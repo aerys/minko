@@ -60,7 +60,7 @@ package aerys.minko.scene.mesh.parser.max3ds
 				Minko.log("Parsing mesh \"" + name + "\"", this);
 				
 				var parser	: Max3DSMeshParser 	= new Max3DSMeshParser(myChunk, name);
-				var mesh	: Mesh3D			= new Mesh3D(VertexStream3D.fromVerticesAndUVs(parser.vertices, parser.uvData),
+				var mesh	: Mesh3D			= new Mesh3D(VertexStream3D.fromPositionsAndUVs(parser.vertices, parser.uvData),
 														     new IndexStream3D(parser.indices));
 					
 				_meshesMap[name] = mesh;

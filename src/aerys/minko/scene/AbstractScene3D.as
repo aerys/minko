@@ -16,7 +16,7 @@ package aerys.minko.scene
 			_name = value;
 		}
 		
-		public function visited(myVisitor : IScene3DVisitor) : void
+		public function visited(visitor : IScene3DVisitor) : void
 		{
 			throw new Error();
 		}

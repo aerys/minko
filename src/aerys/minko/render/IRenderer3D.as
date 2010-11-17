@@ -13,12 +13,13 @@ package aerys.minko.render
 		function get transform() : TransformManager;
 		function get viewport() : Viewport3D;
 		function get textures() : Vector.<TextureBase3D>;
+		function get drawingTime() : int;
 		
 		function drawTriangles(myIndexStream 	: IndexStream3D,
 							   myOffset			: uint	= 0,
 							   myNumTriangles	: uint	= -1) : void;
 		
-		function clear(color : uint = 0) : void;
+		function clear(color : uint = 0xff000000) : void;
 		
 		function present() : void;
 	}

@@ -81,7 +81,7 @@ package aerys.minko.scene.mesh.primitive
 				indices[int(c++)] = (myParallels - 3) * myMeridians + i + 1;
 			}
 			
-			super(VertexStream3D.fromVerticesAndUVs(vertices, uv), new IndexStream3D(indices));
+			super(VertexStream3D.fromPositionsAndUVs(vertices, uv), new IndexStream3D(indices));
 		}
 		
 	}

@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.scene.IScene3D;
-	import aerys.minko.type.math.Frustum;
+	import aerys.minko.type.math.Frustum3D;
 	import aerys.minko.type.math.Transform3D;
 	
 	import flash.display.Sprite;
@@ -11,6 +11,7 @@ package aerys.minko.render
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
+	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DRenderMode;
 	import flash.display3D.Context3DTriangleFace;
 	import flash.events.Event;
@@ -40,14 +41,14 @@ package aerys.minko.render
 		private var _zFar		: Number			= 0.;
 		
 		private var _rectangle	: Rectangle			= null;
-		private var _frustum	: Frustum			= new Frustum();
+		private var _frustum	: Frustum3D			= new Frustum3D();
 		
 		private var _visitor	: IScene3DVisitor	= null;
 		private var _time		: int				= 0;
 		
 		private var _projection	: Transform3D		= new Transform3D();
 		
-		private var _context	: Context3D			= new Context3D(Context3DRenderMode.SOFTWARE);
+		private var _context	: Context3D			= new Context3D(Context3DRenderMode.AUTO);
 		
 		/**
 		 * Indicates the width of the viewport.
@@ -139,8 +140,8 @@ package aerys.minko.render
 			}
 		}
 		
-		/*public function get numTriangles() 			: uint	{ return _graphics.numTriangles; }
-		public function get numDrawingOperations() 	: uint	{ return _graphics.numDrawingOperations; }*/
+		public function get numTriangles() 			: uint	{ return _visitor.renderer.numTriangles; }
+		
 		public function get renderingTime() 		: uint	{ return _time; }
 		
 		/**
@@ -174,7 +175,7 @@ package aerys.minko.render
 		 * @return A Frustum object.
 		 *
 		 */
-		public function get frustum() : Frustum
+		public function get frustum() : Frustum3D
 		{
 			if (_update)
 				update();
@@ -187,6 +188,11 @@ package aerys.minko.render
 			return _context;
 		}
 		
+		public function get drawingTime() : int
+		{
+			return _visitor.renderer.drawingTime;
+		}
+		
 		/**
 		 * Creates a new Viewport object.
 		 *
@@ -197,23 +203,21 @@ package aerys.minko.render
 		 * @param myZFar The far clipping plane.
 		 *
 		 */
-		public function Viewport3D(myWidth	: Number,
-								   myHeight	: Number,
-								   myZFar	: Number	= DEFAUT_ZFAR,
-								   myZNear	: Number	= DEFAUT_ZNEAR,
-								   myFoV	: Number	= DEFAUT_FOV)
+		public function Viewport3D(width	: Number,
+								   height	: Number,
+								   zFar		: Number	= DEFAUT_ZFAR,
+								   zNear	: Number	= DEFAUT_ZNEAR,
+								   fov		: Number	= DEFAUT_FOV)
 		{
-			_width = myWidth;
-			_height = myHeight;
-			_fov = myFoV;
-			_zNear = myZNear;
-			_zFar = myZFar;
+			_width = width;
+			_height = height;
+			_fov = fov;
+			_zNear = zNear;
+			_zFar = zFar;
 			
 			_visitor = new Scene3DVisitor(this);
 			
-			_context.setupBackBuffer(_width, _height, 0, true);
-			
-			_context.setCulling(Context3DTriangleFace.FRONT);
+			resetContext();
 		}
 
 		private function update() : void
@@ -222,9 +226,7 @@ package aerys.minko.render
 			var height	: Number	= -_height / 2.;
 			
 			_projection = Transform3D.perspectiveFovLH(_fov, _width / _height, _zNear, _zFar);
-			_frustum.updateFromProjection(_projection);
-			//_projection.appendScale(width, height, 1.0);
-			
+			_frustum.updateFromProjection(_projection, _width, _height);
 			_rectangle = new Rectangle(0, 0, _width, _height);
 			
 			_update = false;
@@ -245,13 +247,25 @@ package aerys.minko.render
 			return vp;
 		}
 		
-		private function setupOnStage(myStage : Stage, myAutoResize : Boolean = true) : void
+		private function setupOnStage(stage : Stage, autoResize : Boolean = true) : void
 		{
-			myStage.stage3Ds[0].attachContext3D(_context);
-			myStage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+			stage.addChild(this);
+			stage.addEventListener(Event.EXIT_FRAME, exitFrameHandler);
 			
-			if (myAutoResize)
-				myStage.addEventListener(Event.RESIZE, stageResizeHandler);
+			if (autoResize)
+				stage.addEventListener(Event.RESIZE, stageResizeHandler);
+		}
+		
+		private function exitFrameHandler(event : Event) : void
+		{
+			var stage : Stage = event.target as Stage;
+			
+			removeEventListener(Event.EXIT_FRAME, exitFrameHandler);
+			
+			stage.stage3Ds[0].attachContext3D(_context);
+			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+			
+			resetContext();
 		}
 		
 		private function stageResizeHandler(event : Event) : void
@@ -263,29 +277,37 @@ package aerys.minko.render
 			if (stage.stageHeight)
 				height = stage.stageHeight;
 			
-			_context.setupBackBuffer(_width, _height, 0, true);
 			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+			
+			resetContext();
+		}
+		
+		private function resetContext() : void
+		{
+			_context.setupBackBuffer(_width, _height, 0, true);
+			_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
+			_context.setCulling(Context3DTriangleFace.FRONT);
 		}
 		
 		/**
 		 * Render the specified scene.
 		 * @param myScene
 		 */
-		public function render(myScene 		: IScene3D,
-							   myClearColor	: uint		= 0xff000000,
-							   mySweep 		: Boolean 	= true) : void
+		public function render(scene 	: IScene3D,
+							   color	: uint		= 0xff000000,
+							   sweep 	: Boolean 	= true) : void
 		{
 			var time 		: int 			= getTimer();
 			var renderer 	: IRenderer3D 	= _visitor.renderer;
 
-			renderer.clear(myClearColor);
+			renderer.clear(color);
 			renderer.transform.reset();
 			renderer.transform.projection = _projection;
-			_visitor.visit(myScene);
+			_visitor.visit(scene);
 			
 			_time = getTimer() - time;
 
-			if (mySweep)
+			if (sweep)
 				Factory.sweep();
 			
 			renderer.present();

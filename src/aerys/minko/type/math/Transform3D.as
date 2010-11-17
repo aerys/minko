@@ -17,70 +17,70 @@ package aerys.minko.type.math
 		private static const RAD2DEG		: Number	= 180. / Math.PI;
 		private static const ORIENTATION	: String	= Orientation3D.EULER_ANGLES;
 		
-		minko var _matrix		: Matrix3D			= new Matrix3D();
+		minko var _matrix				: Matrix3D			= new Matrix3D();
 		
-		private var _version	: uint				= 0;
-		private var _update		: Boolean			= false;
-		private var _invalidate	: Boolean			= false;
+		private var _version			: uint				= 0;
+		private var _updateRawData		: Boolean			= false;
+		private var _updateComponents	: Boolean			= false;
 		
-		private var _position	: Vector3D			= new Vector3D();
-		private var _rotation	: Vector3D			= new Vector3D();
-		private var _scale		: Vector3D			= new Vector3D(1., 1., 1.);
-		private var _components	: Vector.<Vector3D>	= Vector.<Vector3D>([_position,
-																		 _rotation,
-																		 _scale]);
+		private var _position			: Vector3D			= new Vector3D();
+		private var _rotation			: Vector3D			= new Vector3D();
+		private var _scale				: Vector3D			= new Vector3D(1., 1., 1.);
+		private var _components			: Vector.<Vector3D>	= Vector.<Vector3D>([_position,
+																				 _rotation,
+																				 _scale]);
 		
 		public function get x() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _position.x;
 		}
 		public function get y() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _position.y;
 		}
 		public function get z() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _position.z;
 		}
 		public function get scaleX() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _scale.x;
 		}
 		public function get scaleY() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _scale.y;
 		}
 		public function get scaleZ() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _scale.z;
 		}
 		public function get rotationX() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _rotation.x;
 		}
 		public function get rotationY() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _rotation.y;
 		}
 		public function get rotationZ() : Number
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
 			return _rotation.z;
 		}
@@ -91,7 +91,7 @@ package aerys.minko.type.math
 			{
 				_position.x = value;
 				++_version;
-				_update = true;
+				_updateRawData = true;
 			}
 		}
 		
@@ -101,7 +101,7 @@ package aerys.minko.type.math
 			{
 				_position.y = value;
 				++_version;
-				_update = true;
+				_updateRawData = true;
 			}
 		}
 		
@@ -111,7 +111,7 @@ package aerys.minko.type.math
 			{
 				_position.z = value;
 				++_version;
-				_update = true;
+				_updateRawData = true;
 			}
 		}
 		
@@ -120,7 +120,7 @@ package aerys.minko.type.math
 			if (value != _scale.x)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_scale.x = value;
 			}
 		}
@@ -130,7 +130,7 @@ package aerys.minko.type.math
 			if (value != _scale.y)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_scale.y = value;
 			}
 		}
@@ -140,7 +140,7 @@ package aerys.minko.type.math
 			if (value != _scale.z)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_scale.z = value;
 			}
 		}
@@ -150,7 +150,7 @@ package aerys.minko.type.math
 			if (value != _rotation.x)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_rotation.x = value;
 			}
 		}
@@ -160,7 +160,7 @@ package aerys.minko.type.math
 			if (value != _rotation.y)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_rotation.y = value;
 			}
 		}
@@ -170,7 +170,7 @@ package aerys.minko.type.math
 			if (value != _rotation.z)
 			{
 				++_version;
-				_update = true;
+				_updateRawData = true;
 				_rotation.z = value;
 			}
 		}
@@ -197,9 +197,9 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAtLeftHanded(myEyePosition 	: Vector3D,
-												myEyeDirection 	: Vector3D,
-												myUp			: Vector3D) : Transform3D
+		public static function lookAtLeftHanded(position 	: Vector3D,
+												lookAt	 	: Vector3D,
+												up			: Vector3D) : Transform3D
 		{
 			var z_axis		: Vector3D		= null;
 			var	x_axis		: Vector3D		= null;
@@ -209,16 +209,16 @@ package aerys.minko.type.math
 			var	m43			: Number		= 0.;
 			var matrix		: Transform3D	= TRANSFORM.create();
 			
-			z_axis = myEyeDirection.subtract(myEyePosition);
+			z_axis = lookAt.subtract(position);
 			z_axis.normalize();
-			x_axis = myUp.crossProduct(z_axis);
+			x_axis = up.crossProduct(z_axis);
 			x_axis.normalize();
 			y_axis = z_axis.crossProduct(x_axis);
 			y_axis.normalize();
 			
-			m41 = -x_axis.dotProduct(myEyePosition);
-			m42 = -y_axis.dotProduct(myEyePosition);
-			m43 = -z_axis.dotProduct(myEyePosition);
+			m41 = -x_axis.dotProduct(position);
+			m42 = -y_axis.dotProduct(position);
+			m43 = -z_axis.dotProduct(position);
 			
 			matrix.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
 											   x_axis.y,	y_axis.y,	z_axis.y,	0.,
@@ -245,9 +245,9 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAtRightHanded(myEyePosition 	: Vector3D,
-												 myEyeDirection	: Vector3D,
-												 myUp			: Vector3D) : Transform3D
+		public static function lookAtRightHanded(position 	: Vector3D,
+												 lookAt		: Vector3D,
+												 up			: Vector3D) : Transform3D
 		{
 			var z_axis		: Vector3D		= null;
 			var	x_axis		: Vector3D		= null;
@@ -257,16 +257,16 @@ package aerys.minko.type.math
 			var	m43			: Number		= 0.;
 			var matrix		: Transform3D	= TRANSFORM.create();
 			
-			z_axis = myEyePosition.subtract(myEyeDirection);
+			z_axis = position.subtract(lookAt);
 			z_axis.normalize();
-			x_axis = myUp.crossProduct(z_axis);
+			x_axis = up.crossProduct(z_axis);
 			x_axis.normalize();
 			y_axis = z_axis.crossProduct(x_axis);
 			y_axis.normalize();
 			
-			m41 = -x_axis.dotProduct(myEyePosition);
-			m42 = -y_axis.dotProduct(myEyePosition),
-			m43 = -z_axis.dotProduct(myEyePosition);
+			m41 = -x_axis.dotProduct(position);
+			m42 = -y_axis.dotProduct(position),
+			m43 = -z_axis.dotProduct(position);
 
 			matrix.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
 											   x_axis.y,	y_axis.y,	z_axis.y,	0.,
@@ -276,15 +276,15 @@ package aerys.minko.type.math
 			return matrix;
 		}
 		
-		public static  function perspectiveFovLH(myFov		: Number,
-												 myRatio	: Number,
-												 myZNear	: Number,
-												 myZFar 	: Number) : Transform3D
+		public static  function perspectiveFovLH(fov	: Number,
+												 ratio	: Number,
+												 zNear	: Number,
+												 zFar 	: Number) : Transform3D
 		{
-			var	y_scale		: Number		= 1. / Math.tan(myFov / 2.0);
-			var	x_scale		: Number		= y_scale / myRatio;
-			var	m33			: Number		= myZFar / (myZFar - myZNear);
-			var	m43			: Number		= -myZNear * myZFar / (myZFar - myZNear);
+			var	y_scale		: Number		= 1. / Math.tan(fov * .5);
+			var	x_scale		: Number		= y_scale / ratio;
+			var	m33			: Number		= zFar / (zFar - zNear);
+			var	m43			: Number		= -zNear * zFar / (zFar - zNear);
 			var t			: Transform3D	= TRANSFORM.create();
 			
 			t.setRawData(Vector.<Number>([x_scale,	0.,			0.,		0.,
@@ -299,20 +299,20 @@ package aerys.minko.type.math
 		{
 			if (rawData)
 			{
-				_invalidate = true;
+				_updateComponents = true;
 				_matrix.rawData = rawData;
 			}
 		}
 		
 		private function updateRawData() : void
 		{
-			_update = false;
+			_updateRawData = false;
 			_matrix.recompose(_components, ORIENTATION);
 		}
 		
-		private function invalidateComponents() : void
+		private function updateComponents() : void
 		{
-			_invalidate = false;
+			_updateComponents = false;
 			_components = _matrix.decompose(ORIENTATION);
 			_position = _components[0];
 			_rotation = _components[1];
@@ -322,9 +322,9 @@ package aerys.minko.type.math
 		public function append(lhs : Transform3D) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
-			lhs._update && lhs.updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
+			lhs._updateRawData && lhs.updateRawData();
 			_matrix.append(lhs._matrix);
 			
 			return this;
@@ -335,8 +335,8 @@ package aerys.minko.type.math
 									   pivotPoint	: Vector3D	= null) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.appendRotation(radians * RAD2DEG, axis, pivotPoint);
 			
 			return this;
@@ -347,8 +347,8 @@ package aerys.minko.type.math
 									zScale	: Number	= 1.) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.appendScale(xScale, yScale, zScale);
 			
 			return this;
@@ -357,8 +357,8 @@ package aerys.minko.type.math
 		public function appendUniformScale(scale : Number) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.appendScale(scale, scale, scale);
 			
 			return this;
@@ -369,8 +369,8 @@ package aerys.minko.type.math
 										  z : Number = 0.) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.appendTranslation(x, y, z);
 			
 			return this;
@@ -379,17 +379,18 @@ package aerys.minko.type.math
 		public function identity() : Transform3D
 		{
 			++_version;
-			_invalidate = true;
+			_updateComponents = true;
 			_matrix.identity();
 			
 			return this;
 		}
 		
-		public function interpolateTo(toMat : Transform3D, percent : Number) : Transform3D
+		public function interpolateTo(toMat 	: Transform3D,
+									  percent 	: Number) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.interpolateTo(toMat._matrix, percent);
 			
 			return this;
@@ -398,8 +399,8 @@ package aerys.minko.type.math
 		public function invert() : Boolean
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			
 			return _matrix.invert();
 		}
@@ -409,8 +410,8 @@ package aerys.minko.type.math
 								up	: Vector3D	= null) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.pointAt(pos, at, up);
 			
 			return this;
@@ -419,9 +420,9 @@ package aerys.minko.type.math
 		public function prepend(rhs : Transform3D) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
-			rhs._update && rhs.updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
+			rhs._updateRawData && rhs.updateRawData();
 			_matrix.prepend(rhs._matrix);
 			
 			return this;
@@ -432,8 +433,8 @@ package aerys.minko.type.math
 										pivotPoint	: Vector3D = null) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.prependRotation(radians * RAD2DEG, axis, pivotPoint);
 			
 			return this;
@@ -444,9 +445,19 @@ package aerys.minko.type.math
 									 zScale	: Number = 1.) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.prependScale(xScale, yScale, zScale);
+			
+			return this;
+		}
+		
+		public function prependUniformScale(scale : Number) : Transform3D
+		{
+			++_version;
+			_updateComponents = true;
+			_updateRawData && updateRawData();
+			_matrix.prependScale(scale, scale, scale);
 			
 			return this;
 		}
@@ -456,8 +467,8 @@ package aerys.minko.type.math
 										   z : Number	= 1.) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.prependTranslation(x, y, z);
 			
 			return this;
@@ -466,7 +477,22 @@ package aerys.minko.type.math
 		public function recompose(components		: Vector.<Vector3D>,
 								  orientationStyle	: String = "eulerAngles") : Boolean
 		{
+			var p : Vector3D = components[0];
+			var r : Vector3D = components[1];
+			var s : Vector3D = components[2];
+			
+			_position.x = p.x;
+			_position.y = p.y;
+			_position.z = p.z;
+			_rotation.x = r.x;
+			_rotation.y = r.y;
+			_rotation.z = r.z;
+			_scale.x = s.x;
+			_scale.y = s.y;
+			_scale.z = s.z;
+
 			++_version;
+			_updateComponents = false;
 			
 			return _matrix.recompose(components, orientationStyle);
 		}
@@ -474,136 +500,172 @@ package aerys.minko.type.math
 		public function transpose() : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_update && updateRawData();
+			_updateComponents = true;
+			_updateRawData && updateRawData();
 			_matrix.transpose();
 			
 			return this;
 		}
 		
-		public function setRotation(myX : Number = 0.,
-									myY : Number = 0.,
-									myZ : Number = 0.) : Transform3D
+		public function setRotation(x : Number = 0.,
+									y : Number = 0.,
+									z : Number = 0.) : Transform3D
 		{
-			_rotation.x = myX;
-			_rotation.y = myY;
-			_rotation.z = myZ;
+			_updateComponents && updateComponents();
+			
+			_rotation.x = x;
+			_rotation.y = y;
+			_rotation.z = z;
 			
 			++_version;
-			_update = true;
+			_updateRawData = true;
 			
 			return this;
 		}
 		
-		public function setScale(myX : Number = 1.,
-								 myY : Number = 1.,
-								 myZ : Number = 1.) : Transform3D
+		public function setScale(x : Number = 1.,
+								 y : Number = 1.,
+								 z : Number = 1.) : Transform3D
 		{
-			_scale.x = myX;
-			_scale.y = myY;
-			_scale.z = myZ;
+			_updateComponents && updateComponents();
+			
+			_scale.x = x;
+			_scale.y = y;
+			_scale.z = z;
 			
 			++_version;
-			_update = true;
+			_updateRawData = true;
 			
 			return this;
 		}
 		
-		public function setPosition(pos : Vector3D) : Transform3D
+		public function setPosition(x : Number 	= 0.,
+									y : Number	= 0.,
+									z : Number 	= 0.) : Transform3D
 		{
-			_position.x = pos.x;
-			_position.y = pos.y;
-			_position.z = pos.z;
+			_updateComponents && updateComponents();
+			
+			_position.x = x;
+			_position.y = y;
+			_position.z = z;
 			
 			++_version;
-			_update = true;
+			_updateRawData = true;
 			
 			return this;
 		}
 		
-		public function clone(myTemporary : Boolean = false) : Transform3D
+		public function clone() : Transform3D
 		{
-			var clone : Transform3D = TRANSFORM.create(myTemporary);
+			var clone : Transform3D = TRANSFORM.create();
 			
 			clone.setRawData(_matrix.rawData);
 			
 			return clone;
 		}
 		
-		public function transformVector(myVector : Vector3D) : Vector3D
+		minko function temporaryClone() : Transform3D
 		{
-			return _matrix.transformVector(myVector);
+			var clone : Transform3D = TRANSFORM.create(true);
+			
+			clone.setRawData(_matrix.rawData);
+			
+			return clone;
 		}
 		
-		public function deltaTransformVector(myVector : Vector3D) : Vector3D
+		public function transformVector(vector : Vector3D) : Vector3D
 		{
-			return _matrix.deltaTransformVector(myVector);
+			return _matrix.transformVector(vector);
 		}
 		
-		public function setRawData(v : Vector.<Number>) : Transform3D
+		public function deltaTransformVector(vector : Vector3D) : Vector3D
+		{
+			return _matrix.deltaTransformVector(vector);
+		}
+		
+		public function setRawData(data : Vector.<Number>) : Transform3D
 		{
 			++_version;
-			_invalidate = true;
-			_matrix.rawData = v;
+			_updateComponents = true;
+			_updateRawData = false;
+			_matrix.rawData = data;
 			
 			return this;
 		}
 		
 		public function getRawData() : Vector.<Number>
 		{
-			_update && updateRawData();
+			_updateRawData && updateRawData();
 			
 			return _matrix.rawData;
 		}
 		
-		public function decompose(myOrientation : String = "eulerAngles") : Vector.<Vector3D>
+		public function decompose(orientation : String = "eulerAngles") : Vector.<Vector3D>
 		{
-			_update && updateRawData();
+			++_version;
+			_updateRawData && updateRawData();
 			
-			return _matrix.decompose(myOrientation);
+			var c : Vector.<Vector3D> = _matrix.decompose(orientation);
+			var p : Vector3D = c[0];
+			var r : Vector3D = c[1];
+			var s : Vector3D = c[2];
+			
+			_position.x = p.x;
+			_position.y = p.y;
+			_position.z = p.z;
+			_rotation.x = r.x;
+			_rotation.y = r.y;
+			_rotation.z = r.z;
+			_scale.x = s.x;
+			_scale.y = s.y;
+			_scale.z = s.z;
+			
+			_updateComponents = false;
+			
+			return c;
 		}
 		
-		public function transformVectors(myIn 	: Vector.<Number>,
-										 myOut	: Vector.<Number>) : void
+		public function transformVectors(input 	: Vector.<Number>,
+										 output	: Vector.<Number>) : void
 		{
-			_update && updateRawData();
-			_matrix.transformVectors(myIn, myOut);
+			_updateRawData && updateRawData();
+			_matrix.transformVectors(input, output);
 		}
 		
 		public function getPosition() : Vector3D
 		{
-			_invalidate && invalidateComponents()();
+			_updateComponents && updateComponents()();
 			
-			return _position;
+			return _position.clone();
 		}
 		
 		public function getRotation() : Vector3D
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
-			return _rotation;
+			return _rotation.clone();
 		}
 		
 		public function getScale() : Vector3D
 		{
-			_invalidate && invalidateComponents();
+			_updateComponents && updateComponents();
 			
-			return _scale;
+			return _scale.clone();
 		}
 				
-		public function projectVector(myVector : Vector3D) : Vector3D
+		public function projectVector(vector : Vector3D) : Vector3D
 		{
-			_update && updateRawData();
+			_updateRawData && updateRawData();
 			
-			return Utils3D.projectVector(_matrix, myVector);
+			return Utils3D.projectVector(_matrix, vector);
 		}
 		
-		public function projectVectors(myIn 	: Vector.<Number>,
-									   myOut	: Vector.<Number>,
-									   myUVT	: Vector.<Number>) : void
+		public function projectVectors(input 	: Vector.<Number>,
+									   output	: Vector.<Number>,
+									   uvt		: Vector.<Number>) : void
 		{
-			_update && updateRawData();
-			Utils3D.projectVectors(_matrix, myIn, myOut, myUVT);
+			_updateRawData && updateRawData();
+			Utils3D.projectVectors(_matrix, input, output, uvt);
 		}
 	}
 }

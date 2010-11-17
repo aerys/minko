@@ -7,6 +7,7 @@ package aerys.minko.type.stream
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DVertexFormat;
+	import flash.utils.ByteArray;
 	
 	
 	public final class VertexStream3D
@@ -25,13 +26,17 @@ package aerys.minko.type.stream
 		public function get length() : int				{ return _data.length / _format.dwordsPerVertex; }
 		public function get format() : IVertex3DFormat	{ return _format; }
 	
-		public function VertexStream3D(myData 		: Vector.<Number>,
-									   myFormat		: IVertex3DFormat = null)
+		public function VertexStream3D(data 	: Vector.<Number>,
+									   format	: IVertex3DFormat 	= null)
 		{
 			super();
+
+			_format = format || DEFAULT_FORMAT;
 			
-			_data = myData.concat();
-			_format = myFormat || DEFAULT_FORMAT;
+			if (data.length % _format.dwordsPerVertex)
+				throw new Error("Incompatible vertex format: the data length does not match");
+			
+			_data = data ? data.concat() : null;
 		}
 		
 		public function deleteVertexByIndex(myIndex : int) : Boolean
@@ -88,22 +93,60 @@ package aerys.minko.type.stream
 				myContext.setVertexStream(i++, null, 0, Context3DVertexFormat.DISABLED);
 		}
 		
-		public static function fromVerticesAndUVs(myVertices : Vector.<Number>,
-												  myUVs		 : Vector.<Number>) : VertexStream3D
+		public static function fromPositionsAndUVs(positions : Vector.<Number>,
+												   uvs		 : Vector.<Number>) : VertexStream3D
 		{
-			var numVertices : int = myVertices.length / 3;
+			var numVertices : int = positions.length / 3;
 			var data : Vector.<Number> = new Vector.<Number>(numVertices * 5, true);
 			
 			for (var i : int = 0; i < numVertices; ++i)
 			{
-				data[int(i * 5)] = myVertices[int(i * 3)];
-				data[int(i * 5 + 1)] = myVertices[int(i * 3 + 1)];
-				data[int(i * 5 + 2)] = myVertices[int(i * 3 + 2)];
-				data[int(i * 5 + 3)] = myUVs[int(i * 2)];
-				data[int(i * 5 + 4)] = myUVs[int(i * 2 + 1)];
+				data[int(i * 5)] = positions[int(i * 3)];
+				data[int(i * 5 + 1)] = positions[int(i * 3 + 1)];
+				data[int(i * 5 + 2)] = positions[int(i * 3 + 2)];
+				data[int(i * 5 + 3)] = uvs[int(i * 2)];
+				data[int(i * 5 + 4)] = uvs[int(i * 2 + 1)];
 			}
 			
 			return new VertexStream3D(data, Vertex3DFormat.XYZ_UV);
+		}
+		
+		public static function fromByteArray(data 	: ByteArray,
+											 count	: int,
+											 format	: IVertex3DFormat) : VertexStream3D
+		{
+			var nativeFormats	: Vector.<int>		= format.nativeFormats;
+			var numFormats		: int				= nativeFormats.length;
+			var length			: int				= 0;
+			var tmp				: Vector.<Number>	= null;
+			var stream			: VertexStream3D	= new VertexStream3D(null, format);
+
+			stream._data = tmp;
+
+			tmp = new Vector.<Number>(format.dwordsPerVertex * count,
+									  true);
+			
+			for (var j : int = 0; j < count; ++j)
+			{
+				for (var i : int = 0; i < numFormats; ++i)
+				{
+					switch (nativeFormats[i])
+					{
+						case NativeFormat.RGBA :
+						case NativeFormat.FLOAT_4 :
+							tmp[int(length++)] = data.readFloat();
+						case NativeFormat.FLOAT_3 :
+							tmp[int(length++)] = data.readFloat();
+						case NativeFormat.FLOAT_2 :
+							tmp[int(length++)] = data.readFloat();
+						case NativeFormat.FLOAT_1 :
+							tmp[int(length++)] = data.readFloat();
+							break ;
+					}
+				}
+			}
+			
+			return stream;
 		}
 	}
 }

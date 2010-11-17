@@ -29,37 +29,37 @@ package aerys.minko.scene.material
 			return _parser;
 		}
 		
-		public function MaterialLoader(myParser : IMaterialParser = null)
+		public function MaterialLoader(parser : IMaterialParser = null)
 		{
 			super();
 		
-			_parser = myParser;
+			_parser = parser;
 		}
 		
-		public function loadByteArray(myData : ByteArray) : IMaterial3D
+		public function loadByteArray(data : ByteArray) : IMaterial3D
 		{
-			_parser.parse(myData);
+			_parser.parse(data);
 			_material = _parser.material;
 		
 			return (_material);
 		}
 
-		public function loadAsset(myAsset : Class) : IMaterial3D
+		public function loadAsset(asset : Class) : IMaterial3D
 		{
-			var asset	: Object	= new myAsset();
+			var assetObject	: Object	= new asset();
 			
 			if (_parser)
-				return loadByteArray(asset as ByteArray);
+				return loadByteArray(assetObject as ByteArray);
 	
-			if (asset is IBitmapDrawable)
-				_material = BitmapMaterial3D.fromDisplayObject(asset as Bitmap);
-			else if (asset is ByteArray)
-				_material = BitmapMaterial3D.fromByteArray(asset as ByteArray);
+			if (assetObject is IBitmapDrawable)
+				_material = NativeTexture3D.fromDisplayObject(assetObject as Bitmap);
+			else if (assetObject is ByteArray)
+				_material = NativeTexture3D.fromByteArray(assetObject as ByteArray);
 			
 			return _material;
 		}
 		
-		public function load(myRequest : URLRequest) : void
+		public function load(request : URLRequest) : void
 		{
 			if (_parser)
 			{
@@ -68,14 +68,14 @@ package aerys.minko.scene.material
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				
 				urlLoader.addEventListener(Event.COMPLETE, completeHandler);
-				urlLoader.load(myRequest);
+				urlLoader.load(request);
 			}
 			else
 			{
 				var loader : Loader = new Loader();
 				
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
-				loader.load(myRequest);
+				loader.load(request);
 			}			
 			
 		}
@@ -85,21 +85,21 @@ package aerys.minko.scene.material
 			if (_parser)
 				loadByteArray((event.target as URLLoader).data as ByteArray);
 			else
-				_material = new BitmapMaterial3D(event.target.content.bitmapData);
+				_material = new NativeTexture3D(event.target.content.bitmapData);
 			
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 
-		public static function loadAsset(myAsset 	: Class,
-										 myParser 	: IMaterialParser = null) : IMaterial3D
+		public static function loadAsset(asset 	: Class,
+										 parser	: IMaterialParser = null) : IMaterial3D
 		{
-			return new MaterialLoader(myParser).loadAsset(myAsset);
+			return new MaterialLoader(parser).loadAsset(asset);
 		}
 		
-		public static function loadByteArray(myData 	: ByteArray,
-											 myParser	: IMaterialParser = null) : IMaterial3D
+		public static function loadByteArray(data 	: ByteArray,
+											 parser	: IMaterialParser = null) : IMaterial3D
 		{
-			return new MaterialLoader(myParser).loadByteArray(myData);
+			return new MaterialLoader(parser).loadByteArray(data);
 		}
 
 	}

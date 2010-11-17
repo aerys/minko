@@ -18,7 +18,7 @@ package aerys.minko.type.vertex.formats
 		public function get dwordsPerVertex()	: int			{ return _nbDwords; }
 		
 		public function Vertex3DFormat(properties 		: Array,
-											   nativeFormats	: Array)
+									   nativeFormats	: Array)
 		{
 			var numProperties : int = properties.length;
 			var numFormats : int = nativeFormats.length;

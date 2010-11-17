@@ -8,7 +8,7 @@ package aerys.minko.scene.debug
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.scene.DisplayObject3D;
-	import aerys.minko.scene.material.BitmapMaterial3D;
+	import aerys.minko.scene.material.NativeTexture3D;
 	import aerys.minko.scene.mesh.primitive.CubeMesh;
 	
 	import flash.display.CapsStyle;
@@ -27,7 +27,7 @@ package aerys.minko.scene.debug
 			shape.graphics.drawRect(2, 2, 252, 252);
 			
 			super(CubeMesh.cubeMesh,
-				  BitmapMaterial3D.fromDisplayObject(shape, 256, true));
+				  NativeTexture3D.fromDisplayObject(shape, 256, true));
 		}
 		
 		override public function visited(myVisitor : IScene3DVisitor) : void

@@ -1,10 +1,13 @@
 package aerys.minko.scene.mesh
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.IScene3DVisitor;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	
+	import flash.display3D.Context3D;
 	
 	public class Mesh3D extends AbstractScene3D implements IMesh3D
 	{
@@ -34,11 +37,14 @@ package aerys.minko.scene.mesh
 			return _indexStream;
 		}
 		
-		override public function visited(myVisitor : IScene3DVisitor) : void
+		override public function visited(visitor : IScene3DVisitor) : void
 		{
-			_vertexStream.prepareContext(myVisitor.renderer.viewport.context,
-										 myVisitor.renderer.states.vertexFormat);
-			_indexStream.prepare(myVisitor.renderer.viewport.context);
+			var renderer : IRenderer3D = visitor.renderer;
+			var context : Context3D = renderer.viewport.context;
+			
+			_indexStream.prepare(context);
+			_vertexStream.prepareContext(context,
+										 renderer.states.vertexFormat);
 		}
 		
 		public function set vertexStream(value : VertexStream3D) : void

@@ -10,7 +10,6 @@ package aerys.minko.type.math
 	import aerys.minko.type.stream.VertexStream3D;
 	
 	import flash.display.TriangleCulling;
-	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 	
 	/**
@@ -184,7 +183,7 @@ package aerys.minko.type.math
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class Frustum
+	public class Frustum3D
 	{
 		use namespace minko;
 		
@@ -256,9 +255,11 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		minko function updateFromProjection(myTransform : Transform3D) : void
+		minko function updateFromProjection(transform 	: Transform3D,
+											width		: Number,
+											height		: Number) : void
 		{
-			var data	: Vector.<Number>	= myTransform.getRawData();
+			var data	: Vector.<Number>	= transform.getRawData();
 			
 			_planes[RIGHT] = new Plane3D(data[3] - data[0] + THICKNESS,
 									     data[7] - data[4],
@@ -300,24 +301,24 @@ package aerys.minko.type.math
 		 * @return 
 		 * 
 		 */
-		public function testVector(myVector 	: Vector3D,
-								   myTransform	: Matrix3D 	= null,
-								   myMask		: int 			= 0xffffff) : uint
+		public function testVector(vector 		: Vector3D,
+								   transform	: Transform3D 	= null,
+								   mask			: int 			= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
 			var p 		: Plane3D	= null;
 			var d		: Number	= 0.;
 			
-			if (myTransform)
-				myVector = myTransform.transformVector(myVector);
+			if (transform)
+				vector = transform.transformVector(vector);
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_SPHERE << (i << 2)) & myMask) == 0)
+				if (((CULLING_SPHERE << (i << 2)) & mask) == 0)
 					continue ;
 				
 				p = _planes[i];
-				d = p._a * myVector.x + p._b * myVector.y + p._c * myVector.z - p._d;
+				d = p._a * vector.x + p._b * vector.y + p._c * vector.z - p._d;
 				
 				if (d < 0.)
 					return OUTSIDE;
@@ -334,27 +335,30 @@ package aerys.minko.type.math
 		 * @param myCulling The bitmask that describes the planes to test.
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 */
-		public function testBoundingSphere(mySphere 	: BoundingSphere3D,
-										   myTransform	: Matrix3D	= null,
-										   myCulling	: int 			= 0xffffff) : int
+		public function testBoundingSphere(sphere 		: BoundingSphere3D,
+										   transform	: Transform3D	= null,
+										   culling		: int 			= 0xffffff) : int
 		{
-			var center		: Vector3D	= mySphere._center;
-			var radius		: Number	= mySphere.radius;
+			var center		: Vector3D	= sphere._center;
+			var radius		: Number	= sphere.radius;
 			var result		: int		= 0;
 			var p 			: Plane3D	= null;
 			var d 			: Number	= 0.;
+		
+			if (!culling)
+				return INSIDE;
 			
-			if (myTransform != null)
+			if (transform != null)
 			{
-				var scale	: Vector3D	= myTransform.decompose()[2];
+				var scale	: Vector3D	= transform.decompose()[2];
 
-				center = myTransform.transformVector(mySphere._center);
+				center = transform.transformVector(sphere._center);
 				radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
 			}
 						
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_SPHERE << (i << 2)) & myCulling) == 0)
+				if (((CULLING_SPHERE << (i << 2)) & culling) == 0)
 					continue ;
 				
 				p = _planes[i];
@@ -378,26 +382,29 @@ package aerys.minko.type.math
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 *
 		 */
-		public function testBoundingBox(myBox		: BoundingBox3D,
-										myTransform	: Matrix3D 	= null,
-										myCulling	: int			= 0xffffff) : uint
+		public function testBoundingBox(box			: BoundingBox3D,
+										transform	: Transform3D 	= null,
+										culling		: int			= 0xffffff) : uint
 		{
 			var result		: uint				= 0;
 			var count		: int				= 0;
-			var vertices	: Vector.<Number>	= myBox._vertices;
+			var vertices	: Vector.<Number>	= box._vertices;
 			var p			: Plane3D			= null;
 			
+			if (!culling)
+				return INSIDE;
+			
 			// transform vertices
-			if (myTransform != null)
+			if (transform != null)
 			{
 				_boxVertices.length = 0;
-				myTransform.transformVectors(vertices, _boxVertices);
+				transform.transformVectors(vertices, _boxVertices);
 				vertices = _boxVertices;
 			}
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_BOX << (i << 2)) & myCulling) == 0)
+				if (((CULLING_BOX << (i << 2)) & culling) == 0)
 					continue ;
 				
 				p = _planes[i];
@@ -451,23 +458,29 @@ package aerys.minko.type.math
 		 * the spanning planes.
 		 * 
 		 */
-		public function testBoundedVolume(myVolume		: IBoundedVolume3D,
-								 	      myTransform	: Matrix3D,
-								 		  myCulling		: int = 0xffffff) : uint
+		public function testBoundedVolume(volume	: IBoundedVolume3D,
+								 	      transform	: Transform3D	= null,
+								 		  culling	: int 			= 0xffffff) : uint
 		{
-			var box		: BoundingBox3D		= myVolume.boundingBox;
+			var box		: BoundingBox3D		= volume.boundingBox;
 			
-			if ((myCulling & FrustumCulling.SPHERE) == 0)
-				return testBoundingBox(box, myTransform, myCulling);
+			if (!culling)
+				return INSIDE;
 			
-			var sphere		: BoundingSphere3D	= myVolume.boundingSphere;
-			var center		: Vector3D			= myTransform.transformVector(sphere._center);
-			var scale		: Vector3D			= myTransform.decompose()[2];
+			if ((culling & FrustumCulling.SPHERE) == 0)
+				return testBoundingBox(box, transform, culling);
+			
+			var sphere		: BoundingSphere3D	= volume.boundingSphere;
+			var center		: Vector3D			= sphere._center;
+			//var scale		: Vector3D			= transform.decompose()[2];
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
 			var vertices	: Vector.<Number>	= null;
 			
-			radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
+			//radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
+			
+			if (transform)
+				center = transform.transformVector(center);
 			
 			for (var i : int = 0; i < 6; i++)
 			{
@@ -475,7 +488,7 @@ package aerys.minko.type.math
 				var d 	: Number	= 0;
 				
 				// bounding sphere
-				if (((CULLING_SPHERE << (i << 2)) & myCulling))
+				if (((CULLING_SPHERE << (i << 2)) & culling))
 				{
 					d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
 					
@@ -486,7 +499,7 @@ package aerys.minko.type.math
 				}
 
 				// bounding box
-				if ((CULLING_BOX << (i << 2)) & myCulling)
+				if ((CULLING_BOX << (i << 2)) & culling)
 				{
 					var count	: int	= 0;
 					var test	: uint	= 0;
@@ -496,7 +509,7 @@ package aerys.minko.type.math
 					{
 						vertices = _boxVertices;
 						vertices.length = 0;
-						myTransform.transformVectors(box._vertices, vertices);
+						transform.transformVectors(box._vertices, vertices);
 					}
 					
 					// test vertices

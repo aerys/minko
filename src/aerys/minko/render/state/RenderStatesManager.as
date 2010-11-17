@@ -28,8 +28,8 @@ package aerys.minko.render.state
 																				   Context3DBlendMode.ZERO]);
 		
 		private static const CULLING_STR	: Vector.<String>	= Vector.<String>([Context3DTriangleFace.NONE,
-																				   Context3DTriangleFace.FRONT,
-																				   Context3DTriangleFace.BACK]);
+																				   Context3DTriangleFace.BACK,
+																				   Context3DTriangleFace.FRONT]);
 		
 		public static const BLENDING			: uint			= RenderState.BLENDING;
 		public static const SHADER				: uint			= RenderState.SHADER;
@@ -130,12 +130,12 @@ package aerys.minko.render.state
 				if ((_triangleCulling & TriangleCulling.FRONT)
 					&& (_triangleCulling & TriangleCulling.BACK))
 				{
-					//_context.setCulling(Context3DTriangleFace.FRONT_AND_BACK);
+					_context.setCulling(Context3DTriangleFace.FRONT_AND_BACK);
 				}
 				else
 				{
-					trace("culling", CULLING_STR[_triangleCulling]);
-					//_context.setCulling(CULLING_STR[_triangleCulling]);
+					//trace("triangleCulling =", CULLING_STR[_triangleCulling]);
+					_context.setCulling(CULLING_STR[_triangleCulling]);
 				}
 			}
 		}
@@ -147,15 +147,15 @@ package aerys.minko.render.state
 			blending = BlendingSource.DEFAULT | BlendingDestination.DEFAULT;
 			shader = new DefaultShader3D();
 			writeMask = WriteMask.ENABLED;
-			_frustumCulling = FrustumCulling.ENABLED;
+			frustumCulling = FrustumCulling.ENABLED;
 			triangleCulling = TriangleCulling.BACK;
 			
-			register(BLENDING, "blending", new Vector.<uint>());
-			register(SHADER, "shader", new Vector.<Shader3D>());
-			register(FORMAT, "vertexFormat", new Vector.<IVertex3DFormat>());
-			register(WRITE_MASK, "writeMask", new Vector.<uint>());
-			register(FRUSTUM_CULLING, "frustumCulling", new Vector.<uint>());
-			register(TRIANGLE_CULLING, "triangleCulling", new Vector.<uint>());
+			registerState(BLENDING, "blending", new Vector.<uint>());
+			registerState(SHADER, "shader", new Vector.<Shader3D>());
+			registerState(FORMAT, "vertexFormat", new Vector.<IVertex3DFormat>());
+			registerState(WRITE_MASK, "writeMask", new Vector.<uint>());
+			registerState(FRUSTUM_CULLING, "frustumCulling", new Vector.<uint>());
+			registerState(TRIANGLE_CULLING, "triangleCulling", new Vector.<uint>());
 		}
 		
 		public function compareTo(state : RenderStatesManager) : int

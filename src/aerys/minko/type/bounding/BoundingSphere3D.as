@@ -36,13 +36,13 @@ package aerys.minko.type.bounding
 		
 		/**
 		 * Creates a new BoundingSphere object with the specified center and radius.
-		 * @param	myCenter
-		 * @param	myRadius
+		 * @param	center
+		 * @param	radius
 		 */
-		public function BoundingSphere3D(myCenter : Vector3D, myRadius : Number)
+		public function BoundingSphere3D(center : Vector3D, radius : Number)
 		{
-			_center = myCenter.clone();
-			_radius = myRadius;
+			_center = center.clone();
+			_radius = radius;
 		}
 		/* ! CONSTRUCTOR */
 		
@@ -50,17 +50,17 @@ package aerys.minko.type.bounding
 		/**
 		 * Create a new BoundingSphere object by computing its center and radius from
 		 * the bottom-left and top-right vertices of a bounding box.
-		 * @param	myMin
-		 * @param	myMax
+		 * @param	min
+		 * @param	max
 		 * @return
 		 */
-		public static function fromMinMax(myMin : Vector3D, myMax : Vector3D) : BoundingSphere3D
+		public static function fromMinMax(min : Vector3D, max : Vector3D) : BoundingSphere3D
 		{
-			var center : Vector3D = new Vector3D((myMax.x + myMin.x) / 2.0,
-												 (myMax.y + myMin.y) / 2.0,
-												 (myMax.z + myMin.z) / 2.0);
-			var radius	: Number	= Math.max(Vector3D.distance(center, myMax),
-											   Vector3D.distance(center, myMin));
+			var center : Vector3D 	= new Vector3D((max.x + min.x) * .5,
+												   (max.y + min.y) * .5,
+												   (max.z + min.z) * .5);
+			var radius	: Number	= Math.max(Vector3D.distance(center, max),
+											   Vector3D.distance(center, min));
 			
 			return new BoundingSphere3D(center, radius);
 		}

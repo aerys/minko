@@ -21,9 +21,9 @@ package aerys.minko.type
 		{
 		}
 		
-		protected function register(bitmask 	: uint,
-									property 	: String,
-									stack 		: Object = null) : void
+		protected function registerState(bitmask 	: uint,
+										 property 	: String,
+										 stack 		: Object = null) : void
 		{
 			_masks[_numStates] = bitmask;
 			_properties[_numStates] = property;
@@ -59,6 +59,7 @@ package aerys.minko.type
 			{
 				if (statesMask & (mask = _masks[i]))
 				{
+					//trace("push", _properties[i], this[_properties[i]]);
 					pushState(1 << i, this[_properties[i]], _stacks[i]);
 					statesMask ^= mask;
 					pushMask |= mask;
@@ -90,18 +91,19 @@ package aerys.minko.type
 			{
 				if ((mask = _masks[i]) & statesMask)
 				{
+					//trace("pop", _properties[i], this[_properties[i]]);
 					popState(mask, _properties[i], _stacks[i]);
 					statesMask ^= mask;
 				}
 			}
 		}
 		
-		public function pushState(mask : uint, value : Object, stack : Object) : void
+		protected function pushState(mask : uint, value : Object, stack : Object) : void
 		{
 			stack[stack.length] = value;
 		}
 		
-		public function popState(mask : uint, property : String, stack : Object) : void
+		protected function popState(mask : uint, property : String, stack : Object) : void
 		{
 			this[property] = stack[int(stack.length - 1)];
 			stack.length--;

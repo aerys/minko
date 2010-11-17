@@ -1,18 +1,14 @@
 package aerys.minko.scene.camera
 {
-	import aerys.common.Factory;
 	import aerys.minko.render.IScene3DVisitor;
-	import aerys.minko.render.Scene3DVisitor;
 	
-	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 	
 	public class ArcBallCamera3D extends AbstractCamera3D
 	{
-		private static const MATRIX3D		: Factory	= Factory.getFactory(Matrix3D);
 		private static const PI_DIV_2		: Number	= Math.PI / 2.;
 		private static const PI_2			: Number	= Math.PI * 2.;
-		private static const EPSILON		: Number	= .0000001;
+		private static const EPSILON		: Number	= .00001;
 		
 		private var _distance	: Number	= 1.;
 		private var _rotation	: Vector3D	= new Vector3D();
@@ -57,7 +53,7 @@ package aerys.minko.scene.camera
 		//} endregion
 		
 		//{ region methods
-		override protected function invalidateTransform(myVisitor : IScene3DVisitor = null) : void
+		override protected function invalidateTransform(visitor : IScene3DVisitor = null) : void
 		{
 			if (_rotation.x >= PI_DIV_2)
 				_rotation.x = PI_DIV_2 - EPSILON;
@@ -71,7 +67,7 @@ package aerys.minko.scene.camera
 			_position.y = lookAtY - _distance * Math.sin(_rotation.x);
 			_position.z = lookAtZ - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.invalidateTransform(myVisitor);
+			super.invalidateTransform(visitor);
 		}
 		//} endregion
 	}

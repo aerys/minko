@@ -31,7 +31,7 @@ package aerys.minko.type.triangle
 		
 		public function get length() : int
 		{
-			return _ib.length / 3.;
+			return _ib ? _ib.length / 3. : _vb.length / 3.;
 		}
 		
 		public function Triangle3DIterator(myVertexBuffer 	: VertexStream3D,

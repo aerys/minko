@@ -241,7 +241,7 @@ package aerys.minko.type.triangle
 			_center.z = (_v0.z + _v1.z + _v2.z) * .33333333;
 		}
 		
-		private function swapCulling() : void
+		private function invertWinding() : void
 		{
 			_update = UPDATE_ALL;
 			

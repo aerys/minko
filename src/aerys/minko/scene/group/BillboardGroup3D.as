@@ -1,17 +1,18 @@
 package aerys.minko.scene.group
 {
 	import aerys.common.Factory;
+	import aerys.minko.ns.minko;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.IScene3DVisitor;
-	import aerys.minko.render.Scene3DVisitor;
 	import aerys.minko.render.transform.TransformType;
 	import aerys.minko.type.math.Transform3D;
 	
-	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 
 	public class BillboardGroup3D extends Group3D
 	{
+		use namespace minko;
+		
 		private static const TRANSFORM3D	: Factory	= Factory.getFactory(Transform3D);
 		private static const UP				: Vector3D	= new Vector3D(0., -1., 0.);
 		
@@ -28,7 +29,7 @@ package aerys.minko.scene.group
 		
 		override public function visited(myVisitor : IScene3DVisitor) : void
 		{
-			var t 		 : Transform3D = _transform.clone(true);
+			var t 		 : Transform3D = _transform.temporaryClone();
 			var renderer : IRenderer3D = myVisitor.renderer;
 			
 			/*t.pointAt(myVisitor.transform.localCameraPosition,

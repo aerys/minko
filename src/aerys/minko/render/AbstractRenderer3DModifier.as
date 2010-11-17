@@ -6,11 +6,11 @@ package aerys.minko.render
 	
 	import flash.display3D.TextureBase3D;
 	
-	public class AbstractRenderer3DDecorator implements IRenderer3DDecorator
+	public class AbstractRenderer3DModifier implements IRenderer3DModifier
 	{
 		private var _target			: IRenderer3D	= null;
 		
-		public function AbstractRenderer3DDecorator(myTarget : IRenderer3D)
+		public function AbstractRenderer3DModifier(myTarget : IRenderer3D)
 		{
 			_target = myTarget;
 		}
@@ -21,6 +21,12 @@ package aerys.minko.render
 		public function get target()		: IRenderer3D				{ return _target; }
 		public function get numTriangles()	: uint						{ return _target.numTriangles; }
 		public function get textures()		: Vector.<TextureBase3D>	{ return _target.textures; }
+		public function get drawingTime()	: int						{ return _target.drawingTime; }
+		
+		public function set target(value : IRenderer3D) : void
+		{
+			_target = value;
+		}
 		
 		public function drawTriangles(myIndexStream 	: IndexStream3D,
 									  myOffset			: uint = 0,

@@ -47,9 +47,9 @@ package aerys.minko.scene.mesh
 			loadByteArray(data);
 		}
 		
-		public static function loadAsset(myAsset : Class, myParser : Class = null) : Vector.<IMesh3D>
+		public static function loadAsset(asset : Class, parser : Class = null) : Vector.<IMesh3D>
 		{
-			return loadByteArray(new myAsset() as ByteArray, myParser);
+			return loadByteArray(new asset() as ByteArray, parser);
 		}
 		
 		public static function loadByteArray(myData : ByteArray, myParser : Class = null) : Vector.<IMesh3D>

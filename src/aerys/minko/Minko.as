@@ -6,8 +6,8 @@ package aerys.minko
 	public class Minko
 	{
 		//{ region consts
-		public static const VERSION	: String		= "0.1b";
-		public static const URL		: String		= "http://minko.in";
+		public static const VERSION	: String		= "0.01a";
+		public static const URL		: String		= "http://aerys.in/minko";
 		//} endregion
 		
 		//{ region vars

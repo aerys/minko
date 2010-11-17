@@ -8,6 +8,6 @@ package aerys.minko.scene.mesh.parser
 	{
 		function get meshes() : Vector.<IMesh3D>;
 		
-		function parse(myData : ByteArray) : void;
+		function parse(data : ByteArray) : void;
 	}
 }

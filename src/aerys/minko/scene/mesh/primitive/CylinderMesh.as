@@ -57,7 +57,7 @@ package aerys.minko.scene.mesh.primitive
 				++ii;
 			}
 			
-			super(VertexStream3D.fromVerticesAndUVs(vb, uv), new IndexStream3D(ib));
+			super(VertexStream3D.fromPositionsAndUVs(vb, uv), new IndexStream3D(ib));
 		}
 		
 	}

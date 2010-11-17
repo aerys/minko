@@ -89,10 +89,19 @@ package aerys.minko.render.transform
 		
 		public function getLocalToScreenMatrix() : Matrix3D
 		{
-			var mat : Transform3D = _world.clone(true);
+			var mat : Transform3D = _world.temporaryClone();
 			
 			mat.append(_view);
 			mat.append(_projection);
+			
+			return mat._matrix;
+		}
+		
+		public function getLocalToViewMatrix() : Matrix3D
+		{
+			var mat : Transform3D = _world.temporaryClone();
+			
+			mat.append(_view);
 			
 			return mat._matrix;
 		}
@@ -102,26 +111,38 @@ package aerys.minko.render.transform
 		{
 			super();
 			
-			register(TransformType.WORLD, "world", new Vector.<Transform3D>());
-			register(TransformType.VIEW, "view", new Vector.<Transform3D>());
-			register(TransformType.PROJECTION, "projection", new Vector.<Transform3D>());
+			registerState(TransformType.WORLD, "world", new Vector.<Transform3D>());
+			registerState(TransformType.VIEW, "view", new Vector.<Transform3D>());
+			registerState(TransformType.PROJECTION, "projection", new Vector.<Transform3D>());
 		}
 		
-		override public function pushState(mask : uint, value : Object, stack : Object) : void
+		override protected function pushState(mask 	: uint,
+											  value : Object,
+											  stack : Object) : void
 		{
-			super.pushState(mask, (value as Transform3D).clone(true), stack);
+			super.pushState(mask, (value as Transform3D).temporaryClone(), stack);
+		}
+		
+		override protected function popState(mask		: uint,
+											 property	: String,
+											 stack		: Object) : void
+		{
+			var value : Vector.<Number> = stack[int(stack.length - 1)].getRawData();
+			
+			stack.length--;
+			if (property == "world")
+				world.setRawData(value);
+			else if (property == "view")
+				view.setRawData(value);
+			else if (property == "projection")
+				projection.setRawData(value);
 		}
 		
 		//{ region methods
 		public function reset() : void
 		{
-			_world = TRANSFORM3D.create(true);
 			_world.identity();
-			
-			_view = TRANSFORM3D.create(true);
 			_view.identity();
-			
-			_projection = TRANSFORM3D.create(true);
 			_projection.identity();
 		}
 	}

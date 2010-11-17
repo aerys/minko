@@ -1,13 +1,8 @@
 package aerys.minko.render
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.state.RenderStatesManager;
-	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.scene.IScene3D;
-	import aerys.minko.type.stream.IndexStream3D;
-	import aerys.minko.type.vertex.formats.IVertex3DFormat;
-	
-	import flash.display3D.Context3D;
+	import aerys.minko.scene.camera.ICamera3D;
 	
 	public class Scene3DVisitor implements IScene3DVisitor
 	{
@@ -18,9 +13,11 @@ package aerys.minko.render
 		private var _current	: IScene3D			= null;
 		private var _parent		: IScene3D			= null;
 		private var _parents	: Vector.<IScene3D>	= new Vector.<IScene3D>();
+		private var _camera		: ICamera3D			= null;
 		
 		public function get renderer() 		: IRenderer3D	{ return _renderer; }
 		public function get parent()		: IScene3D		{ return _parent; }
+		public function get camera()		: ICamera3D		{ return _camera; }
 
 		public function set renderer(value : IRenderer3D) : void	{ _renderer = value; }	
 		
@@ -34,6 +31,11 @@ package aerys.minko.render
 			_parents[_parents.length] = _parent;
 			_parent = _current;
 			_current = scene;
+			
+			var camera : ICamera3D = null;
+			
+			if ((camera = scene as ICamera3D) && camera.enabled)
+				_camera = camera;
 			
 			scene.visited(this);
 			

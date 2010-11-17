@@ -1,5 +1,6 @@
 package aerys.minko.scene.camera
 {
+	import aerys.minko.ns.minko;
 	import aerys.minko.render.IScene3DVisitor;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.type.math.Transform3D;
@@ -25,10 +26,13 @@ package aerys.minko.scene.camera
 	 */
 	public class AbstractCamera3D extends AbstractScene3D implements ICamera3D
 	{
+		use namespace minko;
+		
 		//{ region vars
 		private var _enabled		: Boolean		= true;
 		
 		protected var _update		: Boolean		= true;
+		
 		private var _lookAt			: Vector3D		= Vector3D.Y_AXIS.clone();
 		private var _up				: Vector3D		= Vector3D.Y_AXIS.clone();
 		private var _transform		: Transform3D	= new Transform3D();
@@ -46,6 +50,11 @@ package aerys.minko.scene.camera
 		 * <code>false</code> otherwise
 		 */
 		public function get enabled() 	: Boolean 	{ return _enabled; }
+		
+		public function get x()			: Number	{ return _position.x; }
+		public function get y()			: Number	{ return _position.y; }
+		public function get z()			: Number	{ return _position.z; }
+		
 		/**
 		 * The <code>x</code> component of the look-at vector.
 		 */
@@ -132,6 +141,11 @@ package aerys.minko.scene.camera
 		//} endregion
 
 		//{ region methods
+		public function getPosition() : Vector3D
+		{
+			return _position.clone();
+		}
+		
 		public function getLookAt() : Vector3D
 		{
 			return _lookAt.clone();
@@ -164,22 +178,31 @@ package aerys.minko.scene.camera
 			return _up.clone();
 		}
 		
-		protected function invalidateTransform(myVisitor : IScene3DVisitor = null) : void
+		protected function invalidateTransform(visitor : IScene3DVisitor = null) : void
 		{
-			var t : Transform3D = myVisitor.renderer.transform.world;
+			var t : Transform3D = visitor.renderer.transform.world;
 			
 			_transform = Transform3D.lookAtLeftHanded(t.transformVector(_position),
 													  t.transformVector(_lookAt),
 													  t.transformVector(_up));
 		}
 		
-		override public function visited(myVisitor : IScene3DVisitor) : void
+		override public function visited(visitor : IScene3DVisitor) : void
 		{
 			if (!_enabled)
 				return ;
 			
-			invalidateTransform(myVisitor);
-			myVisitor.renderer.transform.view = _transform;
+			invalidateTransform(visitor);
+			visitor.renderer.transform.view = _transform;
+		}
+		
+		public function getLocalPosition(worldTransform : Transform3D) : Vector3D
+		{
+			var world : Transform3D = worldTransform.temporaryClone();
+			
+			world.invert();
+			
+			return world.transformVector(_position);
 		}
 		//} endregion
 	}

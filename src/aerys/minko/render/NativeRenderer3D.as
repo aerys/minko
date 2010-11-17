@@ -11,6 +11,7 @@ package aerys.minko.render
 	import flash.display3D.Context3DBlendMode;
 	import flash.display3D.Context3DVertexFormat;
 	import flash.display3D.TextureBase3D;
+	import flash.utils.getTimer;
 
 	public class NativeRenderer3D implements IRenderer3D
 	{
@@ -32,12 +33,14 @@ package aerys.minko.render
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport3D				= null;
 		private var _textures		: Vector.<TextureBase3D>	= new Vector.<TextureBase3D>(8, true);
+		private var _drawingTime	: int						= 0;
 		
 		public function get states() 		: RenderStatesManager		{ return _states; }
 		public function get transform()		: TransformManager			{ return _transform; }
 		public function get numTriangles()	: uint						{ return _numTriangles; }
 		public function get viewport()		: Viewport3D				{ return _viewport; }
 		public function get textures()		: Vector.<TextureBase3D>	{ return _textures; }
+		public function get drawingTime()	: int						{ return _drawingTime; }
 		
 		protected function get context() 	: Context3D					{ return _context; }
 		
@@ -74,32 +77,40 @@ package aerys.minko.render
 				_context.setVertexStream(i++, null, 0, Context3DVertexFormat.DISABLED);
 		}
 		
-		public function drawTriangles(myIndexStream 	: IndexStream3D,
-									  myFirstIndex		: uint	= 0,
-									  myNumTriangles	: uint	= 0) : void
+		public function drawTriangles(indexStream 	: IndexStream3D,
+									  firstIndex	: uint	= 0,
+									  count			: uint	= 0) : void
 		{
-			for (var i : int = 0; i < 8; ++i)
-				_context.setTexture(i, _textures[i]);
+			/*for (var i : int = 0; i < 8; ++i)
+				_context.setTexture(i, _textures[i]);*/
 			
-			myNumTriangles ||= myIndexStream.length / 3;
-			_numTriangles += myNumTriangles;
+			count ||= indexStream.length / 3;
+			_numTriangles += count;
 			
-			//return ;
-			/*_context.drawTriangles(myIndexStream._nativeBuffer,
-								   myFirstIndex,
-								   myNumTriangles);*/
+			if (indexStream.length == 0 || indexStream.length / 3 < count)
+				return ;
 			
-			_context.drawTrianglesSynchronized(myIndexStream._nativeBuffer,
-											   myFirstIndex,
-											   myNumTriangles);
+			var t : int = getTimer();
+			
+			_context.drawTriangles(indexStream._nativeBuffer,
+								   firstIndex,
+								   count);
+			
+			/*_context.drawTrianglesSynchronized(indexStream._nativeBuffer,
+											   firstIndex,
+											   count);*/
+			
+			_drawingTime += getTimer() - t;
 		}
 		
-		public function clear(color : uint = 0) : void
+		public function clear(color : uint = 0xff000000) : void
 		{
 			_context.clear(((color >> 16) & 0xff) / 255.,
 						   ((color >> 8) & 0xff) / 255.,
 						   (color & 0xff) / 255.,
 						   ((color >> 24) & 0xff) / 255.);
+			_numTriangles = 0;
+			_drawingTime = 0;
 		}
 		
 		public function present() : void
