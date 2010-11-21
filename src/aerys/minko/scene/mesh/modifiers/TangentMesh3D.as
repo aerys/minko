@@ -5,9 +5,9 @@ package aerys.minko.scene.mesh.modifiers
 	import aerys.minko.type.triangle.Triangle3DReference;
 	import aerys.minko.type.vertex.Vertex3DIterator;
 	import aerys.minko.type.vertex.Vertex3DReference;
-	import aerys.minko.type.vertex.formats.IVertex3DFormat;
-	import aerys.minko.type.vertex.formats.NativeFormat;
-	import aerys.minko.type.vertex.formats.Vertex3DFormat;
+	import aerys.minko.type.vertex.format.IVertex3DFormat;
+	import aerys.minko.type.vertex.format.NativeFormat;
+	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;

@@ -1,4 +1,4 @@
-package aerys.minko.type.vertex.formats
+package aerys.minko.type.vertex.format
 {
 	import flash.display3D.Context3DVertexFormat;
 

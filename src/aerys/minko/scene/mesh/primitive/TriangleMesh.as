@@ -2,7 +2,7 @@
 {
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.vertex.formats.Vertex3DFormat;
+	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	/**
 	 * ...

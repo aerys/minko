@@ -1,4 +1,4 @@
-package aerys.minko.type.vertex.formats
+package aerys.minko.type.vertex.format
 {
 	public interface IVertex3DFormat
 	{

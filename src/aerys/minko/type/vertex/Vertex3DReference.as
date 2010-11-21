@@ -2,7 +2,7 @@
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.vertex.formats.IVertex3DFormat;
+	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;

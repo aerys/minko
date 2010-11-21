@@ -4,7 +4,7 @@ package aerys.minko.render.state
 	import aerys.minko.type.AbstractStatesManager;
 	import aerys.minko.render.shader.DefaultShader3D;
 	import aerys.minko.render.shader.Shader3D;
-	import aerys.minko.type.vertex.formats.IVertex3DFormat;
+	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendMode;

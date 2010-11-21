@@ -1,9 +1,9 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.vertex.formats.IVertex3DFormat;
-	import aerys.minko.type.vertex.formats.NativeFormat;
-	import aerys.minko.type.vertex.formats.Vertex3DFormat;
+	import aerys.minko.type.vertex.format.IVertex3DFormat;
+	import aerys.minko.type.vertex.format.NativeFormat;
+	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DVertexFormat;

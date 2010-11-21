@@ -5,7 +5,7 @@ package aerys.minko.render
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.vertex.formats.NativeFormat;
+	import aerys.minko.type.vertex.format.NativeFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendMode;
