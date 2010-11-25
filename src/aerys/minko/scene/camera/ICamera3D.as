@@ -24,6 +24,7 @@
 		
 		function getPosition() : Vector3D;
 		function getLocalPosition(worldTransform : Transform3D) : Vector3D;
+		function getLocalLookAt(worldTransform : Transform3D) : Vector3D;
 	}
 	
 }

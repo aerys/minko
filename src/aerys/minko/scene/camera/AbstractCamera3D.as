@@ -204,6 +204,15 @@ package aerys.minko.scene.camera
 			
 			return world.transformVector(_position);
 		}
+
+		public function getLocalLookAt(worldTransform : Transform3D) : Vector3D
+		{
+			var world : Transform3D = worldTransform.temporaryClone();
+			
+			world.invert();
+			
+			return world.transformVector(_lookAt);
+		}
 		//} endregion
 	}
 }

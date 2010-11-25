@@ -3,6 +3,8 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	
+	import flash.geom.Vector3D;
 
 	/**
 	 * The Plane class represents a geometrical plane through its equation
@@ -96,7 +98,7 @@ package aerys.minko.type.math
 		}
 		
 		/**
-		 * Test _dhether a 3D point is coinciding, infront or behind the plane.
+		 * Test a 3D point is coinciding, infront or behind the plane.
 		 * @param	myPoint
 		 * @param	myThickness
 		 * @return
@@ -114,7 +116,38 @@ package aerys.minko.type.math
 		}
 		
 		/**
-		 * Test _dhether a polygon (triangle) is coinciding, infront or behind the plane.
+		 * Test a 3D ray is coinciding, infront or behind the plane.
+		 * @param	myOrigin
+		 * @param	myTarget
+		 * @return
+		 */
+		public final function testRay(myOrigin 		: Vector3D,
+									  myTarget		: Vector3D) : uint
+		{
+			var distOrigin	: Number	= _a * myOrigin.x + _b * myOrigin.y + _c * myOrigin.z - _d;
+			var distTarget	: Number	= _a * myTarget.x + _b * myTarget.y + _c * myTarget.z - _d;
+			
+			var r : uint = 0;
+			
+			if (distOrigin > 0.)
+				r &= A_INFRONT;
+			else if (distOrigin < 0.)
+				r &= A_BEHIND;
+			else
+				r &= A_COINCIDING;
+			
+			if (distTarget > 0.)
+				r &= B_INFRONT;
+			else if (distTarget < 0.)
+				r &= B_BEHIND;
+			else
+				r &= B_COINCIDING;
+
+			return r;
+		}
+		
+		/**
+		 * Test a polygon (triangle) is coinciding, infront or behind the plane.
 		 * @param	myA
 		 * @param	myB
 		 * @param	myC
