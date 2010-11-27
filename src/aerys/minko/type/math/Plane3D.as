@@ -3,65 +3,65 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	
+
 	import flash.geom.Vector3D;
 
 	/**
 	 * The Plane class represents a geometrical plane through its equation
-	 * ax + by + cz + d = 0 _dhere (a, b, c) is the normal of the plane and
+	 * ax + by + cz + d = 0 where (a, b, c) is the normal of the plane and
 	 * d the distance along that normal.
-	 * 
+	 *
 	 * @author Jean-Marc Le Roux
 	 */
 	public class Plane3D
 	{
 		use namespace minko;
-		
+
 		//{ region consts
 		public static const POINT_INFRONT		: uint		= 1;
 		public static const POINT_BEHIND		: uint		= 2;
 		public static const POINT_COINCIDING	: uint		= 4;
-				
+
 		public static const A_INFRONT			: uint		= POINT_INFRONT	<< 16;
 		public static const B_INFRONT			: uint		= POINT_INFRONT	<< 8;
 		public static const C_INFRONT			: uint		= POINT_INFRONT;
-		
+
 		public static const A_BEHIND			: uint		= POINT_BEHIND << 16;
 		public static const B_BEHIND			: uint		= POINT_BEHIND << 8;
 		public static const C_BEHIND			: uint		= POINT_BEHIND;
-		
+
 		public static const A_COINCIDING		: uint		= POINT_COINCIDING << 16;
 		public static const B_COINCIDING		: uint		= POINT_COINCIDING << 8;
 		public static const C_COINCIDING		: uint		= POINT_COINCIDING;
-		
+
 		private static const AB_INFRONT			: uint		= A_INFRONT | B_INFRONT | C_BEHIND;
 		private static const BC_INFRONT			: uint		= A_BEHIND | B_INFRONT | C_INFRONT;
 		private static const CA_INFRONT			: uint		= A_INFRONT | B_BEHIND | C_INFRONT;
-		
+
 		private static const AB_BEHIND			: uint		= A_BEHIND | B_BEHIND | C_INFRONT;
 		private static const BC_BEHIND			: uint		= A_INFRONT | B_BEHIND | C_BEHIND;
 		private static const CA_BEHIND			: uint		= A_BEHIND | B_INFRONT | C_BEHIND;
-		
+
 		public static const POLYGON_INFRONT		: uint		= A_INFRONT | B_INFRONT | C_INFRONT;
 		public static const POLYGON_BEHIND		: uint		= A_BEHIND | B_BEHIND | C_BEHIND;
 		public static const POLYGON_COINCIDING	: uint		= A_COINCIDING | B_COINCIDING | C_COINCIDING;
 
 		public static const OPPOSITE			: uint		= 1 << 24;
 		public static const COLINEAR			: uint		= 2 << 24;
-	
+
 		public static const DEFAULT_THICKNESS	: Number	= .01;
 		//} endregion
-		
+
 		minko var _a	: Number	= 0.;
 		minko var _b	: Number	= 0.;
 		minko var _c	: Number	= 0.;
 		minko var _d	: Number	= 0.;
-		
+
 		public function get a() : Number	{ return _a; }
 		public function get b() : Number	{ return _b; }
 		public function get c() : Number	{ return _c; }
 		public function get d() : Number	{ return _d; }
-		
+
 		/**
 		 * Creates a new Plane object.
 		 * @param	myA
@@ -78,14 +78,14 @@ package aerys.minko.type.math
 			_b = myB;
 			_c = myC;
 			_d = myD;
-			
+
 			normalize();
 		}
-		
+
 		public function normalize() : Number
 		{
 			var mag	: Number	= Math.sqrt(_a * _a + _b * _b + _c * _c);
-			
+
 			if (mag && mag != 1.)
 			{
 				_a /= mag;
@@ -93,10 +93,19 @@ package aerys.minko.type.math
 				_c /= mag;
 				_d /= mag;
 			}
-			
+
 			return mag;
 		}
-		
+
+		public function project(myV : Vector3D) : Vector3D
+		{
+			var scale : Number = _a * myV.x + _b * myV.y + _c * myV.z;
+
+			return new Vector3D(myV.x - scale * _a,
+								myV.y - scale * _b,
+								myV.z - scale * _c);
+		}
+
 		/**
 		 * Test a 3D point is coinciding, infront or behind the plane.
 		 * @param	myPoint
@@ -109,12 +118,12 @@ package aerys.minko.type.math
 										myThickness : Number = DEFAULT_THICKNESS) : uint
 		{
 			var dist	: Number	= _a * myX + _b * myY + _c * myZ - _d;
-			
+
 			return (dist >= -myThickness && dist <= myThickness) ? POINT_COINCIDING
 														   		 : (dist < 0. ? POINT_BEHIND
 											 								  : POINT_INFRONT);
 		}
-		
+
 		/**
 		 * Test a 3D ray is coinciding, infront or behind the plane.
 		 * @param	myOrigin
@@ -126,16 +135,16 @@ package aerys.minko.type.math
 		{
 			var distOrigin	: Number	= _a * myOrigin.x + _b * myOrigin.y + _c * myOrigin.z - _d;
 			var distTarget	: Number	= _a * myTarget.x + _b * myTarget.y + _c * myTarget.z - _d;
-			
+
 			var r : uint = 0;
-			
+
 			if (distOrigin > 0.)
 				r &= A_INFRONT;
 			else if (distOrigin < 0.)
 				r &= A_BEHIND;
 			else
 				r &= A_COINCIDING;
-			
+
 			if (distTarget > 0.)
 				r &= B_INFRONT;
 			else if (distTarget < 0.)
@@ -145,7 +154,7 @@ package aerys.minko.type.math
 
 			return r;
 		}
-		
+
 		/**
 		 * Test a polygon (triangle) is coinciding, infront or behind the plane.
 		 * @param	myA
@@ -163,17 +172,17 @@ package aerys.minko.type.math
 			var result  : uint 		= 0;
 			var s		: Number	= -myThickness;
 			var t		: Number	= myThickness;
-			
+
 			test = _a * myX1 + _b * myY1 + _c * myZ1 - _d;
 			result = ((test >= s && test <= t) ? POINT_COINCIDING
 											 : ((test < 0.) ? POINT_BEHIND
 														    : POINT_INFRONT)) << 16;
-			
+
 			test = _a * myX2 + _b * myY2 + _c * myZ2 - _d;
 			result |= ((test >= s && test <= t) ? POINT_COINCIDING
 											  : ((test < 0.) ? POINT_BEHIND
 														     : POINT_INFRONT)) << 8;
-			
+
 			test = _a * myX3 + _b * myY3 + _c * myZ3 - _d;
 			result |= (test >= s && test <= t) ? POINT_COINCIDING
 											 : ((test < 0.) ? POINT_BEHIND
@@ -191,24 +200,24 @@ package aerys.minko.type.math
 				var dot : Number = _a * (y1y3 * z1z2 - z1z3 * y1y2)
 								   + _b * (z1z3 * x1x2 - x1x3 * z1z2)
 								   + _c * (x1x3 * y1y2 - y1y3 * x1x2);
-				
+
 				result |= dot > 0. ? COLINEAR : OPPOSITE;
 			}
 
 			return result;
 		}
-		
+
 		public function clone() : Plane3D
 		{
 			return new Plane3D(_a, _b, _c, _d);
 		}
-		
+
 		public function toString() : String
 		{
 			return "(" + _a + ", " + _b + ", "
 				   + _c + ", " + _d + ")";
 		}
-		
+
 		/**
 		 * Create a new Plane from a polygon defined by 3 set of (x, _b, _c) tuples.
 		 * @param	myX1
@@ -229,7 +238,7 @@ package aerys.minko.type.math
 			var nx : Number = (myY1 - myY3) * (myZ1 - myZ2) - (myZ1 - myZ3) * (myY1 - myY2);
 			var ny : Number = (myZ1 - myZ3) * (myX1 - myX2) - (myX1 - myX3) * (myZ1 - myZ2);
 			var nz : Number = (myX1 - myX3) * (myY1 - myY2) - (myY1 - myY3) * (myX1 - myX2);
-			
+
 			return new Plane3D(nx, ny, nz, myX1 * nx + myY1 * ny + myZ1 * nz);
 		}
 	}
