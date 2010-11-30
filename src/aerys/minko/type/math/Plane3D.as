@@ -97,13 +97,13 @@ package aerys.minko.type.math
 			return mag;
 		}
 
-		public function project(myV : Vector3D) : Vector3D
+		public function project(v : Vector3D) : Vector3D
 		{
-			var scale : Number = _a * myV.x + _b * myV.y + _c * myV.z;
+			var scale : Number = _a * v.x + _b * v.y + _c * v.z;
 
-			return new Vector3D(myV.x - scale * _a,
-								myV.y - scale * _b,
-								myV.z - scale * _c);
+			return new Vector3D(v.x - scale * _a,
+								v.y - scale * _b,
+								v.z - scale * _c);
 		}
 
 		/**

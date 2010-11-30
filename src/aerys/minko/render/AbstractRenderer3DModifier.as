@@ -4,7 +4,7 @@ package aerys.minko.render
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
 	
-	import flash.display3D.TextureBase3D;
+	import flash.display3D.textures.TextureBase;
 	
 	public class AbstractRenderer3DModifier implements IRenderer3DModifier
 	{
@@ -20,7 +20,7 @@ package aerys.minko.render
 		public function get viewport()		: Viewport3D				{ return _target.viewport; }
 		public function get target()		: IRenderer3D				{ return _target; }
 		public function get numTriangles()	: uint						{ return _target.numTriangles; }
-		public function get textures()		: Vector.<TextureBase3D>	{ return _target.textures; }
+		public function get textures()		: Vector.<TextureBase>		{ return _target.textures; }
 		public function get drawingTime()	: int						{ return _target.drawingTime; }
 		
 		public function set target(value : IRenderer3D) : void

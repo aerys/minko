@@ -1,5 +1,6 @@
 package aerys.minko.scene.material
 {
+	import aerys.common.IVersionnable;
 	import aerys.minko.scene.IScene3D;
 	
 	import flash.display.BitmapData;

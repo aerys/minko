@@ -1,15 +1,14 @@
 package aerys.minko.render.state
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.AbstractStatesManager;
 	import aerys.minko.render.shader.DefaultShader3D;
 	import aerys.minko.render.shader.Shader3D;
+	import aerys.minko.type.AbstractStatesManager;
 	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DBlendMode;
+	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DTriangleFace;
-	import flash.display3D.TextureBase3D;
 
 	public final class RenderStatesManager extends AbstractStatesManager
 	{
@@ -17,15 +16,15 @@ package aerys.minko.render.state
 		
 		private static const MAX_TEXTURES	: uint				= 8;
 		
-		private static const BLENDING_STR	: Vector.<String>	= Vector.<String>([Context3DBlendMode.DESTINATION_ALPHA,
-																				   Context3DBlendMode.DESTINATION_COLOR,
-																				   Context3DBlendMode.ONE,
-																				   Context3DBlendMode.ONE_MINUS_DESTINATION_ALPHA,
-																				   Context3DBlendMode.ONE_MINUS_DESTINATION_COLOR,
-																				   Context3DBlendMode.ONE_MINUS_SOURCE_ALPHA,
-																				   Context3DBlendMode.SOURCE_ALPHA,
-																				   Context3DBlendMode.SOURCE_COLOR,
-																				   Context3DBlendMode.ZERO]);
+		private static const BLENDING_STR	: Vector.<String>	= Vector.<String>([Context3DBlendFactor.DESTINATION_ALPHA,
+																				   Context3DBlendFactor.DESTINATION_COLOR,
+																				   Context3DBlendFactor.ONE,
+																				   Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA,
+																				   Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR,
+																				   Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA,
+																				   Context3DBlendFactor.SOURCE_ALPHA,
+																				   Context3DBlendFactor.SOURCE_COLOR,
+																				   Context3DBlendFactor.ZERO]);
 		
 		private static const CULLING_STR	: Vector.<String>	= Vector.<String>([Context3DTriangleFace.NONE,
 																				   Context3DTriangleFace.BACK,
@@ -83,8 +82,11 @@ package aerys.minko.render.state
 			if (!(lockedStates & BLENDING))
 			{
 				_blending = value;
-				_context.setBlending(BLENDING_STR[int(blending & 0xffff)],
-									 BLENDING_STR[int(blending >> 16)]);
+				
+				/*_context.setBlending(BLENDING_STR[int(blending & 0xffff)],
+									 BLENDING_STR[int(blending >> 16)]);*/
+				_context.setBlendFactors(BLENDING_STR[int(blending & 0xffff)],
+										 BLENDING_STR[int(blending >> 16)]);
 			}
 		}
 		
@@ -98,10 +100,15 @@ package aerys.minko.render.state
 			if (value != _write)
 			{
 				_write = value;
-				_context.setColorWriteMask((_write & WriteMask.COLOR_RED) != 0,
+				/*_context.setColorWriteMask((_write & WriteMask.COLOR_RED) != 0,
 										   (_write & WriteMask.COLOR_GREEN) != 0,
 										   (_write & WriteMask.COLOR_BLUE) != 0,
-										   (_write & WriteMask.COLOR_ALPHA) != 0);
+										   (_write & WriteMask.COLOR_ALPHA) != 0);*/
+				
+				_context.setColorMask((_write & WriteMask.COLOR_RED) != 0,
+									  (_write & WriteMask.COLOR_GREEN) != 0,
+									  (_write & WriteMask.COLOR_BLUE) != 0,
+									  (_write & WriteMask.COLOR_ALPHA) != 0);
 			}
 		}
 		

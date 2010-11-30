@@ -181,7 +181,7 @@ package aerys.minko.type.stream
 					_nativeBuffer = context.createIndexBuffer(_length);
 				}
 				
-				_nativeBuffer.upload(_indices, 0, _indices.length);
+				_nativeBuffer.uploadFromVector(_indices, 0, _indices.length);
 				_update = false;
 			}
 		}

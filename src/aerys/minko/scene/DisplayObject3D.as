@@ -58,10 +58,10 @@ package aerys.minko.scene
 			_mesh && visitor.visit(_mesh);
 			_material && visitor.visit(_material);
 			
-			context.setProgramConstantsMatrix(Context3DProgramType.VERTEX,
-											  0,
-											  transform.getLocalToScreenMatrix(),
-											  true);
+			context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX,
+											  	  0,
+											  	  transform.getLocalToScreenMatrix(),
+											  	  true);
 			
 			_mesh && renderer.drawTriangles(_mesh.indexStream);
 		

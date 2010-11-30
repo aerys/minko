@@ -26,6 +26,7 @@
 			var vb : Vector.<Number> = Vector.<Number>([-0.5, 0.0, -0.5,
 														0.5, 0.0, -0.5,
 														0.0, 0.0, 0.5]);
+			
 			super(new VertexStream3D(vb, Vertex3DFormat.XYZ));
 		}
 		

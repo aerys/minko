@@ -48,7 +48,7 @@ package aerys.minko.render
 		
 		private var _projection	: Transform3D		= new Transform3D();
 		
-		private var _context	: Context3D			= new Context3D(Context3DRenderMode.AUTO);
+		private var _context	: Context3D			= null;
 		
 		/**
 		 * Indicates the width of the viewport.
@@ -140,7 +140,8 @@ package aerys.minko.render
 			}
 		}
 		
-		public function get numTriangles() 			: uint	{ return _visitor.renderer.numTriangles; }
+		public function get numTriangles() 			: uint	{ return _visitor ? _visitor.renderer.numTriangles
+																			  : 0; }
 		
 		public function get renderingTime() 		: uint	{ return _time; }
 		
@@ -190,7 +191,24 @@ package aerys.minko.render
 		
 		public function get drawingTime() : int
 		{
-			return _visitor.renderer.drawingTime;
+			return _visitor ? _visitor.renderer.drawingTime
+							: 0;
+		}
+		
+		public function get renderMode() : String
+		{
+			if (_context)
+				return _context.driverInfo.split(/^(\w+) Description=(.*) Driver=.*$/gs)[1];
+			
+			return null;
+		}
+		
+		public function get driver() : String
+		{
+			if (_context)
+				return _context.driverInfo.split(/^(\w+) Description=(.*) Driver=.*$/gs)[2];
+			
+			return null;
 		}
 		
 		/**
@@ -214,10 +232,6 @@ package aerys.minko.render
 			_fov = fov;
 			_zNear = zNear;
 			_zFar = zFar;
-			
-			_visitor = new Scene3DVisitor(this);
-			
-			resetContext();
 		}
 
 		private function update() : void
@@ -232,17 +246,17 @@ package aerys.minko.render
 			_update = false;
 		}
 		
-		public static function setupOnStage(myStage 		: Stage,
-											myZFar			: Number	= DEFAUT_ZFAR,
-											myZNear			: Number	= DEFAUT_ZNEAR,
-											myFoV			: Number	= DEFAUT_FOV) : Viewport3D
+		public static function setupOnStage(stage 	: Stage,
+											zFar	: Number	= DEFAUT_ZFAR,
+											zNear	: Number	= DEFAUT_ZNEAR,
+											fov		: Number	= DEFAUT_FOV) : Viewport3D
 		{
-			var vp : Viewport3D = new Viewport3D(myStage.stageWidth, myStage.stageHeight, myZFar, myZNear, myFoV);
+			var vp : Viewport3D = new Viewport3D(stage.stageWidth, stage.stageHeight, zFar, zNear, fov);
 			
-			myStage.align = StageAlign.TOP_LEFT;
-			myStage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			stage.scaleMode = StageScaleMode.NO_SCALE;
 			
-			vp.setupOnStage(myStage);
+			vp.setupOnStage(stage);
 			
 			return vp;
 		}
@@ -250,22 +264,13 @@ package aerys.minko.render
 		private function setupOnStage(stage : Stage, autoResize : Boolean = true) : void
 		{
 			stage.addChild(this);
-			stage.addEventListener(Event.EXIT_FRAME, exitFrameHandler);
 			
+			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, resetContext3D);
+			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+			stage.stage3Ds[0].requestContext3D();
+
 			if (autoResize)
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
-		}
-		
-		private function exitFrameHandler(event : Event) : void
-		{
-			var stage : Stage = event.target as Stage;
-			
-			removeEventListener(Event.EXIT_FRAME, exitFrameHandler);
-			
-			stage.stage3Ds[0].attachContext3D(_context);
-			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
-			
-			resetContext();
 		}
 		
 		private function stageResizeHandler(event : Event) : void
@@ -279,12 +284,13 @@ package aerys.minko.render
 			
 			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
 			
-			resetContext();
+			resetContext3D();
 		}
 		
-		private function resetContext() : void
+		private function resetContext3D(event : Event = null) : void
 		{
-			_context.setupBackBuffer(_width, _height, 0, true);
+			_context = stage.stage3Ds[0].context3D;
+			_context.configureBackBuffer(_width, _height, 0, true);
 			_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
 			_context.setCulling(Context3DTriangleFace.FRONT);
 		}
@@ -298,19 +304,26 @@ package aerys.minko.render
 							   sweep 	: Boolean 	= true) : void
 		{
 			var time 		: int 			= getTimer();
-			var renderer 	: IRenderer3D 	= _visitor.renderer;
-
-			renderer.clear(color);
-			renderer.transform.reset();
-			renderer.transform.projection = _projection;
-			_visitor.visit(scene);
+			
+			if (_context)
+			{
+				if (!_visitor)
+					_visitor = new Scene3DVisitor(this);
+				
+				var renderer 	: IRenderer3D 	= _visitor.renderer;
+		
+				renderer.clear(color);
+				renderer.transform.reset();
+				renderer.transform.projection = _projection;
+				_visitor.visit(scene);
+				
+				renderer.present();
+			}
 			
 			_time = getTimer() - time;
 
 			if (sweep)
-				Factory.sweep();
-			
-			renderer.present();
+				Factory.sweep();			
 		}		
 	}
 }

@@ -13,7 +13,7 @@ package aerys.minko.scene.material
 	import flash.display.Loader;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.Texture3D;
+	import flash.display3D.textures.Texture;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
@@ -27,7 +27,7 @@ package aerys.minko.scene.material
 	public class NativeTexture3D extends AbstractScene3D implements IMaterial3D
 	{
 		private var _data		: BitmapData	= null;
-		private var _texture	: Texture3D		= null;
+		private var _texture	: Texture		= null;
 		private var _alpha		: Boolean		= false;
 		private var _update		: Boolean		= true;
 		private var _index		: int			= 0;
@@ -148,7 +148,7 @@ package aerys.minko.scene.material
 					while (ws > 1 && hs > 1)
 					{
 						tmp.draw(_data, transform, null, null, null, true);
-						_texture.upload(tmp, level);
+						_texture.uploadFromBitmapData(tmp, level);
 						transform.scale(.5, .5);
 						level++;
 						ws >>= 1;
@@ -158,7 +158,7 @@ package aerys.minko.scene.material
 				}
 				else
 				{
-					_texture.upload(_data, 0);
+					_texture.uploadFromBitmapData(_data, 0);
 				}
 			}
 			
@@ -169,7 +169,7 @@ package aerys.minko.scene.material
 			}
 			
 			//renderer.textures[_index] = _texture;
-			context.setTexture(_index, _texture);
+			context.setTextureAt(_index, _texture);
 		}
 		
 		//{ region statis

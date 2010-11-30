@@ -33,7 +33,7 @@ package aerys.minko.type.vertex.format
 				var format : int = int(nativeFormats[i])
 				
 				_formats[i] = format;
-				_nbDwords += NativeFormat.NB_DWORDS[format];
+				_nbDwords += NativeFormat.NB_DWORDS[int(format - 1)];
 			}
 		}
 	}

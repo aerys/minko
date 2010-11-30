@@ -4,7 +4,7 @@ package aerys.minko.render
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
 	
-	import flash.display3D.TextureBase3D;
+	import flash.display3D.textures.TextureBase;
 
 	public interface IRenderer3D
 	{
@@ -12,7 +12,7 @@ package aerys.minko.render
 		function get states() : RenderStatesManager;
 		function get transform() : TransformManager;
 		function get viewport() : Viewport3D;
-		function get textures() : Vector.<TextureBase3D>;
+		function get textures() : Vector.<TextureBase>;
 		function get drawingTime() : int;
 		
 		function drawTriangles(myIndexStream 	: IndexStream3D,

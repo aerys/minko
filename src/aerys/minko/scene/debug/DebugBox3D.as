@@ -13,7 +13,6 @@ package aerys.minko.scene.debug
 	
 	import flash.display.CapsStyle;
 	import flash.display.Shape;
-	import flash.display3D.Context3DBlendMode;
 	import flash.display3D.Context3DTriangleFace;
 	
 	public class DebugBox3D extends DisplayObject3D

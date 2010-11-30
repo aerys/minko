@@ -8,38 +8,37 @@ package aerys.minko.render
 	import aerys.minko.type.vertex.format.NativeFormat;
 	
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DBlendMode;
-	import flash.display3D.Context3DVertexFormat;
-	import flash.display3D.TextureBase3D;
+	import flash.display3D.Context3DBlendFactor;
+	import flash.display3D.textures.TextureBase;
 	import flash.utils.getTimer;
 
 	public class NativeRenderer3D implements IRenderer3D
 	{
 		use namespace minko;
 		
-		public static const BLENDING_STR	: Vector.<String>	= Vector.<String>([Context3DBlendMode.DESTINATION_ALPHA,
-																				   Context3DBlendMode.DESTINATION_COLOR,
-																				   Context3DBlendMode.ONE,
-																				   Context3DBlendMode.ONE_MINUS_DESTINATION_ALPHA,
-																				   Context3DBlendMode.ONE_MINUS_DESTINATION_COLOR,
-																				   Context3DBlendMode.ONE_MINUS_SOURCE_ALPHA,
-																				   Context3DBlendMode.SOURCE_ALPHA,
-																				   Context3DBlendMode.SOURCE_COLOR,
-																				   Context3DBlendMode.ZERO]);
+		public static const BLENDING_STR	: Vector.<String>	= Vector.<String>([Context3DBlendFactor.DESTINATION_ALPHA,
+																				   Context3DBlendFactor.DESTINATION_COLOR,
+																				   Context3DBlendFactor.ONE,
+																				   Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA,
+																				   Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR,
+																				   Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA,
+																				   Context3DBlendFactor.SOURCE_ALPHA,
+																				   Context3DBlendFactor.SOURCE_COLOR,
+																				   Context3DBlendFactor.ZERO]);
 		
 		private var _context		: Context3D					= null;
 		private var _states			: RenderStatesManager		= null;
 		private var _transform		: TransformManager			= new TransformManager();
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport3D				= null;
-		private var _textures		: Vector.<TextureBase3D>	= new Vector.<TextureBase3D>(8, true);
+		private var _textures		: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
 		private var _drawingTime	: int						= 0;
 		
 		public function get states() 		: RenderStatesManager		{ return _states; }
 		public function get transform()		: TransformManager			{ return _transform; }
 		public function get numTriangles()	: uint						{ return _numTriangles; }
 		public function get viewport()		: Viewport3D				{ return _viewport; }
-		public function get textures()		: Vector.<TextureBase3D>	{ return _textures; }
+		public function get textures()		: Vector.<TextureBase>		{ return _textures; }
 		public function get drawingTime()	: int						{ return _drawingTime; }
 		
 		protected function get context() 	: Context3D					{ return _context; }
@@ -53,9 +52,9 @@ package aerys.minko.render
 			_transform.projection = _viewport.projection;
 		}
 
-		public function setVertexStream(myVertexStream	: VertexStream3D) : void
+		public function setVertexStream(stream	: VertexStream3D) : void
 		{
-			var formats 	: Vector.<int> 	= myVertexStream.format.nativeFormats;
+			/*var formats 	: Vector.<int> 	= stream.format.nativeFormats;
 			var numFormats 	: int 			= formats.length;
 			var offset 		: int 			= 0;
 			
@@ -64,26 +63,24 @@ package aerys.minko.render
 			{
 				var nativeFormat : int = formats[i];
 				
-				_context.setVertexStream(i,
-										 myVertexStream._nativeBuffer,
-										 offset,
-										 NativeFormat.STRINGS[nativeFormat]);
+				_context.setVertexBufferAt(i,
+										   stream._nativeBuffer,
+										   offset,
+										   NativeFormat.STRINGS[nativeFormat]);
 				
 				offset += NativeFormat.NB_DWORDS[nativeFormat];
 			}
 			
 			// disable the other streams
 			while (i < 8)
-				_context.setVertexStream(i++, null, 0, Context3DVertexFormat.DISABLED);
+				_context.setVertexBufferAt(i++, null);*/
+			//stream.
 		}
 		
 		public function drawTriangles(indexStream 	: IndexStream3D,
 									  firstIndex	: uint	= 0,
 									  count			: uint	= 0) : void
 		{
-			/*for (var i : int = 0; i < 8; ++i)
-				_context.setTexture(i, _textures[i]);*/
-			
 			count ||= indexStream.length / 3;
 			_numTriangles += count;
 			
@@ -92,13 +89,10 @@ package aerys.minko.render
 			
 			var t : int = getTimer();
 			
+			_context.enableErrorChecking = true;
 			_context.drawTriangles(indexStream._nativeBuffer,
 								   firstIndex,
 								   count);
-			
-			/*_context.drawTrianglesSynchronized(indexStream._nativeBuffer,
-											   firstIndex,
-											   count);*/
 			
 			_drawingTime += getTimer() - t;
 		}
@@ -115,7 +109,7 @@ package aerys.minko.render
 		
 		public function present() : void
 		{
-			_context.swap();
+			_context.present();
 		}
 	}
 }

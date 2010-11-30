@@ -6,7 +6,6 @@ package aerys.minko.type.stream
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DVertexFormat;
 	import flash.utils.ByteArray;
 	
 	
@@ -53,44 +52,45 @@ package aerys.minko.type.stream
 			return true;
 		}
 		
-		public function prepareContext(myContext 	: Context3D,
-									   myFormat 	: IVertex3DFormat = null) : void
+		public function prepareContext(context 		: Context3D,
+									   forcedFormat : IVertex3DFormat = null,
+									   offset		: int = 0) : void
 		{
 			var numVertices : int 				= length;
-			var format 		: IVertex3DFormat 	= myFormat || _format;
+			var format 		: IVertex3DFormat 	= forcedFormat || _format;
 
 			if (!_nativeBuffer)
 			{
-				_nativeBuffer = myContext.createVertexBuffer(numVertices,
+				_nativeBuffer = context.createVertexBuffer(numVertices,
 															 _format.dwordsPerVertex);
 			}
 			
 			if (_update)
 			{
 				_update = false;
-				_nativeBuffer.upload(_data, 0, numVertices);
+				_nativeBuffer.uploadFromVector(_data, 0, numVertices);
 			}
 			
 			var formats 	: Vector.<int> 	= format.nativeFormats;
 			var numFormats 	: int 			= formats.length;
-			var offset 		: int 			= 0;
+			var o 			: int 			= 0;
 			
 			// set input vertex streams
 			for (var i : int = 0; i < numFormats; ++i)
 			{
-				var nativeFormat : int = formats[i];
+				var nativeFormatIndex : int = formats[i] - 1;
 				
-				myContext.setVertexStream(i,
+				context.setVertexBufferAt(offset + i,
 										  _nativeBuffer,
-										  offset,
-										  NativeFormat.STRINGS[nativeFormat]);
+									      o,
+										  NativeFormat.STRINGS[nativeFormatIndex]);
 				
-				offset += NativeFormat.NB_DWORDS[nativeFormat];
+				o += NativeFormat.NB_DWORDS[nativeFormatIndex];
 			}
 			
 			// disable the other streams
 			while (i < 8)
-				myContext.setVertexStream(i++, null, 0, Context3DVertexFormat.DISABLED);
+				context.setVertexBufferAt(i++, null);
 		}
 		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,
@@ -132,7 +132,6 @@ package aerys.minko.type.stream
 				{
 					switch (nativeFormats[i])
 					{
-						case NativeFormat.RGBA :
 						case NativeFormat.FLOAT_4 :
 							tmp[int(length++)] = data.readFloat();
 						case NativeFormat.FLOAT_3 :
