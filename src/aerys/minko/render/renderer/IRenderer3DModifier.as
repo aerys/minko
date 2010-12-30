@@ -1,4 +1,4 @@
-package aerys.minko.render
+package aerys.minko.render.renderer
 {
 	public interface IRenderer3DModifier extends IRenderer3D
 	{

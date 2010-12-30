@@ -1,7 +1,7 @@
 package aerys.minko.scene.mesh
 {
-	import aerys.minko.render.IScene3DVisitor;
-	import aerys.minko.scene.mesh.modifiers.IMeshModifier3D;
+	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.scene.mesh.modifier.IMeshModifier3D;
 	import aerys.minko.type.Animation3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;

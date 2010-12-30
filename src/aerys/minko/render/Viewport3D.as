@@ -2,18 +2,19 @@ package aerys.minko.render
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.render.visitor.Scene3DVisitor;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.type.math.Frustum3D;
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DRenderMode;
-	import flash.display3D.Context3DTriangleFace;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.utils.getTimer;
@@ -46,8 +47,9 @@ package aerys.minko.render
 		private var _visitor	: IScene3DVisitor	= null;
 		private var _time		: int				= 0;
 		
-		private var _projection	: Transform3D		= new Transform3D();
+		private var _projection	: Matrix4x4			= new Matrix4x4();
 		
+		private var _renderer	: IRenderer3D		= null;
 		private var _context	: Context3D			= null;
 		
 		/**
@@ -163,7 +165,7 @@ package aerys.minko.render
 		 * @return A Matrix3D object that describes the projection transform.
 		 *
 		 */
-		public function get projection() : Transform3D
+		public function get projection() : Matrix4x4
 		{
 			if (_update)
 				update();
@@ -182,11 +184,6 @@ package aerys.minko.render
 				update();
 			
 			return _frustum;
-		}
-		
-		public function get context() : Context3D
-		{
-			return _context;
 		}
 		
 		public function get drawingTime() : int
@@ -239,7 +236,12 @@ package aerys.minko.render
 			var width	: Number	= _width / 2.;
 			var height	: Number	= -_height / 2.;
 			
-			_projection = Transform3D.perspectiveFovLH(_fov, _width / _height, _zNear, _zFar);
+			Matrix4x4.perspectiveFoVLH(_fov,
+									   _width / _height,
+									   _zNear,
+									   _zFar,
+									   _projection);
+			
 			_frustum.updateFromProjection(_projection, _width, _height);
 			_rectangle = new Rectangle(0, 0, _width, _height);
 			
@@ -267,7 +269,7 @@ package aerys.minko.render
 			
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, resetContext3D);
 			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
-			stage.stage3Ds[0].requestContext3D();
+			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 
 			if (autoResize)
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
@@ -291,8 +293,6 @@ package aerys.minko.render
 		{
 			_context = stage.stage3Ds[0].context3D;
 			_context.configureBackBuffer(_width, _height, 0, true);
-			_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
-			_context.setCulling(Context3DTriangleFace.FRONT);
 		}
 		
 		/**
@@ -300,24 +300,20 @@ package aerys.minko.render
 		 * @param myScene
 		 */
 		public function render(scene 	: IScene3D,
-							   color	: uint		= 0xff000000,
 							   sweep 	: Boolean 	= true) : void
 		{
-			var time 		: int 			= getTimer();
+			var time : int = getTimer();
 			
 			if (_context)
 			{
 				if (!_visitor)
-					_visitor = new Scene3DVisitor(this);
+					_visitor = new Scene3DVisitor(_renderer);
 				
-				var renderer 	: IRenderer3D 	= _visitor.renderer;
-		
-				renderer.clear(color);
-				renderer.transform.reset();
-				renderer.transform.projection = _projection;
+				_renderer.clear(0);
+				_renderer.transform.reset();
 				_visitor.visit(scene);
 				
-				renderer.present();
+				_renderer.present();
 			}
 			
 			_time = getTimer() - time;

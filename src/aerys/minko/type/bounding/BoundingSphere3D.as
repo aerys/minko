@@ -1,6 +1,7 @@
 package aerys.minko.type.bounding
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
 	
@@ -15,7 +16,7 @@ package aerys.minko.type.bounding
 		use namespace minko;
 		
 		//{ region vars
-		minko var _center	: Vector3D	= null;
+		minko var _center	: Vector4	= null;
 		
 		private var _radius	: Number	= 0;
 		//} endregion
@@ -36,10 +37,10 @@ package aerys.minko.type.bounding
 		
 		/**
 		 * Creates a new BoundingSphere object with the specified center and radius.
-		 * @param	center
-		 * @param	radius
+		 * @param	myCenter
+		 * @param	myRadius
 		 */
-		public function BoundingSphere3D(center : Vector3D, radius : Number)
+		public function BoundingSphere3D(center : Vector4, radius : Number)
 		{
 			_center = center.clone();
 			_radius = radius;
@@ -50,34 +51,34 @@ package aerys.minko.type.bounding
 		/**
 		 * Create a new BoundingSphere object by computing its center and radius from
 		 * the bottom-left and top-right vertices of a bounding box.
-		 * @param	min
-		 * @param	max
+		 * @param	myMin
+		 * @param	myMax
 		 * @return
 		 */
-		public static function fromMinMax(min : Vector3D, max : Vector3D) : BoundingSphere3D
+		public static function fromMinMax(min : Vector4, max : Vector4) : BoundingSphere3D
 		{
-			var center : Vector3D 	= new Vector3D((max.x + min.x) * .5,
-												   (max.y + min.y) * .5,
-												   (max.z + min.z) * .5);
-			var radius	: Number	= Math.max(Vector3D.distance(center, max),
-											   Vector3D.distance(center, min));
+			var center : Vector4 	= new Vector4((max.x + min.x) / 2.0,
+												  (max.y + min.y) / 2.0,
+												  (max.z + min.z) / 2.0);
+			var radius	: Number	= Math.max(Vector4.distance(center, max),
+											   Vector4.distance(center, min));
 			
 			return new BoundingSphere3D(center, radius);
 		}
 		//} endregion
 		
 		//{ region internal
-		minko function update(myMin : Vector3D, myMax : Vector3D) : void
+		minko function update(min : Vector4, max : Vector4) : void
 		{
-			_center.x = (myMax.x + myMin.x) / 2.;
-			_center.y = (myMax.y + myMin.y) / 2.;
-			_center.z =	(myMax.z + myMin.z) / 2.;
+			_center.x = (max.x + min.x) / 2.;
+			_center.y = (max.y + min.y) / 2.;
+			_center.z =	(max.z + min.z) / 2.;
 			
-			_radius = Math.max(Vector3D.distance(_center, myMax),
-							   Vector3D.distance(_center, myMin));
+			_radius = Math.max(Vector4.distance(_center, max),
+							   Vector4.distance(_center, min));
 		}
 		
-		public function getCenter() : Vector3D
+		public function getCenter() : Vector4
 		{
 			return _center.clone();
 		}

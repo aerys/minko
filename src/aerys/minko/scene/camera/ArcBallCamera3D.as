@@ -1,23 +1,26 @@
 package aerys.minko.scene.camera
 {
-	import aerys.minko.render.IScene3DVisitor;
+	import aerys.common.Factory;
+	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.type.math.Vector4;
 	
-	import flash.geom.Vector3D;
+	import flash.geom.Matrix3D;
 	
 	public class ArcBallCamera3D extends AbstractCamera3D
 	{
+		private static const MATRIX3D		: Factory	= Factory.getFactory(Matrix3D);
 		private static const PI_DIV_2		: Number	= Math.PI / 2.;
 		private static const PI_2			: Number	= Math.PI * 2.;
-		private static const EPSILON		: Number	= .00001;
+		private static const EPSILON		: Number	= 0.01;
 		
 		private var _distance	: Number	= 1.;
-		private var _rotation	: Vector3D	= new Vector3D();
+		private var _rotation	: Vector4	= new Vector4();
+		
+		private var _rv			: uint		= 0;
 		
 		public function ArcBallCamera3D()
 		{
 			super();
-			
-			lookAtX = lookAtY = lookAtZ = 0.;
 		}
 		
 		//{ region getters/setters
@@ -26,30 +29,16 @@ package aerys.minko.scene.camera
 		public function set distance(value : Number) : void
 		{
 			if (value != _distance)
+			{
 				_distance = value;
+				invalidate();
+			}
 		}
 		
-		public function set rotationX(value : Number) : void
+		public function get rotation() : Vector4
 		{
-			if (value != _rotation.x)
-				_rotation.x = value;
+			return _rotation;
 		}
-		
-		public function set rotationY(value : Number) : void
-		{
-			if (value != _rotation.y)
-				_rotation.y = value;
-		}
-		
-		public function set rotationZ(value : Number) : void
-		{
-			if (value != _rotation.z)
-				_rotation.z = value;
-		}
-		
-		public function get rotationX() : Number { return _rotation.x; }
-		public function get rotationY() : Number { return _rotation.y; }
-		public function get rotationZ() : Number { return _rotation.z; }
 		//} endregion
 		
 		//{ region methods
@@ -63,11 +52,22 @@ package aerys.minko.scene.camera
 			if (_distance <= 0.)
 				_distance = EPSILON;
 
-			_position.x = lookAtX - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
-			_position.y = lookAtY - _distance * Math.sin(_rotation.x);
-			_position.z = lookAtZ - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
+			position.x = lookAt.x - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
+			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
+			position.z = lookAt.z - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
 			super.invalidateTransform(visitor);
+		}
+		
+		override public function visited(visitor : IScene3DVisitor) : void
+		{
+			if (_rotation.version != _rv)
+			{
+				invalidate();
+				_rv = _rotation.version;
+			}
+			
+			super.visited(visitor);
 		}
 		//} endregion
 	}

@@ -168,7 +168,7 @@ package aerys.minko.type.stream
 			_update = true;
 		}
 		
-		public function prepare(context : Context3D) : void
+		minko function prepare(context : Context3D) : void
 		{
 			if (!_nativeBuffer && _length)
 				_nativeBuffer = context.createIndexBuffer(_length);

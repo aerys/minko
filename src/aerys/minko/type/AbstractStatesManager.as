@@ -91,7 +91,6 @@ package aerys.minko.type
 			{
 				if ((mask = _masks[i]) & statesMask)
 				{
-					//trace("pop", _properties[i], this[_properties[i]]);
 					popState(mask, _properties[i], _stacks[i]);
 					statesMask ^= mask;
 				}

@@ -1,10 +1,12 @@
 package aerys.minko.scene.material
 {
-	import aerys.minko.render.IRenderer3D;
-	import aerys.minko.render.IScene3DVisitor;
+	import aerys.minko.render.state.BlendingStyle;
+	import aerys.minko.render.renderer.IRenderer3D;
 	import aerys.minko.render.state.BlendingDestination;
 	import aerys.minko.render.state.BlendingSource;
 	import aerys.minko.render.state.RenderStatesManager;
+	import aerys.minko.render.state.WriteMask;
+	import aerys.minko.render.visitor.IScene3DVisitor;
 	import aerys.minko.scene.AbstractScene3D;
 	
 	import flash.display.Bitmap;
@@ -24,11 +26,11 @@ package aerys.minko.scene.material
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class NativeTexture3D extends AbstractScene3D implements IMaterial3D
+	public class NativeMaterial3D extends AbstractScene3D implements IMaterial3D
 	{
 		private var _data		: BitmapData	= null;
 		private var _texture	: Texture		= null;
-		private var _alpha		: Boolean		= false;
+		private var _blendMode	: uint			= 0;
 		private var _update		: Boolean		= true;
 		private var _index		: int			= 0;
 		private var _mipmapping	: Boolean		= false;
@@ -71,14 +73,14 @@ package aerys.minko.scene.material
 			_update = true;
 		}
 		
-		public function get alphaBlending() : Boolean
+		public function get blendMode() : uint
 		{
-			return _alpha;
+			return _blendMode;
 		}
 		
-		public function set alphaBlending(value : Boolean) : void
+		public function set blendMode(value : uint) : void
 		{
-			_alpha = value;
+			_blendMode = value;
 		}
 		
 		public function get index() : int
@@ -108,28 +110,27 @@ package aerys.minko.scene.material
 		 * @param myBitmapData
 		 *
 		 */
-		public function NativeTexture3D(data 		: BitmapData 	= null,
-										alpha		: Boolean		= false,
+		public function NativeMaterial3D(data 		: BitmapData 	= null,
+										blendMode	: uint			= 0,
 										mipmapping	: Boolean		= false)
 		{
 			bitmapData = data;
-			_alpha = alpha;
+			_blendMode = blendMode;
 			_mipmapping = mipmapping;
 		}
 		
 		override public function visited(visitor : IScene3DVisitor) : void
 		{
-			var renderer : IRenderer3D = visitor.renderer;
-			var renderStates : RenderStatesManager = renderer.states;
-			var context : Context3D = visitor.renderer.viewport.context;
-			var level : int = 0;
+			var renderer 		: IRenderer3D 			= visitor.renderer;
+			var renderStates 	: RenderStatesManager 	= renderer.states;
+			var level 			: int 					= 0;
 
 			if (!_texture)
 			{
-				_texture = context.createTexture(_data.width,
-												 _data.height,
-												 Context3DTextureFormat.BGRA,
-												 false);
+				_texture = renderer.createTexture(_data.width,
+												  _data.height,
+												  Context3DTextureFormat.BGRA,
+												  false);
 				
 				_update = true;
 			}
@@ -162,20 +163,26 @@ package aerys.minko.scene.material
 				}
 			}
 			
-			if (_alpha)
+			if (_blendMode == BlendingStyle.ADDITIVE)
+			{
+				renderStates.writeMask ^= WriteMask.DEPTH;
+				renderStates.blending = BlendingSource.SOURCE_ALPHA
+										| BlendingDestination.ONE;
+			}
+			if (_blendMode == BlendingStyle.ALPHA)
 			{
 				renderStates.blending = BlendingSource.SOURCE_ALPHA
 										| BlendingDestination.ONE_MINUS_SOURCE_ALPHA;
 			}
 			
 			//renderer.textures[_index] = _texture;
-			context.setTextureAt(_index, _texture);
+			renderer.setTexture(_index, _texture);
 		}
 		
 		//{ region statis
 		public static function fromDisplayObject(source : DisplayObject,
 												 size 	: int 		= 0,
-												 smooth : Boolean 	= false) : NativeTexture3D
+												 smooth : Boolean 	= false) : NativeMaterial3D
 		{
 			var bmp : BitmapData = new BitmapData(size || source.width,
 												  size || source.height,
@@ -191,13 +198,13 @@ package aerys.minko.scene.material
 			
 			bmp.draw(source, matrix, null, null, null, smooth);
 			
-			return new NativeTexture3D(bmp);
+			return new NativeMaterial3D(bmp);
 		}
 		
-		public static function fromByteArray(source : ByteArray) : NativeTexture3D
+		public static function fromByteArray(source : ByteArray) : NativeMaterial3D
 		{
 			var loader 	: Loader 			= new Loader();
-			var mat 	: NativeTexture3D 	= new NativeTexture3D();
+			var mat 	: NativeMaterial3D 	= new NativeMaterial3D();
 			
 			loader.loadBytes(source);
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, mat.loadCompleteHandler);

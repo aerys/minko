@@ -1,6 +1,6 @@
 package aerys.minko.scene
 {
-	import aerys.minko.render.IScene3DVisitor;
+	import aerys.minko.render.visitor.IScene3DVisitor;
 	
 	public class AbstractScene3D implements IScene3D
 	{

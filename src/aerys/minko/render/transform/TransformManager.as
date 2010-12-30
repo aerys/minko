@@ -3,7 +3,8 @@ package aerys.minko.render.transform
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.AbstractStatesManager;
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
@@ -12,9 +13,8 @@ package aerys.minko.render.transform
 	{
 		use namespace minko;
 		
-		private static const TRANSFORM3D			: Factory	= Factory.getFactory(Transform3D);
-		private static const VECTOR3D				: Factory	= Factory.getFactory(Vector3D);
-		private static const ZERO3					: Vector3D	= new Vector3D();
+		private static const MATRIX4X4				: Factory	= Factory.getFactory(Matrix4x4);
+		private static const VECTOR4				: Factory	= Factory.getFactory(Vector4);
 		
 		private static const UPDATE_NONE			: uint		= 0;
 		private static const UPDATE_WORLD_TO_LOCAL	: uint		= 1;
@@ -29,81 +29,74 @@ package aerys.minko.render.transform
 		private var _update				: uint					= UPDATE_NONE;
 		private var _size				: int					= 0;
 		
-		private var _cameraPos			: Vector3D				= new Vector3D();
-		private var _localCameraPos		: Vector3D				= new Vector3D();
+		private var _cameraPos			: Vector4				= new Vector4();
+		private var _localCameraPos		: Vector4				= new Vector4();
 		
-		private var _view				: Transform3D			= new Transform3D();
-		private var _world				: Transform3D			= new Transform3D();
-		private var _projection			: Transform3D			= new Transform3D();
+		private var _view				: Matrix4x4				= new Matrix4x4();
+		private var _world				: Matrix4x4				= new Matrix4x4();
+		private var _projection			: Matrix4x4				= new Matrix4x4();
 		
-		private var _worldStack			: Vector.<Transform3D>	= new Vector.<Transform3D>();
-		private var _viewStack			: Vector.<Transform3D>	= new Vector.<Transform3D>();
-		private var _projectionStack	: Vector.<Transform3D>	= new Vector.<Transform3D>();
+		private var _worldStack			: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
+		private var _viewStack			: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
+		private var _projectionStack	: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
 		
 		private var _pushStack			: Vector.<uint>		= new Vector.<uint>();
 		
 		//{ region getters/setters
-		public function get world() : Transform3D
+		public function get world() : Matrix4x4
 		{
 			return _world;
 		}
 
-		public function get view() : Transform3D
+		public function get view() : Matrix4x4
 		{
 			return _view;
 		}
 		
-		public function get projection() : Transform3D
+		public function get projection() : Matrix4x4
 		{
 			return _projection;
 		}
 
-		public function set view(value : Transform3D) : void
+		public function set view(value : Matrix4x4) : void
 		{
 			if (!(lockedStates & TransformType.VIEW))
 			{
-				_view.setRawData(value.getRawData());
+				_view = Matrix4x4.clone(value, _view);
 				_update |= UPDATE_CAMERA_POSITION
 						   | UPDATE_LOCAL_TO_VIEW
 						   | UPDATE_LOCAL_TO_SCREEN;
 			}
 		}
 		
-		public function set projection(value : Transform3D) : void
+		public function set projection(value : Matrix4x4) : void
 		{
 			if (!(lockedStates & TransformType.PROJECTION))
 			{
+				_projection = Matrix4x4.clone(value, _projection);
 				_update |= UPDATE_LOCAL_TO_SCREEN;
-				_projection.setRawData(value.getRawData());
 			}
 		}
 		
-		public function set world(value : Transform3D) : void
+		public function set world(value : Matrix4x4) : void
 		{
 			if (!(lockedStates & TransformType.WORLD))
 			{
-				_world.setRawData(value.getRawData());
+				_world = Matrix4x4.clone(value, _world);
 				_update = UPDATE_ALL;
 			}
 		}
 		
-		public function getLocalToScreenMatrix() : Matrix3D
+		public function getLocalToScreenMatrix() : Matrix4x4
 		{
-			var mat : Transform3D = _world.temporaryClone();
-			
-			mat.append(_view);
-			mat.append(_projection);
-			
-			return mat._matrix;
+			return Matrix4x4.multiplyInverse(_world, _view, MATRIX4X4.create(true))
+							.multiplyInverse(_projection);
 		}
 		
-		public function getLocalToViewMatrix() : Matrix3D
+		public function getLocalToViewMatrix3D() : Matrix3D
 		{
-			var mat : Transform3D = _world.temporaryClone();
-			
-			mat.append(_view);
-			
-			return mat._matrix;
+			return Matrix4x4.multiplyInverse(_world, _view, MATRIX4X4.create(true))
+							._matrix;
 		}
 		//} endregion
 		
@@ -111,16 +104,18 @@ package aerys.minko.render.transform
 		{
 			super();
 			
-			registerState(TransformType.WORLD, "world", new Vector.<Transform3D>());
-			registerState(TransformType.VIEW, "view", new Vector.<Transform3D>());
-			registerState(TransformType.PROJECTION, "projection", new Vector.<Transform3D>());
+			registerState(TransformType.WORLD, "world", new Vector.<Matrix4x4>());
+			registerState(TransformType.VIEW, "view", new Vector.<Matrix4x4>());
+			registerState(TransformType.PROJECTION, "projection", new Vector.<Matrix4x4>());
 		}
 		
 		override protected function pushState(mask 	: uint,
 											  value : Object,
 											  stack : Object) : void
 		{
-			super.pushState(mask, (value as Transform3D).temporaryClone(), stack);
+			super.pushState(mask,
+							Matrix4x4.clone(value as Matrix4x4, MATRIX4X4.create(true)),
+							stack);
 		}
 		
 		override protected function popState(mask		: uint,

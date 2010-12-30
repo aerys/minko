@@ -3,6 +3,7 @@ package aerys.minko.type.math
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.state.FrustumCulling;
+	import aerys.minko.transform.Transform3D;
 	import aerys.minko.type.bounding.BoundingBox3D;
 	import aerys.minko.type.bounding.BoundingSphere3D;
 	import aerys.minko.type.bounding.IBoundedVolume3D;
@@ -10,7 +11,6 @@ package aerys.minko.type.math
 	import aerys.minko.type.stream.VertexStream3D;
 	
 	import flash.display.TriangleCulling;
-	import flash.geom.Vector3D;
 	
 	/**
 	 * The frustum is the geometrical six-sided 3D shape which represents
@@ -255,11 +255,11 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		minko function updateFromProjection(transform 	: Transform3D,
+		minko function updateFromProjection(projection 	: Matrix4x4,
 											width		: Number,
 											height		: Number) : void
 		{
-			var data	: Vector.<Number>	= transform.getRawData();
+			var data	: Vector.<Number>	= projection.getRawData();
 			
 			_planes[RIGHT] = new Plane3D(data[3] - data[0] + THICKNESS,
 									     data[7] - data[4],
@@ -301,8 +301,8 @@ package aerys.minko.type.math
 		 * @return 
 		 * 
 		 */
-		public function testVector(vector 		: Vector3D,
-								   transform	: Transform3D 	= null,
+		public function testVector(vector 		: Vector4,
+								   transform	: Matrix4x4 	= null,
 								   mask			: int 			= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
@@ -310,7 +310,7 @@ package aerys.minko.type.math
 			var d		: Number	= 0.;
 			
 			if (transform)
-				vector = transform.transformVector(vector);
+				vector = transform.multiplyVector(vector);
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
@@ -339,20 +339,20 @@ package aerys.minko.type.math
 										   transform	: Transform3D	= null,
 										   culling		: int 			= 0xffffff) : int
 		{
-			var center		: Vector3D	= sphere._center;
-			var radius		: Number	= sphere.radius;
-			var result		: int		= 0;
-			var p 			: Plane3D	= null;
-			var d 			: Number	= 0.;
+			var center	: Vector4	= sphere._center;
+			var radius	: Number	= sphere.radius;
+			var result	: int		= 0;
+			var p 		: Plane3D	= null;
+			var d 		: Number	= 0.;
 		
 			if (!culling)
 				return INSIDE;
 			
 			if (transform != null)
 			{
-				var scale	: Vector3D	= transform.decompose()[2];
+				var scale	: Vector4	= transform.scale;
 
-				center = transform.transformVector(sphere._center);
+				center = transform.multiplyVector(sphere._center);
 				radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
 			}
 						
@@ -383,7 +383,7 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundingBox(box			: BoundingBox3D,
-										transform	: Transform3D 	= null,
+										transform	: Matrix4x4 	= null,
 										culling		: int			= 0xffffff) : uint
 		{
 			var result		: uint				= 0;
@@ -398,7 +398,7 @@ package aerys.minko.type.math
 			if (transform != null)
 			{
 				_boxVertices.length = 0;
-				transform.transformVectors(vertices, _boxVertices);
+				transform.multiplyRawVectors(vertices, _boxVertices);
 				vertices = _boxVertices;
 			}
 			
@@ -459,7 +459,7 @@ package aerys.minko.type.math
 		 * 
 		 */
 		public function testBoundedVolume(volume	: IBoundedVolume3D,
-								 	      transform	: Transform3D	= null,
+								 	      transform	: Matrix4x4	= null,
 								 		  culling	: int 			= 0xffffff) : uint
 		{
 			var box		: BoundingBox3D		= volume.boundingBox;
@@ -471,7 +471,7 @@ package aerys.minko.type.math
 				return testBoundingBox(box, transform, culling);
 			
 			var sphere		: BoundingSphere3D	= volume.boundingSphere;
-			var center		: Vector3D			= sphere._center;
+			var center		: Vector4			= sphere._center;
 			//var scale		: Vector3D			= transform.decompose()[2];
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
@@ -480,7 +480,7 @@ package aerys.minko.type.math
 			//radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
 			
 			if (transform)
-				center = transform.transformVector(center);
+				center = transform.multiplyVector(center);
 			
 			for (var i : int = 0; i < 6; i++)
 			{
@@ -509,7 +509,7 @@ package aerys.minko.type.math
 					{
 						vertices = _boxVertices;
 						vertices.length = 0;
-						transform.transformVectors(box._vertices, vertices);
+						transform.multiplyRawVectors(box._vertices, vertices);
 					}
 					
 					// test vertices

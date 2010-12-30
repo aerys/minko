@@ -1,6 +1,9 @@
-package aerys.minko.render
+package aerys.minko.render.visitor
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.Viewport3D;
+	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.renderer.NativeRenderer3D;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
 	
@@ -18,15 +21,15 @@ package aerys.minko.render
 		public function get renderer() 		: IRenderer3D	{ return _renderer; }
 		public function get parent()		: IScene3D		{ return _parent; }
 		public function get camera()		: ICamera3D		{ return _camera; }
-
+		
 		public function set renderer(value : IRenderer3D) : void	{ _renderer = value; }	
 		
-		public function Scene3DVisitor(myViewport : Viewport3D)
+		public function Scene3DVisitor(renderer : IRenderer3D)
 		{
-			_renderer = new NativeRenderer3D(myViewport);
+			_renderer = renderer;
 		}
 				
-		public function visit(scene : IScene3D):void
+		public function visit(scene : IScene3D, visitor : IScene3DVisitor = null) : void
 		{
 			_parents[_parents.length] = _parent;
 			_parent = _current;
@@ -37,7 +40,7 @@ package aerys.minko.render
 			if ((camera = scene as ICamera3D) && camera.enabled)
 				_camera = camera;
 			
-			scene.visited(this);
+			scene.visited(visitor || this);
 			
 			_current = _parent;
 			_parent = _parents[(_parents.length - 1)];

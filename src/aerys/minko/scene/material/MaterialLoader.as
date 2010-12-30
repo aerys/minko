@@ -52,9 +52,9 @@ package aerys.minko.scene.material
 				return loadByteArray(assetObject as ByteArray);
 	
 			if (assetObject is IBitmapDrawable)
-				_material = NativeTexture3D.fromDisplayObject(assetObject as Bitmap);
+				_material = NativeMaterial3D.fromDisplayObject(assetObject as Bitmap);
 			else if (assetObject is ByteArray)
-				_material = NativeTexture3D.fromByteArray(assetObject as ByteArray);
+				_material = NativeMaterial3D.fromByteArray(assetObject as ByteArray);
 			
 			return _material;
 		}
@@ -85,7 +85,7 @@ package aerys.minko.scene.material
 			if (_parser)
 				loadByteArray((event.target as URLLoader).data as ByteArray);
 			else
-				_material = new NativeTexture3D(event.target.content.bitmapData);
+				_material = new NativeMaterial3D(event.target.content.bitmapData);
 			
 			dispatchEvent(new Event(Event.COMPLETE));
 		}

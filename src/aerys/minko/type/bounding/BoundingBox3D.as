@@ -1,8 +1,8 @@
 package aerys.minko.type.bounding
 {
 	import aerys.minko.ns.minko;
-	
-	import flash.geom.Vector3D;
+	import aerys.minko.type.math.Vector4;
+
 	/**
 	 * The BoundingBox class represents a six-sided (8 vertices) box that bounds the
 	 * maximum extent of an object (ie an IMeshFilter object).
@@ -13,8 +13,8 @@ package aerys.minko.type.bounding
 	{
 		use namespace minko;
 		
-		private var _min		: Vector3D			= new Vector3D();
-		private var _max		: Vector3D			= new Vector3D();
+		minko var _min		: Vector4			= new Vector4();
+		minko var _max		: Vector4			= new Vector4();
 		
 		minko var _vertices	: Vector.<Number>	= new Vector.<Number>(24, true);
 		/**
@@ -32,20 +32,20 @@ package aerys.minko.type.bounding
 		
 		/**
 		 * Creates a new BoundingBox object.
-		 * @param	myMin The position of the bottom-left vertex.
-		 * @param	myMax The position of the top-right vertex.
+		 * @param	min The position of the bottom-left vertex.
+		 * @param	max The position of the top-right vertex.
 		 */
-		public function BoundingBox3D(myMin : Vector3D, myMax : Vector3D)
+		public function BoundingBox3D(min : Vector4, max : Vector4)
 		{
-			update(myMin, myMax);
+			update(min, max);
 		}
 		
 		//{ region methods
-		public function testPoint(myPoint : Vector3D) : Boolean
+		public function testPoint(point : Vector4) : Boolean
 		{
-			return myPoint.x >= _min.x && myPoint.x <= _max.x
-				   && myPoint.y >= _min.y && myPoint.y <= _max.y
-				   && myPoint.z >= _min.z && myPoint.z <= _max.z;
+			return point.x >= _min.x && point.x <= _max.x
+				   && point.y >= _min.y && point.y <= _max.y
+				   && point.z >= _min.z && point.z <= _max.z;
 		}
 		
 		public function clone() : BoundingBox3D
@@ -53,27 +53,27 @@ package aerys.minko.type.bounding
 			return new BoundingBox3D(_min, _max);
 		}
 		
-		public function merge(myBox : BoundingBox3D) : void
+		public function merge(box : BoundingBox3D) : void
 		{
-			_min.x = _vertices[0] = _vertices[9] = _vertices[15] = _vertices[18] = Math.min(_min.x, myBox._min.x);
-			_min.y = _vertices[1] = _vertices[4] = _vertices[7] = _vertices[10] = Math.min(_min.y, myBox._min.y);
-			_min.z = _vertices[2] = _vertices[5] = _vertices[20] = _vertices[23] = Math.min(_min.z, myBox._min.z);
+			_min.x = _vertices[0] = _vertices[9] = _vertices[15] = _vertices[18] = Math.min(_min.x, box._min.x);
+			_min.y = _vertices[1] = _vertices[4] = _vertices[7] = _vertices[10] = Math.min(_min.y, box._min.y);
+			_min.z = _vertices[2] = _vertices[5] = _vertices[20] = _vertices[23] = Math.min(_min.z, box._min.z);
 			
-			_max.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = Math.max(_max.x, myBox._max.x);
-			_max.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = Math.max(_max.y, myBox._max.y);
-			_max.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = Math.max(_max.z, myBox._max.z);
+			_max.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = Math.max(_max.x, box._max.x);
+			_max.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = Math.max(_max.y, box._max.y);
+			_max.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = Math.max(_max.z, box._max.z);
 		}
 		//} endregion
 		
 		//{ region static
 		public static function merge(myBB1 : BoundingBox3D, myBB2 : BoundingBox3D) : BoundingBox3D
 		{
-			return new BoundingBox3D(new Vector3D(Math.min(myBB1._min.x, myBB2._min.x),
-												Math.min(myBB1._min.y, myBB2._min.y),
-												Math.min(myBB1._min.z, myBB2._min.z)),
-								   new Vector3D(Math.max(myBB1._max.x, myBB2._max.x),
-												Math.max(myBB1._max.y, myBB2._max.y),
-												Math.max(myBB1._max.z, myBB2._max.z)));
+			return new BoundingBox3D(new Vector4(Math.min(myBB1._min.x, myBB2._min.x),
+												 Math.min(myBB1._min.y, myBB2._min.y),
+												 Math.min(myBB1._min.z, myBB2._min.z)),
+								   	 new Vector4(Math.max(myBB1._max.x, myBB2._max.x),
+												 Math.max(myBB1._max.y, myBB2._max.y),
+												 Math.max(myBB1._max.z, myBB2._max.z)));
 		}
 		
 		public function getVertices() : Vector.<Number>
@@ -83,23 +83,19 @@ package aerys.minko.type.bounding
 		//} endregion
 		
 		//{ region internals
-		minko function get min() : Vector3D { return _min; }
-		
-		minko function get max() : Vector3D { return _max; }
-		
-		minko function update(myMin : Vector3D	= null,
-							  myMax : Vector3D	= null) : void
+		minko function update(min : Vector4 = null,
+							  max : Vector4	= null) : void
 		{
-			myMin ||= _min;
-			myMax ||= _max;
+			min ||= _min;
+			max ||= _max;
 			
-			_min.x = _vertices[0] = _vertices[9] = _vertices[15] = _vertices[18] = myMin.x;
-			_min.y = _vertices[1] = _vertices[4] = _vertices[7] = _vertices[10] = myMin.y;
-			_min.z = _vertices[2] = _vertices[5] = _vertices[20] = _vertices[23] = myMin.z;
+			_min.x = _vertices[0] = _vertices[9] = _vertices[15] = _vertices[18] = min.x;
+			_min.y = _vertices[1] = _vertices[4] = _vertices[7] = _vertices[10] = min.y;
+			_min.z = _vertices[2] = _vertices[5] = _vertices[20] = _vertices[23] = min.z;
 			
-			_max.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = myMax.x;
-			_max.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = myMax.y;
-			_max.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = myMax.z;
+			_max.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = max.x;
+			_max.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = max.y;
+			_max.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = max.z;
 		}
 		//} endregion
 	}

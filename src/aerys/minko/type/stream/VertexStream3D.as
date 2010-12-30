@@ -52,47 +52,6 @@ package aerys.minko.type.stream
 			return true;
 		}
 		
-		public function prepareContext(context 		: Context3D,
-									   forcedFormat : IVertex3DFormat = null,
-									   offset		: int = 0) : void
-		{
-			var numVertices : int 				= length;
-			var format 		: IVertex3DFormat 	= forcedFormat || _format;
-
-			if (!_nativeBuffer)
-			{
-				_nativeBuffer = context.createVertexBuffer(numVertices,
-															 _format.dwordsPerVertex);
-			}
-			
-			if (_update)
-			{
-				_update = false;
-				_nativeBuffer.uploadFromVector(_data, 0, numVertices);
-			}
-			
-			var formats 	: Vector.<int> 	= format.nativeFormats;
-			var numFormats 	: int 			= formats.length;
-			var o 			: int 			= 0;
-			
-			// set input vertex streams
-			for (var i : int = 0; i < numFormats; ++i)
-			{
-				var nativeFormatIndex : int = formats[i] - 1;
-				
-				context.setVertexBufferAt(offset + i,
-										  _nativeBuffer,
-									      o,
-										  NativeFormat.STRINGS[nativeFormatIndex]);
-				
-				o += NativeFormat.NB_DWORDS[nativeFormatIndex];
-			}
-			
-			// disable the other streams
-			while (i < 8)
-				context.setVertexBufferAt(i++, null);
-		}
-		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,
 												   uvs		 : Vector.<Number>) : VertexStream3D
 		{

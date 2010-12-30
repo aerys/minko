@@ -1,6 +1,6 @@
 package aerys.minko.scene
 {
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.transform.Transform3D;
 
 	public interface IObject3D extends IScene3D
 	{

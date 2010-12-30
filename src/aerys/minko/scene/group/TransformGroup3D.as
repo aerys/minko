@@ -1,11 +1,11 @@
 ﻿package aerys.minko.scene.group 
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.IScene3DVisitor;
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.render.transform.TransformType;
+	import aerys.minko.render.visitor.IScene3DVisitor;
 	import aerys.minko.scene.IObject3D;
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.transform.Transform3D;
 	
 	/**
 	 * ...
@@ -33,17 +33,17 @@
 		 * @return The number of triangles that have been/will be rendered.
 		 * @see aerys.minko.frame.FrameContext
 		 */
-		override public function visited(myVisitor : IScene3DVisitor) : void
+		override public function visited(visitor : IScene3DVisitor) : void
 		{
 			if (!_visible)
 				return ;
 			
-			var t : TransformManager	= myVisitor.renderer.transform;
+			var t : TransformManager	= visitor.renderer.transform;
 			
 			t.push(TransformType.WORLD);
-			t.world.append(_transform);
+			t.world.multiply(_transform);
 			
-			super.visited(myVisitor);
+			super.visited(visitor);
 			
 			t.pop();
 		}

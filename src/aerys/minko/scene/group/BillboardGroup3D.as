@@ -2,23 +2,25 @@ package aerys.minko.scene.group
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.IRenderer3D;
-	import aerys.minko.render.IScene3DVisitor;
+	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.render.transform.TransformType;
-	import aerys.minko.type.math.Transform3D;
-	
-	import flash.geom.Vector3D;
+	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.transform.Transform3D;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	public class BillboardGroup3D extends Group3D
 	{
 		use namespace minko;
 		
 		private static const TRANSFORM3D	: Factory	= Factory.getFactory(Transform3D);
-		private static const UP				: Vector3D	= new Vector3D(0., -1., 0.);
+		private static const UP				: Vector4	= new Vector4(0., -1., 0.);
 		
 		private static var _id				: uint		= 0;
 		
-		private var _transform	: Transform3D	= new Transform3D();
+		private var _local	: Transform3D	= new Transform3D();
+		private var _camera	: Vector4		= new Vector4();
 		
 		public function BillboardGroup3D(...children)
 		{
@@ -27,21 +29,24 @@ package aerys.minko.scene.group
 			name = "BillboardContainer3D_" + ++_id;
 		}
 		
-		override public function visited(myVisitor : IScene3DVisitor) : void
+		override public function visited(visitor : IScene3DVisitor) : void
 		{
-			var t 		 : Transform3D = _transform.temporaryClone();
-			var renderer : IRenderer3D = myVisitor.renderer;
+			var renderer	: IRenderer3D 		= visitor.renderer;
+			var transform	: TransformManager	= renderer.transform;
 			
-			/*t.pointAt(myVisitor.transform.localCameraPosition,
-				      Vector3D.Z_AXIS,
-					  UP);*/
+			Matrix4x4.invert(transform.world, _local);
 			
-			renderer.transform.push(TransformType.WORLD);
-			renderer.transform.world.append(t);
+			_local.multiplyVector(visitor.camera.position, _camera);
+			_local.pointAt(_camera,
+						   Vector4.Z_AXIS,
+						   UP);
 			
-			super.visited(myVisitor);
+			transform.push(TransformType.WORLD);
+			transform.world = _local;			
 			
-			renderer.transform.pop();
+			super.visited(visitor);
+			
+			transform.pop();
 		}
 	}
 }

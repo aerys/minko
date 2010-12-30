@@ -1,4 +1,4 @@
-package aerys.minko.scene.mesh.modifiers
+package aerys.minko.scene.mesh.modifier
 {
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.triangle.Triangle3DIterator;

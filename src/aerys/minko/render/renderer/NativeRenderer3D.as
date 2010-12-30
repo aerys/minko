@@ -1,14 +1,19 @@
-package aerys.minko.render
+package aerys.minko.render.renderer
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.Viewport3D;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.transform.TransformManager;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
+	import flash.display3D.VertexBuffer3D;
+	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.getTimer;
 
@@ -40,41 +45,64 @@ package aerys.minko.render
 		public function get viewport()		: Viewport3D				{ return _viewport; }
 		public function get textures()		: Vector.<TextureBase>		{ return _textures; }
 		public function get drawingTime()	: int						{ return _drawingTime; }
+		public function get isReady()		: Boolean					{ return true; }
 		
 		protected function get context() 	: Context3D					{ return _context; }
 		
-		public function NativeRenderer3D(myViewport : Viewport3D)
+		public function NativeRenderer3D(viewport : Viewport3D, context : Context3D)
 		{
-			_viewport = myViewport;
-			_context = myViewport.context;
+			_viewport = viewport;
+			_context = context;
 			
 			_states = new RenderStatesManager(_context);
 			_transform.projection = _viewport.projection;
 		}
 
-		public function setVertexStream(stream	: VertexStream3D) : void
+		public function setVertexStream(stream 	: VertexStream3D,
+										offset	: int	= 0) : void
 		{
-			/*var formats 	: Vector.<int> 	= stream.format.nativeFormats;
+			var numVertices : int 				= stream.length;
+			var format 		: IVertex3DFormat 	= states.vertexFormat || stream.format;
+			var buffer		: VertexBuffer3D	= stream._nativeBuffer;
+			
+			if (!buffer)
+			{
+				buffer = context.createVertexBuffer(numVertices,
+													stream.format.dwordsPerVertex);
+				stream._nativeBuffer = buffer;
+			}
+			
+			if (stream._update)
+			{
+				stream._update = false;
+				buffer.uploadFromVector(stream._data, 0, numVertices);
+			}
+			
+			var formats 	: Vector.<int> 	= format.nativeFormats;
 			var numFormats 	: int 			= formats.length;
-			var offset 		: int 			= 0;
+			var o 			: int 			= 0;
 			
 			// set input vertex streams
 			for (var i : int = 0; i < numFormats; ++i)
 			{
-				var nativeFormat : int = formats[i];
+				var nativeFormatIndex : int = formats[i] - 1;
 				
-				_context.setVertexBufferAt(i,
-										   stream._nativeBuffer,
-										   offset,
-										   NativeFormat.STRINGS[nativeFormat]);
+				context.setVertexBufferAt(offset + i,
+										  buffer,
+										  o,
+										  NativeFormat.STRINGS[nativeFormatIndex]);
 				
-				offset += NativeFormat.NB_DWORDS[nativeFormat];
+				o += NativeFormat.NB_DWORDS[nativeFormatIndex];
 			}
 			
 			// disable the other streams
 			while (i < 8)
-				_context.setVertexBufferAt(i++, null);*/
-			//stream.
+				context.setVertexBufferAt(i++, null);
+		}
+		
+		protected function prepareContext() : void
+		{
+			//_context.enableErrorChecking = true;
 		}
 		
 		public function drawTriangles(indexStream 	: IndexStream3D,
@@ -84,12 +112,15 @@ package aerys.minko.render
 			count ||= indexStream.length / 3;
 			_numTriangles += count;
 			
-			if (indexStream.length == 0 || indexStream.length / 3 < count)
+			if (indexStream.length == 0 || count == 0)
 				return ;
+			
+			prepareContext();
+			
+			indexStream.prepare(_context);
 			
 			var t : int = getTimer();
 			
-			_context.enableErrorChecking = true;
 			_context.drawTriangles(indexStream._nativeBuffer,
 								   firstIndex,
 								   count);
@@ -110,6 +141,52 @@ package aerys.minko.render
 		public function present() : void
 		{
 			_context.present();
+		}
+		
+		public function createTexture(width 	: uint,
+							   		  height 	: uint,
+							   		  type 		: String,
+							   		  optimized : Boolean = false) : Texture
+		{
+			return _context.createTexture(width, height, type, optimized);
+		}
+		
+		public function beginRenderToTexture(texture 			: TextureBase,
+								 			 depthAndStencil	: Boolean = true) : void
+		{
+			_context.setRenderToTexture(texture, depthAndStencil);
+		}
+		
+		public function endRenderToTexture() : void
+		{
+			_context.setRenderToBackBuffer();
+		}
+		
+		public function setMatrix(index			: int,
+								  matrix 		: Matrix4x4,
+								  programType	: String,
+								  transposed	: Boolean	= true) : void
+		{
+			_context.setProgramConstantsFromMatrix(programType,
+												   index,
+												   matrix._matrix);
+		}
+		
+		public function setConstants(firstRegister	: int,
+									 data			: Vector.<Number>,
+									 programType	: String,
+									 numRegisters	: int = -1) : void
+		{
+			_context.setProgramConstantsFromVector(programType,
+												   firstRegister,
+												   data,
+												   numRegisters);
+		}
+		
+		public function setTexture(index	: int,
+								   texture	: TextureBase) : void
+		{
+			_context.setTextureAt(index, texture);
 		}
 	}
 }

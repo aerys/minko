@@ -153,7 +153,7 @@ package aerys.minko.render.state
 			
 			blending = BlendingSource.DEFAULT | BlendingDestination.DEFAULT;
 			shader = new DefaultShader3D();
-			writeMask = WriteMask.ENABLED;
+			writeMask = WriteMask.ALL;
 			frustumCulling = FrustumCulling.ENABLED;
 			triangleCulling = TriangleCulling.BACK;
 			
