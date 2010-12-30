@@ -1,7 +1,6 @@
-package aerys.minko.render.renderer
+package aerys.minko.render
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.Viewport3D;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.type.math.Matrix4x4;
@@ -10,8 +9,10 @@ package aerys.minko.render.renderer
 	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	
+	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
+	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
@@ -31,23 +32,18 @@ package aerys.minko.render.renderer
 																				   Context3DBlendFactor.SOURCE_COLOR,
 																				   Context3DBlendFactor.ZERO]);
 		
-		private var _context		: Context3D					= null;
-		private var _states			: RenderStatesManager		= null;
-		private var _transform		: TransformManager			= new TransformManager();
-		private var _numTriangles	: uint						= 0;
-		private var _viewport		: Viewport3D				= null;
-		private var _textures		: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
-		private var _drawingTime	: int						= 0;
+		private var _context		: Context3D				= null;
+		private var _states			: RenderStatesManager	= null;
+		private var _transform		: TransformManager		= new TransformManager();
+		private var _numTriangles	: uint					= 0;
+		private var _viewport		: Viewport3D			= null;
+		private var _drawingTime	: int					= 0;
 		
-		public function get states() 		: RenderStatesManager		{ return _states; }
-		public function get transform()		: TransformManager			{ return _transform; }
-		public function get numTriangles()	: uint						{ return _numTriangles; }
-		public function get viewport()		: Viewport3D				{ return _viewport; }
-		public function get textures()		: Vector.<TextureBase>		{ return _textures; }
-		public function get drawingTime()	: int						{ return _drawingTime; }
-		public function get isReady()		: Boolean					{ return true; }
-		
-		protected function get context() 	: Context3D					{ return _context; }
+		public function get states() 		: RenderStatesManager	{ return _states; }
+		public function get transform()		: TransformManager		{ return _transform; }
+		public function get numTriangles()	: uint					{ return _numTriangles; }
+		public function get viewport()		: Viewport3D			{ return _viewport; }
+		public function get drawingTime()	: int					{ return _drawingTime; }
 		
 		public function NativeRenderer3D(viewport : Viewport3D, context : Context3D)
 		{
@@ -55,7 +51,6 @@ package aerys.minko.render.renderer
 			_context = context;
 			
 			_states = new RenderStatesManager(_context);
-			_transform.projection = _viewport.projection;
 		}
 
 		public function setVertexStream(stream 	: VertexStream3D,
@@ -67,8 +62,8 @@ package aerys.minko.render.renderer
 			
 			if (!buffer)
 			{
-				buffer = context.createVertexBuffer(numVertices,
-													stream.format.dwordsPerVertex);
+				buffer = _context.createVertexBuffer(numVertices,
+													 stream.format.dwordsPerVertex);
 				stream._nativeBuffer = buffer;
 			}
 			
@@ -87,22 +82,22 @@ package aerys.minko.render.renderer
 			{
 				var nativeFormatIndex : int = formats[i] - 1;
 				
-				context.setVertexBufferAt(offset + i,
-										  buffer,
-										  o,
-										  NativeFormat.STRINGS[nativeFormatIndex]);
+				_context.setVertexBufferAt(offset + i,
+										   buffer,
+										   o,
+										   NativeFormat.STRINGS[nativeFormatIndex]);
 				
 				o += NativeFormat.NB_DWORDS[nativeFormatIndex];
 			}
 			
 			// disable the other streams
 			while (i < 8)
-				context.setVertexBufferAt(i++, null);
+				_context.setVertexBufferAt(i++, null);
 		}
 		
 		protected function prepareContext() : void
 		{
-			//_context.enableErrorChecking = true;
+			_context.enableErrorChecking = true;
 		}
 		
 		public function drawTriangles(indexStream 	: IndexStream3D,
@@ -117,11 +112,9 @@ package aerys.minko.render.renderer
 			
 			prepareContext();
 			
-			indexStream.prepare(_context);
-			
 			var t : int = getTimer();
 			
-			_context.drawTriangles(indexStream._nativeBuffer,
+			_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
 								   firstIndex,
 								   count);
 			
@@ -145,10 +138,10 @@ package aerys.minko.render.renderer
 		
 		public function createTexture(width 	: uint,
 							   		  height 	: uint,
-							   		  type 		: String,
-							   		  optimized : Boolean = false) : Texture
+							   		  format 	: String	= Context3DTextureFormat.BGRA,
+							   		  optimized : Boolean 	= false) : Texture
 		{
-			return _context.createTexture(width, height, type, optimized);
+			return _context.createTexture(width, height, format, optimized);
 		}
 		
 		public function beginRenderToTexture(texture 			: TextureBase,
@@ -169,7 +162,8 @@ package aerys.minko.render.renderer
 		{
 			_context.setProgramConstantsFromMatrix(programType,
 												   index,
-												   matrix._matrix);
+												   matrix.matrix3D,
+												   transposed);
 		}
 		
 		public function setConstants(firstRegister	: int,
@@ -187,6 +181,11 @@ package aerys.minko.render.renderer
 								   texture	: TextureBase) : void
 		{
 			_context.setTextureAt(index, texture);
+		}
+		
+		public function drawToBitmapData(bitmapData : BitmapData) : void
+		{
+			_context.drawToBitmapData(bitmapData);
 		}
 	}
 }

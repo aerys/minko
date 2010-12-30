@@ -1,7 +1,7 @@
 package aerys.minko.scene
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.render.transform.TransformType;
@@ -53,30 +53,26 @@ package aerys.minko.scene
 		
 		override public function visited(visitor : IScene3DVisitor) : void
 		{
-			var renderer	: IRenderer3D	= visitor.renderer;
+			var renderer	: IRenderer3D		= visitor.renderer;
+			var transform 	: TransformManager 	= renderer.transform;
+				
+			transform.push(TransformType.WORLD);
+			transform.world.multiply(_transform);
 			
-			if (renderer.isReady && _visible)
-			{
-				var transform 	: TransformManager 	= renderer.transform;
-				
-				transform.push(TransformType.WORLD);
-				transform.world.multiply(_transform);
-				
-				renderer.states.push(RenderState.ALL);
-				
-				_mesh && visitor.visit(_mesh);
-				_material && visitor.visit(_material);
-				
-				renderer.setMatrix(0,
-								   transform.getLocalToScreenMatrix(),
-								   Context3DProgramType.VERTEX,
-								   true);
-				
-				_mesh && renderer.drawTriangles(_mesh.indexStream);
+			renderer.states.push(RenderState.ALL);
 			
-				renderer.states.pop();
-				transform.pop();
-			}
+			_mesh && visitor.visit(_mesh);
+			_material && visitor.visit(_material);
+			
+			renderer.setMatrix(0,
+							   transform.getLocalToScreenMatrix(),
+							   Context3DProgramType.VERTEX,
+							   true);
+			
+			_mesh && renderer.drawTriangles(_mesh.indexStream);
+		
+			renderer.states.pop();
+			transform.pop();
 		}
 	}
 }

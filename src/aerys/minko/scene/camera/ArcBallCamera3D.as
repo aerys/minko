@@ -8,7 +8,6 @@ package aerys.minko.scene.camera
 	
 	public class ArcBallCamera3D extends AbstractCamera3D
 	{
-		private static const MATRIX3D		: Factory	= Factory.getFactory(Matrix3D);
 		private static const PI_DIV_2		: Number	= Math.PI / 2.;
 		private static const PI_2			: Number	= Math.PI * 2.;
 		private static const EPSILON		: Number	= 0.01;

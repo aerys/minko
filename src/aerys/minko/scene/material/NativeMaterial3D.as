@@ -1,9 +1,9 @@
 package aerys.minko.scene.material
 {
-	import aerys.minko.render.state.BlendingStyle;
-	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.BlendingDestination;
 	import aerys.minko.render.state.BlendingSource;
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.state.WriteMask;
 	import aerys.minko.render.visitor.IScene3DVisitor;
@@ -13,7 +13,6 @@ package aerys.minko.scene.material
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.Loader;
-	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
 	import flash.events.Event;
@@ -30,7 +29,7 @@ package aerys.minko.scene.material
 	{
 		private var _data		: BitmapData	= null;
 		private var _texture	: Texture		= null;
-		private var _blendMode	: uint			= 0;
+		private var _blending	: uint			= 0;
 		private var _update		: Boolean		= true;
 		private var _index		: int			= 0;
 		private var _mipmapping	: Boolean		= false;
@@ -73,14 +72,14 @@ package aerys.minko.scene.material
 			_update = true;
 		}
 		
-		public function get blendMode() : uint
+		public function get blending() : uint
 		{
-			return _blendMode;
+			return _blending;
 		}
 		
-		public function set blendMode(value : uint) : void
+		public function set blending(value : uint) : void
 		{
-			_blendMode = value;
+			_blending = value;
 		}
 		
 		public function get index() : int
@@ -111,11 +110,11 @@ package aerys.minko.scene.material
 		 *
 		 */
 		public function NativeMaterial3D(data 		: BitmapData 	= null,
-										blendMode	: uint			= 0,
+										blending	: uint			= 0,
 										mipmapping	: Boolean		= false)
 		{
 			bitmapData = data;
-			_blendMode = blendMode;
+			_blending = blending || Blending.NORMAL;
 			_mipmapping = mipmapping;
 		}
 		
@@ -141,10 +140,10 @@ package aerys.minko.scene.material
 				
 				if (_mipmapping)
 				{
-					var ws : int = _data.width;
-					var hs : int = _data.height;
-					var tmp : BitmapData = new BitmapData(_data.width, _data.height);
-					var transform : Matrix = new Matrix();
+					var ws 			: int 			= _data.width;
+					var hs 			: int 			= _data.height;
+					var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height);
+					var transform 	: Matrix 		= new Matrix();
 					
 					while (ws > 1 && hs > 1)
 					{
@@ -155,6 +154,7 @@ package aerys.minko.scene.material
 						ws >>= 1;
 						hs >>= 1;
 					}
+					
 					tmp.dispose();
 				}
 				else
@@ -163,19 +163,7 @@ package aerys.minko.scene.material
 				}
 			}
 			
-			if (_blendMode == BlendingStyle.ADDITIVE)
-			{
-				renderStates.writeMask ^= WriteMask.DEPTH;
-				renderStates.blending = BlendingSource.SOURCE_ALPHA
-										| BlendingDestination.ONE;
-			}
-			if (_blendMode == BlendingStyle.ALPHA)
-			{
-				renderStates.blending = BlendingSource.SOURCE_ALPHA
-										| BlendingDestination.ONE_MINUS_SOURCE_ALPHA;
-			}
-			
-			//renderer.textures[_index] = _texture;
+			renderer.states.blending = _blending;
 			renderer.setTexture(_index, _texture);
 		}
 		

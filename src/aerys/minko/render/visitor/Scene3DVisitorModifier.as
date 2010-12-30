@@ -2,7 +2,7 @@ package aerys.minko.render.visitor
 {
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
-	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.IRenderer3D;
 	
 	public class Scene3DVisitorModifier implements IScene3DVisitorModifier
 	{

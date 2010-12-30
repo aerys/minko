@@ -2,8 +2,8 @@ package aerys.minko.render.visitor
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.Viewport3D;
-	import aerys.minko.render.renderer.IRenderer3D;
-	import aerys.minko.render.renderer.NativeRenderer3D;
+	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.NativeRenderer3D;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
 	

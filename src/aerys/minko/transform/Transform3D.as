@@ -102,9 +102,12 @@ package aerys.minko.transform
 		{
 			super();
 			
-			_translation.set(translation.x, translation.y, translation.z);
-			_rotation.set(rotation.x, rotation.y, rotation.z);
-			_scale.set(scale.x, scale.y, scale.z);
+			if (translation)
+				_translation.set(translation.x, translation.y, translation.z);
+			if (rotation)
+				_rotation.set(rotation.x, rotation.y, rotation.z);
+			if (scale)
+				_scale.set(scale.x, scale.y, scale.z);
 		}
 		
 		protected function updateComponents() : void

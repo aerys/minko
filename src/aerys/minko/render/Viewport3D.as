@@ -2,7 +2,6 @@ package aerys.minko.render
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.IRenderer3D;
 	import aerys.minko.render.visitor.IScene3DVisitor;
 	import aerys.minko.render.visitor.Scene3DVisitor;
 	import aerys.minko.scene.IScene3D;
@@ -41,7 +40,6 @@ package aerys.minko.render
 		private var _zNear		: Number			= 0.;
 		private var _zFar		: Number			= 0.;
 		
-		private var _rectangle	: Rectangle			= null;
 		private var _frustum	: Frustum3D			= new Frustum3D();
 		
 		private var _visitor	: IScene3DVisitor	= null;
@@ -148,19 +146,6 @@ package aerys.minko.render
 		public function get renderingTime() 		: uint	{ return _time; }
 		
 		/**
-		 * The Rectangle object that bounds the viewport.
-		 * @return A Rectagle object.
-		 *
-		 */
-		minko function get rectangle() : Rectangle
-		{
-			if (_update)
-				update();
-			
-			return _rectangle;
-		}
-		
-		/**
 		 * Indicates the projection transform that will project 3D view-space vertices on the 2D screen.
 		 * @return A Matrix3D object that describes the projection transform.
 		 *
@@ -243,7 +228,6 @@ package aerys.minko.render
 									   _projection);
 			
 			_frustum.updateFromProjection(_projection, _width, _height);
-			_rectangle = new Rectangle(0, 0, _width, _height);
 			
 			_update = false;
 		}
@@ -293,24 +277,24 @@ package aerys.minko.render
 		{
 			_context = stage.stage3Ds[0].context3D;
 			_context.configureBackBuffer(_width, _height, 0, true);
+			
+			_renderer = new NativeRenderer3D(this, _context);
+			_visitor = new Scene3DVisitor(_renderer);
 		}
 		
 		/**
 		 * Render the specified scene.
-		 * @param myScene
+		 * @param scene
 		 */
-		public function render(scene 	: IScene3D,
-							   sweep 	: Boolean 	= true) : void
+		public function render(scene : IScene3D) : void
 		{
 			var time : int = getTimer();
 			
 			if (_context)
 			{
-				if (!_visitor)
-					_visitor = new Scene3DVisitor(_renderer);
-				
 				_renderer.clear(0);
 				_renderer.transform.reset();
+				
 				_visitor.visit(scene);
 				
 				_renderer.present();
@@ -318,8 +302,7 @@ package aerys.minko.render
 			
 			_time = getTimer() - time;
 
-			if (sweep)
-				Factory.sweep();			
+			Factory.sweep();			
 		}		
 	}
 }

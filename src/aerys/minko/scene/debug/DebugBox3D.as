@@ -1,8 +1,8 @@
 package aerys.minko.scene.debug
 {
-	import aerys.minko.render.state.BlendingStyle;
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.Viewport3D;
-	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.BlendingDestination;
 	import aerys.minko.render.state.BlendingSource;
 	import aerys.minko.render.state.RenderState;
@@ -29,26 +29,22 @@ package aerys.minko.scene.debug
 			
 			var mat : NativeMaterial3D = NativeMaterial3D.fromDisplayObject(shape, 256, true);
 			
-			mat.blendMode = BlendingStyle.ADDITIVE;
+			mat.blending = Blending.ADDITIVE;
 				
 			super(CubeMesh.cubeMesh, mat);
 		}
 		
 		override public function visited(visitor : IScene3DVisitor) : void
 		{
-			var renderer : IRenderer3D	= visitor.renderer;
-			
-			if (renderer.isReady)
-			{
-				var renderStates	: RenderStatesManager	= renderer.states;
+			var renderer	: IRenderer3D			= visitor.renderer;
+			var states		: RenderStatesManager	= renderer.states;
 
-				renderStates.push(RenderState.TRIANGLE_CULLING);
-				renderStates.triangleCulling = TriangleCulling.DISABLED;
-				
-				super.visited(visitor);
-				
-				renderStates.pop();
-			}
+			states.push(RenderState.TRIANGLE_CULLING);
+			states.triangleCulling = TriangleCulling.DISABLED;
+			
+			super.visited(visitor);
+			
+			states.pop();
 		}
 	}
 }

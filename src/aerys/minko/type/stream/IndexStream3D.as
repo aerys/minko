@@ -14,7 +14,8 @@ package aerys.minko.type.stream
 		use namespace minko;
 		
 		minko var _indices		: Vector.<uint>		= null;
-		minko var _nativeBuffer : IndexBuffer3D		= null;
+		
+		private var _nativeBuffer : IndexBuffer3D		= null;
 		
 		private var _update			: Boolean			= true;
 		private var _length			: int				= 0;
@@ -168,7 +169,7 @@ package aerys.minko.type.stream
 			_update = true;
 		}
 		
-		minko function prepare(context : Context3D) : void
+		minko function getIndexBuffer3D(context : Context3D) : IndexBuffer3D
 		{
 			if (!_nativeBuffer && _length)
 				_nativeBuffer = context.createIndexBuffer(_length);
@@ -184,6 +185,8 @@ package aerys.minko.type.stream
 				_nativeBuffer.uploadFromVector(_indices, 0, _indices.length);
 				_update = false;
 			}
+			
+			return _nativeBuffer;
 		}
 		
 		public static function fromByteArray(data 		: ByteArray,

@@ -1,12 +1,13 @@
-package aerys.minko.render.renderer
+package aerys.minko.render
 {
-	import aerys.minko.render.Viewport3D;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	
+	import flash.display.BitmapData;
+	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 
@@ -16,9 +17,7 @@ package aerys.minko.render.renderer
 		function get states() 		: RenderStatesManager;
 		function get transform() 	: TransformManager;
 		function get viewport() 	: Viewport3D;
-		function get textures() 	: Vector.<TextureBase>;
 		function get drawingTime() 	: int;
-		function get isReady() 		: Boolean;
 		
 		function setVertexStream(stream	: VertexStream3D,
 								 offset	: int	= 0) : void;
@@ -33,8 +32,8 @@ package aerys.minko.render.renderer
 		
 		function createTexture(width 		: uint,
 							   height 		: uint,
-							   type 		: String,
-							   optimized 	: Boolean = false) : Texture;
+							   format 		: String	= Context3DTextureFormat.BGRA,
+							   optimized 	: Boolean 	= false) : Texture;
 		
 		function beginRenderToTexture(texture 			: TextureBase,
 								 	  depthAndStencil 	: Boolean = true) : void;
@@ -53,5 +52,7 @@ package aerys.minko.render.renderer
 		
 		function setTexture(index 	: int,
 							texture	: TextureBase) : void;
+		
+		function drawToBitmapData(bitmapData : BitmapData) : void;
 	}
 }

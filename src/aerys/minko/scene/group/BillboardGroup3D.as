@@ -2,7 +2,7 @@ package aerys.minko.scene.group
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.IRenderer3D;
+	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.transform.TransformManager;
 	import aerys.minko.render.transform.TransformType;
 	import aerys.minko.render.visitor.IScene3DVisitor;

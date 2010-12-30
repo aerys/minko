@@ -26,16 +26,12 @@ package aerys.minko.scene.camera
 	 */
 	public class AbstractCamera3D extends AbstractScene3D implements ICamera3D
 	{
-		//{ region const
-		private static const MATRIX	: Factory	= Factory.getFactory(Matrix4x4);
-		//} endregion
-		
 		//{ region vars
 		private var _version		: uint		= 0;
 		
 		private var _enabled		: Boolean	= true;
 		
-		protected var _update		: Boolean	= true;
+		private var _update			: Boolean	= true;
 
 		private var _position		: Vector4	= new Vector4();
 		private var _lookAt			: Vector4	= Vector4.ZERO.clone();
@@ -85,11 +81,11 @@ package aerys.minko.scene.camera
 		
 		protected function invalidateTransform(visitor : IScene3DVisitor = null) : void
 		{
-			var t : Matrix4x4 	= visitor.renderer.transform.world;
+			var world : Matrix4x4 	= visitor.renderer.transform.world;
 			
-			Matrix4x4.lookAtLeftHanded(t.multiplyVector(_position),
-									   t.multiplyVector(_lookAt),
-									   t.deltaMultiplyVector(_up),
+			Matrix4x4.lookAtLeftHanded(world.multiplyVector(_position),
+									   world.multiplyVector(_lookAt),
+									   world.deltaMultiplyVector(_up),
 									   _transform);
 		}
 		
@@ -113,24 +109,6 @@ package aerys.minko.scene.camera
 			
 			t.projection = visitor.renderer.viewport.projection;
 			t.view = _transform;
-		}
-		
-		public function getLocalPosition(worldTransform : Matrix4x4) : Vector4
-		{
-			var world : Matrix4x4 = Matrix4x4.clone(worldTransform, MATRIX.create(true));
-			
-			world.invert();
-			
-			return world.multiplyVector(_position);
-		}
-		
-		public function getLocalLookAt(worldTransform : Matrix4x4) : Vector4
-		{
-			var world : Matrix4x4 = Matrix4x4.clone(worldTransform, MATRIX.create(true));
-			
-			world.invert();
-			
-			return world.multiplyVector(_lookAt);
 		}
 		//} endregion
 	}

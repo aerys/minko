@@ -68,6 +68,11 @@ package aerys.minko.type.math
 		protected function get invalidRawData() : Boolean	{ return (_update & UPDATE_DATA) != 0; }
 		protected function get invalidMatrix() 	: Boolean	{ return (_update & UPDATE_MATRIX) != 0; }
 		
+		minko function get matrix3D() : Matrix3D
+		{
+			return matrix;
+		}
+		
 		protected function get matrix() : Matrix3D
 		{
 			if (_update & UPDATE_MATRIX)
@@ -302,7 +307,6 @@ package aerys.minko.type.math
 										output	: Matrix4x4	= null) : Matrix4x4
 		{
 			output ||= FACTORY.create();
-			
 			output.identity();
 			output.matrix.append(m1.matrix);
 			output.multiply(m2);
@@ -315,7 +319,6 @@ package aerys.minko.type.math
 											   output	: Matrix4x4 = null) : Matrix4x4
 		{
 			output ||= FACTORY.create();
-			
 			output.identity();
 			output.matrix.append(m1.matrix);
 			output.multiplyInverse(m2);
@@ -323,8 +326,8 @@ package aerys.minko.type.math
 			return output;
 		}
 		
-		public static function clone(source	: Matrix4x4,
-									 target : Matrix4x4 = null) : Matrix4x4
+		public static function copy(source	: Matrix4x4,
+									target : Matrix4x4 = null) : Matrix4x4
 		{
 			target ||= FACTORY.create();
 			target._matrix.identity();
@@ -345,7 +348,6 @@ package aerys.minko.type.math
 							   		  output	: Matrix4x4	= null) : Matrix4x4
 		{
 			output ||= FACTORY.create();
-			
 			output.identity();
 			output.invert();
 			
@@ -353,7 +355,7 @@ package aerys.minko.type.math
 		}
 		
 		/**
-		 * Builds a (left-handed) view trnasform.
+		 * Builds a (left-handed) view transform.
 		 * <br /><br />
 		 * Eye : eye position, At : eye direction, Up : up vector
 		 * <br /><br />
@@ -420,12 +422,12 @@ package aerys.minko.type.math
 												 up		: Vector4,
 												 result	: Matrix4x4 = null) : Matrix4x4
 		{
-			var z_axis		: Vector4	= null;
-			var	x_axis		: Vector4	= null;
-			var	y_axis		: Vector4	= null;
-			var	m41			: Number	= 0.;
-			var	m42			: Number	= 0.;
-			var	m43			: Number	= 0.;
+			var z_axis	: Vector4	= null;
+			var	x_axis	: Vector4	= null;
+			var	y_axis	: Vector4	= null;
+			var	m41		: Number	= 0.;
+			var	m42		: Number	= 0.;
+			var	m43		: Number	= 0.;
 			
 			z_axis = Vector4.subtract(eye, lookAt).normalize();
 			x_axis = Vector4.crossProduct(up, z_axis).normalize();
@@ -450,7 +452,7 @@ package aerys.minko.type.math
 												 zFar 	: Number,
 												 result	: Matrix4x4 = null) : Matrix4x4
 		{
-			var	y_scale		: Number	= 1. / Math.tan(fov / 2.0);
+			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
 			var	x_scale		: Number	= y_scale / ratio;
 			var	m33			: Number	= zFar / (zFar - zNear);
 			var	m43			: Number	= -zNear * zFar / (zFar - zNear);

@@ -27,20 +27,10 @@ package aerys.minko.render.transform
 																  | UPDATE_LOCAL_TO_SCREEN;
 		
 		private var _update				: uint					= UPDATE_NONE;
-		private var _size				: int					= 0;
-		
-		private var _cameraPos			: Vector4				= new Vector4();
-		private var _localCameraPos		: Vector4				= new Vector4();
 		
 		private var _view				: Matrix4x4				= new Matrix4x4();
 		private var _world				: Matrix4x4				= new Matrix4x4();
 		private var _projection			: Matrix4x4				= new Matrix4x4();
-		
-		private var _worldStack			: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
-		private var _viewStack			: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
-		private var _projectionStack	: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
-		
-		private var _pushStack			: Vector.<uint>		= new Vector.<uint>();
 		
 		//{ region getters/setters
 		public function get world() : Matrix4x4
@@ -62,7 +52,7 @@ package aerys.minko.render.transform
 		{
 			if (!(lockedStates & TransformType.VIEW))
 			{
-				_view = Matrix4x4.clone(value, _view);
+				Matrix4x4.copy(value, _view);
 				_update |= UPDATE_CAMERA_POSITION
 						   | UPDATE_LOCAL_TO_VIEW
 						   | UPDATE_LOCAL_TO_SCREEN;
@@ -73,7 +63,7 @@ package aerys.minko.render.transform
 		{
 			if (!(lockedStates & TransformType.PROJECTION))
 			{
-				_projection = Matrix4x4.clone(value, _projection);
+				Matrix4x4.copy(value, _projection);
 				_update |= UPDATE_LOCAL_TO_SCREEN;
 			}
 		}
@@ -82,7 +72,7 @@ package aerys.minko.render.transform
 		{
 			if (!(lockedStates & TransformType.WORLD))
 			{
-				_world = Matrix4x4.clone(value, _world);
+				Matrix4x4.copy(value, _world);
 				_update = UPDATE_ALL;
 			}
 		}
@@ -92,21 +82,23 @@ package aerys.minko.render.transform
 			return Matrix4x4.multiplyInverse(_world, _view, MATRIX4X4.create(true))
 							.multiplyInverse(_projection);
 		}
-		
-		public function getLocalToViewMatrix3D() : Matrix3D
-		{
-			return Matrix4x4.multiplyInverse(_world, _view, MATRIX4X4.create(true))
-							._matrix;
-		}
 		//} endregion
 		
 		public function TransformManager()
 		{
 			super();
 			
-			registerState(TransformType.WORLD, "world", new Vector.<Matrix4x4>());
-			registerState(TransformType.VIEW, "view", new Vector.<Matrix4x4>());
-			registerState(TransformType.PROJECTION, "projection", new Vector.<Matrix4x4>());
+			registerState(TransformType.WORLD,
+						  "world",
+						  new Vector.<Matrix4x4>());
+			
+			registerState(TransformType.VIEW,
+						  "view",
+						  new Vector.<Matrix4x4>());
+			
+			registerState(TransformType.PROJECTION,
+						  "projection",
+						  new Vector.<Matrix4x4>());
 		}
 		
 		override protected function pushState(mask 	: uint,
@@ -114,7 +106,7 @@ package aerys.minko.render.transform
 											  stack : Object) : void
 		{
 			super.pushState(mask,
-							Matrix4x4.clone(value as Matrix4x4, MATRIX4X4.create(true)),
+							Matrix4x4.copy(value as Matrix4x4, MATRIX4X4.create(true)),
 							stack);
 		}
 		
@@ -122,15 +114,16 @@ package aerys.minko.render.transform
 											 property	: String,
 											 stack		: Object) : void
 		{
-			var value : Vector.<Number> = stack[int(stack.length - 1)].getRawData();
+			var value : Matrix4x4 = stack[int(stack.length - 1)];
 			
 			stack.length--;
+			
 			if (property == "world")
-				world.setRawData(value);
+				Matrix4x4.copy(value, world);
 			else if (property == "view")
-				view.setRawData(value);
+				Matrix4x4.copy(value, view);
 			else if (property == "projection")
-				projection.setRawData(value);
+				Matrix4x4.copy(value, projection);
 		}
 		
 		//{ region methods
@@ -139,6 +132,8 @@ package aerys.minko.render.transform
 			_world.identity();
 			_view.identity();
 			_projection.identity();
+			
+			_update = UPDATE_ALL;
 		}
 	}
 }
