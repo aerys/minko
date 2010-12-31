@@ -1,17 +1,19 @@
 package aerys.minko.effect
 {
+	import aerys.minko.render.IRenderer3D;
+
 	public class AbstractEffect3D implements IEffect3D
 	{
-		private var _techniques	: Vector.<ITechnique3D>	= null;
-		private var _current	: ITechnique3D			= null;
+		private var _techniques	: Vector.<IEffect3DTechnique>	= new Vector.<IEffect3DTechnique>();
+		private var _current	: IEffect3DTechnique			= null;
 		
-		protected function get techniques() : Vector.<ITechnique3D>	{ return _techniques; }
+		protected function get techniques() : Vector.<IEffect3DTechnique>	{ return _techniques; }
 		
 		public function AbstractEffect3D()
 		{
 		}
 		
-		public function getTechnique(name:String):ITechnique3D
+		public function getTechnique(name:String):IEffect3DTechnique
 		{
 			var numTechniques : int = _techniques.length;
 			
@@ -21,23 +23,25 @@ package aerys.minko.effect
 			return numTechniques >= 0 ? _techniques[numTechniques]
 									  : null;
 		}
-		
-		public function set currentTechnique(value : ITechnique3D) : void
+	
+		public function set currentTechnique(value : IEffect3DTechnique) : void
 		{
 			_current = value;
 		}
 		
-		public function get currentTechnique() : ITechnique3D
+		public function get currentTechnique() : IEffect3DTechnique
 		{
 			return _current;
 		}
 		
-		public function begin() : void
+		public function begin(renderer : IRenderer3D) : void
 		{
+			// NOTHING
 		}
 		
-		public function end() : void
+		public function end(renderer : IRenderer3D) : void
 		{
+			// NOTHING
 		}
 	}
 }

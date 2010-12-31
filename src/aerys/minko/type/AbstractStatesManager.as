@@ -43,7 +43,7 @@ package aerys.minko.type
 			_lock |= statesMask;
 		}
 		
-		public final function push(statesMask : uint) : void
+		public function push(statesMask : uint) : void
 		{
 			var mask 		: uint = 0;
 			var pushMask 	: uint = 0;
@@ -70,7 +70,7 @@ package aerys.minko.type
 			_lockStack[_lockStack.length] = _lock;
 		}
 		
-		public final function pop() : void
+		public function pop() : void
 		{
 			if (_lockOffset)
 			{

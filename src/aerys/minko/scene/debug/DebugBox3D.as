@@ -9,7 +9,7 @@ package aerys.minko.scene.debug
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.state.TriangleCulling;
 	import aerys.minko.render.visitor.IScene3DVisitor;
-	import aerys.minko.scene.DisplayObject3D;
+	import aerys.minko.scene.Model3D;
 	import aerys.minko.scene.material.NativeMaterial3D;
 	import aerys.minko.scene.mesh.primitive.CubeMesh;
 	
@@ -17,7 +17,7 @@ package aerys.minko.scene.debug
 	import flash.display.Shape;
 	import flash.display3D.Context3DTriangleFace;
 	
-	public class DebugBox3D extends DisplayObject3D
+	public class DebugBox3D extends Model3D
 	{
 		public function DebugBox3D(color : uint = 0xff0000)
 		{

@@ -1,5 +1,8 @@
 package aerys.minko.scene
 {
+	import aerys.minko.effect.IEffect3D;
+	import aerys.minko.effect.IEffect3DPass;
+	import aerys.minko.effect.basic.BasicEffect3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.RenderState;
@@ -13,14 +16,16 @@ package aerys.minko.scene
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 
-	public class DisplayObject3D extends AbstractScene3D implements IScene3D, IObject3D
+	public class Model3D extends AbstractScene3D implements IScene3D, IObject3D
 	{
 		use namespace minko;
 		
-		private var _mesh		: IMesh3D		= null;
-		private var _material	: IMaterial3D	= null;
-		private var _transform	: Transform3D	= new Transform3D();
-		private var _visible	: Boolean		= true;
+		private var _mesh		: IMesh3D				= null;
+		private var _material	: IMaterial3D			= null;
+		private var _transform	: Transform3D			= new Transform3D();
+		private var _visible	: Boolean				= true;
+		private var _style		: Object				= new Object();
+		private var _effects	: Vector.<IEffect3D>	= Vector.<IEffect3D>([new BasicEffect3D()]);
 		
 		public function get transform() 	: Transform3D	{ return _transform; }
 		public function get mesh()			: IMesh3D		{ return _mesh; }
@@ -42,7 +47,7 @@ package aerys.minko.scene
 			_visible = value;
 		}
 		
-		public function DisplayObject3D(mesh 	 : IMesh3D		= null,
+		public function Model3D(mesh 	 : IMesh3D		= null,
 										material : IMaterial3D	= null)
 		{
 			super();
@@ -64,13 +69,30 @@ package aerys.minko.scene
 			_mesh && visitor.visit(_mesh);
 			_material && visitor.visit(_material);
 			
-			renderer.setMatrix(0,
-							   transform.getLocalToScreenMatrix(),
-							   Context3DProgramType.VERTEX,
-							   true);
+			var numEffects : int = _effects.length;
 			
-			_mesh && renderer.drawTriangles(_mesh.indexStream);
-		
+			for (var i : int = 0; i < numEffects; ++i)
+			{
+				var effect		: IEffect3D					= _effects[i];
+				var passes		: Vector.<IEffect3DPass>	= effect.currentTechnique.passes;
+				var numPasses 	: int 						= passes.length;
+				
+				effect.begin(renderer);
+				
+				for (var j : int = 0; j < numPasses; ++j)
+				{
+					var pass : IEffect3DPass = passes[i];
+					
+					pass.begin(renderer, _style);
+					
+					renderer.drawTriangles(_mesh.indexStream);
+					
+					pass.end(renderer, _style);
+				}
+				
+				effect.end(renderer);
+			}
+			
 			renderer.states.pop();
 			transform.pop();
 		}
