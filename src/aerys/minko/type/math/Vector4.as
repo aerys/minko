@@ -1,5 +1,6 @@
 package aerys.minko.type.math
 {
+	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	
@@ -8,6 +9,8 @@ package aerys.minko.type.math
 	public final class Vector4 implements IVersionnable
 	{
 		use namespace minko;
+		
+		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
 		
 		public static const X_AXIS				: Vector4	= new Vector4(1., 0., 0.);
 		public static const Y_AXIS				: Vector4	= new Vector4(0., 1., 0.);
@@ -277,6 +280,34 @@ package aerys.minko.type.math
 		{
 			return "(" + _vector.x + ", " + _vector.y + ", " + _vector.z + ", "
 				   + _vector.w + ")";
+		}
+		
+		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
+		{
+			target ||= FACTORY.create();
+			target.set(source._vector.x,
+					   source._vector.y,
+					   source._vector.z,
+					   source._vector.w);
+			
+			return target;
+		}
+		
+		public static function scale(v : Vector4, s : Number, out : Vector4 = null) : Vector4
+		{
+			out ||= FACTORY.create();
+			out._vector.x = v._vector.x;
+			out._vector.y = v._vector.y;
+			out._vector.z = v._vector.z;
+			out._vector.w = v._vector.w;
+			
+			return out;
+		}
+		
+		public static function normalize(v : Vector4, out : Vector4 = null) : Vector4
+		{
+			out = copy(v, out);
+			return out.normalize();
 		}
 	}
 }

@@ -4,19 +4,19 @@ package aerys.minko.scene.mesh.primitive
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 
-	public class SphereMesh extends Mesh3D
+	public class SphereMesh3D extends Mesh3D
 	{
 		private static const DEFAULT_NUM_PARALLELS	: uint 	= 10;
 		private static const DEFAULT_NUM_MERIDIANS	: uint 	= 10;
 		
-		private static var _instance	: SphereMesh	= null;
+		private static var _instance	: SphereMesh3D	= null;
 		
-		public static function get sphereMesh() : SphereMesh
+		public static function get sphereMesh() : SphereMesh3D
 		{
-			return _instance || (_instance = new SphereMesh());
+			return _instance || (_instance = new SphereMesh3D());
 		}
 		
-		public function SphereMesh(myParallels : uint = DEFAULT_NUM_PARALLELS,
+		public function SphereMesh3D(myParallels : uint = DEFAULT_NUM_PARALLELS,
 								   myMeridians : uint = 0)
 		{
 			myMeridians ||= myParallels;

@@ -6,14 +6,9 @@ package aerys.minko.effect.basic
 	{
 		public function BasicTechnique3D()
 		{
-			super();
+			super("basic");
 			
 			passes.push(new DiffusePass3D());
-		}
-		
-		override public function get name() : String
-		{
-			return "basic";
 		}
 	}
 }

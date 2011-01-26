@@ -1,9 +1,6 @@
 package aerys.minko.scene.material
 {
-	import aerys.common.IVersionnable;
 	import aerys.minko.scene.IScene3D;
-	
-	import flash.display.BitmapData;
 	
 	/**
 	 * <p>Common interface for all the materials.</p>
@@ -11,11 +8,10 @@ package aerys.minko.scene.material
 	 * of another underlaying material. This way, one can easily stack materials
 	 * and effects.</p>
 	 *
-	 * @author Promethe
+	 * @author Jean-Marc Le Roux
 	 *
 	 */
 	public interface IMaterial3D extends IScene3D
 	{
-		function get bitmapData() : BitmapData;
 	}
 }

@@ -7,17 +7,17 @@ package aerys.minko.scene.mesh.primitive
 	/**
 	 * The CylinderMesh class represents a cylinder mesh.
 	 */
-	public class CylinderMesh extends Mesh3D
+	public class CylinderMesh3D extends Mesh3D
 	{
 		private static const DEFAULT_NUM_COLS	: uint	= 8;
 		private static const DEFAULT_NUM_ROWS	: uint	= 2;
 		
-		private static var _instance	: CylinderMesh	= null;
+		private static var _instance	: CylinderMesh3D	= null;
 		
-		public static function get cylinderMesh() : CylinderMesh
+		public static function get cylinderMesh() : CylinderMesh3D
 		{
 			if (!_instance)
-				_instance = new CylinderMesh();
+				_instance = new CylinderMesh3D();
 			
 			return (_instance);
 		}
@@ -26,7 +26,7 @@ package aerys.minko.scene.mesh.primitive
 		 * @param	myNumCols
 		 * @param	myNumRows
 		 */
-		public function CylinderMesh(myNumCols	: uint	= DEFAULT_NUM_COLS,
+		public function CylinderMesh3D(myNumCols	: uint	= DEFAULT_NUM_COLS,
 									 myNumRows	: uint	= DEFAULT_NUM_ROWS)
 		{
 			var vb	: Vector.<Number>	= new Vector.<Number>();

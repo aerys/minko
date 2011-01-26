@@ -4,22 +4,22 @@ package aerys.minko.scene.mesh.primitive
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	
-	public class QuadMesh extends Mesh3D
+	public class QuadMesh3D extends Mesh3D
 	{
-		static private var _instance	: QuadMesh	= null;
-		static private var _instance2	: QuadMesh	= null;
+		static private var _instance	: QuadMesh3D	= null;
+		static private var _instance2	: QuadMesh3D	= null;
 		
-		public static function get quadMesh() : QuadMesh
+		public static function get quadMesh() : QuadMesh3D
 		{
-			return _instance || (_instance = new QuadMesh());
+			return _instance || (_instance = new QuadMesh3D());
 		}
 		
-		public static function get doubleSidedQuadMesh() : QuadMesh
+		public static function get doubleSidedQuadMesh() : QuadMesh3D
 		{
-			return _instance2 || (_instance2 = new QuadMesh(true));
+			return _instance2 || (_instance2 = new QuadMesh3D(true));
 		}
 		
-		public function QuadMesh(doubleSided	: Boolean 	= false,
+		public function QuadMesh3D(doubleSided	: Boolean 	= false,
 								 width 			: uint 		= 1,
 								 height 		: uint 		= 0)
 		{

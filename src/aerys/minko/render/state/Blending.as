@@ -10,5 +10,8 @@ package aerys.minko.render.state
 		
 		public static const ADDITIVE	: uint		= BlendingSource.SOURCE_ALPHA
 													  | BlendingDestination.ONE;
+		
+		public static const LIGHT		: uint		= BlendingSource.ZERO
+													  | BlendingDestination.SOURCE_COLOR;
 	}
 }

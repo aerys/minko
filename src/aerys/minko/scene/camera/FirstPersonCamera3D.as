@@ -1,13 +1,15 @@
 package aerys.minko.scene.camera
 {
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
 	
 	public class FirstPersonCamera3D extends AbstractCamera3D
 	{
-		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - .001;
+		private static const EPSILON		: Number	= .001;
+		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
 		private var _ghostMode	: Boolean	= false;
@@ -23,18 +25,30 @@ package aerys.minko.scene.camera
 			_ghostMode = value;
 		}
 		
-		public function FirstPersonCamera3D()
+		public function get rotation() : Vector4
 		{
-			super ();
+			return _rotation;
 		}
 		
-		override protected function invalidateTransform(visitor : IScene3DVisitor = null) : void
+		public function FirstPersonCamera3D(ghostMode : Boolean = false)
 		{
+			super();
+			
+			_ghostMode = ghostMode;
+		}
+		
+		override protected function invalidateTransform(query : RenderingQuery = null) : void
+		{
+			if (_rotation.x >= MAX_ROTATION_X)
+				_rotation.x = MAX_ROTATION_X;
+			else if (_rotation.x <= MIN_ROTATION_X)
+				_rotation.x = MIN_ROTATION_X;
+			
 			lookAt.x = position.x + Math.sin(_rotation.y) * Math.cos(_rotation.x);
 			lookAt.y = position.y + Math.sin(_rotation.x);
 			lookAt.z = position.z + Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.invalidateTransform(visitor);
+			super.invalidateTransform(query);
 		}
 		
 		public function walk(distance : Number) : void
@@ -50,15 +64,12 @@ package aerys.minko.scene.camera
 				position.x += Math.sin(_rotation.y) * distance;
 				position.z += Math.cos(_rotation.y) * distance;
 			}
-			
-			invalidate();
 		}
 		
 		public function strafe(distance : Number) : void
 		{
 			position.x += Math.sin(_rotation.y + Math.PI / 2) * distance;
 			position.z += Math.cos(_rotation.y + Math.PI / 2) * distance;
-			invalidate();
 		}
 		/* ! METHODS */
 

@@ -1,24 +1,28 @@
 package aerys.minko.type.triangle
 {
+	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.math.Plane3D;
+	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.math.Plane3D;
+	import aerys.minko.type.vertex.Vertex3DReference;
 	
 	import flash.geom.Vector3D;
-	import aerys.minko.type.vertex.Vertex3DReference;
 
 	public class Triangle3DReference
 	{
 		use namespace minko;
 		
-		private static const UPDATE_NONE			: uint	= 0;
-		private static const UPDATE_NORMAL			: uint	= 1;
-		private static const UPDATE_PLANE			: uint	= 2;
-		private static const UPDATE_CENTER			: uint	= 4;
+		private static const VECTOR4				: Factory	= Factory.getFactory(Vector4);
 		
-		minko static const UPDATE_ALL				: uint	= UPDATE_NORMAL | UPDATE_PLANE
-															  | UPDATE_CENTER;
+		private static const UPDATE_NONE			: uint		= 0;
+		private static const UPDATE_NORMAL			: uint		= 1;
+		private static const UPDATE_PLANE			: uint		= 2;
+		private static const UPDATE_CENTER			: uint		= 4;
+		
+		minko static const UPDATE_ALL				: uint		= UPDATE_NORMAL | UPDATE_PLANE
+															  	  | UPDATE_CENTER;
 
 		minko var _index	: int				= 0;
 		minko var _update	: uint				= UPDATE_ALL;
@@ -37,9 +41,9 @@ package aerys.minko.type.triangle
 		private var _v1v	: uint				= 0;
 		private var _v2v	: uint				= 0;
 		
-		private var _normal	: Vector3D			= null;
+		private var _normal	: Vector4			= null;
 		private var _plane	: Plane3D			= null;
-		private var _center	: Vector3D			= null;
+		private var _center	: Vector4			= null;
 		
 		public function get index()	: int				{ return _index; }
 		
@@ -123,6 +127,7 @@ package aerys.minko.type.triangle
 		{
 			_ib._indices[int(_index * 3)] = value;
 			_ib._update = true;
+			_ib._version++;
 			_v0._index = value;
 			_update |= UPDATE_ALL;
 		}
@@ -131,6 +136,7 @@ package aerys.minko.type.triangle
 		{
 			_ib._indices[int(_index * 3 + 1)] = value;
 			_ib._update = true;
+			_ib._version++;
 			_v1._index = value;
 			_update |= UPDATE_ALL;
 		}
@@ -139,30 +145,31 @@ package aerys.minko.type.triangle
 		{
 			_ib._indices[int(_index * 3 + 2)] = value;
 			_ib._update = true;
+			_ib._version++;
 			_v2._index = value;
 			_update |= UPDATE_ALL;
 		}
 		
-		public function Triangle3DReference(myVertexBuffer 	: VertexStream3D,
-											myIndexBuffer	: IndexStream3D,
-											myIndex 		: int)
+		public function Triangle3DReference(vertexBuffer 	: VertexStream3D,
+											indexBuffer		: IndexStream3D,
+											index 			: int)
 		{
-			_ib = myIndexBuffer;
+			_ib = indexBuffer;
 			
-			_index = myIndex;
+			_index = index;
 			
-			_v0 = new Vertex3DReference(myVertexBuffer,
-										myIndexBuffer._indices[int(_index * 3)]);
-			_v1 = new Vertex3DReference(myVertexBuffer,
-										myIndexBuffer._indices[int(_index * 3 + 1)]);
-			_v2 = new Vertex3DReference(myVertexBuffer,
-										myIndexBuffer._indices[int(_index * 3 + 2)]);			
+			_v0 = new Vertex3DReference(vertexBuffer,
+										indexBuffer._indices[int(_index * 3)]);
+			_v1 = new Vertex3DReference(vertexBuffer,
+										indexBuffer._indices[int(_index * 3 + 1)]);
+			_v2 = new Vertex3DReference(vertexBuffer,
+										indexBuffer._indices[int(_index * 3 + 2)]);			
 		}
 		
 		private function invalidateNormal() : void
 		{
 			if (!_normal)
-				_normal = new Vector3D();
+				_normal = new Vector4();
 			
 			var x0 : Number = _v0.x;
 			var y0 : Number = _v0.y;
@@ -186,14 +193,14 @@ package aerys.minko.type.triangle
 			_v2v = _v2.version;
 		}
 		
-		public function getNormal() : Vector3D
+		public function getNormal(out : Vector4) : Vector4
 		{
-			return _normal.clone();
+			return Vector4.copy(_normal, out);
 		}
 		
-		public function getCenter() : Vector3D
+		public function getCenter(out : Vector4) : Vector4
 		{
-			return _center.clone();
+			return Vector4.copy(_center, out);
 		}
 		
 		private function invalidatePlane() : void
@@ -241,7 +248,7 @@ package aerys.minko.type.triangle
 			_center.z = (_v0.z + _v1.z + _v2.z) * .33333333;
 		}
 		
-		private function invertWinding() : void
+		public function invertWinding() : void
 		{
 			_update = UPDATE_ALL;
 			
@@ -249,6 +256,9 @@ package aerys.minko.type.triangle
 			
 			_v0._index = _i0 = _i1;
 			_v1._index = tmp;
+			
+			i0 = _i1;
+			i1 = tmp;
 		}
 	}
 }

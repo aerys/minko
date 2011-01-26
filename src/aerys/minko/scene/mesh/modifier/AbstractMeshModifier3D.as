@@ -1,6 +1,6 @@
 package aerys.minko.scene.mesh.modifier
 {
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
@@ -19,6 +19,11 @@ package aerys.minko.scene.mesh.modifier
 			return _target;
 		}
 		
+		public function get version() : uint
+		{
+			return _target.version;
+		}
+				
 		public function get vertexStream() : VertexStream3D
 		{
 			return _target.vertexStream;
@@ -29,9 +34,9 @@ package aerys.minko.scene.mesh.modifier
 			return _target.indexStream;
 		}
 		
-		public function visited(visitor : IScene3DVisitor) : void
+		public function accept(query : IScene3DQuery) : void
 		{
-			visitor.visit(_target);
+			query.query(_target);
 		}
 		
 		public function get name() : String

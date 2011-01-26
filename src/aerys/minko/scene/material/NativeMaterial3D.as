@@ -1,12 +1,14 @@
 package aerys.minko.scene.material
 {
+	import aerys.minko.effect.basic.BasicStyle3D;
+	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.BlendingDestination;
 	import aerys.minko.render.state.BlendingSource;
-	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.state.WriteMask;
-	import aerys.minko.render.visitor.IScene3DVisitor;
 	import aerys.minko.scene.AbstractScene3D;
 	
 	import flash.display.Bitmap;
@@ -15,6 +17,7 @@ package aerys.minko.scene.material
 	import flash.display.Loader;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
+	import flash.display3D.textures.TextureBase;
 	import flash.events.Event;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
@@ -27,25 +30,27 @@ package aerys.minko.scene.material
 	 */
 	public class NativeMaterial3D extends AbstractScene3D implements IMaterial3D
 	{
+		public static const DEFAULT_BLENDING	: uint	= Blending.ALPHA;
+		
 		private var _data		: BitmapData	= null;
 		private var _texture	: Texture		= null;
 		private var _blending	: uint			= 0;
 		private var _update		: Boolean		= true;
-		private var _index		: int			= 0;
 		private var _mipmapping	: Boolean		= false;
+		
+		private var _styleProp	: String		= null;
 
-		/**
-		 * A transparent or opaque bitmap image.
-		 *
-		 * @return
-		 *
-		 */
-		public function get bitmapData() : BitmapData
+		public function get styleProperty() : String
 		{
-			return _data;
+			return _styleProp;
 		}
 		
-		public function set bitmapData(value : BitmapData) : void
+		public function set styleProperty(value : String) : void
+		{
+			_styleProp = value;
+		}
+		
+		protected function set bitmapData(value : BitmapData) : void
 		{
 			for (var w : int = 1; w < value.width; w *= 2)
 				continue ;
@@ -82,89 +87,73 @@ package aerys.minko.scene.material
 			_blending = value;
 		}
 		
-		public function get index() : int
-		{
-			return _index;
-		}
-		
-		public function set index(value : int) : void
-		{
-			_index = value;
-		}
-		
-		public function get mipmapping() : Boolean
-		{
-			return _mipmapping;
-		}
-		
-		public function set mipmapping(value : Boolean) : void
-		{
-			_mipmapping = value;
-			_update = true;
-		}
-		
-		/**
-		 * Creates a new BitmapMaterial object.
-		 *
-		 * @param myBitmapData
-		 *
-		 */
 		public function NativeMaterial3D(data 		: BitmapData 	= null,
-										blending	: uint			= 0,
-										mipmapping	: Boolean		= false)
+										 blending	: uint			= 0,
+										 mipmapping	: Boolean		= false)
 		{
-			bitmapData = data;
-			_blending = blending || Blending.NORMAL;
+			if (data)
+				bitmapData = data;
+			_blending = blending || DEFAULT_BLENDING;
 			_mipmapping = mipmapping;
+			
+			_styleProp = BasicStyle3D.DIFFUSE;
 		}
 		
-		override public function visited(visitor : IScene3DVisitor) : void
+		override public function accept(query : IScene3DQuery) : void
 		{
-			var renderer 		: IRenderer3D 			= visitor.renderer;
-			var renderStates 	: RenderStatesManager 	= renderer.states;
-			var level 			: int 					= 0;
-
-			if (!_texture)
+			if (query is RenderingQuery)
 			{
-				_texture = renderer.createTexture(_data.width,
-												  _data.height,
-												  Context3DTextureFormat.BGRA,
-												  false);
+				var q		: RenderingQuery	= query as RenderingQuery;
 				
-				_update = true;
-			}
-			
-			if (_update)
-			{
-				_update = false;
-				
-				if (_mipmapping)
+				if (_data)
 				{
-					var ws 			: int 			= _data.width;
-					var hs 			: int 			= _data.height;
-					var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height);
-					var transform 	: Matrix 		= new Matrix();
-					
-					while (ws > 1 && hs > 1)
+					if (!_texture)
 					{
-						tmp.draw(_data, transform, null, null, null, true);
-						_texture.uploadFromBitmapData(tmp, level);
-						transform.scale(.5, .5);
-						level++;
-						ws >>= 1;
-						hs >>= 1;
+						_texture = q.createTexture(_data.width,
+												   _data.height,
+												   Context3DTextureFormat.BGRA,
+												   false) as Texture;
+						
+						_update = true;
 					}
 					
-					tmp.dispose();
+					if (_update)
+					{
+						_update = false;
+						
+						if (_mipmapping)
+						{
+							var level 		: int 			= 0;
+							var ws 			: int 			= _data.width;
+							var hs 			: int 			= _data.height;
+							var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height);
+							var transform 	: Matrix 		= new Matrix();
+							
+							while (ws > 1 && hs > 1)
+							{
+								tmp.draw(_data, transform, null, null, null, true);
+								_texture.uploadFromBitmapData(tmp, level);
+								transform.scale(.5, .5);
+								level++;
+								ws >>= 1;
+								hs >>= 1;
+							}
+							
+							tmp.dispose();
+						}
+						else
+						{
+							_texture.uploadFromBitmapData(_data, 0);
+						}
+					}
+					
+					_data.dispose();
+					_data = null;
 				}
-				else
-				{
-					_texture.uploadFromBitmapData(_data, 0);
-				}
+				
+				q.style.set(BasicStyle3D.BLENDING, _blending);
+				q.style.set(_styleProp, _texture);
 			}
-			
-			renderer.states.blending = _blending;
-			renderer.setTexture(_index, _texture);
 		}
 		
 		//{ region statis
@@ -195,12 +184,13 @@ package aerys.minko.scene.material
 			var mat 	: NativeMaterial3D 	= new NativeMaterial3D();
 			
 			loader.loadBytes(source);
-			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, mat.loadCompleteHandler);
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+													  mat.loadBytesCompleteHandler);
 			
 			return mat;
 		}
 		
-		private function loadCompleteHandler(event : Event) : void
+		private function loadBytesCompleteHandler(event : Event) : void
 		{
 			bitmapData = (event.target.content as Bitmap).bitmapData;
 		}

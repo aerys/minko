@@ -2,10 +2,11 @@ package aerys.minko.scene.group
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
+	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.render.IRenderer3D;
-	import aerys.minko.render.transform.TransformManager;
-	import aerys.minko.render.transform.TransformType;
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.transform.TransformManager;
+	import aerys.minko.transform.TransformType;
 	import aerys.minko.transform.Transform3D;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -29,24 +30,27 @@ package aerys.minko.scene.group
 			name = "BillboardContainer3D_" + ++_id;
 		}
 		
-		override public function visited(visitor : IScene3DVisitor) : void
+		override public function accept(query : IScene3DQuery) : void
 		{
-			var renderer	: IRenderer3D 		= visitor.renderer;
-			var transform	: TransformManager	= renderer.transform;
-			
-			Matrix4x4.invert(transform.world, _local);
-			
-			_local.multiplyVector(visitor.camera.position, _camera);
-			_local.pointAt(_camera,
-						   Vector4.Z_AXIS,
-						   UP);
-			
-			transform.push(TransformType.WORLD);
-			transform.world = _local;			
-			
-			super.visited(visitor);
-			
-			transform.pop();
+			if (query is RenderingQuery)
+			{
+				var q			: RenderingQuery	= query as RenderingQuery;
+				var transform	: TransformManager	= q.transform;
+				
+				Matrix4x4.invert(transform.world, _local);
+				
+				//_local.multiplyVector(transform.cameraPosition, _camera);
+				_local.pointAt(_camera,
+							   Vector4.Z_AXIS,
+							   UP);
+				
+				transform.push(TransformType.WORLD);
+				transform.world = _local;			
+				
+				super.accept(query);
+				
+				transform.pop();
+			}
 		}
 	}
 }

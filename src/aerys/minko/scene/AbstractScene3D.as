@@ -1,6 +1,6 @@
 package aerys.minko.scene
 {
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.query.IScene3DQuery;
 	
 	public class AbstractScene3D implements IScene3D
 	{
@@ -16,7 +16,7 @@ package aerys.minko.scene
 			_name = value;
 		}
 		
-		public function visited(visitor : IScene3DVisitor) : void
+		public function accept(query : IScene3DQuery) : void
 		{
 			throw new Error();
 		}

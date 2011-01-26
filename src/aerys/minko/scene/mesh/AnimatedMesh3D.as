@@ -1,6 +1,6 @@
 package aerys.minko.scene.mesh
 {
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.scene.mesh.modifier.IMeshModifier3D;
 	import aerys.minko.type.Animation3D;
 	import aerys.minko.type.stream.IndexStream3D;
@@ -18,6 +18,12 @@ package aerys.minko.scene.mesh
 		private var _animation	: Animation3D			= null;
 		private var _isPlaying	: Boolean				= false;
 		private var _loop		: Boolean				= true;
+		private var _version	: uint					= 0;
+		
+		public function get version() : uint
+		{
+			return _version + _current.version;
+		}
 		
 		public function get name() : String
 		{
@@ -48,6 +54,8 @@ package aerys.minko.scene.mesh
 		{
 			if (value == _frame)
 				return ;
+			
+			++_version;
 			
 			if (_animation)
 			{
@@ -85,9 +93,9 @@ package aerys.minko.scene.mesh
 			_current = _frames[0];
 		}
 		
-		public function visited(visitor : IScene3DVisitor) : void
+		public function accept(visitor : IScene3DQuery) : void
 		{
-			visitor.visit(_current);
+			visitor.query(_current);
 		}
 	}
 }

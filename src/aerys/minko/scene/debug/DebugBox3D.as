@@ -1,17 +1,18 @@
 package aerys.minko.scene.debug
 {
-	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.Viewport3D;
+	import aerys.minko.Viewport3D;
+	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.BlendingDestination;
 	import aerys.minko.render.state.BlendingSource;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.render.state.TriangleCulling;
-	import aerys.minko.render.visitor.IScene3DVisitor;
 	import aerys.minko.scene.Model3D;
 	import aerys.minko.scene.material.NativeMaterial3D;
-	import aerys.minko.scene.mesh.primitive.CubeMesh;
+	import aerys.minko.scene.mesh.primitive.CubeMesh3D;
 	
 	import flash.display.CapsStyle;
 	import flash.display.Shape;
@@ -31,20 +32,23 @@ package aerys.minko.scene.debug
 			
 			mat.blending = Blending.ADDITIVE;
 				
-			super(CubeMesh.cubeMesh, mat);
+			super(CubeMesh3D.cubeMesh, mat);
 		}
 		
-		override public function visited(visitor : IScene3DVisitor) : void
+		/*override public function accept(query : IScene3DQuery) : void
 		{
-			var renderer	: IRenderer3D			= visitor.renderer;
-			var states		: RenderStatesManager	= renderer.states;
-
-			states.push(RenderState.TRIANGLE_CULLING);
-			states.triangleCulling = TriangleCulling.DISABLED;
-			
-			super.visited(visitor);
-			
-			states.pop();
-		}
+			if (query is RenderingQuery)
+			{
+				var renderer	: IRenderer3D			= (query as RenderingQuery).renderer;
+				var states		: RenderStatesManager	= renderer.states;
+	
+				states.push(RenderState.TRIANGLE_CULLING);
+				states.triangleCulling = TriangleCulling.DISABLED;
+				
+				super.accept(query);
+				
+				states.pop();
+			}
+		}*/
 	}
 }

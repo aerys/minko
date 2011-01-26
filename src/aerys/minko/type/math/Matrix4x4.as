@@ -24,29 +24,29 @@ package aerys.minko.type.math
 		private static const UPDATE_ALL			: uint		= UPDATE_DATA | UPDATE_MATRIX;
 		
 		minko var _matrix	: Matrix3D			= null;
-		minko var _data		: Vector.<Number>	= null;
+		minko var _data		: Vector.<Number>	= new Vector.<Number>(16, true);
 		
 		private var _version	: uint			= 0;
 		private var _update		: uint			= UPDATE_NONE;
 		
 		public function get version()	: uint		{ return _version; }
 		
-		public function get m11()		: Number	{ return data[0]; }
-		public function get m12()		: Number	{ return data[1]; }
-		public function get m13()		: Number	{ return data[2]; }
-		public function get m14()		: Number	{ return data[3]; }
-		public function get m21()		: Number	{ return data[4]; }
-		public function get m22()		: Number	{ return data[5]; }
-		public function get m23()		: Number	{ return data[6]; }
-		public function get m24()		: Number	{ return data[7]; }
-		public function get m31()		: Number	{ return data[8]; }
-		public function get m32()		: Number	{ return data[9]; }
-		public function get m33()		: Number	{ return data[10]; }
-		public function get m34()		: Number	{ return data[11]; }
-		public function get m41()		: Number	{ return data[12]; }
-		public function get m42()		: Number	{ return data[13]; }
-		public function get m43()		: Number	{ return data[14]; }
-		public function get m44()		: Number	{ return data[15]; }
+		public function get m11()		: Number	{ return rawData[0]; }
+		public function get m12()		: Number	{ return rawData[1]; }
+		public function get m13()		: Number	{ return rawData[2]; }
+		public function get m14()		: Number	{ return rawData[3]; }
+		public function get m21()		: Number	{ return rawData[4]; }
+		public function get m22()		: Number	{ return rawData[5]; }
+		public function get m23()		: Number	{ return rawData[6]; }
+		public function get m24()		: Number	{ return rawData[7]; }
+		public function get m31()		: Number	{ return rawData[8]; }
+		public function get m32()		: Number	{ return rawData[9]; }
+		public function get m33()		: Number	{ return rawData[10]; }
+		public function get m34()		: Number	{ return rawData[11]; }
+		public function get m41()		: Number	{ return rawData[12]; }
+		public function get m42()		: Number	{ return rawData[13]; }
+		public function get m43()		: Number	{ return rawData[14]; }
+		public function get m44()		: Number	{ return rawData[15]; }
 		
 		public function set m11(value : Number) : void	{ setComponent(0, value); }
 		public function set m12(value : Number) : void	{ setComponent(1, value); }
@@ -75,39 +75,68 @@ package aerys.minko.type.math
 		
 		protected function get matrix() : Matrix3D
 		{
-			if (_update & UPDATE_MATRIX)
+			if (invalidMatrix)
 			{
+				updateMatrix();
 				_update &= ~UPDATE_MATRIX;
-				_matrix.rawData = _data;
 			}
 			
 			return _matrix;
 		}
 		
-		protected function get data() : Vector.<Number>
+		protected function get rawData() : Vector.<Number>
 		{
-			if (_update & UPDATE_DATA)
+			if (invalidRawData)
 			{
-				_update &= ~UPDATE_DATA;
-				_data = _matrix.rawData;
+				 updateRawData();
+				 _update &= ~UPDATE_DATA;
 			}
 			
 			return _data;
 		}
 				
-		public function Matrix4x4(data : Vector.<Number> = null)
+		public function Matrix4x4(m11 : Number	= 1., m12 : Number	= 0., m13 : Number	= 0., m14 : Number	= 0.,
+								  m21 : Number	= 0., m22 : Number	= 1., m23 : Number	= 0., m24 : Number	= 0.,
+								  m31 : Number	= 0., m32 : Number	= 0., m33 : Number	= 1., m34 : Number	= 0.,
+								  m41 : Number	= 0., m42 : Number	= 0., m43 : Number	= 0., m44 : Number	= 1.)
 		{
-			initialize(data);
+			initialize(m11, m12, m13, m14,
+					   m21, m22, m23, m24,
+					   m31, m32, m33, m34,
+					   m41, m42, m43, m44);
 		}
 		
-		private function initialize(data : Vector.<Number>) : void
+		protected function updateMatrix() : void
 		{
-			_data = data ? new Vector.<Number>(16, true)
-						 : Vector.<Number>(DEFAULT_DATA);
-			
-			if (data)
-				for (var i : int = 0; i < 16; ++i)
-					_data[i] = data[i];
+			_matrix.rawData = _data;
+		}
+		
+		protected function updateRawData() : void
+		{
+			_data = _matrix.rawData;
+		}
+		
+		private function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
+									m21 : Number, m22 : Number, m23 : Number, m24 : Number,
+									m31 : Number, m32 : Number, m33 : Number, m34 : Number,
+									m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
+		{
+			_data[0] = m11;
+			_data[1] = m12;
+			_data[2] = m13;
+			_data[3] = m14;
+			_data[4] = m21;
+			_data[5] = m22;
+			_data[6] = m23;
+			_data[7] = m24;
+			_data[8] = m31;
+			_data[9] = m32;
+			_data[10] = m33;
+			_data[11] = m34;
+			_data[12] = m41;
+			_data[13] = m42;
+			_data[14] = m43;
+			_data[15] = m44;
 			
 			_matrix = new Matrix3D(_data);
 		}
@@ -269,22 +298,19 @@ package aerys.minko.type.math
 				_data[i] = data[i];
 			
 			++_version;
-			_update |= UPDATE_MATRIX;
+			_update = UPDATE_MATRIX;
 		}
 		
-		public function getRawData(data : Vector.<Number> = null) : Vector.<Number>
+		public function getRawData(out : Vector.<Number> = null) : Vector.<Number>
 		{
-			if (_update & UPDATE_DATA)
-			{
-				_update ^= UPDATE_DATA;
-				_data = matrix.rawData;
-			}
+			var i 		: int 				= 0;
+			var rawData : Vector.<Number> 	= rawData;
 			
-			data ||= new Vector.<Number>(16, true);
-			for (var i : int = 0; i < 16; ++i)
-				data[i] = _data[i];
+			out ||= new Vector.<Number>(16, true);
+			for (i = 0; i < 16; ++i)
+				out[i] = rawData[i];
 			
-			return data;
+			return out;
 		}
 		
 		public function projectVectors(input 	: Vector.<Number>,
@@ -302,44 +328,29 @@ package aerys.minko.type.math
 			_update |= UPDATE_DATA;
 		}
 		
-		public static function multiply(m1 		: Matrix4x4,
-										m2 		: Matrix4x4,
-										output	: Matrix4x4	= null) : Matrix4x4
+		public function toString() : String
 		{
-			output ||= FACTORY.create();
-			output.identity();
-			output.matrix.append(m1.matrix);
-			output.multiply(m2);
-			
-			return output;
+			return getRawData().toString();
 		}
 		
-		public static function multiplyInverse(m1 		: Matrix4x4,
-											   m2 		: Matrix4x4,
-											   output	: Matrix4x4 = null) : Matrix4x4
+		public static function multiply(m1 	: Matrix4x4,
+										m2 	: Matrix4x4,
+										out	: Matrix4x4	= null) : Matrix4x4
 		{
-			output ||= FACTORY.create();
-			output.identity();
-			output.matrix.append(m1.matrix);
-			output.multiplyInverse(m2);
+			out ||= FACTORY.create();
+			out.identity();
+			out.matrix.append(m1.matrix);
+			out.multiply(m2);
 			
-			return output;
+			return out;
 		}
 		
 		public static function copy(source	: Matrix4x4,
-									target : Matrix4x4 = null) : Matrix4x4
+									target 	: Matrix4x4 = null) : Matrix4x4
 		{
 			target ||= FACTORY.create();
-			target._matrix.identity();
-			target._matrix.append(source.matrix);
-			
-			var targetData : Vector.<Number> = target._data;
-			var sourceData : Vector.<Number> = source.data;
-			
-			for (var i : int = 0; i < 16; ++i)
-				targetData[i] = sourceData[i];
-			
-			target._update = UPDATE_NONE;
+			source.matrix.copyToMatrix3D(target._matrix);
+			target._update = UPDATE_DATA;
 			
 			return target;
 		}
@@ -347,8 +358,7 @@ package aerys.minko.type.math
 		public static function invert(input		: Matrix4x4,
 							   		  output	: Matrix4x4	= null) : Matrix4x4
 		{
-			output ||= FACTORY.create();
-			output.identity();
+			output = copy(input, output);
 			output.invert();
 			
 			return output;
@@ -371,10 +381,10 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAtLeftHanded(eye 	: Vector4,
-												lookAt 	: Vector4,
-												up		: Vector4,
-												result	: Matrix4x4 = null) : Matrix4x4
+		public static function lookAtLH(eye 	: Vector4,
+										lookAt 	: Vector4,
+										up		: Vector4,
+										out		: Matrix4x4 = null) : Matrix4x4
 		{
 			var z_axis	: Vector4	= null;
 			var	x_axis	: Vector4	= null;
@@ -391,13 +401,13 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			result ||= FACTORY.create();
-			result.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
-											   x_axis.y,	y_axis.y,	z_axis.y,	0.,
-											   x_axis.z,	y_axis.z,	z_axis.z,	0.,
-											   m41,			m42,		m43,		1.]));
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
+											x_axis.y,	y_axis.y,	z_axis.y,	0.,
+											x_axis.z,	y_axis.z,	z_axis.z,	0.,
+											m41,		m42,		m43,		1.]));
 			
-			return result;
+			return out;
 		}
 		
 		/**
@@ -417,10 +427,10 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAtRightHanded(eye 	: Vector4,
-												 lookAt	: Vector4,
-												 up		: Vector4,
-												 result	: Matrix4x4 = null) : Matrix4x4
+		public static function lookAtRH(eye 	: Vector4,
+										lookAt	: Vector4,
+										up		: Vector4,
+										out		: Matrix4x4 = null) : Matrix4x4
 		{
 			var z_axis	: Vector4	= null;
 			var	x_axis	: Vector4	= null;
@@ -437,33 +447,98 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			result ||= FACTORY.create();
-			result.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
-											   x_axis.y,	y_axis.y,	z_axis.y,	0.,
-											   x_axis.z,	y_axis.z,	z_axis.z,	0.,
-											   m41,			m42,		m43,		1.]))
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([x_axis.x,	y_axis.x,	z_axis.x,	0.,
+											x_axis.y,	y_axis.y,	z_axis.y,	0.,
+											x_axis.z,	y_axis.z,	z_axis.z,	0.,
+											m41,		m42,		m43,		1.]))
 			
-			return result;
+			return out;
 		}
 		
-		public static  function perspectiveFoVLH(fov	: Number,
-												 ratio	: Number,
-												 zNear	: Number,
-												 zFar 	: Number,
-												 result	: Matrix4x4 = null) : Matrix4x4
+		public static function perspectiveFoVLH(fov		: Number,
+												ratio	: Number,
+												zNear	: Number,
+												zFar 	: Number,
+												out		: Matrix4x4 = null) : Matrix4x4
 		{
 			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
 			var	x_scale		: Number	= y_scale / ratio;
 			var	m33			: Number	= zFar / (zFar - zNear);
 			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
 			
-			result ||= FACTORY.create();
-			result.setRawData(Vector.<Number>([x_scale,	0.,			0.,		0.,
-											   0.,		y_scale,	0.,		0.,
-											   0.,		0.,			m33,	1.,
-											   0.,		0.,			m43,	0.]));
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([x_scale,	0.,			0.,		0.,
+											0.,			y_scale,	0.,		0.,
+											0.,			0.,			m33,	1.,
+											0.,			0.,			m43,	0.]));
 			
-			return result;
+			return out;
 		}
+		
+		public static function orthoLH(w 		: Number,
+									   h		: Number,
+									   zNear	: Number,
+									   zFar		: Number,
+									   out		: Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([2. / w,	0.,		0.,						0.,
+											0.,		2. / h,	0.,						0.,
+											0.,		0.,		1. / (zFar - zNear),	0.,
+											0.,		0.,		zNear / (zNear - zFar),	1.]));
+			
+			return out;
+		}
+		
+		public static function orthoRH(w 		: Number,
+									   h		: Number,
+									   zNear	: Number,
+									   zFar		: Number,
+									   out		: Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([2. / w,	0.,		0.,						0.,
+											0.,		2. / h,	0.,						0.,
+											0.,		0.,		1. / (zNear - zFar),	0.,
+											0.,		0.,		zNear / (zNear - zFar),	1.]));
+			
+			return out;
+		}
+		
+		public static function orthoOffCenterLH(l	: Number,
+												r	: Number,
+												b	: Number,
+												t		: Number,
+												zNear	: Number,
+												zFar	: Number,
+												out		: Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([2. / (r - l),		0.,					0.,						0.,
+											0.,					2. / (t - b),		0.,						0.,
+											0.,					0.,					1. / (zFar - zNear),	0.,
+											(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.]));
+			
+			return out;
+		}
+		
+		public static function orthoOffCenterRH(l	: Number,
+												r	: Number,
+												b	: Number,
+												t		: Number,
+												zNear	: Number,
+												zFar	: Number,
+												out		: Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= FACTORY.create();
+			out.setRawData(Vector.<Number>([2. / (r - l),		0.,					0.,						0.,
+											0.,					2. / (t - b),		0.,						0.,
+											0.,					0.,					1. / (zNear - zFar),	0.,
+											(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.]));
+			
+			return out;
+		}
+		
 	}
 }

@@ -15,14 +15,15 @@ package aerys.minko.transform
 	{
 		use namespace minko;
 		
-		private static const FACTORY		: Factory	= Factory.getFactory(Transform3D);
-		private static const RAD2DEG		: Number	= 180. / Math.PI;
-		private static const ORIENTATION	: String	= Orientation3D.EULER_ANGLES;
+		private static const FACTORY		: Factory			= Factory.getFactory(Transform3D);
+		private static const RAD2DEG		: Number			= 180. / Math.PI;
+		private static const ORIENTATION	: String			= Orientation3D.EULER_ANGLES;
+		private static const TMP			: Vector.<Vector3D>	= new Vector.<Vector3D>(3, true);
 		
 		private var _translation	: Vector4	= new Vector4();
 		private var _rotation		: Vector4	= new Vector4();
 		private var _scale			: Vector4	= new Vector4(1., 1., 1.);
-		
+				
 		private var _update			: Boolean	= false;
 		private var _tv				: uint		= 0;
 		private var _rv				: uint		= 0;
@@ -30,18 +31,25 @@ package aerys.minko.transform
 		
 		protected function get invalidComponents() : Boolean
 		{
-			return _update || _tv != _translation.version || _rv != _rotation.version
-				   || _sv != _scale.version;
+			return super.invalidMatrix || super.invalidRawData;
 		}
 		
 		override protected function get invalidMatrix() : Boolean
 		{
-			return invalidComponents || super.invalidMatrix;
+			return _update
+				   || _tv != _translation.version
+				   || _rv != _rotation.version
+				   || _sv != _scale.version
+				   || super.invalidMatrix;
 		}
 		
 		override protected function get invalidRawData() : Boolean
 		{
-			return invalidComponents || super.invalidRawData;
+			return _update
+				   || _tv != _translation.version
+				   || _rv != _rotation.version
+				   || _sv != _scale.version
+				   || super.invalidRawData;
 		}
 		
 		public function get translation() : Vector4
@@ -110,6 +118,49 @@ package aerys.minko.transform
 				_scale.set(scale.x, scale.y, scale.z);
 		}
 		
+		override protected function updateMatrix() : void
+		{
+			if (_update
+				|| _tv != _translation.version
+				|| _rv != _rotation.version
+				|| _sv != _scale.version)
+			{
+				TMP[0] = _translation._vector;
+				TMP[1] = _rotation._vector;
+				TMP[2] = _scale._vector;
+				_matrix.recompose(TMP);
+				
+				_update = false;
+				_tv = _translation.version;
+				_rv = _rotation.version;
+				_sv = _scale.version;
+				
+				//invalidateRawData();
+			}
+			else
+			{
+				super.updateMatrix();
+			}
+		}
+		
+		override protected function updateRawData() : void
+		{
+			if (invalidComponents)
+			{
+				TMP[0] = _translation._vector;
+				TMP[1] = _rotation._vector;
+				TMP[2] = _scale._vector;
+				matrix.recompose(TMP);
+				
+				_update = false;
+				_tv = _translation.version;
+				_rv = _rotation.version;
+				_sv = _scale.version;
+			}
+			
+			super.updateRawData();
+		}
+		
 		protected function updateComponents() : void
 		{
 			var c : Vector.<Vector3D> = matrix.decompose(ORIENTATION);
@@ -119,6 +170,9 @@ package aerys.minko.transform
 			_scale.set(c[2].x, c[2].y, c[2].z, c[2].w);
 			
 			_update = false;
+			_tv = _translation.version;
+			_rv = _rotation.version;
+			_sv = _scale.version;
 		}
 		
 		protected function invalidateComponents() : void

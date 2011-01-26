@@ -1,6 +1,7 @@
 package aerys.minko.scene.mesh.modifier
 {
 	import aerys.minko.scene.mesh.IMesh3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.triangle.Triangle3DIterator;
 	import aerys.minko.type.triangle.Triangle3DReference;
 	import aerys.minko.type.vertex.Vertex3DIterator;
@@ -30,7 +31,7 @@ package aerys.minko.scene.mesh.modifier
 		private function updateTangentMatrices() : void
 		{
 			var triangles	: Triangle3DIterator	= new Triangle3DIterator(vertexStream, indexStream);
-			var matrices	: Vector.<Matrix3D>		= new Vector.<Matrix3D>();
+			var matrices	: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();
 			var normal		: Vector3D				= new Vector3D();
 			var tangent 	: Vector3D 				= new Vector3D();
 			var binormal	: Vector3D				= new Vector3D();
@@ -58,10 +59,10 @@ package aerys.minko.scene.mesh.modifier
 				
 				binormal = tangent.crossProduct(normal);
 				
-				matrices.push(new Matrix3D(Vector.<Number>([tangent.x, 	tangent.y, 	tangent.z, 	0.,
-															binormal.x, binormal.y, binormal.z,	0.,
-															normal.x,	normal.x,	normal.z,	0.,
-															0.,			0.,			0.,			1.])));
+				matrices.push(new Matrix4x4(tangent.x, 	tangent.y, 	tangent.z, 	0.,
+											binormal.x, binormal.y, binormal.z,	0.,
+											normal.x,	normal.x,	normal.z,	0.,
+											0.,			0.,			0.,			1.));
 			}
 			
 			// per vertex tangent space matrix

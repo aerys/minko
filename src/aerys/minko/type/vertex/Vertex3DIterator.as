@@ -26,15 +26,15 @@ package aerys.minko.type.vertex
 			return _ib ? _ib.length : _vb.length;
 		}
 		
-		public function Vertex3DIterator(myVertexBuffer	: VertexStream3D,
-										 myIndexBuffer	: IndexStream3D = null,
-										 myShallow		: Boolean		= true)
+		public function Vertex3DIterator(vertexStream	: VertexStream3D,
+										 indexStream	: IndexStream3D = null,
+										 shallow		: Boolean		= true)
 		{
 			super();
 			
-			_vb = myVertexBuffer;
-			_ib = myIndexBuffer;
-			_shallow = myShallow;
+			_vb = vertexStream;
+			_ib = indexStream;
+			_shallow = shallow;
 		}
 		
 		override flash_proxy function getProperty(name : *) : *

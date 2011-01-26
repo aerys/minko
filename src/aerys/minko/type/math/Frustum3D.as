@@ -255,29 +255,27 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		minko function updateFromProjection(projection 	: Matrix4x4,
-											width		: Number,
-											height		: Number) : void
+		public function update(matrix : Matrix4x4) : void
 		{
-			var data	: Vector.<Number>	= projection.getRawData();
+			var data	: Vector.<Number>	= matrix.getRawData();
 			
-			_planes[RIGHT] = new Plane3D(data[3] - data[0] + THICKNESS,
+			_planes[RIGHT] = new Plane3D(data[3] - data[0],
 									     data[7] - data[4],
 									     data[11] - data[8],
 									     data[12] - data[15]);
 			
-			_planes[LEFT] = new Plane3D(data[3] + data[0] - THICKNESS,
+			_planes[LEFT] = new Plane3D(data[3] + data[0],
 									    data[7] + data[4],
 									    data[11] + data[8],
 									    -data[15] - data[12]);
 			
 			_planes[TOP] = new Plane3D(data[3] - data[1],
-									   data[7] - data[5] + THICKNESS,
+									   data[7] - data[5],
 									   data[11] - data[9],
 									   data[13] + data[15]);
 			
 			_planes[BOTTOM] = new Plane3D(data[3] + data[1],
-									      data[7] + data[5] - THICKNESS,
+									      data[7] + data[5],
 									      data[11] + data[9],
 									      -data[15] - data[13]);
 			
@@ -475,7 +473,7 @@ package aerys.minko.type.math
 			//var scale		: Vector3D			= transform.decompose()[2];
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
-			var vertices	: Vector.<Number>	= null;
+			var vertices	: Vector.<Number>	= transform ? null : box._vertices;
 			
 			//radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
 			

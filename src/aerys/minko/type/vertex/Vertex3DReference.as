@@ -31,6 +31,7 @@
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
 			_stream._update = true;
+			_stream._version++;
 			_stream._data[int(_index * _format.dwordsPerVertex + _format.offsets[name])] = value as Number;
 		}
 		

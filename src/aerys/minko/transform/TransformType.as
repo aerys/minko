@@ -1,4 +1,4 @@
-package aerys.minko.render.transform
+package aerys.minko.transform
 {
 	public final class TransformType
 	{

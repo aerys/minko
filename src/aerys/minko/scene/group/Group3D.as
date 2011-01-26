@@ -1,6 +1,6 @@
 package aerys.minko.scene.group
 {
-	import aerys.minko.render.visitor.IScene3DVisitor;
+	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.scene.IScene3D;
 
@@ -247,7 +247,7 @@ package aerys.minko.scene.group
 		 *
 		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
 		 */
-		override public function visited(visitor : IScene3DVisitor) : void
+		override public function accept(query : IScene3DQuery) : void
 		{
 			var numChildren : int = _numChildren;
 			var i 			: int = 0;
@@ -256,7 +256,7 @@ package aerys.minko.scene.group
 			_visiting = this;
 			
 			for (i = 0; i < numChildren; ++i)
-				childVisited(_children[i], visitor);
+				childVisited(_children[i], query);
 			
 			// unlock
 			_visiting = null;
@@ -290,9 +290,9 @@ package aerys.minko.scene.group
 		}
 		
 		protected function childVisited(child 	: IScene3D,
-									  	visitor : IScene3DVisitor) : void
+									  	visitor : IScene3DQuery) : void
 		{
-			visitor.visit(child);
+			visitor.query(child);
 		}
 		//} endregion
 	}

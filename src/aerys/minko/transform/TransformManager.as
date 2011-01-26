@@ -1,4 +1,4 @@
-package aerys.minko.render.transform
+package aerys.minko.transform
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
@@ -29,16 +29,12 @@ package aerys.minko.render.transform
 		
 		private var _updateFlags		: uint					= UPDATE_NONE;
 		private var _updateFlagsStack	: Vector.<uint>			= new Vector.<uint>();
+		private var _worldVersion		: uint					= 0;
+		private var _viewVersion		: uint					= 0;
 		
 		private var _view				: Matrix4x4				= new Matrix4x4();
 		private var _world				: Matrix4x4				= new Matrix4x4();
 		private var _projection			: Matrix4x4				= new Matrix4x4();
-		
-		private var _localToScreen		: Matrix4x4				= new Matrix4x4();
-		private var _localToView		: Matrix4x4				= new Matrix4x4();
-		private var _viewToLocal		: Matrix4x4				= new Matrix4x4();
-		
-		private var _cameraPosition		: Vector4				= new Vector4();
 		
 		//{ region getters/setters
 		protected function get updateFlags() : uint
@@ -73,8 +69,8 @@ package aerys.minko.render.transform
 				Matrix4x4.copy(value, _view);
 				
 				_updateFlags |= UPDATE_CAMERA_POSITION
-						   | UPDATE_LOCAL_TO_VIEW
-						   | UPDATE_LOCAL_TO_SCREEN;
+						  	 	| UPDATE_LOCAL_TO_VIEW
+						   		| UPDATE_LOCAL_TO_SCREEN;
 			}
 		}
 		
@@ -96,54 +92,6 @@ package aerys.minko.render.transform
 				
 				_updateFlags = UPDATE_ALL;
 			}
-		}
-		
-		public function get localToScreen() : Matrix4x4
-		{
-			if (_updateFlags & UPDATE_LOCAL_TO_SCREEN)
-			{
-				_updateFlags ^= UPDATE_LOCAL_TO_SCREEN;
-				
-				Matrix4x4.multiplyInverse(localToView, _projection, _localToScreen);
-			}
-			
-			return _localToScreen;
-		}
-		
-		public function get localToView() : Matrix4x4
-		{
-			if (_updateFlags & UPDATE_LOCAL_TO_VIEW)
-			{
-				_updateFlags ^= UPDATE_LOCAL_TO_VIEW;
-				
-				Matrix4x4.multiplyInverse(_world, _view, _localToView);
-			}
-			
-			return _localToView;
-		}
-		
-		public function get viewToLocal() : Matrix4x4
-		{
-			if (_updateFlags & UPDATE_VIEW_TO_LOCAL)
-			{
-				_updateFlags ^= UPDATE_VIEW_TO_LOCAL;
-				
-				Matrix4x4.invert(_view, _viewToLocal);
-			}
-			
-			return _viewToLocal;
-		}
-		
-		public function get cameraPosition() : Vector4
-		{
-			if (_updateFlags & UPDATE_CAMERA_POSITION)
-			{
-				_updateFlags ^= UPDATE_CAMERA_POSITION;
-				
-				viewToLocal.multiplyVector(Vector4.ZERO, _cameraPosition);
-			}
-			
-			return _cameraPosition;
 		}
 		//} endregion
 		
@@ -177,6 +125,25 @@ package aerys.minko.render.transform
 			
 			_updateFlags = _updateFlagsStack[int(_updateFlagsStack.length - 1)];
 			_updateFlagsStack.length--;
+		}
+		
+		public function getLocalToScreen(out : Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= MATRIX4X4.create();
+			out = Matrix4x4.copy(_world, out)
+					 	   .multiplyInverse(_view)
+					 	   .multiplyInverse(_projection);
+			
+			return out;
+		}
+		
+		public function getLocalToView(out : Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= MATRIX4X4.create();
+			out = Matrix4x4.copy(_world, out)
+				.multiplyInverse(_view);
+			
+			return out;
 		}
 		
 		override protected function pushState(mask 	: uint,

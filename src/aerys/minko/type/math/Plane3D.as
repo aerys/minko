@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-
+	
 	import flash.geom.Vector3D;
 
 	/**
@@ -69,15 +69,15 @@ package aerys.minko.type.math
 		 * @param	myC
 		 * @param	myD
 		 */
-		public function Plane3D(myA : Number 	= 0.,
-							  	myB : Number 	= 0.,
-							  	myC	: Number 	= 0.,
-							  	myD	: Number 	= 0.)
+		public function Plane3D(a 	: Number 	= 0.,
+							  	b 	: Number 	= 0.,
+							  	c	: Number 	= 0.,
+							  	d	: Number 	= 0.)
 		{
-			_a = myA;
-			_b = myB;
-			_c = myC;
-			_d = myD;
+			_a = a;
+			_b = b;
+			_c = c;
+			_d = d;
 
 			normalize();
 		}
@@ -97,13 +97,13 @@ package aerys.minko.type.math
 			return mag;
 		}
 
-		public function project(v : Vector3D) : Vector3D
+		public function project(v : Vector4) : Vector4
 		{
 			var scale : Number = _a * v.x + _b * v.y + _c * v.z;
 
-			return new Vector3D(v.x - scale * _a,
-								v.y - scale * _b,
-								v.z - scale * _c);
+			return new Vector4(v.x - scale * _a,
+							   v.y - scale * _b,
+							   v.z - scale * _c);
 		}
 
 		/**
@@ -112,16 +112,16 @@ package aerys.minko.type.math
 		 * @param	myThickness
 		 * @return
 		 */
-		public final function testPoint(myX 		: Number,
-										myY 		: Number,
-										myZ 		: Number,
-										myThickness : Number = DEFAULT_THICKNESS) : uint
+		public final function testPoint(x 			: Number,
+										y 			: Number,
+										z 			: Number,
+										thickness 	: Number = DEFAULT_THICKNESS) : uint
 		{
-			var dist	: Number	= _a * myX + _b * myY + _c * myZ - _d;
+			var dist	: Number	= _a * x + _b * y + _c * z - _d;
 
-			return (dist >= -myThickness && dist <= myThickness) ? POINT_COINCIDING
-														   		 : (dist < 0. ? POINT_BEHIND
-											 								  : POINT_INFRONT);
+			return (dist >= -thickness && dist <= thickness) ? POINT_COINCIDING
+														   	 : (dist < 0. ? POINT_BEHIND
+											 							  : POINT_INFRONT);
 		}
 
 		/**
@@ -130,11 +130,11 @@ package aerys.minko.type.math
 		 * @param	myTarget
 		 * @return
 		 */
-		public final function testRay(myOrigin 		: Vector3D,
-									  myTarget		: Vector3D) : uint
+		public final function testRay(origin 	: Vector4,
+									  target	: Vector4) : uint
 		{
-			var distOrigin	: Number	= _a * myOrigin.x + _b * myOrigin.y + _c * myOrigin.z - _d;
-			var distTarget	: Number	= _a * myTarget.x + _b * myTarget.y + _c * myTarget.z - _d;
+			var distOrigin	: Number	= _a * origin.x + _b * origin.y + _c * origin.z - _d;
+			var distTarget	: Number	= _a * target.x + _b * target.y + _c * target.z - _d;
 
 			var r : uint = 0;
 

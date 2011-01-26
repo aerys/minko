@@ -1,6 +1,7 @@
 package aerys.minko.type.stream
 {
 	import aerys.common.Factory;
+	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	
 	import flash.display3D.Context3D;
@@ -9,11 +10,12 @@ package aerys.minko.type.stream
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
-	public final dynamic class IndexStream3D extends Proxy
+	public final dynamic class IndexStream3D extends Proxy implements IVersionnable
 	{
 		use namespace minko;
 		
 		minko var _indices		: Vector.<uint>		= null;
+		minko var _version		: uint				= 0;
 		
 		private var _nativeBuffer : IndexBuffer3D		= null;
 		
@@ -21,6 +23,11 @@ package aerys.minko.type.stream
 		private var _length			: int				= 0;
 		private var _dynamic		: Boolean			= false;
 		private var _bufferLength	: int				= 0;
+		
+		public function get version() : uint
+		{
+			return _version;
+		}
 		
 		public function get length() : int			{ return _length; }
 		
@@ -30,7 +37,7 @@ package aerys.minko.type.stream
 			_update = true;
 		}
 		
-		public static function dummy(size : int) : IndexStream3D
+		public static function dummy(size : int, dynamic : Boolean) : IndexStream3D
 		{
 			var indices : Vector.<uint> = new Vector.<uint>();
 			
@@ -38,7 +45,7 @@ package aerys.minko.type.stream
 			for (var i : int = 0; i < size; ++i)
 				indices[i] = i;
 			
-			return new IndexStream3D(indices, size, false);
+			return new IndexStream3D(indices, size, dynamic);
 		}
 		
 		public function IndexStream3D(data 		: Vector.<uint> = null,
@@ -176,6 +183,8 @@ package aerys.minko.type.stream
 			
 			if (_update)
 			{
+				_update = false;
+				
 				if (_indices.length != _length)
 				{
 					_length = _indices.length;
@@ -183,7 +192,9 @@ package aerys.minko.type.stream
 				}
 				
 				_nativeBuffer.uploadFromVector(_indices, 0, _indices.length);
-				_update = false;
+				
+				if (!_dynamic)
+					_indices = null;
 			}
 			
 			return _nativeBuffer;

@@ -1,32 +1,37 @@
 package aerys.minko.type.stream
 {
+	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.Context3D;
+	import flash.display3D.VertexBuffer3D;
 	import flash.utils.ByteArray;
 	
 	
-	public final class VertexStream3D
+	public final class VertexStream3D implements IVersionnable
 	{
 		use namespace minko;
 		
 		public static const DEFAULT_FORMAT	: IVertex3DFormat			= Vertex3DFormat.XYZ_UV;
 		
-		minko var _data				: Vector.<Number>					= null;
-		minko var _update			: Boolean							= true;
+		minko var _data				: Vector.<Number>	= null;
+		minko var _update			: Boolean			= true;
+		minko var _dynamic			: Boolean			= false;
+		minko var _nativeBuffer		: VertexBuffer3D	= null;
+		minko var _version			: uint				= 0;
 		
-		minko var _nativeBuffer		: flash.display3D.VertexBuffer3D	= null;
+		private var _format			: IVertex3DFormat	= null;
 		
-		private var _format			: IVertex3DFormat					= null;
-		
-		public function get length() : int				{ return _data.length / _format.dwordsPerVertex; }
-		public function get format() : IVertex3DFormat	{ return _format; }
+		public function get length() 	: int				{ return _data.length / _format.dwordsPerVertex; }
+		public function get format()	: IVertex3DFormat	{ return _format; }
+		public function get version()	: uint				{ return _version; }
 	
 		public function VertexStream3D(data 	: Vector.<Number>,
-									   format	: IVertex3DFormat 	= null)
+									   format	: IVertex3DFormat 	= null,
+									   dynamic	: Boolean			= false)
 		{
 			super();
 
@@ -36,6 +41,8 @@ package aerys.minko.type.stream
 				throw new Error("Incompatible vertex format: the data length does not match");
 			
 			_data = data ? data.concat() : null;
+			_dynamic = dynamic;
+			//_length = _data.length / _format.dwordsPerVertex;
 		}
 		
 		public function deleteVertexByIndex(myIndex : int) : Boolean
@@ -46,6 +53,7 @@ package aerys.minko.type.stream
 				return false;
 			
 			_data.splice(myIndex, _format.dwordsPerVertex);
+			//_length = _data.length / _format.dwordsPerVertex;
 			
 			_update = true;
 			

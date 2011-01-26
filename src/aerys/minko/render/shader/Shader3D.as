@@ -1,5 +1,7 @@
 package aerys.minko.render.shader
 {
+	import aerys.minko.ns.minko;
+	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
@@ -7,16 +9,18 @@ package aerys.minko.render.shader
 	
 	public class Shader3D
 	{
+		use namespace minko;
+		
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
 		
-		private var _nativeProgram	: Program3D	= null;
+		minko var _nativeProgram	: Program3D	= null;
 		
-		public function Shader3D(myVertexShader 	: ByteArray,
-								 myFragmentShader 	: ByteArray)
+		public function Shader3D(vertexShader 	: ByteArray,
+								 fragmentShader : ByteArray)
 		{
-			_vertexShader = myVertexShader;
-			_fragmentShader = myFragmentShader;
+			_vertexShader = vertexShader;
+			_fragmentShader = fragmentShader;
 		}
 		
 		public static function fromByteArray(myData : ByteArray) : Shader3D
@@ -33,7 +37,7 @@ package aerys.minko.render.shader
 			return new Shader3D(vs, fs);
 		}
 		
-		public function prepareContext(context : Context3D) : void
+		public function prepare(context : Context3D) : void
 		{
 			if (!_nativeProgram)
 			{
