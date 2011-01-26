@@ -2,6 +2,7 @@ package aerys.minko
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
+	import aerys.minko.asset.MinkoLogo;
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
@@ -35,10 +36,7 @@ package aerys.minko
 	{
 		use namespace minko;
 		
-		[Embed("../assets/minko_logo_app.png")]
-		private static const ASSET_LOGO	: Class;
-		
-		private var _logo		: Sprite			= new Sprite();
+		private var _logo		: MovieClip			= new MinkoLogo();
 		
 		private var _width		: Number			= 0.;
 		private var _height		: Number			= 0.;
@@ -166,7 +164,6 @@ package aerys.minko
 		
 			_aa = antiAliasing;
 			
-			_logo.addChild(new ASSET_LOGO());
 			_logo.addEventListener(MouseEvent.CLICK, logoClickHandler);
 		}
 		
