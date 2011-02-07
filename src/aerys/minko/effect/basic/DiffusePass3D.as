@@ -26,9 +26,9 @@ package aerys.minko.effect.basic
 		public function begin(renderer : IRenderer3D, style : IEffect3DStyle) : Boolean
 		{
 			var states 		: RenderStatesManager 	= renderer.states;
-			var diffuse		: Texture				= style.get(BasicStyle3D.DIFFUSE)
+			var diffuse		: Texture				= style.get(BasicStyle3D.DIFFUSE_MAP)
 													  as Texture;
-			var toScreen	: Matrix4x4				= style.get(BasicStyle3D.LOCAL_TO_SCREEN)
+			var toScreen	: Matrix4x4				= style.get(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX)
 													  as Matrix4x4;
 			var blending	: uint					= style.get(BasicStyle3D.BLENDING) as uint
 													  || Blending.NORMAL;

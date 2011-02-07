@@ -1,5 +1,7 @@
 package aerys.minko.scene.material
 {
+	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.render.state.Blending;
 	
 	import flash.display.BitmapData;
@@ -21,12 +23,49 @@ package aerys.minko.scene.material
 		public static const ORANGE			: ColorMaterial3D	= new ColorMaterial3D(0xffffa200);
 		public static const PINK			: ColorMaterial3D	= new ColorMaterial3D(0xffff00d8);
 		
+		private var _bmp	: BitmapData	= null;
+		private var _color	: uint			= 0;
+		
+		private var _update	: Boolean		= true;
+		
+		public function get color() : uint
+		{
+			return _color;
+		}
+		
+		public function set color(value : uint) : void
+		{
+			if (_color != value)
+			{
+				var enableAlpha : Boolean = (value >> 24) != 0xff;
+				
+				_color = value;
+				
+				if (!_bmp || enableAlpha != _bmp.transparent)
+					_bmp = new BitmapData(1, 1, enableAlpha, _color);
+				else
+					_bmp.fillRect(_bmp.rect, _color);
+				
+				_update = true;
+			}
+		}
+		
 		public function ColorMaterial3D(color : uint)
 		{
-			var alpha : Boolean = (color >> 24) != 0xff
+			super();
 			
-			super(new BitmapData(1, 1, alpha, color),
-				  alpha ? Blending.ALPHA : Blending.NORMAL);
+			this.color = color;
+		}
+		
+		override protected function acceptRenderingQuery(query : RenderingQuery) : void
+		{
+			if (_update)
+			{
+				_update = false;
+				updateFromBitmapData(_bmp);
+			}
+			
+			super.acceptRenderingQuery(query);
 		}
 	}
 }

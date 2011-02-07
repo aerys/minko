@@ -1,9 +1,14 @@
 package aerys.minko.scene
 {
 	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
+	
+	import flash.utils.getQualifiedClassName;
 	
 	public class AbstractScene3D implements IScene3D
 	{
+		private static var _id	: uint			= 0;
+		
 		protected var _name		: String		= null;
 		
 		public function get name() : String
@@ -16,9 +21,22 @@ package aerys.minko.scene
 			_name = value;
 		}
 		
+		public function AbstractScene3D()
+		{
+			var className : String = getQualifiedClassName(this);
+			
+			_name = className.substr(className.lastIndexOf(":") + 1) + "_" + (++_id);
+		}
+		
 		public function accept(query : IScene3DQuery) : void
 		{
-			throw new Error();
+			if (query is RenderingQuery)
+				acceptRenderingQuery(query as RenderingQuery);
+		}
+		
+		protected function acceptRenderingQuery(query : RenderingQuery) : void
+		{
+			// NOTHING
 		}
 	}
 }

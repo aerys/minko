@@ -4,14 +4,11 @@ package aerys.minko
 	import aerys.common.IVersionnable;
 	import aerys.minko.asset.MinkoLogo;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.render.DirectRenderer3D;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.scene.IScene3D;
 	
-	import flash.display.Bitmap;
-	import flash.display.DisplayObject;
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.display.Stage;

@@ -79,25 +79,21 @@ package aerys.minko.scene
 			transform.world.multiply(_transform);
 			transform.getLocalToScreen(_toScreen);
 			
-			_style.set(BasicStyle3D.WORLD, transform.world)
-				  .set(BasicStyle3D.VIEW, transform.view)
-				  .set(BasicStyle3D.PROJECTION, transform.projection)
-				  .set(BasicStyle3D.LOCAL_TO_SCREEN, _toScreen);
-			query.style = _style.override(query.style);
+			_style.set(BasicStyle3D.WORLD_MATRIX, transform.world)
+				  .set(BasicStyle3D.VIEW_MATRIX, transform.view)
+				  .set(BasicStyle3D.PROJECTION_MATRIX, transform.projection)
+				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
 			
 			_mesh && query.query(_mesh);
 			_material && query.query(_material);
 			
-			var numEffects : int = _effects.length;
+			query.effects.pushEffects(_effects);
+			query.style = _style.override(query.style);
 			
-			for (var i : int = 0; i < numEffects; ++i)
-			{
-				query.beginEffect(_effects[i]);
-				query.draw(_mesh.vertexStream, _mesh.indexStream);
-				query.endEffect();
-			}
+			query.draw(_mesh.vertexStream, _mesh.indexStream);
 			
 			query.style = _style.override();
+			query.effects.pop(_effects.length);
 			
 			transform.pop();
 		}

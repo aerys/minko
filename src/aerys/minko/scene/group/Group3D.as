@@ -64,8 +64,6 @@ package aerys.minko.scene.group
 			_numChildren = children.length;
 			_children = _numChildren ? Vector.<IScene3D>(children)
 									 : new Vector.<IScene3D>();
-			
-			_name = "Container3D_" + ++_id;
 		}
 		
 		//{ region methods

@@ -108,12 +108,14 @@ package aerys.minko.type.math
 		
 		protected function updateMatrix() : void
 		{
-			_matrix.rawData = _data;
+			//_matrix.rawData = _data;
+			_matrix.copyRawDataFrom(_data);
 		}
 		
 		protected function updateRawData() : void
 		{
-			_data = _matrix.rawData;
+			//_data = _matrix.rawData;
+			_matrix.copyRawDataTo(_data);
 		}
 		
 		private function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
@@ -265,12 +267,14 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function invert() : Boolean
+		public function invert() : Matrix4x4
 		{
 			++_version;
 			_update |= UPDATE_DATA;
 			
-			return matrix.invert();
+			matrix.invert()
+			
+			return this;
 		}
 		
 		public function transpose() : void
@@ -337,9 +341,7 @@ package aerys.minko.type.math
 										m2 	: Matrix4x4,
 										out	: Matrix4x4	= null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
-			out.identity();
-			out.matrix.append(m1.matrix);
+			out = copy(m1, out);
 			out.multiply(m2);
 			
 			return out;

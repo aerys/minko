@@ -2,6 +2,9 @@ package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.bounding.BoundingBox3D;
+	import aerys.minko.type.bounding.BoundingSphere3D;
+	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
@@ -24,6 +27,9 @@ package aerys.minko.type.stream
 		minko var _version			: uint				= 0;
 		
 		private var _format			: IVertex3DFormat	= null;
+		
+		private var _box			: BoundingBox3D		= null;
+		private var _sphere			: BoundingSphere3D	= null;
 		
 		public function get length() 	: int				{ return _data.length / _format.dwordsPerVertex; }
 		public function get format()	: IVertex3DFormat	{ return _format; }
@@ -114,5 +120,36 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
+		
+		/*private function updateBoundingVolumes() : void
+		{
+			var min			: Vector4	= new Vector4(Number.POSITIVE_INFINITY,
+													  Number.POSITIVE_INFINITY,
+													  Number.POSITIVE_INFINITY);
+			var max			: Vector4	= new Vector4(Number.NEGATIVE_INFINITY,
+													  Number.NEGATIVE_INFINITY,
+													  Number.NEGATIVE_INFINITY);
+			var numVertices	: int		= _vertices.length - 2;
+			
+			for (var i : int = 0; i < numVertices; i += 3)
+			{
+				var x : Number = _vertices[i];
+				var y : Number = _vertices[int(i + 1)];
+				var z : Number = _vertices[int(i + 2)];
+				
+				min.x = x < min.x ? x : min.x;
+				min.y = y < min.y ? y : min.y;
+				min.z = z < min.z ? z : min.z;
+				
+				max.x = x > max.x ? x : max.x;
+				max.y = y > max.y ? y : max.y;
+				max.z = z > max.z ? z : max.z;
+			}
+			
+			_boundingSphere = BoundingSphere3D.fromMinMax(min, max);
+			_boundingBox = new BoundingBox3D(min, max);
+			
+			_update = UPDATE_NONE;
+		}*/
 	}
 }

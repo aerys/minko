@@ -224,7 +224,7 @@ package aerys.minko.render
 				
 				var t : int = getTimer();
 				
-				_context.setTextureAt(index, texture || _emptyTexture);
+				_context.setTextureAt(index, texture);// || _emptyTexture);
 				
 				_drawingTime += getTimer() - t;
 			}

@@ -1,6 +1,7 @@
 package aerys.minko.query
 {
 	import aerys.minko.Viewport3D;
+	import aerys.minko.effect.Effect3DList;
 	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
@@ -21,16 +22,16 @@ package aerys.minko.query
 	{
 		use namespace minko;
 		
-		private var _renderer	: IRenderer3D		= null;
+		private var _renderer	: IRenderer3D			= null;
 		
-		private var _current	: IScene3D			= null;
-		private var _parent		: IScene3D			= null;
-		private var _parents	: Vector.<IScene3D>	= new Vector.<IScene3D>();
-		private var _camera		: ICamera3D			= null;
-		private var _style		: IEffect3DStyle	= new Effect3DStyle();
-		private var _tm			: TransformManager	= new TransformManager();
-		private var _fx			: IEffect3D			= null;
-		private var _numNodes	: uint				= 0;
+		private var _current	: IScene3D				= null;
+		private var _parent		: IScene3D				= null;
+		private var _parents	: Vector.<IScene3D>		= new Vector.<IScene3D>();
+		private var _camera		: ICamera3D				= null;
+		private var _style		: IEffect3DStyle		= new Effect3DStyle();
+		private var _tm			: TransformManager		= new TransformManager();
+		private var _fx			: Effect3DList			= new Effect3DList();
+		private var _numNodes	: uint					= 0;
 		
 		public function get parent()		: IScene3D			{ return _parent; }
 		public function get camera()		: ICamera3D			{ return _camera; }
@@ -40,7 +41,7 @@ package aerys.minko.query
 		public function get numTriangles()	: uint				{ return _renderer.numTriangles; }
 		public function get drawingTime()	: int				{ return _renderer.drawingTime; }
 		public function get frameId()		: uint				{ return _renderer.frameId; }
-		public function get effect()		: IEffect3D			{ return _fx; }
+		public function get effects()		: Effect3DList		{ return _fx; }
 		public function get numNodes()		: uint				{ return _numNodes; }
 		
 		public function set style(value : IEffect3DStyle) : void
@@ -53,20 +54,6 @@ package aerys.minko.query
 			_renderer = renderer;
 		}
 		
-		public function beginEffect(fx : IEffect3D) : void
-		{
-			_fx = fx;
-			_style = _fx.style.override(_style);
-			_fx.begin(_renderer, _style);
-		}
-		
-		public function endEffect() : void
-		{
-			_fx.end(_renderer, _style);
-			_style = _fx.style.override();
-			_fx = null;
-		}
-				
 		public function query(scene : IScene3D) : void
 		{
 			_parents[_parents.length] = _parent;
@@ -100,24 +87,82 @@ package aerys.minko.query
 							 offset			: uint	= 0,
 							 numTriangles	: uint	= 0) : void
 		{
-			if (!_fx)
+			var fxs			: Vector.<IEffect3D>	= _fx._data;
+			var numEffects 	: int 					= fxs.length;
+			
+			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
 			
-			var passes		: Vector.<IEffect3DPass>	= _fx.currentTechnique.passes;
-			var numPasses 	: int 						= passes.length;
-			
-			for (var j : int = 0; j < numPasses; ++j)
+			for (var i : int = 0; i < numEffects; ++i)
 			{
-				var pass : IEffect3DPass = passes[j];
+				var fx			: IEffect3D					= fxs[i];
+				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var numPasses 	: int 						= passes.length;
 				
-				if (pass.begin(_renderer, _style))
+				_style = fx.style.override(_style);
+				fx.begin(_renderer, _style);
+				
+				for (var j : int = 0; j < numPasses; ++j)
 				{
-					_renderer.setVertexStream(vertexStream);
-					_renderer.drawTriangles(indexStream, offset, numTriangles);
+					var pass : IEffect3DPass = passes[j];
+					
+					if (pass.begin(_renderer, _style))
+					{
+						_renderer.setVertexStream(vertexStream);
+						_renderer.drawTriangles(indexStream, offset, numTriangles);
+					}
+					
+					pass.end(_renderer, _style);
 				}
 				
-				pass.end(_renderer, _style);
+				fx.end(_renderer, _style);
+				_style = fx.style.override();
 			}
+		}
+		
+		public function drawList(vertexStream 	: VertexStream3D,
+								 indexStream 	: IndexStream3D,
+								 offsets		: Vector.<uint>,
+								 numTriangles	: Vector.<uint> = null) : void
+		{
+			var fxs			: Vector.<IEffect3D>	= _fx._data;
+			var numEffects 	: int 					= fxs.length;
+			
+			if (numEffects == 0)
+				throw new Error("Unable to draw without an effect.");
+			
+			var length	: int	= offsets.length;
+			
+			if (length != numTriangles.length)
+				throw new Error();
+			
+			for (var i : int = 0; i < numEffects; ++i)
+			{
+				var fx			: IEffect3D					= fxs[i];
+				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var numPasses 	: int 						= passes.length;
+				
+				_style = fx.style.override(_style);
+				fx.begin(_renderer, _style);
+				
+				for (var j : int = 0; j < numPasses; ++j)
+				{
+					var pass : IEffect3DPass = passes[j];
+					
+					if (pass.begin(_renderer, _style))
+					{
+						_renderer.setVertexStream(vertexStream);
+						
+						for (var k : int = 0; k < length; k += 1)
+							_renderer.drawTriangles(indexStream, offsets[k], numTriangles[k]);
+					}
+					
+					pass.end(_renderer, _style);
+				}
+				
+				fx.end(_renderer, _style);
+				_style = fx.style.override();
+			}			
 		}
 		
 		public function createTexture(width 		: uint,

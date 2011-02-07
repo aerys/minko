@@ -28,7 +28,7 @@ package aerys.minko.data
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
 		
-		private var _data				: Vector.<IScene3D>	= null;
+		private var _data				: Vector.<IScene3D>	= new Vector.<IScene3D>();
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
 		private var _content			: IGroup3D			= new Group3D();
 		
@@ -75,11 +75,6 @@ package aerys.minko.data
 			}
 			
 			return _content;
-		}
-		
-		public static function load(request : URLRequest) : IScene3D
-		{
-			return new Loader3D().load(request);
 		}
 		
 		public static function loadBytes(bytes : ByteArray) : Vector.<IScene3D>
@@ -156,13 +151,14 @@ package aerys.minko.data
 		{
 			var info : LoaderInfo = event.target as LoaderInfo;
 			var mat : IMaterial3D = null;
-			
+						
 			if (info.content is MovieClip)
 				mat = new MovieClipMaterial3D(info.content as MovieClip);
 			else if (info.content is Bitmap)
 				mat = new NativeMaterial3D((info.content as Bitmap).bitmapData);
 			
-			_data = Vector.<IScene3D>([mat]);
+			_data.length = 0;
+			_data[0] = mat;
 			
 			updateGroup();
 			
@@ -171,7 +167,7 @@ package aerys.minko.data
 		
 		private function updateGroup() : void
 		{
-			var length 	: int 		= _data.length;
+			var length 	: int	= _data.length;
 			
 			for (var i : int = 0; i < length; ++i)
 				_content.addChild(_data[i]);
