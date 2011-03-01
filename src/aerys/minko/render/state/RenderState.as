@@ -256,13 +256,7 @@ package aerys.minko.render.state
 												  value 		: Matrix4x4,
 												  transposed	: Boolean = true) : void
 		{
-			var t : Matrix3D = new Matrix3D();
-			
-			value._matrix.copyToMatrix3D(t);
-			if (transposed)
-				t.transpose();
-			
-			t.copyRawDataTo(_fragmentConstants, register * 4);
+			value._matrix.copyRawDataTo(_fragmentConstants, register * 4, transposed);
 			
 			_setFlags |= FRAGMENT_CONSTS;
 			++_version;
@@ -302,13 +296,7 @@ package aerys.minko.render.state
 												value		: Matrix4x4,
 												transposed	: Boolean = true) : void
 		{
-			var t : Matrix3D = new Matrix3D();
-			
-			value._matrix.copyToMatrix3D(t);
-			if (transposed)
-				t.transpose();
-			
-			t.copyRawDataTo(_vertexConstants, register * 4);
+			value._matrix.copyRawDataTo(_vertexConstants, register * 4, transposed);
 			
 			_setFlags |= VERTEX_CONSTS;
 			++_version;
