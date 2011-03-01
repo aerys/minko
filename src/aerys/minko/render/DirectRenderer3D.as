@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.minko.Viewport3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.shader.Shader3D;
-	import aerys.minko.render.state.RenderStatesManager;
+	import aerys.minko.render.state.RenderState;
 	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream3D;
@@ -25,7 +25,7 @@ package aerys.minko.render
 		use namespace minko;
 		
 		private var _context		: Context3D				= null;
-		private var _states			: RenderStatesManager	= null;
+		private var _states			: RenderState			= new RenderState();
 		private var _transform		: TransformManager		= new TransformManager();
 		private var _numTriangles	: uint					= 0;
 		private var _viewport		: Viewport3D			= null;
@@ -40,18 +40,18 @@ package aerys.minko.render
 		
 		private var _textures		: Vector.<TextureBase>	= new Vector.<TextureBase>(8, true);
 		
-		public function get states() 		: RenderStatesManager	{ return _states; }
-		public function get numTriangles()	: uint					{ return _numTriangles; }
-		public function get viewport()		: Viewport3D			{ return _viewport; }
-		public function get drawingTime()	: int					{ return _drawingTime; }
-		public function get frameId()		: uint					{ return _frame; }
+		private var _session		: RenderSession			= null;
+		
+		public function get states() 		: RenderState	{ return _states; }
+		public function get numTriangles()	: uint			{ return _numTriangles; }
+		public function get viewport()		: Viewport3D	{ return _viewport; }
+		public function get drawingTime()	: int			{ return _drawingTime; }
+		public function get frameId()		: uint			{ return _frame; }
 		
 		public function DirectRenderer3D(viewport : Viewport3D, context : Context3D)
 		{
 			_viewport = viewport;
 			_context = context;
-			
-			_states = new RenderStatesManager();
 			
 			_emptyTexture = createTexture(1, 1);
 		}
@@ -119,16 +119,28 @@ package aerys.minko.render
 			if (indexStream.length == 0 || count == 0)
 				return ;
 			
-			//_context.enableErrorChecking = true;
+			_context.enableErrorChecking = true;
 			
-			var t : int = getTimer();
+			/*if (!_session || _session.renderState.version != _states.version)
+			{
+				var session : RenderSession = new RenderSession();
+				
+				session.next = _session;
+				_session = session;
+				_states.copy(_session.renderState);
+			}
 			
-			_states.apply(_context);
+			var dc : DrawCall = new DrawCall();
+			
+			dc.initialize(_stream, indexStream, firstIndex, count);
+			_session.drawCalls.push(dc);*/
+			
+			_states.prepareContext(_context);
+			
 			_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
 								   firstIndex,
 								   count);
 			
-			_drawingTime += getTimer() - t;
 			_numTriangles += count;
 		}
 		
@@ -149,11 +161,33 @@ package aerys.minko.render
 		{
 			++_frame;
 			
-			var t : int = getTimer();
+			/*var t : int = getTimer();
+			var oldStates : RenderState = new RenderState();
 			
+			while (_session)
+			{
+				var states : RenderState = _session.renderState;
+				var drawCalls	: Vector.<DrawCall> = _session.drawCalls;
+				var numDrawCalls : int = drawCalls.length;
+				
+				states.prepareContext(oldStates, _context);
+				for (var i : int = 0; i < numDrawCalls; ++i)
+				{
+					var drawCall : DrawCall = drawCalls[i];
+					
+					setVertexStream(drawCall.vertexBuffer);
+					_context.drawTriangles(drawCall.indexBuffer.getIndexBuffer3D(_context),
+										   drawCall.offset,
+										   drawCall.numTriangles);
+				}
+				
+				oldStates = states;
+				_session = _session.next;
+			}
+			*/
 			_context.present();
 			
-			_drawingTime += getTimer() - t;
+			//_drawingTime += getTimer() - t;
 			
 			_stream = null;
 			_format = null;
@@ -166,68 +200,6 @@ package aerys.minko.render
 							   		  optimized : Boolean 	= false) : TextureBase
 		{
 			return _context.createTexture(width, height, format, optimized);
-		}
-		
-		public function beginRenderToTexture(texture 			: TextureBase,
-								 			 depthAndStencil	: Boolean 	= false,
-											 antiAliasing		: int		= 0,
-										     surface			: int		= 0) : void
-		{
-			_context.setRenderToTexture(texture, depthAndStencil, antiAliasing, surface);
-		}
-		
-		public function endRenderToTexture() : void
-		{
-			_context.setRenderToBackBuffer();
-		}
-		
-		public function setMatrix(index			: int,
-								  programType	: String,
-								  matrix 		: Matrix4x4,
-								  transposed	: Boolean	= true) : void
-		{
-			var t : int = getTimer();
-			
-			_context.setProgramConstantsFromMatrix(programType,
-												   index,
-												   matrix.matrix3D,
-												   transposed);
-			
-			_drawingTime += getTimer() - t;
-		}
-		
-		public function setConstants(firstRegister	: int,
-									 programType	: String,
-									 ...data) : void
-		{
-			var numConstants : int = data.length;
-			
-			_tmp.length = 0;
-			for (var i : int = 0; i < numConstants; ++i)
-				_tmp[i] = data[i];
-			
-			var t : int = getTimer();
-			
-			_context.setProgramConstantsFromVector(programType,
-												   firstRegister,
-												   _tmp);
-			
-			_drawingTime += getTimer() - t;
-		}
-		
-		public function setTexture(index	: int,
-								   texture	: TextureBase) : void
-		{
-			if (_textures[index] != texture)
-			{
-				_textures[index] = texture;
-				
-				var t : int = getTimer();
-				
-				_context.setTextureAt(index, texture);// || _emptyTexture);
-				
-				_drawingTime += getTimer() - t;
-			}
 		}
 		
 		public function drawToBitmapData(bitmapData : BitmapData) : void

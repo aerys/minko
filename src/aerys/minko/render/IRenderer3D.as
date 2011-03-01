@@ -1,11 +1,8 @@
 package aerys.minko.render
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.render.shader.Shader3D;
-	import aerys.minko.render.state.RenderStatesManager;
-	import aerys.minko.transform.TransformManager;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.render.state.RenderState;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	
@@ -18,7 +15,7 @@ package aerys.minko.render
 	public interface IRenderer3D
 	{
 		function get numTriangles()	: uint;
-		function get states() 		: RenderStatesManager;
+		function get states() 		: RenderState;
 		function get viewport() 	: Viewport3D;
 		function get drawingTime() 	: int;
 		
@@ -48,25 +45,6 @@ package aerys.minko.render
 		
 		function createShader(vertexShader 		: ByteArray,
 							  fragmentShader 	: ByteArray) : Shader3D;
-		
-		function beginRenderToTexture(texture 			: TextureBase,
-									  depthAndStencil	: Boolean 	= false,
-									  antiAliasing		: int		= 0,
-									  surface			: int		= 0) : void;
-		
-		function endRenderToTexture() : void;
-		
-		function setMatrix(index 		: int,
-						   programType	: String,
-						   matrix 		: Matrix4x4,
-						   transposed 	: Boolean = true) : void;
-		
-		function setConstants(firstRegister	: int,
-							  programType	: String,
-							  ...data) : void
-		
-		function setTexture(index 	: int,
-							texture	: TextureBase) : void;
 		
 		function drawToBitmapData(bitmapData : BitmapData) : void;
 		

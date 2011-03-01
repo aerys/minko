@@ -6,14 +6,12 @@ package aerys.minko.effect.basic
 	import aerys.minko.render.shader.DefaultShader3D;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.state.BlendingSource;
 	import aerys.minko.render.state.RenderState;
-	import aerys.minko.render.state.RenderStatesManager;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
-	import flash.display3D.Context3DProgramType;
 	import flash.display3D.textures.Texture;
+	import flash.geom.Matrix3D;
 	
 	public class DiffusePass3D implements IEffect3DPass
 	{
@@ -25,30 +23,29 @@ package aerys.minko.effect.basic
 		
 		public function begin(renderer : IRenderer3D, style : IEffect3DStyle) : Boolean
 		{
-			var states 		: RenderStatesManager 	= renderer.states;
-			var diffuse		: Texture				= style.get(BasicStyle3D.DIFFUSE_MAP)
-													  as Texture;
-			var toScreen	: Matrix4x4				= style.get(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX)
-													  as Matrix4x4;
-			var blending	: uint					= style.get(BasicStyle3D.BLENDING) as uint
-													  || Blending.NORMAL;
+			var states 		: RenderState 	= renderer.states;
+			var diffuse		: Texture		= style.get(BasicStyle3D.DIFFUSE_MAP)
+											  as Texture;
+			var toScreen	: Matrix4x4		= style.get(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX)
+											  as Matrix4x4;
+			var blending	: uint			= style.get(BasicStyle3D.BLENDING) as uint
+											  || Blending.NORMAL;
 			
-			states.push();
+			if (!diffuse)
+				return false;
+			
 			states.vertexFormat = Vertex3DFormat.XYZ_UV;
 			states.shader = SHADER;
 			states.blending = blending;
-			
-			renderer.setTexture(0, diffuse);
-			renderer.setMatrix(0,
-							   Context3DProgramType.VERTEX,
-							   toScreen);
+			states.setTexture(0, diffuse);
+			states.setVertexConstantMatrix(0, toScreen);
 			
 			return true;
 		}
 		
 		public function end(renderer : IRenderer3D, style : IEffect3DStyle) : void
 		{
-			renderer.states.pop();
+			//renderer.setTexture(0, null);
 		}
 	}
 }

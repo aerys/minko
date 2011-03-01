@@ -17,7 +17,7 @@ package aerys.minko.type.stream
 		minko var _indices		: Vector.<uint>		= null;
 		minko var _version		: uint				= 0;
 		
-		private var _nativeBuffer : IndexBuffer3D		= null;
+		minko var _nativeBuffer : IndexBuffer3D		= null;
 		
 		private var _update			: Boolean			= true;
 		private var _length			: int				= 0;

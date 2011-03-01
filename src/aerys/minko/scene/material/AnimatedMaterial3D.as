@@ -2,6 +2,7 @@ package aerys.minko.scene.material
 {
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.group.Group3D;
 	
 	import flash.display.BitmapData;
@@ -51,7 +52,8 @@ package aerys.minko.scene.material
 				}
 			}
 			
-			query.query(children[_frame]);
+			if (_frame < numChildren)
+				query.query(children[_frame]);
 		}
 		
 		protected function nextFrame(query : RenderingQuery) : void

@@ -180,7 +180,7 @@ package aerys.minko
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			
-			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, resetContext3D);
+			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
 			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 
@@ -197,19 +197,27 @@ package aerys.minko
 			if (stage.stageHeight)
 				height = stage.stageHeight;
 			
-			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
-			
+			resetContext3D();
+		}
+		
+		private function contextCreatedHandler(event : Event) : void
+		{
+			_context = stage.stage3Ds[0].context3D;
 			resetContext3D();
 		}
 		
 		private function resetContext3D(event : Event = null) : void
 		{
-			_context = stage.stage3Ds[0].context3D;
-			_context.configureBackBuffer(_width, _height, _aa, true);
-			_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
-			
-			_renderer = new DirectRenderer3D(this, _context);
-			_query = new RenderingQuery(_renderer);
+			if (_context)
+			{
+				stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+
+				_context.configureBackBuffer(_width, _height, _aa, true);
+				_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
+				
+				_renderer = new DirectRenderer3D(this, _context);
+				_query = new RenderingQuery(_renderer);
+			}
 		}
 		
 		/**
@@ -218,29 +226,34 @@ package aerys.minko
 		 */
 		public function render(scene : IScene3D) : void
 		{
-			var time : int = getTimer();
-			
-			if (_context)
+			if (_query)
 			{
+				var time : Number = getTimer();
+
 				_query.reset();
 				_query.query(scene);
-				
 				_renderer.present();
+			
+				_sceneSize = _query.numNodes;
+				
+				Factory.sweep();
+				
+				_time = getTimer() - time;
+				_drawTime = _query.drawingTime;
 			}
-			
-			_time = getTimer() - time;
-			_sceneSize = _query.numNodes;
-			_drawTime = _query.drawingTime;
+			else
+			{
+				_time = 0;
+				_drawTime = 0;
+			}
 
-			Factory.sweep();
-			
-			showLogo();
+			//showLogo();
 		}	
 	
 		public function showLogo() : void
 		{
 			addChild(_logo);
-		
+			
 			_logo.visible = true;
 			_logo.useHandCursor = true;
 			_logo.buttonMode = true;

@@ -21,8 +21,6 @@
 		public function TransformGroup3D(...children) 
 		{
 			super(children);
-			
-			name = "TransformGroup3D_" + _id++;
 		}
 		
 		override public function accept(query : IScene3DQuery) : void

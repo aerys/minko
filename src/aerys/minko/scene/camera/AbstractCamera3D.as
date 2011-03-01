@@ -3,8 +3,8 @@ package aerys.minko.scene.camera
 	import aerys.minko.Viewport3D;
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
-	import aerys.minko.transform.TransformManager;
 	import aerys.minko.scene.AbstractScene3D;
+	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.math.Frustum3D;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -28,15 +28,17 @@ package aerys.minko.scene.camera
 	 */
 	public class AbstractCamera3D extends AbstractScene3D implements ICamera3D
 	{
-		public static const DEFAULT_FOV				: Number	= Math.PI * .25;
-		public static const DEFAULT_NEAR_CLIPPING	: Number	= .1;
-		public static const DEFAULT_FAR_CLIPPING	: Number	= 1000.;
+		public static const DEFAULT_FOV				: Number			= Math.PI * .25;
+		public static const DEFAULT_NEAR_CLIPPING	: Number			= .1;
+		public static const DEFAULT_FAR_CLIPPING	: Number			= 1000.;
 		
-		private static const UPDATE_NONE			: uint		= 0;
-		private static const UPDATE_VIEW			: uint		= 1;
-		private static const UPDATE_PROJ			: uint		= 2;
-		private static const UPDATE_ALL				: uint		= UPDATE_VIEW
-																  | UPDATE_PROJ;
+		private static const RAW_DATA				: Vector.<Number>	= new Vector.<Number>();
+		
+		private static const UPDATE_NONE			: uint				= 0;
+		private static const UPDATE_VIEW			: uint				= 1;
+		private static const UPDATE_PROJ			: uint				= 2;
+		private static const UPDATE_ALL				: uint				= UPDATE_VIEW
+																  		  | UPDATE_PROJ;
 		
 		//{ region vars
 		private var _version		: uint		= 0;
@@ -153,10 +155,7 @@ package aerys.minko.scene.camera
 		
 		protected function invalidateTransform(query : RenderingQuery = null) : void
 		{
-			Matrix4x4.lookAtLH(_position,
-							   _lookAt,
-							   _up,
-							   _view)
+			Matrix4x4.lookAtLH(_position, _lookAt, _up, _view)
 					 .multiply(query.transform.world);
 			
 			var viewport : Viewport3D = query.viewport;

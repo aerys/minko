@@ -1,26 +1,15 @@
 package aerys.minko.scene.material
 {
 	import aerys.minko.effect.basic.BasicStyle3D;
-	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
-	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.state.BlendingDestination;
-	import aerys.minko.render.state.BlendingSource;
-	import aerys.minko.render.state.RenderStatesManager;
-	import aerys.minko.render.state.WriteMask;
 	import aerys.minko.scene.AbstractScene3D;
 	
-	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
-	import flash.display.Loader;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
-	import flash.display3D.textures.TextureBase;
-	import flash.events.Event;
 	import flash.geom.Matrix;
-	import flash.utils.ByteArray;
 	
 	/**
 	 * The BitmapMaterial class enables the use of BitmapData and DisplayObject objects as materials.
@@ -60,14 +49,15 @@ package aerys.minko.scene.material
 			
 			var scaleMatrix : Matrix = new Matrix();
 			
-			scaleMatrix.scale(w / value.width,
-							  h / value.height);
+			scaleMatrix.scale(w / value.width, h / value.height);
 			
 			if (!_data || _data.width != w || _data.height != h)
 				_data = new BitmapData(w, h, value.transparent, 0);
 			
 			_data.draw(value, scaleMatrix, null, null, null, true);
-				
+			_blending = _data.transparent ? BLENDING_ALPHA
+									      : BLENDING_NORMAL;
+			
 			_update = true;
 		}
 		
@@ -88,7 +78,6 @@ package aerys.minko.scene.material
 				updateFromBitmapData(data);
 			_mipmapping = mipmapping;
 			
-			_blending = data && data.transparent ? BLENDING_ALPHA : BLENDING_NORMAL;
 			_styleProp = BasicStyle3D.DIFFUSE_MAP;
 		}
 		

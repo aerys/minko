@@ -29,45 +29,17 @@ package aerys.minko.transform
 		private var _rv				: uint		= 0;
 		private var _sv				: uint		= 0;
 		
-		protected function get invalidComponents() : Boolean
-		{
-			return super.invalidMatrix || super.invalidRawData;
-		}
-		
-		override protected function get invalidMatrix() : Boolean
-		{
-			return _update
-				   || _tv != _translation.version
-				   || _rv != _rotation.version
-				   || _sv != _scale.version
-				   || super.invalidMatrix;
-		}
-		
-		override protected function get invalidRawData() : Boolean
-		{
-			return _update
-				   || _tv != _translation.version
-				   || _rv != _rotation.version
-				   || _sv != _scale.version
-				   || super.invalidRawData;
-		}
-		
 		public function get translation() : Vector4
 		{
-			invalidComponents && updateComponents();
-			
 			return _translation;
 		}
+		
 		public function get rotation() : Vector4
 		{
-			invalidComponents && updateComponents();
-			
 			return _rotation;
 		}
 		public function get scale() : Vector4
 		{
-			invalidComponents && updateComponents();
-			
 			return _scale;
 		}
 		
@@ -118,52 +90,9 @@ package aerys.minko.transform
 				_scale.set(scale.x, scale.y, scale.z);
 		}
 		
-		override protected function updateMatrix() : void
-		{
-			if (_update
-				|| _tv != _translation.version
-				|| _rv != _rotation.version
-				|| _sv != _scale.version)
-			{
-				TMP[0] = _translation._vector;
-				TMP[1] = _rotation._vector;
-				TMP[2] = _scale._vector;
-				_matrix.recompose(TMP);
-				
-				_update = false;
-				_tv = _translation.version;
-				_rv = _rotation.version;
-				_sv = _scale.version;
-				
-				//invalidateRawData();
-			}
-			else
-			{
-				super.updateMatrix();
-			}
-		}
-		
-		override protected function updateRawData() : void
-		{
-			if (invalidComponents)
-			{
-				TMP[0] = _translation._vector;
-				TMP[1] = _rotation._vector;
-				TMP[2] = _scale._vector;
-				matrix.recompose(TMP);
-				
-				_update = false;
-				_tv = _translation.version;
-				_rv = _rotation.version;
-				_sv = _scale.version;
-			}
-			
-			super.updateRawData();
-		}
-		
 		protected function updateComponents() : void
 		{
-			var c : Vector.<Vector3D> = matrix.decompose(ORIENTATION);
+			var c : Vector.<Vector3D> = _matrix.decompose(ORIENTATION);
 			
 			_translation.set(c[0].x, c[0].y, c[0].z, c[0].w);
 			_rotation.set(c[1].x, c[1].y, c[1].z, c[1].w);
@@ -191,8 +120,7 @@ package aerys.minko.transform
 									   axis			: Vector4,
 									   pivotPoint	: Vector4	= null) : Transform3D
 		{
-			invalidateRawData();
-			matrix.appendRotation(radians * RAD2DEG,
+			_matrix.appendRotation(radians * RAD2DEG,
 								  axis._vector,
 								  pivotPoint ? pivotPoint._vector : null);
 			
@@ -203,16 +131,14 @@ package aerys.minko.transform
 									y	: Number	= 1.,
 									z	: Number	= 1.) : Transform3D
 		{
-			invalidateRawData();
-			matrix.appendScale(x, y, z);
+			_matrix.appendScale(x, y, z);
 			
 			return this;
 		}
 		
 		public function appendUniformScale(scale : Number) : Transform3D
 		{
-			invalidateRawData();
-			matrix.appendScale(scale, scale, scale);
+			_matrix.appendScale(scale, scale, scale);
 			
 			return this;
 		}
@@ -221,8 +147,7 @@ package aerys.minko.transform
 										  y : Number = 0.,
 										  z : Number = 0.) : Transform3D
 		{
-			invalidateRawData();
-			matrix.appendTranslation(x, y, z);
+			_matrix.appendTranslation(x, y, z);
 			
 			return this;
 		}
@@ -231,8 +156,7 @@ package aerys.minko.transform
 								at	: Vector4	= null,
 								up	: Vector4	= null) : Transform3D
 		{
-			invalidateRawData();
-			matrix.pointAt(pos._vector,
+			_matrix.pointAt(pos._vector,
 						   at._vector,
 						   up._vector);
 			
@@ -250,8 +174,7 @@ package aerys.minko.transform
 										axis		: Vector4,
 										pivotPoint	: Vector4 = null) : Transform3D
 		{
-			invalidateRawData();
-			matrix.prependRotation(radians * RAD2DEG, 
+			_matrix.prependRotation(radians * RAD2DEG, 
 								   axis._vector,
 								   pivotPoint ? pivotPoint._vector : null);
 			
@@ -262,8 +185,7 @@ package aerys.minko.transform
 									 y	: Number = 1.,
 									 z	: Number = 1.) : Transform3D
 		{
-			invalidateRawData();
-			matrix.prependScale(x, y, z);
+			_matrix.prependScale(x, y, z);
 			
 			return this;
 		}
@@ -272,8 +194,7 @@ package aerys.minko.transform
 										   y : Number	= 1.,
 										   z : Number	= 1.) : Transform3D
 		{
-			invalidateRawData();
-			matrix.prependTranslation(x, y, z);
+			_matrix.prependTranslation(x, y, z);
 			
 			return this;
 		}

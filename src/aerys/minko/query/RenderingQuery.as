@@ -56,7 +56,9 @@ package aerys.minko.query
 		
 		public function query(scene : IScene3D) : void
 		{
-			_parents[_parents.length] = _parent;
+			var numParents : int = _parents.length;
+			
+			_parents[numParents] = _parent;
 			_parent = _current;
 			_current = scene;
 			
@@ -70,8 +72,8 @@ package aerys.minko.query
 			scene.accept(this);
 			
 			_current = _parent;
-			_parent = _parents[(_parents.length - 1)];
-			_parents.length--;
+			_parent = _parents[numParents];
+			_parents.length = numParents;
 		}
 		
 		public function reset() : void
