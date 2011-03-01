@@ -1,5 +1,7 @@
 package aerys.minko.render.shader
 {
+	import aerys.minko.type.vertex.format.Vertex3DComponent;
+	
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 
@@ -70,12 +72,13 @@ package aerys.minko.render.shader
 		}
 		
 		public function Shader3DAsset(myVertexShader 	: ByteArray,
-									  myFragmentShader	: ByteArray)
+									  myFragmentShader	: ByteArray,
+									  vertexInput		: Vector.<Vertex3DComponent>)
 		{
 			myVertexShader.endian = Endian.LITTLE_ENDIAN;
 			myFragmentShader.endian = Endian.LITTLE_ENDIAN;
 			
-			super(myVertexShader, myFragmentShader);
+			super(myVertexShader, myFragmentShader, vertexInput);
 		}
 	}
 }

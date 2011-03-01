@@ -1,11 +1,13 @@
 package aerys.minko.effect
 {
-	import flash.utils.flash_proxy;
-	
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
+		
 	public final class Effect3DStyle implements IEffect3DStyle
 	{
 		private var _target		: IEffect3DStyle	= null;
 		private var _properties	: Object			= new Object();
+		private var _append		: Object			= new Object();
 		
 		public function Effect3DStyle()
 		{
@@ -18,10 +20,26 @@ package aerys.minko.effect
 			
 			_target = style;
 			
+			if (target == null)
+				for (var name:String in _append)
+					(_properties[name] as Array).length = _append[name];
+			
 			return target || this;
 		}
 		
-		public function get(name : String) : *
+		public function clear() : void 
+		{
+			_properties	= new Object();
+			_append		= new Object();
+			_target		= null
+		}
+		
+		public function has(name : String) : Boolean 
+		{
+			return _properties.hasOwnProperty(name);
+		}
+		
+		public function get(name : String, readonly : Boolean = true) : *
 		{
 			return _properties[name] || (_target ? _target.get(name) : null);
 		}
@@ -32,5 +50,23 @@ package aerys.minko.effect
 			
 			return this;
 		}
+		
+		public function append(name : String, value : *) : IEffect3DStyle 
+		{
+			var a:Array = get(name);
+			if (!a)
+			{
+				a = new Array();
+				set(name, a);
+			}
+			
+			if (!_append.hasOwnProperty(name))
+				_append[name] = a.length;
+			
+			a.push(value);
+			
+			return this;
+		}
+		
 	}
 }

@@ -5,19 +5,21 @@ package aerys.minko.render.state
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.vertex.format.IVertex3DFormat;
+	import aerys.minko.type.stream.IndexStream3D;
+	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.Context3DTriangleFace;
-	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
-
+	
 	public final class RenderState implements IVersionnable
 	{
 		use namespace minko;
@@ -29,7 +31,7 @@ package aerys.minko.render.state
 		private static const TC_BACK				: int				= TriangleCulling.BACK;
 		
 		private static const TMP_VECTOR				: Vector.<Number>	= new Vector.<Number>();
-		
+
 		private static const BLENDING_STR			: Vector.<String>	= Vector.<String>([Context3DBlendFactor.DESTINATION_ALPHA,
 																						   Context3DBlendFactor.DESTINATION_COLOR,
 																						   Context3DBlendFactor.ONE,
@@ -57,18 +59,18 @@ package aerys.minko.render.state
 		private static const TEXTURE6				: uint	= 1 << 10;
 		private static const TEXTURE7				: uint	= 1 << 11;
 		private static const TEXTURE8				: uint	= 1 << 12;
-		private static const VERTEX_BUFFER			: uint	= 1 << 13;
+		private static const INDEX_STREAM			: uint	= 1 << 13;
 		private static const VERTEX_CONSTS			: uint	= 1 << 14;
 		private static const FRAGMENT_CONSTS		: uint	= 1 << 15;
 		private static const SCISSOR_RECTANGLE		: uint	= 1 << 16;
-		private static const VERTEX_BUFFER_1		: uint	= 1 << 17;
-		private static const VERTEX_BUFFER_2		: uint	= 1 << 18;
-		private static const VERTEX_BUFFER_3		: uint	= 1 << 19;
-		private static const VERTEX_BUFFER_4		: uint	= 1 << 20;
-		private static const VERTEX_BUFFER_5		: uint	= 1 << 21;
-		private static const VERTEX_BUFFER_6		: uint	= 1 << 22;
-		private static const VERTEX_BUFFER_7		: uint	= 1 << 23;
-		private static const VERTEX_BUFFER_8		: uint	= 1 << 24;
+		private static const VERTEX_STREAM_1		: uint	= 1 << 17;
+		private static const VERTEX_STREAM_2		: uint	= 1 << 18;
+		private static const VERTEX_STREAM_3		: uint	= 1 << 19;
+		private static const VERTEX_STREAM_4		: uint	= 1 << 20;
+		private static const VERTEX_STREAM_5		: uint	= 1 << 21;
+		private static const VERTEX_STREAM_6		: uint	= 1 << 22;
+		private static const VERTEX_STREAM_7		: uint	= 1 << 23;
+		private static const VERTEX_STREAM_8		: uint	= 1 << 24;
 		
 		public static const TEXTURES				: uint	= TEXTURE1 | TEXTURE2 | TEXTURE3 | TEXTURE4
 															  | TEXTURE5 | TEXTURE6 | TEXTURE7 | TEXTURE8;
@@ -79,12 +81,15 @@ package aerys.minko.render.state
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
 		private var _shader				: Shader3D					= null;
-		private var _vertexFormat		: IVertex3DFormat			= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
-		private var _vertexBuffers		: Vector.<VertexBuffer3D>	= new Vector.<VertexBuffer3D>(8, true);
-		private var _indexBuffer		: IndexBuffer3D				= null;
+	
+		private var _vertexStreams		: Vector.<VertexStream3D>	= new Vector.<VertexStream3D>(8, true);
+		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
+		private var _vertexFormats		: Vector.<String>			= new Vector.<String>(8, true);
+		private var _indexStream		: IndexStream3D				= null;
+		
 		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>(NUM_VERTEX_CONSTS * 4);
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
 		private var _rectangle			: Rectangle					= null;
@@ -114,15 +119,15 @@ package aerys.minko.render.state
 			return _blending;
 		}
 		
-		public function get vertexFormat() : IVertex3DFormat
-		{
-			return _vertexFormat;
-		}
-		
 		public function get triangleCulling() : uint
 		{
 			return _triangleCulling;
 		}
+		
+		public function get indexStream()	: IndexStream3D 
+		{
+			return _indexStream;
+		} 
 		
 		public function set renderTarget(value : RenderTarget) : void
 		{
@@ -174,12 +179,45 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function setTexture(index : int, texture : TextureBase) : void
+		public function set indexStream(value : IndexStream3D) : void 
 		{
-			if (_textures[index] != texture)
+			if (value != _indexStream)
+			{
+				_indexStream = value;
+				_setFlags |= INDEX_STREAM;
+				++_version;
+			}
+		}
+		
+		public function setVertexStreamList(streamList	: VertexStreamList3D) : void
+		{
+			var vertexInput	: Vector.<Vertex3DComponent> = _shader._vertexInput;
+			
+			for (var i : int = 0; i < 8; ++i)
+			{
+				var neededComponent:Vertex3DComponent = vertexInput[i];
+				
+				if (neededComponent)
+				{
+					var stream:VertexStream3D = streamList.getComponentStream(neededComponent);
+					
+					_vertexStreams[i] = stream;
+					_vertexFormats[i] = neededComponent.nativeFormatString;
+					_vertexOffsets[i] = stream.format.getOffsetForComponent(neededComponent);
+					
+					_setFlags |= VERTEX_STREAM_1 << i;
+				}
+			}
+		}
+		
+		public function setTextureAt(index : int, texture : TextureBase) : void
+		{
+			var flag : uint = TEXTURE1 << index;
+			
+			if (!(_setFlags & flag) || _textures[index] != texture)
 			{
 				_textures[index] = texture;
-				_setFlags |= TEXTURE1 << index;
+				_setFlags |= flag;
 				++_version;
 			}
 		}
@@ -214,10 +252,17 @@ package aerys.minko.render.state
 			++_version;
 		}
 		
-		public function setFragmentConstantMatrix(register 	: int,
-												  value 	: Matrix3D) : void
+		public function setFragmentConstantMatrix(register 		: int,
+												  value 		: Matrix4x4,
+												  transposed	: Boolean = true) : void
 		{
-			value.copyRawDataTo(_fragmentConstants, register * 4);
+			var t : Matrix3D = new Matrix3D();
+			
+			value._matrix.copyToMatrix3D(t);
+			if (transposed)
+				t.transpose();
+			
+			t.copyRawDataTo(_fragmentConstants, register * 4);
 			
 			_setFlags |= FRAGMENT_CONSTS;
 			++_version;
@@ -254,14 +299,15 @@ package aerys.minko.render.state
 		}
 		
 		public function setVertexConstantMatrix(register	: int,
-												value		: Matrix4x4) : void
+												value		: Matrix4x4,
+												transposed	: Boolean = true) : void
 		{
 			var t : Matrix3D = new Matrix3D();
 			
-			// FIXME
 			value._matrix.copyToMatrix3D(t);
-			t.transpose();
-			//value._matrix.copyRawDataTo(_vertexConstants, register * 4);
+			if (transposed)
+				t.transpose();
+			
 			t.copyRawDataTo(_vertexConstants, register * 4);
 			
 			_setFlags |= VERTEX_CONSTS;
@@ -308,10 +354,24 @@ package aerys.minko.render.state
 				
 				for (var i : int = 0; i < 8; ++i)
 				{
+					// set textures
 					var texture : TextureBase = _textures[i];
 					
-					if (_setFlags & (TEXTURE1 << i))
-						context.setTextureAt(i, texture);
+					context.setTextureAt(i, (_setFlags & (TEXTURE1 << i)) ? texture : null);
+					
+					// set vertex buffers
+					if (_setFlags & (VERTEX_STREAM_1 << i))
+					{
+						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getVertexBuffer3D(context);
+						var vertexOffset : int				= _vertexOffsets[i];
+						var vertexFormat : String			= _vertexFormats[i];
+					
+						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexFormat);
+					}
+					else 
+					{
+						context.setVertexBufferAt(i, null);
+					}
 				}
 			}
 		}

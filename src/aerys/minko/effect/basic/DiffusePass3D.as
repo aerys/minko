@@ -8,6 +8,7 @@ package aerys.minko.effect.basic
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.textures.Texture;
@@ -23,7 +24,7 @@ package aerys.minko.effect.basic
 		
 		public function begin(renderer : IRenderer3D, style : IEffect3DStyle) : Boolean
 		{
-			var states 		: RenderState 	= renderer.states;
+			var state 		: RenderState 	= renderer.state;
 			var diffuse		: Texture		= style.get(BasicStyle3D.DIFFUSE_MAP)
 											  as Texture;
 			var toScreen	: Matrix4x4		= style.get(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX)
@@ -34,18 +35,16 @@ package aerys.minko.effect.basic
 			if (!diffuse)
 				return false;
 			
-			states.vertexFormat = Vertex3DFormat.XYZ_UV;
-			states.shader = SHADER;
-			states.blending = blending;
-			states.setTexture(0, diffuse);
-			states.setVertexConstantMatrix(0, toScreen);
+			state.shader = SHADER;
+			state.blending = blending;
+			state.setTextureAt(0, diffuse);
+			state.setVertexConstantMatrix(0, toScreen);
 			
 			return true;
 		}
 		
 		public function end(renderer : IRenderer3D, style : IEffect3DStyle) : void
 		{
-			//renderer.setTexture(0, null);
 		}
 	}
 }

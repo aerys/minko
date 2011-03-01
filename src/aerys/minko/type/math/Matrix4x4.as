@@ -381,7 +381,7 @@ package aerys.minko.type.math
 		public static function orthoOffCenterRH(l	: Number,
 												r	: Number,
 												b	: Number,
-												t		: Number,
+												t	: Number,
 												zNear	: Number,
 												zFar	: Number,
 												out		: Matrix4x4 = null) : Matrix4x4

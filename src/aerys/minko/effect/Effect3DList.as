@@ -8,6 +8,8 @@ package aerys.minko.effect
 		
 		minko var _data		: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		
+		public function get length():uint { return _data.length; }
+		
 		public function Effect3DList()
 		{
 		}
@@ -30,5 +32,6 @@ package aerys.minko.effect
 			for (var i : int = 0; i < numPush; ++i)
 				_data[int(numEffects + i)] = effects[i];
 		}
+		
 	}
 }

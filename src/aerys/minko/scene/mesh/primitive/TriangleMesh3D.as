@@ -2,6 +2,7 @@
 {
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	/**
@@ -27,7 +28,7 @@
 														0.5, 0.0, -0.5,
 														0.0, 0.0, 0.5]);
 			
-			super(new VertexStream3D(vb, Vertex3DFormat.XYZ));
+			super(Vector.<VertexStream3D>([new VertexStream3D(vb, PackedVertex3DFormat.XYZ)]));
 		}
 		
 	}

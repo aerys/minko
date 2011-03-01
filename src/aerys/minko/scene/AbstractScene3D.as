@@ -9,7 +9,7 @@ package aerys.minko.scene
 	{
 		private static var _id	: uint			= 0;
 		
-		protected var _name		: String		= null;
+		private var _name		: String		= null;
 		
 		public function get name() : String
 		{

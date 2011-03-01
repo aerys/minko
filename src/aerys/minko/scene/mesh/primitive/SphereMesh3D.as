@@ -3,6 +3,7 @@ package aerys.minko.scene.mesh.primitive
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.stream.VertexStreamList3D;
 
 	public class SphereMesh3D extends Mesh3D
 	{
@@ -81,7 +82,11 @@ package aerys.minko.scene.mesh.primitive
 				indices[int(c++)] = (myParallels - 3) * myMeridians + i + 1;
 			}
 			
-			super(VertexStream3D.fromPositionsAndUVs(vertices, uv), new IndexStream3D(indices));
+			
+			super(
+				new VertexStreamList3D([VertexStream3D.fromPositionsAndUVs(vertices, uv)]),
+				new IndexStream3D(indices)
+			);
 		}
 		
 	}

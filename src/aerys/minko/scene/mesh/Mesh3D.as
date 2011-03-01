@@ -1,56 +1,58 @@
 package aerys.minko.scene.mesh
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
-	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	
-	import flash.display3D.Context3D;
+	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	
 	public class Mesh3D extends AbstractScene3D implements IMesh3D
 	{
 		use namespace minko;
 		
-		private static var _id		: uint				= 0;
+		private static var _id : uint = 0;
 		
-		protected var _vertexStream	: VertexStream3D	= null;
-		protected var _indexStream	: IndexStream3D		= null;
+		protected var _vertexStreamList	: VertexStreamList3D	= null;
+		protected var _indexStream		: IndexStream3D			= null;
 		
 		public function get version() : uint
 		{
-			return _vertexStream.version + _indexStream.version;
+			return _vertexStreamList.version + _indexStream.version;
 		}
 		
-		public function Mesh3D(vertexBuffer	: VertexStream3D	= null,
-							   indexBuffer	: IndexStream3D 	= null)
+		public function get vertexStreamList() : VertexStreamList3D
 		{
-			_vertexStream = vertexBuffer;
-			_indexStream = indexBuffer || IndexStream3D.dummy(_vertexStream.length, _vertexStream._dynamic);
-			
-			_name = "Mesh_" + ++_id;
+			return _vertexStreamList;
 		}
 		
-		public function get vertexStream() : VertexStream3D
+		public function set vertexStreamList(value : VertexStreamList3D) : void
 		{
-			return _vertexStream;
+			_vertexStreamList = value;
 		}
-		
+
 		public function get indexStream() : IndexStream3D
 		{
 			return _indexStream;
 		}
-		
-		override public function accept(query : IScene3DQuery) : void
+
+		public function Mesh3D(vertexStreamList	: VertexStreamList3D	= null,
+							   indexBuffer		: IndexStream3D 		= null)
 		{
-			// NOTHING
+			if (null == vertexStreamList.getComponentStream(Vertex3DComponent.XYZ))
+				throw new Error('VertexStreamList must contain vertex position component (Vertex3DComponent.XYZ)');
+			
+			_vertexStreamList = vertexStreamList;
+			_indexStream = indexBuffer || IndexStream3D.dummy(vertexStreamList.length, vertexStreamList.dynamic);
+			
+			name = "Mesh_" + ++_id;
 		}
 		
-		public function set vertexStream(value : VertexStream3D) : void
+		override protected function acceptRenderingQuery(query : RenderingQuery) : void
 		{
-			_vertexStream = value;
+			query.draw(vertexStreamList, indexStream);
 		}
+		
 	}
 }

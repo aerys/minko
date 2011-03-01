@@ -1,6 +1,8 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.vertex.format.Vertex3DComponent;
+	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
@@ -11,19 +13,24 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
+		
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
 		
+		minko var _vertexInput		: Vector.<Vertex3DComponent> = null;
 		minko var _nativeProgram	: Program3D	= null;
 		
 		public function Shader3D(vertexShader 	: ByteArray,
-								 fragmentShader : ByteArray)
+								 fragmentShader : ByteArray,
+								 vertexInput	: Vector.<Vertex3DComponent>)
 		{
-			_vertexShader = vertexShader;
-			_fragmentShader = fragmentShader;
+			_vertexShader	= vertexShader;
+			_fragmentShader	= fragmentShader;
+			_vertexInput	= vertexInput;
 		}
 		
-		public static function fromByteArray(myData : ByteArray) : Shader3D
+		public static function fromByteArray(myData 	: ByteArray,
+											 vertexInput: Vector.<Vertex3DComponent>) : Shader3D
 		{
 			var vs : ByteArray = new ByteArray();
 			var fs : ByteArray = new ByteArray();
@@ -34,7 +41,7 @@ package aerys.minko.render.shader
 			vs.endian = Endian.LITTLE_ENDIAN;
 			fs.endian = Endian.LITTLE_ENDIAN;
 			
-			return new Shader3D(vs, fs);
+			return new Shader3D(vs, fs, vertexInput);
 		}
 		
 		public function prepare(context : Context3D) : void
@@ -47,5 +54,6 @@ package aerys.minko.render.shader
 			
 			context.setProgram(_nativeProgram);
 		}
+		
 	}
 }

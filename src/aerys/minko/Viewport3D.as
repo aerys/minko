@@ -33,22 +33,23 @@ package aerys.minko
 	{
 		use namespace minko;
 		
-		private var _logo		: MovieClip			= new MinkoLogo();
+		private var _logo			: MovieClip			= new MinkoLogo();
 		
-		private var _width		: Number			= 0.;
-		private var _height		: Number			= 0.;
+		private var _width			: Number			= 0.;
+		private var _height			: Number			= 0.;
 		
-		private var _version	: uint				= 0;
+		private var _version		: uint				= 0;
 		
-		private var _query		: RenderingQuery	= null;
-		private var _time		: int				= 0;
-		private var _sceneSize	: uint				= 0;
-		private var _drawTime	: int				= 0;
+		private var _query			: RenderingQuery	= null;
+		private var _time			: int				= 0;
+		private var _sceneSize		: uint				= 0;
+		private var _drawTime		: int				= 0;
 		
-		private var _renderer	: IRenderer3D		= null;
-		private var _context	: Context3D			= null;
+		private var _rendererClass	: Class				= null;
+		private var _renderer		: IRenderer3D		= null;
+		private var _context		: Context3D			= null;
 		
-		private var _aa			: int				= 0;
+		private var _aa				: int				= 0;
 		
 		public function get version() : uint
 		{
@@ -154,13 +155,14 @@ package aerys.minko
 		 */
 		public function Viewport3D(width		: Number,
 								   height		: Number,
-								   antiAliasing	: int	= 0)
+								   antiAliasing	: int	= 0,
+								   rendererType	: Class = null)
 		{
 			this.width = width;
 			this.height = height;
-		
-			_aa = antiAliasing;
 			
+			_aa = antiAliasing;
+			_rendererClass = rendererType || DirectRenderer3D;
 			_logo.addEventListener(MouseEvent.CLICK, logoClickHandler);
 		}
 		

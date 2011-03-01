@@ -4,9 +4,8 @@ package aerys.minko.type.stream
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.bounding.BoundingBox3D;
 	import aerys.minko.type.bounding.BoundingSphere3D;
-	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.vertex.format.IVertex3DFormat;
 	import aerys.minko.type.vertex.format.NativeFormat;
+	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.Context3D;
@@ -18,26 +17,23 @@ package aerys.minko.type.stream
 	{
 		use namespace minko;
 		
-		public static const DEFAULT_FORMAT	: IVertex3DFormat			= Vertex3DFormat.XYZ_UV;
+		public static const DEFAULT_FORMAT	: PackedVertex3DFormat	= PackedVertex3DFormat.XYZ_UV;
 		
-		minko var _data				: Vector.<Number>	= null;
-		minko var _update			: Boolean			= true;
-		minko var _dynamic			: Boolean			= false;
-		minko var _nativeBuffer		: VertexBuffer3D	= null;
-		minko var _version			: uint				= 0;
+		minko var _data				: Vector.<Number>		= null;
+		minko var _update			: Boolean				= true;
+		minko var _dynamic			: Boolean				= false;
+		minko var _nativeBuffer		: VertexBuffer3D		= null;
+		minko var _version			: uint					= 0;
 		
-		private var _format			: IVertex3DFormat	= null;
+		private var _format			: PackedVertex3DFormat	= null;
 		
-		private var _box			: BoundingBox3D		= null;
-		private var _sphere			: BoundingSphere3D	= null;
-		
-		public function get length() 	: int				{ return _data.length / _format.dwordsPerVertex; }
-		public function get format()	: IVertex3DFormat	{ return _format; }
-		public function get version()	: uint				{ return _version; }
+		public function get length() 	: int					{ return _data.length / _format.dwordsPerVertex; }
+		public function get format()	: PackedVertex3DFormat	{ return _format; }
+		public function get version()	: uint					{ return _version; }
 	
 		public function VertexStream3D(data 	: Vector.<Number>,
-									   format	: IVertex3DFormat 	= null,
-									   dynamic	: Boolean			= false)
+									   format	: PackedVertex3DFormat 	= null,
+									   dynamic	: Boolean				= false)
 		{
 			super();
 
@@ -48,19 +44,30 @@ package aerys.minko.type.stream
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;
-			//_length = _data.length / _format.dwordsPerVertex;
+		}
+		
+		minko function getVertexBuffer3D(context : Context3D) : VertexBuffer3D {
+			
+			if (!_nativeBuffer)
+				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
+			
+			if (_update)
+			{
+				_update = false;
+				_nativeBuffer.uploadFromVector(_data, 0, length);
+				
+				if (!_dynamic)
+					_data = null;
+			}
+			return _nativeBuffer;
 		}
 		
 		public function deleteVertexByIndex(myIndex : int) : Boolean
 		{
-			var max : int = length - 1;
-			
 			if (myIndex > length)
 				return false;
 			
 			_data.splice(myIndex, _format.dwordsPerVertex);
-			//_length = _data.length / _format.dwordsPerVertex;
-			
 			_update = true;
 			
 			return true;
@@ -81,21 +88,24 @@ package aerys.minko.type.stream
 				data[int(i * 5 + 4)] = uvs[int(i * 2 + 1)];
 			}
 			
-			return new VertexStream3D(data, Vertex3DFormat.XYZ_UV);
+			return new VertexStream3D(data, PackedVertex3DFormat.XYZ_UV);
 		}
 		
 		public static function fromByteArray(data 	: ByteArray,
 											 count	: int,
-											 format	: IVertex3DFormat) : VertexStream3D
+											 format	: PackedVertex3DFormat) : VertexStream3D
 		{
-			var nativeFormats	: Vector.<int>		= format.nativeFormats;
-			var numFormats		: int				= nativeFormats.length;
+			var numFormats		: int				= format.components.length;
+			var nativeFormats	: Vector.<int>		= new Vector.<int>(numFormats, true);
 			var length			: int				= 0;
 			var tmp				: Vector.<Number>	= null;
 			var stream			: VertexStream3D	= new VertexStream3D(null, format);
-
+			
+			for (var k : int = 0; k < numFormats; k++)
+				nativeFormats[k] = format.components[k].nativeFormat;
+			
 			stream._data = tmp;
-
+			
 			tmp = new Vector.<Number>(format.dwordsPerVertex * count,
 									  true);
 			
@@ -121,35 +131,6 @@ package aerys.minko.type.stream
 			return stream;
 		}
 		
-		/*private function updateBoundingVolumes() : void
-		{
-			var min			: Vector4	= new Vector4(Number.POSITIVE_INFINITY,
-													  Number.POSITIVE_INFINITY,
-													  Number.POSITIVE_INFINITY);
-			var max			: Vector4	= new Vector4(Number.NEGATIVE_INFINITY,
-													  Number.NEGATIVE_INFINITY,
-													  Number.NEGATIVE_INFINITY);
-			var numVertices	: int		= _vertices.length - 2;
-			
-			for (var i : int = 0; i < numVertices; i += 3)
-			{
-				var x : Number = _vertices[i];
-				var y : Number = _vertices[int(i + 1)];
-				var z : Number = _vertices[int(i + 2)];
-				
-				min.x = x < min.x ? x : min.x;
-				min.y = y < min.y ? y : min.y;
-				min.z = z < min.z ? z : min.z;
-				
-				max.x = x > max.x ? x : max.x;
-				max.y = y > max.y ? y : max.y;
-				max.z = z > max.z ? z : max.z;
-			}
-			
-			_boundingSphere = BoundingSphere3D.fromMinMax(min, max);
-			_boundingBox = new BoundingBox3D(min, max);
-			
-			_update = UPDATE_NONE;
-		}*/
+		
 	}
 }

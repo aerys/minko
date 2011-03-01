@@ -55,6 +55,7 @@ package aerys.minko.scene.material
 				_data = new BitmapData(w, h, value.transparent, 0);
 			
 			_data.draw(value, scaleMatrix, null, null, null, true);
+			
 			_blending = _data.transparent ? BLENDING_ALPHA
 									      : BLENDING_NORMAL;
 			

@@ -4,6 +4,7 @@ package aerys.minko.scene.mesh.modifier
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.stream.VertexStreamList3D;
 	
 	public class AbstractMeshModifier3D implements IMeshModifier3D
 	{
@@ -24,9 +25,9 @@ package aerys.minko.scene.mesh.modifier
 			return _target.version;
 		}
 				
-		public function get vertexStream() : VertexStream3D
+		public function get vertexStreamList() : VertexStreamList3D
 		{
-			return _target.vertexStream;
+			return _target.vertexStreamList;
 		}
 		
 		public function get indexStream() : IndexStream3D

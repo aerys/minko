@@ -9,11 +9,12 @@ package aerys.minko.query
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
 	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
-	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.stream.VertexStreamList3D;
 	
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
@@ -82,18 +83,24 @@ package aerys.minko.query
 			_numNodes = 0;
 			_renderer.clear();
 			_tm.reset();
+			
+			_style.clear();
+			if (_fx.length != 0)
+				throw new Error('Effect3DList stack must be empty when reseting.');
 		}
 		
-		public function draw(vertexStream 	: VertexStream3D,
-							 indexStream 	: IndexStream3D,
-							 offset			: uint	= 0,
-							 numTriangles	: uint	= 0) : void
+		public function draw(vertexStreamList 	: VertexStreamList3D,
+							 indexStream 		: IndexStream3D,
+							 offset				: uint	= 0,
+							 numTriangles		: uint	= 0) : void
 		{
 			var fxs			: Vector.<IEffect3D>	= _fx._data;
 			var numEffects 	: int 					= fxs.length;
 			
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
+			
+			var state:RenderState = _renderer.state;
 			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
@@ -110,8 +117,9 @@ package aerys.minko.query
 					
 					if (pass.begin(_renderer, _style))
 					{
-						_renderer.setVertexStream(vertexStream);
-						_renderer.drawTriangles(indexStream, offset, numTriangles);
+						state.indexStream = indexStream;
+						state.setVertexStreamList(vertexStreamList);
+						_renderer.drawTriangles(offset, numTriangles);
 					}
 					
 					pass.end(_renderer, _style);
@@ -122,10 +130,10 @@ package aerys.minko.query
 			}
 		}
 		
-		public function drawList(vertexStream 	: VertexStream3D,
-								 indexStream 	: IndexStream3D,
-								 offsets		: Vector.<uint>,
-								 numTriangles	: Vector.<uint> = null) : void
+		public function drawList(vertexStreamList 	: VertexStreamList3D,
+								 indexStream 		: IndexStream3D,
+								 offsets			: Vector.<uint>,
+								 numTriangles		: Vector.<uint> = null) : void
 		{
 			var fxs			: Vector.<IEffect3D>	= _fx._data;
 			var numEffects 	: int 					= fxs.length;
@@ -133,6 +141,7 @@ package aerys.minko.query
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
 			
+			var state:RenderState = _renderer.state;
 			var length	: int	= offsets.length;
 			
 			if (length != numTriangles.length)
@@ -153,10 +162,11 @@ package aerys.minko.query
 					
 					if (pass.begin(_renderer, _style))
 					{
-						_renderer.setVertexStream(vertexStream);
+						state.indexStream = indexStream;
+						state.setVertexStreamList(vertexStreamList);
 						
 						for (var k : int = 0; k < length; k += 1)
-							_renderer.drawTriangles(indexStream, offsets[k], numTriangles[k]);
+							_renderer.drawTriangles(offsets[k], numTriangles[k]);
 					}
 					
 					pass.end(_renderer, _style);
@@ -164,7 +174,7 @@ package aerys.minko.query
 				
 				fx.end(_renderer, _style);
 				_style = fx.style.override();
-			}			
+			}
 		}
 		
 		public function createTexture(width 		: uint,
