@@ -3,7 +3,7 @@ package aerys.minko.scene.mesh.primitive
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 	
 	public class QuadMesh3D extends Mesh3D
 	{
@@ -57,7 +57,7 @@ package aerys.minko.scene.mesh.primitive
 			if (doubleSided)
 				indices = indices.concat(indices.concat().reverse());
 			
-			var vertexStreamList:VertexStreamList3D = new VertexStreamList3D([new VertexStream3D(vertices)]);
+			var vertexStreamList:VertexStream3DList = new VertexStream3DList([new VertexStream3D(vertices)]);
 			super(vertexStreamList, new IndexStream3D(indices));
 		}
 

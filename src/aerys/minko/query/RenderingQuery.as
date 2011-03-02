@@ -14,7 +14,7 @@ package aerys.minko.query
 	import aerys.minko.scene.camera.ICamera3D;
 	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 	
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
@@ -89,7 +89,7 @@ package aerys.minko.query
 				throw new Error('Effect3DList stack must be empty when reseting.');
 		}
 		
-		public function draw(vertexStreamList 	: VertexStreamList3D,
+		public function draw(vertexStreamList 	: VertexStream3DList,
 							 indexStream 		: IndexStream3D,
 							 offset				: uint	= 0,
 							 numTriangles		: uint	= 0) : void
@@ -130,7 +130,7 @@ package aerys.minko.query
 			}
 		}
 		
-		public function drawList(vertexStreamList 	: VertexStreamList3D,
+		public function drawList(vertexStreamList 	: VertexStream3DList,
 								 indexStream 		: IndexStream3D,
 								 offsets			: Vector.<uint>,
 								 numTriangles		: Vector.<uint> = null) : void

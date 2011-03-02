@@ -2,7 +2,7 @@ package aerys.minko.scene.mesh.primitive
 {
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 
 	/**
 	 * The CubeMesh class represent a cubic mesh.
@@ -66,7 +66,7 @@ package aerys.minko.scene.mesh.primitive
 														   1., 1., 1., 0., 0., 0.,
 														   0., 0., 0., 1., 1., 1.]);
 		
-			super(new VertexStreamList3D([VertexStream3D.fromPositionsAndUVs(vb, uv)]));
+			super(new VertexStream3DList([VertexStream3D.fromPositionsAndUVs(vb, uv)]));
 		}
 		
 	}

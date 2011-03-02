@@ -2,11 +2,11 @@ package aerys.minko.type.vertex.format
 {
 	public class Vertex3DComponent
 	{
-		public static const XYZ		: Vertex3DComponent = new Vertex3DComponent(['x', 'y', 'z'], NativeFormat.FLOAT_3);
-		public static const UV		: Vertex3DComponent = new Vertex3DComponent(['u', 'v'], NativeFormat.FLOAT_2);
-		public static const RGB		: Vertex3DComponent = new Vertex3DComponent(['r', 'g', 'b'], NativeFormat.FLOAT_3);
-		public static const NORMAL	: Vertex3DComponent = new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3);
-		
+		public static const XYZ			: Vertex3DComponent = new Vertex3DComponent(['x', 'y', 'z'], NativeFormat.FLOAT_3);
+		public static const UV			: Vertex3DComponent = new Vertex3DComponent(['u', 'v'], NativeFormat.FLOAT_2);
+		public static const RGB			: Vertex3DComponent = new Vertex3DComponent(['r', 'g', 'b'], NativeFormat.FLOAT_3);
+		public static const NORMAL		: Vertex3DComponent = new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3);
+		public static const LIGHTMAP	: Vertex3DComponent = new Vertex3DComponent(['s', 't'], NativeFormat.FLOAT_2);
 		
 		private var _nativeFormat	: int;
 		private var _fields			: Array;

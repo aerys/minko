@@ -8,7 +8,7 @@ package aerys.minko.type.stream
 	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
-	public class VertexStreamList3D implements IVersionnable
+	public class VertexStream3DList implements IVersionnable
 	{
 		use namespace minko;
 		
@@ -26,7 +26,7 @@ package aerys.minko.type.stream
 		public function get dynamic()	: Boolean { return _dynamic; }
 		public function get length()	: int { return _streams.length ? _streams[0].length : 0; }
 		
-		public function VertexStreamList3D(streams:Array = null)
+		public function VertexStream3DList(streams:Array = null)
 		{
 			_streams		= new Vector.<VertexStream3D>;
 			_streamVersions	= new Vector.<int>;
@@ -41,8 +41,8 @@ package aerys.minko.type.stream
 					pushVertexStream(stream);
 		}
 		
-		public function clone() : VertexStreamList3D {
-			var vertexStreamList:VertexStreamList3D = new VertexStreamList3D();
+		public function clone() : VertexStream3DList {
+			var vertexStreamList:VertexStream3DList = new VertexStream3DList();
 			for each (var stream:VertexStream3D in _streams)
 				vertexStreamList.pushVertexStream(stream);
 			return vertexStreamList;
