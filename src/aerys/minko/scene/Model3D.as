@@ -19,8 +19,6 @@ package aerys.minko.scene
 	{
 		use namespace minko;
 		
-		private var _emptyStyle	: IEffect3DStyle		= new Effect3DStyle();
-		
 		private var _mesh		: IMesh3D				= null;
 		private var _material	: IMaterial3D			= null;
 		private var _transform	: Transform3D			= new Transform3D();
@@ -60,10 +58,14 @@ package aerys.minko.scene
 			_material = material;
 		}
 		
-		override protected function acceptRenderingQuery(query:RenderingQuery):void 
+		override protected function acceptRenderingQuery(query : RenderingQuery) : void 
 		{
-			var transform 	: TransformManager 	= query.transform;
+			var transform 		: TransformManager 		= query.transform;
+			var numEffects		: int					= _effects.length;
+			var queryEffects	: Vector.<IEffect3D>	= query.effects;
+			var numQueryEffects	: int					= queryEffects.length;
 			
+			// push world transform
 			transform.push(TransformType.WORLD);
 			transform.world.multiply(_transform);
 			transform.getLocalToScreen(_toScreen);
@@ -73,21 +75,19 @@ package aerys.minko.scene
 				  .set(BasicStyle3D.PROJECTION_MATRIX, transform.projection)
 				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
 			
-			query.effects.pushEffects(_effects);
-			
-			var newStyle:IEffect3DStyle;
-			newStyle = _style.override(query.style);
-			newStyle = _emptyStyle.override(newStyle);
-			query.style = newStyle;
+			// push FXs and style
+			for (var i : int = 0; i < numEffects; ++i)
+				queryEffects[int(numQueryEffects + i)] = _effects[i];	
+			query.style = _style.override(query.style);
 			
 			_material && query.query(_material);
 			_mesh && query.query(_mesh);
 			
-			query.style = query.style.override().override();
-			_emptyStyle.clear();
+			// pop FXs and style
+			query.style = query.style.override();
+			queryEffects.length = numQueryEffects;
 			
-			query.effects.pop(_effects.length);
-			
+			// pop world transform
 			transform.pop();
 		}
 	}

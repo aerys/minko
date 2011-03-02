@@ -175,8 +175,8 @@ package aerys.minko.transform
 										pivotPoint	: Vector4 = null) : Transform3D
 		{
 			_matrix.prependRotation(radians * RAD2DEG, 
-								   axis._vector,
-								   pivotPoint ? pivotPoint._vector : null);
+								    axis._vector,
+								    pivotPoint ? pivotPoint._vector : null);
 			
 			return this;
 		}

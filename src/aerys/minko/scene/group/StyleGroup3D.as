@@ -8,7 +8,6 @@ package aerys.minko.scene.group
 	
 	public class StyleGroup3D extends Group3D implements IStyled3D
 	{
-		private var _emptyStyle	: IEffect3DStyle	= new Effect3DStyle();
 		private var _style		: IEffect3DStyle	= new Effect3DStyle();
 		
 		public function StyleGroup3D(...children)
@@ -23,15 +22,11 @@ package aerys.minko.scene.group
 		
 		override protected function acceptRenderingQuery(q:RenderingQuery):void
 		{
-			var newStyle:IEffect3DStyle;
-			newStyle = _style.override(q.style);
-			newStyle = _emptyStyle.override(newStyle);
-			q.style = newStyle;
+			q.style = _style.override(q.style);
 			
 			super.acceptRenderingQuery(q);
 			
-			q.style = q.style.override().override();
-			_emptyStyle.clear();
+			q.style = q.style.override();
 		}
 	}
 }

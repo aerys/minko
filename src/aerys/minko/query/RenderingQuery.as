@@ -1,7 +1,6 @@
 package aerys.minko.query
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.effect.Effect3DList;
 	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
@@ -31,19 +30,19 @@ package aerys.minko.query
 		private var _camera		: ICamera3D				= null;
 		private var _style		: IEffect3DStyle		= new Effect3DStyle();
 		private var _tm			: TransformManager		= new TransformManager();
-		private var _fx			: Effect3DList			= new Effect3DList();
+		private var _fx			: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _numNodes	: uint					= 0;
 		
-		public function get parent()		: IScene3D			{ return _parent; }
-		public function get camera()		: ICamera3D			{ return _camera; }
-		public function get style()			: IEffect3DStyle	{ return _style; }
-		public function get transform()		: TransformManager	{ return _tm; }
-		public function get viewport()		: Viewport3D		{ return _renderer.viewport; }
-		public function get numTriangles()	: uint				{ return _renderer.numTriangles; }
-		public function get drawingTime()	: int				{ return _renderer.drawingTime; }
-		public function get frameId()		: uint				{ return _renderer.frameId; }
-		public function get effects()		: Effect3DList		{ return _fx; }
-		public function get numNodes()		: uint				{ return _numNodes; }
+		public function get parent()		: IScene3D				{ return _parent; }
+		public function get camera()		: ICamera3D				{ return _camera; }
+		public function get style()			: IEffect3DStyle		{ return _style; }
+		public function get transform()		: TransformManager		{ return _tm; }
+		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
+		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }
+		public function get drawingTime()	: int					{ return _renderer.drawingTime; }
+		public function get frameId()		: uint					{ return _renderer.frameId; }
+		public function get effects()		: Vector.<IEffect3D>	{ return _fx; }
+		public function get numNodes()		: uint					{ return _numNodes; }
 		
 		public function set style(value : IEffect3DStyle) : void
 		{
@@ -94,8 +93,7 @@ package aerys.minko.query
 							 offset				: uint	= 0,
 							 numTriangles		: uint	= 0) : void
 		{
-			var fxs			: Vector.<IEffect3D>	= _fx._data;
-			var numEffects 	: int 					= fxs.length;
+			var numEffects 	: int 					= _fx.length;
 			
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
@@ -104,7 +102,7 @@ package aerys.minko.query
 			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
-				var fx			: IEffect3D					= fxs[i];
+				var fx			: IEffect3D					= _fx[i];
 				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
 				var numPasses 	: int 						= passes.length;
 				
@@ -135,8 +133,7 @@ package aerys.minko.query
 								 offsets			: Vector.<uint>,
 								 numTriangles		: Vector.<uint> = null) : void
 		{
-			var fxs			: Vector.<IEffect3D>	= _fx._data;
-			var numEffects 	: int 					= fxs.length;
+			var numEffects 	: int 	= _fx.length;
 			
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
@@ -149,7 +146,7 @@ package aerys.minko.query
 			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
-				var fx			: IEffect3D					= fxs[i];
+				var fx			: IEffect3D					= _fx[i];
 				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
 				var numPasses 	: int 						= passes.length;
 				
