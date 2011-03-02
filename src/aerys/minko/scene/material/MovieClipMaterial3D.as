@@ -22,7 +22,7 @@ package aerys.minko.scene.material
 		{
 			if (_source)
 			{
-				addChild(NativeMaterial3D.fromDisplayObject(_source));
+				addChild(BitmapMaterial3D.fromDisplayObject(_source));
 				_source.nextFrame();
 				
 				if (_source.currentFrame >= _source.totalFrames)

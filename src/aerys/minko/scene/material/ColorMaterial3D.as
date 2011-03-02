@@ -6,7 +6,7 @@ package aerys.minko.scene.material
 	
 	import flash.display.BitmapData;
 	
-	public class ColorMaterial3D extends NativeMaterial3D
+	public class ColorMaterial3D extends BitmapMaterial3D
 	{
 		public static const WHITE			: ColorMaterial3D	= new ColorMaterial3D(0xffffffff);
 		public static const BLACK			: ColorMaterial3D	= new ColorMaterial3D(0xff000000);

@@ -2,9 +2,14 @@ package aerys.minko.type.vertex.format
 {
 	public class PackedVertex3DFormat extends Vertex3DFormat
 	{
-		public static const XYZ		: PackedVertex3DFormat = new PackedVertex3DFormat([Vertex3DComponent.XYZ]);
-		public static const XYZ_RGB	: PackedVertex3DFormat = new PackedVertex3DFormat([Vertex3DComponent.XYZ, Vertex3DComponent.RGB]);
-		public static const XYZ_UV	: PackedVertex3DFormat = new PackedVertex3DFormat([Vertex3DComponent.XYZ, Vertex3DComponent.UV]);
+		public static const XYZ			: PackedVertex3DFormat 	= new PackedVertex3DFormat(Vertex3DComponent.XYZ);
+		public static const XYZ_RGB		: PackedVertex3DFormat 	= new PackedVertex3DFormat(Vertex3DComponent.XYZ,
+																						   Vertex3DComponent.RGB);
+		public static const XYZ_UV		: PackedVertex3DFormat 	= new PackedVertex3DFormat(Vertex3DComponent.XYZ,
+																							Vertex3DComponent.UV);
+		public static const XYZ_UV_ST	: PackedVertex3DFormat	= new PackedVertex3DFormat(Vertex3DComponent.XYZ,
+																						   Vertex3DComponent.UV,
+																						   Vertex3DComponent.ST);
 		
 		private var _dwordsPerVertex	: int;
 		private var _componentOffsets	: Object;
@@ -12,7 +17,7 @@ package aerys.minko.type.vertex.format
 		
 		public function get dwordsPerVertex()	: int { return _dwordsPerVertex; }
 		
-		public function PackedVertex3DFormat(components:Array=null)
+		public function PackedVertex3DFormat(...components)
 		{
 			super(components);
 			

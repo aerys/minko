@@ -9,8 +9,10 @@ package aerys.minko.type.vertex.format
 		public function Vertex3DFormat(components : Array = null)
 		{
 			_components = new Object();
-			for each (var component:Vertex3DComponent in components)
-				_components[component.implodedFields] = component;
+			
+			if (components)
+				for each (var component:Vertex3DComponent in components)
+					_components[component.implodedFields] = component;
 		}
 		
 		/**

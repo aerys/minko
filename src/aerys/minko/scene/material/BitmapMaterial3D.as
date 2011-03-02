@@ -17,7 +17,7 @@ package aerys.minko.scene.material
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class NativeMaterial3D extends AbstractScene3D implements IMaterial3D
+	public class BitmapMaterial3D extends AbstractScene3D implements IMaterial3D
 	{
 		public static const BLENDING_NORMAL	: uint	= Blending.NORMAL;
 		public static const BLENDING_ALPHA	: uint	= Blending.ALPHA;
@@ -42,20 +42,21 @@ package aerys.minko.scene.material
 		
 		protected function updateFromBitmapData(value : BitmapData) : void
 		{
-			for (var w : int = 1; w < value.width; w *= 2)
+			var size : int = 1;
+			
+			for (; size < value.width; size *= 2)
 				continue ;
-			for (var h : int = 1; h < value.height; h *= 2)
+			for (; size < value.height; size *= 2)
 				continue ;
 			
 			var scaleMatrix : Matrix = new Matrix();
 			
-			scaleMatrix.scale(w / value.width, h / value.height);
+			scaleMatrix.scale(size / value.width, size / value.height);
 			
-			if (!_data || _data.width != w || _data.height != h)
-				_data = new BitmapData(w, h, value.transparent, 0);
+			if (!_data || _data.width != size || _data.height != size)
+				_data = new BitmapData(size, size, value.transparent, 0);
 			
 			_data.draw(value, scaleMatrix, null, null, null, true);
-			
 			_blending = _data.transparent ? BLENDING_ALPHA
 									      : BLENDING_NORMAL;
 			
@@ -72,11 +73,12 @@ package aerys.minko.scene.material
 			_blending = value;
 		}
 		
-		public function NativeMaterial3D(data 		: BitmapData 	= null,
-										 mipmapping	: Boolean		= false)
+		public function BitmapMaterial3D(bitmapData : BitmapData 	= null,
+										 mipmapping	: Boolean		= true)
 		{
-			if (data)
-				updateFromBitmapData(data);
+			if (bitmapData)
+				updateFromBitmapData(bitmapData);
+			
 			_mipmapping = mipmapping;
 			
 			_styleProp = BasicStyle3D.DIFFUSE_MAP;
@@ -105,13 +107,14 @@ package aerys.minko.scene.material
 						var level 		: int 			= 0;
 						var ws 			: int 			= _data.width;
 						var hs 			: int 			= _data.height;
-						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height);
+						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, true, 0);
 						var transform 	: Matrix 		= new Matrix();
 						
-						while (ws > 1 && hs > 1)
+						while (ws >= 1 && hs >= 1)
 						{
 							tmp.draw(_data, transform, null, null, null, true);
 							_texture.uploadFromBitmapData(tmp, level);
+							
 							transform.scale(.5, .5);
 							level++;
 							ws >>= 1;
@@ -134,10 +137,9 @@ package aerys.minko.scene.material
 					   .set(_styleProp, _texture);
 		}
 		
-		//{ region statis
 		public static function fromDisplayObject(source : DisplayObject,
 												 size 	: int 		= 0,
-												 smooth : Boolean 	= false) : NativeMaterial3D
+												 smooth : Boolean 	= false) : BitmapMaterial3D
 		{
 			var bmp : BitmapData = new BitmapData(size || source.width,
 												  size || source.height,
@@ -153,8 +155,7 @@ package aerys.minko.scene.material
 			
 			bmp.draw(source, matrix, null, null, null, smooth);
 			
-			return new NativeMaterial3D(bmp);
+			return new BitmapMaterial3D(bmp);
 		}
-		//} endregion
 	}
 }

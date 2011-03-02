@@ -13,5 +13,6 @@ package aerys.minko.effect.basic
 		public static const BLENDING				: String	= "basic_blending";
 		
 		public static const FRUSTUM_CULLING			: String	= "basic_frustumCulling";
+		public static const TRIANGLE_CULLING		: String	= "basic_triangleCulling";
 	}
 }

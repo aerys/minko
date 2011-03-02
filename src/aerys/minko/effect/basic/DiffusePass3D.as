@@ -16,7 +16,7 @@ package aerys.minko.effect.basic
 	
 	public class DiffusePass3D implements IEffect3DPass
 	{
-		private static const SHADER	: Shader3D	= new DefaultShader3D();
+		private static const DEFAULT_SHADER	: Shader3D	= new DefaultShader3D();
 		
 		public function DiffusePass3D()
 		{
@@ -35,7 +35,7 @@ package aerys.minko.effect.basic
 			if (!diffuse)
 				return false;
 			
-			state.shader = SHADER;
+			state.shader = DEFAULT_SHADER;
 			state.blending = blending;
 			state.setTextureAt(0, diffuse);
 			state.setVertexConstantMatrix(0, toScreen);
@@ -45,6 +45,7 @@ package aerys.minko.effect.basic
 		
 		public function end(renderer : IRenderer3D, style : IEffect3DStyle) : void
 		{
+			// NOTHING
 		}
 	}
 }

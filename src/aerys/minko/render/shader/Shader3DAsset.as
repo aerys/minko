@@ -71,14 +71,14 @@ package aerys.minko.render.shader
 			return data;
 		}
 		
-		public function Shader3DAsset(myVertexShader 	: ByteArray,
-									  myFragmentShader	: ByteArray,
+		public function Shader3DAsset(vertexShader 		: ByteArray,
+									  fragmentShader	: ByteArray,
 									  vertexInput		: Vector.<Vertex3DComponent>)
 		{
-			myVertexShader.endian = Endian.LITTLE_ENDIAN;
-			myFragmentShader.endian = Endian.LITTLE_ENDIAN;
+			vertexShader.endian = Endian.LITTLE_ENDIAN;
+			fragmentShader.endian = Endian.LITTLE_ENDIAN;
 			
-			super(myVertexShader, myFragmentShader, vertexInput);
+			super(vertexShader, fragmentShader, vertexInput);
 		}
 	}
 }

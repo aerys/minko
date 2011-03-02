@@ -15,6 +15,7 @@ package aerys.minko.render.state
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.Context3DTriangleFace;
+	import flash.display3D.Program3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix3D;
@@ -29,6 +30,9 @@ package aerys.minko.render.state
 		
 		private static const TC_FRONT				: int				= TriangleCulling.FRONT;
 		private static const TC_BACK				: int				= TriangleCulling.BACK;
+		
+		private static const PT_VERTEX				: String			= Context3DProgramType.VERTEX;
+		private static const PT_FRAGMENT			: String			= Context3DProgramType.FRAGMENT;
 		
 		private static const TMP_VECTOR				: Vector.<Number>	= new Vector.<Number>();
 
@@ -141,7 +145,7 @@ package aerys.minko.render.state
 		
 		public function set renderTarget(value : RenderTarget) : void
 		{
-			if (value != _renderTarget)
+			//if (value != _renderTarget)
 			{
 				_renderTarget = value;
 				_setFlags |= RENDER_TARGET;
@@ -151,7 +155,7 @@ package aerys.minko.render.state
 		
 		public function set shader(value : Shader3D) : void
 		{
-			if (_shader != value)
+			//if (_shader != value)
 			{
 				_shader = value;
 				_setFlags |= SHADER;
@@ -161,7 +165,7 @@ package aerys.minko.render.state
 		
 		public function set blending(value : uint) : void
 		{
-			if (_blending != value)
+			//if (_blending != value)
 			{
 				_blending = value;
 				_setFlags |= BLENDING;
@@ -171,7 +175,7 @@ package aerys.minko.render.state
 		
 		public function set colorMask(value : uint) : void
 		{
-			if (value != _colorMask)
+			//if (value != _colorMask)
 			{
 				_colorMask = value;
 				_setFlags |= COLOR_MASK;
@@ -181,7 +185,7 @@ package aerys.minko.render.state
 		
 		public function set triangleCulling(value : uint) : void
 		{
-			if (value != _triangleCulling)
+			//if (value != _triangleCulling)
 			{
 				_triangleCulling = value;
 				_setFlags |= TRIANGLE_CULLING;
@@ -191,7 +195,7 @@ package aerys.minko.render.state
 		
 		public function set indexStream(value : IndexStream3D) : void 
 		{
-			if (value != _indexStream)
+			//if (value != _indexStream)
 			{
 				_indexStream = value;
 				_setFlags |= INDEX_STREAM;
@@ -201,9 +205,10 @@ package aerys.minko.render.state
 		
 		public function setVertexStreamList(streamList	: VertexStream3DList) : void
 		{
-			var vertexInput	: Vector.<Vertex3DComponent> = _shader._vertexInput;
+			var vertexInput	: Vector.<Vertex3DComponent> 	= _shader._vertexInput;
+			var numInputs	: int							= vertexInput.length;
 			
-			for (var i : int = 0; i < 8; ++i)
+			for (var i : int = 0; i < numInputs; ++i)
 			{
 				var neededComponent:Vertex3DComponent = vertexInput[i];
 				
@@ -322,25 +327,29 @@ package aerys.minko.render.state
 		{
 			if (current)
 			{
-				prepareContextDelta(context, current);
+				//prepareContextDelta(context, current);
+				throw new Error();
 			}
 			else
 			{
 				_shader.prepare(context);
-				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX,
-													  0,
-													  _vertexConstants);
 				
-				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT,
-													  0,
-													  _fragmentConstants);
+				if (_setFlags & VERTEX_CONSTS)
+					context.setProgramConstantsFromVector(Context3DProgramType.VERTEX,
+														  0,
+														  _vertexConstants);
+
+				if (_setFlags & FRAGMENT_CONSTS)
+					context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT,
+														  0,
+														  _fragmentConstants);
 				
-				if ((_triangleCulling & TC_FRONT) && (_triangleCulling & TC_BACK))
-					context.setCulling(Context3DTriangleFace.FRONT_AND_BACK);
-				else
-					context.setCulling(CULLING_STR[_triangleCulling]);
+				if (_setFlags & TRIANGLE_CULLING)
+					context.setCulling((_triangleCulling & TC_FRONT) && (_triangleCulling & TC_BACK)
+									   ? Context3DTriangleFace.FRONT_AND_BACK
+									   : CULLING_STR[_triangleCulling]);
 				
-				if (_setFlags & COLOR_MASK && current._colorMask != _colorMask)
+				if (_setFlags & COLOR_MASK)
 					context.setColorMask((_colorMask & WriteMask.COLOR_RED) != 0,
 										 (_colorMask & WriteMask.COLOR_GREEN) != 0,
 										 (_colorMask & WriteMask.COLOR_BLUE) != 0,
@@ -352,12 +361,10 @@ package aerys.minko.render.state
 				
 				for (var i : int = 0; i < 8; ++i)
 				{
-					// set textures
-					var texture : TextureBase = _textures[i];
+					// set texture
+					context.setTextureAt(i, (_setFlags & (TEXTURE1 << i)) ? _textures[i] : null);
 					
-					context.setTextureAt(i, (_setFlags & (TEXTURE1 << i)) ? texture : null);
-					
-					// set vertex buffers
+					// set vertex buffer
 					if (_setFlags & (VERTEX_STREAM_1 << i))
 					{
 						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getVertexBuffer3D(context);
@@ -376,35 +383,16 @@ package aerys.minko.render.state
 		
 		private function prepareContextDelta(context : Context3D, current : RenderState) : void
 		{
-			if (_setFlags & RENDER_TARGET && _renderTarget != current._renderTarget)
-			{
-				// FIXME: support cubic render target
-				if (!_renderTarget.texture)
-					_renderTarget._texture = context.createTexture(_renderTarget.size,
-																   _renderTarget.size,
-																   Context3DTextureFormat.BGRA,
-																   true);
-				
-				context.setRenderToTexture(_renderTarget.texture,
-										   _renderTarget.useDepthAndStencil,
-										   _renderTarget.antiAliasing);
-				context.clear();
-			}
-			
-			if (_setFlags & SHADER && current._shader != _shader)
-				_shader.prepare(context);
+			_shader.prepare(context);
 			
 			if (_setFlags & VERTEX_CONSTS)
-				context.setProgramConstantsFromVector(Context3DProgramType.VERTEX,
-													  0,
-													  _vertexConstants);
-			
+				context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
+											
 			if (_setFlags & FRAGMENT_CONSTS)
-				context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT,
-					0,
-					_fragmentConstants);
+				context.setProgramConstantsFromVector(PT_FRAGMENT, 0, _fragmentConstants);
 			
-			if (_setFlags & TRIANGLE_CULLING && current._triangleCulling != _triangleCulling)
+			if (_setFlags & TRIANGLE_CULLING
+				&& (!(current._setFlags & TRIANGLE_CULLING) || current._triangleCulling != _triangleCulling))
 			{
 				if ((_triangleCulling & TC_FRONT) && (_triangleCulling & TC_BACK))
 					context.setCulling(Context3DTriangleFace.FRONT_AND_BACK);
@@ -412,31 +400,49 @@ package aerys.minko.render.state
 					context.setCulling(CULLING_STR[_triangleCulling]);
 			}
 			
-			if (_setFlags & COLOR_MASK && current._colorMask != _colorMask)
-				context.setColorMask((_colorMask & WriteMask.COLOR_RED) != 0,
-					(_colorMask & WriteMask.COLOR_GREEN) != 0,
-					(_colorMask & WriteMask.COLOR_BLUE) != 0,
-					(_colorMask & WriteMask.COLOR_ALPHA) != 0);
-			
-			if (_setFlags & BLENDING && current._blending != _blending)
-				context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
-					BLENDING_STR[int(_blending >> 16)]);
-			
-			if (_setFlags & TEXTURES)
+			if (_setFlags & COLOR_MASK
+				&& (!(current._setFlags & COLOR_MASK) || current._colorMask != _colorMask))
 			{
-				for (var i : int = 0; i < 8; ++i)
-				{
-					var texture : TextureBase = _textures[i];
-					
-					if (_setFlags & (TEXTURE1 << i) && current._textures[i] != texture)
-						context.setTextureAt(i, texture);
-				}
+				context.setColorMask((_colorMask & WriteMask.COLOR_RED) != 0,
+									 (_colorMask & WriteMask.COLOR_GREEN) != 0,
+									 (_colorMask & WriteMask.COLOR_BLUE) != 0,
+									 (_colorMask & WriteMask.COLOR_ALPHA) != 0);
+			}
+			
+			if (_setFlags & BLENDING
+				&& (!(current._setFlags & BLENDING) || current._blending != _blending))
+			{
+				context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
+										BLENDING_STR[int(_blending >> 16)]);
+			}
+			
+			for (var i : int = 0; i < 8; ++i)
+			{
+				// set textures
+				var textureFlag	: uint			= TEXTURE1 << i;
+				var texture		: TextureBase 	= (_setFlags & textureFlag)
+											  	  ? _textures[i]
+											  	  : null;
+				
+				if (texture != (current._setFlags & textureFlag ? current._textures[i] : null))
+					context.setTextureAt(i, texture);
+				
+				// set vertex buffers
+				var vertexFlag : uint = VERTEX_STREAM_1 << i;
+				var vertexStream : VertexBuffer3D	= _setFlags & vertexFlag
+													  ? _vertexStreams[i].getVertexBuffer3D(context)
+													  : null;
+				var vertexOffset : int				= _vertexOffsets[i];
+				var vertexFormat : String			= _vertexFormats[i];
+				
+				if (vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
+					context.setVertexBufferAt(i, vertexStream, vertexOffset, vertexFormat);
 			}
 		}
 		
 		public function copy(target : RenderState) : RenderState
 		{
-			target._setFlags = _setFlags;
+			/*target._setFlags = _setFlags;
 			
 			if (_setFlags & RENDER_TARGET)
 				target._renderTarget = _renderTarget;
@@ -465,7 +471,7 @@ package aerys.minko.render.state
 			if (_setFlags & TEXTURES)
 				for (var i : int = 0; i < 8; ++i)
 					if (_setFlags & (TEXTURE1 << i))
-						target._textures[i] = _textures[i];
+						target._textures[i] = _textures[i];*/
 			
 			return target;
 		}

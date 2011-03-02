@@ -10,12 +10,12 @@ package aerys.minko.scene.mesh.modifier
 	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
 	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	
-	public class NormalMesh extends AbstractMeshModifier3D
+	public class NormalMesh3D extends AbstractMeshModifier3D
 	{
 		use namespace minko;
 		
 		public static const VERTEX_FORMAT	: PackedVertex3DFormat	=
-			new PackedVertex3DFormat([new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3)]);
+			new PackedVertex3DFormat(new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3));
 		
 		protected var _version	: uint	= 0;
 		protected var _vertexStreamList:VertexStream3DList;
@@ -23,7 +23,7 @@ package aerys.minko.scene.mesh.modifier
 		override public function get version() : uint { return _version; }
 		override public function get vertexStreamList():VertexStream3DList { return _vertexStreamList; }
 		
-		public function NormalMesh(target : IMesh3D)
+		public function NormalMesh3D(target : IMesh3D)
 		{
 			super(target);
 			

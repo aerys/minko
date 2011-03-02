@@ -31,17 +31,19 @@ package aerys.minko.effect
 		{
 			_properties	= new Object();
 			_append		= new Object();
-			_target		= null
+			_target		= null;
 		}
 		
-		public function has(name : String) : Boolean 
+		public function get(name : String, defaultValue : * = undefined) : *
 		{
-			return _properties.hasOwnProperty(name);
-		}
-		
-		public function get(name : String, readonly : Boolean = true) : *
-		{
-			return _properties[name] || (_target ? _target.get(name) : null);
+			var value : * = _properties[name] !== undefined
+							? _properties[name]
+							: (_target ? _target.get(name, defaultValue) : defaultValue);
+			
+			if (value === undefined)
+				throw new Error("Unable to read a style that was never set if no default value is provided.");
+			
+			return value;
 		}
 		
 		public function set(name : String, value : *) : IEffect3DStyle
@@ -53,7 +55,8 @@ package aerys.minko.effect
 		
 		public function append(name : String, value : *) : IEffect3DStyle 
 		{
-			var a:Array = get(name);
+			var a : Array = get(name, null);
+			
 			if (!a)
 			{
 				a = new Array();

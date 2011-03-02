@@ -62,7 +62,7 @@ package aerys.minko.render
 			if (indexStream.length == 0 || count == 0)
 				return ;
 			
-			_context.enableErrorChecking = true;
+			//_context.enableErrorChecking = true;
 			
 			/*if (!_session || _session.renderState.version != _states.version)
 			{
@@ -78,11 +78,16 @@ package aerys.minko.render
 			dc.initialize(_stream, indexStream, firstIndex, count);
 			_session.drawCalls.push(dc);*/
 			
-			_state.prepareContext(_context);
+			var t : int = getTimer();
 			
+			_state.prepareContext(_context);
+				
 			_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
 								   firstIndex,
 								   count);
+			
+			_drawingTime += getTimer() - t;
+			
 			_state.clear();
 			
 			_numTriangles += count;
@@ -129,6 +134,7 @@ package aerys.minko.render
 				_session = _session.next;
 			}
 			*/
+			
 			_context.present();
 			
 			//_drawingTime += getTimer() - t;

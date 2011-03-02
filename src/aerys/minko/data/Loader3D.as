@@ -8,7 +8,7 @@ package aerys.minko.data
 	import aerys.minko.scene.material.AnimatedMaterial3D;
 	import aerys.minko.scene.material.IMaterial3D;
 	import aerys.minko.scene.material.MovieClipMaterial3D;
-	import aerys.minko.scene.material.NativeMaterial3D;
+	import aerys.minko.scene.material.BitmapMaterial3D;
 	
 	import flash.display.Bitmap;
 	import flash.display.IBitmapDrawable;
@@ -65,8 +65,14 @@ package aerys.minko.data
 			}
 			else
 			{
-				var urlLoader : URLLoader	= new URLLoader();
+				var urlLoader 	: URLLoader	= new URLLoader();
+				var uri			: String	= request.url;
+				var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
+				var parser		: IParser3D	= PARSERS[extension.toLocaleLowerCase()];
 				
+				if (!parser)
+					throw new Error("No data parser registered for extension '" + extension + "'");
+
 				_loaderToURI[urlLoader] = request.url;
 				
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
@@ -121,7 +127,7 @@ package aerys.minko.data
 				}
 			}
 			else if (assetObject is IBitmapDrawable)
-				return Vector.<IScene3D>([NativeMaterial3D.fromDisplayObject(assetObject as Bitmap)]);
+				return Vector.<IScene3D>([BitmapMaterial3D.fromDisplayObject(assetObject as Bitmap)]);
 			else if (assetObject is ByteArray)
 				return loadBytes(assetObject as ByteArray);
 			
@@ -132,11 +138,8 @@ package aerys.minko.data
 		{
 			var loader 		: URLLoader	= event.target as URLLoader;
 			var uri			: String	= _loaderToURI[loader];
-			var extension	: String	= uri.split(/^\.([A-Za-z0-9]+)$/s)[0];
+			var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
 			var parser		: IParser3D	= PARSERS[extension.toLocaleLowerCase()];
-			
-			if (!parser)
-				throw new Error("No data parser registered for extension '" + extension + "'");
 			
 			_data = parser.parse(loader.data as ByteArray)
 					? parser.data
@@ -155,7 +158,7 @@ package aerys.minko.data
 			if (info.content is MovieClip)
 				mat = new MovieClipMaterial3D(info.content as MovieClip);
 			else if (info.content is Bitmap)
-				mat = new NativeMaterial3D((info.content as Bitmap).bitmapData);
+				mat = new BitmapMaterial3D((info.content as Bitmap).bitmapData);
 			
 			_data.length = 0;
 			_data[0] = mat;

@@ -2,7 +2,7 @@ package aerys.minko.scene.debug
 {
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.scene.Model3D;
-	import aerys.minko.scene.material.NativeMaterial3D;
+	import aerys.minko.scene.material.BitmapMaterial3D;
 	import aerys.minko.scene.mesh.primitive.CubeMesh3D;
 	
 	import flash.display.CapsStyle;
@@ -18,7 +18,7 @@ package aerys.minko.scene.debug
 			shape.graphics.beginFill(0, 0.);
 			shape.graphics.drawRect(2, 2, 252, 252);
 			
-			var mat : NativeMaterial3D = NativeMaterial3D.fromDisplayObject(shape, 256, true);
+			var mat : BitmapMaterial3D = BitmapMaterial3D.fromDisplayObject(shape, 256, true);
 			
 			mat.blending = Blending.ADDITIVE;
 				
