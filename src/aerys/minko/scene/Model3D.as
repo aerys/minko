@@ -19,6 +19,8 @@ package aerys.minko.scene
 	{
 		use namespace minko;
 		
+		private var _emptyStyle	: IEffect3DStyle		= new Effect3DStyle();
+		
 		private var _mesh		: IMesh3D				= null;
 		private var _material	: IMaterial3D			= null;
 		private var _transform	: Transform3D			= new Transform3D();
@@ -72,12 +74,18 @@ package aerys.minko.scene
 				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
 			
 			query.effects.pushEffects(_effects);
-			query.style = _style.override(query.style);
+			
+			var newStyle:IEffect3DStyle;
+			newStyle = _style.override(query.style);
+			newStyle = _emptyStyle.override(newStyle);
+			query.style = newStyle;
 			
 			_material && query.query(_material);
 			_mesh && query.query(_mesh);
 			
-			query.style = _style.override();
+			query.style = query.style.override().override();
+			_emptyStyle.clear();
+			
 			query.effects.pop(_effects.length);
 			
 			transform.pop();

@@ -2,10 +2,10 @@
 {
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
-	import aerys.minko.transform.TransformManager;
-	import aerys.minko.transform.TransformType;
 	import aerys.minko.scene.IObject3D;
 	import aerys.minko.transform.Transform3D;
+	import aerys.minko.transform.TransformManager;
+	import aerys.minko.transform.TransformType;
 	
 	/**
 	 * ...
@@ -23,26 +23,19 @@
 			super(children);
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
+		override protected function acceptRenderingQuery(query:RenderingQuery):void
 		{
-			if (query is RenderingQuery)
-			{
-				if (!_visible)
-					return ;
-				
-				var t : TransformManager	= (query as RenderingQuery).transform;
-				
-				t.push(TransformType.WORLD);
-				t.world.multiply(_transform);
-				
-				super.accept(query);
-				
-				t.pop();
-			}
-			else
-			{
-				super.accept(query);
-			}
+			if (!_visible)
+				return ;
+			
+			var t : TransformManager	= (query as RenderingQuery).transform;
+			
+			t.push(TransformType.WORLD);
+			t.world.multiply(_transform);
+			
+			super.acceptRenderingQuery(query);
+			
+			t.pop();
 		}
 		
 		/**

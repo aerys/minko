@@ -1,6 +1,7 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.scene.IScene3D;
 
@@ -246,6 +247,19 @@ package aerys.minko.scene.group
 		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
 		 */
 		override public function accept(query : IScene3DQuery) : void
+		{
+			super.accept(query);
+			if (!(query is RenderingQuery))
+				visitChildren(query);
+		}
+		
+		override protected function acceptRenderingQuery(query:RenderingQuery):void
+		{
+			super.acceptRenderingQuery(query);
+			visitChildren(query);
+		}
+		
+		protected function visitChildren(query : IScene3DQuery) : void
 		{
 			var numChildren : int = _numChildren;
 			var i 			: int = 0;

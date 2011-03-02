@@ -1,5 +1,7 @@
 package aerys.minko.effect
 {
+	import aerys.minko.effect.basic.BasicEffect3D;
+	import aerys.minko.effect.basic.BasicStyle3D;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 		
@@ -16,15 +18,29 @@ package aerys.minko.effect
 		
 		public function override(style : IEffect3DStyle = null) : IEffect3DStyle
 		{
-			var target : IEffect3DStyle = _target;
-			
-			_target = style;
-			
-			if (target == null)
+			if (style === null)
+			{
+				var target:IEffect3DStyle = _target;
+				
 				for (var name:String in _append)
 					(_properties[name] as Array).length = _append[name];
+				
+				_target = null;
+				return target;
+			}
+			else
+			{
+				_target = style;
+				return this;
+			}
 			
-			return target || this;
+//			var target : IEffect3DStyle = _target;
+//			
+//			_target = style;
+//			
+//			if (target == null)
+//			
+//			return target || this;
 		}
 		
 		public function clear() : void 
@@ -36,14 +52,16 @@ package aerys.minko.effect
 		
 		public function get(name : String, defaultValue : * = undefined) : *
 		{
-			var value : * = _properties[name] !== undefined
-							? _properties[name]
-							: (_target ? _target.get(name, defaultValue) : defaultValue);
+			if (_properties.hasOwnProperty(name))
+				return _properties[name];
 			
-			if (value === undefined)
+			if (_target)
+				return _target.get(name, defaultValue);
+			
+			if (defaultValue === undefined)
 				throw new Error("Unable to read a style that was never set if no default value is provided.");
-			
-			return value;
+
+			return defaultValue;
 		}
 		
 		public function set(name : String, value : *) : IEffect3DStyle

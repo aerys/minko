@@ -1,7 +1,6 @@
 package aerys.minko.scene
 {
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.scene.group.IGroup3D;
 
 	public interface IScene3D
 	{

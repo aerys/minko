@@ -21,15 +21,16 @@ package aerys.minko.scene.group
 			return _style;
 		}
 		
-		override protected function acceptRenderingQuery(query:RenderingQuery):void
+		override protected function acceptRenderingQuery(q:RenderingQuery):void
 		{
-			_style.override(query.style);
-			_emptyStyle.override(_style);
-			query.style = style;
+			var newStyle:IEffect3DStyle;
+			newStyle = _style.override(q.style);
+			newStyle = _emptyStyle.override(newStyle);
+			q.style = newStyle;
 			
-			super.acceptRenderingQuery(query);
+			super.acceptRenderingQuery(q);
 			
-			query.style = _style.override().override();
+			q.style = q.style.override().override();
 			_emptyStyle.clear();
 		}
 	}

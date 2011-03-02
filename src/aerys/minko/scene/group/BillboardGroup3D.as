@@ -41,7 +41,7 @@ package aerys.minko.scene.group
 			transform.push(TransformType.WORLD);
 			transform.world.multiply(_local);	
 			
-			super.accept(query);
+			super.acceptRenderingQuery(query);
 			
 			transform.pop();
 		}
