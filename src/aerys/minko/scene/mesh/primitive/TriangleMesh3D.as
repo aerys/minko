@@ -28,7 +28,7 @@
 														0.5, 0.0, -0.5,
 														0.0, 0.0, 0.5]);
 			
-			super(Vector.<VertexStream3D>([new VertexStream3D(vb, PackedVertex3DFormat.XYZ)]));
+			super(Vector.<VertexStream3D>(new VertexStream3D(vb, PackedVertex3DFormat.XYZ)));
 		}
 		
 	}

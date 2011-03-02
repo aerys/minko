@@ -17,13 +17,13 @@ package aerys.minko.scene.mesh.primitive
 			return _instance || (_instance = new SphereMesh3D());
 		}
 		
-		public function SphereMesh3D(myParallels : uint = DEFAULT_NUM_PARALLELS,
-								   myMeridians : uint = 0)
+		public function SphereMesh3D(numParallels : uint = DEFAULT_NUM_PARALLELS,
+								   	 numMeridians : uint = 0)
 		{
-			myMeridians ||= myParallels;
+			numMeridians ||= numParallels;
 			
-			var numVertices	: int				= (myParallels - 2) * (myMeridians + 1) + 2;
-			var numFaces	: int				= (myParallels - 2) * (myMeridians) * 2;
+			var numVertices	: int				= (numParallels - 2) * (numMeridians + 1) + 2;
+			var numFaces	: int				= (numParallels - 2) * (numMeridians) * 2;
 			var	indices		: Vector.<uint>		= new Vector.<uint>(numFaces * 3, true);
 			var vertices	: Vector.<Number>	= new Vector.<Number>(numVertices * 3, true);
 			var uv			: Vector.<Number>	= new Vector.<Number>(numVertices * 2, true);
@@ -34,19 +34,19 @@ package aerys.minko.scene.mesh.primitive
 			var j			: int				= 0;
 			var i			: int				= 0;
 			
-			for (j = 1; j < myParallels - 1; j++)
+			for (j = 1; j < numParallels - 1; j++)
 			{
-				for (i = 0; i < myMeridians + 1; i++, c += 3, k += 2)
+				for (i = 0; i < numMeridians + 1; i++, c += 3, k += 2)
 				{
-					theta = j / (myParallels - 1) * Math.PI;
-					phi = i / myMeridians * Math.PI * 2;
+					theta = j / (numParallels - 1) * Math.PI;
+					phi = i / numMeridians * Math.PI * 2;
 					
 					vertices[c] = Math.sin(theta) * Math.cos(phi) * .5;
 					vertices[int(c + 1)] = Math.cos(theta) * .5;
 					vertices[int(c + 2)] = -Math.sin(theta) * Math.sin(phi) * .5;
 					
-					uv[k] = 1. - i / myMeridians;
-					uv[int(k + 1)] = j / (myParallels - 1);
+					uv[k] = 1. - i / numMeridians;
+					uv[int(k + 1)] = j / (numParallels - 1);
 				}
 			}
 			
@@ -56,35 +56,35 @@ package aerys.minko.scene.mesh.primitive
 			vertices[int(c + 3)] = 0.; vertices[int(c + 4)]= -.5; vertices[int(c + 5)] = 0.;
 			uv[int(k + 2)] = .5; uv[int(k + 3)] = 1.;
 			
-			myMeridians++;
-			for (c = 0,j = 0; j < myParallels - 3; j++)
+			numMeridians++;
+			for (c = 0,j = 0; j < numParallels - 3; j++)
 			{
-				for (i = 0; i < myMeridians - 1; i++)
+				for (i = 0; i < numMeridians - 1; i++)
 				{
-					indices[int(c++)] = j * myMeridians + i;
-					indices[int(c++)] = j * myMeridians + i + 1;
-					indices[int(c++)] = (j + 1) * myMeridians + i + 1;
+					indices[int(c++)] = j * numMeridians + i;
+					indices[int(c++)] = j * numMeridians + i + 1;
+					indices[int(c++)] = (j + 1) * numMeridians + i + 1;
 
-					indices[int(c++)] = j * myMeridians + i;
-					indices[int(c++)] = (j + 1) * myMeridians + i + 1;
-					indices[int(c++)] = (j + 1) * myMeridians + i;
+					indices[int(c++)] = j * numMeridians + i;
+					indices[int(c++)] = (j + 1) * numMeridians + i + 1;
+					indices[int(c++)] = (j + 1) * numMeridians + i;
 				}
 			}
 			
-			for (i = 0; i < myMeridians - 1; i++)
+			for (i = 0; i < numMeridians - 1; i++)
 			{
-				indices[int(c++)] = (myParallels - 2) * myMeridians;
+				indices[int(c++)] = (numParallels - 2) * numMeridians;
 				indices[int(c++)] = i + 1;
 				indices[int(c++)] = i;
 
-				indices[int(c++)] = (myParallels - 2) * myMeridians + 1;
-				indices[int(c++)] = (myParallels - 3) * myMeridians + i;
-				indices[int(c++)] = (myParallels - 3) * myMeridians + i + 1;
+				indices[int(c++)] = (numParallels - 2) * numMeridians + 1;
+				indices[int(c++)] = (numParallels - 3) * numMeridians + i;
+				indices[int(c++)] = (numParallels - 3) * numMeridians + i + 1;
 			}
 			
 			
 			super(
-				new VertexStream3DList([VertexStream3D.fromPositionsAndUVs(vertices, uv)]),
+				new VertexStream3DList(VertexStream3D.fromPositionsAndUVs(vertices, uv)),
 				new IndexStream3D(indices)
 			);
 		}

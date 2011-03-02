@@ -26,7 +26,7 @@ package aerys.minko.type.stream
 		public function get dynamic()	: Boolean { return _dynamic; }
 		public function get length()	: int { return _streams.length ? _streams[0].length : 0; }
 		
-		public function VertexStream3DList(streams:Array = null)
+		public function VertexStream3DList(...streams)
 		{
 			_streams		= new Vector.<VertexStream3D>;
 			_streamVersions	= new Vector.<int>;
@@ -36,9 +36,8 @@ package aerys.minko.type.stream
 			
 			_version	= 0;
 			
-			if (streams)
-				for each (var stream:VertexStream3D in streams) 
-					pushVertexStream(stream);
+			for each (var stream:VertexStream3D in streams) 
+				pushVertexStream(stream);
 		}
 		
 		public function clone() : VertexStream3DList {

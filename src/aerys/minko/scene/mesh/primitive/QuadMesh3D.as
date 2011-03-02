@@ -32,12 +32,8 @@ package aerys.minko.scene.mesh.primitive
 			for (var y : int = 0; y <= height; y++)
 			{
 				for (var x : int = 0; x <= width; x++)
-				{
-					// x, y, z
-					vertices.push(x / width - .5, y / height - .5, 0.);
-					// u, v
-					vertices.push(x / width, 1. - y / height);
-				}
+					vertices.push(x / width - .5, y / height - .5, 0.,
+								  x / width, 1. - y / height);
 			}
 			
 			for (y = 0; y < height; y++)
@@ -57,8 +53,8 @@ package aerys.minko.scene.mesh.primitive
 			if (doubleSided)
 				indices = indices.concat(indices.concat().reverse());
 			
-			var vertexStreamList:VertexStream3DList = new VertexStream3DList([new VertexStream3D(vertices)]);
-			super(vertexStreamList, new IndexStream3D(indices));
+			super(new VertexStream3DList(new VertexStream3D(vertices)),
+				  new IndexStream3D(indices));
 		}
 
 	}

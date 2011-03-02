@@ -66,7 +66,7 @@ package aerys.minko.scene.mesh.primitive
 														   1., 1., 1., 0., 0., 0.,
 														   0., 0., 0., 1., 1., 1.]);
 		
-			super(new VertexStream3DList([VertexStream3D.fromPositionsAndUVs(vb, uv)]));
+			super(new VertexStream3DList(VertexStream3D.fromPositionsAndUVs(vb, uv)));
 		}
 		
 	}
