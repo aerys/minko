@@ -38,12 +38,13 @@ package aerys.minko.scene.group
 						   Vector4.Z_AXIS,
 						   UP);
 			
-			transform.push(TransformType.WORLD);
-			transform.world.multiply(_local);	
+			//transform.push(TransformType.WORLD);
+			transform.world.push()
+						   .multiply(_local);	
 			
 			super.acceptRenderingQuery(query);
 			
-			transform.pop();
+			transform.world.pop();
 		}
 	}
 }

@@ -66,8 +66,9 @@ package aerys.minko.scene
 			var numQueryEffects	: int					= queryEffects.length;
 			
 			// push world transform
-			transform.push(TransformType.WORLD);
-			transform.world.multiply(_transform);
+			//transform.push(TransformType.WORLD);
+			transform.world.push()
+						   .multiply(_transform);
 			transform.getLocalToScreen(_toScreen);
 			
 			_style.set(BasicStyle3D.WORLD_MATRIX, transform.world)
@@ -88,7 +89,7 @@ package aerys.minko.scene
 			queryEffects.length = numQueryEffects;
 			
 			// pop world transform
-			transform.pop();
+			transform.world.pop();
 		}
 	}
 }

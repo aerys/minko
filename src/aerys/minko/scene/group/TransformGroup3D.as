@@ -30,12 +30,13 @@
 			
 			var t : TransformManager	= (query as RenderingQuery).transform;
 			
-			t.push(TransformType.WORLD);
-			t.world.multiply(_transform);
+			//t.push(TransformType.WORLD);
+			t.world.push()
+				   .multiply(_transform);
 			
 			super.acceptRenderingQuery(query);
 			
-			t.pop();
+			t.world.pop();
 		}
 		
 		/**

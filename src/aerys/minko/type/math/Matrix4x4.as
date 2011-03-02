@@ -55,7 +55,7 @@ package aerys.minko.type.math
 		
 		public function push() : Matrix4x4
 		{
-			_matrix.copyRawDataTo(_data);
+			_matrix.copyRawDataTo(_data, _data.length);
 			
 			return this;
 		}
