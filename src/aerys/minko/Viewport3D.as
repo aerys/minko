@@ -133,20 +133,9 @@ package aerys.minko
 		
 		public function get renderMode() : String
 		{
-			if (_context)
-				return _context.driverInfo.split(/^(\w+) Description=(.*) Driver=.*$/gs)[1];
-			
-			return null;
+			return _context ? _context.driverInfo : null;
 		}
-		
-		public function get driver() : String
-		{
-			if (_context)
-				return _context.driverInfo.split(/^(\w+) Description=(.*) Driver=.*$/gs)[2];
-			
-			return null;
-		}
-		
+
 		/**
 		 * Creates a new Viewport object.
 		 *
