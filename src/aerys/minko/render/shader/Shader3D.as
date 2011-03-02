@@ -13,7 +13,6 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
-		
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
 		

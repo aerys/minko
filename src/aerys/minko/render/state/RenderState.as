@@ -94,6 +94,11 @@ package aerys.minko.render.state
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
 		private var _rectangle			: Rectangle					= null;
 		
+		public function get rectangle() : Rectangle
+		{
+			return _rectangle;
+		}
+		
 		public function get version() : uint
 		{
 			return _version;
@@ -127,7 +132,12 @@ package aerys.minko.render.state
 		public function get indexStream()	: IndexStream3D 
 		{
 			return _indexStream;
-		} 
+		}
+		
+		public function set rectangle(value : Rectangle) : void
+		{
+			_rectangle = value;
+		}
 		
 		public function set renderTarget(value : RenderTarget) : void
 		{
