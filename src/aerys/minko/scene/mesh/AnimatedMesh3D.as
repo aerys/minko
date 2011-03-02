@@ -5,7 +5,7 @@ package aerys.minko.scene.mesh
 	import aerys.minko.type.Animation3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 	
 	import flash.events.EventDispatcher;
 	
@@ -31,7 +31,7 @@ package aerys.minko.scene.mesh
 			return null;
 		}
 		
-		public function get vertexStreamList() : VertexStreamList3D
+		public function get vertexStreamList() : VertexStream3DList
 		{
 			return _current.vertexStreamList;
 		}

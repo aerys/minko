@@ -7,7 +7,7 @@ package aerys.minko.render.state
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	
 	import flash.display3D.Context3D;
@@ -199,7 +199,7 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function setVertexStreamList(streamList	: VertexStreamList3D) : void
+		public function setVertexStreamList(streamList	: VertexStream3DList) : void
 		{
 			var vertexInput	: Vector.<Vertex3DComponent> = _shader._vertexInput;
 			

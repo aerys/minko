@@ -3,7 +3,7 @@ package aerys.minko.scene.mesh.primitive
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStreamList3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 
 	/**
 	 * The CylinderMesh class represents a cylinder mesh.
@@ -58,7 +58,7 @@ package aerys.minko.scene.mesh.primitive
 				++ii;
 			}
 			
-			super(new VertexStreamList3D([VertexStream3D.fromPositionsAndUVs(vb, uv)]), new IndexStream3D(ib));
+			super(new VertexStream3DList(VertexStream3D.fromPositionsAndUVs(vb, uv)), new IndexStream3D(ib));
 		}
 		
 	}
