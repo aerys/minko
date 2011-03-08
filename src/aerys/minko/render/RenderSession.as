@@ -4,23 +4,27 @@ package aerys.minko.render
 
 	internal final class RenderSession
 	{
-		private var _renderState	: RenderState		= new RenderState();
-		private var _drawCalls		: Vector.<DrawCall>	= new Vector.<DrawCall>();
-		private var _next			: RenderSession		= null;
+		private var _renderState	: RenderState		= null;
+		private var _offset			: uint				= 0;
+		private var _numTriangles	: uint				= 0;
 		
-		public function get drawCalls()		: Vector.<DrawCall>	{ return _drawCalls; }
 		public function get renderState()	: RenderState		{ return _renderState; }
-		public function get next()			: RenderSession		{ return _next; }
+		public function get offset()		: uint				{ return _offset; }
+		public function get numTriangles()	: uint				{ return _numTriangles; }
 		
-		public function set next(value : RenderSession) : void
+		public function set renderState(value : RenderState) : void
 		{
-			_next = value;
+			_renderState = value;
 		}
 		
-		public function clear() : void
+		public function set offset(value : uint) : void
 		{
-			_drawCalls.length = 0;
-			_next = null;
+			_offset = value;
+		}
+		
+		public function set numTriangles(value : uint) : void
+		{
+			_numTriangles = value;
 		}
 	}
 }

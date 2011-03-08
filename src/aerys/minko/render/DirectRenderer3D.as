@@ -1,8 +1,10 @@
 package aerys.minko.render
 {
+	import aerys.common.Factory;
 	import aerys.minko.Viewport3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.shader.Shader3D;
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.math.Matrix4x4;
@@ -27,16 +29,22 @@ package aerys.minko.render
 	{
 		use namespace minko;
 		
-		private var _context		: Context3D				= null;
-		private var _state			: RenderState			= new RenderState();
-		private var _transform		: TransformManager		= new TransformManager();
-		private var _numTriangles	: uint					= 0;
-		private var _viewport		: Viewport3D			= null;
-		private var _drawingTime	: int					= 0;
-		private var _emptyTexture	: TextureBase			= null;
-		private var _frame			: uint					= 0;
+		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
+		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		
-		private var _session		: RenderSession			= null;
+		private static const DIRECT			: Boolean			= false;
+		
+		private var _context		: Context3D					= null;
+		private var _state			: RenderState				= new RenderState();
+		private var _currentState	: RenderState				= new RenderState();
+		private var _transform		: TransformManager			= new TransformManager();
+		private var _numTriangles	: uint						= 0;
+		private var _viewport		: Viewport3D				= null;
+		private var _drawingTime	: int						= 0;
+		private var _frame			: uint						= 0;
+		
+		private var _sessions		: Vector.<RenderSession>	= new Vector.<RenderSession>();
+		private var _numSessions	: int						= 0;
 		
 		public function get state() 		: RenderState	{ return _state; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
@@ -49,47 +57,44 @@ package aerys.minko.render
 			_viewport = viewport;
 			_context = context;
 			
-			_emptyTexture = createTexture(1, 1);
+			//_context.enableErrorChecking = true;
 		}
 
 		public function drawTriangles(firstIndex	: uint	= 0,
 									  count			: uint	= 0) : void
 		{
-			var indexStream:IndexStream3D = state.indexStream; 
+			var indexStream : IndexStream3D = _state.indexStream; 
 			
 			count ||= indexStream.length / 3;
 			
 			if (indexStream.length == 0 || count == 0)
 				return ;
-			
-			//_context.enableErrorChecking = true;
-			
-			/*if (!_session || _session.renderState.version != _states.version)
+		
+			if (!DIRECT)
 			{
-				var session : RenderSession = new RenderSession();
+				var session : RenderSession = RENDER_SESSION.create();
 				
-				session.next = _session;
-				_session = session;
-				_states.copy(_session.renderState);
+				session.renderState = _state;
+				session.offset = firstIndex;
+				session.numTriangles = count;
+				
+				_sessions[int(_numSessions++)] = session;
+				
+				_state = RENDER_STATE.create();
+			}
+			else
+			{
+				var t : int = getTimer();
+				
+				_state.prepareContext(_context);
+				_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
+									   firstIndex,
+									   count);
+				_drawingTime += getTimer() - t;
+				
 			}
 			
-			var dc : DrawCall = new DrawCall();
-			
-			dc.initialize(_stream, indexStream, firstIndex, count);
-			_session.drawCalls.push(dc);*/
-			
-			var t : int = getTimer();
-			
-			_state.prepareContext(_context);
-				
-			_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
-								   firstIndex,
-								   count);
-			
-			_drawingTime += getTimer() - t;
-			
 			_state.clear();
-			
 			_numTriangles += count;
 		}
 		
@@ -108,41 +113,29 @@ package aerys.minko.render
 		
 		public function present() : void
 		{
-			++_frame;
+			var time : int = getTimer();
 			
-			/*var t : int = getTimer();
-			var oldStates : RenderState = new RenderState();
-			
-			while (_session)
+			for (var i : int = 0; i < _numSessions; ++i)
 			{
-				var states : RenderState = _session.renderState;
-				var drawCalls	: Vector.<DrawCall> = _session.drawCalls;
-				var numDrawCalls : int = drawCalls.length;
+				var session : RenderSession = _sessions[i];
+				var state	: RenderState 	= session.renderState;
 				
-				states.prepareContext(oldStates, _context);
-				for (var i : int = 0; i < numDrawCalls; ++i)
-				{
-					var drawCall : DrawCall = drawCalls[i];
-					
-					setVertexStream(drawCall.vertexBuffer);
-					_context.drawTriangles(drawCall.indexBuffer.getIndexBuffer3D(_context),
-										   drawCall.offset,
-										   drawCall.numTriangles);
-				}
+				state.prepareContext(_context, _currentState);
+				_context.drawTriangles(state.indexStream.getIndexBuffer3D(_context),
+									   session.offset,
+									   session.numTriangles);
+
+				RENDER_SESSION.free(session);
+				RENDER_STATE.free(_currentState);
 				
-				oldStates = states;
-				_session = _session.next;
+				_currentState = state;
 			}
-			*/
 			
+			_numSessions = 0;
 			_context.present();
 			
-			//_drawingTime += getTimer() - t;
-			
-//			ligne 38
-//			_stream = null;
-//			_format = null;
-//			_offset = 0;
+			_drawingTime += getTimer() - time;
+			++_frame;
 		}
 		
 		public function createTexture(width 	: uint,

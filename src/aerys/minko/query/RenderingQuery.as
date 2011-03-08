@@ -49,6 +49,11 @@ package aerys.minko.query
 			_style = value;
 		}
 		
+		public function set effects(value : Vector.<IEffect3D>) : void
+		{
+			_fx = value;
+		}
+		
 		public function RenderingQuery(renderer : IRenderer3D)
 		{
 			_renderer = renderer;
@@ -98,8 +103,6 @@ package aerys.minko.query
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
 			
-			var state:RenderState = _renderer.state;
-			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect3D					= _fx[i];
@@ -115,6 +118,8 @@ package aerys.minko.query
 					
 					if (pass.begin(_renderer, _style))
 					{
+						var state:RenderState = _renderer.state;
+						
 						state.indexStream = indexStream;
 						state.setVertexStreamList(vertexStreamList);
 						_renderer.drawTriangles(offset, numTriangles);
@@ -138,8 +143,7 @@ package aerys.minko.query
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
 			
-			var state:RenderState = _renderer.state;
-			var length	: int	= offsets.length;
+			var length	: int			= offsets.length;
 			
 			if (length != numTriangles.length)
 				throw new Error();
@@ -159,6 +163,8 @@ package aerys.minko.query
 					
 					if (pass.begin(_renderer, _style))
 					{
+						var state	: RenderState 	= _renderer.state;
+
 						state.indexStream = indexStream;
 						state.setVertexStreamList(vertexStreamList);
 						

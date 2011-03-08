@@ -238,7 +238,7 @@ package aerys.minko
 				_drawTime = 0;
 			}
 
-			//showLogo();
+			showLogo();
 		}	
 	
 		public function showLogo() : void
@@ -248,8 +248,8 @@ package aerys.minko
 			_logo.visible = true;
 			_logo.useHandCursor = true;
 			_logo.buttonMode = true;
-			_logo.x = stage.stageWidth - _logo.width - 10;
-			_logo.y = stage.stageHeight - _logo.height - 10;
+			_logo.x = stage.stageWidth - _logo.width - 5;
+			_logo.y = stage.stageHeight - _logo.height - 20;
 		}
 		
 		private function logoClickHandler(event : Event) : void

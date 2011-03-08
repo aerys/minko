@@ -30,7 +30,7 @@ package aerys.minko.type.vertex.format
 			_offsets			= new Object();
 			_nativeFormat		= nativeFormat;
 			_fields				= fields;
-			_implodedFields		= fields.join('|');
+			_implodedFields		= fields.join(', ');
 			
 			for (var offset:int = 0; offset < fields.length; ++offset)
 				_offsets[fields[offset]] = offset;

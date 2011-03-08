@@ -172,32 +172,17 @@ package aerys.minko.scene.camera
 			
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
+		override protected function acceptRenderingQuery(query : RenderingQuery) : void
 		{
 			if (!_enabled)
 				return ;
 			
-			var q : RenderingQuery = query as RenderingQuery;
+			invalidateTransform(query);
 			
-			if (q)
-			{
-	
-				/*if (_update || _position.version != _pv || _lookAt.version != _lv
-					|| _up.version != _uv)
-				{*/
-					invalidateTransform(q);
-					
-					/*_update = false;
-					_pv = _position.version;
-					_lv = _lookAt.version;
-					_uv = _up.version;*/
-				//}
-				
-				var transform : TransformManager = q.transform;
-				
-				transform.projection = _projection;
-				transform.view = _view;
-			}
+			var transform : TransformManager = query.transform;
+			
+			transform.projection = _projection;
+			transform.view = _view;
 		}
 		//} endregion
 	}

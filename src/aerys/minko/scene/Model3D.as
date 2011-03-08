@@ -77,8 +77,10 @@ package aerys.minko.scene
 				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
 			
 			// push FXs and style
-			for (var i : int = 0; i < numEffects; ++i)
-				queryEffects[int(numQueryEffects + i)] = _effects[i];	
+			query.effects = _effects.concat(queryEffects);
+			/*for (var i : int = 0; i < numEffects; ++i)
+				queryEffects.unshift(_effects[i]);*/
+				//queryEffects[int(numQueryEffects + i)] = _effects[i];	
 			query.style = _style.override(query.style);
 			
 			_material && query.query(_material);
@@ -86,7 +88,7 @@ package aerys.minko.scene
 			
 			// pop FXs and style
 			query.style = query.style.override();
-			queryEffects.length = numQueryEffects;
+			query.effects = queryEffects;
 			
 			// pop world transform
 			transform.world.pop();

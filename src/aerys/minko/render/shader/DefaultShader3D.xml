@@ -1,5 +1,5 @@
 <agal name="DefaultShader3D" packageName="aerys.minko.render.shader">
   <description/>
-  <vertexShader>// vc0 : world * view * projection matrix// va0 : vertex position// va1 : texture coordinatesm44 op, va0, vc0mov v0, va1</vertexShader>
-  <fragmentShader>// v0 : texture coordinates// fs0 : diffuse mapmov ft0, v0tex oc, ft0, fs0 &lt;2d,repeat,linear&gt;</fragmentShader>
+  <vertexShader>// vc0-3 = world * view * projection matrix// va0.xyz = vertex position// va1.xy = texture coordinatesm44 op, va0, vc0mov v0, va1</vertexShader>
+  <fragmentShader>// v0.xy = texture coordinates// fs0 = diffuse maptex ft0, v0, fs0 &lt;2d,repeat,linear&gt;mov oc, ft0</fragmentShader>
 </agal>

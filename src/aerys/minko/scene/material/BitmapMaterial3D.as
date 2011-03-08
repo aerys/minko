@@ -107,7 +107,7 @@ package aerys.minko.scene.material
 						var level 		: int 			= 0;
 						var ws 			: int 			= _data.width;
 						var hs 			: int 			= _data.height;
-						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, true, 0);
+						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, _data.transparent, 0);
 						var transform 	: Matrix 		= new Matrix();
 						
 						while (ws >= 1 && hs >= 1)
@@ -133,7 +133,7 @@ package aerys.minko.scene.material
 				_data = null;
 			}
 			
-			query.style.set(BasicStyle3D.BLENDING, _blending)
+			query.style//.set(BasicStyle3D.BLENDING, _blending)
 					   .set(_styleProp, _texture);
 		}
 		
