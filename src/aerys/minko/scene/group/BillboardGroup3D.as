@@ -1,11 +1,10 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.transform.Transform3D;
 	import aerys.minko.transform.TransformManager;
-	import aerys.minko.transform.TransformType;
+	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -31,11 +30,11 @@ package aerys.minko.scene.group
 			
 			Matrix4x4.multiply(transform.world, transform.view, _local)
 					 .invert()
-					 .multiplyVector(Vector4.ZERO, _localCamera);
+					 .multiplyVector(ConstVector4.ZERO, _localCamera);
 			
 			_local.identity();
 			_local.pointAt(_localCamera,
-						   Vector4.Z_AXIS,
+						   ConstVector4.Z_AXIS,
 						   UP);
 			
 			//transform.push(TransformType.WORLD);

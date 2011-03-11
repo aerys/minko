@@ -13,7 +13,7 @@ package aerys.minko.scene.material
 		public static const DEFAULT_FRAMERATE	: Number	= 30.;
 		
 		private var _frame		: int		= 0;
-		private var _lastFrame	: uint		= 0;
+		private var _lastFrame	: uint		= uint(-1);
 		private var _framerate	: Number	= 0.;
 		
 		private var _time		: int		= 0;

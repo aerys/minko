@@ -18,6 +18,11 @@ package aerys.minko.scene.camera
 		
 		private var _rv			: uint		= 0;
 		
+		override public function get version():uint
+		{
+			return super.version + _rotation.version;
+		}
+		
 		public function ArcBallCamera3D()
 		{
 			super();
@@ -42,7 +47,7 @@ package aerys.minko.scene.camera
 		//} endregion
 		
 		//{ region methods
-		override protected function invalidateTransform(query : RenderingQuery = null) : void
+		override protected function updateMatrices(query : RenderingQuery = null) : void
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -56,7 +61,7 @@ package aerys.minko.scene.camera
 			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
 			position.z = lookAt.z - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.invalidateTransform(query);
+			super.updateMatrices(query);
 		}
 		
 		override public function accept(visitor : IScene3DQuery) : void

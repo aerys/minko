@@ -12,8 +12,14 @@ package aerys.minko.scene.camera
 		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
+		private var _version	: uint		= 0;
 		private var _ghostMode	: Boolean	= false;
 		private var _rotation	: Vector4	= new Vector4();
+		
+		override public function get version():uint
+		{
+			return super.version + _rotation.version + _version;
+		}
 		
 		public function get ghostMode() : Boolean
 		{
@@ -23,6 +29,7 @@ package aerys.minko.scene.camera
 		public function set ghostMode(value : Boolean) : void
 		{
 			_ghostMode = value;
+			++_version;
 		}
 		
 		public function get rotation() : Vector4
@@ -37,7 +44,7 @@ package aerys.minko.scene.camera
 			_ghostMode = ghostMode;
 		}
 		
-		override protected function invalidateTransform(query : RenderingQuery = null) : void
+		override protected function updateMatrices(query : RenderingQuery = null) : void
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -48,7 +55,7 @@ package aerys.minko.scene.camera
 			lookAt.y = position.y + Math.sin(_rotation.x);
 			lookAt.z = position.z + Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.invalidateTransform(query);
+			super.updateMatrices(query);
 		}
 		
 		public function walk(distance : Number) : void

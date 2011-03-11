@@ -1,5 +1,6 @@
 ﻿package aerys.minko.scene.camera 
 {
+	import aerys.common.IVersionnable;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.type.math.Frustum3D;
 	import aerys.minko.type.math.Matrix4x4;
@@ -9,7 +10,7 @@
 	 * ...
 	 * @author Jean-Marc Le Roux
 	 */
-	public interface ICamera3D extends IScene3D
+	public interface ICamera3D extends IScene3D, IVersionnable
 	{
 		function get enabled() 		: Boolean;
 		

@@ -6,32 +6,27 @@ package aerys.minko.type.math
 	
 	import flash.geom.Vector3D;
 
-	public final class Vector4 implements IVersionnable
+	public class Vector4 implements IVersionnable
 	{
 		use namespace minko;
 		
 		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
-		
-		public static const X_AXIS				: Vector4	= new Vector4(1., 0., 0.);
-		public static const Y_AXIS				: Vector4	= new Vector4(0., 1., 0.);
-		public static const Z_AXIS				: Vector4	= new Vector4(0., 0., 1.);
-		public static const ZERO				: Vector4	= new Vector4();
-		public static const ONE					: Vector4	= new Vector4(1., 1., 1.);
 		
 		private static const UPDATE_NONE		: uint		= 0;
 		private static const UPDATE_LENGTH		: uint		= 1;
 		private static const UPDATE_LENGTH_SQ	: uint		= 2;
 		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 		
+		minko var _vector		: Vector3D	= new Vector3D();
+		
 		private var _version	: uint		= 0;
 		private var _update		: uint		= UPDATE_NONE;
-		
-		minko var _vector		: Vector3D	= new Vector3D();
 		
 		private var _length		: Number	= 0.;
 		private var _lengthSq	: Number	= 0.;
 		
 		public function get version()	: uint		{ return _version; }
+		
 		public function get x()			: Number	{ return _vector.x; }
 		public function get y()			: Number	{ return _vector.y; }
 		public function get z()			: Number	{ return _vector.z; }
@@ -113,27 +108,27 @@ package aerys.minko.type.math
 			_update = UPDATE_ALL;
 		}
 		
-		public static function add(u : Vector4, v : Vector4) : Vector4
+		public static function add(u 	: Vector4,
+								   v 	: Vector4,
+								   out	: Vector4 = null) : Vector4
 		{
-			return new Vector4(u._vector.x + v._vector.x,
-							   u._vector.y + v._vector.y,
-							   u._vector.z + v._vector.z,
-							   u._vector.w + v._vector.w);
+			out = copy(u);
+			
+			return out.add(v);
 		}
 		
-		public static function subtract(u : Vector4, v : Vector4) : Vector4
+		public static function subtract(u 	: Vector4,
+										v 	: Vector4,
+										out : Vector4 = null) : Vector4
 		{
-			return new Vector4(u._vector.x - v._vector.x,
-							   u._vector.y - v._vector.y,
-							   u._vector.z - v._vector.z,
-							   u._vector.w - v._vector.w);
+			out = copy(u);
+			
+			return out.subtract(v);
 		}
 		
 		public static function dotProduct(u : Vector4, v : Vector4) : Number
 		{
-			return u._vector.x * v._vector.x
-				   + u._vector.y * v._vector.y
-				   + u._vector.z * v._vector.z;
+			return u._vector.dotProduct(v._vector);
 		}
 		
 		public static function crossProduct(u : Vector4, v : Vector4) : Vector4
@@ -158,6 +153,14 @@ package aerys.minko.type.math
 			var z : Number = v._vector.z - u._vector.z;
 			
 			return Math.sqrt(x * x + y * y + z * z);
+		}
+		
+		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
+		{
+			target ||= FACTORY.create();
+			target.set(source.x, source.y, source.z);
+			
+			return target;
 		}
 		
 		public function add(vector : Vector4) : Vector4
@@ -247,11 +250,6 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function clone() : Vector4
-		{
-			return new Vector4(_vector.x, _vector.y, _vector.z, _vector.w);
-		}
-		
 		public function getVector3D() : Vector3D
 		{
 			return _vector.clone();
@@ -280,17 +278,6 @@ package aerys.minko.type.math
 		{
 			return "(" + _vector.x + ", " + _vector.y + ", " + _vector.z + ", "
 				   + _vector.w + ")";
-		}
-		
-		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
-		{
-			target ||= FACTORY.create();
-			target.set(source._vector.x,
-					   source._vector.y,
-					   source._vector.z,
-					   source._vector.w);
-			
-			return target;
 		}
 		
 		public static function scale(v : Vector4, s : Number, out : Vector4 = null) : Vector4

@@ -337,7 +337,7 @@ package aerys.minko.type.math
 										   transform	: Transform3D	= null,
 										   culling		: int 			= 0xffffff) : int
 		{
-			var center	: Vector4	= sphere._center;
+			var center	: Vector4	= sphere.center;
 			var radius	: Number	= sphere.radius;
 			var result	: int		= 0;
 			var p 		: Plane3D	= null;
@@ -350,7 +350,7 @@ package aerys.minko.type.math
 			{
 				var scale	: Vector4	= transform.scale;
 
-				center = transform.multiplyVector(sphere._center);
+				center = transform.multiplyVector(sphere.center);
 				radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
 			}
 						
@@ -469,7 +469,7 @@ package aerys.minko.type.math
 				return testBoundingBox(box, transform, culling);
 			
 			var sphere		: BoundingSphere3D	= volume.boundingSphere;
-			var center		: Vector4			= sphere._center;
+			var center		: Vector4			= sphere.center;
 			//var scale		: Vector3D			= transform.decompose()[2];
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;

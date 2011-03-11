@@ -15,6 +15,7 @@ package aerys.minko.query
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
 	
+	import flash.display3D.Context3DClearMask;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	
@@ -72,7 +73,12 @@ package aerys.minko.query
 			var camera : ICamera3D = scene as ICamera3D;
 			
 			if (camera && camera.enabled)
+			{
+				if (_camera)
+					throw new Error();
+				
 				_camera = camera;
+			}
 			
 			scene.accept(this);
 			
@@ -83,6 +89,7 @@ package aerys.minko.query
 		
 		public function reset() : void
 		{
+			_camera = null;
 			_parents.length = 0;
 			_numNodes = 0;
 			_renderer.clear();
@@ -116,16 +123,17 @@ package aerys.minko.query
 				{
 					var pass : IEffect3DPass = passes[j];
 					
+					_renderer.begin();
 					if (pass.begin(_renderer, _style))
 					{
 						var state:RenderState = _renderer.state;
 						
-						state.indexStream = indexStream;
-						state.setVertexStreamList(vertexStreamList);
+						state.setInputStreams(vertexStreamList, indexStream);
 						_renderer.drawTriangles(offset, numTriangles);
 					}
 					
 					pass.end(_renderer, _style);
+					_renderer.end();
 				}
 				
 				fx.end(_renderer, _style);
@@ -161,17 +169,17 @@ package aerys.minko.query
 				{
 					var pass : IEffect3DPass = passes[j];
 					
+					_renderer.begin();
 					if (pass.begin(_renderer, _style))
 					{
 						var state	: RenderState 	= _renderer.state;
-
-						state.indexStream = indexStream;
-						state.setVertexStreamList(vertexStreamList);
 						
+						state.setInputStreams(vertexStreamList, indexStream);
 						for (var k : int = 0; k < length; k += 1)
 							_renderer.drawTriangles(offsets[k], numTriangles[k]);
 					}
 					
+					_renderer.end();
 					pass.end(_renderer, _style);
 				}
 				

@@ -123,9 +123,14 @@ package aerys.minko.render.state
 		
 		private var _priority			: Number					= 0.;
 		
+		minko function get indexStream() : IndexStream3D
+		{
+			return _indexStream;
+		}
+		
 		public function get rectangle() : Rectangle
 		{
-			return _rectangle;
+			return _setFlags & SCISSOR_RECTANGLE ? _rectangle : null;
 		}
 		
 		public function get version() : uint
@@ -135,37 +140,32 @@ package aerys.minko.render.state
 		
 		public function get renderTarget() : RenderTarget
 		{
-			return _renderTarget;
+			return _setFlags & RENDER_TARGET ? _renderTarget : null;
 		}
 		
 		public function get colorMask() : uint
 		{
-			return _colorMask; 
+			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
 		public function get shader() : Shader3D
 		{
-			return _shader;
+			return _setFlags & SHADER ? _shader : null;
 		}
 		
 		public function get blending() : uint
 		{
-			return _blending;
+			return _setFlags & BLENDING ? _blending : 0;
 		}
 		
 		public function get triangleCulling() : uint
 		{
-			return _triangleCulling;
+			return _setFlags & TRIANGLE_CULLING ? triangleCulling : 0;
 		}
 		
-		public function get indexStream()	: IndexStream3D 
+		public function get depthMask() : uint
 		{
-			return _indexStream;
-		}
-		
-		public function get depthMasl() : uint
-		{
-			return _depthMask;
+			return _setFlags & DEPTH_MASK ? _depthMask : 0;
 		}
 		
 		public function set rectangle(value : Rectangle) : void
@@ -223,16 +223,6 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function set indexStream(value : IndexStream3D) : void 
-		{
-			//if (value != _indexStream)
-			{
-				_indexStream = value;
-				_setFlags |= INDEX_STREAM;
-				++_version;
-			}
-		}
-		
 		public function set depthMask(value : uint) : void
 		{
 			_depthMask = value;
@@ -240,10 +230,14 @@ package aerys.minko.render.state
 			++_version;
 		}
 		
-		public function setVertexStreamList(streamList	: VertexStream3DList) : void
+		public function setInputStreams(vertexStream	: VertexStream3DList,
+										indexStream		: IndexStream3D) : void
 		{
-			var vertexInput	: Vector.<Vertex3DComponent> 	= _shader._vertexInput;
+			var vertexInput	: Vector.<Vertex3DComponent> 	= shader._vertexInput;
 			var numInputs	: int							= vertexInput.length;
+			
+			_indexStream = indexStream;
+			_setFlags |= INDEX_STREAM;
 			
 			for (var i : int = 0; i < numInputs; ++i)
 			{
@@ -251,7 +245,7 @@ package aerys.minko.render.state
 				
 				if (neededComponent)
 				{
-					var stream : VertexStream3D = streamList.getComponentStream(neededComponent);
+					var stream : VertexStream3D = vertexStream.getComponentStream(neededComponent);
 					
 					if (!stream)
 						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
@@ -312,7 +306,7 @@ package aerys.minko.render.state
 												  value 		: Matrix4x4,
 												  transposed	: Boolean = true) : void
 		{
-			value._matrix.copyRawDataTo(_fragmentConstants, register * 4, transposed);
+			value.getRawData(_fragmentConstants, register * 4, transposed);
 			
 			_setFlags |= FRAGMENT_CONSTS;
 			++_version;
@@ -352,7 +346,7 @@ package aerys.minko.render.state
 												value		: Matrix4x4,
 												transposed	: Boolean = true) : void
 		{
-			value._matrix.copyRawDataTo(_vertexConstants, register * 4, transposed);
+			value.getRawData(_vertexConstants, register * 4, transposed);
 			
 			_setFlags |= VERTEX_CONSTS;
 			++_version;

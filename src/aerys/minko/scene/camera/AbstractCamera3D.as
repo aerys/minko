@@ -1,10 +1,10 @@
 package aerys.minko.scene.camera
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.query.RenderingQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.transform.TransformManager;
+	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Frustum3D;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -37,10 +37,8 @@ package aerys.minko.scene.camera
 		private static const UPDATE_NONE			: uint				= 0;
 		private static const UPDATE_VIEW			: uint				= 1;
 		private static const UPDATE_PROJ			: uint				= 2;
-		private static const UPDATE_ALL				: uint				= UPDATE_VIEW
-																  		  | UPDATE_PROJ;
+		private static const UPDATE_ALL				: uint				= UPDATE_VIEW | UPDATE_PROJ;
 		
-		//{ region vars
 		private var _version		: uint		= 0;
 		
 		private var _enabled		: Boolean	= true;
@@ -48,8 +46,8 @@ package aerys.minko.scene.camera
 		private var _update			: uint		= 0;
 
 		private var _position		: Vector4	= new Vector4();
-		private var _lookAt			: Vector4	= Vector4.ZERO.clone();
-		private var _up				: Vector4	= Vector4.Y_AXIS.clone();
+		private var _lookAt			: Vector4	= Vector4.copy(ConstVector4.Z_AXIS);
+		private var _up				: Vector4	= Vector4.copy(ConstVector4.Y_AXIS);
 		
 		private var _view			: Matrix4x4	= new Matrix4x4();
 		private var _projection		: Matrix4x4	= new Matrix4x4();
@@ -63,9 +61,12 @@ package aerys.minko.scene.camera
 		private var _zNear			: Number	= 0.;
 		private var _zFar			: Number	= 0.;
 		private var _frustum		: Frustum3D	= new Frustum3D();
-		//} endregion
+
+		public function get version() : uint
+		{
+			return _version + _position.version + _lookAt.version + _up.version;
+		}
 		
-		//{ region getters/setters
 		public function get position() 		: Vector4	{ return _position; }
 		public function get lookAt()		: Vector4	{ return _lookAt; }
 		public function get up()			: Vector4	{ return _up; }
@@ -129,8 +130,7 @@ package aerys.minko.scene.camera
 				_update |= UPDATE_PROJ;
 			}
 		}
-		//} endregion
-
+		
 		public function AbstractCamera3D(fieldOfView 	: Number 	= DEFAULT_FOV,
 										 nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
 										 farClipping	: Number	= DEFAULT_FAR_CLIPPING)
@@ -140,7 +140,6 @@ package aerys.minko.scene.camera
 			this.farClipping = farClipping;
 		}
 		
-		//{ region methods
 		protected function invalidateView() : void
 		{
 			_update |= UPDATE_VIEW;
@@ -153,7 +152,7 @@ package aerys.minko.scene.camera
 			++_version;
 		}
 		
-		protected function invalidateTransform(query : RenderingQuery = null) : void
+		protected function updateMatrices(query : RenderingQuery = null) : void
 		{
 			Matrix4x4.lookAtLH(_position, _lookAt, _up, _view)
 					 .multiply(query.transform.world);
@@ -176,14 +175,13 @@ package aerys.minko.scene.camera
 		{
 			if (!_enabled)
 				return ;
-			
-			invalidateTransform(query);
+						
+			updateMatrices(query);
 			
 			var transform : TransformManager = query.transform;
 			
 			transform.projection = _projection;
 			transform.view = _view;
 		}
-		//} endregion
 	}
 }

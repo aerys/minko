@@ -2,4 +2,12 @@
   <description/>
   <vertexShader>// vc0-3 = world * view * projection matrix// va0.xyz = vertex position// va1.xy = texture coordinatesm44 op, va0, vc0mov v0, va1</vertexShader>
   <fragmentShader>// v0.xy = texture coordinates// fs0 = diffuse maptex ft0, v0, fs0 &lt;2d,repeat,linear&gt;mov oc, ft0</fragmentShader>
+  <component>Vertex3DComponent.XYZ</component>
+  <component>Vertex3DComponent.UV</component>
+  <component>null</component>
+  <component>null</component>
+  <component>null</component>
+  <component>null</component>
+  <component>null</component>
+  <component>null</component>
 </agal>

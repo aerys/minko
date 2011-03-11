@@ -16,6 +16,9 @@ package aerys.minko.render
 		function get drawingTime() 	: int;
 		function get frameId()		: uint;
 		
+		function begin() : void;
+		function end() : void;
+		
 		function drawTriangles(offset		: uint	= 0,
 							   numTriangles	: uint	= 0) : void;
 		

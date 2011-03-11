@@ -29,6 +29,8 @@ package aerys.minko.scene.material
 		private var _mipmapping	: Boolean		= false;
 		
 		private var _styleProp	: String		= null;
+		
+		private var _matrix		: Matrix		= new Matrix();
 
 		public function get styleProperty() : String
 		{
@@ -40,23 +42,30 @@ package aerys.minko.scene.material
 			_styleProp = value;
 		}
 		
-		protected function updateFromBitmapData(value : BitmapData) : void
+		protected function updateFromBitmapData(value 	: BitmapData,
+												smooth	: Boolean	= true) : void
 		{
-			var size : int = 1;
+			var size 	: int = 1;
+			var w 		: int = value.width;
+			var h 		: int = value.height;
 			
-			for (; size < value.width; size *= 2)
-				continue ;
-			for (; size < value.height; size *= 2)
-				continue ;
-			
-			var scaleMatrix : Matrix = new Matrix();
-			
-			scaleMatrix.scale(size / value.width, size / value.height);
+			while (size < w || size < h)
+				size <<= 1;
 			
 			if (!_data || _data.width != size || _data.height != size)
 				_data = new BitmapData(size, size, value.transparent, 0);
+				
+			if (size != w || size != h)
+			{
+				_matrix.identity();
+				_matrix.scale(size / value.width, size / value.height);
+				_data.draw(value, _matrix, null, null, null, smooth);
+			}
+			else
+			{
+				_data.draw(value, null, null, null, null, smooth);
+			}
 			
-			_data.draw(value, scaleMatrix, null, null, null, true);
 			_blending = _data.transparent ? BLENDING_ALPHA
 									      : BLENDING_NORMAL;
 			
