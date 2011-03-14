@@ -4,7 +4,7 @@ package aerys.minko
 	import aerys.common.IVersionnable;
 	import aerys.minko.asset.MinkoLogo;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.render.DirectRenderer3D;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.scene.IScene3D;
@@ -204,7 +204,6 @@ package aerys.minko
 				stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
 
 				_context.configureBackBuffer(_width, _height, _aa, true);
-				_context.setDepthTest(true, Context3DCompareMode.LESS_EQUAL);
 				
 				_renderer = new DirectRenderer3D(this, _context);
 				_query = new RenderingQuery(_renderer);

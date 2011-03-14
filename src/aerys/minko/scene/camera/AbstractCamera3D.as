@@ -1,9 +1,9 @@
 package aerys.minko.scene.camera
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.scene.AbstractScene3D;
-	import aerys.minko.transform.TransformManager;
+	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Frustum3D;
 	import aerys.minko.type.math.Matrix4x4;

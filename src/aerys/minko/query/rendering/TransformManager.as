@@ -1,4 +1,4 @@
-package aerys.minko.transform
+package aerys.minko.query.rendering
 {
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;

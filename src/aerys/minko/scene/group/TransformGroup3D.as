@@ -1,11 +1,9 @@
 ﻿package aerys.minko.scene.group 
 {
-	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.scene.IObject3D;
-	import aerys.minko.transform.Transform3D;
-	import aerys.minko.transform.TransformManager;
-	import aerys.minko.transform.TransformType;
+	import aerys.minko.type.Transform3D;
 	
 	/**
 	 * ...

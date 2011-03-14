@@ -1,7 +1,7 @@
 package aerys.minko.effect.basic
 {
+	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.effect.IEffect3DPass;
-	import aerys.minko.effect.IEffect3DStyle;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.shader.DefaultShader3D;
 	import aerys.minko.render.shader.Shader3D;
@@ -9,11 +9,8 @@ package aerys.minko.effect.basic
 	import aerys.minko.render.state.CompareMode;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
-	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display3D.textures.Texture;
-	import flash.geom.Matrix3D;
 	
 	public class DiffusePass3D implements IEffect3DPass
 	{
@@ -23,7 +20,7 @@ package aerys.minko.effect.basic
 		{
 		}
 		
-		public function begin(renderer : IRenderer3D, style : IEffect3DStyle) : Boolean
+		public function begin(renderer : IRenderer3D, style : Effect3DStyle) : Boolean
 		{
 			var state 		: RenderState 	= renderer.state;
 			var diffuse		: Texture		= style.get(BasicStyle3D.DIFFUSE_MAP)
@@ -46,7 +43,7 @@ package aerys.minko.effect.basic
 			return true;
 		}
 		
-		public function end(renderer : IRenderer3D, style : IEffect3DStyle) : void
+		public function end(renderer : IRenderer3D, style : Effect3DStyle) : void
 		{
 			// NOTHING
 		}

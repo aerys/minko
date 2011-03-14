@@ -1,7 +1,7 @@
 package aerys.minko.scene.material
 {
 	import aerys.minko.effect.basic.BasicStyle3D;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.scene.AbstractScene3D;
 	
@@ -114,20 +114,18 @@ package aerys.minko.scene.material
 					if (_mipmapping)
 					{
 						var level 		: int 			= 0;
-						var ws 			: int 			= _data.width;
-						var hs 			: int 			= _data.height;
+						var size		: int 			= _data.width;
 						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, _data.transparent, 0);
 						var transform 	: Matrix 		= new Matrix();
 						
-						while (ws >= 1 && hs >= 1)
+						while (size >= 1)
 						{
 							tmp.draw(_data, transform, null, null, null, true);
 							_texture.uploadFromBitmapData(tmp, level);
 							
 							transform.scale(.5, .5);
 							level++;
-							ws >>= 1;
-							hs >>= 1;
+							size >>= 1;
 						}
 						
 						tmp.dispose();

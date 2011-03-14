@@ -2,7 +2,7 @@ package aerys.minko.scene.camera
 {
 	import aerys.common.Factory;
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
@@ -26,6 +26,8 @@ package aerys.minko.scene.camera
 		public function ArcBallCamera3D()
 		{
 			super();
+			
+			lookAt.set(0., 0., 0.);
 		}
 		
 		//{ region getters/setters

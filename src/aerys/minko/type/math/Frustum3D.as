@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.state.FrustumCulling;
-	import aerys.minko.transform.Transform3D;
+	import aerys.minko.type.Transform3D;
 	import aerys.minko.type.bounding.BoundingBox3D;
 	import aerys.minko.type.bounding.BoundingSphere3D;
 	import aerys.minko.type.bounding.IBoundedVolume3D;

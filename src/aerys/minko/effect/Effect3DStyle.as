@@ -1,17 +1,11 @@
 package aerys.minko.effect
 {
-	import aerys.minko.effect.basic.BasicEffect3D;
-	import aerys.minko.effect.basic.BasicStyle3D;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
-		
-	public final class Effect3DStyle implements IEffect3DStyle
+	public final class Effect3DStyle
 	{
-		private var _target		: IEffect3DStyle	= null;
+		private static const APPEND_DATA	: Object	= new Object();	
 		
+		private var _target		: Effect3DStyle		= null;
 		private var _properties	: Object			= new Object();
-		private var _tmp		: Object			= new Object();
-		
 		private var _append		: Object			= new Object();
 		
 		public function Effect3DStyle()
@@ -19,45 +13,39 @@ package aerys.minko.effect
 			super();
 		}
 		
-		public function override(style : IEffect3DStyle = null) : IEffect3DStyle
+		public function push(style : Effect3DStyle) : void
 		{
-			if (style === null)
-			{
-				var target : IEffect3DStyle = _target;
-				
-				for (var name : String in _append)
-					((_properties[name] || _tmp[name]) as Array).length = _append[name];
-				
-				_target = null;
-				
-				return target;
-			}
-			else
-			{
-				_target = style;
-				
-				return this;
-			}
+			if (_target)
+				style._target = _target;
+			_target = style;
+		}
+		
+		public function pop() : void
+		{
+			var append : Object = _target._append;
+			
+			for (var name : String in append)
+				(_properties[name] as Array).length = append[name];
+					
+			_target = _target._target;
 		}
 		
 		public function clear() : void 
 		{
 			_properties	= new Object();
-			//_append		= new Object();
-			_tmp		= new Object();
 			_target		= null;
 		}
 		
-		public function get(name : String, defaultValue : * = undefined) : *
+		public function get(styleName : String, defaultValue : * = undefined) : *
 		{
-			if (_target && _tmp[name] !== undefined)
-				return _tmp[name];
-			
-			if (_properties[name] !== undefined)
-				return _properties[name];
-			
-			if (_target)
-				return _target.get(name, defaultValue);
+			var style : Effect3DStyle 	= this;
+			var value : *				= null;
+				
+			while (style != null && (value = style._properties[styleName]) === undefined)
+				style = style._target;
+				
+			if (style != null)
+				return value;
 			
 			if (defaultValue === undefined)
 				throw new Error("Unable to read a style that was never set if no default value is provided.");
@@ -65,31 +53,23 @@ package aerys.minko.effect
 			return defaultValue;
 		}
 		
-		public function set(name : String, value : *) : IEffect3DStyle
+		public function set(name : String, value : *) : Effect3DStyle
 		{
-			// if we are in the style stack, we set the temporary table
-			if (_target)
-				_tmp[name] = value;
-			else
-				_properties[name] = value;
+			_properties[name] = value;
 			
 			return this;
 		}
 		
-		public function append(name : String, value : *) : IEffect3DStyle 
+		public function append(styleName : String, value : *) : Effect3DStyle 
 		{
-			var a : Array = get(name, null);
+			var data : Array = null;
 			
-			if (!a)
-			{
-				a = new Array();
-				set(name, a);
-			}
+			if ((data = APPEND_DATA[styleName]) === undefined)
+				APPEND_DATA[styleName] = data = new Array();
 			
-			//if (!_append.hasOwnProperty(name))
-				_append[name] = a.length;
-			
-			a.push(value);
+			_properties[styleName] = data;
+			(_target || this)._append[styleName] = data.length;
+			data.push(value);
 			
 			return this;
 		}

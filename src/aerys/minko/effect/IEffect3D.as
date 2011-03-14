@@ -9,7 +9,7 @@ package aerys.minko.effect
 		function set currentTechnique(value : IEffect3DTechnique) : void;
 		function get currentTechnique() : IEffect3DTechnique;
 		
-		function begin(renderer : IRenderer3D, style : IEffect3DStyle) : void;
-		function end(renderer : IRenderer3D, style : IEffect3DStyle) : void;
+		function begin(renderer : IRenderer3D, style : Effect3DStyle) : void;
+		function end(renderer : IRenderer3D, style : Effect3DStyle) : void;
 	}
 }

@@ -1,4 +1,4 @@
-package aerys.minko.transform
+package aerys.minko.type
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;

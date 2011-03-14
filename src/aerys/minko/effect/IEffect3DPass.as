@@ -4,7 +4,7 @@ package aerys.minko.effect
 
 	public interface IEffect3DPass
 	{
-		function begin(renderer : IRenderer3D, style : IEffect3DStyle) : Boolean;
-		function end(renderer : IRenderer3D, style : IEffect3DStyle) : void;
+		function begin(renderer : IRenderer3D, style : Effect3DStyle) : Boolean;
+		function end(renderer : IRenderer3D, style : Effect3DStyle) : void;
 	}
 }

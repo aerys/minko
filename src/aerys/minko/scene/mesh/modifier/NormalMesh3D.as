@@ -2,7 +2,7 @@ package aerys.minko.scene.mesh.modifier
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
@@ -17,8 +17,7 @@ package aerys.minko.scene.mesh.modifier
 		public static const VERTEX_FORMAT	: PackedVertex3DFormat	=
 			new PackedVertex3DFormat(new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3));
 		
-		protected var _version	: uint	= 0;
-		protected var _vertexStreamList:VertexStream3DList;
+		protected var _version			: uint					= 0;
 		
 		override public function get version() : uint { return _version; }
 		override public function get vertexStreamList():VertexStream3DList { return _vertexStreamList; }

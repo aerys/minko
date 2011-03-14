@@ -1,9 +1,9 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.RenderingQuery;
-	import aerys.minko.transform.Transform3D;
-	import aerys.minko.transform.TransformManager;
+	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.type.Transform3D;
+	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;

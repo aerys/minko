@@ -6,7 +6,7 @@ package aerys.minko.render
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
-	import aerys.minko.transform.TransformManager;
+	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IndexStream3D;
@@ -32,7 +32,7 @@ package aerys.minko.render
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		
-		private static const DIRECT			: Boolean			= true;
+		private static const DIRECT			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _state			: RenderState				= new RenderState();
@@ -65,7 +65,7 @@ package aerys.minko.render
 									  count			: uint	= 0) : void
 		{
 			var indexStream : IndexStream3D = _state.indexStream; 
-			
+		
 			count ||= indexStream.length / 3;
 			
 			if (indexStream.length == 0 || count == 0)
@@ -80,7 +80,7 @@ package aerys.minko.render
 			else
 			{
 				var t : int = getTimer();
-				
+			
 				_state.prepareContext(_context);
 				_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
 									   firstIndex,

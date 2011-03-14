@@ -1,19 +1,18 @@
 package aerys.minko.scene.mesh.modifier
 {
 	import aerys.minko.query.IScene3DQuery;
+	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
 	
-	public class AbstractMeshModifier3D implements IMeshModifier3D
+	public class AbstractMeshModifier3D extends AbstractScene3D implements IMeshModifier3D
 	{
-		private var _target : IMesh3D	= null;
+		private var _target 			: IMesh3D				= null;
 		
-		public function AbstractMeshModifier3D(target : IMesh3D)
-		{
-			_target = target;
-		}
+		protected var _vertexStreamList	: VertexStream3DList	= null;
+		protected var _indexStream		: IndexStream3D			= null;
 		
 		public function get target() : IMesh3D
 		{
@@ -27,22 +26,42 @@ package aerys.minko.scene.mesh.modifier
 				
 		public function get vertexStreamList() : VertexStream3DList
 		{
-			return _target.vertexStreamList;
+			return _vertexStreamList || (_target ? _target.vertexStreamList : null);
 		}
 		
 		public function get indexStream() : IndexStream3D
 		{
-			return _target.indexStream;
+			return _indexStream || (_target ? _target.indexStream : null);
 		}
 		
-		public function accept(query : IScene3DQuery) : void
+		override public function accept(query : IScene3DQuery) : void
 		{
 			query.query(_target);
 		}
 		
-		public function get name() : String
+		public function AbstractMeshModifier3D(target : IMesh3D, ...streams)
 		{
-			return null;
+			super();
+			
+			_target = target;
+			
+			initialize(streams);
 		}
+		
+		private function initialize(streams : Array) : void
+		{
+			var numStreams : int = streams.length;
+			
+			if (numStreams != 0)
+			{
+				_vertexStreamList = _target
+									? _target.vertexStreamList.clone()
+									: new VertexStream3DList();
+				
+				for (var i : int = 0; i < numStreams; ++i)
+					_vertexStreamList.pushVertexStream(streams[i] as VertexStream3D);
+			}
+		}
+		
 	}
 }

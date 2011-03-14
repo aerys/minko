@@ -189,13 +189,6 @@ package aerys.minko.type.math
 			return output;
 		}
 		
-		public function setRawData(data 	: Vector.<Number>,
-								   offset	: int	= 0) : void
-		{
-			validMatrix3D.copyRawDataFrom(data);
-			invalidate();
-		}
-		
 		public function getRawData(out 			: Vector.<Number> = null,
 								   offset		: int			  = 0,
 								   transposed	: Boolean 		  = false) : Vector.<Number>
@@ -204,6 +197,16 @@ package aerys.minko.type.math
 			validMatrix3D.copyRawDataTo(out, offset, transposed);
 			
 			return out;
+		}
+		
+		public function setRawData(input		: Vector.<Number>,
+								   offset		: int		= 0,
+								   transposed	: Boolean	= false) : Matrix4x4
+		{
+			_matrix.copyRawDataFrom(input, offset, transposed);
+			invalidate();
+			
+			return this;
 		}
 		
 		public function projectVectors(input 	: Vector.<Number>,
@@ -454,6 +457,13 @@ package aerys.minko.type.math
 						   0.,					0.,					0.,					1.);
 			
 			return out;
+		}
+		
+		public static function fromRawData(data			: Vector.<Number>,
+										   offset		: int		= 0,
+										   transposed	: Boolean	= false) : Matrix4x4
+		{
+			return (FACTORY.create() as Matrix4x4).setRawData(data, offset, transposed);
 		}
 		
 	}

@@ -1,7 +1,7 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.effect.IEffect3D;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 
 	public class EffectGroup3D extends StyleGroup3D
 	{

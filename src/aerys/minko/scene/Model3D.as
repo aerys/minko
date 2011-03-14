@@ -2,17 +2,15 @@ package aerys.minko.scene
 {
 	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.effect.IEffect3D;
-	import aerys.minko.effect.IEffect3DStyle;
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.effect.basic.BasicEffect3D;
 	import aerys.minko.effect.basic.BasicStyle3D;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.scene.material.IMaterial3D;
 	import aerys.minko.scene.mesh.IMesh3D;
-	import aerys.minko.transform.Transform3D;
-	import aerys.minko.transform.TransformManager;
-	import aerys.minko.transform.TransformType;
+	import aerys.minko.type.Transform3D;
 	import aerys.minko.type.math.Matrix4x4;
 
 	public class Model3D extends AbstractScene3D implements IScene3D, IObject3D, IStyled3D
@@ -24,15 +22,15 @@ package aerys.minko.scene
 		private var _transform	: Transform3D			= new Transform3D();
 		private var _visible	: Boolean				= true;
 		private var _effects	: Vector.<IEffect3D>	= Vector.<IEffect3D>([new BasicEffect3D()]);
-		private var _style		: IEffect3DStyle		= new Effect3DStyle();
+		private var _style		: Effect3DStyle			= new Effect3DStyle();
 		private var _toScreen	: Matrix4x4				= new Matrix4x4();
 		
-		public function get transform() 	: Transform3D			{ return _transform; }
-		public function get mesh()			: IMesh3D				{ return _mesh; }
-		public function get material()		: IMaterial3D			{ return _material; }
-		public function get visible()		: Boolean				{ return _visible; }
-		public function get effects()		: Vector.<IEffect3D>	{ return _effects; }
-		public function get style()			: IEffect3DStyle		{ return _style; }
+		public function get transform() : Transform3D			{ return _transform; }
+		public function get mesh()		: IMesh3D				{ return _mesh; }
+		public function get material()	: IMaterial3D			{ return _material; }
+		public function get visible()	: Boolean				{ return _visible; }
+		public function get effects()	: Vector.<IEffect3D>	{ return _effects; }
+		public function get style()		: Effect3DStyle			{ return _style; }
 		
 		public function set mesh(value : IMesh3D) : void
 		{
@@ -81,13 +79,15 @@ package aerys.minko.scene
 			/*for (var i : int = 0; i < numEffects; ++i)
 				queryEffects.unshift(_effects[i]);*/
 				//queryEffects[int(numQueryEffects + i)] = _effects[i];	
-			query.style = _style.override(query.style);
+			//query.style = _style.override(query.style);
+			query.style.push(_style);
 			
 			_material && query.query(_material);
 			_mesh && query.query(_mesh);
 			
 			// pop FXs and style
-			query.style = query.style.override();
+			//query.style = query.style.override();
+			query.style.pop();
 			query.effects = queryEffects;
 			
 			// pop world transform

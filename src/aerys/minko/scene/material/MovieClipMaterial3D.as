@@ -1,7 +1,7 @@
 package aerys.minko.scene.material
 {
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;

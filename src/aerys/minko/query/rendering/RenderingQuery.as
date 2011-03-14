@@ -1,21 +1,19 @@
-package aerys.minko.query
+package aerys.minko.query.rendering
 {
 	import aerys.minko.Viewport3D;
 	import aerys.minko.effect.Effect3DStyle;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
-	import aerys.minko.effect.IEffect3DStyle;
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.ns.minko;
+	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
-	import aerys.minko.transform.TransformManager;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
 	
-	import flash.display3D.Context3DClearMask;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	
@@ -29,14 +27,14 @@ package aerys.minko.query
 		private var _parent		: IScene3D				= null;
 		private var _parents	: Vector.<IScene3D>		= new Vector.<IScene3D>();
 		private var _camera		: ICamera3D				= null;
-		private var _style		: IEffect3DStyle		= new Effect3DStyle();
+		private var _style		: Effect3DStyle			= new Effect3DStyle();
 		private var _tm			: TransformManager		= new TransformManager();
 		private var _fx			: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _numNodes	: uint					= 0;
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: IEffect3DStyle		{ return _style; }
+		public function get style()			: Effect3DStyle			{ return _style; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }
@@ -45,7 +43,7 @@ package aerys.minko.query
 		public function get effects()		: Vector.<IEffect3D>	{ return _fx; }
 		public function get numNodes()		: uint					{ return _numNodes; }
 		
-		public function set style(value : IEffect3DStyle) : void
+		public function set style(value : Effect3DStyle) : void
 		{
 			_style = value;
 		}
@@ -94,10 +92,10 @@ package aerys.minko.query
 			_numNodes = 0;
 			_renderer.clear();
 			_tm.reset();
-			
 			_style.clear();
+			
 			if (_fx.length != 0)
-				throw new Error('Effect3DList stack must be empty when reseting.');
+				throw new Error('Effect3DList stack should be empty.');
 		}
 		
 		public function draw(vertexStreamList 	: VertexStream3DList,
@@ -116,7 +114,8 @@ package aerys.minko.query
 				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
 				var numPasses 	: int 						= passes.length;
 				
-				_style = fx.style.override(_style);
+				//_style = fx.style.override(_style);
+				_style.push(fx.style);
 				fx.begin(_renderer, _style);
 				
 				for (var j : int = 0; j < numPasses; ++j)
@@ -137,7 +136,8 @@ package aerys.minko.query
 				}
 				
 				fx.end(_renderer, _style);
-				_style = fx.style.override();
+				//_style = fx.style.override();
+				_style.pop();
 			}
 		}
 		
@@ -162,7 +162,8 @@ package aerys.minko.query
 				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
 				var numPasses 	: int 						= passes.length;
 				
-				_style = fx.style.override(_style);
+				//_style = fx.style.override(_style);
+				_style.push(fx.style);
 				fx.begin(_renderer, _style);
 				
 				for (var j : int = 0; j < numPasses; ++j)
@@ -184,7 +185,8 @@ package aerys.minko.query
 				}
 				
 				fx.end(_renderer, _style);
-				_style = fx.style.override();
+				//_style = fx.style.override();
+				_style.pop();
 			}
 		}
 		

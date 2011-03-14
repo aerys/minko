@@ -1,7 +1,7 @@
 package aerys.minko.scene.camera
 {
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
