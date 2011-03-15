@@ -43,7 +43,7 @@ package aerys.minko.effect
 		public function clear() : void 
 		{
 			_properties	= new Object();
-			//_append		= new Object();
+			_append		= new Object();
 			_tmp		= new Object();
 			_target		= null;
 		}
@@ -60,13 +60,14 @@ package aerys.minko.effect
 				return _target.get(name, defaultValue);
 			
 			if (defaultValue === undefined)
-				throw new Error("Unable to read a style that was never set if no default value is provided.");
+				throw new Error("Unable to read style " + name + " and no default value was provided.");
 
 			return defaultValue;
 		}
 		
 		public function set(name : String, value : *) : IEffect3DStyle
 		{
+			
 			// if we are in the style stack, we set the temporary table
 			if (_target)
 				_tmp[name] = value;
@@ -78,6 +79,7 @@ package aerys.minko.effect
 		
 		public function append(name : String, value : *) : IEffect3DStyle 
 		{
+			
 			var a : Array = get(name, null);
 			
 			if (!a)
@@ -86,7 +88,7 @@ package aerys.minko.effect
 				set(name, a);
 			}
 			
-			//if (!_append.hasOwnProperty(name))
+			if (!_append.hasOwnProperty(name))
 				_append[name] = a.length;
 			
 			a.push(value);
