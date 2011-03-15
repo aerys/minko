@@ -48,7 +48,7 @@ package aerys.minko.effect
 				return value;
 			
 			if (defaultValue === undefined)
-				throw new Error("Unable to read a style that was never set if no default value is provided.");
+				throw new Error("Unable to read style " + name + " and no default value was provided.");
 
 			return defaultValue;
 		}
