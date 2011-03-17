@@ -4,6 +4,9 @@ package aerys.minko.scene.group
 	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.scene.IScene3D;
+	
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
 
 	/**
 	 * The Object3DContainer provides a basic support for Object3D grouping. Such
@@ -16,11 +19,12 @@ package aerys.minko.scene.group
 	 * @see aerys.minko.scene.Object3D
 	 * @see aerys.minko.scene.IChild3D
 	 */
-	public class Group3D extends AbstractScene3D implements IGroup3D
+	public class Group3D extends Proxy implements IGroup3D
 	{
 		private static var _id		: uint				= 0;
 		
-		//{ region vars
+		private var _name			: String			= null;
+		
 		private var _visiting		: IScene3D			= null;
 		
 		private var _toRemove		: Vector.<IScene3D>	= new Vector.<IScene3D>();
@@ -30,10 +34,10 @@ package aerys.minko.scene.group
 		private var _children		: Vector.<IScene3D>	= null;
 		
 		private var _numChildren	: int				= 0;
-		//} endregion
 		
-		//{ region getters/setters
-		protected function get children() : Vector.<IScene3D> 	{ return _children; }
+		public function get name()			: String				{ return _name; }
+		
+		protected function get children() 	: Vector.<IScene3D> 	{ return _children; }
 		
 		protected function set children(value : Vector.<IScene3D>) : void
 		{
@@ -48,7 +52,6 @@ package aerys.minko.scene.group
 		{
 			return _numChildren;
 		}
-		//} endregion
 		
 		public function Group3D(...children)
 		{
@@ -67,7 +70,6 @@ package aerys.minko.scene.group
 									 : new Vector.<IScene3D>();
 		}
 		
-		//{ region methods
 		public function contains(myChild : IScene3D) : Boolean
 		{
 			return getChildIndex(myChild) >= 0;
@@ -240,22 +242,38 @@ package aerys.minko.scene.group
 			
 			return true;
 		}
+		
+		public function getDescendantByName(name : String) : IScene3D
+		{
+			var descendant 	: IScene3D 	= getChildByName(name);
+			var numChildren	: int 		= numChildren;
+			
+			for (var i : int = 0; i < numChildren && !descendant; ++i)
+			{
+				var childGroup : IGroup3D = _children[i] as IGroup3D;
+				
+				if (childGroup)
+					descendant = childGroup.getDescendantByName(name);
+			}
+			
+			return descendant;
+		}
 
 		/**
 		 * Render child nodes.
 		 *
 		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
 		 */
-		override public function accept(query : IScene3DQuery) : void
+		public function accept(query : IScene3DQuery) : void
 		{
-			super.accept(query);
-			if (!(query is RenderingQuery))
+			if (query is RenderingQuery)
+				acceptRenderingQuery(query as RenderingQuery);
+			else
 				visitChildren(query);
 		}
 		
-		override protected function acceptRenderingQuery(query:RenderingQuery):void
+		protected function acceptRenderingQuery(query : RenderingQuery) : void
 		{
-			super.acceptRenderingQuery(query);
 			visitChildren(query);
 		}
 		
@@ -306,6 +324,15 @@ package aerys.minko.scene.group
 		{
 			visitor.query(child);
 		}
-		//} endregion
+		
+		override flash_proxy function getProperty(name : *) : *
+		{
+			return name is String ? getChildByName(name) : getChildAt(name);
+		}
+		
+		override flash_proxy function getDescendants(name : *) : *
+		{
+			return getDescendantByName(name);
+		}
 	}
 }

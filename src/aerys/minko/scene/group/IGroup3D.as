@@ -6,19 +6,21 @@ package aerys.minko.scene.group
 	{
 		function get numChildren() : uint;
 		
-		function addChild(myObject : IScene3D) : IScene3D;
-		function addChildAt(myObject : IScene3D, myPosition : uint) : IScene3D;
+		function addChild(scene : IScene3D) : IScene3D;
+		function addChildAt(scene : IScene3D, myPosition : uint) : IScene3D;
 		
-		function removeChild(myChild : IScene3D) : IScene3D;
-		function removeChildAt(myPosition : uint) : IScene3D;
+		function removeChild(child : IScene3D) : IScene3D;
+		function removeChildAt(position : uint) : IScene3D;
 		function removeAllChildren() : uint;
 		
-		function contains(myChild : IScene3D) : Boolean
+		function contains(scene : IScene3D) : Boolean
 			
 		function swapChildren(myChild1 : IScene3D, myChild2 : IScene3D) : Boolean;
 		
 		function getChildAt(myPosition : uint) : IScene3D;
 		function getChildIndex(myChild : IScene3D) : int;
 		function getChildByName(myName : String) : IScene3D;
+		
+		function getDescendantByName(name : String) : IScene3D;
 	}
 }
