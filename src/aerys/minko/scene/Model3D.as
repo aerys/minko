@@ -1,6 +1,7 @@
 package aerys.minko.scene
 {
 	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Effect3DStyleStack;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.effect.basic.BasicEffect3D;
@@ -21,7 +22,7 @@ package aerys.minko.scene
 		private var _material	: IMaterial3D			= null;
 		private var _transform	: Transform3D			= new Transform3D();
 		private var _visible	: Boolean				= true;
-		private var _effects	: Vector.<IEffect3D>	= Vector.<IEffect3D>([new BasicEffect3D()]);
+		private var _effects	: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _style		: Effect3DStyle			= new Effect3DStyle();
 		private var _toScreen	: Matrix4x4				= new Matrix4x4();
 		
@@ -47,13 +48,16 @@ package aerys.minko.scene
 			_visible = value;
 		}
 		
-		public function Model3D(mesh 	 : IMesh3D		= null,
-								material : IMaterial3D	= null)
+		public function Model3D(mesh 			: IMesh3D		= null,
+								material		: IMaterial3D	= null,
+								noBaseEffect	: Boolean		= false)
 		{
 			super();
 			
 			_mesh = mesh;
 			_material = material;
+			if (!noBaseEffect)
+				_effects.push(new BasicEffect3D());
 		}
 		
 		override protected function acceptRenderingQuery(query : RenderingQuery) : void 

@@ -1,7 +1,7 @@
 package aerys.minko.effect.basic
 {
 	import aerys.minko.effect.AbstractEffect3D;
-	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Effect3DStyleStack;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.TriangleCulling;
 	
@@ -15,7 +15,7 @@ package aerys.minko.effect.basic
 			currentTechnique = techniques[0];
 		}
 		
-		override public function begin(renderer : IRenderer3D, style : Effect3DStyle) : void
+		override public function begin(renderer : IRenderer3D, style : Effect3DStyleStack) : void
 		{
 			super.begin(renderer, style);
 			

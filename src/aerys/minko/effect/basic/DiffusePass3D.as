@@ -1,6 +1,6 @@
 package aerys.minko.effect.basic
 {
-	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Effect3DStyleStack;
 	import aerys.minko.effect.IEffect3DPass;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.shader.DefaultShader3D;
@@ -20,7 +20,7 @@ package aerys.minko.effect.basic
 		{
 		}
 		
-		public function begin(renderer : IRenderer3D, style : Effect3DStyle) : Boolean
+		public function begin(renderer : IRenderer3D, style : Effect3DStyleStack) : Boolean
 		{
 			var state 		: RenderState 	= renderer.state;
 			var diffuse		: Texture		= style.get(BasicStyle3D.DIFFUSE_MAP)
@@ -43,7 +43,7 @@ package aerys.minko.effect.basic
 			return true;
 		}
 		
-		public function end(renderer : IRenderer3D, style : Effect3DStyle) : void
+		public function end(renderer : IRenderer3D, style : Effect3DStyleStack) : void
 		{
 			// NOTHING
 		}

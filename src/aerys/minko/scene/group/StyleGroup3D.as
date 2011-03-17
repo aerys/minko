@@ -1,6 +1,7 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Effect3DStyleStack;
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.query.rendering.RenderingQuery;
 	

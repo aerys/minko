@@ -42,12 +42,12 @@ package aerys.minko.effect
 			return _current;
 		}
 		
-		public function begin(renderer : IRenderer3D, style : Effect3DStyle) : void
+		public function begin(renderer : IRenderer3D, style : Effect3DStyleStack) : void
 		{
 			// NOTHING
 		}
 		
-		public function end(renderer : IRenderer3D, style : Effect3DStyle) : void
+		public function end(renderer : IRenderer3D, style : Effect3DStyleStack) : void
 		{
 			// NOTHING
 		}

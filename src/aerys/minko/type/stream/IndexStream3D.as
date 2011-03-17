@@ -1,6 +1,5 @@
 package aerys.minko.type.stream
 {
-	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	

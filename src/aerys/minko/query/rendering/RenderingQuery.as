@@ -1,7 +1,7 @@
 package aerys.minko.query.rendering
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Effect3DStyleStack;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
 	import aerys.minko.effect.IStyled3D;
@@ -17,7 +17,7 @@ package aerys.minko.query.rendering
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	
-	public class RenderingQuery implements IScene3DQuery, IStyled3D
+	public class RenderingQuery implements IScene3DQuery
 	{
 		use namespace minko;
 		
@@ -27,14 +27,14 @@ package aerys.minko.query.rendering
 		private var _parent		: IScene3D				= null;
 		private var _parents	: Vector.<IScene3D>		= new Vector.<IScene3D>();
 		private var _camera		: ICamera3D				= null;
-		private var _style		: Effect3DStyle			= new Effect3DStyle();
+		private var _styleStack	: Effect3DStyleStack	= new Effect3DStyleStack();
 		private var _tm			: TransformManager		= new TransformManager();
 		private var _fx			: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _numNodes	: uint					= 0;
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: Effect3DStyle			{ return _style; }
+		public function get style()			: Effect3DStyleStack			{ return _styleStack; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }
@@ -43,9 +43,9 @@ package aerys.minko.query.rendering
 		public function get effects()		: Vector.<IEffect3D>	{ return _fx; }
 		public function get numNodes()		: uint					{ return _numNodes; }
 		
-		public function set style(value : Effect3DStyle) : void
+		public function set style(value : Effect3DStyleStack) : void
 		{
-			_style = value;
+			_styleStack = value;
 		}
 		
 		public function set effects(value : Vector.<IEffect3D>) : void
@@ -92,7 +92,7 @@ package aerys.minko.query.rendering
 			_numNodes = 0;
 			_renderer.clear();
 			_tm.reset();
-			_style.clear();
+//			_style.clear();
 			
 			if (_fx.length != 0)
 				throw new Error('Effect3DList stack should be empty.');
@@ -115,15 +115,15 @@ package aerys.minko.query.rendering
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);
-				_style.push(fx.style);
-				fx.begin(_renderer, _style);
+				_styleStack.push(fx.style);
+				fx.begin(_renderer, _styleStack);
 				
 				for (var j : int = 0; j < numPasses; ++j)
 				{
 					var pass : IEffect3DPass = passes[j];
 					
 					_renderer.begin();
-					if (pass.begin(_renderer, _style))
+					if (pass.begin(_renderer, _styleStack))
 					{
 						var state:RenderState = _renderer.state;
 						
@@ -131,13 +131,13 @@ package aerys.minko.query.rendering
 						_renderer.drawTriangles(offset, numTriangles);
 					}
 					
-					pass.end(_renderer, _style);
+					pass.end(_renderer, _styleStack);
 					_renderer.end();
 				}
 				
-				fx.end(_renderer, _style);
+				fx.end(_renderer, _styleStack);
 				//_style = fx.style.override();
-				_style.pop();
+				_styleStack.pop();
 			}
 		}
 		
@@ -163,15 +163,15 @@ package aerys.minko.query.rendering
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);
-				_style.push(fx.style);
-				fx.begin(_renderer, _style);
+				_styleStack.push(fx.style);
+				fx.begin(_renderer, _styleStack);
 				
 				for (var j : int = 0; j < numPasses; ++j)
 				{
 					var pass : IEffect3DPass = passes[j];
 					
 					_renderer.begin();
-					if (pass.begin(_renderer, _style))
+					if (pass.begin(_renderer, _styleStack))
 					{
 						var state	: RenderState 	= _renderer.state;
 						
@@ -181,12 +181,12 @@ package aerys.minko.query.rendering
 					}
 					
 					_renderer.end();
-					pass.end(_renderer, _style);
+					pass.end(_renderer, _styleStack);
 				}
 				
-				fx.end(_renderer, _style);
+				fx.end(_renderer, _styleStack);
 				//_style = fx.style.override();
-				_style.pop();
+				_styleStack.pop();
 			}
 		}
 		

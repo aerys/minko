@@ -388,7 +388,7 @@ package aerys.minko.render.state
 				
 				if (_setFlags & BLENDING)
 					context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
-											BLENDING_STR[int(_blending >> 16)]);
+											BLENDING_STR[int(_blending >>> 16)]);
 				
 				for (var i : int = 0; i < 8; ++i)
 				{

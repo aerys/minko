@@ -58,7 +58,7 @@ package aerys.minko.render
 			_viewport = viewport;
 			_context = context;
 			
-			//_context.enableErrorChecking = true;
+			// _context.enableErrorChecking = true;
 		}
 
 		public function drawTriangles(firstIndex	: uint	= 0,
