@@ -15,11 +15,11 @@ package aerys.minko.scene.group
 		
 		function contains(scene : IScene3D) : Boolean
 			
-		function swapChildren(myChild1 : IScene3D, myChild2 : IScene3D) : Boolean;
+		function swapChildren(child1 : IScene3D, child2 : IScene3D) : Boolean;
 		
-		function getChildAt(myPosition : uint) : IScene3D;
-		function getChildIndex(myChild : IScene3D) : int;
-		function getChildByName(myName : String) : IScene3D;
+		function getChildAt(position : uint) : IScene3D;
+		function getChildIndex(child : IScene3D) : int;
+		function getChildByName(name : String) : IScene3D;
 		
 		function getDescendantByName(name : String) : IScene3D;
 	}

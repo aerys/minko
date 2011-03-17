@@ -9,15 +9,10 @@ package aerys.minko.scene.group
 	import flash.utils.flash_proxy;
 
 	/**
-	 * The Object3DContainer provides a basic support for Object3D grouping. Such
-	 * groups can be used to provide local z-sorting or apply a common 3D transform.
-	 * An Object3DContainer can contain any object implementing the IChild3D interface,
-	 * including Object3D or even Object3DContainer object.
+	 * The Group3D provides a basic support for objects grouping.
+	 * A Group3D can contain any object implementing the IScene3D interface.
 	 *
 	 * @author Jean-Marc Le Roux
-	 * @see aerys.minko.scene.containers.IContainer3D
-	 * @see aerys.minko.scene.Object3D
-	 * @see aerys.minko.scene.IChild3D
 	 */
 	public dynamic class Group3D extends Proxy implements IGroup3D
 	{
@@ -35,11 +30,11 @@ package aerys.minko.scene.group
 		
 		private var _numChildren	: int				= 0;
 		
-		public function get name()					: String				{ return _name; }
+		public function get name()	: String	{ return _name; }
 		
-		protected function get rawChildren() 		: Vector.<IScene3D> 	{ return _children; }
+		protected function get rawChildren()	: Vector.<IScene3D> 	{ return _children; }
 		
-		protected function set rawChildren(value 	: Vector.<IScene3D>) : void
+		protected function set rawChildren(value : Vector.<IScene3D>) : void
 		{
 			_children = value;
 			_numChildren = _children.length;

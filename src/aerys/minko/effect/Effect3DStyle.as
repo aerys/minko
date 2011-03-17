@@ -24,8 +24,8 @@ package aerys.minko.effect
 		{
 			var append : Object = _target._append;
 			
-			for (var name : String in append)
-				(_properties[name] as Array).length = append[name];
+			/*for (var name : String in append)
+				(_properties[name] as Array).length = append[name];*/
 					
 			_target = _target._target;
 		}

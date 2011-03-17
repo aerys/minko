@@ -3,6 +3,7 @@ package aerys.minko.render
 	import aerys.minko.Viewport3D;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.RenderState;
+	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
