@@ -23,9 +23,15 @@ package aerys.minko.scene
 		
 		public function AbstractScene3D()
 		{
-			var className : String = getQualifiedClassName(this);
+			_name = getDefaultSceneName(this);
+		}
+		
+		public static function getDefaultSceneName(scene : IScene3D) : String
+		{
+			var className : String = getQualifiedClassName(scene);
 			
-			_name = className.substr(className.lastIndexOf(":") + 1) + "_" + (++_id);
+			return className.substr(className.lastIndexOf(":") + 1)
+				   + "_" + (++_id);
 		}
 		
 		public function accept(query : IScene3DQuery) : void

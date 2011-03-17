@@ -53,7 +53,7 @@ package aerys.minko.scene.material
 			}
 			
 			if (_frame < numChildren)
-				query.query(children[_frame]);
+				query.query(rawChildren[_frame]);
 		}
 		
 		protected function nextFrame(query : RenderingQuery) : void

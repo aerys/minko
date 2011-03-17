@@ -42,8 +42,8 @@ package aerys.minko.scene.material
 			_styleProp = value;
 		}
 		
-		protected function updateFromBitmapData(value 	: BitmapData,
-												smooth	: Boolean	= true) : void
+		public function updateFromBitmapData(value 	: BitmapData,
+											 smooth	: Boolean	= true) : void
 		{
 			var size 	: int = 1;
 			var w 		: int = value.width;

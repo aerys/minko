@@ -4,11 +4,10 @@ package aerys.minko.data
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.group.Group3D;
-	import aerys.minko.scene.group.IGroup3D;
 	import aerys.minko.scene.material.AnimatedMaterial3D;
+	import aerys.minko.scene.material.BitmapMaterial3D;
 	import aerys.minko.scene.material.IMaterial3D;
 	import aerys.minko.scene.material.MovieClipMaterial3D;
-	import aerys.minko.scene.material.BitmapMaterial3D;
 	
 	import flash.display.Bitmap;
 	import flash.display.IBitmapDrawable;
@@ -28,19 +27,11 @@ package aerys.minko.data
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
 		
-		private var _data				: Vector.<IScene3D>	= new Vector.<IScene3D>();
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
-		private var _content			: IGroup3D			= new Group3D();
+		private var _content			: Group3D			= new Group3D();
 		
-		public function get data() : Vector.<IScene3D>
-		{
-			return _data;
-		}
-		
-		public function get name() : String
-		{
-			return _content.name;
-		}
+		public function get name()	 	: String	{ return _content.name; }
+		public function get content() 	: Group3D	{ return _content; }
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void
@@ -53,7 +44,7 @@ package aerys.minko.data
 			
 		}
 		
-		public function load(request : URLRequest) : IScene3D
+		public function load(request : URLRequest) : Group3D
 		{
 			if (request.url.match(FORMATS))
 			{
@@ -83,7 +74,7 @@ package aerys.minko.data
 			return _content;
 		}
 		
-		public static function loadBytes(bytes : ByteArray) : Vector.<IScene3D>
+		public static function loadBytes(bytes : ByteArray) : Group3D
 		{
 			for (var extension : String in PARSERS)
 			{
@@ -92,7 +83,16 @@ package aerys.minko.data
 				bytes.position = 0;
 				
 				if (parser.parse(bytes))
-					return parser.data;
+				{
+					var data	: Vector.<IScene3D>	= parser.data;
+					var length	: int				= data ? data.length : 0;
+					var content : Group3D			= new Group3D();
+
+					for (var i : int = 0; i < length; ++i)
+						content.addChild(data[i]);
+					
+					return content;
+				}
 			}
 			
 			throw new Error("Unable to find a proper data parser.");
@@ -100,9 +100,10 @@ package aerys.minko.data
 			return null;
 		}
 		
-		public static function loadAsset(asset : Class) : Vector.<IScene3D>
+		public static function loadAsset(asset : Class) : Group3D
 		{
-			var assetObject : Object = new asset();
+			var assetObject : Object 	= new asset();
+			var content 	: Group3D 	= null;
 			
 			if (assetObject is MovieClip)
 			{
@@ -119,61 +120,58 @@ package aerys.minko.data
 						mat.addChild(new MovieClipMaterial3D(loader.content as MovieClip));
 					});
 					
-					return Vector.<IScene3D>([mat]);
+					
+					content = new Group3D(mat);
 				}
 				else
 				{
-					return Vector.<IScene3D>([new MovieClipMaterial3D(mc)]);
+					content = new Group3D(new MovieClipMaterial3D(mc));
 				}
 			}
 			else if (assetObject is IBitmapDrawable)
-				return Vector.<IScene3D>([BitmapMaterial3D.fromDisplayObject(assetObject as Bitmap)]);
+			{
+				content = new Group3D(BitmapMaterial3D.fromDisplayObject(assetObject as Bitmap));
+			}
 			else if (assetObject is ByteArray)
-				return loadBytes(assetObject as ByteArray);
+			{
+				content = loadBytes(assetObject as ByteArray);
+			}
 			
-			return null;
+			return content;
 		}
 		
 		private function urlLoaderCompleteHandler(event : Event) : void
 		{
-			var loader 		: URLLoader	= event.target as URLLoader;
-			var uri			: String	= _loaderToURI[loader];
-			var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
-			var parser		: IParser3D	= PARSERS[extension.toLocaleLowerCase()];
+			var loader 		: URLLoader			= event.target as URLLoader;
+			var uri			: String			= _loaderToURI[loader];
+			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
+			var parser		: IParser3D			= PARSERS[extension.toLocaleLowerCase()];
+			var data		: Vector.<IScene3D>	= parser.parse(loader.data as ByteArray)
+												  ? parser.data
+												  : null;
+			var length		: int				= data ? data.length : 0;
 			
-			_data = parser.parse(loader.data as ByteArray)
-					? parser.data
-					: null;
-			
-			updateGroup();
-			
+			_content.removeAllChildren();
+			for (var i : int = 0; i < length; ++i)
+				_content.addChild(data[i]);
+
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		private function loaderCompleteHandler(event : Event) : void
 		{
-			var info : LoaderInfo = event.target as LoaderInfo;
-			var mat : IMaterial3D = null;
+			var info 	: LoaderInfo 	= event.target as LoaderInfo;
+			var mat 	: IMaterial3D 	= null;
 						
 			if (info.content is MovieClip)
 				mat = new MovieClipMaterial3D(info.content as MovieClip);
 			else if (info.content is Bitmap)
 				mat = new BitmapMaterial3D((info.content as Bitmap).bitmapData);
 			
-			_data.length = 0;
-			_data[0] = mat;
-			
-			updateGroup();
+			_content.removeAllChildren();
+			_content.addChild(mat);
 			
 			dispatchEvent(new Event(Event.COMPLETE));
-		}
-		
-		private function updateGroup() : void
-		{
-			var length 	: int	= _data.length;
-			
-			for (var i : int = 0; i < length; ++i)
-				_content.addChild(_data[i]);
 		}
 		
 		public function accept(query : IScene3DQuery) : void

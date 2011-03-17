@@ -3,25 +3,15 @@ package aerys.minko.render
 	import aerys.common.Factory;
 	import aerys.minko.Viewport3D;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.shader.Shader3D;
-	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.state.RenderState;
 	import aerys.minko.query.rendering.TransformManager;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
+	import aerys.minko.render.shader.Shader3D;
+	import aerys.minko.render.state.RenderState;
 	import aerys.minko.type.stream.IndexStream3D;
-	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStream3DList;
-	import aerys.minko.type.vertex.format.NativeFormat;
-	import aerys.minko.type.vertex.format.Vertex3DComponent;
-	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
 
