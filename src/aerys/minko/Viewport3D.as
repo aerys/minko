@@ -33,8 +33,6 @@ package aerys.minko
 	{
 		use namespace minko;
 		
-		private var _logo			: MovieClip			= new MinkoLogo();
-		
 		private var _width			: Number			= 0.;
 		private var _height			: Number			= 0.;
 		
@@ -152,7 +150,6 @@ package aerys.minko
 			
 			_aa = antiAliasing;
 			_rendererClass = rendererType || DirectRenderer3D;
-			_logo.addEventListener(MouseEvent.CLICK, logoClickHandler);
 		}
 		
 		public static function setupOnStage(stage : Stage, antiAliasing : int = 0) : Viewport3D
@@ -202,7 +199,6 @@ package aerys.minko
 			if (_context)
 			{
 				stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
-
 				_context.configureBackBuffer(_width, _height, _aa, true);
 				
 				_renderer = new DirectRenderer3D(this, _context);
@@ -242,18 +238,12 @@ package aerys.minko
 	
 		public function showLogo() : void
 		{
-			addChild(_logo);
+			var logo : Sprite = Minko.logo;
 			
-			_logo.visible = true;
-			_logo.useHandCursor = true;
-			_logo.buttonMode = true;
-			_logo.x = stage.stageWidth - _logo.width - 5;
-			_logo.y = stage.stageHeight - _logo.height - 20;
-		}
-		
-		private function logoClickHandler(event : Event) : void
-		{
-			navigateToURL(new URLRequest(Minko.URL), "_blank");
+			addChild(logo);
+			
+			logo.x = 5;
+			logo.y = stage.stageHeight - logo.height - 5;
 		}
 	}
 }

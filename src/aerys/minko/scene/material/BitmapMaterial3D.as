@@ -1,5 +1,6 @@
 package aerys.minko.scene.material
 {
+	import aerys.common.IVersionnable;
 	import aerys.minko.effect.basic.BasicStyle3D;
 	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.render.state.Blending;
@@ -17,10 +18,12 @@ package aerys.minko.scene.material
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class BitmapMaterial3D extends AbstractScene3D implements IMaterial3D
+	public class BitmapMaterial3D extends AbstractScene3D implements IMaterial3D, IVersionnable
 	{
 		public static const BLENDING_NORMAL	: uint	= Blending.NORMAL;
 		public static const BLENDING_ALPHA	: uint	= Blending.ALPHA;
+		
+		private var _version	: uint			= 0;
 		
 		private var _data		: BitmapData	= null;
 		private var _texture	: Texture		= null;
@@ -31,6 +34,11 @@ package aerys.minko.scene.material
 		private var _styleProp	: String		= null;
 		
 		private var _matrix		: Matrix		= new Matrix();
+		
+		public function get version() : uint
+		{
+			return _version;
+		}
 
 		public function get styleProperty() : String
 		{
@@ -70,6 +78,7 @@ package aerys.minko.scene.material
 									      : BLENDING_NORMAL;
 			
 			_update = true;
+			++_version;
 		}
 		
 		public function get blending() : uint
@@ -140,8 +149,7 @@ package aerys.minko.scene.material
 				_data = null;
 			}
 			
-			query.style//.set(BasicStyle3D.BLENDING, _blending)
-					   .set(_styleProp, _texture);
+			query.style.set(_styleProp, _texture);
 		}
 		
 		public static function fromDisplayObject(source : DisplayObject,

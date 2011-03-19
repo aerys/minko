@@ -1,6 +1,6 @@
 package aerys.minko.scene
 {
-	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Style3D;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IStyled3D;
 	import aerys.minko.effect.basic.BasicEffect3D;
@@ -22,7 +22,7 @@ package aerys.minko.scene
 		private var _transform	: Transform3D			= new Transform3D();
 		private var _visible	: Boolean				= true;
 		private var _effects	: Vector.<IEffect3D>	= Vector.<IEffect3D>([new BasicEffect3D()]);
-		private var _style		: Effect3DStyle			= new Effect3DStyle();
+		private var _style		: Style3D			= new Style3D();
 		private var _toScreen	: Matrix4x4				= new Matrix4x4();
 		
 		public function get transform() : Transform3D			{ return _transform; }
@@ -30,7 +30,7 @@ package aerys.minko.scene
 		public function get material()	: IMaterial3D			{ return _material; }
 		public function get visible()	: Boolean				{ return _visible; }
 		public function get effects()	: Vector.<IEffect3D>	{ return _effects; }
-		public function get style()		: Effect3DStyle			{ return _style; }
+		public function get style()		: Style3D			{ return _style; }
 		
 		public function set mesh(value : IMesh3D) : void
 		{
@@ -58,6 +58,9 @@ package aerys.minko.scene
 		
 		override protected function acceptRenderingQuery(query : RenderingQuery) : void 
 		{
+			if (!_visible)
+				return ;
+			
 			var transform 		: TransformManager 		= query.transform;
 			var numEffects		: int					= _effects.length;
 			var queryEffects	: Vector.<IEffect3D>	= query.effects;

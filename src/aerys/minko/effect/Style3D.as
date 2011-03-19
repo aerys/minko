@@ -1,19 +1,19 @@
 package aerys.minko.effect
 {
-	public final class Effect3DStyle
+	public final class Style3D
 	{
 		private static const APPEND_DATA	: Object	= new Object();	
 		
-		private var _target		: Effect3DStyle		= null;
+		private var _target		: Style3D		= null;
 		private var _properties	: Object			= new Object();
 		private var _append		: Object			= new Object();
 		
-		public function Effect3DStyle()
+		public function Style3D()
 		{
 			super();
 		}
 		
-		public function push(style : Effect3DStyle) : void
+		public function push(style : Style3D) : void
 		{
 			if (_target)
 				style._target = _target;
@@ -38,7 +38,7 @@ package aerys.minko.effect
 		
 		public function get(styleName : String, defaultValue : * = undefined) : *
 		{
-			var style : Effect3DStyle 	= this;
+			var style : Style3D 	= this;
 			var value : *				= null;
 				
 			while (style != null && (value = style._properties[styleName]) === undefined)
@@ -54,14 +54,14 @@ package aerys.minko.effect
 			return defaultValue;
 		}
 		
-		public function set(name : String, value : *) : Effect3DStyle
+		public function set(name : String, value : *) : Style3D
 		{
 			_properties[name] = value;
 			
 			return this;
 		}
 		
-		public function append(styleName : String, value : *) : Effect3DStyle 
+		public function append(styleName : String, value : *) : Style3D 
 		{
 			var data : Array = null;
 			

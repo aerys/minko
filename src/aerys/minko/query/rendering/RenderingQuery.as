@@ -1,7 +1,7 @@
 package aerys.minko.query.rendering
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.effect.Effect3DStyle;
+	import aerys.minko.effect.Style3D;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
 	import aerys.minko.effect.IStyled3D;
@@ -27,14 +27,14 @@ package aerys.minko.query.rendering
 		private var _parent		: IScene3D				= null;
 		private var _parents	: Vector.<IScene3D>		= new Vector.<IScene3D>();
 		private var _camera		: ICamera3D				= null;
-		private var _style		: Effect3DStyle			= new Effect3DStyle();
+		private var _style		: Style3D			= new Style3D();
 		private var _tm			: TransformManager		= new TransformManager();
 		private var _fx			: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _numNodes	: uint					= 0;
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: Effect3DStyle			{ return _style; }
+		public function get style()			: Style3D			{ return _style; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }
@@ -43,7 +43,7 @@ package aerys.minko.query.rendering
 		public function get effects()		: Vector.<IEffect3D>	{ return _fx; }
 		public function get numNodes()		: uint					{ return _numNodes; }
 		
-		public function set style(value : Effect3DStyle) : void
+		public function set style(value : Style3D) : void
 		{
 			_style = value;
 		}
@@ -111,7 +111,7 @@ package aerys.minko.query.rendering
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect3D					= _fx[i];
-				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var passes		: Vector.<IEffect3DPass>	= fx.passes;
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);
@@ -159,7 +159,7 @@ package aerys.minko.query.rendering
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect3D					= _fx[i];
-				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var passes		: Vector.<IEffect3DPass>	= fx.passes;
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);
