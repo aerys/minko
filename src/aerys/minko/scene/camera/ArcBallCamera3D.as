@@ -7,6 +7,16 @@ package aerys.minko.scene.camera
 	
 	import flash.geom.Matrix3D;
 	
+	/**
+	 * ArcBallCamera3D objects represents a "third-person" camera that can move around a
+	 * point in space.
+	 * 
+	 * The position of the camera will be computed according to the look-at point and the
+	 * rotation angles given by the "rotation" property.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class ArcBallCamera3D extends AbstractCamera3D
 	{
 		private static const EPSILON		: Number	= .001;
@@ -30,7 +40,12 @@ package aerys.minko.scene.camera
 			lookAt.set(0., 0., 0.);
 		}
 		
-		//{ region getters/setters
+		/**
+		 * The distance between the camera position and the look-at point.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get distance() : Number { return _distance; }
 		
 		public function set distance(value : Number) : void
@@ -42,13 +57,18 @@ package aerys.minko.scene.camera
 			}
 		}
 		
+		/**
+		 * The rotation (as 3 Euler angles) that will be used to compute
+		 * the position according to its look-at point.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get rotation() : Vector4
 		{
 			return _rotation;
 		}
-		//} endregion
-		
-		//{ region methods
+
 		override protected function updateMatrices(query : RenderingQuery = null) : void
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
@@ -76,6 +96,5 @@ package aerys.minko.scene.camera
 			
 			super.accept(visitor);
 		}
-		//} endregion
 	}
 }

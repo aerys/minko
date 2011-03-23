@@ -6,6 +6,15 @@ package aerys.minko.scene.material
 	
 	import flash.display.BitmapData;
 	
+	/**
+	 * ColorMaterials3D objects represent solid color ARGB textures.
+	 * 
+	 * It is recommended to use static constants such as ColorMaterial3D.GREEN
+	 * or ColorMaterial3D.BLUE whenever possible to minimize GPU memory footprint.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class ColorMaterial3D extends BitmapMaterial3D
 	{
 		public static const WHITE			: ColorMaterial3D	= new ColorMaterial3D(0xffffffff);
@@ -28,6 +37,12 @@ package aerys.minko.scene.material
 		
 		private var _update	: Boolean		= true;
 		
+		/**
+		 * The color (as an ARGB uint value) in the texture.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get color() : uint
 		{
 			return _color;

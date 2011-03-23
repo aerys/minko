@@ -1,12 +1,18 @@
 package aerys.minko.effect
 {
-	public final class Style3D
+	import aerys.common.IVersionnable;
+
+	public final class Style3D implements IVersionnable
 	{
 		private static const APPEND_DATA	: Object	= new Object();	
 		
-		private var _target		: Style3D		= null;
-		private var _properties	: Object			= new Object();
-		private var _append		: Object			= new Object();
+		private var _version	: uint		= 0;
+		
+		private var _target		: Style3D	= null;
+		private var _properties	: Object	= new Object();
+		private var _append		: Object	= new Object();
+		
+		public function get version() : uint	{ return _version; }
 		
 		public function Style3D()
 		{
@@ -57,6 +63,7 @@ package aerys.minko.effect
 		public function set(name : String, value : *) : Style3D
 		{
 			_properties[name] = value;
+			++_version;
 			
 			return this;
 		}
@@ -64,6 +71,8 @@ package aerys.minko.effect
 		public function append(styleName : String, value : *) : Style3D 
 		{
 			var data : Array = null;
+			
+			++_version;
 			
 			if ((data = APPEND_DATA[styleName]) === undefined)
 				APPEND_DATA[styleName] = data = new Array();

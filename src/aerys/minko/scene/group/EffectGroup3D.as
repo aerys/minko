@@ -3,6 +3,12 @@ package aerys.minko.scene.group
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.query.rendering.RenderingQuery;
 
+	/**
+	 * EffectGroup3D enables 
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class EffectGroup3D extends StyleGroup3D
 	{
 		private var _effects	: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
@@ -23,11 +29,13 @@ package aerys.minko.scene.group
 			var queryEffects	: Vector.<IEffect3D>	= q.effects;
 			var numQueryEffects	: int					= queryEffects.length;
 			
+			// push effects
 			for (var i : int = 0; i < numEffects; ++i)
 				queryEffects[int(numQueryEffects + i)] = _effects[i];
 			
 			super.acceptRenderingQuery(q);
 			
+			// pop effects
 			queryEffects.length = numQueryEffects;
 		}
 	}

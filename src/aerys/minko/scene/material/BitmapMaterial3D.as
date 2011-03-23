@@ -13,7 +13,7 @@ package aerys.minko.scene.material
 	import flash.geom.Matrix;
 	
 	/**
-	 * The BitmapMaterial class enables the use of BitmapData and DisplayObject objects as materials.
+	 * The BitmapMaterial3D class enables the use of BitmapData objects as materials.
 	 *
 	 * @author Jean-Marc Le Roux
 	 *

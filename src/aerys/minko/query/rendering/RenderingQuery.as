@@ -17,6 +17,20 @@ package aerys.minko.query.rendering
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	
+	/**
+	 * A RenderingQuery object is used to traverse a scene graph and provides
+	 * rendering methods and properties such as:
+	 * <ul>
+	 * <li>The list of IEffect3D that will be use when rendering.</li>
+	 * <li>The current Style3D object that will parametrize rendering.</li>
+	 * <li>The (enabled) ICamera3D object.</li>
+	 * <li>The list of the parent nodes that were traversed.</li>
+	 * <li>The list of the ancestor nodes that were traversed.</li>
+	 * </ul>
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class RenderingQuery implements IScene3DQuery, IStyled3D
 	{
 		use namespace minko;

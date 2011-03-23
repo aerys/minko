@@ -4,17 +4,19 @@
 	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.scene.IObject3D;
 	import aerys.minko.type.Transform3D;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	/**
-	 * ...
+	 * TransformGroup3D apply a 3D transform to their children.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 */
 	public class TransformGroup3D extends Group3D implements IObject3D
 	{
-		private static var _id			: uint			= 0;
+		private static var _id	: uint			= 0;
 		
-		private var _transform			: Transform3D	= new Transform3D();
-		private var _visible			: Boolean		= true;
+		private var _transform	: Transform3D	= new Transform3D();
+		private var _visible	: Boolean		= true;
 		
 		public function TransformGroup3D(...children) 
 		{
@@ -26,15 +28,14 @@
 			if (!_visible)
 				return ;
 			
-			var t : TransformManager	= (query as RenderingQuery).transform;
+			var worldTransform : Matrix4x4	= query.transform.world;
 			
-			//t.push(TransformType.WORLD);
-			t.world.push()
-				   .multiply(_transform);
+			worldTransform.push()
+				   	 	  .multiply(_transform);
 			
 			super.acceptRenderingQuery(query);
 			
-			t.world.pop();
+			worldTransform.pop();
 		}
 		
 		/**
