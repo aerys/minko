@@ -160,7 +160,7 @@ package aerys.minko.render.state
 		
 		public function get triangleCulling() : uint
 		{
-			return _setFlags & TRIANGLE_CULLING ? triangleCulling : 0;
+			return _setFlags & TRIANGLE_CULLING ? _triangleCulling : 0;
 		}
 		
 		public function get depthMask() : uint

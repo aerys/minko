@@ -34,7 +34,7 @@ package aerys.minko.query.rendering
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: Effect3DStyleStack			{ return _styleStack; }
+		public function get style()			: Effect3DStyleStack	{ return _styleStack; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }

@@ -178,8 +178,6 @@ package aerys.minko
 			if (autoResize)
 			{
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
-				width = stage.stageWidth;
-				height = stage.stageHeight;
 			}
 		}
 		
