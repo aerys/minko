@@ -21,8 +21,8 @@ package aerys.minko.render
 		
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
-		
 		private static const DIRECT			: Boolean			= false;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _state			: RenderState				= new RenderState();
@@ -48,7 +48,7 @@ package aerys.minko.render
 			_viewport = viewport;
 			_context = context;
 			
-			// _context.enableErrorChecking = true;
+			_context.enableErrorChecking = DEBUG;
 		}
 
 		public function drawTriangles(firstIndex	: uint	= 0,

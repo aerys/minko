@@ -1,5 +1,6 @@
 package aerys.minko.scene.material
 {
+	import aerys.common.IVersionnable;
 	import aerys.minko.scene.IScene3D;
 	
 	/**
@@ -11,7 +12,7 @@ package aerys.minko.scene.material
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public interface IMaterial3D extends IScene3D
+	public interface IMaterial3D extends IScene3D, IVersionnable
 	{
 	}
 }

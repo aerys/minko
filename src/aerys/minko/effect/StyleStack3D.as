@@ -2,13 +2,13 @@ package aerys.minko.effect
 {
 	import aerys.common.Factory;
 
-	public final class Effect3DStyleStack
+	public final class StyleStack3D
 	{
 		private static var _emptyObject	: Object = new Object();
 		
 		private var _data : Vector.<Object>;
 		
-		public function Effect3DStyleStack()
+		public function StyleStack3D()
 		{
 			_data = new Vector.<Object>();
 		}
@@ -35,7 +35,7 @@ package aerys.minko.effect
 			throw new Error(name + ' is undefined an no default value was provided');
 		}
 		
-		public function set(name : String, value : *) : Effect3DStyleStack
+		public function set(name : String, value : *) : StyleStack3D
 		{
 			var current : Object = _data[0];
 			if (current === _emptyObject)
@@ -50,7 +50,7 @@ package aerys.minko.effect
 		}
 		
 		public function append(name		: String, 
-							   value	: IStyleObject = undefined) : Effect3DStyleStack 
+							   value	: IStyleObject = undefined) : StyleStack3D 
 		{
 			var stackHeight		: uint = _data.length;
 			var styleObjectList	: StyleObjectList;
@@ -78,7 +78,7 @@ package aerys.minko.effect
 			return this;
 		}
 		
-		public function push(style : Effect3DStyle = null) : void
+		public function push(style : Style3D = null) : void
 		{
 			_data.unshift(style._data);
 			_data.unshift(_emptyObject);

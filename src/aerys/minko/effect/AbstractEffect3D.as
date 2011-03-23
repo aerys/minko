@@ -4,50 +4,22 @@ package aerys.minko.effect
 
 	public class AbstractEffect3D implements IEffect3D
 	{
-		private var _techniques	: Vector.<IEffect3DTechnique>	= null;
-		private var _current	: IEffect3DTechnique			= null;
-		private var _style		: Effect3DStyle					= new Effect3DStyle();
+		private var _passes	: Vector.<IEffect3DPass>	= new Vector.<IEffect3DPass>();
+		private var _style	: Style3D					= new Style3D();
 		
-		public function get style() : Effect3DStyle	{ return _style; }
+		public function get style() 	: Style3D					{ return _style; }
+		public function get passes() 	: Vector.<IEffect3DPass>	{ return _passes; }
 		
-		protected function get techniques() : Vector.<IEffect3DTechnique>	{ return _techniques; }
-		
-		public function AbstractEffect3D(...techniques)
+		public function AbstractEffect3D()
 		{
-			_techniques = Vector.<IEffect3DTechnique>(techniques)
-						  || new Vector.<IEffect3DTechnique>();
-			
-			if (_techniques.length)
-				_current = _techniques[0];
 		}
 		
-		public function getTechnique(name : String) : IEffect3DTechnique
-		{
-			var numTechniques : int = _techniques.length - 1;
-			
-			while (numTechniques <= 0 && _techniques[numTechniques].name != name)
-				--numTechniques;
-			
-			return numTechniques >= 0 ? _techniques[numTechniques]
-									  : null;
-		}
-	
-		public function set currentTechnique(value : IEffect3DTechnique) : void
-		{
-			_current = value;
-		}
-		
-		public function get currentTechnique() : IEffect3DTechnique
-		{
-			return _current;
-		}
-		
-		public function begin(renderer : IRenderer3D, style : Effect3DStyleStack) : void
+		public function begin(renderer : IRenderer3D, style : StyleStack3D) : void
 		{
 			// NOTHING
 		}
 		
-		public function end(renderer : IRenderer3D, style : Effect3DStyleStack) : void
+		public function end(renderer : IRenderer3D, style : StyleStack3D) : void
 		{
 			// NOTHING
 		}

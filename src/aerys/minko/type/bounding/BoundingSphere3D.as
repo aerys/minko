@@ -14,7 +14,7 @@ package aerys.minko.type.bounding
 	{
 		use namespace minko;
 		
-		private var _center	: ConstVector4	= null;
+		private var _center	: ConstVector4	= new ConstVector4();
 		
 		private var _radius	: Number	= 0;
 		
@@ -45,8 +45,8 @@ package aerys.minko.type.bounding
 		/**
 		 * Create a new BoundingSphere object by computing its center and radius from
 		 * the bottom-left and top-right vertices of a bounding box.
-		 * @param	myMin
-		 * @param	myMax
+		 * @param	min
+		 * @param	max
 		 * @return
 		 */
 		public static function fromMinMax(min : Vector4, max : Vector4) : BoundingSphere3D

@@ -25,15 +25,15 @@ package aerys.minko
 	import flash.utils.getTimer;
 	
 	/**
-	 *
+	 * The viewport is the the display area used to render a 3D scene.
+	 * It can be used to render any IScene3D object.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
 	public class Viewport3D extends Sprite implements IVersionnable
 	{
 		use namespace minko;
-		
-		private var _logo			: MovieClip			= new MinkoLogo();
 		
 		private var _width			: Number			= 0.;
 		private var _height			: Number			= 0.;
@@ -72,6 +72,8 @@ package aerys.minko
 			{
 				_width = value;
 				++_version;
+				
+				resetContext3D();
 			}
 		}
 		
@@ -96,9 +98,17 @@ package aerys.minko
 			{
 				_height = value;
 				++_version;
+				
+				resetContext3D();
 			}
 		}
 		
+		/**
+		 * The anti-aliasing value used to render the scene.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get antiAliasing() : int
 		{
 			return _aa;
@@ -115,12 +125,34 @@ package aerys.minko
 			}
 		}
 		
+		/**
+		 * The amount of triangle rendered durung the last call to the
+		 * "render" method. Sometimes, the number of triangles is higher
+		 * than the total amount of triangles in the scene because some
+		 * triangles are renderer multiple times (multipass).
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get numTriangles() : uint
 		{
 			return _query ? _query.numTriangles
 							: 0;
 		}
 		
+		/**
+		 * The time spent during the last call to the "render" method.
+		 * 
+		 * This time includes:
+		 * <ul>
+		 * <li>updating the scene graph</li>
+		 * <li>rendering the scene graph</li>
+		 * <li>performing draw calls to the internal 3D APIs</li>
+		 * </ul>
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get renderingTime() : uint
 		{
 			return _time;
@@ -137,7 +169,7 @@ package aerys.minko
 		}
 
 		/**
-		 * Creates a new Viewport object.
+		 * Creates a new Viewport3D object.
 		 *
 		 * @param width The width of the viewport.
 		 * @param height The height of the viewport.
@@ -152,9 +184,24 @@ package aerys.minko
 			
 			_aa = antiAliasing;
 			_rendererClass = rendererType || DirectRenderer3D;
-			_logo.addEventListener(MouseEvent.CLICK, logoClickHandler);
 		}
 		
+		/**
+		 * Create a new Viewport3D object and setup the stage accordingly.
+		 * 
+		 * <ul>
+		 * <li>The resulting Viewport3D object will have the dimensions of the stage.</li>
+		 * <li>The resulting Viewport3D object listens to the Event.RESIZE event of the stage
+		 * in order to update its dimensions.</li>
+		 * <li>The stage "scaleMode" property is set to StageScaleMode.NO_SCALE.</li>
+		 * <li>The stage "align" property is set to StageAlign.TOP_LEFT.</li>
+		 * </ul>
+		 *  
+		 * @param stage
+		 * @param antiAliasing
+		 * @return 
+		 * 
+		 */
 		public static function setupOnStage(stage : Stage, antiAliasing : int = 0) : Viewport3D
 		{
 			var vp : Viewport3D = new Viewport3D(stage.stageWidth, stage.stageHeight, antiAliasing);
@@ -172,7 +219,7 @@ package aerys.minko
 			stage.align = StageAlign.TOP_LEFT;
 			
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
-			stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
+			stage.stage3Ds[0].viewPort = new Rectangle(x, y, _width, _height);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 
 			if (autoResize)
@@ -203,8 +250,7 @@ package aerys.minko
 		{
 			if (_context)
 			{
-				stage.stage3Ds[0].viewPort = new Rectangle(0, 0, _width, _height);
-
+				stage.stage3Ds[0].viewPort = new Rectangle(x, y, _width, _height);
 				_context.configureBackBuffer(_width, _height, _aa, true);
 				
 				_renderer = new DirectRenderer3D(this, _context);
@@ -244,18 +290,12 @@ package aerys.minko
 	
 		public function showLogo() : void
 		{
-			addChild(_logo);
+			var logo : Sprite = Minko.logo;
 			
-			_logo.visible = true;
-			_logo.useHandCursor = true;
-			_logo.buttonMode = true;
-			_logo.x = stage.stageWidth - _logo.width - 5;
-			_logo.y = stage.stageHeight - _logo.height - 20;
-		}
-		
-		private function logoClickHandler(event : Event) : void
-		{
-			navigateToURL(new URLRequest(Minko.URL), "_blank");
+			addChild(logo);
+			
+			logo.x = 5;
+			logo.y = stage.stageHeight - logo.height - 5;
 		}
 	}
 }

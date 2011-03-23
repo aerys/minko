@@ -3,19 +3,44 @@ package aerys.minko
 	import aerys.common.log.ILogger;
 	import aerys.common.log.LogLevel;
 	
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
+	
 	public class Minko
 	{
-		//{ region consts
 		public static const VERSION	: String		= "0.01a";
 		public static const URL		: String		= "http://aerys.in/minko";
-		//} endregion
 		
-		//{ region vars
 		private static var _logger		: ILogger	= null;
 		private static var _debugLevel	: uint		= LogLevel.DISABLED;
-		//} endregion
+		private static var _logo		: Sprite	= null;
 		
-		//{ region getters/setters
+		public static function get logo() : Sprite
+		{
+			if (!_logo)
+			{
+				_logo = new Sprite();
+				_logo.graphics.beginFill(0x7f7f7f, .85);
+				_logo.graphics.lineTo(50, 0);
+				_logo.graphics.lineTo(25, 25);
+				_logo.graphics.endFill();
+				_logo.visible = true;
+				_logo.useHandCursor = true;
+				_logo.buttonMode = true;
+				_logo.addEventListener(MouseEvent.CLICK, logoClickHandler);	
+			}
+			
+			return _logo;
+		}
+		
+		private static function logoClickHandler(event : Event) : void
+		{
+			navigateToURL(new URLRequest(URL), "_blank");
+		}
+		
 		public static function set logger(value : ILogger)	: void
 		{
 			_logger = value;
@@ -24,9 +49,7 @@ package aerys.minko
 		public static function set debugLevel(value : uint)	: void	{ _debugLevel = value; }
 		
 		public static function get debugLevel() : uint				{ return _debugLevel; }
-		//} endregion
 		
-		//{ region methods
 		public static function log(myMessage : Object, myTarget : Object = null) : void
 		{
 			if (_logger != null && _debugLevel & LogLevel.LOG)
@@ -52,6 +75,5 @@ package aerys.minko
 			
 			throw new Error(myMessage);
 		}
-		//} endregion
 	}
 }

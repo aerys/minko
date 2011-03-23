@@ -1,7 +1,8 @@
 package aerys.minko.effect.basic
 {
 	import aerys.minko.effect.AbstractEffect3D;
-	import aerys.minko.effect.Effect3DStyleStack;
+	import aerys.minko.effect.StyleStack3D;
+	import aerys.minko.effect.IEffect3DPass;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.TriangleCulling;
 	
@@ -11,11 +12,10 @@ package aerys.minko.effect.basic
 		{
 			super();
 			
-			techniques.push(new BasicTechnique3D());
-			currentTechnique = techniques[0];
+			passes[0] = new DiffusePass3D();
 		}
 		
-		override public function begin(renderer : IRenderer3D, style : Effect3DStyleStack) : void
+		override public function begin(renderer : IRenderer3D, style : StyleStack3D) : void
 		{
 			super.begin(renderer, style);
 			

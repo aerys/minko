@@ -6,6 +6,15 @@ package aerys.minko.scene.camera
 	
 	import flash.geom.Vector3D;
 	
+	/**
+	 * FirstPersonCamera3D objects represent a "first-person" camera.
+	 * 
+	 * The look-at point of such camera is computed according to the position
+	 * of the camera and the rotation property.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class FirstPersonCamera3D extends AbstractCamera3D
 	{
 		private static const EPSILON		: Number	= .001;

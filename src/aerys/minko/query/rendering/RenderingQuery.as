@@ -1,7 +1,7 @@
 package aerys.minko.query.rendering
 {
 	import aerys.minko.Viewport3D;
-	import aerys.minko.effect.Effect3DStyleStack;
+	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
 	import aerys.minko.effect.IStyled3D;
@@ -17,6 +17,20 @@ package aerys.minko.query.rendering
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	
+	/**
+	 * A RenderingQuery object is used to traverse a scene graph and provides
+	 * rendering methods and properties such as:
+	 * <ul>
+	 * <li>The list of IEffect3D that will be use when rendering.</li>
+	 * <li>The current Style3D object that will parametrize rendering.</li>
+	 * <li>The (enabled) ICamera3D object.</li>
+	 * <li>The list of the parent nodes that were traversed.</li>
+	 * <li>The list of the ancestor nodes that were traversed.</li>
+	 * </ul>
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class RenderingQuery implements IScene3DQuery
 	{
 		use namespace minko;
@@ -27,14 +41,14 @@ package aerys.minko.query.rendering
 		private var _parent		: IScene3D				= null;
 		private var _parents	: Vector.<IScene3D>		= new Vector.<IScene3D>();
 		private var _camera		: ICamera3D				= null;
-		private var _styleStack	: Effect3DStyleStack	= new Effect3DStyleStack();
+		private var _styleStack	: StyleStack3D	= new StyleStack3D();
 		private var _tm			: TransformManager		= new TransformManager();
 		private var _fx			: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _numNodes	: uint					= 0;
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: Effect3DStyleStack	{ return _styleStack; }
+		public function get style()			: StyleStack3D	{ return _styleStack; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }
@@ -43,7 +57,7 @@ package aerys.minko.query.rendering
 		public function get effects()		: Vector.<IEffect3D>	{ return _fx; }
 		public function get numNodes()		: uint					{ return _numNodes; }
 		
-		public function set style(value : Effect3DStyleStack) : void
+		public function set style(value : StyleStack3D) : void
 		{
 			_styleStack = value;
 		}
@@ -111,7 +125,7 @@ package aerys.minko.query.rendering
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect3D					= _fx[i];
-				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var passes		: Vector.<IEffect3DPass>	= fx.passes;
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);
@@ -159,7 +173,7 @@ package aerys.minko.query.rendering
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect3D					= _fx[i];
-				var passes		: Vector.<IEffect3DPass>	= fx.currentTechnique.passes;
+				var passes		: Vector.<IEffect3DPass>	= fx.passes;
 				var numPasses 	: int 						= passes.length;
 				
 				//_style = fx.style.override(_style);

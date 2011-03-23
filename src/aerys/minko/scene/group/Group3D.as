@@ -9,8 +9,10 @@ package aerys.minko.scene.group
 	import flash.utils.flash_proxy;
 
 	/**
-	 * The Group3D provides a basic support for objects grouping.
+	 * The Group3D provides a basic support for scene building.
 	 * A Group3D can contain any object implementing the IScene3D interface.
+	 * 
+	 * Group3D objects do not affect their children with any specific behaviour.
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
