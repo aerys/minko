@@ -22,8 +22,8 @@ package aerys.minko.type.interpolation
 				return;
 			
 			var t2		: Number = .5 * (1 - Math.cos(t * Math.PI));
-			var term1 : Number = 1 - t2;
-			var term2 : Number = t2;
+			var term1	: Number = 1 - t2;
+			var term2	: Number = t2;
 			
 			_tmpPos.set(
 				term1 * _start.x + term2 * _end.x,

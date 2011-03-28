@@ -19,6 +19,16 @@ package aerys.minko.type.interpolation
 		protected var _tmpTangent	: Vector4;
 		protected var _tmpPointAt	: Vector4;
 		
+		public function get start() : Vector4
+		{
+			return _start;
+		}
+		
+		public function get end() : Vector4
+		{
+			return _end;
+		}
+		
 		public function set start(value : Vector4) : void
 		{
 			_start = value;

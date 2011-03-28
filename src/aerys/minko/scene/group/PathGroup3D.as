@@ -6,21 +6,21 @@ package aerys.minko.scene.group
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.scene.mesh.primitive.TriangleMesh3D;
 	import aerys.minko.type.Transform3D;
-	import aerys.minko.type.math.Vector4;
+	import aerys.minko.type.interpolation.AbstractSegment;
 	import aerys.minko.type.interpolation.BezierCubicSegment;
 	import aerys.minko.type.interpolation.BezierQuadSegment;
 	import aerys.minko.type.interpolation.CatmullRomSegment;
 	import aerys.minko.type.interpolation.CubicSegment;
 	import aerys.minko.type.interpolation.HermiteSegment;
-	import aerys.minko.type.interpolation.AbstractSegment;
 	import aerys.minko.type.interpolation.LinearSegment;
+	import aerys.minko.type.math.Vector4;
 	
 	public class PathGroup3D extends TransformGroup3D
 	{
 		protected var _debugContainer		: IGroup3D;
 		
-		protected var _atVector				: Vector4;
-		protected var _upVector				: Vector4;
+		protected var _at					: Vector4;
+		protected var _up					: Vector4;
 		
 		protected var _begin				: Vector4;
 		protected var _lastBegin			: Vector4;
@@ -31,11 +31,19 @@ package aerys.minko.scene.group
 		protected var _segments				: Vector.<AbstractSegment>;
 		protected var _lastRatio			: Number;
 		
+		/**
+		 * If this flag is set to true, a TriangleMesh will be addChilded on 
+		 * all checkpoints and bezier control points created on subsequent
+		 * calls to add* and close* methods on this PathGroup
+		 */
 		public function set debugContainer(v : IGroup3D) : void
 		{
 			_debugContainer = v;
 		}
 		
+		/**
+		 * current interpolation ratio in the path.
+		 */
 		public function get ratio() : Number
 		{
 			return _lastRatio;
@@ -44,29 +52,36 @@ package aerys.minko.scene.group
 		public function set ratio(t : Number) : void
 		{
 			_lastRatio = t;
-			var segmentCount : uint	= _segments.length;
-			t = (t < 0 ? - t : t) % 1;
 			
-			if (segmentCount != 0)
+			var segmentCount : uint	= _segments.length;
+			if (segmentCount == 0)
 			{
+				transform.position.set(_end.x, _end.y, _end.z, 0);
+			}
+			else
+			{
+				t = (t < 0 ? - t : t) % 1;
 				var segment	: AbstractSegment = _segments[int(t * segmentCount)];
 				var localT	: Number		  = (t * segmentCount) % 1;
 				segment.setTransform(transform, localT);
 			}
-			else
-			{
-				transform.position.set(_end.x, _end.y, _end.z, 0);
-			}
 		}
 		
-		public function PathGroup3D(start 		: Vector4,
-									atVector	: Vector4,
-									upVector	: Vector4,
+		/**
+		 * @var start First checkpoint of the path.
+		 * @var at forward direction of the elements in this group. This vector will be kept parralel to the tangent of the path when updating the ratio value.
+		 * @var up  up direction of the elements in this group. This vector will determine the rotation around the tangent of the path when updateing the ratio value.
+		 * @var ...childen Children to be addChilded at the group creation
+		 */
+		public function PathGroup3D(start 	: Vector4,
+									at		: Vector4,
+									up		: Vector4,
 									...children)
 		{
 			super(children);
 			
-			_upVector	= _upVector;
+			_at			= at;
+			_up			= up;
 			_begin		= start;
 			_end		= start;
 			_segments	= new Vector.<AbstractSegment>();
@@ -75,76 +90,103 @@ package aerys.minko.scene.group
 		}
 		
 		/**
-		 * Append a straight line to the path
+		 * Append a straight line to the path.
 		 * 
-		 * @var end
-		 * @var begin
+		 * @var end End of the segment, default to the first point of the path
+		 * @var begin Begin of the segment, default to last checkpoint.
 		 */
-		public function addLinearSegment(end	: Vector4, 
+		public function addLinearSegment(end	: Vector4 = null, 
 										 begin	: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (end == null) end = _begin;
+			if (begin == null) begin = _end;
 			
 			_segments.push(new LinearSegment(begin, end));
 			_lastBegin = begin;
 			_lastBezierControl = begin;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
 			if (_firstBezierControl == null && _segments.length == 1)
 				_firstBezierControl = end;
 			
-			if (_debugContainer)
-				addDebugMarker(end, false);
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
 			
+			if (_debugContainer)
+			{
+				addDebugMarker(begin, false);
+				addDebugMarker(end, false);
+			}
+
 			return this;
 		}
 		
 		/**
 		 * Append a cosine segment to the path
 		 * 
-		 * @var end
-		 * @var begin
+		 * @var end End of the segment, default to the begining of the path.
+		 * @var begin Begin of the segment, default to last checkpoint.
 		 */
-		public function addCosineSegment(end	: Vector4,
+		public function addCosineSegment(end	: Vector4 = null,
 										 begin	: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) _end = _begin;
 			
 			_segments.push(new CubicSegment(begin, end, _lastBegin, null));
 			_lastBegin = begin;
 			_lastBezierControl = null;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
 			
+			if (_debugContainer)
+			{
+				addDebugMarker(begin, false);
+				addDebugMarker(end, false);
+			}
+
 			return this;
 		}
 		
 		/**
 		 * Append a cubic segment to the path
 		 * 
-		 * @var end
-		 * @var begin
+		 * @var end End of the segment, default to the first point of the path
+		 * @var begin Begin of the segment, default to last checkpoint.
 		 */
-		public function addCubicSegment(end		: Vector4, 
+		public function addCubicSegment(end		: Vector4 = null,
 										begin	: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) end = _begin;
 			
 			_segments.push(new CubicSegment(begin, end, _lastBegin, null));
 			_lastBegin = begin;
 			_lastBezierControl = null;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
+			
+			if (_debugContainer)
+			{
+				addDebugMarker(begin, false);
+				addDebugMarker(end, false);
+			}
 			
 			return this;
 		}
@@ -152,81 +194,105 @@ package aerys.minko.scene.group
 		/**
 		 * Append a Catmull-Rom cubic segment to the path
 		 * 
-		 * @var end
-		 * @var begin
+		 * @var end End of the segment, default to the first point of the path
+		 * @var begin Begin of the segment, default to last checkpoint.
 		 */
-		public function addCatmullRomSegment(end	: Vector4, 
+		public function addCatmullRomSegment(end	: Vector4 = null, 
 											 begin	: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) end = _begin;
 			
 			_segments.push(new CatmullRomSegment(begin, end, _lastBegin, null));
 			_lastBegin = begin;
 			_lastBezierControl = null;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
 			
-			
+			if (_debugContainer)
+			{
+				addDebugMarker(begin, false);
+				addDebugMarker(end, false);
+			}
+
 			return this;
 		}
 		
 		/**
 		 * Append an Hermite segment to the path
 		 * 
-		 * @var end
-		 * @var tension
-		 * @var bias
-		 * @var begin
+		 * @var end End of the segment, default to the first point of the path
+		 * @var tension used to tighten up the curvature at the known points. 1 is high, 0 normal, -1 is low.
+		 * @var bias used to twist the curve about the known points. 0 is even, positive is towards first segment, negative towards the other
+		 * @var begin Begin of the segment, default to last checkpoint.
 		 */
-		public function addHermiteSegment(end		: Vector4,
+		public function addHermiteSegment(end		: Vector4 = null,
 										  tension	: Number = 0,
 										  bias		: Number = 0,
 										  begin		: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) end = _begin;
 			
 			_segments.push(new HermiteSegment(begin, end, bias, tension, _lastBegin, null));
 			_lastBegin = begin;
 			_lastBezierControl = null;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
 			
-			return this;	
+			if (_debugContainer)
+			{
+				addDebugMarker(begin, false);
+				addDebugMarker(end, false);
+			}
+			return this;
 		}
 		
 		/**
 		 * Append a Bezier quadratic segment to the path
 		 * 
-		 * @var control
-		 * @var end
-		 * @var begin
+		 * @var control Bezier control point
+		 * @var end End of the segment, default to the first point of the path
+		 * @var begin Begin of the segment, default to last checkpoint.
+		 * @see Wikipedia article about bezier curves <http://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves>
 		 */
 		public function addBezierQuadSegment(control	: Vector4,
-											 end		: Vector4,
+											 end		: Vector4 = null,
 											 begin		: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) end = _begin;
 			
 			_segments.push(new BezierQuadSegment(begin, control, end));
 			_lastBegin = begin;
 			_lastBezierControl = control;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
 			if (_firstBezierControl == null && _segments.length == 1)
 				_firstBezierControl = control;
 			
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
+			
 			if (_debugContainer)
 			{
+				addDebugMarker(begin, false);
 				addDebugMarker(control, true, false);
 				addDebugMarker(end, false);
 			}
@@ -237,32 +303,38 @@ package aerys.minko.scene.group
 		/**
 		 * Append a Bezier cubic segment to the path.
 		 * 
-		 * @var control1 
-		 * @var control2
-		 * @var end
-		 * @var begin
+		 * @var control1 Bezier control point
+		 * @var control2 Bezier control point
+		 * @var end End of the segment, default to the first point of the path
+		 * @var begin Begin of the segment, default to last checkpoint.
+		 * @see Wikipedia article about bezier curves <http://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves>
 		 */
 		public function addBezierCubicSegment(control1	: Vector4, 
 											  control2	: Vector4, 
-								   			  end		: Vector4,
+								   			  end		: Vector4 = null,
 											  begin		: Vector4 = null) : PathGroup3D
 		{
-			if (begin == null)
-				begin = _end;
+			if (begin == null) begin = _end;
+			if (end == null) end = _begin;
 			
 			_segments.push(new BezierCubicSegment(begin, control1, control2, end));
 			_lastBegin = begin;
 			_lastBezierControl = control2;
 			_end = end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
 			if (_firstBezierControl == null && _segments.length == 1)
 				_firstBezierControl = control1;
 			
+			if (_segments.length > 1)
+			{
+				_lastRatio = (_segments.length - 1) * _lastRatio / _segments.length;
+				if (_segments[_segments.length - 2] is CubicSegment)
+					CubicSegment(_segments[_segments.length - 2]).next = end;
+			}
+			
 			if (_debugContainer)
 			{
+				addDebugMarker(begin, false);
 				addDebugMarker(control1, true, false);
 				addDebugMarker(control2, true, false);
 				addDebugMarker(end, false);
@@ -285,30 +357,18 @@ package aerys.minko.scene.group
 			
 			var end : Vector4 = getControlSymetric(length, _lastBezierControl, _end);
 			
-			_segments.push(new LinearSegment(_end, end));
-			_lastBegin = _end;
-			_lastBezierControl = _end;
-			_end = end;
-			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
-			if (_debugContainer)
-			{
-				addDebugMarker(end, false);
-			}
-			
-			return this;
+			return addLinearSegment(end);
 		}
 		
 		/**
 		 * Append a bezier quadratic segment to the path, which smoothly extends it.
 		 * To use this method, last segment must be a linear or bezier segment.
 		 * 
-		 * @var end
+		 * @var end End of the segment, default to the first point of the path
 		 * @var controlDistance
+		 * @see Wikipedia article about bezier curves <http://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves>
 		 */
-		public function addSmoothBezierQuadSegment(end				: Vector4, 
+		public function addSmoothBezierQuadSegment(end				: Vector4 = null,
 												   controlDistance	: Number = 0) : PathGroup3D
 		{
 			var segmentCount : uint = _segments.length;
@@ -320,21 +380,7 @@ package aerys.minko.scene.group
 			
 			var control : Vector4 = getControlSymetric(controlDistance, _lastBezierControl, _end);
 			
-			_segments.push(new BezierQuadSegment(_end, control, end));
-			_lastBegin = _end;
-			_lastBezierControl = control;
-			_end = end;
-			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
-			if (_debugContainer)
-			{
-				addDebugMarker(control, true, true);
-				addDebugMarker(end, false);
-			}
-			
-			return this;
+			return addBezierQuadSegment(control, end);
 		}
 		
 		/**
@@ -342,11 +388,12 @@ package aerys.minko.scene.group
 		 * To use this method, last segment must be a linear or bezier segment.
 		 * 
 		 * @var control2
-		 * @var end
+		 * @var end End of the segment, default to the first point of the path
 		 * @var control1Distance
+		 * @see Wikipedia article about bezier curves <http://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves>
 		 */
 		public function addSmoothBezierCubicSegment(control2			: Vector4,
-													end					: Vector4,
+													end					: Vector4 = null,
 													control1Distance	: Number = 0) : PathGroup3D
 		{
 			var segmentCount : uint = _segments.length;
@@ -358,42 +405,65 @@ package aerys.minko.scene.group
 			
 			var control1 : Vector4 = getControlSymetric(control1Distance, _lastBezierControl, _end);
 			
-			_segments.push(new BezierCubicSegment(_end, control1, control2, end));
-			_lastBegin = _end;
-			_lastBezierControl = control2;
-			_end = end;
+			addBezierCubicSegment(control1, control2, end);
+			return this;
+		}
+		
+		/**
+		 * Close the loop, adding a straight line between the last and first checkpoint.
+		 */
+		public function closeLoopLinear() : PathGroup3D
+		{
+			return addLinearSegment();
+		}
+		
+		/**
+		 * Close the loop, adding a cosine segment between the first and last checkpoint.
+		 * If both first and last segments are cosine segments, the path will be smooth.
+		 */
+		public function closeLoopCosine() : PathGroup3D
+		{
+			return addCosineSegment();
+		}
+		
+		/**
+		 * Close the loop, adding a cubic segment between the first and last checkpoint.
+		 * If both first and last segments are cubic segments, the path will be smooth.
+		 */
+		public function closeLoopCubic() : PathGroup3D
+		{
+			addCubicSegment();
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = end;
-			
-			if (_debugContainer)
-			{
-				addDebugMarker(control1, true, true);
-				addDebugMarker(control2, true, false);
-				addDebugMarker(end, false);
-			}
+			var cubicSegment : CubicSegment = _segments[_segments.length - 1] as CubicSegment;
+			cubicSegment.next = _segments[0].end;
 			
 			return this;
 		}
 		
 		/**
-		 * Close the loop, adding a line between the last and first checkpoint.
+		 * Close the loop, adding a Catmull-Rom segment between the first and last checkpoint.
+		 * If both first and last segments are Catmull-Rom segments, the path will be smooth.
 		 */
-		public function closeLoopLinear() : PathGroup3D
+		public function closeLoopCatmullRom() : PathGroup3D
 		{
-			if (_segments.length == 0)
-				throw new Error('There is no path to close');
+			addCatmullRomSegment();
 			
-			_segments.push(new LinearSegment(_end, _begin));
-			_lastBegin = _end;
-			_lastBezierControl = _end;
-			_end = _begin;
+			var cubicSegment : CatmullRomSegment = _segments[_segments.length - 1] as CatmullRomSegment;
+			cubicSegment.next = _segments[0].end;
 			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = _begin;
+			return this;
+		}
+		
+		/**
+		 * Close the loop, adding a Hermite segment between the first and last checkpoint.
+		 * If both first and last segments are Hermite segments, the path will be smooth.
+		 */
+		public function closeLoopHermite() : PathGroup3D
+		{
+			addHermiteSegment();
 			
-			if (_debugContainer)
-				addDebugMarker(_begin, false);
+			var hermiteSegment : HermiteSegment = _segments[_segments.length - 1] as HermiteSegment;
+			hermiteSegment.next = _segments[0].end;
 			
 			return this;
 		}
@@ -404,9 +474,10 @@ package aerys.minko.scene.group
 		 * 
 		 * @var control1Distance 
 		 * @var control2Distance 
+		 * @see Wikipedia article about bezier curves <http://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_curves>
 		 */
-		public function closeLoopBezierCubic(control1Distance : Number = 0,
-											 control2Distance : Number = 0) : PathGroup3D
+		public function closeLoopSmoothBezierCubic(control1Distance : Number = 0,
+												   control2Distance : Number = 0) : PathGroup3D
 		{
 			if (_segments.length == 0)
 				throw new Error('There is no path to close');
@@ -420,22 +491,7 @@ package aerys.minko.scene.group
 			var control1 : Vector4 = getControlSymetric(control1Distance, _lastBezierControl, _end);
 			var control2 : Vector4 = getControlSymetric(control2Distance, _firstBezierControl, _begin);
 			
-			_segments.push(new BezierCubicSegment(_end, control1, control2, _begin));
-			_lastBegin = _end;
-			_lastBezierControl = control2;
-			_end = _begin;
-			
-			if (_segments.length > 1 && _segments[_segments.length - 2] is CubicSegment)
-				CubicSegment(_segments[_segments.length - 2]).next = _begin;
-			
-			if (_debugContainer)
-			{
-				addDebugMarker(control1, true, true);
-				addDebugMarker(control2, true, false);
-				addDebugMarker(_begin, false);
-			}
-			
-			return this;
+			return addBezierCubicSegment(control1, control2);
 		}
 		
 		protected function getControlSymetric(distance	: Number, 
