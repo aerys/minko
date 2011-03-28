@@ -21,8 +21,8 @@ package aerys.minko.scene.mesh.primitive
 		}
 		
 		public function QuadMesh3D(doubleSided	: Boolean 	= false,
-								 width 			: uint 		= 1,
-								 height 		: uint 		= 0)
+								   width 		: uint 		= 1,
+								   height 		: uint 		= 0)
 		{
 			var vertices : Vector.<Number> = new Vector.<Number>();
 			var indices : Vector.<uint> = new Vector.<uint>();

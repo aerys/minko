@@ -10,14 +10,14 @@ package aerys.minko.scene.debug
 	
 	public class OrthogonalFrame extends Group3D
 	{
-		public function OrthogonalFrame()
+		public function OrthogonalFrame(noBaseEffect : Boolean = false)
 		{
 			var cubeMesh : IMesh3D = new NormalMesh3D(new CubeMesh3D());
 			
-			var repere0	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.WHITE, true));
-			var repereX	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.RED, true));
-			var repereY	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.GREEN, true));
-			var repereZ	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.BLUE, true));
+			var repere0	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.WHITE, noBaseEffect));
+			var repereX	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.RED, noBaseEffect));
+			var repereY	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.GREEN, noBaseEffect));
+			var repereZ	: TransformGroup3D = new TransformGroup3D(new Model3D(cubeMesh, ColorMaterial3D.BLUE, noBaseEffect));
 			
 			repereX.transform.appendTranslation(1, 0, 0);
 			repereY.transform.appendTranslation(0, 1, 0);

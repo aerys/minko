@@ -2,6 +2,7 @@
 {
 	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
+	import aerys.minko.type.stream.VertexStream3DList;
 	import aerys.minko.type.vertex.format.PackedVertex3DFormat;
 	import aerys.minko.type.vertex.format.Vertex3DFormat;
 	
@@ -24,11 +25,14 @@
 		
 		public function TriangleMesh3D()
 		{
-			var vb : Vector.<Number> = Vector.<Number>([-0.5, 0.0, -0.5,
-														0.5, 0.0, -0.5,
-														0.0, 0.0, 0.5]);
+			var vb : Vector.<Number> = Vector.<Number>([-0.5, 0.0, -0.5, 0., 0.,
+														0.5, 0.0, -0.5, 0., 1.,
+														0.0, 0.0, 0.5, 1., 0.]);
 			
-			super(Vector.<VertexStream3D>(new VertexStream3D(vb, PackedVertex3DFormat.XYZ)));
+			var vertexStreamList : VertexStream3DList = new VertexStream3DList(
+				new VertexStream3D(vb, PackedVertex3DFormat.XYZ_UV)
+			);
+			super(vertexStreamList);
 		}
 		
 	}

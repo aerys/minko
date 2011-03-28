@@ -17,10 +17,17 @@ package aerys.minko.scene.mesh.modifier
 		public static const VERTEX_FORMAT	: PackedVertex3DFormat	=
 			new PackedVertex3DFormat(new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3));
 		
-		protected var _version			: uint					= 0;
+		protected var _version : uint = 0;
 		
-		override public function get version() : uint { return _version; }
-		override public function get vertexStreamList():VertexStream3DList { return _vertexStreamList; }
+		override public function get version() : uint 
+		{
+			return _version; 
+		}
+		
+		override public function get vertexStreamList() : VertexStream3DList 
+		{ 
+			return _vertexStreamList; 
+		}
 		
 		public function NormalMesh3D(target : IMesh3D)
 		{

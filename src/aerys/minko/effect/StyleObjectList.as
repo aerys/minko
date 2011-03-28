@@ -27,6 +27,7 @@ package aerys.minko.effect
 		{
 			if (_dirty)
 			{
+				_dirty = false;
 				_hash = _styleName + "_";
 				for each (var object : IStyleObject in _objects)
 					_hash += object.hash;
