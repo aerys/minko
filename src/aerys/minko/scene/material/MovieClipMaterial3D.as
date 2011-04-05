@@ -23,8 +23,11 @@ package aerys.minko.scene.material
 	 */
 	public class MovieClipMaterial3D extends AnimatedMaterial3D
 	{
-		private var _source		: MovieClip		= null;
-		private var _playing	: Boolean		= true;
+		private var _source			: MovieClip			= null;
+		private var _currentFrame	: int				= 1;
+		private var _playing		: Boolean			= true;
+		
+		private var _frames			: Vector.<Boolean>	= new Vector.<Boolean>();
 		
 		public function get isPlaying() : Boolean	{ return _playing; }
 		
@@ -40,17 +43,26 @@ package aerys.minko.scene.material
 		{
 			if (_source && _playing)
 			{
-				addChild(BitmapMaterial3D.fromDisplayObject(_source));
-				_source.nextFrame();
-				
-				if (_source.currentFrame >= _source.totalFrames)
-					_source = null;
+				if (!_frames[int(_currentFrame - 1)])
+				{
+					_frames[int(_currentFrame - 1)] = true;
+					
+					var mat : BitmapMaterial3D = BitmapMaterial3D.fromDisplayObject(_source);
+					
+					mat.name = _source.currentFrameLabel;
+					
+					addChild(mat);
+					_source.gotoAndStop(_currentFrame++);
+					
+					if (numChildren == _source.totalFrames)
+						_source = null;
+				}
 			}
 			
 			super.nextFrame(query);
 		}
 		
-		/*public function stop() : void
+		public function stop() : void
 		{
 			_playing = false;
 		}
@@ -62,12 +74,14 @@ package aerys.minko.scene.material
 		
 		public function gotoAndPlay(frame : Object) : void
 		{
-			play();
+			_source.gotoAndStop(frame);
+			_playing = true;
 		}
 		
 		public function gotoAndStop(frame : Object) : void
 		{
-			stop();
-		}*/
+			_source.gotoAndStop(frame);
+			_playing = false;
+		}
 	}
 }

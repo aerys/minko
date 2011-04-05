@@ -1,4 +1,4 @@
-package aerys.minko
+package aerys.minko.stage
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
@@ -23,6 +23,7 @@ package aerys.minko
 	import flash.net.URLRequest;
 	import flash.net.navigateToURL;
 	import flash.utils.getTimer;
+	import aerys.minko.Minko;
 	
 	/**
 	 * The viewport is the the display area used to render a 3D scene.
@@ -214,18 +215,14 @@ package aerys.minko
 		private function setupOnStage(stage : Stage, autoResize : Boolean = true) : void
 		{
 			stage.addChild(this);
-			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			if (autoResize)
+				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 			
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
-			stage.stage3Ds[0].viewPort = new Rectangle(x, y, _width, _height);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 
-			if (autoResize)
-			{
-				stage.addEventListener(Event.RESIZE, stageResizeHandler);
-			}
 		}
 		
 		private function stageResizeHandler(event : Event) : void

@@ -1,6 +1,6 @@
 package aerys.minko.scene.camera
 {
-	import aerys.minko.Viewport3D;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.query.rendering.TransformManager;

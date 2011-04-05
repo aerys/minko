@@ -1,7 +1,7 @@
 package aerys.minko.render
 {
 	import aerys.common.Factory;
-	import aerys.minko.Viewport3D;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.rendering.TransformManager;
 	import aerys.minko.render.shader.Shader3D;

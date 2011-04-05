@@ -1,6 +1,6 @@
 package aerys.minko.render
 {
-	import aerys.minko.Viewport3D;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.RenderState;
 	
