@@ -24,12 +24,14 @@ package aerys.minko.type.interpolation
 		{
 			super.start = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		override public function set end(v : Vector4) : void
 		{
 			super.end = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set previous(v : Vector4) : void
@@ -41,10 +43,11 @@ package aerys.minko.type.interpolation
 					2 * _start.x - _end.x,
 					2 * _start.y - _end.y,
 					2 * _start.z - _end.z,
-					0
+					2 * _start.w - _end.w
 				);
 			
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set next(v : Vector4) : void
@@ -56,16 +59,18 @@ package aerys.minko.type.interpolation
 					2 * _end.x - _start.x,
 					2 * _end.y - _start.y,
 					2 * _end.z - _start.z,
-					0
+					2 * _end.w - _start.w
 				);
 			
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set bias(v : Number) : void
 		{
 			_bias = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set tension(v : Number) : void
@@ -75,6 +80,7 @@ package aerys.minko.type.interpolation
 			
 			_tension = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function HermiteSegment(start	: Vector4,
@@ -82,9 +88,11 @@ package aerys.minko.type.interpolation
 									   bias		: Number,
 									   tension	: Number,
 									   previous	: Vector4 = null,
-									   next		: Vector4 = null)
+									   next		: Vector4 = null,
+									   at		: Vector4 = null,
+									   up		: Vector4 = null)
 		{
-			super(start, end);
+			super(start, end, at, up);
 			
 			if (tension < -1 || tension > 1)
 				throw new Error('Tension value must be between -1 and 1.');
@@ -109,7 +117,8 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpPosT == t)
+			
+			if (_tmpPosT == t)
 				return;
 			
 			var t2 : Number = t * t;
@@ -127,7 +136,7 @@ package aerys.minko.type.interpolation
 				a0 * _start.x + a1 * _m0.x + a2 * _m1.x + a3 * _end.x,
 				a0 * _start.y + a1 * _m0.y + a2 * _m1.y + a3 * _end.y,
 				a0 * _start.z + a1 * _m0.z + a2 * _m1.z + a3 * _end.z,
-				0
+				a0 * _start.w + a1 * _m0.w + a2 * _m1.w + a3 * _end.w
 			);
 			
 			_tmpPosT = t;
@@ -137,7 +146,8 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpTangentT == t)
+			
+			if (_tmpTangentT == t)
 				return;
 			
 			var t2 : Number = t * t;
@@ -152,7 +162,7 @@ package aerys.minko.type.interpolation
 				dA0_dT * _start.x + dA1_dT * _m0.x + dA2_dT * _m1.x + dA3_dT * _end.x,
 				dA0_dT * _start.y + dA1_dT * _m0.y + dA2_dT * _m1.y + dA3_dT * _end.y,
 				dA0_dT * _start.z + dA1_dT * _m0.z + dA2_dT * _m1.z + dA3_dT * _end.z,
-				0
+				dA0_dT * _start.w + dA1_dT * _m0.w + dA2_dT * _m1.w + dA3_dT * _end.w
 			).normalize();
 			
 			_tmpTangentT = t;
@@ -162,20 +172,8 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpPointAtT == t)
-				return;
 			
-			updatePosition(t);
-			updateTangent(t);
-			
-			_tmpPointAt.set(
-				_tmpPos.x - _tmpTangent.x,
-				_tmpPos.y - _tmpTangent.y,
-				_tmpPos.z - _tmpTangent.z,
-				0
-			);
-			
-			_tmpPointAtT = t;
+			super.updatePointAt(t);
 		}
 		
 		protected function updatePrecomputedTerms() : void
@@ -184,17 +182,21 @@ package aerys.minko.type.interpolation
 				0.5 * ((_start.x - _previous.x) * (1 + _bias) * (1 - _tension) + (_end.x - _start.x) * (1 - _bias) * (1 - _tension)),
 				0.5 * ((_start.y - _previous.y) * (1 + _bias) * (1 - _tension) + (_end.y - _start.y) * (1 - _bias) * (1 - _tension)),
 				0.5 * ((_start.z - _previous.z) * (1 + _bias) * (1 - _tension) + (_end.z - _start.z) * (1 - _bias) * (1 - _tension)),
-				0
+				0.5 * ((_start.w - _previous.w) * (1 + _bias) * (1 - _tension) + (_end.w - _start.w) * (1 - _bias) * (1 - _tension))
 			);
 			
 			_m1.set(
 				0.5 * ((_end.x - _start.x) * (1 + _bias) * (1 - _tension) + (_next.x - _end.x) * (1 - _bias) * (1 - _tension)),
 				0.5 * ((_end.y - _start.y) * (1 + _bias) * (1 - _tension) + (_next.y - _end.y) * (1 - _bias) * (1 - _tension)),
 				0.5 * ((_end.z - _start.z) * (1 + _bias) * (1 - _tension) + (_next.z - _end.z) * (1 - _bias) * (1 - _tension)),
-				0
+				0.5 * ((_end.w - _start.w) * (1 + _bias) * (1 - _tension) + (_next.w - _end.w) * (1 - _bias) * (1 - _tension))
 			);
 			
-			_dirty = false;
+			_dirty			= false;
+			_tmpPointAtT	= -1;
+			_tmpPosT		= -1;
+			_tmpTangentT	= -1;
+			_length			= NaN;
 		}
 	}
 }

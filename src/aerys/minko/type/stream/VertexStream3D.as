@@ -40,7 +40,7 @@ package aerys.minko.type.stream
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data.length % _format.dwordsPerVertex)
-				throw new Error("Incompatible vertex format: the data length does not match");
+ 				throw new Error("Incompatible vertex format: the data length does not match");
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;

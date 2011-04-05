@@ -33,6 +33,7 @@ package aerys.minko.scene.group
 		private var _numChildren	: int				= 0;
 		
 		public function get name()	: String	{ return _name; }
+		public function set name(v : String) : void { _name = v; }
 		
 		protected function get rawChildren()	: Vector.<IScene3D> 	{ return _children; }
 		

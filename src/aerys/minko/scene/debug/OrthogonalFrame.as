@@ -8,7 +8,7 @@ package aerys.minko.scene.debug
 	import aerys.minko.scene.mesh.modifier.NormalMesh3D;
 	import aerys.minko.scene.mesh.primitive.CubeMesh3D;
 	
-	public class OrthogonalFrame extends Group3D
+	public class OrthogonalFrame extends TransformGroup3D
 	{
 		public function OrthogonalFrame(noBaseEffect : Boolean = false)
 		{

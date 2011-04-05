@@ -4,9 +4,22 @@ package aerys.minko.type.interpolation
 
 	public class AbstractBezierSegment extends AbstractSegment
 	{
-		public function AbstractBezierSegment(start : Vector4, end : Vector4) 
+		public function get firstControl() : Vector4
 		{
-			super(start, end);
+			throw new Error('Must be overriden');
+		}
+		
+		public function get lastControl() : Vector4
+		{
+			throw new Error('Must be overriden');
+		}
+		
+		public function AbstractBezierSegment(start	: Vector4, 
+											  end	: Vector4, 
+											  at	: Vector4 = null, 
+											  up	: Vector4 = null) 
+		{
+			super(start, end, at, up);
 		}
 	}
 }

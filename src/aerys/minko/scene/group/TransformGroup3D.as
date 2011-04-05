@@ -11,7 +11,7 @@
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class TransformGroup3D extends Group3D implements IObject3D
+	public dynamic class TransformGroup3D extends Group3D implements IObject3D
 	{
 		private static var _id	: uint			= 0;
 		

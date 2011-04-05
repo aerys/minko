@@ -38,7 +38,7 @@ package aerys.minko.scene.mesh
 		}
 
 		public function Mesh3D(vertexStreamList	: VertexStream3DList	= null,
-							   indexBuffer		: IndexStream3D 		= null)
+							   indexStream		: IndexStream3D 		= null)
 		{
 			super();
 			
@@ -46,7 +46,7 @@ package aerys.minko.scene.mesh
 				throw new Error('VertexStreamList must contain vertex position component (Vertex3DComponent.XYZ)');
 			
 			_vertexStreamList = vertexStreamList;
-			_indexStream = indexBuffer || IndexStream3D.dummy(vertexStreamList.length, vertexStreamList.dynamic);
+			_indexStream = indexStream || IndexStream3D.dummy(vertexStreamList.length, vertexStreamList.dynamic);
 		}
 		
 		override protected function acceptRenderingQuery(query : RenderingQuery) : void

@@ -23,12 +23,14 @@ package aerys.minko.type.interpolation
 		{
 			super.start = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		override public function set end(v : Vector4) : void
 		{
 			super.end = v;
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set previous(v : Vector4) : void
@@ -40,10 +42,11 @@ package aerys.minko.type.interpolation
 					2 * _start.x - _end.x,
 					2 * _start.y - _end.y,
 					2 * _start.z - _end.z,
-					0
+					2 * _start.w - _end.w
 				);
 			
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function set next(v : Vector4) : void
@@ -55,18 +58,21 @@ package aerys.minko.type.interpolation
 					2 * _end.x - _start.x,
 					2 * _end.y - _start.y,
 					2 * _end.z - _start.z,
-					0
+					2 * _end.w - _start.w
 				);
 			
 			_dirty = true;
+			_length = NaN;
 		}
 		
 		public function CubicSegment(start		: Vector4,
 									 end		: Vector4,
 									 previous	: Vector4 = null,
-									 next		: Vector4 = null)
+									 next		: Vector4 = null,
+									 at			: Vector4 = null,
+									 up			: Vector4 = null)
 		{
-			super(start, end);
+			super(start, end, at, up);
 			
 			_dirty		= true;
 			
@@ -83,19 +89,19 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpPosT == t)
+			
+			if (_tmpPosT == t)
 				return;
 			
 			var term1 : Number = t * t * t;
 			var term2 : Number = t * t;
-			var term3 : Number = t;
-			// term4 = 1
+			// term3 = t, term4 = 1
 			
 			_tmpPos.set(
-				term1 * _a0.x + term2 * _a1.x + term3 * _a2.x + _a3.x, 
-				term1 * _a0.y + term2 * _a1.y + term3 * _a2.y + _a3.y, 
-				term1 * _a0.z + term2 * _a1.z + term3 * _a2.z + _a3.z, 
-				0
+				term1 * _a0.x + term2 * _a1.x + t * _a2.x + _a3.x, 
+				term1 * _a0.y + term2 * _a1.y + t * _a2.y + _a3.y, 
+				term1 * _a0.z + term2 * _a1.z + t * _a2.z + _a3.z, 
+				term1 * _a0.w + term2 * _a1.w + t * _a2.w + _a3.w
 			);
 			
 			_tmpPosT = t;
@@ -105,7 +111,8 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpTangentT == t)
+			
+			if (_tmpTangentT == t)
 				return;
 			
 			var dTerm1_dT : Number = 3 * t * t;
@@ -116,7 +123,7 @@ package aerys.minko.type.interpolation
 				dTerm1_dT * _a0.x + dTerm2_dT * _a1.x + _a2.x, 
 				dTerm1_dT * _a0.y + dTerm2_dT * _a1.y + _a2.y, 
 				dTerm1_dT * _a0.z + dTerm2_dT * _a1.z + _a2.z, 
-				0
+				dTerm1_dT * _a0.w + dTerm2_dT * _a1.w + _a2.w
 			).normalize();
 			
 			_tmpTangentT = t;
@@ -126,20 +133,8 @@ package aerys.minko.type.interpolation
 		{
 			if (_dirty)
 				updatePrecomputedTerms();
-			else if (_tmpPointAtT == t)
-				return;
 			
-			updatePosition(t);
-			updateTangent(t);
-			
-			_tmpPointAt.set(
-				_tmpPos.x - _tmpTangent.x,
-				_tmpPos.y - _tmpTangent.y,
-				_tmpPos.z - _tmpTangent.z,
-				0
-			);
-			
-			_tmpPointAtT = t;
+			super.updatePointAt(t);
 		}
 		
 		protected function updatePrecomputedTerms() : void
@@ -153,26 +148,30 @@ package aerys.minko.type.interpolation
 				y3.x - y2.x - y0.x + y1.x,
 				y3.y - y2.y - y0.y + y1.y,
 				y3.z - y2.z - y0.z + y1.z,
-				0
+				y3.w - y2.w - y0.w + y1.w
 			);
 			
 			_a1.set(
 				y0.x - y1.x - _a0.x,
 				y0.y - y1.y - _a0.y,
 				y0.z - y1.z - _a0.z,
-				0
+				y0.w - y1.w - _a0.w
 			);
 			
 			_a2.set(
 				y2.x - y0.x,
 				y2.y - y0.y,
 				y2.z - y0.z,
-				0
+				y2.w - y0.w
 			);
 			
-			_a3.set(y1.x, y1.y, y1.z, 0);
+			_a3.set(y1.x, y1.y, y1.z, 0/*y1.w*/);
 			
-			_dirty = false;
+			_dirty			= false;
+			_tmpPosT		= -1;
+			_tmpPointAtT	= -1;
+			_tmpTangentT	= -1;
+			_length			= NaN;
 		}
 	}
 }

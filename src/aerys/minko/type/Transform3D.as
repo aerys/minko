@@ -136,8 +136,8 @@ package aerys.minko.type
 									   pivotPoint	: Vector4	= null) : Transform3D
 		{
 			validMatrix3D.appendRotation(radians * RAD2DEG,
-								  axis._vector,
-								  pivotPoint ? pivotPoint._vector : null);
+								  		 axis._vector,
+								  		 pivotPoint ? pivotPoint._vector : null);
 			
 			return this;
 		}
@@ -163,17 +163,6 @@ package aerys.minko.type
 										  z : Number = 0.) : Transform3D
 		{
 			validMatrix3D.appendTranslation(x, y, z);
-			
-			return this;
-		}
-		
-		public function pointAt(pos	: Vector4,
-								at	: Vector4	= null,
-								up	: Vector4	= null) : Transform3D
-		{
-			validMatrix3D.pointAt(pos._vector,
-						   at._vector,
-						   up._vector);
 			
 			return this;
 		}

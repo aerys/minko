@@ -26,7 +26,7 @@ package aerys.minko.scene.camera
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class AbstractCamera3D extends AbstractScene3D implements ICamera3D
+	public class Camera3D extends AbstractScene3D implements ICamera3D
 	{
 		public static const DEFAULT_FOV				: Number			= Math.PI * .25;
 		public static const DEFAULT_NEAR_CLIPPING	: Number			= .1;
@@ -131,9 +131,9 @@ package aerys.minko.scene.camera
 			}
 		}
 		
-		public function AbstractCamera3D(fieldOfView 	: Number 	= DEFAULT_FOV,
-										 nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
-										 farClipping	: Number	= DEFAULT_FAR_CLIPPING)
+		public function Camera3D(fieldOfView 	: Number 	= DEFAULT_FOV,
+								 nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
+								 farClipping	: Number	= DEFAULT_FAR_CLIPPING)
 		{
 			this.fieldOfView = fieldOfView;
 			this.nearClipping = nearClipping;

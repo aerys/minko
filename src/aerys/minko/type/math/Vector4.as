@@ -112,7 +112,7 @@ package aerys.minko.type.math
 								   v 	: Vector4,
 								   out	: Vector4 = null) : Vector4
 		{
-			out = copy(u);
+			out = copy(u, out);
 			
 			return out.add(v);
 		}
@@ -121,7 +121,7 @@ package aerys.minko.type.math
 										v 	: Vector4,
 										out : Vector4 = null) : Vector4
 		{
-			out = copy(u);
+			out = copy(u, out);
 			
 			return out.subtract(v);
 		}
@@ -148,27 +148,20 @@ package aerys.minko.type.math
 		
 		public static function distance(u : Vector4, v : Vector4) : Number
 		{
-			var x : Number = v._vector.x - u._vector.x;
-			var y : Number = v._vector.y - u._vector.y;
-			var z : Number = v._vector.z - u._vector.z;
-			
-			return Math.sqrt(x * x + y * y + z * z);
+			return Vector3D.distance(u._vector, v._vector);
 		}
 		
 		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
 		{
 			target ||= FACTORY.create();
-			target.set(source.x, source.y, source.z);
+			target.set(source.x, source.y, source.z, source.w);
 			
 			return target;
 		}
 		
 		public function add(vector : Vector4) : Vector4
 		{
-			_vector.x += vector._vector.x;
-			_vector.y += vector._vector.y;
-			_vector.z += vector._vector.z;
-			_vector.w += vector._vector.w;
+			_vector.incrementBy(vector._vector);
 			
 			++_version;
 			_update = UPDATE_ALL;
@@ -178,10 +171,7 @@ package aerys.minko.type.math
 		
 		public function subtract(vector : Vector4) : Vector4
 		{
-			_vector.x -= vector._vector.x;
-			_vector.y -= vector._vector.y;
-			_vector.z -= vector._vector.z;
-			_vector.w -= vector._vector.w;
+			_vector.decrementBy(vector._vector);
 			
 			++_version;
 			_update = UPDATE_ALL;
@@ -191,10 +181,7 @@ package aerys.minko.type.math
 		
 		public function scaleBy(scale : Number) : Vector4
 		{
-			_vector.x *= scale;
-			_vector.y *= scale;
-			_vector.z *= scale;
-			_vector.w *= scale;
+			_vector.scaleBy(scale);
 			
 			++_version;
 			_update = UPDATE_ALL;

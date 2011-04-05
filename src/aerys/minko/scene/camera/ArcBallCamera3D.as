@@ -17,7 +17,7 @@ package aerys.minko.scene.camera
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class ArcBallCamera3D extends AbstractCamera3D
+	public class ArcBallCamera3D extends Camera3D
 	{
 		private static const EPSILON		: Number	= .001;
 		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;

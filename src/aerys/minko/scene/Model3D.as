@@ -138,8 +138,7 @@ package aerys.minko.scene
 			var numQueryEffects	: int					= queryEffects.length;
 			
 			// push world transform
-			transform.world.push()
-						   .multiply(_transform);
+			transform.world.push().multiply(_transform);
 			
 			transform.getLocalToScreen(_toScreen);
 			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)

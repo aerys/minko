@@ -28,7 +28,7 @@ package aerys.minko.scene.mesh.primitive
 		 * @param	myNumRows
 		 */
 		public function CylinderMesh3D(myNumCols	: uint	= DEFAULT_NUM_COLS,
-									 myNumRows	: uint	= DEFAULT_NUM_ROWS)
+									   myNumRows	: uint	= DEFAULT_NUM_ROWS)
 		{
 			var vb	: Vector.<Number>	= new Vector.<Number>();
 			var ib	: Vector.<uint>		= new Vector.<uint>();
@@ -41,9 +41,9 @@ package aerys.minko.scene.mesh.primitive
 				
 				for (var j : uint = 0; j < myNumRows; ++j)
 				{
-					var iy : Number = (j / (myNumRows - 1) - 0.5) * Math.PI;
+					var iy : Number = j / (myNumRows - 1) - 0.5;
 					
-					vb.push(Math.cos(ix), iy, Math.sin(ix));
+					vb.push(0.5 * Math.cos(ix), iy, 0.5 * Math.sin(ix));
 					uv.push(i / (myNumCols - 1), j / (myNumRows - 1));
 				}
 			}

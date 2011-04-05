@@ -209,18 +209,33 @@ package aerys.minko.type.math
 			return this;
 		}
 		
+		public function pointAt(pos	: Vector4,
+								at	: Vector4	= null,
+								up	: Vector4	= null) : Matrix4x4
+		{
+			validMatrix3D.pointAt(pos._vector,
+				at._vector,
+				up._vector);
+			
+			invalidate();
+			
+			return this;
+		}
+		
+		public function interpolateTo(target : Matrix4x4, percent : Number) : Matrix4x4
+		{
+			validMatrix3D.interpolateTo(target.validMatrix3D, percent);
+			
+			invalidate();
+			
+			return this;
+		}
+		
 		public function projectVectors(input 	: Vector.<Number>,
 									   output	: Vector.<Number>,
 									   uvt		: Vector.<Number>) : void
 		{
 			Utils3D.projectVectors(validMatrix3D, input, output, uvt);
-		}
-		
-		public function interpolateTo(target : Matrix4x4, percent : Number) : void
-		{
-			validMatrix3D.interpolateTo(target.validMatrix3D, percent);
-			
-			invalidate();
 		}
 		
 		public function toString() : String
