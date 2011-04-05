@@ -222,7 +222,6 @@ package aerys.minko.stage
 			
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
-
 		}
 		
 		private function stageResizeHandler(event : Event) : void
