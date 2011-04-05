@@ -1,6 +1,6 @@
 package aerys.minko.query.rendering
 {
-	import aerys.minko.Viewport3D;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
