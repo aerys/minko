@@ -1,16 +1,15 @@
 package aerys.minko.query.rendering
 {
-	import aerys.minko.stage.Viewport3D;
-	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.effect.IEffect3D;
 	import aerys.minko.effect.IEffect3DPass;
-	import aerys.minko.effect.IStyled3D;
+	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.IScene3D;
 	import aerys.minko.scene.camera.ICamera3D;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
 	
@@ -48,7 +47,7 @@ package aerys.minko.query.rendering
 		
 		public function get parent()		: IScene3D				{ return _parent; }
 		public function get camera()		: ICamera3D				{ return _camera; }
-		public function get style()			: StyleStack3D	{ return _styleStack; }
+		public function get style()			: StyleStack3D			{ return _styleStack; }
 		public function get transform()		: TransformManager		{ return _tm; }
 		public function get viewport()		: Viewport3D			{ return _renderer.viewport; }
 		public function get numTriangles()	: uint					{ return _renderer.numTriangles; }

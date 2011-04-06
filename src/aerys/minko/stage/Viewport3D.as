@@ -2,28 +2,22 @@ package aerys.minko.stage
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
-	import aerys.minko.asset.MinkoLogo;
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.rendering.RenderingQuery;
 	import aerys.minko.render.DirectRenderer3D;
 	import aerys.minko.render.IRenderer3D;
 	import aerys.minko.scene.IScene3D;
 	
-	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
 	import flash.geom.Rectangle;
-	import flash.net.URLRequest;
-	import flash.net.navigateToURL;
 	import flash.utils.getTimer;
-	import aerys.minko.Minko;
 	
 	/**
 	 * The viewport is the the display area used to render a 3D scene.
@@ -205,7 +199,9 @@ package aerys.minko.stage
 		 */
 		public static function setupOnStage(stage : Stage, antiAliasing : int = 0) : Viewport3D
 		{
-			var vp : Viewport3D = new Viewport3D(stage.stageWidth, stage.stageHeight, antiAliasing);
+			var vp : Viewport3D = new Viewport3D(stage.stageWidth,
+												 stage.stageHeight,
+												 antiAliasing);
 			
 			vp.setupOnStage(stage);
 			
@@ -217,11 +213,14 @@ package aerys.minko.stage
 			stage.addChild(this);
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
+			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
+			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
+			
 			if (autoResize)
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 			
-			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
-			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
+			width = stage.stageWidth;
+			height = stage.stageHeight;
 		}
 		
 		private function stageResizeHandler(event : Event) : void
