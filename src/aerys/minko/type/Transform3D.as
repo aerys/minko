@@ -102,18 +102,36 @@ package aerys.minko.type
 		
 		override protected function update() : void
 		{
+			var c : Vector.<Vector3D> = null;
+			
 			if (super.invalid)
 			{
 				super.update();
 				
-				var c : Vector.<Vector3D> = _matrix.decompose(ORIENTATION);
-				
-				_position.set(c[0].x, c[0].y, c[0].z, c[0].w);
-				_rotation.set(c[1].x, c[1].y, c[1].z, c[1].w);
-				_scale.set(c[2].x, c[2].y, c[2].z, c[2].w);
+				c = _matrix.decompose(ORIENTATION);
+
+				_position._vector = c[0];
+				_rotation._vector = c[1];
+				_scale._vector = c[2];
 			}
 			else
 			{
+				var invalidPosition : Boolean 	= _position.version != _tv;
+				var invalidRotation : Boolean	= _rotation.version != _rv;
+				var invalidScale	: Boolean	= _scale.version != _sv;
+				
+				if (invalidPosition || invalidRotation || invalidScale)
+				{
+					c = _matrix.decompose(ORIENTATION);
+
+					if (!invalidPosition)
+						_position._vector = c[0];
+					if (!invalidRotation)
+						_rotation._vector = c[1];
+					if (!invalidScale)
+						_scale._vector = c[2];
+				}
+				
 				_matrix.recompose(Vector.<Vector3D>([_position._vector,
 											 	     _rotation._vector,
 													 _scale._vector]));
