@@ -18,6 +18,7 @@ package aerys.minko.type
 		
 		private static const FACTORY		: Factory			= Factory.getFactory(Transform3D);
 		private static const RAD2DEG		: Number			= 180. / Math.PI;
+		private static const DEG2RAD		: Number			= Math.PI / 180.;
 		private static const ORIENTATION	: String			= Orientation3D.EULER_ANGLES;
 		private static const TMP			: Vector.<Vector3D>	= new Vector.<Vector3D>(3, true);
 		
@@ -25,15 +26,14 @@ package aerys.minko.type
 		private var _rotation		: Vector4	= new Vector4();
 		private var _scale			: Vector4	= new Vector4(1., 1., 1.);
 				
-		private var _invalid		: Boolean	= false;
 		private var _tv				: uint		= 0;
 		private var _rv				: uint		= 0;
 		private var _sv				: uint		= 0;
+		private var _mv				: uint		= 0;
 		
 		override protected function get invalid() : Boolean
 		{
 			return super.invalid
-				   || _invalid
 				   || _position.version != _tv
 				   || _rotation.version != _rv
 				   || _scale.version != _sv;
@@ -41,21 +41,39 @@ package aerys.minko.type
 		
 		public function get position() : Vector4
 		{
+			if (super.invalid)
+				updateComponents();
+			
 			return _position;
 		}
 		
 		public function get rotation() : Vector4
 		{
+			if (super.invalid)
+				updateComponents();
+
 			return _rotation;
 		}
 		public function get scale() : Vector4
 		{
+			if (super.invalid)
+				updateComponents();
+
 			return _scale;
+		}
+		
+		public function set position(value : Vector4) : void
+		{
+			if (!Vector4.equals(value, position, true))
+			{
+				_position.set(value.x, value.y, value.z, value.w);				
+				invalidate();
+			}
 		}
 		
 		public function set rotation(value : Vector4) : void
 		{
-			if (!Vector4.equals(value, _rotation, true))
+			if (!Vector4.equals(value, rotation, true))
 			{
 				_rotation.set(value.x, value.y, value.z, value.w);
 				invalidate();
@@ -64,25 +82,18 @@ package aerys.minko.type
 		
 		public function set scale(value : Vector4) : void
 		{
-			if (!Vector4.equals(value, _scale, true))
+			if (!Vector4.equals(value, scale, true))
 			{
 				_scale.set(value.x, value.y, value.z, value.w);
 				invalidate();
 			}
 		}
 		
-		public function set position(value : Vector4) : void
-		{
-			if (!Vector4.equals(value, _position, true))
-			{
-				_position.set(value.x, value.y, value.z, value.w);				
-				invalidate();
-			}
-		}
-		
 		override public function get version() : uint
 		{
-			return super.version + _position.version + _rotation.version
+			return super.version
+				   + _position.version
+				   + _rotation.version
 				   + _scale.version;
 		}
 		
@@ -100,41 +111,49 @@ package aerys.minko.type
 				_scale.set(scale.x, scale.y, scale.z);
 		}
 		
-		override protected function update() : void
+		protected function updateComponents() : void
 		{
-			var c : Vector.<Vector3D> = null;
+			super.updateMatrix();
 			
-			if (super.invalid)
-			{
-				super.update();
-				
-				c = _matrix.decompose(ORIENTATION);
+			trace("Transform3D.updateComponents");
+			var c : Vector.<Vector3D> = _matrix.decompose(ORIENTATION);
+			
+			c[1].scaleBy(DEG2RAD);
+			
+			_position._vector = c[0];
+			_rotation._vector = c[1];
+			_scale._vector = c[2];
+		}
+		
+		override protected function updateMatrix() : void
+		{
+			var invalidPosition : Boolean 	= _position.version != _tv;
+			var invalidRotation : Boolean	= _rotation.version != _rv;
+			var invalidScale	: Boolean	= _scale.version != _sv;
 
-				_position._vector = c[0];
-				_rotation._vector = c[1];
-				_scale._vector = c[2];
-			}
-			else
+			if (invalidPosition || invalidRotation || invalidScale)
 			{
-				var invalidPosition : Boolean 	= _position.version != _tv;
-				var invalidRotation : Boolean	= _rotation.version != _rv;
-				var invalidScale	: Boolean	= _scale.version != _sv;
+				var c : Vector.<Vector3D> = null;
 				
-				if (invalidPosition || invalidRotation || invalidScale)
+				if (!invalidPosition || !invalidRotation || !invalidScale)
 				{
 					c = _matrix.decompose(ORIENTATION);
-
-					if (!invalidPosition)
-						_position._vector = c[0];
-					if (!invalidRotation)
-						_rotation._vector = c[1];
-					if (!invalidScale)
-						_scale._vector = c[2];
+				
+					if (invalidPosition)
+						c[0] = _position._vector;
+					if (invalidRotation)
+						c[1] = _rotation._vector;
+					if (invalidScale)
+						c[2] = _scale._vector;
+				}
+				else
+				{
+					c = Vector.<Vector3D>(_position._vector,
+										  _rotation._vector,
+										  _scale._vector)
 				}
 				
-				_matrix.recompose(Vector.<Vector3D>([_position._vector,
-											 	     _rotation._vector,
-													 _scale._vector]));
+				_matrix.recompose(c);
 			}
 			
 			_tv = _position.version;

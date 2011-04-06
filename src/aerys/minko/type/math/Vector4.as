@@ -57,7 +57,7 @@ package aerys.minko.type.math
 		
 		public function set x(value : Number) : void
 		{
-			if (value != _vector.x)
+			//if (value != _vector.x)
 			{
 				_vector.x = value;
 				_update = UPDATE_ALL;
@@ -67,7 +67,7 @@ package aerys.minko.type.math
 		
 		public function set y(value : Number) : void
 		{
-			if (value != _vector.y)
+			//if (value != _vector.y)
 			{
 				_vector.y = value;
 				_update = UPDATE_ALL;
@@ -77,7 +77,7 @@ package aerys.minko.type.math
 		
 		public function set z(value : Number) : void
 		{
-			if (value != _vector.z)
+			//if (value != _vector.z)
 			{
 				_vector.z = value;
 				_update = UPDATE_ALL;
@@ -87,7 +87,7 @@ package aerys.minko.type.math
 		
 		public function set w(value : Number) : void
 		{
-			if (value != _vector.w)
+			//if (value != _vector.w)
 			{
 				_vector.w = value;
 				_update = UPDATE_ALL;

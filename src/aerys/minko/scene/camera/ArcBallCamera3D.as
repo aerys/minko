@@ -75,7 +75,7 @@ package aerys.minko.scene.camera
 				_rotation.x = MAX_ROTATION_X;
 			else if (_rotation.x <= MIN_ROTATION_X)
 				_rotation.x = MIN_ROTATION_X;
-				
+			
 			if (_distance <= 0.)
 				_distance = EPSILON;
 

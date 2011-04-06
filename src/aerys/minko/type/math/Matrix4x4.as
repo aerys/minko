@@ -37,7 +37,7 @@ package aerys.minko.type.math
 		protected function get validMatrix3D() : Matrix3D
 		{
 			if (invalid)
-				update();
+				updateMatrix();
 			
 			return _matrix;
 		}
@@ -80,7 +80,7 @@ package aerys.minko.type.math
 			++_version;
 		}
 		
-		protected function update() : void
+		protected function updateMatrix() : void
 		{
 			_invalid = false;
 		}
@@ -155,6 +155,7 @@ package aerys.minko.type.math
 		public function identity() : Matrix4x4
 		{
 			validMatrix3D.identity();
+			
 			invalidate();
 			
 			return this;
@@ -163,7 +164,7 @@ package aerys.minko.type.math
 		public function invert() : Matrix4x4
 		{
 			validMatrix3D.invert();
-				
+			
 			invalidate();
 			
 			return this;
@@ -204,6 +205,7 @@ package aerys.minko.type.math
 								   transposed	: Boolean	= false) : Matrix4x4
 		{
 			_matrix.copyRawDataFrom(input, offset, transposed);
+			
 			invalidate();
 			
 			return this;
@@ -213,9 +215,7 @@ package aerys.minko.type.math
 								at	: Vector4	= null,
 								up	: Vector4	= null) : Matrix4x4
 		{
-			validMatrix3D.pointAt(pos._vector,
-				at._vector,
-				up._vector);
+			validMatrix3D.pointAt(pos._vector, at._vector, up._vector);
 			
 			invalidate();
 			
