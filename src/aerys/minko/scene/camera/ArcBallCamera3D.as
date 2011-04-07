@@ -79,9 +79,9 @@ package aerys.minko.scene.camera
 			if (_distance <= 0.)
 				_distance = EPSILON;
 
-			position.x = lookAt.x - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
+			position.x = lookAt.x - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
-			position.z = lookAt.z - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
+			position.z = lookAt.z - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
 			
 			super.updateMatrices(query);
 		}
