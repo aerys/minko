@@ -1,9 +1,6 @@
 package aerys.minko.type.interpolation
 {
-	import aerys.minko.type.Transform3D;
 	import aerys.minko.type.math.Vector4;
-	
-	import spark.effects.easing.Power;
 	
 	/**
 	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>

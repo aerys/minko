@@ -17,8 +17,12 @@ package aerys.minko.type
 		use namespace minko;
 		
 		private static const FACTORY		: Factory			= Factory.getFactory(Transform3D);
+		
 		private static const RAD2DEG		: Number			= 180. / Math.PI;
 		private static const DEG2RAD		: Number			= Math.PI / 180.;
+		private static const ZERO3			: Vector3D			= new Vector3D();
+		private static const ONE3			: Vector3D			= new Vector3D(1., 1., 1.);
+		
 		private static const ORIENTATION	: String			= Orientation3D.EULER_ANGLES;
 		private static const TMP			: Vector.<Vector3D>	= new Vector.<Vector3D>(3, true);
 		

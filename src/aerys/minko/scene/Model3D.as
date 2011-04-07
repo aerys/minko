@@ -140,11 +140,11 @@ package aerys.minko.scene
 			// push world transform
 			transform.world.push().multiply(_transform);
 			
-			transform.getLocalToScreen(_toScreen);
+			/*transform.getLocalToScreen(_toScreen);
 			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)
 				  .set(BasicStyle3D.VIEW_MATRIX, 			transform.view)
 				  .set(BasicStyle3D.PROJECTION_MATRIX, 		transform.projection)
-				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
+				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);*/
 			
 			// push FXs and style
 			for (var i : int = 0; i < numEffects; ++i)

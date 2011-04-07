@@ -14,19 +14,14 @@ package aerys.minko.scene.mesh.modifier
 	{
 		use namespace minko;
 		
-		public static const VERTEX_FORMAT	: PackedVertex3DFormat	=
-			new PackedVertex3DFormat(new Vertex3DComponent(['nx', 'ny', 'nz'], NativeFormat.FLOAT_3));
+		public static const VERTEX_FORMAT	: PackedVertex3DFormat	= new PackedVertex3DFormat(new Vertex3DComponent(["nx", "ny", "nz"],
+																							   NativeFormat.FLOAT_3));
 		
 		protected var _version : uint = 0;
 		
 		override public function get version() : uint 
 		{
 			return _version; 
-		}
-		
-		override public function get vertexStreamList() : VertexStream3DList 
-		{ 
-			return _vertexStreamList; 
 		}
 		
 		public function NormalMesh3D(target : IMesh3D)
@@ -114,7 +109,7 @@ package aerys.minko.scene.mesh.modifier
 			return new VertexStream3D(normals, normalsFormat, vertexStreamList.dynamic);
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
+		/*override public function accept(query : IScene3DQuery) : void
 		{
 			var q : RenderingQuery = query as RenderingQuery;
 			
@@ -123,6 +118,6 @@ package aerys.minko.scene.mesh.modifier
 //			{
 //				_version = target.version;
 //			}
-		}
+		}*/
 	}
 }

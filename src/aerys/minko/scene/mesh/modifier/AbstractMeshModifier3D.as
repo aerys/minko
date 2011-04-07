@@ -3,41 +3,39 @@ package aerys.minko.scene.mesh.modifier
 	import aerys.minko.query.IScene3DQuery;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.scene.mesh.IMesh3D;
+	import aerys.minko.scene.mesh.Mesh3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
 	
-	public class AbstractMeshModifier3D extends AbstractScene3D implements IMeshModifier3D
+	public class AbstractMeshModifier3D extends Mesh3D implements IMeshModifier3D
 	{
 		private var _target 			: IMesh3D				= null;
-		
-		protected var _vertexStreamList	: VertexStream3DList	= null;
-		protected var _indexStream		: IndexStream3D			= null;
 		
 		public function get target() : IMesh3D
 		{
 			return _target;
 		}
 		
-		public function get version() : uint
+		override public function get version() : uint
 		{
-			return _target.version;
+			return super.version + _target.version;
 		}
 				
-		public function get vertexStreamList() : VertexStream3DList
+		override public function get vertexStreamList() : VertexStream3DList
 		{
 			return _vertexStreamList || (_target ? _target.vertexStreamList : null);
 		}
 		
-		public function get indexStream() : IndexStream3D
+		override public function get indexStream() : IndexStream3D
 		{
 			return _indexStream || (_target ? _target.indexStream : null);
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
+		/*override public function accept(query : IScene3DQuery) : void
 		{
 			query.query(_target);
-		}
+		}*/
 		
 		public function AbstractMeshModifier3D(target : IMesh3D, ...streams)
 		{
