@@ -11,7 +11,7 @@
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class TransformGroup3D extends Group3D implements IObject3D
+	public class TransformGroup3D extends Group3D implements IObject3D
 	{
 		private static var _id	: uint			= 0;
 		
@@ -23,7 +23,7 @@
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(query:RenderingQuery):void
+		override protected function acceptRenderingQuery(query : RenderingQuery) : void
 		{
 			if (!_visible)
 				return ;

@@ -16,7 +16,7 @@ package aerys.minko.scene.group
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class Group3D extends Proxy implements IGroup3D
+	public class Group3D extends Proxy implements IGroup3D
 	{
 		private static var _id		: uint				= 0;
 		
@@ -218,9 +218,9 @@ package aerys.minko.scene.group
 			return this;
 		}
 		
-		public function getChildAt(myPosition : uint) : IScene3D
+		public function getChildAt(position : uint) : IScene3D
 		{
-			return myPosition < _numChildren ? _children[myPosition] : null;
+			return position < _numChildren ? _children[position] : null;
 		}
 		
 		public function swapChildren(child1	: IScene3D,
@@ -283,7 +283,10 @@ package aerys.minko.scene.group
 			_visiting = this;
 			
 			for (i = 0; i < numChildren; ++i)
-				childVisited(_children[i], query);
+			{
+				//childVisited(_children[i], query);
+				query.query(_children[i]);
+			}
 			
 			// unlock
 			_visiting = null;
@@ -316,11 +319,11 @@ package aerys.minko.scene.group
 			}
 		}
 		
-		protected function childVisited(child 	: IScene3D,
-									  	visitor : IScene3DQuery) : void
+		/*protected function childVisited(child 	: IScene3D,
+										query : IScene3DQuery) : void
 		{
-			visitor.query(child);
-		}
+			query.query(child);
+		}*/
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
