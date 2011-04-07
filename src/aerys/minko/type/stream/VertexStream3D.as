@@ -77,18 +77,25 @@ package aerys.minko.type.stream
 												   uvs		 : Vector.<Number>) : VertexStream3D
 		{
 			var numVertices : int = positions.length / 3;
-			var data : Vector.<Number> = new Vector.<Number>(numVertices * 5, true);
+			var stride : int = uvs ? 5 : 3;
+			var data : Vector.<Number> = new Vector.<Number>(numVertices * stride, true);
 			
 			for (var i : int = 0; i < numVertices; ++i)
 			{
-				data[int(i * 5)] = positions[int(i * 3)];
-				data[int(i * 5 + 1)] = positions[int(i * 3 + 1)];
-				data[int(i * 5 + 2)] = positions[int(i * 3 + 2)];
-				data[int(i * 5 + 3)] = uvs[int(i * 2)];
-				data[int(i * 5 + 4)] = uvs[int(i * 2 + 1)];
+				var offset : int = i * stride;
+				
+				data[offset] = positions[int(i * 3)];
+				data[int(offset + 1)] = positions[int(i * 3 + 1)];
+				data[int(offset + 2)] = positions[int(i * 3 + 2)];
+				
+				if (uvs)
+				{
+					data[int(offset + 3)] = uvs[int(i * 2)];
+					data[int(offset + 4)] = uvs[int(i * 2 + 1)];
+				}
 			}
 			
-			return new VertexStream3D(data, PackedVertex3DFormat.XYZ_UV);
+			return new VertexStream3D(data, uvs ? PackedVertex3DFormat.XYZ_UV : PackedVertex3DFormat.XYZ);
 		}
 		
 		public static function fromByteArray(data 	: ByteArray,

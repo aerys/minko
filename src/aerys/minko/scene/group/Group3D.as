@@ -98,7 +98,7 @@ package aerys.minko.scene.group
 		 *
 		 * @param	myChild The child to add.
 		 */
-		public function addChild(scene : IScene3D) : IScene3D
+		public function addChild(scene : IScene3D) : IGroup3D
 		{
 			if (!scene)
 				throw new Error();
@@ -116,10 +116,10 @@ package aerys.minko.scene.group
 			
 			//scene.added(this);
 			
-			return scene;
+			return this;
 		}
 		
-		public function addChildAt(scene : IScene3D, position : uint) : IScene3D
+		public function addChildAt(scene : IScene3D, position : uint) : IGroup3D
 		{
 			if (!scene)
 				throw new Error();
@@ -130,21 +130,20 @@ package aerys.minko.scene.group
 			{
 				_toAdd.push(scene);
 				_toAddAt.push(position);
+			}
+			else
+			{
+				if (position >= numChildren)
+					return addChild(scene);
 				
-				return scene;
+				for (var i : int = numChildren; i > position; --i)
+					_children[i] = _children[int(i - 1)];
+				_children[position] = scene;
+				
+				++_numChildren;
 			}
 			
-			if (position >= numChildren)
-				return addChild(scene);
-			
-			for (var i : int = numChildren; i > position; --i)
-				_children[i] = _children[int(i - 1)];
-			_children[position] = scene;
-			
-			++_numChildren;
-			//myScene.added(this);
-			
-			return scene;
+			return this;
 		}
 		
 		/**
@@ -153,7 +152,7 @@ package aerys.minko.scene.group
 		 * @param	myChild The child to remove.
 		 * @return Whether the child was actually removed or not.
 		 */
-		public function removeChild(child : IScene3D) : IScene3D
+		public function removeChild(child : IScene3D) : IGroup3D
 		{
 			var numChildren : int = _children.length;
 			var i : int	= 0;
@@ -167,7 +166,7 @@ package aerys.minko.scene.group
 			return removeChildAt(i);
 		}
 		
-		public function removeChildAt(position : uint) : IScene3D
+		public function removeChildAt(position : uint) : IGroup3D
 		{
 			var removed 	: IScene3D 	= null;
 	
@@ -178,21 +177,21 @@ package aerys.minko.scene.group
 				if (_visiting)
 				{
 					_toRemove.push(removed);
-					
-					return removed;
 				}
-				
-				while (position < _numChildren - 1)
-					_children[position] = _children[int(++position)];
-				_children.length = --_numChildren;
+				else
+				{
+					while (position < _numChildren - 1)
+						_children[position] = _children[int(++position)];
+					_children.length = --_numChildren;
+				}
 				
 				//removed.removed(this);
 			}
 			
-			return removed;
+			return this;
 		}
 		
-		public function removeAllChildren() : uint
+		public function removeAllChildren() : IGroup3D
 		{
 			//var i : int = _numChildren - 1;
 			
@@ -209,8 +208,6 @@ package aerys.minko.scene.group
 			{
 				while (numChildren)
 					_toRemove.push(_children[int(numChildren--)]);
-				
-				return _numChildren;
 			}
 			else
 			{
@@ -218,7 +215,7 @@ package aerys.minko.scene.group
 				_numChildren = 0;
 			}
 			
-			return numChildren;
+			return this;
 		}
 		
 		public function getChildAt(myPosition : uint) : IScene3D
@@ -226,21 +223,21 @@ package aerys.minko.scene.group
 			return myPosition < _numChildren ? _children[myPosition] : null;
 		}
 		
-		public function swapChildren(myChild1	: IScene3D,
-									 myChild2	: IScene3D) : Boolean
+		public function swapChildren(child1	: IScene3D,
+									 child2	: IScene3D) : IGroup3D
 		{
-			var id1	: int 	= getChildIndex(myChild1);
-			var id2 : int	= getChildIndex(myChild2);
+			var id1	: int 	= getChildIndex(child1);
+			var id2 : int	= getChildIndex(child2);
 			
 			if (id1 == -1 || id2 == -1)
-				return false;
+				return this;
 			
 			var tmp : IScene3D = _children[id2];
 			
 			_children[id2] = _children[id1];
 			_children[id1] = tmp;
 			
-			return true;
+			return this;
 		}
 		
 		public function getDescendantByName(name : String) : IScene3D

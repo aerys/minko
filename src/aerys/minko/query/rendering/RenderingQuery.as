@@ -127,7 +127,6 @@ package aerys.minko.query.rendering
 				var passes		: Vector.<IEffect3DPass>	= fx.passes;
 				var numPasses 	: int 						= passes.length;
 				
-				//_style = fx.style.override(_style);
 				_styleStack.push(fx.style);
 				fx.begin(_renderer, _styleStack);
 				
@@ -149,7 +148,6 @@ package aerys.minko.query.rendering
 				}
 				
 				fx.end(_renderer, _styleStack);
-				//_style = fx.style.override();
 				_styleStack.pop();
 			}
 		}

@@ -11,6 +11,7 @@ package aerys.minko.effect
 		public function StyleStack3D()
 		{
 			_data = new Vector.<Object>();
+			_data[0] = _emptyObject;
 		}
 		
 		public final function get(name : String, defaultValue : * = undefined) : *
@@ -38,6 +39,7 @@ package aerys.minko.effect
 		public function set(name : String, value : *) : StyleStack3D
 		{
 			var current : Object = _data[0];
+			
 			if (current === _emptyObject)
 			{
 				current = new Object();
