@@ -51,6 +51,8 @@ package aerys.minko.scene.graph.camera
 			super();
 			
 			_ghostMode = ghostMode;
+			
+			_rotation.y = Math.PI / 2.;
 		}
 		
 		override protected function updateMatrices(query : RenderingVisitor = null) : void
@@ -71,23 +73,21 @@ package aerys.minko.scene.graph.camera
 		{
 			if (_ghostMode)
 			{
-				position.y += Math.sin(_rotation.x) * distance;
 				position.x += Math.sin(_rotation.y) * Math.cos(-_rotation.x) * distance;
+				position.y += Math.cos(_rotation.x) * distance;
 				position.z += Math.cos(_rotation.y) * Math.cos(-_rotation.x) * distance;
 			}
 			else
 			{
-				position.x += Math.sin(_rotation.y) * distance;
-				position.z += Math.cos(_rotation.y) * distance;
+				position.x += Math.cos(_rotation.y) * distance;
+				position.z += Math.sin(_rotation.y) * distance;
 			}
 		}
 		
 		public function strafe(distance : Number) : void
 		{
-			position.x += Math.sin(_rotation.y + Math.PI / 2) * distance;
-			position.z += Math.cos(_rotation.y + Math.PI / 2) * distance;
+			position.x += Math.cos(_rotation.y + Math.PI / 2) * distance;
+			position.z += Math.sin(_rotation.y + Math.PI / 2) * distance;
 		}
-		/* ! METHODS */
-
 	}
 }
