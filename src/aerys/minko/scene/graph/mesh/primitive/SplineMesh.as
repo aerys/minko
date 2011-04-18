@@ -1,13 +1,11 @@
 package aerys.minko.scene.graph.mesh.primitive
 {
 	import aerys.minko.scene.graph.mesh.Mesh;
-	import aerys.minko.type.interpolation.AbstractSegment;
 	import aerys.minko.type.interpolation.IInterpolation;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.vertex.format.PackedVertexFormat;
 	
 	public class SplineMesh extends Mesh
 	{
@@ -52,9 +50,10 @@ package aerys.minko.scene.graph.mesh.primitive
 				Vector4.copy(TMP2, TMP1);
 			}
 			
-			var vertexStream : VertexStream = new VertexStream(vertexData, PackedVertexFormat.XYZ_UV);
-			var vertexStreamList : VertexStreamList = new VertexStreamList(vertexStream);
-			var indexStream : IndexStream = new IndexStream(indexData);
+			var vertexStream 		: VertexStream 		= new VertexStream(vertexData);
+			var vertexStreamList 	: VertexStreamList 	= new VertexStreamList(vertexStream);
+			var indexStream 		: IndexStream 		= new IndexStream(indexData);
+			
 			super(vertexStreamList, indexStream);
 		}
 	}

@@ -2,10 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.vertex.format.NativeFormat;
-	import aerys.minko.type.vertex.format.PackedVertexFormat;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
@@ -17,7 +14,7 @@ package aerys.minko.type.stream
 	{
 		use namespace minko;
 		
-		public static const DEFAULT_FORMAT	: PackedVertexFormat	= PackedVertexFormat.XYZ_UV;
+		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 		
 		minko var _data				: Vector.<Number>		= null;
 		minko var _update			: Boolean				= true;
@@ -25,15 +22,15 @@ package aerys.minko.type.stream
 		minko var _nativeBuffer		: VertexBuffer3D		= null;
 		minko var _version			: uint					= 0;
 		
-		private var _format			: PackedVertexFormat	= null;
+		private var _format			: VertexFormat			= null;
 		
-		public function get length() 	: int					{ return _data.length / _format.dwordsPerVertex; }
-		public function get format()	: PackedVertexFormat	{ return _format; }
-		public function get version()	: uint					{ return _version; }
+		public function get length() 	: int			{ return _data.length / _format.dwordsPerVertex; }
+		public function get format()	: VertexFormat	{ return _format; }
+		public function get version()	: uint			{ return _version; }
 	
-		public function VertexStream(data 	: Vector.<Number>,
-									   format	: PackedVertexFormat 	= null,
-									   dynamic	: Boolean				= false)
+		public function VertexStream(data 		: Vector.<Number>,
+									 format		: VertexFormat 	= null,
+									 dynamic	: Boolean		= false)
 		{
 			super();
 
@@ -95,12 +92,12 @@ package aerys.minko.type.stream
 				}
 			}
 			
-			return new VertexStream(data, uvs ? PackedVertexFormat.XYZ_UV : PackedVertexFormat.XYZ);
+			return new VertexStream(data, uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ);
 		}
 		
 		public static function fromByteArray(data 	: ByteArray,
 											 count	: int,
-											 format	: PackedVertexFormat) : VertexStream
+											 format	: VertexFormat) : VertexStream
 		{
 			var numFormats		: int				= format.components.length;
 			var nativeFormats	: Vector.<int>		= new Vector.<int>(numFormats, true);

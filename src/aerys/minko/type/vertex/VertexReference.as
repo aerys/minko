@@ -2,7 +2,7 @@
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.PackedVertexFormat;
+	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -19,7 +19,7 @@
 		minko var _index		: int				= 0;
 		
 		private var _stream 	: VertexStream 	= null;
-		private var _format		: PackedVertexFormat	= null;
+		private var _format		: VertexFormat	= null;
 		
 		public function get index() : int	{ return _index; }
 		
@@ -35,12 +35,12 @@
 			_stream._data[int(_index * _format.dwordsPerVertex + _format.getOffsetForField(name))] = value as Number;
 		}
 		
-		public function VertexReference(myStream 	: VertexStream,
-								 		  myIndex	: int)
+		public function VertexReference(stream 	: VertexStream,
+								 		index	: int)
 		{
-			_stream = myStream;
-			_format = myStream.format;
-			_index = myIndex;
+			_stream = stream;
+			_format = stream.format;
+			_index = index;
 		}		
 	}
 

@@ -3,7 +3,6 @@
 	import aerys.minko.scene.graph.mesh.Mesh;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.vertex.format.PackedVertexFormat;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	/**
@@ -30,7 +29,7 @@
 														0.0, 0.0, 0.5, 1., 0.]);
 			
 			var vertexStreamList : VertexStreamList = new VertexStreamList(
-				new VertexStream(vb, PackedVertexFormat.XYZ_UV)
+				new VertexStream(vb, VertexFormat.XYZ_UV)
 			);
 			super(vertexStreamList);
 		}
