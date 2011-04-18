@@ -116,8 +116,8 @@ package aerys.minko.scene.graph
 		}
 		
 		public function Model(mesh 			: IMesh		= null,
-								material		: ITexture	= null,
-								noBaseEffect	: Boolean		= false)
+							  material		: ITexture	= null,
+							  noBaseEffect	: Boolean	= false)
 		{
 			super();
 			
@@ -134,7 +134,7 @@ package aerys.minko.scene.graph
 			
 			var transform 		: TransformManager 		= query.transform;
 			var numEffects		: int					= _effects.length;
-			var queryEffects	: Vector.<IEffect>	= query.effects;
+			var queryEffects	: Vector.<IEffect>		= query.effects;
 			var numQueryEffects	: int					= queryEffects.length;
 			
 			// push world transform

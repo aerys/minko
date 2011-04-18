@@ -100,7 +100,7 @@ package aerys.minko.scene.graph.mesh.modifier
 				}
 			}
 			
-			return new VertexStream(normals, normalsFormat, vertexStreamList.dynamic);
+			return new VertexStream(normals, normalsFormat, vertexStream.dynamic);
 		}
 		
 		/*override public function accept(query : IScene3DQuery) : void

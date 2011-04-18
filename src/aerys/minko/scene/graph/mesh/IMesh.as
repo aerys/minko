@@ -2,6 +2,7 @@ package aerys.minko.scene.graph.mesh
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;

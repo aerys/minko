@@ -28,6 +28,7 @@ package aerys.minko.type.stream
 		public function get length() 	: int			{ return _data.length / _format.dwordsPerVertex; }
 		public function get format()	: VertexFormat	{ return _format; }
 		public function get version()	: uint			{ return _version; }
+		public function get dynamic()	: Boolean		{ return _dynamic; }
 	
 		public function VertexStream(data 		: Vector.<Number>,
 									 format		: VertexFormat 	= null,
@@ -51,7 +52,6 @@ package aerys.minko.type.stream
 			
 			if (_update)
 			{
-				trace("update");
 				_update = false;
 				_nativeBuffer.uploadFromVector(_data, 0, length);
 				

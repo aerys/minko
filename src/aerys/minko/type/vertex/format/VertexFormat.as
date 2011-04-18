@@ -34,15 +34,13 @@ package aerys.minko.type.vertex.format
 				addComponent(component);
 		}
 		
-		public function addComponent(component : VertexComponent) : void
+		private function addComponent(component : VertexComponent) : void
 		{
 			_components[component.implodedFields] = component;
 			_componentOffsets[component.implodedFields] = _dwordsPerVertex;
 			
 			for (var fieldName : String in component.offsets)
-			{
 				_fieldOffsets[fieldName] = _dwordsPerVertex + component.offsets[fieldName];
-			}
 			
 			_dwordsPerVertex += component.dwords;
 		}
@@ -72,8 +70,8 @@ package aerys.minko.type.vertex.format
 		 */
 		public function unionWith(otherVertexFormat : VertexFormat) : void
 		{
-			for (var implodedFields:String in otherVertexFormat._components)
-				_components[implodedFields] = otherVertexFormat._components[implodedFields];
+			for each (var component : VertexComponent in otherVertexFormat._components)
+				addComponent(component);
 		}
 		
 		public function getOffsetForComponent(component : VertexComponent) : int
