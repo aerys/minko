@@ -1,6 +1,7 @@
 package aerys.minko.type.vertex
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	
@@ -18,22 +19,22 @@ package aerys.minko.type.vertex
 		private var _shallow	: Boolean			= true;
 		
 		private var _vertex		: VertexReference	= null;
-		private var _vb			: VertexStream	= null;
-		private var _ib			: IndexStream		= null;
+		private var _vstream	: IVertexStream		= null;
+		private var _istream	: IndexStream		= null;
 		
 		public function get length() : int
 		{
-			return _ib ? _ib.length : _vb.length;
+			return _istream ? _istream.length : _vstream.length;
 		}
 		
-		public function VertexIterator(vertexStream	: VertexStream,
-										 indexStream	: IndexStream = null,
-										 shallow		: Boolean		= true)
+		public function VertexIterator(vertexStream	: IVertexStream,
+									   indexStream	: IndexStream 	= null,
+									   shallow		: Boolean		= true)
 		{
 			super();
 			
-			_vb = vertexStream;
-			_ib = indexStream;
+			_vstream = vertexStream;
+			_istream = indexStream;
 			_shallow = shallow;
 		}
 		
@@ -41,14 +42,14 @@ package aerys.minko.type.vertex
 		{
 			var index : int = int(name);
 			
-			return new VertexReference(_vb, _ib ? _ib._indices[index] : index);
+			return new VertexReference(_vstream, _istream ? _istream._indices[index] : index);
 		}
 		
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
 			var index : int = int(name);
 			
-			if (_vb.deleteVertexByIndex(index))
+			if (_vstream.deleteVertexByIndex(index))
 			{
 				if (index <= _index)
 					++_offset;
@@ -63,7 +64,7 @@ package aerys.minko.type.vertex
 		{
 			var index : int = int(name);
 			
-			return _ib ? index < _ib.length : index < _vb.length;
+			return _istream ? index < _istream.length : index < _vstream.length;
 		}
 		
 		
@@ -72,8 +73,8 @@ package aerys.minko.type.vertex
 			index -= _offset;
 			_offset = 0;
 			
-			return _ib ? index < _ib.length ? index + 1 : 0
-				: index < _vb.length ? index + 1 : 0;
+			return _istream ? index < _istream.length ? index + 1 : 0
+				: index < _vstream.length ? index + 1 : 0;
 		}
 		
 		override flash_proxy function nextName(index : int) : String
@@ -86,11 +87,11 @@ package aerys.minko.type.vertex
 			_index = index - 1;
 			
 			if (!_shallow || !_vertex)
-				_vertex = new VertexReference(_vb, _ib ? _ib._indices[_index]
+				_vertex = new VertexReference(_vstream, _istream ? _istream._indices[_index]
 					: _index);
 			
 			if (_shallow)
-				_vertex._index = -_offset + (_ib ? _ib._indices[_index]
+				_vertex._index = -_offset + (_istream ? _istream._indices[_index]
 					: _index);
 			
 			return _vertex;

@@ -3,6 +3,7 @@ package aerys.minko.type.stream
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.vertex.format.NativeFormat;
+	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
@@ -10,7 +11,7 @@ package aerys.minko.type.stream
 	import flash.utils.ByteArray;
 	
 	
-	public final class VertexStream implements IVersionnable
+	public final class VertexStream implements IVersionnable, IVertexStream
 	{
 		use namespace minko;
 		
@@ -50,6 +51,7 @@ package aerys.minko.type.stream
 			
 			if (_update)
 			{
+				trace("update");
 				_update = false;
 				_nativeBuffer.uploadFromVector(_data, 0, length);
 				
@@ -59,23 +61,31 @@ package aerys.minko.type.stream
 			return _nativeBuffer;
 		}
 		
-		public function deleteVertexByIndex(myIndex : int) : Boolean
+		public function deleteVertexByIndex(index : int) : Boolean
 		{
-			if (myIndex > length)
+			if (index > length)
 				return false;
 			
-			_data.splice(myIndex, _format.dwordsPerVertex);
+			_data.splice(index, _format.dwordsPerVertex);
 			_update = true;
 			
 			return true;
 		}
 		
+		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
+		{
+			if (vertexComponent in _format.components)
+				return this;
+			
+			return null;
+		}
+		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,
 												   uvs		 : Vector.<Number>) : VertexStream
 		{
-			var numVertices : int = positions.length / 3;
-			var stride : int = uvs ? 5 : 3;
-			var data : Vector.<Number> = new Vector.<Number>(numVertices * stride, true);
+			var numVertices : int 				= positions.length / 3;
+			var stride 		: int 				= uvs ? 5 : 3;
+			var data 		: Vector.<Number> 	= new Vector.<Number>(numVertices * stride, true);
 			
 			for (var i : int = 0; i < numVertices; ++i)
 			{
@@ -134,7 +144,6 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
-		
 		
 	}
 }
