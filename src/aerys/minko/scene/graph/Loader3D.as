@@ -1,12 +1,12 @@
 package aerys.minko.scene.graph
 {
-	import aerys.minko.type.parser.IParser3D;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.graph.group.Group;
 	import aerys.minko.scene.graph.texture.AnimatedTexture;
 	import aerys.minko.scene.graph.texture.BitmapTexture;
 	import aerys.minko.scene.graph.texture.ITexture;
 	import aerys.minko.scene.graph.texture.MovieClipTexture;
+	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.type.parser.IParser3D;
 	
 	import flash.display.Bitmap;
 	import flash.display.IBitmapDrawable;
@@ -26,11 +26,11 @@ package aerys.minko.scene.graph
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
 		
-		private var _loaderToURI		: Dictionary		= new Dictionary(true);
+		private var _loaderToURI		: Dictionary	= new Dictionary(true);
 		private var _content			: Group			= new Group();
 		
 		public function get name()	 	: String	{ return _content.name; }
-		public function get content() 	: Group	{ return _content; }
+		public function get content() 	: Group		{ return _content; }
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void
@@ -85,7 +85,7 @@ package aerys.minko.scene.graph
 				{
 					var data	: Vector.<IScene>	= parser.data;
 					var length	: int				= data ? data.length : 0;
-					var content : Group			= new Group();
+					var content : Group				= new Group();
 
 					for (var i : int = 0; i < length; ++i)
 						content.addChild(data[i]);
@@ -102,41 +102,39 @@ package aerys.minko.scene.graph
 		public static function loadAsset(asset : Class) : Group
 		{
 			var assetObject : Object 	= new asset();
-			var content 	: Group 	= null;
 			
 			if (assetObject is MovieClip)
 			{
-				var mc : MovieClip = assetObject as MovieClip;
-				var loader : Loader = null;
+				var mc 		: MovieClip	= assetObject as MovieClip;
+				var loader 	: Loader 	= null;
 				
 				if (mc.numChildren == 1 && (loader = mc.getChildAt(0) as Loader))
 				{
-					var mat : AnimatedTexture = new AnimatedTexture();
+					var texture : MovieClipTexture = new MovieClipTexture();
 					
 					loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 															  function(e : Event) : void
 					{
-						mat.addChild(new MovieClipTexture(loader.content as MovieClip));
+						texture.source = loader.content as MovieClip;
 					});
-					
-					
-					content = new Group(mat);
+
+					return new Group(texture);
 				}
 				else
 				{
-					content = new Group(new MovieClipTexture(mc));
+					return new Group(new MovieClipTexture(mc));
 				}
 			}
 			else if (assetObject is IBitmapDrawable)
 			{
-				content = new Group(BitmapTexture.fromDisplayObject(assetObject as Bitmap));
+				return new Group(BitmapTexture.fromDisplayObject(assetObject as Bitmap));
 			}
 			else if (assetObject is ByteArray)
 			{
-				content = loadBytes(assetObject as ByteArray);
+				return loadBytes(assetObject as ByteArray);
 			}
 			
-			return content;
+			return null;
 		}
 		
 		private function urlLoaderCompleteHandler(event : Event) : void
@@ -157,18 +155,23 @@ package aerys.minko.scene.graph
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
+		private static function embedCompleteHandler(event : Event) : void
+		{
+			
+		}
+		
 		private function loaderCompleteHandler(event : Event) : void
 		{
 			var info 	: LoaderInfo 	= event.target as LoaderInfo;
-			var mat 	: ITexture 	= null;
+			var texture	: ITexture 		= null;
 						
 			if (info.content is MovieClip)
-				mat = new MovieClipTexture(info.content as MovieClip);
+				texture = new MovieClipTexture(info.content as MovieClip);
 			else if (info.content is Bitmap)
-				mat = new BitmapTexture((info.content as Bitmap).bitmapData);
+				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
 			
 			_content.removeAllChildren();
-			_content.addChild(mat);
+			_content.addChild(texture);
 			
 			dispatchEvent(new Event(Event.COMPLETE));
 		}

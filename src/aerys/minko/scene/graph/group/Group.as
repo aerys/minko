@@ -96,7 +96,7 @@ package aerys.minko.scene.graph.group
 		/**
 		 * Add a child to the container.
 		 *
-		 * @param	myChild The child to add.
+		 * @param	scene The child to add.
 		 */
 		public function addChild(scene : IScene) : IGroup
 		{

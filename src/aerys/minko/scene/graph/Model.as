@@ -37,7 +37,7 @@ package aerys.minko.scene.graph
 		private var _version	: uint					= 0;
 		
 		private var _mesh		: IMesh				= null;
-		private var _material	: ITexture			= null;
+		private var _texture	: ITexture			= null;
 		private var _transform	: Transform3D			= new Transform3D();
 		private var _visible	: Boolean				= true;
 		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
@@ -50,7 +50,7 @@ package aerys.minko.scene.graph
 				   + _transform.version
 				   + _style.version
 				   + (_mesh ? _mesh.version : 0)
-				   + (_material ? _material.version : 0);
+				   + (_texture ? _texture.version : 0);
 		}
 		
 		/**
@@ -75,7 +75,7 @@ package aerys.minko.scene.graph
 		 * @return 
 		 * 
 		 */
-		public function get material()	: ITexture			{ return _material; }
+		public function get texture()	: ITexture			{ return _texture; }
 		/**
 		 * Indicates whether the object is visible or not. Invisible
 		 * objects are not traversed during scene rendering.
@@ -105,9 +105,9 @@ package aerys.minko.scene.graph
 			_mesh = value;
 		}
 		
-		public function set material(value : ITexture) : void
+		public function set texture(value : ITexture) : void
 		{
-			_material = value;
+			_texture = value;
 		}
 		
 		public function set visible(value : Boolean) : void
@@ -122,7 +122,7 @@ package aerys.minko.scene.graph
 			super();
 			
 			_mesh = mesh;
-			_material = material;
+			_texture = material;
 			if (!noBaseEffect)
 				_effects.push(new BasicEffect());
 		}
@@ -151,7 +151,7 @@ package aerys.minko.scene.graph
 				queryEffects.push(_effects[i]);
 			query.style.push(_style);
 			
-			_material && query.query(_material);
+			_texture && query.query(_texture);
 			_mesh && query.query(_mesh);
 			
 			// pop FXs and style

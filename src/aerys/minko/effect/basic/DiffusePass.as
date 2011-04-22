@@ -1,7 +1,7 @@
 package aerys.minko.effect.basic
 {
-	import aerys.minko.effect.StyleStack;
 	import aerys.minko.effect.IEffectPass;
+	import aerys.minko.effect.StyleStack;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.shader.DefaultShader;
 	import aerys.minko.render.shader.Shader;
@@ -15,6 +15,7 @@ package aerys.minko.effect.basic
 	public class DiffusePass implements IEffectPass
 	{
 		private static const DEFAULT_SHADER	: Shader	= new DefaultShader();
+		private static const DEPTH_TEST		: int		= CompareMode.LESS | CompareMode.EQUAL;
 		
 		public function DiffusePass()
 		{
@@ -38,7 +39,7 @@ package aerys.minko.effect.basic
 			
 			state.shader = DEFAULT_SHADER;
 			state.blending = blending;
-			state.depthMask = CompareMode.LESS;
+			state.depthMask = DEPTH_TEST;
 			
 			state.setTextureAt(0, diffuse);
 			
