@@ -261,17 +261,17 @@ package aerys.minko.scene.graph.group
 		 *
 		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
 		 */
-		public function visited(query : ISceneVisitor) : void
+		public function visited(visitor : ISceneVisitor) : void
 		{
-			if (query is RenderingVisitor)
-				acceptRenderingQuery(query as RenderingVisitor);
+			if (visitor is RenderingVisitor)
+				visitedByRenderingVisitor(visitor as RenderingVisitor);
 			else
-				visitChildren(query);
+				visitChildren(visitor);
 		}
 		
-		protected function acceptRenderingQuery(query : RenderingVisitor) : void
+		protected function visitedByRenderingVisitor(visitor : RenderingVisitor) : void
 		{
-			visitChildren(query);
+			visitChildren(visitor);
 		}
 		
 		protected function visitChildren(query : ISceneVisitor) : void

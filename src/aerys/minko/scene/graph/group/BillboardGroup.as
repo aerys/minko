@@ -24,7 +24,7 @@ package aerys.minko.scene.graph.group
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingVisitor) : void
+		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void
 		{
 			var transform	: TransformManager	= query.transform;
 			
@@ -41,7 +41,7 @@ package aerys.minko.scene.graph.group
 			transform.world.push()
 						   .multiply(_local);	
 			
-			super.acceptRenderingQuery(query);
+			super.visitedByRenderingVisitor(query);
 			
 			transform.world.pop();
 		}

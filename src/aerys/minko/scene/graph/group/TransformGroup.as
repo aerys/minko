@@ -22,14 +22,14 @@
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingVisitor) : void
+		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void
 		{
 			var worldTransform : Matrix4x4	= query.transform.world;
 			
 			worldTransform.push()
 				   	 	  .multiply(_transform);
 			
-			super.acceptRenderingQuery(query);
+			super.visitedByRenderingVisitor(query);
 			
 			worldTransform.pop();
 		}
