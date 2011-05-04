@@ -1,8 +1,8 @@
 package aerys.minko.effect.basic
 {
 	import aerys.minko.effect.AbstractEffect;
-	import aerys.minko.effect.StyleStack;
 	import aerys.minko.effect.IEffectPass;
+	import aerys.minko.effect.StyleStack;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.state.TriangleCulling;
 	
@@ -20,7 +20,7 @@ package aerys.minko.effect.basic
 			super.begin(renderer, style);
 			
 			renderer.state.triangleCulling = style.get(BasicStyle.TRIANGLE_CULLING,
-													   TriangleCulling.BACK);
+													   TriangleCulling.BACK) as uint;
 		}
 	}
 }

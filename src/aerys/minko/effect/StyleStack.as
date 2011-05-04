@@ -14,19 +14,19 @@ package aerys.minko.effect
 			_data[0] = _emptyObject;
 		}
 		
-		public final function get(name : String, defaultValue : * = undefined) : *
+		public final function get(name : String, defaultValue : * = undefined) : Object
 		{
-			var stackHeight : uint = _data.length;
-			var data : Object, item : *;
+			var stackHeight : uint 		= _data.length;
+			var data 		: Object	= null;
 			
 			for (var i : int = 0; i < stackHeight; ++i)
 			{
 				data = _data[i];
+				
 				if (data != _emptyObject)
 				{
-					item = data[name];
-					if (item != undefined)
-						return item;
+					if (data[name] != undefined)
+						return data[name];
 				}
 			}
 			
@@ -36,7 +36,7 @@ package aerys.minko.effect
 			throw new Error(name + ' is undefined an no default value was provided');
 		}
 		
-		public function set(name : String, value : *) : StyleStack
+		public function set(name : String, value : Object) : StyleStack
 		{
 			var current : Object = _data[0];
 			

@@ -4,11 +4,11 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.effect.IEffectPass;
 	import aerys.minko.effect.StyleStack;
 	import aerys.minko.ns.minko;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.graph.IScene;
 	import aerys.minko.scene.graph.camera.ICamera;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.stage.Viewport;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStreamList;
@@ -98,17 +98,20 @@ package aerys.minko.scene.visitor.rendering
 			_parents.length = numParents;
 		}
 		
-		public function reset() : void
+		public function reset(defaultEffect : IEffect) : void
 		{
 			_camera = null;
 			_parents.length = 0;
 			_numNodes = 0;
 			_renderer.clear();
 			_tm.reset();
-//			_style.clear();
+//			_style.clear();		
 			
-			if (_fx.length != 0)
-				throw new Error('Effect3DList stack should be empty.');
+			if (defaultEffect)
+				_fx[0] = defaultEffect;
+			
+//			if (_fx.length != 1)
+//				throw new Error('The effects list should be empty.');
 		}
 		
 		public function draw(vertexStreamList 	: VertexStreamList,

@@ -16,14 +16,14 @@ package aerys.minko.scene.graph.debug
 	
 	public class OrthogonalFrame extends TransformGroup
 	{
-		public function OrthogonalFrame(noBaseEffect : Boolean = false)
+		public function OrthogonalFrame()
 		{
 			var cubeMesh : IMesh = new NormalMesh(new CubeMesh());
 			
-			var repere0	: Model = new Model(cubeMesh, ColorTexture.WHITE, noBaseEffect);
-			var repereX	: Model = new Model(cubeMesh, null, noBaseEffect);
-			var repereY	: Model = new Model(cubeMesh, null, noBaseEffect);
-			var repereZ	: Model = new Model(cubeMesh, null, noBaseEffect);
+			var repere0	: Model = new Model(cubeMesh, ColorTexture.WHITE);
+			var repereX	: Model = new Model(cubeMesh, null);
+			var repereY	: Model = new Model(cubeMesh, null);
+			var repereZ	: Model = new Model(cubeMesh, null);
 			
 			var text : TextField	= new TextField();
 			var tmp : BitmapData 	= new BitmapData(32, 32, false, 0xffff0000);

@@ -3,11 +3,13 @@ package aerys.minko.stage
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
 	import aerys.minko.Minko;
+	import aerys.minko.effect.IEffect;
+	import aerys.minko.effect.basic.BasicEffect;
 	import aerys.minko.ns.minko;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.render.DirectRenderer;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
@@ -41,10 +43,12 @@ package aerys.minko.stage
 		private var _drawTime		: int				= 0;
 		
 		private var _rendererClass	: Class				= null;
-		private var _renderer		: IRenderer		= null;
+		private var _renderer		: IRenderer			= null;
 		private var _context		: Context3D			= null;
 		
 		private var _aa				: int				= 0;
+		
+		private var _defaultEffect	: IEffect			= new BasicEffect();
 		
 		public function get version() : uint
 		{
@@ -120,6 +124,16 @@ package aerys.minko.stage
 			}
 		}
 		
+		public function get defaultEffect() : IEffect
+		{
+			return _defaultEffect;
+		}
+		
+		public function set defaultEffect(value : IEffect) : void
+		{
+			_defaultEffect = value;
+		}
+		
 		/**
 		 * The amount of triangle rendered durung the last call to the
 		 * "render" method. Sometimes, the number of triangles is higher
@@ -131,8 +145,7 @@ package aerys.minko.stage
 		 */
 		public function get numTriangles() : uint
 		{
-			return _query ? _query.numTriangles
-							: 0;
+			return _query ? _query.numTriangles : 0;
 		}
 		
 		/**
@@ -169,7 +182,7 @@ package aerys.minko.stage
 		 * @param width The width of the viewport.
 		 * @param height The height of the viewport.
 		 */
-		public function Viewport(width		: Number,
+		public function Viewport(width			: Number,
 								   height		: Number,
 								   antiAliasing	: int	= 0,
 								   rendererType	: Class = null)
@@ -200,8 +213,8 @@ package aerys.minko.stage
 		public static function setupOnStage(stage : Stage, antiAliasing : int = 0) : Viewport
 		{
 			var vp : Viewport = new Viewport(stage.stageWidth,
-												 stage.stageHeight,
-												 antiAliasing);
+											 stage.stageHeight,
+											 antiAliasing);
 			
 			vp.setupOnStage(stage);
 			
@@ -221,6 +234,8 @@ package aerys.minko.stage
 			
 			width = stage.stageWidth;
 			height = stage.stageHeight;
+			
+			showLogo();
 		}
 		
 		private function stageResizeHandler(event : Event) : void
@@ -263,7 +278,7 @@ package aerys.minko.stage
 			{
 				var time : Number = getTimer();
 
-				_query.reset();
+				_query.reset(_defaultEffect);
 				_query.query(scene);
 				_renderer.present();
 			

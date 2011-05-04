@@ -18,16 +18,15 @@ package aerys.minko.effect
 			_version	= 0;
 		}
 		
-		public function get(name : String, defaultValue : * = undefined) : * 
+		public function get(name : String, defaultValue : Object = undefined) : Object 
 		{
-			var data : * = _data[name];
-			if (data != undefined)
-				return data;
+			if (_data[name] != undefined)
+				return _data[name];
 			
 			throw new Error();
 		}
 		
-		public function set(name : String, value : *) : Style 
+		public function set(name : String, value : Object) : Style 
 		{
 			_data[name] = value;
 			++_version;

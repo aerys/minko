@@ -34,15 +34,15 @@ package aerys.minko.scene.graph
 	{
 		use namespace minko;
 		
-		private var _version	: uint					= 0;
+		private var _version	: uint				= 0;
 		
 		private var _mesh		: IMesh				= null;
 		private var _material	: ITexture			= null;
-		private var _transform	: Transform3D			= new Transform3D();
-		private var _visible	: Boolean				= true;
+		private var _transform	: Transform3D		= new Transform3D();
+		private var _visible	: Boolean			= true;
 		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
 		private var _style		: Style				= new Style();
-		private var _toScreen	: Matrix4x4				= new Matrix4x4();
+		private var _toScreen	: Matrix4x4			= new Matrix4x4();
 		
 		public function get version() : uint
 		{
@@ -83,7 +83,7 @@ package aerys.minko.scene.graph
 		 * @return 
 		 * 
 		 */
-		public function get visible()	: Boolean				{ return _visible; }
+		public function get visible()	: Boolean			{ return _visible; }
 		/**
 		 * The IEffect3D objects used to render the object during
 		 * scene rendering.
@@ -116,15 +116,12 @@ package aerys.minko.scene.graph
 		}
 		
 		public function Model(mesh 			: IMesh		= null,
-							  material		: ITexture	= null,
-							  noBaseEffect	: Boolean	= false)
+							  material		: ITexture	= null)
 		{
 			super();
 			
 			_mesh = mesh;
 			_material = material;
-			if (!noBaseEffect)
-				_effects.push(new BasicEffect());
 		}
 		
 		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void 
