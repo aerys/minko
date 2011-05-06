@@ -38,6 +38,7 @@ package aerys.minko.scene.graph.camera
 			super();
 			
 			lookAt.set(0., 0., 0.);
+			rotation.y = Math.PI * .5;
 		}
 		
 		/**

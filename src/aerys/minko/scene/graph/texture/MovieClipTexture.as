@@ -30,20 +30,35 @@ package aerys.minko.scene.graph.texture
 		private var _frames			: Vector.<Boolean>	= new Vector.<Boolean>();
 		
 		public function get isPlaying() : Boolean	{ return _playing; }
+		public function get source()	: MovieClip	{ return _source; }
 		
-		public function MovieClipTexture(source : MovieClip)
+		public function set source(value : MovieClip) : void
+		{
+			_source = value;
+			
+			if (_source)
+			{
+				_source.gotoAndStop(0);
+				_frames.length = 0;
+			}
+		}
+		
+		public function MovieClipTexture(source : MovieClip = null)
 		{
 			super();
 			
-			_source = source;
-			_source.gotoAndStop(0);
+			if (source)
+			{
+				_source = source;
+				_source.gotoAndStop(0);
+			}
 		}
 		
 		override protected function nextFrame(query : RenderingVisitor) : void
 		{
 			if (_source && _playing)
 			{
-				if (!_frames[int(_currentFrame - 1)])
+				if (_currentFrame >= _frames.length)
 				{
 					_frames[int(_currentFrame - 1)] = true;
 					

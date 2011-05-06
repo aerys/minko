@@ -37,9 +37,11 @@ package aerys.minko.scene.graph
 		private var _version	: uint				= 0;
 		
 		private var _mesh		: IMesh				= null;
-		private var _material	: ITexture			= null;
-		private var _transform	: Transform3D		= new Transform3D();
-		private var _visible	: Boolean			= true;
+
+		private var _texture	: ITexture			= null;
+		private var _transform	: Transform3D			= new Transform3D();
+		private var _visible	: Boolean				= true;
+
 		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
 		private var _style		: Style				= new Style();
 		private var _toScreen	: Matrix4x4			= new Matrix4x4();
@@ -50,7 +52,7 @@ package aerys.minko.scene.graph
 				   + _transform.version
 				   + _style.version
 				   + (_mesh ? _mesh.version : 0)
-				   + (_material ? _material.version : 0);
+				   + (_texture ? _texture.version : 0);
 		}
 		
 		/**
@@ -75,7 +77,7 @@ package aerys.minko.scene.graph
 		 * @return 
 		 * 
 		 */
-		public function get material()	: ITexture			{ return _material; }
+		public function get texture()	: ITexture			{ return _texture; }
 		/**
 		 * Indicates whether the object is visible or not. Invisible
 		 * objects are not traversed during scene rendering.
@@ -105,9 +107,9 @@ package aerys.minko.scene.graph
 			_mesh = value;
 		}
 		
-		public function set material(value : ITexture) : void
+		public function set texture(value : ITexture) : void
 		{
-			_material = value;
+			_texture = value;
 		}
 		
 		public function set visible(value : Boolean) : void
@@ -116,12 +118,12 @@ package aerys.minko.scene.graph
 		}
 		
 		public function Model(mesh 			: IMesh		= null,
-							  material		: ITexture	= null)
+							  texture		: ITexture	= null)
 		{
 			super();
 			
 			_mesh = mesh;
-			_material = material;
+			_texture = texture;
 		}
 		
 		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void 
@@ -148,8 +150,8 @@ package aerys.minko.scene.graph
 				queryEffects.push(_effects[i]);
 			query.style.push(_style);
 			
-			_material && query.visit(_material);
-			_mesh && query.visit(_mesh);
+			_texture && query.query(_texture);
+			_mesh && query.query(_mesh);
 			
 			// pop FXs and style
 			query.style.pop();
