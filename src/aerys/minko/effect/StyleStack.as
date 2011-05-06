@@ -77,6 +77,7 @@ package aerys.minko.effect
 			styleObjectList = new StyleObjectList(name);
 			styleObjectList.push(value);
 			set(name, styleObjectList);
+			
 			return this;
 		}
 		

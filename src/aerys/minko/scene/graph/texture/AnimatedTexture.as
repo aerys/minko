@@ -53,7 +53,7 @@ package aerys.minko.scene.graph.texture
 			}
 			
 			if (_frame < numChildren)
-				query.query(rawChildren[_frame]);
+				query.visit(rawChildren[_frame]);
 		}
 		
 		protected function nextFrame(query : RenderingVisitor) : void

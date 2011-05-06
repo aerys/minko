@@ -279,7 +279,7 @@ package aerys.minko.stage
 				var time : Number = getTimer();
 
 				_query.reset(_defaultEffect);
-				_query.query(scene);
+				_query.visit(scene);
 				_renderer.present();
 			
 				_sceneSize = _query.numNodes;

@@ -35,7 +35,7 @@ package aerys.minko.scene.visitor
 		{
 		}
 		
-		public function query(scene : IScene) : void
+		public function visit(scene : IScene) : void
 		{
 			if (scene is ITransformable)
 				queryIObject3D(scene as ITransformable);

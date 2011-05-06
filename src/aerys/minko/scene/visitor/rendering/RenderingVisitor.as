@@ -71,7 +71,7 @@ package aerys.minko.scene.visitor.rendering
 			_renderer = renderer;
 		}
 		
-		public function query(scene : IScene) : void
+		public function visit(scene : IScene) : void
 		{
 			var numParents : int = _parents.length;
 			

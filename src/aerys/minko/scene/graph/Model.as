@@ -148,8 +148,8 @@ package aerys.minko.scene.graph
 				queryEffects.push(_effects[i]);
 			query.style.push(_style);
 			
-			_material && query.query(_material);
-			_mesh && query.query(_mesh);
+			_material && query.visit(_material);
+			_mesh && query.visit(_mesh);
 			
 			// pop FXs and style
 			query.style.pop();

@@ -96,7 +96,7 @@ package aerys.minko.scene.graph.mesh
 		
 		public function visited(visitor : ISceneVisitor) : void
 		{
-			visitor.query(_current);
+			visitor.visit(_current);
 		}
 	}
 }

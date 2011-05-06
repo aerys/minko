@@ -285,7 +285,7 @@ package aerys.minko.scene.graph.group
 			for (i = 0; i < numChildren; ++i)
 			{
 				//childVisited(_children[i], query);
-				query.query(_children[i]);
+				query.visit(_children[i]);
 			}
 			
 			// unlock
