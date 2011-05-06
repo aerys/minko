@@ -4,12 +4,12 @@ package aerys.minko.render.state
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.render.shader.Shader3D;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.stream.IndexStream3D;
-	import aerys.minko.type.stream.VertexStream3D;
-	import aerys.minko.type.stream.VertexStream3DList;
-	import aerys.minko.type.vertex.format.Vertex3DComponent;
+	import aerys.minko.type.stream.IndexStream;
+	import aerys.minko.type.stream.VertexStream;
+	import aerys.minko.type.stream.VertexStreamList;
+	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -108,15 +108,15 @@ package aerys.minko.render.state
 			
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: Shader3D					= null;
+		private var _shader				: Shader					= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
 	
-		private var _vertexStreams		: Vector.<VertexStream3D>	= new Vector.<VertexStream3D>(8, true);
+		private var _vertexStreams		: Vector.<VertexStream>	= new Vector.<VertexStream>(8, true);
 		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
 		private var _vertexFormats		: Vector.<String>			= new Vector.<String>(8, true);
-		private var _indexStream		: IndexStream3D				= null;
+		private var _indexStream		: IndexStream				= null;
 		
 		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>(NUM_VERTEX_CONSTS * 4);
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
@@ -131,7 +131,7 @@ package aerys.minko.render.state
 			return _priority;
 		}
 
-		minko function get indexStream() : IndexStream3D
+		minko function get indexStream() : IndexStream
 		{
 			return _indexStream;
 		}
@@ -156,7 +156,7 @@ package aerys.minko.render.state
 			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
-		public function get shader() : Shader3D
+		public function get shader() : Shader
 		{
 			return _setFlags & SHADER ? _shader : null;
 		}
@@ -198,7 +198,7 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function set shader(value : Shader3D) : void
+		public function set shader(value : Shader) : void
 		{
 			//if (_shader != value)
 			{
@@ -245,10 +245,10 @@ package aerys.minko.render.state
 			++_version;
 		}
 		
-		public function setInputStreams(vertexStream	: VertexStream3DList,
-										indexStream		: IndexStream3D) : void
+		public function setInputStreams(vertexStream	: VertexStreamList,
+										indexStream		: IndexStream) : void
 		{
-			var vertexInput	: Vector.<Vertex3DComponent> 	= shader._vertexInput;
+			var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
 			var numInputs	: int							= vertexInput.length;
 			
 			_indexStream = indexStream;
@@ -256,11 +256,11 @@ package aerys.minko.render.state
 			
 			for (var i : int = 0; i < numInputs; ++i)
 			{
-				var neededComponent:Vertex3DComponent = vertexInput[i];
+				var neededComponent:VertexComponent = vertexInput[i];
 				
 				if (neededComponent)
 				{
-					var stream : VertexStream3D = vertexStream.getComponentStream(neededComponent);
+					var stream : VertexStream = vertexStream.getComponentStream(neededComponent);
 					
 					if (!stream)
 						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
@@ -515,7 +515,7 @@ package aerys.minko.render.state
 				
 				// set vertex buffers
 				var vertexFlag : uint = VERTEX_STREAM_1 << i;
-				var vertexStream : VertexStream3D	= _setFlags & vertexFlag
+				var vertexStream : VertexStream	= _setFlags & vertexFlag
 													  ? _vertexStreams[i]
 													  : null;
 				var vertexOffset : int				= _vertexOffsets[i];

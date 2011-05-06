@@ -8,7 +8,7 @@ package aerys.minko.render.ressource
 	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix;
 
-	public class TextureRessource implements IRessource3D
+	public class TextureRessource implements IRessource
 	{
 		private var _texture	: Texture	= null;
 		private var _mipmap		: Boolean;
