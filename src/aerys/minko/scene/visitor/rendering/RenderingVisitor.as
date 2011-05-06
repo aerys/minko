@@ -93,7 +93,7 @@ package aerys.minko.scene.visitor.rendering
 			
 		}
 		
-		public function query(scene : IScene) : void
+		public function visit(scene : IScene) : void
 		{
 			var transformObject : ITransformable	= scene as ITransformable;
 			var styleObject		: IStyled			= scene as IStyled;
@@ -170,7 +170,7 @@ package aerys.minko.scene.visitor.rendering
 				if (child == null)
 					break;
 				
-				query(child);
+				visit(child);
 			}
 		}
 		

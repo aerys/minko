@@ -12,11 +12,11 @@ package aerys.minko.scene.graph.mesh
 	public class AnimatedMesh extends EventDispatcher implements IMesh, IMeshModifier
 	{
 		private var _frames		: Vector.<IMesh>		= null;
-		private var _current	: IMesh				= null;
-		private var _next		: IMesh				= null;
+		private var _current	: IMesh					= null;
+		private var _next		: IMesh					= null;
 		private var _frame		: Number				= 0.;
 		private var _animations	: Vector.<Animation>	= new Vector.<Animation>();
-		private var _animation	: Animation			= null;
+		private var _animation	: Animation				= null;
 		private var _isPlaying	: Boolean				= false;
 		private var _loop		: Boolean				= true;
 		private var _version	: uint					= 0;
@@ -96,7 +96,7 @@ package aerys.minko.scene.graph.mesh
 		
 		public function visited(visitor : ISceneVisitor) : void
 		{
-			visitor.query(_current);
+			visitor.visit(_current);
 		}
 	}
 }

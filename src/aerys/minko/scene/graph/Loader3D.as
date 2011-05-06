@@ -177,7 +177,7 @@ package aerys.minko.scene.graph
 		
 		public function visited(query : ISceneVisitor) : void
 		{
-			query.query(_content);
+			query.visit(_content);
 		}
 	}
 }

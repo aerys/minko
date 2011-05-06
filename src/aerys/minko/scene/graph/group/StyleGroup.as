@@ -25,11 +25,11 @@ package aerys.minko.scene.graph.group
 			return _style;
 		}
 		
-//		override protected function acceptRenderingQuery(q:RenderingVisitor):void
+//		override protected function visitedByRenderingVisitor(q:RenderingVisitor):void
 //		{
 //			q.style.push(_style);
 //			
-//			super.acceptRenderingQuery(q);
+//			super.visitedByRenderingVisitor(q);
 //			
 //			q.style.pop();
 //		}

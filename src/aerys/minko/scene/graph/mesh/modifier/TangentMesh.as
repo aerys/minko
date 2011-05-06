@@ -1,26 +1,15 @@
 package aerys.minko.scene.graph.mesh.modifier
 {
 	import aerys.minko.scene.graph.mesh.IMesh;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.triangle.TriangleIterator;
-	import aerys.minko.type.triangle.TriangleReference;
-	import aerys.minko.type.vertex.VertexIterator;
-	import aerys.minko.type.vertex.VertexReference;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.PackedVertexFormat;
-	
-	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
+	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	public class TangentMesh extends AbstractMeshModifier
 	{
-		public static const VERTEX_FORMAT	: PackedVertexFormat	=
-			new PackedVertexFormat([
-				new VertexComponent(["tx", "ty", "tz"], NativeFormat.FLOAT_3),
-				new VertexComponent(["nx", "ny", "nz"], NativeFormat.FLOAT_3),
-				new VertexComponent(["bx", "by", "bz"], NativeFormat.FLOAT_3)
-			]);
+		public static const VERTEX_FORMAT	: VertexFormat	= new VertexFormat(new VertexComponent(["tx", "ty", "tz"], NativeFormat.FLOAT_3),
+																			   new VertexComponent(["nx", "ny", "nz"], NativeFormat.FLOAT_3),
+																			   new VertexComponent(["bx", "by", "bz"], NativeFormat.FLOAT_3));
 		
 		public function TangentMesh(target : IMesh)
 		{

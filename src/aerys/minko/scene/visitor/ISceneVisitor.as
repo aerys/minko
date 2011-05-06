@@ -11,7 +11,7 @@ package aerys.minko.scene.visitor
 	 */
 	public interface ISceneVisitor
 	{
-		function query(scene : IScene) : void;
+		function visit(scene : IScene) : void;
 		
 		//function get actions() : Vector.<IVisitorAction>;
 	}

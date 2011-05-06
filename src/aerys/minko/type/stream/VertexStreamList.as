@@ -8,20 +8,21 @@ package aerys.minko.type.stream
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
-	public class VertexStreamList implements IVersionnable
+	public class VertexStreamList implements IVersionnable, IVertexStream
 	{
 		use namespace minko;
 		
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
-		private var _streamVersions	: Vector.<int>				= new Vector.<int>();
+		private var _streamVersions	: Vector.<int>			= new Vector.<int>();
 		private var _format			: VertexFormat			= new VertexFormat();
 		
-		private var _version		: int						= 0;
-		private var _dynamic		: Boolean					= false;
+		private var _version		: int					= 0;
+		private var _dynamic		: Boolean				= false;
 		
-		public function get version()	: uint 		{ return _version; }
-		public function get dynamic()	: Boolean 	{ return _dynamic; }
-		public function get length()	: int		{ return _streams.length ? _streams[0].length : 0; }
+		public function get version()	: uint 			{ return _version; }
+		public function get dynamic()	: Boolean 		{ return _dynamic; }
+		public function get format()	: VertexFormat	{ return _format; }
+		public function get length()	: int			{ return _streams.length ? _streams[0].length : 0; }
 		
 		public function VertexStreamList(...streams)
 		{
@@ -47,7 +48,7 @@ package aerys.minko.type.stream
 		public function pushVertexStream(vertexStream : VertexStream) : void 
 		{
 			if (length && vertexStream.length != length)
-				throw new Error('All VertexStream3D must have the same length');
+				throw new Error('All VertexStream must have the same length');
 			
 			_streams.push(vertexStream);
 			_streamVersions.push(vertexStream.version);
@@ -59,9 +60,10 @@ package aerys.minko.type.stream
 			++_version;
 		}
 		
-		public function getComponentStream(vertexComponent : VertexComponent) : VertexStream
+		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
-			var streamLength:int = _streams.length;
+			var streamLength	: int = _streams.length;
+			
 			for (var i : int = 0; i < streamLength; ++i)
 				if (_streams[i].format.hasComponent(vertexComponent))
 					return _streams[i];
@@ -74,7 +76,7 @@ package aerys.minko.type.stream
 			if (index > length)
 				return false;
 			
-			for each (var stream:VertexStream in _streams)
+			for each (var stream : VertexStream in _streams)
 				stream.deleteVertexByIndex(index);
 			
 			return true;

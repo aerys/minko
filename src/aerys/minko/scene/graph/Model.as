@@ -34,6 +34,7 @@ package aerys.minko.scene.graph
 		
 		private var _mesh		: IMesh				= null;
 		private var _texture	: ITexture			= null;
+		
 		private var _transform	: Transform3D		= new Transform3D();
 		private var _visible	: Boolean			= true;
 		
@@ -79,7 +80,7 @@ package aerys.minko.scene.graph
 		 * @return 
 		 * 
 		 */
-		public function get visible()	: Boolean				{ return _visible; }
+		public function get visible()	: Boolean			{ return _visible; }
 		/**
 		 * The IEffect3D objects used to render the object during
 		 * scene rendering.
@@ -112,15 +113,12 @@ package aerys.minko.scene.graph
 		}
 		
 		public function Model(mesh 			: IMesh		= null,
-								material		: ITexture	= null,
-								noBaseEffect	: Boolean		= false)
+							  texture		: ITexture	= null)
 		{
 			super();
 			
 			_mesh = mesh;
-			_texture = material;
-			if (!noBaseEffect)
-				_effects.push(new BasicEffect());
+			_texture = texture;
 		}
 		
 //		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void 

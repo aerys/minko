@@ -23,7 +23,7 @@ package aerys.minko.scene.graph.group
 			super(children);
 		}
 		
-//		override protected function acceptRenderingQuery(q : RenderingVisitor) : void
+//		override protected function visitedByRenderingVisitor(q : RenderingVisitor) : void
 //		{
 //			var numEffects		: int					= _effects.length;
 //			var queryEffects	: Vector.<IEffect>	= q.effects;
@@ -33,7 +33,7 @@ package aerys.minko.scene.graph.group
 //			for (var i : int = 0; i < numEffects; ++i)
 //				queryEffects[int(numQueryEffects + i)] = _effects[i];
 //			
-//			super.acceptRenderingQuery(q);
+//			super.visitedByRenderingVisitor(q);
 //			
 //			// pop effects
 //			queryEffects.length = numQueryEffects;

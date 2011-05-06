@@ -22,17 +22,14 @@
 			super(children);
 		}
 		
-//		override protected function acceptRenderingQuery(query:RenderingQueryOld):void
+//		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void
 //		{
-//			if (!_visible)
-//				return ;
-//			
 //			var worldTransform : Matrix4x4	= query.transform.world;
 //			
 //			worldTransform.push()
 //				   	 	  .multiply(_transform);
 //			
-//			super.acceptRenderingQuery(query);
+//			super.visitedByRenderingVisitor(query);
 //			
 //			worldTransform.pop();
 //		}
