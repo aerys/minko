@@ -2,14 +2,14 @@ package aerys.minko.scene.material
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.effect.basic.BasicStyle3D;
-	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.ns.minko;
+	import aerys.minko.render.ressource.IRessource3D;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.scene.AbstractScene3D;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
-	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix;
 	
 	/**
@@ -20,26 +20,22 @@ package aerys.minko.scene.material
 	 */
 	public class BitmapMaterial3D extends AbstractScene3D implements IMaterial3D, IVersionnable
 	{
-		public static const BLENDING_NORMAL	: uint	= Blending.NORMAL;
-		public static const BLENDING_ALPHA	: uint	= Blending.ALPHA;
-		
 		private var _version	: uint			= 0;
 		
 		private var _data		: BitmapData	= null;
-		private var _texture	: Texture		= null;
-		private var _blending	: uint			= 0;
-		private var _update		: Boolean		= true;
 		private var _mipmapping	: Boolean		= false;
 		
 		private var _styleProp	: String		= null;
 		
 		private var _matrix		: Matrix		= new Matrix();
 		
+		private var _ressource	: TextureRessource	= new TextureRessource();
+		
 		public function get version() : uint
 		{
 			return _version;
 		}
-
+		
 		public function get styleProperty() : String
 		{
 			return _styleProp;
@@ -48,6 +44,16 @@ package aerys.minko.scene.material
 		public function set styleProperty(value : String) : void
 		{
 			_styleProp = value;
+		}
+		
+		public function get ressource() : IRessource3D
+		{
+			return _ressource;
+		}
+		
+		protected function get bitmapData() : BitmapData
+		{
+			return _data;
 		}
 		
 		public function updateFromBitmapData(value 	: BitmapData,
@@ -74,82 +80,20 @@ package aerys.minko.scene.material
 				_data.draw(value, null, null, null, null, smooth);
 			}
 			
-			_blending = _data.transparent ? BLENDING_ALPHA
-									      : BLENDING_NORMAL;
-			
-			_update = true;
 			++_version;
-		}
-		
-		public function get blending() : uint
-		{
-			return _blending;
-		}
-		
-		public function set blending(value : uint) : void
-		{
-			_blending = value;
+			
+			_ressource.setContentFromBitmapData(_data, _mipmapping);
 		}
 		
 		public function BitmapMaterial3D(bitmapData : BitmapData 	= null,
-										 mipmapping	: Boolean		= true)
+										 mipmapping	: Boolean		= true,
+										 styleProp	: String		= BasicStyle3D.DIFFUSE_MAP)
 		{
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
 			
-			_mipmapping = mipmapping;
-			
-			_styleProp = BasicStyle3D.DIFFUSE_MAP;
-		}
-		
-		override protected function acceptRenderingQuery(query : RenderingQuery) : void
-		{
-			if (_data)
-			{
-				if (!_texture)
-				{
-					_texture = query.createTexture(_data.width,
-											   	   _data.height,
-											   	   Context3DTextureFormat.BGRA,
-												   false) as Texture;
-					
-					_update = true;
-				}
-				
-				if (_update)
-				{
-					_update = false;
-					
-					if (_mipmapping)
-					{
-						var level 		: int 			= 0;
-						var size		: int 			= _data.width;
-						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, _data.transparent, 0);
-						var transform 	: Matrix 		= new Matrix();
-						
-						while (size >= 1)
-						{
-							tmp.draw(_data, transform, null, null, null, true);
-							_texture.uploadFromBitmapData(tmp, level);
-							
-							transform.scale(.5, .5);
-							level++;
-							size >>= 1;
-						}
-						
-						tmp.dispose();
-					}
-					else
-					{
-						_texture.uploadFromBitmapData(_data, 0);
-					}
-				}
-				
-				_data.dispose();
-				_data = null;
-			}
-			
-			query.style.set(_styleProp, _texture);
+			_mipmapping	= mipmapping;
+			_styleProp	= styleProp;
 		}
 		
 		public static function fromDisplayObject(source : DisplayObject,
@@ -157,9 +101,9 @@ package aerys.minko.scene.material
 												 smooth : Boolean 	= false) : BitmapMaterial3D
 		{
 			var bmp : BitmapData = new BitmapData(size || source.width,
-												  size || source.height,
-												  true,
-												  0);
+				size || source.height,
+				true,
+				0);
 			var matrix : Matrix = null;
 			
 			if (size)

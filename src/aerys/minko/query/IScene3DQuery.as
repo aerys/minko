@@ -1,6 +1,6 @@
 package aerys.minko.query
 {
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.scene.interfaces.IScene3D;
 
 	/**
 	 * 

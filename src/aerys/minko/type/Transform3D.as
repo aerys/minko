@@ -115,7 +115,6 @@ package aerys.minko.type
 		{
 			super.updateMatrix();
 			
-			trace("Transform3D.updateComponents");
 			var c : Vector.<Vector3D> = _matrix.decompose(ORIENTATION);
 			
 			c[1].scaleBy(DEG2RAD);

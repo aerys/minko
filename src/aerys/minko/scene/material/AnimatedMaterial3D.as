@@ -1,11 +1,9 @@
 package aerys.minko.scene.material
 {
-	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.render.ressource.IRessource3D;
+	import aerys.minko.scene.interfaces.IScene3DRessource;
 	import aerys.minko.scene.group.Group3D;
 	
-	import flash.display.BitmapData;
 	import flash.utils.getTimer;
 	
 	public class AnimatedMaterial3D extends Group3D implements IMaterial3D
@@ -35,28 +33,32 @@ package aerys.minko.scene.material
 			_framerate = framerate;
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
+		
+		public function get ressource() : IRessource3D
 		{
-			var q : RenderingQuery = query as RenderingQuery;
-			
-			if (q && _lastFrame != q.frameId)
+			return null;
+		}
+		
+		/**
+		 * FIXME Je doute que ce truc marche.
+		 */
+		public function gotoFrame(frameId : uint) : void
+		{
+			if (_lastFrame != frameId)
 			{
 				var t : int = getTimer();
 				
 				if (t - _time > (1000. / _framerate))
 				{
-					_lastFrame = q.frameId;
-					nextFrame(q);
+					_lastFrame = frameId;
+					nextFrame();
 					
 					_time = t;
 				}
 			}
-			
-			if (_frame < numChildren)
-				query.query(rawChildren[_frame]);
 		}
 		
-		protected function nextFrame(query : RenderingQuery) : void
+		public function nextFrame() : void
 		{
 			_frame = (_frame + 1) % numChildren;
 			++_version;

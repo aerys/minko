@@ -1,6 +1,13 @@
 package aerys.minko.effect
 {
+	import aerys.minko.query.renderdata.style.Style3D;
+	import aerys.minko.query.renderdata.style.StyleStack3D;
+	import aerys.minko.query.renderdata.transform.TransformData;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.state.RenderState;
+	
+	import flash.utils.Dictionary;
 
 	public class AbstractEffect3D implements IEffect3D
 	{
@@ -14,14 +21,12 @@ package aerys.minko.effect
 		{
 		}
 		
-		public function begin(renderer : IRenderer3D, style : StyleStack3D) : void
+		public function prepare(styleStack	: StyleStack3D, 
+								local		: TransformData, 
+								world		: Dictionary) : void
 		{
-			// NOTHING
+			
 		}
 		
-		public function end(renderer : IRenderer3D, style : StyleStack3D) : void
-		{
-			// NOTHING
-		}
 	}
 }

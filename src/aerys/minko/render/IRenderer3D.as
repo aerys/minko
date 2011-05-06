@@ -33,13 +33,13 @@ package aerys.minko.render
 		
 		function present() : void;
 		
-		function createTexture(width 		: uint,
-							   height 		: uint,
-							   format 		: String	= Context3DTextureFormat.BGRA,
-							   renderTarget : Boolean 	= false) : TextureBase;
+//		function createTexture(width 		: uint,
+//							   height 		: uint,
+//							   format 		: String	= Context3DTextureFormat.BGRA,
+//							   renderTarget : Boolean 	= false) : TextureBase;
 		
-		function createShader(vertexShader 		: ByteArray,
-							  fragmentShader 	: ByteArray) : Shader3D;
+//		function createShader(vertexShader 		: ByteArray,
+//							  fragmentShader 	: ByteArray) : Shader3D;
 		
 		function drawToBitmapData(bitmapData : BitmapData) : void;
 		

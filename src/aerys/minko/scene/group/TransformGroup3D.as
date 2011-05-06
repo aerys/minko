@@ -1,8 +1,8 @@
 ﻿package aerys.minko.scene.group 
 {
-	import aerys.minko.query.rendering.RenderingQuery;
-	import aerys.minko.query.rendering.TransformManager;
-	import aerys.minko.scene.IObject3D;
+//	import aerys.minko.query.RenderingQueryOld;
+	import aerys.minko.query.renderdata.transform.TransformManager;
+	import aerys.minko.scene.interfaces.IObject3D;
 	import aerys.minko.type.Transform3D;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -23,20 +23,20 @@
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(query:RenderingQuery):void
-		{
-			if (!_visible)
-				return ;
-			
-			var worldTransform : Matrix4x4	= query.transform.world;
-			
-			worldTransform.push()
-				   	 	  .multiply(_transform);
-			
-			super.acceptRenderingQuery(query);
-			
-			worldTransform.pop();
-		}
+//		override protected function acceptRenderingQuery(query:RenderingQueryOld):void
+//		{
+//			if (!_visible)
+//				return ;
+//			
+//			var worldTransform : Matrix4x4	= query.transform.world;
+//			
+//			worldTransform.push()
+//				   	 	  .multiply(_transform);
+//			
+//			super.acceptRenderingQuery(query);
+//			
+//			worldTransform.pop();
+//		}
 		
 		/**
 		 * The Transform3D object defining the transform of the object into world-space.

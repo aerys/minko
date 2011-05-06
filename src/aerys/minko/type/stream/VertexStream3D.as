@@ -46,7 +46,7 @@ package aerys.minko.type.stream
 			_dynamic = dynamic;
 		}
 		
-		minko function getVertexBuffer3D(context : Context3D) : VertexBuffer3D {
+		minko function getNativeVertexBuffer3D(context : Context3D) : VertexBuffer3D {
 			
 			if (!_nativeBuffer)
 				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
@@ -130,7 +130,6 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
-		
 		
 	}
 }

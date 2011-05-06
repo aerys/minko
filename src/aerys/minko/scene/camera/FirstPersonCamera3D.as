@@ -1,10 +1,8 @@
 package aerys.minko.scene.camera
 {
-	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.query.renderdata.transform.TransformManager;
+	import aerys.minko.query.renderdata.world.IWorldData;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.geom.Vector3D;
 	
 	/**
 	 * FirstPersonCamera3D objects represent a "first-person" camera.
@@ -53,7 +51,7 @@ package aerys.minko.scene.camera
 			_ghostMode = ghostMode;
 		}
 		
-		override protected function updateMatrices(query : RenderingQuery = null) : void
+		override public function getData(transformManager : TransformManager) : IWorldData
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -64,9 +62,9 @@ package aerys.minko.scene.camera
 			lookAt.y = position.y + Math.sin(_rotation.x);
 			lookAt.z = position.z + Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.updateMatrices(query);
+			return super.getData(transformManager);
 		}
-		
+			
 		public function walk(distance : Number) : void
 		{
 			if (_ghostMode)
@@ -87,7 +85,6 @@ package aerys.minko.scene.camera
 			position.x += Math.sin(_rotation.y + Math.PI / 2) * distance;
 			position.z += Math.cos(_rotation.y + Math.PI / 2) * distance;
 		}
-		/* ! METHODS */
 
 	}
 }

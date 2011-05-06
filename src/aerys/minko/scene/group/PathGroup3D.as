@@ -58,7 +58,8 @@ package aerys.minko.scene.group
 			ratio = 0;
 		}
 		
-		public function addDebugMarkers(parent : IGroup3D) : void 
+		public function addDebugMarkers(parent	: IGroup3D,
+										width	: Number = 1) : void 
 		{
 			for each (var position : Vector4 in _path.checkpoints)
 			{
@@ -67,6 +68,7 @@ package aerys.minko.scene.group
 				var marker		: Model3D		= new Model3D(markerMesh, material);
 				
 				marker.transform.position.set(position.x, position.y, position.z, 0);
+				marker.transform.appendUniformScale(width);
 				parent.addChild(marker);
 			}
 		}

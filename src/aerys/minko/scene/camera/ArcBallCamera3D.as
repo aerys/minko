@@ -2,7 +2,8 @@ package aerys.minko.scene.camera
 {
 	import aerys.common.Factory;
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.query.renderdata.transform.TransformManager;
+	import aerys.minko.query.renderdata.world.IWorldData;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
@@ -26,8 +27,6 @@ package aerys.minko.scene.camera
 		private var _distance	: Number	= 1.;
 		private var _rotation	: Vector4	= new Vector4();
 		
-		private var _rv			: uint		= 0;
-		
 		override public function get version():uint
 		{
 			return super.version + _rotation.version;
@@ -50,11 +49,7 @@ package aerys.minko.scene.camera
 		
 		public function set distance(value : Number) : void
 		{
-			if (value != _distance)
-			{
-				_distance = value;
-				invalidateView();
-			}
+			_distance = value;
 		}
 		
 		/**
@@ -69,7 +64,7 @@ package aerys.minko.scene.camera
 			return _rotation;
 		}
 
-		override protected function updateMatrices(query : RenderingQuery = null) : void
+		override public function getData(transformManager : TransformManager) : IWorldData
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -83,18 +78,7 @@ package aerys.minko.scene.camera
 			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
 			position.z = lookAt.z - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
 			
-			super.updateMatrices(query);
-		}
-		
-		override public function accept(visitor : IScene3DQuery) : void
-		{
-			if (_rotation.version != _rv)
-			{
-				invalidateView();
-				_rv = _rotation.version;
-			}
-			
-			super.accept(visitor);
+			return super.getData(transformManager);
 		}
 	}
 }

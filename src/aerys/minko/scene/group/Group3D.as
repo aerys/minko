@@ -1,9 +1,9 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 	import aerys.minko.scene.AbstractScene3D;
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.scene.interfaces.IScene3D;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -264,18 +264,18 @@ package aerys.minko.scene.group
 		 *
 		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
 		 */
-		public function accept(query : IScene3DQuery) : void
-		{
-			if (query is RenderingQuery)
-				acceptRenderingQuery(query as RenderingQuery);
-			else
-				visitChildren(query);
-		}
+//		public function accept(query : IScene3DQuery) : void
+//		{
+//			if (query is RenderingQueryOld)
+//				acceptRenderingQuery(query as RenderingQueryOld);
+//			else
+//				visitChildren(query);
+//		}
 		
-		protected function acceptRenderingQuery(query : RenderingQuery) : void
-		{
-			visitChildren(query);
-		}
+//		protected function acceptRenderingQuery(query : RenderingQueryOld) : void
+//		{
+//			visitChildren(query);
+//		}
 		
 		protected function visitChildren(query : IScene3DQuery) : void
 		{

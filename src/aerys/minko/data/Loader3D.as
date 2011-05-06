@@ -2,7 +2,7 @@ package aerys.minko.data
 {
 	import aerys.minko.data.parser.IParser3D;
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.scene.interfaces.IScene3D;
 	import aerys.minko.scene.group.Group3D;
 	import aerys.minko.scene.material.AnimatedMaterial3D;
 	import aerys.minko.scene.material.BitmapMaterial3D;

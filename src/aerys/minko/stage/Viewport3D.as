@@ -4,10 +4,12 @@ package aerys.minko.stage
 	import aerys.common.IVersionnable;
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.query.RenderingQuery;
+	import aerys.minko.query.WorldDataExtracterQuery;
 	import aerys.minko.render.DirectRenderer3D;
 	import aerys.minko.render.IRenderer3D;
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.scene.interfaces.IScene3D;
+	import aerys.minko.scene.camera.CameraData;
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
@@ -17,6 +19,7 @@ package aerys.minko.stage
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
+	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
 	/**
@@ -30,21 +33,23 @@ package aerys.minko.stage
 	{
 		use namespace minko;
 		
-		private var _width			: Number			= 0.;
-		private var _height			: Number			= 0.;
+		private var _width				: Number					= 0.;
+		private var _height				: Number					= 0.;
 		
-		private var _version		: uint				= 0;
+		private var _version			: uint						= 0;
 		
-		private var _query			: RenderingQuery	= null;
-		private var _time			: int				= 0;
-		private var _sceneSize		: uint				= 0;
-		private var _drawTime		: int				= 0;
+		private var _wdExtracterQuery	: WorldDataExtracterQuery	= null;
+		private var _renderingQuery		: RenderingQuery			= null;
 		
-		private var _rendererClass	: Class				= null;
-		private var _renderer		: IRenderer3D		= null;
-		private var _context		: Context3D			= null;
+		private var _time				: int						= 0;
+		private var _sceneSize			: uint						= 0;
+		private var _drawTime			: int						= 0;
 		
-		private var _aa				: int				= 0;
+		private var _rendererClass		: Class						= null;
+		private var _renderer			: IRenderer3D				= null;
+		private var _context			: Context3D					= null;
+		
+		private var _aa					: int						= 0;
 		
 		public function get version() : uint
 		{
@@ -131,8 +136,7 @@ package aerys.minko.stage
 		 */
 		public function get numTriangles() : uint
 		{
-			return _query ? _query.numTriangles
-							: 0;
+			return _renderingQuery ? _renderingQuery.numTriangles : 0;
 		}
 		
 		/**
@@ -249,7 +253,9 @@ package aerys.minko.stage
 				_context.configureBackBuffer(_width, _height, _aa, true);
 				
 				_renderer = new DirectRenderer3D(this, _context);
-				_query = new RenderingQuery(_renderer);
+				
+				_wdExtracterQuery = new WorldDataExtracterQuery();
+				_renderingQuery = new RenderingQuery(_renderer);
 			}
 		}
 		
@@ -259,20 +265,32 @@ package aerys.minko.stage
 		 */
 		public function render(scene : IScene3D) : void
 		{
-			if (_query)
+			if (_renderingQuery)
 			{
 				var time : Number = getTimer();
-
-				_query.reset();
-				_query.query(scene);
+				
+				_wdExtracterQuery.reset();
+				_renderingQuery.reset();
+				
+				_wdExtracterQuery.query(scene);
+				
+				var worldData : Dictionary = _wdExtracterQuery.worldData;
+				if (worldData[CameraData] != null)
+				{
+					CameraData(worldData[CameraData]).ratio = _width / _height
+				}
+				
+				_renderingQuery.updateWorldData(worldData);
+				_renderingQuery.query(scene);
+				
 				_renderer.present();
-			
-				_sceneSize = _query.numNodes;
+				
+				_sceneSize = _renderingQuery.numNodes;
 				
 				Factory.sweep();
 				
 				_time = getTimer() - time;
-				_drawTime = _query.drawingTime;
+				_drawTime = _renderingQuery.drawingTime;
 			}
 			else
 			{

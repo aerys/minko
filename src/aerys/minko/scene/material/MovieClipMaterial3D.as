@@ -1,7 +1,7 @@
 package aerys.minko.scene.material
 {
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 	
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
@@ -39,7 +39,7 @@ package aerys.minko.scene.material
 			_source.gotoAndStop(0);
 		}
 		
-		override protected function nextFrame(query : RenderingQuery) : void
+		override public function nextFrame() : void
 		{
 			if (_source && _playing)
 			{
@@ -59,7 +59,7 @@ package aerys.minko.scene.material
 				}
 			}
 			
-			super.nextFrame(query);
+			super.nextFrame();
 		}
 		
 		public function stop() : void

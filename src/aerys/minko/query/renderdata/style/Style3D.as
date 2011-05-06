@@ -1,4 +1,4 @@
-package aerys.minko.effect
+package aerys.minko.query.renderdata.style
 {
 	import aerys.common.IVersionnable;
 

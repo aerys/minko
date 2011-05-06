@@ -1,9 +1,5 @@
 package aerys.minko.scene.material
 {
-	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
-	import aerys.minko.render.state.Blending;
-	
 	import flash.display.BitmapData;
 	
 	/**
@@ -32,36 +28,27 @@ package aerys.minko.scene.material
 		public static const ORANGE			: ColorMaterial3D	= new ColorMaterial3D(0xffffa200);
 		public static const PINK			: ColorMaterial3D	= new ColorMaterial3D(0xffff00d8);
 		
-		private var _bmp	: BitmapData	= null;
-		private var _color	: uint			= 0;
-		
-		private var _update	: Boolean		= true;
-		
 		/**
 		 * The color (as an ARGB uint value) in the texture.
 		 *  
 		 * @return 
-		 * 
 		 */
 		public function get color() : uint
 		{
-			return _color;
+			return bitmapData.getPixel32(0, 0);
 		}
 		
 		public function set color(value : uint) : void
 		{
-			if (_color != value)
+			if (bitmapData)
+				bitmapData.setPixel32(0, 0, value);
+			else
 			{
 				var enableAlpha : Boolean = (value >> 24) != 0xff;
+				var bmp : BitmapData = new BitmapData(1, 1, enableAlpha, value);
 				
-				_color = value;
-				
-				if (!_bmp || enableAlpha != _bmp.transparent)
-					_bmp = new BitmapData(1, 1, enableAlpha, _color);
-				else
-					_bmp.fillRect(_bmp.rect, _color);
-				
-				_update = true;
+				updateFromBitmapData(bmp, false);
+				bmp.dispose();
 			}
 		}
 		
@@ -72,15 +59,5 @@ package aerys.minko.scene.material
 			this.color = color;
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingQuery) : void
-		{
-			if (_update)
-			{
-				_update = false;
-				updateFromBitmapData(_bmp);
-			}
-			
-			super.acceptRenderingQuery(query);
-		}
 	}
 }

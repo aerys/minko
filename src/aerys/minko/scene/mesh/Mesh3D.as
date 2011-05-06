@@ -1,7 +1,7 @@
 package aerys.minko.scene.mesh
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 	import aerys.minko.scene.AbstractScene3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	import aerys.minko.type.stream.VertexStream3D;
@@ -49,10 +49,10 @@ package aerys.minko.scene.mesh
 			_indexStream = indexStream || IndexStream3D.dummy(vertexStreamList.length, vertexStreamList.dynamic);
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingQuery) : void
-		{
-			query.draw(vertexStreamList, indexStream);
-		}
+//		override protected function acceptRenderingQuery(query : RenderingQueryOld) : void
+//		{
+//			query.draw(vertexStreamList, indexStream);
+//		}
 		
 	}
 }

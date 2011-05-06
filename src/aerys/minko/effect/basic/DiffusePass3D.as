@@ -1,8 +1,11 @@
 package aerys.minko.effect.basic
 {
-	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.effect.IEffect3DPass;
+	import aerys.minko.query.renderdata.style.StyleStack3D;
+	import aerys.minko.query.renderdata.transform.TransformData;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.DefaultShader3D;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.Blending;
@@ -11,6 +14,7 @@ package aerys.minko.effect.basic
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display3D.textures.Texture;
+	import flash.utils.Dictionary;
 	
 	public class DiffusePass3D implements IEffect3DPass
 	{
@@ -20,17 +24,18 @@ package aerys.minko.effect.basic
 		{
 		}
 		
-		public function begin(renderer : IRenderer3D, style : StyleStack3D) : Boolean
+		public function fillRenderState(state	: RenderState,
+										style	: StyleStack3D, 
+										local	: TransformData, 
+										world	: Dictionary) : Boolean
 		{
-			var state 		: RenderState 	= renderer.state;
-			var diffuse		: Texture		= style.get(BasicStyle3D.DIFFUSE_MAP)
-											  as Texture;
-			var toScreen	: Matrix4x4		= style.get(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX)
-											  as Matrix4x4;
-			var blending	: uint			= style.get(BasicStyle3D.BLENDING, Blending.NORMAL) as uint;
-			
+			var diffuse		: TextureRessource		= style.get(BasicStyle3D.DIFFUSE_MAP) as TextureRessource;
 			if (!diffuse)
 				return false;
+			
+			var blending	: uint			= style.get(BasicStyle3D.BLENDING, Blending.NORMAL) as uint;
+			
+			var toScreen : Matrix4x4 = local.localToScreen;
 			
 			state.shader = DEFAULT_SHADER;
 			state.blending = blending;
@@ -43,9 +48,5 @@ package aerys.minko.effect.basic
 			return true;
 		}
 		
-		public function end(renderer : IRenderer3D, style : StyleStack3D) : void
-		{
-			// NOTHING
-		}
 	}
 }

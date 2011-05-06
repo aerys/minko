@@ -1,9 +1,11 @@
 package aerys.minko.effect.basic
 {
 	import aerys.minko.effect.AbstractEffect3D;
-	import aerys.minko.effect.StyleStack3D;
 	import aerys.minko.effect.IEffect3DPass;
+	import aerys.minko.query.renderdata.style.StyleStack3D;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.render.IRenderer3D;
+	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;
 	
 	public class BasicEffect3D extends AbstractEffect3D
@@ -15,12 +17,5 @@ package aerys.minko.effect.basic
 			passes[0] = new DiffusePass3D();
 		}
 		
-		override public function begin(renderer : IRenderer3D, style : StyleStack3D) : void
-		{
-			super.begin(renderer, style);
-			
-			renderer.state.triangleCulling = style.get(BasicStyle3D.TRIANGLE_CULLING,
-													   TriangleCulling.BACK);
-		}
 	}
 }

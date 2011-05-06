@@ -20,8 +20,6 @@ package aerys.minko.scene.debug
 			
 			var mat : BitmapMaterial3D = BitmapMaterial3D.fromDisplayObject(shape, 256, true);
 			
-			mat.blending = Blending.ADDITIVE;
-				
 			super(CubeMesh3D.cubeMesh, mat);
 		}
 		

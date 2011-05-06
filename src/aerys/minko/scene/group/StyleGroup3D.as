@@ -1,8 +1,8 @@
 package aerys.minko.scene.group
 {
-	import aerys.minko.effect.IStyled3D;
-	import aerys.minko.effect.Style3D;
-	import aerys.minko.query.rendering.RenderingQuery;
+	import aerys.minko.scene.interfaces.IStyled3D;
+	import aerys.minko.query.renderdata.style.Style3D;
+//	import aerys.minko.query.RenderingQueryOld;
 	
 	/**
 	 * StyleGroup3D enables setting style properties that will
@@ -25,13 +25,13 @@ package aerys.minko.scene.group
 			return _style;
 		}
 		
-		override protected function acceptRenderingQuery(q:RenderingQuery):void
-		{
-			q.style.push(_style);
-			
-			super.acceptRenderingQuery(q);
-			
-			q.style.pop();
-		}
+//		override protected function acceptRenderingQuery(q:RenderingQueryOld):void
+//		{
+//			q.style.push(_style);
+//			
+//			super.acceptRenderingQuery(q);
+//			
+//			q.style.pop();
+//		}
 	}
 }

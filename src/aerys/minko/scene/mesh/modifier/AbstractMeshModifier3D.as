@@ -34,10 +34,10 @@ package aerys.minko.scene.mesh.modifier
 			return _indexStream || (_target ? _target.indexStream : null);
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
-		{
-			query.query(_target);
-		}
+//		override public function accept(query : IScene3DQuery) : void
+//		{
+//			query.query(_target);
+//		}
 		
 		public function AbstractMeshModifier3D(target : IMesh3D, ...streams)
 		{

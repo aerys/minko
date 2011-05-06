@@ -3,6 +3,7 @@ package aerys.minko.render.state
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream3D;
@@ -10,6 +11,7 @@ package aerys.minko.render.state
 	import aerys.minko.type.stream.VertexStream3DList;
 	import aerys.minko.type.vertex.format.Vertex3DComponent;
 	
+	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DCompareMode;
@@ -18,6 +20,7 @@ package aerys.minko.render.state
 	import flash.display3D.Context3DTriangleFace;
 	import flash.display3D.Program3D;
 	import flash.display3D.VertexBuffer3D;
+	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
@@ -108,7 +111,7 @@ package aerys.minko.render.state
 		private var _shader				: Shader3D					= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
-		private var _textures			: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
+		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
 	
 		private var _vertexStreams		: Vector.<VertexStream3D>	= new Vector.<VertexStream3D>(8, true);
 		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
@@ -123,6 +126,11 @@ package aerys.minko.render.state
 		
 		private var _priority			: Number					= 0.;
 		
+		public function get priority() : Number
+		{
+			return _priority;
+		}
+
 		minko function get indexStream() : IndexStream3D
 		{
 			return _indexStream;
@@ -168,9 +176,16 @@ package aerys.minko.render.state
 			return _setFlags & DEPTH_MASK ? _depthMask : 0;
 		}
 		
+		public function set priority(value : Number) : void
+		{
+			_priority = value;
+			_setFlags |= PRIORITY;
+		}
+		
 		public function set rectangle(value : Rectangle) : void
 		{
 			_rectangle = value;
+			_setFlags |= SCISSOR_RECTANGLE;
 		}
 		
 		public function set renderTarget(value : RenderTarget) : void
@@ -260,7 +275,7 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function setTextureAt(index : int, texture : TextureBase) : void
+		public function setTextureAt(index : int, texture : TextureRessource) : void
 		{
 			var flag : uint = TEXTURE_1 << index;
 			
@@ -393,12 +408,20 @@ package aerys.minko.render.state
 				for (var i : int = 0; i < 8; ++i)
 				{
 					// set texture
-					context.setTextureAt(i, (_setFlags & (TEXTURE_1 << i)) ? _textures[i] : null);
+					if (_setFlags & (TEXTURE_1 << i))
+					{
+						var texture : Texture = _textures[i].getNativeTexture(context);
+						context.setTextureAt(i, texture);
+					}
+					else
+					{
+						context.setTextureAt(i, null);
+					}
 					
 					// set vertex buffer
 					if (_setFlags & (VERTEX_STREAM_1 << i))
 					{
-						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getVertexBuffer3D(context);
+						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getNativeVertexBuffer3D(context);
 						var vertexOffset : int				= _vertexOffsets[i];
 						var vertexFormat : String			= _vertexFormats[i];
 					
@@ -419,6 +442,24 @@ package aerys.minko.render.state
 							context.setDepthTest(true, COMPARE_STR[j]);
 							break ;
 						}
+					}
+				}
+				
+				if (_setFlags & RENDER_TARGET)
+				{
+					if (_renderTarget == null)
+					{
+						context.setRenderToBackBuffer();
+						context.clear();
+					}
+					else
+					{
+						var renderTexture		: Texture	= _renderTarget.textureRessource.getNativeTexture(context);
+						var useDepthAndStencil	: Boolean	= _renderTarget.useDepthAndStencil;
+						var antialiasing		: int		= _renderTarget.antiAliasing;
+						
+						context.setRenderToTexture(renderTexture, useDepthAndStencil, antialiasing);
+						context.clear(0);
 					}
 				}
 			}
@@ -463,9 +504,10 @@ package aerys.minko.render.state
 			for (var i : int = 0; i < 8; ++i)
 			{
 				// set textures
-				var textureFlag	: uint			= TEXTURE_1 << i;
-				var texture		: TextureBase 	= (_setFlags & textureFlag)
-											  	  ? _textures[i]
+				var textureFlag			: uint			= TEXTURE_1 << i;
+				var textureRessource	: TextureRessource = _textures[i];
+				var texture				: TextureBase 	= (_setFlags & textureFlag)
+											  	  ? textureRessource.getNativeTexture(context)
 											  	  : null;
 				
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
@@ -481,7 +523,7 @@ package aerys.minko.render.state
 				
 				if (!vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
 					context.setVertexBufferAt(i,
-											  vertexStream ? vertexStream.getVertexBuffer3D(context) : null,
+											  vertexStream ? vertexStream.getNativeVertexBuffer3D(context) : null,
 											  vertexOffset,
 											  vertexFormat);
 			}
@@ -496,6 +538,25 @@ package aerys.minko.render.state
 						context.setDepthTest(true, COMPARE_STR[j]);
 						break ;
 					}
+				}
+			}
+			
+			if (_setFlags & RENDER_TARGET
+				&& (!(current._setFlags & RENDER_TARGET) || _renderTarget != current._renderTarget))
+			{
+				if (_renderTarget == null)
+				{
+					context.setRenderToBackBuffer();
+					context.clear();
+				}
+				else
+				{
+					var renderTexture		: Texture	= _renderTarget.textureRessource.getNativeTexture(context);
+					var useDepthAndStencil	: Boolean	= _renderTarget.useDepthAndStencil;
+					var antialiasing		: int		= _renderTarget.antiAliasing;
+					
+					context.setRenderToTexture(renderTexture, useDepthAndStencil, antialiasing);
+					context.clear();
 				}
 			}
 		}

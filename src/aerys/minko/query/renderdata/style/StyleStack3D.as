@@ -1,6 +1,8 @@
-package aerys.minko.effect
+package aerys.minko.query.renderdata.style
 {
 	import aerys.common.Factory;
+	import aerys.minko.query.renderdata.world.IWorldData;
+	import aerys.minko.query.renderdata.world.WorldDataList;
 
 	public final class StyleStack3D
 	{
@@ -25,7 +27,10 @@ package aerys.minko.effect
 				{
 					item = data[name];
 					if (item != undefined)
+					{
+						//set(name, item);
 						return item;
+					}
 				}
 			}
 			
@@ -50,20 +55,20 @@ package aerys.minko.effect
 		}
 		
 		public function append(name		: String, 
-							   value	: IStyleObject = undefined) : StyleStack3D 
+							   value	: IWorldData = undefined) : StyleStack3D 
 		{
 			var stackHeight		: uint = _data.length;
-			var styleObjectList	: StyleObjectList;
+			var styleObjectList	: WorldDataList;
 			
 			for (var i : int = 0; i < stackHeight; ++i)
 			{
 				var data : Object = _data[i];
 				if (data != _emptyObject)
 				{
-					styleObjectList = data[name] as StyleObjectList;
+					styleObjectList = data[name] as WorldDataList;
 					if (styleObjectList != null)
 					{
-						var cloned : StyleObjectList;
+						var cloned : WorldDataList;
 						cloned = styleObjectList.clone();
 						cloned.push(value);
 						set(name, cloned);
@@ -72,7 +77,7 @@ package aerys.minko.effect
 				}
 			}
 			
-			styleObjectList = new StyleObjectList(name);
+			styleObjectList = new WorldDataList(name);
 			styleObjectList.push(value);
 			set(name, styleObjectList);
 			return this;

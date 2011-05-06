@@ -2,7 +2,7 @@ package aerys.minko.scene.mesh.modifier
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.query.IScene3DQuery;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.stream.VertexStream3D;
 	import aerys.minko.type.stream.VertexStream3DList;
@@ -114,15 +114,15 @@ package aerys.minko.scene.mesh.modifier
 			return new VertexStream3D(normals, normalsFormat, vertexStreamList.dynamic);
 		}
 		
-		override public function accept(query : IScene3DQuery) : void
-		{
-			var q : RenderingQuery = query as RenderingQuery;
-			
-			q && q.draw(vertexStreamList, indexStream);
-//			if (q && _version != target.version)
-//			{
-//				_version = target.version;
-//			}
-		}
+//		override public function accept(query : IScene3DQuery) : void
+//		{
+//			var q : RenderingQueryOld = query as RenderingQueryOld;
+//			
+//			q && q.draw(vertexStreamList, indexStream);
+////			if (q && _version != target.version)
+////			{
+////				_version = target.version;
+////			}
+//		}
 	}
 }

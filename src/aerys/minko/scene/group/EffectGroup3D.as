@@ -1,7 +1,7 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.effect.IEffect3D;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 
 	/**
 	 * EffectGroup3D enables 
@@ -23,20 +23,20 @@ package aerys.minko.scene.group
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(q : RenderingQuery) : void
-		{
-			var numEffects		: int					= _effects.length;
-			var queryEffects	: Vector.<IEffect3D>	= q.effects;
-			var numQueryEffects	: int					= queryEffects.length;
-			
-			// push effects
-			for (var i : int = 0; i < numEffects; ++i)
-				queryEffects[int(numQueryEffects + i)] = _effects[i];
-			
-			super.acceptRenderingQuery(q);
-			
-			// pop effects
-			queryEffects.length = numQueryEffects;
-		}
+//		override protected function acceptRenderingQuery(q : RenderingQueryOld) : void
+//		{
+//			var numEffects		: int					= _effects.length;
+//			var queryEffects	: Vector.<IEffect3D>	= q.effects;
+//			var numQueryEffects	: int					= queryEffects.length;
+//			
+//			// push effects
+//			for (var i : int = 0; i < numEffects; ++i)
+//				queryEffects[int(numQueryEffects + i)] = _effects[i];
+//			
+//			super.acceptRenderingQuery(q);
+//			
+//			// pop effects
+//			queryEffects.length = numQueryEffects;
+//		}
 	}
 }

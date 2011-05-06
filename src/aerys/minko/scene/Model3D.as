@@ -1,19 +1,21 @@
 package aerys.minko.scene
 {
 	import aerys.common.IVersionnable;
-	import aerys.minko.effect.StyleStack3D;
+	import aerys.minko.query.renderdata.style.StyleStack3D;
 	import aerys.minko.effect.IEffect3D;
-	import aerys.minko.effect.IStyled3D;
-	import aerys.minko.effect.Style3D;
+	import aerys.minko.query.renderdata.style.Style3D;
 	import aerys.minko.effect.basic.BasicEffect3D;
 	import aerys.minko.effect.basic.BasicStyle3D;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.rendering.RenderingQuery;
-	import aerys.minko.query.rendering.TransformManager;
+//	import aerys.minko.query.RenderingQueryOld;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.scene.material.IMaterial3D;
 	import aerys.minko.scene.mesh.IMesh3D;
 	import aerys.minko.type.Transform3D;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.scene.interfaces.IObject3D;
+	import aerys.minko.scene.interfaces.IScene3D;
+	import aerys.minko.scene.interfaces.IStyled3D;
 
 	/**
 	 * Model3D objects are visible scene objects. They contain references to:
@@ -42,7 +44,7 @@ package aerys.minko.scene
 		private var _visible	: Boolean				= true;
 		private var _effects	: Vector.<IEffect3D>	= new Vector.<IEffect3D>();
 		private var _style		: Style3D				= new Style3D();
-		private var _toScreen	: Matrix4x4				= new Matrix4x4();
+//		private var _toScreen	: Matrix4x4				= new Matrix4x4();
 		
 		public function get version() : uint
 		{
@@ -127,39 +129,40 @@ package aerys.minko.scene
 				_effects.push(new BasicEffect3D());
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingQuery) : void 
-		{
-			if (!_visible)
-				return ;
-			
-			var transform 		: TransformManager 		= query.transform;
-			var numEffects		: int					= _effects.length;
-			var queryEffects	: Vector.<IEffect3D>	= query.effects;
-			var numQueryEffects	: int					= queryEffects.length;
-			
-			// push world transform
-			transform.world.push().multiply(_transform);
-			
-			transform.getLocalToScreen(_toScreen);
-			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)
-				  .set(BasicStyle3D.VIEW_MATRIX, 			transform.view)
-				  .set(BasicStyle3D.PROJECTION_MATRIX, 		transform.projection)
-				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
-			
-			// push FXs and style
-			for (var i : int = 0; i < numEffects; ++i)
-				queryEffects.push(_effects[i]);
-			query.style.push(_style);
-			
-			_material && query.query(_material);
-			_mesh && query.query(_mesh);
-			
-			// pop FXs and style
-			query.style.pop();
-			query.effects.length = numQueryEffects;
-			
-			// pop world transform
-			transform.world.pop();
-		}
+//		override protected function acceptRenderingQuery(query : RenderingQueryOld) : void 
+//		{
+//			if (!_visible)
+//				return ;
+//			
+//			var transform 		: TransformManager 		= query.transform;
+//			var numEffects		: int					= _effects.length;
+//			var queryEffects	: Vector.<IEffect3D>	= query.effects;
+//			var numQueryEffects	: int					= queryEffects.length;
+//			
+//			// push world transform
+//			transform.world.push().multiply(_transform);
+//			
+////			transform.getLocalToScreen(_toScreen);
+////			
+////			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)
+////				  .set(BasicStyle3D.VIEW_MATRIX, 			transform.view)
+////				  .set(BasicStyle3D.PROJECTION_MATRIX, 		transform.projection)
+////				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);
+//			
+//			// push FXs and style
+//			for (var i : int = 0; i < numEffects; ++i)
+//				queryEffects.push(_effects[i]);
+//			query.style.push(_style);
+//			
+//			_material && query.query(_material);
+//			_mesh && query.query(_mesh);
+//			
+//			// pop FXs and style
+//			query.style.pop();
+//			query.effects.length = numQueryEffects;
+//			
+//			// pop world transform
+//			transform.world.pop();
+//		}
 	}
 }

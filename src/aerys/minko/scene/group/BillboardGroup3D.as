@@ -1,9 +1,9 @@
 package aerys.minko.scene.group
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.rendering.RenderingQuery;
+//	import aerys.minko.query.RenderingQueryOld;
 	import aerys.minko.type.Transform3D;
-	import aerys.minko.query.rendering.TransformManager;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -24,26 +24,26 @@ package aerys.minko.scene.group
 			super(children);
 		}
 		
-		override protected function acceptRenderingQuery(query : RenderingQuery) : void
-		{
-			var transform	: TransformManager	= query.transform;
-			
-			Matrix4x4.multiply(transform.world, transform.view, _local)
-					 .invert()
-					 .multiplyVector(ConstVector4.ZERO, _localCamera);
-			
-			_local.identity();
-			_local.pointAt(_localCamera,
-						   ConstVector4.Z_AXIS,
-						   UP);
-			
-			//transform.push(TransformType.WORLD);
-			transform.world.push()
-						   .multiply(_local);	
-			
-			super.acceptRenderingQuery(query);
-			
-			transform.world.pop();
-		}
+//		override protected function acceptRenderingQuery(query : RenderingQueryOld) : void
+//		{
+//			var transform	: TransformManager	= query.transform;
+//			
+//			Matrix4x4.multiply(transform.world, transform.view, _local)
+//					 .invert()
+//					 .multiplyVector(ConstVector4.ZERO, _localCamera);
+//			
+//			_local.identity();
+//			_local.pointAt(_localCamera,
+//						   ConstVector4.Z_AXIS,
+//						   UP);
+//			
+//			//transform.push(TransformType.WORLD);
+//			transform.world.push()
+//						   .multiply(_local);	
+//			
+//			super.acceptRenderingQuery(query);
+//			
+//			transform.world.pop();
+//		}
 	}
 }

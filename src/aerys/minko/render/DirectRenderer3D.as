@@ -1,11 +1,11 @@
 package aerys.minko.render
 {
 	import aerys.common.Factory;
-	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.ns.minko;
-	import aerys.minko.query.rendering.TransformManager;
+	import aerys.minko.query.renderdata.transform.TransformManager;
 	import aerys.minko.render.shader.Shader3D;
 	import aerys.minko.render.state.RenderState;
+	import aerys.minko.stage.Viewport3D;
 	import aerys.minko.type.stream.IndexStream3D;
 	
 	import flash.display.BitmapData;
@@ -13,6 +13,7 @@ package aerys.minko.render
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 
 	public class DirectRenderer3D implements IRenderer3D
@@ -22,7 +23,8 @@ package aerys.minko.render
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		private static const DIRECT			: Boolean			= false;
-		private static const DEBUG			: Boolean			= false;
+		private static const SORT			: Boolean			= true;
+		private static const DEBUG			: Boolean			= true;
 		
 		private var _context		: Context3D					= null;
 		private var _state			: RenderState				= new RenderState();
@@ -33,6 +35,7 @@ package aerys.minko.render
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
+		private var _rtSessions		: Dictionary				= null;
 		private var _sessions		: Vector.<RenderSession>	= new Vector.<RenderSession>();
 		private var _currentSession	: RenderSession				= new RenderSession();
 		private var _numSessions	: int						= 0;
@@ -90,9 +93,11 @@ package aerys.minko.render
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff) : void
 		{
-			_context.clear(red, green, blue, alpha, depth, stencil, mask);
+//			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 			_numTriangles = 0;
 			_drawingTime = 0;
+			
+			_rtSessions = new Dictionary(true);
 			
 			end();
 		}
@@ -100,6 +105,14 @@ package aerys.minko.render
 		public function present() : void
 		{
 			var time : int = getTimer();
+			
+			if (SORT)
+			{
+				// FIXME crappy coding.
+				_sessions = _sessions.sort(function(rs1 : RenderSession, rs2 : RenderSession) : Number {
+					return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
+				});
+			}
 			
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
@@ -126,32 +139,15 @@ package aerys.minko.render
 			
 			_currentSession = null;
 			_numSessions = 0;
-			
 			_context.present();
 			
 			_drawingTime += getTimer() - time;
 			++_frame;
 		}
 		
-		public function createTexture(width 	: uint,
-							   		  height 	: uint,
-							   		  format 	: String	= Context3DTextureFormat.BGRA,
-							   		  optimized : Boolean 	= false) : TextureBase
-		{
-			return _context.createTexture(width, height, format, optimized);
-		}
-		
-
 		public function drawToBitmapData(bitmapData : BitmapData) : void
 		{
 			_context.drawToBitmapData(bitmapData);
-		}
-		
-		public function createShader(vertexShader 	: ByteArray,
-									 fragmentShader	: ByteArray) : Shader3D
-		{
-			// FIXME
-			return null;
 		}
 		
 		public function begin() : void
@@ -167,13 +163,24 @@ package aerys.minko.render
 			}
 			else
 			{
+//				if (_state.renderTarget)
+//				{
+//					var sessions : Vector.<RenderSession> = _rtSessions[_state.renderTarget];
+//					
+//					sessions ||= _rtSessions[_state.renderTarget] = new Vector.<RenderSession>();
+//					sessions.push(_currentSession);
+//				}
+//				else
+//				{
+//					_sessions[int(_numSessions++)] = _currentSession;
+//				}
+				
 				_state = RENDER_STATE.create();
 				_state.clear();
 				_currentSession = RENDER_SESSION.create();
 				_currentSession.renderState = _state;
 				_currentSession.offsets.length = 0;
 				_currentSession.numTriangles.length = 0;
-				_sessions[int(_numSessions++)] = _currentSession;
 			}
 		}
 		

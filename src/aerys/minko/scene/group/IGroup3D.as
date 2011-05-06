@@ -1,6 +1,6 @@
 package aerys.minko.scene.group
 {
-	import aerys.minko.scene.IScene3D;
+	import aerys.minko.scene.interfaces.IScene3D;
 	
 	public interface IGroup3D extends IScene3D
 	{
