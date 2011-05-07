@@ -180,6 +180,6 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
-		
+
 	}
 }

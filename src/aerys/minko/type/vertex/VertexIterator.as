@@ -55,17 +55,23 @@ package aerys.minko.type.vertex
 			}
 		}
 		
+		override flash_proxy function setProperty(name : *, value : *) : void
+		{
+			var vertex : VertexReference = value as VertexReference;
+			
+			if (!vertex)
+				throw new Error();
+			
+			vertex._index = _vstream.length;
+			vertex._propToStream = _propToStream;
+		}
+		
 		override flash_proxy function getProperty(name : *) : *
 		{
 			var index : int = int(name);
 			
 			if (_istream)
-			{
-				if (index < _istream._indices.length)
-					index = _istream._indices[index];
-				else if (index == _istream._indices.length)
-					_istream._indices[index] = _vstream.length;
-			}
+				index = _istream._indices[index];
 			
 			return new VertexReference(_vstream, index, _propToStream);
 		}

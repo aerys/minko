@@ -18,11 +18,11 @@
 		use namespace minko;
 		use namespace flash_proxy;
 		
-		minko var _index		: int		= 0;
+		minko var _index			: int			= 0;
+		minko var _propToStream		: Object		= null;
 		
 		private var _stream 		: IVertexStream	= null;
-		private var _propToStream	: Object	= new Object();
-		
+				
 		public function get index() : int	{ return _index; }
 		
 		override flash_proxy function getProperty(name : *) : *
@@ -44,13 +44,29 @@
 		}
 		
 		public function VertexReference(stream 				: IVertexStream,
-								 		index				: int,
-										propertyToStream	: Object = null)
+								 		index				: int		= -1,
+										propertyToStream	: Object 	= null)
 		{
 			_stream = stream;
-			_index = index;
+			_index = index == -1 ? stream.length : index;
 			_propToStream = propertyToStream;
-		}		
+			
+			if (!_propToStream)
+				initialize();
+		}
+		
+		private function initialize() : void
+		{
+			var components : Object = _stream.format.components;
+			
+			_propToStream = new Object();
+			
+			for each (var component : VertexComponent in components)
+			{
+				for each (var field : String in component.fields)
+				_propToStream[field] = _stream.getVertexStreamByComponent(component);
+			}
+		}
 	}
 
 }
