@@ -18,16 +18,16 @@
 		use namespace minko;
 		use namespace flash_proxy;
 		
-		minko var _index		: int			= 0;
+		minko var _index		: int		= 0;
 		
 		private var _stream 		: IVertexStream	= null;
-		private var _prop2stream	: Object		= new Object();
+		private var _propToStream	: Object	= new Object();
 		
 		public function get index() : int	{ return _index; }
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
-			var stream : VertexStream = getVertexStreamByProperty(name);
+			var stream : VertexStream = _propToStream[name];
 			var format : VertexFormat = stream.format;
 			
 			return stream._data[int(_index * format.dwordsPerVertex + format.getOffsetForField(name))];
@@ -35,7 +35,7 @@
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var stream : VertexStream = getVertexStreamByProperty(name);
+			var stream : VertexStream = _propToStream[name];
 			var format : VertexFormat = stream.format;
 			
 			stream._update = true;
@@ -43,32 +43,13 @@
 			stream._data[int(_index * format.dwordsPerVertex + format.getOffsetForField(name))] = value as Number;
 		}
 		
-		private function getVertexStreamByProperty(property : String) : VertexStream
-		{
-			var stream 	: VertexStream 	= _prop2stream[property];
-			
-			if (!stream)
-			{
-				var components : Object = _stream.format.components;
-				
-				for each (var component : VertexComponent in components)
-				{
-					if (component.hasField(property))
-						return _prop2stream[property] = stream = _stream.getStreamByComponent(component);
-				}
-				
-				if (!stream)
-					throw new Error("Unable to find vertex component for property '" + property + "'");
-			}
-			
-			return stream;
-		}
-		
-		public function VertexReference(stream 	: IVertexStream,
-								 		index	: int)
+		public function VertexReference(stream 				: IVertexStream,
+								 		index				: int,
+										propertyToStream	: Object = null)
 		{
 			_stream = stream;
 			_index = index;
+			_propToStream = propertyToStream;
 		}		
 	}
 

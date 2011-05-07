@@ -215,7 +215,9 @@ package aerys.minko.type.math
 								at	: Vector4	= null,
 								up	: Vector4	= null) : Matrix4x4
 		{
-			validMatrix3D.pointAt(pos._vector, at._vector, up._vector);
+			validMatrix3D.pointAt(pos._vector,
+								  at ? at._vector : null,
+								  up ? up._vector : null);
 			
 			invalidate();
 			

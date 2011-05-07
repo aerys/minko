@@ -21,7 +21,7 @@ package aerys.minko.render
 		function end() : void;
 		
 		function drawTriangles(offset		: uint	= 0,
-							   numTriangles	: uint	= 0) : void;
+							   numTriangles	: int	= -1) : void;
 		
 		function clear(red 		: Number	= 0.,
 					   green 	: Number	= 0.,

@@ -4,6 +4,8 @@ package aerys.minko.type.vertex
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
+	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.geom.Vector3D;
 	import flash.utils.Proxy;
@@ -13,14 +15,16 @@ package aerys.minko.type.vertex
 	{
 		use namespace minko;
 		
-		private var _index		: int				= 0;
-		private var _offset		: int				= 0;
+		private var _index			: int				= 0;
+		private var _offset			: int				= 0;
 		
-		private var _shallow	: Boolean			= true;
+		private var _shallow		: Boolean			= true;
 		
-		private var _vertex		: VertexReference	= null;
-		private var _vstream	: IVertexStream		= null;
-		private var _istream	: IndexStream		= null;
+		private var _vertex			: VertexReference	= null;
+		private var _vstream		: IVertexStream		= null;
+		private var _istream		: IndexStream		= null;
+		
+		private var _propToStream	: Object			= new Object();
 		
 		public function get length() : int
 		{
@@ -36,13 +40,34 @@ package aerys.minko.type.vertex
 			_vstream = vertexStream;
 			_istream = indexStream;
 			_shallow = shallow;
+			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			var components : Object = _vstream.format.components;
+			
+			for each (var component : VertexComponent in components)
+			{
+				for each (var field : String in component.fields)
+					_propToStream[field] = _vstream.getVertexStreamByComponent(component);
+			}
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
 			var index : int = int(name);
 			
-			return new VertexReference(_vstream, _istream ? _istream._indices[index] : index);
+			if (_istream)
+			{
+				if (index < _istream._indices.length)
+					index = _istream._indices[index];
+				else if (index == _istream._indices.length)
+					_istream._indices[index] = _vstream.length;
+			}
+			
+			return new VertexReference(_vstream, index, _propToStream);
 		}
 		
 		override flash_proxy function deleteProperty(name : *) : Boolean

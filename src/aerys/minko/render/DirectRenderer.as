@@ -11,6 +11,7 @@ package aerys.minko.render
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
+	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
@@ -29,7 +30,7 @@ package aerys.minko.render
 		private var _currentState	: RenderState				= new RenderState();
 		private var _transform		: TransformManager			= new TransformManager();
 		private var _numTriangles	: uint						= 0;
-		private var _viewport		: Viewport				= null;
+		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
@@ -39,7 +40,7 @@ package aerys.minko.render
 		
 		public function get state() 		: RenderState	{ return _state; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
-		public function get viewport()		: Viewport	{ return _viewport; }
+		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
 		public function get frameId()		: uint			{ return _frame; }
 		
@@ -52,15 +53,15 @@ package aerys.minko.render
 		}
 
 		public function drawTriangles(firstIndex	: uint	= 0,
-									  count			: uint	= 0) : void
+									  count			: int	= -1) : void
 		{
 			var indexStream : IndexStream = _state.indexStream; 
 		
-			count ||= indexStream.length / 3;
+//			count ||= indexStream.length / 3;
 			
-			if (indexStream.length == 0 || count == 0)
-				return ;
-		
+			/*if (indexStream.length == 0 || count == 0)
+				return ;*/
+			
 			if (!DIRECT)
 			{
 				_currentSession.renderState = _state;
@@ -79,7 +80,7 @@ package aerys.minko.render
 				
 			}
 			
-			_numTriangles += count;
+			_numTriangles += count == -1 ? indexStream.length / 3. : count;
 		}
 		
 		public function clear(red 		: Number	= 0.,
@@ -110,13 +111,16 @@ package aerys.minko.render
 				state.prepareContext(_context, _currentState);
 				
 				var offsets 		: Vector.<uint>	= _currentSession.offsets;
-				var numTriangles 	: Vector.<uint> = _currentSession.numTriangles;
+				var numTriangles 	: Vector.<int> 	= _currentSession.numTriangles;
 				var numCalls 		: int 			= offsets.length;
 				
 				for (var j : int = 0; j < numCalls; ++j)
-					_context.drawTriangles(state.indexStream.getIndexBuffer3D(_context),
-										   offsets[j],
-										   numTriangles[j]);
+				{
+					var ib : IndexBuffer3D = state.indexStream.getIndexBuffer3D(_context);
+					
+					if (ib)
+						_context.drawTriangles(ib, offsets[j], numTriangles[j]);
+				}
 
 				RENDER_SESSION.free(_currentSession);
 				RENDER_STATE.free(_currentState);

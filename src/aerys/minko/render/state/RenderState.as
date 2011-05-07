@@ -245,7 +245,7 @@ package aerys.minko.render.state
 				
 				if (neededComponent)
 				{
-					var stream : VertexStream = vertexStream.getStreamByComponent(neededComponent);
+					var stream : VertexStream = vertexStream.getVertexStreamByComponent(neededComponent);
 					
 					if (!stream)
 						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
@@ -401,7 +401,7 @@ package aerys.minko.render.state
 						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getVertexBuffer3D(context);
 						var vertexOffset : int				= _vertexOffsets[i];
 						var vertexFormat : String			= _vertexFormats[i];
-					
+						
 						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexFormat);
 					}
 					else 
@@ -464,20 +464,16 @@ package aerys.minko.render.state
 			{
 				// set textures
 				var textureFlag	: uint			= TEXTURE_1 << i;
-				var texture		: TextureBase 	= (_setFlags & textureFlag)
-											  	  ? _textures[i]
-											  	  : null;
+				var texture		: TextureBase 	= (_setFlags & textureFlag) ? _textures[i] : null;
 				
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
 					context.setTextureAt(i, texture);
 				
 				// set vertex buffers
-				var vertexFlag : uint = VERTEX_STREAM_1 << i;
-				var vertexStream : VertexStream	= _setFlags & vertexFlag
-													  ? _vertexStreams[i]
-													  : null;
-				var vertexOffset : int				= _vertexOffsets[i];
-				var vertexFormat : String			= _vertexFormats[i];
+				var vertexFlag 		: uint 				= VERTEX_STREAM_1 << i;
+				var vertexStream 	: VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
+				var vertexOffset 	: int				= _vertexOffsets[i];
+				var vertexFormat 	: String			= _vertexFormats[i];
 				
 				if (!vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
 					context.setVertexBufferAt(i,
@@ -494,6 +490,7 @@ package aerys.minko.render.state
 					if (_depthMask == COMPARE_FLAGS[j])
 					{
 						context.setDepthTest(true, COMPARE_STR[j]);
+						
 						break ;
 					}
 				}

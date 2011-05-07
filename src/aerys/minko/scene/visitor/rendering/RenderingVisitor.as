@@ -117,7 +117,7 @@ package aerys.minko.scene.visitor.rendering
 		public function draw(vertexStreamList 	: VertexStreamList,
 							 indexStream 		: IndexStream,
 							 offset				: uint	= 0,
-							 numTriangles		: uint	= 0) : void
+							 numTriangles		: int	= -1) : void
 		{
 			var numEffects 	: int 					= _fx.length;
 			
@@ -126,9 +126,9 @@ package aerys.minko.scene.visitor.rendering
 			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
-				var fx			: IEffect					= _fx[i];
+				var fx			: IEffect				= _fx[i];
 				var passes		: Vector.<IEffectPass>	= fx.passes;
-				var numPasses 	: int 						= passes.length;
+				var numPasses 	: int 					= passes.length;
 				
 				_styleStack.push(fx.style);
 				fx.begin(_renderer, _styleStack);

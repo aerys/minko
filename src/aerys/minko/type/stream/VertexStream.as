@@ -24,8 +24,9 @@ package aerys.minko.type.stream
 		minko var _version			: uint					= 0;
 		
 		private var _format			: VertexFormat			= null;
+		private var _length			: int					= 0;
 		
-		public function get length() 	: int			{ return _data.length / _format.dwordsPerVertex; }
+		public function get length() 	: int			{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
 		public function get format()	: VertexFormat	{ return _format; }
 		public function get version()	: uint			{ return _version; }
 		public function get dynamic()	: Boolean		{ return _dynamic; }
@@ -39,25 +40,32 @@ package aerys.minko.type.stream
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data.length % _format.dwordsPerVertex)
- 				throw new Error("Incompatible vertex format: the data length does not match");
+ 				throw new Error("Incompatible vertex format: the data length does not match.");
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;
 		}
 		
-		minko function getVertexBuffer3D(context : Context3D) : VertexBuffer3D {
+		minko function getVertexBuffer3D(context : Context3D) : VertexBuffer3D
+		{
+			var currentLength : int = _data ? _data.length / _format.dwordsPerVertex : _length;
 			
-			if (!_nativeBuffer)
+			if ((!_nativeBuffer && _data.length) || _length != currentLength)
+			{
 				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
+				_length = currentLength;
+				_update = true;
+			}
 			
-			if (_update)
+			if (_nativeBuffer && _update)
 			{
 				_update = false;
-				_nativeBuffer.uploadFromVector(_data, 0, length);
+				_nativeBuffer.uploadFromVector(_data, 0, _length);
 				
 				if (!_dynamic)
 					_data = null;
 			}
+			
 			return _nativeBuffer;
 		}
 		
@@ -72,7 +80,7 @@ package aerys.minko.type.stream
 			return true;
 		}
 		
-		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
+		public function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			if (vertexComponent in _format.components)
 				return this;
@@ -80,8 +88,36 @@ package aerys.minko.type.stream
 			return null;
 		}
 		
+		public function push(...data) : void
+		{
+			var dataLength : int = data.length;
+			
+			if (dataLength % _format.dwordsPerVertex)
+				throw new Error("Invalid data length.");
+			
+			for (var i : int = 0; i < dataLength; i++)
+				_data.push(data[i]);
+			
+			++_version;
+			_update = true;
+		}
+		
+		public function pushData(data : Vector.<Number>) : void
+		{
+			var dataLength : int = data.length;
+			
+			if (dataLength % _format.dwordsPerVertex)
+				throw new Error("Invalid data length.");
+			
+			for (var i : int = 0; i < dataLength; i++)
+				_data.push(data[i]);
+			
+			++_version;
+			_update = true;
+		}
+		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,
-												   uvs		 : Vector.<Number>) : VertexStream
+												   uvs		 : Vector.<Number> = null) : VertexStream
 		{
 			var numVertices : int 				= positions.length / 3;
 			var stride 		: int 				= uvs ? 5 : 3;
@@ -113,7 +149,7 @@ package aerys.minko.type.stream
 			var nativeFormats	: Vector.<int>		= new Vector.<int>(numFormats, true);
 			var length			: int				= 0;
 			var tmp				: Vector.<Number>	= null;
-			var stream			: VertexStream	= new VertexStream(null, format);
+			var stream			: VertexStream		= new VertexStream(null, format);
 			
 			for (var k : int = 0; k < numFormats; k++)
 				nativeFormats[k] = format.components[k].nativeFormat;

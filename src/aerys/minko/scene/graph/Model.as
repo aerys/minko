@@ -126,18 +126,19 @@ package aerys.minko.scene.graph
 			_texture = texture;
 		}
 		
-		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void 
+		override protected function visitedByRenderingVisitor(visitor : RenderingVisitor) : void 
 		{
 			if (!_visible)
 				return ;
 			
-			var transform 		: TransformManager 		= query.transform;
+			var transform 		: TransformManager 		= visitor.transform;
 			var numEffects		: int					= _effects.length;
-			var queryEffects	: Vector.<IEffect>		= query.effects;
+			var queryEffects	: Vector.<IEffect>		= visitor.effects;
 			var numQueryEffects	: int					= queryEffects.length;
 			
 			// push world transform
-			transform.world.push().multiply(_transform);
+			transform.world.push()
+						   .multiply(_transform);
 			
 			/*transform.getLocalToScreen(_toScreen);
 			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)
@@ -148,14 +149,14 @@ package aerys.minko.scene.graph
 			// push FXs and style
 			for (var i : int = 0; i < numEffects; ++i)
 				queryEffects.push(_effects[i]);
-			query.style.push(_style);
+			visitor.style.push(_style);
 			
-			_texture && query.query(_texture);
-			_mesh && query.query(_mesh);
+			_texture && visitor.visit(_texture);
+			_mesh && visitor.visit(_mesh);
 			
 			// pop FXs and style
-			query.style.pop();
-			query.effects.length = numQueryEffects;
+			visitor.style.pop();
+			visitor.effects.length = numQueryEffects;
 			
 			// pop world transform
 			transform.world.pop();
