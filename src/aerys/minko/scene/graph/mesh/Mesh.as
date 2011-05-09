@@ -14,7 +14,7 @@ package aerys.minko.scene.graph.mesh
 		private static var _id : uint = 0;
 		
 		protected var _vertexStreamList	: VertexStreamList	= null;
-		protected var _indexStream		: IndexStream			= null;
+		protected var _indexStream		: IndexStream		= null;
 		
 		public function get version() : uint
 		{
@@ -35,20 +35,22 @@ package aerys.minko.scene.graph.mesh
 		{
 			return _indexStream;
 		}
+		
+		public function set indexStream(value : IndexStream) : void
+		{
+			_indexStream = value;
+		}
 
 		public function Mesh(vertexStreamList	: VertexStreamList	= null,
-							   indexStream		: IndexStream 		= null)
+							 indexStream		: IndexStream 		= null)
 		{
 			super();
-			
-			/*if (null == vertexStreamList.getComponentStream(Vertex3DComponent.XYZ))
-				throw new Error('VertexStreamList must contain vertex position component (Vertex3DComponent.XYZ)');*/
 			
 			_vertexStreamList = vertexStreamList;
 			_indexStream = indexStream;
 			
 			if (!_indexStream && _vertexStreamList)
-				_indexStream = IndexStream.dummy(vertexStreamList.length, vertexStreamList.dynamic)
+				_indexStream = new IndexStream(null, vertexStreamList.length, vertexStreamList.dynamic);
 		}
 		
 //		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void

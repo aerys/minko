@@ -28,7 +28,7 @@ package aerys.minko.type.stream
 			return _version;
 		}
 		
-		public function get length() : int			{ return _length; }
+		public function get length() : int	{ return _indices ? _indices.length : _length; }
 		
 		public function set length(value : int) : void
 		{
@@ -36,20 +36,19 @@ package aerys.minko.type.stream
 			_update = true;
 		}
 		
-		public static function dummy(size : int, dynamic : Boolean) : IndexStream
+		public static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>
 		{
-			var indices : Vector.<uint> = new Vector.<uint>();
+			var indices : Vector.<uint> = new Vector.<uint>(size);
 			
-			indices.length = size;
 			for (var i : int = 0; i < size; ++i)
-				indices[i] = i;
+				indices[i] = i + offset;
 			
-			return new IndexStream(indices, size, dynamic);
+			return indices;
 		}
 		
-		public function IndexStream(data 		: Vector.<uint> = null,
-									  length	: uint			= 0,
-									  dynamic	: Boolean		= false)
+		public function IndexStream(data 	: Vector.<uint> = null,
+									length	: uint			= 0,
+									dynamic	: Boolean		= false)
 		{
 			super();
 			
@@ -62,12 +61,18 @@ package aerys.minko.type.stream
 		private function initialize(indices : Vector.<uint>,
 									length 	: uint	= 0) : void
 		{
-			var numIndices : int = Math.min(indices ? indices.length : 0,
-											_length);
-			
-			_indices = new Vector.<uint>(_length, _dynamic);
-			for (var i : int = 0; i < numIndices; ++i)
-				_indices[i] = indices[i];
+			if (indices)
+			{
+				var numIndices : int = Math.min(indices.length, _length);
+				
+				_indices = new Vector.<uint>(numIndices);
+				for (var i : int = 0; i < numIndices; ++i)
+					_indices[i] = indices[i];
+			}
+			else
+			{
+				_indices = dummyData(_length);
+			}
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
@@ -121,9 +126,9 @@ package aerys.minko.type.stream
 		
 		public function concat(myIndexBuffer : IndexStream) : void
 		{
-			var numIndices : int = _indices.length;
-			var toConcat : Vector.<uint> = myIndexBuffer._indices;
-			var numIndices2 : int = toConcat.length;
+			var numIndices 	: int 			= _indices.length;
+			var toConcat 	: Vector.<uint> = myIndexBuffer._indices;
+			var numIndices2 : int 			= toConcat.length;
 			
 			for (var i : int = 0; i < numIndices2; ++i, ++numIndices)
 				_indices[numIndices] = toConcat[i];
@@ -133,21 +138,22 @@ package aerys.minko.type.stream
 		
 		public function push(...parameters) : IndexStream
 		{
-			var numIndices : int = parameters.length;
-			var length : int = length;
+			var numIndices 	: int = parameters.length;
+			var length 		: int = length;
 
 			for (var i : int = 0; i < numIndices; ++i, ++length)
 				_indices[length] = int(parameters[i]);
 			
 			_update = true;
+			++_version;
 			
 			return this;
 		}
 		
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
-			var index : int = int(name);
-			var length : int = length;
+			var index 	: int = int(name);
+			var length 	: int = length;
 			
 			if (index > length)
 				return false;
@@ -157,6 +163,7 @@ package aerys.minko.type.stream
 			
 			_indices.length = length - 1;
 			_update = true;
+			++_version;
 			
 			return true;
 		}
@@ -167,20 +174,21 @@ package aerys.minko.type.stream
 		{
 			var l : int = _indices.length;
 			
-			count ||= indices.length - offset;
+			count ||= indices.length;
 			
 			for (var i : int = 0; i < count; ++i)
-				_indices[int(l++)] = indices[int(offset + i)];
-			
+				_indices[int(l++)] = indices[i] + offset;
+
 			_update = true;
+			++_version;
 		}
 		
 		minko function getIndexBuffer3D(context : Context3D) : IndexBuffer3D
 		{
-			if (!_nativeBuffer && _length)
-				_nativeBuffer = context.createIndexBuffer(_length);
+			if (!_nativeBuffer && _indices.length)
+				_nativeBuffer = context.createIndexBuffer(_indices.length);
 			
-			if (_update)
+			if (_nativeBuffer && _update)
 			{
 				_update = false;
 				

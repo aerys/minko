@@ -33,7 +33,7 @@ package aerys.minko.scene.graph.mesh.modifier
 		{
 			var normalsFormat	: VertexFormat		= VERTEX_FORMAT;
 			
-			var vertexStream	: VertexStream		= vertexStreamList.getStreamByComponent(VertexComponent.XYZ);
+			var vertexStream	: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
 			var vertexOffset	: int 				= vertexStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var vertexLength	: int 				= vertexStream.format.dwordsPerVertex;
 			

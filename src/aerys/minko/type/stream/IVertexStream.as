@@ -9,6 +9,6 @@ package aerys.minko.type.stream
 		function get length() : int;
 		
 		function deleteVertexByIndex(index : int) : Boolean;
-		function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream;
+		function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream;
 	}
 }

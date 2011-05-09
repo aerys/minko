@@ -260,7 +260,7 @@ package aerys.minko.render.state
 				
 				if (neededComponent)
 				{
-					var stream : VertexStream = vertexStream.getStreamByComponent(neededComponent);
+					var stream : VertexStream = vertexStream.getVertexStreamByComponent(neededComponent);
 					
 					if (!stream)
 						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
@@ -425,7 +425,7 @@ package aerys.minko.render.state
 						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getNativeVertexBuffer3D(context);
 						var vertexOffset : int				= _vertexOffsets[i];
 						var vertexFormat : String			= _vertexFormats[i];
-					
+						
 						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexFormat);
 					}
 					else 
@@ -510,15 +510,12 @@ package aerys.minko.render.state
 				var texture				: TextureBase 	= (_setFlags & textureFlag)
 											  	  ? textureRessource.getNativeTexture(context)
 											  	  : null;
-				
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
 					context.setTextureAt(i, texture);
 				
 				// set vertex buffers
 				var vertexFlag : uint = VERTEX_STREAM_1 << i;
-				var vertexStream : VertexStream		= _setFlags & vertexFlag
-													  ? _vertexStreams[i]
-													  : null;
+				var vertexStream : VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
 				var vertexOffset : int				= _vertexOffsets[i];
 				var vertexFormat : String			= _vertexFormats[i];
 				
@@ -537,6 +534,7 @@ package aerys.minko.render.state
 					if (_depthMask == COMPARE_FLAGS[j])
 					{
 						context.setDepthTest(true, COMPARE_STR[j]);
+						
 						break ;
 					}
 				}

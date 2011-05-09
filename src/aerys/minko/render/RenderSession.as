@@ -6,11 +6,11 @@ package aerys.minko.render
 	{
 		private var _renderState	: RenderState		= null;
 		private var _offsets		: Vector.<uint>		= new Vector.<uint>();
-		private var _numTriangles	: Vector.<uint>		= new Vector.<uint>();
+		private var _numTriangles	: Vector.<int>		= new Vector.<int>();
 		
 		public function get renderState()	: RenderState		{ return _renderState; }
 		public function get offsets()		: Vector.<uint>		{ return _offsets; }
-		public function get numTriangles()	: Vector.<uint>		{ return _numTriangles; }
+		public function get numTriangles()	: Vector.<int>		{ return _numTriangles; }
 		
 		public function set renderState(value : RenderState) : void
 		{

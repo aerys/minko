@@ -5,6 +5,7 @@ package aerys.minko.type.vertex.format
 		public static const XYZ		: VertexComponent 	= new VertexComponent(["x", "y", "z"], NativeFormat.FLOAT_3);
 		public static const UV		: VertexComponent 	= new VertexComponent(["u", "v"], NativeFormat.FLOAT_2);
 		public static const RGB		: VertexComponent 	= new VertexComponent(["r", "g", "b"], NativeFormat.FLOAT_3);
+		public static const RGBA	: VertexComponent 	= new VertexComponent(["r", "g", "b", "a"], NativeFormat.FLOAT_4);
 		public static const NORMAL	: VertexComponent 	= new VertexComponent(["nx", "ny", "nz"], NativeFormat.FLOAT_3);
 		public static const ST		: VertexComponent 	= new VertexComponent(["s", "t"], NativeFormat.FLOAT_2);
 		public static const BONE	: VertexComponent	= new VertexComponent(["id", "weight"], NativeFormat.FLOAT_2);
