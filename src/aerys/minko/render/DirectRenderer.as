@@ -27,7 +27,7 @@ package aerys.minko.render
 		private var _currentState	: RenderState				= new RenderState();
 		private var _transform		: TransformManager			= new TransformManager();
 		private var _numTriangles	: uint						= 0;
-		private var _viewport		: Viewport				= null;
+		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
@@ -38,7 +38,7 @@ package aerys.minko.render
 		
 		public function get state() 		: RenderState	{ return _state; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
-		public function get viewport()		: Viewport	{ return _viewport; }
+		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
 		public function get frameId()		: uint			{ return _frame; }
 		
@@ -80,23 +80,23 @@ package aerys.minko.render
 			
 			_numTriangles += count;
 		}
-//		
-//		public function clear(red 		: Number	= 0.,
-//							  green 	: Number	= 0.,
-//							  blue 		: Number	= 0.,
-//							  alpha 	: Number	= 1.,
-//							  depth 	: Number	= 1.,
-//							  stencil	: uint		= 0,
-//							  mask		: uint		= 0xffffffff) : void
-//		{
-////			_context.clear(red, green, blue, alpha, depth, stencil, mask);
-//			_numTriangles = 0;
-//			_drawingTime = 0;
-//			
+		
+		public function clear(red 		: Number	= 0.,
+							  green 	: Number	= 0.,
+							  blue 		: Number	= 0.,
+							  alpha 	: Number	= 1.,
+							  depth 	: Number	= 1.,
+							  stencil	: uint		= 0,
+							  mask		: uint		= 0xffffffff) : void
+		{
+			_context.clear(red, green, blue, alpha, depth, stencil, mask);
+			_numTriangles = 0;
+			_drawingTime = 0;
+			
 //			_rtSessions = new Dictionary(true);
-//			
-//			end();
-//		}
+			
+			end();
+		}
 		
 		public function present() : void
 		{
@@ -170,6 +170,9 @@ package aerys.minko.render
 //				{
 //					_sessions[int(_numSessions++)] = _currentSession;
 //				}
+				
+				if (_currentSession && _currentSession.renderState)
+					_sessions[int(_numSessions++)] = _currentSession;
 				
 				_state = RENDER_STATE.create();
 				_state.clear();

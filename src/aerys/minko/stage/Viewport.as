@@ -286,20 +286,22 @@ package aerys.minko.stage
 				var time : Number = getTimer();
 				
 				_wdExtracterQuery.reset();
-				_renderingQuery.reset();
+				_renderingQuery.reset(_defaultEffect);
 				
+				// recover all WorldObjets' data.
 				_wdExtracterQuery.visit(scene);
-				
 				var worldData : Dictionary = _wdExtracterQuery.worldData;
 				if (worldData[CameraData] != null)
 				{
 					CameraData(worldData[CameraData]).ratio = _width / _height
 				}
 				
+				// render
 				_renderingQuery.updateWorldData(worldData);
 				_renderingQuery.visit(scene);
 				
 				_renderer.present();
+				//_renderer.clear();
 				
 				_sceneSize = _renderingQuery.numNodes;
 				

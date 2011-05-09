@@ -411,6 +411,7 @@ package aerys.minko.render.state
 					if (_setFlags & (TEXTURE_1 << i))
 					{
 						var texture : Texture = _textures[i].getNativeTexture(context);
+						
 						context.setTextureAt(i, texture);
 					}
 					else
@@ -459,7 +460,7 @@ package aerys.minko.render.state
 						var antialiasing		: int		= _renderTarget.antiAliasing;
 						
 						context.setRenderToTexture(renderTexture, useDepthAndStencil, antialiasing);
-						context.clear(0);
+						context.clear();
 					}
 				}
 			}
@@ -515,7 +516,7 @@ package aerys.minko.render.state
 				
 				// set vertex buffers
 				var vertexFlag : uint = VERTEX_STREAM_1 << i;
-				var vertexStream : VertexStream	= _setFlags & vertexFlag
+				var vertexStream : VertexStream		= _setFlags & vertexFlag
 													  ? _vertexStreams[i]
 													  : null;
 				var vertexOffset : int				= _vertexOffsets[i];

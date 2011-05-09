@@ -66,12 +66,22 @@ package aerys.minko.scene.visitor.rendering
 		}
 		
 		
-		public function reset() : void
+		public function reset(defaultEffect : IEffect) : void
 		{
-//			_renderer.clear();
+			_renderer.clear();
 			_worldData		= null;
 			_numNodes		= 0;
 			++_frameId;
+			
+			if (defaultEffect)
+			{
+				_fx.length = 1;
+				_fx[0] = defaultEffect;
+			}
+			else
+			{
+				_fx.length = 0;
+			}
 		}
 		
 		public function updateWorldData(worldData : Dictionary) : void
