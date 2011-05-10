@@ -34,7 +34,7 @@ package aerys.minko.type.vertex.format
 				addComponent(component);
 		}
 		
-		private function addComponent(component : VertexComponent) : void
+		public function addComponent(component : VertexComponent) : void
 		{
 			_components[component.implodedFields] = component;
 			_componentOffsets[component.implodedFields] = _dwordsPerVertex;
@@ -79,7 +79,7 @@ package aerys.minko.type.vertex.format
 			return _componentOffsets[component.implodedFields];
 		}
 		
-		public function getOffsetForField(fieldName:String) : int
+		public function getOffsetForField(fieldName : String) : int
 		{ 
 			return _fieldOffsets[fieldName];
 		}
