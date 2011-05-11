@@ -20,6 +20,8 @@ package aerys.minko.stage
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
+	import flash.events.FullScreenEvent;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
@@ -35,8 +37,11 @@ package aerys.minko.stage
 	{
 		use namespace minko;
 		
+		private static const ZERO2		: Point						= new Point();
+		
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
+		private var _autoResize			: Boolean					= false;
 		
 		private var _version			: uint						= 0;
 		
@@ -58,6 +63,18 @@ package aerys.minko.stage
 		public function get version() : uint
 		{
 			return _version;
+		}
+		
+		override public function set x(value : Number) : void
+		{
+			super.x = value;
+			updateRectangle();
+		}
+		
+		override public function set y(value : Number) : void
+		{
+			super.y = value;
+			updateRectangle();
 		}
 		
 		/**
@@ -187,46 +204,23 @@ package aerys.minko.stage
 		 * @param width The width of the viewport.
 		 * @param height The height of the viewport.
 		 */
-		public function Viewport(width			: Number,
-								   height		: Number,
-								   antiAliasing	: int	= 0,
-								   rendererType	: Class = null)
+		public function Viewport(width			: uint		= 0,
+								 height			: uint		= 0,
+								 autoResize		: Boolean	= false,
+								 antiAliasing	: int		= 0,
+								 rendererType	: Class 	= null)
 		{
 			this.width = width;
 			this.height = height;
 			
+			_autoResize = autoResize;
 			_aa = antiAliasing;
 			_rendererClass = rendererType || DirectRenderer;
+			
+			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 		}
 		
-		/**
-		 * Create a new Viewport3D object and setup the stage accordingly.
-		 * 
-		 * <ul>
-		 * <li>The resulting Viewport3D object will have the dimensions of the stage.</li>
-		 * <li>The resulting Viewport3D object listens to the Event.RESIZE event of the stage
-		 * in order to update its dimensions.</li>
-		 * <li>The stage "scaleMode" property is set to StageScaleMode.NO_SCALE.</li>
-		 * <li>The stage "align" property is set to StageAlign.TOP_LEFT.</li>
-		 * </ul>
-		 *  
-		 * @param stage
-		 * @param antiAliasing
-		 * @return 
-		 * 
-		 */
-		public static function setupOnStage(stage : Stage, antiAliasing : int = 0) : Viewport
-		{
-			var vp : Viewport = new Viewport(stage.stageWidth,
-											 stage.stageHeight,
-											 antiAliasing);
-			
-			vp.setupOnStage(stage);
-			
-			return vp;
-		}
-		
-		private function setupOnStage(stage : Stage, autoResize : Boolean = true) : void
+		private function addedToStageHandler(event : Event) : void
 		{
 			stage.addChild(this);
 			stage.scaleMode = StageScaleMode.NO_SCALE;
@@ -234,11 +228,13 @@ package aerys.minko.stage
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 			
-			if (autoResize)
+			if (_autoResize)
+			{
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
-			
-			width = stage.stageWidth;
-			height = stage.stageHeight;
+				
+				width = stage.stageWidth;
+				height = stage.stageHeight;
+			}
 			
 			showLogo();
 		}
@@ -265,13 +261,23 @@ package aerys.minko.stage
 		{
 			if (_context)
 			{
-				stage.stage3Ds[0].viewPort = new Rectangle(x, y, _width, _height);
+				updateRectangle();
 				_context.configureBackBuffer(_width, _height, _aa, true);
 				
 				_renderer = new DirectRenderer(this, _context);
 				
 				_wdExtracterQuery = new WorldDataExtracterVisitor();
 				_renderingQuery = new RenderingVisitor(_renderer);
+			}
+		}
+		
+		private function updateRectangle() : void
+		{
+			if (_context)
+			{
+				var origin : Point = localToGlobal(ZERO2);
+				
+				stage.stage3Ds[0].viewPort = new Rectangle(origin.x, origin.y, _width, _height);
 			}
 		}
 		
@@ -317,8 +323,8 @@ package aerys.minko.stage
 			}
 
 			showLogo();
-		}	
-	
+		}
+		
 		public function showLogo() : void
 		{
 			var logo : Sprite = Minko.logo;
@@ -326,7 +332,7 @@ package aerys.minko.stage
 			addChild(logo);
 			
 			logo.x = 5;
-			logo.y = stage.stageHeight - logo.height - 5;
+			logo.y = _height - logo.height - 5;
 		}
 	}
 }
