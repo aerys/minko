@@ -45,7 +45,7 @@ package aerys.minko.stage
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
 		private var _autoResize			: Boolean					= false;
-		private var _antiAliasing					: int						= 0;
+		private var _antiAliasing		: int						= 0;
 		
 		private var _wdExtracterQuery	: WorldDataExtracterVisitor	= null;
 		private var _renderingQuery		: RenderingVisitor			= null;
@@ -216,13 +216,21 @@ package aerys.minko.stage
 			_rendererClass = rendererType || DirectRenderer;
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
 			addEventListener(Event.ADDED, addedHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
 		{
-			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
-			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
+			var stageId	: int 		= 0;
+			
+			_stage3d = stage.stage3Ds[stageId];
+			
+			while (_stage3d.willTrigger(Event.CONTEXT3D_CREATE))
+				_stage3d = stage.stage3Ds[int(++stageId)];
+			
+			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+			_stage3d.requestContext3D(Context3DRenderMode.AUTO);
 			
 			if (_autoResize)
 			{
@@ -235,6 +243,13 @@ package aerys.minko.stage
 			}
 			
 			showLogo();
+		}
+		
+		private function removedFromStage(event : Event) : void
+		{
+			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+			_stage3d.context3D.dispose();
+			_stage3d = null;
 		}
 		
 		private function addedHandler(event : Event) : void
@@ -255,16 +270,9 @@ package aerys.minko.stage
 			showLogo();
 		}
 		
-		private function contextCreatedHandler(event : Event) : void
-		{
-			_stage3d = stage.stage3Ds[0];
-			
-			resetStage3D();
-		}
-		
 		private function resetStage3D(event : Event = null) : void
 		{
-			if (_stage3d)
+			if (_stage3d && _stage3d.context3D)
 			{
 				updateRectangle();
 				_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
