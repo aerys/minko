@@ -125,7 +125,7 @@ package aerys.minko.scene.graph.camera
 			var cameraData 		: CameraData	= CAMERA_DATA.create(true);
 			var worldMatrix		: Matrix4x4		= transformManager.world;
 			var worldPosition	: Vector4		= worldMatrix.multiplyVector(_position);
-			var worldLookAt		: Vector4		= worldMatrix.deltaMultiplyVector(_lookAt);
+			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(_lookAt);
 			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(_up).normalize();
 			
 			cameraData.reset();
