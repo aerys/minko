@@ -58,9 +58,12 @@ package aerys.minko.scene.visitor.rendering
 	
 		protected function queryIWorldObject(worldObject : IWorldObject) : void
 		{
-			var worldObjectClass		: Class			= Object(worldObject).constructor;
-			
 			var worldObjectData			: IWorldData	= worldObject.getData(_tm);
+			
+			if (!worldObjectData)
+				return ;
+			
+			var worldObjectClass		: Class			= Object(worldObject).constructor;
 			var worldObjectDataClass	: Class			= Object(worldObjectData).constructor;
 			
 			if (worldObject.isSingle)
@@ -81,8 +84,9 @@ package aerys.minko.scene.visitor.rendering
 			for (var childIndex : uint = 0; true; ++childIndex)
 			{
 				var child : IScene = groupObject.getChildAt(childIndex);
+				
 				if (child == null)
-					break;
+					break ;
 				
 				visit(child);
 			}

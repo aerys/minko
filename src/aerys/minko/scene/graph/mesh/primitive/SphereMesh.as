@@ -17,8 +17,8 @@ package aerys.minko.scene.graph.mesh.primitive
 			return _instance || (_instance = new SphereMesh());
 		}
 		
-		public function SphereMesh(numParallels : uint = DEFAULT_NUM_PARALLELS,
-								   	 numMeridians : uint = 0)
+		public function SphereMesh(numParallels : uint 		= DEFAULT_NUM_PARALLELS,
+								   numMeridians : uint 		= 0)
 		{
 			numMeridians ||= numParallels;
 			
@@ -33,7 +33,7 @@ package aerys.minko.scene.graph.mesh.primitive
 			var k			: int				= 0;
 			var j			: int				= 0;
 			var i			: int				= 0;
-			
+	
 			for (j = 1; j < numParallels - 1; j++)
 			{
 				for (i = 0; i < numMeridians + 1; i++, c += 3, k += 2)

@@ -2,6 +2,7 @@ package aerys.minko.scene.visitor.rendering
 {
 	import aerys.minko.effect.IEffect;
 	import aerys.minko.effect.IEffectPass;
+	import aerys.minko.effect.IEffectTarget;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.ressource.IRessource;
@@ -94,6 +95,7 @@ package aerys.minko.scene.visitor.rendering
 			// update our transformManager if there is a camera, or
 			// set it to null to render to screenspace otherwise
 			var cameraData : CameraData = worldData[CameraData] as CameraData;
+			
 			if (cameraData)
 			{
 				_tm.view		= cameraData.view;
@@ -107,7 +109,7 @@ package aerys.minko.scene.visitor.rendering
 		{
 			var transformObject : ITransformable	= scene as ITransformable;
 			var styleObject		: IStyled			= scene as IStyled;
-			var effectObject	: EffectGroup		= scene as EffectGroup;
+			var effectObject	: IEffectTarget		= scene as IEffectTarget;
 			
 			// push transform, style and effect
 			pushData(transformObject, styleObject, effectObject);
@@ -140,7 +142,7 @@ package aerys.minko.scene.visitor.rendering
 		
 		protected function pushData(transformObject	: ITransformable, 
 									styleObject		: IStyled, 
-									effectObject	: EffectGroup) : void
+									effectObject	: IEffectTarget) : void
 		{
 			
 			if (transformObject)
@@ -156,7 +158,7 @@ package aerys.minko.scene.visitor.rendering
 		
 		protected function popData(transformObject	: ITransformable, 
 								   styleObject		: IStyled, 
-								   effectObject		: EffectGroup) : void
+								   effectObject		: IEffectTarget) : void
 		{
 			if (transformObject)
 				_tm.world.pop();
@@ -167,6 +169,7 @@ package aerys.minko.scene.visitor.rendering
 			if (effectObject)
 			{
 				var effectCount : uint = effectObject.effects.length;
+				
 				while (effectCount--)
 					_fx.pop();
 			}
@@ -187,13 +190,13 @@ package aerys.minko.scene.visitor.rendering
 		protected function queryIMesh(scene : IMesh) : void
 		{
 			for each (var worldObject : IWorldData in _worldData)
-				worldObject.invalidate();
+				worldObject && worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
 			var vertexStreamList 	: VertexStreamList	= scene.vertexStreamList;
 			var indexStream 		: IndexStream		= scene.indexStream;
+			var numEffects 			: int 				= _fx.length;
 			
-			var numEffects 	: int = _fx.length;
 			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
 			

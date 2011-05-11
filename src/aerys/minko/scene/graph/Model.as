@@ -2,6 +2,7 @@ package aerys.minko.scene.graph
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.effect.IEffect;
+	import aerys.minko.effect.IEffectTarget;
 	import aerys.minko.effect.basic.BasicEffect;
 	import aerys.minko.ns.minko;
 	import aerys.minko.scene.graph.mesh.IMesh;
@@ -26,7 +27,7 @@ package aerys.minko.scene.graph
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements IScene, ITransformable, IStyled, IVersionnable
+	public class Model extends AbstractScene implements IScene, ITransformable, IStyled, IVersionnable, IEffectTarget
 	{
 		use namespace minko;
 		

@@ -1,6 +1,7 @@
 package aerys.minko.scene.graph.group
 {
 	import aerys.minko.effect.IEffect;
+	import aerys.minko.effect.IEffectTarget;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 
 	/**
@@ -9,7 +10,7 @@ package aerys.minko.scene.graph.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class EffectGroup extends StyleGroup
+	public class EffectGroup extends StyleGroup implements IEffectTarget
 	{
 		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
 		
