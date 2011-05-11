@@ -45,7 +45,7 @@ package aerys.minko.stage
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
 		private var _autoResize			: Boolean					= false;
-		private var _aa					: int						= 0;
+		private var _antiAliasing					: int						= 0;
 		
 		private var _wdExtracterQuery	: WorldDataExtracterVisitor	= null;
 		private var _renderingQuery		: RenderingVisitor			= null;
@@ -131,14 +131,14 @@ package aerys.minko.stage
 		 */
 		public function get antiAliasing() : int
 		{
-			return _aa;
+			return _antiAliasing;
 		}
 		
 		public function set antiAliasing(value : int) : void
 		{
-			if (value != _aa)
+			if (value != _antiAliasing)
 			{
-				_aa = value;
+				_antiAliasing = value;
 				++_version;
 				
 				resetStage3D();
@@ -205,15 +205,14 @@ package aerys.minko.stage
 		 */
 		public function Viewport(width			: uint		= 0,
 								 height			: uint		= 0,
-								 autoResize		: Boolean	= false,
 								 antiAliasing	: int		= 0,
 								 rendererType	: Class 	= null)
 		{
 			this.width = width;
 			this.height = height;
 			
-			_autoResize = autoResize;
-			_aa = antiAliasing;
+			_autoResize = _width == 0 || _height == 0;
+			_antiAliasing = antiAliasing;
 			_rendererClass = rendererType || DirectRenderer;
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
@@ -227,6 +226,8 @@ package aerys.minko.stage
 			
 			if (_autoResize)
 			{
+				stage.align = StageAlign.TOP_LEFT;
+				stage.scaleMode = StageScaleMode.NO_SCALE;
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 				
 				width = stage.stageWidth;
@@ -251,6 +252,7 @@ package aerys.minko.stage
 				height = stage.stageHeight;
 			
 			resetStage3D();
+			showLogo();
 		}
 		
 		private function contextCreatedHandler(event : Event) : void
@@ -265,7 +267,7 @@ package aerys.minko.stage
 			if (_stage3d)
 			{
 				updateRectangle();
-				_stage3d.context3D.configureBackBuffer(_width, _height, _aa, true);
+				_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
 				
 				_renderer = new DirectRenderer(this, _stage3d.context3D);
 				
