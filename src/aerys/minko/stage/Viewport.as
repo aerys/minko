@@ -15,6 +15,7 @@ package aerys.minko.stage
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
+	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
@@ -39,11 +40,12 @@ package aerys.minko.stage
 		
 		private static const ZERO2		: Point						= new Point();
 		
+		private var _version			: uint						= 0;
+		
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
 		private var _autoResize			: Boolean					= false;
-		
-		private var _version			: uint						= 0;
+		private var _aa					: int						= 0;
 		
 		private var _wdExtracterQuery	: WorldDataExtracterVisitor	= null;
 		private var _renderingQuery		: RenderingVisitor			= null;
@@ -52,13 +54,10 @@ package aerys.minko.stage
 		private var _sceneSize			: uint						= 0;
 		private var _drawTime			: int						= 0;
 		
+		private var _stage3d			: Stage3D					= null;
 		private var _rendererClass		: Class						= null;
 		private var _renderer			: IRenderer					= null;
-		private var _context			: Context3D					= null;
-		
-		private var _aa					: int						= 0;
-		
-		private var _defaultEffect	: IEffect			= new BasicEffect();
+		private var _defaultEffect		: IEffect					= new BasicEffect();
 		
 		public function get version() : uint
 		{
@@ -94,7 +93,7 @@ package aerys.minko.stage
 				_width = value;
 				++_version;
 				
-				resetContext3D();
+				resetStage3D();
 			}
 		}
 		
@@ -120,7 +119,7 @@ package aerys.minko.stage
 				_height = value;
 				++_version;
 				
-				resetContext3D();
+				resetStage3D();
 			}
 		}
 		
@@ -142,7 +141,7 @@ package aerys.minko.stage
 				_aa = value;
 				++_version;
 				
-				resetContext3D();
+				resetStage3D();
 			}
 		}
 		
@@ -195,7 +194,7 @@ package aerys.minko.stage
 		
 		public function get renderMode() : String
 		{
-			return _context ? _context.driverInfo : null;
+			return _stage3d ? _stage3d.context3D.driverInfo : null;
 		}
 
 		/**
@@ -218,13 +217,11 @@ package aerys.minko.stage
 			_rendererClass = rendererType || DirectRenderer;
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			addEventListener(Event.ADDED, addedHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
 		{
-			stage.addChild(this);
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
 			stage.stage3Ds[0].addEventListener(Event.CONTEXT3D_CREATE, contextCreatedHandler);
 			stage.stage3Ds[0].requestContext3D(Context3DRenderMode.AUTO);
 			
@@ -239,6 +236,11 @@ package aerys.minko.stage
 			showLogo();
 		}
 		
+		private function addedHandler(event : Event) : void
+		{
+			updateRectangle();
+		}
+		
 		private function stageResizeHandler(event : Event) : void
 		{
 			var stage : Stage = event.target as Stage;
@@ -248,23 +250,24 @@ package aerys.minko.stage
 			if (stage.stageHeight)
 				height = stage.stageHeight;
 			
-			resetContext3D();
+			resetStage3D();
 		}
 		
 		private function contextCreatedHandler(event : Event) : void
 		{
-			_context = stage.stage3Ds[0].context3D;
-			resetContext3D();
+			_stage3d = stage.stage3Ds[0];
+			
+			resetStage3D();
 		}
 		
-		private function resetContext3D(event : Event = null) : void
+		private function resetStage3D(event : Event = null) : void
 		{
-			if (_context)
+			if (_stage3d)
 			{
 				updateRectangle();
-				_context.configureBackBuffer(_width, _height, _aa, true);
+				_stage3d.context3D.configureBackBuffer(_width, _height, _aa, true);
 				
-				_renderer = new DirectRenderer(this, _context);
+				_renderer = new DirectRenderer(this, _stage3d.context3D);
 				
 				_wdExtracterQuery = new WorldDataExtracterVisitor();
 				_renderingQuery = new RenderingVisitor(_renderer);
@@ -273,11 +276,11 @@ package aerys.minko.stage
 		
 		private function updateRectangle() : void
 		{
-			if (_context)
+			if (_stage3d)
 			{
 				var origin : Point = localToGlobal(ZERO2);
 				
-				stage.stage3Ds[0].viewPort = new Rectangle(origin.x, origin.y, _width, _height);
+				_stage3d.viewPort = new Rectangle(origin.x, origin.y, _width, _height);
 			}
 		}
 		
