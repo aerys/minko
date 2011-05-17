@@ -59,11 +59,9 @@ package aerys.minko.scene.visitor.rendering
 		protected function queryIWorldObject(worldObject : IWorldObject) : void
 		{
 			var worldObjectData			: IWorldData	= worldObject.getData(_tm);
+			if (worldObjectData == null)
+				return;
 			
-			if (!worldObjectData)
-				return ;
-			
-			var worldObjectClass		: Class			= Object(worldObject).constructor;
 			var worldObjectDataClass	: Class			= Object(worldObjectData).constructor;
 			
 			if (worldObject.isSingle)

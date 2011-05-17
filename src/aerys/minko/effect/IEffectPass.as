@@ -9,10 +9,10 @@ package aerys.minko.effect
 
 	public interface IEffectPass
 	{
-		function fillRenderState(state	: RenderState,
-								 style	: StyleStack, 
-								 local	: TransformData, 
-								 world	: Dictionary) : Boolean;
+		function fillRenderState(state		: RenderState,
+								 styleStack	: StyleStack, 
+								 local		: TransformData, 
+								 world		: Dictionary) : Boolean;
 	}
 
 }

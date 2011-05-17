@@ -38,6 +38,9 @@ package aerys.minko.scene.visitor.data
 		protected var _localToScreen_localToViewVersion 	: uint;
 		protected var _localToScreen_projectionVersion		: uint;
 		
+		protected var _localToUv							: Matrix4x4;
+		protected var _localToUv_localToScreenVersion		: uint;
+		
 		public function get view() : Matrix4x4
 		{
 			return _tm.view;
@@ -110,8 +113,33 @@ package aerys.minko.scene.visitor.data
 			return _localToScreen;
 		}
 		
+		/**
+		 * FIXME URGENTLY I'M A KLUDGE OUT OF LAZINESS
+		 */
+		public function get screentoUv() : Matrix4x4
+		{
+			var offset : Number = 0.5 + (0.5 / 2048);
+			return new Matrix4x4(
+				0.5,		0.0,		0.0,	0.0,
+				0.0, 		-0.5,		0.0,	0.0,
+				0.0,		0.0,		1.0,	0.0,
+				offset, 	offset,		0.0, 	1.0
+			);
+		}
 		
-		
+		public function get localToUv() : Matrix4x4
+		{
+			var localToScreenMatrix : Matrix4x4 = localToScreen;
+			var screenToUvMatrix	: Matrix4x4 = screentoUv;
+			
+			if (_localToUv_localToScreenVersion != localToScreenMatrix.version)
+			{
+				_localToUv = Matrix4x4.multiply(screenToUvMatrix, localToScreenMatrix);
+				_localToUv_localToScreenVersion = localToScreenMatrix.version;
+			}
+			
+			return _localToUv;
+		}
 		
 		public function TransformData(transformManager : TransformManager)
 		{
