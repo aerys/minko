@@ -110,6 +110,7 @@ package aerys.minko.scene.visitor.data
 				_localToScreen_localToViewVersion	= localToViewMatrix.version;
 				_localToScreen_projectionVersion	= projectionMatrix.version;
 			}
+			
 			return _localToScreen;
 		}
 		
@@ -144,20 +145,21 @@ package aerys.minko.scene.visitor.data
 		public function TransformData(transformManager : TransformManager)
 		{
 			_tm = transformManager;
+			
 			reset();
 		}
 		
 		public function reset() : void
 		{
-//			_viewInverse_viewVersion = uint.MAX_VALUE;
-//			
-//			_worldInverse_worldVersion = uint.MAX_VALUE;
-//			
-//			_localToView_viewInverseVersion = uint.MAX_VALUE;
-//			_localToView_worldVersion = uint.MAX_VALUE;
-//			
-//			_localToScreen_localToViewVersion = uint.MAX_VALUE;
-//			_localToScreen_projectionVersion = uint.MAX_VALUE;
+			_viewInverse_viewVersion = uint.MAX_VALUE;
+			
+			_worldInverse_worldVersion = uint.MAX_VALUE;
+			
+			_localToView_viewVersion = uint.MAX_VALUE;
+			_localToView_worldVersion = uint.MAX_VALUE;
+			
+			_localToScreen_localToViewVersion = uint.MAX_VALUE;
+			_localToScreen_projectionVersion = uint.MAX_VALUE;
 		}
 		
 	}

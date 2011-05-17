@@ -114,7 +114,7 @@ package aerys.minko.render
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
 				_currentSession = _sessions[i];
-				
+
 				var state	: RenderState 	= _currentSession.renderState;
 				
 				state.prepareContext(_context, _currentState);

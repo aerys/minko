@@ -25,6 +25,9 @@ package aerys.minko.scene.visitor.data
 		public static const LOCAL_POSITION	: String = 'localPosition';
 		public static const LOCAL_LOOK_AT	: String = 'localLookAt';
 		
+		public static const DIRECTION		: String = 'direction';
+		public static const LOCAL_DIRECTION	: String = 'localDirection';
+		
 		public static const FRUSTUM			: String = 'frustum';
 		
 		// local data provider
@@ -166,8 +169,17 @@ package aerys.minko.scene.visitor.data
 			return _localLookAt;
 		}
 		
+		public function get localDirection() : Vector4
+		{
+			// FIXME: handle cache
+			return Vector4.subtract(localPosition, localLookAt).normalize();
+		}
 		
-		
+		public function get direction() : Vector4
+		{
+			// FIXME: handle cache
+			return Vector4.subtract(position, lookAt).normalize();
+		}
 		
 		public function set ratio(v : Number) : void
 		{
@@ -245,6 +257,8 @@ package aerys.minko.scene.visitor.data
 			
 			_zFarParts_invalidated	= true;
 			_projection_invalidated = true;
+			
+			_transformData && _transformData.reset();
 		}
 	}
 }

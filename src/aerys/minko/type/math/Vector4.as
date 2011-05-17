@@ -98,14 +98,16 @@ package aerys.minko.type.math
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
-								w 	: Number	= 0.)
+								w 	: Number	= NaN)
 		{
-			_vector.x = x;
-			_vector.y = y;
-			_vector.z = z;
-			_vector.w = w;
-			
-			_update = UPDATE_ALL;
+			if (x)
+				this.x = x;
+			if (y)
+				this.y = y;
+			if (z)
+				this.z = z;
+			if (!isNaN(w))
+				this.w = w;
 		}
 		
 		public static function add(u 	: Vector4,
