@@ -21,7 +21,7 @@ package aerys.minko.render
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		private static const DIRECT			: Boolean			= false;
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _state			: RenderState				= new RenderState();
@@ -114,7 +114,7 @@ package aerys.minko.render
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
 				_currentSession = _sessions[i];
-				
+
 				var state	: RenderState 	= _currentSession.renderState;
 				
 				state.prepareContext(_context, _currentState);

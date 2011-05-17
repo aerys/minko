@@ -58,6 +58,7 @@ package aerys.minko.stage
 		private var _rendererClass		: Class						= null;
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IEffect					= new BasicEffect();
+		private var _backgroundColor	: int						= 0;
 		
 		public function get version() : uint
 		{
@@ -197,6 +198,16 @@ package aerys.minko.stage
 			return _stage3d ? _stage3d.context3D.driverInfo : null;
 		}
 
+		public function get backgroundColor() : int
+		{
+			return _backgroundColor;
+		}
+		
+		public function set backgroundColor(value : int) : void
+		{
+			_backgroundColor = value;
+		}
+		
 		/**
 		 * Creates a new Viewport3D object.
 		 *
@@ -305,7 +316,7 @@ package aerys.minko.stage
 				var time : Number = getTimer();
 				
 				_wdExtracterQuery.reset();
-				_renderingQuery.reset(_defaultEffect);
+				_renderingQuery.reset(_defaultEffect, _backgroundColor);
 				
 				// recover all WorldObjets' data.
 				_wdExtracterQuery.visit(scene);

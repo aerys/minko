@@ -4,20 +4,27 @@ package aerys.minko.type.math
 
 	public class ConstVector4 extends Vector4
 	{
+		use namespace minko;
+		
 		private static const ERROR	: String	= "ConstVector4 objects can not be modified.";
 		
 		public static const X_AXIS	: Vector4	= new ConstVector4(1., 0., 0.);
 		public static const Y_AXIS	: Vector4	= new ConstVector4(0., 1., 0.);
 		public static const Z_AXIS	: Vector4	= new ConstVector4(0., 0., 1.);
 		public static const ZERO	: Vector4	= new ConstVector4();
-		public static const ONE		: Vector4	= new ConstVector4(1., 1., 1.);
+		public static const ONE		: Vector4	= new ConstVector4(1., 1., 1., 1.);
 		
 		public function ConstVector4(x : Number = 0.,
 									 y : Number = 0.,
 									 z : Number = 0.,
-									 w : Number = 0.)
+									 w : Number = NaN)
 		{
-			super(x, y, z, w);
+			super();
+			
+			_vector.x = x;
+			_vector.y = y;
+			_vector.z = z;
+			_vector.w = w;
 		}
 		
 		override public function set x(value : Number) : void		{ throw new Error(ERROR); }

@@ -67,9 +67,12 @@ package aerys.minko.scene.visitor.rendering
 		}
 		
 		
-		public function reset(defaultEffect : IEffect) : void
+		public function reset(defaultEffect : IEffect, color : int = 0) : void
 		{
-			_renderer.clear();
+			_renderer.clear(((color >> 16) & 0xff) / 255.,
+							((color >> 8) & 0xff) / 255.,
+							(color & 0xff) / 255.);
+			
 			_worldData		= null;
 			_numNodes		= 0;
 			++_frameId;
