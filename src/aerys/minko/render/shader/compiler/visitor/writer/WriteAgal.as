@@ -1,6 +1,5 @@
 package aerys.minko.render.shader.compiler.visitor.writer
 {
-	import aerys.minko.render.shader.compiler.AgalCompiler;
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
 	import aerys.minko.render.shader.compiler.register.RegisterMask;
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
@@ -10,13 +9,10 @@ package aerys.minko.render.shader.compiler.visitor.writer
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
-	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	
-	import flash.net.registerClassAlias;
+	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	
 	public class WriteAgal implements IShaderNodeVisitor
 	{

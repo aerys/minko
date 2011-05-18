@@ -2,8 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.render.shader.compiler.AgalCompiler;
-	import aerys.minko.render.shader.compiler.ByteCodeCompiler;
+	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
@@ -15,7 +14,9 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.visitor.data.TransformData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
+	import aerys.minko.type.vertex.format.VertexComponent;
 	
+	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
 	public class DynamicShader extends Shader
@@ -28,24 +29,30 @@ package aerys.minko.render.shader
 		protected var _fsParams		: Vector.<ParameterAllocation>;
 		protected var _samplers		: Vector.<String>;
 		
-		public function DynamicShader(vsOp : INode, fsOp : INode)
+		public static function create(clipspacePosition	: INode,
+									  color				: INode) : DynamicShader
 		{
-			var agalDebugCompiler : AgalCompiler = new AgalCompiler();
-			agalDebugCompiler.compile(vsOp, fsOp);
+			var compiler : Compiler = new Compiler();
+			compiler.load(clipspacePosition, color);
+			return compiler.compileShader();
+		}
+		
+		public function DynamicShader(vertexShader					: ByteArray,
+									  fragmentShader				: ByteArray,
+									  vertexInput					: Vector.<VertexComponent>,
+									  vertexShaderConstantData		: Vector.<Number>,
+									  fragmentShaderConstantData	: Vector.<Number>,
+									  vertexShaderParameters		: Vector.<ParameterAllocation>,
+									  fragmentShaderParameters		: Vector.<ParameterAllocation>,
+									  samplers						: Vector.<String>)
+		{
+			_vsConstData	= vertexShaderConstantData;
+			_fsConstData	= fragmentShaderConstantData;
+			_vsParams		= vertexShaderParameters;
+			_fsParams		= fragmentShaderParameters;
+			_samplers		= samplers;
 			
-			trace("vertexShader\n", agalDebugCompiler.vertexShaderAgal);
-			trace("fragmentShader\n", agalDebugCompiler.fragmentShaderAgal);
-			
-			var compiler : ByteCodeCompiler = new ByteCodeCompiler();
-			compiler.compile(vsOp, fsOp);
-			
-			_vsConstData	= compiler.vsConstData;
-			_fsConstData	= compiler.fsConstData;
-			_vsParams		= compiler.vsParams;
-			_fsParams		= compiler.fsParams;
-			_samplers		= compiler.samplers;
-			
-			super(compiler.vertexShader, compiler.fragmentShader, compiler.vertexInput);
+			super(vertexShader, fragmentShader, vertexInput);
 		}
 		
 		public function setTextures(styleStack	: StyleStack,

@@ -16,7 +16,7 @@ package aerys.minko.effect.basic
 	public class BasicPass implements IEffectPass
 	{
 		protected static const SHADER	: DynamicShader = 
-			new DynamicShader(new ClipspacePosition(), new DiffuseMapTexture());
+			DynamicShader.create(new ClipspacePosition(), new DiffuseMapTexture());
 		
 		protected var _priority			: Number;
 		protected var _renderTarget		: RenderTarget;

@@ -5,11 +5,21 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 	
 	public class DebugVisitor implements IShaderNodeVisitor
 	{
+		protected var _errors : String;
+		
 		public function DebugVisitor()
 		{
 		}
 		
-		public function visit(shaderNode:INode):void
+		public function processShader(clipspacePos	: INode, 
+									  color			: INode) : String
+		{
+			_errors = '';
+			
+			return _errors;
+		}
+		
+		public function visit(node : INode):void
 		{
 			/*
 			from vertex preprocessor

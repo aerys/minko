@@ -17,7 +17,7 @@ package aerys.minko.effect.common
 	public class NormalPass implements IEffectPass
 	{
 		protected static const SHADER : DynamicShader = 
-			new DynamicShader(new ClipspacePosition(), new WorldNormal().interpolated);
+			DynamicShader.create(new ClipspacePosition(), new WorldNormal().interpolated);
 		
 		protected var _priority		: Number;
 		protected var _renderTarget : RenderTarget;

@@ -17,7 +17,7 @@ package aerys.minko.effect.common
 	public class DepthPass implements IEffectPass
 	{
 		protected static var SHADER : DynamicShader = 
-			new DynamicShader(new ClipspacePosition(), new PackedDepth());
+			DynamicShader.create(new ClipspacePosition(), new PackedDepth());
 		
 		protected var _priority				: Number;
 		protected var _renderTarget			: RenderTarget;
