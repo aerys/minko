@@ -9,10 +9,8 @@ package aerys.minko.effect
 
 	public class AbstractEffect implements IEffect
 	{
-		private var _passes	: Vector.<IEffectPass>		= new Vector.<IEffectPass>();
-//		private var _style	: Style						= new Style();
+		private var _passes				: Vector.<IEffectPass>		= new Vector.<IEffectPass>();
 		
-//		public function get style() 	: Style						{ return _style; }
 		public function get passes() 	: Vector.<IEffectPass>		{ return _passes; }
 		
 		public function prepare(styleStack	: StyleStack, 
