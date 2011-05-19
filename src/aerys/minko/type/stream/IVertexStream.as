@@ -6,9 +6,9 @@ package aerys.minko.type.stream
 	public interface IVertexStream
 	{
 		function get format() : VertexFormat;
-		function get length() : int;
+		function get length() : uint;
 		
-		function deleteVertexByIndex(index : int) : Boolean;
+		function deleteVertexByIndex(index : uint) : Boolean;
 		function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream;
 	}
 }

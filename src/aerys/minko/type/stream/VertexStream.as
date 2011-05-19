@@ -2,6 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
@@ -26,21 +27,22 @@ package aerys.minko.type.stream
 		private var _format			: VertexFormat			= null;
 		private var _length			: int					= 0;
 		
-		public function get length() 	: int			{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
-		public function get format()	: VertexFormat	{ return _format; }
-		public function get version()	: uint			{ return _version; }
-		public function get dynamic()	: Boolean		{ return _dynamic; }
-	
+		minko_stream function get data()	: Vector.<Number>	{ return _data; }
+		public function get length() 		: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
+		public function get format()		: VertexFormat		{ return _format; }
+		public function get version()		: uint				{ return _version; }
+		public function get dynamic()		: Boolean			{ return _dynamic; }
+		
 		public function VertexStream(data 		: Vector.<Number>,
 									 format		: VertexFormat 	= null,
 									 dynamic	: Boolean		= false)
 		{
 			super();
-
+			
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data.length % _format.dwordsPerVertex)
- 				throw new Error("Incompatible vertex format: the data length does not match.");
+				throw new Error("Incompatible vertex format: the data length does not match.");
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;
@@ -69,7 +71,7 @@ package aerys.minko.type.stream
 			return _nativeBuffer;
 		}
 		
-		public function deleteVertexByIndex(index : int) : Boolean
+		public function deleteVertexByIndex(index : uint) : Boolean
 		{
 			if (index > length)
 				return false;
@@ -157,7 +159,7 @@ package aerys.minko.type.stream
 			stream._data = tmp;
 			
 			tmp = new Vector.<Number>(format.dwordsPerVertex * count,
-									  true);
+				true);
 			
 			for (var j : int = 0; j < count; ++j)
 			{
@@ -180,6 +182,6 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
-
+		
 	}
 }

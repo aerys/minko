@@ -19,10 +19,11 @@ package aerys.minko.type.stream
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
 		
-		public function get version()	: uint 			{ return _version; }
-		public function get dynamic()	: Boolean 		{ return _dynamic; }
-		public function get format()	: VertexFormat	{ return _format; }
-		public function get length()	: int			{ return _streams.length ? _streams[0].length : 0; }
+		public function get version()		: uint 			{ return _version; }
+		public function get dynamic()		: Boolean 		{ return _dynamic; }
+		public function get format()		: VertexFormat	{ return _format; }
+		public function get streamCount()	: uint			{ return _streams.length; }
+		public function get length()		: uint			{ return _streams.length ? _streams[0].length : 0; }
 		
 		public function VertexStreamList(...streams)
 		{
@@ -32,7 +33,7 @@ package aerys.minko.type.stream
 		private function initialize(streams : Array) : void
 		{
 			for each (var stream : VertexStream in streams) 
-				pushVertexStream(stream);
+			pushVertexStream(stream);
 		}
 		
 		public function clone() : VertexStreamList
@@ -40,8 +41,8 @@ package aerys.minko.type.stream
 			var vertexStreamList:VertexStreamList = new VertexStreamList();
 			
 			for each (var stream:VertexStream in _streams)
-				vertexStreamList.pushVertexStream(stream);
-				
+			vertexStreamList.pushVertexStream(stream);
+			
 			return vertexStreamList;
 		}
 		
@@ -60,6 +61,11 @@ package aerys.minko.type.stream
 			++_version;
 		}
 		
+		public function getVextexStreamById(i : uint) : VertexStream
+		{
+			return _streams[i];
+		}
+		
 		public function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			var streamLength	: int = _streams.length;
@@ -76,13 +82,13 @@ package aerys.minko.type.stream
 			return id < _streams.length ? _streams[id] : null;
 		}
 		
-		public function deleteVertexByIndex(index : int) : Boolean
+		public function deleteVertexByIndex(index : uint) : Boolean
 		{
 			if (index > length)
 				return false;
 			
 			for each (var stream : VertexStream in _streams)
-				stream.deleteVertexByIndex(index);
+			stream.deleteVertexByIndex(index);
 			
 			return true;
 		}
