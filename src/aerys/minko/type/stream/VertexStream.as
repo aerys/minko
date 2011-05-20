@@ -38,11 +38,11 @@ package aerys.minko.type.stream
 									 dynamic	: Boolean		= false)
 		{
 			super();
-
+			
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data.length % _format.dwordsPerVertex)
- 				throw new Error("Incompatible vertex format: the data length does not match.");
+				throw new Error("Incompatible vertex format: the data length does not match.");
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;
@@ -71,7 +71,7 @@ package aerys.minko.type.stream
 			return _nativeBuffer;
 		}
 		
-		public function deleteVertexByIndex(index : int) : Boolean
+		public function deleteVertexByIndex(index : uint) : Boolean
 		{
 			if (index > length)
 				return false;
@@ -159,7 +159,7 @@ package aerys.minko.type.stream
 			stream._data = tmp;
 			
 			tmp = new Vector.<Number>(format.dwordsPerVertex * count,
-									  true);
+				true);
 			
 			for (var j : int = 0; j < count; ++j)
 			{
@@ -182,6 +182,6 @@ package aerys.minko.type.stream
 			
 			return stream;
 		}
-
+		
 	}
 }

@@ -33,7 +33,7 @@ package aerys.minko.type.stream
 		private function initialize(streams : Array) : void
 		{
 			for each (var stream : VertexStream in streams) 
-				pushVertexStream(stream);
+			pushVertexStream(stream);
 		}
 		
 		public function clone() : VertexStreamList
@@ -41,8 +41,8 @@ package aerys.minko.type.stream
 			var vertexStreamList:VertexStreamList = new VertexStreamList();
 			
 			for each (var stream:VertexStream in _streams)
-				vertexStreamList.pushVertexStream(stream);
-				
+			vertexStreamList.pushVertexStream(stream);
+			
 			return vertexStreamList;
 		}
 		
@@ -82,13 +82,13 @@ package aerys.minko.type.stream
 			return id < _streams.length ? _streams[id] : null;
 		}
 		
-		public function deleteVertexByIndex(index : int) : Boolean
+		public function deleteVertexByIndex(index : uint) : Boolean
 		{
 			if (index > length)
 				return false;
 			
 			for each (var stream : VertexStream in _streams)
-				stream.deleteVertexByIndex(index);
+			stream.deleteVertexByIndex(index);
 			
 			return true;
 		}
