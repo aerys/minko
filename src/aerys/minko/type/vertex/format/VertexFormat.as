@@ -113,8 +113,8 @@ package aerys.minko.type.vertex.format
 		public function intersectWith(otherVertexFormat : VertexFormat) : void
 		{
 			for each (var component : VertexComponent in _components)
-			if (!otherVertexFormat.hasComponent(component))
-				removeComponent(component);
+				if (!otherVertexFormat.hasComponent(component))
+					removeComponent(component);
 		}
 		
 		public function getOffsetForComponent(component : VertexComponent) : int

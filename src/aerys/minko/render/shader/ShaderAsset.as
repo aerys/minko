@@ -9,7 +9,8 @@ package aerys.minko.render.shader
 	{
 		private static const ESCAPE_CHAR_CODE : Number = 61; // The '=' char
 		
-		private static const INVERSE : Array = [64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+		private static const INVERSE : Array = [
+			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
 			52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 64, 64, 64, 64, 64,
@@ -24,7 +25,8 @@ package aerys.minko.render.shader
 			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64];
+			64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
+		];
 		
 		public static function decode(encoded	:  String,
 									  data	 	:  ByteArray = null) : ByteArray
@@ -71,9 +73,9 @@ package aerys.minko.render.shader
 			return data;
 		}
 		
-		public function ShaderAsset(vertexShader 		: ByteArray,
-									  fragmentShader	: ByteArray,
-									  vertexInput		: Vector.<VertexComponent>)
+		public function ShaderAsset(vertexShader	: ByteArray,
+									fragmentShader	: ByteArray,
+									vertexInput		: Vector.<VertexComponent>)
 		{
 			vertexShader.endian = Endian.LITTLE_ENDIAN;
 			fragmentShader.endian = Endian.LITTLE_ENDIAN;

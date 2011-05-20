@@ -15,7 +15,7 @@ package aerys.minko.type.stream
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
 		private var _streamVersions	: Vector.<int>			= new Vector.<int>();
 		private var _format			: VertexFormat			= new VertexFormat();
-		
+			
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
 		

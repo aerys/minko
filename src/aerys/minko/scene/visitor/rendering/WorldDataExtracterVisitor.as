@@ -1,9 +1,9 @@
 package aerys.minko.scene.visitor.rendering
 {
-	import aerys.minko.scene.graph.IScene;
-	import aerys.minko.scene.graph.ITransformable;
-	import aerys.minko.scene.graph.IWorldObject;
-	import aerys.minko.scene.graph.group.IGroup;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.IWorldObject;
+	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.data.IWorldData;
 	import aerys.minko.scene.visitor.data.TransformManager;

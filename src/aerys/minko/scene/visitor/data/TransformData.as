@@ -115,7 +115,7 @@ package aerys.minko.scene.visitor.data
 		}
 		
 		/**
-		 * FIXME URGENTLY I'M A KLUDGE OUT OF LAZINESS
+		 * FIXME
 		 */
 		public function get screentoUv() : Matrix4x4
 		{

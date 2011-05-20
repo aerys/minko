@@ -2,7 +2,6 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
@@ -20,8 +19,8 @@ package aerys.minko.render.shader
 		minko var _nativeProgram	: Program3D	= null;
 		
 		public function Shader(vertexShader 	: ByteArray,
-								 fragmentShader : ByteArray,
-								 vertexInput	: Vector.<VertexComponent>)
+							   fragmentShader	: ByteArray,
+							   vertexInput		: Vector.<VertexComponent>)
 		{
 			_vertexShader	= vertexShader;
 			_fragmentShader	= fragmentShader;
@@ -53,6 +52,5 @@ package aerys.minko.render.shader
 			
 			context.setProgram(_nativeProgram);
 		}
-		
 	}
 }

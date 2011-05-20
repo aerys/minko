@@ -1,6 +1,6 @@
 package aerys.minko.type.parser
 {
-	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.node.IScene;
 	
 	import flash.utils.ByteArray;
 

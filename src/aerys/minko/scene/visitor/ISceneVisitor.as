@@ -1,6 +1,6 @@
 package aerys.minko.scene.visitor
 {
-	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.action.IVisitorAction;
 
 	/**

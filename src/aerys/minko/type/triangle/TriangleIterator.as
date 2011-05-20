@@ -1,7 +1,7 @@
 package aerys.minko.type.triangle
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.scene.graph.mesh.IMesh;
+	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	

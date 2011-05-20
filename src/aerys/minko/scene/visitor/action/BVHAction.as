@@ -1,6 +1,6 @@
 package aerys.minko.scene.visitor.action
 {
-	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.bounding.IBoundedVolume;
 
 	public class BVHAction implements IVisitorAction

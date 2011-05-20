@@ -256,7 +256,7 @@ package aerys.minko.render.state
 			
 			for (var i : int = 0; i < numInputs; ++i)
 			{
-				var neededComponent:VertexComponent = vertexInput[i];
+				var neededComponent : VertexComponent = vertexInput[i];
 				
 				if (neededComponent)
 				{

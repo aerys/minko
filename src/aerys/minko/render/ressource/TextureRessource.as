@@ -51,50 +51,44 @@ package aerys.minko.render.ressource
 		
 		public function getNativeTexture(context : Context3D) : Texture
 		{
-//			if (!_bitmapData && !_texture)
-//				throw new Error('A content must be set to use this ressource.');
-			
 			if (!_texture)
 			{
 				_texture = context.createTexture(_width,
 												 _height,
 												 Context3DTextureFormat.BGRA,
-												 true);
+												 _bitmapData == null);
 				
 				_update = true;
 			}
 			
-			if (_bitmapData)
+			if (_bitmapData && _update)
 			{
-				if (_update)
+				_update = false;
+				
+				if (_mipmap)
 				{
-					_update = false;
+					var level 		: int 			= 0;
+					var size		: int 			= _bitmapData.width;
+					var tmp 		: BitmapData 	= new BitmapData(_bitmapData.width,
+																	 _bitmapData.height,
+																	 _bitmapData.transparent, 0);
+					var transform 	: Matrix 		= new Matrix();
 					
-					if (_mipmap)
+					while (size >= 1)
 					{
-						var level 		: int 			= 0;
-						var size		: int 			= _bitmapData.width;
-						var tmp 		: BitmapData 	= new BitmapData(_bitmapData.width,
-																		 _bitmapData.height,
-																		 _bitmapData.transparent, 0);
-						var transform 	: Matrix 		= new Matrix();
+						tmp.draw(_bitmapData, transform, null, null, null, true);
+						_texture.uploadFromBitmapData(tmp, level);
 						
-						while (size >= 1)
-						{
-							tmp.draw(_bitmapData, transform, null, null, null, true);
-							_texture.uploadFromBitmapData(tmp, level);
-							
-							transform.scale(.5, .5);
-							level++;
-							size >>= 1;
-						}
-						
-						tmp.dispose();
+						transform.scale(.5, .5);
+						level++;
+						size >>= 1;
 					}
-					else
-					{
-						_texture.uploadFromBitmapData(_bitmapData, 0);
-					}
+					
+					tmp.dispose();
+				}
+				else
+				{
+					_texture.uploadFromBitmapData(_bitmapData, 0);
 				}
 			}
 			

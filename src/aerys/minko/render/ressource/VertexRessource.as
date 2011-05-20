@@ -7,6 +7,7 @@ package aerys.minko.render.ressource
 	{
 		public function VertexRessource()
 		{
+			throw new Error("Implement me");
 		}
 		
 		public function getNativeBuffer(context : Context3D) : VertexBuffer3D
