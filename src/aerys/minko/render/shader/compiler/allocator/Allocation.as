@@ -2,7 +2,7 @@ package aerys.minko.render.shader.compiler.allocator
 {
 	import aerys.minko.render.shader.node.INode;
 
-	internal class Allocation 
+	public class Allocation 
 	{
 		protected var _beginId	: uint;
 		protected var _endId	: uint;

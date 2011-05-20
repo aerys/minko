@@ -2,6 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
@@ -26,11 +27,12 @@ package aerys.minko.type.stream
 		private var _format			: VertexFormat			= null;
 		private var _length			: int					= 0;
 		
-		public function get length() 	: int			{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
-		public function get format()	: VertexFormat	{ return _format; }
-		public function get version()	: uint			{ return _version; }
-		public function get dynamic()	: Boolean		{ return _dynamic; }
-	
+		minko_stream function get data()	: Vector.<Number>	{ return _data; }
+		public function get length() 		: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
+		public function get format()		: VertexFormat		{ return _format; }
+		public function get version()		: uint				{ return _version; }
+		public function get dynamic()		: Boolean			{ return _dynamic; }
+		
 		public function VertexStream(data 		: Vector.<Number>,
 									 format		: VertexFormat 	= null,
 									 dynamic	: Boolean		= false)

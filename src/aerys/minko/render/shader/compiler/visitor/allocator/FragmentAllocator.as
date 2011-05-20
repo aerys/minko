@@ -75,24 +75,20 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			_visited.push(shaderNode);
 			_stack.push(shaderNode);
 			
-			var isInterpolate : Boolean = shaderNode is Interpolate;
-			
 			// visit the children only if not and interpolation node.
-			if (!isInterpolate)
+			if (!(shaderNode is Interpolate))
 				shaderNode.accept(this);
 			
-			++_operationId;
+//			// Tells the allocator what temporary variables we use on this node.
+//			if (!isInterpolate && !(shaderNode is Combine) && (shaderNode is AbstractOperation))
+//			{
+//			}
 			
-			// Tells the allocator what temporary variables we use on this node.
-			if (!isInterpolate && !(shaderNode is Combine) && (shaderNode is AbstractOperation))
-				reportOperationArgumentsUsage(shaderNode as AbstractOperation);
-			
-			if (isInterpolate)
+			if (shaderNode is Interpolate)
 			{
 				// An interpolate node is a vertex shader output,
 				// everything under it must not be processed here.
 				_vertexShaderOutputs.push(shaderNode);
-				
 				_variyngAlloc.allocate(shaderNode);
 			}
 			else if (shaderNode is AbstractConstant)
@@ -117,15 +113,19 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			{
 				var combineNode : Combine = shaderNode as Combine;
 				
+				++_operationId;
 				reportArgumentUsage(combineNode.arg1, false);
+				
 				_tmpAlloc.allocate(shaderNode, _operationId);
 				
 				++_operationId;
-				
 				reportArgumentUsage(combineNode.arg2, false);
 			}
 			else if (shaderNode is AbstractOperation)
 			{
+				++_operationId;
+				reportOperationArgumentsUsage(shaderNode as AbstractOperation);
+				
 				if (_stack.length > 1)
 					_tmpAlloc.allocate(shaderNode, _operationId);
 			}

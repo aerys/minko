@@ -4,8 +4,8 @@ package aerys.minko.effect.common
 	import aerys.minko.effect.basic.BasicStyle;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.DynamicShader;
-	import aerys.minko.render.shader.node.operation.common.ClipspacePosition;
-	import aerys.minko.render.shader.node.operation.common.PackedDepth;
+	import aerys.minko.render.shader.node.common.ClipspacePosition;
+	import aerys.minko.render.shader.node.common.PackedDepth;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;

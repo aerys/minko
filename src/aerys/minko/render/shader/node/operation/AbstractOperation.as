@@ -32,7 +32,8 @@ package aerys.minko.render.shader.node.operation
 		
 		public function get name() : String
 		{
-			return getQualifiedClassName(this);
+			var className : String = getQualifiedClassName(this);
+			return className.substr(className.lastIndexOf(':') + 1);
 		}
 		
 		public function get size() : uint

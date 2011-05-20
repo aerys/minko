@@ -2,6 +2,7 @@ package aerys.minko.render.shader.compiler.allocator
 {
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	
@@ -13,6 +14,11 @@ package aerys.minko.render.shader.compiler.allocator
 		protected var _allocations	: Vector.<Allocation>;
 		
 		protected var _maxOffset	: uint;
+		
+		public function get allocations() : Vector.<Allocation>
+		{
+			return _allocations;
+		}
 		
 		public function Allocator(registerCount:uint = 8)
 		{
@@ -44,68 +50,6 @@ package aerys.minko.render.shader.compiler.allocator
 			var size		: uint = alloc.size;
 			
 			return Allocator.getWriteMask(localOffset, size);
-		}
-		
-		public function getReadSwizzling(readFrom		: INode,
-										 outputOffset	: uint) : uint
-		{
-			var alloc			: Allocation = _opUsage[readFrom] as Allocation;
-			var inputOffset		: uint	= (alloc.offset % 4);
-			var inputSize		: uint	= alloc.size;
-			
-			// there is no swizzling for data spread among multiple registers
-			// (used by m34, m44 only)
-			if (inputSize > 4)
-				return 0xe4;
-			
-			var sw : uint = 0;
-//			
-//			if (readFrom is Swizzle)
-//			{
-//				
-//			}
-//			else
-//			{
-////				sw = RegisterSwizzling.createContinuous(inputOffset, outputOffset,  
-//			}
-//			
-//			return sw;
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			if (inputSize + inputOffset > 4) 
-				throw new Error('Cannot read ' + inputSize + ' floats from position ' + inputOffset + ' of a register, reading ' + readFrom.toString() + '.');
-			
-			if (inputSize + outputOffset > 4)
-				throw new Error('Cannot read ' + inputSize + ' floats from position ' + outputOffset + ' of a register, reading ' + readFrom.toString() + '.');
-			
-			var i			: int;
-			
-			var beginAt 	: int	= outputOffset;
-			var endAt		: int	= outputOffset + inputSize;
-			var currentSw	: uint	= inputOffset;
-			
-			for (i = 0; i < beginAt; ++i)
-				sw |= currentSw << (2 * i)
-			
-			for (; i < endAt; ++i)
-				sw |= (currentSw++) << (2 * i);
-					
-			--currentSw;
-			
-			for (; i < 4; ++i)
-				sw |= (currentSw) << (2 * i);
-			
-			if (sw > 0xff)
-				throw new Error('Swizzling must be between 0x0 and 0xff, reading ' + readFrom.toString() + '.');
-			
-			return sw;
 		}
 		
 		public function getLocalOffset(op : INode) : uint
@@ -160,7 +104,8 @@ package aerys.minko.render.shader.compiler.allocator
 			{
 				var success			: Boolean		= false;
 				var alloc			: Allocation	= _allocations[i];
-				var maxLocalOffset	: uint			= 
+				
+				var maxLocalOffset	: uint = 
 					(alloc.size > 4 || alloc.aligned || alignEverything) ? 0 : 4 - alloc.size;
 				
 				for (var regOffset : int = 0; regOffset < _maxOffset && !success; regOffset += 4)
@@ -191,13 +136,20 @@ package aerys.minko.render.shader.compiler.allocator
 			if (allocLimit == -1)
 				allocLimit = _allocations.length;
 			
+			var endOffset : int = offset + size;
+			
 			for (var i : int = 0; i < allocLimit; ++i)
 			{
-				var alloc		: Allocation	= _allocations[i];
-				var allocOffset	: uint			= alloc.offset;
+				var alloc			: Allocation	= _allocations[i];
+				var allocOffset		: uint			= alloc.offset;
+				var allocSize		: uint			= alloc.size;
+				var allocEndOffset	: uint			= allocOffset + allocSize;
 				
-				if (alloc.beginId <= operationId && alloc.endId > operationId // overlaps in time 
-					&& allocOffset <= offset && allocOffset + alloc.size > offset) // overlaps in offset
+				if (alloc.beginId <= operationId && alloc.endId > operationId && (
+						(offset >= allocOffset && offset < allocEndOffset) ||
+						(endOffset > allocOffset && endOffset <= allocEndOffset) ||
+						(offset <= allocOffset && endOffset >= allocEndOffset)
+					))
 					return false;
 			}
 			return true;

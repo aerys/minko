@@ -3,6 +3,7 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.compiler.Compiler;
+	import aerys.minko.render.shader.compiler.DebugCompiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
@@ -12,12 +13,16 @@ package aerys.minko.render.shader
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformData;
+	import aerys.minko.stage.Viewport;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
+	import flash.display.Bitmap;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	
+	import mx.charts.chartClasses.InstanceCache;
 	
 	public class DynamicShader extends Shader
 	{
@@ -32,7 +37,7 @@ package aerys.minko.render.shader
 		public static function create(clipspacePosition	: INode,
 									  color				: INode) : DynamicShader
 		{
-			var compiler : Compiler = new Compiler();
+			var compiler : DebugCompiler = new DebugCompiler();
 			compiler.load(clipspacePosition, color);
 			return compiler.compileShader();
 		}

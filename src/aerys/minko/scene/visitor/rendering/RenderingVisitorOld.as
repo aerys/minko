@@ -5,8 +5,8 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.state.RenderState;
-	import aerys.minko.scene.graph.IScene;
-	import aerys.minko.scene.graph.camera.ICamera;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformManager;

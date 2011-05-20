@@ -1,8 +1,8 @@
 package aerys.minko.scene.visitor
 {
-	import aerys.minko.scene.graph.ICollectable;
-	import aerys.minko.scene.graph.ITransformable;
-	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.node.ICollectable;
+	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.action.IVisitorAction;
 	import aerys.minko.type.math.Matrix4x4;
 

@@ -3,8 +3,8 @@ package aerys.minko.effect.basic
 	import aerys.minko.effect.IEffectPass;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.DynamicShader;
-	import aerys.minko.render.shader.node.operation.common.ClipspacePosition;
-	import aerys.minko.render.shader.node.operation.common.DiffuseMapTexture;
+	import aerys.minko.render.shader.node.common.ClipspacePosition;
+	import aerys.minko.render.shader.node.common.DiffuseMapTexture;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;

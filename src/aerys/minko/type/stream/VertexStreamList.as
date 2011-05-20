@@ -15,14 +15,15 @@ package aerys.minko.type.stream
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
 		private var _streamVersions	: Vector.<int>			= new Vector.<int>();
 		private var _format			: VertexFormat			= new VertexFormat();
-		
+			
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
 		
-		public function get version()	: uint 			{ return _version; }
-		public function get dynamic()	: Boolean 		{ return _dynamic; }
-		public function get format()	: VertexFormat	{ return _format; }
-		public function get length()	: int			{ return _streams.length ? _streams[0].length : 0; }
+		public function get version()		: uint 			{ return _version; }
+		public function get dynamic()		: Boolean 		{ return _dynamic; }
+		public function get format()		: VertexFormat	{ return _format; }
+		public function get streamCount()	: uint			{ return _streams.length; }
+		public function get length()		: uint			{ return _streams.length ? _streams[0].length : 0; }
 		
 		public function VertexStreamList(...streams)
 		{
@@ -58,6 +59,11 @@ package aerys.minko.type.stream
 			_dynamic ||= vertexStream;
 			
 			++_version;
+		}
+		
+		public function getVextexStreamById(i : uint) : VertexStream
+		{
+			return _streams[i];
 		}
 		
 		public function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream

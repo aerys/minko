@@ -8,7 +8,7 @@ package aerys.minko.stage
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.DirectRenderer;
 	import aerys.minko.render.IRenderer;
-	import aerys.minko.scene.graph.IScene;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.scene.visitor.rendering.WorldDataExtracterVisitor;

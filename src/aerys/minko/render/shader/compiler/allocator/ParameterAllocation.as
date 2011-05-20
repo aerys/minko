@@ -10,30 +10,35 @@ package aerys.minko.render.shader.compiler.allocator
 		minko var _offset		: uint;
 		minko var _parameter	: AbstractParameter;
 		
-//		public final function get offset() : uint
-//		{
-//			return _offset;
-//		}
-//
-//		public final function get size() : uint
-//		{
-//			return _parameter._size;
-//		}
-//		
-//		public final function get key() : String
-//		{
-//			return _parameter._key;
-//		}
-//		
-//		public final function get index() : int
-//		{
-//			return _parameter._index;
-//		}
-//		
-//		public final function get field() : String
-//		{
-//			return _parameter._field;
-//		}
+		public final function get offset() : uint
+		{
+			return _offset;
+		}
+
+		public final function get size() : uint
+		{
+			return _parameter._size;
+		}
+		
+		public final function get parameter() : AbstractParameter
+		{
+			return _parameter;
+		}
+		
+		public final function get key() : String
+		{
+			return _parameter._key;
+		}
+		
+		public final function get index() : int
+		{
+			return _parameter._index;
+		}
+		
+		public final function get field() : String
+		{
+			return _parameter._field;
+		}
 		
 		public function ParameterAllocation(offset		: uint, 
 											parameter	: AbstractParameter)

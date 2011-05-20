@@ -7,10 +7,10 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.render.IRenderer;
 	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.state.RenderState;
-	import aerys.minko.scene.graph.*;
-	import aerys.minko.scene.graph.group.*;
-	import aerys.minko.scene.graph.mesh.*;
-	import aerys.minko.scene.graph.texture.*;
+	import aerys.minko.scene.node.*;
+	import aerys.minko.scene.node.group.*;
+	import aerys.minko.scene.node.mesh.*;
+	import aerys.minko.scene.node.texture.*;
 	import aerys.minko.scene.visitor.*;
 	import aerys.minko.scene.visitor.data.*;
 	import aerys.minko.type.stream.IndexStream;

@@ -127,12 +127,12 @@ package aerys.minko.render.shader.compiler
 		protected function allocateRegistries() : void
 		{
 			// Allocate all registries on both shaders (va, vt, vc, v, ft, fs, fc)
-			_attrAllocator.computeRegisterState(true);
-			_varyingAllocator.computeRegisterState(true);
-			_vsTmpAllocator.computeRegisterState();
-			_vsConstAllocator.computeRegisterState();
-			_fsTmpAllocator.computeRegisterState();
-			_fsConstAllocator.computeRegisterState();
+			_attrAllocator		.computeRegisterState(true);
+			_varyingAllocator	.computeRegisterState(true);
+			_vsTmpAllocator		.computeRegisterState(false);
+			_vsConstAllocator	.computeRegisterState(false);
+			_fsTmpAllocator		.computeRegisterState(false);
+			_fsConstAllocator	.computeRegisterState(false);
 		}
 		
 		protected function createAllocationTables() : void
@@ -159,7 +159,7 @@ package aerys.minko.render.shader.compiler
 			);
 		}
 		
-		public function compileVertexShader() : ByteArray
+		protected function compileVertexShader() : ByteArray
 		{
 			return new WriteByteCode(
 				_attrAllocator, _fsTmpAllocator, _varyingAllocator,
@@ -167,33 +167,13 @@ package aerys.minko.render.shader.compiler
 			).processVertexShader(_vertexOps);
 		}
 		
-		public function compileFragmentShader() : ByteArray
+		protected function compileFragmentShader() : ByteArray
 		{
 			return new WriteByteCode(
 				_attrAllocator, _fsTmpAllocator, _varyingAllocator,
 				_fsConstAllocator, _vsTmpAllocator, _vsConstAllocator
 			).processFragmentShader(_colorNode);
 		}
-		
-		public function compileAgalVertexShader() : String
-		{
-			return new WriteAgal(
-				_attrAllocator, _fsTmpAllocator, _varyingAllocator,
-				_fsConstAllocator, _vsTmpAllocator, _vsConstAllocator
-			).processVertexShader(_vertexOps);
-		}
-		
-		public function compileAgalFragmentShader() : String
-		{
-			return new WriteAgal(
-				_attrAllocator, _fsTmpAllocator, _varyingAllocator,
-				_fsConstAllocator, _vsTmpAllocator, _vsConstAllocator
-			).processFragmentShader(_colorNode);
-		}
-		
-		public function writeDotGraph() : String
-		{
-			return new WriteDot().processShader(_clipspacePosNode, _colorNode);
-		}
+
 	}
 }
