@@ -4,12 +4,12 @@ package aerys.minko.type.vertex.format
 	{
 		public static const XYZ			: VertexFormat 	= new VertexFormat(VertexComponent.XYZ);
 		public static const XYZ_RGB		: VertexFormat 	= new VertexFormat(VertexComponent.XYZ,
-			VertexComponent.RGB);
+																		   VertexComponent.RGB);
 		public static const XYZ_UV		: VertexFormat 	= new VertexFormat(VertexComponent.XYZ,
-			VertexComponent.UV);
+																		   VertexComponent.UV);
 		public static const XYZ_UV_ST	: VertexFormat	= new VertexFormat(VertexComponent.XYZ,
-			VertexComponent.UV,
-			VertexComponent.ST);
+																		   VertexComponent.UV,
+																		   VertexComponent.ST);
 		
 		protected var _components		: Object;
 		

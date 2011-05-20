@@ -56,11 +56,6 @@ package aerys.minko.render
 		{
 			var indexStream : IndexStream = _state.indexStream; 
 		
-//			count ||= indexStream.length / 3;
-			
-			/*if (indexStream.length == 0 || count == 0)
-				return ;*/
-			
 			if (!DIRECT)
 			{
 				_currentSession.renderState = _state;

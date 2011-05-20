@@ -195,7 +195,7 @@ package aerys.minko.stage
 		
 		public function get renderMode() : String
 		{
-			return _stage3d ? _stage3d.context3D.driverInfo : null;
+			return _stage3d && _stage3d.context3D ? _stage3d.context3D.driverInfo : null;
 		}
 
 		public function get backgroundColor() : int
