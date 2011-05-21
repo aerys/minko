@@ -1,8 +1,8 @@
 package aerys.minko.scene.node.mesh.modifier
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.math.Vector4;
@@ -11,7 +11,7 @@ package aerys.minko.scene.node.mesh.modifier
 	
 	public class BVHMesh extends AbstractMeshModifier
 	{
-		use namespace minko;
+		use namespace minko_stream;
 		
 		private var _version		: uint				= 0;
 		

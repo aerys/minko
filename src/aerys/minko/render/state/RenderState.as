@@ -246,7 +246,7 @@ package aerys.minko.render.state
 										indexStream		: IndexStream) : void
 		{
 			var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
-			var numInputs	: int							= vertexInput.length;
+			var numInputs	: int						= vertexInput.length;
 			
 			_indexStream = indexStream;
 			_setFlags |= INDEX_STREAM;

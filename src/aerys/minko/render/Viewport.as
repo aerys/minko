@@ -168,7 +168,7 @@ package aerys.minko.render
 		 */
 		public function get numTriangles() : uint
 		{
-			return _renderingQuery ? _renderingQuery.numTriangles : 0;
+			return _renderingQuery ? _renderer.numTriangles : 0;
 		}
 		
 		/**
@@ -338,7 +338,7 @@ package aerys.minko.render
 				Factory.sweep();
 				
 				_time = getTimer() - time;
-				_drawTime = _renderingQuery.drawingTime;
+				_drawTime = _renderer.drawingTime;
 			}
 			else
 			{

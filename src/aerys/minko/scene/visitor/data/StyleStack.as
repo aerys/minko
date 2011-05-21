@@ -14,10 +14,11 @@ package aerys.minko.scene.visitor.data
 			_data[0] = _emptyObject;
 		}
 		
-		public final function get(name : String, defaultValue : * = undefined) : *
+		public final function get(name : String, defaultValue : Object = null) : Object
 		{
-			var stackHeight : uint = _data.length;
-			var data : Object, item : *;
+			var stackHeight : uint 		= _data.length;
+			var data 		: Object 	= null;
+			var item 		: Object 	= null;
 			
 			for (var i : int = 0; i < stackHeight; ++i)
 			{
@@ -25,15 +26,20 @@ package aerys.minko.scene.visitor.data
 				if (data != _emptyObject)
 				{
 					item = data[name];
-					if (item != undefined)
+					if (item !== null)
 						return item;
 				}
 			}
 			
-			if (defaultValue !== undefined)
+			if (defaultValue !== null)
 				return defaultValue;
 			
 			throw new Error(name + ' is undefined an no default value was provided');
+		}
+		
+		public final function isSet(name : String) : Object
+		{
+			return get(name, _emptyObject) !== _emptyObject;
 		}
 		
 		public function set(name : String, value : *) : StyleStack
@@ -66,6 +72,7 @@ package aerys.minko.scene.visitor.data
 					if (worldDataList != null)
 					{
 						var cloned : WorldDataList;
+						
 						cloned = worldDataList.clone();
 						cloned.push(value);
 						set(name, cloned);

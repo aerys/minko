@@ -1,6 +1,6 @@
 ﻿package aerys.minko.type.vertex
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -15,11 +15,11 @@
 	 */
 	public dynamic final class VertexReference extends Proxy
 	{
-		use namespace minko;
+		use namespace minko_stream;
 		use namespace flash_proxy;
 		
-		minko var _index			: int			= 0;
-		minko var _propToStream		: Object		= null;
+		minko_stream var _index			: int			= 0;
+		minko_stream var _propToStream	: Object		= null;
 		
 		private var _stream 		: IVertexStream	= null;
 				

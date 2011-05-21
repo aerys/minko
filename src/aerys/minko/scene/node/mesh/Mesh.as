@@ -140,7 +140,7 @@ package aerys.minko.scene.node.mesh
 					vertexComponentOffsets[k]				= vertexStream.format.getOffsetForComponent(vertexComponent);
 					vertexComponentDwordsPerVertex[k]		= vertexStream.format.dwordsPerVertex;
 					vertexComponentSizes[k]					= vertexComponent.dwords;
-					vertexComponentDatas[k]					= vertexStream.data;
+					vertexComponentDatas[k]					= vertexStream._data;
 				}
 				
 				// push vertex data into the new buffer.

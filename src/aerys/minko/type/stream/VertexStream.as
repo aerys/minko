@@ -14,24 +14,23 @@ package aerys.minko.type.stream
 	
 	public final class VertexStream implements IVersionnable, IVertexStream
 	{
-		use namespace minko;
+		use namespace minko_stream;
 		
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 		
-		minko var _data				: Vector.<Number>		= null;
-		minko var _update			: Boolean				= true;
-		minko var _dynamic			: Boolean				= false;
-		minko var _nativeBuffer		: VertexBuffer3D		= null;
-		minko var _version			: uint					= 0;
+		minko_stream var _data			: Vector.<Number>		= null;
+		minko_stream var _update		: Boolean				= true;
+		minko_stream var _dynamic		: Boolean				= false;
+		minko_stream var _nativeBuffer	: VertexBuffer3D		= null;
+		minko_stream var _version		: uint					= 0;
 		
 		private var _format			: VertexFormat			= null;
 		private var _length			: int					= 0;
 		
-		minko_stream function get data()	: Vector.<Number>	{ return _data; }
-		public function get length() 		: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
-		public function get format()		: VertexFormat		{ return _format; }
-		public function get version()		: uint				{ return _version; }
-		public function get dynamic()		: Boolean			{ return _dynamic; }
+		public function get length() 	: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
+		public function get format()	: VertexFormat		{ return _format; }
+		public function get version()	: uint				{ return _version; }
+		public function get dynamic()	: Boolean			{ return _dynamic; }
 		
 		public function VertexStream(data 		: Vector.<Number>,
 									 format		: VertexFormat 	= null,

@@ -1,8 +1,6 @@
 package aerys.minko.scene.node.mesh.modifier
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -10,7 +8,7 @@ package aerys.minko.scene.node.mesh.modifier
 	
 	public class NormalMesh extends AbstractMeshModifier
 	{
-		use namespace minko;
+		use namespace minko_stream;
 		
 		public static const VERTEX_FORMAT	: VertexFormat	= new VertexFormat(VertexComponent.NORMAL);
 		
@@ -36,7 +34,7 @@ package aerys.minko.scene.node.mesh.modifier
 			var vertexStream	: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
 			var vertexOffset	: int 				= vertexStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var vertexLength	: int 				= vertexStream.format.dwordsPerVertex;
-			
+		
 			var vertices		: Vector.<Number>	= vertexStream._data;
 			var numVertices		: int				= vertices.length / vertexLength;
 			var indices			: Vector.<uint>		= indexStream._indices;

@@ -2,6 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
@@ -11,12 +12,12 @@ package aerys.minko.type.stream
 
 	public final dynamic class IndexStream extends Proxy implements IVersionnable
 	{
-		use namespace minko;
+		use namespace minko_stream;
 		
-		minko var _indices		: Vector.<uint>		= null;
-		minko var _version		: uint				= 0;
+		minko_stream var _indices		: Vector.<uint>		= null;
+		minko_stream var _version		: uint				= 0;
 		
-		minko var _nativeBuffer : IndexBuffer3D		= null;
+		minko_stream var _nativeBuffer 	: IndexBuffer3D		= null;
 		
 		private var _update			: Boolean			= true;
 		private var _length			: int				= 0;

@@ -4,7 +4,7 @@ package aerys.minko.render.effect.fog
 	{
 		public static const FOG_ENABLED	: String = 'fogEnabled';
 		public static const COLOR		: String = 'fogColor';
-		public static const MIN_DEPTH	: String = 'fogMinDepth';
-		public static const MAX_DEPTH	: String = 'fogMaxDepth';
+		public static const START		: String = 'fogStart';
+		public static const DISTANCE	: String = 'fogDistance';
 	}
 }

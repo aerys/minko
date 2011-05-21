@@ -2,23 +2,28 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.common.Fog;
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.Sampler;
+	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Add;
+	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
+	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.builtin.Texture;
 	import aerys.minko.render.shader.node.operation.manipulation.Blend;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
+	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.StyleStack;
@@ -60,6 +65,11 @@ package aerys.minko.render.shader
 		protected final function get cameraLocalDirection() : INode
 		{
 			return new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION);
+		}
+		
+		protected final function get cameraLocalPosition() : INode
+		{
+			return new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION);
 		}
 		
 		protected final function get localToScreenMatrix() : INode
@@ -121,9 +131,20 @@ package aerys.minko.render.shader
 			return new Texture(getShaderNode(uv), new Sampler(styleName));
 		}
 		
-		protected final function multiply(value1 : Object, value2 : Object) : INode
+		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : INode
 		{
-			return new Multiply(getShaderNode(value1), getShaderNode(value2));
+			var p 		: Product 	= new Product(getShaderNode(arg1), getShaderNode(arg2));
+			var numArgs : int 		= args.length;
+			
+			for (var i : int = 0; i < numArgs; ++i)
+				p.addTerm(getShaderNode(args[i]))
+			
+			return p;
+		}
+		
+		protected final function divide(arg1 : Object, arg2 : Object) : INode
+		{
+			return new Divide(getShaderNode(arg1), getShaderNode(arg2));
 		}
 		
 		protected final function power(base : Object, exp : Object) : INode
@@ -164,6 +185,19 @@ package aerys.minko.render.shader
 			return new WorldParameter(size, key, field, index);
 		}
 		
+		protected final function getStyleParameter(size 	: uint,
+												   key 		: String,
+												   field 	: String 	= null,
+												   index 	: int 		= -1) : INode
+		{
+			return new StyleParameter(size, key, field, index);
+		}
+		
+		protected final function getConstant(value : Object) : INode
+		{
+			return getShaderNode(value);
+		}
+		
 		protected final function extract(value : Object, Component : uint) : INode
 		{
 			return new Extract(getShaderNode(value), Component);
@@ -172,6 +206,25 @@ package aerys.minko.render.shader
 		protected final function blend(color1 : Object, color2 : Object, blending : uint) : INode
 		{
 			return new Blend(getShaderNode(color1), getShaderNode(color2), blending);
+		}
+		
+		protected final function vector3Length(vector3 : Object) : INode
+		{
+			var v : INode = getShaderNode(vector3);
+			
+			return sqrt(dotProduct3(v, v));
+		}
+		
+		protected final function sqrt(scalar : Object) : INode
+		{
+			return new SquareRoot(getShaderNode(scalar));
+		}
+		
+		protected final function getFolorColor(start	: Object,
+											   distance	: Object,
+											   color	: Object) : INode
+		{
+			return new Fog(getShaderNode(start), getShaderNode(distance), getShaderNode(color));
 		}
 		
 		private function getShaderNode(value : Object) : INode

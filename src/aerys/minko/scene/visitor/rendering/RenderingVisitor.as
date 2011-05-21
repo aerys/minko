@@ -38,21 +38,6 @@ package aerys.minko.scene.visitor.rendering
 			return _numNodes;
 		}
 		
-		// [RemoveMe]
-		// 		pourquoi on wrap cette methode? elle ne sert que dans Viewport qui connait aussi le renderer
-		
-				public function get drawingTime() : uint
-				{
-					return _renderer.drawingTime;
-				}
-				
-				public function get numTriangles() : uint
-				{
-					return _renderer.numTriangles;
-				}
-		
-		// [/RemoveMe]
-		
 		public function RenderingVisitor(renderer : IRenderer)
 		{
 			_renderer		= renderer;
@@ -224,27 +209,29 @@ package aerys.minko.scene.visitor.rendering
 					
 					_renderer.end();
 				}
-				
-//				_styleStack.pop();
 			}
 		}
 		
 		protected function queryITexture(scene : ITexture) : void
 		{
 			if (scene is AnimatedTexture)
-			{
 				queryAnimatedTexture(scene as AnimatedTexture);
-			}
 			else if (scene is BitmapTexture)
-			{
 				queryBitmapTexture(scene as BitmapTexture);
-			}
 		}
 		
 		protected function queryAnimatedTexture(scene : AnimatedTexture) : void
 		{
-//			scene.gotoFrame(_frameId);
-//			query(scene.getChildAt(_frameId));
+			/*if (t - _time > (1000. / _framerate))
+			{
+				_lastFrame = q.frameId;
+				nextFrame(q);
+				
+				_time = t;
+			}
+			
+			if (_frame < numChildren)
+				query.query(rawChildren[_frame]);*/
 		}
 		
 		protected function queryBitmapTexture(scene : BitmapTexture) : void

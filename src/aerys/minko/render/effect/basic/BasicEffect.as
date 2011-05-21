@@ -8,13 +8,13 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.ParametricShader;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.common.DiffuseMapTexture;
-	import aerys.minko.render.shader.node.common.Fog;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;
+	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformData;
+	import aerys.minko.type.math.ConstVector4;
 	
 	import flash.utils.Dictionary;
 	
@@ -74,7 +74,22 @@ package aerys.minko.render.effect.basic
 			else
 				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
 			
-			return blend(new Fog(), diffuse, Blending.ALPHA);
+			// fog
+			if (fogEnabled)
+			{
+				var zFar		: INode	= getWorldParameter(1, CameraData, CameraData.Z_FAR);
+				var fogColor 	: *		= style.isSet(FogStyle.COLOR)
+										  ? getStyleParameter(3, FogStyle.COLOR)
+										  : ConstVector4.ZERO;
+				var fogStart	: *		= style.isSet(FogStyle.START)
+										  ? getStyleParameter(1, FogStyle.START)
+										  : 0.;
+				
+				fogColor = getFolorColor(fogStart, zFar, fogColor); 
+				diffuse = blend(fogColor, diffuse, Blending.ALPHA);
+			}
+				
+			return diffuse;
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
