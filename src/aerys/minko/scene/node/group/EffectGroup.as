@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.group
 {
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.IEffectTarget;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 
 	/**

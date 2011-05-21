@@ -15,6 +15,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Power;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.builtin.Texture;
+	import aerys.minko.render.shader.node.operation.manipulation.Blend;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
@@ -87,7 +88,7 @@ package aerys.minko.render.shader
 									   local	: TransformData, 
 									   world	: Dictionary) : String
 		{
-			throw new Error();
+			return "";
 		}
 		
 		protected function getOutputPosition(style	: StyleStack, 
@@ -166,6 +167,11 @@ package aerys.minko.render.shader
 		protected final function extract(value : Object, Component : uint) : INode
 		{
 			return new Extract(getShaderNode(value), Component);
+		}
+		
+		protected final function blend(color1 : Object, color2 : Object, blending : uint) : INode
+		{
+			return new Blend(getShaderNode(color1), getShaderNode(color2), blending);
 		}
 		
 		private function getShaderNode(value : Object) : INode

@@ -1,25 +1,23 @@
-package aerys.minko.render
+package aerys.minko.render.renderer
 {
 	import aerys.common.Factory;
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.TransformManager;
-	import aerys.minko.stage.Viewport;
-	import aerys.minko.type.stream.IndexStream;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
-
-	public class DirectRenderer implements IRenderer
+	
+	public class DefaultRenderer implements IRenderer
 	{
-		use namespace minko;
+		use namespace minko_render;
 		
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
-		private static const DIRECT			: Boolean			= false;
 		private static const SORT			: Boolean			= true;
 		private static const DEBUG			: Boolean			= true;
 		
@@ -43,53 +41,47 @@ package aerys.minko.render
 		public function get drawingTime()	: int			{ return _drawingTime; }
 		public function get frameId()		: uint			{ return _frame; }
 		
-		public function DirectRenderer(viewport : Viewport, context : Context3D)
+		public function DefaultRenderer()
 		{
-			_viewport = viewport;
-			_context = context;
-			
-			_context.enableErrorChecking = DEBUG;
-		}
-
-		public function drawTriangles(firstIndex	: uint	= 0,
-									  count			: int	= -1) : void
-		{
-			var indexStream : IndexStream = _state.indexStream; 
-		
-			if (!DIRECT)
-			{
-				_currentSession.renderState = _state;
-				_currentSession.offsets.push(firstIndex);
-				_currentSession.numTriangles.push(count);
-			}
-			else
-			{
-				var t : int = getTimer();
-			
-				_state.prepareContext(_context);
-				_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
-									   firstIndex,
-									   count);
-				_drawingTime += getTimer() - t;
-				
-			}
-			
-			_numTriangles += count == -1 ? indexStream.length / 3. : count;
 		}
 		
-		public function clear(red 		: Number	= 0.,
-							  green 	: Number	= 0.,
-							  blue 		: Number	= 0.,
-							  alpha 	: Number	= 1.,
-							  depth 	: Number	= 1.,
+		public function begin()	: void
+		{
+		}
+		
+		public function end() : void
+		{
+			if (_currentSession && _currentSession.renderState)
+				_sessions[int(_numSessions++)] = _currentSession;
+			
+			_state = RENDER_STATE.create();
+			_state.clear();
+			_currentSession = RENDER_SESSION.create();
+			_currentSession.renderState = _state;
+			_currentSession.offsets.length = 0;
+			_currentSession.numTriangles.length = 0;
+		}
+		
+		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
+		{
+			_currentSession.renderState = _state;
+			_currentSession.offsets.push(offset);
+			_currentSession.numTriangles.push(numTriangles);
+			
+			_numTriangles += numTriangles == -1 ? _state._indexStream.length / 3. : numTriangles;
+		}
+		
+		public function clear(red		: Number	= 0.,
+							  green		: Number	= 0.,
+							  blue		: Number	= 0.,
+							  alpha		: Number	= 0.,
+							  depth		: Number	= 0.,
 							  stencil	: uint		= 0,
-							  mask		: uint		= 0xffffffff) : void
+							  mask		: uint		= 0xffffffff)  :void
 		{
 			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 			_numTriangles = 0;
 			_drawingTime = 0;
-			
-//			_rtSessions = new Dictionary(true);
 			
 			end();
 		}
@@ -105,11 +97,11 @@ package aerys.minko.render
 					return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
 				});
 			}
-			
+			trace(_numSessions);
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
 				_currentSession = _sessions[i];
-
+				
 				var state	: RenderState 	= _currentSession.renderState;
 				
 				state.prepareContext(_context, _currentState);
@@ -120,12 +112,12 @@ package aerys.minko.render
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{
-					var ib : IndexBuffer3D = state.indexStream.getIndexBuffer3D(_context);
+					var ib : IndexBuffer3D = state._indexStream.getIndexBuffer3D(_context);
 					
 					if (ib)
 						_context.drawTriangles(ib, offsets[j], numTriangles[j]);
 				}
-
+				
 				RENDER_SESSION.free(_currentSession);
 				RENDER_STATE.free(_currentState);
 				
@@ -144,43 +136,5 @@ package aerys.minko.render
 		{
 			_context.drawToBitmapData(bitmapData);
 		}
-		
-		public function begin() : void
-		{
-			
-		}
-		
-		public function end() : void
-		{
-			if (DIRECT)
-			{
-				_state.clear();
-			}
-			else
-			{
-//				if (_state.renderTarget)
-//				{
-//					var sessions : Vector.<RenderSession> = _rtSessions[_state.renderTarget];
-//					
-//					sessions ||= _rtSessions[_state.renderTarget] = new Vector.<RenderSession>();
-//					sessions.push(_currentSession);
-//				}
-//				else
-//				{
-//					_sessions[int(_numSessions++)] = _currentSession;
-//				}
-				
-				if (_currentSession && _currentSession.renderState)
-					_sessions[int(_numSessions++)] = _currentSession;
-				
-				_state = RENDER_STATE.create();
-				_state.clear();
-				_currentSession = RENDER_SESSION.create();
-				_currentSession.renderState = _state;
-				_currentSession.offsets.length = 0;
-				_currentSession.numTriangles.length = 0;
-			}
-		}
-		
 	}
 }

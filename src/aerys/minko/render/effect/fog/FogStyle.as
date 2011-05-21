@@ -1,4 +1,4 @@
-package aerys.minko.effect.fog
+package aerys.minko.render.effect.fog
 {
 	public final class FogStyle
 	{

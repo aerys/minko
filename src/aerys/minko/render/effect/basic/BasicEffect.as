@@ -1,14 +1,15 @@
-package aerys.minko.effect.basic
+package aerys.minko.render.effect.basic
 {
-	import aerys.minko.effect.IEffectPass;
-	import aerys.minko.effect.fog.FogStyle;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectPass;
+	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.render.shader.DynamicShader;
 	import aerys.minko.render.shader.ParametricShader;
+	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.DiffuseMapTexture;
+	import aerys.minko.render.shader.node.common.Fog;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;
@@ -17,18 +18,25 @@ package aerys.minko.effect.basic
 	
 	import flash.utils.Dictionary;
 	
-	public class BasicPass extends ParametricShader implements IEffectPass
+	public class BasicEffect extends ParametricShader implements IEffect, IEffectPass
 	{
 		protected var _priority			: Number;
 		protected var _renderTarget		: RenderTarget;
 		
-		protected var _shadersMap		: Object		= new Object();
+		protected var _passes			: Vector.<IEffectPass>	= Vector.<IEffectPass>([this]);
 		
-		public function BasicPass(priority		: Number		= 0,
-								  renderTarget	: RenderTarget	= null)
+		public function BasicEffect(priority		: Number		= 0,
+								  	renderTarget	: RenderTarget	= null)
 		{
 			_priority		= priority;
 			_renderTarget	= renderTarget;
+		}
+		
+		public function getPasses(styleStack	: StyleStack, 
+								  local			: TransformData, 
+								  world			: Dictionary) : Vector.<IEffectPass>
+		{
+			return _passes;
 		}
 		
 		override public function fillRenderState(state	: RenderState, 
@@ -57,12 +65,16 @@ package aerys.minko.effect.basic
 												   local	: TransformData,
 												   world	: Dictionary) : INode
 		{
-			var diffuseMap : TextureRessource = style.get(BasicStyle.DIFFUSE_MAP, null) as TextureRessource;
+			var diffuseMap 	: TextureRessource 	= style.get(BasicStyle.DIFFUSE_MAP, null) as TextureRessource;
+			var fogEnabled 	: Boolean			= style.get(FogStyle.FOG_ENABLED, false);
+			var diffuse		: INode				= null;
 			
 			if (diffuseMap)
-				return new DiffuseMapTexture();
+				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
+			else
+				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
 			
-			return interpolate(vertexColor);
+			return blend(new Fog(), diffuse, Blending.ALPHA);
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
@@ -75,7 +87,7 @@ package aerys.minko.effect.basic
 			
 			if (style.get(FogStyle.FOG_ENABLED, false))
 				hash += "_fog";
-
+			
 			return hash;
 		}
 	}

@@ -1,7 +1,7 @@
-package aerys.minko.effect.common
+package aerys.minko.render.effect.common
 {
-	import aerys.minko.effect.IEffectPass;
-	import aerys.minko.effect.basic.BasicStyle;
+	import aerys.minko.render.effect.IEffectPass;
+	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.DynamicShader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;

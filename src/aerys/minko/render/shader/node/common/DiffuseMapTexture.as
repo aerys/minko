@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.node.common
 {
-	import aerys.minko.effect.basic.BasicStyle;
+	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;

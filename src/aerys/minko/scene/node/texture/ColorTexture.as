@@ -1,8 +1,8 @@
 package aerys.minko.scene.node.texture
 {
+	import aerys.minko.render.state.Blending;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
-	import aerys.minko.render.state.Blending;
 	
 	import flash.display.BitmapData;
 	
@@ -49,8 +49,8 @@ package aerys.minko.scene.node.texture
 				bitmapData.setPixel32(0, 0, value);
 			else
 			{
-				var enableAlpha : Boolean = (value >> 24) != 0xff;
-				var bmp : BitmapData = new BitmapData(1, 1, enableAlpha, value);
+				var enableAlpha : Boolean 		= (value >> 24) != 0xff;
+				var bmp 		: BitmapData 	= new BitmapData(1, 1, enableAlpha, value);
 				
 				updateFromBitmapData(bmp, false);
 				bmp.dispose();
@@ -62,6 +62,59 @@ package aerys.minko.scene.node.texture
 			super();
 			
 			this.color = color;
+		}
+		
+		public static function fromRGBA(r : Number, g : Number, b : Number, a : Number = 1.) : ColorTexture
+		{
+			return new ColorTexture(((int(a * 255) & 0xff) << 24)
+									+ ((int(r * 255) & 0xff) << 16)
+									+ ((int(g * 255) & 0xff) << 8)
+									+ (int(b * 255) & 0xff));
+		}
+		
+		public static function fromHSV(h : Number, s : Number, v : Number) : ColorTexture
+		{
+			var r	: Number	= 0;
+			var g	: Number	= 0;
+			var b	: Number	= 0;
+			var i	: Number	= 0.;
+			var f	: Number	= 0.;
+			var p	: Number	= 0.;
+			var q	: Number	= 0.;
+			var t 	: Number 	= 0.;
+			
+			if (v == 0.0)
+			{
+				r = g = b = 0;
+			}
+			else
+			{
+				i = Math.floor( h * 6 );
+				f = ( h * 6 ) - i;
+				p = v * ( 1 - s );
+				q = v * ( 1 - ( s * f ) );
+				t = v * ( 1 - ( s * ( 1 - f ) ) );
+				
+				switch (i)
+				{
+					case 1 :
+						return ColorTexture.fromRGBA(q, v, p);
+					case 2 :
+						return ColorTexture.fromRGBA(p, v, t);
+					case 3 :
+						return ColorTexture.fromRGBA(p, q, v);
+					case 4 :
+						return ColorTexture.fromRGBA(t, p, v);
+					case 5 :
+						return ColorTexture.fromRGBA(v, p, q);
+					case 6 :
+					case 0 :
+						return ColorTexture.fromRGBA(v, t, p);
+				}
+				
+			}
+			
+			return ColorTexture.fromRGBA(r, g, b);
 		}
 		
 	}

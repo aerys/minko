@@ -1,13 +1,14 @@
-package aerys.minko.stage
+package aerys.minko.render
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
 	import aerys.minko.Minko;
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.basic.BasicEffect;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.DirectRenderer;
-	import aerys.minko.render.IRenderer;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.basic.BasicEffect;
+	import aerys.minko.render.renderer.DefaultRenderer;
+	import aerys.minko.render.renderer.DirectRenderer;
+	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
@@ -209,7 +210,7 @@ package aerys.minko.stage
 		}
 		
 		/**
-		 * Creates a new Viewport3D object.
+		 * Creates a new Viewport object.
 		 *
 		 * @param width The width of the viewport.
 		 * @param height The height of the viewport.
@@ -224,7 +225,7 @@ package aerys.minko.stage
 			
 			_autoResize = _width == 0 || _height == 0;
 			_antiAliasing = antiAliasing;
-			_rendererClass = rendererType || DirectRenderer;
+			_rendererClass = rendererType || DefaultRenderer;
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
@@ -320,16 +321,15 @@ package aerys.minko.stage
 				
 				// recover all WorldObjets' data.
 				_wdExtracterQuery.visit(scene);
+				
 				var worldData : Dictionary = _wdExtracterQuery.worldData;
+				
 				if (worldData[CameraData] != null)
-				{
 					CameraData(worldData[CameraData]).ratio = _width / _height
-				}
 				
 				// render
 				_renderingQuery.updateWorldData(worldData);
 				_renderingQuery.visit(scene);
-				
 				_renderer.present();
 				//_renderer.clear();
 				
