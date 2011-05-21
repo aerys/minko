@@ -1,6 +1,7 @@
 package aerys.minko.render.shader.node.leaf
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.shader.node.INode;
 	
 	import flash.utils.getQualifiedClassName;
 
@@ -28,6 +29,19 @@ package aerys.minko.render.shader.node.leaf
 		override public function clone() : AbstractConstant
 		{
 			return new WorldParameter(_size, _class, _field, _index);
+		}
+		
+		override public function isSame(otherNode : INode) : Boolean
+		{
+			var otherWorldParam : WorldParameter = otherNode as WorldParameter;
+			
+			return otherWorldParam != null
+				&&_size		== otherWorldParam._size 
+				&& _name	== otherWorldParam._name
+				&& _field	== otherWorldParam._field
+				&& _key		== otherWorldParam._key
+				&& _index	== otherWorldParam._index
+				&& _class	== otherWorldParam._class;
 		}
 	}
 	

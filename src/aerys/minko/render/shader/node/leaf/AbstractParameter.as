@@ -45,20 +45,6 @@ package aerys.minko.render.shader.node.leaf
 			_index	= index;
 		}
 		
-		override public function isSame(otherNode : INode) : Boolean
-		{
-			var nodeType : Class = Object(otherNode).constructor;
-			if (!(this is nodeType))
-				return false;
-			
-			var objParamOtherNode : AbstractParameter = otherNode as AbstractParameter;
-			
-			return _size == objParamOtherNode._size 
-				&& _name == objParamOtherNode._name
-				&& _field == objParamOtherNode._field
-				&& _index == objParamOtherNode._index;
-		}
-		
 		override public function toString() : String
 		{
 			return "Parameter\\n" 

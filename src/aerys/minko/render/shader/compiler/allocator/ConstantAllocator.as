@@ -22,7 +22,7 @@ package aerys.minko.render.shader.compiler.allocator
 		
 		public function computeParameterAllocation() : Vector.<ParameterAllocation>
 		{
-			var result:Vector.<ParameterAllocation> = new Vector.<ParameterAllocation>();
+			var result : Vector.<ParameterAllocation> = new Vector.<ParameterAllocation>();
 			
 			var allocationsLength:int = _allocations.length;
 			for (var i : int = 0; i < allocationsLength; ++i)
@@ -43,12 +43,12 @@ package aerys.minko.render.shader.compiler.allocator
 		
 		public function computeConstantAllocation() : Vector.<Number>
 		{
-			var result:Vector.<Number> = new Vector.<Number>();
+			var result : Vector.<Number> = new Vector.<Number>();
 			
-			var allocationsLength:int = _allocations.length;
+			var allocationsLength : int = _allocations.length;
 			for (var i : int = 0; i < allocationsLength; ++i)
 			{
-				var alloc:Allocation = _allocations[i];
+				var alloc : Allocation = _allocations[i];
 				if (result.length < alloc.offset + alloc.size)
 					result.length = alloc.offset + alloc.size;
 				

@@ -14,7 +14,7 @@ package aerys.minko.render.shader.node.common
 	
 	public class LocalViewDirection extends Dummy implements IVertexNode
 	{
-		public function get interpolated() : IFragmentNode
+		public function get interpolated() : INode
 		{
 			return new Interpolate(this);
 		}

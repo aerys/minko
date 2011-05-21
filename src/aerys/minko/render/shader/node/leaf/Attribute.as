@@ -1,6 +1,5 @@
 package aerys.minko.render.shader.node.leaf
 {
-	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.IVertexNode;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
@@ -10,7 +9,7 @@ package aerys.minko.render.shader.node.leaf
 	{
 		protected var _component : VertexComponent;
 		
-		public function get interpolated() : IFragmentNode
+		public function get interpolated() : INode
 		{
 			return new Interpolate(this);
 		}

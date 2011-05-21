@@ -25,6 +25,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 	
 	public class Compiler
 	{

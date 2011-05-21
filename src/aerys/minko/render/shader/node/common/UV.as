@@ -4,6 +4,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.IVertexNode;
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
@@ -13,15 +14,29 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.scene.visitor.data.TransformData;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
-	public class UV extends Dummy implements IFragmentNode
+	public class UV extends Dummy implements IVertexNode
 	{
+		public function get interpolated() : INode
+		{
+//			var simpleUv : INode = new Multiply4x4(
+//				new Interpolate(new Attribute(VertexComponent.XYZ)),
+//				new TransformParameter(16, TransformData.LOCAL_TO_UV)
+//			);
+//			
+//			var uv : INode = new Divide(
+//				simpleUv, 
+//				new Extract(simpleUv, Components.W)
+//			);
+//			
+//			return uv;
+			return new Interpolate(this);
+		}
+		
 		public function UV()
 		{
-			var simpleUv : INode = new Interpolate(
-				new Multiply4x4(
-					new Attribute(VertexComponent.XYZ),
-					new TransformParameter(16, TransformData.LOCAL_TO_UV)
-				)
+			var simpleUv : INode = new Multiply4x4(
+				new Attribute(VertexComponent.XYZ),
+				new TransformParameter(16, TransformData.LOCAL_TO_UV)
 			);
 			
 			var uv : INode = new Divide(

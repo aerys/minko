@@ -1,7 +1,6 @@
 package aerys.minko.render.shader.node.common
 {
 	import aerys.minko.render.shader.node.Dummy;
-	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.IVertexNode;
 	import aerys.minko.render.shader.node.leaf.Attribute;
@@ -13,7 +12,7 @@ package aerys.minko.render.shader.node.common
 	
 	public class ClipspacePosition extends Dummy implements IVertexNode
 	{
-		public function get interpolated() : IFragmentNode
+		public function get interpolated() : INode
 		{
 			return new Interpolate(this);
 		}
