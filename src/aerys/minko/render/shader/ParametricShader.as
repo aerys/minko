@@ -87,7 +87,7 @@ package aerys.minko.render.shader
 									   local	: TransformData, 
 									   world	: Dictionary) : String
 		{
-			throw new Error();
+			return "";
 		}
 		
 		protected function getOutputPosition(style	: StyleStack, 
