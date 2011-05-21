@@ -23,8 +23,6 @@ package aerys.minko.effect.basic
 		
 		protected var _passes			: Vector.<IEffectPass>	= Vector.<IEffectPass>([this]);
 		
-		public function get passes() 	: Vector.<IEffectPass>		{ return _passes; }
-		
 		public function BasicEffect(priority		: Number		= 0,
 								  	renderTarget	: RenderTarget	= null)
 		{
@@ -32,11 +30,11 @@ package aerys.minko.effect.basic
 			_renderTarget	= renderTarget;
 		}
 		
-		public function prepare(styleStack	: StyleStack, 
+		public function getPasses(styleStack	: StyleStack, 
 								local		: TransformData, 
-								world		: Dictionary) : void
+								world		: Dictionary) : Vector.<IEffectPass>
 		{
-			// NOTHING	
+			return _passes;
 		}
 		
 		override public function fillRenderState(state	: RenderState, 

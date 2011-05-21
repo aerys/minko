@@ -8,10 +8,8 @@ package aerys.minko.effect
 
 	public interface IEffect
 	{
-		function get passes() : Vector.<IEffectPass>;
-		
-		function prepare(styleStack	: StyleStack, 
-						 local		: TransformData, 
-						 world		: Dictionary) : void;
+		function getPasses(styleStack	: StyleStack, 
+						   local		: TransformData, 
+						   world		: Dictionary) : Vector.<IEffectPass>;
 	}
 }

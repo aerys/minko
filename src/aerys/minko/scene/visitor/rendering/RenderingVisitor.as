@@ -206,11 +206,7 @@ package aerys.minko.scene.visitor.rendering
 			for (var i : int = 0; i < numEffects; ++i)
 			{
 				var fx			: IEffect					= _fx[i];
-				
-//				_styleStack.push(fx.style);
-				fx.prepare(_styleStack, _transformData, _worldData);
-				
-				var passes		: Vector.<IEffectPass>		= fx.passes;
+				var passes		: Vector.<IEffectPass>		= fx.getPasses(_styleStack, _transformData, _worldData);;
 				var numPasses 	: int 						= passes.length;
 				
 				for (var j : int = 0; j < numPasses; ++j)
