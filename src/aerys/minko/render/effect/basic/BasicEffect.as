@@ -9,7 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.common.DiffuseMapTexture;
-	import aerys.minko.render.shader.node.common.Fog;
+	import aerys.minko.render.shader.node.fog.Fog;
 	import aerys.minko.render.state.Blending;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;

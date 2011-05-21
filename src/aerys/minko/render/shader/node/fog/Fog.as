@@ -1,8 +1,9 @@
-package aerys.minko.render.shader.node.common
+package aerys.minko.render.shader.node.fog
 {
 	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.common.Depth;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
@@ -15,8 +16,8 @@ package aerys.minko.render.shader.node.common
 		public function Fog()
 		{
 			// get fog parameters
-			var minDepth		: INode = new Constant(100);
-			var deltaDepth		: INode = new Constant(100);
+			var minDepth		: INode = new StyleParameter(1, FogStyle.MIN_DEPTH);
+			var deltaDepth		: INode = new StyleParameter(1, FogStyle.DELTA_DEPTH)
 			
 			// get the current depth.
 			var depth			: INode = new Depth().interpolated;
