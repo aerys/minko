@@ -41,10 +41,11 @@ package aerys.minko.effect.common
 			state.triangleCulling	= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			
 			var triangleCullingModifier : Number = state.triangleCulling == TriangleCulling.BACK ? 1.0 : -1.0;
-			styleStack.set(BasicStyle.TRIANGLE_CULLING_MULTIPLIER, triangleCullingModifier)
 			
-			SHADER.setConstants(styleStack, local, world, state);
-			SHADER.setTextures(styleStack, local, world, state);
+			styleStack.set(BasicStyle.TRIANGLE_CULLING_MULTIPLIER, triangleCullingModifier);
+			
+			SHADER.fillRenderState(state, styleStack, local, world);
+			
 			return true;
 		}
 		

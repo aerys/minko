@@ -2,7 +2,6 @@ package aerys.minko.render.shader.compiler.allocator
 {
 	import aerys.minko.render.shader.node.INode;
 	
-	import mx.states.OverrideBase;
 
 	public class AttributeAllocator extends Allocator
 	{

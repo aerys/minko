@@ -40,8 +40,7 @@ package aerys.minko.effect.common
 			state.shader			= SHADER;
 			state.triangleCulling	= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			
-			SHADER.setConstants(styleStack, local, world, state);
-			SHADER.setTextures(styleStack, local, world, state);
+			SHADER.fillRenderState(state, styleStack, local, world);
 			
 			return true;
 		}

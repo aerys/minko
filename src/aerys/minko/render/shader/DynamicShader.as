@@ -2,7 +2,6 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.DebugCompiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.node.INode;
@@ -13,16 +12,12 @@ package aerys.minko.render.shader
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformData;
-	import aerys.minko.stage.Viewport;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
-	import flash.display.Bitmap;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	
-	import mx.charts.chartClasses.InstanceCache;
 	
 	public class DynamicShader extends Shader
 	{
@@ -38,7 +33,9 @@ package aerys.minko.render.shader
 									  color				: INode) : DynamicShader
 		{
 			var compiler : DebugCompiler = new DebugCompiler();
+			
 			compiler.load(clipspacePosition, color);
+			
 			return compiler.compileShader();
 		}
 		
@@ -60,14 +57,28 @@ package aerys.minko.render.shader
 			super(vertexShader, fragmentShader, vertexInput);
 		}
 		
-		public function setTextures(styleStack	: StyleStack,
-									localData	: TransformData,
-									worldData	: Object,
-									state		: RenderState) : void
+		public function fillRenderState(state	: RenderState, 
+										style	: StyleStack, 
+										local	: TransformData, 
+										world	: Dictionary) : Boolean
 		{
-			var texture : TextureRessource, samplerStyleName : String;
+			setTextures(state, style, local, world);
+			setConstants(state, style, local, world);
 			
-			var samplerCount : uint = _samplers.length;
+			state.shader = this;
+			
+			return true;
+		}
+		
+		protected function setTextures(state		: RenderState,
+									   styleStack	: StyleStack,
+								   	   localData	: TransformData,
+									   worldData	: Object) : void
+		{
+			var texture 			: TextureRessource	= null;
+			var samplerStyleName 	: String			= null;
+			var samplerCount 		: uint 				= _samplers.length;
+			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleName = _samplers[i];
@@ -76,10 +87,10 @@ package aerys.minko.render.shader
 			}
 		}
 		
-		public function setConstants(styleStack	: StyleStack,
-									 local		: TransformData,
-									 world		: Dictionary,
-									 state		: RenderState) : void
+		protected function setConstants(state		: RenderState,
+									    styleStack	: StyleStack,
+										local		: TransformData,
+										world		: Dictionary) : void
 		{
 			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
 			updateConstData(_fsConstData, _fsParams, styleStack, local, world);

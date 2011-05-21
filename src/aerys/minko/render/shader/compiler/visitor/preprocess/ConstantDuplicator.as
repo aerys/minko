@@ -3,11 +3,8 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
-	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	
-	import org.osmf.utils.OSMFStrings;
 	
 	public class ConstantDuplicator implements IShaderNodeVisitor
 	{

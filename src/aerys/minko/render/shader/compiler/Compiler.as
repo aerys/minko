@@ -95,7 +95,9 @@ package aerys.minko.render.shader.compiler
 		protected function removeDummyNodes() : void
 		{
 			var dummyRemover : DummyRemover = new DummyRemover();
+			
 			dummyRemover.processShader(_clipspacePosNode, _colorNode);
+			
 			_clipspacePosNode	= dummyRemover.clipspacePos;
 			_colorNode			= dummyRemover.color;
 		}
@@ -127,18 +129,19 @@ package aerys.minko.render.shader.compiler
 		protected function allocateRegistries() : void
 		{
 			// Allocate all registries on both shaders (va, vt, vc, v, ft, fs, fc)
-			_attrAllocator		.computeRegisterState(true);
-			_varyingAllocator	.computeRegisterState(true);
-			_vsTmpAllocator		.computeRegisterState(false);
-			_vsConstAllocator	.computeRegisterState(false);
-			_fsTmpAllocator		.computeRegisterState(false);
-			_fsConstAllocator	.computeRegisterState(false);
+			_attrAllocator.computeRegisterState(true);
+			_varyingAllocator.computeRegisterState(true);
+			_vsTmpAllocator.computeRegisterState(false);
+			_vsConstAllocator.computeRegisterState(false);
+			_fsTmpAllocator.computeRegisterState(false);
+			_fsConstAllocator.computeRegisterState(false);
 		}
 		
 		protected function createAllocationTables() : void
 		{
 			var a : Array = _attrAllocator.getAllocations();
-			for (var i:int = 0; i < a.length; ++i)
+			
+			for (var i : int = 0; i < a.length; ++i)
 				_vertexInput.push(Attribute(a[i]).vertexComponent);
 			
 			_vsConstData	= _vsConstAllocator.computeConstantAllocation();
