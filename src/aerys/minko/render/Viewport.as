@@ -289,7 +289,7 @@ package aerys.minko.render
 				updateRectangle();
 				_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
 				
-				_renderer = new DirectRenderer(this, _stage3d.context3D);
+				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
 				_wdExtracterQuery = new WorldDataExtracterVisitor();
 				_renderingQuery = new RenderingVisitor(_renderer);

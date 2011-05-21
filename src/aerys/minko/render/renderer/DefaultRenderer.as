@@ -1,6 +1,7 @@
 package aerys.minko.render.renderer
 {
 	import aerys.common.Factory;
+	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.state.RenderState;
@@ -14,6 +15,7 @@ package aerys.minko.render.renderer
 	
 	public class DefaultRenderer implements IRenderer
 	{
+		use namespace minko;
 		use namespace minko_render;
 		
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
@@ -41,8 +43,12 @@ package aerys.minko.render.renderer
 		public function get drawingTime()	: int			{ return _drawingTime; }
 		public function get frameId()		: uint			{ return _frame; }
 		
-		public function DefaultRenderer()
+		public function DefaultRenderer(viewport : Viewport, context : Context3D)
 		{
+			_viewport = viewport;
+			_context = context;
+			
+			_context.enableErrorChecking = DEBUG;
 		}
 		
 		public function begin()	: void
@@ -97,7 +103,7 @@ package aerys.minko.render.renderer
 					return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
 				});
 			}
-			trace(_numSessions);
+			
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
 				_currentSession = _sessions[i];
