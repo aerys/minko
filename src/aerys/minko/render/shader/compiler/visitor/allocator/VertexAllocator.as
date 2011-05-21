@@ -46,9 +46,12 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			
 			shaderNode.accept(this);
 			
-			++_operationId;
-			
-			if (shaderNode is Interpolate || shaderNode is Extract)
+			if (shaderNode is Interpolate)
+			{
+				++_operationId;
+				reportOperationArgumentsUsage(AbstractOperation(shaderNode));
+			}
+			else if (shaderNode is Extract)
 			{
 				reportOperationArgumentsUsage(AbstractOperation(shaderNode));
 			}
@@ -56,16 +59,19 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			{
 				var combineNode : Combine = shaderNode as Combine;
 				
+				++_operationId;
 				reportArgumentUsage(combineNode.arg1, false);
+				
 				_tmpAlloc.allocate(combineNode, _operationId);
 				
 				++_operationId;
-				
 				reportArgumentUsage(combineNode.arg2, false);
 			}
 			else if (shaderNode is AbstractOperation)
 			{
 				var operationNode : AbstractOperation = AbstractOperation(shaderNode);
+				
+				++_operationId;
 				reportOperationArgumentsUsage(operationNode);
 				
 				// on ne traite pas le noeud final.
