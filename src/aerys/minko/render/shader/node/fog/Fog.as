@@ -1,8 +1,10 @@
-package aerys.minko.render.shader.node.common
+package aerys.minko.render.shader.node.fog
 {
 	import aerys.minko.render.effect.fog.FogStyle;
+	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.common.Depth;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
@@ -10,6 +12,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
+	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.scene.visitor.data.CameraData;
 	
 	public class Fog extends Dummy
@@ -18,8 +21,8 @@ package aerys.minko.render.shader.node.common
 		{
 			start ||= new Constant(0.);
 			distance ||= new WorldParameter(1, CameraData, CameraData.Z_FAR);
-			color ||= new Constant(0., 0., 0.);
-			
+			color ||= new Extract(new Constant(0.), Components.XXX);
+						
 			// get the current depth.
 			var depth	: INode = new Depth().interpolated;
 			

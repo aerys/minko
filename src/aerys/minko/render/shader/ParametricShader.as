@@ -2,7 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.common.Fog;
+	import aerys.minko.render.shader.node.fog.Fog;
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.Sampler;
@@ -13,7 +13,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
@@ -33,7 +32,6 @@ package aerys.minko.render.shader
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	import flash.geom.Point;
-	import flash.net.getClassByAlias;
 	import flash.utils.Dictionary;
 	
 	public class ParametricShader

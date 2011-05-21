@@ -19,7 +19,7 @@ package aerys.minko.render.shader.node.operation.manipulation
 		
 		override public function get size() : uint
 		{
-			return 4;
+			return _arg1.size;
 		}
 		
 		override public function get name() : String
@@ -35,9 +35,6 @@ package aerys.minko.render.shader.node.operation.manipulation
 		public function RootWrapper(arg1 : INode)
 		{
 			super(arg1, null);
-			
-			if (arg1.size != 4)
-				throw new Error('This should never happen.');
 		}
 	}
 }

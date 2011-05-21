@@ -18,18 +18,19 @@ package aerys.minko.render.shader.node.common
 	{
 		public function get interpolated() : INode
 		{
-//			var simpleUv : INode = new Multiply4x4(
-//				new Interpolate(new Attribute(VertexComponent.XYZ)),
-//				new TransformParameter(16, TransformData.LOCAL_TO_UV)
-//			);
-//			
-//			var uv : INode = new Divide(
-//				simpleUv, 
-//				new Extract(simpleUv, Components.W)
-//			);
-//			
-//			return uv;
-			return new Interpolate(this);
+			var simpleUv : INode = new Interpolate(
+				new Multiply4x4(
+					new Attribute(VertexComponent.XYZ),
+					new TransformParameter(16, TransformData.LOCAL_TO_UV)
+				)
+			);
+			
+			var uv : INode = new Divide(
+				simpleUv, 
+				new Extract(simpleUv, Components.W)
+			);
+			
+			return uv;
 		}
 		
 		public function UV()
