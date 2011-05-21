@@ -10,7 +10,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.visitor.data.Style;
 	import aerys.minko.scene.visitor.data.TransformManager;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
-	import aerys.minko.type.Transform3D;
+	import aerys.minko.type.math.Transform3D;
 
 	/**
 	 * Model3D objects are visible scene objects. They contain references to:

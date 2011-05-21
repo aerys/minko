@@ -1,11 +1,8 @@
-package aerys.minko.type
+package aerys.minko.type.math
 {
 	import aerys.common.Factory;
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.math.ConstVector4;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Orientation3D;

@@ -1,7 +1,6 @@
 package aerys.minko.type.stream
 {
 	import aerys.common.IVersionnable;
-	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -47,7 +46,7 @@ package aerys.minko.type.stream
 			_dynamic = dynamic;
 		}
 		
-		minko function getNativeVertexBuffer3D(context : Context3D) : VertexBuffer3D
+		minko_stream function getNativeVertexBuffer3D(context : Context3D) : VertexBuffer3D
 		{
 			var currentLength : int = _data ? _data.length / _format.dwordsPerVertex : _length;
 			

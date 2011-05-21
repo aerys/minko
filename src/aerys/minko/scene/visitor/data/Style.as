@@ -5,6 +5,7 @@ package aerys.minko.scene.visitor.data
 	public class Style implements IVersionnable
 	{
 		internal var	_data : Object;
+		
 		private var		_version : uint;
 		
 		public function get version() : uint	
@@ -18,19 +19,21 @@ package aerys.minko.scene.visitor.data
 			_version	= 0;
 		}
 		
-		public function get(name : String, defaultValue : * = undefined) : * 
+		public function get(name : String, defaultValue : Object = null) : Object 
 		{
-			var data : * = _data[name];
-			if (data != undefined)
+			var data : Object = _data[name];
+			
+			if (data !== null)
 				return data;
 			
 			throw new Error();
 		}
 		
-		public function set(name : String, value : *) : Style 
+		public function set(name : String, value : Object) : Style 
 		{
 			_data[name] = value;
 			++_version;
+			
 			return this;
 		}
 		
@@ -38,6 +41,7 @@ package aerys.minko.scene.visitor.data
 		{
 			_data = new Object();
 			_version = 0;
+			
 			return this;
 		}
 		

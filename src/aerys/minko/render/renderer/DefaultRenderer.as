@@ -25,14 +25,13 @@ package aerys.minko.render.renderer
 		
 		private var _context		: Context3D					= null;
 		private var _state			: RenderState				= new RenderState();
-		private var _currentState	: RenderState				= new RenderState();
+		private var _actualState	: RenderState				= new RenderState();
 		private var _transform		: TransformManager			= new TransformManager();
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
-		private var _rtSessions		: Dictionary				= null;
 		private var _sessions		: Vector.<RenderSession>	= new Vector.<RenderSession>();
 		private var _currentSession	: RenderSession				= new RenderSession();
 		private var _numSessions	: int						= 0;
@@ -53,19 +52,19 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
+			_state = RENDER_STATE.create();
+			_state.clear();
+			
+			_currentSession = RENDER_SESSION.create();
+			_currentSession.renderState = _state;
+			_currentSession.offsets.length = 0;
+			_currentSession.numTriangles.length = 0;
 		}
 		
 		public function end() : void
 		{
 			if (_currentSession && _currentSession.renderState)
 				_sessions[int(_numSessions++)] = _currentSession;
-			
-			_state = RENDER_STATE.create();
-			_state.clear();
-			_currentSession = RENDER_SESSION.create();
-			_currentSession.renderState = _state;
-			_currentSession.offsets.length = 0;
-			_currentSession.numTriangles.length = 0;
 		}
 		
 		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
@@ -86,8 +85,13 @@ package aerys.minko.render.renderer
 							  mask		: uint		= 0xffffffff)  :void
 		{
 			_context.clear(red, green, blue, alpha, depth, stencil, mask);
+			
 			_numTriangles = 0;
 			_drawingTime = 0;
+			_currentSession = null;
+			_numSessions = 0;
+			
+			_actualState.clear();
 			
 			end();
 		}
@@ -96,25 +100,19 @@ package aerys.minko.render.renderer
 		{
 			var time : int = getTimer();
 			
-			if (SORT)
-			{
-				// FIXME crappy coding.
-				_sessions = _sessions.sort(function(rs1 : RenderSession, rs2 : RenderSession) : Number {
-					return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
-				});
-			}
+			if (SORT && _numSessions > 1)
+				_sessions = _sessions.sort(compareRenderStates);
 			
 			for (var i : int = 0; i < _numSessions; ++i)
 			{
 				_currentSession = _sessions[i];
 				
-				var state	: RenderState 	= _currentSession.renderState;
-				
-				state.prepareContext(_context, _currentState);
-				
+				var state			: RenderState 	= _currentSession.renderState;
 				var offsets 		: Vector.<uint>	= _currentSession.offsets;
 				var numTriangles 	: Vector.<int> 	= _currentSession.numTriangles;
 				var numCalls 		: int 			= offsets.length;
+				
+				state.prepareContext(_context, _actualState);
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{
@@ -125,13 +123,11 @@ package aerys.minko.render.renderer
 				}
 				
 				RENDER_SESSION.free(_currentSession);
-				RENDER_STATE.free(_currentState);
+				RENDER_STATE.free(_actualState);
 				
-				_currentState = state;
+				_actualState = state;
 			}
 			
-			_currentSession = null;
-			_numSessions = 0;
 			_context.present();
 			
 			_drawingTime += getTimer() - time;
@@ -141,6 +137,11 @@ package aerys.minko.render.renderer
 		public function drawToBitmapData(bitmapData : BitmapData) : void
 		{
 			_context.drawToBitmapData(bitmapData);
+		}
+		
+		private function compareRenderStates(rs1 : RenderSession, rs2 : RenderSession) : Number
+		{
+			return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
 		}
 	}
 }

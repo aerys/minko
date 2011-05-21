@@ -1,6 +1,6 @@
 package aerys.minko.type.interpolation
 {
-	import aerys.minko.type.Transform3D;
+	import aerys.minko.type.math.Transform3D;
 	import aerys.minko.type.math.Vector4;
 	
 	/**

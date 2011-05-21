@@ -65,19 +65,21 @@ package aerys.minko.render.effect.basic
 												   local	: TransformData,
 												   world	: Dictionary) : INode
 		{
-			var diffuseMap 	: TextureRessource 	= style.get(BasicStyle.DIFFUSE_MAP, null) as TextureRessource;
-			var fogEnabled 	: Boolean			= style.get(FogStyle.FOG_ENABLED, false);
+			var diffuseMap 	: TextureRessource 	= style.get(BasicStyle.DIFFUSE_MAP, null)
+												  as TextureRessource;
 			var diffuse		: INode				= null;
 			
 			if (diffuseMap)
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
 				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
-			
+		
 			// fog
-			if (fogEnabled)
+			if (style.get(FogStyle.FOG_ENABLED, false))
 			{
-				var zFar		: INode	= getWorldParameter(1, CameraData, CameraData.Z_FAR);
+				var zFar		: INode	= style.isSet(FogStyle.DISTANCE)
+										  ? getStyleParameter(1, FogStyle.DISTANCE)
+										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
 				var fogColor 	: *		= style.isSet(FogStyle.COLOR)
 										  ? getStyleParameter(3, FogStyle.COLOR)
 										  : ConstVector4.ZERO;

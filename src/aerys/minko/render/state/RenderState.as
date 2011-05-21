@@ -3,6 +3,7 @@ package aerys.minko.render.state
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.Shader;
@@ -30,6 +31,7 @@ package aerys.minko.render.state
 	{
 		use namespace minko;
 		use namespace minko_render;
+		use namespace minko_stream;
 		
 		private static const NUM_VERTEX_CONSTS		: int				= 128;
 		private static const NUM_FRAGMENT_CONSTS	: int				= 28;
@@ -511,16 +513,18 @@ package aerys.minko.render.state
 					context.setTextureAt(i, texture);
 				
 				// set vertex buffers
-				var vertexFlag : uint = VERTEX_STREAM_1 << i;
+				var vertexFlag 	 : uint 			= VERTEX_STREAM_1 << i;
 				var vertexStream : VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
 				var vertexOffset : int				= _vertexOffsets[i];
 				var vertexFormat : String			= _vertexFormats[i];
 				
-				if (!vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
+				if (vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
+				{
 					context.setVertexBufferAt(i,
 											  vertexStream ? vertexStream.getNativeVertexBuffer3D(context) : null,
 											  vertexOffset,
 											  vertexFormat);
+				}
 			}
 			
 			if (_setFlags & DEPTH_MASK

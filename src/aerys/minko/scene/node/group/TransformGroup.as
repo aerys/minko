@@ -3,7 +3,7 @@
 	import aerys.minko.scene.visitor.data.TransformManager;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.scene.node.ITransformable;
-	import aerys.minko.type.Transform3D;
+	import aerys.minko.type.math.Transform3D;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	/**

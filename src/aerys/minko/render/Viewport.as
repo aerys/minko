@@ -331,12 +331,10 @@ package aerys.minko.render
 				_renderingQuery.updateWorldData(worldData);
 				_renderingQuery.visit(scene);
 				_renderer.present();
-				//_renderer.clear();
-				
-				_sceneSize = _renderingQuery.numNodes;
-				
+								
 				Factory.sweep();
 				
+				_sceneSize = _renderingQuery.numNodes;
 				_time = getTimer() - time;
 				_drawTime = _renderer.drawingTime;
 			}
