@@ -1,4 +1,4 @@
-package aerys.minko.render
+package aerys.minko.render.renderer
 {
 	import aerys.minko.render.state.RenderState;
 

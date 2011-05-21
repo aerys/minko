@@ -1,8 +1,8 @@
-package aerys.minko.effect.basic
+package aerys.minko.render.effect.basic
 {
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.IEffectPass;
-	import aerys.minko.effect.fog.FogStyle;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectPass;
+	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.ParametricShader;
@@ -31,8 +31,8 @@ package aerys.minko.effect.basic
 		}
 		
 		public function getPasses(styleStack	: StyleStack, 
-								local		: TransformData, 
-								world		: Dictionary) : Vector.<IEffectPass>
+								  local			: TransformData, 
+								  world			: Dictionary) : Vector.<IEffectPass>
 		{
 			return _passes;
 		}

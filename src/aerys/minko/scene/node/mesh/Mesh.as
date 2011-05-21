@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.effect.basic.BasicStyle;
+	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.AbstractScene;

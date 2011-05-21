@@ -1,10 +1,10 @@
 package aerys.minko.scene.visitor.rendering
 {
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.IEffectPass;
-	import aerys.minko.effect.IEffectTarget;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectPass;
+	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.IRenderer;
+	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.node.*;

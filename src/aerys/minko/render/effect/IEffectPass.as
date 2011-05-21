@@ -1,6 +1,6 @@
-package aerys.minko.effect
+package aerys.minko.render.effect
 {
-	import aerys.minko.render.IRenderer;
+	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformData;

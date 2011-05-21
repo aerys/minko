@@ -1,16 +1,16 @@
 package aerys.minko.scene.visitor.rendering
 {
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.IEffectPass;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.IRenderer;
+	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.scene.visitor.data.TransformManager;
-	import aerys.minko.stage.Viewport;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	

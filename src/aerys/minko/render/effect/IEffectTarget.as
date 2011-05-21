@@ -1,4 +1,4 @@
-package aerys.minko.effect
+package aerys.minko.render.effect
 {
 	public interface IEffectTarget
 	{

@@ -2,6 +2,7 @@ package aerys.minko.render.state
 {
 	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.Shader;
@@ -28,6 +29,7 @@ package aerys.minko.render.state
 	public final class RenderState implements IVersionnable
 	{
 		use namespace minko;
+		use namespace minko_render;
 		
 		private static const NUM_VERTEX_CONSTS		: int				= 128;
 		private static const NUM_FRAGMENT_CONSTS	: int				= 28;
@@ -116,7 +118,7 @@ package aerys.minko.render.state
 		private var _vertexStreams		: Vector.<VertexStream>	= new Vector.<VertexStream>(8, true);
 		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
 		private var _vertexFormats		: Vector.<String>			= new Vector.<String>(8, true);
-		private var _indexStream		: IndexStream				= null;
+		minko_render var _indexStream	: IndexStream				= null;
 		
 		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>(NUM_VERTEX_CONSTS * 4);
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
@@ -131,11 +133,6 @@ package aerys.minko.render.state
 			return _priority;
 		}
 
-		minko function get indexStream() : IndexStream
-		{
-			return _indexStream;
-		}
-		
 		public function get rectangle() : Rectangle
 		{
 			return _setFlags & SCISSOR_RECTANGLE ? _rectangle : null;

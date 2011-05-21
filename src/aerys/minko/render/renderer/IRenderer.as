@@ -1,6 +1,5 @@
-package aerys.minko.render
+package aerys.minko.render.renderer
 {
-	import aerys.minko.stage.Viewport;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.state.RenderState;
 	
@@ -8,6 +7,7 @@ package aerys.minko.render
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
+	import aerys.minko.render.Viewport;
 
 	public interface IRenderer
 	{

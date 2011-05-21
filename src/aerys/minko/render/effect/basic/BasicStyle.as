@@ -1,4 +1,4 @@
-package aerys.minko.effect.basic
+package aerys.minko.render.effect.basic
 {
 	public final class BasicStyle
 	{

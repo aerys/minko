@@ -1,9 +1,9 @@
 package aerys.minko.scene.node
 {
 	import aerys.common.IVersionnable;
-	import aerys.minko.effect.IEffect;
-	import aerys.minko.effect.IEffectTarget;
-	import aerys.minko.effect.basic.BasicEffect;
+	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectTarget;
+	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.ns.minko;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
