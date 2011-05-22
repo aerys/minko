@@ -112,7 +112,7 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
-				var data : * = getParameterData(param, styleStack, local, world);
+				var data : Object = getParameterData(param, styleStack, local, world);
 				
 				loadParameterData(paramAlloc, constData, data);
 			}
@@ -121,7 +121,7 @@ package aerys.minko.render.shader
 		private function getParameterData(param			: AbstractParameter,
 										  styleStack	: StyleStack,
 										  local			: TransformData,
-										  world			: Dictionary) : *
+										  world			: Dictionary) : Object
 		{
 			if (param is StyleParameter)
 			{
@@ -164,14 +164,14 @@ package aerys.minko.render.shader
 		
 		private function loadParameterData(paramAlloc	: ParameterAllocation,
 										   constData	: Vector.<Number>,
-										   data			: *) : void
+										   data			: Object) : void
 		{
 			var offset	: uint	= paramAlloc._offset;
 			var size	: uint	= paramAlloc._parameter._size;
 			
 			if (data is int || data is uint)
 			{
-				var intData : int = data;
+				var intData : int = data as int;
 				
 				if (size == 1)
 				{
@@ -202,7 +202,7 @@ package aerys.minko.render.shader
 					throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
 						'defined as size=' + size + ' but only a Number was found');
 				
-				constData[offset] = data;
+				constData[offset] = data as Number;
 			}
 			else if (data is Vector4)
 			{

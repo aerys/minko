@@ -25,7 +25,7 @@ package aerys.minko.type
 		}
 		
 		public function create(autoMark : Boolean 	= false,
-							   values 	: Object 	= null) : *
+							   values 	: Object 	= null) : Object
 		{
 			var result : Object = _numFree ? _free[int(--_numFree)]
 										   : new _class();

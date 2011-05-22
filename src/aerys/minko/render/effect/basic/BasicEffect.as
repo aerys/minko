@@ -9,6 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.state.Blending;
+	import aerys.minko.render.state.CompareMode;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.render.state.TriangleCulling;
 	import aerys.minko.scene.visitor.data.CameraData;
@@ -46,6 +47,7 @@ package aerys.minko.render.effect.basic
 		{
 			super.fillRenderState(state, style, local, world);
 			
+			state.depthMask			= CompareMode.LESS;
 			state.blending			= style.get(BasicStyle.BLENDING, Blending.ALPHA) as uint;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			state.priority			= _priority;
@@ -65,11 +67,9 @@ package aerys.minko.render.effect.basic
 												   local	: TransformData,
 												   world	: Dictionary) : INode
 		{
-			var diffuseMap 	: TextureRessource 	= style.get(BasicStyle.DIFFUSE_MAP, null)
-												  as TextureRessource;
-			var diffuse		: INode				= null;
+			var diffuse	: INode		= null;
 			
-			if (diffuseMap)
+			if (style.isSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
 				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);

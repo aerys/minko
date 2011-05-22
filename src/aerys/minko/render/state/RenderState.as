@@ -117,7 +117,7 @@ package aerys.minko.render.state
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
 	
-		private var _vertexStreams		: Vector.<VertexStream>	= new Vector.<VertexStream>(8, true);
+		private var _vertexStreams		: Vector.<VertexStream>		= new Vector.<VertexStream>(8, true);
 		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
 		private var _vertexFormats		: Vector.<String>			= new Vector.<String>(8, true);
 		minko_render var _indexStream	: IndexStream				= null;
@@ -306,7 +306,7 @@ package aerys.minko.render.state
 		public function setFragmentConstants(register	: int,
 											 data		: Vector.<Number>) : void
 		{
-			var offset : int = register * 4;
+			var offset 	: int = register * 4;
 			var numData : int = data.length;
 			
 			for (var i : int = 0; i < numData; ++i)
@@ -380,7 +380,7 @@ package aerys.minko.render.state
 			}
 			else
 			{
-				if (_shader)
+				if (_setFlags & SHADER)
 					_shader.prepare(context);
 				
 				if (_setFlags & VERTEX_CONSTS)
@@ -408,15 +408,9 @@ package aerys.minko.render.state
 				{
 					// set texture
 					if (_setFlags & (TEXTURE_1 << i))
-					{
-						var texture : Texture = _textures[i].getNativeTexture(context);
-						
-						context.setTextureAt(i, texture);
-					}
+						context.setTextureAt(i, _textures[i].getNativeTexture(context));
 					else
-					{
 						context.setTextureAt(i, null);
-					}
 					
 					// set vertex buffer
 					if (_setFlags & (VERTEX_STREAM_1 << i))
@@ -440,11 +434,12 @@ package aerys.minko.render.state
 						if (_depthMask == COMPARE_FLAGS[j])
 						{
 							context.setDepthTest(true, COMPARE_STR[j]);
+							
 							break ;
 						}
 					}
 				}
-				
+
 				if (_setFlags & RENDER_TARGET)
 				{
 					if (_renderTarget == null)
@@ -504,13 +499,17 @@ package aerys.minko.render.state
 			for (var i : int = 0; i < 8; ++i)
 			{
 				// set textures
-				var textureFlag			: uint			= TEXTURE_1 << i;
-				var textureRessource	: TextureRessource = _textures[i];
-				var texture				: TextureBase 	= (_setFlags & textureFlag)
-											  	  ? textureRessource.getNativeTexture(context)
-											  	  : null;
+				var textureFlag			: uint				= TEXTURE_1 << i;
+				var textureRessource	: TextureRessource 	= _textures[i];
+				var texture				: TextureBase 		= (_setFlags & textureFlag)
+											  	  			  ? textureRessource.getNativeTexture(context)
+											  	  			  : null;
+				trace(_textures);
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
+				{
+					trace(i, texture);
 					context.setTextureAt(i, texture);
+				}
 				
 				// set vertex buffers
 				var vertexFlag 	 : uint 			= VERTEX_STREAM_1 << i;

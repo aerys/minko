@@ -25,7 +25,6 @@ package aerys.minko.render.renderer
 		private var _context		: Context3D					= null;
 		private var _currentState	: RenderState				= new RenderState();
 		private var _actualState	: RenderState				= null;
-		private var _transform		: TransformManager			= new TransformManager();
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
@@ -69,10 +68,12 @@ package aerys.minko.render.renderer
 							  mask		: uint		= 0xffffffff) : void
 		{
 			_context.clear(red, green, blue, alpha, depth, stencil, mask);
+			
 			_numTriangles = 0;
 			_drawingTime = 0;
+			
 			_actualState = null;
-			_currentState.clear();
+			_currentState = null;
 		}
 		
 		public function present() : void
@@ -92,14 +93,13 @@ package aerys.minko.render.renderer
 		
 		public function begin() : void
 		{
-			
+			_currentState = RENDER_STATE.create(true);
+			_currentState.clear();
 		}
 		
 		public function end() : void
 		{
 			_actualState = _currentState;
-			_currentState = RENDER_STATE.create(true);
-			_currentState.clear();
 		}
 		
 	}

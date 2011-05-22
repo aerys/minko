@@ -6,6 +6,7 @@ package aerys.minko.render.renderer
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.TransformManager;
+	import aerys.minko.type.stream.IndexStream;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -24,9 +25,8 @@ package aerys.minko.render.renderer
 		private static const DEBUG			: Boolean			= true;
 		
 		private var _context		: Context3D					= null;
-		private var _state			: RenderState				= new RenderState();
-		private var _actualState	: RenderState				= new RenderState();
-		private var _transform		: TransformManager			= new TransformManager();
+		private var _currentState	: RenderState				= null;
+		private var _actualState	: RenderState				= null;
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
@@ -36,7 +36,7 @@ package aerys.minko.render.renderer
 		private var _currentSession	: RenderSession				= new RenderSession();
 		private var _numSessions	: int						= 0;
 		
-		public function get state() 		: RenderState	{ return _state; }
+		public function get state() 		: RenderState	{ return _currentState; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
 		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
@@ -52,11 +52,11 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
-			_state = RENDER_STATE.create();
-			_state.clear();
+			_currentState = RENDER_STATE.create();
+			_currentState.clear();
 			
 			_currentSession = RENDER_SESSION.create();
-			_currentSession.renderState = _state;
+			_currentSession.renderState = _currentState;
 			_currentSession.offsets.length = 0;
 			_currentSession.numTriangles.length = 0;
 		}
@@ -65,22 +65,22 @@ package aerys.minko.render.renderer
 		{
 			if (_currentSession && _currentSession.renderState)
 				_sessions[int(_numSessions++)] = _currentSession;
+			
+			_currentState = null;
+			_currentSession = null;
 		}
 		
 		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
 		{
-			_currentSession.renderState = _state;
 			_currentSession.offsets.push(offset);
 			_currentSession.numTriangles.push(numTriangles);
-			
-			_numTriangles += numTriangles == -1 ? _state._indexStream.length / 3. : numTriangles;
 		}
 		
 		public function clear(red		: Number	= 0.,
 							  green		: Number	= 0.,
 							  blue		: Number	= 0.,
-							  alpha		: Number	= 0.,
-							  depth		: Number	= 0.,
+							  alpha		: Number	= 1.,
+							  depth		: Number	= 1.,
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff)  :void
 		{
@@ -88,12 +88,12 @@ package aerys.minko.render.renderer
 			
 			_numTriangles = 0;
 			_drawingTime = 0;
+			
+			_actualState = null;
+			_currentState = null;
+			
 			_currentSession = null;
 			_numSessions = 0;
-			
-			_actualState.clear();
-			
-			end();
 		}
 		
 		public function present() : void
@@ -116,14 +116,20 @@ package aerys.minko.render.renderer
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{
-					var ib : IndexBuffer3D = state._indexStream.getIndexBuffer3D(_context);
+					var iStream : IndexStream	= state._indexStream;
+					var iBuffer : IndexBuffer3D = iStream.getIndexBuffer3D(_context);
+					var count	: int			= numTriangles[j];
 					
-					if (ib)
-						_context.drawTriangles(ib, offsets[j], numTriangles[j]);
+					_numTriangles += count == -1
+									 ? state._indexStream.length / 3.
+									 : count;
+					
+					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
 				
 				RENDER_SESSION.free(_currentSession);
-				RENDER_STATE.free(_actualState);
+				if (_actualState)
+					RENDER_STATE.free(_actualState);
 				
 				_actualState = state;
 			}
@@ -141,7 +147,7 @@ package aerys.minko.render.renderer
 		
 		private function compareRenderStates(rs1 : RenderSession, rs2 : RenderSession) : Number
 		{
-			return 1000 * (rs2.renderState.priority - rs1.renderState.priority);
+			return 1000. * (rs2.renderState.priority - rs1.renderState.priority);
 		}
 	}
 }

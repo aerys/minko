@@ -42,7 +42,7 @@ package aerys.minko.scene.visitor.data
 			return get(name, _emptyObject) !== _emptyObject;
 		}
 		
-		public function set(name : String, value : *) : StyleStack
+		public function set(name : String, value : Object) : StyleStack
 		{
 			var current : Object = _data[0];
 			

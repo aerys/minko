@@ -24,7 +24,6 @@ package aerys.minko.scene.visitor.rendering
 		
 		protected var _renderer			: IRenderer;
 		protected var _numNodes			: uint;
-		protected var _frameId			: uint;
 		
 		protected var _styleStack		: StyleStack;
 		protected var _worldData		: Dictionary;
@@ -48,7 +47,6 @@ package aerys.minko.scene.visitor.rendering
 			_fx				= new Vector.<IEffect>();
 			
 			_transformData	= new TransformData(_tm);
-			_frameId		= 0;
 		}
 		
 		
@@ -60,7 +58,6 @@ package aerys.minko.scene.visitor.rendering
 			
 			_worldData		= null;
 			_numNodes		= 0;
-			++_frameId;
 			
 			if (defaultEffect)
 			{
@@ -89,8 +86,6 @@ package aerys.minko.scene.visitor.rendering
 				_tm.view		= cameraData.view;
 				_tm.projection	= cameraData.projection;
 			}
-			
-			
 		}
 		
 		public function visit(scene : IScene) : void
@@ -178,7 +173,7 @@ package aerys.minko.scene.visitor.rendering
 		protected function queryIMesh(scene : IMesh) : void
 		{
 			for each (var worldObject : IWorldData in _worldData)
-				worldObject && worldObject.invalidate();
+				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
 			var vertexStreamList 	: VertexStreamList	= scene.vertexStreamList;
@@ -190,9 +185,9 @@ package aerys.minko.scene.visitor.rendering
 			
 			for (var i : int = 0; i < numEffects; ++i)
 			{
-				var fx			: IEffect					= _fx[i];
-				var passes		: Vector.<IEffectPass>		= fx.getPasses(_styleStack, _transformData, _worldData);;
-				var numPasses 	: int 						= passes.length;
+				var fx			: IEffect				= _fx[i];
+				var passes		: Vector.<IEffectPass>	= fx.getPasses(_styleStack, _transformData, _worldData);;
+				var numPasses 	: int 					= passes.length;
 				
 				for (var j : int = 0; j < numPasses; ++j)
 				{
