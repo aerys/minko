@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;

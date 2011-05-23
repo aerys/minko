@@ -1,6 +1,6 @@
 package aerys.minko.type.math
 {
-	import aerys.common.Factory;
+	import aerys.minko.type.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.state.FrustumCulling;
 	import aerys.minko.type.bounding.BoundingBox;

@@ -1,10 +1,10 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.common.Factory;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.IWorldData;
 	import aerys.minko.scene.visitor.data.TransformManager;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -122,7 +122,7 @@ package aerys.minko.scene.node.camera
 			if (!_enabled)
 				return null;
 			
-			var cameraData 		: CameraData	= CAMERA_DATA.create(true);
+			var cameraData 		: CameraData	= CAMERA_DATA.create(true) as CameraData;
 			var worldMatrix		: Matrix4x4		= transformManager.world;
 			var worldPosition	: Vector4		= worldMatrix.multiplyVector(_position);
 			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(_lookAt);

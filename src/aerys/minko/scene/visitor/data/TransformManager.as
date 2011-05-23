@@ -1,7 +1,7 @@
 package aerys.minko.scene.visitor.data
 {
-	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -90,7 +90,7 @@ package aerys.minko.scene.visitor.data
 		
 		public function getLocalToScreen(out : Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= MATRIX4X4.create();
+			out ||= MATRIX4X4.create() as Matrix4x4;
 			out = Matrix4x4.copy(_world, out)
 					 	   .multiplyInverse(_view)
 					 	   .multiplyInverse(_projection);
@@ -100,7 +100,7 @@ package aerys.minko.scene.visitor.data
 		
 		public function getLocalToView(out : Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= MATRIX4X4.create();
+			out ||= MATRIX4X4.create() as Matrix4x4;
 			out = Matrix4x4.copy(_world, out)
 						   .multiplyInverse(_view);
 			

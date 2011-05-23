@@ -1,6 +1,6 @@
 package aerys.minko.scene.visitor.data
 {
-	import aerys.common.Factory;
+	import aerys.minko.type.Factory;
 
 	public class WorldDataList implements IWorldData
 	{
@@ -65,7 +65,9 @@ package aerys.minko.scene.visitor.data
 		
 		public function clone() : WorldDataList
 		{
-			var newStyleObjList : WorldDataList = Factory.getFactory(WorldDataList).create(true);
+			var newStyleObjList : WorldDataList = Factory.getFactory(WorldDataList).create(true)
+												  as WorldDataList;
+			
 			newStyleObjList._objects	= _objects.concat();
 			return newStyleObjList;
 		}

@@ -1,7 +1,7 @@
 package aerys.minko.render
 {
-	import aerys.common.Factory;
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;

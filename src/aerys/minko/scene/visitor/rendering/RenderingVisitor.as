@@ -1,9 +1,9 @@
 package aerys.minko.scene.visitor.rendering
 {
+	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.IEffectTarget;
-	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.state.RenderState;
@@ -160,14 +160,10 @@ package aerys.minko.scene.visitor.rendering
 		
 		protected function queryIGroup(scene : IGroup) : void
 		{
-			for (var childIndex : uint = 0; true; ++childIndex)
-			{
-				var child : IScene = scene.getChildAt(childIndex);
-				if (child == null)
-					break;
-				
-				visit(child);
-			}
+			var numChildren : int = scene.numChildren;
+			
+			for (var childIndex : uint = 0; childIndex < numChildren; ++childIndex)
+				visit(scene.getChildAt(childIndex));
 		}
 		
 		protected function queryIMesh(scene : IMesh) : void

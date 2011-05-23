@@ -4,7 +4,6 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.fog.FogStyle;
-	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.ParametricShader;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;

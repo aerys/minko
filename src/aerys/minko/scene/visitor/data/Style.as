@@ -1,6 +1,6 @@
 package aerys.minko.scene.visitor.data
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 
 	public class Style implements IVersionnable
 	{

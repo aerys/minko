@@ -1,6 +1,6 @@
 package aerys.minko.render.state
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_stream;
@@ -504,12 +504,8 @@ package aerys.minko.render.state
 				var texture				: TextureBase 		= (_setFlags & textureFlag)
 											  	  			  ? textureRessource.getNativeTexture(context)
 											  	  			  : null;
-				trace(_textures);
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
-				{
-					trace(i, texture);
 					context.setTextureAt(i, texture);
-				}
 				
 				// set vertex buffers
 				var vertexFlag 	 : uint 			= VERTEX_STREAM_1 << i;

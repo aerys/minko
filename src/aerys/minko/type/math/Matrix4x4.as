@@ -1,8 +1,8 @@
 package aerys.minko.type.math
 {
-	import aerys.common.Factory;
-	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionnable;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Utils3D;
@@ -258,7 +258,7 @@ package aerys.minko.type.math
 		public static function copy(source	: Matrix4x4,
 									target 	: Matrix4x4 = null) : Matrix4x4
 		{
-			target ||= FACTORY.create();
+			target ||= FACTORY.create() as Matrix4x4;
 			source.validMatrix3D.copyToMatrix3D(target.validMatrix3D);
 						
 			return target;
@@ -310,7 +310,7 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
 						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
 						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
@@ -356,7 +356,7 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
 						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
 						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
@@ -376,7 +376,7 @@ package aerys.minko.type.math
 			var	m33			: Number	= zFar / (zFar - zNear);
 			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
 			
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(x_scale,	0.,			0.,		0.,
 						   0.,		y_scale,	0.,		0.,
 						   0.,		0.,			m33,	1.,
@@ -391,7 +391,7 @@ package aerys.minko.type.math
 									   zFar		: Number,
 									   out		: Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(2. / w,	0.,		0.,						0.,
 						   0.,		2. / h,	0.,						0.,
 						   0.,		0.,		1. / (zFar - zNear),	0.,
@@ -406,7 +406,7 @@ package aerys.minko.type.math
 									   zFar		: Number,
 									   out		: Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(2. / w,	0.,		0.,						0.,
 						   0.,		2. / h,	0.,						0.,
 						   0.,		0.,		1. / (zNear - zFar),	0.,
@@ -423,7 +423,7 @@ package aerys.minko.type.math
 												zFar	: Number,
 												out		: Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(2. / (r - l),		0.,					0.,						0.,
 						   0.,					2. / (t - b),		0.,						0.,
 						   0.,					0.,					1. / (zFar - zNear),	0.,
@@ -440,7 +440,7 @@ package aerys.minko.type.math
 												zFar	: Number,
 												out		: Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(2. / (r - l),		0.,					0.,						0.,
 						   0.,					2. / (t - b),		0.,						0.,
 						   0.,					0.,					1. / (zNear - zFar),	0.,
@@ -451,7 +451,7 @@ package aerys.minko.type.math
 		
 		public static function fromQuaternion(quaternion : Vector4, out : Matrix4x4 = null) : Matrix4x4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Matrix4x4;
 			
 			var x : Number = quaternion.x;
 			var y : Number = quaternion.y;

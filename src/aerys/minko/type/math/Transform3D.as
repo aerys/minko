@@ -1,7 +1,7 @@
 package aerys.minko.type.math
 {
-	import aerys.common.Factory;
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko;
 	
 	import flash.geom.Matrix3D;

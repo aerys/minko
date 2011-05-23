@@ -1,8 +1,8 @@
 package aerys.minko.type.math
 {
-	import aerys.common.Factory;
-	import aerys.common.IVersionnable;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionnable;
 	
 	import flash.geom.Vector3D;
 
@@ -155,7 +155,7 @@ package aerys.minko.type.math
 		
 		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
 		{
-			target ||= FACTORY.create();
+			target ||= FACTORY.create() as Vector4;
 			target.set(source.x, source.y, source.z, source.w);
 			
 			return target;
@@ -271,11 +271,24 @@ package aerys.minko.type.math
 		
 		public static function scale(v : Vector4, s : Number, out : Vector4 = null) : Vector4
 		{
-			out ||= FACTORY.create();
+			out ||= FACTORY.create() as Vector4;
 			out._vector.x = v._vector.x;
 			out._vector.y = v._vector.y;
 			out._vector.z = v._vector.z;
 			out._vector.w = v._vector.w;
+			
+			return out;
+		}
+		
+		public function toVector3D(out : Vector3D = null) : Vector3D
+		{
+			if (!out)
+				return _vector.clone();
+			
+			out.x = _vector.x;
+			out.y = _vector.y;
+			out.z = _vector.z;
+			out.w = _vector.w;
 			
 			return out;
 		}

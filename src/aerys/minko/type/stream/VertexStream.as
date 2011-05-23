@@ -1,6 +1,6 @@
 package aerys.minko.type.stream
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;

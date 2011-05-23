@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.ressource.TextureRessource;

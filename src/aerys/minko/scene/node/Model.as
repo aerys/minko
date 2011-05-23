@@ -1,6 +1,6 @@
 package aerys.minko.scene.node
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.effect.basic.BasicEffect;

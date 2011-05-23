@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.common.Factory;
+	import aerys.minko.type.Factory;
 	import aerys.minko.scene.visitor.data.TransformManager;
 	import aerys.minko.scene.visitor.data.IWorldData;
 	import aerys.minko.scene.visitor.ISceneVisitor;

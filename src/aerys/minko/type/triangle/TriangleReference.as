@@ -1,6 +1,6 @@
 package aerys.minko.type.triangle
 {
-	import aerys.common.Factory;
+	import aerys.minko.type.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;

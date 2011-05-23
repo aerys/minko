@@ -1,11 +1,11 @@
 package aerys.minko.render.renderer
 {
-	import aerys.common.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.state.RenderState;
 	import aerys.minko.scene.visitor.data.TransformManager;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.stream.IndexStream;
 	
 	import flash.display.BitmapData;
@@ -22,7 +22,7 @@ package aerys.minko.render.renderer
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RenderState				= null;
@@ -52,10 +52,10 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
-			_currentState = RENDER_STATE.create();
+			_currentState = RENDER_STATE.create() as RenderState;
 			_currentState.clear();
 			
-			_currentSession = RENDER_SESSION.create();
+			_currentSession = RENDER_SESSION.create() as RenderSession;
 			_currentSession.renderState = _currentState;
 			_currentSession.offsets.length = 0;
 			_currentSession.numTriangles.length = 0;

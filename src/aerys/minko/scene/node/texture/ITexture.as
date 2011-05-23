@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.common.IVersionnable;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ISceneRessource;
 	

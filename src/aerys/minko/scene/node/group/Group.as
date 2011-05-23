@@ -321,7 +321,9 @@ package aerys.minko.scene.node.group
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
-			return parseInt(name) == name ? getChildAt(name) : getChildByName(name);
+			var index : int = parseInt(name);
+			
+			return index == name ? getChildAt(index) : getChildByName(name as String);
 		}
 		
 		override flash_proxy function getDescendants(name : *) : *

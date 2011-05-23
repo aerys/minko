@@ -1,6 +1,6 @@
 package aerys.minko.scene.visitor.data
 {
-	import aerys.common.Factory;
+	import aerys.minko.type.Factory;
 
 	public final class StyleStack
 	{
@@ -34,7 +34,7 @@ package aerys.minko.scene.visitor.data
 			if (defaultValue !== null)
 				return defaultValue;
 			
-			throw new Error(name + ' is undefined an no default value was provided');
+			throw new Error(name + ' is undefined and no default value was provided');
 		}
 		
 		public final function isSet(name : String) : Object
