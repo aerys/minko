@@ -38,7 +38,11 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
-		private var _shadersMap		: Object	= new Object();
+		private var _shadersMap		: Object		= new Object();
+		
+		private var _styleStack		: StyleStack	= null;
+		private var _local			: TransformData	= null;
+		private var _world			: Dictionary	= null;
 		
 		protected final function get vertexClipspacePosition() : INode
 		{
@@ -83,9 +87,13 @@ package aerys.minko.render.shader
 			var hash 	: String 		= getDataHash(style, local, world);
 			var shader 	: DynamicShader = _shadersMap[hash];
 			
+			_styleStack = style;
+			_local = local;
+			_world = world;
+			
 			if (!shader)
-				_shadersMap[hash] = shader = DynamicShader.create(getOutputPosition(style, local, world),
-																  getOutputColor(style, local, world));
+				_shadersMap[hash] = shader = DynamicShader.create(getOutputPosition(),
+																  getOutputColor());
 			
 			shader.fillRenderState(state, style, local, world);
 			
@@ -99,18 +107,24 @@ package aerys.minko.render.shader
 			return "";
 		}
 		
-		protected function getOutputPosition(style	: StyleStack, 
-											 local	: TransformData, 
-											 world	: Dictionary) : INode
+		protected function getOutputPosition() : INode
 		{
 			throw new Error();
 		}
 		
-		protected function getOutputColor(style	: StyleStack, 
-										  local	: TransformData, 
-										  world	: Dictionary) : INode
+		protected function getOutputColor() : INode
 		{
 			throw new Error();
+		}
+		
+		protected final function getStyleConstant(name : String, defaultValue : Object = null) : Object
+		{
+			return _styleStack.get(name, defaultValue);
+		}
+		
+		protected final function styleIsSet(name : String) : Boolean
+		{
+			return _styleStack.isSet(name);
 		}
 		
 		protected final function interpolate(value : INode) : INode

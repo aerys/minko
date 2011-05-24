@@ -55,34 +55,30 @@ package aerys.minko.render.effect.basic
 			return true;
 		}
 		
-		override protected function getOutputPosition(style	: StyleStack,
-													  local	: TransformData,
-													  world	: Dictionary) : INode
+		override protected function getOutputPosition() : INode
 		{
 			return vertexClipspacePosition;
 		}
 		
-		override protected function getOutputColor(style	: StyleStack,
-												   local	: TransformData,
-												   world	: Dictionary) : INode
+		override protected function getOutputColor() : INode
 		{
 			var diffuse	: INode		= null;
 			
-			if (style.isSet(BasicStyle.DIFFUSE_MAP))
+			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
 				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
 		
 			// fog
-			if (style.get(FogStyle.FOG_ENABLED, false))
+			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
 			{
-				var zFar		: INode	= style.isSet(FogStyle.DISTANCE)
+				var zFar		: INode	= styleIsSet(FogStyle.DISTANCE)
 										  ? getStyleParameter(1, FogStyle.DISTANCE)
 										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
-				var fogColor 	: *		= style.isSet(FogStyle.COLOR)
+				var fogColor 	: *		= styleIsSet(FogStyle.COLOR)
 										  ? getStyleParameter(3, FogStyle.COLOR)
 										  : ConstVector4.ZERO;
-				var fogStart	: *		= style.isSet(FogStyle.START)
+				var fogStart	: *		= styleIsSet(FogStyle.START)
 										  ? getStyleParameter(1, FogStyle.START)
 										  : 0.;
 				
