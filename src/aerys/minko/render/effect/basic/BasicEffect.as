@@ -46,11 +46,11 @@ package aerys.minko.render.effect.basic
 		{
 			super.fillRenderState(state, style, local, world);
 			
-			state.depthMask			= CompareMode.LESS;
+			state.depthTest			= CompareMode.LESS;
 			state.blending			= style.get(BasicStyle.BLENDING, Blending.ALPHA) as uint;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			state.priority			= _priority;
-			state.renderTarget		= _renderTarget;
+			//state.renderTarget		= _renderTarget;
 			
 			return true;
 		}

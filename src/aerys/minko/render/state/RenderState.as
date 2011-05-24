@@ -126,23 +126,23 @@ package aerys.minko.render.state
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
 		private var _rectangle			: Rectangle					= null;
 		
-		private var _depthMask			: uint						= 0;
+		private var _depthTest			: uint						= 0;
 		
 		private var _priority			: Number					= 0.;
 		
+		public function get version() : uint
+		{
+			return _version;
+		}
+		
 		public function get priority() : Number
 		{
-			return _priority;
+			return _setFlags & PRIORITY ? _priority : 0.;
 		}
 
 		public function get rectangle() : Rectangle
 		{
 			return _setFlags & SCISSOR_RECTANGLE ? _rectangle : null;
-		}
-		
-		public function get version() : uint
-		{
-			return _version;
 		}
 		
 		public function get renderTarget() : RenderTarget
@@ -170,9 +170,9 @@ package aerys.minko.render.state
 			return _setFlags & TRIANGLE_CULLING ? _triangleCulling : 0;
 		}
 		
-		public function get depthMask() : uint
+		public function get depthTest() : uint
 		{
-			return _setFlags & DEPTH_MASK ? _depthMask : 0;
+			return _setFlags & DEPTH_MASK ? _depthTest : 0;
 		}
 		
 		public function set priority(value : Number) : void
@@ -237,9 +237,9 @@ package aerys.minko.render.state
 			}
 		}
 		
-		public function set depthMask(value : uint) : void
+		public function set depthTest(value : uint) : void
 		{
-			_depthMask = value;
+			_depthTest = value;
 			_setFlags |= DEPTH_MASK;
 			++_version;
 		}
@@ -395,10 +395,10 @@ package aerys.minko.render.state
 									   : CULLING_STR[_triangleCulling]);
 				
 				if (_setFlags & COLOR_MASK)
-					context.setColorMask((_colorMask & WriteMask.COLOR_RED) != 0,
-										 (_colorMask & WriteMask.COLOR_GREEN) != 0,
-										 (_colorMask & WriteMask.COLOR_BLUE) != 0,
-										 (_colorMask & WriteMask.COLOR_ALPHA) != 0);
+					context.setColorMask((_colorMask & ColorMask.COLOR_RED) != 0,
+										 (_colorMask & ColorMask.COLOR_GREEN) != 0,
+										 (_colorMask & ColorMask.COLOR_BLUE) != 0,
+										 (_colorMask & ColorMask.COLOR_ALPHA) != 0);
 				
 				if (_setFlags & BLENDING)
 					context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
@@ -431,7 +431,7 @@ package aerys.minko.render.state
 				{
 					for (var j : int = 0; j < 8; ++j)
 					{
-						if (_depthMask == COMPARE_FLAGS[j])
+						if (_depthTest == COMPARE_FLAGS[j])
 						{
 							context.setDepthTest(true, COMPARE_STR[j]);
 							
@@ -483,10 +483,10 @@ package aerys.minko.render.state
 			if (_setFlags & COLOR_MASK
 				&& (!(current._setFlags & COLOR_MASK) || current._colorMask != _colorMask))
 			{
-				context.setColorMask((_colorMask & WriteMask.COLOR_RED) != 0,
-									 (_colorMask & WriteMask.COLOR_GREEN) != 0,
-									 (_colorMask & WriteMask.COLOR_BLUE) != 0,
-									 (_colorMask & WriteMask.COLOR_ALPHA) != 0);
+				context.setColorMask((_colorMask & ColorMask.COLOR_RED) != 0,
+									 (_colorMask & ColorMask.COLOR_GREEN) != 0,
+									 (_colorMask & ColorMask.COLOR_BLUE) != 0,
+									 (_colorMask & ColorMask.COLOR_ALPHA) != 0);
 			}
 			
 			if (_setFlags & BLENDING
@@ -523,11 +523,11 @@ package aerys.minko.render.state
 			}
 			
 			if (_setFlags & DEPTH_MASK
-				&& (!(current._setFlags & DEPTH_MASK) || _depthMask != current._depthMask))
+				&& (!(current._setFlags & DEPTH_MASK) || _depthTest != current._depthTest))
 			{
 				for (var j : int = 0; j < 8; ++j)
 				{
-					if (_depthMask == COMPARE_FLAGS[j])
+					if (_depthTest == COMPARE_FLAGS[j])
 					{
 						context.setDepthTest(true, COMPARE_STR[j]);
 						

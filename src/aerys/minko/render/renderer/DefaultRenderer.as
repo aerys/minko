@@ -63,8 +63,7 @@ package aerys.minko.render.renderer
 		
 		public function end() : void
 		{
-			if (_currentSession && _currentSession.renderState)
-				_sessions[int(_numSessions++)] = _currentSession;
+			_sessions[int(_numSessions++)] = _currentSession;
 			
 			_currentState = null;
 			_currentSession = null;
