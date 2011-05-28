@@ -3,6 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
+	import aerys.minko.scene.action.EffectAction;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
@@ -121,46 +122,12 @@ package aerys.minko.scene.node
 			super();
 			
 			actions.push(StyleAction.styleAction,
+						 new EffectAction(),
 						 TransformAction.transformAction,
 						 ModelAction.modelAction);
 			
 			_mesh = mesh;
 			_texture = texture;
 		}
-		
-//		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void 
-//		{
-//			if (!_visible)
-//				return ;
-//			
-//			var transform 		: TransformManager 		= query.transform;
-//			var numEffects		: int					= _effects.length;
-//			var queryEffects	: Vector.<IEffect>		= query.effects;
-//			var numQueryEffects	: int					= queryEffects.length;
-//			
-//			// push world transform
-//			transform.world.push().multiply(_transform);
-//			
-//			/*transform.getLocalToScreen(_toScreen);
-//			_style.set(BasicStyle3D.WORLD_MATRIX, 			transform.world)
-//				  .set(BasicStyle3D.VIEW_MATRIX, 			transform.view)
-//				  .set(BasicStyle3D.PROJECTION_MATRIX, 		transform.projection)
-//				  .set(BasicStyle3D.LOCAL_TO_SCREEN_MATRIX, _toScreen);*/
-//			
-//			// push FXs and style
-//			for (var i : int = 0; i < numEffects; ++i)
-//				queryEffects.push(_effects[i]);
-//			query.style.push(_style);
-//			
-//			_texture && query.query(_texture);
-//			_mesh && query.query(_mesh);
-//			
-//			// pop FXs and style
-//			query.style.pop();
-//			query.effects.length = numQueryEffects;
-//			
-//			// pop world transform
-//			transform.world.pop();
-//		}
 	}
 }

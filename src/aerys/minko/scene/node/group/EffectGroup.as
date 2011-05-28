@@ -24,7 +24,7 @@ package aerys.minko.scene.node.group
 		{
 			super(children);
 			
-			actions.push(new EffectAction());
+			actions.unshift(new EffectAction());
 		}
 		
 //		override protected function visitedByRenderingVisitor(q : RenderingVisitor) : void

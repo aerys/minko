@@ -59,10 +59,7 @@ package aerys.minko.scene.visitor.rendering
 			_worldData		= null;
 			_numNodes		= 0;
 			
-			_renderingData.clear();
-			
-			if (defaultEffect)
-				_renderingData.effects[0] = defaultEffect;
+			_renderingData.clear(defaultEffect);
 		}
 		
 		public function updateWorldData(worldData : Dictionary) : void

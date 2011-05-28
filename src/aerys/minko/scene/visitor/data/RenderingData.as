@@ -17,9 +17,17 @@ package aerys.minko.scene.visitor.data
 			
 		}
 		
-		public function clear() : void
+		public function clear(defaultEffect : IEffect) : void
 		{
-			_effects.length = 0;
+			if (defaultEffect)
+			{
+				_effects.length = 1;
+				_effects[0] = defaultEffect;
+			}
+			else
+			{
+				_effects.length = 0;
+			}
 		}
 	}
 }
