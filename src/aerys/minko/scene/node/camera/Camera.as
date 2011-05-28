@@ -3,7 +3,7 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.TransformManager;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
@@ -117,13 +117,13 @@ package aerys.minko.scene.node.camera
 			this.farClipping = farClipping;
 		}
 		
-		public function getData(transformManager : TransformManager) : IWorldData
+		public function getData(localData : LocalData) : IWorldData
 		{
 			if (!_enabled)
 				return null;
 			
 			var cameraData 		: CameraData	= CAMERA_DATA.create(true) as CameraData;
-			var worldMatrix		: Matrix4x4		= transformManager.world;
+			var worldMatrix		: Matrix4x4		= localData.world;
 			var worldPosition	: Vector4		= worldMatrix.multiplyVector(_position);
 			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(_lookAt);
 			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(_up).normalize();

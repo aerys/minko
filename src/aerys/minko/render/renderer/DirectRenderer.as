@@ -3,7 +3,7 @@ package aerys.minko.render.renderer
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.stream.IndexStream;
 	

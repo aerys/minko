@@ -9,9 +9,10 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.TransformData;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -59,7 +60,7 @@ package aerys.minko.render.shader
 		
 		public function fillRenderState(state	: RenderState, 
 										style	: StyleStack, 
-										local	: TransformData, 
+										local	: LocalData, 
 										world	: Dictionary) : Boolean
 		{
 			setTextures(state, style, local, world);
@@ -72,7 +73,7 @@ package aerys.minko.render.shader
 		
 		protected function setTextures(state		: RenderState,
 									   styleStack	: StyleStack,
-								   	   localData	: TransformData,
+								   	   localData	: LocalData,
 									   worldData	: Object) : void
 		{
 			var texture 			: TextureRessource	= null;
@@ -89,7 +90,7 @@ package aerys.minko.render.shader
 		
 		protected function setConstants(state		: RenderState,
 									    styleStack	: StyleStack,
-										local		: TransformData,
+										local		: LocalData,
 										world		: Dictionary) : void
 		{
 			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
@@ -102,7 +103,7 @@ package aerys.minko.render.shader
 		protected function updateConstData(constData	: Vector.<Number>, 
 										   paramsAllocs	: Vector.<ParameterAllocation>, 
 										   styleStack	: StyleStack,
-										   local		: TransformData,
+										   local		: LocalData,
 										   world		: Dictionary) : void
 		{
 			var paramLength	: int = paramsAllocs.length;
@@ -120,7 +121,7 @@ package aerys.minko.render.shader
 		
 		private function getParameterData(param			: AbstractParameter,
 										  styleStack	: StyleStack,
-										  local			: TransformData,
+										  local			: LocalData,
 										  world			: Dictionary) : Object
 		{
 			if (param is StyleParameter)

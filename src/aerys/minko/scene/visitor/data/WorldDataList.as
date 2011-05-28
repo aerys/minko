@@ -24,11 +24,11 @@ package aerys.minko.scene.visitor.data
 			_objects = new Vector.<IWorldData>();
 		}
 		
-		public function setLocalDataProvider(styleStack		: StyleStack, 
-											 transformData	: TransformData) : void
+		public function setLocalDataProvider(styleStack	: StyleStack, 
+											 localData	: LocalData) : void
 		{
 			for each (var dataObject : IWorldData in _objects)
-				dataObject.setLocalDataProvider(styleStack, transformData);
+				dataObject.setLocalDataProvider(styleStack, localData);
 		}
 		
 		public function invalidate() : void

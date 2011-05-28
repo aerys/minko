@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.debug
 {
-	import aerys.minko.render.state.Blending;
+	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.scene.node.Model;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.mesh.primitive.CubeMesh;

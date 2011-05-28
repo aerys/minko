@@ -1,16 +1,16 @@
 package aerys.minko.render.effect.common
 {
+	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.DynamicShader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.WorldNormal;
-	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.state.RenderState;
-	import aerys.minko.render.state.TriangleCulling;
+	import aerys.minko.render.renderer.state.Blending;
+	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.TriangleCulling;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.TransformData;
 	
 	import flash.utils.Dictionary;
 	
@@ -31,7 +31,7 @@ package aerys.minko.render.effect.common
 		
 		public function fillRenderState(state		: RenderState,
 										styleStack	: StyleStack, 
-										local		: TransformData, 
+										local		: LocalData, 
 										world		: Dictionary) : Boolean
 		{
 			state.blending			= Blending.NORMAL;

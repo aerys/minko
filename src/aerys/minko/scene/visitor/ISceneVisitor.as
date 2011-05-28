@@ -1,7 +1,12 @@
 package aerys.minko.scene.visitor
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.visitor.action.IVisitorAction;
+	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.visitor.data.RenderingData;
+	import aerys.minko.scene.visitor.data.StyleStack;
+	
+	import flash.utils.Dictionary;
+	
 
 	/**
 	 * 
@@ -11,8 +16,10 @@ package aerys.minko.scene.visitor
 	 */
 	public interface ISceneVisitor
 	{
-		function visit(scene : IScene) : void;
+		function get localData() 		: LocalData;
+		function get worldData() 		: Dictionary;
+		function get renderingData()	: RenderingData;
 		
-		//function get actions() : Vector.<IVisitorAction>;
+		function visit(scene : IScene) : void;
 	}
 }

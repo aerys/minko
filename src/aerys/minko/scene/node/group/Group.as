@@ -1,5 +1,7 @@
 package aerys.minko.scene.node.group
 {
+	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.action.group.GroupAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -33,8 +35,15 @@ package aerys.minko.scene.node.group
 		
 		private var _numChildren	: int				= 0;
 		
-		public function get name()	: String	{ return _name; }
-		public function set name(v : String) : void { _name = v; }
+		private var _actions		: Vector.<IAction>	= Vector.<IAction>([GroupAction.groupAction]);
+		
+		public function get actions()	: Vector.<IAction>	{ return _actions; }
+		public function get name()		: String			{ return _name; }
+		
+		public function set name(value : String) : void
+		{
+			_name = value;
+		}
 		
 		protected function get rawChildren()	: Vector.<IScene> 	{ return _children; }
 		

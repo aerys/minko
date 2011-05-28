@@ -1,17 +1,18 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.action.IActionTarget;
+	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
-	public class Mesh extends AbstractScene implements IMesh
+	public class Mesh extends AbstractScene implements IMesh, IActionTarget
 	{
 		use namespace minko;
 		use namespace minko_stream;
@@ -54,8 +55,15 @@ package aerys.minko.scene.node.mesh
 			_vertexStreamList = vertexStreamList;
 			_indexStream = indexStream;
 			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			if (!_indexStream && _vertexStreamList)
 				_indexStream = new IndexStream(null, vertexStreamList.length, vertexStreamList.dynamic);
+			
+			actions[0] = MeshAction.meshAction;
 		}
 		
 		public function clone() : IMesh

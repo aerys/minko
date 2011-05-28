@@ -1,10 +1,7 @@
 package aerys.minko.scene.node.camera
 {
 	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.TransformManager;
-
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Vector4;
 	
 	/**
@@ -56,7 +53,7 @@ package aerys.minko.scene.node.camera
 			_rotation.y = Math.PI / 2.;
 		}
 		
-		override public function getData(transformManager : TransformManager) : IWorldData
+		override public function getData(localData : LocalData) : IWorldData
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -67,7 +64,7 @@ package aerys.minko.scene.node.camera
 			lookAt.y = position.y + Math.sin(_rotation.x);
 			lookAt.z = position.z + Math.sin(_rotation.y) * Math.cos(_rotation.x);
 			
-			return super.getData(transformManager);
+			return super.getData(localData);
 		}
 		
 		public function walk(distance : Number) : void

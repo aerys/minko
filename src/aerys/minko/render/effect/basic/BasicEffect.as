@@ -7,13 +7,13 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.ParametricShader;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.state.Blending;
-	import aerys.minko.render.state.CompareMode;
-	import aerys.minko.render.state.RenderState;
-	import aerys.minko.render.state.TriangleCulling;
+	import aerys.minko.render.renderer.state.Blending;
+	import aerys.minko.render.renderer.state.CompareMode;
+	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.TransformData;
 	import aerys.minko.type.math.ConstVector4;
 	
 	import flash.utils.Dictionary;
@@ -33,7 +33,7 @@ package aerys.minko.render.effect.basic
 		}
 		
 		public function getPasses(styleStack	: StyleStack, 
-								  local			: TransformData, 
+								  local			: LocalData, 
 								  world			: Dictionary) : Vector.<IEffectPass>
 		{
 			return _passes;
@@ -41,7 +41,7 @@ package aerys.minko.render.effect.basic
 		
 		override public function fillRenderState(state	: RenderState, 
 												 style	: StyleStack, 
-												 local	: TransformData, 
+												 local	: LocalData, 
 												 world	: Dictionary) : Boolean
 		{
 			super.fillRenderState(state, style, local, world);
@@ -90,7 +90,7 @@ package aerys.minko.render.effect.basic
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
-												local	: TransformData,
+												local	: LocalData,
 												world	: Dictionary) : String
 		{
 			var hash : String	= "basic";

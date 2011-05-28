@@ -1,7 +1,8 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.mesh.modifier.IMeshModifier;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.Animation;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -28,7 +29,12 @@ package aerys.minko.scene.node.mesh
 		
 		public function get name() : String
 		{
-			return null;
+			return _current.name;
+		}
+		
+		public function get actions() : Vector.<IAction>
+		{
+			return _current.actions;
 		}
 		
 		public function get vertexStreamList() : VertexStreamList

@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	
@@ -9,12 +10,11 @@ package aerys.minko.scene.node
 	{
 		private static var _id	: uint			= 0;
 		
-		private var _name		: String		= null;
+		private var _name		: String			= null;
+		private var _actions	: Vector.<IAction>	= new Vector.<IAction>();
 		
-		public function get name() : String
-		{
-			return _name;
-		}
+		public function get actions()	: Vector.<IAction>	{ return _actions; }
+		public function get name() 		: String			{ return _name; }
 		
 		public function set name(value : String) : void
 		{

@@ -1,30 +1,30 @@
 package aerys.minko.scene.visitor.rendering
 {
+	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.scene.node.IWorldObject;
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.TransformManager;
+	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.visitor.data.RenderingData;
 	import aerys.minko.scene.visitor.data.WorldDataList;
 	
-	import flash.display.InteractiveObject;
 	import flash.utils.Dictionary;
 	
-	public class WorldDataExtracterVisitor implements ISceneVisitor
+	public class WorldDataVisitor implements ISceneVisitor
 	{
-		protected var _worldData	: Dictionary;
-		protected var _tm			: TransformManager;
+		protected var _worldData	: Dictionary	= null;
+		protected var _localData	: LocalData		= new LocalData();
 		
-		public function get worldData() : Dictionary
-		{
-			return _worldData;
-		}
+		public function get localData()		: LocalData		{ return _localData; }
+		public function get worldData() 	: Dictionary	{ return _worldData; }
+		public function get renderingData()	: RenderingData	{ return null; }
+		public function get renderer()		: IRenderer		{ return null; }
 		
-		public function WorldDataExtracterVisitor()
+		public function WorldDataVisitor()
 		{
-			_tm	= new TransformManager();
 			reset();
 		}
 		
@@ -39,7 +39,7 @@ package aerys.minko.scene.visitor.rendering
 			
 			// push transform
 			if (transformObject)
-				_tm.world.push().multiply(transformObject.transform);
+				_localData.world.push().multiply(transformObject.transform);
 			
 			// Act in accordance with the node type
 			if (scene is IWorldObject)
@@ -53,12 +53,13 @@ package aerys.minko.scene.visitor.rendering
 			
 			// pop transform
 			if (transformObject)
-				_tm.world.pop();
+				_localData.world.pop();
 		}
 	
 		protected function queryIWorldObject(worldObject : IWorldObject) : void
 		{
-			var worldObjectData			: IWorldData	= worldObject.getData(_tm);
+			var worldObjectData	: IWorldData	= worldObject.getData(_localData);
+			
 			if (worldObjectData == null)
 				return;
 			

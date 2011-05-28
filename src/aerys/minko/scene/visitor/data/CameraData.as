@@ -31,8 +31,8 @@ package aerys.minko.scene.visitor.data
 		public static const FRUSTUM			: String = 'frustum';
 		
 		// local data provider
-		protected var _styleStack		: StyleStack;
-		protected var _transformData	: TransformData;
+		protected var _styleStack	: StyleStack;
+		protected var _localData	: LocalData;
 		
 		// data available on initialisation
 		protected var _position	: Vector4;
@@ -151,7 +151,7 @@ package aerys.minko.scene.visitor.data
 		{
 			if (_localPosition_positionVersion != _position.version)
 			{
-				_localPosition = _transformData.world.multiplyVector(_position, _localPosition);
+				_localPosition = _localData.world.multiplyVector(_position, _localPosition);
 				_localPosition_positionVersion = _position.version;
 			}
 			
@@ -162,7 +162,7 @@ package aerys.minko.scene.visitor.data
 		{
 			if (_localLookAt_lookAtVersion != _lookAt.version)
 			{
-				_localLookAt = _transformData.world.deltaMultiplyVector(_lookAt, _localLookAt);
+				_localLookAt = _localData.world.deltaMultiplyVector(_lookAt, _localLookAt);
 				_localLookAt_lookAtVersion = _lookAt.version;
 			}
 			
@@ -225,11 +225,11 @@ package aerys.minko.scene.visitor.data
 			reset()
 		}
 		
-		public function setLocalDataProvider(styleStack		: StyleStack, 
-											 transformData	: TransformData) : void
+		public function setLocalDataProvider(styleStack	: StyleStack, 
+											 localData	: LocalData) : void
 		{
-			_styleStack		= styleStack;
-			_transformData	= transformData;
+			_styleStack	= styleStack;
+			_localData	= localData;
 		}
 		
 		public function invalidate() : void
@@ -258,7 +258,7 @@ package aerys.minko.scene.visitor.data
 			_zFarParts_invalidated	= true;
 			_projection_invalidated = true;
 			
-			_transformData && _transformData.reset();
+			_localData && _localData.reset();
 		}
 	}
 }

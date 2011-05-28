@@ -4,7 +4,7 @@ package aerys.minko.scene.visitor.data
 	public interface IWorldData
 	{
 		function setLocalDataProvider(styleStack	: StyleStack, 
-									  transformData	: TransformData) : void;
+									  localData		: LocalData) : void;
 		
 		function invalidate() : void;
 		

@@ -1,6 +1,6 @@
 package aerys.minko.render.renderer
 {
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
 
 	internal final class RenderSession
 	{

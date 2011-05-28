@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ITexture;
@@ -28,8 +29,9 @@ package aerys.minko.scene.node
 		private var _loaderToURI		: Dictionary	= new Dictionary(true);
 		private var _content			: Group			= new Group();
 		
-		public function get name()	 	: String	{ return _content.name; }
-		public function get content() 	: Group		{ return _content; }
+		public function get name()	 	: String			{ return _content.name; }
+		public function get content() 	: Group				{ return _content; }
+		public function get actions()	: Vector.<IAction>	{ return _content.actions; }
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void

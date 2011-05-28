@@ -1,7 +1,7 @@
 package aerys.minko.render.renderer
 {
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;

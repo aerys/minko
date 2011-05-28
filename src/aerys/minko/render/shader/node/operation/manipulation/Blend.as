@@ -7,7 +7,7 @@ package aerys.minko.render.shader.node.operation.manipulation
 	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
-	import aerys.minko.render.state.BlendingSource;
+	import aerys.minko.render.renderer.state.BlendingSource;
 	
 	public class Blend extends Dummy
 	{

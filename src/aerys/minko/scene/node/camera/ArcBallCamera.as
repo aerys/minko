@@ -1,13 +1,8 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.minko.type.Factory;
-	import aerys.minko.scene.visitor.data.TransformManager;
 	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.geom.Matrix3D;
 	
 	/**
 	 * ArcBallCamera3D objects represents a "third-person" camera that can move around a
@@ -66,7 +61,7 @@ package aerys.minko.scene.node.camera
 			return _rotation;
 		}
 
-		override public function getData(transformManager : TransformManager) : IWorldData
+		override public function getData(localData : LocalData) : IWorldData
 		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
@@ -80,7 +75,7 @@ package aerys.minko.scene.node.camera
 			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
 			position.z = lookAt.z - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
 			
-			return super.getData(transformManager);
+			return super.getData(localData);
 		}
 		
 	}

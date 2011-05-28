@@ -7,7 +7,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.scene.visitor.data.TransformData;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	public class ClipspacePosition extends Dummy implements IVertexNode
@@ -21,7 +21,7 @@ package aerys.minko.render.shader.node.common
 		{
 			var result : INode = new Multiply4x4(
 				new Attribute(VertexComponent.XYZ),
-				new TransformParameter(16, TransformData.LOCAL_TO_SCREEN)
+				new TransformParameter(16, LocalData.LOCAL_TO_SCREEN)
 			);
 			
 			super(result);

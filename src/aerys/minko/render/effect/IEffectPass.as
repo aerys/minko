@@ -1,9 +1,8 @@
 package aerys.minko.render.effect
 {
-	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.TransformData;
 	
 	import flash.utils.Dictionary;
 
@@ -11,7 +10,7 @@ package aerys.minko.render.effect
 	{
 		function fillRenderState(state		: RenderState,
 								 styleStack	: StyleStack, 
-								 local		: TransformData, 
+								 local		: LocalData, 
 								 world		: Dictionary) : Boolean;
 	}
 

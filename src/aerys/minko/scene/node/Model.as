@@ -1,15 +1,17 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
-	import aerys.minko.render.effect.basic.BasicEffect;
-	import aerys.minko.ns.minko;
+	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.action.IActionTarget;
+	import aerys.minko.scene.action.ModelAction;
+	import aerys.minko.scene.action.StyleAction;
+	import aerys.minko.scene.action.TransformAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.visitor.data.Style;
-	import aerys.minko.scene.visitor.data.TransformManager;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Transform3D;
 
 	/**
@@ -27,7 +29,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements IScene, ITransformable, IStyled, IVersionnable, IEffectTarget
+	public class Model extends AbstractScene implements IScene, ITransformable, IStyled, IVersionnable, IEffectTarget, IActionTarget
 	{
 		use namespace minko;
 		
@@ -117,6 +119,10 @@ package aerys.minko.scene.node
 							  texture		: ITexture	= null)
 		{
 			super();
+			
+			actions.push(StyleAction.styleAction,
+						 TransformAction.transformAction,
+						 ModelAction.modelAction);
 			
 			_mesh = mesh;
 			_texture = texture;

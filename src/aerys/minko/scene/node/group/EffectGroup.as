@@ -2,6 +2,7 @@ package aerys.minko.scene.node.group
 {
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
+	import aerys.minko.scene.action.EffectAction;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 
 	/**
@@ -22,6 +23,8 @@ package aerys.minko.scene.node.group
 		public function EffectGroup(...children)
 		{
 			super(children);
+			
+			actions.push(new EffectAction());
 		}
 		
 //		override protected function visitedByRenderingVisitor(q : RenderingVisitor) : void

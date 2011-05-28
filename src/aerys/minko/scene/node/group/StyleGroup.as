@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.group
 {
+	import aerys.minko.scene.action.StyleAction;
 	import aerys.minko.scene.node.IStyled;
 	import aerys.minko.scene.visitor.data.Style;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
@@ -18,6 +19,8 @@ package aerys.minko.scene.node.group
 		public function StyleGroup(...children)
 		{
 			super(children);
+			
+			actions.push(StyleAction.styleAction);
 		}
 		
 		public function get style() : Style

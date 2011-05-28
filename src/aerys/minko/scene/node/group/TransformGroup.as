@@ -1,23 +1,25 @@
 ﻿package aerys.minko.scene.node.group 
 {
-	import aerys.minko.scene.visitor.data.TransformManager;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.action.IActionTarget;
+	import aerys.minko.scene.action.TransformAction;
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.type.math.Transform3D;
-	import aerys.minko.type.math.Matrix4x4;
 	
 	/**
 	 * TransformGroup apply a 3D transform to their children.
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class TransformGroup extends Group implements ITransformable
+	public class TransformGroup extends Group implements IActionTarget, ITransformable
 	{
-		private var _transform	: Transform3D	= new Transform3D();
+		private var _transform	: Transform3D		= new Transform3D();
 		
 		public function TransformGroup(...children) 
 		{
 			super(children);
+			
+			actions.unshift(TransformAction.transformAction);
 		}
 		
 		/**

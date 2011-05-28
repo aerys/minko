@@ -1,11 +1,10 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 
-	public interface IScene
+	public interface IScene extends IActionTarget
 	{
-		function visited(query : ISceneVisitor) : void;
-		
 		function get name() : String;
 	}
 }

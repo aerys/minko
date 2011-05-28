@@ -23,10 +23,11 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.math.Product;
-	import aerys.minko.render.state.RenderState;
+	import aerys.minko.render.renderer.state.RenderState;
 	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.TransformData;
+	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -41,7 +42,7 @@ package aerys.minko.render.shader
 		private var _shadersMap		: Object		= new Object();
 		
 		private var _styleStack		: StyleStack	= null;
-		private var _local			: TransformData	= null;
+		private var _local			: LocalData		= null;
 		private var _world			: Dictionary	= null;
 		
 		protected final function get vertexClipspacePosition() : INode
@@ -76,12 +77,12 @@ package aerys.minko.render.shader
 		
 		protected final function get localToScreenMatrix() : INode
 		{
-			return new TransformParameter(16, TransformData.LOCAL_TO_SCREEN);
+			return new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
 		}
 		
 		public function fillRenderState(state	: RenderState, 
 										style	: StyleStack, 
-										local	: TransformData, 
+										local	: LocalData, 
 										world	: Dictionary) : Boolean
 		{
 			var hash 	: String 		= getDataHash(style, local, world);
@@ -101,7 +102,7 @@ package aerys.minko.render.shader
 		}
 		
 		protected function getDataHash(style	: StyleStack, 
-									   local	: TransformData, 
+									   local	: LocalData, 
 									   world	: Dictionary) : String
 		{
 			return "";

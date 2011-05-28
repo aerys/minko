@@ -1,11 +1,14 @@
 package aerys.minko.scene.node.texture
 {
 	
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.action.IActionTarget;
+	import aerys.minko.scene.action.texture.BitmapTextureAction;
 	import aerys.minko.scene.node.AbstractScene;
+	import aerys.minko.type.IVersionnable;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
@@ -17,19 +20,19 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class BitmapTexture extends AbstractScene implements ITexture, IVersionnable
+	public class BitmapTexture extends AbstractScene implements ITexture, IVersionnable, IActionTarget
 	{
-		private var _version	: uint			= 0;
+		private var _version	: uint				= 0;
 		
-		private var _data		: BitmapData	= null;
-		private var _mipmapping	: Boolean		= false;
+		private var _data		: BitmapData		= null;
+		private var _mipmapping	: Boolean			= false;
 		
-		private var _styleProp	: String		= null;
+		private var _styleProp	: String			= null;
 		
-		private var _matrix		: Matrix		= new Matrix();
+		private var _matrix		: Matrix			= new Matrix();
 		
 		private var _ressource	: TextureRessource	= new TextureRessource();
-		
+				
 		public function get version() : uint
 		{
 			return _version;
@@ -93,6 +96,8 @@ package aerys.minko.scene.node.texture
 			_mipmapping	= mipmapping;
 			
 			_styleProp = BasicStyle.DIFFUSE_MAP;
+			
+			actions[0] = BitmapTextureAction.bitmapTextureAction;
 		}
 		
 //		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void

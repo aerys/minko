@@ -1,11 +1,7 @@
 package aerys.minko.scene.node.group
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.scene.visitor.data.TransformManager;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.type.math.Transform3D;
-	import aerys.minko.type.math.ConstVector4;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
 	public class BillboardGroup extends Group

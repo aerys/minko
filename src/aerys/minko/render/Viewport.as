@@ -12,7 +12,7 @@ package aerys.minko.render
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
-	import aerys.minko.scene.visitor.rendering.WorldDataExtracterVisitor;
+	import aerys.minko.scene.visitor.rendering.WorldDataVisitor;
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
@@ -48,7 +48,7 @@ package aerys.minko.render
 		private var _autoResize			: Boolean					= false;
 		private var _antiAliasing		: int						= 0;
 		
-		private var _wdExtracterQuery	: WorldDataExtracterVisitor	= null;
+		private var _wdExtracterQuery	: WorldDataVisitor	= null;
 		private var _renderingQuery		: RenderingVisitor			= null;
 		
 		private var _time				: int						= 0;
@@ -291,7 +291,7 @@ package aerys.minko.render
 				
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
-				_wdExtracterQuery = new WorldDataExtracterVisitor();
+				_wdExtracterQuery = new WorldDataVisitor();
 				_renderingQuery = new RenderingVisitor(_renderer);
 			}
 		}

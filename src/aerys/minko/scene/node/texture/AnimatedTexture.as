@@ -21,8 +21,16 @@ package aerys.minko.scene.node.texture
 		
 		private var _time		: int		= 0;
 		
-		public function get version()	: uint		{ return _version; }
-		public function get framerate() : Number	{ return _framerate; }
+		private var _current	: IScene	= null;
+		
+		public function get version()		: uint		{ return _version; }
+		public function get framerate() 	: Number	{ return _framerate; }
+		/**
+		 * @todo implement 
+		 * @return 
+		 * 
+		 */
+		public function get styleProperty()	: String	{ throw new Error(); }
 		
 		public function set framerate(value : Number) : void
 		{
@@ -62,7 +70,10 @@ package aerys.minko.scene.node.texture
 //			}
 //			
 //			if (_frame < numChildren)
-//				query.query(rawChildren[_frame]);
+//			{
+//				_current = rawChildren[_frame];
+//				query.query(_current);
+//			}
 //		}
 		
 		public function nextFrame() : void

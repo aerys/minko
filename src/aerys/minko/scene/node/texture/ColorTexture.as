@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.render.state.Blending;
+	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	

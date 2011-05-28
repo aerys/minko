@@ -2,13 +2,7 @@ package aerys.minko.scene.visitor.data
 {
 	import aerys.minko.type.math.Matrix4x4;
 
-	/**
-	 * Wrap the TransformManager and furnish some useful matrix that can directly be used
-	 * in passes or called from dynamic shaders
-	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
-	 */
-	public class TransformData
+	public final class LocalData
 	{
 		public static const VIEW						: String = 'view';
 		public static const WORLD						: String = 'world';
@@ -22,38 +16,53 @@ package aerys.minko.scene.visitor.data
 		public static const LOCAL_TO_SCREEN				: String = 'localToScreen';
 		public static const LOCAL_TO_UV					: String = 'localToUv';
 		
-		protected var _tm									: TransformManager;
+		private static const UPDATE_NONE				: uint		= 0;
+		private static const UPDATE_WORLD_TO_LOCAL		: uint		= 1;
+		private static const UPDATE_CAMERA_POSITION		: uint		= 2;
+		private static const UPDATE_LOCAL_TO_VIEW		: uint		= 4;
+		private static const UPDATE_LOCAL_TO_SCREEN		: uint		= 8;
+		private static const UPDATE_VIEW_TO_LOCAL		: uint		= 16;
+		private static const UPDATE_ALL					: uint		= UPDATE_WORLD_TO_LOCAL
+																	  | UPDATE_CAMERA_POSITION
+																	  | UPDATE_LOCAL_TO_VIEW
+																	  | UPDATE_LOCAL_TO_SCREEN
+																	  | UPDATE_VIEW_TO_LOCAL;
 		
-		protected var _viewInverse							: Matrix4x4;
-		protected var _viewInverse_viewVersion				: uint;
+		private var _update								: uint			= 0;
 		
-		protected var _worldInverse							: Matrix4x4;
-		protected var _worldInverse_worldVersion			: uint;
+		private var _world								: Matrix4x4		= new Matrix4x4();
+		private var _view								: Matrix4x4		= new Matrix4x4();
+		private var _projection							: Matrix4x4		= new Matrix4x4();
+		private var _viewInverse						: Matrix4x4		= null;
+		private var _viewInverse_viewVersion			: uint			= 0;
 		
-		protected var _localToView							: Matrix4x4;
-		protected var _localToView_viewVersion				: uint;
-		protected var _localToView_worldVersion				: uint;
+		private var _worldInverse						: Matrix4x4		= null;
+		private var _worldInverse_worldVersion			: uint			= 0;
 		
-		protected var _localToScreen						: Matrix4x4;
-		protected var _localToScreen_localToViewVersion 	: uint;
-		protected var _localToScreen_projectionVersion		: uint;
+		private var _localToView						: Matrix4x4		= null;
+		private var _localToView_viewVersion			: uint			= 0;
+		private var _localToView_worldVersion			: uint			= 0;
 		
-		protected var _localToUv							: Matrix4x4;
-		protected var _localToUv_localToScreenVersion		: uint;
+		private var _localToScreen						: Matrix4x4		= null;
+		private var _localToScreen_localToViewVersion 	: uint			= 0;
+		private var _localToScreen_projectionVersion	: uint			= 0;
+		
+		private var _localToUv							: Matrix4x4		= null;
+		private var _localToUv_localToScreenVersion		: uint			= 0;
 		
 		public function get view() : Matrix4x4
 		{
-			return _tm.view;
+			return _view;
 		}
 		
 		public function get world() : Matrix4x4
 		{
-			return _tm.world;
+			return _world;
 		}
 		
 		public function get projection() : Matrix4x4
 		{
-			return _tm.projection;
+			return _projection;
 		}
 		
 		public function get worldInverse() : Matrix4x4
@@ -142,10 +151,26 @@ package aerys.minko.scene.visitor.data
 			return _localToUv;
 		}
 		
-		public function TransformData(transformManager : TransformManager)
+		public function set world(value : Matrix4x4) : void
 		{
-			_tm = transformManager;
-			
+			Matrix4x4.copy(value, _world);
+			_update |= UPDATE_LOCAL_TO_SCREEN | UPDATE_LOCAL_TO_VIEW | UPDATE_WORLD_TO_LOCAL;
+		}
+		
+		public function set view(value : Matrix4x4) : void
+		{
+			Matrix4x4.copy(value, _view);
+			_update |= UPDATE_LOCAL_TO_SCREEN | UPDATE_LOCAL_TO_VIEW | UPDATE_VIEW_TO_LOCAL;
+		}
+		
+		public function set projection(value : Matrix4x4) : void
+		{
+			Matrix4x4.copy(value, _projection);
+			_update |= UPDATE_LOCAL_TO_SCREEN;
+		}
+		
+		public function LocalData()
+		{
 			reset();
 		}
 		
@@ -161,6 +186,5 @@ package aerys.minko.scene.visitor.data
 			_localToScreen_localToViewVersion = uint.MAX_VALUE;
 			_localToScreen_projectionVersion = uint.MAX_VALUE;
 		}
-		
 	}
 }
