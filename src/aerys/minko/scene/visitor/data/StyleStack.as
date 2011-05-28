@@ -80,13 +80,13 @@ package aerys.minko.scene.visitor.data
 					}
 				}
 			}
-			
+	
 			worldDataList = new WorldDataList(name);
 			worldDataList.push(value);
 			set(name, worldDataList);
 			return this;
 		}
-		
+
 		public function push(style : Style = null) : void
 		{
 			_data.unshift(style._data);

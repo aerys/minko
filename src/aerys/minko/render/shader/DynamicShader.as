@@ -141,6 +141,7 @@ package aerys.minko.render.shader
 			else if (param is WorldParameter)
 			{
 				var paramClass : Class = WorldParameter(param)._class;
+				
 				if (param._index != -1)
 				{
 					return world[paramClass].getItem(param._index)[param._field];

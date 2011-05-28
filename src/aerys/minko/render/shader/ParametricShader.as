@@ -239,6 +239,11 @@ package aerys.minko.render.shader
 			return new Fog(getShaderNode(start), getShaderNode(distance), getShaderNode(color));
 		}
 		
+		protected final function getVertexAttribute(vertexComponent : VertexComponent) : INode
+		{
+			return new Attribute(vertexComponent);
+		}
+		
 		private function getShaderNode(value : Object) : INode
 		{
 			if (value is INode)

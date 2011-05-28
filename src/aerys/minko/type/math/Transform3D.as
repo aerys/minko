@@ -1,8 +1,8 @@
 package aerys.minko.type.math
 {
+	import aerys.minko.ns.minko;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionnable;
-	import aerys.minko.ns.minko;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Orientation3D;
@@ -50,7 +50,9 @@ package aerys.minko.type.math
 		
 		public function get rotation() : Vector4
 		{
-			if (super.invalid)
+			var invalid : Boolean = super.invalid;
+			
+			if (invalid)
 				updateComponents();
 
 			return _rotation;
@@ -175,6 +177,7 @@ package aerys.minko.type.math
 			validMatrix3D.appendRotation(radians * RAD2DEG,
 								  		 axis._vector,
 								  		 pivotPoint ? pivotPoint._vector : null);
+			invalidate();
 			
 			return this;
 		}
@@ -184,6 +187,7 @@ package aerys.minko.type.math
 									z	: Number	= 1.) : Transform3D
 		{
 			validMatrix3D.appendScale(x, y, z);
+			invalidate();
 			
 			return this;
 		}
@@ -191,6 +195,7 @@ package aerys.minko.type.math
 		public function appendUniformScale(scale : Number) : Transform3D
 		{
 			validMatrix3D.appendScale(scale, scale, scale);
+			invalidate();
 			
 			return this;
 		}
@@ -200,6 +205,7 @@ package aerys.minko.type.math
 										  z : Number = 0.) : Transform3D
 		{
 			validMatrix3D.appendTranslation(x, y, z);
+			invalidate();
 			
 			return this;
 		}
@@ -218,6 +224,7 @@ package aerys.minko.type.math
 			validMatrix3D.prependRotation(radians * RAD2DEG, 
 								    axis._vector,
 								    pivotPoint ? pivotPoint._vector : null);
+			invalidate();
 			
 			return this;
 		}
@@ -227,6 +234,7 @@ package aerys.minko.type.math
 									 z	: Number = 1.) : Transform3D
 		{
 			validMatrix3D.prependScale(x, y, z);
+			invalidate();
 			
 			return this;
 		}
@@ -236,6 +244,7 @@ package aerys.minko.type.math
 										   z : Number	= 1.) : Transform3D
 		{
 			validMatrix3D.prependTranslation(x, y, z);
+			invalidate();
 			
 			return this;
 		}

@@ -7,6 +7,7 @@ package aerys.minko.scene.node.group
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.getQualifiedClassName;
 
 	/**
 	 * The Group3D provides a basic support for scene building.
@@ -317,6 +318,11 @@ package aerys.minko.scene.node.group
 				
 				_toAdd.length = 0;
 			}
+		}
+		
+		public function toString() : String
+		{
+			return "[" + getQualifiedClassName(this) + " " + name + "]";
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
