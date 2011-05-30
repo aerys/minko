@@ -4,51 +4,46 @@ package aerys.minko.scene.visitor.data
 
 	public final class LocalData
 	{
+		private static const _SCREEN_TO_UV : Matrix4x4 = new Matrix4x4(
+			0.5,		0.0,		0.0,	0.0,
+			0.0, 		-0.5,		0.0,	0.0,
+			0.0,		0.0,		1.0,	0.0,
+			0.5, 		0.5,		0.0, 	1.0
+		);
+		
 		public static const VIEW						: String = 'view';
 		public static const WORLD						: String = 'world';
 		public static const PROJECTION					: String = 'projection';
 		
 		public static const WORLD_INVERSE				: String = 'worldInverse';
 		public static const VIEW_INVERSE				: String = 'viewInverse';
-		public static const PROJECTION_INVERSE			: String = 'projectionInverse';
+		
+		public static const SCREEN_TO_UV				: String = 'screenToUv';
 		
 		public static const LOCAL_TO_VIEW				: String = 'localToView';
 		public static const LOCAL_TO_SCREEN				: String = 'localToScreen';
 		public static const LOCAL_TO_UV					: String = 'localToUv';
 		
-		private static const UPDATE_NONE				: uint		= 0;
-		private static const UPDATE_WORLD_TO_LOCAL		: uint		= 1;
-		private static const UPDATE_CAMERA_POSITION		: uint		= 2;
-		private static const UPDATE_LOCAL_TO_VIEW		: uint		= 4;
-		private static const UPDATE_LOCAL_TO_SCREEN		: uint		= 8;
-		private static const UPDATE_VIEW_TO_LOCAL		: uint		= 16;
-		private static const UPDATE_ALL					: uint		= UPDATE_WORLD_TO_LOCAL
-																	  | UPDATE_CAMERA_POSITION
-																	  | UPDATE_LOCAL_TO_VIEW
-																	  | UPDATE_LOCAL_TO_SCREEN
-																	  | UPDATE_VIEW_TO_LOCAL;
+		protected var _world							: Matrix4x4;
+		protected var _view								: Matrix4x4;
+		protected var _projection						: Matrix4x4;
 		
-		private var _update								: uint			= 0;
+		protected var _viewInverse						: Matrix4x4;
+		protected var _viewInverse_viewVersion			: uint;
 		
-		private var _world								: Matrix4x4		= new Matrix4x4();
-		private var _view								: Matrix4x4		= new Matrix4x4();
-		private var _projection							: Matrix4x4		= new Matrix4x4();
-		private var _viewInverse						: Matrix4x4		= null;
-		private var _viewInverse_viewVersion			: uint			= 0;
+		protected var _worldInverse						: Matrix4x4;
+		protected var _worldInverse_worldVersion		: uint;
 		
-		private var _worldInverse						: Matrix4x4		= null;
-		private var _worldInverse_worldVersion			: uint			= 0;
+		protected var _localToView						: Matrix4x4;
+		protected var _localToView_viewVersion			: uint;
+		protected var _localToView_worldVersion			: uint;
 		
-		private var _localToView						: Matrix4x4		= null;
-		private var _localToView_viewVersion			: uint			= 0;
-		private var _localToView_worldVersion			: uint			= 0;
+		protected var _localToScreen					: Matrix4x4;
+		protected var _localToScreen_localToViewVersion : uint;
+		protected var _localToScreen_projectionVersion	: uint;
 		
-		private var _localToScreen						: Matrix4x4		= null;
-		private var _localToScreen_localToViewVersion 	: uint			= 0;
-		private var _localToScreen_projectionVersion	: uint			= 0;
-		
-		private var _localToUv							: Matrix4x4		= null;
-		private var _localToUv_localToScreenVersion		: uint			= 0;
+		protected var _localToUv						: Matrix4x4;
+		protected var _localToUv_localToScreenVersion	: uint;
 		
 		public function get view() : Matrix4x4
 		{
@@ -123,18 +118,9 @@ package aerys.minko.scene.visitor.data
 			return _localToScreen;
 		}
 		
-		/**
-		 * FIXME
-		 */
 		public function get screentoUv() : Matrix4x4
 		{
-			var offset : Number = 0.5 + (0.5 / 2048);
-			return new Matrix4x4(
-				0.5,		0.0,		0.0,	0.0,
-				0.0, 		-0.5,		0.0,	0.0,
-				0.0,		0.0,		1.0,	0.0,
-				offset, 	offset,		0.0, 	1.0
-			);
+			return _SCREEN_TO_UV;
 		}
 		
 		public function get localToUv() : Matrix4x4
@@ -154,37 +140,35 @@ package aerys.minko.scene.visitor.data
 		public function set world(value : Matrix4x4) : void
 		{
 			Matrix4x4.copy(value, _world);
-			_update |= UPDATE_LOCAL_TO_SCREEN | UPDATE_LOCAL_TO_VIEW | UPDATE_WORLD_TO_LOCAL;
 		}
 		
 		public function set view(value : Matrix4x4) : void
 		{
 			Matrix4x4.copy(value, _view);
-			_update |= UPDATE_LOCAL_TO_SCREEN | UPDATE_LOCAL_TO_VIEW | UPDATE_VIEW_TO_LOCAL;
 		}
 		
 		public function set projection(value : Matrix4x4) : void
 		{
 			Matrix4x4.copy(value, _projection);
-			_update |= UPDATE_LOCAL_TO_SCREEN;
 		}
 		
 		public function LocalData()
 		{
+			_world								= new Matrix4x4();
+			_view								= new Matrix4x4();
+			_projection							= new Matrix4x4();
+			
 			reset();
 		}
 		
 		public function reset() : void
 		{
-			_viewInverse_viewVersion = uint.MAX_VALUE;
-			
-			_worldInverse_worldVersion = uint.MAX_VALUE;
-			
-			_localToView_viewVersion = uint.MAX_VALUE;
-			_localToView_worldVersion = uint.MAX_VALUE;
-			
-			_localToScreen_localToViewVersion = uint.MAX_VALUE;
-			_localToScreen_projectionVersion = uint.MAX_VALUE;
+			_viewInverse_viewVersion			= uint.MAX_VALUE;
+			_worldInverse_worldVersion			= uint.MAX_VALUE;
+			_localToView_viewVersion			= uint.MAX_VALUE;
+			_localToView_worldVersion			= uint.MAX_VALUE;
+			_localToScreen_localToViewVersion	= uint.MAX_VALUE;
+			_localToScreen_projectionVersion	= uint.MAX_VALUE;
 		}
 	}
 }
