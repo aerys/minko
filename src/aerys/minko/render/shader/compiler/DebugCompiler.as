@@ -4,6 +4,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.compiler.visitor.writer.WriteAgal;
 	import aerys.minko.render.shader.compiler.visitor.writer.WriteDot;
+	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
@@ -17,6 +18,9 @@ package aerys.minko.render.shader.compiler
 
 	public class DebugCompiler extends Compiler
 	{
+		internal static const FIELD_WIDTH	: uint = 20;
+		internal static const FIELD_HEIGHT	: uint = 25;
+		
 		public function DebugCompiler()
 		{
 			super();
@@ -117,9 +121,6 @@ package aerys.minko.render.shader.compiler
 			return summary;
 		}
 		
-		internal static const FIELD_WIDTH	: uint = 20;
-		internal static const FIELD_HEIGHT	: uint = 25;
-		
 		public function writeTemporaryAllocationSummary(vertexShader : Boolean = true) : BitmapData
 		{
 			var allocations : Vector.<Allocation>	= vertexShader ? _vsTmpAllocator.allocations : _fsTmpAllocator.allocations;
@@ -179,6 +180,6 @@ package aerys.minko.render.shader.compiler
 			
 			return bitmapData;
 		}
-												   
+		
 	}
 }
