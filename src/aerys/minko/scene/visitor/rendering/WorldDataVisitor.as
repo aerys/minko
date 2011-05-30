@@ -25,12 +25,14 @@ package aerys.minko.scene.visitor.rendering
 		
 		public function WorldDataVisitor()
 		{
-			reset();
 		}
 		
-		public function reset() : void
+		public function processSceneGraph(scene		: IScene, 
+										  worldData	: Dictionary = null) : Dictionary
 		{
-			_worldData = new Dictionary();
+			_worldData = worldData || new Dictionary();
+			visit(scene);
+			return _worldData;
 		}
 		
 		public function visit(scene : IScene) : void
@@ -55,12 +57,11 @@ package aerys.minko.scene.visitor.rendering
 			if (transformObject)
 				_localData.world.pop();
 		}
-	
+		
 		protected function queryIWorldObject(worldObject : IWorldObject) : void
 		{
 			var worldObjectData	: IWorldData	= worldObject.getData(_localData);
-			
-			if (worldObjectData == null)
+						if (worldObjectData == null)
 				return;
 			
 			var worldObjectDataClass	: Class			= Object(worldObjectData).constructor;

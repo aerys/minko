@@ -1,12 +1,12 @@
 package aerys.minko.render.renderer.state
 {
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -442,7 +442,7 @@ package aerys.minko.render.renderer.state
 
 				if (_setFlags & RENDER_TARGET)
 				{
-					if (_renderTarget == null)
+					if (_renderTarget.type == RenderTarget.BACKBUFFER)
 					{
 						context.setRenderToBackBuffer();
 						context.clear();
@@ -539,7 +539,7 @@ package aerys.minko.render.renderer.state
 			if (_setFlags & RENDER_TARGET
 				&& (!(current._setFlags & RENDER_TARGET) || _renderTarget != current._renderTarget))
 			{
-				if (_renderTarget == null)
+				if (_renderTarget.type == RenderTarget.BACKBUFFER)
 				{
 					context.setRenderToBackBuffer();
 					context.clear();

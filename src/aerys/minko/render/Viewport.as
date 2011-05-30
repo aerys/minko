@@ -1,28 +1,26 @@
 package aerys.minko.render
 {
-	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
-	import aerys.minko.render.renderer.DirectRenderer;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.visitor.data.ViewportData;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.scene.visitor.rendering.WorldDataVisitor;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionnable;
 	
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-	import flash.display3D.Context3D;
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
-	import flash.events.FullScreenEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
@@ -60,6 +58,8 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IEffect					= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
+		
+		private var _viewportData		: ViewportData				= null;
 		
 		public function get version() : uint
 		{
@@ -223,9 +223,10 @@ package aerys.minko.render
 			this.width = width;
 			this.height = height;
 			
-			_autoResize = _width == 0 || _height == 0;
-			_antiAliasing = antiAliasing;
-			_rendererClass = rendererType || DefaultRenderer;
+			_autoResize		= _width == 0 || _height == 0;
+			_antiAliasing	= antiAliasing;
+			_rendererClass	= rendererType || DefaultRenderer;
+			_viewportData	= new ViewportData(this);
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
@@ -316,22 +317,21 @@ package aerys.minko.render
 			{
 				var time : Number = getTimer();
 				
-				_wdExtracterQuery.reset();
-				_renderingQuery.reset(_defaultEffect, _backgroundColor);
 				
-				// recover all WorldObjets' data.
-				_wdExtracterQuery.visit(scene);
+				// extract world data
+				var worldData : Dictionary = new Dictionary();
+				_wdExtracterQuery.processSceneGraph(scene, worldData);
+				worldData[ViewportData] = _viewportData;
 				
-				var worldData : Dictionary = _wdExtracterQuery.worldData;
-				
-				if (worldData[CameraData] != null)
-					CameraData(worldData[CameraData]).ratio = _width / _height
+				if (worldData[CameraData])
+					worldData[CameraData].ratio = _viewportData.ratio;
 				
 				// render
+				_renderingQuery.reset(_defaultEffect, _backgroundColor);
 				_renderingQuery.updateWorldData(worldData);
 				_renderingQuery.visit(scene);
 				_renderer.present();
-								
+				
 				Factory.sweep();
 				
 				_sceneSize = _renderingQuery.numNodes;
@@ -343,7 +343,7 @@ package aerys.minko.render
 				_time = 0;
 				_drawTime = 0;
 			}
-
+			
 			showLogo();
 		}
 		

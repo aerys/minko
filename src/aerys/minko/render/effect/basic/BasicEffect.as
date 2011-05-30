@@ -14,6 +14,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.visitor.data.ViewportData;
 	import aerys.minko.type.math.ConstVector4;
 	
 	import flash.utils.Dictionary;
@@ -50,7 +51,7 @@ package aerys.minko.render.effect.basic
 			state.blending			= style.get(BasicStyle.BLENDING, Blending.ALPHA) as uint;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			state.priority			= _priority;
-			//state.renderTarget		= _renderTarget;
+			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
 			
 			return true;
 		}
