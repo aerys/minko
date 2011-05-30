@@ -1,8 +1,6 @@
 package aerys.minko.scene.visitor.data
 {
 	import aerys.minko.render.effect.IEffect;
-	
-	import flash.text.StyleSheet;
 
 	public final class RenderingData
 	{

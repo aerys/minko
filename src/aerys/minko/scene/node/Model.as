@@ -4,7 +4,6 @@ package aerys.minko.scene.node
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.scene.action.EffectTargetAction;
-	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
 	import aerys.minko.scene.action.StyledAction;
