@@ -56,9 +56,11 @@ package aerys.minko.scene.visitor.data
 		
 		protected var _localPosition					: Vector4;
 		protected var _localPosition_positionVersion	: uint;
+		protected var _localPosition_worldVersion		: uint;
 		
 		protected var _localLookAt						: Vector4;
 		protected var _localLookAt_lookAtVersion		: uint;
+		protected var _localLookAt_worldVersion			: uint;
 		
 		protected var _frustum							: Frustum;
 		protected var _frustum_projectionVersion		: uint;
@@ -147,10 +149,14 @@ package aerys.minko.scene.visitor.data
 		
 		public function get localPosition() : Vector4
 		{
-			if (_localPosition_positionVersion != _position.version)
+			var worldMatrix : Matrix4x4 = _localData.world;
+			
+			if (_localPosition_positionVersion != _position.version ||
+				_localPosition_worldVersion != worldMatrix.version)
 			{
-				_localPosition = _localData.world.multiplyVector(_position, _localPosition);
-				_localPosition_positionVersion = _position.version;
+				_localPosition = worldMatrix.multiplyVector(_position, _localPosition);
+				_localPosition_positionVersion	= _position.version;
+				_localPosition_worldVersion		= worldMatrix.version;
 			}
 			
 			return _localPosition;
@@ -158,10 +164,14 @@ package aerys.minko.scene.visitor.data
 		
 		public function get localLookAt() : Vector4
 		{
-			if (_localLookAt_lookAtVersion != _lookAt.version)
+			var worldMatrix : Matrix4x4 = _localData.world;
+			
+			if (_localLookAt_lookAtVersion != _lookAt.version ||
+				_localLookAt_worldVersion != worldMatrix.version)
 			{
-				_localLookAt = _localData.world.deltaMultiplyVector(_lookAt, _localLookAt);
-				_localLookAt_lookAtVersion = _lookAt.version;
+				_localLookAt = worldMatrix.multiplyVector(_lookAt, _localLookAt);
+				_localLookAt_lookAtVersion	= _lookAt.version;
+				_localLookAt_worldVersion	= worldMatrix.version;
 			}
 			
 			return _localLookAt;
@@ -250,7 +260,9 @@ package aerys.minko.scene.visitor.data
 			_view_lookAtVersion				= uint.MAX_VALUE;
 			_view_upVersion					= uint.MAX_VALUE;
 			_localPosition_positionVersion	= uint.MAX_VALUE;
+			_localPosition_worldVersion		= uint.MAX_VALUE;
 			_localLookAt_lookAtVersion		= uint.MAX_VALUE;
+			_localLookAt_worldVersion		= uint.MAX_VALUE;
 			_frustum_projectionVersion		= uint.MAX_VALUE;
 			
 			_zFarParts_invalidated	= true;
