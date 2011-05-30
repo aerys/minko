@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.renderer.state.RenderState;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.compiler.DebugCompiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
@@ -9,10 +10,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.renderer.state.RenderState;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -171,7 +170,7 @@ package aerys.minko.render.shader
 			var offset	: uint	= paramAlloc._offset;
 			var size	: uint	= paramAlloc._parameter._size;
 			
-			if (data is int || data is uint)
+			if (data is int)
 			{
 				var intData : int = data as int;
 				
@@ -192,10 +191,39 @@ package aerys.minko.render.shader
 				}
 				else if (size == 4)
 				{
+					
 					constData[offset] = ((intData & 0xFF000000) >>> 24) / 255.;
 					constData[int(offset + 1)] = ((intData & 0x00FF0000) >>> 16) / 255.;
 					constData[int(offset + 2)] = ((intData & 0x0000FF00) >>> 8) / 255.;
 					constData[int(offset + 3)] = ((intData & 0x000000FF)) / 255.;
+				}
+			}
+			else if (data is uint)
+			{
+				var uintData : uint = data as uint;
+				
+				if (size == 1)
+				{
+					constData[offset] = uintData;
+				}
+				else if (size == 2)
+				{
+					constData[offset] = ((uintData & 0xFFFF0000) >>> 16) / Number(0xffff);
+					constData[int(offset + 2)] = (uintData & 0x0000FFFF) / Number(0xffff);
+				}
+				else if (size == 3)
+				{
+					constData[offset] = ((uintData & 0xFF0000) >>> 16) / 255.;
+					constData[int(offset + 1)] = ((uintData & 0x00FF00) >>> 8) / 255.;
+					constData[int(offset + 2)] = (uintData & 0x0000FF) / 255.;
+				}
+				else if (size == 4)
+				{
+					
+					constData[offset] = ((uintData & 0xFF000000) >>> 24) / 255.;
+					constData[int(offset + 1)] = ((uintData & 0x00FF0000) >>> 16) / 255.;
+					constData[int(offset + 2)] = ((uintData & 0x0000FF00) >>> 8) / 255.;
+					constData[int(offset + 3)] = ((uintData & 0x000000FF)) / 255.;
 				}
 			}
 			else if (data is Number)
