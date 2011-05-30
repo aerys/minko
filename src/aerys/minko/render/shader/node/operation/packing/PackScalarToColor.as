@@ -3,6 +3,7 @@ package aerys.minko.render.shader.node.operation.packing
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
+	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;
@@ -23,11 +24,9 @@ package aerys.minko.render.shader.node.operation.packing
 		{
 			var nodeOpposite		: INode = new Substract(maxValue, node);
 			var packedDepthOpposite	: INode = new Saturate(
-				new Interpolate(
-					new Divide(
-						new Substract(nodeOpposite, maxValueParts),
-						new Extract(maxValueParts, Components.Y)
-					)
+				new Divide(
+					new Substract(nodeOpposite, maxValueParts),
+					new Extract(maxValueParts, Components.Y)
 				)
 			);
 			
