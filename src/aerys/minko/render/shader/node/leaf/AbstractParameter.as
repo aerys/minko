@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.leaf
 		use namespace minko;
 		
 		minko var _size		: uint;
-		minko var _key		: String;
+		minko var _key		: Object;
 		minko var _field	: String;
 		minko var _index	: int;
 		
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.node.leaf
 			return _size;
 		}
 		
-		public function get key() : String
+		public function get key() : Object
 		{
 			return _key;
 		}
@@ -33,7 +33,7 @@ package aerys.minko.render.shader.node.leaf
 		}
 		
 		public function AbstractParameter(size	: uint,
-										  key	: String,
+										  key	: Object,
 										  field	: String	= null,
 										  index	: int		= -1)
 		{

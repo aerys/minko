@@ -18,7 +18,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 	public class FragmentAllocator extends AbstractAllocator
 	{
 		protected var _vertexShaderOutputs	: Vector.<INode>;
-		protected var _samplers				: Vector.<String>;
+		protected var _samplers				: Vector.<int>;
 		
 		protected var _stack				: Vector.<INode>;
 		protected var _visited				: Vector.<INode>;
@@ -31,7 +31,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			return _vertexShaderOutputs;
 		}
 		
-		public function get samplers() : Vector.<String>
+		public function get samplers() : Vector.<int>
 		{
 			return _samplers;
 		}
@@ -41,7 +41,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 										  constAlloc	: Allocator)
 		{
 			_vertexShaderOutputs	= new Vector.<INode>();
-			_samplers				= new Vector.<String>();
+			_samplers				= new Vector.<int>();
 			
 			_operationId	= 0;
 			_variyngAlloc	= variyngAlloc;
@@ -100,7 +100,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 				// sampler allocation is done by hand.
 				var samplerNode : Sampler = Sampler(shaderNode);
 				samplerNode.samplerId = _fgSamplerId++;
-				_samplers.push(samplerNode.styleName);
+				_samplers.push(samplerNode.styleId);
 				
 				if (_fgSamplerId > RegistryLimit.FG_MAX_SAMPLER)
 					throw new Error('Unable to allocate a new sampler registry.');

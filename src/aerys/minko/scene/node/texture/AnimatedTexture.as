@@ -30,7 +30,7 @@ package aerys.minko.scene.node.texture
 		 * @return 
 		 * 
 		 */
-		public function get styleProperty()	: String	{ throw new Error(); }
+		public function get styleProperty()	: int		{ throw new Error(); }
 		
 		public function set framerate(value : Number) : void
 		{
