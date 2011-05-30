@@ -14,7 +14,7 @@ package aerys.minko.render.shader.node.common
 			var result : INode;
 			
 			var maxValueParts	: INode = new WorldParameter(4, CameraData, CameraData.Z_FAR_PARTS);
-			var maxValue		: INode = new WorldParameter(4, CameraData, CameraData.Z_FAR);
+			var maxValue		: INode = new WorldParameter(1, CameraData, CameraData.Z_FAR);
 			
 			result = new Depth();
 			result = new PackScalarToColor(result, maxValueParts, maxValue);
