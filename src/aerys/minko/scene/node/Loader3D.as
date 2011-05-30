@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.group.Group;
+	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
@@ -74,6 +75,35 @@ package aerys.minko.scene.node
 			return _content;
 		}
 		
+		public function loadBytes(bytes : ByteArray) : Group
+		{
+			for (var extension : String in PARSERS)
+			{
+				var parser : IParser3D = PARSERS[extension];
+				
+				bytes.position = 0;
+				
+				if (parser.parse(bytes))
+				{
+					var data	: Vector.<IScene>	= parser.data;
+					var length	: int				= data ? data.length : 0;
+					var content : Group				= new Group();
+					
+					for (var i : int = 0; i < length; ++i)
+						content.addChild(data[i]);
+					
+					return content;
+				}
+			}
+			
+			var loader 	: Loader 	= new Loader();
+			
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
+			loader.loadBytes(bytes);
+			
+			return _content;
+		}
+	
 		public static function loadBytes(bytes : ByteArray) : Group
 		{
 			for (var extension : String in PARSERS)
@@ -95,9 +125,24 @@ package aerys.minko.scene.node
 				}
 			}
 			
-			throw new Error("Unable to find a proper data parser.");
+			var loader 		 : Loader 	= new Loader();
+			var textureGroup : IGroup 	= new Group();
 			
-			return null;
+			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e : Event) : void
+			{
+				var info 	: LoaderInfo 	= e.target as LoaderInfo;
+				var texture	: ITexture 		= null;
+				
+				if (info.content is MovieClip)
+					textureGroup.addChild(new MovieClipTexture(info.content as MovieClip));
+				else if (info.content is Bitmap)
+					textureGroup.addChild(texture = new BitmapTexture((info.content as Bitmap).bitmapData));
+			});
+			loader.loadBytes(bytes);
+			
+			//throw new Error("Unable to find a proper data parser.");
+			
+			return new Group(textureGroup);
 		}
 		
 		public static function loadAsset(asset : Class) : Group
@@ -156,16 +201,11 @@ package aerys.minko.scene.node
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		private static function embedCompleteHandler(event : Event) : void
-		{
-			
-		}
-		
 		private function loaderCompleteHandler(event : Event) : void
 		{
 			var info 	: LoaderInfo 	= event.target as LoaderInfo;
 			var texture	: ITexture 		= null;
-						
+			
 			if (info.content is MovieClip)
 				texture = new MovieClipTexture(info.content as MovieClip);
 			else if (info.content is Bitmap)

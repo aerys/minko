@@ -25,14 +25,7 @@ package aerys.minko.scene.node.group
 		
 		private var _name			: String			= null;
 		
-		private var _visiting		: IScene			= null;
-		
-		private var _toRemove		: Vector.<IScene>	= new Vector.<IScene>();
-		private var _toAdd			: Vector.<IScene>	= new Vector.<IScene>();
-		private var _toAddAt		: Vector.<int>		= new Vector.<int>();
-		
 		private var _children		: Vector.<IScene>	= null;
-		
 		private var _numChildren	: int				= 0;
 		
 		private var _actions		: Vector.<IAction>	= Vector.<IAction>([GroupAction.groupAction]);
@@ -113,16 +106,8 @@ package aerys.minko.scene.node.group
 			if (!scene)
 				throw new Error();
 			
-			if (_visiting)
-			{
-				_toAdd.push(scene);
-				_toAddAt.push(-1);
-			}
-			else
-			{
-				_children.push(scene);
-				++_numChildren;
-			}
+			_children.push(scene);
+			++_numChildren;
 			
 			//scene.added(this);
 			
@@ -136,22 +121,14 @@ package aerys.minko.scene.node.group
 			
 			var numChildren : int = _children.length;
 			
-			if (_visiting)
-			{
-				_toAdd.push(scene);
-				_toAddAt.push(position);
-			}
-			else
-			{
-				if (position >= numChildren)
-					return addChild(scene);
-				
-				for (var i : int = numChildren; i > position; --i)
-					_children[i] = _children[int(i - 1)];
-				_children[position] = scene;
-				
-				++_numChildren;
-			}
+			if (position >= numChildren)
+				return addChild(scene);
+			
+			for (var i : int = numChildren; i > position; --i)
+				_children[i] = _children[int(i - 1)];
+			_children[position] = scene;
+			
+			++_numChildren;
 			
 			return this;
 		}
@@ -184,18 +161,9 @@ package aerys.minko.scene.node.group
 			{
 				removed = _children[position];
 				
-				if (_visiting)
-				{
-					_toRemove.push(removed);
-				}
-				else
-				{
-					while (position < _numChildren - 1)
-						_children[position] = _children[int(++position)];
-					_children.length = --_numChildren;
-				}
-				
-				//removed.removed(this);
+				while (position < _numChildren - 1)
+					_children[position] = _children[int(++position)];
+				_children.length = --_numChildren;
 			}
 			
 			return this;
@@ -203,27 +171,8 @@ package aerys.minko.scene.node.group
 		
 		public function removeAllChildren() : IGroup
 		{
-			//var i : int = _numChildren - 1;
-			
-			/*while (i >= 0)
-			{
-				//_children[i].removed(this);
-				_children.length = i;
-				--i;
-			}*/
-			
-			var numChildren : int = _numChildren;
-			
-			if (_visiting)
-			{
-				while (numChildren)
-					_toRemove.push(_children[int(numChildren--)]);
-			}
-			else
-			{
-				_children.length = 0;
-				_numChildren = 0;
-			}
+			_children.length = 0;
+			_numChildren = 0;
 			
 			return this;
 		}
@@ -266,69 +215,6 @@ package aerys.minko.scene.node.group
 			return descendant;
 		}
 
-		/**
-		 * Render child nodes.
-		 *
-		 * @param myGraphics The Graphics3D object that describes the frame being rendered.
-		 */
-		public function visited(visitor : ISceneVisitor) : void
-		{
-			if (visitor is RenderingVisitor)
-				visitedByRenderingVisitor(visitor as RenderingVisitor);
-			else
-				visitChildren(visitor);
-		}
-		
-		protected function visitedByRenderingVisitor(visitor : RenderingVisitor) : void
-		{
-			visitChildren(visitor);
-		}
-		
-		protected function visitChildren(query : ISceneVisitor) : void
-		{
-			var numChildren : int = _numChildren;
-			var i 			: int = 0;
-			
-			// lock
-			_visiting = this;
-			
-			for (i = 0; i < numChildren; ++i)
-			{
-				//childVisited(_children[i], query);
-				query.visit(_children[i]);
-			}
-			
-			// unlock
-			_visiting = null;
-			
-			if (_toRemove.length)
-			{
-				var numRemoved : int = _toRemove.length;
-				
-				for (i = 0; i < numRemoved; ++i)
-					removeChild(_toRemove[i]);
-				
-				_toRemove.length = 0;
-			}
-			
-			if (_toAdd.length)
-			{
-				var numAdded : int = _toAdd.length;
-				
-				for (i = 0; i < numAdded; ++i)
-				{
-					var position : int = _toAddAt[i];
-					
-					if (position == -1)
-						addChild(_toAdd[i]);
-					else
-						addChildAt(_toAdd[i], position);
-				}
-				
-				_toAdd.length = 0;
-			}
-		}
-		
 		public function toString() : String
 		{
 			return "[" + getQualifiedClassName(this) + " " + name + "]";

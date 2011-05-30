@@ -33,16 +33,5 @@ package aerys.minko.scene.node
 			return className.substr(className.lastIndexOf(":") + 1)
 				   + "_" + (++_id);
 		}
-		
-		public function visited(visitor : ISceneVisitor) : void
-		{
-			if (visitor is RenderingVisitor)
-				visitedByRenderingVisitor(visitor as RenderingVisitor);
-		}
-		
-		protected function visitedByRenderingVisitor(visitor : RenderingVisitor) : void
-		{
-			// NOTHING
-		}
 	}
 }

@@ -52,26 +52,26 @@ package aerys.minko
 		
 		public static function log(myMessage : Object, myTarget : Object = null) : void
 		{
-			if (_logger != null && _debugLevel & LogLevel.LOG)
-				_logger.log(myMessage, myTarget);
+//			if (_logger != null && _debugLevel & LogLevel.LOG)
+//				_logger.log(myMessage, myTarget);
 		}
 		
 		public static function logMessage(myMessage : Object, myTarget : Object = null) : void
 		{
-			if (_logger != null && _debugLevel & LogLevel.MESSAGE)
-				_logger.logMessage(myMessage, myTarget);
+//			if (_logger != null && _debugLevel & LogLevel.MESSAGE)
+//				_logger.logMessage(myMessage, myTarget);
 		}
 		
 		public static function logWarning(myMessage : Object, myTarget : Object = null) : void
 		{
-			if (_logger != null && _debugLevel & LogLevel.WARNING)
-				_logger.logWarning(myMessage, myTarget);
+//			if (_logger != null && _debugLevel & LogLevel.WARNING)
+//				_logger.logWarning(myMessage, myTarget);
 		}
 		
 		public static function logError(myMessage : Object, myTarget : Object = null) : void
 		{
-			if (_logger != null && _debugLevel & LogLevel.ERROR)
-				_logger.logError(myMessage, myTarget);
+//			if (_logger != null && _debugLevel & LogLevel.ERROR)
+//				_logger.logError(myMessage, myTarget);
 			
 			throw new Error(myMessage);
 		}

@@ -3,11 +3,11 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
-	import aerys.minko.scene.action.EffectAction;
+	import aerys.minko.scene.action.EffectTargetAction;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
-	import aerys.minko.scene.action.StyleAction;
+	import aerys.minko.scene.action.StyledAction;
 	import aerys.minko.scene.action.TransformAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
@@ -121,8 +121,8 @@ package aerys.minko.scene.node
 		{
 			super();
 			
-			actions.push(StyleAction.styleAction,
-						 new EffectAction(),
+			actions.push(StyledAction.styledAction,
+						 EffectTargetAction.effectTargetAction,
 						 TransformAction.transformAction,
 						 ModelAction.modelAction);
 			

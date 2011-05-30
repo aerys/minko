@@ -1,46 +1,47 @@
 package aerys.minko.scene.action
 {
-	import aerys.minko.render.effect.IEffect;
-	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.IStyled;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class EffectAction implements IAction
+	public class StyledAction implements IAction
 	{
-		private var _effects	: Vector.<IEffect>	= null;
+		private static var _instance	: StyledAction	= null;
 		
-		public function EffectAction()
+		public static function get styledAction() : StyledAction
+		{
+			return _instance || (_instance = new StyledAction());
+		}
+		
+		public function StyledAction()
 		{
 		}
 		
 		public function get name() : String
 		{
-			return "EffectAction";
+			return "StyleAction";
 		}
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
+			var styled : IStyled = scene as IStyled;
+			
+			visitor.renderingData.styleStack.push(styled.style);
+			
 			return true;
 		}
 		
 		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			_effects = (scene as IEffectTarget).effects;
-			
-			var numEffects	 : int	= _effects.length;
-			
-			for (var i : int = 0; i < numEffects; ++i)
-				visitor.renderingData.effects.push(_effects[i]);
-			
 			return true;
 		}
 		
 		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var numEffects	 : int	= _effects.length;
+			var styled : IStyled = scene as IStyled;
 			
-			visitor.renderingData.effects.length -= numEffects;
+			visitor.renderingData.styleStack.pop();
 			
 			return true;
 		}

@@ -25,7 +25,7 @@ package aerys.minko.scene.node.mesh.modifier
 			super(target);
 		}
 		
-		override public function visited(query : ISceneVisitor) : void
+		/*public function visited(query : ISceneVisitor) : void
 		{
 			if (target.version != _version || !_boundingBox)
 			{
@@ -64,9 +64,7 @@ package aerys.minko.scene.node.mesh.modifier
 				
 				_version = target.version;
 			}
-			
-			super.visited(query);
-		}
+		}*/
 		
 	}
 }

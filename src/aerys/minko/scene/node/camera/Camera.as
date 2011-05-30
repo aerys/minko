@@ -20,8 +20,8 @@ package aerys.minko.scene.node.camera
 	 * override the <code>invalidateTransform</code> method.
 	 * </p>
 	 * 
-	 * @see ArcBallCamera3D
-	 * @see FirstPersonCamera3D
+	 * @see ArcBallCamera
+	 * @see FirstPersonCamera
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
@@ -124,9 +124,9 @@ package aerys.minko.scene.node.camera
 			
 			var cameraData 		: CameraData	= CAMERA_DATA.create(true) as CameraData;
 			var worldMatrix		: Matrix4x4		= localData.world;
-			var worldPosition	: Vector4		= worldMatrix.multiplyVector(_position);
-			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(_lookAt);
-			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(_up).normalize();
+			var worldPosition	: Vector4		= worldMatrix.multiplyVector(position);
+			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(lookAt);
+			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(up).normalize();
 			
 			cameraData.reset();
 			
@@ -134,9 +134,9 @@ package aerys.minko.scene.node.camera
 			cameraData.lookAt		= worldLookAt;
 			cameraData.up			= worldUp;
 			
-			cameraData.fov			= _fov;
-			cameraData.zNear		= _zNear;
-			cameraData.zFar			= _zFar;
+			cameraData.fov			= fieldOfView;
+			cameraData.zNear		= nearClipping;
+			cameraData.zFar			= farClipping;
 			
 			return cameraData;
 		}
