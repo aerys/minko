@@ -1,30 +1,19 @@
 package aerys.minko.scene.visitor.rendering
 {
-	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
-	import aerys.minko.render.effect.IEffectPass;
-	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.ressource.IRessource;
-	import aerys.minko.render.renderer.state.RenderState;
-	import aerys.minko.scene.node.*;
-	import aerys.minko.scene.node.group.*;
-	import aerys.minko.scene.node.mesh.*;
-	import aerys.minko.scene.node.texture.*;
-	import aerys.minko.scene.visitor.*;
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.IActionTarget;
-	import aerys.minko.scene.visitor.data.*;
-	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStreamList;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.visitor.data.IWorldData;
+	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.visitor.data.RenderingData;
 	
-	import flash.display.ActionScriptVersion;
 	import flash.utils.Dictionary;
 	
 	public class RenderingVisitor implements ISceneVisitor
 	{
-		use namespace minko;
-		
 		protected var _renderer			: IRenderer;
 		protected var _numNodes			: uint;
 		
