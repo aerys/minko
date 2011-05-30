@@ -4,8 +4,6 @@ package aerys.minko.scene.visitor.data
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	import flash.geom.Matrix;
-	
 	public class CameraData implements IWorldData
 	{
 		public static const POSITION		: String = 'position';
@@ -257,8 +255,6 @@ package aerys.minko.scene.visitor.data
 			
 			_zFarParts_invalidated	= true;
 			_projection_invalidated = true;
-			
-			_localData && _localData.reset();
 		}
 	}
 }
