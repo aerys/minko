@@ -74,6 +74,10 @@ package aerys.minko.render.shader.compiler
 								for (var i : uint = allocation.offset % 4; i < allocation.offset % 4 + allocation.size && i < 4; ++i)
 									summary += offsetToLetter[i];
 							}
+							else if (allocation.size == 4)
+							{
+								summary += registerId;
+							}
 							else if (allocation.size == 16)
 							{
 								summary += '[' + registerId + '-' + (registerId + 3) + ']';
