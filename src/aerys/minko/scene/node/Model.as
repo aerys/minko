@@ -8,7 +8,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
 	import aerys.minko.scene.action.StyledAction;
-	import aerys.minko.scene.action.TransformAction;
+	import aerys.minko.scene.action.TransformableAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.visitor.data.Style;
@@ -123,7 +123,7 @@ package aerys.minko.scene.node
 			
 			actions.push(StyledAction.styledAction,
 						 EffectTargetAction.effectTargetAction,
-						 TransformAction.transformAction,
+						 TransformableAction.transformableAction,
 						 ModelAction.modelAction);
 			
 			_mesh = mesh;

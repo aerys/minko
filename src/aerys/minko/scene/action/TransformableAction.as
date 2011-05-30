@@ -5,13 +5,13 @@ package aerys.minko.scene.action
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class TransformAction implements IAction
+	public class TransformableAction implements IAction
 	{
-		private static var _instance	: TransformAction;
+		private static var _instance	: TransformableAction;
 		
-		public static function get transformAction() : TransformAction
+		public static function get transformableAction() : TransformableAction
 		{
-			return _instance || (_instance = new TransformAction());
+			return _instance || (_instance = new TransformableAction());
 		}
 		
 		public function get name() : String

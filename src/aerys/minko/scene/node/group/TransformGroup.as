@@ -2,7 +2,7 @@
 {
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
-	import aerys.minko.scene.action.TransformAction;
+	import aerys.minko.scene.action.TransformableAction;
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.type.math.Transform3D;
 	
@@ -19,7 +19,7 @@
 		{
 			super(children);
 			
-			actions.unshift(TransformAction.transformAction);
+			actions.unshift(TransformableAction.transformableAction);
 		}
 		
 		/**
