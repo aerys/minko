@@ -7,6 +7,8 @@ package aerys.minko.scene.action
 	
 	public class ModelAction implements IAction
 	{
+		private static const TYPE		: uint			= ActionType.RECURSE;
+		
 		private static var _instance	: ModelAction	= null;
 		
 		public static function get modelAction() : ModelAction
@@ -14,10 +16,7 @@ package aerys.minko.scene.action
 			return _instance || (_instance = new ModelAction());
 		}
 		
-		public function get name() : String
-		{
-			return "RenderAction";
-		}
+		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{

@@ -317,9 +317,9 @@ package aerys.minko.render
 			{
 				var time : Number = getTimer();
 				
-				
 				// extract world data
 				var worldData : Dictionary = new Dictionary();
+				
 				_wdExtracterQuery.processSceneGraph(scene, worldData);
 				worldData[ViewportData] = _viewportData;
 				

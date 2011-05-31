@@ -8,6 +8,8 @@ package aerys.minko.scene.action
 	
 	public class EffectTargetAction implements IAction
 	{
+		private static const TYPE		: uint					= ActionType.RENDER;
+		
 		private static var _instance	: EffectTargetAction	= null;
 		
 		public static function get effectTargetAction() : EffectTargetAction
@@ -15,14 +17,7 @@ package aerys.minko.scene.action
 			return _instance || (_instance = new EffectTargetAction());
 		}
 		
-		public function EffectTargetAction()
-		{
-		}
-		
-		public function get name() : String
-		{
-			return "EffectAction";
-		}
+		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{

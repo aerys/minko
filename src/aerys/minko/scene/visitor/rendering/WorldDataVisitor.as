@@ -1,6 +1,8 @@
 package aerys.minko.scene.visitor.rendering
 {
 	import aerys.minko.render.renderer.IRenderer;
+	import aerys.minko.scene.action.ActionType;
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.scene.node.IWorldObject;
@@ -15,6 +17,10 @@ package aerys.minko.scene.visitor.rendering
 	
 	public class WorldDataVisitor implements ISceneVisitor
 	{
+		private static const ACTIONS_TYPES	: uint	= ActionType.UPDATE_WORLD_DATA
+													  | ActionType.UPDATE_LOCAL_DATA
+													  | ActionType.RECURSE;
+		
 		protected var _worldData	: Dictionary	= null;
 		protected var _localData	: LocalData		= new LocalData();
 		
@@ -37,7 +43,7 @@ package aerys.minko.scene.visitor.rendering
 		
 		public function visit(scene : IScene) : void
 		{
-			var transformObject : ITransformable = scene as ITransformable;
+			/*var transformObject : ITransformable = scene as ITransformable;
 			
 			// push transform
 			if (transformObject)
@@ -55,7 +61,24 @@ package aerys.minko.scene.visitor.rendering
 			
 			// pop transform
 			if (transformObject)
-				_localData.world.pop();
+				_localData.world.pop();*/
+						
+			var actions 	: Vector.<IAction> 	= scene.actions;
+			var numActions	: int				= actions.length;
+			var	i			: int				= 0;
+			var action		: IAction			= null;
+			
+			for (i = 0; i < numActions; ++i)
+				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.prefix(scene, this, null))
+					break ;
+			
+			for (i = 0; i < numActions; ++i)
+				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.infix(scene, this, null))
+					break ;
+			
+			for (i = 0; i < numActions; ++i)
+				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.postfix(scene, this, null))
+					break ;
 		}
 		
 		protected function queryIWorldObject(worldObject : IWorldObject) : void

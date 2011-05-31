@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.camera
 {
+	import aerys.minko.scene.action.WorldObjectAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.IWorldData;
@@ -109,12 +110,14 @@ package aerys.minko.scene.node.camera
 		}
 		
 		public function Camera(fieldOfView 	: Number 	= DEFAULT_FOV,
-								 nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
-								 farClipping	: Number	= DEFAULT_FAR_CLIPPING)
+							   nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
+							   farClipping	: Number	= DEFAULT_FAR_CLIPPING)
 		{
 			this.fieldOfView = fieldOfView;
 			this.nearClipping = nearClipping;
 			this.farClipping = farClipping;
+			
+			actions[0] = WorldObjectAction.worldObjectAction;
 		}
 		
 		public function getData(localData : LocalData) : IWorldData

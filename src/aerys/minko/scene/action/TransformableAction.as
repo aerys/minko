@@ -7,6 +7,8 @@ package aerys.minko.scene.action
 	
 	public class TransformableAction implements IAction
 	{
+		private static const TYPE		: uint	= ActionType.UPDATE_LOCAL_DATA;
+		
 		private static var _instance	: TransformableAction;
 		
 		public static function get transformableAction() : TransformableAction
@@ -14,10 +16,7 @@ package aerys.minko.scene.action
 			return _instance || (_instance = new TransformableAction());
 		}
 		
-		public function get name() : String
-		{
-			return "TransformAction";
-		}
+		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{

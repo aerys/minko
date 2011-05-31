@@ -7,6 +7,8 @@ package aerys.minko.scene.action
 	
 	public class StyledAction implements IAction
 	{
+		private static const TYPE		: uint			= ActionType.RENDER;
+		
 		private static var _instance	: StyledAction	= null;
 		
 		public static function get styledAction() : StyledAction
@@ -14,14 +16,7 @@ package aerys.minko.scene.action
 			return _instance || (_instance = new StyledAction());
 		}
 		
-		public function StyledAction()
-		{
-		}
-		
-		public function get name() : String
-		{
-			return "StyleAction";
-		}
+		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
