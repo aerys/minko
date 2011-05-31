@@ -42,7 +42,7 @@ package aerys.minko.render.effect.common
 			
 			var triangleCullingModifier : Number = state.triangleCulling == TriangleCulling.BACK ? 1.0 : -1.0;
 			
-			styleStack.set(BasicStyle.TRIANGLE_CULLING_MULTIPLIER, triangleCullingModifier);
+			styleStack.set(BasicStyle.NORMAL_MULTIPLIER, triangleCullingModifier);
 			
 			SHADER.fillRenderState(state, styleStack, local, world);
 			

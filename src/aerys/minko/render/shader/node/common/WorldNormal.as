@@ -30,7 +30,7 @@ package aerys.minko.render.shader.node.common
 		public function WorldNormal()
 		{
 			var normal : INode = new Multiply(
-				new StyleParameter(1, BasicStyle.TRIANGLE_CULLING_MULTIPLIER),
+				new StyleParameter(1, BasicStyle.NORMAL_MULTIPLIER),
 				new Attribute(VertexComponent.NORMAL)
 			);
 			
