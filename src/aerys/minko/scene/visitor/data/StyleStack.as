@@ -4,28 +4,28 @@ package aerys.minko.scene.visitor.data
 
 	public final class StyleStack
 	{
-		private static var _emptyObject	: Object = new Object();
+		private static var _empty	: Array = new Array();
 		
-		private var _data : Vector.<Object>;
+		private var _data : Vector.<Array>;
 		
 		public function StyleStack()
 		{
-			_data = new Vector.<Object>();
-			_data[0] = _emptyObject;
+			_data = new Vector.<Array>();
+			_data[0] = _empty;
 		}
 		
-		public final function get(name : String, defaultValue : Object = null) : Object
+		public final function get(id : uint, defaultValue : Object = null) : Object
 		{
 			var stackHeight : uint 		= _data.length;
-			var data 		: Object 	= null;
+			var data 		: Array 	= null;
 			var item 		: Object 	= null;
 			
 			for (var i : int = 0; i < stackHeight; ++i)
 			{
 				data = _data[i];
-				if (data != _emptyObject)
+				if (data != _empty)
 				{
-					item = data[name];
+					item = data[id];
 					if (item !== null)
 						return item;
 				}
@@ -34,30 +34,30 @@ package aerys.minko.scene.visitor.data
 			if (defaultValue !== null)
 				return defaultValue;
 			
-			throw new Error(name + ' is undefined and no default value was provided');
+			throw new Error(id + ' is undefined and no default value was provided');
 		}
 		
-		public final function isSet(name : String) : Object
+		public final function isSet(id : int) : Object
 		{
-			return get(name, _emptyObject) !== _emptyObject;
+			return get(id, _empty) !== _empty;
 		}
 		
-		public function set(name : String, value : Object) : StyleStack
+		public function set(styleId : int, value : Object) : StyleStack
 		{
-			var current : Object = _data[0];
+			var current : Array = _data[0];
 			
-			if (current === _emptyObject)
+			if (current === _empty)
 			{
-				current = new Object();
+				current = new Array();
 				_data[0] = current;
 			}
 			
-			current[name] = value;
+			current[styleId] = value;
 			
 			return this;
 		}
 		
-		public function append(name		: String, 
+		public function append(id		: int, 
 							   value	: IWorldData = undefined) : StyleStack 
 		{
 			var stackHeight		: uint = _data.length;
@@ -66,31 +66,31 @@ package aerys.minko.scene.visitor.data
 			for (var i : int = 0; i < stackHeight; ++i)
 			{
 				var data : Object = _data[i];
-				if (data != _emptyObject)
+				if (data != _empty)
 				{
-					worldDataList = data[name] as WorldDataList;
+					worldDataList = data[id] as WorldDataList;
 					if (worldDataList != null)
 					{
 						var cloned : WorldDataList;
 						
 						cloned = worldDataList.clone();
 						cloned.push(value);
-						set(name, cloned);
+						set(id, cloned);
 						return this;
 					}
 				}
 			}
 	
-			worldDataList = new WorldDataList(name);
+			worldDataList = new WorldDataList(id);
 			worldDataList.push(value);
-			set(name, worldDataList);
+			set(id, worldDataList);
 			return this;
 		}
 
 		public function push(style : Style = null) : void
 		{
 			_data.unshift(style._data);
-			_data.unshift(_emptyObject);
+			_data.unshift(_empty);
 		}
 		
 		public function pop() : void

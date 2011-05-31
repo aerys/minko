@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.leaf
 		use namespace minko;
 		
 		public function TransformParameter(size	: uint, 
-										   key	: String)
+										   key	: Object)
 		{
 			super(size, key);
 		}

@@ -8,9 +8,9 @@ package aerys.minko.render.shader.node.leaf
 		use namespace minko;
 		
 		public function StyleParameter(size		: uint, 
-									   key		: String, 
-									   field	: String=null, 
-									   index	: int = -1)
+									   key		: Object, 
+									   field	: String	= null, 
+									   index	: int 		= -1)
 		{
 			super(size, key, field, index);
 		}
@@ -25,7 +25,7 @@ package aerys.minko.render.shader.node.leaf
 			var otherStyleParam : StyleParameter = otherNode as StyleParameter;
 			
 			return otherStyleParam != null
-				&&_size		== otherStyleParam._size 
+				&& _size	== otherStyleParam._size 
 				&& _name	== otherStyleParam._name
 				&& _key		== otherStyleParam._key
 				&& _field	== otherStyleParam._field

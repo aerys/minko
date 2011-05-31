@@ -19,7 +19,7 @@ package aerys.minko.scene.visitor.data
 			}
 		}
 		
-		public function WorldDataList(styleName : String = null)
+		public function WorldDataList(styleId : int = -1)
 		{
 			_objects = new Vector.<IWorldData>();
 		}

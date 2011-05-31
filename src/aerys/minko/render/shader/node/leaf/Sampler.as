@@ -20,7 +20,7 @@ package aerys.minko.render.shader.node.leaf
 		public static const DIMENSION_CUBE	: uint = 1;
 		
 		protected var _id			: uint;
-		protected var _styleName	: String;
+		protected var _styleId		: int;
 		protected var _filter		: uint;
 		protected var _mipmap		: uint;
 		protected var _wrapping		: uint;
@@ -31,27 +31,27 @@ package aerys.minko.render.shader.node.leaf
 			return 0;
 		}
 		
-		public function get styleName():String
+		public function get styleId() : int
 		{
-			return _styleName;
+			return _styleId;
 		}
 
-		public function get filter():uint
+		public function get filter() : uint
 		{
 			return _filter;
 		}
 
-		public function get mipmap():uint
+		public function get mipmap() : uint
 		{
 			return _mipmap;
 		}
 
-		public function get wrapping():uint
+		public function get wrapping() : uint
 		{
 			return _wrapping;
 		}
 
-		public function get dimension():uint
+		public function get dimension() : uint
 		{
 			return _dimension;
 		}
@@ -66,7 +66,7 @@ package aerys.minko.render.shader.node.leaf
 			_id = value; 
 		}
 		
-		public function Sampler(styleName	: String,
+		public function Sampler(styleId		: int,
 								filter		: uint	= FILTER_LINEAR,
 								mipmap		: uint	= MIPMAP_DISABLE, 
 								wrapping	: uint	= WRAPPING_REPEAT,
@@ -74,7 +74,7 @@ package aerys.minko.render.shader.node.leaf
 		{
 			super();
 			
-			_styleName	= styleName;
+			_styleId	= styleId;
 			_filter		= filter;
 			_mipmap		= mipmap;
 			_wrapping	= wrapping;
@@ -87,7 +87,7 @@ package aerys.minko.render.shader.node.leaf
 			if (samplerOtherNode == null)
 				return false;
 			
-			return _styleName	== samplerOtherNode._styleName
+			return _styleId	== samplerOtherNode._styleId
 				&& _filter		== samplerOtherNode._filter
 				&& _mipmap		== samplerOtherNode._mipmap
 				&& _wrapping	== samplerOtherNode._wrapping
@@ -96,7 +96,7 @@ package aerys.minko.render.shader.node.leaf
 		
 		override public function toString() : String
 		{
-			return "Sampler\\nname=" + styleName;
+			return "Sampler\\nname=" + styleId;
 		}
 	}
 }

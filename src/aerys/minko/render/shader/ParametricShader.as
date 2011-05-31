@@ -118,14 +118,14 @@ package aerys.minko.render.shader
 			throw new Error();
 		}
 		
-		protected final function getStyleConstant(name : String, defaultValue : Object = null) : Object
+		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
 		{
-			return _styleStack.get(name, defaultValue);
+			return _styleStack.get(styleId, defaultValue);
 		}
 		
-		protected final function styleIsSet(name : String) : Boolean
+		protected final function styleIsSet(styleId : int) : Boolean
 		{
-			return _styleStack.isSet(name);
+			return _styleStack.isSet(styleId);
 		}
 		
 		protected final function interpolate(value : INode) : INode
@@ -139,9 +139,9 @@ package aerys.minko.render.shader
 			return new Combine(getShaderNode(value1), getShaderNode(value2));
 		}
 		
-		protected final function sampleTexture(styleName : String, uv : Object) : Texture
+		protected final function sampleTexture(styleId : int, uv : Object) : Texture
 		{
-			return new Texture(getShaderNode(uv), new Sampler(styleName));
+			return new Texture(getShaderNode(uv), new Sampler(styleId));
 		}
 		
 		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : INode
@@ -199,7 +199,7 @@ package aerys.minko.render.shader
 		}
 		
 		protected final function getStyleParameter(size 	: uint,
-												   key 		: String,
+												   key 		: int,
 												   field 	: String 	= null,
 												   index 	: int 		= -1) : INode
 		{

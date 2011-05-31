@@ -27,7 +27,7 @@ package aerys.minko.scene.node.texture
 		private var _data		: BitmapData		= null;
 		private var _mipmapping	: Boolean			= false;
 		
-		private var _styleProp	: String			= null;
+		private var _styleProp	: int				= -1;
 		
 		private var _matrix		: Matrix			= new Matrix();
 		
@@ -38,12 +38,12 @@ package aerys.minko.scene.node.texture
 			return _version;
 		}
 		
-		public function get styleProperty() : String
+		public function get styleProperty() : int
 		{
 			return _styleProp;
 		}
 		
-		public function set styleProperty(value : String) : void
+		public function set styleProperty(value : int) : void
 		{
 			_styleProp = value;
 		}

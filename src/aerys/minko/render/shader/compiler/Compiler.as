@@ -48,7 +48,7 @@ package aerys.minko.render.shader.compiler
 		protected var _fsConstData		: Vector.<Number>;
 		protected var _vsParams			: Vector.<ParameterAllocation>;
 		protected var _fsParams			: Vector.<ParameterAllocation>;
-		protected var _samplers			: Vector.<String>;
+		protected var _samplers			: Vector.<int>;
 		
 		public function Compiler()
 		{

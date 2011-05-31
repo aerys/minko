@@ -27,7 +27,7 @@ package aerys.minko.render.shader
 		protected var _fsConstData	: Vector.<Number>;
 		protected var _vsParams		: Vector.<ParameterAllocation>;
 		protected var _fsParams		: Vector.<ParameterAllocation>;
-		protected var _samplers		: Vector.<String>;
+		protected var _samplers		: Vector.<int>;
 		
 		public static function create(clipspacePosition	: INode,
 									  color				: INode) : DynamicShader
@@ -46,7 +46,7 @@ package aerys.minko.render.shader
 									  fragmentShaderConstantData	: Vector.<Number>,
 									  vertexShaderParameters		: Vector.<ParameterAllocation>,
 									  fragmentShaderParameters		: Vector.<ParameterAllocation>,
-									  samplers						: Vector.<String>)
+									  samplers						: Vector.<int>)
 		{
 			_vsConstData	= vertexShaderConstantData;
 			_fsConstData	= fragmentShaderConstantData;
@@ -75,14 +75,14 @@ package aerys.minko.render.shader
 								   	   localData	: LocalData,
 									   worldData	: Object) : void
 		{
-			var texture 			: TextureRessource	= null;
-			var samplerStyleName 	: String			= null;
-			var samplerCount 		: uint 				= _samplers.length;
+			var texture 		: TextureRessource	= null;
+			var samplerStyleId 	: int				= 0;
+			var samplerCount 	: uint 				= _samplers.length;
 			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
-				samplerStyleName = _samplers[i];
-				texture = styleStack.get(samplerStyleName) as TextureRessource;
+				samplerStyleId = _samplers[i];
+				texture = styleStack.get(samplerStyleId) as TextureRessource;
 				state.setTextureAt(i, texture);
 			}
 		}
@@ -127,15 +127,15 @@ package aerys.minko.render.shader
 			{
 				if (param._index != -1)
 				{
-					return styleStack.get(param._key).getItem(param._index)[param._field];
+					return styleStack.get(param._key as int).getItem(param._index)[param._field];
 				}
 				else if (param._field != null)
 				{
-					return styleStack.get(param._key)[param._field];
+					return styleStack.get(param._key as int)[param._field];
 				}
 				else
 				{
-					return styleStack.get(param._key, null);
+					return styleStack.get(param._key as int, null);
 				}
 			}
 			else if (param is WorldParameter)

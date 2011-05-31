@@ -25,7 +25,7 @@ package aerys.minko.render.shader.compiler.allocator
 			return _parameter;
 		}
 		
-		public final function get key() : String
+		public final function get key() : Object
 		{
 			return _parameter._key;
 		}
