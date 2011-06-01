@@ -16,7 +16,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 	 * 
 	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
 	 */	
-	public class Convolution extends Dummy
+	public class Convolution3 extends Dummy
 	{
 		
 		/**
@@ -26,7 +26,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 		 * @param pixelSize
 		 * @param matrix
 		 */
-		public function Convolution(source		: Sampler, 
+		public function Convolution3(source		: Sampler, 
 									uv			: INode, 
 									pixelSize	: Number, 
 									matrix		: Vector.<Number>)

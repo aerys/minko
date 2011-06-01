@@ -28,8 +28,8 @@ package aerys.minko.render.shader.node.operation.math.convolution
 							  uv		: INode, 
 							  pixelSize	: Number)
 		{
-			var xConvolution : INode = new Convolution(source, uv, pixelSize, SOBEL_X);
-			var yConvolution : INode = new Convolution(source, uv, pixelSize, SOBEL_Y);
+			var xConvolution : INode = new Convolution3(source, uv, pixelSize, SOBEL_X);
+			var yConvolution : INode = new Convolution3(source, uv, pixelSize, SOBEL_Y);
 			
 			var node : INode = new SquareRoot(
 				new Add(
