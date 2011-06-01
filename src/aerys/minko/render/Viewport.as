@@ -7,7 +7,10 @@ package aerys.minko.render
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.visitor.data.RenderingData;
 	import aerys.minko.scene.visitor.data.ViewportData;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	import aerys.minko.scene.visitor.rendering.WorldDataVisitor;
@@ -46,8 +49,7 @@ package aerys.minko.render
 		private var _autoResize			: Boolean					= false;
 		private var _antiAliasing		: int						= 0;
 		
-		private var _wdExtracterQuery	: WorldDataVisitor	= null;
-		private var _renderingQuery		: RenderingVisitor			= null;
+		private var _visitors			: Vector.<ISceneVisitor>	= null;
 		
 		private var _time				: int						= 0;
 		private var _sceneSize			: uint						= 0;
@@ -168,7 +170,7 @@ package aerys.minko.render
 		 */
 		public function get numTriangles() : uint
 		{
-			return _renderingQuery ? _renderer.numTriangles : 0;
+			return _renderer ? _renderer.numTriangles : 0;
 		}
 		
 		/**
@@ -292,8 +294,10 @@ package aerys.minko.render
 				
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
-				_wdExtracterQuery = new WorldDataVisitor();
-				_renderingQuery = new RenderingVisitor(_renderer);
+				_visitors = Vector.<ISceneVisitor>([
+					new WorldDataVisitor(),
+					new RenderingVisitor()
+				]);
 			}
 		}
 		
@@ -313,30 +317,29 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
-			if (_renderingQuery)
+			
+			if (_visitors.length != 0)
 			{
 				var time : Number = getTimer();
 				
-				// extract world data
-				var worldData : Dictionary = new Dictionary();
+				// create the data sources the visitors are going to write and read from during render.
+				var localData		: LocalData		= new LocalData();
+				var worldData		: Dictionary	= new Dictionary();
+				var renderingData	: RenderingData	= new RenderingData();
 				
-				_wdExtracterQuery.processSceneGraph(scene, worldData);
+				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
+				renderingData.clear(defaultEffect);
 				
-				if (worldData[CameraData])
-					worldData[CameraData].ratio = _viewportData.ratio;
+				// execute all visitors
+				for each (var visitor : ISceneVisitor in _visitors)
+					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
 				
-				// render
-				_renderingQuery.reset(_defaultEffect, _backgroundColor);
-				_renderingQuery.updateWorldData(worldData);
-				_renderingQuery.visit(scene);
-				_renderer.present();
+				// FIXME how should we count the nodes now?
+				//		_sceneSize = _renderingQuery.numNodes;
 				
-				Factory.sweep();
-				
-				_sceneSize = _renderingQuery.numNodes;
-				_time = getTimer() - time;
-				_drawTime = _renderer.drawingTime;
+				_time		= getTimer() - time;
+				_drawTime	= _renderer.drawingTime;
 			}
 			else
 			{
@@ -344,6 +347,7 @@ package aerys.minko.render
 				_drawTime = 0;
 			}
 			
+			Factory.sweep();
 			showLogo();
 		}
 		

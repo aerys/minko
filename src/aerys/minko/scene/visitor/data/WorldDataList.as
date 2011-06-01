@@ -1,6 +1,8 @@
 package aerys.minko.scene.visitor.data
 {
 	import aerys.minko.type.Factory;
+	
+	import flash.utils.Dictionary;
 
 	public class WorldDataList implements IWorldData
 	{
@@ -24,11 +26,12 @@ package aerys.minko.scene.visitor.data
 			_objects = new Vector.<IWorldData>();
 		}
 		
-		public function setLocalDataProvider(styleStack	: StyleStack, 
-											 localData	: LocalData) : void
+		public function setDataProvider(styleStack	: StyleStack, 
+										localData	: LocalData,
+										worldData	: Dictionary) : void
 		{
 			for each (var dataObject : IWorldData in _objects)
-				dataObject.setLocalDataProvider(styleStack, localData);
+				dataObject.setDataProvider(styleStack, localData, worldData);
 		}
 		
 		public function invalidate() : void

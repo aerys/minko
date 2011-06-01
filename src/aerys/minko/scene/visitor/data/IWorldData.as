@@ -1,10 +1,12 @@
 package aerys.minko.scene.visitor.data
 {
+	import flash.utils.Dictionary;
 
 	public interface IWorldData
 	{
-		function setLocalDataProvider(styleStack	: StyleStack, 
-									  localData		: LocalData) : void;
+		function setDataProvider(styleStack	: StyleStack, 
+								 localData	: LocalData,
+								 worldData	: Dictionary) : void
 		
 		function invalidate() : void;
 		

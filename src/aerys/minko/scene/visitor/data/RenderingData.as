@@ -12,7 +12,6 @@ package aerys.minko.scene.visitor.data
 		
 		public function RenderingData()
 		{
-			
 		}
 		
 		public function clear(defaultEffect : IEffect) : void

@@ -2,6 +2,7 @@ package aerys.minko.scene.visitor.data
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.render.effect.IEffect;
 	
 	import flash.utils.Dictionary;
 
@@ -41,6 +42,11 @@ package aerys.minko.scene.visitor.data
 			return _viewport.backgroundColor;
 		}
 		
+		public function get defaultEffect() : IEffect
+		{
+			return _viewport.defaultEffect;
+		}
+		
 		public function get renderTarget() : RenderTarget
 		{
 			var viewportWidth		: int = _viewport.width;
@@ -67,10 +73,10 @@ package aerys.minko.scene.visitor.data
 			_viewport = viewport;
 		}
 		
-		public function setLocalDataProvider(styleStack		: StyleStack, 
-									  		 localData		: LocalData) : void
+		public function setDataProvider(styleStack	: StyleStack, 
+										localData	: LocalData,
+										worldData	: Dictionary) : void
 		{
-			
 		}
 		
 		public function invalidate() : void

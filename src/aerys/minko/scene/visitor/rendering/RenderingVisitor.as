@@ -10,6 +10,7 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.scene.visitor.data.IWorldData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.RenderingData;
+	import aerys.minko.scene.visitor.data.ViewportData;
 	
 	import flash.utils.Dictionary;
 	
@@ -33,43 +34,52 @@ package aerys.minko.scene.visitor.rendering
 			return _numNodes;
 		}
 		
-		public function RenderingVisitor(renderer : IRenderer)
+		public function RenderingVisitor()
 		{
+		}
+		
+		public function processSceneGraph(scene			: IScene, 
+										  localData		: LocalData, 
+										  worldData		: Dictionary, 
+										  renderingData	: RenderingData,
+										  renderer		: IRenderer) : void
+		{
+			_worldData		= worldData;
+			_localData		= localData;
+			_renderingData	= renderingData; 
 			_renderer		= renderer;
 			
-			_localData		= new LocalData();
-			_renderingData	= new RenderingData();
-		}
-		
-		public function reset(defaultEffect : IEffect, color : int = 0) : void
-		{
-			_renderer.clear(((color >> 16) & 0xff) / 255.,
-							((color >> 8) & 0xff) / 255.,
-							(color & 0xff) / 255.);
-			
-			_worldData		= null;
-			_numNodes		= 0;
-			
-			_renderingData.clear(defaultEffect);
-		}
-		
-		public function updateWorldData(worldData : Dictionary) : void
-		{
-			_worldData = worldData;
+			_renderer.clear();
 			
 			for each (var worldObject : IWorldData in worldData)
-				worldObject.setLocalDataProvider(_renderingData.styleStack, _localData);
+				worldObject.setDataProvider(_renderingData.styleStack, _localData, _worldData);
 			
 			// update our transformManager if there is a camera, or
 			// set it to null to render to screenspace otherwise
 			var cameraData : CameraData = worldData[CameraData] as CameraData;
-			
 			if (cameraData)
 			{
 				_localData.view			= cameraData.view;
 				_localData.projection	= cameraData.projection;
 			}
+			
+			visit(scene);
+			
+			_renderer.drawToBackBuffer();
+			_renderer.present();
 		}
+		
+//		public function reset(defaultEffect : IEffect, color : int = 0) : void
+//		{
+//			_renderer.clear(((color >> 16) & 0xff) / 255.,
+//							((color >> 8) & 0xff) / 255.,
+//							(color & 0xff) / 255.);
+//			
+//			_worldData		= null;
+//			_numNodes		= 0;
+//			
+//			_renderingData.clear(defaultEffect);
+//		}
 		
 		public function visit(scene : IScene) : void
 		{

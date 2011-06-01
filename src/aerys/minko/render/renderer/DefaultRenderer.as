@@ -93,7 +93,7 @@ package aerys.minko.render.renderer
 			_numSessions = 0;
 		}
 		
-		public function present() : void
+		public function drawToBackBuffer() : void
 		{
 			var time : int = getTimer();
 			
@@ -118,8 +118,8 @@ package aerys.minko.render.renderer
 					var count	: int			= numTriangles[j];
 					
 					_numTriangles += count == -1
-									 ? state._indexStream.length / 3.
-									 : count;
+						? state._indexStream.length / 3.
+						: count;
 					
 					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
@@ -131,9 +131,15 @@ package aerys.minko.render.renderer
 				_actualState = state;
 			}
 			
-			_context.present();
-			
 			_drawingTime += getTimer() - time;
+		}
+		
+		public function present() : void
+		{
+			var time : int = getTimer();
+			_context.present();
+			_drawingTime += getTimer() - time;
+			
 			++_frame;
 		}
 		

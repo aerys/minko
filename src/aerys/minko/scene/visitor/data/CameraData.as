@@ -4,19 +4,19 @@ package aerys.minko.scene.visitor.data
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
+	import flash.utils.Dictionary;
+	
 	public class CameraData implements IWorldData
 	{
 		public static const POSITION		: String = 'position';
 		public static const LOOK_AT			: String = 'lookAt';
 		public static const UP				: String = 'up';
 
-		public static const RATIO			: String = 'ratio';
 		public static const FOV				: String = 'fov';
 		public static const Z_NEAR			: String = 'zNear';
 		
 		public static const Z_FAR			: String = 'zFar';
 		public static const Z_FAR_PARTS		: String = 'zFarParts';
-		
 		
 		public static const VIEW			: String = 'view';
 		public static const PROJECTION		: String = 'projection';
@@ -28,16 +28,16 @@ package aerys.minko.scene.visitor.data
 		
 		public static const FRUSTUM			: String = 'frustum';
 		
-		// local data provider
+		// data provider
 		protected var _styleStack	: StyleStack;
 		protected var _localData	: LocalData;
+		protected var _worldData	: Dictionary;
 		
 		// data available on initialisation
 		protected var _position	: Vector4;
 		protected var _lookAt	: Vector4;
 		protected var _up		: Vector4;
 		
-		protected var _ratio	: Number;
 		protected var _fov		: Number;
 		protected var _zNear	: Number;
 		protected var _zFar		: Number;
@@ -123,12 +123,8 @@ package aerys.minko.scene.visitor.data
 		
 		public function get projection() : Matrix4x4
 		{
-			if (_projection_invalidated)
-			{
-				_projection = Matrix4x4.perspectiveFoVLH(_fov, _ratio, _zNear, _zFar, _projection);
-				_projection_invalidated = false;
-			}
-			
+			var ratio : Number = _worldData[ViewportData].ratio;
+			_projection = Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
 			return _projection;
 		}
 		
@@ -189,12 +185,6 @@ package aerys.minko.scene.visitor.data
 			return Vector4.subtract(position, lookAt).normalize();
 		}
 		
-		public function set ratio(v : Number) : void
-		{
-			_ratio = v;
-			_projection_invalidated = true;
-		}
-		
 		public function set position(v : Vector4) : void
 		{
 			_position = v;
@@ -233,11 +223,13 @@ package aerys.minko.scene.visitor.data
 			reset()
 		}
 		
-		public function setLocalDataProvider(styleStack	: StyleStack, 
-											 localData	: LocalData) : void
+		public function setDataProvider(styleStack	: StyleStack, 
+										localData	: LocalData,
+										worldData	: Dictionary) : void
 		{
 			_styleStack	= styleStack;
 			_localData	= localData;
+			_worldData	= worldData;
 		}
 		
 		public function invalidate() : void
@@ -251,7 +243,6 @@ package aerys.minko.scene.visitor.data
 			_lookAt		= null;
 			_up			= null;
 			
-			_ratio	= -1;
 			_fov	= -1;
 			_zNear	= -1;
 			_zFar	= -1;
