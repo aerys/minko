@@ -3,7 +3,7 @@ package aerys.minko.render.renderer
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.stream.IndexStream;
 	
@@ -17,24 +17,21 @@ package aerys.minko.render.renderer
 		use namespace minko;
 		use namespace minko_render;
 		
-		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
-		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
+		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
 		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
-		private var _currentState	: RenderState				= null;
-		private var _actualState	: RenderState				= null;
+		private var _currentState	: RendererState				= null;
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
-		private var _sessions		: Vector.<RenderSession>	= new Vector.<RenderSession>();
-		private var _currentSession	: RenderSession				= new RenderSession();
-		private var _numSessions	: int						= 0;
+		private var _states			: Vector.<RendererState>		= new Vector.<RendererState>();
+		private var _numStates		: int						= 0;
 		
-		public function get state() 		: RenderState	{ return _currentState; }
+		public function get state() 		: RendererState	{ return _currentState; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
 		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
@@ -50,27 +47,21 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
-			_currentState = RENDER_STATE.create() as RenderState;
+			_currentState = RENDER_STATE.create() as RendererState;
 			_currentState.clear();
-			
-			_currentSession = RENDER_SESSION.create() as RenderSession;
-			_currentSession.renderState = _currentState;
-			_currentSession.offsets.length = 0;
-			_currentSession.numTriangles.length = 0;
 		}
 		
 		public function end() : void
 		{
-			_sessions[int(_numSessions++)] = _currentSession;
+			_states[int(_numStates++)] = _currentState;
 			
 			_currentState = null;
-			_currentSession = null;
 		}
 		
 		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
 		{
-			_currentSession.offsets.push(offset);
-			_currentSession.numTriangles.push(numTriangles);
+			_currentState.offsets.push(offset);
+			_currentState.numTriangles.push(numTriangles);
 		}
 		
 		public function clear(red		: Number	= 0.,
@@ -86,30 +77,27 @@ package aerys.minko.render.renderer
 			_numTriangles = 0;
 			_drawingTime = 0;
 			
-			_actualState = null;
 			_currentState = null;
-			
-			_currentSession = null;
-			_numSessions = 0;
+			_numStates = 0;
 		}
 		
 		public function drawToBackBuffer() : void
 		{
 			var time : int = getTimer();
 			
-			if (SORT && _numSessions > 1)
-				_sessions = _sessions.sort(compareRenderStates);
+			if (SORT && _numStates > 1)
+				_states = _states.sort(compareRenderStates);
 			
-			for (var i : int = 0; i < _numSessions; ++i)
+			var actualState : RendererState = null;
+			
+			for (var i : int = 0; i < _numStates; ++i)
 			{
-				_currentSession = _sessions[i];
-				
-				var state			: RenderState 	= _currentSession.renderState;
-				var offsets 		: Vector.<uint>	= _currentSession.offsets;
-				var numTriangles 	: Vector.<int> 	= _currentSession.numTriangles;
+				var state			: RendererState 	= _states[i];
+				var offsets 		: Vector.<uint>	= state.offsets;
+				var numTriangles 	: Vector.<int> 	= state.numTriangles;
 				var numCalls 		: int 			= offsets.length;
 				
-				state.prepareContext(_context, _actualState);
+				state.prepareContext(_context, actualState);
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{
@@ -124,11 +112,10 @@ package aerys.minko.render.renderer
 					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
 				
-				RENDER_SESSION.free(_currentSession);
-				if (_actualState)
-					RENDER_STATE.free(_actualState);
+				if (actualState)
+					RENDER_STATE.free(actualState);
 				
-				_actualState = state;
+				actualState = state;
 			}
 			
 			_drawingTime += getTimer() - time;
@@ -148,9 +135,9 @@ package aerys.minko.render.renderer
 			_context.drawToBitmapData(bitmapData);
 		}
 		
-		private function compareRenderStates(rs1 : RenderSession, rs2 : RenderSession) : int
+		private function compareRenderStates(rs1 : RendererState, rs2 : RendererState) : int
 		{
-			return 1000. * (rs2.renderState.priority - rs1.renderState.priority);
+			return 1000. * (rs2.priority - rs1.priority);
 		}
 	}
 }

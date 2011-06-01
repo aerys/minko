@@ -27,7 +27,7 @@ package aerys.minko.render.renderer.state
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
 	
-	public final class RenderState implements IVersionnable
+	public final class RendererState implements IVersionnable
 	{
 		use namespace minko;
 		use namespace minko_render;
@@ -129,6 +129,19 @@ package aerys.minko.render.renderer.state
 		private var _depthTest			: uint						= 0;
 		
 		private var _priority			: Number					= 0.;
+		
+		private var _offsets		: Vector.<uint>		= new Vector.<uint>();
+		private var _numTriangles	: Vector.<int>		= new Vector.<int>();
+		
+		public function get offsets() : Vector.<uint>
+		{
+			return _offsets;
+		}
+		
+		public function get numTriangles() : Vector.<int>
+		{
+			return _numTriangles;
+		}
 		
 		public function get version() : uint
 		{
@@ -372,7 +385,7 @@ package aerys.minko.render.renderer.state
 			_version = 0;
 		}
 		
-		public function prepareContext(context : Context3D, current : RenderState = null) : void
+		public function prepareContext(context : Context3D, current : RendererState = null) : void
 		{
 			if (current)
 			{
@@ -460,7 +473,7 @@ package aerys.minko.render.renderer.state
 			}
 		}
 		
-		private function prepareContextDelta(context : Context3D, current : RenderState) : void
+		private function prepareContextDelta(context : Context3D, current : RendererState) : void
 		{
 			if (_setFlags & SHADER && _shader != current._shader)
 				_shader.prepare(context);
@@ -556,7 +569,7 @@ package aerys.minko.render.renderer.state
 			}
 		}
 		
-		public function copyTo(target : RenderState) : RenderState
+		public function copyTo(target : RendererState) : RendererState
 		{
 			target._setFlags = _setFlags;
 			
@@ -591,7 +604,7 @@ package aerys.minko.render.renderer.state
 			return target;
 		}
 		
-		public function compare(state : RenderState) : Number
+		public function compare(state : RendererState) : Number
 		{
 			return 0.;
 		}

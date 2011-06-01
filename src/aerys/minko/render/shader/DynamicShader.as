@@ -1,7 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
@@ -55,7 +55,7 @@ package aerys.minko.render.shader
 			super(vertexShader, fragmentShader, vertexInput);
 		}
 		
-		public function fillRenderState(state	: RenderState, 
+		public function fillRenderState(state	: RendererState, 
 										style	: StyleStack, 
 										local	: LocalData, 
 										world	: Dictionary) : Boolean
@@ -68,7 +68,7 @@ package aerys.minko.render.shader
 			return true;
 		}
 		
-		protected function setTextures(state		: RenderState,
+		protected function setTextures(state		: RendererState,
 									   styleStack	: StyleStack,
 								   	   localData	: LocalData,
 									   worldData	: Object) : void
@@ -85,7 +85,7 @@ package aerys.minko.render.shader
 			}
 		}
 		
-		protected function setConstants(state		: RenderState,
+		protected function setConstants(state		: RendererState,
 									    styleStack	: StyleStack,
 										local		: LocalData,
 										world		: Dictionary) : void
