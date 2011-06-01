@@ -3,7 +3,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
@@ -72,7 +72,7 @@ package aerys.minko.scene.action.mesh
 					renderer.begin();
 					
 					var pass	: IEffectPass = passes[j];
-					var state	: RenderState = renderer.state;
+					var state	: RendererState = renderer.state;
 					
 					if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 					{

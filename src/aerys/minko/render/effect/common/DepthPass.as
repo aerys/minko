@@ -7,7 +7,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.PackedDepth;
 	import aerys.minko.render.renderer.state.Blending;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
@@ -30,7 +30,7 @@ package aerys.minko.render.effect.common
 			_renderTarget		= renderTarget;
 		}
 		
-		public function fillRenderState(state		: RenderState,
+		public function fillRenderState(state		: RendererState,
 										styleStack	: StyleStack, 
 										local		: LocalData,
 										world		: Dictionary) : Boolean

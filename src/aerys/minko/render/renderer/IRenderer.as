@@ -1,7 +1,7 @@
 package aerys.minko.render.renderer
 {
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
@@ -12,7 +12,7 @@ package aerys.minko.render.renderer
 	public interface IRenderer
 	{
 		function get numTriangles()	: uint;
-		function get state() 		: RenderState;
+		function get state() 		: RendererState;
 		function get viewport() 	: Viewport;
 		function get drawingTime() 	: int;
 		function get frameId()		: uint;

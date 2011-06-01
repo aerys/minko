@@ -3,7 +3,7 @@ package aerys.minko.render.renderer
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.stream.IndexStream;
 	
@@ -16,18 +16,18 @@ package aerys.minko.render.renderer
 		use namespace minko;
 		use namespace minko_render;
 		
-		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
+		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
-		private var _currentState	: RenderState				= new RenderState();
-		private var _actualState	: RenderState				= null;
+		private var _currentState	: RendererState				= new RendererState();
+		private var _actualState	: RendererState				= null;
 		private var _numTriangles	: uint						= 0;
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
 		
-		public function get state() 		: RenderState	{ return _currentState; }
+		public function get state() 		: RendererState	{ return _currentState; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
 		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
@@ -90,7 +90,7 @@ package aerys.minko.render.renderer
 		
 		public function begin() : void
 		{
-			_currentState = RENDER_STATE.create(true) as RenderState;
+			_currentState = RENDER_STATE.create(true) as RendererState;
 			_currentState.clear();
 		}
 		

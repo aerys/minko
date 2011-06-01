@@ -6,7 +6,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.render.renderer.state.CompareMode;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.shader.ParametricShader;
 	import aerys.minko.render.shader.node.Components;
@@ -40,7 +40,7 @@ package aerys.minko.render.effect.basic
 			return _passes;
 		}
 		
-		override public function fillRenderState(state	: RenderState, 
+		override public function fillRenderState(state	: RendererState, 
 												 style	: StyleStack, 
 												 local	: LocalData, 
 												 world	: Dictionary) : Boolean

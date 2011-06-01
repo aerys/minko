@@ -23,7 +23,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.math.Product;
-	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
@@ -80,7 +80,7 @@ package aerys.minko.render.shader
 			return new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
 		}
 		
-		public function fillRenderState(state	: RenderState, 
+		public function fillRenderState(state	: RendererState, 
 										style	: StyleStack, 
 										local	: LocalData, 
 										world	: Dictionary) : Boolean

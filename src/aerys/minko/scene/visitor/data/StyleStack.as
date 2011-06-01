@@ -6,35 +6,32 @@ package aerys.minko.scene.visitor.data
 	{
 		private static var _empty	: Array = new Array();
 		
-		private var _data : Vector.<Array>;
+		private var _data 	: Vector.<Array>	= new Vector.<Array>();
+		private var _top	: Array				= new Array();
+		private var _size	: int				= 0;
 		
-		public function StyleStack()
+		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
-			_data = new Vector.<Array>();
-			_data[0] = _empty;
-		}
-		
-		public final function get(id : uint, defaultValue : Object = null) : Object
-		{
-			var stackHeight : uint 		= _data.length;
-			var data 		: Array 	= null;
-			var item 		: Object 	= null;
+			var item 		: Object 	= _top[styleId];
 			
-			for (var i : int = 0; i < stackHeight; ++i)
+			if (item !== null)
+				return item;
+			
+			for (var i : int = _size - 1; i >= 0; --i)
 			{
-				data = _data[i];
-				if (data != _empty)
+				item = _data[i][styleId];
+				if (item !== null)
 				{
-					item = data[id];
-					if (item !== null)
-						return item;
+					_top[styleId] = item;
+					
+					return item;
 				}
 			}
 			
 			if (defaultValue !== null)
 				return defaultValue;
 			
-			throw new Error(id + ' is undefined and no default value was provided');
+			throw new Error(Style.getStyleName(styleId) + ' is undefined and no default value was provided');
 		}
 		
 		public final function isSet(id : int) : Object
@@ -44,59 +41,21 @@ package aerys.minko.scene.visitor.data
 		
 		public function set(styleId : int, value : Object) : StyleStack
 		{
-			var current : Array = _data[0];
+			_top[styleId] = value;
 			
-			if (current === _empty)
-			{
-				current = new Array();
-				_data[0] = current;
-			}
-			
-			current[styleId] = value;
-			
-			return this;
-		}
-		
-		public function append(id		: int, 
-							   value	: IWorldData = undefined) : StyleStack 
-		{
-			var stackHeight		: uint = _data.length;
-			var worldDataList	: WorldDataList;
-			
-			for (var i : int = 0; i < stackHeight; ++i)
-			{
-				var data : Object = _data[i];
-				if (data != _empty)
-				{
-					worldDataList = data[id] as WorldDataList;
-					if (worldDataList != null)
-					{
-						var cloned : WorldDataList;
-						
-						cloned = worldDataList.clone();
-						cloned.push(value);
-						set(id, cloned);
-						return this;
-					}
-				}
-			}
-	
-			worldDataList = new WorldDataList(id);
-			worldDataList.push(value);
-			set(id, worldDataList);
 			return this;
 		}
 
 		public function push(style : Style = null) : void
 		{
-			_data.unshift(style._data);
-			_data.unshift(_empty);
+			_data[_size] = style._data;
+			++_size;
 		}
 		
 		public function pop() : void
 		{
-			_data.shift();
-			_data.shift();
+			--_size;
+			_top.length = 0;
 		}
 		
 	}
