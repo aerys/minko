@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 	 * 
 	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
 	 */	
-	public class Sharpen extends Convolution
+	public class Sharpen extends Convolution3
 	{
 		public static const TYPE_1 : uint = 0;
 		public static const TYPE_2 : uint = 1;
