@@ -4,6 +4,8 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.renderer.state.RenderState;
+	import aerys.minko.scene.action.ActionType;
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -15,10 +17,11 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.type.stream.VertexStreamList;
 	
 	import flash.utils.Dictionary;
-	import aerys.minko.scene.action.IAction;
 	
 	public class MeshAction implements IAction
 	{
+		private static const TYPE	: uint		= ActionType.RENDER;
+		
 		private static var _instance	: MeshAction	= null;
 		
 		public static function get meshAction() : MeshAction
@@ -26,14 +29,7 @@ package aerys.minko.scene.action.mesh
 			return _instance || (_instance = new MeshAction());
 		}
 		
-		public function MeshAction()
-		{
-		}
-		
-		public function get name() : String
-		{
-			return "MeshAction";
-		}
+		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{

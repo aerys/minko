@@ -6,16 +6,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.mesh.primitive.TriangleMesh;
 	import aerys.minko.scene.node.texture.ColorTexture;
 	import aerys.minko.scene.node.texture.ITexture;
-	import aerys.minko.type.math.Transform3D;
-	import aerys.minko.type.interpolation.AbstractSegment;
-	import aerys.minko.type.interpolation.BezierCubicSegment;
-	import aerys.minko.type.interpolation.BezierQuadSegment;
-	import aerys.minko.type.interpolation.CatmullRomSegment;
-	import aerys.minko.type.interpolation.CubicSegment;
-	import aerys.minko.type.interpolation.HermiteSegment;
 	import aerys.minko.type.interpolation.IInterpolation;
-	import aerys.minko.type.interpolation.LinearSegment;
-	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Vector4;
 	
 	/**

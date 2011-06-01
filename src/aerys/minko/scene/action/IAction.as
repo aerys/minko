@@ -6,7 +6,7 @@ package aerys.minko.scene.action
 
 	public interface IAction
 	{
-		function get name() : String;
+		function get type() : uint;
 		
 		function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
 		function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
