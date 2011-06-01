@@ -20,7 +20,7 @@ package aerys.minko.render.renderer
 		private static const RENDER_SESSION	: Factory			= Factory.getFactory(RenderSession);
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RenderState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RenderState				= null;
@@ -142,7 +142,7 @@ package aerys.minko.render.renderer
 			_context.drawToBitmapData(bitmapData);
 		}
 		
-		private function compareRenderStates(rs1 : RenderSession, rs2 : RenderSession) : Number
+		private function compareRenderStates(rs1 : RenderSession, rs2 : RenderSession) : int
 		{
 			return 1000. * (rs2.renderState.priority - rs1.renderState.priority);
 		}

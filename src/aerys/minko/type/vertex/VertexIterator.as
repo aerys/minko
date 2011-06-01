@@ -1,6 +1,7 @@
 package aerys.minko.type.vertex
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -14,6 +15,7 @@ package aerys.minko.type.vertex
 	public class VertexIterator extends Proxy
 	{
 		use namespace minko;
+		use namespace minko_stream;
 		
 		private var _index			: int				= 0;
 		private var _offset			: int				= 0;
@@ -112,7 +114,7 @@ package aerys.minko.type.vertex
 			
 			if (_shallow)
 				_vertex._index = -_offset + (_istream ? _istream._indices[_index]
-					: _index);
+								 : _index);
 			
 			return _vertex;
 		}

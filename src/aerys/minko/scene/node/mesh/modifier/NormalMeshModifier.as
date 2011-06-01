@@ -6,7 +6,7 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
-	public class NormalMesh extends AbstractMeshModifier
+	public class NormalMeshModifier extends AbstractMeshModifier
 	{
 		use namespace minko_stream;
 		
@@ -19,7 +19,7 @@ package aerys.minko.scene.node.mesh.modifier
 			return _version; 
 		}
 		
-		public function NormalMesh(target : IMesh)
+		public function NormalMeshModifier(target : IMesh)
 		{
 			super(target);
 			

@@ -35,7 +35,8 @@
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var stream : VertexStream = _propToStream[name];
+			var propertyName : String = name;
+			var stream : VertexStream = _propToStream[propertyName];
 			var format : VertexFormat = stream.format;
 			
 			stream._update = true;

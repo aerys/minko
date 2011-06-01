@@ -227,6 +227,32 @@ package aerys.minko.scene.node.group
 			return index == name ? getChildAt(index) : getChildByName(name as String);
 		}
 		
+		override flash_proxy function setProperty(name : *, value : *) : void
+		{
+			var index : int = parseInt(name);
+			
+			if (index == name)
+			{
+				if (index < numChildren)
+				{
+					removeChildAt(index);
+					addChildAt(value, index);
+				}
+			}
+			else
+			{
+				var old : IScene = getChildByName(name);
+				
+				addChild(value);
+				
+				if (old)
+				{
+					swapChildren(value, old);
+					_children.length = _children.length - 1;
+				}
+			}
+		}
+		
 		override flash_proxy function getDescendants(name : *) : *
 		{
 			return getDescendantByName(name);

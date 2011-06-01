@@ -7,7 +7,7 @@ package aerys.minko.scene.node.debug
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ColorTexture;
 	import aerys.minko.scene.node.mesh.IMesh;
-	import aerys.minko.scene.node.mesh.modifier.NormalMesh;
+	import aerys.minko.scene.node.mesh.modifier.NormalMeshModifier;
 	import aerys.minko.scene.node.mesh.primitive.CubeMesh;
 	
 	import flash.display.BitmapData;
@@ -18,7 +18,7 @@ package aerys.minko.scene.node.debug
 	{
 		public function OrthogonalFrame()
 		{
-			var cubeMesh : IMesh = new NormalMesh(new CubeMesh());
+			var cubeMesh : IMesh = new NormalMeshModifier(new CubeMesh());
 			
 			var repere0	: Model = new Model(cubeMesh, ColorTexture.WHITE);
 			var repereX	: Model = new Model(cubeMesh, null);
