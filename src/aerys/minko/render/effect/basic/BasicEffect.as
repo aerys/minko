@@ -52,11 +52,11 @@ package aerys.minko.render.effect.basic
 			state.depthTest			= CompareMode.LESS;
 			state.blending			= blending;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			state.priority			= _priority;
+			state.priority			= _priority + 0.5;
 			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
 			
 			if (state.blending == Blending.ALPHA)
-				state.priority += .5;
+				state.priority -= .5;
 			
 			return true;
 		}

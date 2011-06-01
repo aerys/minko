@@ -383,6 +383,8 @@ package aerys.minko.render.renderer.state
 		{
 			_setFlags = 0;
 			_version = 0;
+			_offsets.length = 0;
+			_numTriangles.length = 0;
 		}
 		
 		public function prepareContext(context : Context3D, current : RendererState = null) : void
@@ -604,10 +606,105 @@ package aerys.minko.render.renderer.state
 			return target;
 		}
 		
-		public function compare(state : RendererState) : Number
+		public static function sort(states : Vector.<RendererState>) : void
 		{
-			return 0.;
+			var n : int = states.length;
+			var a:Vector.<Number> = new Vector.<Number>(n);
+			var i:int = 0, j:int = 0, k:int = 0, t:int;
+			
+			for (i = 0; i < n; ++i)
+				a[i] = -states[i]._priority;
+			
+			var m:int = int(n * .125);
+			var l:Vector.<int> = new Vector.<int>(m);
+			var anmin:Number = a[0];
+			var nmax:int  = 0;
+			var nmove:int = 0;
+			
+			for (i = 1; i < n; ++i)
+			{
+				if (a[i] < anmin) anmin = a[i];
+				if (a[i] > a[nmax]) nmax = i;
+			}
+			
+			if (anmin == a[nmax]) return;
+			
+			var c1:Number = (m - 1) / (a[nmax] - anmin);
+			
+			for (i = 0; i < n; ++i)
+			{
+				k = int(c1*(a[i] - anmin));
+				++l[k];
+			}
+			
+			for (k = 1; k < m; ++k)
+			{
+				l[k] += l[int(k-1)];
+			}
+			
+			var hold:Number = a[nmax];
+			var holdState : RendererState = states[nmax];
+			
+			a[nmax] = a[0];
+			a[0] = hold;
+			states[nmax] = states[0];
+			states[0] = holdState;
+			
+			var flash:Number;
+			var flashState:RendererState;
+			
+			j = 0;
+			k = int(m - 1);
+			i = int(n - 1);
+			
+			while (nmove < i)
+			{
+				while (j > (l[k]-1))
+				{
+					k = int(c1 * (a[ int(++j) ] - anmin));
+				}
+				
+				flash = a[j];
+				flashState = states[j];
+				
+				while (!(j == l[k]))
+				{
+					k = int(c1 * (flash - anmin));
+					
+					hold = a[ (t = int(l[k]-1)) ];
+					holdState = states[t];
+					
+					a[ t ] = flash;
+					states[t] = flashState;
+					
+					flash = hold;
+					flashState = holdState;
+					
+					--l[k];
+					++nmove;
+				}
+			}
+			
+			for(j = 1; j < n; ++j)
+			{
+				hold = a[j];
+				holdState = states[j];
+				
+				i = int(j - 1);
+				while(i >= 0 && a[i] > hold)
+				{
+					// not trivial
+					a[int(i+1)] = a[i];
+					states[int(i+1)] = states[i];
+					
+					--i;
+				}
+				
+				a[int(i+1)] = hold;
+				states[int(i+1)] = holdState;
+			}
 		}
+		
 		
 	}
 }

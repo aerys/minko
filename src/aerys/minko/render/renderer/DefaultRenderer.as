@@ -27,8 +27,8 @@ package aerys.minko.render.renderer
 		private var _viewport		: Viewport					= null;
 		private var _drawingTime	: int						= 0;
 		private var _frame			: uint						= 0;
-		
-		private var _states			: Vector.<RendererState>		= new Vector.<RendererState>();
+	
+		private var _states			: Vector.<RendererState>	= new Vector.<RendererState>();
 		private var _numStates		: int						= 0;
 		
 		public function get state() 		: RendererState	{ return _currentState; }
@@ -86,7 +86,7 @@ package aerys.minko.render.renderer
 			var time : int = getTimer();
 			
 			if (SORT && _numStates > 1)
-				_states = _states.sort(compareRenderStates);
+				RendererState.sort(_states);
 			
 			var actualState : RendererState = null;
 			
@@ -127,11 +127,6 @@ package aerys.minko.render.renderer
 		public function drawToBitmapData(bitmapData : BitmapData) : void
 		{
 			_context.drawToBitmapData(bitmapData);
-		}
-		
-		private function compareRenderStates(rs1 : RendererState, rs2 : RendererState) : int
-		{
-			return 1000. * (rs2.priority - rs1.priority);
 		}
 	}
 }
