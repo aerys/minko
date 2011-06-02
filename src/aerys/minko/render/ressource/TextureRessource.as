@@ -69,9 +69,11 @@ package aerys.minko.render.ressource
 				{
 					var level 		: int 			= 0;
 					var size		: int 			= _bitmapData.width;
-					var tmp 		: BitmapData 	= new BitmapData(_bitmapData.width,
-																	 _bitmapData.height,
-																	 _bitmapData.transparent, 0);
+					var transparent	: Boolean		= _bitmapData.transparent;
+					var tmp 		: BitmapData 	= new BitmapData(size,
+																	 size,
+																	 transparent,
+																	 0);
 					var transform 	: Matrix 		= new Matrix();
 					
 					while (size >= 1)
@@ -82,9 +84,12 @@ package aerys.minko.render.ressource
 						transform.scale(.5, .5);
 						level++;
 						size >>= 1;
+						if (tmp.transparent)
+							tmp.fillRect(tmp.rect, 0);
 					}
 					
-					tmp.dispose();
+					if (transparent)
+						tmp.dispose();
 				}
 				else
 				{
