@@ -87,7 +87,7 @@ package aerys.minko.render.renderer
 			++_frame;
 		}
 		
-		public function presentIntoBitmapData(bitmapData : BitmapData) : void
+		public function dumpBackbuffer(bitmapData : BitmapData) : void
 		{
 			var time : int = getTimer();
 			

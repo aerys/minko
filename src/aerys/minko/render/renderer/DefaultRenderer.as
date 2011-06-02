@@ -124,15 +124,21 @@ package aerys.minko.render.renderer
 		public function present() : void
 		{
 			var time : int = getTimer();
-			_context.present();
-			_drawingTime += getTimer() - time;
 			
+			_context.present();
+			
+			_drawingTime += getTimer() - time;
 			++_frame;
 		}
 		
-		public function presentIntoBitmapData(bitmapData : BitmapData) : void
+		public function dumpBackbuffer(bitmapData : BitmapData) : void
 		{
+			var time : int = getTimer();
+			
 			_context.drawToBitmapData(bitmapData);
+			
+			_drawingTime += getTimer() - time;
+			++_frame;
 		}
 	}
 }
