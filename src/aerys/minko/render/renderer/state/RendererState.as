@@ -419,6 +419,9 @@ package aerys.minko.render.renderer.state
 					context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
 											BLENDING_STR[int(_blending >>> 16)]);
 				
+				if (_setFlags & SCISSOR_RECTANGLE)
+					context.setScissorRectangle(_rectangle);
+				
 				for (var i : int = 0; i < 8; ++i)
 				{
 					// set texture
@@ -512,6 +515,12 @@ package aerys.minko.render.renderer.state
 			{
 				context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
 										BLENDING_STR[int(_blending >> 16)]);
+			}
+			
+			if (_setFlags & SCISSOR_RECTANGLE
+				&& (!(current._setFlags & SCISSOR_RECTANGLE) || _rectangle != current._rectangle))
+			{
+				context.setScissorRectangle(_rectangle);
 			}
 			
 			for (var i : int = 0; i < 8; ++i)
