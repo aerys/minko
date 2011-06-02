@@ -608,50 +608,54 @@ package aerys.minko.render.renderer.state
 		
 		public static function sort(states : Vector.<RendererState>) : void
 		{
-			var n : int = states.length;
-			var a:Vector.<Number> = new Vector.<Number>(n);
-			var i:int = 0, j:int = 0, k:int = 0, t:int;
+			var n 	: int 				= states.length;
+			var a	: Vector.<Number> 	= new Vector.<Number>(n);
+			var i	: int 				= 0;
+			var j	: int 				= 0;
+			var k	: int 				= 0;
+			var t	: int				= 0;
 			
 			for (i = 0; i < n; ++i)
 				a[i] = -states[i]._priority;
 			
-			var m:int = int(n * .125);
-			var l:Vector.<int> = new Vector.<int>(m);
-			var anmin:Number = a[0];
-			var nmax:int  = 0;
-			var nmove:int = 0;
+			var m		: int 			= int(n * .125);
+			var l		: Vector.<int> 	= new Vector.<int>(m);
+			var anmin	: Number 		= a[0];
+			var nmax	: int  			= 0;
+			var nmove	: int 			= 0;
 			
 			for (i = 1; i < n; ++i)
 			{
-				if (a[i] < anmin) anmin = a[i];
-				if (a[i] > a[nmax]) nmax = i;
+				if (a[i] < anmin)
+					anmin = a[i];
+				if (a[i] > a[nmax])
+					nmax = i;
 			}
 			
-			if (anmin == a[nmax]) return;
+			if (anmin == a[nmax])
+				return ;
 			
-			var c1:Number = (m - 1) / (a[nmax] - anmin);
+			var c1	: Number = (m - 1) / (a[nmax] - anmin);
 			
 			for (i = 0; i < n; ++i)
 			{
-				k = int(c1*(a[i] - anmin));
+				k = int(c1 * (a[i] - anmin));
 				++l[k];
 			}
 			
 			for (k = 1; k < m; ++k)
-			{
 				l[k] += l[int(k-1)];
-			}
 			
-			var hold:Number = a[nmax];
-			var holdState : RendererState = states[nmax];
+			var hold		: Number 		= a[nmax];
+			var holdState 	: RendererState = states[nmax];
 			
 			a[nmax] = a[0];
 			a[0] = hold;
 			states[nmax] = states[0];
 			states[0] = holdState;
 			
-			var flash:Number;
-			var flashState:RendererState;
+			var flash		: Number		= 0.;
+			var flashState	: RendererState	= null;
 			
 			j = 0;
 			k = int(m - 1);
@@ -660,9 +664,7 @@ package aerys.minko.render.renderer.state
 			while (nmove < i)
 			{
 				while (j > (l[k]-1))
-				{
-					k = int(c1 * (a[ int(++j) ] - anmin));
-				}
+					k = int(c1 * (a[int(++j)] - anmin));
 				
 				flash = a[j];
 				flashState = states[j];
@@ -674,7 +676,7 @@ package aerys.minko.render.renderer.state
 					hold = a[ (t = int(l[k]-1)) ];
 					holdState = states[t];
 					
-					a[ t ] = flash;
+					a[t] = flash;
 					states[t] = flashState;
 					
 					flash = hold;
@@ -685,13 +687,13 @@ package aerys.minko.render.renderer.state
 				}
 			}
 			
-			for(j = 1; j < n; ++j)
+			for (j = 1; j < n; ++j)
 			{
 				hold = a[j];
 				holdState = states[j];
 				
 				i = int(j - 1);
-				while(i >= 0 && a[i] > hold)
+				while (i >= 0 && a[i] > hold)
 				{
 					// not trivial
 					a[int(i+1)] = a[i];
