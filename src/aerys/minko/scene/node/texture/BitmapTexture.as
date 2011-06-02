@@ -87,78 +87,28 @@ package aerys.minko.scene.node.texture
 			_ressource.setContentFromBitmapData(_data, _mipmapping);
 		}
 		
-		public function BitmapTexture(bitmapData : BitmapData 	= null,
+		public function BitmapTexture(bitmapData 	: BitmapData 	= null,
 									  mipmapping	: Boolean		= true)
 		{
+			_mipmapping	= mipmapping;
+			
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
-			
-			_mipmapping	= mipmapping;
 			
 			_styleProp = BasicStyle.DIFFUSE_MAP;
 			
 			actions[0] = BitmapTextureAction.bitmapTextureAction;
 		}
 		
-//		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void
-//		{
-//			if (_data)
-//			{
-//				if (!_texture)
-//				{
-//					_texture = query.createTexture(_data.width,
-//											   	   _data.height,
-//											   	   Context3DTextureFormat.BGRA,
-//												   false) as Texture;
-//					
-//					_update = true;
-//				}
-//				
-//				if (_update)
-//				{
-//					_update = false;
-//					
-//					if (_mipmapping)
-//					{
-//						var level 		: int 			= 0;
-//						var size		: int 			= _data.width;
-//						var tmp 		: BitmapData 	= new BitmapData(_data.width, _data.height, _data.transparent, 0);
-//						var transform 	: Matrix 		= new Matrix();
-//						
-//						while (size >= 1)
-//						{
-//							tmp.draw(_data, transform, null, null, null, true);
-//							_texture.uploadFromBitmapData(tmp, level);
-//							
-//							transform.scale(.5, .5);
-//							level++;
-//							size >>= 1;
-//						}
-//						
-//						tmp.dispose();
-//					}
-//					else
-//					{
-//						_texture.uploadFromBitmapData(_data, 0);
-//					}
-//				}
-//				
-//				_data.dispose();
-//				_data = null;
-//			}
-//			
-//			query.style.set(_styleProp, _texture);
-//		}
-		
 		public static function fromDisplayObject(source : DisplayObject,
 												 size 	: int 		= 0,
 												 smooth : Boolean 	= false) : BitmapTexture
 		{
-			var bmp : BitmapData = new BitmapData(size || source.width,
-				size || source.height,
-				true,
-				0);
 			var matrix : Matrix = null;
+			var bmp : BitmapData = new BitmapData(size || source.width,
+												  size || source.height,
+												  true,
+												  0);
 			
 			if (size)
 			{

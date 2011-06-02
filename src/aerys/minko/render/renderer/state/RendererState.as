@@ -460,17 +460,20 @@ package aerys.minko.render.renderer.state
 					if (_renderTarget.type == RenderTarget.BACKBUFFER)
 					{
 						context.setRenderToBackBuffer();
-						context.clear();
 					}
 					else
 					{
-						var renderTexture		: Texture	= _renderTarget.textureRessource.getNativeTexture(context);
-						var useDepthAndStencil	: Boolean	= _renderTarget.useDepthAndStencil;
-						var antialiasing		: int		= _renderTarget.antiAliasing;
-						
-						context.setRenderToTexture(renderTexture, useDepthAndStencil, antialiasing);
-						context.clear();
+						context.setRenderToTexture(_renderTarget.textureRessource.getNativeTexture(context),
+												   _renderTarget.useDepthAndStencil,
+												   _renderTarget.antiAliasing);
 					}
+					
+					var color : uint = _renderTarget.backgroundColor;
+					
+					context.clear(((color >> 16) & 0xff) / 255.,
+								  ((color >> 8) & 0xff) / 255.,
+								  (color & 0xff) / 255.,
+								  ((color >> 24) & 0xff) / 255.);
 				}
 			}
 		}
@@ -557,53 +560,21 @@ package aerys.minko.render.renderer.state
 				if (_renderTarget.type == RenderTarget.BACKBUFFER)
 				{
 					context.setRenderToBackBuffer();
-					context.clear();
 				}
 				else
 				{
-					var renderTexture		: Texture	= _renderTarget.textureRessource.getNativeTexture(context);
-					var useDepthAndStencil	: Boolean	= _renderTarget.useDepthAndStencil;
-					var antialiasing		: int		= _renderTarget.antiAliasing;
-					
-					context.setRenderToTexture(renderTexture, useDepthAndStencil, antialiasing);
-					context.clear();
+					context.setRenderToTexture(_renderTarget.textureRessource.getNativeTexture(context),
+											   _renderTarget.useDepthAndStencil,
+											   _renderTarget.antiAliasing);
 				}
-			}
-		}
-		
-		public function copyTo(target : RendererState) : RendererState
-		{
-			target._setFlags = _setFlags;
-			
-			if (_setFlags & SHADER)
-				target._shader = _shader;
-			
-			if (_setFlags & TRIANGLE_CULLING)
-				target._triangleCulling = _triangleCulling;
-			
-			if (_setFlags & COLOR_MASK)
-				target._colorMask = _colorMask;
-			
-			if (_setFlags & BLENDING)
-				target._blending = _blending;
-			
-			for (var i : int = 0; i < 8; ++i)
-			{
-				if (_setFlags & (TEXTURE_1 << i))
-					target._textures[i] = _textures[i];
 				
-				if (_setFlags & (VERTEX_STREAM_1 << i))
-				{
-					target._vertexStreams[i] = _vertexStreams[i];
-					target._vertexOffsets[i] = _vertexOffsets[i];
-					target._vertexFormats[i] = _vertexFormats[i];
-				}
+				var color : uint = _renderTarget.backgroundColor;
+				
+				context.clear(((color >> 16) & 0xff) / 255.,
+							  ((color >> 8) & 0xff) / 255.,
+							  (color & 0xff) / 255.,
+							  ((color >> 24) & 0xff) / 255.);
 			}
-			
-			if (_setFlags & INDEX_STREAM)
-				target._indexStream = _indexStream;
-			
-			return target;
 		}
 		
 		public static function sort(states : Vector.<RendererState>) : void
@@ -618,7 +589,7 @@ package aerys.minko.render.renderer.state
 			for (i = 0; i < n; ++i)
 				a[i] = -states[i]._priority;
 			
-			var m		: int 			= int(n * .125);
+			var m		: int 			= Math.ceil(n * .125);
 			var l		: Vector.<int> 	= new Vector.<int>(m);
 			var anmin	: Number 		= a[0];
 			var nmax	: int  			= 0;

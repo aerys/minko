@@ -19,6 +19,15 @@ package aerys.minko.render
 		private var _surface			: int				= 0;
 		private var _backgroundColor	: uint				= 0;
 		
+		public function get type()					: uint				{ return _textureRessource == null ? BACKBUFFER : TEXTURE; }
+		public function get width()					: uint				{ return _width; }
+		public function get height()				: uint				{ return _height; }
+		
+		public function get textureRessource() 		: TextureRessource	{ return _textureRessource; }
+		public function get useDepthAndStencil()	: Boolean			{ return _useDepthAndStencil; }
+		public function get antiAliasing()			: int				{ return _antiAliasing; }
+		public function get backgroundColor()		: uint				{ return _backgroundColor; }
+		
 		public function RenderTarget(type				: uint,
 									 width				: uint,
 									 height				: uint,
@@ -49,13 +58,5 @@ package aerys.minko.render
 			}
 		}
 		
-		public function get type()					: uint				{ return _textureRessource == null ? BACKBUFFER : TEXTURE; }
-		public function get width()					: uint				{ return _width; }
-		public function get height()				: uint				{ return _height; }
-		
-		public function get textureRessource() 		: TextureRessource	{ return _textureRessource; }
-		public function get useDepthAndStencil()	: Boolean			{ return _useDepthAndStencil; }
-		public function get antiAliasing()			: int				{ return _antiAliasing; }
-		public function get backgroundColor()		: uint				{ return _backgroundColor; }
 	}
 }

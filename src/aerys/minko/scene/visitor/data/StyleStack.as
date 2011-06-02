@@ -14,17 +14,17 @@ package aerys.minko.scene.visitor.data
 		
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
-			var item 		: Object 	= _cache[styleId];
-			
-			if (item !== null)
-				return item;
+			if (_cache.hasOwnProperty(styleId))
+				return _cache[styleId];
 			
 			for (var i : int = _size - 1; i >= 0; --i)
 			{
-				item = _data[i][styleId];
+				var data : Array = _data[i];
 				
-				if (item !== null)
+				if (data.hasOwnProperty(styleId))
 				{
+					var item : Object = data[styleId];
+					
 					_cache[styleId] = item;
 					
 					return item;
@@ -76,6 +76,7 @@ package aerys.minko.scene.visitor.data
 		public function pop() : void
 		{
 			var free : Array = _data[_size - 1];
+			
 			if (free !== _empty)
 				_free[int(_numFree++)] = free;
 			
