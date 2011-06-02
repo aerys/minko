@@ -49,22 +49,9 @@ package aerys.minko.scene.visitor.rendering
 			_renderingData	= renderingData; 
 			_renderer		= renderer;
 			
+			
 			_renderer.clear();
-			
-			for each (var worldObject : IWorldData in worldData)
-				worldObject.setDataProvider(_renderingData.styleStack, _localData, _worldData);
-			
-			// update our transformManager if there is a camera, or
-			// set it to null to render to screenspace otherwise
-			var cameraData : CameraData = worldData[CameraData] as CameraData;
-			if (cameraData)
-			{
-				_localData.view			= cameraData.view;
-				_localData.projection	= cameraData.projection;
-			}
-			
 			visit(scene);
-			
 			_renderer.drawToBackBuffer();
 			_renderer.present();
 		}

@@ -74,6 +74,11 @@ package aerys.minko.scene.visitor.data
 			return _viewport.stage;
 		}
 		
+		public function get viewport() : Viewport
+		{
+			return _viewport;
+		}
+		
 		public function ViewportData(viewport : Viewport)
 		{
 			_viewport = viewport;

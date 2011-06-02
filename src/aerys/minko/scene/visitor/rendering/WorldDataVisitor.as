@@ -8,6 +8,7 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.scene.node.IWorldObject;
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.IWorldData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.RenderingData;
@@ -21,8 +22,8 @@ package aerys.minko.scene.visitor.rendering
 													  | ActionType.UPDATE_LOCAL_DATA
 													  | ActionType.RECURSE;
 		
-		protected var _worldData	: Dictionary	= null;
-		protected var _localData	: LocalData		= new LocalData();
+		protected var _worldData		: Dictionary	= null;
+		protected var _localData		: LocalData		= null;
 		
 		public function get localData()		: LocalData		{ return _localData; }
 		public function get worldData() 	: Dictionary	{ return _worldData; }
@@ -39,8 +40,21 @@ package aerys.minko.scene.visitor.rendering
 										  renderer		: IRenderer) : void
 		{
 			_worldData = worldData;
+			_localData = localData;
 			
 			visit(scene);
+			
+			for each (var worldObject : IWorldData in worldData)
+				worldObject.setDataProvider(renderingData.styleStack, localData, worldData);
+			
+			// update our transformManager if there is a camera, or
+			// set it to null to render to screenspace otherwise
+			var cameraData : CameraData = worldData[CameraData] as CameraData;
+			if (cameraData)
+			{
+				localData.view			= cameraData.view;
+				localData.projection	= cameraData.projection;
+			}
 		}
 		
 		public function visit(scene : IScene) : void
