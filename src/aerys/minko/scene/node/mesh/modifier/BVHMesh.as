@@ -23,48 +23,44 @@ package aerys.minko.scene.node.mesh.modifier
 		public function BVHMesh(target : IMesh)
 		{
 			super(target);
+			
+			computeBoundingVolumes();
 		}
 		
-		/*public function visited(query : ISceneVisitor) : void
+		public function computeBoundingVolumes() : void
 		{
-			if (target.version != _version || !_boundingBox)
+			var min				: Vector4			= new Vector4(Number.POSITIVE_INFINITY,
+														 		  Number.POSITIVE_INFINITY,
+																  Number.POSITIVE_INFINITY);
+			
+			var max				: Vector4			= new Vector4(Number.NEGATIVE_INFINITY,
+																  Number.NEGATIVE_INFINITY,
+																  Number.NEGATIVE_INFINITY);
+			
+			var xyzStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
+			var xyzOffset		: int				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
+			
+			var dwords			: Vector.<Number>	= xyzStream._data;
+			var dwordsPerVertex	: int				= xyzStream.format.dwordsPerVertex;
+			var dwordsCount		: int				= dwords.length;
+			
+			for (var i : int = xyzOffset; i < dwordsCount; i += dwordsPerVertex)
 			{
-				var min				: Vector4			= new Vector4(Number.POSITIVE_INFINITY,
-															 		  Number.POSITIVE_INFINITY,
-																	  Number.POSITIVE_INFINITY);
+				var x : Number = dwords[i];
+				var y : Number = dwords[int(i + 1)];
+				var z : Number = dwords[int(i + 2)];
 				
-				var max				: Vector4			= new Vector4(Number.NEGATIVE_INFINITY,
-																	  Number.NEGATIVE_INFINITY,
-																	  Number.NEGATIVE_INFINITY);
+				min.x = x < min.x ? x : min.x;
+				min.y = y < min.y ? y : min.y;
+				min.z = z < min.z ? z : min.z;
 				
-				var xyzStream		: VertexStream	= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
-				var xyzOffset		: int				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-				
-				var dwords			: Vector.<Number>	= xyzStream._data;
-				var dwordsPerVertex	: int				= xyzStream.format.dwordsPerVertex;
-				var dwordsCount		: int				= dwords.length;
-				
-				for (var i : int = xyzOffset; i < dwordsCount; i += dwordsPerVertex)
-				{
-					var x : Number = dwords[i];
-					var y : Number = dwords[int(i + 1)];
-					var z : Number = dwords[int(i + 2)];
-					
-					min.x = x < min.x ? x : min.x;
-					min.y = y < min.y ? y : min.y;
-					min.z = z < min.z ? z : min.z;
-					
-					max.x = x > max.x ? x : max.x;
-					max.y = y > max.y ? y : max.y;
-					max.z = z > max.z ? z : max.z;
-				}
-				
-				_boundingSphere = BoundingSphere.fromMinMax(min, max);
-				_boundingBox = new BoundingBox(min, max);
-				
-				_version = target.version;
+				max.x = x > max.x ? x : max.x;
+				max.y = y > max.y ? y : max.y;
+				max.z = z > max.z ? z : max.z;
 			}
-		}*/
-		
+			
+			_boundingSphere = BoundingSphere.fromMinMax(min, max);
+			_boundingBox = new BoundingBox(min, max);
+		}
 	}
 }
