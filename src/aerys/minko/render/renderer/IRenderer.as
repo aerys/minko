@@ -35,7 +35,7 @@ package aerys.minko.render.renderer
 		
 		function present() : void;
 		
-		function drawToBitmapData(bitmapData : BitmapData) : void;
+		function presentIntoBitmapData(bitmapData : BitmapData) : void;
 		
 	}
 }

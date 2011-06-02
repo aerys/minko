@@ -130,7 +130,7 @@ package aerys.minko.render.renderer
 			++_frame;
 		}
 		
-		public function drawToBitmapData(bitmapData : BitmapData) : void
+		public function presentIntoBitmapData(bitmapData : BitmapData) : void
 		{
 			_context.drawToBitmapData(bitmapData);
 		}

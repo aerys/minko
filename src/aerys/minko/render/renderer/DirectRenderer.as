@@ -87,9 +87,14 @@ package aerys.minko.render.renderer
 			++_frame;
 		}
 		
-		public function drawToBitmapData(bitmapData : BitmapData) : void
+		public function presentIntoBitmapData(bitmapData : BitmapData) : void
 		{
+			var time : int = getTimer();
+			
 			_context.drawToBitmapData(bitmapData);
+			
+			_drawingTime += getTimer() - time;
+			++_frame;
 		}
 		
 		public function begin() : void
