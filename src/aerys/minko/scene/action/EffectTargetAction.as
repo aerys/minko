@@ -8,7 +8,7 @@ package aerys.minko.scene.action
 	
 	public class EffectTargetAction implements IAction
 	{
-		private static const TYPE		: uint					= ActionType.RENDER;
+		private static const TYPE		: uint					= ActionType.UPDATE_EFFECTS;
 		
 		private static var _instance	: EffectTargetAction	= null;
 		

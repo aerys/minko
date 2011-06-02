@@ -7,7 +7,7 @@ package aerys.minko.scene.action
 	
 	public class StyledAction implements IAction
 	{
-		private static const TYPE		: uint			= ActionType.RENDER;
+		private static const TYPE		: uint			= ActionType.UPDATE_STYLE;
 		
 		private static var _instance	: StyledAction	= null;
 		
