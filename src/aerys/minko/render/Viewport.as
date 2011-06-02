@@ -211,6 +211,11 @@ package aerys.minko.render
 			_backgroundColor = value;
 		}
 		
+		public function get visitors() : Vector.<ISceneVisitor>
+		{
+			return _visitors;
+		}
+		
 		/**
 		 * Creates a new Viewport object.
 		 *
@@ -317,7 +322,6 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
-			
 			if (_visitors.length != 0)
 			{
 				var time : Number = getTimer();
