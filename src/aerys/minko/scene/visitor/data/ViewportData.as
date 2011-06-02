@@ -4,6 +4,7 @@ package aerys.minko.scene.visitor.data
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.IEffect;
 	
+	import flash.display.Stage;
 	import flash.utils.Dictionary;
 
 	public class ViewportData implements IWorldData
@@ -66,6 +67,11 @@ package aerys.minko.scene.visitor.data
 			}
 			
 			return _renderTarget;
+		}
+		
+		public function get stage() : Stage
+		{
+			return _viewport.stage;
 		}
 		
 		public function ViewportData(viewport : Viewport)
