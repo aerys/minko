@@ -27,10 +27,6 @@ package aerys.minko.scene.visitor.data
 			return _version;
 		}
 		
-		public function Style()
-		{
-		}
-		
 		public function get(styleId : int, defaultValue : Object = null) : Object 
 		{
 			var data : Object = _data[styleId];

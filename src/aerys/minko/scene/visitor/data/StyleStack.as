@@ -4,15 +4,17 @@ package aerys.minko.scene.visitor.data
 
 	public final class StyleStack
 	{
-		private static var _empty	: Array = new Array();
+		private static var _empty	: Array 			= new Array();
+		private static var _free	: Vector.<Array>	= new Vector.<Array>();
+		private static var _numFree	: int				= 0;
 		
 		private var _data 	: Vector.<Array>	= new Vector.<Array>();
-		private var _top	: Array				= new Array();
 		private var _size	: int				= 0;
+		private var _cache	: Array				= new Array();
 		
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
-			var item 		: Object 	= _top[styleId];
+			var item 		: Object 	= _cache[styleId];
 			
 			if (item !== null)
 				return item;
@@ -20,9 +22,10 @@ package aerys.minko.scene.visitor.data
 			for (var i : int = _size - 1; i >= 0; --i)
 			{
 				item = _data[i][styleId];
+				
 				if (item !== null)
 				{
-					_top[styleId] = item;
+					_cache[styleId] = item;
 					
 					return item;
 				}
@@ -41,21 +44,44 @@ package aerys.minko.scene.visitor.data
 		
 		public function set(styleId : int, value : Object) : StyleStack
 		{
-			_top[styleId] = value;
+			var top : Array = _data[int(_size - 1)];
+			
+			if (top === _empty)
+			{
+				if (_numFree > 0)
+				{
+					top = _free[int(--_numFree)];
+					top.length = 0;
+				}
+				else
+				{
+					top = new Array();
+				}
+				
+				_data[int(_size - 1)] = top;
+			}
+			
+			_cache[styleId] = value;
+			top[styleId] = value;
 			
 			return this;
 		}
 
 		public function push(style : Style = null) : void
 		{
-			_data[_size] = style._data;
-			++_size;
+			_data[int(_size++)] = style._data;
+			_data[int(_size++)] = _empty;
 		}
 		
 		public function pop() : void
 		{
-			--_size;
-			_top.length = 0;
+			var free : Array = _data[_size - 1];
+			if (free !== _empty)
+				_free[int(_numFree++)] = free;
+			
+			_size -= 2;
+			
+			_cache.length = 0;
 		}
 		
 	}
