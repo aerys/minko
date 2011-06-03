@@ -295,7 +295,13 @@ package aerys.minko.render
 			if (_stage3d && _stage3d.context3D)
 			{
 				updateRectangle();
-				_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
+				
+				_stage3d.context3D.configureBackBuffer(
+					Math.min(2048, _width),
+					Math.min(2048, _height),
+					_antiAliasing, 
+					true
+				);
 				
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
@@ -339,9 +345,7 @@ package aerys.minko.render
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
 				
-				// FIXME how should we count the nodes now?
-				//		_sceneSize = _renderingQuery.numNodes;
-				
+				_sceneSize	= visitors[0].numNodes;
 				_time		= getTimer() - time;
 				_drawTime	= _renderer.drawingTime;
 			}

@@ -24,7 +24,9 @@ package aerys.minko.scene.visitor.rendering
 		
 		protected var _worldData		: Dictionary	= null;
 		protected var _localData		: LocalData		= null;
+		protected var _numNodes			: uint			= 0;
 		
+		public function get numNodes()		: uint			{ return _numNodes; }
 		public function get localData()		: LocalData		{ return _localData; }
 		public function get worldData() 	: Dictionary	{ return _worldData; }
 		public function get renderingData()	: RenderingData	{ return null; }
@@ -42,6 +44,7 @@ package aerys.minko.scene.visitor.rendering
 			_worldData = worldData;
 			_localData = localData;
 			
+			_numNodes = 0;
 			visit(scene);
 			
 			for each (var worldObject : IWorldData in worldData)
@@ -75,6 +78,8 @@ package aerys.minko.scene.visitor.rendering
 			for (i = 0; i < numActions; ++i)
 				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.postfix(scene, this, null))
 					break ;
+			
+			++_numNodes;
 		}
 	}
 }
