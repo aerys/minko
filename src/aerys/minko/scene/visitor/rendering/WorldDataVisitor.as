@@ -26,10 +26,11 @@ package aerys.minko.scene.visitor.rendering
 		protected var _localData		: LocalData		= null;
 		protected var _numNodes			: uint			= 0;
 		
-		public function get numNodes()		: uint			{ return _numNodes; }
-		public function get localData()		: LocalData		{ return _localData; }
-		public function get worldData() 	: Dictionary	{ return _worldData; }
-		public function get renderingData()	: RenderingData	{ return null; }
+		public function get numNodes()		: uint				{ return _numNodes; }
+		public function get localData()		: LocalData			{ return _localData; }
+		public function get worldData() 	: Dictionary		{ return _worldData; }
+		public function get renderingData()	: RenderingData		{ return null; }
+		public function get ancestors()		: Vector.<IScene>	{ return null; }
 		
 		public function WorldDataVisitor()
 		{

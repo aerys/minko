@@ -19,7 +19,7 @@ package aerys.minko.render.renderer
 		
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;
@@ -47,7 +47,7 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
-			_currentState = RENDER_STATE.create() as RendererState;
+			_currentState = RENDER_STATE.create(true) as RendererState;
 			_currentState.clear();
 		}
 		
@@ -92,7 +92,7 @@ package aerys.minko.render.renderer
 			
 			for (var i : int = 0; i < _numStates; ++i)
 			{
-				var state			: RendererState 	= _states[i];
+				var state			: RendererState = _states[i];
 				var offsets 		: Vector.<uint>	= state.offsets;
 				var numTriangles 	: Vector.<int> 	= state.numTriangles;
 				var numCalls 		: int 			= offsets.length;
@@ -112,8 +112,8 @@ package aerys.minko.render.renderer
 					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
 				
-				if (actualState)
-					RENDER_STATE.free(actualState);
+				/*if (actualState)
+					RENDER_STATE.free(actualState);*/
 				
 				actualState = state;
 			}

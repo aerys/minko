@@ -5,7 +5,7 @@ package aerys.minko.type.math
 	import aerys.minko.render.renderer.state.FrustumCulling;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.bounding.IBoundedVolume;
+	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	
@@ -455,7 +455,7 @@ package aerys.minko.type.math
 		 * the spanning planes.
 		 * 
 		 */
-		public function testBoundedVolume(volume	: IBoundedVolume,
+		public function testBoundedVolume(volume	: IBoundingVolume,
 								 	      transform	: Matrix4x4	= null,
 								 		  culling	: int 			= 0xffffff) : uint
 		{

@@ -26,6 +26,8 @@ package aerys.minko.render
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.system.Capabilities;
+	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	

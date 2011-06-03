@@ -1,8 +1,6 @@
 package aerys.minko.render.shader.node
 {
 	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
-	
-	import flash.utils.ByteArray;
 
 	public interface INode
 	{

@@ -18,6 +18,7 @@ package aerys.minko.scene.visitor
 		function get worldData() 		: Dictionary;
 		function get renderingData()	: RenderingData;
 		function get numNodes()			: uint;
+		function get ancestors()		: Vector.<IScene>;
 		
 		function visit(scene : IScene) : void;
 		

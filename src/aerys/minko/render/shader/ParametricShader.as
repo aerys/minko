@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
 	import aerys.minko.render.shader.node.leaf.Attribute;
@@ -23,11 +24,9 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.math.Product;
-	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -136,58 +135,58 @@ package aerys.minko.render.shader
 		protected final function combine(value1	: Object,
 										 value2	: Object) : INode
 		{
-			return new Combine(getShaderNode(value1), getShaderNode(value2));
+			return new Combine(getNode(value1), getNode(value2));
 		}
 		
 		protected final function sampleTexture(styleId : int, uv : Object) : Texture
 		{
-			return new Texture(getShaderNode(uv), new Sampler(styleId));
+			return new Texture(getNode(uv), new Sampler(styleId));
 		}
 		
 		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : INode
 		{
-			var p 		: Product 	= new Product(getShaderNode(arg1), getShaderNode(arg2));
+			var p 		: Product 	= new Product(getNode(arg1), getNode(arg2));
 			var numArgs : int 		= args.length;
 			
 			for (var i : int = 0; i < numArgs; ++i)
-				p.addTerm(getShaderNode(args[i]))
+				p.addTerm(getNode(args[i]))
 			
 			return p;
 		}
 		
 		protected final function divide(arg1 : Object, arg2 : Object) : INode
 		{
-			return new Divide(getShaderNode(arg1), getShaderNode(arg2));
+			return new Divide(getNode(arg1), getNode(arg2));
 		}
 		
 		protected final function power(base : Object, exp : Object) : INode
 		{
-			return new Power(getShaderNode(base), getShaderNode(exp));
+			return new Power(getNode(base), getNode(exp));
 		}
 		
 		protected final function add(value1 : Object, value2 : Object) : INode
 		{
-			return new Add(getShaderNode(value1), getShaderNode(value2));
+			return new Add(getNode(value1), getNode(value2));
 		}
 		
 		protected final function substract(value1 : Object, value2 : Object) : INode
 		{
-			return new Substract(getShaderNode(value1), getShaderNode(value2));
+			return new Substract(getNode(value1), getNode(value2));
 		}
 		
 		protected final function dotProduct3(u : Object, v : Object) : INode
 		{
-			return new DotProduct3(getShaderNode(u), getShaderNode(v));
+			return new DotProduct3(getNode(u), getNode(v));
 		}
 		
 		protected final function dotProduct4(u : Object, v : Object) : INode
 		{
-			return new DotProduct4(getShaderNode(u), getShaderNode(v));
+			return new DotProduct4(getNode(u), getNode(v));
 		}
 		
 		protected final function multiply4x4(a : Object, b : Object) : INode
 		{
-			return new Multiply4x4(getShaderNode(a), getShaderNode(b));
+			return new Multiply4x4(getNode(a), getNode(b));
 		}
 		
 		protected final function getWorldParameter(size		: uint, 
@@ -208,36 +207,36 @@ package aerys.minko.render.shader
 		
 		protected final function getConstant(value : Object) : INode
 		{
-			return getShaderNode(value);
+			return getNode(value);
 		}
 		
 		protected final function extract(value : Object, Component : uint) : INode
 		{
-			return new Extract(getShaderNode(value), Component);
+			return new Extract(getNode(value), Component);
 		}
 		
 		protected final function blend(color1 : Object, color2 : Object, blending : uint) : INode
 		{
-			return new Blend(getShaderNode(color1), getShaderNode(color2), blending);
+			return new Blend(getNode(color1), getNode(color2), blending);
 		}
 		
 		protected final function vector3Length(vector3 : Object) : INode
 		{
-			var v : INode = getShaderNode(vector3);
+			var v : INode = getNode(vector3);
 			
 			return sqrt(dotProduct3(v, v));
 		}
 		
 		protected final function sqrt(scalar : Object) : INode
 		{
-			return new SquareRoot(getShaderNode(scalar));
+			return new SquareRoot(getNode(scalar));
 		}
 		
 		protected final function getFolorColor(start	: Object,
 											   distance	: Object,
 											   color	: Object) : INode
 		{
-			return new Fog(getShaderNode(start), getShaderNode(distance), getShaderNode(color));
+			return new Fog(getNode(start), getNode(distance), getNode(color));
 		}
 		
 		protected final function getVertexAttribute(vertexComponent : VertexComponent) : INode
@@ -245,10 +244,13 @@ package aerys.minko.render.shader
 			return new Attribute(vertexComponent);
 		}
 		
-		private function getShaderNode(value : Object) : INode
+		private function getNode(value : Object) : INode
 		{
 			if (value is INode)
 				return value as INode;
+			
+			if (value is SValue)
+				return (value as SValue)._node;
 			
 			var c	: Constant	= new Constant();
 			
