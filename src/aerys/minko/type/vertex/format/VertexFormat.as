@@ -37,7 +37,7 @@ package aerys.minko.type.vertex.format
 		public function addComponent(component : VertexComponent) : void
 		{
 			if (hasComponent(component))
-				throw new Error('Component already present in this vertex format');
+				throw new Error('Component already present in this vertex format: ' + component.implodedFields);
 			
 			_components[component.implodedFields] = component;
 			_componentOffsets[component.implodedFields] = _dwordsPerVertex;
