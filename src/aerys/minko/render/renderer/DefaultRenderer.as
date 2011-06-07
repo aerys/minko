@@ -125,7 +125,8 @@ package aerys.minko.render.renderer
 		{
 			var time : int = getTimer();
 			
-			_context.present();
+			if (_numStates != 0)
+				_context.present();
 			
 			_drawingTime += getTimer() - time;
 			++_frame;
