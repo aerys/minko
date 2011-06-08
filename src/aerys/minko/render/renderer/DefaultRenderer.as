@@ -16,10 +16,10 @@ package aerys.minko.render.renderer
 	{
 		use namespace minko;
 		use namespace minko_render;
-		
+	
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;

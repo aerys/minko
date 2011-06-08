@@ -29,16 +29,20 @@ package aerys.minko.scene.action.texture
 		
 		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			//if (renderer && renderer.frameId != _lastFrameId)
+			if (renderer)
 			{
-				var t  		:  int 				= getTimer();
 				var texture : AnimatedTexture 	= scene as AnimatedTexture;
-								
-				if (t - _time > (1000. / texture.framerate))
+				
+				if (renderer.frameId != _lastFrameId)
 				{
-//					_lastFrameId = renderer.frameId;
-					texture.nextFrame();
-					_time = t;
+					var t  	:  int 	= getTimer();
+									
+					if (t - _time > (1000. / texture.framerate))
+					{
+						_lastFrameId = renderer.frameId;
+						texture.nextFrame();
+						_time = t;
+					}
 				}
 				
 				var currentFrame : int = texture.currentFrame;
@@ -47,7 +51,6 @@ package aerys.minko.scene.action.texture
 					visitor.visit(texture.getChildAt(currentFrame));
 				else
 					visitor.visit(NO_TEXTURE);
-				
 			}
 			
 			return true;
