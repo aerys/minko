@@ -1,8 +1,5 @@
 package aerys.minko.type.math
 {
-	import mx.charts.chartClasses.NumericAxis;
-	import mx.effects.easing.Quartic;
-
 	public class Quaternion
 	{
 		private static const TMP_QUATERNION : Quaternion = new Quaternion();
