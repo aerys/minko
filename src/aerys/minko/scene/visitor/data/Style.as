@@ -4,8 +4,9 @@ package aerys.minko.scene.visitor.data
 
 	public class Style implements IVersionnable
 	{
-		private static var _nextId		: uint	= 0;
-		private static var _idToName	: Array	= new Array();
+		private static var _nextId		: uint		= 0;
+		private static var _nameToId	: Object	= new Object();
+		private static var _idToName	: Array		= new Array();
 		
 		internal var	_data 		: Array	= new Array();
 		private var		_version 	: uint	= 0;
@@ -17,7 +18,11 @@ package aerys.minko.scene.visitor.data
 		
 		public static function getStyleId(styleName : String) : uint
 		{
+			if (_nameToId.hasOwnProperty(styleName))
+				return _nameToId[styleName];
+			
 			_idToName[_nextId] = styleName;
+			_nameToId[styleName] = _nextId;
 			
 			return _nextId++;
 		}
