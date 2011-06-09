@@ -197,6 +197,12 @@ package aerys.minko.render.shader
 			return new WorldParameter(size, key, field, index);
 		}
 		
+		protected final function getLocalParameter(size		: uint, 
+												   key		: Object) : INode
+		{
+			return new TransformParameter(size, key);
+		}
+		
 		protected final function getStyleParameter(size 	: uint,
 												   key 		: int,
 												   field 	: String 	= null,
@@ -249,8 +255,8 @@ package aerys.minko.render.shader
 			if (value is INode)
 				return value as INode;
 			
-			if (value is SValue)
-				return (value as SValue)._node;
+			/*if (value is SValue)
+				return (value as SValue)._node;*/
 			
 			var c	: Constant	= new Constant();
 			

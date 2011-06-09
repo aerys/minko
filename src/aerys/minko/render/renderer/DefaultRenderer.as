@@ -54,7 +54,6 @@ package aerys.minko.render.renderer
 		public function end() : void
 		{
 			_states[int(_numStates++)] = _currentState;
-			
 			_currentState = null;
 		}
 		
@@ -106,14 +105,11 @@ package aerys.minko.render.renderer
 					var count	: int			= numTriangles[j];
 					
 					_numTriangles += count == -1
-						? state._indexStream.length / 3.
-						: count;
+									 ? state._indexStream.length / 3.
+									 : count;
 					
 					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
-				
-				/*if (actualState)
-					RENDER_STATE.free(actualState);*/
 				
 				actualState = state;
 			}

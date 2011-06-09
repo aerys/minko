@@ -12,15 +12,20 @@ package aerys.minko.scene.node.group
 	 */
 	public class EffectGroup extends StyleGroup implements IEffectTarget
 	{
-		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
+		private var _effect	: IEffect	= null;
 		
-		public function get effects() : Vector.<IEffect>	{ return _effects; }
+		public function get effect() : IEffect	{ return _effect; }
+		
+		public function set effect(value : IEffect) : void
+		{
+			_effect = value;
+		}
 		
 		public function EffectGroup(...children)
 		{
 			super(children);
 			
-			actions.unshift(EffectTargetAction.effectTargetAction);
+			actions.unshift(new EffectTargetAction());
 		}
 	}
 }

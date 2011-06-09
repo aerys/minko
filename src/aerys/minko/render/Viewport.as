@@ -341,7 +341,7 @@ package aerys.minko.render
 				
 				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
-				renderingData.clear(defaultEffect);
+				renderingData.effect = defaultEffect;
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)

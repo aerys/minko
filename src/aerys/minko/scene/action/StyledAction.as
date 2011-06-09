@@ -34,8 +34,6 @@ package aerys.minko.scene.action
 		
 		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var styled : IStyled = scene as IStyled;
-			
 			visitor.renderingData.styleStack.pop();
 			
 			return true;
