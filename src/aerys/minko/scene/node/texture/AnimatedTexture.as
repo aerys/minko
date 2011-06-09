@@ -17,12 +17,7 @@ package aerys.minko.scene.node.texture
 		private var _version	: uint		= 0;
 		
 		private var _frame		: int		= 0;
-		private var _lastFrame	: uint		= uint(-1);
 		private var _framerate	: Number	= 0.;
-		
-		private var _time		: int		= 0;
-		
-		private var _current	: IScene	= null;
 		
 		public function get version()		: uint		{ return _version; }
 		public function get framerate() 	: Number	{ return _framerate; }
@@ -33,7 +28,7 @@ package aerys.minko.scene.node.texture
 		 * @return 
 		 * 
 		 */
-		public function get styleProperty()	: int		{ throw new Error(); }
+		public function get styleProperty()	: int		{ return (rawChildren[_frame] as ITexture).styleProperty; }
 		
 		public function set framerate(value : Number) : void
 		{
