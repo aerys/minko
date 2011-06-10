@@ -1,6 +1,7 @@
 package aerys.minko.scene.action
 {
 	import aerys.minko.render.renderer.IRenderer;
+	import aerys.minko.render.renderer.state.FrustumCulling;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.modifier.IMeshModifier;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -9,7 +10,7 @@ package aerys.minko.scene.action
 	
 	public class BoundingVolumeAction implements IAction
 	{
-		private static const TYPE	: uint	= ActionType.UPDATE_LOCAL_DATA;
+		private static const TYPE	: uint	= ActionType.RECURSE;
 		
 		public function get type() : uint		{ return TYPE;	}
 		
@@ -20,13 +21,16 @@ package aerys.minko.scene.action
 		
 		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var bv 		: IBoundingVolume 	= scene as IBoundingVolume;
-			var camData : CameraData 		= visitor.worldData[CameraData] as CameraData;
-			
-			if (!camData.frustrum.testBoundedVolume(bv, visitor.localData.localToView))
-				return false;
-			
-			visitor.visit((scene as IMeshModifier).target);
+			if (renderer)
+			{
+				var bv 		: IBoundingVolume 	= scene as IBoundingVolume;
+				var camData : CameraData 		= visitor.worldData[CameraData] as CameraData;
+				
+				if (camData && !camData.frustrum.testBoundedVolume(bv, visitor.localData.localToView))
+					return false;
+				
+				visitor.visit((scene as IMeshModifier).target);
+			}
 			
 			return true;
 		}

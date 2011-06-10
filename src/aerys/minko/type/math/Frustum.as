@@ -1,8 +1,8 @@
 package aerys.minko.type.math
 {
-	import aerys.minko.type.Factory;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.FrustumCulling;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.bounding.IBoundingVolume;
@@ -186,63 +186,65 @@ package aerys.minko.type.math
 	{
 		use namespace minko;
 		
-		public static const OUTSIDE				: uint		= 0x00000000;
-		public static const INSIDE				: uint		= 0xf0000000;
+		public static const OUTSIDE				: uint				= 0x00000000;
+		public static const INSIDE				: uint				= 0xf0000000;
 		
-		minko static const LEFT					: int		= 0;
-		minko static const TOP					: int		= 1;
-		minko static const RIGHT				: int		= 2;
-		minko static const BOTTOM				: int		= 3;
-		minko static const NEAR					: int		= 4;
-		minko static const FAR					: int		= 5;
+		minko static const LEFT					: int				= 0;
+		minko static const TOP					: int				= 1;
+		minko static const RIGHT				: int				= 2;
+		minko static const BOTTOM				: int				= 3;
+		minko static const NEAR					: int				= 4;
+		minko static const FAR					: int				= 5;
 
-		minko static const CULLING_SPHERE		: uint		= 0x00000001;
-		minko static const CULLING_BOX			: uint		= 0x00000002;
+		minko static const CULLING_SPHERE		: uint				= 0x00000001;
+		minko static const CULLING_BOX			: uint				= 0x00000002;
 		
-		minko static const CLIPPING				: uint		= 0x00000001;
-		minko static const CLIPPING_IGNORE		: uint		= 0x00000002;
-		minko static const CLIPPING_DISCARD		: uint		= 0x00000004;
+		minko static const CLIPPING				: uint				= 0x00000001;
+		minko static const CLIPPING_IGNORE		: uint				= 0x00000002;
+		minko static const CLIPPING_DISCARD		: uint				= 0x00000004;
 
-		private static const SPANNING			: uint		= 0x0000000f;
+		private static const SPANNING			: uint				= 0x0000000f;
 
-		public static const SPANNING_LEFT		: uint		= SPANNING << (LEFT << 2);
-		public static const SPANNING_TOP		: uint		= SPANNING << (TOP << 2);
-		public static const SPANNING_RIGHT		: uint		= SPANNING << (RIGHT << 2);
-		public static const SPANNING_BOTTOM		: uint		= SPANNING << (BOTTOM << 2);
-		public static const SPANNING_NEAR		: uint		= SPANNING << (NEAR << 2);
-		public static const SPANNING_FAR		: uint		= SPANNING << (FAR << 2);
+		public static const SPANNING_LEFT		: uint				= SPANNING << (LEFT << 2);
+		public static const SPANNING_TOP		: uint				= SPANNING << (TOP << 2);
+		public static const SPANNING_RIGHT		: uint				= SPANNING << (RIGHT << 2);
+		public static const SPANNING_BOTTOM		: uint				= SPANNING << (BOTTOM << 2);
+		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
+		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
 
-		private static const VERTEX_BUFFER		: Factory	= Factory.getFactory(VertexStream);
-		private static const INDICES			: Factory	= Factory.getFactory(IndexStream);
+		private static const VERTEX_BUFFER		: Factory			= Factory.getFactory(VertexStream);
+		private static const INDICES			: Factory			= Factory.getFactory(IndexStream);
 		
-		private static const THICKNESS			: Number	= .0001;
+		private static const THICKNESS			: Number			= .0001;
 				
-		private static const POINT_BEHIND		: uint		= Plane.POINT_BEHIND;
-		private static const POINT_COINCIDING	: uint		= Plane.POINT_COINCIDING;
-		private static const POINT_INFRONT		: uint		= Plane.POINT_INFRONT;
+		private static const POINT_BEHIND		: uint				= Plane.POINT_BEHIND;
+		private static const POINT_COINCIDING	: uint				= Plane.POINT_COINCIDING;
+		private static const POINT_INFRONT		: uint				= Plane.POINT_INFRONT;
 		
-		private static const POLYGON_COINCIDING	: uint		= Plane.POLYGON_COINCIDING;
-		private static const POLYGON_BEHIND		: uint		= Plane.POLYGON_BEHIND;
-		private static const POLYGON_INFRONT	: uint		= Plane.POLYGON_INFRONT;
+		private static const POLYGON_COINCIDING	: uint				= Plane.POLYGON_COINCIDING;
+		private static const POLYGON_BEHIND		: uint				= Plane.POLYGON_BEHIND;
+		private static const POLYGON_INFRONT	: uint				= Plane.POLYGON_INFRONT;
 		
-		private static const A_BEHIND			: uint		= Plane.A_BEHIND;
-		private static const B_BEHIND			: uint		= Plane.B_BEHIND;
-		private static const C_BEHIND			: uint		= Plane.C_BEHIND;
+		private static const A_BEHIND			: uint				= Plane.A_BEHIND;
+		private static const B_BEHIND			: uint				= Plane.B_BEHIND;
+		private static const C_BEHIND			: uint				= Plane.C_BEHIND;
 		
-		private static const A_COINCIDING		: uint		= Plane.A_COINCIDING;
-		private static const B_COINCIDING		: uint		= Plane.B_COINCIDING;
-		private static const C_COINCIDING		: uint		= Plane.C_COINCIDING;
+		private static const A_COINCIDING		: uint				= Plane.A_COINCIDING;
+		private static const B_COINCIDING		: uint				= Plane.B_COINCIDING;
+		private static const C_COINCIDING		: uint				= Plane.C_COINCIDING;
 		
-		private static const AB_INFRONT			: uint		= Plane.A_INFRONT | Plane.B_INFRONT | Plane.C_BEHIND;
-		private static const BC_INFRONT			: uint		= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_INFRONT;
-		private static const CA_INFRONT			: uint		= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_INFRONT;
+		private static const AB_INFRONT			: uint				= Plane.A_INFRONT | Plane.B_INFRONT | Plane.C_BEHIND;
+		private static const BC_INFRONT			: uint				= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_INFRONT;
+		private static const CA_INFRONT			: uint				= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_INFRONT;
 		
-		private static const AB_BEHIND			: uint		= Plane.A_BEHIND | Plane.B_BEHIND | Plane.C_INFRONT;
-		private static const BC_BEHIND			: uint		= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_BEHIND;
-		private static const CA_BEHIND			: uint		= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_BEHIND;
+		private static const AB_BEHIND			: uint				= Plane.A_BEHIND | Plane.B_BEHIND | Plane.C_INFRONT;
+		private static const BC_BEHIND			: uint				= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_BEHIND;
+		private static const CA_BEHIND			: uint				= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_BEHIND;
 
-		private static const CULLING_POSITIVE	: String	= TriangleCulling.POSITIVE;
-		private static const CULLING_NEGATIVE	: String	= TriangleCulling.NEGATIVE;
+		private static const CULLING_POSITIVE	: String			= TriangleCulling.POSITIVE;
+		private static const CULLING_NEGATIVE	: String			= TriangleCulling.NEGATIVE;
+		
+		private static const TMP_DATA			: Vector.<Number>	= new Vector.<Number>();
 		
 		minko var _planes			: Vector.<Plane>	= new Vector.<Plane>(6, true);
 		
@@ -256,37 +258,37 @@ package aerys.minko.type.math
 		 */
 		public function update(matrix : Matrix4x4) : void
 		{
-			var data	: Vector.<Number>	= matrix.getRawData();
+			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
 			
 			_planes[RIGHT] = new Plane(data[3] - data[0],
-									     data[7] - data[4],
-									     data[11] - data[8],
-									     data[12] - data[15]);
+									   data[7] - data[4],
+									   data[11] - data[8],
+									   data[12] - data[15]);
 			
 			_planes[LEFT] = new Plane(data[3] + data[0],
-									    data[7] + data[4],
-									    data[11] + data[8],
-									    -data[15] - data[12]);
+									  data[7] + data[4],
+									  data[11] + data[8],
+									  -data[15] - data[12]);
 			
 			_planes[TOP] = new Plane(data[3] - data[1],
-									   data[7] - data[5],
-									   data[11] - data[9],
-									   data[13] + data[15]);
+									 data[7] - data[5],
+									 data[11] - data[9],
+									 data[13] + data[15]);
 			
 			_planes[BOTTOM] = new Plane(data[3] + data[1],
-									      data[7] + data[5],
-									      data[11] + data[9],
-									      -data[15] - data[13]);
+									    data[7] + data[5],
+									    data[11] + data[9],
+									    -data[15] - data[13]);
 			
 			_planes[NEAR] = new Plane(data[2],
-									    data[6],
-									    data[10],
-									    -data[14]);
+									  data[6],
+									  data[10],
+									  -data[14]);
 			
 			_planes[FAR] = new Plane(data[3] - data[2],
-									   data[7] - data[6],
-									   data[11] - data[10],
-									   data[14] - data[15]);
+									 data[7] - data[6],
+									 data[11] - data[10],
+									 data[14] - data[15]);
 		}
 		
 		/**
@@ -333,8 +335,8 @@ package aerys.minko.type.math
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 */
 		public function testBoundingSphere(sphere 		: BoundingSphere,
-										   transform	: Transform3D	= null,
-										   culling		: int 			= 0xffffff) : int
+										   transform	: Matrix4x4	= null,
+										   culling		: int 		= 0xffffff) : int
 		{
 			var center	: Vector4	= sphere.center;
 			var radius	: Number	= sphere.radius;
@@ -347,7 +349,7 @@ package aerys.minko.type.math
 			
 			if (transform != null)
 			{
-				var scale	: Vector4	= transform.scale;
+				var scale	: Vector4	= transform.deltaMultiplyVector(ConstVector4.ONE);
 
 				center = transform.multiplyVector(sphere.center);
 				radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
@@ -457,7 +459,7 @@ package aerys.minko.type.math
 		 */
 		public function testBoundedVolume(volume	: IBoundingVolume,
 								 	      transform	: Matrix4x4	= null,
-								 		  culling	: int 			= 0xffffff) : uint
+								 		  culling	: int 		= 0xffffff) : uint
 		{
 			var box		: BoundingBox		= volume.boundingBox;
 			
@@ -469,12 +471,12 @@ package aerys.minko.type.math
 			
 			var sphere		: BoundingSphere	= volume.boundingSphere;
 			var center		: Vector4			= sphere.center;
-			//var scale		: Vector3D			= transform.decompose()[2];
+			var scale		: Vector4			= transform.deltaMultiplyVector(ConstVector4.ONE);
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
 			var vertices	: Vector.<Number>	= transform ? null : box._vertices;
 			
-			//radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
+			radius *= Math.max(scale.x, scale.y, scale.z);
 			
 			if (transform)
 				center = transform.multiplyVector(center);

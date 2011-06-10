@@ -71,7 +71,7 @@ package aerys.minko.render.renderer
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff)  :void
 		{
-			//_context.clear(red, green, blue, alpha, depth, stencil, mask);
+			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 			
 			_numTriangles = 0;
 			_drawingTime = 0;
