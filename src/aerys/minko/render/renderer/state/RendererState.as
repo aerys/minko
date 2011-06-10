@@ -460,7 +460,7 @@ package aerys.minko.render.renderer.state
 
 				if (_setFlags & RENDER_TARGET)
 				{
-					if (_renderTarget.type == RenderTarget.BACKBUFFER)
+					if (!_renderTarget || _renderTarget.type == RenderTarget.BACKBUFFER)
 					{
 						context.setRenderToBackBuffer();
 					}

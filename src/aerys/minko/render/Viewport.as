@@ -311,6 +311,8 @@ package aerys.minko.render
 					new WorldDataVisitor(),
 					new RenderingVisitor()
 				]);
+				
+				dispatchEvent(new Event(Event.INIT));
 			}
 		}
 		
@@ -330,10 +332,10 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
-			if (_visitors.length != 0)
+			if (_visitors && _visitors.length != 0)
 			{
 				var time : Number = getTimer();
-				
+		
 				// create the data sources the visitors are going to write and read from during render.
 				var localData		: LocalData		= new LocalData();
 				var worldData		: Dictionary	= new Dictionary();

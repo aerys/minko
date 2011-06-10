@@ -49,6 +49,11 @@ package aerys.minko.render.shader
 			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
 		
+		protected final function get vertexWorldPosition() : INode
+		{
+			return multiply4x4(vertexPosition, localToWorldMatrix);
+		}
+		
 		protected final function get vertexPosition() : INode
 		{
 			return new Attribute(VertexComponent.XYZ);
@@ -77,6 +82,11 @@ package aerys.minko.render.shader
 		protected final function get localToScreenMatrix() : INode
 		{
 			return new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
+		}
+		
+		protected final function get localToWorldMatrix() : INode
+		{
+			return new TransformParameter(16, LocalData.WORLD);
 		}
 		
 		public function fillRenderState(state	: RendererState, 
