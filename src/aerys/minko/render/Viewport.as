@@ -332,6 +332,8 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
+			showLogo();
+			
 			if (_visitors && _visitors.length != 0)
 			{
 				var time : Number = getTimer();
@@ -360,7 +362,6 @@ package aerys.minko.render
 			}
 			
 			Factory.sweep();
-			showLogo();
 		}
 		
 		public function showLogo() : void
