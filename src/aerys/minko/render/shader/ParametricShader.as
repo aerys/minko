@@ -34,6 +34,8 @@ package aerys.minko.render.shader
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
+	import flashx.textLayout.tlf_internal;
+	
 	public class ParametricShader
 	{
 		use namespace minko;
@@ -67,6 +69,21 @@ package aerys.minko.render.shader
 		protected final function get vertexUV() : INode
 		{
 			return new Attribute(VertexComponent.UV);
+		}
+		
+		protected final function get vertexNormal() : INode
+		{
+			return new Attribute(VertexComponent.NORMAL);
+		}
+		
+		protected final function get vertexTangent() : INode
+		{
+			return new Attribute(VertexComponent.TANGENT);
+		}
+		
+		protected final function get vertexBinormal() : INode
+		{
+			return new Attribute(VertexComponent.BINORMAL);
 		}
 		
 		protected final function get cameraLocalDirection() : INode
@@ -143,12 +160,19 @@ package aerys.minko.render.shader
 		}
 		
 		protected final function combine(value1	: Object,
-										 value2	: Object) : INode
+										 value2	: Object,
+										 ...values) : INode
 		{
-			return new Combine(getNode(value1), getNode(value2));
+			var result : Combine = new Combine(getNode(value1), getNode(value2));
+			var numValues : int = values.length;
+			
+			for (var i : int = 0; i < numValues; ++i)
+				result = new Combine(result, getNode(values[i]));
+			
+			return result;
 		}
 		
-		protected final function sampleTexture(styleId : int, uv : Object) : Texture
+		protected final function sampleTexture(styleId : int, uv : Object) : INode
 		{
 			return new Texture(getNode(uv), new Sampler(styleId));
 		}
@@ -226,9 +250,9 @@ package aerys.minko.render.shader
 			return getNode(value);
 		}
 		
-		protected final function extract(value : Object, Component : uint) : INode
+		protected final function extract(value : Object, component : uint) : INode
 		{
-			return new Extract(getNode(value), Component);
+			return new Extract(getNode(value), component);
 		}
 		
 		protected final function blend(color1 : Object, color2 : Object, blending : uint) : INode

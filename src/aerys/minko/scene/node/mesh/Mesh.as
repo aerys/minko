@@ -171,18 +171,5 @@ package aerys.minko.scene.node.mesh
 			var newVertexStreamList : VertexStreamList	= new VertexStreamList(newVertexStream);
 			return new Mesh(newVertexStreamList, newIndexStream);
 		}
-		
-//		override protected function visitedByRenderingVisitor(query : RenderingVisitor) : void
-//		{
-//			var transform : TransformManager = query.transform;
-//			
-//			query.style.set(BasicStyle.WORLD_MATRIX, 			transform.world)
-//				  	   .set(BasicStyle.VIEW_MATRIX, 			transform.view)
-//				  	   .set(BasicStyle.PROJECTION_MATRIX,		transform.projection)
-//				  	   .set(BasicStyle.LOCAL_TO_SCREEN_MATRIX, 	transform.getLocalToScreen());
-//			
-//			query.draw(vertexStreamList, indexStream);
-//		}
-		
 	}
 }

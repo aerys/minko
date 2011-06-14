@@ -19,6 +19,13 @@ package aerys.minko.render.effect.basic
 	
 	import flash.utils.Dictionary;
 	
+	[StyleParameter(name="basic diffuse map",type="texture")]
+	
+	[StyleParameter(name="fog enabled",type="boolean")]
+	[StyleParameter(name="fog color",type="color")]
+	[StyleParameter(name="fog start",type="number")]
+	[StyleParameter(name="fog distance",type="number")]
+
 	public class BasicEffect extends ParametricShader implements IEffect, IEffectPass
 	{
 		protected var _priority			: Number;
@@ -52,11 +59,11 @@ package aerys.minko.render.effect.basic
 			state.depthTest			= CompareMode.LESS;
 			state.blending			= blending;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			state.priority			= _priority + 0.5;
+			state.priority			= _priority + .5;
 			state.rectangle			= null;
 			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
 			
-			if (state.blending == Blending.ALPHA)
+			if (state.blending != Blending.NORMAL)
 				state.priority -= .5;
 			
 			return true;
@@ -105,7 +112,13 @@ package aerys.minko.render.effect.basic
 			hash += style.get(BasicStyle.DIFFUSE_MAP, false) ? "_diffuse" : "_color";
 			
 			if (style.get(FogStyle.FOG_ENABLED, false))
-				hash += "_fog";
+			{
+				hash += "_fog(";
+				hash += "start=" + style.get(FogStyle.START, 0.);
+				hash += ",distance=" + style.get(FogStyle.DISTANCE, 0.);
+				hash += ",color=" + style.get(FogStyle.COLOR, 0);
+				hash += ");"
+			}
 			
 			return hash;
 		}

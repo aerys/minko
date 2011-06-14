@@ -4,6 +4,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.renderer.state.Blending;
+	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.shader.DynamicShader;
@@ -35,6 +36,7 @@ package aerys.minko.render.effect.common
 										local		: LocalData, 
 										world		: Dictionary) : Boolean
 		{
+			state.depthTest			= CompareMode.LESS;
 			state.blending			= Blending.NORMAL;
 			state.priority			= _priority;
 			state.renderTarget		= _renderTarget || (world[ViewportData] as ViewportData).renderTarget;

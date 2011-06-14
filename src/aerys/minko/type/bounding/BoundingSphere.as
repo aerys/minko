@@ -36,8 +36,8 @@ package aerys.minko.type.bounding
 		public function BoundingSphere(center : Vector4, radius : Number)
 		{
 			_center._vector.x = center.x;
-			_center._vector.x = center.y;
-			_center._vector.x = center.z;
+			_center._vector.y = center.y;
+			_center._vector.z = center.z;
 			
 			_radius = radius;
 		}
@@ -51,9 +51,9 @@ package aerys.minko.type.bounding
 		 */
 		public static function fromMinMax(min : Vector4, max : Vector4) : BoundingSphere
 		{
-			var center : Vector4 	= new Vector4((max.x + min.x) / 2.0,
-												  (max.y + min.y) / 2.0,
-												  (max.z + min.z) / 2.0);
+			var center : Vector4 	= new Vector4((max.x + min.x) * .5,
+												  (max.y + min.y) * .5,
+												  (max.z + min.z) * .5);
 			var radius	: Number	= Math.max(Vector4.distance(center, max),
 											   Vector4.distance(center, min));
 			

@@ -12,11 +12,9 @@ package aerys.minko.scene.node.mesh.modifier
 	{
 		use namespace minko_stream;
 		
-		private static const TANGENT_COMPONENT	: VertexComponent	= new VertexComponent(["tx", "ty", "tz"], NativeFormat.FLOAT_3);
-		private static const BINORMAL_COMPONENT	: VertexComponent	= new VertexComponent(["bnx", "bny", "bnz"], NativeFormat.FLOAT_3);
 		private static const VERTEX_FORMAT		: VertexFormat		= new VertexFormat(VertexComponent.NORMAL,
-																					   TANGENT_COMPONENT,
-																					   BINORMAL_COMPONENT);
+																					   VertexComponent.TANGENT,
+																					   VertexComponent.BINORMAL);
 		
 		public function TangentSpaceMeshModifier(target : IMesh)
 		{

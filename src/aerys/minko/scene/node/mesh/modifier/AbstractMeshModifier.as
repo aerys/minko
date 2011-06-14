@@ -1,16 +1,17 @@
 package aerys.minko.scene.node.mesh.modifier
 {
-	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.scene.action.mesh.modifier.MeshModifierAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
 	public class AbstractMeshModifier extends Mesh implements IMeshModifier
 	{
-		private var _target 			: IMesh				= null;
+		private var _target : IMesh	= null;
 		
 		public function get target() : IMesh
 		{
@@ -39,6 +40,8 @@ package aerys.minko.scene.node.mesh.modifier
 			_target = target;
 			
 			initialize(streams);
+			
+			//actions[0] = new MeshModifierAction();
 		}
 		
 		private function initialize(streams : Array) : void

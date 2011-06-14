@@ -65,6 +65,8 @@ package aerys.minko.render
 		
 		private var _viewportData		: ViewportData				= null;
 		
+		private var _logoIsHidden		: Boolean					= false;
+		
 		public function get version() : uint
 		{
 			return _version;
@@ -264,7 +266,8 @@ package aerys.minko.render
 				height = stage.stageHeight;
 			}
 			
-			showLogo();
+			if (!_logoIsHidden)
+				showLogo();
 		}
 		
 		private function removedFromStage(event : Event) : void
@@ -289,7 +292,9 @@ package aerys.minko.render
 				height = stage.stageHeight;
 			
 			resetStage3D();
-			showLogo();
+			
+			if (!_logoIsHidden)
+				showLogo();
 		}
 		
 		private function resetStage3D(event : Event = null) : void
@@ -332,7 +337,8 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
-			showLogo();
+			if (!_logoIsHidden)
+				showLogo();
 			
 			if (_visitors && _visitors.length != 0)
 			{
@@ -372,6 +378,13 @@ package aerys.minko.render
 			
 			logo.x = 5;
 			logo.y = _height - logo.height - 5;
+		}
+		
+		public function hideLogo() : void
+		{
+			_logoIsHidden = true;
+			if (contains(Minko.logo))
+				removeChild(Minko.logo);
 		}
 	}
 }

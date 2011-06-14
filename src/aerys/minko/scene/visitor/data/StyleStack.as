@@ -1,15 +1,19 @@
 package aerys.minko.scene.visitor.data
 {
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.effect.Style;
 	import aerys.minko.type.Factory;
 
 	public final class StyleStack
 	{
+		use namespace minko_render;
+		
 		private static var _empty	: Array 			= new Array();
 		private static var _free	: Vector.<Array>	= new Vector.<Array>();
 		private static var _numFree	: int				= 0;
 		
-		private var _data 	: Vector.<Array>	= new Vector.<Array>();
-		private var _size	: int				= 0;
+		private var _data 	: Vector.<Array>	= Vector.<Array>([_empty]);
+		private var _size	: int				= 1;
 		private var _cache	: Array				= new Array();
 		
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
@@ -35,7 +39,9 @@ package aerys.minko.scene.visitor.data
 			if (defaultValue !== null)
 				return defaultValue;
 			
-			throw new Error(Style.getStyleName(styleId) + ' is undefined and no default value was provided');
+			throw new Error("The style named '"
+							+ Style.getStyleName(styleId)
+							+ "' is not set and no default value was provided.");
 		}
 		
 		public final function isSet(id : int) : Object

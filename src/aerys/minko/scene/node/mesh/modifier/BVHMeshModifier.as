@@ -49,15 +49,15 @@ package aerys.minko.scene.node.mesh.modifier
 				var xyzStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
 				var xyzOffset		: int				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
 				
-				var dwords			: Vector.<Number>	= xyzStream._data;
+				var xyz				: Vector.<Number>	= xyzStream._data;
 				var dwordsPerVertex	: int				= xyzStream.format.dwordsPerVertex;
-				var dwordsCount		: int				= dwords.length;
+				var dwordsCount		: int				= xyz.length;
 				
 				for (var i : int = xyzOffset; i < dwordsCount; i += dwordsPerVertex)
 				{
-					var x : Number = dwords[i];
-					var y : Number = dwords[int(i + 1)];
-					var z : Number = dwords[int(i + 2)];
+					var x : Number = xyz[i];
+					var y : Number = xyz[int(i + 1)];
+					var z : Number = xyz[int(i + 2)];
 					
 					min.x = x < min.x ? x : min.x;
 					min.y = y < min.y ? y : min.y;
