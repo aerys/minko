@@ -8,13 +8,15 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
+	import flash.geom.Vector3D;
+	
 	public class TangentSpaceMeshModifier extends AbstractMeshModifier
 	{
 		use namespace minko_stream;
 		
 		private static const VERTEX_FORMAT		: VertexFormat		= new VertexFormat(VertexComponent.NORMAL,
 																					   VertexComponent.TANGENT,
-																					   VertexComponent.BINORMAL);
+																					   VertexComponent.BITANGENT);
 		
 		public function TangentSpaceMeshModifier(target : IMesh)
 		{
@@ -97,20 +99,34 @@ package aerys.minko.scene.node.mesh.modifier
 				ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
 				nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
 				
-				var cp	: Number	= (v1 - v0) * (u2 - u0) - (u1 - u0) * (v2 - v0);
-				var mul : Number	= 1. / cp;
-				
-				tx = (x1 - x0) / uu;
+				/*tx = (x1 - x0) / uu;
 				ty = (y1 - y0) / uu;
-				tz = (z1 - z0) / uu;
+				tz = (z1 - z0) / uu;*/
 				
-//				tx = ((x1 - x0) * -(v2 - v0) + (x2 - x0) * (v1 - v0));
-//				ty = ((y1 - y0) * -(v2 - v0) + (y2 - y0) * (v1 - v0));
-//				tz = ((z1 - z0) * -(v2 - v0) + (z2 - z0) * (v1 - v0));
+				/*tx = ((x1 - x0) * -(v2 - v0) + (x2 - x0) * (v1 - v0));
+				ty = ((y1 - y0) * -(v2 - v0) + (y2 - y0) * (v1 - v0));
+				tz = ((z1 - z0) * -(v2 - v0) + (z2 - z0) * (v1 - v0));*/
 				
-				bx = ty * nz - tz * ny;
-				by = tz * nx - tx * nz;
-				bz = tx * ny - ty * nx;
+				var coef : Number = (u1 * v2 - u2 * v1);
+				
+				if (coef == 0.)
+					coef = 1.;
+				else
+					coef = 1. / coef;
+				
+				tx = coef * ((x1 * v2) + (x2 * -v1));
+				ty = coef * ((y1 * v2) + (y2 * -v1));
+				tz = coef * ((z1 * v2) + (z2 * -v1));
+				
+				//var bt : Vector3D = new Vector3D(nx, ny, nz).crossProduct(new Vector3D(tx, ty, tz));
+				
+				bx = ny * tz - nz * ty;
+				by = nz * tx - nx * tz;
+				bz = nx * ty - ny * tx;
+				
+				/*bx = bt.x;
+				by = bt.y;
+				bz = bt.z;*/
 				
 //				bx = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
 //				by = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);

@@ -10,7 +10,7 @@ package aerys.minko.type.vertex.format
 		public static const ST			: VertexComponent 	= new VertexComponent(["s", "t"], NativeFormat.FLOAT_2);
 		
 		public static const TANGENT		: VertexComponent	= new VertexComponent(["tx", "ty", "tz"], NativeFormat.FLOAT_3);
-		public static const BINORMAL	: VertexComponent	= new VertexComponent(["bnx", "bny", "bnz"], NativeFormat.FLOAT_3);
+		public static const BITANGENT	: VertexComponent	= new VertexComponent(["btx", "bty", "btz"], NativeFormat.FLOAT_3);
 		
 		public static const BONE0		: VertexComponent	= new VertexComponent(["boneId0", "boneWeight0"], NativeFormat.FLOAT_2);
 		public static const BONE1		: VertexComponent	= new VertexComponent(["boneId1", "boneWeight1"], NativeFormat.FLOAT_2);

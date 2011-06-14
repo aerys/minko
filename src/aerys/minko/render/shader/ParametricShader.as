@@ -37,8 +37,6 @@ package aerys.minko.render.shader
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
-	import flashx.textLayout.tlf_internal;
-	
 	public class ParametricShader
 	{
 		use namespace minko;
@@ -84,9 +82,9 @@ package aerys.minko.render.shader
 			return new Attribute(VertexComponent.TANGENT);
 		}
 		
-		protected final function get vertexBinormal() : INode
+		protected final function get vertexBitangent() : INode
 		{
-			return new Attribute(VertexComponent.BINORMAL);
+			return new Attribute(VertexComponent.BITANGENT);
 		}
 		
 		protected final function get cameraLocalDirection() : INode

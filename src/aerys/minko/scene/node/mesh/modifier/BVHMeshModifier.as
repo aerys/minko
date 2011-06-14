@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.render.renderer.state.FrustumCulling;
 	import aerys.minko.scene.action.BoundingVolumeAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -19,19 +20,28 @@ package aerys.minko.scene.node.mesh.modifier
 		
 		private var _boundingBox	: BoundingBox		= null;
 		private var _boundingSphere	: BoundingSphere	= null;
+		private var _frustumCulling	: uint				= 0;
 		
-		override public function get version() : uint	{ return _version; }
+		override public function get version() : uint	{ return super.version + _version; }
 		
 		public function get boundingBox()		: BoundingBox		{ return _boundingBox; }
 		public function get boundingSphere()	: BoundingSphere	{ return _boundingSphere; }
+		public function get frustumCulling()	: uint				{ return _frustumCulling; }
+		
+		public function set frustumCulling(value : uint) : void
+		{
+			_frustumCulling = value;
+			++_version;
+		}
 		
 		public function BVHMeshModifier(target : IMesh)
 		{
 			super(target);
 			
-			initialize();
-			
+			_frustumCulling = FrustumCulling.ENABLED;
 			actions[0] = new BoundingVolumeAction();
+			
+			initialize();
 		}
 		
 		private function initialize() : void
