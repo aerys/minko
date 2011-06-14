@@ -77,28 +77,48 @@ package aerys.minko.scene.node.mesh.modifier
 				var y0	: Number 	= xyz[int(ii0 + 1)];
 				var z0	: Number 	= xyz[int(ii0 + 2)];
 				var u0	: Number	= uv[int(uvOffset + uvSize * i0)];
+				var v0	: Number	= uv[int(uvOffset + uvSize * i0 + 1)];
 				
 				var x1	: Number 	= xyz[ii1];
 				var y1	: Number 	= xyz[int(ii1 + 1)];
 				var z1	: Number 	= xyz[int(ii1 + 2)];
 				var u1	: Number	= uv[int(uvOffset + uvSize * i1)];
+				var v1	: Number	= uv[int(uvOffset + uvSize * i1 + 1)];
 				
 				var x2	: Number 	= xyz[ii2];
 				var y2	: Number 	= xyz[int(ii2 + 1)];
 				var z2	: Number 	= xyz[int(ii2 + 2)];
 				var u2	: Number	= uv[int(uvOffset + uvSize * i2)];
+				var v2	: Number	= uv[int(uvOffset + uvSize * i2 + 1)];
 				
-				var uu	: Number 	= u1 - u0 || u2 - u0;
-				
+				var uu	: Number 	= (u1 - u0) || (u2 - u0);
+
 				nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
 				ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
 				nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
+				
+				var cp	: Number	= (v1 - v0) * (u2 - u0) - (u1 - u0) * (v2 - v0);
+				var mul : Number	= 1. / cp;
+				
 				tx = (x1 - x0) / uu;
 				ty = (y1 - y0) / uu;
 				tz = (z1 - z0) / uu;
+				
+//				tx = ((x1 - x0) * -(v2 - v0) + (x2 - x0) * (v1 - v0));
+//				ty = ((y1 - y0) * -(v2 - v0) + (y2 - y0) * (v1 - v0));
+//				tz = ((z1 - z0) * -(v2 - v0) + (z2 - z0) * (v1 - v0));
+				
 				bx = ty * nz - tz * ny;
 				by = tz * nx - tx * nz;
 				bz = tx * ny - ty * nx;
+				
+//				bx = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
+//				by = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
+//				bz = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
+				
+				trace("normal", nx, ny, nz);
+				trace("tangent", tx, ty, tz);
+				trace("binormal", bx, by, bz);
 				
 				ii = i0 * 9;
 				data[ii] += nx;
@@ -176,7 +196,11 @@ package aerys.minko.scene.node.mesh.modifier
 				}
 			}
 			
-			_vertexStreamList.pushVertexStream(new VertexStream(data, VERTEX_FORMAT, xyzStream.dynamic));
+			var stream : VertexStream = new VertexStream(data,
+														 VERTEX_FORMAT,
+														 xyzStream.dynamic);
+			
+			_vertexStreamList.pushVertexStream(stream);
 		}
 	}
 }

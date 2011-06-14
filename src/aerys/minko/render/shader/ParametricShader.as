@@ -11,11 +11,14 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Add;
+	import aerys.minko.render.shader.node.operation.builtin.Cosine;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
+	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
+	import aerys.minko.render.shader.node.operation.builtin.Sine;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.builtin.Texture;
@@ -221,6 +224,21 @@ package aerys.minko.render.shader
 		protected final function multiply4x4(a : Object, b : Object) : INode
 		{
 			return new Multiply4x4(getNode(a), getNode(b));
+		}
+		
+		protected final function cos(angle : Object) : INode
+		{
+			return new Cosine(getNode(angle));
+		}
+		
+		protected final function sin(angle : Object) : INode
+		{
+			return new Sine(getNode(angle));
+		}
+		
+		protected final function normalize(vector : Object) : INode
+		{
+			return new Normalize(getNode(vector));
 		}
 		
 		protected final function getWorldParameter(size		: uint, 
