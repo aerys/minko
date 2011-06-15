@@ -93,48 +93,28 @@ package aerys.minko.scene.node.mesh.modifier
 				var u2	: Number	= uv[int(uvOffset + uvSize * i2)];
 				var v2	: Number	= uv[int(uvOffset + uvSize * i2 + 1)];
 				
-				var uu	: Number 	= (u1 - u0) || (u2 - u0);
-
 				nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
 				ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
 				nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
 				
-				/*tx = (x1 - x0) / uu;
-				ty = (y1 - y0) / uu;
-				tz = (z1 - z0) / uu;*/
-				
-				/*tx = ((x1 - x0) * -(v2 - v0) + (x2 - x0) * (v1 - v0));
-				ty = ((y1 - y0) * -(v2 - v0) + (y2 - y0) * (v1 - v0));
-				tz = ((z1 - z0) * -(v2 - v0) + (z2 - z0) * (v1 - v0));*/
-				
-				var coef : Number = (u1 * v2 - u2 * v1);
+				var c2c1_T : Number = u0 - u2;
+				var c2c1_B : Number = v0 - v2;
+				var c3c1_T : Number = u1 - u2;
+				var c3c1_B : Number = v1 - v2;
+				var coef : Number = c2c1_T * c3c1_B - c3c1_T * c2c1_B;
 				
 				if (coef == 0.)
 					coef = 1.;
 				else
 					coef = 1. / coef;
 				
-				tx = coef * ((x1 * v2) + (x2 * -v1));
-				ty = coef * ((y1 * v2) + (y2 * -v1));
-				tz = coef * ((z1 * v2) + (z2 * -v1));
-				
-				//var bt : Vector3D = new Vector3D(nx, ny, nz).crossProduct(new Vector3D(tx, ty, tz));
+				tx = coef * (c3c1_B * (x0 - x2) - c2c1_B * (x1 - x2));
+				ty = coef * (c3c1_B * (y0 - y2) - c2c1_B * (y1 - y2));
+				tz = coef * (c3c1_B * (z0 - z2) - c2c1_B * (z1 - z2));
 				
 				bx = ny * tz - nz * ty;
 				by = nz * tx - nx * tz;
 				bz = nx * ty - ny * tx;
-				
-				/*bx = bt.x;
-				by = bt.y;
-				bz = bt.z;*/
-				
-//				bx = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
-//				by = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
-//				bz = (x1 - x0) * -(u2 - u0) + (x2 - x0) * (u1 - u0);
-				
-				trace("normal", nx, ny, nz);
-				trace("tangent", tx, ty, tz);
-				trace("binormal", bx, by, bz);
 				
 				ii = i0 * 9;
 				data[ii] += nx;
@@ -186,9 +166,9 @@ package aerys.minko.scene.node.mesh.modifier
 				by = data[int(ii + 7)];
 				bz = data[int(ii + 8)];
 				
-				var normalMag	: Number = Math.sqrt(nx * nx + ny * ny + nz * nz);
-				var tangentMag	: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
-				var binormalMag	: Number = Math.sqrt(bx * bx + by * by + bz * bz);
+				var normalMag		: Number = Math.sqrt(nx * nx + ny * ny + nz * nz);
+				var tangentMag		: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
+				var bitangentMag	: Number = Math.sqrt(bx * bx + by * by + bz * bz);
 				
 				if (normalMag != 0.)
 				{
@@ -204,11 +184,11 @@ package aerys.minko.scene.node.mesh.modifier
 					data[int(ii + 5)] /= tangentMag;
 				}
 				
-				if (binormalMag != 0.)
+				if (bitangentMag != 0.)
 				{
-					data[int(ii + 6)] /= binormalMag;
-					data[int(ii + 7)] /= binormalMag;
-					data[int(ii + 8)] /= binormalMag;
+					data[int(ii + 6)] /= bitangentMag;
+					data[int(ii + 7)] /= bitangentMag;
+					data[int(ii + 8)] /= bitangentMag;
 				}
 			}
 			

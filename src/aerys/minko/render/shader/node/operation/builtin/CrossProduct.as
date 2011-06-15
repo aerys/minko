@@ -26,5 +26,15 @@ package aerys.minko.render.shader.node.operation.builtin
 		{
 			super(arg1, arg2);
 		}
+		
+		override public function isSame(node : INode) : Boolean
+		{
+			var castedNode : CrossProduct = node as CrossProduct;
+			
+			return castedNode != null && (
+				(castedNode._arg1.isSame(_arg1) && castedNode._arg2.isSame(_arg2)) ||
+				(castedNode._arg1.isSame(_arg2) && castedNode._arg2.isSame(_arg1))
+			);
+		}
 	}
 }

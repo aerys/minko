@@ -12,10 +12,13 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Cosine;
+	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
+	import aerys.minko.render.shader.node.operation.builtin.Maximum;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
+	import aerys.minko.render.shader.node.operation.builtin.Negate;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
@@ -92,6 +95,16 @@ package aerys.minko.render.shader
 			return new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION);
 		}
 		
+		protected final function get cameraPosition() : INode
+		{
+			return new WorldParameter(3, CameraData, CameraData.POSITION);
+		}
+		
+		protected final function get cameraDirection() : INode
+		{
+			return new WorldParameter(3, CameraData, CameraData.DIRECTION);
+		}
+		
 		protected final function get cameraLocalPosition() : INode
 		{
 			return new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION);
@@ -105,6 +118,16 @@ package aerys.minko.render.shader
 		protected final function get localToWorldMatrix() : INode
 		{
 			return new TransformParameter(16, LocalData.WORLD);
+		}
+		
+		protected final function get localToViewMatrix() : INode
+		{
+			return new TransformParameter(16, LocalData.LOCAL_TO_VIEW);
+		}
+		
+		protected final function get worldToLocalMatrix() : INode
+		{
+			return new TransformParameter(16, LocalData.WORLD_INVERSE);
 		}
 		
 		public function fillRenderState(state	: RendererState, 
@@ -204,7 +227,7 @@ package aerys.minko.render.shader
 			return new Add(getNode(value1), getNode(value2));
 		}
 		
-		protected final function substract(value1 : Object, value2 : Object) : INode
+		protected final function subtract(value1 : Object, value2 : Object) : INode
 		{
 			return new Substract(getNode(value1), getNode(value2));
 		}
@@ -217,6 +240,11 @@ package aerys.minko.render.shader
 		protected final function dotProduct4(u : Object, v : Object) : INode
 		{
 			return new DotProduct4(getNode(u), getNode(v));
+		}
+		
+		protected final function cross(u : Object, v : Object) : INode
+		{
+			return new CrossProduct(getNode(u), getNode(v));
 		}
 		
 		protected final function multiply4x4(a : Object, b : Object) : INode
@@ -237,6 +265,22 @@ package aerys.minko.render.shader
 		protected final function normalize(vector : Object) : INode
 		{
 			return new Normalize(getNode(vector));
+		}
+		
+		protected final function negate(value : Object) : INode
+		{
+			return new Negate(getNode(value));
+		}
+		
+		protected final function max(a : Object, b : Object, ...values) : INode
+		{
+			var max : Maximum = new Maximum(getNode(a), getNode(b));
+			var numValues : int = values.length;
+			
+			for (var i : int = 0; i < numValues; ++i)
+				max = new Maximum(max, getNode(values[i]));
+			
+			return max;
 		}
 		
 		protected final function getWorldParameter(size		: uint, 
