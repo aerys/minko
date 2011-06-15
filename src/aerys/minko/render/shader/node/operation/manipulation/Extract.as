@@ -1,8 +1,8 @@
 package aerys.minko.render.shader.node.operation.manipulation
 {
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
-	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.Components;
+	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	
 	public class Extract extends AbstractOperation

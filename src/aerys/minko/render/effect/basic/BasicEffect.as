@@ -9,6 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.shader.ParametricShader;
+	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.scene.visitor.data.CameraData;
@@ -69,24 +70,24 @@ package aerys.minko.render.effect.basic
 			return true;
 		}
 		
-		override protected function getOutputPosition() : INode
+		override protected function getOutputPosition() : SValue
 		{
 			return vertexClipspacePosition;
 		}
 		
-		override protected function getOutputColor() : INode
+		override protected function getOutputColor() : SValue
 		{
-			var diffuse	: INode		= null;
+			var diffuse	: SValue		= null;
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
-				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
+				diffuse = combine(interpolate(vertexColor).rgb, 1.);
 		
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
 			{
-				var zFar		: INode	= styleIsSet(FogStyle.DISTANCE)
+				var zFar		: SValue = styleIsSet(FogStyle.DISTANCE)
 										  ? getStyleParameter(1, FogStyle.DISTANCE)
 										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
 				var fogColor 	: *		= styleIsSet(FogStyle.COLOR)

@@ -2,6 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
 	import aerys.minko.render.shader.node.leaf.Attribute;
@@ -29,11 +30,13 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
+	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
@@ -50,79 +53,79 @@ package aerys.minko.render.shader
 		private var _local			: LocalData		= null;
 		private var _world			: Dictionary	= null;
 		
-		protected final function get vertexClipspacePosition() : INode
+		protected final function get vertexClipspacePosition() : SValue
 		{
 			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
 		
-		protected final function get vertexWorldPosition() : INode
+		protected final function get vertexWorldPosition() : SValue
 		{
 			return multiply4x4(vertexPosition, localToWorldMatrix);
 		}
 		
-		protected final function get vertexPosition() : INode
+		protected final function get vertexPosition() : SValue
 		{
-			return new Attribute(VertexComponent.XYZ);
+			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
 		
-		protected final function get vertexColor() : INode
+		protected final function get vertexColor() : SValue
 		{
-			return new Attribute(VertexComponent.RGB);
+			return new SValue(new Attribute(VertexComponent.RGB));
 		}
 		
-		protected final function get vertexUV() : INode
+		protected final function get vertexUV() : SValue
 		{
-			return new Attribute(VertexComponent.UV);
+			return new SValue(new Attribute(VertexComponent.UV));
 		}
 		
-		protected final function get vertexNormal() : INode
+		protected final function get vertexNormal() : SValue
 		{
-			return new Attribute(VertexComponent.NORMAL);
+			return new SValue(new Attribute(VertexComponent.NORMAL));
 		}
 		
-		protected final function get vertexTangent() : INode
+		protected final function get vertexTangent() : SValue
 		{
-			return new Attribute(VertexComponent.TANGENT);
+			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 		
-		protected final function get cameraLocalDirection() : INode
+		protected final function get cameraLocalDirection() : SValue
 		{
-			return new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION);
+			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION));
 		}
 		
-		protected final function get cameraPosition() : INode
+		protected final function get cameraPosition() : SValue
 		{
-			return new WorldParameter(3, CameraData, CameraData.POSITION);
+			return new SValue(new WorldParameter(3, CameraData, CameraData.POSITION));
 		}
 		
-		protected final function get cameraDirection() : INode
+		protected final function get cameraLocalPosition() : SValue
 		{
-			return new WorldParameter(3, CameraData, CameraData.DIRECTION);
+			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION));
 		}
 		
-		protected final function get cameraLocalPosition() : INode
+		protected final function get cameraDirection() : SValue
 		{
-			return new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION);
+			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
 		}
 		
-		protected final function get localToScreenMatrix() : INode
+		protected final function get localToScreenMatrix() : SValue
 		{
-			return new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
+			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_SCREEN));
 		}
 		
-		protected final function get localToWorldMatrix() : INode
+		protected final function get localToWorldMatrix() : SValue
 		{
-			return new TransformParameter(16, LocalData.WORLD);
+			return new SValue(new TransformParameter(16, LocalData.WORLD));
 		}
 		
-		protected final function get localToViewMatrix() : INode
+		protected final function get localToViewMatrix() : SValue
 		{
-			return new TransformParameter(16, LocalData.LOCAL_TO_VIEW);
+			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_VIEW));
 		}
 		
-		protected final function get worldToLocalMatrix() : INode
+		protected final function get worldToLocalMatrix() : SValue
 		{
-			return new TransformParameter(16, LocalData.WORLD_INVERSE);
+			return new SValue(new TransformParameter(16, LocalData.WORLD_INVERSE));
 		}
 		
 		public function fillRenderState(state	: RendererState, 
@@ -138,8 +141,8 @@ package aerys.minko.render.shader
 			_world = world;
 			
 			if (!shader)
-				_shadersMap[hash] = shader = DynamicShader.create(getOutputPosition(),
-																  getOutputColor());
+				_shadersMap[hash] = shader = DynamicShader.create(getOutputPosition()._node,
+																  getOutputColor()._node);
 			
 			shader.fillRenderState(state, style, local, world);
 			
@@ -153,12 +156,12 @@ package aerys.minko.render.shader
 			return "";
 		}
 		
-		protected function getOutputPosition() : INode
+		protected function getOutputPosition() : SValue
 		{
 			throw new Error();
 		}
 		
-		protected function getOutputColor() : INode
+		protected function getOutputColor() : SValue
 		{
 			throw new Error();
 		}
@@ -173,14 +176,14 @@ package aerys.minko.render.shader
 			return _styleStack.isSet(styleId);
 		}
 		
-		protected final function interpolate(value : INode) : INode
+		protected final function interpolate(value : SValue) : SValue
 		{
-			return new Interpolate(value);
+			return new SValue(new Interpolate(getNode(value)));
 		}
 		
 		protected final function combine(value1	: Object,
 										 value2	: Object,
-										 ...values) : INode
+										 ...values) : SValue
 		{
 			var result : Combine = new Combine(getNode(value1), getNode(value2));
 			var numValues : int = values.length;
@@ -188,15 +191,25 @@ package aerys.minko.render.shader
 			for (var i : int = 0; i < numValues; ++i)
 				result = new Combine(result, getNode(values[i]));
 			
-			return result;
+			return new SValue(result);
 		}
 		
-		protected final function sampleTexture(styleId : int, uv : Object) : INode
+		protected final function vector3(x : Object, y : Object, z : Object) : SValue
 		{
-			return new Texture(getNode(uv), new Sampler(styleId));
+			return combine(x, y, z);
 		}
 		
-		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : INode
+		protected final function vector4(x : Object, y : Object, z : Object, w : Object) : SValue
+		{
+			return combine(x, y, z, w);
+		}
+		
+		protected final function sampleTexture(styleId : int, uv : Object) : SValue
+		{
+			return new SValue(new Texture(getNode(uv), new Sampler(styleId)));
+		}
+		
+		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : SValue
 		{
 			var p 		: Product 	= new Product(getNode(arg1), getNode(arg2));
 			var numArgs : int 		= args.length;
@@ -204,70 +217,70 @@ package aerys.minko.render.shader
 			for (var i : int = 0; i < numArgs; ++i)
 				p.addTerm(getNode(args[i]))
 			
-			return p;
+			return new SValue(p);
 		}
 		
-		protected final function divide(arg1 : Object, arg2 : Object) : INode
+		protected final function divide(arg1 : Object, arg2 : Object) : SValue
 		{
-			return new Divide(getNode(arg1), getNode(arg2));
+			return new SValue(new Divide(getNode(arg1), getNode(arg2)));
 		}
 		
-		protected final function pow(base : Object, exp : Object) : INode
+		protected final function pow(base : Object, exp : Object) : SValue
 		{
-			return new Power(getNode(base), getNode(exp));
+			return new SValue(new Power(getNode(base), getNode(exp)));
 		}
 		
-		protected final function add(value1 : Object, value2 : Object) : INode
+		protected final function add(value1 : Object, value2 : Object) : SValue
 		{
-			return new Add(getNode(value1), getNode(value2));
+			return new SValue(new Add(getNode(value1), getNode(value2)));
 		}
 		
-		protected final function subtract(value1 : Object, value2 : Object) : INode
+		protected final function subtract(value1 : Object, value2 : Object) : SValue
 		{
-			return new Substract(getNode(value1), getNode(value2));
+			return new SValue(new Substract(getNode(value1), getNode(value2)));
 		}
 		
-		protected final function dotProduct3(u : Object, v : Object) : INode
+		protected final function dotProduct3(u : Object, v : Object) : SValue
 		{
-			return new DotProduct3(getNode(u), getNode(v));
+			return new SValue(new DotProduct3(getNode(u), getNode(v)));
 		}
 		
-		protected final function dotProduct4(u : Object, v : Object) : INode
+		protected final function dotProduct4(u : Object, v : Object) : SValue
 		{
-			return new DotProduct4(getNode(u), getNode(v));
+			return new SValue(new DotProduct4(getNode(u), getNode(v)));
 		}
 		
-		protected final function cross(u : Object, v : Object) : INode
+		protected final function cross(u : Object, v : Object) : SValue
 		{
-			return new CrossProduct(getNode(u), getNode(v));
+			return new SValue(new CrossProduct(getNode(u), getNode(v)));
 		}
 		
-		protected final function multiply4x4(a : Object, b : Object) : INode
+		protected final function multiply4x4(a : Object, b : Object) : SValue
 		{
-			return new Multiply4x4(getNode(a), getNode(b));
+			return new SValue(new Multiply4x4(getNode(a), getNode(b)));
 		}
 		
-		protected final function cos(angle : Object) : INode
+		protected final function cos(angle : Object) : SValue
 		{
-			return new Cosine(getNode(angle));
+			return new SValue(new Cosine(getNode(angle)));
 		}
 		
-		protected final function sin(angle : Object) : INode
+		protected final function sin(angle : Object) : SValue
 		{
-			return new Sine(getNode(angle));
+			return new SValue(new Sine(getNode(angle)));
 		}
 		
-		protected final function normalize(vector : Object) : INode
+		protected final function normalize(vector : Object) : SValue
 		{
-			return new Normalize(getNode(vector));
+			return new SValue(new Normalize(getNode(vector)));
 		}
 		
-		protected final function negate(value : Object) : INode
+		protected final function negate(value : Object) : SValue
 		{
-			return new Negate(getNode(value));
+			return new SValue(new Negate(getNode(value)));
 		}
 		
-		protected final function max(a : Object, b : Object, ...values) : INode
+		protected final function max(a : Object, b : Object, ...values) : SValue
 		{
 			var max : Maximum = new Maximum(getNode(a), getNode(b));
 			var numValues : int = values.length;
@@ -275,68 +288,85 @@ package aerys.minko.render.shader
 			for (var i : int = 0; i < numValues; ++i)
 				max = new Maximum(max, getNode(values[i]));
 			
-			return max;
+			return new SValue(max);
+		}
+		
+		protected final function planarReflection(vector : Object, normal : Object) : SValue
+		{
+			return new SValue(new PlanarReflection(getNode(vector), getNode(normal)));
 		}
 		
 		protected final function getWorldParameter(size		: uint, 
 												   key		: Class,
 												   field	: String	= null, 
-												   index	: int		= -1) : INode
+												   index	: int		= -1) : SValue
 		{
-			return new WorldParameter(size, key, field, index);
+			return new SValue(new WorldParameter(size, key, field, index));
 		}
 		
 		protected final function getLocalParameter(size		: uint, 
-												   key		: Object) : INode
+												   key		: Object) : SValue
 		{
-			return new TransformParameter(size, key);
+			return new SValue(new TransformParameter(size, key));
 		}
 		
 		protected final function getStyleParameter(size 	: uint,
 												   key 		: int,
 												   field 	: String 	= null,
-												   index 	: int 		= -1) : INode
+												   index 	: int 		= -1) : SValue
 		{
-			return new StyleParameter(size, key, field, index);
+			return new SValue(new StyleParameter(size, key, field, index));
 		}
 		
-		protected final function getConstant(value : Object) : INode
+		protected final function getConstant(value : Object) : SValue
 		{
-			return getNode(value);
+			return new SValue(getNode(value));
 		}
 		
-		protected final function extract(value : Object, component : uint) : INode
+		protected final function extract(value : Object, component : uint) : SValue
 		{
-			return new Extract(getNode(value), component);
+			return new SValue(new Extract(getNode(value), component));
 		}
 		
-		protected final function blend(color1 : Object, color2 : Object, blending : uint) : INode
+		protected final function blend(color1 : Object, color2 : Object, blending : uint) : SValue
 		{
-			return new Blend(getNode(color1), getNode(color2), blending);
+			return new SValue(new Blend(getNode(color1), getNode(color2), blending));
 		}
 		
-		protected final function vector3Length(vector3 : Object) : INode
+		protected final function length(vector : Object) : SValue
 		{
-			var v : INode = getNode(vector3);
+			var v : INode = getNode(vector);
+
+			if (v.size == 2)
+			{
+				var x : INode = new Extract(v, Components.X);
+				var y : INode = new Extract(v, Components.Y);
+				
+				return new SValue(sqrt(add(multiply(x, x), multiply(y, y))));
+			}
+			else if (v.size == 3)
+				return new SValue(sqrt(dotProduct3(v, v)));
+			else if (v.size == 4)
+				return new SValue(sqrt(dotProduct4(v, v)));
 			
-			return sqrt(dotProduct3(v, v));
+			throw new Error("Unable to get the length of a value with size > 4.");
 		}
 		
-		protected final function sqrt(scalar : Object) : INode
+		protected final function sqrt(scalar : Object) : SValue
 		{
-			return new SquareRoot(getNode(scalar));
+			return new SValue(new SquareRoot(getNode(scalar)));
 		}
 		
 		protected final function getFolorColor(start	: Object,
 											   distance	: Object,
-											   color	: Object) : INode
+											   color	: Object) : SValue
 		{
-			return new Fog(getNode(start), getNode(distance), getNode(color));
+			return new SValue(new Fog(getNode(start), getNode(distance), getNode(color)));
 		}
 		
-		protected final function getVertexAttribute(vertexComponent : VertexComponent) : INode
+		protected final function getVertexAttribute(vertexComponent : VertexComponent) : SValue
 		{
-			return new Attribute(vertexComponent);
+			return new SValue(new Attribute(vertexComponent));
 		}
 		
 		private function getNode(value : Object) : INode
@@ -344,8 +374,8 @@ package aerys.minko.render.shader
 			if (value is INode)
 				return value as INode;
 			
-			/*if (value is SValue)
-				return (value as SValue)._node;*/
+			if (value is SValue)
+				return (value as SValue)._node;
 			
 			var c	: Constant	= new Constant();
 			
