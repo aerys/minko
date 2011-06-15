@@ -15,8 +15,7 @@ package aerys.minko.scene.node.mesh.modifier
 		use namespace minko_stream;
 		
 		private static const VERTEX_FORMAT		: VertexFormat		= new VertexFormat(VertexComponent.NORMAL,
-																					   VertexComponent.TANGENT,
-																					   VertexComponent.BITANGENT);
+																					   VertexComponent.TANGENT);
 		
 		public function TangentSpaceMeshModifier(target : IMesh)
 		{
@@ -43,7 +42,7 @@ package aerys.minko.scene.node.mesh.modifier
 			var indices			: Vector.<uint>		= indexStream._indices;
 			var numTriangles	: int				= indexStream.length / 3;
 			
-			var data			: Vector.<Number>	= new Vector.<Number>(9 * numVertices);
+			var data			: Vector.<Number>	= new Vector.<Number>(6 * numVertices);
 			
 			// normal
 			var nx				: Number 			= 0.;
@@ -54,11 +53,6 @@ package aerys.minko.scene.node.mesh.modifier
 			var tx				: Number 			= 0.;
 			var ty				: Number 			= 0.;
 			var tz				: Number 			= 0.;
-			
-			// binormal
-			var bx				: Number 			= 0.;
-			var by				: Number 			= 0.;
-			var bz				: Number 			= 0.;
 			
 			var i				: int				= 0;
 			var ii 				: int 				= 0;
@@ -112,47 +106,34 @@ package aerys.minko.scene.node.mesh.modifier
 				ty = coef * (c3c1_B * (y0 - y2) - c2c1_B * (y1 - y2));
 				tz = coef * (c3c1_B * (z0 - z2) - c2c1_B * (z1 - z2));
 				
-				bx = ny * tz - nz * ty;
-				by = nz * tx - nx * tz;
-				bz = nx * ty - ny * tx;
-				
-				ii = i0 * 9;
+				ii = i0 * 6;
 				data[ii] += nx;
 				data[int(ii + 1)] += ny;
 				data[int(ii + 2)] += nz;
 				data[int(ii + 3)] += tx;
 				data[int(ii + 4)] += ty;
 				data[int(ii + 5)] += tz;
-				data[int(ii + 6)] += bx;
-				data[int(ii + 7)] += by;
-				data[int(ii + 8)] += bz;
 
-				ii = i1 * 9;
+				ii = i1 * 6;
 				data[ii] += nx;
 				data[int(ii + 1)] += ny;
 				data[int(ii + 2)] += nz;
 				data[int(ii + 3)] += tx;
 				data[int(ii + 4)] += ty;
 				data[int(ii + 5)] += tz;
-				data[int(ii + 6)] += bx;
-				data[int(ii + 7)] += by;
-				data[int(ii + 8)] += bz;
 				
-				ii = i2 * 9;
+				ii = i2 * 6;
 				data[ii] += nx;
 				data[int(ii + 1)] += ny;
 				data[int(ii + 2)] += nz;
 				data[int(ii + 3)] += tx;
 				data[int(ii + 4)] += ty;
 				data[int(ii + 5)] += tz;
-				data[int(ii + 6)] += bx;
-				data[int(ii + 7)] += by;
-				data[int(ii + 8)] += bz;
 			}
 			
 			for (i = 0; i < numVertices; ++i)
 			{
-				ii = i * 9;
+				ii = i * 6;
 				
 				nx = data[ii];
 				ny = data[int(ii + 1)];
@@ -162,13 +143,8 @@ package aerys.minko.scene.node.mesh.modifier
 				ty = data[int(ii + 4)];
 				tz = data[int(ii + 5)];
 				
-				bx = data[int(ii + 6)];
-				by = data[int(ii + 7)];
-				bz = data[int(ii + 8)];
-				
 				var normalMag		: Number = Math.sqrt(nx * nx + ny * ny + nz * nz);
 				var tangentMag		: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
-				var bitangentMag	: Number = Math.sqrt(bx * bx + by * by + bz * bz);
 				
 				if (normalMag != 0.)
 				{
@@ -182,13 +158,6 @@ package aerys.minko.scene.node.mesh.modifier
 					data[int(ii + 3)] /= tangentMag;
 					data[int(ii + 4)] /= tangentMag;
 					data[int(ii + 5)] /= tangentMag;
-				}
-				
-				if (bitangentMag != 0.)
-				{
-					data[int(ii + 6)] /= bitangentMag;
-					data[int(ii + 7)] /= bitangentMag;
-					data[int(ii + 8)] /= bitangentMag;
 				}
 			}
 			

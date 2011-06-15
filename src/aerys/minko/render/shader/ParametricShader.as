@@ -85,11 +85,6 @@ package aerys.minko.render.shader
 			return new Attribute(VertexComponent.TANGENT);
 		}
 		
-		protected final function get vertexBitangent() : INode
-		{
-			return new Attribute(VertexComponent.BITANGENT);
-		}
-		
 		protected final function get cameraLocalDirection() : INode
 		{
 			return new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION);
@@ -217,7 +212,7 @@ package aerys.minko.render.shader
 			return new Divide(getNode(arg1), getNode(arg2));
 		}
 		
-		protected final function power(base : Object, exp : Object) : INode
+		protected final function pow(base : Object, exp : Object) : INode
 		{
 			return new Power(getNode(base), getNode(exp));
 		}
