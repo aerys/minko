@@ -1,21 +1,14 @@
 package aerys.minko.scene.node.mesh.modifier
 {
-	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
-	
-	import flash.geom.Vector3D;
 	
 	public class TangentSpaceMeshModifier extends AbstractMeshModifier
 	{
 		use namespace minko_stream;
-		
-		private static const VERTEX_FORMAT		: VertexFormat		= new VertexFormat(VertexComponent.NORMAL,
-																					   VertexComponent.TANGENT);
 		
 		public function TangentSpaceMeshModifier(target : IMesh)
 		{
@@ -26,6 +19,9 @@ package aerys.minko.scene.node.mesh.modifier
 		}
 		private function initialize() : void
 		{
+			var withNormals		: Boolean			= vertexStreamList.getVertexStreamByComponent(VertexComponent.NORMAL) == null;
+			var f				: int				= withNormals ? 6 : 3;
+			
 			// (x, y, z) positions
 			var xyzStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
 			var xyzOffset		: int 				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
@@ -42,7 +38,7 @@ package aerys.minko.scene.node.mesh.modifier
 			var indices			: Vector.<uint>		= indexStream._indices;
 			var numTriangles	: int				= indexStream.length / 3;
 			
-			var data			: Vector.<Number>	= new Vector.<Number>(6 * numVertices);
+			var data			: Vector.<Number>	= new Vector.<Number>(f * numVertices);
 			
 			// normal
 			var nx				: Number 			= 0.;
@@ -61,108 +57,127 @@ package aerys.minko.scene.node.mesh.modifier
 			{
 				ii = i * 3;
 				
-				var i0	: int 		= indices[ii];
-				var i1	: int 		= indices[int(ii + 1)];
-				var i2	: int 		= indices[int(ii + 2)];
+				var i0		: int 		= indices[ii];
+				var i1		: int 		= indices[int(ii + 1)];
+				var i2		: int 		= indices[int(ii + 2)];
 				
-				var ii0	: int 		= xyzOffset + xyzSize * i0;
-				var ii1	: int		= xyzOffset + xyzSize * i1;
-				var ii2	: int 		= xyzOffset + xyzSize * i2;
+				var ii0		: int 		= xyzOffset + xyzSize * i0;
+				var ii1		: int		= xyzOffset + xyzSize * i1;
+				var ii2		: int 		= xyzOffset + xyzSize * i2;
 				
-				var x0	: Number 	= xyz[ii0];
-				var y0	: Number 	= xyz[int(ii0 + 1)];
-				var z0	: Number 	= xyz[int(ii0 + 2)];
-				var u0	: Number	= uv[int(uvOffset + uvSize * i0)];
-				var v0	: Number	= uv[int(uvOffset + uvSize * i0 + 1)];
+				var x0		: Number 	= xyz[ii0];
+				var y0		: Number 	= xyz[int(ii0 + 1)];
+				var z0		: Number 	= xyz[int(ii0 + 2)];
+				var u0		: Number	= uv[int(uvOffset + uvSize * i0)];
+				var v0		: Number	= uv[int(uvOffset + uvSize * i0 + 1)];
 				
-				var x1	: Number 	= xyz[ii1];
-				var y1	: Number 	= xyz[int(ii1 + 1)];
-				var z1	: Number 	= xyz[int(ii1 + 2)];
-				var u1	: Number	= uv[int(uvOffset + uvSize * i1)];
-				var v1	: Number	= uv[int(uvOffset + uvSize * i1 + 1)];
+				var x1		: Number 	= xyz[ii1];
+				var y1		: Number 	= xyz[int(ii1 + 1)];
+				var z1		: Number 	= xyz[int(ii1 + 2)];
+				var u1		: Number	= uv[int(uvOffset + uvSize * i1)];
+				var v1		: Number	= uv[int(uvOffset + uvSize * i1 + 1)];
 				
-				var x2	: Number 	= xyz[ii2];
-				var y2	: Number 	= xyz[int(ii2 + 1)];
-				var z2	: Number 	= xyz[int(ii2 + 2)];
-				var u2	: Number	= uv[int(uvOffset + uvSize * i2)];
-				var v2	: Number	= uv[int(uvOffset + uvSize * i2 + 1)];
-				
-				nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
-				ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
-				nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
-				
-				var c2c1_T : Number = u0 - u2;
-				var c2c1_B : Number = v0 - v2;
-				var c3c1_T : Number = u1 - u2;
-				var c3c1_B : Number = v1 - v2;
-				var coef : Number = c2c1_T * c3c1_B - c3c1_T * c2c1_B;
+				var x2		: Number 	= xyz[ii2];
+				var y2		: Number 	= xyz[int(ii2 + 1)];
+				var z2		: Number 	= xyz[int(ii2 + 2)];
+				var u2		: Number	= uv[int(uvOffset + uvSize * i2)];
+				var v2		: Number	= uv[int(uvOffset + uvSize * i2 + 1)];
+			
+				var v0v2	: Number 	= v0 - v2;
+				var v1v2 	: Number 	= v1 - v2;
+				var coef 	: Number 	= (u0 - u2) * v1v2 - (u1 - u2) * v0v2;
 				
 				if (coef == 0.)
 					coef = 1.;
 				else
 					coef = 1. / coef;
 				
-				tx = coef * (c3c1_B * (x0 - x2) - c2c1_B * (x1 - x2));
-				ty = coef * (c3c1_B * (y0 - y2) - c2c1_B * (y1 - y2));
-				tz = coef * (c3c1_B * (z0 - z2) - c2c1_B * (z1 - z2));
-				
-				ii = i0 * 6;
-				data[ii] += nx;
-				data[int(ii + 1)] += ny;
-				data[int(ii + 2)] += nz;
-				data[int(ii + 3)] += tx;
-				data[int(ii + 4)] += ty;
-				data[int(ii + 5)] += tz;
+				tx = coef * (v1v2 * (x0 - x2) - v0v2 * (x1 - x2));
+				ty = coef * (v1v2 * (y0 - y2) - v0v2 * (y1 - y2));
+				tz = coef * (v1v2 * (z0 - z2) - v0v2 * (z1 - z2));
 
-				ii = i1 * 6;
-				data[ii] += nx;
-				data[int(ii + 1)] += ny;
-				data[int(ii + 2)] += nz;
-				data[int(ii + 3)] += tx;
-				data[int(ii + 4)] += ty;
-				data[int(ii + 5)] += tz;
+				if (withNormals)
+				{
+					nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
+					ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
+					nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
+				}
 				
-				ii = i2 * 6;
-				data[ii] += nx;
-				data[int(ii + 1)] += ny;
-				data[int(ii + 2)] += nz;
-				data[int(ii + 3)] += tx;
-				data[int(ii + 4)] += ty;
-				data[int(ii + 5)] += tz;
+				ii = i0 * f;
+				data[ii] += tx;
+				data[int(ii + 1)] += ty;
+				data[int(ii + 2)] += tz;
+				if (withNormals)
+				{
+					data[int(ii + 3)] += nx;
+					data[int(ii + 4)] += ny;
+					data[int(ii + 5)] += nz;
+				}
+
+				ii = i1 * f;
+				data[ii] += tx;
+				data[int(ii + 1)] += ty;
+				data[int(ii + 2)] += tz;
+				if (withNormals)
+				{
+					data[int(ii + 3)] += nx;
+					data[int(ii + 4)] += ny;
+					data[int(ii + 5)] += nz;
+				}
+				
+				ii = i2 * f;
+				data[ii] += tx;
+				data[int(ii + 1)] += ty;
+				data[int(ii + 2)] += tz;
+				if (withNormals)
+				{
+					data[int(ii + 3)] += nx;
+					data[int(ii + 4)] += ny;
+					data[int(ii + 5)] += nz;
+				}
 			}
 			
 			for (i = 0; i < numVertices; ++i)
 			{
-				ii = i * 6;
+				ii = i * f;
 				
-				nx = data[ii];
-				ny = data[int(ii + 1)];
-				nz = data[int(ii + 2)];
+				tx = data[ii];
+				ty = data[int(ii + 1)];
+				tz = data[int(ii + 2)];
 				
-				tx = data[int(ii + 3)];
-				ty = data[int(ii + 4)];
-				tz = data[int(ii + 5)];
+				var mag	: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
 				
-				var normalMag		: Number = Math.sqrt(nx * nx + ny * ny + nz * nz);
-				var tangentMag		: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
-				
-				if (normalMag != 0.)
+				if (mag != 0.)
 				{
-					data[ii] /= normalMag;
-					data[int(ii + 1)] /= normalMag;
-					data[int(ii + 2)] /= normalMag;
+					data[ii] /= mag;
+					data[int(ii + 1)] /= mag;
+					data[int(ii + 2)] /= mag;
 				}
 				
-				if (tangentMag != 0.)
-				{
-					data[int(ii + 3)] /= tangentMag;
-					data[int(ii + 4)] /= tangentMag;
-					data[int(ii + 5)] /= tangentMag;
+				if (withNormals)
+				{					
+					nx = data[int(ii + 3)];
+					ny = data[int(ii + 4)];
+					nz = data[int(ii + 5)];
+					
+					mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
+					
+					if (mag != 0.)
+					{
+						data[int(ii + 3)] /= mag;
+						data[int(ii + 4)] /= mag;
+						data[int(ii + 5)] /= mag;
+					}
 				}
 			}
 			
+			var format : VertexFormat = new VertexFormat(VertexComponent.TANGENT);
+			
+			if (withNormals)
+				format.addComponent(VertexComponent.NORMAL);
+			
 			var stream : VertexStream = new VertexStream(data,
-														 VERTEX_FORMAT,
+														 format,
 														 xyzStream.dynamic);
 			
 			_vertexStreamList.pushVertexStream(stream);

@@ -128,6 +128,16 @@ package aerys.minko.render.shader
 			return new SValue(new TransformParameter(16, LocalData.WORLD_INVERSE));
 		}
 		
+		protected final function get worldToViewMatrix() : SValue
+		{
+			return new SValue(new TransformParameter(16, LocalData.VIEW));
+		}
+		
+		protected final function get projectionMatrix() : SValue
+		{
+			return new SValue(new TransformParameter(16, LocalData.PROJECTION));
+		}
+		
 		public function fillRenderState(state	: RendererState, 
 										style	: StyleStack, 
 										local	: LocalData, 
@@ -204,9 +214,13 @@ package aerys.minko.render.shader
 			return combine(x, y, z, w);
 		}
 		
-		protected final function sampleTexture(styleId : int, uv : Object) : SValue
+		protected final function sampleTexture(styleId 		: int,
+											   uv 			: Object,
+											   filtering	: uint	= Sampler.FILTER_LINEAR,
+											   mipMapping	: uint	= Sampler.MIPMAP_LINEAR,
+											   wrapping		: uint	= Sampler.WRAPPING_REPEAT) : SValue
 		{
-			return new SValue(new Texture(getNode(uv), new Sampler(styleId)));
+			return new SValue(new Texture(getNode(uv), new Sampler(styleId, filtering, mipMapping, wrapping)));
 		}
 		
 		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : SValue
@@ -379,7 +393,7 @@ package aerys.minko.render.shader
 			
 			var c	: Constant	= new Constant();
 			
-			if (value is int || value is Number)
+			if (value is int || value is uint || value is Number)
 			{
 				c.constants[0] = value as Number;
 			}
