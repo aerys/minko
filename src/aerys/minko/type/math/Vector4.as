@@ -57,7 +57,7 @@ package aerys.minko.type.math
 		
 		public function set x(value : Number) : void
 		{
-			//if (value != _vector.x)
+			if (value != _vector.x)
 			{
 				_vector.x = value;
 				_update = UPDATE_ALL;
@@ -67,7 +67,7 @@ package aerys.minko.type.math
 		
 		public function set y(value : Number) : void
 		{
-			//if (value != _vector.y)
+			if (value != _vector.y)
 			{
 				_vector.y = value;
 				_update = UPDATE_ALL;
@@ -77,7 +77,7 @@ package aerys.minko.type.math
 		
 		public function set z(value : Number) : void
 		{
-			//if (value != _vector.z)
+			if (value != _vector.z)
 			{
 				_vector.z = value;
 				_update = UPDATE_ALL;
@@ -87,27 +87,23 @@ package aerys.minko.type.math
 		
 		public function set w(value : Number) : void
 		{
-			//if (value != _vector.w)
+			if (value != _vector.w)
 			{
 				_vector.w = value;
 				_update = UPDATE_ALL;
 				++_version;
 			}
 		}
-		
+
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
 								w 	: Number	= NaN)
 		{
-			if (x)
-				this.x = x;
-			if (y)
-				this.y = y;
-			if (z)
-				this.z = z;
-			if (!isNaN(w))
-				this.w = w;
+			_vector.x = x;
+			_vector.y = y;
+			_vector.z = z;
+			_vector.w = w;
 		}
 		
 		public static function add(u 	: Vector4,

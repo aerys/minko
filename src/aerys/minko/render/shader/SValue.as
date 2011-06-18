@@ -1,6 +1,5 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.Constant;
@@ -16,7 +15,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -144,13 +142,81 @@ package aerys.minko.render.shader
 		override flash_proxy function getProperty(name : *) : *
 		{
 			// TODO: handle [] AGAL notation here
+			
 			return new SValue(new Extract(_node, getComponentsFromString(name)));
+		}
+		
+		override flash_proxy function setProperty(name : *, value : *) : void
+		{
+			// TODO: handle [] AGAL notation here
+
+			var str 	: String	= String(name).toLowerCase();
+			var val 	: INode	 	= getNode(value);
+			var size 	: uint 		= _node.size;
+			var comps 	: uint 		= 0;
+			
+			if (size == 1)
+				throw new Error("Unable set component(s) of a value with size == 1.");
+			
+			for (var i : int = 0; i < size; ++i)
+			{
+				var char : String = str.charAt(i);
+				
+				if (char == "x" || char == "r")
+					comps |= i + 1;
+				else if (char == "y" || char == "g")
+					comps |= (i + 1) << 4;
+				else if (char == "z" || char == "b")
+				{
+					if (size < 3)
+					{
+						throw new Error("Unable to set the '"
+										+ char
+										+ "' component of a value of size "
+										+ size);
+						
+					}
+						
+					comps |= (i + 1) << 8;
+				}
+				else if (char == "w" || char == "a")
+				{
+					if (size < 4)
+					{
+						throw new Error("Unable to set the '"
+										+ char
+										+ "' component of a value of size "
+										+ size);
+						
+					}
+
+					comps |= (i + 1) << 12;
+				}
+			}
+			
+			var result	: INode = null;
+			
+			for (i = 0; i < size; ++i)
+			{
+				var rhc : int 	= ((comps >>> (i << 2)) & 0xf) - 1;
+				var ext : INode = null;
+				
+				if (rhc >= 0)
+					ext = new Extract(val, rhc | 0x4440);
+				else
+					ext = new Extract(_node, i | 0x4440);					
+				
+				result = i == 0 ? ext : new Combine(result, ext);
+			}
+			
+			_node = result;
 		}
 		
 		private function getComponentsFromString(componentsString : String) : uint
 		{
 			var components 		: uint 	= 0;
 			var strlen			: int	= componentsString.length;
+			var size			: uint	= _node.size;
 			
 			if (strlen > 4)
 				throw new Error("'" + componentsString + "' is not a valid component.");
@@ -167,30 +233,23 @@ package aerys.minko.render.shader
 					{
 						components |= 0 << (i << 2);
 					}
-					else if (c == "y" || c == "g")
+					else if (size >= 2 && (c == "y" || c == "g"))
 					{
-						if (_node.size < 2)
-							throw new Error("Unable to read component '" + c + "' on a value with size < 2.");
-						
 						components |= 1 << (i << 2);
 					}
-					else if (c == "z" || c == "b")
+					else if (size >= 3 && (c == "z" || c == "b"))
 					{
-						if (_node.size < 3)
-							throw new Error("Unable to read component '" + c + "' on a value with size < 3.");
-						
 						components |= 2 << (i << 2);
 					}
-					else if (c == "w" || c == "a")
+					else if (size == 4 && (c == "w" || c == "a"))
 					{
-						if (_node.size < 4)
-							throw new Error("Unable to read component '" + c + "' on a value with size < 4.");
-						
 						components |= 3 << (i << 2);
 					}
 					else
 					{
-						throw new Error("Unkown component '" + c + "'.");
+						throw new Error("Unkown component '"
+										+ c + "' on a value with size "
+										+ size + ".");
 					}
 				}
 				else
@@ -230,6 +289,7 @@ package aerys.minko.render.shader
 				c.constants[0] = vector.x;
 				c.constants[1] = vector.y;
 				c.constants[2] = vector.z;
+				
 				if (!isNaN(vector.w))
 					c.constants[3] = vector.w;
 			}
