@@ -166,31 +166,16 @@ package aerys.minko.render.shader
 					comps |= i + 1;
 				else if (char == "y" || char == "g")
 					comps |= (i + 1) << 4;
-				else if (char == "z" || char == "b")
-				{
-					if (size < 3)
-					{
-						throw new Error("Unable to set the '"
-										+ char
-										+ "' component of a value of size "
-										+ size);
-						
-					}
-						
+				else if (size >= 3 && (char == "z" || char == "b"))
 					comps |= (i + 1) << 8;
-				}
-				else if (char == "w" || char == "a")
-				{
-					if (size < 4)
-					{
-						throw new Error("Unable to set the '"
-										+ char
-										+ "' component of a value of size "
-										+ size);
-						
-					}
-
+				else if (size == 4 && (char == "w" || char == "a"))
 					comps |= (i + 1) << 12;
+				else
+				{
+					throw new Error("Unable to set the '"
+									+ char
+									+ "' component of a value of size "
+									+ size);
 				}
 			}
 			
@@ -230,21 +215,13 @@ package aerys.minko.render.shader
 					var c : String = componentsString.charAt(i);
 					
 					if (c == "x" || c == "r")
-					{
 						components |= 0 << (i << 2);
-					}
 					else if (size >= 2 && (c == "y" || c == "g"))
-					{
 						components |= 1 << (i << 2);
-					}
 					else if (size >= 3 && (c == "z" || c == "b"))
-					{
 						components |= 2 << (i << 2);
-					}
 					else if (size == 4 && (c == "w" || c == "a"))
-					{
 						components |= 3 << (i << 2);
-					}
 					else
 					{
 						throw new Error("Unkown component '"
