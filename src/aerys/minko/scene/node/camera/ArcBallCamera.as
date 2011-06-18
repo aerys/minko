@@ -21,7 +21,7 @@ package aerys.minko.scene.node.camera
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
 		private var _distance	: Number	= 1.;
-		private var _rotation	: Vector4	= new Vector4();
+		private var _rotation	: Vector4	= new Vector4(0., 0., 0., 0.);
 		
 		override public function get version():uint
 		{
@@ -67,7 +67,7 @@ package aerys.minko.scene.node.camera
 				_rotation.x = MAX_ROTATION_X;
 			else if (_rotation.x <= MIN_ROTATION_X)
 				_rotation.x = MIN_ROTATION_X;
-			
+		
 			if (_distance <= 0.)
 				_distance = EPSILON;
 

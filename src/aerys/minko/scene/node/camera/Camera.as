@@ -46,7 +46,7 @@ package aerys.minko.scene.node.camera
 		
 		private var _update			: uint		= 0;
 
-		private var _position		: Vector4	= new Vector4();
+		private var _position		: Vector4	= new Vector4(0., 0., 0., 0.);
 		private var _lookAt			: Vector4	= Vector4.copy(ConstVector4.Z_AXIS);
 		private var _up				: Vector4	= Vector4.copy(ConstVector4.Y_AXIS);
 		
@@ -129,7 +129,8 @@ package aerys.minko.scene.node.camera
 			var worldMatrix		: Matrix4x4		= localData.world;
 			var worldPosition	: Vector4		= worldMatrix.multiplyVector(position);
 			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(lookAt);
-			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(up).normalize();
+			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(up)
+															 .normalize();
 			
 			cameraData.reset();
 			

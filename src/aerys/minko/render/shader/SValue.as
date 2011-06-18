@@ -214,9 +214,9 @@ package aerys.minko.render.shader
 		
 		private function getComponentsFromString(componentsString : String) : uint
 		{
-			var components 		: uint 	= 0;
-			var strlen			: int	= componentsString.length;
-			var size			: uint	= _node.size;
+			var components 	: uint 	= 0;
+			var strlen		: int	= componentsString.length;
+			var size		: uint	= _node.size;
 			
 			if (strlen > 4)
 				throw new Error("'" + componentsString + "' is not a valid component.");
