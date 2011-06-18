@@ -1,7 +1,6 @@
 package aerys.minko
 {
-	import aerys.common.log.ILogger;
-	import aerys.common.log.LogLevel;
+	import aerys.minko.type.ILogger;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -15,7 +14,7 @@ package aerys.minko
 		public static const URL		: String		= "http://aerys.in/minko";
 		
 		private static var _logger		: ILogger	= null;
-		private static var _debugLevel	: uint		= LogLevel.DISABLED;
+		private static var _debugLevel	: uint		= 0;//LogLevel.DISABLED;
 		private static var _logo		: Sprite	= null;
 		
 		public static function get logo() : Sprite

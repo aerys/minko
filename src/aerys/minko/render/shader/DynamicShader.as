@@ -36,7 +36,7 @@ package aerys.minko.render.shader
 			compiler.load(clipspacePosition, color);
 			return compiler.compileShader();
 		}
-		
+	
 		public function DynamicShader(vertexShader					: ByteArray,
 									  fragmentShader				: ByteArray,
 									  vertexInput					: Vector.<VertexComponent>,
