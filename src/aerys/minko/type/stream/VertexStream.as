@@ -1,7 +1,8 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.render.ressource.VertexRessource;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
@@ -17,19 +18,26 @@ package aerys.minko.type.stream
 		
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 		
-		minko_stream var _data			: Vector.<Number>		= null;
-		minko_stream var _update		: Boolean				= true;
-		minko_stream var _dynamic		: Boolean				= false;
-		minko_stream var _nativeBuffer	: VertexBuffer3D		= null;
-		minko_stream var _version		: uint					= 0;
+		private static var _nextId		: int					= 0;	
 		
-		private var _format			: VertexFormat			= null;
+		minko_stream var _data			: Vector.<Number>		= null;
+		
+		private var _update			: Boolean				= true;
+		private var _dynamic		: Boolean				= false;
+		private var _version		: uint					= 0;
 		private var _length			: int					= 0;
 		
+		private var _id				: int					= _nextId++;
+		private var _format			: VertexFormat			= null;
+		private var _ressource		: VertexRessource		= null;
+		private var _nativeBuffer	: VertexBuffer3D		= null;
+		
+		public function get id()		: int				{ return _id; }
 		public function get length() 	: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
 		public function get format()	: VertexFormat		{ return _format; }
 		public function get version()	: uint				{ return _version; }
 		public function get dynamic()	: Boolean			{ return _dynamic; }
+		public function get ressource()	: VertexRessource	{ return _ressource; }
 		
 		public function VertexStream(data 		: Vector.<Number>,
 									 format		: VertexFormat 	= null,
@@ -37,6 +45,7 @@ package aerys.minko.type.stream
 		{
 			super();
 			
+			_ressource = new VertexRessource(this);
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data.length % _format.dwordsPerVertex)
@@ -44,29 +53,6 @@ package aerys.minko.type.stream
 			
 			_data = data ? data.concat() : null;
 			_dynamic = dynamic;
-		}
-		
-		minko_stream function getNativeVertexBuffer3D(context : Context3D) : VertexBuffer3D
-		{
-			var currentLength : int = _data ? _data.length / _format.dwordsPerVertex : _length;
-			
-			if ((!_nativeBuffer && _data.length) || _length != currentLength)
-			{
-				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
-				_length = currentLength;
-				_update = true;
-			}
-			
-			if (_nativeBuffer && _update)
-			{
-				_update = false;
-				_nativeBuffer.uploadFromVector(_data, 0, _length);
-				
-				if (!_dynamic)
-					_data = null;
-			}
-			
-			return _nativeBuffer;
 		}
 		
 		public function deleteVertexByIndex(index : uint) : Boolean
@@ -80,12 +66,17 @@ package aerys.minko.type.stream
 			return true;
 		}
 		
-		public function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream
+		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			if (vertexComponent in _format.components)
 				return this;
 			
 			return null;
+		}
+		
+		public function getSubStreamById(id : int) : VertexStream
+		{
+			return this;
 		}
 		
 		public function push(...data) : void
@@ -114,6 +105,37 @@ package aerys.minko.type.stream
 			
 			++_version;
 			_update = true;
+		}
+		
+		minko_stream function invalidate() : void
+		{
+			_update = true;
+			++_version;
+		}
+		
+		minko_stream function getNativeBuffer(context : Context3D) : VertexBuffer3D
+		{
+			var dwordsPerVertex : int 				= _format.dwordsPerVertex;
+			var currentLength 	: int 				= _data ? _data.length / dwordsPerVertex : _length;
+			
+			if ((!_nativeBuffer && _data.length) || _length != currentLength)
+			{
+				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
+				
+				_length = currentLength;
+				_update = true;
+			}
+			
+			if (_nativeBuffer && _update)
+			{
+				_update = false;
+				_nativeBuffer.uploadFromVector(_data, 0, _length);
+				
+				if (!_dynamic)
+					_data = null;
+			}
+			
+			return _nativeBuffer;
 		}
 		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,

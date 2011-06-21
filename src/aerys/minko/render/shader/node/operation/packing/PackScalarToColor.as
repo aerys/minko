@@ -36,7 +36,7 @@ package aerys.minko.render.shader.node.operation.packing
 										  maxValueParts	: INode,
 										  maxValue		: INode)
 		{
-			/*var nodeOpposite		: INode = new Substract(maxValue, node);
+			var nodeOpposite		: INode = new Substract(maxValue, node);
 			var packedDepthOpposite	: INode = new Saturate(
 				new Divide(
 					new Substract(nodeOpposite, maxValueParts),
@@ -44,9 +44,9 @@ package aerys.minko.render.shader.node.operation.packing
 				)
 			);
 			
-			super(packedDepthOpposite);*/
+			super(packedDepthOpposite);
 			
-			var comp : Fractional = new Fractional(
+			/*var comp : Fractional = new Fractional(
 				new Multiply(
 					new Divide(
 						node,
@@ -54,7 +54,7 @@ package aerys.minko.render.shader.node.operation.packing
 					BIT_SH
 				));
 			
-			super(new Substract(comp, new Multiply(new Extract(comp, Components.XXYZ), BIT_MSK)));
+			super(new Substract(comp, new Multiply(new Extract(comp, Components.XXYZ), BIT_MSK)));*/
 			
 			if (node.size != 1)
 				throw new Error('node must be of size 1');

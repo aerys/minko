@@ -1,6 +1,6 @@
 package aerys.minko
 {
-	import aerys.minko.type.ILogger;
+	import aerys.minko.type.log.ILogger;
 	
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -43,36 +43,20 @@ package aerys.minko
 		public static function set logger(value : ILogger)	: void
 		{
 			_logger = value;
-			logMessage("Minko v" + VERSION + " logger set and initialized");
 		}
 		public static function set debugLevel(value : uint)	: void	{ _debugLevel = value; }
 		
 		public static function get debugLevel() : uint				{ return _debugLevel; }
 		
-		public static function log(myMessage : Object, myTarget : Object = null) : void
+		public static function log(type : uint, message : Object, target : Object = null) : void
 		{
-//			if (_logger != null && _debugLevel & LogLevel.LOG)
-//				_logger.log(myMessage, myTarget);
-		}
-		
-		public static function logMessage(myMessage : Object, myTarget : Object = null) : void
-		{
-//			if (_logger != null && _debugLevel & LogLevel.MESSAGE)
-//				_logger.logMessage(myMessage, myTarget);
-		}
-		
-		public static function logWarning(myMessage : Object, myTarget : Object = null) : void
-		{
-//			if (_logger != null && _debugLevel & LogLevel.WARNING)
-//				_logger.logWarning(myMessage, myTarget);
-		}
-		
-		public static function logError(myMessage : Object, myTarget : Object = null) : void
-		{
-//			if (_logger != null && _debugLevel & LogLevel.ERROR)
-//				_logger.logError(myMessage, myTarget);
-			
-			throw new Error(myMessage);
+			if (_debugLevel & type)
+			{
+				if (_logger != null)
+					_logger.log(message);
+				else
+					trace(message);
+			}
 		}
 	}
 }

@@ -53,7 +53,7 @@ package aerys.minko.type.vertex
 			for each (var component : VertexComponent in components)
 			{
 				for each (var field : String in component.fields)
-					_propToStream[field] = _vstream.getVertexStreamByComponent(component);
+					_propToStream[field] = _vstream.getSubStreamByComponent(component);
 			}
 		}
 		

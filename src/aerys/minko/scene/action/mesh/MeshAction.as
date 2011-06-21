@@ -13,6 +13,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.RenderingData;
 	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
@@ -48,19 +49,19 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var localData			: LocalData			= visitor.localData;
-			var worldData			: Dictionary		= visitor.worldData;
-			var renderingData		: RenderingData		= visitor.renderingData;
-			var effect				: IEffect			= renderingData.effect;
+			var localData		: LocalData			= visitor.localData;
+			var worldData		: Dictionary		= visitor.worldData;
+			var renderingData	: RenderingData		= visitor.renderingData;
+			var effect			: IEffect			= renderingData.effect;
 			
 			if (!effect)
 				throw new Error("Unable to draw without an effect.");
 			
-			var vertexStreamList 	: VertexStreamList		= mesh.vertexStreamList;
-			var indexStream 		: IndexStream			= mesh.indexStream;
-			var passes				: Vector.<IEffectPass>	= effect.getPasses(renderingData.styleStack,
-																   	   		   localData,
-																			   worldData);
+			var vertexStream	: IVertexStream			= mesh.vertexStream;
+			var indexStream 	: IndexStream			= mesh.indexStream;
+			var passes			: Vector.<IEffectPass>	= effect.getPasses(renderingData.styleStack,
+															   	   		   localData,
+																		   worldData);
 			var numPasses 			: int 					= passes.length;
 			
 			for (var j : int = 0; j < numPasses; ++j)
@@ -72,7 +73,7 @@ package aerys.minko.scene.action.mesh
 				
 				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 				{
-					state.setInputStreams(vertexStreamList, indexStream);
+					state.setInputStreams(vertexStream, indexStream);
 					renderer.drawTriangles();
 				}
 				

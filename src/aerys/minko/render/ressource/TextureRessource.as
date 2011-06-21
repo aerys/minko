@@ -51,7 +51,7 @@ package aerys.minko.render.ressource
 		
 		public function getNativeTexture(context : Context3D) : Texture
 		{
-			if (!_texture)
+			if (!_texture && _width && _height)
 			{
 				_texture = context.createTexture(_width,
 												 _height,

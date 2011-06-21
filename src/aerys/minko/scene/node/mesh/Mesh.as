@@ -2,37 +2,36 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
-	public class Mesh extends AbstractScene implements IMesh, IActionTarget
+	public class Mesh extends AbstractScene implements IMesh
 	{
 		use namespace minko;
 		use namespace minko_stream;
 		
 		private static var _id : uint = 0;
 		
-		protected var _vertexStreamList	: VertexStreamList	= null;
-		protected var _indexStream		: IndexStream		= null;
+		protected var _vertexStreamList	: IVertexStream	= null;
+		protected var _indexStream		: IndexStream	= null;
 		
 		public function get version() : uint
 		{
 			return _vertexStreamList.version + _indexStream.version;
 		}
 		
-		public function get vertexStreamList() : VertexStreamList
+		public function get vertexStream() : IVertexStream
 		{
 			return _vertexStreamList;
 		}
 		
-		public function set vertexStreamList(value : VertexStreamList) : void
+		public function set vertexStream(value : IVertexStream) : void
 		{
 			_vertexStreamList = value;
 		}
@@ -61,7 +60,7 @@ package aerys.minko.scene.node.mesh
 		private function initialize() : void
 		{
 			if (!_indexStream && _vertexStreamList)
-				_indexStream = new IndexStream(null, vertexStreamList.length, vertexStreamList.dynamic);
+				_indexStream = new IndexStream(null, vertexStream.length, vertexStream.dynamic);
 			
 			actions[0] = MeshAction.meshAction;
 		}
@@ -87,10 +86,10 @@ package aerys.minko.scene.node.mesh
 		
 		private static function computeVertexFormat(meshes : Vector.<IMesh>) : VertexFormat
 		{
-			var newVertexFormat : VertexFormat = meshes[0].vertexStreamList.format.clone();
+			var newVertexFormat : VertexFormat = meshes[0].vertexStream.format.clone();
 			
 			for each (var mesh : IMesh in meshes)
-				newVertexFormat.intersectWith(mesh.vertexStreamList.format);
+				newVertexFormat.intersectWith(mesh.vertexStream.format);
 			
 			return newVertexFormat;	
 		}
@@ -143,7 +142,7 @@ package aerys.minko.scene.node.mesh
 				for (var k : uint = 0; k < componentCount; ++k)
 				{
 					var vertexComponent	: VertexComponent	= vertexComponents[k];
-					var vertexStream	: VertexStream		= mesh.vertexStreamList.getVertexStreamByComponent(vertexComponent);
+					var vertexStream	: VertexStream		= mesh.vertexStream.getSubStreamByComponent(vertexComponent);
 					
 					vertexComponentOffsets[k]				= vertexStream.format.getOffsetForComponent(vertexComponent);
 					vertexComponentDwordsPerVertex[k]		= vertexStream.format.dwordsPerVertex;
@@ -152,7 +151,7 @@ package aerys.minko.scene.node.mesh
 				}
 				
 				// push vertex data into the new buffer.
-				var vertexCount : uint = mesh.vertexStreamList.length;
+				var vertexCount : uint = mesh.vertexStream.length;
 				for (var vertexId : uint = 0; vertexId < vertexCount; ++vertexId)
 					for (var componentId : uint = 0; componentId < componentCount; ++componentId)
 					{

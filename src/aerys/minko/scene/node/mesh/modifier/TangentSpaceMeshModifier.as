@@ -2,6 +2,8 @@ package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
+	import aerys.minko.type.stream.IVertexStream;
+	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
@@ -12,24 +14,25 @@ package aerys.minko.scene.node.mesh.modifier
 		
 		public function TangentSpaceMeshModifier(target : IMesh)
 		{
-			super(target);
-			
-			_vertexStreamList = target.vertexStreamList.clone();
-			initialize();
+			super(target, computeStream(target));
 		}
-		private function initialize() : void
+		
+		private function computeStream(target : IMesh) : VertexStream
 		{
-			var withNormals		: Boolean			= vertexStreamList.getVertexStreamByComponent(VertexComponent.NORMAL) == null;
+			var vertexStream	: IVertexStream		= target.vertexStream;
+			var indexStream		: IndexStream		= target.indexStream;
+			
+			var withNormals		: Boolean			= vertexStream.getSubStreamByComponent(VertexComponent.NORMAL) == null;
 			var f				: int				= withNormals ? 6 : 3;
 			
 			// (x, y, z) positions
-			var xyzStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
+			var xyzStream		: VertexStream		= vertexStream.getSubStreamByComponent(VertexComponent.XYZ);
 			var xyzOffset		: int 				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var xyzSize			: int 				= xyzStream.format.dwordsPerVertex;
 			var xyz				: Vector.<Number>	= xyzStream._data;
 			
 			// (u, v) texture coordinates
-			var uvStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.UV);
+			var uvStream		: VertexStream		= vertexStream.getSubStreamByComponent(VertexComponent.UV);
 			var uvOffset		: int 				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
 			var uvSize			: int 				= uvStream.format.dwordsPerVertex;
 			var uv				: Vector.<Number>	= uvStream._data;
@@ -176,11 +179,7 @@ package aerys.minko.scene.node.mesh.modifier
 			if (withNormals)
 				format.addComponent(VertexComponent.NORMAL);
 			
-			var stream : VertexStream = new VertexStream(data,
-														 format,
-														 xyzStream.dynamic);
-			
-			_vertexStreamList.pushVertexStream(stream);
+			return new VertexStream(data, format, xyzStream.dynamic);
 		}
 	}
 }

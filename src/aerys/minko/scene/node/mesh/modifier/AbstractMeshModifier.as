@@ -1,34 +1,36 @@
 package aerys.minko.scene.node.mesh.modifier
 {
-	import aerys.minko.scene.action.mesh.modifier.MeshModifierAction;
+	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
-	public class AbstractMeshModifier extends Mesh implements IMeshModifier
+	public class AbstractMeshModifier extends AbstractScene implements IMeshModifier
 	{
-		private var _target : IMesh	= null;
+		private var _target 			: IMesh				= null;
+		private var _indexStream		: IndexStream		= null;
+		private var _vertexStreamList	: VertexStreamList	= new VertexStreamList();
 		
 		public function get target() : IMesh
 		{
 			return _target;
 		}
 		
-		override public function get version() : uint
+		public function get version() : uint
 		{
-			return super.version + _target.version;
+			return _target.version;
 		}
 				
-		override public function get vertexStreamList() : VertexStreamList
+		public function get vertexStream() : IVertexStream
 		{
-			return _vertexStreamList || (_target ? _target.vertexStreamList : null);
+			return _vertexStreamList || (_target ? _target.vertexStream : null);
 		}
 		
-		override public function get indexStream() : IndexStream
+		public function get indexStream() : IndexStream
 		{
 			return _indexStream || (_target ? _target.indexStream : null);
 		}
@@ -42,21 +44,19 @@ package aerys.minko.scene.node.mesh.modifier
 			initialize(streams);
 			
 			//actions[0] = new MeshModifierAction();
+			actions[0] = MeshAction.meshAction;
 		}
-		
+	
 		private function initialize(streams : Array) : void
 		{
 			var numStreams : int = streams.length;
 			
-			if (numStreams != 0)
-			{
-				_vertexStreamList = _target
-									? _target.vertexStreamList.clone()
-									: new VertexStreamList();
-				
-				for (var i : int = 0; i < numStreams; ++i)
-					_vertexStreamList.pushVertexStream(streams[i] as VertexStream);
-			}
+			_vertexStreamList = target.vertexStream is VertexStreamList
+								? (target.vertexStream as VertexStreamList).clone()
+								: new VertexStreamList(_target.vertexStream);
+			
+			for (var i : int = 0; i < numStreams; ++i)
+				_vertexStreamList.pushVertexStream(streams[i] as VertexStream);
 		}
 		
 	}

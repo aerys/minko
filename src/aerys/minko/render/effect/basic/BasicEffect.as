@@ -82,7 +82,7 @@ package aerys.minko.render.effect.basic
 			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
-				diffuse = combine(interpolate(vertexColor).rgb, 1.);
+				diffuse = combine(interpolate(vertexRGBColor).rgb, 1.);
 		
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))

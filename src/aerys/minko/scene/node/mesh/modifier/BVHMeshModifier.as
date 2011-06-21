@@ -56,7 +56,7 @@ package aerys.minko.scene.node.mesh.modifier
 																	  Number.NEGATIVE_INFINITY,
 																	  Number.NEGATIVE_INFINITY);
 				
-				var xyzStream		: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
+				var xyzStream		: VertexStream		= vertexStream.getSubStreamByComponent(VertexComponent.XYZ);
 				var xyzOffset		: int				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
 				
 				var xyz				: Vector.<Number>	= xyzStream._data;

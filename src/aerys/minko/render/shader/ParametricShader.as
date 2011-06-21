@@ -22,6 +22,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Negate;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
+	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
@@ -68,7 +69,7 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
 		
-		protected final function get vertexColor() : SValue
+		protected final function get vertexRGBColor() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.RGB));
 		}
@@ -369,6 +370,11 @@ package aerys.minko.render.shader
 		protected final function sqrt(scalar : Object) : SValue
 		{
 			return new SValue(new SquareRoot(getNode(scalar)));
+		}
+		
+		protected final function rsqrt(scalar : Object) : SValue
+		{
+			return new SValue(new ReciprocalRoot(getNode(scalar)));
 		}
 		
 		protected final function getFolorColor(start	: Object,

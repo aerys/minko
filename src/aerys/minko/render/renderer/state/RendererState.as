@@ -8,6 +8,7 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
@@ -119,7 +120,7 @@ package aerys.minko.render.renderer.state
 	
 		private var _vertexStreams		: Vector.<VertexStream>		= new Vector.<VertexStream>(8, true);
 		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
-		private var _vertexFormats		: Vector.<String>			= new Vector.<String>(8, true);
+		private var _vertexComponents	: Vector.<VertexComponent>	= new Vector.<VertexComponent>(8, true);
 		minko_render var _indexStream	: IndexStream				= null;
 		
 		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>(NUM_VERTEX_CONSTS * 4);
@@ -257,7 +258,7 @@ package aerys.minko.render.renderer.state
 			++_version;
 		}
 		
-		public function setInputStreams(vertexStream	: VertexStreamList,
+		public function setInputStreams(vertexStream	: IVertexStream,
 										indexStream		: IndexStream) : void
 		{
 			var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
@@ -272,13 +273,13 @@ package aerys.minko.render.renderer.state
 				
 				if (neededComponent)
 				{
-					var stream : VertexStream = vertexStream.getVertexStreamByComponent(neededComponent);
+					var stream : VertexStream = vertexStream.getSubStreamByComponent(neededComponent);
 					
 					if (!stream)
 						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
 					
 					_vertexStreams[i] = stream;
-					_vertexFormats[i] = neededComponent.nativeFormatString;
+					_vertexComponents[i] = neededComponent;
 					_vertexOffsets[i] = stream.format.getOffsetForComponent(neededComponent);
 					
 					_setFlags |= VERTEX_STREAM_1 << i;
@@ -433,11 +434,11 @@ package aerys.minko.render.renderer.state
 					// set vertex buffer
 					if (_setFlags & (VERTEX_STREAM_1 << i))
 					{
-						var vertexBuffer : VertexBuffer3D	= _vertexStreams[i].getNativeVertexBuffer3D(context);
-						var vertexOffset : int				= _vertexOffsets[i];
-						var vertexFormat : String			= _vertexFormats[i];
+						var vertexComponent : VertexComponent	= _vertexComponents[i];
+						var vertexBuffer 	: VertexBuffer3D	= _vertexStreams[i].getNativeBuffer(context);
+						var vertexOffset 	: int				= _vertexOffsets[i];
 						
-						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexFormat);
+						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexComponent.nativeFormatString);
 					}
 					else 
 					{
@@ -535,17 +536,23 @@ package aerys.minko.render.renderer.state
 					context.setTextureAt(i, texture);
 				
 				// set vertex buffers
-				var vertexFlag 	 : uint 			= VERTEX_STREAM_1 << i;
-				var vertexStream : VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
-				var vertexOffset : int				= _vertexOffsets[i];
-				var vertexFormat : String			= _vertexFormats[i];
+				var vertexFlag 	 	: uint 				= VERTEX_STREAM_1 << i;
+				var vertexStream 	: VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
 				
 				if (vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
 				{
-					context.setVertexBufferAt(i,
-											  vertexStream ? vertexStream.getNativeVertexBuffer3D(context) : null,
-											  vertexOffset,
-											  vertexFormat);
+					if (!vertexStream)
+						context.setVertexBufferAt(i, null);
+					else
+					{
+						var vertexOffset 	: int				= _vertexOffsets[i];
+						var vertexComponent : VertexComponent	= _vertexComponents[i];
+						var buffer 			: VertexBuffer3D 	= vertexStream
+													  		   	  ? vertexStream.getNativeBuffer(context)
+																  : null;
+						
+						context.setVertexBufferAt(i, buffer, vertexOffset, vertexComponent.nativeFormatString);
+					}
 				}
 			}
 			

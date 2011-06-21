@@ -9,6 +9,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
+	import aerys.minko.render.shader.node.operation.builtin.Negate;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
@@ -74,7 +75,7 @@ package aerys.minko.render.shader
 			return this;
 		}
 		
-		public final function scale(arg : Object) : SValue
+		public final function scaleBy(arg : Object) : SValue
 		{
 			_node = new Multiply(_node, getNode(arg));
 			
@@ -135,6 +136,13 @@ package aerys.minko.render.shader
 		public final function normalize() : SValue
 		{
 			_node = new Normalize(_node);
+			
+			return this;
+		}
+		
+		public final function negate() : SValue
+		{
+			_node = new Negate(_node);
 			
 			return this;
 		}
