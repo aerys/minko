@@ -71,6 +71,7 @@ package aerys.minko.render.renderer
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff)  :void
 		{
+			_context.setScissorRectangle(null);
 			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 			
 			_numTriangles = 0;
@@ -85,7 +86,7 @@ package aerys.minko.render.renderer
 			var time : int = getTimer();
 			
 			if (SORT && _numStates > 1)
-				RendererState.sort(_states);
+				RendererState.sort(_states, _numStates);
 			
 			var actualState : RendererState = null;
 			

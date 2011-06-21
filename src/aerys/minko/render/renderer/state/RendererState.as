@@ -420,8 +420,7 @@ package aerys.minko.render.renderer.state
 					context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
 											BLENDING_STR[int(_blending >>> 16)]);
 				
-				if (_setFlags & SCISSOR_RECTANGLE)
-					context.setScissorRectangle(_rectangle);
+				context.setScissorRectangle(_setFlags & SCISSOR_RECTANGLE ? _rectangle : null);
 				
 				for (var i : int = 0; i < 8; ++i)
 				{
@@ -518,8 +517,7 @@ package aerys.minko.render.renderer.state
 										BLENDING_STR[int(_blending >> 16)]);
 			}
 			
-			if (_setFlags & SCISSOR_RECTANGLE
-				&& (!(current._setFlags & SCISSOR_RECTANGLE) || _rectangle != current._rectangle))
+			if ((current._setFlags & SCISSOR_RECTANGLE) && _rectangle != current._rectangle)
 			{
 				context.setScissorRectangle(_rectangle);
 			}
@@ -593,9 +591,9 @@ package aerys.minko.render.renderer.state
 			}
 		}
 		
-		public static function sort(states : Vector.<RendererState>) : void
+		public static function sort(states : Vector.<RendererState>, numStates : int) : void
 		{
-			var n 	: int 				= states.length;
+			var n 	: int 				= numStates;//states.length;
 			var a	: Vector.<Number> 	= new Vector.<Number>(n);
 			var i	: int 				= 0;
 			var j	: int 				= 0;
