@@ -352,7 +352,7 @@ package aerys.minko.type.math
 				var scale	: Vector4	= transform.deltaMultiplyVector(ConstVector4.ONE);
 
 				center = transform.multiplyVector(sphere.center);
-				radius = Math.max(radius * scale.x, radius * scale.y, radius * scale.z)
+				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 			}
 						
 			for (var i : int = 0; i < 6; ++i)
@@ -471,15 +471,17 @@ package aerys.minko.type.math
 			
 			var sphere		: BoundingSphere	= volume.boundingSphere;
 			var center		: Vector4			= sphere.center;
-			var scale		: Vector4			= transform.deltaMultiplyVector(ConstVector4.ONE);
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
 			var vertices	: Vector.<Number>	= transform ? null : box._vertices;
 			
-			radius *= Math.max(scale.x, scale.y, scale.z);
-			
 			if (transform)
+			{
+				var scale		: Vector4			= transform.deltaMultiplyVector(ConstVector4.ONE);
+
+				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 				center = transform.multiplyVector(center);
+			}
 			
 			for (var i : int = 0; i < 6; i++)
 			{

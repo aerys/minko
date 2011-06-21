@@ -51,8 +51,6 @@ package aerys.minko.scene.node.mesh.modifier
 		{
 			var numStreams : int = streams.length;
 			
-			trace(target.vertexStream);
-			
 			_vertexStreamList = target.vertexStream is VertexStreamList
 								? (target.vertexStream as VertexStreamList).clone()
 								: new VertexStreamList(_target.vertexStream);
