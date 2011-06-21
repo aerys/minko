@@ -13,7 +13,7 @@ package aerys.minko.scene.node.mesh.modifier
 	{
 		private var _target 			: IMesh				= null;
 		private var _indexStream		: IndexStream		= null;
-		private var _vertexStreamList	: VertexStreamList	= new VertexStreamList();
+		private var _vertexStreamList	: VertexStreamList	= null;
 		
 		public function get target() : IMesh
 		{
@@ -50,6 +50,8 @@ package aerys.minko.scene.node.mesh.modifier
 		private function initialize(streams : Array) : void
 		{
 			var numStreams : int = streams.length;
+			
+			trace(target.vertexStream);
 			
 			_vertexStreamList = target.vertexStream is VertexStreamList
 								? (target.vertexStream as VertexStreamList).clone()

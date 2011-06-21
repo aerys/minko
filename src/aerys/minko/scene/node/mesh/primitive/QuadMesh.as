@@ -51,8 +51,7 @@ package aerys.minko.scene.node.mesh.primitive
 			if (doubleSided)
 				indices = indices.concat(indices.concat().reverse());
 			
-			super(new VertexStreamList(new VertexStream(vertices)),
-				  new IndexStream(indices));
+			super(new VertexStream(vertices), new IndexStream(indices));
 		}
 
 	}

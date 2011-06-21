@@ -45,7 +45,7 @@ package aerys.minko.type.stream
 			
 			vertexStreamList._streams = _streams.concat();
 			vertexStreamList._streamVersions = _streamVersions.concat();
-			vertexStreamList._format = _format;
+			vertexStreamList._format = _format.clone();
 			vertexStreamList._version = _version;
 			vertexStreamList._dynamic = _dynamic;
 			
@@ -94,7 +94,7 @@ package aerys.minko.type.stream
 				return false;
 			
 			for each (var stream : VertexStream in _streams)
-			stream.deleteVertexByIndex(index);
+				stream.deleteVertexByIndex(index);
 			
 			return true;
 		}
