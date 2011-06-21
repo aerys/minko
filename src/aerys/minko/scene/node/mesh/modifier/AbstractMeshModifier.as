@@ -13,7 +13,7 @@ package aerys.minko.scene.node.mesh.modifier
 	{
 		private var _target 			: IMesh				= null;
 		private var _indexStream		: IndexStream		= null;
-		private var _vertexStreamList	: VertexStreamList	= new VertexStreamList();
+		private var _vertexStreamList	: VertexStreamList	= null;
 		
 		public function get target() : IMesh
 		{

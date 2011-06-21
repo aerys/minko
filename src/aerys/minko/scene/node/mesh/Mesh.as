@@ -18,22 +18,22 @@ package aerys.minko.scene.node.mesh
 		
 		private static var _id : uint = 0;
 		
-		protected var _vertexStreamList	: IVertexStream	= null;
-		protected var _indexStream		: IndexStream	= null;
+		protected var _vertexStream	: IVertexStream	= null;
+		protected var _indexStream	: IndexStream	= null;
 		
 		public function get version() : uint
 		{
-			return _vertexStreamList.version + _indexStream.version;
+			return _vertexStream.version + _indexStream.version;
 		}
 		
 		public function get vertexStream() : IVertexStream
 		{
-			return _vertexStreamList;
+			return _vertexStream;
 		}
 		
 		public function set vertexStream(value : IVertexStream) : void
 		{
-			_vertexStreamList = value;
+			_vertexStream = value;
 		}
 
 		public function get indexStream() : IndexStream
@@ -46,12 +46,12 @@ package aerys.minko.scene.node.mesh
 			_indexStream = value;
 		}
 
-		public function Mesh(vertexStreamList	: VertexStreamList	= null,
-							 indexStream		: IndexStream 		= null)
+		public function Mesh(vertexStream	: IVertexStream	= null,
+							 indexStream	: IndexStream 	= null)
 		{
 			super();
 			
-			_vertexStreamList = vertexStreamList;
+			_vertexStream = vertexStream;
 			_indexStream = indexStream;
 			
 			initialize();
@@ -59,7 +59,7 @@ package aerys.minko.scene.node.mesh
 		
 		private function initialize() : void
 		{
-			if (!_indexStream && _vertexStreamList)
+			if (!_indexStream && _vertexStream)
 				_indexStream = new IndexStream(null, vertexStream.length, vertexStream.dynamic);
 			
 			actions[0] = MeshAction.meshAction;
@@ -68,7 +68,7 @@ package aerys.minko.scene.node.mesh
 		public function clone() : IMesh
 		{
 			var meshes				: Vector.<IMesh>			= Vector.<IMesh>([this])
-			var vertexFormat		: VertexFormat				= _vertexStreamList.format.clone();
+			var vertexFormat		: VertexFormat				= _vertexStream.format.clone();
 			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
 			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
 			

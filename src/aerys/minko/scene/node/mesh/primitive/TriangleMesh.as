@@ -24,14 +24,15 @@
 		
 		public function TriangleMesh()
 		{
-			var vb : Vector.<Number> = Vector.<Number>([-0.5, 0.0, -0.5, 0., 0.,
-														0.5, 0.0, -0.5, 0., 1.,
-														0.0, 0.0, 0.5, 1., 0.]);
+			var vb : Vector.<Number> = new Vector.<Number>();
 			
-			var vertexStreamList : VertexStreamList = new VertexStreamList(
-				new VertexStream(vb, VertexFormat.XYZ_UV)
+			vb.push(
+				-0.5, 0.0, -0.5, 0., 0.,
+				0.5, 0.0, -0.5, 0., 1.,
+				0.0, 0.0, 0.5, 1., 0.
 			);
-			super(vertexStreamList);
+			
+			super(new VertexStream(vb, VertexFormat.XYZ_UV));
 		}
 		
 	}
