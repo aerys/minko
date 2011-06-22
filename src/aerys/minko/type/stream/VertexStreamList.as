@@ -1,10 +1,8 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.math.Vector4;
+	import aerys.minko.render.ressource.VertexRessource;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
@@ -19,11 +17,14 @@ package aerys.minko.type.stream
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
 		
-		public function get version()		: uint 			{ return _version; }
-		public function get dynamic()		: Boolean 		{ return _dynamic; }
-		public function get format()		: VertexFormat	{ return _format; }
-		public function get streamCount()	: uint			{ return _streams.length; }
-		public function get length()		: uint			{ return _streams.length ? _streams[0].length : 0; }
+		private var _ressource		: VertexRessource		= null;
+		
+		public function get version()		: uint 				{ return _version; }
+		public function get dynamic()		: Boolean 			{ return _dynamic; }
+		public function get format()		: VertexFormat		{ return _format; }
+		public function get streamCount()	: uint				{ return _streams.length; }
+		public function get length()		: uint				{ return _streams.length ? _streams[0].length : 0; }
+		public function get ressource()		: VertexRessource	{ return _ressource; }
 		
 		public function VertexStreamList(...streams)
 		{
@@ -32,16 +33,21 @@ package aerys.minko.type.stream
 		
 		private function initialize(streams : Array) : void
 		{
+			_ressource = new VertexRessource(this);
+			
 			for each (var stream : VertexStream in streams) 
-			pushVertexStream(stream);
+				pushVertexStream(stream);
 		}
 		
 		public function clone() : VertexStreamList
 		{
-			var vertexStreamList:VertexStreamList = new VertexStreamList();
+			var vertexStreamList : VertexStreamList = new VertexStreamList();
 			
-			for each (var stream:VertexStream in _streams)
-			vertexStreamList.pushVertexStream(stream);
+			vertexStreamList._streams = _streams.concat();
+			vertexStreamList._streamVersions = _streamVersions.concat();
+			vertexStreamList._format = _format.clone();
+			vertexStreamList._version = _version;
+			vertexStreamList._dynamic = _dynamic;
 			
 			return vertexStreamList;
 		}
@@ -61,12 +67,12 @@ package aerys.minko.type.stream
 			++_version;
 		}
 		
-		public function getVextexStreamById(i : uint) : VertexStream
+		public function getSubStreamById(id : int) : VertexStream
 		{
-			return _streams[i];
+			return _streams[id];
 		}
 		
-		public function getVertexStreamByComponent(vertexComponent : VertexComponent) : VertexStream
+		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			var streamLength	: int = _streams.length;
 			
@@ -88,7 +94,7 @@ package aerys.minko.type.stream
 				return false;
 			
 			for each (var stream : VertexStream in _streams)
-			stream.deleteVertexByIndex(index);
+				stream.deleteVertexByIndex(index);
 			
 			return true;
 		}

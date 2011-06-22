@@ -27,10 +27,10 @@ package aerys.minko.render.shader.node.operation.builtin
 			super(arg1, arg2);
 			
 			if (arg1.size < 3)
-				throw new Error('First argument must be of length 3 or 4');
+				throw new Error('First argument must be of size 3 or 4');
 			
 			if (arg2.size !== 16)
-				throw new Error('Second argument must be of length 4');
+				throw new Error('Second argument must be of size 16');
 		}
 		
 		override public function isSame(node : INode) : Boolean

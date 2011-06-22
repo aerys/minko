@@ -7,12 +7,12 @@ package aerys.minko.render.shader.node.operation.builtin
 	
 	public class Multiply extends AbstractOperation implements IComponentWiseOperation, ICommutativeOperation
 	{
-		override public function get opCode():uint
+		override public function get opCode() : uint
 		{
 			return 0x03;
 		}
 		
-		override public function get instructionName():String
+		override public function get instructionName() : String
 		{
 			return 'mul';
 		}

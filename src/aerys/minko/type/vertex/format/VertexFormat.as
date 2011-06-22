@@ -31,7 +31,7 @@ package aerys.minko.type.vertex.format
 		private function initialize(components : Array) : void
 		{
 			for each (var component : VertexComponent in components)
-			addComponent(component);
+				addComponent(component);
 		}
 		
 		public function addComponent(component : VertexComponent) : void
@@ -107,7 +107,7 @@ package aerys.minko.type.vertex.format
 		public function unionWith(otherVertexFormat : VertexFormat) : void
 		{
 			for each (var component : VertexComponent in otherVertexFormat._components)
-			addComponent(component);
+				addComponent(component);
 		}
 		
 		public function intersectWith(otherVertexFormat : VertexFormat) : void

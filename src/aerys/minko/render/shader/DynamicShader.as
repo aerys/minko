@@ -1,5 +1,6 @@
 package aerys.minko.render.shader
 {
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.ressource.TextureRessource;
@@ -12,6 +13,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.type.log.LogLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
@@ -34,9 +36,19 @@ package aerys.minko.render.shader
 		{
 			var compiler : Compiler = new Compiler();
 			compiler.load(clipspacePosition, color);
+			
+			if (Minko.debugLevel & LogLevel.SHADER_AGAL)
+			{
+				Minko.log(LogLevel.SHADER_AGAL, compiler.compileAgalVertexShader(), compiler);
+				Minko.log(LogLevel.SHADER_AGAL, compiler.compileAgalFragmentShader(), compiler);
+			}
+			
+			if (Minko.debugLevel & LogLevel.SHADER_DOTTY)
+				Minko.log(LogLevel.SHADER_DOTTY, compiler.writeDotGraph(), compiler);
+			
 			return compiler.compileShader();
 		}
-		
+	
 		public function DynamicShader(vertexShader					: ByteArray,
 									  fragmentShader				: ByteArray,
 									  vertexInput					: Vector.<VertexComponent>,

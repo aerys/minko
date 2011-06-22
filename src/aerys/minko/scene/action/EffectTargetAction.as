@@ -9,37 +9,31 @@ package aerys.minko.scene.action
 	public class EffectTargetAction implements IAction
 	{
 		private static const TYPE		: uint					= ActionType.UPDATE_EFFECTS;
-		
-		private static var _instance	: EffectTargetAction	= null;
-		
-		public static function get effectTargetAction() : EffectTargetAction
-		{
-			return _instance || (_instance = new EffectTargetAction());
-		}
+
+		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
 		
 		public function get type() : uint		{ return TYPE; }
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
+			_effects.push(visitor.renderingData.effect);
+			
 			return true;
 		}
 		
 		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var effects 	: Vector.<IEffect>	= (scene as IEffectTarget).effects;
-			var numEffects	: int				= effects.length;
+			var effect : IEffect = (scene as IEffectTarget).effect;
 			
-			for (var i : int = 0; i < numEffects; ++i)
-				visitor.renderingData.effects.push(effects[i]);
+			if (effect)
+				visitor.renderingData.effect = effect;
 			
 			return true;
 		}
 		
 		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var numEffects	: int	= (scene as IEffectTarget).effects.length;
-			
-			visitor.renderingData.effects.length -= numEffects;
+			visitor.renderingData.effect = _effects.pop();
 			
 			return true;
 		}

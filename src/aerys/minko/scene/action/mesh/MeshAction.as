@@ -13,6 +13,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.RenderingData;
 	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
@@ -48,40 +49,35 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var localData			: LocalData			= visitor.localData;
-			var worldData			: Dictionary		= visitor.worldData;
-			var renderingData		: RenderingData		= visitor.renderingData;
-			var vertexStreamList 	: VertexStreamList	= mesh.vertexStreamList;
-			var indexStream 		: IndexStream		= mesh.indexStream;
-			var effects				: Vector.<IEffect>	= renderingData.effects;
-			var numEffects 			: int 				= effects.length;
+			var localData		: LocalData			= visitor.localData;
+			var worldData		: Dictionary		= visitor.worldData;
+			var renderingData	: RenderingData		= visitor.renderingData;
+			var effect			: IEffect			= renderingData.effect;
 			
-			if (numEffects == 0)
+			if (!effect)
 				throw new Error("Unable to draw without an effect.");
 			
-			for (var i : int = 0; i < numEffects; ++i)
+			var vertexStream	: IVertexStream			= mesh.vertexStream;
+			var indexStream 	: IndexStream			= mesh.indexStream;
+			var passes			: Vector.<IEffectPass>	= effect.getPasses(renderingData.styleStack,
+															   	   		   localData,
+																		   worldData);
+			var numPasses 			: int 					= passes.length;
+			
+			for (var j : int = 0; j < numPasses; ++j)
 			{
-				var fx			: IEffect				= effects[i];
-				var passes		: Vector.<IEffectPass>	= fx.getPasses(renderingData.styleStack,
-																	   localData,
-																	   worldData);
-				var numPasses 	: int 					= passes.length;
+				renderer.begin();
 				
-				for (var j : int = 0; j < numPasses; ++j)
+				var pass	: IEffectPass = passes[j];
+				var state	: RendererState = renderer.state;
+				
+				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 				{
-					renderer.begin();
-					
-					var pass	: IEffectPass = passes[j];
-					var state	: RendererState = renderer.state;
-					
-					if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
-					{
-						state.setInputStreams(vertexStreamList, indexStream);
-						renderer.drawTriangles();
-					}
-					
-					renderer.end();
+					state.setInputStreams(vertexStream, indexStream);
+					renderer.drawTriangles();
 				}
+				
+				renderer.end();
 			}
 			
 			return true;

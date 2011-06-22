@@ -26,6 +26,8 @@ package aerys.minko.render
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.system.Capabilities;
+	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
@@ -62,6 +64,8 @@ package aerys.minko.render
 		private var _backgroundColor	: int						= 0;
 		
 		private var _viewportData		: ViewportData				= null;
+		
+		private var _logoIsHidden		: Boolean					= false;
 		
 		public function get version() : uint
 		{
@@ -262,7 +266,8 @@ package aerys.minko.render
 				height = stage.stageHeight;
 			}
 			
-			showLogo();
+			if (!_logoIsHidden)
+				showLogo();
 		}
 		
 		private function removedFromStage(event : Event) : void
@@ -287,7 +292,9 @@ package aerys.minko.render
 				height = stage.stageHeight;
 			
 			resetStage3D();
-			showLogo();
+			
+			if (!_logoIsHidden)
+				showLogo();
 		}
 		
 		private function resetStage3D(event : Event = null) : void
@@ -309,6 +316,8 @@ package aerys.minko.render
 					new WorldDataVisitor(),
 					new RenderingVisitor()
 				]);
+				
+				dispatchEvent(new Event(Event.INIT));
 			}
 		}
 		
@@ -328,10 +337,13 @@ package aerys.minko.render
 		 */
 		public function render(scene : IScene) : void
 		{
-			if (_visitors.length != 0)
+			if (!_logoIsHidden)
+				showLogo();
+			
+			if (_visitors && _visitors.length != 0)
 			{
 				var time : Number = getTimer();
-				
+		
 				// create the data sources the visitors are going to write and read from during render.
 				var localData		: LocalData		= new LocalData();
 				var worldData		: Dictionary	= new Dictionary();
@@ -339,7 +351,7 @@ package aerys.minko.render
 				
 				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
-				renderingData.clear(defaultEffect);
+				renderingData.effect = defaultEffect;
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
@@ -356,7 +368,6 @@ package aerys.minko.render
 			}
 			
 			Factory.sweep();
-			showLogo();
 		}
 		
 		public function showLogo() : void
@@ -367,6 +378,13 @@ package aerys.minko.render
 			
 			logo.x = 5;
 			logo.y = _height - logo.height - 5;
+		}
+		
+		public function hideLogo() : void
+		{
+			_logoIsHidden = true;
+			if (contains(Minko.logo))
+				removeChild(Minko.logo);
 		}
 	}
 }

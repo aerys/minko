@@ -16,10 +16,10 @@ package aerys.minko.render.renderer
 	{
 		use namespace minko;
 		use namespace minko_render;
-		
+	
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= true;
+		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;
@@ -47,14 +47,13 @@ package aerys.minko.render.renderer
 		
 		public function begin()	: void
 		{
-			_currentState = RENDER_STATE.create() as RendererState;
+			_currentState = RENDER_STATE.create(true) as RendererState;
 			_currentState.clear();
 		}
 		
 		public function end() : void
 		{
 			_states[int(_numStates++)] = _currentState;
-			
 			_currentState = null;
 		}
 		
@@ -72,7 +71,8 @@ package aerys.minko.render.renderer
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff)  :void
 		{
-			//_context.clear(red, green, blue, alpha, depth, stencil, mask);
+			_context.setScissorRectangle(null);
+			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 			
 			_numTriangles = 0;
 			_drawingTime = 0;
@@ -86,13 +86,13 @@ package aerys.minko.render.renderer
 			var time : int = getTimer();
 			
 			if (SORT && _numStates > 1)
-				RendererState.sort(_states);
+				RendererState.sort(_states, _numStates);
 			
 			var actualState : RendererState = null;
 			
 			for (var i : int = 0; i < _numStates; ++i)
 			{
-				var state			: RendererState 	= _states[i];
+				var state			: RendererState = _states[i];
 				var offsets 		: Vector.<uint>	= state.offsets;
 				var numTriangles 	: Vector.<int> 	= state.numTriangles;
 				var numCalls 		: int 			= offsets.length;
@@ -106,14 +106,11 @@ package aerys.minko.render.renderer
 					var count	: int			= numTriangles[j];
 					
 					_numTriangles += count == -1
-						? state._indexStream.length / 3.
-						: count;
+									 ? state._indexStream.length / 3.
+									 : count;
 					
 					_context.drawTriangles(iBuffer, offsets[j], count);
 				}
-				
-				if (actualState)
-					RENDER_STATE.free(actualState);
 				
 				actualState = state;
 			}
@@ -125,7 +122,8 @@ package aerys.minko.render.renderer
 		{
 			var time : int = getTimer();
 			
-			_context.present();
+			if (_numStates != 0)
+				_context.present();
 			
 			_drawingTime += getTimer() - time;
 			++_frame;

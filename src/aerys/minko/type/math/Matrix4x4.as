@@ -415,9 +415,9 @@ package aerys.minko.type.math
 			return out;
 		}
 		
-		public static function orthoOffCenterLH(l	: Number,
-												r	: Number,
-												b	: Number,
+		public static function orthoOffCenterLH(l		: Number,
+												r		: Number,
+												b		: Number,
 												t		: Number,
 												zNear	: Number,
 												zFar	: Number,
@@ -432,10 +432,10 @@ package aerys.minko.type.math
 			return out;
 		}
 		
-		public static function orthoOffCenterRH(l	: Number,
-												r	: Number,
-												b	: Number,
-												t	: Number,
+		public static function orthoOffCenterRH(l		: Number,
+												r		: Number,
+												b		: Number,
+												t		: Number,
 												zNear	: Number,
 												zFar	: Number,
 												out		: Matrix4x4 = null) : Matrix4x4

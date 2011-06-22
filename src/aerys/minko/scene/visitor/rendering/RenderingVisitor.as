@@ -25,9 +25,14 @@ package aerys.minko.scene.visitor.rendering
 		protected var _worldData		: Dictionary;
 		protected var _renderingData	: RenderingData;
 		
+		protected var _parent			: IScene			= null;
+		protected var _ancestors		: Vector.<IScene>	= new Vector.<IScene>();
+		
 		public function get localData()		: LocalData			{ return _localData; }
 		public function get worldData()		: Dictionary		{ return _worldData; }
 		public function get renderingData()	: RenderingData		{ return _renderingData; }
+		public function get ancestors()		: Vector.<IScene>	{ return _ancestors; }
+		public function get parent()		: IScene			{ return _parent; }
 		
 		public function get numNodes() : uint
 		{
@@ -55,25 +60,16 @@ package aerys.minko.scene.visitor.rendering
 			_renderer.drawToBackBuffer();
 			_renderer.present();
 		}
-		
-//		public function reset(defaultEffect : IEffect, color : int = 0) : void
-//		{
-//			_renderer.clear(((color >> 16) & 0xff) / 255.,
-//							((color >> 8) & 0xff) / 255.,
-//							(color & 0xff) / 255.);
-//			
-//			_worldData		= null;
-//			_numNodes		= 0;
-//			
-//			_renderingData.clear(defaultEffect);
-//		}
-		
+				
 		public function visit(scene : IScene) : void
 		{
 			var actions 	: Vector.<IAction> 	= scene.actions;
 			var numActions	: int				= actions.length;
 			var	i			: int				= 0;
 			var action		: IAction			= null;
+			
+			if (_parent)
+				_ancestors.push(_parent);
 			
 			for (i = 0; i < numActions; ++i)
 				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.prefix(scene, this, _renderer))
@@ -89,6 +85,9 @@ package aerys.minko.scene.visitor.rendering
 			
 			// update statistical data
 			++_numNodes;
+			
+			if (_ancestors.length)
+				_parent = _ancestors.pop();
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.texture
 {
+	import aerys.minko.scene.action.texture.DynamicTextureAction;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	
@@ -9,28 +10,17 @@ package aerys.minko.scene.node.texture
 	public class DynamicTexture extends BitmapTexture
 	{
 		private var _source		: DisplayObject	= null;
-		private var _bitmapData	: BitmapData	= null;
-		private var _lastFrame	: uint			= uint(-1);
+		
+		public function get source() : DisplayObject	{ return _source; }
 		
 		public function DynamicTexture(source 		: DisplayObject,
-										  mipmapping	: Boolean	= true)
+									   mipmapping	: Boolean	= true)
 		{
-			_source = source;
-			_bitmapData ||= new BitmapData(_source.width, _source.height);
-			
 			super(null, mipmapping);
+			
+			_source = source;
+			
+			actions.unshift(new DynamicTextureAction());
 		}
-		
-//		override protected function visitedByRenderingVisitor(visitor : RenderingVisitor) : void
-//		{
-//			if (visitor.frameId != _lastFrame)
-//			{
-//				_lastFrame = visitor.frameId;
-//				_bitmapData.draw(_source);
-//				updateFromBitmapData(_bitmapData, false);
-//			}
-//			
-//			super.visitedByRenderingVisitor(visitor);
-//		}
 	}
 }

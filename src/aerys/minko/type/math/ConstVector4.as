@@ -11,7 +11,7 @@ package aerys.minko.type.math
 		public static const X_AXIS	: Vector4	= new ConstVector4(1., 0., 0.);
 		public static const Y_AXIS	: Vector4	= new ConstVector4(0., 1., 0.);
 		public static const Z_AXIS	: Vector4	= new ConstVector4(0., 0., 1.);
-		public static const ZERO	: Vector4	= new ConstVector4();
+		public static const ZERO	: Vector4	= new ConstVector4(0., 0., 0., 0.);
 		public static const ONE		: Vector4	= new ConstVector4(1., 1., 1., 1.);
 		
 		public function ConstVector4(x : Number = 0.,
@@ -19,12 +19,7 @@ package aerys.minko.type.math
 									 z : Number = 0.,
 									 w : Number = NaN)
 		{
-			super();
-			
-			_vector.x = x;
-			_vector.y = y;
-			_vector.z = z;
-			_vector.w = w;
+			super(x, y, z, w);
 		}
 		
 		override public function set x(value : Number) : void		{ throw new Error(ERROR); }
@@ -32,7 +27,7 @@ package aerys.minko.type.math
 		override public function set z(value : Number) : void		{ throw new Error(ERROR); }
 		override public function set w(value : Number) : void		{ throw new Error(ERROR); }
 		
-		override public function set(x : Number, y : Number, z : Number, w : Number = 1.) : Vector4
+		override public function set(x : Number, y : Number, z : Number, w : Number = NaN) : Vector4
 		{
 			throw new Error(ERROR);
 		}
