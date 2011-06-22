@@ -5,7 +5,7 @@ package aerys.minko.render.shader.compiler.allocator
 
 	public class AttributeAllocator extends Allocator
 	{
-		public function AttributeAllocator(registerCount:uint=8)
+		public function AttributeAllocator(registerCount	: uint = 8)
 		{
 			super(registerCount);
 		}

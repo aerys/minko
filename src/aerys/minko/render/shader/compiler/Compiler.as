@@ -145,7 +145,6 @@ package aerys.minko.render.shader.compiler
 		protected function createAllocationTables() : void
 		{
 			var a : Array = _attrAllocator.getAllocations();
-			
 			for (var i : int = 0; i < a.length; ++i)
 				_vertexInput.push(Attribute(a[i]).vertexComponent);
 			

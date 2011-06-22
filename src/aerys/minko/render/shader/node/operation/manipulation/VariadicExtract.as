@@ -1,13 +1,9 @@
 package aerys.minko.render.shader.node.operation.manipulation
 {
-	import aerys.minko.render.shader.compiler.allocator.Allocation;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.leaf.ConstantAllocationId;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
-	import aerys.minko.render.shader.node.operation.builtin.Add;
-	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	
 	public class VariadicExtract extends AbstractOperation

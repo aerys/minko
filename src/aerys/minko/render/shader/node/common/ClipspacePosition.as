@@ -19,10 +19,10 @@ package aerys.minko.render.shader.node.common
 		
 		public function ClipspacePosition()
 		{
-			var result : INode = new Multiply4x4(
-				new Attribute(VertexComponent.XYZ),
-				new TransformParameter(16, LocalData.LOCAL_TO_SCREEN)
-			);
+			var localPosition	: INode = new Attribute(VertexComponent.XYZ);
+			var localToScreen	: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
+			
+			var result			: INode = new Multiply4x4(localPosition, localToScreen); 
 			
 			super(result);
 		}
