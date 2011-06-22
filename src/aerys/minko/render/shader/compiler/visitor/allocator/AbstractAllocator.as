@@ -17,16 +17,16 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 		{
 		}
 		
-		public function visit(shaderNode:INode) : void
+		public function visit(node : INode) : void
 		{
 			throw new Error('Must be overriden');
 		}
 		
 		protected function reportOperationArgumentsUsage(operationNode : AbstractOperation) : void
 		{
-			var aligned	: Boolean		= operationNode is IAlignedOperation;
-			var arg1	: INode	= operationNode.arg1;
-			var arg2	: INode	= operationNode.arg2;
+			var aligned	: Boolean	= operationNode is IAlignedOperation;
+			var arg1	: INode		= operationNode.arg1;
+			var arg2	: INode		= operationNode.arg2;
 			
 			arg1 !== null && reportArgumentUsage(arg1, aligned);
 			arg2 !== null && reportArgumentUsage(arg2, aligned);

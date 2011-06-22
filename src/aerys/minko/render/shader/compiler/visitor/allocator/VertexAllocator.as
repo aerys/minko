@@ -6,8 +6,9 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
+	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
+	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	
 	public class VertexAllocator extends AbstractAllocator
 	{
@@ -53,7 +54,11 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			}
 			else if (shaderNode is Extract)
 			{
-				reportOperationArgumentsUsage(AbstractOperation(shaderNode));
+//				reportOperationArgumentsUsage(AbstractOperation(shaderNode));
+			}
+			else if (shaderNode is VariadicExtract)
+			{
+//				reportOperationArgumentsUsage(AbstractOperation(shaderNode));
 			}
 			else if (shaderNode is Combine)
 			{
@@ -78,20 +83,29 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 				if (_stack.length > 1)
 					_tmpAlloc.allocate(operationNode, _operationId);
 			}
-			
 			else if (shaderNode is Attribute)
+			{
 				_attrAlloc.allocate(shaderNode);
-
+			}
 			else if (shaderNode is AbstractConstant)
+			{
 				_constAlloc.allocate(shaderNode);
+			}
 			
 			_stack.pop();
 		}
 		
-		override protected function reportArgumentUsage(arg:INode, aligned : Boolean) : void
+		override protected function reportArgumentUsage(arg : INode, aligned : Boolean) : void
 		{
 			if (arg is Attribute)
 				_attrAlloc.reportUsage(arg, _operationId, aligned);
+			
+			else if (arg is VariadicExtract)
+			{
+				var variadic : VariadicExtract = arg as VariadicExtract;
+				_tmpAlloc.reportUsage(variadic.arg1, _operationId, aligned);
+				_constAlloc.reportUsage(variadic.arg2, _operationId, aligned);
+			}
 			
 			else if (arg is AbstractConstant)
 				_constAlloc.reportUsage(arg, _operationId, aligned);

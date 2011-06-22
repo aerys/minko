@@ -18,7 +18,8 @@ package aerys.minko.render.shader.node.leaf
 			return _constants; 
 		}
 		
-		public function set constants(value : Vector.<Number>) : void { 
+		public function set constants(value : Vector.<Number>) : void 
+		{ 
 			_constants = value; 
 		}
 		
