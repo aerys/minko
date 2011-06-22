@@ -69,10 +69,10 @@ package aerys.minko.type.math
 		 * @param	myC
 		 * @param	myD
 		 */
-		public function Plane(a 	: Number 	= 0.,
-							  	b 	: Number 	= 0.,
-							  	c	: Number 	= 0.,
-							  	d	: Number 	= 0.)
+		public function Plane(a	: Number 	= 0.,
+							  b	: Number 	= 0.,
+							  c	: Number 	= 0.,
+							  d	: Number 	= 0.)
 		{
 			_a = a;
 			_b = b;
