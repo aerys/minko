@@ -37,6 +37,17 @@ package aerys.minko.render.shader
 			var compiler : Compiler = new Compiler();
 			compiler.load(clipspacePosition, color);
 			
+			if (Minko.debugLevel & LogLevel.SHADER_ATTR_ALLOC)
+			{
+				Minko.log(LogLevel.SHADER_ATTR_ALLOC, compiler.writeAttributeAllocationSummary());
+			}
+			
+			if (Minko.debugLevel & LogLevel.SHADER_CONST_ALLOC)
+			{
+				Minko.log(LogLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(true));
+				Minko.log(LogLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(false));
+			}
+			
 			if (Minko.debugLevel & LogLevel.SHADER_AGAL)
 			{
 				Minko.log(LogLevel.SHADER_AGAL, compiler.compileAgalVertexShader(), compiler);
@@ -44,7 +55,9 @@ package aerys.minko.render.shader
 			}
 			
 			if (Minko.debugLevel & LogLevel.SHADER_DOTTY)
+			{
 				Minko.log(LogLevel.SHADER_DOTTY, compiler.writeDotGraph(), compiler);
+			}
 			
 			return compiler.compileShader();
 		}
@@ -274,6 +287,7 @@ package aerys.minko.render.shader
 			{
 				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>;
 				var matrixVectorDataLength	: uint					= matrixVectorData.length;
+				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
 				{
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
