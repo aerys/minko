@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.node.operation.manipulation
 {
+	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Constant;
@@ -33,10 +34,13 @@ package aerys.minko.render.shader.node.operation.manipulation
 			
 			var leftOperand : INode = index;
 			if (cellSize != 4)
-				leftOperand = new Multiply(
-					leftOperand,
-					new Constant(cellSize / 4)
-				);
+			{
+				leftOperand = new Multiply(leftOperand, new Constant(cellSize / 4));
+				
+				// the following is a patch to adobe's agal validator.
+				// we have to fill a complete register for the index to work
+				leftOperand = new RootWrapper(new Extract(leftOperand, Components.XXXX));
+			}
 			
 			var rightOperand : INode = table;
 			
