@@ -1,20 +1,15 @@
 package aerys.minko.render.shader.node.common
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.shader.compiler.register.RegisterMask;
 	import aerys.minko.render.shader.node.Dummy;
-	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.IVertexNode;
 	import aerys.minko.render.shader.node.leaf.Attribute;
-	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
-	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply3x3;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
-	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.packing.PackNormalizedVectorToColor;
 	import aerys.minko.scene.visitor.data.LocalData;

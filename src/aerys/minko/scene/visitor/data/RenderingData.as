@@ -4,27 +4,15 @@ package aerys.minko.scene.visitor.data
 
 	public final class RenderingData
 	{
-		private var _style		: StyleStack		= new StyleStack();
-		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
+		private var _style	: StyleStack	= new StyleStack();
+		private var _effect	: IEffect		= null;
 		
-		public function get styleStack()	: StyleStack		{ return _style; }
-		public function get effects()		: Vector.<IEffect>	{ return _effects; }
+		public function get styleStack()	: StyleStack	{ return _style; }
+		public function get effect()		: IEffect		{ return _effect; }
 		
-		public function RenderingData()
+		public function set effect(value : IEffect) : void
 		{
-		}
-		
-		public function clear(defaultEffect : IEffect) : void
-		{
-			if (defaultEffect)
-			{
-				_effects.length = 1;
-				_effects[0] = defaultEffect;
-			}
-			else
-			{
-				_effects.length = 0;
-			}
+			_effect = value;
 		}
 	}
 }

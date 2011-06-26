@@ -60,19 +60,7 @@ package aerys.minko.scene.visitor.rendering
 			_renderer.drawToBackBuffer();
 			_renderer.present();
 		}
-		
-//		public function reset(defaultEffect : IEffect, color : int = 0) : void
-//		{
-//			_renderer.clear(((color >> 16) & 0xff) / 255.,
-//							((color >> 8) & 0xff) / 255.,
-//							(color & 0xff) / 255.);
-//			
-//			_worldData		= null;
-//			_numNodes		= 0;
-//			
-//			_renderingData.clear(defaultEffect);
-//		}
-		
+				
 		public function visit(scene : IScene) : void
 		{
 			var actions 	: Vector.<IAction> 	= scene.actions;

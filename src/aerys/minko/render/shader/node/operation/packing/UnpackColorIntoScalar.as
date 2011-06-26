@@ -8,9 +8,15 @@ package aerys.minko.render.shader.node.operation.packing
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
+	import aerys.minko.type.math.ConstVector4;
 	
 	public class UnpackColorIntoScalar extends Dummy
 	{
+		private static const BIT_SH	: Constant	= new Constant(1. / (256. * 256. * 256.),
+															   1. / (256. * 256.),
+															   1. / 256.,
+															   1.);
+
 		public function UnpackColorIntoScalar(node 					: INode,
 											  maxValuePerComponent	: INode,
 											  maxValue				: INode)
@@ -29,6 +35,8 @@ package aerys.minko.render.shader.node.operation.packing
 			);
 			
 			super(unpackedNode);
+			
+			//super(new DotProduct4(node, BIT_SH));
 			
 			if (node.size != 4)
 				throw new Error('Node must be of size 4');

@@ -1,6 +1,5 @@
 package aerys.minko.render.shader.node.leaf
 {
-	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
 	import aerys.minko.render.shader.node.INode;
 	
 	public class Constant extends AbstractConstant
@@ -18,7 +17,8 @@ package aerys.minko.render.shader.node.leaf
 			return _constants; 
 		}
 		
-		public function set constants(value : Vector.<Number>) : void { 
+		public function set constants(value : Vector.<Number>) : void 
+		{ 
 			_constants = value; 
 		}
 		

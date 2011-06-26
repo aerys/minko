@@ -72,6 +72,14 @@ package aerys.minko.scene.node.texture
 									+ (int(b * 255) & 0xff));
 		}
 		
+		public static function random(alpha : Number = 1.) : ColorTexture
+		{
+			return new ColorTexture((((alpha * 255.) & 0xff) << 24)
+									+ ((Math.random() * 0xff) << 16)
+									+ ((Math.random() * 0xff) << 8)
+									+ (Math.random() * 0xff));
+		}
+		
 		public static function fromHSV(h : Number, s : Number, v : Number) : ColorTexture
 		{
 			var r	: Number	= 0;

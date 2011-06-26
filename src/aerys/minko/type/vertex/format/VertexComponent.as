@@ -2,21 +2,23 @@ package aerys.minko.type.vertex.format
 {
 	public class VertexComponent
 	{
-		public static const XYZ		: VertexComponent 	= new VertexComponent(["x", "y", "z"], NativeFormat.FLOAT_3);
-		public static const UV		: VertexComponent 	= new VertexComponent(["u", "v"], NativeFormat.FLOAT_2);
-		public static const RGB		: VertexComponent 	= new VertexComponent(["r", "g", "b"], NativeFormat.FLOAT_3);
-		public static const RGBA	: VertexComponent 	= new VertexComponent(["r", "g", "b", "a"], NativeFormat.FLOAT_4);
-		public static const NORMAL	: VertexComponent 	= new VertexComponent(["nx", "ny", "nz"], NativeFormat.FLOAT_3);
-		public static const ST		: VertexComponent 	= new VertexComponent(["s", "t"], NativeFormat.FLOAT_2);
+		public static const XYZ			: VertexComponent 	= new VertexComponent(["x", "y", "z"], NativeFormat.FLOAT_3);
+		public static const UV			: VertexComponent 	= new VertexComponent(["u", "v"], NativeFormat.FLOAT_2);
+		public static const RGB			: VertexComponent 	= new VertexComponent(["r", "g", "b"], NativeFormat.FLOAT_3);
+		public static const RGBA		: VertexComponent 	= new VertexComponent(["r", "g", "b", "a"], NativeFormat.FLOAT_4);
+		public static const NORMAL		: VertexComponent 	= new VertexComponent(["nx", "ny", "nz"], NativeFormat.FLOAT_3);
+		public static const ST			: VertexComponent 	= new VertexComponent(["s", "t"], NativeFormat.FLOAT_2);
 		
-		public static const BONE0	: VertexComponent	= new VertexComponent(["boneId0", "boneWeight0"], NativeFormat.FLOAT_2);
-		public static const BONE1	: VertexComponent	= new VertexComponent(["boneId1", "boneWeight1"], NativeFormat.FLOAT_2);
-		public static const BONE2	: VertexComponent	= new VertexComponent(["boneId2", "boneWeight2"], NativeFormat.FLOAT_2);
-		public static const BONE3	: VertexComponent	= new VertexComponent(["boneId3", "boneWeight3"], NativeFormat.FLOAT_2);
-		public static const BONE4	: VertexComponent	= new VertexComponent(["boneId4", "boneWeight4"], NativeFormat.FLOAT_2);
-		public static const BONE5	: VertexComponent	= new VertexComponent(["boneId5", "boneWeight5"], NativeFormat.FLOAT_2);
-		public static const BONE6	: VertexComponent	= new VertexComponent(["boneId6", "boneWeight6"], NativeFormat.FLOAT_2);
-		public static const BONE7	: VertexComponent	= new VertexComponent(["boneId7", "boneWeight7"], NativeFormat.FLOAT_2);
+		public static const TANGENT		: VertexComponent	= new VertexComponent(["tx", "ty", "tz"], NativeFormat.FLOAT_3);
+		
+		public static const BONE0		: VertexComponent	= new VertexComponent(["boneId0", "boneWeight0"], NativeFormat.FLOAT_2);
+		public static const BONE1		: VertexComponent	= new VertexComponent(["boneId1", "boneWeight1"], NativeFormat.FLOAT_2);
+		public static const BONE2		: VertexComponent	= new VertexComponent(["boneId2", "boneWeight2"], NativeFormat.FLOAT_2);
+		public static const BONE3		: VertexComponent	= new VertexComponent(["boneId3", "boneWeight3"], NativeFormat.FLOAT_2);
+		public static const BONE4		: VertexComponent	= new VertexComponent(["boneId4", "boneWeight4"], NativeFormat.FLOAT_2);
+		public static const BONE5		: VertexComponent	= new VertexComponent(["boneId5", "boneWeight5"], NativeFormat.FLOAT_2);
+		public static const BONE6		: VertexComponent	= new VertexComponent(["boneId6", "boneWeight6"], NativeFormat.FLOAT_2);
+		public static const BONE7		: VertexComponent	= new VertexComponent(["boneId7", "boneWeight7"], NativeFormat.FLOAT_2);
 		
 		private var _nativeFormat	: int;
 		private var _fields			: Array;

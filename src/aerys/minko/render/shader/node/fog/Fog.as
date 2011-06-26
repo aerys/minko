@@ -1,12 +1,10 @@
 package aerys.minko.render.shader.node.fog
 {
-	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.common.Depth;
 	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;

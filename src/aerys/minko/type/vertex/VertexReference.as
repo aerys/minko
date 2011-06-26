@@ -39,8 +39,7 @@
 			var stream : VertexStream = _propToStream[propertyName];
 			var format : VertexFormat = stream.format;
 			
-			stream._update = true;
-			stream._version++;
+			stream.invalidate();
 			stream._data[int(_index * format.dwordsPerVertex + format.getOffsetForField(name))] = value as Number;
 		}
 		
@@ -65,7 +64,7 @@
 			for each (var component : VertexComponent in components)
 			{
 				for each (var field : String in component.fields)
-				_propToStream[field] = _stream.getVertexStreamByComponent(component);
+				_propToStream[field] = _stream.getSubStreamByComponent(component);
 			}
 		}
 	}

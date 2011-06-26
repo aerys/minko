@@ -9,6 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.shader.ParametricShader;
+	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.scene.visitor.data.CameraData;
@@ -19,6 +20,13 @@ package aerys.minko.render.effect.basic
 	
 	import flash.utils.Dictionary;
 	
+	[StyleParameter(name="basic diffuse map",type="texture")]
+	
+	[StyleParameter(name="fog enabled",type="boolean")]
+	[StyleParameter(name="fog color",type="color")]
+	[StyleParameter(name="fog start",type="number")]
+	[StyleParameter(name="fog distance",type="number")]
+
 	public class BasicEffect extends ParametricShader implements IEffect, IEffectPass
 	{
 		protected var _priority			: Number;
@@ -52,34 +60,34 @@ package aerys.minko.render.effect.basic
 			state.depthTest			= CompareMode.LESS;
 			state.blending			= blending;
 			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			state.priority			= _priority + 0.5;
+			state.priority			= _priority + .5;
 			state.rectangle			= null;
 			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
 			
-			if (state.blending == Blending.ALPHA)
+			if (state.blending != Blending.NORMAL)
 				state.priority -= .5;
 			
 			return true;
 		}
 		
-		override protected function getOutputPosition() : INode
+		override protected function getOutputPosition() : SValue
 		{
 			return vertexClipspacePosition;
 		}
 		
-		override protected function getOutputColor() : INode
+		override protected function getOutputColor() : SValue
 		{
-			var diffuse	: INode		= null;
+			var diffuse	: SValue		= null;
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
 			else
-				diffuse = combine(extract(interpolate(vertexColor), Components.RGB), 1.);
+				diffuse = combine(interpolate(vertexRGBColor).rgb, 1.);
 		
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
 			{
-				var zFar		: INode	= styleIsSet(FogStyle.DISTANCE)
+				var zFar		: SValue = styleIsSet(FogStyle.DISTANCE)
 										  ? getStyleParameter(1, FogStyle.DISTANCE)
 										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
 				var fogColor 	: *		= styleIsSet(FogStyle.COLOR)
@@ -105,7 +113,13 @@ package aerys.minko.render.effect.basic
 			hash += style.get(BasicStyle.DIFFUSE_MAP, false) ? "_diffuse" : "_color";
 			
 			if (style.get(FogStyle.FOG_ENABLED, false))
-				hash += "_fog";
+			{
+				hash += "_fog(";
+				hash += "start=" + style.get(FogStyle.START, 0.);
+				hash += ",distance=" + style.get(FogStyle.DISTANCE, 0.);
+				hash += ",color=" + style.get(FogStyle.COLOR, 0);
+				hash += ");"
+			}
 			
 			return hash;
 		}

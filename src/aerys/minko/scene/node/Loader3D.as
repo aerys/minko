@@ -42,7 +42,7 @@ package aerys.minko.scene.node
 		
 		public function Loader3D()
 		{
-			
+			super();
 		}
 		
 		public function load(request : URLRequest) : Group

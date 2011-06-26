@@ -1,5 +1,6 @@
 package aerys.minko.scene.action
 {
+	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.IStyled;
@@ -22,7 +23,8 @@ package aerys.minko.scene.action
 		{
 			var styled : IStyled = scene as IStyled;
 			
-			visitor.renderingData.styleStack.push(styled.style);
+			if (styled.styleEnabled)
+				visitor.renderingData.styleStack.push(styled.style);
 			
 			return true;
 		}
@@ -36,7 +38,8 @@ package aerys.minko.scene.action
 		{
 			var styled : IStyled = scene as IStyled;
 			
-			visitor.renderingData.styleStack.pop();
+			if (styled.styleEnabled)
+				visitor.renderingData.styleStack.pop();
 			
 			return true;
 		}

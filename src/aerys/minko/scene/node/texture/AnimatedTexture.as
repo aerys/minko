@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.ressource.IRessource;
+	import aerys.minko.scene.action.texture.AnimatedTextureAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -16,21 +17,18 @@ package aerys.minko.scene.node.texture
 		private var _version	: uint		= 0;
 		
 		private var _frame		: int		= 0;
-		private var _lastFrame	: uint		= uint(-1);
 		private var _framerate	: Number	= 0.;
-		
-		private var _time		: int		= 0;
-		
-		private var _current	: IScene	= null;
 		
 		public function get version()		: uint		{ return _version; }
 		public function get framerate() 	: Number	{ return _framerate; }
+		public function get currentFrame()	: int		{ return _frame;}
+		
 		/**
 		 * @todo implement 
 		 * @return 
 		 * 
 		 */
-		public function get styleProperty()	: int		{ throw new Error(); }
+		public function get styleProperty()	: int		{ return (rawChildren[_frame] as ITexture).styleProperty; }
 		
 		public function set framerate(value : Number) : void
 		{
@@ -42,6 +40,9 @@ package aerys.minko.scene.node.texture
 			super();
 			
 			_framerate = framerate;
+			
+			actions.length = 0;
+			actions[0] = new AnimatedTextureAction();
 		}
 		
 		/**
@@ -51,30 +52,6 @@ package aerys.minko.scene.node.texture
 		{
 			throw new Error('Implement me');
 		}
-		
-//		override public function visited(query : ISceneVisitor) : void
-//		{
-//			var q : RenderingVisitor = query as RenderingVisitor;
-//			
-//			if (q && _lastFrame != q.frameId)
-//			{
-//				var t : int = getTimer();
-//				
-//				if (t - _time > (1000. / _framerate))
-//				{
-//					_lastFrame = q.frameId;
-//					nextFrame(q);
-//					
-//					_time = t;
-//				}
-//			}
-//			
-//			if (_frame < numChildren)
-//			{
-//				_current = rawChildren[_frame];
-//				query.query(_current);
-//			}
-//		}
 		
 		public function nextFrame() : void
 		{

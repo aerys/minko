@@ -21,24 +21,21 @@ package aerys.minko.scene.node.mesh.modifier
 		
 		public function NormalMeshModifier(target : IMesh)
 		{
-			super(target);
-			
-			_vertexStreamList = target.vertexStreamList.clone();
-			_vertexStreamList.pushVertexStream(computeNormals());
+			super(target, computeNormals(target));
 		}
 		
-		private function computeNormals() : VertexStream
+		private function computeNormals(target : IMesh) : VertexStream
 		{
 			var normalsFormat	: VertexFormat		= VERTEX_FORMAT;
 			
-			var vertexStream	: VertexStream		= vertexStreamList.getVertexStreamByComponent(VertexComponent.XYZ);
+			var vertexStream	: VertexStream		= target.vertexStream.getSubStreamByComponent(VertexComponent.XYZ);
 			var vertexOffset	: int 				= vertexStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var vertexLength	: int 				= vertexStream.format.dwordsPerVertex;
 		
 			var vertices		: Vector.<Number>	= vertexStream._data;
 			var numVertices		: int				= vertices.length / vertexLength;
-			var indices			: Vector.<uint>		= indexStream._indices;
-			var numTriangles	: int				= indexStream.length / 3;
+			var indices			: Vector.<uint>		= target.indexStream._indices;
+			var numTriangles	: int				= target.indexStream.length / 3;
 			
 			var normals			: Vector.<Number>	= new Vector.<Number>(3 * numVertices);
 			

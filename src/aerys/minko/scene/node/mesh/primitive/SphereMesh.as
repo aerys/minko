@@ -4,6 +4,8 @@ package aerys.minko.scene.node.mesh.primitive
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
+	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.vertex.format.VertexFormat;
 
 	public class SphereMesh extends Mesh
 	{
@@ -18,7 +20,8 @@ package aerys.minko.scene.node.mesh.primitive
 		}
 		
 		public function SphereMesh(numParallels : uint 		= DEFAULT_NUM_PARALLELS,
-								   numMeridians : uint 		= 0)
+								   numMeridians : uint 		= 0,
+								   withNormals	: Boolean	= true)
 		{
 			numMeridians ||= numParallels;
 			
@@ -26,6 +29,7 @@ package aerys.minko.scene.node.mesh.primitive
 			var numFaces	: int				= (numParallels - 2) * (numMeridians) * 2;
 			var	indices		: Vector.<uint>		= new Vector.<uint>(numFaces * 3, true);
 			var vertices	: Vector.<Number>	= new Vector.<Number>(numVertices * 3, true);
+			var normals		: Vector.<Number>	= withNormals ? new Vector.<Number>(numVertices * 3, true) : null;
 			var uv			: Vector.<Number>	= new Vector.<Number>(numVertices * 2, true);
 			var phi			: Number			= 0.;
 			var theta		: Number			= 0.;
@@ -41,21 +45,56 @@ package aerys.minko.scene.node.mesh.primitive
 					theta = j / (numParallels - 1) * Math.PI;
 					phi = i / numMeridians * Math.PI * 2;
 					
-					vertices[c] = Math.sin(theta) * Math.cos(phi) * .5;
-					vertices[int(c + 1)] = Math.cos(theta) * .5;
-					vertices[int(c + 2)] = -Math.sin(theta) * Math.sin(phi) * .5;
+					var x : Number 	= Math.sin(theta) * Math.cos(phi) * .5;
+					var y : Number	= Math.cos(theta) * .5;
+					var z : Number	= -Math.sin(theta) * Math.sin(phi) * .5;
+					
+					vertices[c] = x;
+					vertices[int(c + 1)] = y;
+					vertices[int(c + 2)] = z;
 					
 					uv[k] = 1. - i / numMeridians;
 					uv[int(k + 1)] = j / (numParallels - 1);
+					
+					if (withNormals)
+					{
+						normals[c] = x * 2;
+						normals[int(c + 1)] = y * 2;
+						normals[int(c + 2)] = z * 2;
+					}
 				}
 			}
 			
-			vertices[c] = 0.; vertices[int(c + 1)] = .5; vertices[int(c + 2)] = 0.;
-			uv[k] = .5; uv[int(k + 1)] = 0.;
+			// top
+			vertices[c] = 0.;
+			vertices[int(c + 1)] = .5;
+			vertices[int(c + 2)] = 0.;
 			
-			vertices[int(c + 3)] = 0.; vertices[int(c + 4)]= -.5; vertices[int(c + 5)] = 0.;
-			uv[int(k + 2)] = .5; uv[int(k + 3)] = 1.;
+			uv[k] = .5;
+			uv[int(k + 1)] = 0.;
 			
+			if (withNormals)
+			{
+				normals[c] = 0.;
+				normals[int(c + 1)] = 1.;
+				normals[int(c + 2)] = 0.;
+			}
+			
+			// bottom
+			vertices[int(c + 3)] = 0.;
+			vertices[int(c + 4)]= -.5;
+			vertices[int(c + 5)] = 0.;
+			
+			uv[int(k + 2)] = .5;
+			uv[int(k + 3)] = 1.;
+			
+			if (withNormals)
+			{
+				normals[int(c + 3)] = 0.;
+				normals[int(c + 4)]= -1.;
+				normals[int(c + 5)] = 0.;
+			}
+						
 			numMeridians++;
 			for (c = 0,j = 0; j < numParallels - 3; j++)
 			{
@@ -82,11 +121,13 @@ package aerys.minko.scene.node.mesh.primitive
 				indices[int(c++)] = (numParallels - 3) * numMeridians + i + 1;
 			}
 			
+			var xyzUvStream 	: VertexStream 		= VertexStream.fromPositionsAndUVs(vertices, uv);
+			var list			: VertexStreamList	= new VertexStreamList(xyzUvStream);
 			
-			super(
-				new VertexStreamList(VertexStream.fromPositionsAndUVs(vertices, uv)),
-				new IndexStream(indices)
-			);
+			if (withNormals)
+				list.pushVertexStream(new VertexStream(normals, new VertexFormat(VertexComponent.NORMAL)));
+			
+			super(list, new IndexStream(indices));
 		}
 		
 	}

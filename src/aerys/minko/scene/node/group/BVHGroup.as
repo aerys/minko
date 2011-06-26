@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.group
 {
+	import aerys.minko.render.renderer.state.FrustumCulling;
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
@@ -15,6 +16,7 @@ package aerys.minko.scene.node.group
 		
 		public function get boundingBox()		: BoundingBox		{ return _box; }
 		public function get boundingSphere()	: BoundingSphere	{ return _sphere; }
+		public function get frustumCulling()	: uint				{ return FrustumCulling.ENABLED; }
 		
 		public function BVHGroup(...children)
 		{

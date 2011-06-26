@@ -3,6 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
+	import aerys.minko.render.effect.Style;
 	import aerys.minko.scene.action.EffectTargetAction;
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
@@ -10,7 +11,6 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.action.TransformableAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
-	import aerys.minko.scene.visitor.data.Style;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Transform3D;
 
@@ -33,16 +33,17 @@ package aerys.minko.scene.node
 	{
 		use namespace minko;
 		
-		private var _version	: uint				= 0;
+		private var _version		: uint				= 0;
 		
-		private var _mesh		: IMesh				= null;
-		private var _texture	: ITexture			= null;
+		private var _mesh			: IMesh				= null;
+		private var _texture		: ITexture			= null;
 		
-		private var _transform	: Transform3D		= new Transform3D();
-		private var _visible	: Boolean			= true;
+		private var _transform		: Transform3D		= new Transform3D();
+		private var _visible		: Boolean			= true;
 		
-		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
-		private var _style		: Style				= new Style();
+		private var _effect			: IEffect			= null;
+		private var _style			: Style				= new Style();
+		private var _styleEnabled	: Boolean			= true;
 		
 		public function get version() : uint
 		{
@@ -91,7 +92,7 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function get effects()	: Vector.<IEffect>	{ return _effects; }
+		public function get effect()	: IEffect	{ return _effect; }
 		/**
 		 * The Style3D object used to parametrize rendering.
 		 * 
@@ -99,6 +100,8 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		public function get style()		: Style				{ return _style; }
+		
+		public function get styleEnabled() : Boolean		{ return _styleEnabled; }
 		
 		public function set mesh(value : IMesh) : void
 		{
@@ -115,13 +118,28 @@ package aerys.minko.scene.node
 			_visible = value;
 		}
 		
+		public function set effect(value : IEffect) : void
+		{
+			_effect = value;
+		}
+		
+		public function set style(value : Style) : void
+		{
+			_style = value;
+		}
+		
+		public function set styleEnabled(value : Boolean) : void
+		{
+			_styleEnabled = value;
+		}
+		
 		public function Model(mesh 			: IMesh		= null,
 							  texture		: ITexture	= null)
 		{
 			super();
 			
 			actions.push(StyledAction.styledAction,
-						 EffectTargetAction.effectTargetAction,
+						 new EffectTargetAction(),
 						 TransformableAction.transformableAction,
 						 ModelAction.modelAction);
 			

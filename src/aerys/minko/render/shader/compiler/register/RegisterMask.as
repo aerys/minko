@@ -41,5 +41,10 @@ package aerys.minko.render.shader.compiler.register
 			if (value < 0) return mask >>> (- value);
 			else return mask << value;
 		}
+		
+		public static function stringifyMask(mask : uint):String
+		{
+			return mask != XYZW ? '.' + STRINGS[mask] : '';
+		}
 	}
 }

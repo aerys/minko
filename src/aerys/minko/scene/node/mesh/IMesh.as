@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -9,7 +9,7 @@ package aerys.minko.scene.node.mesh
 
 	public interface IMesh extends IScene, IVersionnable
 	{
-		function get vertexStreamList()	: VertexStreamList;
-		function get indexStream()		: IndexStream;
+		function get vertexStream()	: IVertexStream;
+		function get indexStream()	: IndexStream;
 	}
 }
