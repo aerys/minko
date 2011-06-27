@@ -6,6 +6,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
+	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
@@ -37,6 +39,17 @@ package aerys.minko.render.shader
 			var compiler : Compiler = new Compiler();
 			compiler.load(clipspacePosition, color);
 			
+			if (Minko.debugLevel & LogLevel.SHADER_ATTR_ALLOC)
+			{
+				Minko.log(LogLevel.SHADER_ATTR_ALLOC, compiler.writeAttributeAllocationSummary());
+			}
+			
+			if (Minko.debugLevel & LogLevel.SHADER_CONST_ALLOC)
+			{
+				Minko.log(LogLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(true));
+				Minko.log(LogLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(false));
+			}
+			
 			if (Minko.debugLevel & LogLevel.SHADER_AGAL)
 			{
 				Minko.log(LogLevel.SHADER_AGAL, compiler.compileAgalVertexShader(), compiler);
@@ -44,7 +57,9 @@ package aerys.minko.render.shader
 			}
 			
 			if (Minko.debugLevel & LogLevel.SHADER_DOTTY)
+			{
 				Minko.log(LogLevel.SHADER_DOTTY, compiler.writeDotGraph(), compiler);
+			}
 			
 			return compiler.compileShader();
 		}
@@ -65,6 +80,11 @@ package aerys.minko.render.shader
 			_samplers		= samplers;
 			
 			super(vertexShader, fragmentShader, vertexInput);
+			
+			if (_vsConstData.length > RegisterLimit.VS_MAX_CONSTANT * 4)
+				throw new Error();
+			if (_fsConstData.length > RegisterLimit.FG_MAX_CONSTANT * 4)
+				throw new Error();
 		}
 		
 		public function fillRenderState(state	: RendererState, 
@@ -246,8 +266,7 @@ package aerys.minko.render.shader
 			}
 			else if (data is Vector4)
 			{
-				var vectorData : Vector4;
-				vectorData = data as Vector4;
+				var vectorData : Vector4 = data as Vector4;
 				
 				constData[offset] = vectorData.x;
 				size >= 2 && (constData[int(offset + 1)] = vectorData.y);
@@ -257,6 +276,27 @@ package aerys.minko.render.shader
 			else if (data is Matrix4x4)
 			{
 				(data as Matrix4x4).getRawData(constData, offset, true);
+			}
+			else if (data is Vector.<Vector4>)
+			{
+				var vectorVectorData		: Vector.<Vector4>	= data as Vector.<Vector4>;
+				var vectorVectorDataLength	: uint				= vectorVectorData.length;
+				
+				for (var j : uint = 0; j < vectorVectorDataLength; ++j)
+				{
+					constData[offset + 4 * j] = vectorData.x;
+					constData[int(offset + 4 * j + 1)] = vectorData.y;
+					constData[int(offset + 4 * j + 2)] = vectorData.z;
+					constData[int(offset + 4 * j + 3)] = vectorData.w;
+				}
+			}
+			else if (data is Vector.<Matrix4x4>)
+			{
+				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>;
+				var matrixVectorDataLength	: uint					= matrixVectorData.length;
+				
+				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
+					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
 			}
 			else if (data == null)
 			{

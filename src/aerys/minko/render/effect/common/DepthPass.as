@@ -24,7 +24,7 @@ package aerys.minko.render.effect.common
 		protected var _renderTarget			: RenderTarget;
 		
 		public function DepthPass(priority		: Number		= 0,
-										renderTarget	: RenderTarget	= null)
+								  renderTarget	: RenderTarget	= null)
 		{
 			_priority			= priority;
 			_renderTarget		= renderTarget;

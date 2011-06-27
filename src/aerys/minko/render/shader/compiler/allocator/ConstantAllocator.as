@@ -3,9 +3,6 @@ package aerys.minko.render.shader.compiler.allocator
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.leaf.StyleParameter;
-	import aerys.minko.render.shader.node.leaf.TransformParameter;
-	import aerys.minko.render.shader.node.leaf.WorldParameter;
 
 	public class ConstantAllocator extends Allocator
 	{
@@ -43,10 +40,10 @@ package aerys.minko.render.shader.compiler.allocator
 		
 		public function computeConstantAllocation() : Vector.<Number>
 		{
-			var result : Vector.<Number> = new Vector.<Number>();
+			var result		: Vector.<Number>	= new Vector.<Number>();
+			var allocLength	: int				= _allocations.length;
 			
-			var allocationsLength : int = _allocations.length;
-			for (var i : int = 0; i < allocationsLength; ++i)
+			for (var i : uint = 0; i < allocLength; ++i)
 			{
 				var alloc : Allocation = _allocations[i];
 				if (result.length < alloc.offset + alloc.size)

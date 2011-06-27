@@ -14,7 +14,7 @@ package aerys.minko.render.shader.node.operation.manipulation
 		{
 			return _swizzle;
 		}
-
+		
 		override public function get instructionName() : String
 		{
 			throw new Error('This is a virtual operand');

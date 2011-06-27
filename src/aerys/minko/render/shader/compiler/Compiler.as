@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler
 {
+	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.shader.DynamicShader;
 	import aerys.minko.render.shader.compiler.allocator.Allocation;
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
@@ -7,7 +8,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.allocator.ConstantAllocator;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.compiler.allocator.VaryingAllocator;
-	import aerys.minko.render.shader.compiler.register.RegistryLimit;
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.compiler.visitor.allocator.FragmentAllocator;
 	import aerys.minko.render.shader.compiler.visitor.allocator.VertexAllocator;
 	import aerys.minko.render.shader.compiler.visitor.preprocess.ConstantDuplicator;
@@ -83,12 +84,12 @@ package aerys.minko.render.shader.compiler
 			_vertexInput		= new Vector.<VertexComponent>();
 			_colorNode			= null;
 			
-			_attrAllocator		= new AttributeAllocator(RegistryLimit.VS_MAX_ATTRIBUTE);
-			_varyingAllocator	= new VaryingAllocator(RegistryLimit.MAX_VARYING);
-			_vsTmpAllocator		= new Allocator(RegistryLimit.VS_MAX_TEMPORARY);
-			_vsConstAllocator	= new ConstantAllocator(RegistryLimit.VS_MAX_CONSTANT);
-			_fsTmpAllocator		= new Allocator(RegistryLimit.FG_MAX_TEMPORARY);
-			_fsConstAllocator	= new ConstantAllocator(RegistryLimit.FG_MAX_CONSTANT);
+			_attrAllocator		= new AttributeAllocator(RegisterLimit.VS_MAX_ATTRIBUTE);
+			_varyingAllocator	= new VaryingAllocator(RegisterLimit.MAX_VARYING);
+			_vsTmpAllocator		= new Allocator(RegisterLimit.VS_MAX_TEMPORARY);
+			_vsConstAllocator	= new ConstantAllocator(RegisterLimit.VS_MAX_CONSTANT);
+			_fsTmpAllocator		= new Allocator(RegisterLimit.FG_MAX_TEMPORARY);
+			_fsConstAllocator	= new ConstantAllocator(RegisterLimit.FG_MAX_CONSTANT);
 		}
 		
 		protected function wrapRootNodes() : void
@@ -145,7 +146,6 @@ package aerys.minko.render.shader.compiler
 		protected function createAllocationTables() : void
 		{
 			var a : Array = _attrAllocator.getAllocations();
-			
 			for (var i : int = 0; i < a.length; ++i)
 				_vertexInput.push(Attribute(a[i]).vertexComponent);
 			
@@ -204,10 +204,20 @@ package aerys.minko.render.shader.compiler
 			return new WriteDot().processShader(_clipspacePosNode, _colorNode);
 		}
 		
+		public function writeAttributeAllocationSummary() : String
+		{
+			var result : String = '';
+			var inputCount : uint = _vertexInput.length;
+			for (var i : uint = 0; i < inputCount; ++i)
+				result += 'va' + i + "             " + _vertexInput[i].implodedFields + "\n";
+			return result;
+		}
+		
 		public function writeConstantAllocationSummary(vertexShader : Boolean	= true) : String
 		{
 			var offsetToLetter		: Vector.<String> = Vector.<String>(['x', 'y', 'z', 'w']);
 			var summary				: String = '';
+			var chars				: uint; 
 			
 			var allocationTable 	: Vector.<ParameterAllocation>	= vertexShader ? _vsParams : _fsParams;
 			var constantTable		: Vector.<Number>				= vertexShader ? _vsConstData : _fsConstData;
@@ -216,40 +226,50 @@ package aerys.minko.render.shader.compiler
 			for (var registerId : uint = 0; registerId < occupiedRegisters; ++registerId)
 				for (var offsetId : uint = 0; offsetId < 4; ++offsetId)
 				{
-					var foundInParameterTable : Boolean = false;
-					
+					var foundInParameterTable	: Boolean	= false;
 					for each (var allocation : ParameterAllocation in allocationTable)
 					{
+						chars = summary.length;
+						
 						if (allocation.offset == 4 * registerId + offsetId)
 						{
 							foundInParameterTable = true;
 							
 							summary += (vertexShader ? "vc" : "fc");
+							
 							if (allocation.size < 4)
 							{
 								summary += registerId + '.';
+								
 								for (var i : uint = allocation.offset % 4; i < allocation.offset % 4 + allocation.size && i < 4; ++i)
+								{
 									summary += offsetToLetter[i];
+								}
 							}
 							else if (allocation.size == 4)
 							{
 								summary += registerId;
 							}
-							else if (allocation.size == 16)
+							else if (allocation.size > 4)
 							{
-								summary += '[' + registerId + '-' + (registerId + 3) + ']';
+								summary += '[' + registerId + '-' + (- 1 + registerId + allocation.size / 4) + ']';
 							}
+							
+							chars = summary.length - chars;
+							
+							for (; chars < 16; ++chars)
+								summary += " ";
 							
 							var parameter : AbstractParameter = allocation.parameter;
 							if (parameter is StyleParameter)
 							{
 								var styleParam : StyleParameter = parameter as StyleParameter;
-								summary += "\t\tStyleParameter['" + styleParam.key + "']\n";
+								summary += "StyleParameter['" + Style.getStyleName(styleParam.key as uint) + "']\n";
 							}
 							else if (parameter is WorldParameter)
 							{
 								var worldParam : WorldParameter = parameter as WorldParameter;
-								summary += "\t\tWorldParameter[class='" 
+								summary += "WorldParameter[class='" 
 									+ worldParam.className + "', index='" 
 									+ worldParam.index + "', field='" 
 									+ worldParam.field + "']\n";
@@ -257,7 +277,7 @@ package aerys.minko.render.shader.compiler
 							else if (parameter is TransformParameter)
 							{
 								var transformParam : TransformParameter = parameter as TransformParameter;
-								summary += "\t\tTransformParameter[key='" 
+								summary += "TransformParameter[key='" 
 									+ transformParam.key + "']\n";
 							}
 							
@@ -273,9 +293,15 @@ package aerys.minko.render.shader.compiler
 					
 					if (!foundInParameterTable)
 					{
+						chars = summary.length;
 						summary += (vertexShader ? "vc" : "fc") + registerId.toString()
-							+ '.' + offsetToLetter[offsetId]
-							+ "\t\tConstant[value='" + constantTable[4 * registerId + offsetId] + "']\n";
+							+ '.' + offsetToLetter[offsetId];
+						chars = summary.length - chars;
+						
+						for (; chars < 16; ++chars)
+							summary += " ";
+						
+						summary += "Constant[value='" + constantTable[4 * registerId + offsetId] + "']\n";
 					}
 				}
 			

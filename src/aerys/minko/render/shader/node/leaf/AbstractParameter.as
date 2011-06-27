@@ -1,7 +1,6 @@
 package aerys.minko.render.shader.node.leaf
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.shader.node.INode;
 
 	public class AbstractParameter extends AbstractConstant
 	{
