@@ -62,7 +62,7 @@ package aerys.minko.scene.action.mesh
 			var passes			: Vector.<IEffectPass>	= effect.getPasses(renderingData.styleStack,
 															   	   		   localData,
 																		   worldData);
-			var numPasses 			: int 					= passes.length;
+			var numPasses 		: int 					= passes.length;
 			
 			for (var j : int = 0; j < numPasses; ++j)
 			{

@@ -94,6 +94,7 @@ package aerys.minko.render.ressource
 				else
 				{
 					_texture.uploadFromBitmapData(_bitmapData, 0);
+					_bitmapData.dispose();
 				}
 			}
 			

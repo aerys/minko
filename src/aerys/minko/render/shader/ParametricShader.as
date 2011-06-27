@@ -23,6 +23,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
 	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
+	import aerys.minko.render.shader.node.operation.builtin.Saturate;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
@@ -293,6 +294,11 @@ package aerys.minko.render.shader
 		protected final function negate(value : Object) : SValue
 		{
 			return new SValue(new Negate(getNode(value)));
+		}
+		
+		protected final function saturate(value : Object) : SValue
+		{
+			return new SValue(new Saturate(getNode(value)));
 		}
 		
 		protected final function max(a : Object, b : Object, ...values) : SValue

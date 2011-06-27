@@ -18,10 +18,10 @@ package aerys.minko.scene.node.mesh.modifier
 		{
 			_colors = colors.concat();
 			
-			super(target, getColorStream(withAlpha));
+			super(target, getColorStream(target, withAlpha));
 		}
 		
-		private function getColorStream(withAlpha : Boolean) : VertexStream
+		private function getColorStream(target : IMesh, withAlpha : Boolean) : VertexStream
 		{
 			var numVertices	: int				= target.vertexStream.length;
 			var colors 		: Vector.<Number> 	= new Vector.<Number>(numVertices * 3);

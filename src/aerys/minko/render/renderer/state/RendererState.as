@@ -518,9 +518,7 @@ package aerys.minko.render.renderer.state
 			}
 			
 			if ((current._setFlags & SCISSOR_RECTANGLE) && _rectangle != current._rectangle)
-			{
 				context.setScissorRectangle(_rectangle);
-			}
 			
 			for (var i : int = 0; i < 8; ++i)
 			{
