@@ -8,7 +8,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.allocator.ConstantAllocator;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.compiler.allocator.VaryingAllocator;
-	import aerys.minko.render.shader.compiler.register.RegistryLimit;
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.compiler.visitor.allocator.FragmentAllocator;
 	import aerys.minko.render.shader.compiler.visitor.allocator.VertexAllocator;
 	import aerys.minko.render.shader.compiler.visitor.preprocess.ConstantDuplicator;
@@ -84,12 +84,12 @@ package aerys.minko.render.shader.compiler
 			_vertexInput		= new Vector.<VertexComponent>();
 			_colorNode			= null;
 			
-			_attrAllocator		= new AttributeAllocator(RegistryLimit.VS_MAX_ATTRIBUTE);
-			_varyingAllocator	= new VaryingAllocator(RegistryLimit.MAX_VARYING);
-			_vsTmpAllocator		= new Allocator(RegistryLimit.VS_MAX_TEMPORARY);
-			_vsConstAllocator	= new ConstantAllocator(RegistryLimit.VS_MAX_CONSTANT);
-			_fsTmpAllocator		= new Allocator(RegistryLimit.FG_MAX_TEMPORARY);
-			_fsConstAllocator	= new ConstantAllocator(RegistryLimit.FG_MAX_CONSTANT);
+			_attrAllocator		= new AttributeAllocator(RegisterLimit.VS_MAX_ATTRIBUTE);
+			_varyingAllocator	= new VaryingAllocator(RegisterLimit.MAX_VARYING);
+			_vsTmpAllocator		= new Allocator(RegisterLimit.VS_MAX_TEMPORARY);
+			_vsConstAllocator	= new ConstantAllocator(RegisterLimit.VS_MAX_CONSTANT);
+			_fsTmpAllocator		= new Allocator(RegisterLimit.FG_MAX_TEMPORARY);
+			_fsConstAllocator	= new ConstantAllocator(RegisterLimit.FG_MAX_CONSTANT);
 		}
 		
 		protected function wrapRootNodes() : void

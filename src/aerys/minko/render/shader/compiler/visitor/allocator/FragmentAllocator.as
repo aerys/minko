@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.visitor.allocator
 {
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
-	import aerys.minko.render.shader.compiler.register.RegistryLimit;
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Sampler;
@@ -98,7 +98,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 				samplerNode.samplerId = _fgSamplerId++;
 				_samplers.push(samplerNode.styleId);
 				
-				if (_fgSamplerId > RegistryLimit.FG_MAX_SAMPLER)
+				if (_fgSamplerId > RegisterLimit.FG_MAX_SAMPLER)
 					throw new Error('Unable to allocate a new sampler registry.');
 			}
 			else if (shaderNode is Extract)

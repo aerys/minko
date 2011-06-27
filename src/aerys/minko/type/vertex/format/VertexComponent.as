@@ -20,6 +20,10 @@ package aerys.minko.type.vertex.format
 		public static const BONE6		: VertexComponent	= new VertexComponent(["boneId6", "boneWeight6"], NativeFormat.FLOAT_2);
 		public static const BONE7		: VertexComponent	= new VertexComponent(["boneId7", "boneWeight7"], NativeFormat.FLOAT_2);
 		
+		public static const BONES		: Vector.<VertexComponent> = Vector.<VertexComponent>([
+			BONE0, BONE1, BONE2, BONE3, BONE4, BONE5, BONE6, BONE7
+		]);
+		
 		private var _nativeFormat	: int;
 		private var _fields			: Array;
 		private var _offsets		: Object;

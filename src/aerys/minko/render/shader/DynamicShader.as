@@ -6,6 +6,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
+	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
@@ -78,6 +80,11 @@ package aerys.minko.render.shader
 			_samplers		= samplers;
 			
 			super(vertexShader, fragmentShader, vertexInput);
+			
+			if (_vsConstData.length > RegisterLimit.VS_MAX_CONSTANT * 4)
+				throw new Error();
+			if (_fsConstData.length > RegisterLimit.FG_MAX_CONSTANT * 4)
+				throw new Error();
 		}
 		
 		public function fillRenderState(state	: RendererState, 
@@ -289,9 +296,7 @@ package aerys.minko.render.shader
 				var matrixVectorDataLength	: uint					= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
-				{
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
-				}
 			}
 			else if (data == null)
 			{

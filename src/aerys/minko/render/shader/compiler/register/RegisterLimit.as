@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.register
 {
-	public final class RegistryLimit
+	public final class RegisterLimit
 	{
 		public static const MAX_VARYING			: uint = 8;
 		
