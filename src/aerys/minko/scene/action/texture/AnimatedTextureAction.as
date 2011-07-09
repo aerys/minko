@@ -5,14 +5,16 @@ package aerys.minko.scene.action.texture
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.texture.AnimatedTexture;
-	import aerys.minko.scene.node.texture.ColorTexture;
+	import aerys.minko.scene.node.texture.BitmapTexture;
+	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
+	import flash.display.BitmapData;
 	import flash.utils.getTimer;
 	
 	public class AnimatedTextureAction implements IAction
 	{
-		private static const NO_TEXTURE	: ColorTexture	= new ColorTexture(0);
+		private static const NO_TEXTURE	: ITexture	= new BitmapTexture(new BitmapData(1, 1, false, 0));
 		
 		private var _time			: int		= 0;
 		private var _lastFrameId	: int		= 0;

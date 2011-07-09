@@ -65,16 +65,45 @@ package aerys.minko.scene.node.mesh
 			actions[0] = MeshAction.meshAction;
 		}
 		
-		public function clone() : IMesh
+		/**
+		 * Create a new copy of the Mesh object with the specified VertexFormat.
+		 * 
+		 * <p>
+		 * If no VertexFormat is specified, the original VertexFormat of the Mesh
+		 * will be used. Calling the "clone" method and specifying a VertexFormat
+		 * is a good way to create a lighter Mesh by copying only the required
+		 * vertex components data.
+		 * </p>
+		 *  
+		 * @param vertexFormat
+		 * @return 
+		 * 
+		 */
+		public function clone(vertexFormat : VertexFormat = null) : IMesh
 		{
+			vertexFormat ||= _vertexStream.format.clone();
+			
 			var meshes				: Vector.<IMesh>			= Vector.<IMesh>([this])
-			var vertexFormat		: VertexFormat				= _vertexStream.format.clone();
 			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
 			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
 			
 			return mergedMesh;
 		}
 		
+		/**
+		 * The "mergeMeshes" method will takes multiple Mesh objects and will
+		 * merge all their data to create a single and only Mesh out of it.
+		 * 
+		 * <p>
+		 * Because all the Mesh objects can have multiple VertexFormat, the
+		 * result Mesh VertexFormat will be the biggest common set of
+		 * VertexComponent of all the merged meshes.
+		 * </p>
+		 * 
+		 * @param meshes
+		 * @return 
+		 * 
+		 */
 		public static function mergeMeshes(meshes : Vector.<IMesh>) : IMesh
 		{
 			var vertexFormat		: VertexFormat				= computeVertexFormat(meshes);
@@ -168,6 +197,7 @@ package aerys.minko.scene.node.mesh
 			var newIndexStream		: IndexStream		= new IndexStream(newIndexStreamData);
 			var newVertexStream		: VertexStream		= new VertexStream(newVertexStreamData, vertexFormat);
 			var newVertexStreamList : VertexStreamList	= new VertexStreamList(newVertexStream);
+			
 			return new Mesh(newVertexStreamList, newIndexStream);
 		}
 	}

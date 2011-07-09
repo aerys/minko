@@ -2,7 +2,7 @@ package aerys.minko.scene.node.group
 {
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.scene.action.StyledAction;
-	import aerys.minko.scene.node.IStyled;
+	import aerys.minko.scene.node.IStyledScene;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	
 	/**
@@ -12,7 +12,7 @@ package aerys.minko.scene.node.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class StyleGroup extends Group implements IStyled
+	public class StyleGroup extends Group implements IStyledScene
 	{
 		private var _style			: Style		= new Style();
 		private var _styleEnabled	: Boolean	= true;

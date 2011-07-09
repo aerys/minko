@@ -9,6 +9,12 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
+	/**
+	 * The AbstractMeshModifier class provides basic support for mesh
+	 * modifiers and can be extended in order to be specialized. 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class AbstractMeshModifier extends AbstractScene implements IMeshModifier
 	{
 		private var _target 			: IMesh				= null;

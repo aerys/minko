@@ -1,13 +1,9 @@
 package aerys.minko.render.renderer
 {
-	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.render.renderer.state.RendererState;
 	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3DTextureFormat;
-	import flash.display3D.textures.TextureBase;
-	import flash.utils.ByteArray;
-	import aerys.minko.render.Viewport;
 
 	public interface IRenderer
 	{

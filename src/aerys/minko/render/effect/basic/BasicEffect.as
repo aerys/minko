@@ -8,7 +8,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
-	import aerys.minko.render.shader.ParametricShader;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
@@ -27,7 +27,7 @@ package aerys.minko.render.effect.basic
 	[StyleParameter(name="fog start",type="number")]
 	[StyleParameter(name="fog distance",type="number")]
 
-	public class BasicEffect extends ParametricShader implements IEffect, IEffectPass
+	public class BasicEffect extends ActionScriptShader implements IEffect, IEffectPass
 	{
 		protected var _priority			: Number;
 		protected var _renderTarget		: RenderTarget;
@@ -97,7 +97,7 @@ package aerys.minko.render.effect.basic
 										  ? getStyleParameter(1, FogStyle.START)
 										  : 0.;
 				
-				fogColor = getFolorColor(fogStart, zFar, fogColor); 
+				fogColor = getFogColor(fogStart, zFar, fogColor); 
 				diffuse = blend(fogColor, diffuse, Blending.ALPHA);
 			}
 				

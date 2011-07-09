@@ -12,6 +12,17 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
+	/**
+	 * BVHMeshModifier (Bounding Volume Hierarchy) provide bouding volume
+	 * data (bounding sphere and bounding box) of the targeted IMesh object.
+	 * 
+	 * <p>
+	 * Those bounding volumes can be used to perform frustum culling in order
+	 * to avoid making draw calls for objects that are out of the view frustum.
+	 * </p> 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class BVHMeshModifier extends AbstractMeshModifier implements IBoundingVolume
 	{
 		use namespace minko_stream;

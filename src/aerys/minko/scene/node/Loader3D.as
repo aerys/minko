@@ -22,6 +22,27 @@ package aerys.minko.scene.node
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
+	/**
+	 * The Loader3D class is the interface to load any 3D related content
+	 * (scenes, textures, meshes, ...).
+	 * 
+	 * <p>
+	 * The Loader3D content implements the IScene interface and, as such,
+	 * can be considered just like any other scene graph node. Its behaviour
+	 * will be exactly the same as the flash.display.Loader class when added
+	 * to the Flash' display list.
+	 * </p>
+	 * 
+	 * <p>
+	 * Therefore, it is possible to use a Loader3D object to load 3D content
+	 * asynchronously but add it immediately to the scene. When the content
+	 * is loaded, it will be added as childs/descendants of the Loader3D
+	 * object and will be used during the next rendering traversal.
+	 * </p>
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Loader3D extends EventDispatcher implements IScene
 	{
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s

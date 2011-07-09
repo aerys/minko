@@ -24,6 +24,53 @@ package aerys.minko.render.shader
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
+	/**
+	 * SValue (Shader Value) objects are GPU-side computed value proxies
+	 * declared, defined and used in ActionScript shaders.
+	 * 
+	 * <p>
+	 * ActionScript shaders define what operations will be
+	 * performed on the GPU. Those operations take arguments and return
+	 * values that will be computed and accessible on the graphics hardware
+	 * only. Those values are represented by SValue objects.
+	 * </p>
+	 * 
+	 * <p>
+	 * Because SValue objects are just hardware memory proxies, it is not
+	 * possible (and does not make sense to try) to read their actual value
+	 * using CPU-side code. For the very same reason, most of the errors will
+	 * be detected at runtime only. The only available property is the size
+	 * (number of components) of the corresponding value (ie. 3D vector
+	 * operations will return SValue objects of size 3, cross-product will
+	 * return a scalar SValue object of size 1, ...).
+	 * </p>
+	 * 
+	 * <p>
+	 * SValue objects also provide OOP shader programming by encapsulating
+	 * common operations (add, multiply, ...). They also allow the use of
+	 * dynamic properties in order to read or write sub-components of
+	 * non-scalar values. Example:
+	 * </p>
+	 * 
+	 * <pre>
+	 * public function getOutputColor() : void
+	 * {
+	 * 	var diffuse : SValue = sampleTexture(BasicStyle.DIFFUSE_MAP);
+	 * 	
+	 * 	// use the RGB components of the diffuse map but use a
+	 * 	// fixed alpha = 0.5
+	 *  return combine(diffuse.rgb, 0.5);
+	 * }
+	 * </pre>
+	 * 
+	 * <p>
+	 * Each SValue object wraps a shader graph node that will be evaluated
+	 * by the compiler in order to create the corresponding AGAL bytecode.
+	 * </p>
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public dynamic class SValue extends Proxy
 	{
 		internal var _node	: INode	= null;
@@ -56,11 +103,6 @@ package aerys.minko.render.shader
 		{
 			_node = getNode(value);
 		}
-		
-		/*public final function combine(value	: Object) : SValue
-		{
-			return new SValue(new Combine(_node, getNode(value)));
-		}*/
 		
 		public final function multiply(arg : Object, ...args) : SValue
 		{

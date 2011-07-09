@@ -10,6 +10,13 @@ package aerys.minko.scene.action.texture
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	
+	/**
+	 * The DynamicTextureAction takes care of the rasterizing process
+	 * of a DynamicTexture source DisplayObject object.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class DynamicTextureAction implements IAction
 	{
 		private var _lastFrame	: int			= uint(-1);

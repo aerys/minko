@@ -15,21 +15,24 @@ package aerys.minko.scene.node
 	import aerys.minko.type.math.Transform3D;
 
 	/**
-	 * Model3D objects are visible scene objects. They contain references to:
+	 * Model objects are visible scene objects. They contain references to:
 	 * <ul>
-	 * <li>an IMesh3D object (geometry)</li>
-	 * <li>an IMaterial3D object (texture data)</li>
-	 * <li>a Style3D object (rendering parameters)</li>
+	 * <li>an IMesh object (geometry)</li>
+	 * <li>an ITexture object (texture data)</li>
+	 * <li>a Style object (cascading rendering style parameters)</li>
 	 * <li>and a Transform3D object (position, rotation and scale)</li>
 	 * </ul>
 	 * 
-	 * A Model3D object can be seen as a combination of a TransformGroup3D and an EffectGroup3D
-	 * that can only contain two children: a mesh and a material.
+	 * <p>
+	 * A Model object can be seen as a combination of a TransformGroup,
+	 * a StyleGroup and an EffectGroup that can only contain two children:
+	 * a texture and a mesh.
+	 * </p>
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements IScene, ITransformable, IStyled, IVersionnable, IEffectTarget, IActionTarget
+	public class Model extends AbstractScene implements IScene, ITransformable, IStyledScene, IVersionnable, IEffectTarget, IActionTarget
 	{
 		use namespace minko;
 		

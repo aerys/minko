@@ -3,7 +3,7 @@ package aerys.minko.scene.action
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.IStyled;
+	import aerys.minko.scene.node.IStyledScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
 	public class StyledAction implements IAction
@@ -21,7 +21,7 @@ package aerys.minko.scene.action
 		
 		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var styled : IStyled = scene as IStyled;
+			var styled : IStyledScene = scene as IStyledScene;
 			
 			if (styled.styleEnabled)
 				visitor.renderingData.styleStack.push(styled.style);
@@ -36,7 +36,7 @@ package aerys.minko.scene.action
 		
 		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var styled : IStyled = scene as IStyled;
+			var styled : IStyledScene = scene as IStyledScene;
 			
 			if (styled.styleEnabled)
 				visitor.renderingData.styleStack.pop();

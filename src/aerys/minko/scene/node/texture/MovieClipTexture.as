@@ -4,16 +4,20 @@ package aerys.minko.scene.node.texture
 	import flash.display.MovieClip;
 
 	/**
-	 * The MovieClipMaterials3D enables using MovieClip objects as texture data.
+	 * The MovieClipTexture enables using MovieClip objects as texture data.
 	 * 
-	 * MovieClipMaterial3D objects makes it easy to use animated materials and
+	 * <p>
+	 * MovieClipTexture objects makes it easy to use animated materials and
 	 * provides an interface similar to the MovieClip class with methods such
 	 * as "gotoAndPlay", "play" or "gotoAndStop".
+	 * </p>
 	 * 
-	 * The source MovieClip frames are uploaded to the GPU when required.
-	 * Because each MovieClip only has a limited number of frames, each frame
-	 * will be upload once and only once. Thus, modifying the MovieClip during
-	 * or after upload will give unpredicted results.
+	 * <p>
+	 * The source MovieClip frames are uploaded to the graphics hardware when
+	 * required. Because each MovieClip only has a limited number of frames,
+	 * each frame will be uploaded once and only once. Thus, modifying the
+	 * MovieClip during or after upload will give unpredicted results.
+	 * </p>
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 

@@ -34,6 +34,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
+	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.visitor.data.CameraData;
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
@@ -45,96 +46,276 @@ package aerys.minko.render.shader
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
-	public class ParametricShader
+	/**
+	 * <p>ActionScriptShader objects define vertex and fragment shaders with
+	 * ActionScript code.</p>
+	 * 
+	 * <p>ActionScript shaders make it possible to write dynamic, parametric
+	 * and OOP oriented shaders taking benefits of all the features of
+	 * ActionScript. They fully integrate with the rest of your ActionScript
+	 * code and the application development process. Thus, they allow to
+	 * greatly simplify shaders writing and the rendering process as a whole.
+	 * </p>
+	 * 
+	 * <p>
+	 * Because ActionScript shaders are just actual ActionScript code, they
+	 * can take into account the scene configuration (the number of lights,
+	 * the need for hardware skinning, etc...). Using conditionnal statements
+	 * and loops, one can write an ActionScript shader that will be able to
+	 * handle many usecases by generating a different shader bytecode anytime
+	 * the rendering or the scene configuration changes.
+	 * </p>
+	 * 
+	 * <p>
+	 * To create your own shaders using ActionScript code, you should extend
+	 * the ActionScriptShader class and override the following methods:</p>
+	 * <ul>
+	 * <li>getOutputPosition: this method will define the vertex shader</li>
+	 * <li>getOutputColor: this method will define the fragment shader</li>
+	 * <li>getHash (optionnal): this method should return a hash value
+	 * that will be used as a unique key to identify the shader</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Those methods and other shader dedicated methods heavily rely on
+	 * two data types:
+	 * </p>
+	 * <ul>
+	 * <li>Object: arguments are typed has Object to ensure polymorphism. Any
+	 * of the following type can be used: int, uint, Number, Point, Vector4,
+	 * Matrix4x4 and SValue. Arguments with types different from SValue will
+	 * always be interpreted has static fixed constants.</li>
+	 * <li>SValue: return values are types as SValue objects. They represent
+	 * hardware memory proxies.</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * ActionScript shaders workflow at runtime is as follow:
+	 * </p>
+	 * <ul>
+	 * <li>The shader hash is retrieved using the "getHash" method</li>
+	 * <li>If a shader bytecode has already been compiled for this hash value,
+	 * it is set and used directly.</li>
+	 * <li>Else, the getOutputPosition and getOutputColor methods are called.
+	 * Those methods transparently build and return a "shader graph"
+	 * encapsulated in an SValue object.</li>
+	 * <li>This shader graph is then optimized, compiled into AGAL
+	 * bytecode and saved using the computed hash as a key.</li>
+	 * <li>The compiled AGAL bytecode is then uploaded and used to render the
+	 * scene.</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * You should always remember both getOutputPosition and getOutputColor
+	 * are <b>never</b> executed on the graphics hardware. Instead, they help
+	 * to transparently define a "shader program graph" that will be dynamically
+	 * compiled at runtime into AGAL bytecode. Thus, you should always keep in
+	 * mind that:
+	 * </p>
+	 * <ul>
+	 * <li>Both getOutputPosition and getOutputColor are called only once when
+	 * there is no valid AGAL bytecode available (ie. the "invalidate" method
+	 * has been called or their is no shader bytecode associated with the
+	 * hash retrieve by calling the "getHash" method).</li>
+	 * <li>Conditionnals, loops and method calls with a return type different
+	 * from SValue are considered as static fixed CPU-side code.</li>
+	 * <li>Any value with a type different from SValue will be transparently
+	 * turned into a static fixed shader constant.</li>
+	 * <li>If you want to use updatable values, you should use parameters.</li>
+	 * </ul>
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
+	public class ActionScriptShader
 	{
 		use namespace minko;
 		
-		private var _shadersMap		: Object		= new Object();
+		private var _hashToShader	: Object		= new Object();
+		
+		private var _invalid		: Boolean		= true;
 		
 		private var _styleStack		: StyleStack	= null;
 		private var _local			: LocalData		= null;
 		private var _world			: Dictionary	= null;
 		
+		/**
+		 * The position of the current vertex in clipspace (normalized
+		 * screenspace).
+		 *  
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexClipspacePosition() : SValue
 		{
 			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
 		
+		/**
+		 * The position of the current vertex in world space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexWorldPosition() : SValue
 		{
 			return multiply4x4(vertexPosition, localToWorldMatrix);
 		}
 		
+		/**
+		 * The position of the current vertex in local space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexPosition() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
 		
+		/**
+		 * The RGB color of the current vertex. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexRGBColor() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.RGB));
 		}
-		
+
+		/**
+		 * The RGBA color of the current vertex. 
+		 * @return 
+		 * 
+		 */
+		protected final function get vertexRGBAColor() : SValue
+		{
+			return new SValue(new Attribute(VertexComponent.RGBA));
+		}
+
+		/**
+		 * The UV texture coordinates of the current vertex. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexUV() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.UV));
 		}
 		
+		/**
+		 * The normal of the current vertex. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexNormal() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.NORMAL));
 		}
 		
+		/**
+		 * The tangent of the current vertex. 
+		 * @return 
+		 * 
+		 */
 		protected final function get vertexTangent() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 		
+		/**
+		 * The direction of the camera in local space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get cameraLocalDirection() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION));
 		}
 		
+		/**
+		 * The position of the camera in world space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get cameraPosition() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.POSITION));
 		}
 		
+		/**
+		 * The position of the camera in local space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get cameraLocalPosition() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION));
 		}
 		
+		/**
+		 * The direction of the camera in world space. 
+		 * @return 
+		 * 
+		 */
 		protected final function get cameraDirection() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
 		}
 		
+		/**
+		 * The local-to-screen (= world * view * projection) transformation matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get localToScreenMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_SCREEN));
 		}
 		
+		/**
+		 * The local-to-world (= world) transformation matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get localToWorldMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.WORLD));
 		}
 		
+		/**
+		 * The local-to-view (= world * view) transformation matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get localToViewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_VIEW));
 		}
 		
+		/**
+		 * The world-to-local (= world^-1) transformation matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get worldToLocalMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.WORLD_INVERSE));
 		}
 		
+		/**
+		 * The world-to-view (= world * view) transformation matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get worldToViewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW));
 		}
 		
+		/**
+		 * The view-to-clipspace (= projection) matrix. 
+		 * @return 
+		 * 
+		 */
 		protected final function get projectionMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.PROJECTION));
@@ -146,21 +327,32 @@ package aerys.minko.render.shader
 										world	: Dictionary) : Boolean
 		{
 			var hash 	: String 		= getDataHash(style, local, world);
-			var shader 	: DynamicShader = _shadersMap[hash];
+			var shader 	: DynamicShader = _hashToShader[hash];
 			
 			_styleStack = style;
 			_local = local;
 			_world = world;
 			
-			if (!shader)
-				_shadersMap[hash] = shader = DynamicShader.create(getOutputPosition()._node,
-																  getOutputColor()._node);
+			if (!shader || _invalid)
+				_hashToShader[hash] = shader = DynamicShader.create(getOutputPosition()._node,
+																    getOutputColor()._node);
 			
 			shader.fillRenderState(state, style, local, world);
 			
 			return true;
 		}
 		
+		/**
+		 * The getDataHash method returns a String computed from the style, local and world data.
+		 * This value is used as a hash that defines all the values used as conditionnals in the
+		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
+		 *  
+		 * @param style
+		 * @param local
+		 * @param world
+		 * @return 
+		 * 
+		 */
 		protected function getDataHash(style	: StyleStack, 
 									   local	: LocalData, 
 									   world	: Dictionary) : String
@@ -168,31 +360,103 @@ package aerys.minko.render.shader
 			return "";
 		}
 		
+		/**
+		 * The getOutputPosition method implements a vertex shader using ActionScript code. 
+		 * @return 
+		 * 
+		 */
 		protected function getOutputPosition() : SValue
 		{
 			throw new Error();
 		}
 		
+		/**
+		 * The getOutputColor method implements a fragment shader using ActionScript code.
+		 * @return 
+		 * 
+		 */
 		protected function getOutputColor() : SValue
 		{
 			throw new Error();
 		}
 		
+		/**
+		 * Return a style value that will be passed as a shader constant.
+		 * 
+		 * @param styleId
+		 * @param defaultValue
+		 * @return 
+		 * 
+		 */
 		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
 		{
 			return _styleStack.get(styleId, defaultValue);
 		}
 		
+		/**
+		 * Return whether a specific style is set or not. 
+		 * @param styleId
+		 * @return 
+		 * 
+		 */
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
 			return _styleStack.isSet(styleId);
 		}
 		
+		/**
+		 * Interpolate vertex shader values to make them usable inside the
+		 * fragment shader.
+		 * 
+		 * <p>Any SValue object comming from the vertex shader but used inside
+		 * the fragment shader should be interpolated first. This is what the
+		 * "interpolate" method does.</p>
+		 * 
+		 * <p>The interpolate method will make it possible for the shader
+		 * compiler to resolve varying registers allocations.</p>
+		 * 
+		 * @param value
+		 * @return 
+		 * 
+		 */
 		protected final function interpolate(value : SValue) : SValue
 		{
 			return new SValue(new Interpolate(getNode(value)));
 		}
 		
+		/**
+		 * Create a new value by combining others.
+		 * 
+		 * <p>The resulting value will be made out off all the arguments
+		 * put together one after the other. The size of the final value
+		 * will be the sum of the sizes of the combined values.</p>
+		 * 
+		 * <p>For example, combining an RGB color (1.0, 0.0, 1.0) with
+		 * a scalar (1.0) will return a value of size 4 that could be
+		 * used as an RGBA value:</p>
+		 * 
+		 * <pre>
+		 * override protected function getOutputColor() : SValue
+		 * {
+		 * 	// interpolate the vertex RGB color
+		 * 	var color : SValue = interpolate(vertexRGBColor);
+		 * 
+		 * 	// combine the RGB color with a constant alpha = 1.0
+		 * 	color = combine(color, 1.0);
+		 * 
+		 * 	return color;
+		 * }
+		 * </pre>
+		 * 
+		 * <p>This fragment shader function will output the vertex color
+		 * with a constant alpha value equal to 0.5.</p>
+		 * 
+		 * @param value1
+		 * @param value2
+		 * @param values
+		 * @return 
+		 * 
+		 */
 		protected final function combine(value1	: Object,
 										 value2	: Object,
 										 ...values) : SValue
@@ -206,16 +470,54 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}
 		
+		/**
+		 * Create a new SVAlue object of size 3 by combining 3 scalar values.
+		 * 
+		 * <p>This method is an alias of the "combine" method. You should prefer this
+		 * method everytime you want to build an SValue object of size 3 because this
+		 * method will actually enforce it and "combine" will not.</p>
+		 *  
+		 * @param x
+		 * @param y
+		 * @param z
+		 * @return 
+		 * 
+		 */
 		protected final function vector3(x : Object, y : Object, z : Object) : SValue
 		{
 			return combine(x, y, z);
 		}
 		
+		/**
+		 * Create a new SVAlue object of size 4 by combining 4 scalar values.
+		 * 
+		 * <p>This method is an alias of the "combine" method. You should prefer this
+		 * method everytime you want to build an SValue object of size 4 because
+		 * this method will actually enforce it and "combine" will not.</p>
+		 * 
+		 * @param x
+		 * @param y
+		 * @param z
+		 * @param w
+		 * @return 
+		 * 
+		 */
 		protected final function vector4(x : Object, y : Object, z : Object, w : Object) : SValue
 		{
 			return combine(x, y, z, w);
 		}
 		
+		/**
+		 * Retrieve the RGBA color of a pixel of a texture.
+		 *  
+		 * @param styleId
+		 * @param uv
+		 * @param filtering
+		 * @param mipMapping
+		 * @param wrapping
+		 * @return 
+		 * 
+		 */
 		protected final function sampleTexture(styleId 		: int,
 											   uv 			: Object,
 											   filtering	: uint	= Sampler.FILTER_LINEAR,
@@ -225,9 +527,18 @@ package aerys.minko.render.shader
 			return new SValue(new Texture(getNode(uv), new Sampler(styleId, filtering, mipMapping, wrapping)));
 		}
 		
-		protected final function multiply(arg1 : Object, arg2 : Object, ...args) : SValue
+		/**
+		 * Compute term-to-term scalar multiplication.
+		 *  
+		 * @param arg1
+		 * @param arg2
+		 * @param args
+		 * @return 
+		 * 
+		 */
+		protected final function multiply(value1 : Object, value2 : Object, ...args) : SValue
 		{
-			var p 		: Product 	= new Product(getNode(arg1), getNode(arg2));
+			var p 		: Product 	= new Product(getNode(value1), getNode(value2));
 			var numArgs : int 		= args.length;
 			
 			for (var i : int = 0; i < numArgs; ++i)
@@ -236,19 +547,41 @@ package aerys.minko.render.shader
 			return new SValue(p);
 		}
 		
-		protected final function divide(arg1 : Object, arg2 : Object) : SValue
+		/**
+		 * Compute term-to-term scalar division.
+		 * 
+		 * @param arg1
+		 * @param arg2
+		 * @return 
+		 * 
+		 */
+		protected final function divide(value1 : Object, value2 : Object) : SValue
 		{
-			return new SValue(new Divide(getNode(arg1), getNode(arg2)));
+			return new SValue(new Divide(getNode(value1), getNode(value2)));
 		}
 		
-		protected final function pow(base : Object, exp : Object) : SValue
+		/**
+		 * Elevate the "base" value to the "exp" power.
+		 *  
+		 * @param base
+		 * @param exp
+		 * @return 
+		 * 
+		 */
+		protected final function power(base : Object, exp : Object) : SValue
 		{
 			return new SValue(new Power(getNode(base), getNode(exp)));
 		}
 		
-		protected final function add(value1 : Object, value2 : Object) : SValue
+		protected final function add(value1 : Object, value2 : Object, ...values) : SValue
 		{
-			return new SValue(new Add(getNode(value1), getNode(value2)));
+			var sum		: Sum	= new Sum(getNode(value1), getNode(value2));
+			var numArgs : int	= values.length;
+			
+			for (var i : int = 0; i < numArgs; ++i)
+				sum.addTerm(getNode(values[i]))
+			
+			return new SValue(sum);
 		}
 		
 		protected final function subtract(value1 : Object, value2 : Object) : SValue
@@ -312,7 +645,7 @@ package aerys.minko.render.shader
 			return new SValue(max);
 		}
 		
-		protected final function planarReflection(vector : Object, normal : Object) : SValue
+		protected final function getReflectedVector(vector : Object, normal : Object) : SValue
 		{
 			return new SValue(new PlanarReflection(getNode(vector), getNode(normal)));
 		}
@@ -383,9 +716,9 @@ package aerys.minko.render.shader
 			return new SValue(new ReciprocalRoot(getNode(scalar)));
 		}
 		
-		protected final function getFolorColor(start	: Object,
-											   distance	: Object,
-											   color	: Object) : SValue
+		protected final function getFogColor(start		: Object,
+											 distance	: Object,
+											 color		: Object) : SValue
 		{
 			return new SValue(new Fog(getNode(start), getNode(distance), getNode(color)));
 		}
@@ -393,6 +726,24 @@ package aerys.minko.render.shader
 		protected final function getVertexAttribute(vertexComponent : VertexComponent) : SValue
 		{
 			return new SValue(new Attribute(vertexComponent));
+		}
+		
+		/**
+		 * Invalidate both the vertex and fragment shader bytecode and force it
+		 * to be recompiled next time the shader will be used to draw
+		 * triangles.
+		 * 
+		 * <p>You can use the "invalidate" method to force the shader
+		 * compilation anytime a value used in conditionnals or loop
+		 * statements changes.</p>
+		 * 
+		 * <p>If you do not want to have to maniually invalidate the shader
+		 * bytecode, you should implement the "getHash" method properly.</p>
+		 * 
+		 */
+		public function invalidate() : void
+		{
+			_invalid = true;
 		}
 		
 		private function getNode(value : Object) : INode
