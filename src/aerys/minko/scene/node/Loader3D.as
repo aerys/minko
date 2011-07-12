@@ -16,6 +16,7 @@ package aerys.minko.scene.node
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -43,17 +44,18 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Loader3D extends EventDispatcher implements IScene
+	public class Loader3D extends Group implements IEventDispatcher
 	{
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
 		
-		private var _loaderToURI		: Dictionary	= new Dictionary(true);
-		private var _content			: Group			= new Group();
+//		private var _content			: Group			= new Group();
+		private var _loaderToURI		: Dictionary		= new Dictionary(true);
+		private var _dispatcher			: EventDispatcher	= null;
 		
-		public function get name()	 	: String			{ return _content.name; }
-		public function get content() 	: Group				{ return _content; }
-		public function get actions()	: Vector.<IAction>	{ return _content.actions; }
+//		public function get name()	 	: String			{ return _content.name; }
+//		public function get content() 	: Group				{ return _content; }
+//		public function get actions()	: Vector.<IAction>	{ return _content.actions; }
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void
@@ -64,6 +66,8 @@ package aerys.minko.scene.node
 		public function Loader3D()
 		{
 			super();
+			
+			_dispatcher = new EventDispatcher(this);
 		}
 		
 		public function load(request : URLRequest) : Group
@@ -93,7 +97,9 @@ package aerys.minko.scene.node
 				urlLoader.load(request);
 			}
 			
-			return _content;
+//			return _content;
+			
+			return this;
 		}
 		
 		public function loadBytes(bytes : ByteArray) : Group
@@ -122,7 +128,9 @@ package aerys.minko.scene.node
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
 			loader.loadBytes(bytes);
 			
-			return _content;
+//			return _content;
+			
+			return this;
 		}
 	
 		public static function loadBytes(bytes : ByteArray) : Group
@@ -160,8 +168,6 @@ package aerys.minko.scene.node
 					textureGroup.addChild(texture = new BitmapTexture((info.content as Bitmap).bitmapData));
 			});
 			loader.loadBytes(bytes);
-			
-			//throw new Error("Unable to find a proper data parser.");
 			
 			return new Group(textureGroup);
 		}
@@ -215,9 +221,10 @@ package aerys.minko.scene.node
 												  : null;
 			var length		: int				= data ? data.length : 0;
 			
-			_content.removeAllChildren();
+			//_content.removeAllChildren();
 			for (var i : int = 0; i < length; ++i)
-				_content.addChild(data[i]);
+//				_content.addChild(data[i]);
+				addChild(data[i]);
 
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
@@ -232,15 +239,41 @@ package aerys.minko.scene.node
 			else if (info.content is Bitmap)
 				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
 			
-			_content.removeAllChildren();
-			_content.addChild(texture);
+//			_content.removeAllChildren();
+//			_content.addChild(texture);
+			
+			addChild(texture);
 			
 			dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
-		public function visited(query : ISceneVisitor) : void
+		public function addEventListener(type 				: String,
+										 listener 			: Function,
+										 useCapture 		: Boolean	= false, 
+										 priority 			: int		= 0,
+										 useWeakReference 	: Boolean	= false) : void
 		{
-			query.visit(_content);
+			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type : String, listener : Function, useCapture : Boolean = false) : void
+		{
+			_dispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		public function dispatchEvent(event : Event) : Boolean
+		{
+			return _dispatcher.dispatchEvent(event);
+		}
+		
+		public function hasEventListener(type : String) : Boolean
+		{
+			return _dispatcher.hasEventListener(type);
+		}
+		
+		public function willTrigger(type : String) : Boolean
+		{
+			return _dispatcher.willTrigger(type);
 		}
 	}
 }
