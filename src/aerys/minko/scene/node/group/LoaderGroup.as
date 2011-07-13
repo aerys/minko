@@ -1,8 +1,6 @@
-package aerys.minko.scene.node
+package aerys.minko.scene.node.group
 {
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.node.group.Group;
-	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
@@ -23,6 +21,7 @@ package aerys.minko.scene.node
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import aerys.minko.scene.node.IScene;
 
 	/**
 	 * The Loader3D class is the interface to load any 3D related content
@@ -45,7 +44,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Loader3D extends Group implements IEventDispatcher
+	public class LoaderGroup extends Group implements IEventDispatcher
 	{
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
@@ -64,7 +63,7 @@ package aerys.minko.scene.node
 			PARSERS[extension] = parser;
 		}
 		
-		public function Loader3D()
+		public function LoaderGroup()
 		{
 			super();
 			
@@ -78,7 +77,7 @@ package aerys.minko.scene.node
 		 * @return The Loader3D object itself.
 		 * 
 		 */
-		public function load(request : URLRequest) : Loader3D
+		public function load(request : URLRequest) : LoaderGroup
 		{
 			if (request.url.match(FORMATS))
 			{
@@ -113,7 +112,7 @@ package aerys.minko.scene.node
 			return this;
 		}
 		
-		public function loadBytes(bytes : ByteArray) : Loader3D
+		public function loadBytes(bytes : ByteArray) : LoaderGroup
 		{
 			for (var extension : String in PARSERS)
 			{
@@ -141,7 +140,7 @@ package aerys.minko.scene.node
 			return this;
 		}
 		
-		public function loadAsset(asset : Class) : Loader3D
+		public function loadAsset(asset : Class) : LoaderGroup
 		{
 			var assetObject : Object 	= new asset();
 			
@@ -179,14 +178,14 @@ package aerys.minko.scene.node
 			return this;
 		}
 		
-		public static function loadBytes(bytes : ByteArray) : Loader3D
+		public static function loadBytes(bytes : ByteArray) : LoaderGroup
 		{
-			return new Loader3D().loadBytes(bytes);
+			return new LoaderGroup().loadBytes(bytes);
 		}
 		
-		public static function loadAsset(asset : Class) : Loader3D
+		public static function loadAsset(asset : Class) : LoaderGroup
 		{
-			return new Loader3D().loadAsset(asset);
+			return new LoaderGroup().loadAsset(asset);
 		}
 		
 		private function urlLoaderCompleteHandler(event : Event) : void
