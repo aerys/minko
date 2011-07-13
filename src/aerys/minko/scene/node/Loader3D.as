@@ -17,6 +17,7 @@ package aerys.minko.scene.node
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.globalization.LastOperationStatus;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -49,13 +50,13 @@ package aerys.minko.scene.node
 		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS	: Object	= new Object();
 		
-//		private var _content			: Group			= new Group();
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
+		private var _loaderToPosition	: Dictionary		= new Dictionary(true);
+		
 		private var _dispatcher			: EventDispatcher	= null;
 		
-//		public function get name()	 	: String			{ return _content.name; }
-//		public function get content() 	: Group				{ return _content; }
-//		public function get actions()	: Vector.<IAction>	{ return _content.actions; }
+		private var _total				: uint				= 0;
+		private var _loaded				: uint				= 0;
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void
@@ -70,11 +71,20 @@ package aerys.minko.scene.node
 			_dispatcher = new EventDispatcher(this);
 		}
 		
-		public function load(request : URLRequest) : Group
+		/**
+		 * Load the content corresponding to the specified URLRequest object.
+		 *  
+		 * @param request
+		 * @return The Loader3D object itself.
+		 * 
+		 */
+		public function load(request : URLRequest) : Loader3D
 		{
 			if (request.url.match(FORMATS))
 			{
 				var loader : Loader = new Loader();
+				
+				_loaderToPosition[loader] = numChildren;
 				
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 														  loaderCompleteHandler);
@@ -91,18 +101,19 @@ package aerys.minko.scene.node
 					throw new Error("No data parser registered for extension '" + extension + "'");
 
 				_loaderToURI[urlLoader] = request.url;
+				_loaderToPosition[loader] = numChildren;
 				
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
 				urlLoader.load(request);
 			}
 			
-//			return _content;
+			++_total;
 			
 			return this;
 		}
 		
-		public function loadBytes(bytes : ByteArray) : Group
+		public function loadBytes(bytes : ByteArray) : Loader3D
 		{
 			for (var extension : String in PARSERS)
 			{
@@ -114,12 +125,11 @@ package aerys.minko.scene.node
 				{
 					var data	: Vector.<IScene>	= parser.data;
 					var length	: int				= data ? data.length : 0;
-					var content : Group				= new Group();
 					
 					for (var i : int = 0; i < length; ++i)
-						content.addChild(data[i]);
+						addChild(data[i]);
 					
-					return content;
+					return this;
 				}
 			}
 			
@@ -128,14 +138,14 @@ package aerys.minko.scene.node
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
 			loader.loadBytes(bytes);
 			
-//			return _content;
-			
 			return this;
 		}
 	
-		public static function loadBytes(bytes : ByteArray) : Group
+		public static function loadBytes(bytes : ByteArray) : Loader3D
 		{
-			for (var extension : String in PARSERS)
+			return new Loader3D().loadBytes(bytes);
+
+/*			for (var extension : String in PARSERS)
 			{
 				var parser : IParser3D = PARSERS[extension];
 				
@@ -145,19 +155,18 @@ package aerys.minko.scene.node
 				{
 					var data	: Vector.<IScene>	= parser.data;
 					var length	: int				= data ? data.length : 0;
-					var content : Group				= new Group();
 
 					for (var i : int = 0; i < length; ++i)
-						content.addChild(data[i]);
+						loader.addChild(data[i]);
 					
-					return content;
+					return loader;
 				}
 			}
 			
-			var loader 		 : Loader 	= new Loader();
-			var textureGroup : IGroup 	= new Group();
+			var contentLoader 	: Loader 	= new Loader();
+			var textureGroup 	: IGroup 	= new Group();
 			
-			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e : Event) : void
+			contentLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e : Event) : void
 			{
 				var info 	: LoaderInfo 	= e.target as LoaderInfo;
 				var texture	: ITexture 		= null;
@@ -167,12 +176,14 @@ package aerys.minko.scene.node
 				else if (info.content is Bitmap)
 					textureGroup.addChild(texture = new BitmapTexture((info.content as Bitmap).bitmapData));
 			});
-			loader.loadBytes(bytes);
+			contentLoader.loadBytes(bytes);
 			
-			return new Group(textureGroup);
+			loader.addChild(textureGroup)
+			
+			return loader;*/
 		}
 		
-		public static function loadAsset(asset : Class) : Group
+		public static function loadAsset(asset : Class) : Loader3D
 		{
 			var assetObject : Object 	= new asset();
 			
@@ -214,6 +225,7 @@ package aerys.minko.scene.node
 		{
 			var loader 		: URLLoader			= event.target as URLLoader;
 			var uri			: String			= _loaderToURI[loader];
+			var offset		: uint				= _loaderToPosition[loader];
 			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
 			var parser		: IParser3D			= PARSERS[extension.toLocaleLowerCase()];
 			var data		: Vector.<IScene>	= parser.parse(loader.data as ByteArray)
@@ -221,12 +233,13 @@ package aerys.minko.scene.node
 												  : null;
 			var length		: int				= data ? data.length : 0;
 			
-			//_content.removeAllChildren();
 			for (var i : int = 0; i < length; ++i)
-//				_content.addChild(data[i]);
-				addChild(data[i]);
+				addChildAt(data[i], offset + i);
+			
+			++_loaded;
 
-			dispatchEvent(new Event(Event.COMPLETE));
+			if (_loaded == _total)
+				dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		private function loaderCompleteHandler(event : Event) : void
@@ -239,12 +252,12 @@ package aerys.minko.scene.node
 			else if (info.content is Bitmap)
 				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
 			
-//			_content.removeAllChildren();
-//			_content.addChild(texture);
+			addChildAt(texture, _loaderToPosition[info.loader]);
 			
-			addChild(texture);
+			++_loaded;
 			
-			dispatchEvent(new Event(Event.COMPLETE));
+			if (_loaded == _total)
+				dispatchEvent(new Event(Event.COMPLETE));
 		}
 		
 		public function addEventListener(type 				: String,
