@@ -49,7 +49,7 @@ package aerys.minko.scene.node.texture
 			_styleProp = value;
 		}
 		
-		public function get ressource() : IRessource
+		public function get ressource() : TextureRessource
 		{
 			return _ressource;
 		}

@@ -2,6 +2,8 @@ package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISearchableScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.stream.IVertexStream;
@@ -51,6 +53,19 @@ package aerys.minko.scene.node.mesh.modifier
 			
 			//actions[0] = new MeshModifierAction();
 			actions[0] = MeshAction.meshAction;
+		}
+		
+		public function getDescendantByName(name : String) : IScene
+		{
+			if (_target)
+			{
+				if (_target.name == name)
+					return _target;
+				else if (_target is ISearchableScene)
+					return (_target as ISearchableScene).getDescendantByName(name);
+			}
+			
+			return null;
 		}
 	
 		private function initialize(streams : Array) : void

@@ -4,6 +4,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.action.group.GroupAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISearchableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
 	
@@ -206,10 +207,10 @@ package aerys.minko.scene.node.group
 			
 			for (var i : int = 0; i < numChildren && !descendant; ++i)
 			{
-				var childGroup : IGroup = _children[i] as IGroup;
+				var searchable : ISearchableScene = _children[i] as ISearchableScene;
 				
-				if (childGroup)
-					descendant = childGroup.getDescendantByName(name);
+				if (searchable)
+					descendant = searchable.getDescendantByName(name);
 			}
 			
 			return descendant;

@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.ressource.IRessource;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.scene.action.texture.AnimatedTextureAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.Group;
@@ -48,7 +49,7 @@ package aerys.minko.scene.node.texture
 		/**
 		 * @todo implement
 		 */
-		public function get ressource() : IRessource
+		public function get ressource() : TextureRessource
 		{
 			throw new Error('Implement me');
 		}

@@ -33,6 +33,10 @@ package aerys.minko.scene.node.mesh.modifier
 			
 			// (u, v) texture coordinates
 			var uvStream		: VertexStream		= vertexStream.getSubStreamByComponent(VertexComponent.UV);
+			
+			if (!uvStream)
+				throw new Error("Missing vertex components u, v.");
+			
 			var uvOffset		: int 				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
 			var uvSize			: int 				= uvStream.format.dwordsPerVertex;
 			var uv				: Vector.<Number>	= uvStream._data;

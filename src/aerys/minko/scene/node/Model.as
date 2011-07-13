@@ -32,7 +32,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements IScene, ITransformable, IStyledScene, IVersionnable, IEffectTarget, IActionTarget
+	public class Model extends AbstractScene implements ISearchableScene, ITransformable, IStyled, IVersionnable, IEffectTarget, IActionTarget
 	{
 		use namespace minko;
 		
@@ -148,6 +148,29 @@ package aerys.minko.scene.node
 			
 			_mesh = mesh;
 			_texture = texture;
+		}
+		
+		public function getDescendantByName(name : String) : IScene
+		{
+			var result : IScene = null;
+			
+			if (_texture)
+			{
+				if (_texture.name == name)
+					result = _texture;
+				else if (_texture is ISearchableScene)
+					result = (_texture as ISearchableScene).getDescendantByName(name);
+			}
+			
+			if (!result && _mesh)
+			{
+				if (_mesh.name == name)
+					result = _mesh;
+				else if (_mesh is ISearchableScene)
+					result = (_mesh as ISearchableScene).getDescendantByName(name);
+			}
+			
+			return result;
 		}
 	}
 }

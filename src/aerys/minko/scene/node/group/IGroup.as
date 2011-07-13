@@ -1,8 +1,9 @@
 package aerys.minko.scene.node.group
 {
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISearchableScene;
 	
-	public interface IGroup extends IScene
+	public interface IGroup extends ISearchableScene
 	{
 		function get numChildren() : uint;
 		
@@ -20,7 +21,5 @@ package aerys.minko.scene.node.group
 		function getChildAt(position : uint) : IScene;
 		function getChildIndex(child : IScene) : int;
 		function getChildByName(name : String) : IScene;
-		
-		function getDescendantByName(name : String) : IScene;
 	}
 }
