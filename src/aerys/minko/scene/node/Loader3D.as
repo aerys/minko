@@ -140,85 +140,53 @@ package aerys.minko.scene.node
 			
 			return this;
 		}
-	
-		public static function loadBytes(bytes : ByteArray) : Loader3D
-		{
-			return new Loader3D().loadBytes(bytes);
-
-/*			for (var extension : String in PARSERS)
-			{
-				var parser : IParser3D = PARSERS[extension];
-				
-				bytes.position = 0;
-				
-				if (parser.parse(bytes))
-				{
-					var data	: Vector.<IScene>	= parser.data;
-					var length	: int				= data ? data.length : 0;
-
-					for (var i : int = 0; i < length; ++i)
-						loader.addChild(data[i]);
-					
-					return loader;
-				}
-			}
-			
-			var contentLoader 	: Loader 	= new Loader();
-			var textureGroup 	: IGroup 	= new Group();
-			
-			contentLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, function(e : Event) : void
-			{
-				var info 	: LoaderInfo 	= e.target as LoaderInfo;
-				var texture	: ITexture 		= null;
-				
-				if (info.content is MovieClip)
-					textureGroup.addChild(new MovieClipTexture(info.content as MovieClip));
-				else if (info.content is Bitmap)
-					textureGroup.addChild(texture = new BitmapTexture((info.content as Bitmap).bitmapData));
-			});
-			contentLoader.loadBytes(bytes);
-			
-			loader.addChild(textureGroup)
-			
-			return loader;*/
-		}
 		
-		public static function loadAsset(asset : Class) : Loader3D
+		public function loadAsset(asset : Class) : Loader3D
 		{
 			var assetObject : Object 	= new asset();
 			
 			if (assetObject is MovieClip)
 			{
-				var mc 		: MovieClip	= assetObject as MovieClip;
-				var loader 	: Loader 	= null;
+				var mc 				: MovieClip	= assetObject as MovieClip;
+				var contentLoader 	: Loader 	= null;
 				
-				if (mc.numChildren == 1 && (loader = mc.getChildAt(0) as Loader))
+				if (mc.numChildren == 1 && (contentLoader = mc.getChildAt(0) as Loader))
 				{
 					var texture : MovieClipTexture = new MovieClipTexture();
 					
-					loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
-															  function(e : Event) : void
+					contentLoader.contentLoaderInfo.addEventListener(Event.COMPLETE,
+					function(e : Event) : void
 					{
-						texture.source = loader.content as MovieClip;
+						texture.source = contentLoader.content as MovieClip;
 					});
-
-					return new Group(texture);
+					
+					addChild(texture);
 				}
 				else
 				{
-					return new Group(new MovieClipTexture(mc));
+					addChild(new MovieClipTexture(mc));
 				}
 			}
 			else if (assetObject is IBitmapDrawable)
 			{
-				return new Group(BitmapTexture.fromDisplayObject(assetObject as Bitmap));
+				addChild(BitmapTexture.fromDisplayObject(assetObject as Bitmap));
 			}
 			else if (assetObject is ByteArray)
 			{
 				return loadBytes(assetObject as ByteArray);
 			}
 			
-			return null;
+			return this;
+		}
+		
+		public static function loadBytes(bytes : ByteArray) : Loader3D
+		{
+			return new Loader3D().loadBytes(bytes);
+		}
+		
+		public static function loadAsset(asset : Class) : Loader3D
+		{
+			return new Loader3D().loadAsset(asset);
 		}
 		
 		private function urlLoaderCompleteHandler(event : Event) : void
