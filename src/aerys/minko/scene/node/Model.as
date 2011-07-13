@@ -32,7 +32,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements ISearchableScene, ITransformable, IStyled, IVersionnable, IEffectTarget, IActionTarget
+	public class Model extends AbstractScene implements ISearchableScene, ITransformable, IStyledScene, IVersionnable, IEffectTarget, IActionTarget
 	{
 		use namespace minko;
 		

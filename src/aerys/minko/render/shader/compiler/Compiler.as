@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler
 {
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.render.shader.DynamicShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.compiler.allocator.Allocation;
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
 	import aerys.minko.render.shader.compiler.allocator.AttributeAllocator;
@@ -155,12 +155,12 @@ package aerys.minko.render.shader.compiler
 			_fsParams		= _fsConstAllocator.computeParameterAllocation();
 		}
 		
-		public function compileShader() : DynamicShader
+		public function compileShader() : Shader
 		{
 			var vertexShader	: ByteArray = compileVertexShader();
 			var fragmentShader	: ByteArray	= compileFragmentShader();
 			
-			return new DynamicShader(
+			return new Shader(
 				vertexShader, fragmentShader, _vertexInput, 
 				_vsConstData, _fsConstData, _vsParams, 
 				_fsParams, _samplers

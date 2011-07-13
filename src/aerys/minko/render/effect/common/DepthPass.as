@@ -6,7 +6,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
-	import aerys.minko.render.shader.DynamicShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.PackedDepth;
 	import aerys.minko.scene.visitor.data.LocalData;
@@ -17,8 +17,8 @@ package aerys.minko.render.effect.common
 	
 	public class DepthPass implements IEffectPass
 	{
-		protected static var SHADER : DynamicShader = 
-			DynamicShader.create(new ClipspacePosition(), new PackedDepth());
+		protected static var SHADER : Shader = 
+			Shader.create(new ClipspacePosition(), new PackedDepth());
 		
 		protected var _priority				: Number;
 		protected var _renderTarget			: RenderTarget;

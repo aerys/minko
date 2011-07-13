@@ -1,6 +1,6 @@
 package aerys.minko.type.log
 {
-	public final class LogLevel
+	public final class DebugLevel
 	{
 		public static const DISABLED			: uint	= 0;
 		

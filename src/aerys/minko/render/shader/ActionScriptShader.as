@@ -47,7 +47,7 @@ package aerys.minko.render.shader
 	import flash.utils.Dictionary;
 	
 	/**
-	 * <p>ActionScriptShader objects define vertex and fragment shaders with
+	 * <p>Shader objects define vertex and fragment shaders with
 	 * ActionScript code.</p>
 	 * 
 	 * <p>ActionScript shaders make it possible to write dynamic, parametric
@@ -68,7 +68,7 @@ package aerys.minko.render.shader
 	 * 
 	 * <p>
 	 * To create your own shaders using ActionScript code, you should extend
-	 * the ActionScriptShader class and override the following methods:</p>
+	 * the Shader class and override the following methods:</p>
 	 * <ul>
 	 * <li>getOutputPosition: this method will define the vertex shader</li>
 	 * <li>getOutputColor: this method will define the fragment shader</li>
@@ -327,15 +327,15 @@ package aerys.minko.render.shader
 										world	: Dictionary) : Boolean
 		{
 			var hash 	: String 		= getDataHash(style, local, world);
-			var shader 	: DynamicShader = _hashToShader[hash];
+			var shader 	: Shader = _hashToShader[hash];
 			
 			_styleStack = style;
 			_local = local;
 			_world = world;
 			
 			if (!shader || _invalid)
-				_hashToShader[hash] = shader = DynamicShader.create(getOutputPosition()._node,
-																    getOutputColor()._node);
+				_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
+															 getOutputColor()._node);
 			
 			shader.fillRenderState(state, style, local, world);
 			

@@ -5,7 +5,7 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.ressource.ShaderRessource;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
@@ -113,7 +113,7 @@ package aerys.minko.render.renderer.state
 			
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: Shader					= null;
+		private var _shader				: ShaderRessource					= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
@@ -169,7 +169,7 @@ package aerys.minko.render.renderer.state
 			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
-		public function get shader() : Shader
+		public function get shader() : ShaderRessource
 		{
 			return _setFlags & SHADER ? _shader : null;
 		}
@@ -211,7 +211,7 @@ package aerys.minko.render.renderer.state
 			}
 		}
 		
-		public function set shader(value : Shader) : void
+		public function set shader(value : ShaderRessource) : void
 		{
 			//if (_shader != value)
 			{

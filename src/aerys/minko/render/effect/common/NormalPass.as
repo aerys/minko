@@ -7,7 +7,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
-	import aerys.minko.render.shader.DynamicShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.WorldNormal;
 	import aerys.minko.scene.visitor.data.LocalData;
@@ -18,8 +18,8 @@ package aerys.minko.render.effect.common
 	
 	public class NormalPass implements IEffectPass
 	{
-		protected static const SHADER : DynamicShader = 
-			DynamicShader.create(new ClipspacePosition(), new WorldNormal().interpolated);
+		protected static const SHADER : Shader = 
+			Shader.create(new ClipspacePosition(), new WorldNormal().interpolated);
 		
 		protected var _priority		: Number;
 		protected var _renderTarget : RenderTarget;
