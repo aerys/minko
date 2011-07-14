@@ -81,6 +81,8 @@ package aerys.minko.render.effect.basic
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
 				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
+			else if (styleIsSet(BasicStyle.DIFFUSE_COLOR))
+				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE_COLOR);
 			else
 				diffuse = combine(interpolate(vertexRGBColor).rgb, 1.);
 		
