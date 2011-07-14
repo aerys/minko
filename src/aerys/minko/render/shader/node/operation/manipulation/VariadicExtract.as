@@ -47,7 +47,7 @@ package aerys.minko.render.shader.node.operation.manipulation
 			super(leftOperand, rightOperand);
 			
 			if (cellSize % 4 != 0)	throw new Error();
-			if (index.size != 1)	throw new Error();
+//			if (index.size != 1)	throw new Error();
 		}
 		
 		override public function isSame(node : INode) : Boolean
