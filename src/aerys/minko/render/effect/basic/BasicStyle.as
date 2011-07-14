@@ -4,6 +4,7 @@ package aerys.minko.render.effect.basic
 
 	public final class BasicStyle
 	{
+		public static const DIFFUSE_COLOR		: int	= Style.getStyleId("basic diffuse color");
 		public static const DIFFUSE_MAP			: int	= Style.getStyleId("basic diffuse map");
 		public static const NORMAL_MAP			: int	= Style.getStyleId("basic normal map");
 		
