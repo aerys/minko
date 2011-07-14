@@ -11,7 +11,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Cosine;
 	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
@@ -43,7 +42,6 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.visitor.data.LocalData;
 	import aerys.minko.scene.visitor.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
@@ -534,6 +532,13 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}
 		
+		protected final function float(value : Object) : SValue
+		{
+			var node : INode = getNode(value);
+			
+			return new SValue(node.size == 1 ? node : new Extract(node, Components.X));
+		}
+		
 		protected final function float2(x : Object, y : Object = null) : SValue
 		{
 			return toFloat(2, [x, y]);
@@ -673,9 +678,15 @@ package aerys.minko.render.shader
 			return new SValue(sum);
 		}
 		
-		protected final function subtract(value1 : Object, value2 : Object) : SValue
+		protected final function subtract(value1 : Object, value2 : Object, ...values) : SValue
 		{
-			return new SValue(new Substract(getNode(value1), getNode(value2)));
+			var sub			: Substract	= new Substract(getNode(value1), getNode(value2));
+			var numValues	: int		= values.length;
+			
+			for (var i : int = 0; i < numValues; ++i)
+				sub = new Substract(sub, getNode(values[i]));
+			
+			return new SValue(sub);
 		}
 		
 		protected final function dotProduct3(u : Object, v : Object) : SValue
@@ -848,7 +859,7 @@ package aerys.minko.render.shader
 		
 		private function getNode(value : Object) : INode
 		{
-			if (!value)
+			if (value === null)
 				return null;
 			
 			if (value is INode)
