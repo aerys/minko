@@ -250,13 +250,31 @@ package aerys.minko.type.math
 		
 		private var _boxVertices	: Vector.<Number>	= new Vector.<Number>();
 		
+		public function updateFromDescription(fov	: Number,
+											  ratio	: Number,
+											  zNear	: Number,
+											  zFar 	: Number) : void
+		{
+			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
+			var	x_scale		: Number	= y_scale / ratio;
+			var	m33			: Number	= zFar / (zFar - zNear);
+			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
+			
+			_planes[RIGHT]	= new Plane(-x_scale,	0,			1,			0);
+			_planes[LEFT]	= new Plane(x_scale,	0,			1,			0);
+			_planes[TOP]	= new Plane(0,			-y_scale,	1,			0);
+			_planes[BOTTOM] = new Plane(0,			y_scale,	1,			0);
+			_planes[NEAR]	= new Plane(0,			0,			m33,		-m43);
+			_planes[FAR]	= new Plane(0,			0,			1 - m33,	m43);
+		}
+		
 		/**
 		 * Update the frustum planes according to the specified project matrix.
 		 *
 		 * @param myTransform
 		 *
 		 */
-		public function update(matrix : Matrix4x4) : void
+		public function updateWithProjectionMatrix(matrix : Matrix4x4) : void
 		{
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
 			
@@ -536,5 +554,41 @@ package aerys.minko.type.math
 			
 			return result || INSIDE;
 		}
+		
+		public function toProjectionMatrix(out : Matrix4x4 = null) : Matrix4x4
+		{
+			var r	: Plane = _planes[RIGHT];
+			var l	: Plane = _planes[LEFT];
+			var t	: Plane = _planes[TOP];
+			var b	: Plane = _planes[BOTTOM];
+			var n	: Plane = _planes[NEAR];
+			var f	: Plane = _planes[FAR];
+			
+			var d0	: Number = (l.a - r.a) / 2;
+			var d1	: Number = (b.a - t.a) / 2;
+			var d2	: Number = n.a;
+			var d3	: Number = (b.a + t.a) / 2;
+			var d4	: Number = (l.b - r.b) / 2;
+			var d5	: Number = (b.b - t.b) / 2;
+			var d6	: Number = n.b;
+			var d7	: Number = (b.b + t.b) / 2;
+			var d8	: Number = (l.c - r.c) / 2;
+			var d9	: Number = (b.c - t.c) / 2;
+			var d10	: Number = n.c;
+			var d11	: Number = f.c + n.c;
+			var d12	: Number = (r.d - l.d) / 2;
+			var d13	: Number = t.d - (l.d + r.d) / 2;
+			var d14	: Number = -n.d;
+			var d15	: Number = -(l.d - r.d) / 2;
+			
+			out ||= new Matrix4x4();
+			out.setRawData(Vector.<Number>([ 
+				d0, d1, d2, d3, d4, d5, d6, d7, 
+				d8, d9, d10, d11, d12, d13, d14, d15
+			]));
+			
+			return out;
+		}
+		
 	}
 }
