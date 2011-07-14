@@ -136,7 +136,7 @@ package aerys.minko.scene.visitor.data
 			{
 				if (_frustum == null)
 					_frustum = new Frustum();
-				_frustum.update(projectionMatrix);
+				_frustum.updateWithProjectionMatrix(projectionMatrix);
 				_frustum_projectionVersion = projectionMatrix.version;
 			}
 			
@@ -176,13 +176,13 @@ package aerys.minko.scene.visitor.data
 		public function get localDirection() : Vector4
 		{
 			// FIXME: handle cache
-			return Vector4.subtract(localPosition, localLookAt).normalize();
+			return Vector4.subtract(localLookAt, localPosition).normalize();
 		}
 		
 		public function get direction() : Vector4
 		{
 			// FIXME: handle cache
-			return Vector4.subtract(position, lookAt).normalize();
+			return Vector4.subtract(lookAt, position).normalize();
 		}
 		
 		public function set position(v : Vector4) : void
