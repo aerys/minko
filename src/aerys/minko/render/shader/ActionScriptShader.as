@@ -468,8 +468,8 @@ package aerys.minko.render.shader
 										 value2	: Object,
 										 ...values) : SValue
 		{
-			var result : Combine = new Combine(getNode(value1), getNode(value2));
-			var numValues : int = values.length;
+			var result 		: Combine 	= new Combine(getNode(value1), getNode(value2));
+			var numValues 	: int 		= values.length;
 			
 			for (var i : int = 0; i < numValues; ++i)
 				result = new Combine(result, getNode(values[i]));
@@ -477,12 +477,66 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}
 		
-		protected final function vector2(x : Object, y : Object = null) : SValue
+		private final function toFloat(size : uint, values : Array) : SValue
 		{
-			if (y === null)
-				y = x;
+			var inputSize 	: uint 	= 0;
+			var numValues	: uint	= values.length;
+			var result		: INode	= null;
+			var i 			: int 	= 0;
+			var value 		: INode	= null;
+			var validValue	: INode	= null;
 			
-			return combine(x, y);
+			for (i = 0; i < numValues && size > 0; ++i)
+			{
+				value = getNode(values[i]);
+				
+				if (!value)
+					continue ;
+				
+				validValue = value;
+				
+				var sizeToComponents	: Array	= [Components.X, Components.XY, Components.XYZ];
+				
+				size -= value.size;
+				if (size < 0)
+					result = new Combine(result, new Extract(value, sizeToComponents[int(-size + 1)]));
+				else
+					result = result ? new Combine(result, value) : value;
+			}
+			
+			if (size > 0)
+			{
+				var last 	: INode 	= null;
+				var zero	: Constant	= new Constant(0.);
+				
+				if (validValue)
+				{
+					if (validValue.size == 1)
+						last = new Extract(validValue, Components.X);
+					else if (validValue.size == 2)
+						last = new Extract(validValue, Components.Y);
+					else if (validValue.size == 3)
+						last = new Extract(validValue, Components.Z);
+					else if (validValue.size == 4)
+						last = new Extract(validValue, Components.W);
+				}
+				
+				while (size)
+				{
+					if (last)
+						result = new Combine(result, last);
+					else
+						result = result ? new Combine(result, zero) : zero;
+					size--;
+				}
+			}
+			
+			return new SValue(result);
+		}
+		
+		protected final function float2(x : Object, y : Object = null) : SValue
+		{
+			return toFloat(2, [x, y]);
 		}
 		
 		/**
@@ -498,14 +552,9 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function vector3(x : Object, y : Object = null, z : Object = null) : SValue
+		protected final function float3(x : Object, y : Object = null, z : Object = null) : SValue
 		{
-			if (y === null)
-				y = x;
-			if (z === null)
-				z = y;
-			
-			return combine(x, y, z);
+			return toFloat(3, [x, y, z]);
 		}
 		
 		/**
@@ -522,16 +571,9 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function vector4(x : Object, y : Object = null, z : Object = null, w : Object = null) : SValue
+		protected final function float4(x : Object, y : Object = null, z : Object = null, w : Object = null) : SValue
 		{
-			if (y === null)
-				y = x;
-			if (z === null)
-				z = y;
-			if (w === null)
-				w = z;
-			
-			return combine(x, y, z, w);
+			return toFloat(4, [x, y, z, w]);
 		}
 		
 		/**
@@ -806,6 +848,9 @@ package aerys.minko.render.shader
 		
 		private function getNode(value : Object) : INode
 		{
+			if (!value)
+				return null;
+			
 			if (value is INode)
 				return value as INode;
 			
@@ -818,7 +863,7 @@ package aerys.minko.render.shader
 			{
 				c.constants[0] = value as Number;
 			}
-			if (value is Point)
+			else if (value is Point)
 			{
 				var point	: Point	= value as Point;
 				
@@ -839,8 +884,7 @@ package aerys.minko.render.shader
 			{
 				(value as Matrix4x4).getRawData(c.constants);
 			}
-			
-			if (!c)
+			else
 				throw new Error("Constants can only be int, uint, Number, Point, Vector4 or Matrix4x4 values.");
 			
 			return c;
