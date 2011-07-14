@@ -24,6 +24,8 @@ package aerys.minko.scene.visitor.data
 		public static const LOCAL_TO_SCREEN				: String = 'localToScreen';
 		public static const LOCAL_TO_UV					: String = 'localToUv';
 		
+		public static const GLOBAL_TO_SCREEN			: String = 'globalToScreen';
+		
 		protected var _world							: Matrix4x4;
 		protected var _view								: Matrix4x4;
 		protected var _projection						: Matrix4x4;
@@ -44,6 +46,10 @@ package aerys.minko.scene.visitor.data
 		
 		protected var _localToUv						: Matrix4x4;
 		protected var _localToUv_localToScreenVersion	: uint;
+		
+		protected var _globalToScreen					: Matrix4x4;
+		protected var _globalToScreen_viewVersion		: uint;
+		protected var _globalToScreen_projectionVersion	: uint;
 		
 		public function get view() : Matrix4x4
 		{
@@ -137,6 +143,22 @@ package aerys.minko.scene.visitor.data
 			return _localToUv;
 		}
 		
+		public function get globalToScreen() : Matrix4x4
+		{
+			var projectionMatrix	: Matrix4x4 = projection;
+			var viewMatrix			: Matrix4x4 = view;
+			
+			if (_globalToScreen_projectionVersion != projectionMatrix.version ||
+				_globalToScreen_viewVersion != viewMatrix.version)
+			{
+				_globalToScreen = Matrix4x4.multiply(projectionMatrix, viewMatrix, _globalToScreen);
+				_globalToScreen_projectionVersion	= projectionMatrix.version;
+				_globalToScreen_viewVersion			= viewMatrix.version;
+			}
+			
+			return _globalToScreen;
+		}
+		
 		public function set world(value : Matrix4x4) : void
 		{
 			Matrix4x4.copy(value, _world);
@@ -169,6 +191,8 @@ package aerys.minko.scene.visitor.data
 			_localToView_worldVersion			= uint.MAX_VALUE;
 			_localToScreen_localToViewVersion	= uint.MAX_VALUE;
 			_localToScreen_projectionVersion	= uint.MAX_VALUE;
+			_globalToScreen_projectionVersion	= uint.MAX_VALUE;
+			_globalToScreen_viewVersion			= uint.MAX_VALUE;
 		}
 	}
 }
