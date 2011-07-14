@@ -320,17 +320,19 @@ package aerys.minko.render
 				dispatchEvent(new Event(Event.INIT));
 			}
 		}
-		
+
 		private function updateRectangle() : void
 		{
 			if (_stage3d)
 			{
 				var origin : Point = localToGlobal(ZERO2);
 				
-				_stage3d.viewPort = new Rectangle(origin.x, origin.y, _width, _height);
+//				_stage3d.viewPort = new Rectangle(origin.x, origin.y, _width, _height);
+				_stage3d.x = origin.x;
+				_stage3d.y = origin.y;
 			}
 		}
-		
+	
 		/**
 		 * Render the specified scene.
 		 * @param scene

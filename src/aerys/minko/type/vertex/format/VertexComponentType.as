@@ -2,7 +2,7 @@ package aerys.minko.type.vertex.format
 {
 	import flash.display3D.Context3DVertexBufferFormat;
 
-	public final class NativeFormat
+	public final class VertexComponentType
 	{
 		public static const FLOAT_1		: int			= 0;
 		public static const FLOAT_2		: int			= 1;

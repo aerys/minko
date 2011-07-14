@@ -3,8 +3,8 @@ package aerys.minko.type.stream
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.ressource.VertexRessource;
 	import aerys.minko.type.IVersionnable;
-	import aerys.minko.type.vertex.format.NativeFormat;
 	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.vertex.format.VertexComponentType;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
@@ -39,19 +39,19 @@ package aerys.minko.type.stream
 		public function get dynamic()	: Boolean			{ return _dynamic; }
 		public function get ressource()	: VertexRessource	{ return _ressource; }
 		
-		public function VertexStream(data 		: Vector.<Number>,
-									 format		: VertexFormat 	= null,
-									 dynamic	: Boolean		= false)
+		public function VertexStream(data 		: Vector.<Number>	= null,
+									 format		: VertexFormat 		= null,
+									 dynamic	: Boolean			= false)
 		{
 			super();
 			
 			_ressource = new VertexRessource(this);
 			_format = format || DEFAULT_FORMAT;
 			
-			if (data.length % _format.dwordsPerVertex)
+			if (data && data.length && data.length % _format.dwordsPerVertex)
 				throw new Error("Incompatible vertex format: the data length does not match.");
 			
-			_data = data ? data.concat() : null;
+			_data = data ? data.concat() : new Vector.<Number>();
 			_dynamic = dynamic;
 		}
 		
@@ -187,13 +187,13 @@ package aerys.minko.type.stream
 				{
 					switch (nativeFormats[i])
 					{
-						case NativeFormat.FLOAT_4 :
+						case VertexComponentType.FLOAT_4 :
 							tmp[int(length++)] = data.readFloat();
-						case NativeFormat.FLOAT_3 :
+						case VertexComponentType.FLOAT_3 :
 							tmp[int(length++)] = data.readFloat();
-						case NativeFormat.FLOAT_2 :
+						case VertexComponentType.FLOAT_2 :
 							tmp[int(length++)] = data.readFloat();
-						case NativeFormat.FLOAT_1 :
+						case VertexComponentType.FLOAT_1 :
 							tmp[int(length++)] = data.readFloat();
 							break ;
 					}

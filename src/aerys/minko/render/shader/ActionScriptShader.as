@@ -17,11 +17,15 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
+	import aerys.minko.render.shader.node.operation.builtin.Fractional;
 	import aerys.minko.render.shader.node.operation.builtin.Maximum;
+	import aerys.minko.render.shader.node.operation.builtin.Minimum;
+	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.builtin.Negate;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
+	import aerys.minko.render.shader.node.operation.builtin.Reciprocal;
 	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
@@ -334,8 +338,11 @@ package aerys.minko.render.shader
 			_world = world;
 			
 			if (!shader || _invalid)
+			{
+				_invalid = false;
 				_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
 															 getOutputColor()._node);
+			}
 			
 			shader.fillRenderState(state, style, local, world);
 			
@@ -470,6 +477,14 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}
 		
+		protected final function vector2(x : Object, y : Object = null) : SValue
+		{
+			if (y === null)
+				y = x;
+			
+			return combine(x, y);
+		}
+		
 		/**
 		 * Create a new SVAlue object of size 3 by combining 3 scalar values.
 		 * 
@@ -483,8 +498,13 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function vector3(x : Object, y : Object, z : Object) : SValue
+		protected final function vector3(x : Object, y : Object = null, z : Object = null) : SValue
 		{
+			if (y === null)
+				y = x;
+			if (z === null)
+				z = y;
+			
 			return combine(x, y, z);
 		}
 		
@@ -502,8 +522,15 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function vector4(x : Object, y : Object, z : Object, w : Object) : SValue
+		protected final function vector4(x : Object, y : Object = null, z : Object = null, w : Object = null) : SValue
 		{
+			if (y === null)
+				y = x;
+			if (z === null)
+				z = y;
+			if (w === null)
+				w = z;
+			
 			return combine(x, y, z, w);
 		}
 		
@@ -558,6 +585,26 @@ package aerys.minko.render.shader
 		protected final function divide(value1 : Object, value2 : Object) : SValue
 		{
 			return new SValue(new Divide(getNode(value1), getNode(value2)));
+		}
+		
+		protected final function fractional(value : Object) : SValue
+		{
+			return new SValue(new Fractional(getNode(value)));
+		}
+		
+		protected final function modulo(value : Object, base : Object) : SValue
+		{
+			var baseNode : INode = getNode(base);
+			
+			return new SValue(new Multiply(
+				baseNode,
+				new Fractional(new Divide(getNode(value), baseNode)))
+			);
+		}
+		
+		protected final function reciprocal(value : Object) : SValue
+		{
+			return new SValue(new Reciprocal(getNode(value)));
 		}
 		
 		/**
@@ -636,11 +683,22 @@ package aerys.minko.render.shader
 		
 		protected final function max(a : Object, b : Object, ...values) : SValue
 		{
-			var max : Maximum = new Maximum(getNode(a), getNode(b));
-			var numValues : int = values.length;
+			var max 		: Maximum 	= new Maximum(getNode(a), getNode(b));
+			var numValues 	: int		= values.length;
 			
 			for (var i : int = 0; i < numValues; ++i)
 				max = new Maximum(max, getNode(values[i]));
+			
+			return new SValue(max);
+		}
+		
+		protected final function min(a : Object, b : Object, ...values) : SValue
+		{
+			var max 		: Minimum 	= new Minimum(getNode(a), getNode(b));
+			var numValues 	: int 		= values.length;
+			
+			for (var i : int = 0; i < numValues; ++i)
+				max = new Minimum(max, getNode(values[i]));
 			
 			return new SValue(max);
 		}

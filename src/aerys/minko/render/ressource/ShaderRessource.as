@@ -45,6 +45,7 @@ package aerys.minko.render.ressource
 			
 			if (_update)
 			{
+				_update = false;
 				_nativeProgram.upload(_vertexShader, _fragmentShader);
 			}
 			
