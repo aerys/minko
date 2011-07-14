@@ -7,11 +7,14 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
 	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
+	import aerys.minko.render.shader.node.operation.builtin.Fractional;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.builtin.Negate;
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Power;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
@@ -129,6 +132,16 @@ package aerys.minko.render.shader
 			return new SValue(new Divide(_node, getNode(arg)));
 		}
 		
+		public final function modulo(base : Object) : SValue
+		{
+			var baseNode : INode = getNode(base);
+			
+			return new SValue(new Multiply(
+				baseNode,
+				new Fractional(new Divide(_node, baseNode)))
+			);
+		}
+		
 		public final function pow(exp : Object) : SValue
 		{
 			_node = new Power(_node, getNode(exp));
@@ -189,6 +202,20 @@ package aerys.minko.render.shader
 			return this;
 		}
 		
+		public final function setIfGreaterEqual(test : Object, value : Object) : SValue
+		{
+			_node = new SetIfGreaterEqual(getNode(test), getNode(value));
+			
+			return this;
+		}
+		
+		public final function setIfLessThan(test : Object, value : Object) : SValue
+		{
+			_node = new SetIfLessThan(getNode(test), getNode(value));
+			
+			return this;
+		}
+		
 		override flash_proxy function getProperty(name : *) : *
 		{
 			// TODO: handle [] AGAL notation here
@@ -206,7 +233,7 @@ package aerys.minko.render.shader
 			var comps 	: uint 		= 0;
 			
 			if (size == 1)
-				throw new Error("Unable set component(s) of a value with size == 1.");
+				throw new Error("Unable to set component(s) of a value with size == 1.");
 			
 			for (var i : int = 0; i < size; ++i)
 			{
@@ -220,7 +247,7 @@ package aerys.minko.render.shader
 					comps |= (i + 1) << 8;
 				else if (size == 4 && (char == "w" || char == "a"))
 					comps |= (i + 1) << 12;
-				else
+				else if (char != "")
 				{
 					throw new Error("Unable to set the '"
 									+ char
