@@ -5,6 +5,7 @@ package aerys.minko.type.math
 	import aerys.minko.type.IVersionnable;
 	
 	import flash.geom.Matrix3D;
+	import flash.geom.Orientation3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 
@@ -238,6 +239,66 @@ package aerys.minko.type.math
 									   uvt		: Vector.<Number>) : void
 		{
 			Utils3D.projectVectors(validMatrix3D, input, output, uvt);
+		}
+		
+		public function toDualQuaternion(n : Vector4,
+										 d : Vector4) : void
+		{
+			var m : Vector.<Number> = TMP_VECTOR
+			_matrix.copyRawDataTo(m, 0, true);
+			
+			var mTrace	: Number = m[0] + m[5] + m[10];
+			var s		: Number;
+			var nw		: Number;
+			var nx		: Number;
+			var ny		: Number;
+			var nz		: Number;
+			
+			var plop 	: Number = 0;
+			
+			if (mTrace > 0)
+			{
+				s = 2.0 * Math.sqrt(mTrace + 1.0);
+				nw = 0.25 * s;
+				nx = (m[9] - m[6]) / s;
+				ny = (m[2] - m[8]) / s;
+				nz = (m[4] - m[1]) / s;
+			}
+			else if (m[0] > m[5] && m[0] > m[10])
+			{
+				s = 2.0 * Math.sqrt(1.0 + m[0] - m[5] - m[10]);
+				
+				nw = (m[9] - m[6]) / s
+				nx = 0.25 * s;
+				ny = (m[1] + m[4]) / s;
+				nz = (m[2] + m[8]) / s;
+			}
+			else if (m[5] > m[10])
+			{
+				s = 2.0 * Math.sqrt(1.0 + m[5] - m[0] - m[10]);
+				
+				nw = (m[2] - m[8]) / s;
+				nx = (m[1] + m[4]) / s;
+				ny = 0.25 * s;
+				nz = (m[6] + m[9]) / s;
+			}
+			else
+			{
+				s = 2.0 * Math.sqrt(1.0 + m[10] - m[0] - m[5]);
+				
+				nw = (m[4] - m[1]) / s;
+				nx = (m[2] + m[8]) / s;
+				ny = (m[6] + m[9]) / s;
+				nz = 0.25 * s;
+			}
+			
+			var dw : Number = -	0.5 * (	 m[3] * nx + m[7] * ny + m[11] * nz);
+			var dx : Number = 	0.5 * (	 m[3] * nw + m[7] * nz - m[11] * ny);
+			var dy : Number = 	0.5 * (- m[3] * nz + m[7] * nw + m[11] * nx);
+			var dz : Number = 	0.5 * (	 m[3] * ny - m[7] * nx + m[11] * nw);
+			
+			n.set(nx, ny, nz, nw);
+			d.set(dx, dy, dz, dw);
 		}
 		
 		public function toString() : String
@@ -474,6 +535,47 @@ package aerys.minko.type.math
 						   0.,					0.,					0.,					1.);
 			
 			return out;
+		}
+		
+		public static function fromDualQuaternion(dQn : Vector4, dQd : Vector4, out : Matrix4x4 = null) : Matrix4x4
+		{
+			out ||= FACTORY.create() as Matrix4x4;
+			
+			var len2Inv	: Number = 1 / (dQn.w * dQn.w + dQn.x * dQn.x + dQn.y * dQn.y + dQn.z * dQn.z);
+			
+			var w		: Number = dQn.w;
+			var x		: Number = dQn.x;
+			var y		: Number = dQn.y;
+			var z		: Number = dQn.z;
+			
+			var t0		: Number = dQd.w;
+			var t1		: Number = dQd.x;
+			var t2		: Number = dQd.y;
+			var t3		: Number = dQd.z;
+			
+			out.initialize(
+				len2Inv * (w * w + x * x - y * y - z * z),
+				len2Inv * (2 * x * y + 2 * w * z),
+				len2Inv * (2 * x * z - 2 * w * y),
+				0,
+				
+				len2Inv * (2 * x * y - 2 * w * z),
+				len2Inv * (w * w + y * y - x * x - z * z),
+				len2Inv * (2 * y * z + 2 * w * x),
+				0,
+				
+				len2Inv * (2 * x * z + 2 * w * y),
+				len2Inv * (2 * y * z - 2 * w * x),
+				len2Inv * (w * w + z * z - x * x - y * y),
+				0,
+				
+				len2Inv * (-2 * t0 * x + 2 * w * t1 - 2 * t2 * z + 2 * y * t3),
+				len2Inv * (-2 * t0 * y + 2 * t1 * z - 2 * x * t3 + 2 * w * t2),
+				len2Inv * (-2 * t0 * z + 2 * x * t2 + 2 * w * t3 - 2 * t1 * y),
+				1
+			);
+			
+			return out;	
 		}
 		
 		public static function fromRawData(data			: Vector.<Number>,
