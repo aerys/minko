@@ -286,6 +286,8 @@ package aerys.minko.render.shader
 				
 				for (var j : uint = 0; j < vectorVectorDataLength; ++j)
 				{
+					vectorData = vectorVectorData[j];
+					
 					constData[offset + 4 * j] = vectorData.x;
 					constData[int(offset + 4 * j + 1)] = vectorData.y;
 					constData[int(offset + 4 * j + 2)] = vectorData.z;
@@ -298,7 +300,9 @@ package aerys.minko.render.shader
 				var matrixVectorDataLength	: uint					= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
+				{
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
+				}
 			}
 			else if (data == null)
 			{
@@ -312,6 +316,5 @@ package aerys.minko.render.shader
 					'map it to a shader constant.');	
 			}
 		}
-		
 	}
 }
