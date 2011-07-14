@@ -94,7 +94,7 @@ package aerys.minko.render.effect.basic
 										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
 				var fogColor 	: *		= styleIsSet(FogStyle.COLOR)
 										  ? getStyleParameter(3, FogStyle.COLOR)
-										  : vector3(0., 0., 0.);
+										  : float3(0., 0., 0.);
 				var fogStart	: *		= styleIsSet(FogStyle.START)
 										  ? getStyleParameter(1, FogStyle.START)
 										  : 0.;
