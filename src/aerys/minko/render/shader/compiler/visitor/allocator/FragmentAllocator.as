@@ -4,6 +4,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
+	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
@@ -141,8 +142,8 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			else if (arg is VariadicExtract)
 			{
 				var variadic : VariadicExtract = arg as VariadicExtract;
-				_tmpAlloc.reportUsage(variadic.arg1, _operationId, aligned);
-				_constAlloc.reportUsage(variadic.arg2, _operationId, aligned);
+				reportArgumentUsage(variadic.arg1, aligned);
+				reportArgumentUsage(variadic.arg2, aligned);
 			}
 			
 			else if (arg is AbstractConstant)

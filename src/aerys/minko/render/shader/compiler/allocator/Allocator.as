@@ -2,6 +2,7 @@ package aerys.minko.render.shader.compiler.allocator
 {
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
@@ -55,6 +56,9 @@ package aerys.minko.render.shader.compiler.allocator
 		public function getLocalOffset(op : INode) : uint
 		{
 			var alloc : Allocation = _opUsage[op] as Allocation;
+			if (alloc == null)
+				throw new Error('Unable to compiler shader: an allocation is missing. Did you forget an interpolation node?');
+			
 			return alloc.offset % 4;
 		}
 		
@@ -71,6 +75,9 @@ package aerys.minko.render.shader.compiler.allocator
 				throw new Error('A result was already allocated for this operation');
 			
 			var alloc : Allocation = new Allocation(operationId, op);
+			if (op is IAlignedOperation)
+				alloc.aligned = true;
+			
 			_opUsage[op] = alloc;
 			_allocations.push(alloc);
 		}

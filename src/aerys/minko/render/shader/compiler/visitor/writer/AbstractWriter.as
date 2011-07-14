@@ -11,6 +11,8 @@ package aerys.minko.render.shader.compiler.visitor.writer
 	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
+	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
+	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
@@ -193,8 +195,8 @@ package aerys.minko.render.shader.compiler.visitor.writer
 		}
 		
 		private function registerReadFromCommon(argument	: INode,
-												  operation	: AbstractOperation,
-												  swizzle	: uint) : void
+												operation	: AbstractOperation,
+												swizzle		: uint) : void
 		{
 			// ask the allocator where we are to write the result of the node we are processing
 			var argAllocator : Allocator = getAllocatorFor(argument);
@@ -215,11 +217,16 @@ package aerys.minko.render.shader.compiler.visitor.writer
 														 swizzle	: uint) : void
 		{
 			// ask the allocator where we are to write the result of the node we are processing
-			var indexNode		: INode		= argument.arg1;
 			var tableNode		: INode		= argument.arg2;
+			var tableAllocator	: Allocator	= getAllocatorFor(tableNode);
+			
+			
+			var indexNode		: INode		= argument.arg1;
+			var indexSwizzle	: uint		= getReadSwizzle(indexNode, null);
+			while (indexNode is Extract)
+				indexNode = Extract(indexNode).arg1;
 			
 			var indexAllocator	: Allocator	= getAllocatorFor(indexNode);
-			var tableAllocator	: Allocator	= getAllocatorFor(tableNode);
 			
 			outputCommonSource(
 				indexAllocator.getId(indexNode),			// registerNumber
@@ -227,7 +234,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 				swizzle,									// swizzle
 				getRegisterTypeFor(tableNode),				// registerType
 				getRegisterTypeFor(indexNode),				// indexRegisterType
-				getReadSwizzle(indexNode, null) & 0x3,		// indexRegisterComponentSelect
+				indexSwizzle & 0x3,							// indexRegisterComponentSelect
 				false										// direct
 			);
 		}
@@ -255,7 +262,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 				
 				// If the operation is component wise, we have to offset the 
 				// swizzle of the argument to match the offset the result will be written at.
-				if (operation is IComponentWiseOperation && opAllocator != null && _stack.length > 1)
+				if (operation is IComponentWiseOperation && _stack.length > 1)
 				{
 					var opAllocator	: Allocator = getAllocatorFor(operation);
 					var writeOffset	: uint		= opAllocator.getLocalOffset(operation);
@@ -275,10 +282,13 @@ package aerys.minko.render.shader.compiler.visitor.writer
 				
 				// retrieve the concerned allocator, we are sure this is non-null, because it is an
 				// argument, and cannot be the root of the tree.
-				var argAllocator	: Allocator = getAllocatorFor(argument);
-				var readOffset		: uint		= argAllocator.getLocalOffset(argument);
-				
-				swizzle = RegisterSwizzling.readOffset(readOffset, swizzle);
+				if (!(argument is VariadicExtract))
+				{
+					var argAllocator	: Allocator = getAllocatorFor(argument);
+					var readOffset		: uint		= argAllocator.getLocalOffset(argument);
+					
+					swizzle = RegisterSwizzling.readOffset(readOffset, swizzle);
+				}
 			}
 			
 			return swizzle;

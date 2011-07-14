@@ -103,8 +103,8 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 			else if (arg is VariadicExtract)
 			{
 				var variadic : VariadicExtract = arg as VariadicExtract;
-				_tmpAlloc.reportUsage(variadic.arg1, _operationId, aligned);
-				_constAlloc.reportUsage(variadic.arg2, _operationId, aligned);
+				reportArgumentUsage(variadic.arg1, aligned);
+				reportArgumentUsage(variadic.arg2, aligned);
 			}
 			
 			else if (arg is AbstractConstant)

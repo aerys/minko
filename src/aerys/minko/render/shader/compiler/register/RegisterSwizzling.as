@@ -268,38 +268,38 @@ package aerys.minko.render.shader.compiler.register
 		public static const WWWW : uint = W | (W << 2) | (W << 4) | (W << 6);
 		
 		public static const STRINGS:Vector.<String> = Vector.<String>([
-			'xxxx', 'yxxx', 'zxxx', 'wxxx', 'xyxx', 'yyxx', 'zyxx', 'wyxx', 
-			'xzxx', 'yzxx', 'zzxx', 'wzxx', 'xwxx', 'ywxx', 'zwxx', 'wwxx', 
-			'xxyx', 'yxyx', 'zxyx', 'wxyx', 'xyyx', 'yyyx', 'zyyx', 'wyyx', 
-			'xzyx', 'yzyx', 'zzyx', 'wzyx', 'xwyx', 'ywyx', 'zwyx', 'wwyx', 
-			'xxzx', 'yxzx', 'zxzx', 'wxzx', 'xyzx', 'yyzx', 'zyzx', 'wyzx', 
-			'xzzx', 'yzzx', 'zzzx', 'wzzx', 'xwzx', 'ywzx', 'zwzx', 'wwzx', 
-			'xxwx', 'yxwx', 'zxwx', 'wxwx', 'xywx', 'yywx', 'zywx', 'wywx', 
-			'xzwx', 'yzwx', 'zzwx', 'wzwx', 'xwwx', 'ywwx', 'zwwx', 'wwwx', 
-			'xxxy', 'yxxy', 'zxxy', 'wxxy', 'xyxy', 'yyxy', 'zyxy', 'wyxy', 
-			'xzxy', 'yzxy', 'zzxy', 'wzxy', 'xwxy', 'ywxy', 'zwxy', 'wwxy', 
-			'xxyy', 'yxyy', 'zxyy', 'wxyy', 'xyyy', 'yyyy', 'zyyy', 'wyyy', 
-			'xzyy', 'yzyy', 'zzyy', 'wzyy', 'xwyy', 'ywyy', 'zwyy', 'wwyy', 
-			'xxzy', 'yxzy', 'zxzy', 'wxzy', 'xyzy', 'yyzy', 'zyzy', 'wyzy', 
-			'xzzy', 'yzzy', 'zzzy', 'wzzy', 'xwzy', 'ywzy', 'zwzy', 'wwzy', 
-			'xxwy', 'yxwy', 'zxwy', 'wxwy', 'xywy', 'yywy', 'zywy', 'wywy', 
-			'xzwy', 'yzwy', 'zzwy', 'wzwy', 'xwwy', 'ywwy', 'zwwy', 'wwwy', 
-			'xxxz', 'yxxz', 'zxxz', 'wxxz', 'xyxz', 'yyxz', 'zyxz', 'wyxz', 
-			'xzxz', 'yzxz', 'zzxz', 'wzxz', 'xwxz', 'ywxz', 'zwxz', 'wwxz', 
-			'xxyz', 'yxyz', 'zxyz', 'wxyz', 'xyyz', 'yyyz', 'zyyz', 'wyyz', 
-			'xzyz', 'yzyz', 'zzyz', 'wzyz', 'xwyz', 'ywyz', 'zwyz', 'wwyz', 
-			'xxzz', 'yxzz', 'zxzz', 'wxzz', 'xyzz', 'yyzz', 'zyzz', 'wyzz', 
-			'xzzz', 'yzzz', 'zzzz', 'wzzz', 'xwzz', 'ywzz', 'zwzz', 'wwzz', 
-			'xxwz', 'yxwz', 'zxwz', 'wxwz', 'xywz', 'yywz', 'zywz', 'wywz', 
-			'xzwz', 'yzwz', 'zzwz', 'wzwz', 'xwwz', 'ywwz', 'zwwz', 'wwwz', 
-			'xxxw', 'yxxw', 'zxxw', 'wxxw', 'xyxw', 'yyxw', 'zyxw', 'wyxw', 
-			'xzxw', 'yzxw', 'zzxw', 'wzxw', 'xwxw', 'ywxw', 'zwxw', 'wwxw', 
-			'xxyw', 'yxyw', 'zxyw', 'wxyw', 'xyyw', 'yyyw', 'zyyw', 'wyyw', 
-			'xzyw', 'yzyw', 'zzyw', 'wzyw', 'xwyw', 'ywyw', 'zwyw', 'wwyw', 
-			'xxzw', 'yxzw', 'zxzw', 'wxzw', 'xyzw', 'yyzw', 'zyzw', 'wyzw', 
-			'xzzw', 'yzzw', 'zzzw', 'wzzw', 'xwzw', 'ywzw', 'zwzw', 'wwzw', 
-			'xxww', 'yxww', 'zxww', 'wxww', 'xyww', 'yyww', 'zyww', 'wyww', 
-			'xzww', 'yzww', 'zzww', 'wzww', 'xwww', 'ywww', 'zwww', 'wwww'
+			'xxxx', 'yxxx', 'zxxx', 'wxxx', 'xyxx', 'yyxx', 'zyxx', 'wyxx',		//   0 - 8
+			'xzxx', 'yzxx', 'zzxx', 'wzxx', 'xwxx', 'ywxx', 'zwxx', 'wwxx',		//   8 - 16
+			'xxyx', 'yxyx', 'zxyx', 'wxyx', 'xyyx', 'yyyx', 'zyyx', 'wyyx',		//  16 - 24
+			'xzyx', 'yzyx', 'zzyx', 'wzyx', 'xwyx', 'ywyx', 'zwyx', 'wwyx',		//  24 - 32
+			'xxzx', 'yxzx', 'zxzx', 'wxzx', 'xyzx', 'yyzx', 'zyzx', 'wyzx',		//  32 - 40
+			'xzzx', 'yzzx', 'zzzx', 'wzzx', 'xwzx', 'ywzx', 'zwzx', 'wwzx',		//  40 - 48
+			'xxwx', 'yxwx', 'zxwx', 'wxwx', 'xywx', 'yywx', 'zywx', 'wywx',		//  48 - 56
+			'xzwx', 'yzwx', 'zzwx', 'wzwx', 'xwwx', 'ywwx', 'zwwx', 'wwwx',		//  56 - 64
+			'xxxy', 'yxxy', 'zxxy', 'wxxy', 'xyxy', 'yyxy', 'zyxy', 'wyxy',		//  64 - 72
+			'xzxy', 'yzxy', 'zzxy', 'wzxy', 'xwxy', 'ywxy', 'zwxy', 'wwxy',		//  72 - 80
+			'xxyy', 'yxyy', 'zxyy', 'wxyy', 'xyyy', 'yyyy', 'zyyy', 'wyyy',		//  80 - 88
+			'xzyy', 'yzyy', 'zzyy', 'wzyy', 'xwyy', 'ywyy', 'zwyy', 'wwyy',		//  88 - 96
+			'xxzy', 'yxzy', 'zxzy', 'wxzy', 'xyzy', 'yyzy', 'zyzy', 'wyzy',		//  96 - 104
+			'xzzy', 'yzzy', 'zzzy', 'wzzy', 'xwzy', 'ywzy', 'zwzy', 'wwzy',		// 104 - 112
+			'xxwy', 'yxwy', 'zxwy', 'wxwy', 'xywy', 'yywy', 'zywy', 'wywy',		// 112 - 120
+			'xzwy', 'yzwy', 'zzwy', 'wzwy', 'xwwy', 'ywwy', 'zwwy', 'wwwy',		// 120 - 128
+			'xxxz', 'yxxz', 'zxxz', 'wxxz', 'xyxz', 'yyxz', 'zyxz', 'wyxz',		// 128 - 136
+			'xzxz', 'yzxz', 'zzxz', 'wzxz', 'xwxz', 'ywxz', 'zwxz', 'wwxz',		// 136 - 144
+			'xxyz', 'yxyz', 'zxyz', 'wxyz', 'xyyz', 'yyyz', 'zyyz', 'wyyz',		// 144 - 152
+			'xzyz', 'yzyz', 'zzyz', 'wzyz', 'xwyz', 'ywyz', 'zwyz', 'wwyz',		// 152 - 160
+			'xxzz', 'yxzz', 'zxzz', 'wxzz', 'xyzz', 'yyzz', 'zyzz', 'wyzz',		// 160 - 168
+			'xzzz', 'yzzz', 'zzzz', 'wzzz', 'xwzz', 'ywzz', 'zwzz', 'wwzz',		// 168 - 176
+			'xxwz', 'yxwz', 'zxwz', 'wxwz', 'xywz', 'yywz', 'zywz', 'wywz',		// 176 - 184
+			'xzwz', 'yzwz', 'zzwz', 'wzwz', 'xwwz', 'ywwz', 'zwwz', 'wwwz',		// 184 - 192
+			'xxxw', 'yxxw', 'zxxw', 'wxxw', 'xyxw', 'yyxw', 'zyxw', 'wyxw',		// 192 - 200
+			'xzxw', 'yzxw', 'zzxw', 'wzxw', 'xwxw', 'ywxw', 'zwxw', 'wwxw',		// 200 - 208
+			'xxyw', 'yxyw', 'zxyw', 'wxyw', 'xyyw', 'yyyw', 'zyyw', 'wyyw',		// 208 - 216
+			'xzyw', 'yzyw', 'zzyw', 'wzyw', 'xwyw', 'ywyw', 'zwyw', 'wwyw',		// 216 - 224
+			'xxzw', 'yxzw', 'zxzw', 'wxzw', 'xyzw', 'yyzw', 'zyzw', 'wyzw',		// 224 - 232
+			'xzzw', 'yzzw', 'zzzw', 'wzzw', 'xwzw', 'ywzw', 'zwzw', 'wwzw',		// 232 - 240
+			'xxww', 'yxww', 'zxww', 'wxww', 'xyww', 'yyww', 'zyww', 'wyww',		// 240 - 248
+			'xzww', 'yzww', 'zzww', 'wzww', 'xwww', 'ywww', 'zwww', 'wwww'		// 248 - 256
 		]);
 		
 		
@@ -357,7 +357,7 @@ package aerys.minko.render.shader.compiler.register
 				bitsToInject = swizzle & 0x3;
 				
 				for (i = 0; i < writeOffsetValue; ++i)
-					swizzle = (swizzle << 2) | bitsToInject;
+					swizzle = ((swizzle << 2) | bitsToInject) & 0xFF;
 			}
 			else if (writeOffsetValue < 0)
 			{
