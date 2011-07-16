@@ -19,8 +19,8 @@ package aerys.minko.render.renderer
 	
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= false;
-		
+		private static const DEBUG			: Boolean			= true;
+	
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;
 		private var _numTriangles	: uint						= 0;

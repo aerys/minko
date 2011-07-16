@@ -124,7 +124,9 @@ package aerys.minko.scene.visitor.data
 		public function get projection() : Matrix4x4
 		{
 			var ratio : Number = _worldData[ViewportData].ratio;
+			
 			_projection = Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
+			
 			return _projection;
 		}
 		

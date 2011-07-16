@@ -27,6 +27,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Reciprocal;
 	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
@@ -35,6 +37,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
+	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
@@ -462,7 +465,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function combine(value1	: Object,
+		/*protected final function combine(value1	: Object,
 										 value2	: Object,
 										 ...values) : SValue
 		{
@@ -473,7 +476,7 @@ package aerys.minko.render.shader
 				result = new Combine(result, getNode(values[i]));
 			
 			return new SValue(result);
-		}
+		}*/
 		
 		private final function toFloat(size : uint, values : Array) : SValue
 		{
@@ -530,6 +533,11 @@ package aerys.minko.render.shader
 			}
 			
 			return new SValue(result);
+		}
+		
+		protected final function clone(value : Object) : SValue
+		{
+			return new SValue(new RootWrapper(getNode(value)));
 		}
 		
 		protected final function float(value : Object) : SValue
@@ -754,6 +762,16 @@ package aerys.minko.render.shader
 				max = new Minimum(max, getNode(values[i]));
 			
 			return new SValue(max);
+		}
+		
+		protected final function ifGreaterEqual(a : Object, b : Object) : SValue
+		{
+			return new SValue(new SetIfGreaterEqual(getNode(a), getNode(b)));
+		}
+		
+		protected final function ifLessThan(a : Object, b : Object) : SValue
+		{
+			return new SValue(new SetIfLessThan(getNode(a), getNode(b)));
 		}
 		
 		protected final function getReflectedVector(vector : Object, normal : Object) : SValue
