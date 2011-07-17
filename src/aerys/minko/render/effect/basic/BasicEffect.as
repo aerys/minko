@@ -12,10 +12,10 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.scene.visitor.data.CameraData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.ViewportData;
+	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.ConstVector4;
 	
 	import flash.utils.Dictionary;

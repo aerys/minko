@@ -2,7 +2,7 @@ package aerys.minko.scene.node.texture
 {
 	import aerys.minko.scene.action.texture.DynamicTextureAction;
 	import aerys.minko.scene.node.texture.BitmapTexture;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;

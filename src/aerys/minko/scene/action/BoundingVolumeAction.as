@@ -5,7 +5,7 @@ package aerys.minko.scene.action
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.modifier.IMeshModifier;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	
 	public class BoundingVolumeAction implements IAction

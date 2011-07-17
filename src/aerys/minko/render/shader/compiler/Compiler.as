@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler
 {
+	import aerys.minko.Minko;
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.compiler.allocator.Allocation;
@@ -25,6 +26,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
+	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	import flash.display.BitmapData;
@@ -66,14 +68,43 @@ package aerys.minko.render.shader.compiler
 			
 			_clipspacePosNode	= clipspacePos;
 			_colorNode			= color;
+
+			if (Minko.debugLevel & DebugLevel.SHADER_ANTECOMPILE_DOTTY)
+			{
+				Minko.log(DebugLevel.SHADER_ANTECOMPILE_DOTTY, writeDotGraph());
+			}
 			
 			wrapRootNodes();
 			removeDummyNodes();
 			
 			preprocess();
 			splitAndReportMemoryUsage();
+			
+			if (Minko.debugLevel & DebugLevel.SHADER_POSTCOMPILE_DOTTY)
+			{
+				Minko.log(DebugLevel.SHADER_POSTCOMPILE_DOTTY, writeDotGraph());
+			}
+			
 			allocateRegistries();
 			createAllocationTables();
+			
+			if (Minko.debugLevel & DebugLevel.SHADER_ATTR_ALLOC)
+			{
+				Minko.log(DebugLevel.SHADER_ATTR_ALLOC, writeAttributeAllocationSummary());
+			}
+			
+			if (Minko.debugLevel & DebugLevel.SHADER_CONST_ALLOC)
+			{
+				Minko.log(DebugLevel.SHADER_CONST_ALLOC, writeConstantAllocationSummary(true));
+				Minko.log(DebugLevel.SHADER_CONST_ALLOC, writeConstantAllocationSummary(false));
+			}
+			
+			if (Minko.debugLevel & DebugLevel.SHADER_AGAL)
+			{
+				Minko.log(DebugLevel.SHADER_AGAL, compileAgalVertexShader());
+				Minko.log(DebugLevel.SHADER_AGAL, compileAgalFragmentShader());
+			}
+			
 		}
 		
 		protected function reset() : void

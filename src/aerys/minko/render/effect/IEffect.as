@@ -1,7 +1,7 @@
 package aerys.minko.render.effect
 {
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.StyleStack;
 	
 	import flash.utils.Dictionary;
 	

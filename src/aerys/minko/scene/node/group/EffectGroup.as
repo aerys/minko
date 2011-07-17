@@ -3,7 +3,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.scene.action.EffectTargetAction;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
 
 	/**
 	 * 

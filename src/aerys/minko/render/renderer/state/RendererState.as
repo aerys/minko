@@ -457,7 +457,7 @@ package aerys.minko.render.renderer.state
 						}
 					}
 				}
-
+				
 				if (_setFlags & RENDER_TARGET)
 				{
 					if (!_renderTarget || _renderTarget.type == RenderTarget.BACKBUFFER)
@@ -471,7 +471,7 @@ package aerys.minko.render.renderer.state
 												   _renderTarget.antiAliasing);
 					}
 					
-					var color : uint = _renderTarget.backgroundColor;
+					var color : uint = _renderTarget ? _renderTarget.backgroundColor : 0;
 					
 					context.clear(((color >> 16) & 0xff) / 255.,
 								  ((color >> 8) & 0xff) / 255.,
@@ -580,7 +580,7 @@ package aerys.minko.render.renderer.state
 											   _renderTarget.antiAliasing);
 				}
 				
-				var color : uint = _renderTarget.backgroundColor;
+				var color : uint = _renderTarget ? _renderTarget.backgroundColor : 0;
 				
 				context.clear(((color >> 16) & 0xff) / 255.,
 							  ((color >> 8) & 0xff) / 255.,

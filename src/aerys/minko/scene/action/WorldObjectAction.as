@@ -4,8 +4,8 @@ package aerys.minko.scene.action
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.IWorldObject;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.WorldDataList;
+	import aerys.minko.scene.data.IWorldData;
+	import aerys.minko.scene.data.WorldDataList;
 	
 	import flash.utils.Dictionary;
 	

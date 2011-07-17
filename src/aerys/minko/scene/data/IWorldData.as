@@ -1,4 +1,4 @@
-package aerys.minko.scene.visitor.data
+package aerys.minko.scene.data
 {
 	import flash.utils.Dictionary;
 

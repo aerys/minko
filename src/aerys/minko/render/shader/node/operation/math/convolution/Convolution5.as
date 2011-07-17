@@ -90,7 +90,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 			super(result);
 			
 			if (matrix.length != 25)
-				throw new Error('Convolution matrix must be of size 9 (3x3)');
+				throw new Error('Convolution matrix must be of size 25 (5x5)');
 		}
 	}
 }

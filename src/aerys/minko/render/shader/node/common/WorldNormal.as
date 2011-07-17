@@ -12,7 +12,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.packing.PackNormalizedVectorToColor;
-	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	public class WorldNormal extends Dummy implements IVertexNode

@@ -2,7 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
 	
 	import flash.utils.getQualifiedClassName;
 	

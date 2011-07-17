@@ -6,17 +6,19 @@ package aerys.minko.render
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
+	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.CameraData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.RenderingData;
-	import aerys.minko.scene.visitor.data.ViewportData;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
-	import aerys.minko.scene.visitor.rendering.WorldDataVisitor;
+	import aerys.minko.scene.visitor.PostprocessVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
+	import aerys.minko.scene.visitor.WorldDataVisitor;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionnable;
 	
+	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
@@ -63,10 +65,23 @@ package aerys.minko.render
 		private var _defaultEffect		: IEffect					= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
 		
+		private var _postProcessEffect	: IEffect					= null;
+		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
+		
 		private var _viewportData		: ViewportData				= null;
 		
 		private var _logoIsHidden		: Boolean					= false;
 		
+		public function get postProcessEffect() : IEffect
+		{
+			return _postProcessEffect;
+		}
+
+		public function set postProcessEffect(value : IEffect):void
+		{
+			_postProcessEffect = value;
+		}
+
 		public function get version() : uint
 		{
 			return _version;
@@ -327,7 +342,6 @@ package aerys.minko.render
 			{
 				var origin : Point = localToGlobal(ZERO2);
 				
-//				_stage3d.viewPort = new Rectangle(origin.x, origin.y, _width, _height);
 				_stage3d.x = origin.x;
 				_stage3d.y = origin.y;
 			}
@@ -358,6 +372,15 @@ package aerys.minko.render
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
+				
+				// execute postprocessing
+				if (_postProcessEffect != null)
+				{
+					renderingData.effect = _postProcessEffect;
+					_postProcessVisitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
+				}
+				
+				_renderer.present();
 				
 				_sceneSize	= visitors[0].numNodes;
 				_time		= getTimer() - time;

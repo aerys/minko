@@ -10,9 +10,9 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.WorldNormal;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.StyleStack;
-	import aerys.minko.scene.visitor.data.ViewportData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.ViewportData;
 	
 	import flash.utils.Dictionary;
 	

@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	public class LocalViewDirection extends Dummy implements IVertexNode

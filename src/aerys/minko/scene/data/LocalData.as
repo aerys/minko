@@ -1,4 +1,4 @@
-package aerys.minko.scene.visitor.data
+package aerys.minko.scene.data
 {
 	import aerys.minko.type.math.Matrix4x4;
 

@@ -6,7 +6,7 @@ package aerys.minko.scene.node.texture
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
 	
 	import flash.display.BitmapData;
 	import flash.utils.getTimer;

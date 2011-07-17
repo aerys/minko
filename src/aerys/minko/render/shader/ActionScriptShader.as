@@ -39,9 +39,9 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.scene.visitor.data.CameraData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;

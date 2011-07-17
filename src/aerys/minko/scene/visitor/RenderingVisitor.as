@@ -1,16 +1,15 @@
-package aerys.minko.scene.visitor.rendering
+package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.CameraData;
-	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.RenderingData;
-	import aerys.minko.scene.visitor.data.ViewportData;
+	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.IWorldData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.ViewportData;
 	
 	import flash.utils.Dictionary;
 	
@@ -54,13 +53,11 @@ package aerys.minko.scene.visitor.rendering
 			_renderingData	= renderingData; 
 			_renderer		= renderer;
 			
-			
 			_renderer.clear();
 			visit(scene);
 			_renderer.drawToBackBuffer();
-			_renderer.present();
 		}
-				
+		
 		public function visit(scene : IScene) : void
 		{
 			var actions 	: Vector.<IAction> 	= scene.actions;

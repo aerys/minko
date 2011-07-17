@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler.visitor.writer
 {
+	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
 	import aerys.minko.render.shader.compiler.register.RegisterMask;
 	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
@@ -15,6 +16,8 @@ package aerys.minko.render.shader.compiler.visitor.writer
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
+	
+	use namespace minko_shader;
 	
 	public class WriteAgal extends AbstractWriter
 	{

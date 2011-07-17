@@ -1,4 +1,4 @@
-package aerys.minko.scene.visitor.data
+package aerys.minko.scene.data
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.effect.Style;

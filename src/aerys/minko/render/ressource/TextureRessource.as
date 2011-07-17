@@ -23,6 +23,16 @@ package aerys.minko.render.ressource
 		{
 		}
 		
+		public function get width():Number
+		{
+			return _width;
+		}
+
+		public function get height():Number
+		{
+			return _height;
+		}
+
 		public function setSize(width : uint, height : uint) : void
 		{
 			_width	= width;

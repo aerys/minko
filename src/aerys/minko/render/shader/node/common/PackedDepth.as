@@ -5,7 +5,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.render.shader.node.operation.packing.PackScalarToColor;
-	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.data.CameraData;
 	
 	public class PackedDepth extends Dummy implements IFragmentNode
 	{

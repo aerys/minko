@@ -38,11 +38,11 @@ package aerys.minko.render
 			_backgroundColor	= backgroundColor;
 			_useDepthAndStencil	= useDepthAndStencil;
 			_antiAliasing		= antiAliasing;
+			_width				= width;
+			_height				= height;
 			
 			if (type == BACKBUFFER)
 			{
-				_width				= width;
-				_height				= height;
 				_textureRessource	= null;
 			}
 			else if (type == TEXTURE)

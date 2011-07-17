@@ -1,20 +1,23 @@
 package aerys.minko.render.shader.node.leaf
 {
+	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
 	
+	use namespace minko_shader;
+	
 	public class Sampler extends AbstractLeaf implements IFragmentNode
 	{
-		public static const _SAMPLER_FILTER_STRINGS:Vector.<String> =
+		minko_shader static const _SAMPLER_FILTER_STRINGS		: Vector.<String> =
 			Vector.<String>(['nearest', 'linear']);
 		
-		public static const _SAMPLER_MIPMAP_STRINGS:Vector.<String> =
+		minko_shader static const _SAMPLER_MIPMAP_STRINGS		: Vector.<String> =
 			Vector.<String>(['mipnone', 'mipnearest', 'miplinear']);
 		
-		public static const _SAMPLER_WRAPPING_STRINGS:Vector.<String> =
+		minko_shader static const _SAMPLER_WRAPPING_STRINGS	: Vector.<String> =
 			Vector.<String>(['clamp', 'repeat']);
 		
-		public static const _SAMPLER_DIMENSION_STRINGS:Vector.<String> = 
+		minko_shader static const _SAMPLER_DIMENSION_STRINGS	: Vector.<String> = 
 			Vector.<String>(['2d', 'cube', '3d']);
 		
 		public static const FILTER_NEAREST	: uint = 0;

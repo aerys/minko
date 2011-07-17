@@ -11,7 +11,7 @@ package aerys.minko.render.shader.node.fog
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.scene.visitor.data.CameraData;
+	import aerys.minko.scene.data.CameraData;
 	
 	public class Fog extends Dummy
 	{

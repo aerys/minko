@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.LocalData;
+	import aerys.minko.scene.data.IWorldData;
+	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.math.Vector4;
 	
 	/**

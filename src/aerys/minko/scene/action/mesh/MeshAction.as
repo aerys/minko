@@ -9,10 +9,10 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.RenderingData;
-	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.data.IWorldData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStreamList;

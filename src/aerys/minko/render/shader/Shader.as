@@ -13,8 +13,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -38,31 +38,7 @@ package aerys.minko.render.shader
 									  outputColor		: INode) : Shader
 		{
 			var compiler : Compiler = new Compiler();
-			
 			compiler.load(outputPosition, outputColor);
-			
-			if (Minko.debugLevel & DebugLevel.SHADER_ATTR_ALLOC)
-			{
-				Minko.log(DebugLevel.SHADER_ATTR_ALLOC, compiler.writeAttributeAllocationSummary());
-			}
-			
-			if (Minko.debugLevel & DebugLevel.SHADER_CONST_ALLOC)
-			{
-				Minko.log(DebugLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(true));
-				Minko.log(DebugLevel.SHADER_CONST_ALLOC, compiler.writeConstantAllocationSummary(false));
-			}
-			
-			if (Minko.debugLevel & DebugLevel.SHADER_AGAL)
-			{
-				Minko.log(DebugLevel.SHADER_AGAL, compiler.compileAgalVertexShader(), compiler);
-				Minko.log(DebugLevel.SHADER_AGAL, compiler.compileAgalFragmentShader(), compiler);
-			}
-			
-			if (Minko.debugLevel & DebugLevel.SHADER_DOTTY)
-			{
-				Minko.log(DebugLevel.SHADER_DOTTY, compiler.writeDotGraph(), compiler);
-			}
-			
 			return compiler.compileShader();
 		}
 	
@@ -296,7 +272,7 @@ package aerys.minko.render.shader
 			}
 			else if (data is Vector.<Matrix4x4>)
 			{
-				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>;
+				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>; 
 				var matrixVectorDataLength	: uint					= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)

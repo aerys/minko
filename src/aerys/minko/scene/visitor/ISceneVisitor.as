@@ -2,9 +2,9 @@ package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.RenderingData;
-	import aerys.minko.scene.visitor.data.StyleStack;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.StyleStack;
 	
 	import flash.utils.Dictionary;
 	

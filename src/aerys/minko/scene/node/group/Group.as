@@ -6,7 +6,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ISearchableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.rendering.RenderingVisitor;
+	import aerys.minko.scene.visitor.RenderingVisitor;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;

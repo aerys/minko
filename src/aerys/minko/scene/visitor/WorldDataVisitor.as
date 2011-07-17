@@ -1,4 +1,4 @@
-package aerys.minko.scene.visitor.rendering
+package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
@@ -7,12 +7,11 @@ package aerys.minko.scene.visitor.rendering
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.scene.node.IWorldObject;
 	import aerys.minko.scene.node.group.IGroup;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.data.CameraData;
-	import aerys.minko.scene.visitor.data.IWorldData;
-	import aerys.minko.scene.visitor.data.LocalData;
-	import aerys.minko.scene.visitor.data.RenderingData;
-	import aerys.minko.scene.visitor.data.WorldDataList;
+	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.IWorldData;
+	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.WorldDataList;
 	
 	import flash.utils.Dictionary;
 	
