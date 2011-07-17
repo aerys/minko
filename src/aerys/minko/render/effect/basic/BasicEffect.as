@@ -84,7 +84,7 @@ package aerys.minko.render.effect.basic
 			else if (styleIsSet(BasicStyle.DIFFUSE_COLOR))
 				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE_COLOR);
 			else
-				diffuse = combine(interpolate(vertexRGBColor).rgb, 1.);
+				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
 		
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))

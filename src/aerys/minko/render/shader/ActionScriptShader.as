@@ -11,7 +11,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Cosine;
 	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
@@ -28,6 +27,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Reciprocal;
 	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Saturate;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
+	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
 	import aerys.minko.render.shader.node.operation.builtin.Sine;
 	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
@@ -36,6 +37,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
+	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
@@ -43,7 +45,6 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
@@ -464,7 +465,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function combine(value1	: Object,
+		/*protected final function combine(value1	: Object,
 										 value2	: Object,
 										 ...values) : SValue
 		{
@@ -475,7 +476,7 @@ package aerys.minko.render.shader
 				result = new Combine(result, getNode(values[i]));
 			
 			return new SValue(result);
-		}
+		}*/
 		
 		private final function toFloat(size : uint, values : Array) : SValue
 		{
@@ -532,6 +533,18 @@ package aerys.minko.render.shader
 			}
 			
 			return new SValue(result);
+		}
+		
+		protected final function clone(value : Object) : SValue
+		{
+			return new SValue(new RootWrapper(getNode(value)));
+		}
+		
+		protected final function float(value : Object) : SValue
+		{
+			var node : INode = getNode(value);
+			
+			return new SValue(node.size == 1 ? node : new Extract(node, Components.X));
 		}
 		
 		protected final function float2(x : Object, y : Object = null) : SValue
@@ -673,9 +686,15 @@ package aerys.minko.render.shader
 			return new SValue(sum);
 		}
 		
-		protected final function subtract(value1 : Object, value2 : Object) : SValue
+		protected final function subtract(value1 : Object, value2 : Object, ...values) : SValue
 		{
-			return new SValue(new Substract(getNode(value1), getNode(value2)));
+			var sub			: Substract	= new Substract(getNode(value1), getNode(value2));
+			var numValues	: int		= values.length;
+			
+			for (var i : int = 0; i < numValues; ++i)
+				sub = new Substract(sub, getNode(values[i]));
+			
+			return new SValue(sub);
 		}
 		
 		protected final function dotProduct3(u : Object, v : Object) : SValue
@@ -743,6 +762,16 @@ package aerys.minko.render.shader
 				max = new Minimum(max, getNode(values[i]));
 			
 			return new SValue(max);
+		}
+		
+		protected final function ifGreaterEqual(a : Object, b : Object) : SValue
+		{
+			return new SValue(new SetIfGreaterEqual(getNode(a), getNode(b)));
+		}
+		
+		protected final function ifLessThan(a : Object, b : Object) : SValue
+		{
+			return new SValue(new SetIfLessThan(getNode(a), getNode(b)));
 		}
 		
 		protected final function getReflectedVector(vector : Object, normal : Object) : SValue
@@ -848,7 +877,7 @@ package aerys.minko.render.shader
 		
 		private function getNode(value : Object) : INode
 		{
-			if (!value)
+			if (value === null)
 				return null;
 			
 			if (value is INode)

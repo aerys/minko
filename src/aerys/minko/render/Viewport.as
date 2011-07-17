@@ -6,7 +6,6 @@ package aerys.minko.render
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.ViewportData;
@@ -18,18 +17,14 @@ package aerys.minko.render
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionnable;
 	
-	import flash.display.BitmapData;
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
-	import flash.display.Stage;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
 	import flash.geom.Point;
-	import flash.geom.Rectangle;
-	import flash.system.Capabilities;
-	import flash.system.System;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
@@ -243,13 +238,14 @@ package aerys.minko.render
 		 */
 		public function Viewport(width			: uint		= 0,
 								 height			: uint		= 0,
+								 autoResize		: Boolean	= true,
 								 antiAliasing	: int		= 0,
 								 rendererType	: Class 	= null)
 		{
 			this.width = width;
 			this.height = height;
 			
-			_autoResize		= _width == 0 || _height == 0;
+			_autoResize		= autoResize;
 			_antiAliasing	= antiAliasing;
 			_rendererClass	= rendererType || DefaultRenderer;
 			_viewportData	= new ViewportData(this);
@@ -271,16 +267,6 @@ package aerys.minko.render
 			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 			_stage3d.requestContext3D(Context3DRenderMode.AUTO);
 			
-			if (_autoResize)
-			{
-				stage.align = StageAlign.TOP_LEFT;
-				stage.scaleMode = StageScaleMode.NO_SCALE;
-				stage.addEventListener(Event.RESIZE, stageResizeHandler);
-				
-				width = stage.stageWidth;
-				height = stage.stageHeight;
-			}
-			
 			if (!_logoIsHidden)
 				showLogo();
 		}
@@ -294,17 +280,39 @@ package aerys.minko.render
 		
 		private function addedHandler(event : Event) : void
 		{
+			if (_autoResize)
+			{
+				parent.addEventListener(Event.RESIZE, resizeHandler);
+				if (parent == stage)
+				{
+					stage.align = StageAlign.TOP_LEFT;
+					stage.scaleMode = StageScaleMode.NO_SCALE;
+				}
+			}
+			
 			updateRectangle();
 		}
 		
-		private function stageResizeHandler(event : Event) : void
+		private function resizeHandler(event : Event = null) : void
 		{
-			var stage : Stage = event.target as Stage;
-			
-			if (stage.stageWidth)
+			if (parent == stage)
+			{
 				width = stage.stageWidth;
-			if (stage.stageHeight)
 				height = stage.stageHeight;
+			}
+			else
+			{
+				var p : DisplayObject = parent;
+				
+				while (p && (p.width == 0 || p.height == 0))
+					p = p.parent;
+				
+				if (p)
+				{
+					width = p.width;
+					height = p.height;
+				}
+			}
 			
 			resetStage3D();
 			
@@ -314,16 +322,9 @@ package aerys.minko.render
 		
 		private function resetStage3D(event : Event = null) : void
 		{
-			if (_stage3d && _stage3d.context3D)
+			if (_stage3d && _stage3d.context3D && _width && _height)
 			{
 				updateRectangle();
-				
-				_stage3d.context3D.configureBackBuffer(
-					Math.min(2048, _width),
-					Math.min(2048, _height),
-					_antiAliasing, 
-					true
-				);
 				
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
@@ -344,6 +345,16 @@ package aerys.minko.render
 				
 				_stage3d.x = origin.x;
 				_stage3d.y = origin.y;
+				
+				if (_stage3d.context3D)
+				{
+					_stage3d.context3D.configureBackBuffer(
+						Math.min(2048, _width),
+						Math.min(2048, _height),
+						_antiAliasing, 
+						true
+					);
+				}
 			}
 		}
 	
