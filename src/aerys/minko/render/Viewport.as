@@ -384,6 +384,8 @@ package aerys.minko.render
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
 				
+				_drawTime	= _renderer.drawingTime;
+				
 				// execute postprocessing
 				if (_postProcessEffect != null)
 				{
@@ -395,7 +397,7 @@ package aerys.minko.render
 				
 				_sceneSize	= visitors[0].numNodes;
 				_time		= getTimer() - time;
-				_drawTime	= _renderer.drawingTime;
+				_drawTime	+= _renderer.drawingTime;
 			}
 			else
 			{

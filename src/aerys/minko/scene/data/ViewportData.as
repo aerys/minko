@@ -59,7 +59,7 @@ package aerys.minko.scene.data
 			var viewportHeight			: int	= _viewport.height;
 			var viewportAntialias		: int	= _viewport.antiAliasing;
 			var viewportBgColor			: int	= _viewport.backgroundColor;
-			var size					: uint	= 1 << Math.ceil(Math.log(Math.max(viewportWidth, viewportHeight)) * Math.LOG2E);
+			var size					: uint	= 1 << Math.min(11, Math.ceil(Math.log(Math.max(viewportWidth, viewportHeight)) * Math.LOG2E));
 			
 			if (_renderTarget == null 
 				|| size					!= _renderTarget.width
