@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.group
 {
 	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
@@ -21,7 +22,6 @@ package aerys.minko.scene.node.group
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import aerys.minko.scene.node.IScene;
 
 	/**
 	 * The Loader3D class is the interface to load any 3D related content
@@ -56,6 +56,12 @@ package aerys.minko.scene.node.group
 		
 		private var _total				: uint				= 0;
 		private var _loaded				: uint				= 0;
+		
+		
+		public static function getParserByExtension(ext : String) : IParser3D
+		{
+			return PARSERS[ext];
+		}
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser3D) : void
