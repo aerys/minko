@@ -38,18 +38,20 @@ package aerys.minko.render.shader
 									  outputColor		: INode) : Shader
 		{
 			var compiler : Compiler = new Compiler();
+			
 			compiler.load(outputPosition, outputColor);
+			
 			return compiler.compileShader();
 		}
 	
 		public function Shader(vertexShader					: ByteArray,
-									  fragmentShader				: ByteArray,
-									  vertexInput					: Vector.<VertexComponent>,
-									  vertexShaderConstantData		: Vector.<Number>,
-									  fragmentShaderConstantData	: Vector.<Number>,
-									  vertexShaderParameters		: Vector.<ParameterAllocation>,
-									  fragmentShaderParameters		: Vector.<ParameterAllocation>,
-									  samplers						: Vector.<int>)
+							   fragmentShader				: ByteArray,
+							   vertexInput					: Vector.<VertexComponent>,
+							   vertexShaderConstantData		: Vector.<Number>,
+							   fragmentShaderConstantData	: Vector.<Number>,
+							   vertexShaderParameters		: Vector.<ParameterAllocation>,
+							   fragmentShaderParameters		: Vector.<ParameterAllocation>,
+							   samplers						: Vector.<int>)
 		{
 			_vsConstData	= vertexShaderConstantData;
 			_fsConstData	= fragmentShaderConstantData;

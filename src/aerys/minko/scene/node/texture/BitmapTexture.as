@@ -6,7 +6,7 @@ package aerys.minko.scene.node.texture
 	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
-	import aerys.minko.scene.action.texture.BitmapTextureAction;
+	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.type.IVersionnable;
 	
@@ -98,7 +98,7 @@ package aerys.minko.scene.node.texture
 			
 			_styleProp = BasicStyle.DIFFUSE_MAP;
 			
-			actions[0] = BitmapTextureAction.bitmapTextureAction;
+			actions[0] = TextureAction.textureAction;
 		}
 		
 		public static function fromDisplayObject(source : DisplayObject,
