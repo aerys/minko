@@ -105,7 +105,7 @@ package aerys.minko.scene.node.group
 		public function addChild(scene : IScene) : IGroup
 		{
 			if (!scene)
-				throw new Error();
+				throw new Error("Parameter child must be non-null.");
 			
 			_children.push(scene);
 			++_numChildren;
@@ -118,7 +118,7 @@ package aerys.minko.scene.node.group
 		public function addChildAt(scene : IScene, position : uint) : IGroup
 		{
 			if (!scene)
-				throw new Error();
+				throw new Error("Parameter child must be non-null.");
 			
 			var numChildren : int = _children.length;
 			
