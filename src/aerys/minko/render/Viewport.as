@@ -115,6 +115,11 @@ package aerys.minko.render
 			}
 		}
 		
+		public function get frameId() : uint
+		{
+			return _renderer.frameId;
+		}
+		
 		public function get sceneSize() : uint
 		{
 			return _sceneSize;
