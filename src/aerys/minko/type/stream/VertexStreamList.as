@@ -52,7 +52,7 @@ package aerys.minko.type.stream
 			return vertexStreamList;
 		}
 		
-		public function pushVertexStream(vertexStream : VertexStream) : void 
+		public function pushVertexStream(vertexStream : VertexStream, force : Boolean = false) : void 
 		{
 			if (length && vertexStream.length != length)
 				throw new Error('All VertexStream must have the same length');
@@ -60,7 +60,7 @@ package aerys.minko.type.stream
 			_streams.push(vertexStream);
 			_streamVersions.push(vertexStream.version);
 			
-			_format.unionWith(vertexStream.format);
+			_format.unionWith(vertexStream.format, force);
 			
 			_dynamic ||= vertexStream;
 			
@@ -76,7 +76,7 @@ package aerys.minko.type.stream
 		{
 			var streamLength	: int = _streams.length;
 			
-			for (var i : int = 0; i < streamLength; ++i)
+			for (var i : int = streamLength - 1; i >= 0; --i)
 				if (_streams[i].format.hasComponent(vertexComponent))
 					return _streams[i];
 			

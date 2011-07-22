@@ -34,10 +34,15 @@ package aerys.minko.type.vertex.format
 				addComponent(component);
 		}
 		
-		public function addComponent(component : VertexComponent) : void
+		public function addComponent(component : VertexComponent, force : Boolean = false) : void
 		{
 			if (hasComponent(component))
+			{
+				if (force)
+					return ;
+				
 				throw new Error('Component already present in this vertex format: ' + component.implodedFields);
+			}
 			
 			_components[component.implodedFields] = component;
 			_componentOffsets[component.implodedFields] = _dwordsPerVertex;
@@ -104,10 +109,10 @@ package aerys.minko.type.vertex.format
 		/**
 		 * Add the components from the vertex format passed in attribute that we don't have in this one.
 		 */
-		public function unionWith(otherVertexFormat : VertexFormat) : void
+		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : void
 		{
 			for each (var component : VertexComponent in otherVertexFormat._components)
-				addComponent(component);
+				addComponent(component, force);
 		}
 		
 		public function intersectWith(otherVertexFormat : VertexFormat) : void
