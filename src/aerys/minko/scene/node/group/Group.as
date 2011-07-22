@@ -66,12 +66,21 @@ package aerys.minko.scene.node.group
 		
 		private function initialize(children : Array) : void
 		{
+			_children = new Vector.<IScene>();
+
 			while (children.length == 1 && children[0] is Array)
 				children = children[0];
-			
-			_numChildren = children.length;
-			_children = _numChildren ? Vector.<IScene>(children)
-									 : new Vector.<IScene>();
+
+			var childrenNum : uint = children.length;
+			for (var childrenIndex : uint = 0; childrenIndex < childrenNum; ++childrenIndex)
+			{
+				var child : IScene = children[childrenIndex] as IScene;
+
+				if (!child)
+					throw new Error("Constructor parameters must be IScene objects.");
+
+				addChild(child);
+			}
 		}
 		
 		public function contains(scene : IScene) : Boolean
