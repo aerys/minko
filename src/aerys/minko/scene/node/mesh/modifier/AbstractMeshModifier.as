@@ -20,8 +20,9 @@ package aerys.minko.scene.node.mesh.modifier
 	public class AbstractMeshModifier extends AbstractScene implements IMeshModifier
 	{
 		private var _target 			: IMesh				= null;
-		private var _indexStream		: IndexStream		= null;
-		private var _vertexStreamList	: VertexStreamList	= null;
+		
+		protected var _indexStream		: IndexStream		= null;
+		protected var _vertexStreamList	: VertexStreamList	= null;
 		
 		public function get target() : IMesh
 		{

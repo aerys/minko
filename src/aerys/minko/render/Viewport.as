@@ -257,7 +257,6 @@ package aerys.minko.render
 			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
-			addEventListener(Event.ADDED, addedHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
@@ -274,17 +273,7 @@ package aerys.minko.render
 			
 			if (!_logoIsHidden)
 				showLogo();
-		}
-		
-		private function removedFromStage(event : Event) : void
-		{
-			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
-			_stage3d.context3D.dispose();
-			_stage3d = null;
-		}
-		
-		private function addedHandler(event : Event) : void
-		{
+			
 			if (_autoResize)
 			{
 				parent.addEventListener(Event.RESIZE, resizeHandler);
@@ -296,6 +285,13 @@ package aerys.minko.render
 			}
 			
 			updateRectangle();
+		}
+		
+		private function removedFromStage(event : Event) : void
+		{
+			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+			_stage3d.context3D.dispose();
+			_stage3d = null;
 		}
 		
 		private function resizeHandler(event : Event = null) : void

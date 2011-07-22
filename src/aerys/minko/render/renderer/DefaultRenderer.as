@@ -133,7 +133,8 @@ package aerys.minko.render.renderer
 		{
 			var time : int = getTimer();
 			
-			_context.drawToBitmapData(bitmapData);
+			if (_numStates != 0)
+				_context.drawToBitmapData(bitmapData);
 			
 			_drawingTime += getTimer() - time;
 			++_frame;
