@@ -240,7 +240,7 @@ package aerys.minko.render.shader.compiler
 			var result : String = '';
 			var inputCount : uint = _vertexInput.length;
 			for (var i : uint = 0; i < inputCount; ++i)
-				result += 'va' + i + "             " + _vertexInput[i].implodedFields + "\n";
+				result += 'va' + i + "             " + _vertexInput[i].toString() + "\n";
 			return result;
 		}
 		

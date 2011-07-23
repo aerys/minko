@@ -274,9 +274,8 @@ package aerys.minko.render.renderer.state
 				if (neededComponent)
 				{
 					var stream : VertexStream = vertexStream.getSubStreamByComponent(neededComponent);
-					
 					if (!stream)
-						throw new Error("Missing vertex components: " + neededComponent.implodedFields);
+						throw new Error("Missing vertex components: " + neededComponent.toString());
 					
 					_vertexStreams[i] = stream;
 					_vertexComponents[i] = neededComponent;
