@@ -32,12 +32,12 @@ package aerys.minko.render.shader.node.leaf
 		override public function isSame(node : INode) : Boolean
 		{
 			var attrNode : Attribute = node as Attribute;
-			return attrNode != null && _component.isSameAs(attrNode._component);
+			return attrNode != null && _component == attrNode._component;
 		}
 		
 		override public function toString() : String
 		{
-			return "Attribute\\n" + _component.implodedFields;
+			return "Attribute\\n" + _component.toString();
 		}
 	}
 }

@@ -875,6 +875,12 @@ package aerys.minko.render.shader
 			_invalid = true;
 		}
 		
+		public function dispose() : void
+		{
+			for each (var shader : Shader in _hashToShader)
+				shader.dispose();
+		}
+		
 		private function getNode(value : Object) : INode
 		{
 			if (value === null)

@@ -1,5 +1,7 @@
 package aerys.minko.type.vertex.format
 {
+	import flash.utils.Dictionary;
+
 	public class VertexFormat
 	{
 		public static const XYZ			: VertexFormat 	= new VertexFormat(VertexComponent.XYZ);
@@ -11,18 +13,38 @@ package aerys.minko.type.vertex.format
 																		   VertexComponent.UV,
 																		   VertexComponent.ST);
 		
-		protected var _components		: Object;
-		
-		private var _dwordsPerVertex	: int		= 0;
-		private var _componentOffsets	: Object	= new Object();
-		private var _fieldOffsets		: Object	= new Object();
+		private var _dwordsPerVertex	: int;
+		private var _components			: Vector.<VertexComponent>;
+		private var _componentOffsets	: Dictionary;
+		private var _fieldOffsets		: Object;
 		
 		public function get components() 		: Object 	{ return _components; }
 		public function get dwordsPerVertex()	: int		{ return _dwordsPerVertex; }
 		
+		public function get componentList()		: Vector.<VertexComponent>
+		{
+			function sortComponentsByOffsets(component1 : VertexComponent, component2 : VertexComponent) : int {
+				return getOffsetForComponent(component1) - getOffsetForComponent(component2);
+			}
+			
+			var vertexComponents	: Object					= components;
+			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
+			
+			for (var key : String in vertexComponents)
+				if (vertexComponents[key] != undefined && vertexComponents[key] is VertexComponent)
+					vertexComponentList.push(vertexComponents[key] as VertexComponent);
+			
+			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
+			
+			return vertexComponentList;
+		}
+		
 		public function VertexFormat(...components)
 		{
-			_components = new Object();
+			_dwordsPerVertex	= 0
+			_components			= new Vector.<VertexComponent>();
+			_componentOffsets	= new Dictionary();
+			_fieldOffsets		= new Object()
 			
 			if (components)
 				initialize(components);
@@ -34,13 +56,18 @@ package aerys.minko.type.vertex.format
 				addComponent(component);
 		}
 		
-		public function addComponent(component : VertexComponent) : void
+		public function addComponent(component : VertexComponent, force : Boolean = false) : void
 		{
 			if (hasComponent(component))
-				throw new Error('Component already present in this vertex format: ' + component.implodedFields);
+			{
+				if (force)
+					return;
+				
+				throw new Error('Component already present in this vertex format: ' + component.toString());
+			}
 			
-			_components[component.implodedFields] = component;
-			_componentOffsets[component.implodedFields] = _dwordsPerVertex;
+			_components.push(component);
+			_componentOffsets[component] = _dwordsPerVertex;
 			
 			for (var fieldName : String in component.offsets)
 				_fieldOffsets[fieldName] = _dwordsPerVertex + component.offsets[fieldName];
@@ -53,22 +80,22 @@ package aerys.minko.type.vertex.format
 			if (!hasComponent(component))
 				throw new Error('No such component');
 			
-			var offset	: uint = _componentOffsets[component.implodedFields];
+			var offset	: uint = _componentOffsets[component];
 			var dwords	: uint = component.dwords;
 			
-			_components[component.implodedFields]		= undefined;
-			_componentOffsets[component.implodedFields]	= undefined;
+			_components.splice(_components.indexOf(component), 1);
+			delete _componentOffsets[component]
 			
-			for (var componentName : String in _componentOffsets)
+			for (var otherComponent : Object in _componentOffsets)
 			{
-				var otherOffset : uint = _componentOffsets[componentName];
+				var otherOffset : uint = _componentOffsets[otherComponent];
 				if (otherOffset > offset)
-					_componentOffsets[componentName] -= dwords;
+					_componentOffsets[component] -= dwords;
 			}
 			
 			for (var fieldName : String in component.offsets)
 			{
-				_fieldOffsets[fieldName] = undefined;
+				delete _fieldOffsets[fieldName];
 			}
 			
 			for (var otherFieldName : String in _fieldOffsets)
@@ -86,7 +113,7 @@ package aerys.minko.type.vertex.format
 		 */
 		public function hasComponent(component : VertexComponent) : Boolean
 		{
-			return _components.hasOwnProperty(component.implodedFields);
+			return _components.indexOf(component) != -1;
 		}
 		
 		/**
@@ -94,8 +121,8 @@ package aerys.minko.type.vertex.format
 		 */ 
 		public function isSubsetOf(otherVertexFormat : VertexFormat) : Boolean
 		{
-			for (var implodedFields : String in _components)
-				if (!otherVertexFormat._components.hasOwnProperty(implodedFields))
+			for each (var component : VertexComponent in _components)
+				if (otherVertexFormat._components.indexOf(component) == -1)
 					return false;
 			
 			return true;
@@ -104,10 +131,10 @@ package aerys.minko.type.vertex.format
 		/**
 		 * Add the components from the vertex format passed in attribute that we don't have in this one.
 		 */
-		public function unionWith(otherVertexFormat : VertexFormat) : void
+		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : void
 		{
 			for each (var component : VertexComponent in otherVertexFormat._components)
-				addComponent(component);
+				addComponent(component, force);
 		}
 		
 		public function intersectWith(otherVertexFormat : VertexFormat) : void
@@ -119,7 +146,7 @@ package aerys.minko.type.vertex.format
 		
 		public function getOffsetForComponent(component : VertexComponent) : int
 		{
-			return _componentOffsets[component.implodedFields];
+			return _componentOffsets[component];
 		}
 		
 		public function getOffsetForField(fieldName : String) : int
@@ -129,20 +156,17 @@ package aerys.minko.type.vertex.format
 		
 		public function clone() : VertexFormat
 		{
-			var clone : VertexFormat = new VertexFormat();
-			clone._dwordsPerVertex = _dwordsPerVertex;
+			var clone	: VertexFormat = new VertexFormat();
+			
+			clone._dwordsPerVertex	= _dwordsPerVertex;
+			clone._components		= _components.slice()
+			clone._componentOffsets	= new Dictionary();
+			clone._fieldOffsets		= new Dictionary();
 			
 			var key : String;
-			
-			clone._componentOffsets = new Object();
 			for (key in _componentOffsets) 
 				clone._componentOffsets[key] = _componentOffsets[key];
 			
-			clone._components = new Object();
-			for (key in _components) 
-				clone._components[key] = _components[key];
-			
-			clone._fieldOffsets = new Object();
 			for (key in _fieldOffsets) 
 				clone._fieldOffsets[key] = _fieldOffsets[key];
 			

@@ -84,9 +84,7 @@ package aerys.minko.scene.node.mesh
 			vertexFormat ||= _vertexStream.format.clone();
 			
 			var meshes				: Vector.<IMesh>			= Vector.<IMesh>([this])
-			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
-			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
-			
+			var mergedMesh			: IMesh						= createMesh(meshes, vertexFormat);
 			return mergedMesh;
 		}
 		
@@ -106,58 +104,41 @@ package aerys.minko.scene.node.mesh
 		 */
 		public static function mergeMeshes(meshes : Vector.<IMesh>) : IMesh
 		{
-			var vertexFormat		: VertexFormat				= computeVertexFormat(meshes);
-			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
-			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
+			// insersect all meshes vertexformats
+			var numMeshes		: uint			= meshes.length;
+			var vertexFormat	: VertexFormat	= meshes[0].vertexStream.format.clone();
+			
+			for (var meshId : uint = 1; meshId < numMeshes; ++meshId)
+			{
+				var mesh : IMesh = meshes[meshId];
+				vertexFormat.intersectWith(mesh.vertexStream.format);
+			}
+			
+			var vertexComponents	: Vector.<VertexComponent>	= vertexFormat.componentList;
+			var mergedMesh			: IMesh						= createMesh(meshes, vertexFormat);
 			
 			return mergedMesh;
 		}
 		
-		private static function computeVertexFormat(meshes : Vector.<IMesh>) : VertexFormat
+		private static function createMesh(meshes		: Vector.<IMesh>,
+										   vertexFormat	: VertexFormat) : IMesh
 		{
-			var newVertexFormat : VertexFormat = meshes[0].vertexStream.format.clone();
 			
-			for each (var mesh : IMesh in meshes)
-				newVertexFormat.intersectWith(mesh.vertexStream.format);
+			var newIndexStreamData 			: Vector.<uint>				= new Vector.<uint>();
+			var newVertexStreamData			: Vector.<Number>			= new Vector.<Number>();
 			
-			return newVertexFormat;	
-		}
-		
-		private static function computeVertexComponentList(vertexFormat : VertexFormat) : Vector.<VertexComponent>
-		{
-			function sortComponentsByOffsets(component1 : VertexComponent, component2 : VertexComponent) : int {
-				return vertexFormat.getOffsetForComponent(component1) - vertexFormat.getOffsetForComponent(component2);
-			}
-			
-			var vertexComponents	: Object					= vertexFormat.components;
-			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
-			
-			for (var key : String in vertexComponents)
-				if (vertexComponents[key] != undefined && vertexComponents[key] is VertexComponent)
-					vertexComponentList.push(vertexComponents[key] as VertexComponent);
-			
-			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
-			
-			return vertexComponentList;
-		}
-		
-		private static function createMesh(meshes			: Vector.<IMesh>,
-										   vertexComponents	: Vector.<VertexComponent>,
-										   vertexFormat		: VertexFormat) : IMesh
-		{
-			var newIndexStreamData 				: Vector.<uint>				= new Vector.<uint>();
-			var newVertexStreamData				: Vector.<Number>			= new Vector.<Number>();
-			
-			var componentCount					: uint						= vertexComponents.length;
-			var vertexComponentOffsets			: Vector.<uint>				= new Vector.<uint>(componentCount, true);
-			var vertexComponentSizes			: Vector.<uint>				= new Vector.<uint>(componentCount, true);
-			var vertexComponentDwordsPerVertex	: Vector.<uint>				= new Vector.<uint>(componentCount, true);
-			var vertexComponentDatas			: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(componentCount, true);
+			var components					: Vector.<VertexComponent>	= vertexFormat.componentList;
+			var componentCount				: uint						= components.length;
+			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(componentCount, true);
+			var componentSizes				: Vector.<uint>				= new Vector.<uint>(componentCount, true);
+			var componentDwordsPerVertex	: Vector.<uint>				= new Vector.<uint>(componentCount, true);
+			var componentDatas				: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(componentCount, true);
 			
 			var meshCount : uint = meshes.length;
 			for (var i : uint = 0; i < meshCount; ++i)
 			{
-				var mesh		: IMesh				= meshes[i];
+				var mesh			: IMesh			= meshes[i];
+				var vertexStream	: IVertexStream	= mesh.vertexStream;
 				
 				// append index data
 				var indexData	: Vector.<uint>		= mesh.indexStream.getIndices();
@@ -170,13 +151,14 @@ package aerys.minko.scene.node.mesh
 				// get offsets, sizes, and buffers for components in the current mesh.
 				for (var k : uint = 0; k < componentCount; ++k)
 				{
-					var vertexComponent	: VertexComponent	= vertexComponents[k];
-					var vertexStream	: VertexStream		= mesh.vertexStream.getSubStreamByComponent(vertexComponent);
+					var vertexComponent	: VertexComponent	= components[k];
+					var subVertexStream	: VertexStream		= vertexStream.getSubStreamByComponent(vertexComponent);
+					var subvertexFormat	: VertexFormat		= subVertexStream.format;
 					
-					vertexComponentOffsets[k]				= vertexStream.format.getOffsetForComponent(vertexComponent);
-					vertexComponentDwordsPerVertex[k]		= vertexStream.format.dwordsPerVertex;
-					vertexComponentSizes[k]					= vertexComponent.dwords;
-					vertexComponentDatas[k]					= vertexStream._data;
+					componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
+					componentDwordsPerVertex[k]	= subvertexFormat.dwordsPerVertex;
+					componentSizes[k]			= vertexComponent.dwords;
+					componentDatas[k]			= subVertexStream._data;
 				}
 				
 				// push vertex data into the new buffer.
@@ -184,9 +166,9 @@ package aerys.minko.scene.node.mesh
 				for (var vertexId : uint = 0; vertexId < vertexCount; ++vertexId)
 					for (var componentId : uint = 0; componentId < componentCount; ++componentId)
 					{
-						var vertexData		: Vector.<Number>	= vertexComponentDatas[componentId];
-						var componentSize	: uint				= vertexComponentSizes[componentId];
-						var componentOffset	: uint				= vertexComponentOffsets[componentId] + vertexId * vertexComponentDwordsPerVertex[componentId];
+						var vertexData		: Vector.<Number>	= componentDatas[componentId];
+						var componentSize	: uint				= componentSizes[componentId];
+						var componentOffset	: uint				= componentOffsets[componentId] + vertexId * componentDwordsPerVertex[componentId];
 						var componentLimit	: uint				= componentSize + componentOffset;
 						
 						for (var n : uint = componentOffset; n < componentLimit; ++n)
