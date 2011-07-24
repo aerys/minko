@@ -2,9 +2,7 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 {
 	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.leaf.AbstractLeaf;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	
 	public class Merger implements IShaderNodeVisitor
 	{
@@ -33,8 +31,9 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 			
 			_stack.push(node);
 			
-			var replaced : Boolean = false;
-			var visitedLength : uint = _visited.length;
+			var replaced		: Boolean	= false;
+			var visitedLength	: uint		= _visited.length;
+			
 			for (var i : int = 0; i < visitedLength; ++i)
 			{
 				var tmpNode : INode = _visited[i];
@@ -60,7 +59,7 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 				throw new Error('Root node cannot be a leaf');
 			
 			var parent	: AbstractOperation = _stack[_stack.length - 2] as AbstractOperation;
-			var current	: INode		= _stack[_stack.length - 1];
+			var current	: INode				= _stack[_stack.length - 1];
 			
 			if (!parent)
 				throw new Error('Clipspace position node and/or color nodes must ' +

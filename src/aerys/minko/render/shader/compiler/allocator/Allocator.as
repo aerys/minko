@@ -132,7 +132,6 @@ package aerys.minko.render.shader.compiler.allocator
 						+ alloc.size + ' contiguous ' + (!alloc.aligned ? 'non-' : '')
 						+ 'aligned floats');
 			}
-			
 		}
 		
 		protected function isFree(operationId : int, offset : int, size : int, allocLimit:int = -1) : Boolean
