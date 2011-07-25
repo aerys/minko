@@ -76,7 +76,7 @@ package aerys.minko.type.animation
 				if (!target)
 					continue;
 				
-				timeline.setMatrixAt(time, target.transform);
+				timeline.updateAt(time, target);
 			}
 		}
 		

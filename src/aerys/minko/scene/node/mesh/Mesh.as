@@ -84,7 +84,7 @@ package aerys.minko.scene.node.mesh
 			vertexFormat ||= _vertexStream.format.clone();
 			
 			var meshes				: Vector.<IMesh>			= Vector.<IMesh>([this])
-			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
+			var vertexComponents	: Vector.<VertexComponent>	= vertexFormat.componentList;
 			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
 			
 			return mergedMesh;
@@ -107,7 +107,7 @@ package aerys.minko.scene.node.mesh
 		public static function mergeMeshes(meshes : Vector.<IMesh>) : IMesh
 		{
 			var vertexFormat		: VertexFormat				= computeVertexFormat(meshes);
-			var vertexComponents	: Vector.<VertexComponent>	= computeVertexComponentList(vertexFormat);
+			var vertexComponents	: Vector.<VertexComponent>	= vertexFormat.componentList;
 			var mergedMesh			: IMesh						= createMesh(meshes, vertexComponents, vertexFormat);
 			
 			return mergedMesh;
@@ -121,24 +121,6 @@ package aerys.minko.scene.node.mesh
 				newVertexFormat.intersectWith(mesh.vertexStream.format);
 			
 			return newVertexFormat;	
-		}
-		
-		private static function computeVertexComponentList(vertexFormat : VertexFormat) : Vector.<VertexComponent>
-		{
-			function sortComponentsByOffsets(component1 : VertexComponent, component2 : VertexComponent) : int {
-				return vertexFormat.getOffsetForComponent(component1) - vertexFormat.getOffsetForComponent(component2);
-			}
-			
-			var vertexComponents	: Object					= vertexFormat.components;
-			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
-			
-			for (var key : String in vertexComponents)
-				if (vertexComponents[key] != undefined && vertexComponents[key] is VertexComponent)
-					vertexComponentList.push(vertexComponents[key] as VertexComponent);
-			
-			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
-			
-			return vertexComponentList;
 		}
 		
 		private static function createMesh(meshes			: Vector.<IMesh>,

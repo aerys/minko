@@ -1,8 +1,10 @@
 package aerys.minko.type.animation.timeline
 {
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.type.math.Matrix4x4;
 
-	public class MatrixSegmentTimeline implements ITimeline
+	public class TransformMatrixSegmentTimeline implements ITimeline
 	{
 		private var _id			: String;
 		private var _target		: String;
@@ -14,7 +16,7 @@ package aerys.minko.type.animation.timeline
 		public function get target()	: String	{ return _target; }
 		public function get duration()	: uint		{ return _times[_times.length - 1]; }
 		
-		public function MatrixSegmentTimeline(id		: String,
+		public function TransformMatrixSegmentTimeline(id		: String,
 									    target 	: String,
 									    times 	: Vector.<uint>,
 									    matrices	: Vector.<Matrix4x4>)
@@ -25,8 +27,9 @@ package aerys.minko.type.animation.timeline
 			_matrices	= matrices;
 		}
 		
-		public function setMatrixAt(t : uint, out : Matrix4x4) : void
+		public function updateAt(t : uint, scene : IScene) : void
 		{
+			var out			: Matrix4x4 = ITransformable(scene).transform;
 			var i			: uint;
 			var timesLength : uint = _times.length;
 			

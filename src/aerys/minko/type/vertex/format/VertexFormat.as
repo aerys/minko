@@ -20,6 +20,24 @@ package aerys.minko.type.vertex.format
 		public function get components() 		: Object 	{ return _components; }
 		public function get dwordsPerVertex()	: int		{ return _dwordsPerVertex; }
 		
+		public function get componentList()		: Vector.<VertexComponent>
+		{
+			function sortComponentsByOffsets(component1 : VertexComponent, component2 : VertexComponent) : int {
+				return getOffsetForComponent(component1) - getOffsetForComponent(component2);
+			}
+			
+			var vertexComponents	: Object					= components;
+			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
+			
+			for (var key : String in vertexComponents)
+				if (vertexComponents[key] != undefined && vertexComponents[key] is VertexComponent)
+					vertexComponentList.push(vertexComponents[key] as VertexComponent);
+			
+			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
+			
+			return vertexComponentList;
+		}
+		
 		public function VertexFormat(...components)
 		{
 			_components = new Object();
