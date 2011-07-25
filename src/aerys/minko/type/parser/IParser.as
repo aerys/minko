@@ -4,7 +4,7 @@ package aerys.minko.type.parser
 	
 	import flash.utils.ByteArray;
 
-	public interface IParser3D
+	public interface IParser
 	{
 		function get data() : Vector.<IScene>;
 		
