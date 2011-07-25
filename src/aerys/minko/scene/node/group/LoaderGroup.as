@@ -142,6 +142,7 @@ package aerys.minko.scene.node.group
 			
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
 			loader.loadBytes(bytes);
+			++_total;
 			
 			return this;
 		}
