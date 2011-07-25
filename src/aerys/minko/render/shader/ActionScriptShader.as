@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
@@ -11,41 +12,19 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.shader.node.operation.builtin.Cosine;
-	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
-	import aerys.minko.render.shader.node.operation.builtin.Divide;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
-	import aerys.minko.render.shader.node.operation.builtin.Fractional;
-	import aerys.minko.render.shader.node.operation.builtin.Maximum;
-	import aerys.minko.render.shader.node.operation.builtin.Minimum;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
-	import aerys.minko.render.shader.node.operation.builtin.Negate;
-	import aerys.minko.render.shader.node.operation.builtin.Normalize;
-	import aerys.minko.render.shader.node.operation.builtin.Power;
-	import aerys.minko.render.shader.node.operation.builtin.Reciprocal;
-	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
-	import aerys.minko.render.shader.node.operation.builtin.Saturate;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
-	import aerys.minko.render.shader.node.operation.builtin.Sine;
-	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
-	import aerys.minko.render.shader.node.operation.builtin.Substract;
-	import aerys.minko.render.shader.node.operation.builtin.Texture;
-	import aerys.minko.render.shader.node.operation.manipulation.Blend;
-	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
+	import aerys.minko.render.shader.node.operation.builtin.*;
+	import aerys.minko.render.shader.node.operation.manipulation.*;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
+	import aerys.minko.render.shader.node.skinning.DQSkinnedPosition;
+	import aerys.minko.render.shader.node.skinning.MatrixSkinnedPosition;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
+	import aerys.minko.type.skinning.SkinningMethod;
 	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	import flash.geom.Point;
@@ -153,8 +132,9 @@ package aerys.minko.render.shader
 		 */
 		protected final function get vertexClipspacePosition() : SValue
 		{
-			return multiply4x4(vertexPosition, localToScreenMatrix);
+			return multiply4x4(vertexSkinnedPosition, localToScreenMatrix);
 		}
+		
 		
 		/**
 		 * The position of the current vertex in world space. 
@@ -174,6 +154,45 @@ package aerys.minko.render.shader
 		protected final function get vertexPosition() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
+		}
+		
+		/**
+		 * The position of the current vertex in local space. 
+		 * @return 
+		 * 
+		 */
+		protected final function get vertexSkinnedPosition() : SValue
+		{
+			var maxInfluences	: uint; 
+			var numBones		: uint;
+			
+			switch (_styleStack.get(SkinningStyle.METHOD, SkinningMethod.DISABLED))
+			{
+				case SkinningMethod.DISABLED :
+					return vertexPosition;
+				
+				case SkinningMethod.MATRIX :
+					maxInfluences	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
+					numBones		= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
+					return new SValue(new MatrixSkinnedPosition(maxInfluences, numBones));
+					
+				case SkinningMethod.DUAL_QUATERNION :
+					maxInfluences	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
+					numBones		= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
+					return new SValue(new DQSkinnedPosition(maxInfluences, numBones));
+				
+				default :
+					throw new Error('Unknown SkinningMethod.');
+			}
+		}
+		
+		protected final function get vertexDQSkinnedPosition() : SValue
+		{
+			var maxInfluences	: uint	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
+			var numBones		: uint	= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
+			var shaderNode		: INode	= new DQSkinnedPosition(maxInfluences, numBones);
+			
+			return new SValue(shaderNode);
 		}
 		
 		/**

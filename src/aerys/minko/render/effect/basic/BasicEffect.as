@@ -4,6 +4,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.fog.FogStyle;
+	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
@@ -17,6 +18,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.ConstVector4;
+	import aerys.minko.type.skinning.SkinningMethod;
 	
 	import flash.utils.Dictionary;
 	
@@ -85,24 +87,24 @@ package aerys.minko.render.effect.basic
 				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE_COLOR);
 			else
 				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
-		
+			
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
 			{
 				var zFar		: SValue = styleIsSet(FogStyle.DISTANCE)
 										  ? getStyleParameter(1, FogStyle.DISTANCE)
 										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
-				var fogColor 	: *		= styleIsSet(FogStyle.COLOR)
+				var fogColor 	: SValue = styleIsSet(FogStyle.COLOR)
 										  ? getStyleParameter(3, FogStyle.COLOR)
 										  : float3(0., 0., 0.);
-				var fogStart	: *		= styleIsSet(FogStyle.START)
+				var fogStart	: SValue = styleIsSet(FogStyle.START)
 										  ? getStyleParameter(1, FogStyle.START)
-										  : 0.;
+										  : float(0.);
 				
 				fogColor = getFogColor(fogStart, zFar, fogColor); 
-				diffuse = blend(fogColor, diffuse, Blending.ALPHA);
+				diffuse  = blend(fogColor, diffuse, Blending.ALPHA);
 			}
-				
+			
 			return diffuse;
 		}
 		
@@ -114,13 +116,22 @@ package aerys.minko.render.effect.basic
 			
 			hash += style.get(BasicStyle.DIFFUSE_MAP, false) ? "_diffuse" : "_color";
 			
+			if (style.get(SkinningStyle.METHOD, SkinningMethod.DISABLED) != SkinningMethod.DISABLED)
+			{
+				hash += "_skin(";
+				hash += "method=" + style.get(SkinningStyle.METHOD);
+				hash += ",maxInfluences=" + style.get(SkinningStyle.MAX_INFLUENCES, 0);
+				hash += ",numBones=" + style.get(SkinningStyle.NUM_BONES, 0);
+				hash += ")";
+			}
+			
 			if (style.get(FogStyle.FOG_ENABLED, false))
 			{
 				hash += "_fog(";
 				hash += "start=" + style.get(FogStyle.START, 0.);
 				hash += ",distance=" + style.get(FogStyle.DISTANCE, 0.);
 				hash += ",color=" + style.get(FogStyle.COLOR, 0);
-				hash += ");"
+				hash += ")"
 			}
 			
 			return hash;
