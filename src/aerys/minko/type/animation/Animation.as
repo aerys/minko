@@ -41,20 +41,19 @@ package aerys.minko.type.animation
 			transformNodes(time);
 		}
 		
-		public function step() : void
+		public function step(deltaTime : uint = 80) : void
 		{
-			var time : uint = (_lastTime + 2500 / 30) % _duration;
+			var time : uint = (_lastTime + deltaTime) % _duration;
 			transformNodes(time);
 		}
 		
-		public function stepReverse() : void
+		public function stepReverse(deltaTime : uint = 80) : void
 		{
-			var time : int = (_lastTime - 2500 / 30) % _duration;
+			var time : int = (_lastTime - deltaTime) % _duration;
 			if (time < 0)
 				time = time + _duration;
 			
 			transformNodes(time);
-				
 		}
 		
 		private function transformNodes(time : uint) : void
