@@ -358,7 +358,7 @@ package aerys.minko.render
 				}
 			}
 		}
-	
+
 		/**
 		 * Render the specified scene.
 		 * @param scene

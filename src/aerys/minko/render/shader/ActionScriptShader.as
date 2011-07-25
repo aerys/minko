@@ -478,7 +478,7 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}*/
 		
-		private final function toFloat(size : uint, values : Array) : SValue
+		private final function toFloat(size : int, values : Array) : SValue
 		{
 			var inputSize 	: uint 	= 0;
 			var numValues	: uint	= values.length;
@@ -500,7 +500,11 @@ package aerys.minko.render.shader
 				
 				size -= value.size;
 				if (size < 0)
-					result = new Combine(result, new Extract(value, sizeToComponents[int(-size + 1)]));
+				{
+					var extract : Extract = new Extract(value, sizeToComponents[int(-size + 1)]);
+					
+					result = result ? new Combine(result, extract) : extract;
+				}
 				else
 					result = result ? new Combine(result, value) : value;
 			}
