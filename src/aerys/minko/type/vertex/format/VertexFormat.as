@@ -18,8 +18,8 @@ package aerys.minko.type.vertex.format
 		private var _componentOffsets	: Dictionary;
 		private var _fieldOffsets		: Object;
 		
-		public function get components() 		: Object 	{ return _components; }
-		public function get dwordsPerVertex()	: int		{ return _dwordsPerVertex; }
+		public function get components() 		: Vector.<VertexComponent> 	{ return _components; }
+		public function get dwordsPerVertex()	: int						{ return _dwordsPerVertex; }
 		
 		public function get componentList()		: Vector.<VertexComponent>
 		{
@@ -161,7 +161,7 @@ package aerys.minko.type.vertex.format
 			clone._dwordsPerVertex	= _dwordsPerVertex;
 			clone._components		= _components.slice()
 			clone._componentOffsets	= new Dictionary();
-			clone._fieldOffsets		= new Dictionary();
+			clone._fieldOffsets		= new Object();
 			
 			var key : String;
 			for (key in _componentOffsets) 
