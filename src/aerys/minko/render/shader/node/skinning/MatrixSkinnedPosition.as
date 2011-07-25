@@ -18,12 +18,12 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	
-	public class MatrixSkinnedClipspacePosition extends Dummy
+	public class MatrixSkinnedPosition extends Dummy
 	{
-		public function MatrixSkinnedClipspacePosition(maxInfluences : uint, numBones : uint)
+		public function MatrixSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
-			var inVertexPosition	: INode			 = new Attribute(VertexComponent.XYZ); 
-			var outVertexPosition	: INode			 = null;
+			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ); 
+			var outVertexPosition	: INode = null;
 			
 			if (maxInfluences == 0)
 			{
@@ -63,8 +63,8 @@ package aerys.minko.render.shader.node.skinning
 				}
 			}
 			
-			var localToScreen		: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
-			var result				: INode = new Multiply4x4(outVertexPosition, localToScreen); 
+			var localToScreen	: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
+			var result			: INode = outVertexPosition; 
 			
 			super(result);
 		}

@@ -23,9 +23,9 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	
-	public class DQSkinnedClipspacePosition extends Dummy
+	public class DQSkinnedPosition extends Dummy
 	{
-		public function DQSkinnedClipspacePosition(maxInfluences : uint, numBones : uint)
+		public function DQSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
 			var localToScreen		: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
 			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ);
@@ -34,7 +34,7 @@ package aerys.minko.render.shader.node.skinning
 			
 			if (maxInfluences == 0)
 			{
-				result = new Multiply4x4(inVertexPosition, localToScreen);
+				result = inVertexPosition;
 			}
 			else
 			{
@@ -102,7 +102,7 @@ package aerys.minko.render.shader.node.skinning
 				
 				outVertexPosition	= new Combine(outVertexPosition, new Constant(1.0));
 				
-				result = new Multiply4x4(outVertexPosition, localToScreen); 
+				result = outVertexPosition; 
 			}
 			
 			super(result);
