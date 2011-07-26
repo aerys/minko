@@ -6,16 +6,14 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.mesh.IMesh;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.data.IWorldData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.mesh.IMesh;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStreamList;
 	
 	import flash.utils.Dictionary;
 	
@@ -68,16 +66,17 @@ package aerys.minko.scene.action.mesh
 			{
 				renderer.begin();
 				
-				var pass	: IEffectPass = passes[j];
-				var state	: RendererState = renderer.state;
+				var pass	: IEffectPass	= passes[j];
+				var state	: RendererState	= renderer.state;
 				
 				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 				{
 					state.setInputStreams(vertexStream, indexStream);
 					renderer.drawTriangles();
+					
+					renderer.end();
 				}
 				
-				renderer.end();
 			}
 			
 			return true;

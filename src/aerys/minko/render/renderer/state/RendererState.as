@@ -77,7 +77,7 @@ package aerys.minko.render.renderer.state
 																						   Context3DTriangleFace.BACK,
 																						   Context3DTriangleFace.FRONT]);
 
-		private static const RENDER_TARGET			: uint	= 1 << 0;
+		public static const RENDER_TARGET			: uint	= 1 << 0;
 		private static const BLENDING				: uint	= 1 << 1;
 		private static const SHADER					: uint	= 1 << 2;
 		private static const COLOR_MASK				: uint	= 1 << 3;
@@ -109,7 +109,7 @@ package aerys.minko.render.renderer.state
 															  | TEXTURE_5 | TEXTURE_6 | TEXTURE_7 | TEXTURE_8;
 		
 		private var _version			: uint						= 0;
-		private var _setFlags			: uint						= 0;
+		public var _setFlags			: uint						= 0;
 			
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
@@ -459,7 +459,11 @@ package aerys.minko.render.renderer.state
 				
 				if (_setFlags & RENDER_TARGET)
 				{
-					if (!_renderTarget || _renderTarget.type == RenderTarget.BACKBUFFER)
+					if (!_renderTarget)
+					{
+						throw new Error('RenderTarget cannot be undefined');
+					}
+					else if (_renderTarget.type == RenderTarget.BACKBUFFER)
 					{
 						context.setRenderToBackBuffer();
 					}
@@ -471,7 +475,6 @@ package aerys.minko.render.renderer.state
 					}
 					
 					var color : uint = _renderTarget ? _renderTarget.backgroundColor : 0;
-					
 					context.clear(((color >> 16) & 0xff) / 255.,
 								  ((color >> 8) & 0xff) / 255.,
 								  (color & 0xff) / 255.,
@@ -542,10 +545,7 @@ package aerys.minko.render.renderer.state
 					{
 						var vertexOffset 	: int				= _vertexOffsets[i];
 						var vertexComponent : VertexComponent	= _vertexComponents[i];
-						var buffer 			: VertexBuffer3D 	= vertexStream
-													  		   	  ? vertexStream.getNativeBuffer(context)
-																  : null;
-						
+						var buffer 			: VertexBuffer3D 	= vertexStream.getNativeBuffer(context);
 						context.setVertexBufferAt(i, buffer, vertexOffset, vertexComponent.nativeFormatString);
 					}
 				}
@@ -568,7 +568,11 @@ package aerys.minko.render.renderer.state
 			if (_setFlags & RENDER_TARGET
 				&& (!(current._setFlags & RENDER_TARGET) || _renderTarget != current._renderTarget))
 			{
-				if (_renderTarget.type == RenderTarget.BACKBUFFER)
+				if (!_renderTarget)
+				{
+					throw new Error('RenderTarget cannot be undefined');
+				}
+				else if (_renderTarget.type == RenderTarget.BACKBUFFER)
 				{
 					context.setRenderToBackBuffer();
 				}
@@ -578,8 +582,7 @@ package aerys.minko.render.renderer.state
 											   _renderTarget.useDepthAndStencil,
 											   _renderTarget.antiAliasing);
 				}
-				
-				var color : uint = _renderTarget ? _renderTarget.backgroundColor : 0;
+				var color : uint = _renderTarget.backgroundColor;
 				
 				context.clear(((color >> 16) & 0xff) / 255.,
 							  ((color >> 8) & 0xff) / 255.,
