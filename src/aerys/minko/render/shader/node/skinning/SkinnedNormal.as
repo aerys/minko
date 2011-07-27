@@ -41,7 +41,7 @@ package aerys.minko.render.shader.node.skinning
 					throw new Error('Unknown SkinningMethod.');
 			}*/
 			
-			_node = new Multiply(normal, new StyleParameter(1, BasicStyle.NORMAL_MULTIPLIER));
+			_node = normal;
 		}
 	}
 }
