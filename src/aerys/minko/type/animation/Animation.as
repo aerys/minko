@@ -7,8 +7,6 @@ package aerys.minko.type.animation
 	
 	import flash.utils.getTimer;
 	
-	import org.osmf.elements.DurationElement;
-
 	public class Animation
 	{
 		private var _id				: String;
