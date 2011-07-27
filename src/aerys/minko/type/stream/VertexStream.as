@@ -68,7 +68,7 @@ package aerys.minko.type.stream
 		
 		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
-			if (vertexComponent in _format.components)
+			if (_format.components.indexOf(vertexComponent) != -1)
 				return this;
 			
 			return null;
@@ -115,8 +115,8 @@ package aerys.minko.type.stream
 		
 		minko_stream function getNativeBuffer(context : Context3D) : VertexBuffer3D
 		{
-			var dwordsPerVertex : int 				= _format.dwordsPerVertex;
-			var currentLength 	: int 				= _data ? _data.length / dwordsPerVertex : _length;
+			var dwordsPerVertex : int = _format.dwordsPerVertex;
+			var currentLength 	: int = _data ? _data.length / dwordsPerVertex : _length;
 			
 			if ((!_nativeBuffer && _data.length) || _length != currentLength)
 			{

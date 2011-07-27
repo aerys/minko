@@ -6,7 +6,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.type.parser.IParser3D;
+	import aerys.minko.type.parser.IParser;
 	
 	import flash.display.Bitmap;
 	import flash.display.IBitmapDrawable;
@@ -58,13 +58,13 @@ package aerys.minko.scene.node.group
 		private var _loaded				: uint				= 0;
 		
 		
-		public static function getParserByExtension(ext : String) : IParser3D
+		public static function getParserByExtension(ext : String) : IParser
 		{
 			return PARSERS[ext];
 		}
 		
 		public static function registerParser(extension : String,
-											  parser 	: IParser3D) : void
+											  parser 	: IParser) : void
 		{
 			PARSERS[extension] = parser;
 		}
@@ -100,7 +100,7 @@ package aerys.minko.scene.node.group
 				var urlLoader 	: URLLoader	= new URLLoader();
 				var uri			: String	= request.url;
 				var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
-				var parser		: IParser3D	= PARSERS[extension.toLocaleLowerCase()];
+				var parser		: IParser	= PARSERS[extension.toLocaleLowerCase()];
 				
 				if (!parser)
 					throw new Error("No data parser registered for extension '" + extension + "'");
@@ -122,7 +122,7 @@ package aerys.minko.scene.node.group
 		{
 			for (var extension : String in PARSERS)
 			{
-				var parser : IParser3D = PARSERS[extension];
+				var parser : IParser = PARSERS[extension];
 				
 				bytes.position = 0;
 				
@@ -200,7 +200,7 @@ package aerys.minko.scene.node.group
 			var uri			: String			= _loaderToURI[loader];
 			var offset		: uint				= _loaderToPosition[loader];
 			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
-			var parser		: IParser3D			= PARSERS[extension.toLocaleLowerCase()];
+			var parser		: IParser			= PARSERS[extension.toLocaleLowerCase()];
 			var data		: Vector.<IScene>	= parser.parse(loader.data as ByteArray)
 												  ? parser.data
 												  : null;

@@ -4,6 +4,8 @@ package aerys.minko.render.effect.skinning
 
 	public class SkinningStyle
 	{
+		public static const METHOD			: uint = Style.getStyleId('skinning_method');
+		
 		public static const MAX_INFLUENCES	: uint = Style.getStyleId('skinning_maxInfluences');
 		public static const NUM_BONES		: uint = Style.getStyleId('skinning_numBones');
 		
