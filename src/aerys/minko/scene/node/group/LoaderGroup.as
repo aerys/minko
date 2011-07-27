@@ -57,12 +57,6 @@ package aerys.minko.scene.node.group
 		private var _total				: uint				= 0;
 		private var _loaded				: uint				= 0;
 		
-		
-		public static function getParserByExtension(ext : String) : IParser
-		{
-			return PARSERS[ext];
-		}
-		
 		public static function registerParser(extension : String,
 											  parser 	: IParser) : void
 		{

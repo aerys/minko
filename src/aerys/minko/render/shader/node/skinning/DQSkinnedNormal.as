@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.node.skinning
 {
+	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
@@ -18,14 +19,13 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
 	
 	public class DQSkinnedNormal extends Dummy
 	{
 		public function DQSkinnedNormal(maxInfluences : uint, numBones : uint)
 		{
 			var inNormal	: INode = new Extract(new Attribute(VertexComponent.NORMAL), Components.XYZ);
-			var outNormal	: INode;
+			var outNormal	: INode	= null;
 			
 			if (maxInfluences == 0)
 			{
