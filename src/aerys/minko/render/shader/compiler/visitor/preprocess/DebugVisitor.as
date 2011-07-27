@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.visitor.preprocess
 {
-	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
+	import aerys.minko.render.shader.node.INode;
 	
 	public class DebugVisitor implements IShaderNodeVisitor
 	{

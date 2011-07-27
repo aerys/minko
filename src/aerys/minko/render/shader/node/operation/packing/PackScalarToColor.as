@@ -33,9 +33,12 @@ package aerys.minko.render.shader.node.operation.packing
 		}
 		
 		public function PackScalarToColor(node			: INode, 
-										  maxValueParts	: INode,
-										  maxValue		: INode)
+										  maxValueParts	: INode = null,
+										  maxValue		: INode = null)
 		{
+			maxValueParts	||= new Constant(0, 400, 800, 1200);
+			maxValue		||= new Constant(1600);
+			
 			var nodeOpposite		: INode = new Substract(maxValue, node);
 			var packedDepthOpposite	: INode = new Saturate(
 				new Divide(

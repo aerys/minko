@@ -33,8 +33,7 @@ package aerys.minko.render.shader.node
 		
 		public function isSame(node : INode) : Boolean
 		{
-			var castedNode : Dummy = node as Dummy;
-			return castedNode != null && castedNode._node.isSame(_node);
+			throw new Error('Dummy nodes are to be removed before folding the shader graph and therefor cannot be compared. Go fix your code.');
 		}
 		
 		public function toString() : String

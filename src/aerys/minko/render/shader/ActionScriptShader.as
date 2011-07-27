@@ -68,7 +68,7 @@ package aerys.minko.render.shader
 	 * <li>Object: arguments are typed has Object to ensure polymorphism. Any
 	 * of the following type can be used: int, uint, Number, Point, Vector4,
 	 * Matrix4x4 and SValue. Arguments with types different from SValue will
-	 * always be interpreted has static fixed constants.</li>
+	 * always be interpreted as static fixed constants.</li>
 	 * <li>SValue: return values are types as SValue objects. They represent
 	 * hardware memory proxies.</li>
 	 * </ul>

@@ -41,9 +41,9 @@ package aerys.minko.render.shader.compiler.allocator
 			return _endId;
 		}
 		
-		public function set offset(value:uint):void
+		public function set offset(v : uint):void
 		{
-			_offset = value;
+			_offset = v;
 		}
 
 		public function set aligned(v : Boolean):void

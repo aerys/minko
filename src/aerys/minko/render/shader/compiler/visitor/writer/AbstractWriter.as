@@ -11,8 +11,6 @@ package aerys.minko.render.shader.compiler.visitor.writer
 	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
-	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;

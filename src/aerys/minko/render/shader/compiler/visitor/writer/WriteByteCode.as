@@ -1,21 +1,9 @@
 package aerys.minko.render.shader.compiler.visitor.writer
 {
-	import aerys.minko.render.shader.compiler.allocator.Allocation;
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
-	import aerys.minko.render.shader.compiler.register.RegisterMask;
-	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
 	import aerys.minko.render.shader.compiler.register.RegisterType;
-	import aerys.minko.render.shader.compiler.visitor.IShaderNodeVisitor;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.leaf.AbstractConstant;
-	import aerys.minko.render.shader.node.leaf.Attribute;
-	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
-	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
-	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
@@ -91,9 +79,9 @@ package aerys.minko.render.shader.compiler.visitor.writer
 													  writeMask			: uint,
 													  registerType		: uint) : void
 		{
-			_bytecode.writeShort(registerNumber);				// NNNNNNNNNNNNNNNN = Register number (16 bits)
-			_bytecode.writeByte(writeMask);						// ----MMMM = Write mask (4 bits)
-			_bytecode.writeByte(registerType);					// ----TTTT = Register type (4 bits)
+			_bytecode.writeShort(registerNumber);			// NNNNNNNNNNNNNNNN = Register number (16 bits)
+			_bytecode.writeByte(writeMask);					// ----MMMM = Write mask (4 bits)
+			_bytecode.writeByte(registerType);				// ----TTTT = Register type (4 bits)
 		}
 		
 		override protected function outputSamplerSource(index		: uint,
