@@ -36,8 +36,8 @@ package aerys.minko.render.shader.node.operation.packing
 										  maxValueParts	: INode = null,
 										  maxValue		: INode = null)
 		{
-			maxValueParts	||= new Constant(0, 400, 800, 1200);
-			maxValue		||= new Constant(1600);
+			maxValueParts	||= new Constant(0, 200, 400, 600);
+			maxValue		||= new Constant(800);
 			
 			var nodeOpposite		: INode = new Substract(maxValue, node);
 			var packedDepthOpposite	: INode = new Saturate(

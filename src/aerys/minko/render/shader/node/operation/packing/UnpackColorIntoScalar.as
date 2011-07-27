@@ -21,8 +21,8 @@ package aerys.minko.render.shader.node.operation.packing
 											  maxValuePerComponent	: INode = null,
 											  maxValue				: INode = null)
 		{
-			maxValuePerComponent ||= new Constant(400);
-			maxValue			 ||= new Constant(1600);
+			maxValuePerComponent ||= new Constant(200);
+			maxValue			 ||= new Constant(800);
 			
 			var unpackedOppositeNode : INode = new DotProduct4(
 				new Multiply(
