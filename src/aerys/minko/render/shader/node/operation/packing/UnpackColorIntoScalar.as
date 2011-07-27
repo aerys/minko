@@ -18,9 +18,12 @@ package aerys.minko.render.shader.node.operation.packing
 															   1.);
 
 		public function UnpackColorIntoScalar(node 					: INode,
-											  maxValuePerComponent	: INode,
-											  maxValue				: INode)
+											  maxValuePerComponent	: INode = null,
+											  maxValue				: INode = null)
 		{
+			maxValuePerComponent ||= new Constant(200);
+			maxValue			 ||= new Constant(800);
+			
 			var unpackedOppositeNode : INode = new DotProduct4(
 				new Multiply(
 					node,

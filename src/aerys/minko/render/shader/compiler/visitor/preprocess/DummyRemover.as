@@ -7,7 +7,6 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 	
 	public class DummyRemover implements IShaderNodeVisitor
 	{
-		
 		protected var _stack 	: Vector.<INode>;
 		protected var _visited	: Vector.<INode>;
 		

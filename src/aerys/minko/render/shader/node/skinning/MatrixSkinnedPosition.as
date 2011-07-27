@@ -22,7 +22,7 @@ package aerys.minko.render.shader.node.skinning
 	{
 		public function MatrixSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
-			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ); 
+			var inVertexPosition	: INode = new Extract(new Attribute(VertexComponent.XYZ), Components.XYZ); 
 			var outVertexPosition	: INode = null;
 			
 			if (maxInfluences == 0)

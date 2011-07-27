@@ -27,10 +27,9 @@ package aerys.minko.render.shader.node.skinning
 	{
 		public function DQSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
-			var localToScreen		: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
-			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ);
-			var outVertexPosition	: INode;
-			var result				: INode;
+			var inVertexPosition	: INode = new Extract(new Attribute(VertexComponent.XYZ), Components.XYZ);
+			var outVertexPosition	: INode	= null;
+			var result				: INode	= null;
 			
 			if (maxInfluences == 0)
 			{

@@ -23,8 +23,8 @@ package aerys.minko.render.shader.node.skinning
 	{
 		public function MatrixSkinnedNormal(maxInfluences : uint, numBones : uint)
 		{
-			var inNormal	: INode = new Attribute(VertexComponent.XYZ); 
-			var outNormal	: INode;
+			var inNormal	: INode = new Extract(new Attribute(VertexComponent.NORMAL), Components.XYZ); 
+			var outNormal	: INode	= null;
 			
 			if (maxInfluences == 0)
 			{

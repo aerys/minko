@@ -9,14 +9,13 @@ package aerys.minko.render.shader.node.leaf
 	{
 		use namespace minko;
 		
+		minko var _class : Class;
+		
 		public function get className() : String
 		{
 			var className : String = getQualifiedClassName(_class);
 			return className.substr(className.lastIndexOf(":") + 1);
 		}
-		
-		minko var _class : Class;
-		
 		public function WorldParameter(size		: uint, 
 									   key		: Class,
 									   field	: String	= null, 

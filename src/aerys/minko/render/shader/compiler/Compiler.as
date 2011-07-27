@@ -399,7 +399,5 @@ package aerys.minko.render.shader.compiler
 			
 			return bitmapData;
 		}
-		
-		
 	}
 }
