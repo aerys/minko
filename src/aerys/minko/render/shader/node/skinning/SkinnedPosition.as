@@ -1,9 +1,9 @@
 package aerys.minko.render.shader.node.skinning
 {
 	import aerys.minko.render.shader.node.Dummy;
-	import aerys.minko.render.shader.node.common.ClipspacePosition;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.vertex.format.VertexComponent;
 	
 	public class SkinnedPosition extends Dummy
 	{
@@ -23,7 +23,7 @@ package aerys.minko.render.shader.node.skinning
 			switch (skinningMethod)
 			{
 				case SkinningMethod.DISABLED :
-					_node = new ClipspacePosition();
+					_node = new Attribute(VertexComponent.XYZ);
 					break ;
 				case SkinningMethod.MATRIX :
 					_node = new MatrixSkinnedPosition(maxInfluences, numBones);
