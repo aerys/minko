@@ -9,6 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
@@ -18,6 +19,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.ConstVector4;
+	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.skinning.SkinningMethod;
 	
 	import flash.utils.Dictionary;
@@ -79,14 +81,17 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputColor() : SValue
 		{
-			var diffuse	: SValue		= null;
+			var diffuse			: SValue;
+			var diffuseStyle	: Object = styleIsSet(BasicStyle.DIFFUSE) ? getStyleConstant(BasicStyle.DIFFUSE) : null;
 			
-			if (styleIsSet(BasicStyle.DIFFUSE_MAP))
-				diffuse = sampleTexture(BasicStyle.DIFFUSE_MAP, interpolate(vertexUV));
-			else if (styleIsSet(BasicStyle.DIFFUSE_COLOR))
-				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE_COLOR);
-			else
+			if (diffuseStyle == null)
 				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
+			if (diffuseStyle is uint || diffuseStyle is Vector4)
+				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE);
+			else if (diffuseStyle is TextureRessource)
+				diffuse = sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
+			else
+				throw new Error('Invalid BasicStyle.DIFFUSE value');
 			
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
@@ -114,7 +119,16 @@ package aerys.minko.render.effect.basic
 		{
 			var hash : String	= "basic";
 			
-			hash += style.get(BasicStyle.DIFFUSE_MAP, false) ? "_diffuse" : "_color";
+			var diffuseStyle : Object = style.isSet(BasicStyle.DIFFUSE) ? style.get(BasicStyle.DIFFUSE) : null;
+			
+			if (diffuseStyle == null)
+				hash += '_colorFromVertex';
+			else if (diffuseStyle is uint || diffuseStyle is Vector4)
+				hash += '_colorFromConstant';
+			else if (diffuseStyle is TextureRessource)
+				hash += '_colorFromTexture';
+			else
+				throw new Error('Invalid BasicStyle.DIFFUSE value');
 			
 			if (style.get(SkinningStyle.METHOD, SkinningMethod.DISABLED) != SkinningMethod.DISABLED)
 			{

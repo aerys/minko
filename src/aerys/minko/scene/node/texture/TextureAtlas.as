@@ -19,9 +19,9 @@ package aerys.minko.scene.node.texture
 		private var _empty		: Array				= new Array();
 		private var _ressource	: TextureRessource	= new TextureRessource();
 		
-		public function get styleProperty() : int			{ return BasicStyle.DIFFUSE_MAP;	}
-		public function get ressource() : TextureRessource	{ return _ressource; }
-		public function get version() : uint				{ return _version; }
+		public function get styleProperty() : int			{ return BasicStyle.DIFFUSE;	}
+		public function get ressource() : TextureRessource	{ return _ressource;			}
+		public function get version() : uint				{ return _version;				}
 		
 		public function get bitmapData()	: BitmapData	{ return _bitmapData; }
 		

@@ -12,17 +12,29 @@ package aerys.minko.scene.node.texture
 		private var _version : uint;
 		private var _color : uint;
 		
+		/**
+		 * The texture color in ARGB format
+		 * 
+		 * @return current texture color
+		 */		
 		public function get color() : uint { return _color; }
-		public function get styleProperty() : int { return BasicStyle.DIFFUSE_COLOR; }
+		
+		public function get styleProperty() : int { return BasicStyle.DIFFUSE; }
+		
 		public function get ressource() : TextureRessource { return null; }
 		
+		/**
+		 * Set texture color in ARGB format
+		 *  
+		 * @param v the new color
+		 */		
 		public function set color(v : uint) : void
 		{
 			_color = v;
 			++_version
 		}
 		
-		public function ColorTexture(color : uint = 0xffffff)
+		public function ColorTexture(argb : uint = 0xffffff)
 		{
 			_color		= color;
 			

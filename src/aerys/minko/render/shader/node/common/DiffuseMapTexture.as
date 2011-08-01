@@ -16,7 +16,7 @@ package aerys.minko.render.shader.node.common
 		{
 			var result : INode = new Texture(
 				new Interpolate(new Attribute(VertexComponent.UV)),
-				new Sampler(BasicStyle.DIFFUSE_MAP, Sampler.FILTER_LINEAR, Sampler.MIPMAP_LINEAR)
+				new Sampler(BasicStyle.DIFFUSE, Sampler.FILTER_LINEAR, Sampler.MIPMAP_LINEAR)
 			);
 			
 			super(result);

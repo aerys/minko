@@ -96,7 +96,7 @@ package aerys.minko.scene.node.texture
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
 			
-			_styleProp = BasicStyle.DIFFUSE_MAP;
+			_styleProp = BasicStyle.DIFFUSE;
 			
 			actions[0] = TextureAction.textureAction;
 		}
