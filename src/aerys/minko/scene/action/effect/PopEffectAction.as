@@ -1,11 +1,12 @@
 package aerys.minko.scene.action.effect
 {
 	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.visitor.ISceneVisitor;
 	
 	public class PopEffectAction implements IAction
 	{
@@ -15,7 +16,8 @@ package aerys.minko.scene.action.effect
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			visitor.renderingData.effect = _effects.pop();
+			if (scene is IEffectTarget && (scene as IEffectTarget).effect)
+				visitor.renderingData.effect = _effects.pop();
 			
 			return true;
 

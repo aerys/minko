@@ -2,8 +2,8 @@ package aerys.minko.scene.node.group
 {
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
-	import aerys.minko.scene.action.EffectTargetAction;
-	import aerys.minko.scene.visitor.RenderingVisitor;
+	import aerys.minko.scene.action.effect.PopEffectAction;
+	import aerys.minko.scene.action.effect.PushEffectAction;
 
 	/**
 	 * 
@@ -25,7 +25,8 @@ package aerys.minko.scene.node.group
 		{
 			super(children);
 			
-			actions.unshift(new EffectTargetAction());
+			actions.unshift(new PushEffectAction());
+			actions.push(new PopEffectAction());
 		}
 	}
 }
