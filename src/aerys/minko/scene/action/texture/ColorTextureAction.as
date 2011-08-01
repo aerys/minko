@@ -24,9 +24,10 @@ package aerys.minko.scene.action.texture
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var texture : ColorTexture = scene as ColorTexture;
-			var color	: uint = texture.color;
 			if (!texture)
-				throw new Error();
+				throw new Error('Only ColorTexture can use a ColorTextureAction');
+			
+			var color	: uint = texture.color;
 			
 			var alpha	: uint = (color >> 24) & 0xff
 			var red		: uint = (color >> 16) & 0xff
@@ -34,7 +35,6 @@ package aerys.minko.scene.action.texture
 			var blue	: uint = color & 0xff;
 			
 			color = (red << 24) | (green << 16) | (blue << 8) | (alpha); 
-				
 			visitor.renderingData.styleStack.set(BasicStyle.DIFFUSE, color);
 			
 			return true;

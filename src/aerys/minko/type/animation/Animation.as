@@ -39,17 +39,20 @@ package aerys.minko.type.animation
 			transformNodes(time);
 		}
 		
-		public function step(deltaTime : uint = 80) : void
+		public function step(deltaTime : int = 80) : void
 		{
-			var time : uint = (_lastTime + deltaTime) % _duration;
-			transformNodes(time);
-		}
-		
-		public function stepReverse(deltaTime : uint = 80) : void
-		{
-			var time : int = (_lastTime - deltaTime) % _duration;
-			if (time < 0)
-				time = time + _duration;
+			var time : int;
+			
+			if (deltaTime > 0)
+			{
+				time = (_lastTime + deltaTime) % _duration;
+			}
+			else
+			{
+				time = (_lastTime + deltaTime) % _duration;
+				if (time < 0)
+					time = time + _duration;
+			}
 			
 			transformNodes(time);
 		}
@@ -88,6 +91,5 @@ package aerys.minko.type.animation
 		{
 			_playingOn = null;
 		}
-		
 	}
 }
