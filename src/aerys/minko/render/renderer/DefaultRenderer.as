@@ -1,10 +1,12 @@
 package aerys.minko.render.renderer
 {
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.type.Factory;
+	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.stream.IndexStream;
 	
 	import flash.display.BitmapData;
@@ -19,7 +21,6 @@ package aerys.minko.render.renderer
 	
 		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
 		private static const SORT			: Boolean			= true;
-		private static const DEBUG			: Boolean			= false;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;
@@ -42,7 +43,7 @@ package aerys.minko.render.renderer
 			_viewport = viewport;
 			_context = context;
 			
-			_context.enableErrorChecking = DEBUG;
+			_context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
 		}
 		
 		public function begin()	: void
