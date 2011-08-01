@@ -36,12 +36,10 @@ package aerys.minko.type.animation.timeline
 			var i			: uint;
 			var timesLength : uint = _times.length;
 			
+			// FIXME Replace me by a dichotomy
 			for (i = 0; i < timesLength; ++i)
-			{
-				if (_times[i] < t)
-					continue;
-				break;
-			}
+				if (_times[i] >= t)
+					break;
 			
 			if (i == 0)
 			{
@@ -60,15 +58,8 @@ package aerys.minko.type.animation.timeline
 				var previousMatrix		: Matrix4x4 = _matrices[i - 1];
 				var nextMatrix			: Matrix4x4 = _matrices[i];
 				
-//				Matrix4x4.copy(previousMatrix, out);
-//				previousMatrix.interpolateTo(nextMatrix, 1 - interpolationRatio);
-				previousMatrix.getRawData(TMP_VEC);
-				nextMatrix.getRawData(TMP_VEC2);
-				
-				for (i = 0; i < 16; ++i)
-					TMP_VEC[i] = (1 - interpolationRatio) * TMP_VEC[i] + interpolationRatio * TMP_VEC2[i]; 
-				
-				out.setRawData(TMP_VEC);
+				Matrix4x4.copy(previousMatrix, out);
+				previousMatrix.interpolateTo(nextMatrix, 1 - interpolationRatio);
 			}
 		}
 	}

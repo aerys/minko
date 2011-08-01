@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.node.skinning
 {
+	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
@@ -11,18 +12,18 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.operation.builtin.Minimum;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
+	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
 	
 	public class MatrixSkinnedPosition extends Dummy
 	{
 		public function MatrixSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
-			var inVertexPosition	: INode = new Extract(new Attribute(VertexComponent.XYZ), Components.XYZ); 
+			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ); 
 			var outVertexPosition	: INode = null;
 			
 			if (maxInfluences == 0)
@@ -63,10 +64,7 @@ package aerys.minko.render.shader.node.skinning
 				}
 			}
 			
-			var localToScreen	: INode = new TransformParameter(16, LocalData.LOCAL_TO_SCREEN);
-			var result			: INode = outVertexPosition; 
-			
-			super(result);
+			super(outVertexPosition);
 		}
 	}
 }

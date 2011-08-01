@@ -33,13 +33,10 @@ package aerys.minko.type.animation.timeline
 			var i			: uint;
 			var timesLength : uint = _times.length;
 			
+			// FIXME Replace me by a dichotomy
 			for (i = 0; i < timesLength; ++i)
-			{
-				if (_times[i] < t)
-					continue;
-				
-				break;
-			}
+				if (_times[i] >= t)
+					break;
 			
 			if (i == 0)
 				Matrix4x4.copy(_matrices[0], out);

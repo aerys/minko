@@ -27,7 +27,7 @@ package aerys.minko.render.shader.node.skinning
 	{
 		public function DQSkinnedPosition(maxInfluences : uint, numBones : uint)
 		{
-			var inVertexPosition	: INode = new Extract(new Attribute(VertexComponent.XYZ), Components.XYZ);
+			var inVertexPosition	: INode = new Attribute(VertexComponent.XYZ);
 			var outVertexPosition	: INode	= null;
 			var result				: INode	= null;
 			
@@ -105,11 +105,6 @@ package aerys.minko.render.shader.node.skinning
 			}
 			
 			super(result);
-			
-			if (maxInfluences > 7)
-				throw new Error('It is not possible to have more than 7 influences per bone');
-			if (numBones > 62)
-				throw new Error('It is not possible to have more than 62 bones in the same mesh.');
 		}
 	}
 }

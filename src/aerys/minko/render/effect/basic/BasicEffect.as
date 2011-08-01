@@ -81,7 +81,7 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputColor() : SValue
 		{
-			var diffuse	: SValue	= float4(interpolate(vertexRGBColor).rgb, 1.);
+			var diffuse	: SValue;
 			
 			if (styleIsSet(BasicStyle.DIFFUSE))
 			{
@@ -94,6 +94,8 @@ package aerys.minko.render.effect.basic
 				else
 					throw new Error('Invalid BasicStyle.DIFFUSE value.');
 			}
+			else
+				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
 			
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
