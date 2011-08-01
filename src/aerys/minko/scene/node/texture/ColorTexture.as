@@ -36,7 +36,7 @@ package aerys.minko.scene.node.texture
 		
 		public function ColorTexture(argb : uint = 0xffffff)
 		{
-			_color		= color;
+			_color		= argb;
 			
 			actions[0]	= ColorTextureAction.colorTextureAction;
 		}
