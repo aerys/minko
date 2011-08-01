@@ -21,12 +21,7 @@ package aerys.minko.scene.action.texture
 		
 		public function get type() : uint		{ return TYPE; }
 		
-		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
-			return true;
-		}
-		
-		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var texture : ColorTexture = scene as ColorTexture;
 			var color	: uint = texture.color;
@@ -42,11 +37,6 @@ package aerys.minko.scene.action.texture
 				
 			visitor.renderingData.styleStack.set(BasicStyle.DIFFUSE, color);
 			
-			return true;
-		}
-		
-		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
 			return true;
 		}
 	}

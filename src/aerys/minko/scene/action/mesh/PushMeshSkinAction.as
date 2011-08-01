@@ -16,30 +16,24 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public class SkinnedMeshAction implements IAction
+	public class PushMeshSkinAction implements IAction
 	{
 		private static const TMP_LOCAL_MATRIX		: Matrix4x4	= new Matrix4x4();
 		private static const TMP_SKINNING_MATRIX	: Matrix4x4 = new Matrix4x4();
 		private static const EMPTY_STYLE			: Style		= new Style();
 		
-		private static var _INSTANCE : SkinnedMeshAction;
+		private static var _instance : PushMeshSkinAction	= null;
 		
-		public static function get instance() : SkinnedMeshAction
+		public static function get pushMeshSkinAction() : PushMeshSkinAction
 		{
-			if (!_INSTANCE)
-				_INSTANCE = new SkinnedMeshAction();
-			
-			return _INSTANCE;
+			return _instance || (_instance = new PushMeshSkinAction());
 		}
 		
-		public function get type() : uint
-		{
-			return ActionType.UPDATE_STYLE;
-		}
+		public function get type() : uint		{ return ActionType.UPDATE_STYLE; }
 		
-		public function prefix(scene	: IScene, 
-							   visitor	: ISceneVisitor, 
-							   renderer	: IRenderer) : Boolean
+		public function run(scene		: IScene, 
+							visitor		: ISceneVisitor, 
+							renderer	: IRenderer) : Boolean
 		{
 			var skinnedMesh			: SkinnedMesh			= SkinnedMesh(scene);
 			
@@ -145,6 +139,7 @@ package aerys.minko.scene.action.mesh
 			}
 			
 			var numChildren : uint = currentNode.numChildren;
+			
 			for (i = 0; i < numChildren; ++i)
 			{
 				var child : Group = currentNode.getChildAt(i) as Group;
@@ -154,21 +149,6 @@ package aerys.minko.scene.action.mesh
 			
 			if (currentNode is ITransformable)
 				TMP_LOCAL_MATRIX.pop();
-		}
-		
-		public function infix(scene		: IScene, 
-							  visitor	: ISceneVisitor, 
-							  renderer	: IRenderer):Boolean
-		{
-			return true;
-		}
-		
-		public function postfix(scene		: IScene, 
-								visitor		: ISceneVisitor, 
-								renderer	: IRenderer):Boolean
-		{
-			visitor.renderingData.styleStack.pop();
-			return true;
 		}
 	}
 }

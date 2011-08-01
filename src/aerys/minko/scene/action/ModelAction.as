@@ -18,20 +18,7 @@ package aerys.minko.scene.action
 		
 		public function get type() : uint		{ return TYPE; }
 		
-		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
-			var model : Model = scene as Model;
-			
-			if (!model)
-				throw new Error();
-			
-			if (!model.visible)
-				return false;
-			
-			return true;
-		}
-		
-		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var model : Model = scene as Model;
 			
@@ -40,16 +27,6 @@ package aerys.minko.scene.action
 			
 			model.texture && visitor.visit(model.texture);
 			model.mesh && visitor.visit(model.mesh);
-			
-			return true;
-		}
-		
-		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
-			var model : Model = scene as Model;
-			
-			if (!model.visible)
-				return false;
 			
 			return true;
 		}

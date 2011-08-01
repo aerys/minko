@@ -16,7 +16,7 @@ package aerys.minko.scene.action.mesh.modifier
 			return true;
 		}
 		
-		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			visitor.visit((scene as IMeshModifier).target);
 			

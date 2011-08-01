@@ -1,8 +1,11 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.mesh.SkinnedMeshAction;
+	import aerys.minko.scene.action.style.PopStyleAction;
 	import aerys.minko.scene.action.mesh.MeshAction;
+	import aerys.minko.scene.action.mesh.PopMeshSkinAction;
+	import aerys.minko.scene.action.mesh.PushMeshSkinAction;
+	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.type.math.Matrix4x4;
@@ -11,10 +14,8 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.vertex.format.VertexComponent;
 	import aerys.minko.type.vertex.format.VertexFormat;
 	
-	public class SkinnedMesh implements IScene, IMesh
+	public class SkinnedMesh extends AbstractScene implements IMesh
 	{
-		private static const _ACTIONS : Vector.<IAction> = new Vector.<IAction>();
-		
 		private var _name					: String;
 		
 		private var _mesh					: IMesh;
@@ -26,13 +27,6 @@ package aerys.minko.scene.node.mesh
 		private var _maxInfluences			: uint;
 		
 		public function set skeletonReference(v : IGroup) : void { _skeletonReference = v; }
-		
-		/**
-		 * IScene implementation 
-		 */		
-		public function get actions()		: Vector.<IAction>	{ return _ACTIONS; }
-		public function get name()			: String			{ return _name; }
-		public function set name(v : String): void				{ _name = v; }
 		
 		/**
 		 * IMesh implementation
@@ -59,7 +53,7 @@ package aerys.minko.scene.node.mesh
 		{
 			super();
 			
-			_name					= 'SkinnedMesh';
+			name					= 'SkinnedMesh';
 			
 			_skeletonReference		= skeletonReference;
 			_skeletonRootName		= skeletonRootName;
@@ -70,9 +64,9 @@ package aerys.minko.scene.node.mesh
 			
 			_maxInfluences = getMaxInfluencesFromVertexFormat(_mesh.vertexStream.format);
 			
-			_ACTIONS.length = 2;
-			_ACTIONS[0] = SkinnedMeshAction.instance;
-			_ACTIONS[1] = MeshAction.meshAction;
+			actions.push(PushMeshSkinAction.pushMeshSkinAction,
+						 MeshAction.meshAction,
+						 PopMeshSkinAction.popMeshSkinAction);
 		}
 		
 		private function getMaxInfluencesFromVertexFormat(vertexFormat : VertexFormat) : uint

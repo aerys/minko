@@ -1,8 +1,8 @@
 ﻿package aerys.minko.scene.node.group 
 {
-	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.IActionTarget;
-	import aerys.minko.scene.action.TransformableAction;
+	import aerys.minko.scene.action.transform.PopTransformAction;
+	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.ITransformable;
 	import aerys.minko.type.math.Transform3D;
 	
@@ -19,7 +19,8 @@
 		{
 			super(children);
 			
-			actions.unshift(TransformableAction.transformableAction);
+			actions.unshift(PushTransformAction.pushTransformAction);
+			actions.push(PopTransformAction.popTransformAction);
 		}
 		
 		/**

@@ -19,17 +19,9 @@ package aerys.minko.scene.action.texture
 		private var _time			: int		= 0;
 		private var _lastFrameId	: int		= 0;
 		
-		public function get type() : uint
-		{
-			return ActionType.RECURSE;
-		}
+		public function get type() : uint		{ return ActionType.RECURSE; }
 		
-		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
-			return true;
-		}
-		
-		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			if (renderer)
 			{
@@ -55,11 +47,6 @@ package aerys.minko.scene.action.texture
 					visitor.visit(NO_TEXTURE);
 			}
 			
-			return true;
-		}
-		
-		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
 			return true;
 		}
 	}

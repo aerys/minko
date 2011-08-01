@@ -4,11 +4,14 @@ package aerys.minko.scene.node
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.scene.action.EffectTargetAction;
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
-	import aerys.minko.scene.action.StyledAction;
-	import aerys.minko.scene.action.TransformableAction;
+	import aerys.minko.scene.action.effect.PopEffectAction;
+	import aerys.minko.scene.action.style.PopStyleAction;
+	import aerys.minko.scene.action.transform.PopTransformAction;
+	import aerys.minko.scene.action.effect.PushEffectAction;
+	import aerys.minko.scene.action.style.PushStyleAction;
+	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.type.IVersionnable;
@@ -141,10 +144,15 @@ package aerys.minko.scene.node
 		{
 			super();
 			
-			actions.push(StyledAction.styledAction,
-						 new EffectTargetAction(),
-						 TransformableAction.transformableAction,
-						 ModelAction.modelAction);
+			actions.push(
+				PushStyleAction.pushStyleAction,
+				new PushEffectAction(),
+				PushTransformAction.pushTransformAction,
+				ModelAction.modelAction,
+				PopTransformAction.popTransformAction,
+				new PopEffectAction(),
+				PopStyleAction.popStyleAction
+			);
 			
 			_mesh = mesh;
 			_texture = texture;

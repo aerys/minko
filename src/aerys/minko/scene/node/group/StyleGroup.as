@@ -1,9 +1,9 @@
 package aerys.minko.scene.node.group
 {
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.scene.action.StyledAction;
+	import aerys.minko.scene.action.style.PopStyleAction;
+	import aerys.minko.scene.action.style.PushStyleAction;
 	import aerys.minko.scene.node.IStyledScene;
-	import aerys.minko.scene.visitor.RenderingVisitor;
 	
 	/**
 	 * StyleGroup enables setting style properties that will
@@ -34,7 +34,8 @@ package aerys.minko.scene.node.group
 		{
 			super(children);
 			
-			actions.unshift(StyledAction.styledAction);
+			actions.unshift(PushStyleAction.pushStyleAction);
+			actions.push(PopStyleAction.popStyleAction);
 		}
 	}
 }

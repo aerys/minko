@@ -81,17 +81,19 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputColor() : SValue
 		{
-			var diffuse			: SValue;
-			var diffuseStyle	: Object = styleIsSet(BasicStyle.DIFFUSE) ? getStyleConstant(BasicStyle.DIFFUSE) : null;
+			var diffuse	: SValue	= float4(interpolate(vertexRGBColor).rgb, 1.);
 			
-			if (diffuseStyle == null)
-				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
-			if (diffuseStyle is uint || diffuseStyle is Vector4)
-				diffuse = getStyleParameter(4, BasicStyle.DIFFUSE);
-			else if (diffuseStyle is TextureRessource)
-				diffuse = sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
-			else
-				throw new Error('Invalid BasicStyle.DIFFUSE value');
+			if (styleIsSet(BasicStyle.DIFFUSE))
+			{
+				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
+				
+				if (diffuseStyle is uint || diffuseStyle is Vector4)
+					diffuse = getStyleParameter(4, BasicStyle.DIFFUSE);
+				else if (diffuseStyle is TextureRessource)
+					diffuse = sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
+				else
+					throw new Error('Invalid BasicStyle.DIFFUSE value.');
+			}
 			
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
@@ -117,9 +119,10 @@ package aerys.minko.render.effect.basic
 												local	: LocalData,
 												world	: Dictionary) : String
 		{
-			var hash : String	= "basic";
-			
-			var diffuseStyle : Object = style.isSet(BasicStyle.DIFFUSE) ? style.get(BasicStyle.DIFFUSE) : null;
+			var hash 			: String	= "basic";
+			var diffuseStyle 	: Object 	= style.isSet(BasicStyle.DIFFUSE)
+											  ? style.get(BasicStyle.DIFFUSE)
+											  : null;
 			
 			if (diffuseStyle == null)
 				hash += '_colorFromVertex';

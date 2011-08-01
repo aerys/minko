@@ -26,15 +26,15 @@ package aerys.minko.scene.node.texture
 		/**
 		 * Set texture color in ARGB format
 		 *  
-		 * @param v the new color
+		 * @param value the new color
 		 */		
-		public function set color(v : uint) : void
+		public function set color(value : uint) : void
 		{
-			_color = v;
+			_color = value;
 			++_version
 		}
 		
-		public function ColorTexture(argb : uint = 0xffffff)
+		public function ColorTexture(argb : uint = 0xffffffff)
 		{
 			_color		= color;
 			

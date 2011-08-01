@@ -15,8 +15,6 @@ package aerys.minko.scene.action
 	{
 		function get type() : uint;
 		
-		function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
-		function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
-		function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
+		function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
 	}
 }

@@ -27,12 +27,7 @@ package aerys.minko.scene.action.texture
 			return ActionType.UPDATE_STYLE;
 		}
 		
-		public function prefix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
-			return true;
-		}
-		
-		public function infix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			if (renderer && renderer.frameId != _lastFrame)
 			{
@@ -47,11 +42,6 @@ package aerys.minko.scene.action.texture
 				dynamicTexture.updateFromBitmapData(_bitmapData, false);
 			}
 
-			return true;
-		}
-		
-		public function postfix(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
-		{
 			return true;
 		}
 	}

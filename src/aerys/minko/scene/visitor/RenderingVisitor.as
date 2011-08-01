@@ -62,22 +62,13 @@ package aerys.minko.scene.visitor
 		{
 			var actions 	: Vector.<IAction> 	= scene.actions;
 			var numActions	: int				= actions.length;
-			var	i			: int				= 0;
 			var action		: IAction			= null;
 			
 			if (_parent)
 				_ancestors.push(_parent);
 			
-			for (i = 0; i < numActions; ++i)
-				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.prefix(scene, this, _renderer))
-					break ;
-			
-			for (i = 0; i < numActions; ++i)
-				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.infix(scene, this, _renderer))
-					break ;
-			
-			for (i = 0; i < numActions; ++i)
-				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.postfix(scene, this, _renderer))
+			for (var i : int = 0; i < numActions; ++i)
+				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.run(scene, this, _renderer))
 					break ;
 			
 			// update statistical data
