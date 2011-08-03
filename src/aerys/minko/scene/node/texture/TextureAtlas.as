@@ -19,9 +19,10 @@ package aerys.minko.scene.node.texture
 		private var _empty		: Array				= new Array();
 		private var _ressource	: TextureRessource	= new TextureRessource();
 		
-		public function get styleProperty() : int			{ return BasicStyle.DIFFUSE;	}
-		public function get ressource() : TextureRessource	{ return _ressource;			}
-		public function get version() : uint				{ return _version;				}
+		public function get styleProperty() : int				{ return BasicStyle.DIFFUSE; }
+		public function get ressource() 	: TextureRessource	{ return _ressource; }
+		public function get version() 		: uint				{ return _version; }
+		public function get size() 			: uint				{ return _bitmapData.width; }
 		
 		public function get bitmapData()	: BitmapData	{ return _bitmapData; }
 		
@@ -52,10 +53,9 @@ package aerys.minko.scene.node.texture
 			var node 	: Rectangle = _nodes[rootId];
 			var first	: Rectangle	= _nodes[int(rootId * 2 + 1)];
 			var second	: Rectangle	= _nodes[int(rootId * 2 + 2)];
-			
 			if (!first && !second)
 			{
-				if (_empty[rootId] === false || (width > node.width && height > node.height))
+				if (_empty[rootId] === false || width > node.width || height > node.height)
 					return null;
 				
 				if (width == node.width && height == node.height)

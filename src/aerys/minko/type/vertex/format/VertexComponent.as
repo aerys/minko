@@ -2,7 +2,7 @@ package aerys.minko.type.vertex.format
 {
 	public class VertexComponent
 	{
-		private static const _INSTANCIATED_COMPONENTS : Object = new Object();
+		private static const INSTANCIATED_COMPONENTS	: Object = new Object();
 		
 		public static const XYZ			: VertexComponent 	= VertexComponent.create(["x", "y", "z"], VertexComponentType.FLOAT_3);
 		public static const UV			: VertexComponent 	= VertexComponent.create(["u", "v"], VertexComponentType.FLOAT_2);
@@ -40,16 +40,16 @@ package aerys.minko.type.vertex.format
 		{
 			var implodedFields : String = nativeFormat.toString() + '_' + fields.join("_");
 			
-			if (!_INSTANCIATED_COMPONENTS[implodedFields])
-				_INSTANCIATED_COMPONENTS[implodedFields] = new VertexComponent(fields, nativeFormat);
+			if (!INSTANCIATED_COMPONENTS[implodedFields])
+				INSTANCIATED_COMPONENTS[implodedFields] = new VertexComponent(fields, nativeFormat);
 			
-			return _INSTANCIATED_COMPONENTS[implodedFields];
+			return INSTANCIATED_COMPONENTS[implodedFields];
 		}
 		
 		public function VertexComponent(fields : Array, nativeFormat : int) 
 		{
 			var implodedFields : String = nativeFormat.toString() + '_' + fields.join("_");
-			if (_INSTANCIATED_COMPONENTS[implodedFields])
+			if (INSTANCIATED_COMPONENTS[implodedFields])
 				throw new Error('This component was already defined. Use VertexComponent.create instead');
 			
 			_offsets		= new Object();

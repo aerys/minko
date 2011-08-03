@@ -2,7 +2,7 @@ package aerys.minko.type.vertex.format
 {
 	import flash.utils.Dictionary;
 
-	public class VertexFormat
+	public final class VertexFormat
 	{
 		public static const XYZ			: VertexFormat 	= new VertexFormat(VertexComponent.XYZ);
 		public static const XYZ_RGB		: VertexFormat 	= new VertexFormat(VertexComponent.XYZ,
@@ -23,10 +23,6 @@ package aerys.minko.type.vertex.format
 		
 		public function get componentList()		: Vector.<VertexComponent>
 		{
-			function sortComponentsByOffsets(component1 : VertexComponent, component2 : VertexComponent) : int {
-				return getOffsetForComponent(component1) - getOffsetForComponent(component2);
-			}
-			
 			var vertexComponents	: Object					= components;
 			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
 			
@@ -37,6 +33,12 @@ package aerys.minko.type.vertex.format
 			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
 			
 			return vertexComponentList;
+		}
+		
+		private function sortComponentsByOffsets(component1 : VertexComponent,
+												 component2 : VertexComponent) : int
+		{
+			return getOffsetForComponent(component1) - getOffsetForComponent(component2);
 		}
 		
 		public function VertexFormat(...components)
@@ -156,14 +158,14 @@ package aerys.minko.type.vertex.format
 		
 		public function clone() : VertexFormat
 		{
-			var clone	: VertexFormat = new VertexFormat();
+			var clone	: VertexFormat 	= new VertexFormat();
+			var key 	: Object		= null;
 			
 			clone._dwordsPerVertex	= _dwordsPerVertex;
 			clone._components		= _components.slice()
 			clone._componentOffsets	= new Dictionary();
 			clone._fieldOffsets		= new Object();
 			
-			var key : String;
 			for (key in _componentOffsets) 
 				clone._componentOffsets[key] = _componentOffsets[key];
 			
