@@ -24,8 +24,6 @@ package aerys.minko.scene.node.texture
 		public function get version() 		: uint				{ return _version; }
 		public function get size() 			: uint				{ return _bitmapData.width; }
 		
-		public function get bitmapData()	: BitmapData	{ return _bitmapData; }
-		
 		public function TextureAtlas(size 				: uint 		= 2048,
 									 transparent 		: Boolean 	= true,
 									 backgroundColor 	: uint 		= 0x000000)
