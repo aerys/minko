@@ -179,16 +179,6 @@ package aerys.minko.scene.node.group
 			return this;
 		}
 		
-		public static function loadBytes(bytes : ByteArray) : LoaderGroup
-		{
-			return new LoaderGroup().loadBytes(bytes);
-		}
-		
-		public static function loadAsset(asset : Class) : LoaderGroup
-		{
-			return new LoaderGroup().loadAsset(asset);
-		}
-		
 		private function urlLoaderCompleteHandler(event : Event) : void
 		{
 			var loader 		: URLLoader			= event.target as URLLoader;
