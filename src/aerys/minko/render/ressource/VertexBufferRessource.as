@@ -15,7 +15,7 @@ package aerys.minko.render.ressource
 		
 		private var _stream			: IVertexStream		= null;
 		private var _streamVersion	: uint				= 0;
-		private var _vertexBuffers	: Dictionary		= new Dictionary(true);
+		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 		
 		public function get numVertices() : uint	{ return _numVertices; }
@@ -32,24 +32,22 @@ package aerys.minko.render.ressource
 			if (!(_stream is VertexStream))
 				return vstream.ressource.getVertexBuffer3D(context, component);
 			
-			var vbuffer		: VertexBuffer3D	= _vertexBuffers[vstream];
 			var update		: Boolean			= vstream.version != _streamVersion;
 			var numVertices	: uint				= vstream.length;
 			
-			if (numVertices && (!vbuffer || numVertices != _numVertices))
+			if (numVertices && (!_vertexBuffer || numVertices != _numVertices))
 			{
-				if (vbuffer)
-					vbuffer.dispose();
+				if (_vertexBuffer)
+					_vertexBuffer.dispose();
 				
-				vbuffer = context.createVertexBuffer(vstream.length,
-													 vstream.format.dwordsPerVertex);
-				_vertexBuffers[vstream] = vbuffer;
+				_vertexBuffer = context.createVertexBuffer(vstream.length,
+														   vstream.format.dwordsPerVertex);
 				update = true;
 			}
 			
-			if (vbuffer && update)
+			if (_vertexBuffer && update)
 			{
-				vbuffer.uploadFromVector(vstream._data, 0, numVertices);
+				_vertexBuffer.uploadFromVector(vstream._data, 0, numVertices);
 				
 				_streamVersion = vstream.version;
 				_numVertices = numVertices;
@@ -58,15 +56,12 @@ package aerys.minko.render.ressource
 					vstream.disposeLocalData();
 			}
 			
-			return vbuffer;
+			return _vertexBuffer;
 		}
 		
 		public function dispose() : void
 		{
-			for each (var vb : VertexBuffer3D in _vertexBuffers)
-				vb.dispose();
-			
-			_vertexBuffers = new Dictionary(true);
+			_vertexBuffer.dispose();
 		}
 	}
 }
