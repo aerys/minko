@@ -21,20 +21,20 @@ package aerys.minko.scene.node.group
 	import flash.utils.Dictionary;
 
 	/**
-	 * The Loader3D class is the interface to load any 3D related content
+	 * The LoaderGroup class is the interface to load any 3D related content
 	 * (scenes, textures, meshes, ...).
 	 * 
 	 * <p>
-	 * The Loader3D content implements the IScene interface and, as such,
+	 * The LoaderGroup content implements the IScene interface and, as such,
 	 * can be considered just like any other scene graph node. Its behaviour
 	 * will be exactly the same as the flash.display.Loader class when added
 	 * to the Flash' display list.
 	 * </p>
 	 * 
 	 * <p>
-	 * Therefore, it is possible to use a Loader3D object to load 3D content
+	 * Therefore, it is possible to use a LoaderGroup object to load 3D content
 	 * asynchronously but add it immediately to the scene. When the content
-	 * is loaded, it will be added as childs/descendants of the Loader3D
+	 * is loaded, it will be added as childs/descendants of the LoaderGroup
 	 * object and will be used during the next rendering traversal.
 	 * </p>
 	 * 
