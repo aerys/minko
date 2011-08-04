@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.group
 {
-	import aerys.minko.render.renderer.state.FrustumCulling;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.RenderingVisitor;

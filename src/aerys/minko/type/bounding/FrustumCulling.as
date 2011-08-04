@@ -1,4 +1,4 @@
-package aerys.minko.render.renderer.state
+package aerys.minko.type.bounding
 {
 	/**
 	 * The FrustumClipping enumeration exposes the required flags to
