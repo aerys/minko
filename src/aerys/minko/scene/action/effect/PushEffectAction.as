@@ -18,10 +18,11 @@ package aerys.minko.scene.action.effect
 		{
 			var effect : IEffect = (scene as IEffectTarget).effect;
 
-			_effects.push(visitor.renderingData.effect);
-			
 			if (effect)
+			{
+				_effects.push(visitor.renderingData.effect);
 				visitor.renderingData.effect = effect;
+			}
 			
 			return true;
 		}
