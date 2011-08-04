@@ -1,15 +1,13 @@
 package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	
-	import flash.display.TriangleCulling;
 	
 	/**
 	 * The frustum is the geometrical six-sided 3D shape which represents
@@ -177,12 +175,11 @@ package aerys.minko.type.math
 	 * </ul>
 	 * 
 	 * @see FrustumCulling
-	 * @see FrustumClipping
 	 *
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class Frustum
+	public final class Frustum
 	{
 		use namespace minko;
 		
@@ -212,39 +209,9 @@ package aerys.minko.type.math
 		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
 		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
 
-		private static const VERTEX_BUFFER		: Factory			= Factory.getFactory(VertexStream);
-		private static const INDICES			: Factory			= Factory.getFactory(IndexStream);
-		
-		private static const THICKNESS			: Number			= .0001;
-				
-		private static const POINT_BEHIND		: uint				= Plane.POINT_BEHIND;
-		private static const POINT_COINCIDING	: uint				= Plane.POINT_COINCIDING;
-		private static const POINT_INFRONT		: uint				= Plane.POINT_INFRONT;
-		
-		private static const POLYGON_COINCIDING	: uint				= Plane.POLYGON_COINCIDING;
-		private static const POLYGON_BEHIND		: uint				= Plane.POLYGON_BEHIND;
-		private static const POLYGON_INFRONT	: uint				= Plane.POLYGON_INFRONT;
-		
-		private static const A_BEHIND			: uint				= Plane.A_BEHIND;
-		private static const B_BEHIND			: uint				= Plane.B_BEHIND;
-		private static const C_BEHIND			: uint				= Plane.C_BEHIND;
-		
-		private static const A_COINCIDING		: uint				= Plane.A_COINCIDING;
-		private static const B_COINCIDING		: uint				= Plane.B_COINCIDING;
-		private static const C_COINCIDING		: uint				= Plane.C_COINCIDING;
-		
-		private static const AB_INFRONT			: uint				= Plane.A_INFRONT | Plane.B_INFRONT | Plane.C_BEHIND;
-		private static const BC_INFRONT			: uint				= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_INFRONT;
-		private static const CA_INFRONT			: uint				= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_INFRONT;
-		
-		private static const AB_BEHIND			: uint				= Plane.A_BEHIND | Plane.B_BEHIND | Plane.C_INFRONT;
-		private static const BC_BEHIND			: uint				= Plane.A_INFRONT | Plane.B_BEHIND | Plane.C_BEHIND;
-		private static const CA_BEHIND			: uint				= Plane.A_BEHIND | Plane.B_INFRONT | Plane.C_BEHIND;
-
-		private static const CULLING_POSITIVE	: String			= TriangleCulling.POSITIVE;
-		private static const CULLING_NEGATIVE	: String			= TriangleCulling.NEGATIVE;
-		
 		private static const TMP_DATA			: Vector.<Number>	= new Vector.<Number>();
+		
+		private static const THICKNESS			: Number			= 0.01;
 		
 		minko var _planes			: Vector.<Plane>	= new Vector.<Plane>(6, true);
 		
@@ -401,12 +368,12 @@ package aerys.minko.type.math
 		 */
 		public function testBoundingBox(box			: BoundingBox,
 										transform	: Matrix4x4 	= null,
-										culling		: int			= 0xffffff) : uint
+										culling		: int			= 0xffffffff) : uint
 		{
 			var result		: uint				= 0;
 			var count		: int				= 0;
 			var vertices	: Vector.<Number>	= box._vertices;
-			var p			: Plane			= null;
+			var p			: Plane				= null;
 			
 			if (!culling)
 				return INSIDE;
@@ -419,6 +386,31 @@ package aerys.minko.type.math
 				vertices = _boxVertices;
 			}
 			
+			var x1	: Number	= vertices[0];
+			var y1	: Number	= vertices[1];
+			var z1	: Number	= vertices[2];
+			var x2	: Number	= vertices[3];
+			var y2	: Number	= vertices[4];
+			var z2	: Number	= vertices[5];
+			var x3	: Number	= vertices[6];
+			var y3	: Number	= vertices[7];
+			var z3	: Number	= vertices[8];
+			var x4	: Number	= vertices[9];
+			var y4	: Number	= vertices[10];
+			var z4	: Number	= vertices[11];
+			var x5	: Number	= vertices[12];
+			var y5	: Number	= vertices[13];
+			var z5	: Number	= vertices[14];
+			var x6	: Number	= vertices[15];
+			var y6	: Number	= vertices[16];
+			var z6	: Number	= vertices[17];
+			var x7	: Number	= vertices[18];
+			var y7	: Number	= vertices[19];
+			var z7	: Number	= vertices[20];
+			var x8	: Number	= vertices[21];
+			var y8	: Number	= vertices[22];
+			var z8	: Number	= vertices[23];
+			
 			for (var i : int = 0; i < 6; ++i)
 			{
 				if (((CULLING_BOX << (i << 2)) & culling) == 0)
@@ -426,15 +418,20 @@ package aerys.minko.type.math
 				
 				p = _planes[i];
 				
+				var pa	: Number	= p.a;
+				var pb	: Number	= p.b;
+				var pc	: Number	= p.c;
+				var pd	: Number	= p.d;
+				
 				// test vertices
-				count = p.testPoint(vertices[0], vertices[1], vertices[2]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[3], vertices[4], vertices[5]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[6], vertices[7], vertices[8]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[9], vertices[10], vertices[11]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[12], vertices[13], vertices[14]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[15], vertices[16], vertices[17]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[18], vertices[19], vertices[20]) != POINT_INFRONT ? -1 : 1;
-				count += p.testPoint(vertices[21], vertices[22], vertices[23]) != POINT_INFRONT ? -1 : 1;
+				count = pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
+				count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
+				count += pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1;
+				count += pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1;
+				count += pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1;
+				count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
+				count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
+				count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
 				
 				if (count == -8)
 					return OUTSIDE;
@@ -475,27 +472,62 @@ package aerys.minko.type.math
 		 * the spanning planes.
 		 * 
 		 */
-		public function testBoundedVolume(volume	: IBoundingVolume,
-								 	      transform	: Matrix4x4	= null,
-								 		  culling	: int 		= 0xffffff) : uint
+		public function testBoundedVolume(volume		: IBoundingVolume,
+								 	      transform		: Matrix4x4	= null,
+								 		  cullingMask	: int 		= 0xffffffff) : uint
 		{
+			cullingMask = cullingMask & volume.frustumCulling;
+			
 			var box		: BoundingBox		= volume.boundingBox;
 			
-			if (!culling)
+			if (!cullingMask)
 				return INSIDE;
 			
-			if ((culling & FrustumCulling.SPHERE) == 0)
-				return testBoundingBox(box, transform, culling);
+			if ((cullingMask & FrustumCulling.SPHERE) == 0)
+				return testBoundingBox(box, transform, cullingMask);
 			
 			var sphere		: BoundingSphere	= volume.boundingSphere;
 			var center		: Vector4			= sphere.center;
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
-			var vertices	: Vector.<Number>	= transform ? null : box._vertices;
+			var vertices	: Vector.<Number>	= box._vertices;
+			var count		: int				= 0;
+			
+			if ((cullingMask & FrustumCulling.BOX) != 0 && transform != null)
+			{
+				vertices = _boxVertices;
+				vertices.length = 0;
+				transform.multiplyRawVectors(box._vertices, vertices);
+			}
+			
+			var x1	: Number	= vertices[0];
+			var y1	: Number	= vertices[1];
+			var z1	: Number	= vertices[2];
+			var x2	: Number	= vertices[3];
+			var y2	: Number	= vertices[4];
+			var z2	: Number	= vertices[5];
+			var x3	: Number	= vertices[6];
+			var y3	: Number	= vertices[7];
+			var z3	: Number	= vertices[8];
+			var x4	: Number	= vertices[9];
+			var y4	: Number	= vertices[10];
+			var z4	: Number	= vertices[11];
+			var x5	: Number	= vertices[12];
+			var y5	: Number	= vertices[13];
+			var z5	: Number	= vertices[14];
+			var x6	: Number	= vertices[15];
+			var y6	: Number	= vertices[16];
+			var z6	: Number	= vertices[17];
+			var x7	: Number	= vertices[18];
+			var y7	: Number	= vertices[19];
+			var z7	: Number	= vertices[20];
+			var x8	: Number	= vertices[21];
+			var y8	: Number	= vertices[22];
+			var z8	: Number	= vertices[23];
 			
 			if (transform)
 			{
-				var scale		: Vector4			= transform.deltaMultiplyVector(ConstVector4.ONE);
+				var scale	: Vector4	= transform.deltaMultiplyVector(ConstVector4.ONE);
 
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 				center = transform.multiplyVector(center);
@@ -507,7 +539,7 @@ package aerys.minko.type.math
 				var d 	: Number	= 0;
 				
 				// bounding sphere
-				if (((CULLING_SPHERE << (i << 2)) & culling))
+				if (((CULLING_SPHERE << (i << 2)) & cullingMask))
 				{
 					d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
 					
@@ -518,28 +550,22 @@ package aerys.minko.type.math
 				}
 
 				// bounding box
-				if ((CULLING_BOX << (i << 2)) & culling)
+				if ((CULLING_BOX << (i << 2)) & cullingMask)
 				{
-					var count	: int	= 0;
-					var test	: uint	= 0;
-					
-					// transform vertices
-					if (vertices == null)
-					{
-						vertices = _boxVertices;
-						vertices.length = 0;
-						transform.multiplyRawVectors(box._vertices, vertices);
-					}
+					var pa	: Number	= p.a;
+					var pb	: Number	= p.b;
+					var pc	: Number	= p.c;
+					var pd	: Number	= p.d;
 					
 					// test vertices
-					count = p.testPoint(vertices[0], vertices[1], vertices[2]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[3], vertices[4], vertices[5]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[6], vertices[7], vertices[8]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[9], vertices[10], vertices[11]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[12], vertices[13], vertices[14]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[15], vertices[16], vertices[17]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[18], vertices[19], vertices[20]) != POINT_INFRONT ? -1 : 1;
-					count += p.testPoint(vertices[21], vertices[22], vertices[23]) != POINT_INFRONT ? -1 : 1;
+					count += pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
+					count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
+					count += pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1;
+					count += pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1;
+					count += pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1;
+					count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
+					count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
+					count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
 					
 					if (count == -8)
 						return OUTSIDE;
@@ -583,8 +609,10 @@ package aerys.minko.type.math
 			
 			out ||= new Matrix4x4();
 			out.setRawData(Vector.<Number>([ 
-				d0, d1, d2, d3, d4, d5, d6, d7, 
-				d8, d9, d10, d11, d12, d13, d14, d15
+				d0,		d1, 	d2, 	d3,
+				d4, 	d5, 	d6, 	d7, 
+				d8, 	d9, 	d10, 	d11,
+				d12,	d13,	d14,	d15
 			]));
 			
 			return out;

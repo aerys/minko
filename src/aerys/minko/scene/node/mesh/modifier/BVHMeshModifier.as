@@ -49,14 +49,14 @@ package aerys.minko.scene.node.mesh.modifier
 		{
 			super(target);
 			
-			_frustumCulling = FrustumCulling.ENABLED;
-			actions[0] = new BoundingVolumeAction();
-			
 			initialize();
 		}
 		
 		private function initialize() : void
 		{
+			_frustumCulling = FrustumCulling.ENABLED;
+			actions[0] = new BoundingVolumeAction();
+
 			//if (target.version != _version || !_boundingBox)
 			{
 				var min				: Vector4			= new Vector4(Number.POSITIVE_INFINITY,
