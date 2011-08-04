@@ -7,60 +7,30 @@ package aerys.minko.type.animation
 	
 	import flash.utils.getTimer;
 	
-	public class Animation
+	public class AbstractAnimation
 	{
-		private var _id				: String;
-		
-		private var _beginTime		: uint;
-		private var _lastTime		: uint;
-		
-		private var _playingOn		: IScene;
-		private var _timelines		: Vector.<ITimeline>;
-		private var _duration		: uint;
+		protected var _id				: String;
+		protected var _playingOn		: IScene;
+		protected var _timelines		: Vector.<ITimeline>;
+		protected var _duration		: uint;
 		
 		public function get id() : String { return _id; }
+		public function get duration() : uint { return _duration; }
 		
-		public function Animation(id		: String,
-								  timelines : Vector.<ITimeline>)
+		public function AbstractAnimation(id		: String,
+								 		  timelines : Vector.<ITimeline>)
 		{
 			_id			= id;
 			_timelines	= timelines;
-			_lastTime	= 0;
-			
 			_duration	= 0;
+			
 			for each (var timeline : ITimeline in timelines)
 				if (_duration < timeline.duration)
 					_duration = timeline.duration;
 		}
 		
-		public function tick() : void
+		protected function transformNodes(time : uint) : void
 		{
-			var time : uint = (getTimer() - _beginTime) % _duration;
-			transformNodes(time);
-		}
-		
-		public function step(deltaTime : int = 80) : void
-		{
-			var time : int;
-			
-			if (deltaTime > 0)
-			{
-				time = (_lastTime + deltaTime) % _duration;
-			}
-			else
-			{
-				time = (_lastTime + deltaTime) % _duration;
-				if (time < 0)
-					time = time + _duration;
-			}
-			
-			transformNodes(time);
-		}
-		
-		private function transformNodes(time : uint) : void
-		{
-			_lastTime = time;
-			
 			var timelinesCount : uint = _timelines.length;
 			for (var i : uint = 0; i < timelinesCount; ++i)
 			{
@@ -82,9 +52,7 @@ package aerys.minko.type.animation
 		
 		public function playOn(node : IScene) : void
 		{
-			_beginTime	= getTimer();
 			_playingOn	= node;
-			_lastTime	= 0;
 		}
 		
 		public function stop() : void

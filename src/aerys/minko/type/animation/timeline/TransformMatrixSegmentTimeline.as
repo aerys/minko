@@ -17,9 +17,9 @@ package aerys.minko.type.animation.timeline
 		public function get duration()	: uint		{ return _times[_times.length - 1]; }
 		
 		public function TransformMatrixSegmentTimeline(id		: String,
-									    target 	: String,
-									    times 	: Vector.<uint>,
-									    matrices	: Vector.<Matrix4x4>)
+													   target 	: String,
+													   times 	: Vector.<uint>,
+													   matrices	: Vector.<Matrix4x4>)
 		{
 			_id			= id;
 			_target		= target;
@@ -42,6 +42,16 @@ package aerys.minko.type.animation.timeline
 				Matrix4x4.copy(_matrices[0], out);
 			else
 				Matrix4x4.copy(_matrices[i - 1], out);
+		}
+		
+		public function cloneReversed() : ITimeline
+		{
+			var id			: String				= _id + '_reversed';
+			var target		: String				= _target;
+			var matrices	: Vector.<Matrix4x4>	= _matrices.slice().reverse();
+			var times		: Vector.<uint>			= _times.slice().reverse();
+			
+			return new TransformMatrixLinearTimeline(id, target, times, matrices);
 		}
 	}
 }

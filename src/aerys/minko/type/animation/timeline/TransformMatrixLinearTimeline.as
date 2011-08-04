@@ -6,9 +6,6 @@ package aerys.minko.type.animation.timeline
 
 	public class TransformMatrixLinearTimeline implements ITimeline
 	{
-		private static const TMP_VEC	: Vector.<Number> = new Vector.<Number>();
-		private static const TMP_VEC2	: Vector.<Number> = new Vector.<Number>();
-		
 		private var _id			: String;
 		private var _target		: String;
 		
@@ -61,6 +58,16 @@ package aerys.minko.type.animation.timeline
 				Matrix4x4.copy(previousMatrix, out);
 				previousMatrix.interpolateTo(nextMatrix, 1 - interpolationRatio);
 			}
+		}
+		
+		public function cloneReversed() : ITimeline
+		{
+			var id			: String				= _id + '_reversed';
+			var target		: String				= _target;
+			var matrices	: Vector.<Matrix4x4>	= _matrices.slice().reverse();
+			var times		: Vector.<uint>			= _times.slice().reverse();
+			
+			return new TransformMatrixLinearTimeline(id, target, times, matrices);
 		}
 	}
 }
