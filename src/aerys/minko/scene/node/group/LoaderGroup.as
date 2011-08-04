@@ -1,11 +1,9 @@
 package aerys.minko.scene.node.group
 {
-	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.texture.BitmapTexture;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.parser.IParser;
 	
 	import flash.display.Bitmap;
@@ -16,7 +14,6 @@ package aerys.minko.scene.node.group
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.globalization.LastOperationStatus;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -46,8 +43,8 @@ package aerys.minko.scene.node.group
 	 */
 	public class LoaderGroup extends Group implements IEventDispatcher
 	{
-		private static const FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
-		private static const PARSERS	: Object	= new Object();
+		private static const NATIVE_FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
+		private static const PARSERS		: Object	= new Object();
 		
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
 		private var _loaderToPosition	: Dictionary		= new Dictionary(true);
@@ -56,6 +53,21 @@ package aerys.minko.scene.node.group
 		
 		private var _total				: uint				= 0;
 		private var _loaded				: uint				= 0;
+		
+		public static function load(request : URLRequest) : LoaderGroup
+		{
+			return new LoaderGroup().load(request);
+		}
+		
+		public static function loadClass(asset : Class) : LoaderGroup
+		{
+			return new LoaderGroup().loadClass(asset);
+		}
+		
+		public static function loadBytes(bytes : ByteArray) : LoaderGroup
+		{
+			return new LoaderGroup().loadBytes(bytes);
+		}
 		
 		public static function registerParser(extension : String,
 											  parser 	: IParser) : void
@@ -74,12 +86,12 @@ package aerys.minko.scene.node.group
 		 * Load the content corresponding to the specified URLRequest object.
 		 *  
 		 * @param request
-		 * @return The Loader3D object itself.
+		 * @return The LoaderGroup object itself.
 		 * 
 		 */
 		public function load(request : URLRequest) : LoaderGroup
 		{
-			if (request.url.match(FORMATS))
+			if (request.url.match(NATIVE_FORMATS))
 			{
 				var loader : Loader = new Loader();
 				
@@ -97,7 +109,10 @@ package aerys.minko.scene.node.group
 				var parser		: IParser	= PARSERS[extension.toLocaleLowerCase()];
 				
 				if (!parser)
-					throw new Error("No data parser registered for extension '" + extension + "'");
+				{
+					throw new Error("No data parser registered for extension '"
+									+ extension + "'.");
+				}
 
 				_loaderToURI[urlLoader] = request.url;
 				_loaderToPosition[loader] = numChildren;
@@ -114,6 +129,7 @@ package aerys.minko.scene.node.group
 		
 		public function loadBytes(bytes : ByteArray) : LoaderGroup
 		{
+			// try to find a parser
 			for (var extension : String in PARSERS)
 			{
 				var parser : IParser = PARSERS[extension];
@@ -132,6 +148,7 @@ package aerys.minko.scene.node.group
 				}
 			}
 			
+			// no parser was found, try to load as a native format
 			var loader 	: Loader 	= new Loader();
 			
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
@@ -141,7 +158,7 @@ package aerys.minko.scene.node.group
 			return this;
 		}
 		
-		public function loadAsset(asset : Class) : LoaderGroup
+		public function loadClass(asset : Class) : LoaderGroup
 		{
 			var assetObject : Object 	= new asset();
 			
