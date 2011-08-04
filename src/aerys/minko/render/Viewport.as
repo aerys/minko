@@ -379,19 +379,22 @@ package aerys.minko.render
 				
 				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
-				renderingData.effect = defaultEffect;
+				renderingData.effect.push(defaultEffect);
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
 				
+				renderingData.effect.pop();
+					
 				_drawTime	= _renderer.drawingTime;
 				
 				// execute postprocessing
 				if (_postProcessEffect != null)
 				{
-					renderingData.effect = _postProcessEffect;
+					renderingData.effect.push(_postProcessEffect);
 					_postProcessVisitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
+					renderingData.effect.pop();
 				}
 				
 				_renderer.present();

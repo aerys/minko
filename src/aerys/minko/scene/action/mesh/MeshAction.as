@@ -45,7 +45,8 @@ package aerys.minko.scene.action.mesh
 			var localData		: LocalData			= visitor.localData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
-			var effect			: IEffect			= renderingData.effect;
+			var effectStack		: Vector.<IEffect>	= renderingData.effect;
+			var effect			: IEffect			= effectStack[effectStack.length - 1];
 			
 			if (!effect)
 				throw new Error("Unable to draw without an effect.");
