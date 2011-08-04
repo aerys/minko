@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class ClipspacePosition extends Dummy implements IVertexNode
 	{

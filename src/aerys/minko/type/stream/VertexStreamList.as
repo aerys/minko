@@ -1,10 +1,10 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.ressource.VertexRessource;
+	import aerys.minko.render.ressource.VertexBufferRessource;
 	import aerys.minko.type.IVersionnable;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class VertexStreamList implements IVersionnable, IVertexStream
 	{
@@ -17,14 +17,18 @@ package aerys.minko.type.stream
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
 		
-		private var _ressource		: VertexRessource		= null;
+		private var _ressource		: VertexBufferRessource		= null;
 		
 		public function get version()		: uint 				{ return _version; }
 		public function get dynamic()		: Boolean 			{ return _dynamic; }
 		public function get format()		: VertexFormat		{ return _format; }
 		public function get streamCount()	: uint				{ return _streams.length; }
-		public function get length()		: uint				{ return _streams.length ? _streams[0].length : 0; }
-		public function get ressource()		: VertexRessource	{ return _ressource; }
+		public function get ressource()		: VertexBufferRessource	{ return _ressource; }
+		
+		public function get length()	: uint
+		{
+			return _streams.length ? _streams[0].length : 0;
+		}
 		
 		public function VertexStreamList(...streams)
 		{
@@ -33,7 +37,7 @@ package aerys.minko.type.stream
 		
 		private function initialize(streams : Array) : void
 		{
-			_ressource = new VertexRessource(this);
+			_ressource = new VertexBufferRessource(this);
 			
 			for each (var stream : VertexStream in streams) 
 				pushVertexStream(stream);
@@ -55,7 +59,7 @@ package aerys.minko.type.stream
 		public function pushVertexStream(vertexStream : VertexStream, force : Boolean = false) : void 
 		{
 			if (length && vertexStream.length != length)
-				throw new Error('All VertexStream must have the same length');
+				throw new Error('All VertexStream must have the same total number of vertices.');
 			
 			_streams.push(vertexStream);
 			_streamVersions.push(vertexStream.version);

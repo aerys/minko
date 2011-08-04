@@ -103,7 +103,7 @@ package aerys.minko.render.renderer
 				for (var j : int = 0; j < numCalls; ++j)
 				{
 					var iStream : IndexStream	= state._indexStream;
-					var iBuffer : IndexBuffer3D = iStream.getIndexBuffer3D(_context);
+					var iBuffer : IndexBuffer3D = iStream.ressource.getIndexBuffer3D(_context);
 					var count	: int			= numTriangles[j];
 					
 					_numTriangles += count == -1

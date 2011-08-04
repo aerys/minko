@@ -12,7 +12,7 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -433,7 +433,7 @@ package aerys.minko.render.renderer.state
 					if (_setFlags & (VERTEX_STREAM_1 << i))
 					{
 						var vertexComponent : VertexComponent	= _vertexComponents[i];
-						var vertexBuffer 	: VertexBuffer3D	= _vertexStreams[i].getNativeBuffer(context);
+						var vertexBuffer 	: VertexBuffer3D	= _vertexStreams[i].ressource.getVertexBuffer3D(context, vertexComponent);
 						var vertexOffset 	: int				= _vertexOffsets[i];
 						
 						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexComponent.nativeFormatString);
@@ -545,7 +545,8 @@ package aerys.minko.render.renderer.state
 					{
 						var vertexOffset 	: int				= _vertexOffsets[i];
 						var vertexComponent : VertexComponent	= _vertexComponents[i];
-						var buffer 			: VertexBuffer3D 	= vertexStream.getNativeBuffer(context);
+						var buffer 			: VertexBuffer3D 	= vertexStream.ressource.getVertexBuffer3D(context, vertexComponent);
+						
 						context.setVertexBufferAt(i, buffer, vertexOffset, vertexComponent.nativeFormatString);
 					}
 				}

@@ -1,14 +1,15 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.ressource.VertexRessource;
+	import aerys.minko.render.ressource.VertexBufferRessource;
 	import aerys.minko.type.IVersionnable;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexComponentType;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponentType;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
+	import flash.events.ProgressEvent;
 	import flash.utils.ByteArray;
 	
 	
@@ -18,26 +19,20 @@ package aerys.minko.type.stream
 		
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 		
-		private static var _nextId		: int					= 0;	
+		minko_stream var _data		: Vector.<Number>		= null;
 		
-		minko_stream var _data			: Vector.<Number>		= null;
-		
-		private var _update			: Boolean				= true;
 		private var _dynamic		: Boolean				= false;
 		private var _version		: uint					= 0;
-		private var _length			: int					= 0;
 		
-		private var _id				: int					= _nextId++;
 		private var _format			: VertexFormat			= null;
-		private var _ressource		: VertexRessource		= null;
-		private var _nativeBuffer	: VertexBuffer3D		= null;
+		private var _ressource		: VertexBufferRessource		= null;
+		private var _length			: uint					= 0;
 		
-		public function get id()		: int				{ return _id; }
-		public function get length() 	: uint				{ return _data ? _data.length / _format.dwordsPerVertex : _length; }
 		public function get format()	: VertexFormat		{ return _format; }
 		public function get version()	: uint				{ return _version; }
 		public function get dynamic()	: Boolean			{ return _dynamic; }
-		public function get ressource()	: VertexRessource	{ return _ressource; }
+		public function get ressource()	: VertexBufferRessource	{ return _ressource; }
+		public function get length()	: uint				{ return _length; }
 		
 		public function VertexStream(data 		: Vector.<Number>	= null,
 									 format		: VertexFormat 		= null,
@@ -45,7 +40,14 @@ package aerys.minko.type.stream
 		{
 			super();
 			
-			_ressource = new VertexRessource(this);
+			initialize(data, format, dynamic);
+		}
+		
+		private function initialize(data 	: Vector.<Number>	= null,
+									format	: VertexFormat 		= null,
+									dynamic	: Boolean			= false) : void
+		{
+			_ressource = new VertexBufferRessource(this);
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data && data.length && data.length % _format.dwordsPerVertex)
@@ -53,6 +55,8 @@ package aerys.minko.type.stream
 			
 			_data = data ? data.concat() : new Vector.<Number>();
 			_dynamic = dynamic;
+			
+			invalidate();
 		}
 		
 		public function deleteVertexByIndex(index : uint) : Boolean
@@ -61,7 +65,8 @@ package aerys.minko.type.stream
 				return false;
 			
 			_data.splice(index, _format.dwordsPerVertex);
-			_update = true;
+			
+			invalidate();
 			
 			return true;
 		}
@@ -89,8 +94,7 @@ package aerys.minko.type.stream
 			for (var i : int = 0; i < dataLength; i++)
 				_data.push(data[i]);
 			
-			++_version;
-			_update = true;
+			invalidate();
 		}
 		
 		public function pushData(data : Vector.<Number>) : void
@@ -103,39 +107,23 @@ package aerys.minko.type.stream
 			for (var i : int = 0; i < dataLength; i++)
 				_data.push(data[i]);
 			
-			++_version;
-			_update = true;
+			invalidate();
+		}
+		
+		public function disposeLocalData() : void
+		{
+			if (length != ressource.numVertices)
+				throw new Error("Unable to dispose local data: "
+								+ "some vertices have not been uploaded.");
+			
+			_data = null;
+			_dynamic = false;
 		}
 		
 		minko_stream function invalidate() : void
 		{
-			_update = true;
+			_length = _data.length / _format.dwordsPerVertex;
 			++_version;
-		}
-		
-		minko_stream function getNativeBuffer(context : Context3D) : VertexBuffer3D
-		{
-			var dwordsPerVertex : int = _format.dwordsPerVertex;
-			var currentLength 	: int = _data ? _data.length / dwordsPerVertex : _length;
-			
-			if ((!_nativeBuffer && _data.length) || _length != currentLength)
-			{
-				_nativeBuffer = context.createVertexBuffer(length, format.dwordsPerVertex);
-				
-				_length = currentLength;
-				_update = true;
-			}
-			
-			if (_nativeBuffer && _update)
-			{
-				_update = false;
-				_nativeBuffer.uploadFromVector(_data, 0, _length);
-				
-				if (!_dynamic)
-					_data = null;
-			}
-			
-			return _nativeBuffer;
 		}
 		
 		public static function fromPositionsAndUVs(positions : Vector.<Number>,
@@ -178,8 +166,7 @@ package aerys.minko.type.stream
 			
 			stream._data = tmp;
 			
-			tmp = new Vector.<Number>(format.dwordsPerVertex * count,
-				true);
+			tmp = new Vector.<Number>(format.dwordsPerVertex * count, true);
 			
 			for (var j : int = 0; j < count; ++j)
 			{

@@ -3,7 +3,7 @@
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	/**
 	 * ...

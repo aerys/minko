@@ -11,8 +11,8 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class SkinnedMesh extends AbstractScene implements IMesh
 	{

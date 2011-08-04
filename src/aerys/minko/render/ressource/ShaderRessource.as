@@ -1,7 +1,7 @@
 package aerys.minko.render.ressource
 {
 	import aerys.minko.ns.minko_render;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
@@ -52,11 +52,9 @@ package aerys.minko.render.ressource
 			context.setProgram(_nativeProgram);
 		}
 		
-		public function dispose() : Boolean
+		public function dispose() : void
 		{
 			_nativeProgram.dispose();
-			
-			return true;
 		}
 	}
 }

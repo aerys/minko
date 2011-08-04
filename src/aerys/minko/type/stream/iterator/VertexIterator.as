@@ -1,12 +1,12 @@
-package aerys.minko.type.vertex
+package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.geom.Vector3D;
 	import flash.utils.Proxy;
@@ -62,7 +62,7 @@ package aerys.minko.type.vertex
 			var index : int = int(name);
 			
 			if (_istream)
-				index = _istream._indices[index];
+				index = _istream._data[index];
 			
 			return new VertexReference(_vstream, index, _propToStream);
 		}
@@ -86,7 +86,9 @@ package aerys.minko.type.vertex
 		{
 			var index : int = int(name);
 			
-			return _istream ? index < _istream.length : index < _vstream.length;
+			return _istream
+				   ? index < _istream.length
+				   : index < _vstream.length;
 		}
 		
 		
@@ -95,8 +97,9 @@ package aerys.minko.type.vertex
 			index -= _offset;
 			_offset = 0;
 			
-			return _istream ? index < _istream.length ? index + 1 : 0
-				: index < _vstream.length ? index + 1 : 0;
+			return _istream
+				   ? index < _istream.length ? index + 1 : 0
+				   : index < _vstream.length ? index + 1 : 0;
 		}
 		
 		override flash_proxy function nextName(index : int) : String
@@ -109,11 +112,11 @@ package aerys.minko.type.vertex
 			_index = index - 1;
 			
 			if (!_shallow || !_vertex)
-				_vertex = new VertexReference(_vstream, _istream ? _istream._indices[_index]
+				_vertex = new VertexReference(_vstream, _istream ? _istream._data[_index]
 					: _index);
 			
 			if (_shallow)
-				_vertex._index = -_offset + (_istream ? _istream._indices[_index]
+				_vertex._index = -_offset + (_istream ? _istream._data[_index]
 								 : _index);
 			
 			return _vertex;

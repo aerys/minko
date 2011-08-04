@@ -1,10 +1,10 @@
-﻿package aerys.minko.type.vertex
+﻿package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;

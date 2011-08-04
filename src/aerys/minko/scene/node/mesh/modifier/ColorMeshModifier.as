@@ -2,8 +2,8 @@ package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class ColorMeshModifier extends AbstractMeshModifier
 	{
@@ -24,7 +24,7 @@ package aerys.minko.scene.node.mesh.modifier
 		private function getColorStream(target : IMesh, withAlpha : Boolean) : VertexStream
 		{
 			var numVertices	: int				= target.vertexStream.length;
-			var colors 		: Vector.<Number> 	= new Vector.<Number>(numVertices * 3);
+			var colors 		: Vector.<Number> 	= new Vector.<Number>(numVertices * 3, true);
 			var ii			: int				= 0;
 			var size		: int				= withAlpha ? 4 : 3;
 			

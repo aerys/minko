@@ -12,7 +12,7 @@ package aerys.minko.type.animation
 		protected var _id				: String;
 		protected var _playingOn		: IScene;
 		protected var _timelines		: Vector.<ITimeline>;
-		protected var _duration		: uint;
+		protected var _duration			: uint;
 		
 		public function get id() : String { return _id; }
 		public function get duration() : uint { return _duration; }

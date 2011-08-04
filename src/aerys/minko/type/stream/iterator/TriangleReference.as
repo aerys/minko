@@ -1,4 +1,4 @@
-package aerys.minko.type.triangle
+package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.type.Factory;
 	import aerys.minko.ns.minko;
@@ -6,7 +6,6 @@ package aerys.minko.type.triangle
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.VertexReference;
 	
 	import flash.geom.Vector3D;
 

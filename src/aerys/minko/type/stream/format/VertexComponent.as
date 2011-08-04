@@ -1,4 +1,4 @@
-package aerys.minko.type.vertex.format
+package aerys.minko.type.stream.format
 {
 	public class VertexComponent
 	{
