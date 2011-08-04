@@ -8,8 +8,8 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class Mesh extends AbstractScene implements IMesh
 	{
@@ -51,16 +51,21 @@ package aerys.minko.scene.node.mesh
 		{
 			super();
 			
+			initialize(vertexStream, indexStream);
+		}
+		
+		private function initialize(vertexStream	: IVertexStream,
+									indexStream		: IndexStream) : void
+		{
 			_vertexStream = vertexStream;
 			_indexStream = indexStream;
 			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
 			if (!_indexStream && _vertexStream)
-				_indexStream = new IndexStream(null, vertexStream.length, vertexStream.dynamic);
+			{
+				_indexStream = new IndexStream(null,
+											   vertexStream.length,
+											   vertexStream.dynamic);
+			}
 			
 			actions[0] = MeshAction.meshAction;
 		}
@@ -79,18 +84,15 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		/*public function clone(vertexFormat : VertexFormat = null) : IMesh
+		public function clone(vertexFormat : VertexFormat = null) : IMesh
 		{
 			vertexFormat ||= _vertexStream.format.clone();
 			
-			var meshes				: Vector.<IMesh>	= Vector.<IMesh>([this])
-			var mergedMesh			: IMesh				= createMesh(meshes, vertexFormat);
-			
-			return mergedMesh;
-		}*/
+			return createMesh(Vector.<IMesh>([this]), vertexFormat);
+		}
 		
 		/**
-		 * The "mergeMeshes" method will takes multiple Mesh objects and will
+		 * The "merge" method will takes multiple Mesh objects and will
 		 * merge all their data to create a single and only Mesh out of it.
 		 * 
 		 * <p>
@@ -103,18 +105,14 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		public static function mergeMeshes(meshes : Vector.<IMesh>) : IMesh
+		public static function merge(meshes : Vector.<IMesh>) : IMesh
 		{
 			// insersect all meshes vertexformats
 			var numMeshes		: uint			= meshes.length;
 			var vertexFormat	: VertexFormat	= meshes[0].vertexStream.format.clone();
 			
 			for (var meshId : uint = 1; meshId < numMeshes; ++meshId)
-			{
-				var mesh : IMesh = meshes[meshId];
-				
-				vertexFormat.intersectWith(mesh.vertexStream.format);
-			}
+				vertexFormat.intersectWith(meshes[meshId].vertexStream.format);
 			
 			return createMesh(meshes, vertexFormat);
 		}
@@ -143,7 +141,7 @@ package aerys.minko.scene.node.mesh
 				var vertexStream	: IVertexStream	= mesh.vertexStream;
 			
 				// append index data
-				var indexData	: Vector.<uint>		= mesh.indexStream._indices;
+				var indexData	: Vector.<uint>		= mesh.indexStream._data;
 				var indexCount	: uint				= indexData.length;
 				var indexOffset	: uint				= newVertexStreamData.length / vertexFormat.dwordsPerVertex;
 				
@@ -186,8 +184,11 @@ package aerys.minko.scene.node.mesh
 			var newIndexStream		: IndexStream	= new IndexStream();
 			var newVertexStream		: VertexStream	= new VertexStream(null, vertexFormat);
 			
-			newIndexStream._indices = newIndexStreamData;
+			newIndexStream._data = newIndexStreamData;
+			newIndexStream.invalidate();
+			
 			newVertexStream._data = newVertexStreamData;
+			newVertexStream.invalidate();
 			
 			return new Mesh(newVertexStream, newIndexStream);
 		}

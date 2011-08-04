@@ -8,7 +8,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.leaf.Sampler;
 	import aerys.minko.render.shader.node.operation.builtin.Texture;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class DiffuseMapTexture extends Dummy implements IFragmentNode
 	{

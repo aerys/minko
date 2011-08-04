@@ -113,17 +113,10 @@ package aerys.minko.render.ressource
 			return _texture;
 		}
 		
-		public function dispose() : Boolean
+		public function dispose() : void
 		{
-			if (_texture)
-			{
-				_texture.dispose();
-				_texture = null;
-				
-				return true;
-			}
-			
-			return false;
+			_texture.dispose();
+			_texture = null;
 		}
 	}
 }

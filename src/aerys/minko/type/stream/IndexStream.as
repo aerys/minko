@@ -1,8 +1,9 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.type.IVersionnable;
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.render.ressource.IndexBufferRessource;
+	import aerys.minko.type.IVersionnable;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
@@ -14,27 +15,21 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 		
-		minko_stream var _indices		: Vector.<uint>		= null;
-		minko_stream var _version		: uint				= 0;
+		minko_stream var _data	: Vector.<uint>		= null;
 		
-		minko_stream var _nativeBuffer 	: IndexBuffer3D		= null;
+		private var _version	: uint				= 0;
+		private var _dynamic	: Boolean			= false;
+		private var _length		: uint				= 0;
+		private var _ressource	: IndexBufferRessource	= null;
 		
-		private var _update			: Boolean			= true;
-		private var _length			: int				= 0;
-		private var _dynamic		: Boolean			= false;
-		private var _bufferLength	: int				= 0;
+		public function get version() 		: uint				{ return _version; }
+		public function get ressource()		: IndexBufferRessource	{ return _ressource; }
+		public function get length()		: uint				{ return _length; }
 		
-		public function get version() : uint
+		public function set length(value : uint) : void
 		{
-			return _version;
-		}
-		
-		public function get length() : int	{ return _indices ? _indices.length : _length; }
-		
-		public function set length(value : int) : void
-		{
-			_indices.length = value;
-			_update = true;
+			_data.length = value;
+			invalidate();
 		}
 		
 		public static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>
@@ -47,61 +42,92 @@ package aerys.minko.type.stream
 			return indices;
 		}
 		
+		public static function fromByteArray(data 		: ByteArray,
+											 numIndices	: int) : IndexStream
+		{
+			var indices : Vector.<uint> = new Vector.<uint>(numIndices, true);
+			var stream : IndexStream = new IndexStream();
+			
+			for (var i : int = 0; i < numIndices; ++i)
+				indices[i] = data.readInt();
+			
+			stream._data = indices;
+			
+			return stream;
+		}
+		
 		public function IndexStream(data 	: Vector.<uint> = null,
 									length	: uint			= 0,
 									dynamic	: Boolean		= false)
 		{
 			super();
 			
-			_length = length || (data ? data.length : 0);
-			_dynamic = dynamic;
-			
-			initialize(data);
+			initialize(data, length, dynamic);
+		}
+		
+		minko_stream function invalidate() : void
+		{
+			_length = _data.length;
 		}
 		
 		private function initialize(indices : Vector.<uint>,
-									length 	: uint	= 0) : void
+									length 	: uint,
+									dynamic	: Boolean) : void
 		{
+			_dynamic = dynamic;
+			_ressource = new IndexBufferRessource(this);
+			
 			if (indices)
 			{
-				var numIndices : int = Math.min(indices.length, _length);
+				var numIndices : int = indices && length == 0
+									   ? indices.length
+									   : Math.min(indices.length, length);
 				
-				_indices = new Vector.<uint>(numIndices);
+				_data = new Vector.<uint>(numIndices);
 				for (var i : int = 0; i < numIndices; ++i)
-					_indices[i] = indices[i];
+					_data[i] = indices[i];
 			}
 			else
 			{
-				_indices = dummyData(_length);
+				_data = dummyData(length);
 			}
+			
+			invalidate();
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
-			return _indices[int(name)];
+			return _data[int(name)];
 		}
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
 			var index : int = int(name);
 				
-			_indices[index] = int(value);
-			_update = true;
+			_data[index] = int(value);
+			
+			invalidate();
 		}
 		
 		override flash_proxy function nextNameIndex(index : int) : int
 		{
-			return index >= _indices.length ? 0 : index + 1;
+			return index >= _data.length ? 0 : index + 1;
 		}
 		
 		override flash_proxy function nextValue(index : int) : *
 		{
-			return _indices[int(index - 1)];
+			return _data[int(index - 1)];
 		}
 		
-		public function getIndices() : Vector.<uint>
+		public function getIndices(indices : Vector.<uint> = null) : Vector.<uint>
 		{
-			return _indices.concat();
+			var numIndices : int = length;
+			
+			indices ||= new Vector.<uint>();
+			for (var i : int = 0; i < numIndices; ++i)
+				indices[i] = _data[i];			
+			
+			return indices;
 		}
 		
 		public function setIndices(indices : Vector.<uint>) : void
@@ -109,32 +135,33 @@ package aerys.minko.type.stream
 			var length : int = indices.length;
 			
 			for (var i : int = 0; i < length; ++i)
-				_indices[i] = indices[i];
+				_data[i] = indices[i];
 			
-			_indices.length = length;
-			_update = true;
+			_data.length = length;
+			
+			invalidate();
 		}
 		
 		public function clone() : IndexStream
 		{
-			return new IndexStream(_indices, _length, _dynamic);
+			return new IndexStream(_data, length, _dynamic);
 		}
 		
 		public function toString() : String
 		{
-			return _indices.toString();
+			return _data.toString();
 		}
 		
 		public function concat(myIndexBuffer : IndexStream) : void
 		{
-			var numIndices 	: int 			= _indices.length;
-			var toConcat 	: Vector.<uint> = myIndexBuffer._indices;
+			var numIndices 	: int 			= _data.length;
+			var toConcat 	: Vector.<uint> = myIndexBuffer._data;
 			var numIndices2 : int 			= toConcat.length;
 			
 			for (var i : int = 0; i < numIndices2; ++i, ++numIndices)
-				_indices[numIndices] = toConcat[i];
+				_data[numIndices] = toConcat[i];
 			
-			_update = true;
+			invalidate();
 		}
 		
 		public function push(...parameters) : IndexStream
@@ -143,10 +170,9 @@ package aerys.minko.type.stream
 			var length 		: int = length;
 
 			for (var i : int = 0; i < numIndices; ++i, ++length)
-				_indices[length] = int(parameters[i]);
+				_data[length] = int(parameters[i]);
 			
-			_update = true;
-			++_version;
+			invalidate();
 			
 			return this;
 		}
@@ -160,11 +186,11 @@ package aerys.minko.type.stream
 				return false;
 			
 			for (var i : int = index; i < length - 1; ++i)
-				_indices[i] = _indices[int(i + 1)];
+				_data[i] = _data[int(i + 1)];
 			
-			_indices.length = length - 1;
-			_update = true;
-			++_version;
+			_data.length = length - 1;
+			
+			invalidate();
 			
 			return true;
 		}
@@ -173,53 +199,24 @@ package aerys.minko.type.stream
 									offset	: uint 	= 0,
 									count	: uint	= 0) : void
 		{
-			var l : int = _indices.length;
+			var l : int = _data.length;
 			
 			count ||= indices.length;
 			
 			for (var i : int = 0; i < count; ++i)
-				_indices[int(l++)] = indices[i] + offset;
+				_data[int(l++)] = indices[i] + offset;
 
-			_update = true;
-			++_version;
+			invalidate();
 		}
 		
-		minko function getIndexBuffer3D(context : Context3D) : IndexBuffer3D
+		public function disposeLocalData() : void
 		{
-			if (!_nativeBuffer && _indices.length)
-				_nativeBuffer = context.createIndexBuffer(_indices.length);
+			if (length != ressource.numIndices)
+				throw new Error("Unable to dispose local data: "
+								+ "some intices have not been uploaded.");
 			
-			if (_nativeBuffer && _update)
-			{
-				_update = false;
-				
-				if (_indices.length != _length)
-				{
-					_length = _indices.length;
-					_nativeBuffer = context.createIndexBuffer(_length);
-				}
-				
-				_nativeBuffer.uploadFromVector(_indices, 0, _indices.length);
-				
-				if (!_dynamic)
-					_indices = null;
-			}
-			
-			return _nativeBuffer;
-		}
-		
-		public static function fromByteArray(data 		: ByteArray,
-											 numIndices	: int) : IndexStream
-		{
-			var indices : Vector.<uint> = new Vector.<uint>(numIndices, true);
-			var stream : IndexStream = new IndexStream();
-			
-			for (var i : int = 0; i < numIndices; ++i)
-				indices[i] = data.readInt();
-			
-			stream._indices = indices;
-			
-			return stream;
+			_data = null;
+			_dynamic = false;
 		}
 	}
 }

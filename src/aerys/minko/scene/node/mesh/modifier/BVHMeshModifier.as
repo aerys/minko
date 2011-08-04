@@ -10,7 +10,7 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	/**
 	 * BVHMeshModifier (Bounding Volume Hierarchy) provide bouding volume

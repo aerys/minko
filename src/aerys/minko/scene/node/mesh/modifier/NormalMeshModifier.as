@@ -3,8 +3,8 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class NormalMeshModifier extends AbstractMeshModifier
 	{
@@ -34,7 +34,7 @@ package aerys.minko.scene.node.mesh.modifier
 		
 			var vertices		: Vector.<Number>	= vertexStream._data;
 			var numVertices		: int				= vertices.length / vertexLength;
-			var indices			: Vector.<uint>		= target.indexStream._indices;
+			var indices			: Vector.<uint>		= target.indexStream._data;
 			var numTriangles	: int				= target.indexStream.length / 3;
 			
 			var normals			: Vector.<Number>	= new Vector.<Number>(3 * numVertices);

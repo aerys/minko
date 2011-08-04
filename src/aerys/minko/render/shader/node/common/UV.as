@@ -11,7 +11,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class UV extends Dummy implements IVertexNode
 	{

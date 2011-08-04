@@ -17,7 +17,7 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class MatrixSkinnedPosition extends Dummy
 	{

@@ -27,7 +27,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
 	import aerys.minko.type.log.DebugLevel;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;

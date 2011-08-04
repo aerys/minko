@@ -33,10 +33,7 @@ package aerys.minko.scene.visitor
 		public function get ancestors()		: Vector.<IScene>	{ return _ancestors; }
 		public function get parent()		: IScene			{ return _parent; }
 		
-		public function get numNodes() : uint
-		{
-			return _numNodes;
-		}
+		public function get numNodes() 		: uint				{ return _numNodes;	}
 		
 		public function RenderingVisitor()
 		{

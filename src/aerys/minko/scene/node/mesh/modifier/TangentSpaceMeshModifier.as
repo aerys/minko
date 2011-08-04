@@ -5,8 +5,8 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.vertex.format.VertexComponent;
-	import aerys.minko.type.vertex.format.VertexFormat;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class TangentSpaceMeshModifier extends AbstractMeshModifier
 	{
@@ -42,7 +42,7 @@ package aerys.minko.scene.node.mesh.modifier
 			var uv				: Vector.<Number>	= uvStream._data;
 			
 			var numVertices		: int				= xyz.length / xyzSize;
-			var indices			: Vector.<uint>		= indexStream._indices;
+			var indices			: Vector.<uint>		= indexStream._data;
 			var numTriangles	: int				= indexStream.length / 3;
 			
 			var data			: Vector.<Number>	= new Vector.<Number>(f * numVertices);

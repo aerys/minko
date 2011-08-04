@@ -18,7 +18,7 @@ package aerys.minko.render.shader
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.vertex.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;

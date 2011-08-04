@@ -1,4 +1,4 @@
-package aerys.minko.type.triangle
+package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.scene.node.mesh.IMesh;

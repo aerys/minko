@@ -22,7 +22,6 @@ package aerys.minko.scene.action.effect
 				visitor.renderingData.effect = _effects.pop();
 			
 			return true;
-
 		}
 	}
 }
