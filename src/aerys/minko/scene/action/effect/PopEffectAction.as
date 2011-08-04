@@ -16,7 +16,9 @@ package aerys.minko.scene.action.effect
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			if (scene is IEffectTarget && (scene as IEffectTarget).effect)
+			var effect : IEffect = (scene as IEffectTarget).effect;
+			
+			if (effect)
 				visitor.renderingData.effect = _effects.pop();
 			
 			return true;
