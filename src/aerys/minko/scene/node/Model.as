@@ -7,15 +7,19 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
 	import aerys.minko.scene.action.effect.PopEffectAction;
-	import aerys.minko.scene.action.style.PopStyleAction;
-	import aerys.minko.scene.action.transform.PopTransformAction;
 	import aerys.minko.scene.action.effect.PushEffectAction;
+	import aerys.minko.scene.action.style.PopStyleAction;
 	import aerys.minko.scene.action.style.PushStyleAction;
+	import aerys.minko.scene.action.transform.PopTransformAction;
 	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Transform3D;
+	
+	import avmplus.getQualifiedClassName;
+	
+	import flash.net.getClassByAlias;
 
 	/**
 	 * Model objects are visible scene objects. They contain references to:
@@ -179,6 +183,29 @@ package aerys.minko.scene.node
 			}
 			
 			return result;
+		}
+		
+		public function getDescendantsByType(type : Class, descendants : Vector.<IScene> = null) : Vector.<IScene>
+		{
+			descendants ||= new Vector.<IScene>();
+			
+			if (_texture)
+			{
+				if (getClassByAlias(getQualifiedClassName(_texture)) == type)
+					descendants.push(_texture);
+				if (_texture is ISearchableScene)
+					(_texture as ISearchableScene).getDescendantsByType(type, descendants);
+			}
+			
+			if (_mesh)
+			{
+				if (getClassByAlias(getQualifiedClassName(_mesh)) == type)
+					descendants.push(_mesh);
+				if (_mesh is ISearchableScene)
+					(_mesh as ISearchableScene).getDescendantsByType(type, descendants);
+			}
+			
+			return descendants;
 		}
 	}
 }

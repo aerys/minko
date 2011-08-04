@@ -8,6 +8,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	
+	import flash.net.getClassByAlias;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
@@ -223,6 +224,27 @@ package aerys.minko.scene.node.group
 			}
 			
 			return descendant;
+		}
+		
+		public function getDescendantsByType(type : Class, descendants : Vector.<IScene> = null) : Vector.<IScene>
+		{		
+			var numChildren	: int 		= numChildren;
+			
+			descendants ||= new Vector.<IScene>();
+			
+			for (var i : int = 0; i < numChildren; ++i)
+			{
+				var child		: IScene			= _children[i];
+				var searchable 	: ISearchableScene 	= child as ISearchableScene;
+
+				if (getClassByAlias(getQualifiedClassName(child)) == type)
+					descendants.push(child);
+				
+				if (searchable)
+					searchable.getDescendantsByType(type, descendants);
+			}
+			
+			return descendants;
 		}
 
 		public function toString() : String
