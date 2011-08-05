@@ -7,11 +7,7 @@ package aerys.minko.type.stream
 	import aerys.minko.type.stream.format.VertexComponentType;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
-	import flash.display3D.Context3D;
-	import flash.display3D.VertexBuffer3D;
-	import flash.events.ProgressEvent;
 	import flash.utils.ByteArray;
-	
 	
 	public final class VertexStream implements IVersionnable, IVertexStream
 	{

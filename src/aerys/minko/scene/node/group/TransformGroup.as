@@ -1,6 +1,5 @@
 ﻿package aerys.minko.scene.node.group 
 {
-	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.transform.PopTransformAction;
 	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.ITransformable;
@@ -11,7 +10,7 @@
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class TransformGroup extends Group implements IActionTarget, ITransformable
+	public class TransformGroup extends Group implements ITransformable
 	{
 		private var _transform	: Transform3D		= new Transform3D();
 		

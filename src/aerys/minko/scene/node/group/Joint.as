@@ -3,6 +3,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.Model;
 	import aerys.minko.scene.node.mesh.modifier.NormalMeshModifier;
 	import aerys.minko.scene.node.mesh.primitive.CubeMesh;
+	import aerys.minko.scene.node.texture.ColorTexture;
 	
 	public class Joint extends TransformGroup
 	{
@@ -12,9 +13,8 @@ package aerys.minko.scene.node.group
 		{
 			super();
 			
-			//var debugCubeMesh : Model = new Model(new NormalMeshModifier(new CubeMesh()));
-			//debugCubeMesh.transform.appendScale(0.05, 0.05, 0.05);
-			//addChild(debugCubeMesh);
+//			var debugCubeMesh : Model = new Model(new NormalMeshModifier(new CubeMesh()), new ColorTexture(0xffFF0000));
+//			addChild(debugCubeMesh);
 		}
 
 		public function get boneName() : String

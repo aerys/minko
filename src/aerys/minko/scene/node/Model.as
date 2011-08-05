@@ -4,7 +4,6 @@ package aerys.minko.scene.node
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectTarget;
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.ModelAction;
 	import aerys.minko.scene.action.effect.PopEffectAction;
 	import aerys.minko.scene.action.effect.PushEffectAction;
@@ -39,7 +38,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements ISearchableScene, ITransformable, IStyledScene, IVersionnable, IEffectTarget, IActionTarget
+	public class Model extends AbstractScene implements ISearchableScene, ITransformable, IStyledScene, IVersionnable, IEffectTarget
 	{
 		use namespace minko;
 		
@@ -191,7 +190,7 @@ package aerys.minko.scene.node
 			
 			if (_texture)
 			{
-				if (getClassByAlias(getQualifiedClassName(_texture)) == type)
+				if (_texture is type)
 					descendants.push(_texture);
 				if (_texture is ISearchableScene)
 					(_texture as ISearchableScene).getDescendantsByType(type, descendants);
@@ -199,7 +198,7 @@ package aerys.minko.scene.node
 			
 			if (_mesh)
 			{
-				if (getClassByAlias(getQualifiedClassName(_mesh)) == type)
+				if (_mesh is type)
 					descendants.push(_mesh);
 				if (_mesh is ISearchableScene)
 					(_mesh as ISearchableScene).getDescendantsByType(type, descendants);

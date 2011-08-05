@@ -1,14 +1,9 @@
 package aerys.minko.scene.node.texture
 {
-	
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.ressource.IRessource;
 	import aerys.minko.render.ressource.TextureRessource;
-	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.IActionTarget;
 	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.type.IVersionnable;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
@@ -21,7 +16,7 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class BitmapTexture extends AbstractScene implements ITexture, IVersionnable, IActionTarget
+	public class BitmapTexture extends AbstractScene implements ITexture
 	{
 		private var _version	: uint				= 0;
 		

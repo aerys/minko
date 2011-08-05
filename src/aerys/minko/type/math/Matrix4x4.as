@@ -127,7 +127,7 @@ package aerys.minko.type.math
 		{
 			var v : Vector3D = validMatrix3D.transformVector(input._vector);
 			
-			output ||= new Vector4();			
+			output ||= new Vector4();
 			output.set(v.x, v.y, v.z, v.w);
 			
 			return output;

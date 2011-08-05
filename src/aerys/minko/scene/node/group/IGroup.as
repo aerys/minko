@@ -16,8 +16,6 @@ package aerys.minko.scene.node.group
 		
 		function contains(scene : IScene) : Boolean
 			
-		function swapChildren(child1 : IScene, child2 : IScene) : IGroup;
-		
 		function getChildAt(position : uint) : IScene;
 		function getChildIndex(child : IScene) : int;
 		function getChildByName(name : String) : IScene;

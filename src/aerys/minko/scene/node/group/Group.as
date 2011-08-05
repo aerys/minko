@@ -11,13 +11,14 @@ package aerys.minko.scene.node.group
 	import flash.net.getClassByAlias;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.getDefinitionByName;
 	import flash.utils.getQualifiedClassName;
 
 	/**
-	 * The Group3D provides a basic support for scene building.
-	 * A Group3D can contain any object implementing the IScene3D interface.
+	 * The Group provides a basic support for scene building.
+	 * A Group can contain any object implementing the IScene interface.
 	 * 
-	 * Group3D objects do not affect their children with any specific behaviour.
+	 * Group objects do not affect their children with any specific behaviour.
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
@@ -26,14 +27,15 @@ package aerys.minko.scene.node.group
 		private static var _id		: uint				= 0;
 		
 		private var _name			: String			= null;
+		private var _parents		: Vector.<IScene>	= new Vector.<IScene>();
+		private var _actions		: Vector.<IAction>	= Vector.<IAction>([GroupAction.groupAction]);
 		
 		private var _children		: Vector.<IScene>	= null;
 		private var _numChildren	: int				= 0;
 		
-		private var _actions		: Vector.<IAction>	= Vector.<IAction>([GroupAction.groupAction]);
-		
-		public function get actions()	: Vector.<IAction>	{ return _actions; }
 		public function get name()		: String			{ return _name; }
+		public function get parents()	: Vector.<IScene>	{ return _parents; }
+		public function get actions()	: Vector.<IAction>	{ return _actions; }
 		
 		public function set name(value : String) : void
 		{
@@ -114,15 +116,7 @@ package aerys.minko.scene.node.group
 		 */
 		public function addChild(scene : IScene) : IGroup
 		{
-			if (!scene)
-				throw new Error("Parameter child must be non-null.");
-			
-			_children.push(scene);
-			++_numChildren;
-			
-			//scene.added(this);
-			
-			return this;
+			return addChildAt(scene, _numChildren);
 		}
 		
 		public function addChildAt(scene : IScene, position : uint) : IGroup
@@ -130,14 +124,14 @@ package aerys.minko.scene.node.group
 			if (!scene)
 				throw new Error("Parameter child must be non-null.");
 			
-			var numChildren : int = _children.length;
+			if (position < _numChildren)
+				for (var i : int = _numChildren; i > position; --i)
+					_children[i] = _children[int(i - 1)];
+			else
+				position = _numChildren;
 			
-			if (position >= numChildren)
-				return addChild(scene);
-			
-			for (var i : int = numChildren; i > position; --i)
-				_children[i] = _children[int(i - 1)];
 			_children[position] = scene;
+			scene.parents.push(this);
 			
 			++_numChildren;
 			
@@ -152,29 +146,24 @@ package aerys.minko.scene.node.group
 		 */
 		public function removeChild(child : IScene) : IGroup
 		{
-			var numChildren : int = _children.length;
-			var i : int	= 0;
-
-			while (i < numChildren && _children[i] !== child)
-				++i;
+			var childIndex : int = getChildIndex(child);
 			
-			if (i >= numChildren)
-				return null;
+			if (childIndex == -1)
+				throw new Error('The scene node is not a child of the caller');
 			
-			return removeChildAt(i);
+			return removeChildAt(childIndex);
 		}
 		
 		public function removeChildAt(position : uint) : IGroup
 		{
-			var removed 	: IScene 	= null;
-	
 			if (position < _numChildren)
 			{
-				removed = _children[position];
+				var removedParents : Vector.<IScene> = _children[position].parents;
 				
-				while (position < _numChildren - 1)
-					_children[position] = _children[int(++position)];
-				_children.length = --_numChildren;
+				_children.splice(position, 1);
+				removedParents.splice(removedParents.indexOf(this), 1);
+				
+				--_numChildren;
 			}
 			
 			return this;
@@ -182,32 +171,15 @@ package aerys.minko.scene.node.group
 		
 		public function removeAllChildren() : IGroup
 		{
-			_children.length = 0;
-			_numChildren = 0;
-			
+			while (_numChildren)
+				removeChildAt(0);
+				
 			return this;
 		}
 		
 		public function getChildAt(position : uint) : IScene
 		{
 			return position < _numChildren ? _children[position] : null;
-		}
-		
-		public function swapChildren(child1	: IScene,
-									 child2	: IScene) : IGroup
-		{
-			var id1	: int 	= getChildIndex(child1);
-			var id2 : int	= getChildIndex(child2);
-			
-			if (id1 == -1 || id2 == -1)
-				return this;
-			
-			var tmp : IScene = _children[id2];
-			
-			_children[id2] = _children[id1];
-			_children[id1] = tmp;
-			
-			return this;
 		}
 		
 		public function getDescendantByName(name : String) : IScene
@@ -237,7 +209,7 @@ package aerys.minko.scene.node.group
 				var child		: IScene			= _children[i];
 				var searchable 	: ISearchableScene 	= child as ISearchableScene;
 
-				if (getClassByAlias(getQualifiedClassName(child)) == type)
+				if (child is type)
 					descendants.push(child);
 				
 				if (searchable)
@@ -263,26 +235,13 @@ package aerys.minko.scene.node.group
 		{
 			var index : int = parseInt(name);
 			
-			if (index == name)
-			{
-				if (index < numChildren)
-				{
-					removeChildAt(index);
-					addChildAt(value, index);
-				}
-			}
-			else
-			{
-				var old : IScene = getChildByName(name);
-				
-				addChild(value);
-				
-				if (old)
-				{
-					swapChildren(value, old);
-					_children.length = _children.length - 1;
-				}
-			}
+			if (index != name || index > numChildren)
+				throw new Error("'" + name + "' is not a valid child index.");
+			
+			if (index != numChildren)
+				removeChildAt(index);
+			
+			addChildAt(value, index);
 		}
 		
 		override flash_proxy function getDescendants(name : *) : *

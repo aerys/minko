@@ -1,12 +1,9 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.ressource.IndexBufferRessource;
 	import aerys.minko.type.IVersionnable;
 	
-	import flash.display3D.Context3D;
-	import flash.display3D.IndexBuffer3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -15,11 +12,11 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 		
-		minko_stream var _data	: Vector.<uint>		= null;
+		minko_stream var _data	: Vector.<uint>			= null;
 		
-		private var _version	: uint				= 0;
-		private var _dynamic	: Boolean			= false;
-		private var _length		: uint				= 0;
+		private var _version	: uint					= 0;
+		private var _dynamic	: Boolean				= false;
+		private var _length		: uint					= 0;
 		private var _ressource	: IndexBufferRessource	= null;
 		
 		public function get version() 		: uint				{ return _version; }
