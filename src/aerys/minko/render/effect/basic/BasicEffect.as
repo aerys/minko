@@ -3,6 +3,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
+	import aerys.minko.render.effect.SinglePassEffect;
 	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.Blending;
@@ -31,25 +32,12 @@ package aerys.minko.render.effect.basic
 	[StyleParameter(name="fog start",type="number")]
 	[StyleParameter(name="fog distance",type="number")]
 
-	public class BasicEffect extends ActionScriptShader implements IEffect, IEffectPass
+	public class BasicEffect extends SinglePassEffect
 	{
-		protected var _priority			: Number;
-		protected var _renderTarget		: RenderTarget;
-		
-		protected var _passes			: Vector.<IEffectPass>	= Vector.<IEffectPass>([this]);
-		
 		public function BasicEffect(priority		: Number		= 0,
 								  	renderTarget	: RenderTarget	= null)
 		{
-			_priority		= priority;
-			_renderTarget	= renderTarget;
-		}
-		
-		public function getPasses(styleStack	: StyleStack, 
-								  local			: LocalData, 
-								  world			: Dictionary) : Vector.<IEffectPass>
-		{
-			return _passes;
+			super(priority, renderTarget);
 		}
 		
 		override public function fillRenderState(state	: RendererState, 
@@ -59,14 +47,8 @@ package aerys.minko.render.effect.basic
 		{
 			super.fillRenderState(state, style, local, world);
 			
-			var blending : uint = style.get(BasicStyle.BLENDING, Blending.NORMAL) as uint;
-			
-			state.depthTest			= CompareMode.LESS;
-			state.blending			= blending;
-			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			state.priority			= _priority + .5;
-			state.rectangle			= null;
-			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
+			state.depthTest	= CompareMode.LESS;
+			state.priority	= state.priority + .5;
 			
 			if (state.blending != Blending.NORMAL)
 				state.priority -= .5;

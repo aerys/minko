@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.renderer.state.FrustumCulling;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.scene.action.BoundingVolumeAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -49,14 +49,14 @@ package aerys.minko.scene.node.mesh.modifier
 		{
 			super(target);
 			
-			_frustumCulling = FrustumCulling.ENABLED;
-			actions[0] = new BoundingVolumeAction();
-			
 			initialize();
 		}
 		
 		private function initialize() : void
 		{
+			_frustumCulling = FrustumCulling.ENABLED;
+			actions[0] = new BoundingVolumeAction();
+
 			//if (target.version != _version || !_boundingBox)
 			{
 				var min				: Vector4			= new Vector4(Number.POSITIVE_INFINITY,

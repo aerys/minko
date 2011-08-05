@@ -13,7 +13,7 @@ package aerys.minko.type.math
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public class Plane
+	public final class Plane
 	{
 		use namespace minko;
 

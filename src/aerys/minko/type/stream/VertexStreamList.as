@@ -13,17 +13,13 @@ package aerys.minko.type.stream
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
 		private var _streamVersions	: Vector.<int>			= new Vector.<int>();
 		private var _format			: VertexFormat			= new VertexFormat();
-			
 		private var _version		: int					= 0;
 		private var _dynamic		: Boolean				= false;
-		
-		private var _ressource		: VertexBufferRessource		= null;
 		
 		public function get version()		: uint 				{ return _version; }
 		public function get dynamic()		: Boolean 			{ return _dynamic; }
 		public function get format()		: VertexFormat		{ return _format; }
-		public function get streamCount()	: uint				{ return _streams.length; }
-		public function get ressource()		: VertexBufferRessource	{ return _ressource; }
+		public function get numStreams()	: uint				{ return _streams.length; }
 		
 		public function get length()	: uint
 		{
@@ -37,9 +33,7 @@ package aerys.minko.type.stream
 		
 		private function initialize(streams : Array) : void
 		{
-			_ressource = new VertexBufferRessource(this);
-			
-			for each (var stream : VertexStream in streams) 
+			for each (var stream : VertexStream in streams)
 				pushVertexStream(stream);
 		}
 		

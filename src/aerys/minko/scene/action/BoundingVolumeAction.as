@@ -1,7 +1,7 @@
 package aerys.minko.scene.action
 {
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.renderer.state.FrustumCulling;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.modifier.IMeshModifier;
 	import aerys.minko.scene.visitor.ISceneVisitor;

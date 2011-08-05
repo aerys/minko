@@ -13,60 +13,50 @@ package aerys.minko.render.ressource
 	{
 		use namespace minko_stream;
 		
-		private var _stream			: IVertexStream		= null;
+		private var _stream			: VertexStream		= null;
 		private var _streamVersion	: uint				= 0;
-		private var _vertexBuffers	: Dictionary		= new Dictionary(true);
+		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 		
 		public function get numVertices() : uint	{ return _numVertices; }
 		
-		public function VertexBufferRessource(source : IVertexStream)
+		public function VertexBufferRessource(source : VertexStream)
 		{
 			_stream = source;
 		}
 		
 		public function getVertexBuffer3D(context : Context3D, component : VertexComponent) : VertexBuffer3D
 		{
-			var vstream		: VertexStream		= _stream.getSubStreamByComponent(component);
+			var update		: Boolean			= _stream.version != _streamVersion;
+			var numVertices	: uint				= _stream.length;
 			
-			if (!(_stream is VertexStream))
-				return vstream.ressource.getVertexBuffer3D(context, component);
-			
-			var vbuffer		: VertexBuffer3D	= _vertexBuffers[vstream];
-			var update		: Boolean			= vstream.version != _streamVersion;
-			var numVertices	: uint				= vstream.length;
-			
-			if (numVertices && (!vbuffer || numVertices != _numVertices))
+			if (numVertices && (!_vertexBuffer || numVertices != _numVertices))
 			{
-				if (vbuffer)
-					vbuffer.dispose();
+				if (_vertexBuffer)
+					_vertexBuffer.dispose();
 				
-				vbuffer = context.createVertexBuffer(vstream.length,
-													 vstream.format.dwordsPerVertex);
-				_vertexBuffers[vstream] = vbuffer;
+				_vertexBuffer = context.createVertexBuffer(_stream.length,
+														   _stream.format.dwordsPerVertex);
 				update = true;
 			}
 			
-			if (vbuffer && update)
+			if (_vertexBuffer && update)
 			{
-				vbuffer.uploadFromVector(vstream._data, 0, numVertices);
+				_vertexBuffer.uploadFromVector(_stream._data, 0, numVertices);
 				
-				_streamVersion = vstream.version;
+				_streamVersion = _stream.version;
 				_numVertices = numVertices;
 				
-				if (!vstream.dynamic)
-					vstream.disposeLocalData();
+				if (!_stream.dynamic)
+					_stream.disposeLocalData();
 			}
 			
-			return vbuffer;
+			return _vertexBuffer;
 		}
 		
 		public function dispose() : void
 		{
-			for each (var vb : VertexBuffer3D in _vertexBuffers)
-				vb.dispose();
-			
-			_vertexBuffers = new Dictionary(true);
+			_vertexBuffer.dispose();
 		}
 	}
 }
