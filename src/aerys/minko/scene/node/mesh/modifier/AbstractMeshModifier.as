@@ -5,7 +5,6 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ISearchableScene;
 	import aerys.minko.scene.node.mesh.IMesh;
-	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -52,9 +51,7 @@ package aerys.minko.scene.node.mesh.modifier
 		{
 			super();
 			
-			_target = target;
-			
-			initialize(streams);
+			initialize(target, streams);
 			
 			//actions[0] = new MeshModifierAction();
 			actions[0] = MeshAction.meshAction;
@@ -73,7 +70,8 @@ package aerys.minko.scene.node.mesh.modifier
 			return null;
 		}
 		
-		public function getDescendantsByType(type : Class, descendants : Vector.<IScene> = null) : Vector.<IScene>
+		public function getDescendantsByType(type 			: Class,
+											 descendants 	: Vector.<IScene> = null) : Vector.<IScene>
 		{
 			descendants ||= new Vector.<IScene>();
 			
@@ -88,9 +86,12 @@ package aerys.minko.scene.node.mesh.modifier
 			return descendants;
 		}
 	
-		private function initialize(streams : Array) : void
+		private function initialize(target : IMesh, streams : Array) : void
 		{
 			var numStreams : int = streams.length;
+			
+			_target = target;
+			_target.parents.push(this);
 			
 			_vertexStreamList = target.vertexStream is VertexStreamList
 								? (target.vertexStream as VertexStreamList).clone()

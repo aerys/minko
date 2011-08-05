@@ -79,10 +79,10 @@ package aerys.minko.type.stream.iterator
 		{
 			super();
 			
-			if (!vertexStream.dynamic)
+			/*if (!vertexStream.dynamic)
 				throw new Error("Unable to work on static VertexStream.");
 			if (!indexStream.dynamic)
-				throw new Error("Unable to work on static IndexStream.");
+				throw new Error("Unable to work on static IndexStream.");*/
 			
 			_vstream = vertexStream;
 			_istream = indexStream;
