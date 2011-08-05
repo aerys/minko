@@ -10,7 +10,8 @@
 	import flash.utils.flash_proxy;
 	
 	/**
-	 * ...
+	 * VertexReference object are high-level OOP-oriented vertices data proxy.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 */
 	public dynamic final class VertexReference extends Proxy
@@ -18,54 +19,76 @@
 		use namespace minko_stream;
 		use namespace flash_proxy;
 		
-		minko_stream var _index			: int			= 0;
-		minko_stream var _propToStream	: Object		= null;
+		minko_stream var _index				: int		= 0;
+		minko_stream var _propertyToStream	: Object	= null;
 		
-		private var _stream 		: IVertexStream	= null;
+		private var _stream	: IVertexStream	= null;
 				
+		/**
+		 * The index of the vertex in the source VertexStream.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get index() : int	{ return _index; }
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
-			var stream : VertexStream = _propToStream[name];
-			var format : VertexFormat = stream.format;
+			if (!_propertyToStream)
+				initialize();
+
+			var propertyName 	: String 		= name;
+			var stream 			: VertexStream	= _propertyToStream[propertyName];
+			var format 			: VertexFormat 	= stream.format;
+			var index			: int			= _index * format.dwordsPerVertex
+												  + format.getOffsetForField(name);
 			
-			return stream._data[int(_index * format.dwordsPerVertex + format.getOffsetForField(name))];
+			return stream._data[index];
 		}
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var propertyName : String = name;
-			var stream : VertexStream = _propToStream[propertyName];
-			var format : VertexFormat = stream.format;
+			if (!_propertyToStream)
+				initialize();
+
+			var propertyName 	: String 		= name;
+			var stream 			: VertexStream 	= _propertyToStream[propertyName];
+			var format 			: VertexFormat 	= stream.format;
+			var index			: int			= _index * format.dwordsPerVertex
+												  + format.getOffsetForField(name);
 			
+			stream._data[index] = value as Number;
 			stream.invalidate();
-			stream._data[int(_index * format.dwordsPerVertex + format.getOffsetForField(name))] = value as Number;
 		}
 		
-		public function VertexReference(stream 				: IVertexStream,
-								 		index				: int		= -1,
-										propertyToStream	: Object 	= null)
+		public function VertexReference(stream 	: IVertexStream,
+								 		index	: int	= -1)
 		{
 			_stream = stream;
 			_index = index == -1 ? stream.length : index;
-			_propToStream = propertyToStream;
-			
-			if (!_propToStream)
-				initialize();
 		}
 		
 		private function initialize() : void
 		{
 			var components : Object = _stream.format.components;
 			
-			_propToStream = new Object();
+			_propertyToStream = new Object();
 			
 			for each (var component : VertexComponent in components)
-			{
 				for each (var field : String in component.fields)
-				_propToStream[field] = _stream.getSubStreamByComponent(component);
-			}
+					_propertyToStream[field] = _stream.getSubStreamByComponent(component);
+		}
+		
+		public function toString() : String
+		{
+			var str : String	= "Vertex(index=" + _index;
+			
+			for (var field : String in _propertyToStream)
+				str += ", " + field + "=" + getProperty(field);
+
+			str += ")";
+			
+			return str;
 		}
 	}
 

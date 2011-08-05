@@ -41,7 +41,7 @@ package aerys.minko.type.stream.iterator
 		private var _v2v	: uint				= 0;
 		
 		private var _normal	: Vector4			= null;
-		private var _plane	: Plane			= null;
+		private var _plane	: Plane				= null;
 		private var _center	: Vector4			= null;
 		
 		public function get index()	: int				{ return _index; }

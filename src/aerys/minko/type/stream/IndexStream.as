@@ -16,12 +16,13 @@ package aerys.minko.type.stream
 		
 		private var _version	: uint					= 0;
 		private var _dynamic	: Boolean				= false;
-		private var _length		: uint					= 0;
 		private var _ressource	: IndexBufferRessource	= null;
+		private var _length		: uint					= 0;
 		
-		public function get version() 		: uint				{ return _version; }
-		public function get ressource()		: IndexBufferRessource	{ return _ressource; }
-		public function get length()		: uint				{ return _length; }
+		public function get version() 	: uint					{ return _version; }
+		public function get dynamic()	: Boolean				{ return _dynamic; }
+		public function get ressource()	: IndexBufferRessource	{ return _ressource; }
+		public function get length()	: uint					{ return _length; }
 		
 		public function set length(value : uint) : void
 		{
@@ -29,7 +30,7 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 		
-		public static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>
+		minko_stream static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>
 		{
 			var indices : Vector.<uint> = new Vector.<uint>(size);
 			

@@ -9,8 +9,7 @@ package aerys.minko.type.stream.iterator
 	import flash.utils.flash_proxy;
 	
 	/**
-	 * Triangle3DIterator allow per-triangle access on VertexBuffer3D and
-	 * IndexBuffer3D objects.
+	 * TriangleIterator allow per-triangle access on VertexStream objects.
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
@@ -19,30 +18,30 @@ package aerys.minko.type.stream.iterator
 	{
 		use namespace minko;
 		
-		private var _shallow	: Boolean				= true;
+		private var _singleReference	: Boolean			= true;
 		
-		private var _offset		: int					= 0;
-		private var _index		: int					= 0;
+		private var _offset				: int				= 0;
+		private var _index				: int				= 0;
 		
-		private var _vb			: VertexStream		= null;
-		private var _ib			: IndexStream			= null;
+		private var _vb					: VertexStream		= null;
+		private var _ib					: IndexStream		= null;
 		
-		private var _triangle	: TriangleReference	= null;
+		private var _triangle			: TriangleReference	= null;
 		
 		public function get length() : int
 		{
-			return _ib ? _ib.length / 3. : _vb.length / 3.;
+			return _ib ? _ib.length / 3 : _vb.length / 3;
 		}
 		
-		public function TriangleIterator(myVertexBuffer 	: VertexStream,
-										   myIndexBuffer	: IndexStream,
-										   myShallow		: Boolean = true)
+		public function TriangleIterator(vertexStream 		: VertexStream,
+										   indexStream		: IndexStream,
+										   singleReference	: Boolean = true)
 		{
 			super();
 			
-			_vb = myVertexBuffer;
-			_ib = myIndexBuffer;
-			_shallow = myShallow;
+			_vb = vertexStream;
+			_ib = indexStream;
+			_singleReference = singleReference;
 		}
 		
 		override flash_proxy function hasProperty(name : *) : Boolean
@@ -67,10 +66,10 @@ package aerys.minko.type.stream.iterator
 		{
 			_index = index - 1;
 			
-			if (!_shallow || !_triangle)
+			if (!_singleReference || !_triangle)
 				_triangle = new TriangleReference(_vb, _ib, _index);
 			
-			if (_shallow)
+			if (_singleReference)
 			{
 				_triangle._index = _index;
 				_triangle.v0._index = _ib._indices[int(_index * 3)];
