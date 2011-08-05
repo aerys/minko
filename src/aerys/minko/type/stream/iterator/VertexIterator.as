@@ -29,7 +29,7 @@ package aerys.minko.type.stream.iterator
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class VertexIteraDztor extends Proxy
+	public class VertexIterator extends Proxy
 	{
 		use namespace minko_stream;
 		
