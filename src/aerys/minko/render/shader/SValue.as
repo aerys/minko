@@ -323,39 +323,7 @@ package aerys.minko.render.shader
 			if (value is SValue)
 				return (value as SValue)._node;
 			
-			var c	: Constant	= new Constant();
-			
-			if (value is int || value is Number)
-			{
-				c.constants[0] = value as Number;
-			}
-			else if (value is Point)
-			{
-				var point	: Point	= value as Point;
-				
-				c.constants[0] = point.x;
-				c.constants[1] = point.y;
-			}
-			else if (value is Vector4)
-			{
-				var vector 	: Vector4 	= value as Vector4;
-				
-				c.constants[0] = vector.x;
-				c.constants[1] = vector.y;
-				c.constants[2] = vector.z;
-				
-				if (!isNaN(vector.w))
-					c.constants[3] = vector.w;
-			}
-			else if (value is Matrix4x4)
-			{
-				(value as Matrix4x4).getRawData(c.constants);
-			}
-			
-			if (!c)
-				throw new Error("Constants can only be int, uint, Number, Point, Vector4 or Matrix4x4 values.");
-			
-			return c;
+			return new Constant(value);
 		}
 	}
 }
