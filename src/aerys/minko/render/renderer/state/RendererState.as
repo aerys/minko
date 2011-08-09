@@ -465,11 +465,12 @@ package aerys.minko.render.renderer.state
 							if (component)
 							{
 								var stream 			: VertexStream 		= _vertexStream.getSubStreamByComponent(component);
-								var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
-								var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
 								
 								if (!stream)
 									throw new Error("Missing vertex components: " + component.toString());
+								
+								var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
+								var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
 								
 								context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
 							}
@@ -602,11 +603,12 @@ package aerys.minko.render.renderer.state
 					if (component)
 					{
 						var stream 			: VertexStream 		= _vertexStream.getSubStreamByComponent(component);
-						var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
-						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
 						
 						if (!stream)
 							throw new Error("Missing vertex components: " + component.toString());
+						
+						var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
+						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
 						
 						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
 					}

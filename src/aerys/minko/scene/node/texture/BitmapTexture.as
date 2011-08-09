@@ -84,14 +84,15 @@ package aerys.minko.scene.node.texture
 		}
 		
 		public function BitmapTexture(bitmapData 	: BitmapData 	= null,
-									  mipmapping	: Boolean		= true)
+									  mipmapping	: Boolean		= true,
+									  styleProp		: int			= -1)
 		{
 			_mipmapping	= mipmapping;
 			
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
 			
-			_styleProp = BasicStyle.DIFFUSE;
+			_styleProp = styleProp != -1 ? styleProp : BasicStyle.DIFFUSE;
 			
 			actions[0] = TextureAction.textureAction;
 		}
