@@ -6,6 +6,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
+	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.leaf.Sampler;
@@ -295,6 +296,11 @@ package aerys.minko.render.shader
 			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_SCREEN));
 		}
 		
+		protected final function get worldToScreenMatrix() : SValue
+		{
+			return new SValue(new TransformParameter(16, LocalData.WORLD_TO_SCREEN));
+		}
+		
 		/**
 		 * The local-to-world (= world) transformation matrix. 
 		 * @return 
@@ -331,6 +337,16 @@ package aerys.minko.render.shader
 		 * 
 		 */
 		protected final function get worldToViewMatrix() : SValue
+		{
+			return new SValue(new TransformParameter(16, LocalData.VIEW));
+		}
+		
+		protected final function get viewToWorldMatrix() : SValue
+		{
+			return new SValue(new TransformParameter(16, LocalData.VIEW_INVERSE));
+		}
+		
+		protected final function get viewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW));
 		}
@@ -520,7 +536,7 @@ package aerys.minko.render.shader
 				size -= value.size;
 				if (size < 0)
 				{
-					var extract : Extract = new Extract(value, sizeToComponents[int(-size + 1)]);
+					var extract : Extract = new Extract(value, sizeToComponents[int(value.size + size - 1)]);
 					
 					result = result ? new Combine(result, extract) : extract;
 				}
@@ -883,6 +899,16 @@ package aerys.minko.render.shader
 		protected final function getVertexAttribute(vertexComponent : VertexComponent) : SValue
 		{
 			return new SValue(new Attribute(vertexComponent));
+		}
+		
+		protected final function getConstantByIndex(constant 	: SValue,
+													index		: SValue) : SValue
+		{
+			if (!(constant._node is AbstractConstant))
+				throw new Error("Unable to use index on non-constant values.");
+			
+			// handle only size == 4 (#20)
+			return new SValue(new VariadicExtract(index._node, constant._node as AbstractConstant, 4));
 		}
 		
 		/**

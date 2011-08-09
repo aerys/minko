@@ -24,7 +24,7 @@ package aerys.minko.scene.data
 		public static const LOCAL_TO_SCREEN				: String = 'localToScreen';
 		public static const LOCAL_TO_UV					: String = 'localToUv';
 		
-		public static const GLOBAL_TO_SCREEN			: String = 'globalToScreen';
+		public static const WORLD_TO_SCREEN				: String = 'worldToScreen';
 		
 		protected var _world							: Matrix4x4;
 		protected var _view								: Matrix4x4;
@@ -143,7 +143,7 @@ package aerys.minko.scene.data
 			return _localToUv;
 		}
 		
-		public function get globalToScreen() : Matrix4x4
+		public function get worldToScreen() : Matrix4x4
 		{
 			var projectionMatrix	: Matrix4x4 = projection;
 			var viewMatrix			: Matrix4x4 = view;

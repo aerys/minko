@@ -37,10 +37,10 @@ package aerys.minko.render.shader.node.operation.manipulation
 			{
 				leftOperand = new Multiply(leftOperand, new Constant(cellSize / 4));
 				
-				// the following is a patch to adobe's agal validator.
-				// we have to fill a complete register for the index to work
-				leftOperand = new RootWrapper(new Extract(leftOperand, Components.XXXX));
 			}
+			// the following is a patch to adobe's agal validator.
+			// we have to fill a complete register for the index to work
+			leftOperand = new RootWrapper(new Extract(leftOperand, Components.XXXX));
 			
 			var rightOperand : INode = table;
 			

@@ -2,16 +2,17 @@ package aerys.minko.render.shader.node.operation.builtin
 {
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
+	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
 	
-	public class Normalize extends AbstractOperation implements IComponentWiseOperation
+	public class Normalize extends AbstractOperation implements IComponentWiseOperation, IAlignedOperation
 	{
-		override public function get opCode():uint
+		override public function get opCode() : uint
 		{
 			return 0x0e;
 		}
 		
-		override public function get instructionName():String
+		override public function get instructionName() : String
 		{
 			return 'nrm';
 		}
@@ -21,7 +22,7 @@ package aerys.minko.render.shader.node.operation.builtin
 			return Math.min(arg1.size, 3);
 		}
 		
-		public function Normalize(arg1:INode)
+		public function Normalize(arg1 : INode)
 		{
 			super(arg1, null);
 			

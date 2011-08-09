@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.debug
 {
 	import aerys.minko.scene.node.Model;
+	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.scene.node.group.TransformGroup;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.mesh.modifier.ColorMeshModifier;
@@ -12,7 +13,7 @@ package aerys.minko.scene.node.debug
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
 	
-	public class OrthogonalFrame extends TransformGroup
+	public class OrthogonalFrame extends Group
 	{
 		public function OrthogonalFrame()
 		{

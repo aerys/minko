@@ -2,6 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.operation.builtin.Add;
 	import aerys.minko.render.shader.node.operation.builtin.Divide;
@@ -19,6 +20,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.builtin.Substract;
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
+	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -154,7 +156,7 @@ package aerys.minko.render.shader
 			return new SValue(new Add(_node, getNode(value)));
 		}
 		
-		public final function increment(value : Object) : SValue
+		public final function incrementBy(value : Object) : SValue
 		{
 			_node = new Add(_node, getNode(value));
 			
@@ -218,15 +220,11 @@ package aerys.minko.render.shader
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
-			// TODO: handle [] AGAL notation here
-			
 			return new SValue(new Extract(_node, getComponentsFromString(name)));
 		}
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			// TODO: handle [] AGAL notation here
-
 			var str 	: String	= String(name).toLowerCase();
 			var val 	: INode	 	= getNode(value);
 			var size 	: uint 		= _node.size;
