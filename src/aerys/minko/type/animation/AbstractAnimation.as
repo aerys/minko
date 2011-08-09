@@ -14,8 +14,8 @@ package aerys.minko.type.animation
 		protected var _timelines		: Vector.<ITimeline>;
 		protected var _duration			: uint;
 		
-		public function get id() : String { return _id; }
-		public function get duration() : uint { return _duration; }
+		public function get id() 		: String 	{ return _id; }
+		public function get duration() 	: uint 		{ return _duration; }
 		
 		public function AbstractAnimation(id		: String,
 								 		  timelines : Vector.<ITimeline>)

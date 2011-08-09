@@ -740,6 +740,11 @@ package aerys.minko.render.shader
 			return new SValue(new Multiply4x4(getNode(a), getNode(b)));
 		}
 		
+		protected final function multiply3x3(a : Object, b : Object) : SValue
+		{
+			return new SValue(new Multiply3x3(getNode(a), getNode(b)));
+		}
+		
 		protected final function cos(angle : Object) : SValue
 		{
 			return new SValue(new Cosine(getNode(angle)));

@@ -19,7 +19,7 @@ package aerys.minko.scene.action.effect
 			var effect : IEffect = (scene as IEffectTarget).effect;
 			
 			if (effect)
-				visitor.renderingData.effect.pop();
+				visitor.renderingData.effects.pop();
 			
 			return true;
 		}

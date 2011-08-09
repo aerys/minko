@@ -6,17 +6,18 @@ package aerys.minko.render.effect.debug
 
 	public class DebugEffect extends SinglePassEffect
 	{
-		private static const COLOR	: Vector4	= new Vector4(.5, .5, .5, 1.);
+		private const COLOR			: SValue	= float4(.5, .5, .5, 1.);
 		
 		private var _vertexColor	: SValue	= null;
 		
 		override protected function getOutputPosition() : SValue
 		{
-			var lightDir	: SValue	= cameraLocalDirection;
-			var normal		: SValue	= vertexNormal;
+			var lightDir	: SValue	= subtract(cameraLocalPosition, vertexPosition);
 			
-			_vertexColor = saturate(negate(normal.dotProduct3(lightDir)));
-			_vertexColor.scaleBy(COLOR);
+			lightDir.normalize();
+			
+			_vertexColor = saturate(vertexNormal.dotProduct3(lightDir));
+			_vertexColor = float4(multiply(_vertexColor, COLOR.rgb), COLOR.a);
 			
 			return vertexClipspacePosition;
 		}

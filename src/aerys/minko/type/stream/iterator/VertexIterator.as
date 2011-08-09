@@ -29,7 +29,7 @@ package aerys.minko.type.stream.iterator
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class VertexIteraDztor extends Proxy
+	public class VertexIterator extends Proxy
 	{
 		use namespace minko_stream;
 		
@@ -79,10 +79,10 @@ package aerys.minko.type.stream.iterator
 		{
 			super();
 			
-			if (!vertexStream.dynamic)
+			/*if (!vertexStream.dynamic)
 				throw new Error("Unable to work on static VertexStream.");
 			if (!indexStream.dynamic)
-				throw new Error("Unable to work on static IndexStream.");
+				throw new Error("Unable to work on static IndexStream.");*/
 			
 			_vstream = vertexStream;
 			_istream = indexStream;

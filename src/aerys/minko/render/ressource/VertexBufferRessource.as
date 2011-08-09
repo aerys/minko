@@ -25,7 +25,7 @@ package aerys.minko.render.ressource
 			_stream = source;
 		}
 		
-		public function getVertexBuffer3D(context : Context3D, component : VertexComponent) : VertexBuffer3D
+		public function getVertexBuffer3D(context : Context3D) : VertexBuffer3D
 		{
 			var update		: Boolean			= _stream.version != _streamVersion;
 			var numVertices	: uint				= _stream.length;

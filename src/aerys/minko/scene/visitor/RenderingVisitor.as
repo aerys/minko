@@ -4,12 +4,12 @@ package aerys.minko.scene.visitor
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.IWorldData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.ViewportData;
+	import aerys.minko.scene.node.IScene;
 	
 	import flash.utils.Dictionary;
 	
@@ -25,6 +25,7 @@ package aerys.minko.scene.visitor
 		protected var _renderingData	: RenderingData;
 		
 		protected var _parent			: IScene			= null;
+		protected var _current			: IScene			= null;
 		protected var _ancestors		: Vector.<IScene>	= new Vector.<IScene>();
 		
 		public function get localData()		: LocalData			{ return _localData; }
@@ -61,8 +62,9 @@ package aerys.minko.scene.visitor
 			var numActions	: int				= actions.length;
 			var action		: IAction			= null;
 			
-			if (_parent)
-				_ancestors.push(_parent);
+			_ancestors.push(_parent);
+			_parent = _current;
+			_current = scene;
 			
 			for (var i : int = 0; i < numActions; ++i)
 				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.run(scene, this, _renderer))
@@ -71,8 +73,8 @@ package aerys.minko.scene.visitor
 			// update statistical data
 			++_numNodes;
 			
-			if (_ancestors.length)
-				_parent = _ancestors.pop();
+			_current = _parent;
+			_parent = _ancestors.pop();
 		}
 	}
 }

@@ -18,7 +18,6 @@ package aerys.minko.scene.data
 		
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
-			
 			if (_cache.hasOwnProperty(styleId))
 				return _cache[styleId];
 			

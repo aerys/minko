@@ -25,19 +25,11 @@ package aerys.minko.type.bounding
 		/**
 		 * The bottom-left corner of the bounding box.
 		 */
-		/*public function get minX() : Number		{ return _min.x; }
-		public function get minY() : Number		{ return _min.y; }
-		public function get minZ() : Number		{ return _min.z; }*/
-		
 		public function get min()	: ConstVector4	{ return _min; }
 		
 		/**
 		 * The top-right corner of the bounding box.
 		 */
-		/*public function get maxX() : Number		{ return _max.x; }
-		public function get maxY() : Number		{ return _max.y; }
-		public function get maxZ() : Number		{ return _max.z; }*/
-		
 		public function get max()	: ConstVector4	{ return _max; }
 		
 		/**
