@@ -277,6 +277,7 @@ package aerys.minko.render
 			if (_autoResize)
 			{
 				parent.addEventListener(Event.RESIZE, resizeHandler);
+				
 				if (parent == stage)
 				{
 					stage.align = StageAlign.TOP_LEFT;
@@ -284,7 +285,7 @@ package aerys.minko.render
 				}
 			}
 			
-			updateRectangle();
+			resizeHandler();
 		}
 		
 		private function removedFromStage(event : Event) : void
