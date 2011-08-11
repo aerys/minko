@@ -438,47 +438,33 @@ package aerys.minko.render.renderer.state
 						context.setTextureAt(i, _textures[i].getNativeTexture(context));
 					else
 						context.setTextureAt(i, null);
+				}
+			
+				if ((_setFlags & VERTEX_STREAM) != 0 || (_setFlags & SHADER) != 0)
+				{
+					var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
+					var numInputs	: int						= vertexInput.length;
 					
-					// set vertex buffer
-					/*if (_setFlags & (VERTEX_STREAM_1 << i))
+					for (i = 0; i < numInputs; ++i)
 					{
-						var vertexComponent : VertexComponent	= _vertexComponents[i];
-						var vertexBuffer 	: VertexBuffer3D	= _vertexStreams[i].ressource.getVertexBuffer3D(context, vertexComponent);
-						var vertexOffset 	: int				= _vertexOffsets[i];
+						var component : VertexComponent = vertexInput[i];
 						
-						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, vertexComponent.nativeFormatString);
-					}
-					else 
-					{
-						context.setVertexBufferAt(i, null);
-					}*/
-					
-					if ((_setFlags & VERTEX_STREAM) != 0 || (_setFlags & SHADER) != 0)
-					{
-						var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
-						var numInputs	: int						= vertexInput.length;
-						
-						for (i = 0; i < numInputs; ++i)
+						if (component)
 						{
-							var component : VertexComponent = vertexInput[i];
+							var stream 			: VertexStream 		= _vertexStream.getSubStreamByComponent(component);
 							
-							if (component)
-							{
-								var stream 			: VertexStream 		= _vertexStream.getSubStreamByComponent(component);
-								
-								if (!stream)
-									throw new Error("Missing vertex components: " + component.toString());
-								
-								var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
-								var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
-								
-								context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
-							}
+							if (!stream)
+								throw new Error("Missing vertex components: " + component.toString());
+							
+							var vertexBuffer 	: VertexBuffer3D	= stream.ressource.getVertexBuffer3D(context);
+							var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
+							
+							context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
 						}
-						
-						while (i < 8)
-							context.setVertexBufferAt(i++, null);	
 					}
+					
+					while (i < 8)
+						context.setVertexBufferAt(i++, null);
 				}
 				
 				if (_setFlags & DEPTH_MASK)
@@ -569,24 +555,6 @@ package aerys.minko.render.renderer.state
 											  	  			  : null;
 				if (texture != ((current._setFlags & textureFlag) ? current._textures[i] : null))
 					context.setTextureAt(i, texture);
-				
-				// set vertex buffers
-				/*var vertexFlag 	 	: uint 				= VERTEX_STREAM_1 << i;
-				var vertexStream 	: VertexStream		= _setFlags & vertexFlag ? _vertexStreams[i] : null;
-				
-				if (vertexStream != (current._setFlags & vertexFlag ? current._vertexStreams[i] : null))
-				{
-					if (!vertexStream)
-						context.setVertexBufferAt(i, null);
-					else
-					{
-						var vertexOffset 	: int				= _vertexOffsets[i];
-						var vertexComponent : VertexComponent	= _vertexComponents[i];
-						var buffer 			: VertexBuffer3D 	= vertexStream.ressource.getVertexBuffer3D(context, vertexComponent);
-						
-						context.setVertexBufferAt(i, buffer, vertexOffset, vertexComponent.nativeFormatString);
-					}
-				}*/
 			}
 			
 			if ((_setFlags & VERTEX_STREAM) != 0

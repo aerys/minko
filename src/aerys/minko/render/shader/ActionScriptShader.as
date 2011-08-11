@@ -901,14 +901,17 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(vertexComponent));
 		}
 		
-		protected final function getConstantByIndex(constant 	: SValue,
-													index		: SValue) : SValue
+		protected final function getConstantByIndex(constant 	: Object,
+													index		: Object) : SValue
 		{
-			if (!(constant._node is AbstractConstant))
+			var c	: INode	= getNode(constant);
+			var i	: INode	= getNode(index);
+			
+			if (!(c is AbstractConstant))
 				throw new Error("Unable to use index on non-constant values.");
 			
 			// handle only size == 4 (#20)
-			return new SValue(new VariadicExtract(index._node, constant._node as AbstractConstant, 4));
+			return new SValue(new VariadicExtract(i, c as AbstractConstant, 4));
 		}
 		
 		/**

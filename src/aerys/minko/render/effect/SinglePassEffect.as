@@ -22,7 +22,7 @@ package aerys.minko.render.effect
 		protected function get priority() 		: Number		{ return _priority; }
 		protected function get renderTarget() 	: RenderTarget	{ return _renderTarget; }
 		
-		public function SinglePassEffect(priority		: Number	= 0.,
+		public function SinglePassEffect(priority		: Number		= 0.,
 										 renderTarget	: RenderTarget	= null)
 		{
 			_priority = priority;
