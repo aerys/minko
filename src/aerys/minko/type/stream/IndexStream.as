@@ -50,6 +50,7 @@ package aerys.minko.type.stream
 				indices[i] = data.readInt();
 			
 			stream._data = indices;
+			stream.invalidate();
 			
 			return stream;
 		}
@@ -123,7 +124,7 @@ package aerys.minko.type.stream
 			
 			indices ||= new Vector.<uint>();
 			for (var i : int = 0; i < numIndices; ++i)
-				indices[i] = _data[i];			
+				indices[i] = _data[i];
 			
 			return indices;
 		}
