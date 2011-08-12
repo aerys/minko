@@ -1,9 +1,8 @@
 package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.scene.node.mesh.IMesh;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -23,7 +22,7 @@ package aerys.minko.type.stream.iterator
 		private var _offset				: int				= 0;
 		private var _index				: int				= 0;
 		
-		private var _vb					: VertexStream		= null;
+		private var _vb					: IVertexStream		= null;
 		private var _ib					: IndexStream		= null;
 		
 		private var _triangle			: TriangleReference	= null;
@@ -33,7 +32,7 @@ package aerys.minko.type.stream.iterator
 			return _ib ? _ib.length / 3 : _vb.length / 3;
 		}
 		
-		public function TriangleIterator(vertexStream 		: VertexStream,
+		public function TriangleIterator(vertexStream 		: IVertexStream,
 										   indexStream		: IndexStream,
 										   singleReference	: Boolean = true)
 		{

@@ -1,13 +1,11 @@
 package aerys.minko.type.stream.iterator
 {
-	import aerys.minko.type.Factory;
 	import aerys.minko.ns.minko;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
-	
-	import flash.geom.Vector3D;
 
 	public class TriangleReference
 	{
@@ -149,7 +147,7 @@ package aerys.minko.type.stream.iterator
 			_update |= UPDATE_ALL;
 		}
 		
-		public function TriangleReference(vertexBuffer 	: VertexStream,
+		public function TriangleReference(vertexBuffer 		: IVertexStream,
 											indexBuffer		: IndexStream,
 											index 			: int)
 		{
