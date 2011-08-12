@@ -122,8 +122,9 @@ package aerys.minko.type.stream
 			++_version;
 		}
 		
-		public static function fromPositionsAndUVs(positions : Vector.<Number>,
-												   uvs		 : Vector.<Number> = null) : VertexStream
+		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
+												   uvs		 	: Vector.<Number> 	= null,
+												   dynamic		: Boolean			= false) : VertexStream
 		{
 			var numVertices : int 				= positions.length / 3;
 			var stride 		: int 				= uvs ? 5 : 3;
@@ -144,18 +145,21 @@ package aerys.minko.type.stream
 				}
 			}
 			
-			return new VertexStream(data, uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ);
+			return new VertexStream(data,
+									uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ,
+									dynamic);
 		}
 		
-		public static function fromByteArray(data 	: ByteArray,
-											 count	: int,
-											 format	: VertexFormat) : VertexStream
+		public static function fromByteArray(data 		: ByteArray,
+											 count		: int,
+											 format		: VertexFormat,
+											 dynamic	: Boolean	= false) : VertexStream
 		{
 			var numFormats		: int				= format.components.length;
 			var nativeFormats	: Vector.<int>		= new Vector.<int>(numFormats, true);
 			var length			: int				= 0;
 			var tmp				: Vector.<Number>	= null;
-			var stream			: VertexStream		= new VertexStream(null, format);
+			var stream			: VertexStream		= new VertexStream(null, format, dynamic);
 			
 			for (var k : int = 0; k < numFormats; k++)
 				nativeFormats[k] = format.components[k].nativeFormat;
