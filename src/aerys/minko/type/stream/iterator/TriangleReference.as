@@ -1,6 +1,7 @@
 package aerys.minko.type.stream.iterator
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Plane;
 	import aerys.minko.type.math.Vector4;
@@ -10,6 +11,7 @@ package aerys.minko.type.stream.iterator
 	public class TriangleReference
 	{
 		use namespace minko;
+		use namespace minko_stream;
 		
 		private static const VECTOR4				: Factory	= Factory.getFactory(Vector4);
 		
@@ -48,9 +50,9 @@ package aerys.minko.type.stream.iterator
 		public function get v1() 	: VertexReference	{ return _v1; }
 		public function get v2() 	: VertexReference	{ return _v2; }
 		
-		public function get i0() 	: int				{ return _ib._indices[int(_index * 3)]; }
-		public function get i1() 	: int				{ return _ib._indices[int(_index * 3 + 1)]; }
-		public function get i2() 	: int				{ return _ib._indices[int(_index * 3 + 2)]; }
+		public function get i0() 	: int				{ return _ib._data[int(_index * 3)]; }
+		public function get i1() 	: int				{ return _ib._data[int(_index * 3 + 1)]; }
+		public function get i2() 	: int				{ return _ib._data[int(_index * 3 + 2)]; }
 		
 		private function get updateNormal() : Boolean	{ return (_update & UPDATE_NORMAL) || _v0.version != _v0v
 																 || _v1.version != _v1v || _v2.version != _v2v; }
@@ -122,7 +124,7 @@ package aerys.minko.type.stream.iterator
 		
 		public function set i0(value : int) : void
 		{
-			_ib._indices[int(_index * 3)] = value;
+			_ib._data[int(_index * 3)] = value;
 			_ib._update = true;
 			_ib._version++;
 			_v0._index = value;
@@ -131,7 +133,7 @@ package aerys.minko.type.stream.iterator
 		
 		public function set i1(value : int) : void
 		{
-			_ib._indices[int(_index * 3 + 1)] = value;
+			_ib._data[int(_index * 3 + 1)] = value;
 			_ib._update = true;
 			_ib._version++;
 			_v1._index = value;
@@ -140,27 +142,27 @@ package aerys.minko.type.stream.iterator
 		
 		public function set i2(value : int) : void
 		{
-			_ib._indices[int(_index * 3 + 2)] = value;
+			_ib._data[int(_index * 3 + 2)] = value;
 			_ib._update = true;
 			_ib._version++;
 			_v2._index = value;
 			_update |= UPDATE_ALL;
 		}
 		
-		public function TriangleReference(vertexBuffer 		: IVertexStream,
-											indexBuffer		: IndexStream,
-											index 			: int)
+		public function TriangleReference(vertexStream 	: IVertexStream,
+										  indexStream	: IndexStream,
+										  index 		: int)
 		{
-			_ib = indexBuffer;
+			_ib = indexStream;
 			
 			_index = index;
 			
-			_v0 = new VertexReference(vertexBuffer,
-										indexBuffer._indices[int(_index * 3)]);
-			_v1 = new VertexReference(vertexBuffer,
-										indexBuffer._indices[int(_index * 3 + 1)]);
-			_v2 = new VertexReference(vertexBuffer,
-										indexBuffer._indices[int(_index * 3 + 2)]);			
+			_v0 = new VertexReference(vertexStream,
+									  indexStream._data[int(_index * 3)]);
+			_v1 = new VertexReference(vertexStream,
+									  indexStream._data[int(_index * 3 + 1)]);
+			_v2 = new VertexReference(vertexStream,
+									  indexStream._data[int(_index * 3 + 2)]);			
 		}
 		
 		private function invalidateNormal() : void
