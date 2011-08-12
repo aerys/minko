@@ -97,9 +97,12 @@ package aerys.minko.type.math
 		{
 			var dataLength : int = _data.length;
 			
-			validMatrix3D.copyRawDataFrom(_data, dataLength - 16);
-			_data.length = dataLength - 16;
-			invalidate();
+			if (dataLength)
+			{
+				validMatrix3D.copyRawDataFrom(_data, dataLength - 16);
+				_data.length = dataLength - 16;
+				invalidate();
+			}
 			
 			return this;
 		}
