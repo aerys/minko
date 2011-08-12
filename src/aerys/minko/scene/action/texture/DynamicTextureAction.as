@@ -33,7 +33,7 @@ package aerys.minko.scene.action.texture
 			{
 				var dynamicTexture 	: DynamicTexture 	= scene as DynamicTexture;
 				var source			: DisplayObject		= dynamicTexture.source;
-								
+				
 				_lastFrame = renderer.frameId;
 				
 				_bitmapData ||= new BitmapData(source.width, source.height);

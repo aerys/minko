@@ -19,8 +19,9 @@ package aerys.minko.render.effect
 		private var _priority		: Number				= 0.;
 		private var _renderTarget	: RenderTarget			= null;
 		
-		protected function get priority() 		: Number		{ return _priority; }
-		protected function get renderTarget() 	: RenderTarget	{ return _renderTarget; }
+		protected function get priority() 		: Number				{ return _priority; }
+		protected function get renderTarget() 	: RenderTarget			{ return _renderTarget; }
+		protected function get passes()			: Vector.<IEffectPass>	{ return _passes; }
 		
 		public function SinglePassEffect(priority		: Number		= 0.,
 										 renderTarget	: RenderTarget	= null)
