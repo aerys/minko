@@ -12,11 +12,11 @@ package aerys.minko.render.effect.debug
 		
 		override protected function getOutputPosition() : SValue
 		{
-			var lightDir	: SValue	= subtract(cameraLocalPosition, vertexPosition);
+			var lightDir	: SValue	= subtract(vertexPosition, cameraLocalPosition);
 			
 			lightDir.normalize();
 			
-			_vertexColor = saturate(vertexNormal.dotProduct3(lightDir));
+			_vertexColor = vertexNormal.dotProduct3(lightDir);
 			_vertexColor = float4(multiply(_vertexColor, COLOR.rgb), COLOR.a);
 			
 			return vertexClipspacePosition;

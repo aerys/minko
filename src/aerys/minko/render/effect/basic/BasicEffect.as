@@ -26,6 +26,7 @@ package aerys.minko.render.effect.basic
 	import flash.utils.Dictionary;
 	
 	[StyleParameter(name="basic diffuse map",type="texture")]
+	[StyleParameter(name="basic diffuse multiplier",type="color")]
 	
 	[StyleParameter(name="fog enabled",type="boolean")]
 	[StyleParameter(name="fog color",type="color")]
@@ -79,6 +80,13 @@ package aerys.minko.render.effect.basic
 			else
 				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
 			
+			if (styleIsSet(BasicStyle.DIFFUSE_MULTIPLIER))
+			{
+				var diffuseMultiplier : SValue	= getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER);
+				
+				diffuse.scaleBy(copy(diffuseMultiplier));
+			}
+			
 			// fog
 			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
 			{
@@ -116,6 +124,9 @@ package aerys.minko.render.effect.basic
 				hash += '_colorFromTexture';
 			else
 				throw new Error('Invalid BasicStyle.DIFFUSE value');
+			
+			if (style.isSet(BasicStyle.DIFFUSE_MULTIPLIER))
+				hash += "_diffuseMultiplier";
 			
 			if (style.get(SkinningStyle.METHOD, SkinningMethod.DISABLED) != SkinningMethod.DISABLED)
 			{

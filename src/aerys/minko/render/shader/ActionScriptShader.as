@@ -131,7 +131,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexClipspacePosition() : SValue
+		protected function get vertexClipspacePosition() : SValue
 		{
 			return multiply4x4(vertexSkinnedPosition, localToScreenMatrix);
 		}
@@ -142,7 +142,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexWorldPosition() : SValue
+		protected function get vertexWorldPosition() : SValue
 		{
 			return multiply4x4(vertexPosition, localToWorldMatrix);
 		}
@@ -152,7 +152,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexPosition() : SValue
+		protected function get vertexPosition() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
@@ -162,7 +162,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexSkinnedPosition() : SValue
+		protected function get vertexSkinnedPosition() : SValue
 		{
 			var maxInfluences	: uint; 
 			var numBones		: uint;
@@ -187,21 +187,12 @@ package aerys.minko.render.shader
 			}
 		}
 		
-		protected final function get vertexDQSkinnedPosition() : SValue
-		{
-			var maxInfluences	: uint	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
-			var numBones		: uint	= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
-			var shaderNode		: INode	= new DQSkinnedPosition(maxInfluences, numBones);
-			
-			return new SValue(shaderNode);
-		}
-		
 		/**
 		 * The RGB color of the current vertex. 
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexRGBColor() : SValue
+		protected function get vertexRGBColor() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.RGB));
 		}
@@ -211,7 +202,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexRGBAColor() : SValue
+		protected function get vertexRGBAColor() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.RGBA));
 		}
@@ -221,7 +212,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexUV() : SValue
+		protected function get vertexUV() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.UV));
 		}
@@ -231,7 +222,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexNormal() : SValue
+		protected function get vertexNormal() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.NORMAL));
 		}
@@ -241,7 +232,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get vertexTangent() : SValue
+		protected function get vertexTangent() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
@@ -251,7 +242,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get cameraLocalDirection() : SValue
+		protected function get cameraLocalDirection() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION));
 		}
@@ -261,7 +252,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get cameraPosition() : SValue
+		protected function get cameraPosition() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.POSITION));
 		}
@@ -271,7 +262,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get cameraLocalPosition() : SValue
+		protected function get cameraLocalPosition() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION));
 		}
@@ -281,7 +272,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get cameraDirection() : SValue
+		protected function get cameraDirection() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
 		}
@@ -291,12 +282,12 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get localToScreenMatrix() : SValue
+		protected function get localToScreenMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_SCREEN));
 		}
 		
-		protected final function get worldToScreenMatrix() : SValue
+		protected function get worldToScreenMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.WORLD_TO_SCREEN));
 		}
@@ -306,7 +297,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get localToWorldMatrix() : SValue
+		protected function get localToWorldMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.WORLD));
 		}
@@ -316,7 +307,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get localToViewMatrix() : SValue
+		protected function get localToViewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_VIEW));
 		}
@@ -326,7 +317,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get worldToLocalMatrix() : SValue
+		protected function get worldToLocalMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.WORLD_INVERSE));
 		}
@@ -336,17 +327,17 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get worldToViewMatrix() : SValue
+		protected function get worldToViewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW));
 		}
 		
-		protected final function get viewToWorldMatrix() : SValue
+		protected function get viewToWorldMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW_INVERSE));
 		}
 		
-		protected final function get viewMatrix() : SValue
+		protected function get viewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW));
 		}
@@ -356,7 +347,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function get projectionMatrix() : SValue
+		protected function get projectionMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.PROJECTION));
 		}
@@ -500,7 +491,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		/*protected final function combine(value1	: Object,
+		/*protected function combine(value1	: Object,
 										 value2	: Object,
 										 ...values) : SValue
 		{
@@ -574,7 +565,7 @@ package aerys.minko.render.shader
 			return new SValue(result);
 		}
 		
-		protected final function clone(value : Object) : SValue
+		protected final function copy(value : Object) : SValue
 		{
 			return new SValue(new RootWrapper(getNode(value)));
 		}
@@ -604,7 +595,9 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function float3(x : Object, y : Object = null, z : Object = null) : SValue
+		protected final function float3(x : Object,
+										y : Object = null,
+										z : Object = null) : SValue
 		{
 			return toFloat(3, [x, y, z]);
 		}
@@ -623,7 +616,10 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		protected final function float4(x : Object, y : Object = null, z : Object = null, w : Object = null) : SValue
+		protected final function float4(x : Object,
+										y : Object = null,
+										z : Object = null,
+										w : Object = null) : SValue
 		{
 			return toFloat(4, [x, y, z, w]);
 		}
@@ -889,9 +885,9 @@ package aerys.minko.render.shader
 			return new SValue(new ReciprocalRoot(getNode(scalar)));
 		}
 		
-		protected final function getFogColor(start		: Object,
-											 distance	: Object,
-											 color		: Object) : SValue
+		protected function getFogColor(start	: Object,
+									   distance	: Object,
+									   color	: Object) : SValue
 		{
 			return new SValue(new Fog(getNode(start), getNode(distance), getNode(color)));
 		}
