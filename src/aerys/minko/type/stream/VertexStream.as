@@ -151,46 +151,54 @@ package aerys.minko.type.stream
 		}
 		
 
-		public static function fromByteArray(data 		: ByteArray,
+		public static function fromByteArray(bytes 		: ByteArray,
 											 count		: int,
-											 format		: VertexFormat,
-											 dynamic	: Boolean	= false,
-											 reader 	: Function 	= null) : VertexStream
+											 formatIn	: VertexFormat,
+											 formatOut	: VertexFormat	= null,
+											 dynamic	: Boolean		= false,
+											 reader 	: Function 		= null,
+											 dwordSize	: uint			= 4) : VertexStream
 		{
-			var numFormats		: int				= format.components.length;
-			var nativeFormats	: Vector.<int>		= new Vector.<int>(numFormats, true);
-			var length			: int				= 0;
-			var tmp				: Vector.<Number>	= null;
-			var stream			: VertexStream		= new VertexStream(null, format, dynamic);
+			formatOut ||= formatIn;
+			reader ||= bytes.readFloat;
 			
-			for (var k : int = 0; k < numFormats; k++)
-				nativeFormats[k] = format.components[k].nativeFormat;
+			var dataLength		: int						= 0;
+			var data			: Vector.<Number>			= null;
+			var stream			: VertexStream				= new VertexStream(null, formatOut, dynamic);
+			var start			: int						= bytes.position;
+			var componentsOut	: Vector.<VertexComponent>	= formatOut.components;
+			var numComponents	: int						= componentsOut.length;
+			var nativeFormats	: Vector.<int>				= new Vector.<int>(numComponents, true);
 			
-			if (reader == null)
-				reader = data.readFloat;
+			for (var k : int = 0; k < numComponents; k++)
+				nativeFormats[k] = componentsOut[k].nativeFormat;
 			
-			tmp = new Vector.<Number>(format.dwordsPerVertex * count, true);
-			
-			for (var j : int = 0; j < count; ++j)
+			data = new Vector.<Number>(formatOut.dwordsPerVertex * count, true);
+			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
-				for (var i : int = 0; i < numFormats; ++i)
+				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
-					switch (nativeFormats[i])
+					bytes.position = start + formatIn.dwordsPerVertex * vertexId * dwordSize
+									+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
+					
+					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
-							tmp[int(length++)] = reader();
+							data[int(dataLength++)] = reader();
 						case VertexComponentType.FLOAT_3 :
-							tmp[int(length++)] = reader();
+							data[int(dataLength++)] = reader();
 						case VertexComponentType.FLOAT_2 :
-							tmp[int(length++)] = reader();
+							data[int(dataLength++)] = reader();
 						case VertexComponentType.FLOAT_1 :
-							tmp[int(length++)] = reader();
+							data[int(dataLength++)] = reader();
 							break ;
 					}
 				}
 			}
+			// make sure the ByteArray position is at the end of the buffer
+			bytes.position = start + formatIn.dwordsPerVertex * count * dwordSize;
 			
-			stream._data = tmp;
+			stream._data = data;
 			stream.invalidate();
 
 			return stream;
