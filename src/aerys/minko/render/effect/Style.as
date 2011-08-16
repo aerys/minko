@@ -33,19 +33,30 @@ package aerys.minko.render.effect
 		
 		public function get version() 	: uint		{ return _version; }
 		
+		public function isSet(styleId : int) : Boolean
+		{
+			return _data.hasOwnProperty(styleId);
+		}
+		
 		public function get(styleId : int, defaultValue : Object = null) : Object 
 		{
-			var data : Object = _data[styleId];
+			if (!_data.hasOwnProperty(styleId))
+				throw new Error("Style '" + getStyleName(styleId) + "' is not set.");
 			
-			if (data !== null)
-				return data;
-			
-			throw new Error();
+			return _data[styleId];
 		}
 		
 		public function set(styleId : int, value : Object) : Style 
 		{
 			_data[styleId] = value;
+			++_version;
+			
+			return this;
+		}
+		
+		public function unset(styleId : int) : Style
+		{
+			delete _data[styleId];
 			++_version;
 			
 			return this;
