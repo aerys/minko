@@ -6,6 +6,7 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.ressource.ShaderRessource;
 	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
@@ -33,6 +34,8 @@ package aerys.minko.render.renderer.state
 		use namespace minko;
 		use namespace minko_render;
 		use namespace minko_stream;
+		
+		private static const FACTORY				: Factory			= Factory.getFactory(RendererState);
 		
 		private static const NUM_VERTEX_CONSTS		: int				= 128;
 		private static const NUM_FRAGMENT_CONSTS	: int				= 28;
@@ -94,14 +97,6 @@ package aerys.minko.render.renderer.state
 		private static const VERTEX_CONSTS			: uint	= 1 << 14;
 		private static const FRAGMENT_CONSTS		: uint	= 1 << 15;
 		private static const SCISSOR_RECTANGLE		: uint	= 1 << 16;
-		/*private static const VERTEX_STREAM_1		: uint	= 1 << 17;
-		private static const VERTEX_STREAM_2		: uint	= 1 << 18;
-		private static const VERTEX_STREAM_3		: uint	= 1 << 19;
-		private static const VERTEX_STREAM_4		: uint	= 1 << 20;
-		private static const VERTEX_STREAM_5		: uint	= 1 << 21;
-		private static const VERTEX_STREAM_6		: uint	= 1 << 22;
-		private static const VERTEX_STREAM_7		: uint	= 1 << 23;
-		private static const VERTEX_STREAM_8		: uint	= 1 << 24;*/
 		private static const VERTEX_STREAM			: uint	= 1 << 24;
 		private static const DEPTH_MASK				: uint	= 1 << 25;
 		private static const PRIORITY				: uint	= 1 << 26;
@@ -119,14 +114,11 @@ package aerys.minko.render.renderer.state
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
 	
-		/*private var _vertexStreams		: Vector.<VertexStream>		= new Vector.<VertexStream>(8, true);
-		private var _vertexOffsets		: Vector.<int>				= new Vector.<int>(8, true);
-		private var _vertexComponents	: Vector.<VertexComponent>	= new Vector.<VertexComponent>(8, true);*/
 		private var _vertexStream		: IVertexStream				= null;
 		minko_render var _indexStream	: IndexStream				= null;
 		
-		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>(NUM_VERTEX_CONSTS * 4);
-		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>(NUM_FRAGMENT_CONSTS * 4);
+		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>();
+		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>();
 		private var _rectangle			: Rectangle					= null;
 		
 		private var _depthTest			: uint						= 0;
@@ -205,52 +197,37 @@ package aerys.minko.render.renderer.state
 		
 		public function set renderTarget(value : RenderTarget) : void
 		{
-			//if (value != _renderTarget)
-			{
-				_renderTarget = value;
-				_setFlags |= RENDER_TARGET;
-				++_version;
-			}
+			_renderTarget = value;
+			_setFlags |= RENDER_TARGET;
+			++_version;
 		}
 		
 		public function set shader(value : ShaderRessource) : void
 		{
-			//if (_shader != value)
-			{
-				_shader = value;
-				_setFlags |= SHADER;
-				++_version;
-			}
+			_shader = value;
+			_setFlags |= SHADER;
+			++_version;
 		}
 		
 		public function set blending(value : uint) : void
 		{
-			//if (_blending != value)
-			{
-				_blending = value;
-				_setFlags |= BLENDING;
-				++_version;
-			}
+			_blending = value;
+			_setFlags |= BLENDING;
+			++_version;
 		}
 		
 		public function set colorMask(value : uint) : void
 		{
-			//if (value != _colorMask)
-			{
-				_colorMask = value;
-				_setFlags |= COLOR_MASK;
-				++_version;
-			}
+			_colorMask = value;
+			_setFlags |= COLOR_MASK;
+			++_version;
 		}
 		
 		public function set triangleCulling(value : uint) : void
 		{
-			//if (value != _triangleCulling)
-			{
-				_triangleCulling = value;
-				_setFlags |= TRIANGLE_CULLING;
-				++_version;
-			}
+			_triangleCulling = value;
+			_setFlags |= TRIANGLE_CULLING;
+			++_version;
 		}
 		
 		public function set depthTest(value : uint) : void
@@ -260,38 +237,16 @@ package aerys.minko.render.renderer.state
 			++_version;
 		}
 		
-		public function setInputStreams(vertexStream	: IVertexStream,
-										indexStream		: IndexStream) : void
+		public function set vertexStream(value : IVertexStream) : void
 		{
-			/*var vertexInput	: Vector.<VertexComponent> 	= shader._vertexInput;
-			var numInputs	: int						= vertexInput.length;
-			
-			_indexStream = indexStream;
+			_vertexStream = value;
+			_setFlags |= VERTEX_STREAM;
+		}
+		
+		public function set indexStream(value : IndexStream) : void
+		{
+			_indexStream = value;
 			_setFlags |= INDEX_STREAM;
-			
-			for (var i : int = 0; i < numInputs; ++i)
-			{
-				var neededComponent : VertexComponent = vertexInput[i];
-				
-				if (neededComponent)
-				{
-					var stream : VertexStream = vertexStream.getSubStreamByComponent(neededComponent);
-					
-					if (!stream)
-						throw new Error("Missing vertex components: " + neededComponent.toString());
-					
-					_vertexStreams[i] = stream;
-					_vertexComponents[i] = neededComponent;
-					_vertexOffsets[i] = stream.format.getOffsetForComponent(neededComponent);
-					
-					_setFlags |= VERTEX_STREAM_1 << i;
-					++_version;
-				}
-			}*/
-			
-			_indexStream = indexStream;
-			_vertexStream = vertexStream;
-			_setFlags |= INDEX_STREAM | VERTEX_STREAM;
 		}
 		
 		public function setTextureAt(index : int, texture : TextureRessource) : void
@@ -301,89 +256,28 @@ package aerys.minko.render.renderer.state
 			if (!texture)
 				throw new Error("Argument 'texture' can not be null.");
 			
-			//if (!(_setFlags & flag) || _textures[index] != texture)
-			{
-				_textures[index] = texture;
-				_setFlags |= flag;
-				++_version;
-			}
-		}
-		
-		public function setFragmentConstant(register	: int,
-											x			: Number,
-											y			: Number = 0.,
-											z			: Number = 0.,
-											w			: Number = 0.) : void
-		{
-			var offset : int = register * 4;
-			
-			_fragmentConstants[offset] = x;
-			_fragmentConstants[int(offset + 1)] = y;
-			_fragmentConstants[int(offset + 2)] = z;
-			_fragmentConstants[int(offset + 3)] = w;
-			
-			_setFlags |= FRAGMENT_CONSTS;
+			_textures[index] = texture;
+			_setFlags |= flag;
 			++_version;
 		}
 		
-		public function setFragmentConstants(register	: int,
-											 data		: Vector.<Number>) : void
+		public function setFragmentConstants(data	: Vector.<Number>) : void
 		{
-			var offset 	: int = register * 4;
 			var numData : int = data.length;
 			
 			for (var i : int = 0; i < numData; ++i)
-				_fragmentConstants[int(offset + i)] = data[i];
+				_fragmentConstants[i] = data[i];
 			
 			_setFlags |= FRAGMENT_CONSTS;
 			++_version;
 		}
 		
-		public function setFragmentConstantMatrix(register 		: int,
-												  value 		: Matrix4x4,
-												  transposed	: Boolean = true) : void
+		public function setVertexConstants(data	: Vector.<Number>) : void
 		{
-			value.getRawData(_fragmentConstants, register * 4, transposed);
-			
-			_setFlags |= FRAGMENT_CONSTS;
-			++_version;
-		}
-		
-		public function setVertexConstant(register	: int,
-										  x			: Number,
-										  y			: Number = 0.,
-										  z			: Number = 0.,
-										  w			: Number = 0.) : void
-		{
-			var offset : int = register * 4;
-			
-			_vertexConstants[offset] = x;
-			_vertexConstants[int(offset + 1)] = y;
-			_vertexConstants[int(offset + 2)] = z;
-			_vertexConstants[int(offset + 3)] = w;
-			
-			_setFlags |= VERTEX_CONSTS;
-			++_version;
-		}
-		
-		public function setVertexConstants(register	: int,
-										   data		: Vector.<Number>) : void
-		{
-			var offset : int = register * 4;
 			var numData : int = data.length;
 			
 			for (var i : int = 0; i < numData; ++i)
-				_vertexConstants[int(offset + i)] = data[i];
-			
-			_setFlags |= VERTEX_CONSTS;
-			++_version;
-		}
-		
-		public function setVertexConstantMatrix(register	: int,
-												value		: Matrix4x4,
-												transposed	: Boolean = true) : void
-		{
-			value.getRawData(_vertexConstants, register * 4, transposed);
+				_vertexConstants[i] = data[i];
 			
 			_setFlags |= VERTEX_CONSTS;
 			++_version;
@@ -727,6 +621,18 @@ package aerys.minko.render.renderer.state
 			}
 		}
 		
+		public static function create(temporary : Boolean = true) : RendererState
+		{
+			var state : RendererState	= FACTORY.create(temporary) as RendererState;
+			
+			state.clear();
+			
+			return state;
+		}
 		
+		public function dispose() : void
+		{
+			FACTORY.free(this);
+		}
 	}
 }

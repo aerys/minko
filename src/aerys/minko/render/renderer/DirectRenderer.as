@@ -48,13 +48,16 @@ package aerys.minko.render.renderer
 			var indexStream : IndexStream 	= _currentState._indexStream; 
 			var t 			: int 			= getTimer();
 		
-			_currentState.prepareContext(_context, _actualState);
+			if (_actualState != _currentState)
+				_currentState.prepareContext(_context, _actualState);
+			
 			_context.drawTriangles(indexStream.getIndexBuffer3D(_context),
 								   offset,
 								   numTriangles);
 			
 			_drawingTime += getTimer() - t;
 			_numTriangles += numTriangles == -1 ? indexStream.length / 3. : numTriangles;
+			_actualState = _currentState;
 		}
 	
 		public function clear(red 		: Number	= 0.,
@@ -98,16 +101,10 @@ package aerys.minko.render.renderer
 			++_frame;
 		}
 		
-		public function begin() : void
+		public function pushState(state : RendererState) : void
 		{
-			_currentState = RENDER_STATE.create(true) as RendererState;
-			_currentState.clear();
+			_currentState = state;
 		}
-		
-		public function end() : void
-		{
-			_actualState = _currentState;
-		}
-		
+
 	}
 }

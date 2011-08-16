@@ -60,17 +60,16 @@ package aerys.minko.scene.action.mesh
 			
 			for (var j : int = 0; j < numPasses; ++j)
 			{
-				renderer.begin();
-				
 				var pass	: IEffectPass	= passes[j];
-				var state	: RendererState	= renderer.state;
+				var state	: RendererState	= RendererState.create(true);
+				
+				state.vertexStream = vertexStream;
+				state.indexStream = indexStream;
 				
 				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 				{
-					state.setInputStreams(vertexStream, indexStream);
+					renderer.pushState(state);
 					renderer.drawTriangles();
-					
-					renderer.end();
 				}
 				
 			}

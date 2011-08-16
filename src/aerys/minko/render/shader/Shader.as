@@ -105,8 +105,8 @@ package aerys.minko.render.shader
 			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
 			updateConstData(_fsConstData, _fsParams, styleStack, local, world);
 			
-			state.setVertexConstants(0, _vsConstData);
-			state.setFragmentConstants(0, _fsConstData);
+			state.setVertexConstants(_vsConstData);
+			state.setFragmentConstants(_fsConstData);
 		}
 		
 		protected function updateConstData(constData	: Vector.<Number>, 

@@ -19,8 +19,7 @@ package aerys.minko.render.renderer
 		use namespace minko;
 		use namespace minko_render;
 	
-		private static const RENDER_STATE	: Factory			= Factory.getFactory(RendererState);
-		private static const SORT			: Boolean			= true;
+		private static const SORT	: Boolean					= true;
 		
 		private var _context		: Context3D					= null;
 		private var _currentState	: RendererState				= null;
@@ -46,16 +45,10 @@ package aerys.minko.render.renderer
 			_context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
 		}
 		
-		public function begin()	: void
+		public function pushState(state : RendererState) : void
 		{
-			_currentState = RENDER_STATE.create(true) as RendererState;
-			_currentState.clear();
-		}
-		
-		public function end() : void
-		{
-			_states[int(_numStates++)] = _currentState;
-			_currentState = null;
+			_states[int(_numStates++)] = state;
+			_currentState = state;
 		}
 		
 		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
