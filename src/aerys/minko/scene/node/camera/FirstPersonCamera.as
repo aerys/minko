@@ -71,9 +71,9 @@ package aerys.minko.scene.node.camera
 		{
 			if (_ghostMode)
 			{
-				position.x += Math.sin(_rotation.y) * Math.cos(-_rotation.x) * distance;
-				position.y += Math.cos(_rotation.x) * distance;
-				position.z += Math.cos(_rotation.y) * Math.cos(-_rotation.x) * distance;
+				position.x += Math.cos(_rotation.y) * Math.cos(-_rotation.x) * distance;
+				position.y += Math.sin(_rotation.x) * distance;
+				position.z += Math.sin(_rotation.y) * Math.cos(-_rotation.x) * distance;
 			}
 			else
 			{
@@ -84,8 +84,8 @@ package aerys.minko.scene.node.camera
 		
 		public function strafe(distance : Number) : void
 		{
-			position.x += Math.cos(_rotation.y + Math.PI / 2) * distance;
-			position.z += Math.sin(_rotation.y + Math.PI / 2) * distance;
+			position.x += Math.cos(_rotation.y + Math.PI / 2) * -distance;
+			position.z += Math.sin(_rotation.y + Math.PI / 2) * -distance;
 		}
 	}
 }
