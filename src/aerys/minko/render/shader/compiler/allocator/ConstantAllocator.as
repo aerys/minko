@@ -40,14 +40,16 @@ package aerys.minko.render.shader.compiler.allocator
 		
 		public function computeConstantAllocation() : Vector.<Number>
 		{
-			var result		: Vector.<Number>	= new Vector.<Number>();
+			var result		: Vector.<Number>	= new Vector.<Number>(_maxOffset);
 			var allocLength	: int				= _allocations.length;
+			var size		: int				= 0;
 			
 			for (var i : uint = 0; i < allocLength; ++i)
 			{
 				var alloc : Allocation = _allocations[i];
-				if (result.length < alloc.offset + alloc.size)
-					result.length = alloc.offset + alloc.size;
+				
+				if (size < alloc.offset + alloc.size)
+					size = alloc.offset + alloc.size;
 				
 				if (alloc.node is Constant)
 				{
@@ -55,6 +57,9 @@ package aerys.minko.render.shader.compiler.allocator
 						result[int(alloc.offset + j)] = Constant(alloc.node).constants[j];
 				}
 			}
+			
+			// make sure table.length % 4 == 0
+			result.length = Math.ceil(size / 4) * 4;
 			
 			return result;
 		}
