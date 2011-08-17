@@ -265,7 +265,7 @@ package aerys.minko.render.renderer.state
 			++_version;
 		}
 		
-		public function setFragmentConstants(data	: Vector.<Number>) : void
+		public function setFragmentConstants(data : Vector.<Number>) : void
 		{
 			var numData : int = data.length;
 			
@@ -387,7 +387,8 @@ package aerys.minko.render.renderer.state
 												   _renderTarget.antiAliasing);
 					}
 					
-					var color : uint = _renderTarget ? _renderTarget.backgroundColor : 0;
+					var color : uint = _renderTarget.backgroundColor;
+					
 					context.clear(((color >> 16) & 0xff) / 255.,
 								  ((color >> 8) & 0xff) / 255.,
 								  (color & 0xff) / 255.,

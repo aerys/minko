@@ -8,7 +8,6 @@ package aerys.minko.render.renderer
 	public interface IRenderer
 	{
 		function get numTriangles()	: uint;
-		function get state() 		: RendererState;
 		function get viewport() 	: Viewport;
 		function get drawingTime() 	: int;
 		function get frameId()		: uint;

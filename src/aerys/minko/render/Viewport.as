@@ -52,6 +52,7 @@ package aerys.minko.render
 		
 		private var _time				: int						= 0;
 		private var _sceneSize			: uint						= 0;
+		private var _numTriangles		: uint						= 0;
 		private var _drawTime			: int						= 0;
 		
 		private var _stage3d			: Stage3D					= null;
@@ -189,7 +190,7 @@ package aerys.minko.render
 		 */
 		public function get numTriangles() : uint
 		{
-			return _renderer ? _renderer.numTriangles : 0;
+			return _numTriangles;
 		}
 		
 		/**
@@ -388,7 +389,8 @@ package aerys.minko.render
 				
 				renderingData.effects.pop();
 					
-				_drawTime	= _renderer.drawingTime;
+				_numTriangles = _renderer.numTriangles;
+				_drawTime = _renderer.drawingTime;
 				
 				// execute postprocessing
 				if (_postProcessEffect != null)
@@ -407,6 +409,7 @@ package aerys.minko.render
 			else
 			{
 				_time = 0;
+				_numTriangles = 0;
 				_drawTime = 0;
 			}
 			

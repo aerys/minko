@@ -9,6 +9,8 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.data.IWorldData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.WorldDataList;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -45,6 +47,7 @@ package aerys.minko.scene.action.mesh
 			var localData		: LocalData			= visitor.localData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
+			var styleStack		: StyleStack		= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
 			var effect			: IEffect			= effectStack[effectStack.length - 1];
 			
@@ -53,7 +56,7 @@ package aerys.minko.scene.action.mesh
 			
 			var vertexStream	: IVertexStream			= mesh.vertexStream;
 			var indexStream 	: IndexStream			= mesh.indexStream;
-			var passes			: Vector.<IEffectPass>	= effect.getPasses(renderingData.styleStack,
+			var passes			: Vector.<IEffectPass>	= effect.getPasses(styleStack,
 															   	   		   localData,
 																		   worldData);
 			var numPasses 		: int 					= passes.length;
@@ -61,13 +64,13 @@ package aerys.minko.scene.action.mesh
 			for (var j : int = 0; j < numPasses; ++j)
 			{
 				var pass	: IEffectPass	= passes[j];
-				var state	: RendererState	= RendererState.create(true);
+				var state	: RendererState	= RendererState.create();
 				
-				state.vertexStream = vertexStream;
-				state.indexStream = indexStream;
-				
-				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
+				if (pass.fillRenderState(state, styleStack, localData, worldData))
 				{
+					state.vertexStream = vertexStream;
+					state.indexStream = indexStream;
+
 					renderer.pushState(state);
 					renderer.drawTriangles();
 				}

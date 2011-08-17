@@ -31,7 +31,6 @@ package aerys.minko.render.renderer
 		private var _states			: Vector.<RendererState>	= new Vector.<RendererState>();
 		private var _numStates		: int						= 0;
 		
-		public function get state() 		: RendererState	{ return _currentState; }
 		public function get numTriangles()	: uint			{ return _numTriangles; }
 		public function get viewport()		: Viewport		{ return _viewport; }
 		public function get drawingTime()	: int			{ return _drawingTime; }
@@ -65,9 +64,6 @@ package aerys.minko.render.renderer
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff)  :void
 		{
-//			_context.setScissorRectangle(null);
-//			_context.clear(red, green, blue, alpha, depth, stencil, mask);
-			
 			_numTriangles = 0;
 			_drawingTime = 0;
 			
