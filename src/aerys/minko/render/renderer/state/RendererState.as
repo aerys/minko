@@ -109,7 +109,7 @@ package aerys.minko.render.renderer.state
 			
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: ShaderRessource					= null;
+		private var _shader				: ShaderRessource			= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
@@ -187,12 +187,14 @@ package aerys.minko.render.renderer.state
 		{
 			_priority = value;
 			_setFlags |= PRIORITY;
+			++_version;
 		}
 		
 		public function set rectangle(value : Rectangle) : void
 		{
 			_rectangle = value;
 			_setFlags |= SCISSOR_RECTANGLE;
+			++_version;
 		}
 		
 		public function set renderTarget(value : RenderTarget) : void
@@ -241,12 +243,14 @@ package aerys.minko.render.renderer.state
 		{
 			_vertexStream = value;
 			_setFlags |= VERTEX_STREAM;
+			++_version;
 		}
 		
 		public function set indexStream(value : IndexStream) : void
 		{
 			_indexStream = value;
 			_setFlags |= INDEX_STREAM;
+			++_version;
 		}
 		
 		public function setTextureAt(index : int, texture : TextureRessource) : void
@@ -281,14 +285,6 @@ package aerys.minko.render.renderer.state
 			
 			_setFlags |= VERTEX_CONSTS;
 			++_version;
-		}
-		
-		public function clear() : void
-		{
-			_setFlags = 0;
-			_version = 0;
-			_offsets.length = 0;
-			_numTriangles.length = 0;
 		}
 		
 		public function prepareContext(context : Context3D, current : RendererState = null) : void
@@ -625,14 +621,12 @@ package aerys.minko.render.renderer.state
 		{
 			var state : RendererState	= FACTORY.create(temporary) as RendererState;
 			
-			state.clear();
+			state._setFlags = 0;
+			state._version = 0;
+			state._offsets.length = 0;
+			state._numTriangles.length = 0;
 			
 			return state;
-		}
-		
-		public function dispose() : void
-		{
-			FACTORY.free(this);
 		}
 	}
 }
