@@ -1,8 +1,10 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.ressource.TextureRessource;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
@@ -340,6 +342,23 @@ package aerys.minko.render.shader
 		protected function get viewMatrix() : SValue
 		{
 			return new SValue(new TransformParameter(16, LocalData.VIEW));
+		}
+		
+		protected function get diffuseColor() : SValue
+		{
+			if (styleIsSet(BasicStyle.DIFFUSE))
+			{
+				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
+				
+				if (diffuseStyle is uint || diffuseStyle is Vector4)
+					return getStyleParameter(4, BasicStyle.DIFFUSE);
+				else if (diffuseStyle is TextureRessource)
+					return sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
+				else
+					throw new Error('Invalid BasicStyle.DIFFUSE value.');
+			}
+			else
+				return float4(interpolate(vertexRGBColor).rgb, 1.);
 		}
 		
 		/**
