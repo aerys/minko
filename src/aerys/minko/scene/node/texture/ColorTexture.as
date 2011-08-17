@@ -9,19 +9,18 @@ package aerys.minko.scene.node.texture
 	
 	public class ColorTexture extends AbstractScene implements ITexture
 	{
-		private var _version : uint;
-		private var _color : uint;
+		private var _version 		: uint	= 0;
+		private var _color 			: uint	= 0;
+		private var _styleProperty	: int	= 0;
 		
 		/**
 		 * The texture color in ARGB format
 		 * 
 		 * @return current texture color
 		 */		
-		public function get color() : uint { return _color; }
-		
-		public function get styleProperty() : int { return BasicStyle.DIFFUSE; }
-		
-		public function get ressource() : TextureRessource { return null; }
+		public function get color() 		: uint 				{ return _color; }
+		public function get styleProperty() : int 				{ return _styleProperty; }
+		public function get ressource() 	: TextureRessource 	{ return null; }
 		
 		/**
 		 * Set texture color in ARGB format
@@ -34,11 +33,17 @@ package aerys.minko.scene.node.texture
 			++_version
 		}
 		
+		public function set styleProperty(value : int) : void
+		{
+			_styleProperty = value;
+		}
+		
 		public function ColorTexture(argb : uint = 0xffffffff)
 		{
-			_color		= argb;
+			_color			= argb;
+			_styleProperty	= BasicStyle.DIFFUSE;
 			
-			actions[0]	= ColorTextureAction.colorTextureAction;
+			actions[0]		= ColorTextureAction.colorTextureAction;
 		}
 		
 		public function get version() : uint

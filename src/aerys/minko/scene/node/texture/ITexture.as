@@ -16,6 +16,7 @@ package aerys.minko.scene.node.texture
 	public interface ITexture extends IScene, IVersionnable
 	{
 		function get styleProperty() : int;
+		
 		function get ressource() : TextureRessource;
 	}
 }

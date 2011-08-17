@@ -15,10 +15,10 @@ package aerys.minko.scene.node.texture
 	{
 		public static const DEFAULT_FRAMERATE	: Number	= 30.;
 		
-		private var _version	: uint		= 0;
+		private var _version		: uint		= 0;
 		
-		private var _frame		: int		= 0;
-		private var _framerate	: Number	= 0.;
+		private var _frame			: int		= 0;
+		private var _framerate		: Number	= 0.;
 		
 		public function get version()		: uint		{ return _version; }
 		public function get framerate() 	: Number	{ return _framerate; }
