@@ -377,8 +377,8 @@ package aerys.minko.render
 				var width	: Number	= Math.min(2048, _width);
 				var height	: Number	= Math.min(2048, _height);
 				
-				_stageX = _stageX;
-				_stageY = _stageY;
+				_stageX = origin.x;
+				_stageY = origin.y;
 				
 				_stage3d.x = _stageX;
 				_stage3d.y = _stageY;
