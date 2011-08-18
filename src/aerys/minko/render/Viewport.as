@@ -26,6 +26,7 @@ package aerys.minko.render
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
@@ -47,6 +48,8 @@ package aerys.minko.render
 		
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
+		private var _stageX				: Number					= 0.;
+		private var _stageY				: Number					= 0.;
 		private var _autoResize			: Boolean					= false;
 		private var _antiAliasing		: int						= 0;
 		
@@ -250,6 +253,7 @@ package aerys.minko.render
 		{
 			_alwaysOnTop = value;
 			updateRectangle();
+			updateStageListeners();
 		}
 		
 		/**
@@ -303,6 +307,7 @@ package aerys.minko.render
 			}
 			
 			resizeHandler();
+			updateStageListeners();
 			
 			stage.addEventListener(Event.ADDED, displayObjectAddedToStageHandler);
 		}
@@ -372,8 +377,11 @@ package aerys.minko.render
 				var width	: Number	= Math.min(2048, _width);
 				var height	: Number	= Math.min(2048, _height);
 				
-				_stage3d.x = origin.x;
-				_stage3d.y = origin.y;
+				_stageX = _stageX;
+				_stageY = _stageY;
+				
+				_stage3d.x = _stageX;
+				_stage3d.y = _stageY;
 				
 				updateMask();
 				
@@ -389,6 +397,52 @@ package aerys.minko.render
 			}
 		}
 		
+		private function updateStageListeners() : void
+		{
+			if (!stage)
+				return ;
+			
+			if (_alwaysOnTop)
+			{
+				stage.addEventListener(MouseEvent.CLICK, stageMouseHandler);
+				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
+				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageMouseHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OUT, stageMouseHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OVER, stageMouseHandler);
+				stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageMouseHandler);
+				stage.addEventListener(MouseEvent.ROLL_OUT, stageMouseHandler);
+				stage.addEventListener(MouseEvent.ROLL_OVER, stageMouseHandler);
+			}
+			else
+			{
+				stage.removeEventListener(MouseEvent.CLICK, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OUT, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OVER, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OUT, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OVER, stageMouseHandler);
+			}
+		}
+		
+		private function stageMouseHandler(event : MouseEvent) : void
+		{
+			if (!_alwaysOnTop || event.target == this)
+				return ;
+			
+			var stageX	: Number	= event.stageX;
+			var stageY	: Number	= event.stageY;
+			
+			if (stageX > _stageX && stageX < _stageX + _width
+				&& stageY > _stageY && stageY < _stageY + _height)
+			{
+				dispatchEvent(event.clone());
+			}
+		}
+		
 		private function updateMask() : void
 		{
 			var numChildren : int = stage.numChildren;
@@ -396,22 +450,24 @@ package aerys.minko.render
 			
 			if (_alwaysOnTop)
 			{
-				var origin 	: Point 	= localToGlobal(ZERO2);
-				var gfx		: Graphics	= _mask.graphics;
+				var gfx			: Graphics	= _mask.graphics;
+				var stageWidth	: int		= stage.stageWidth;
+				var stageHeight	: int		= stage.stageHeight;
 				
 				gfx.clear();
 				gfx.beginFill(0);
 				gfx.moveTo(0, 0);
-				gfx.lineTo(stage.stageWidth, 0);
-				gfx.lineTo(stage.stageWidth, stage.stageHeight);
-				gfx.lineTo(0., stage.stageHeight);
+				gfx.lineTo(stageWidth, 0);
+				gfx.lineTo(stageWidth, stageHeight);
+				gfx.lineTo(0., stageHeight);
 				gfx.lineTo(0, 0);
-				gfx.moveTo(origin.x, origin.y);
-				gfx.lineTo(origin.x, origin.y + height);
-				gfx.lineTo(origin.x + width, origin.y + height);
-				gfx.lineTo(origin.x + width, origin.y);
+				gfx.moveTo(_stageX, _stageY);
+				gfx.lineTo(_stageX, _stageY + height);
+				gfx.lineTo(_stageX + width, _stageY + height);
+				gfx.lineTo(_stageX + width, _stageY);
+				gfx.lineTo(_stageX, _stageY);
 				gfx.endFill();
-				
+								
 				for (i = 0; i < numChildren; ++i)
 					stage.getChildAt(i).mask = _mask;
 			}
