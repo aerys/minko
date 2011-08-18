@@ -18,6 +18,8 @@ package aerys.minko.render
 	import aerys.minko.type.IVersionnable;
 	
 	import flash.display.DisplayObject;
+	import flash.display.Graphics;
+	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
@@ -68,12 +70,15 @@ package aerys.minko.render
 		
 		private var _logoIsHidden		: Boolean					= false;
 		
+		private var _mask				: Shape						= new Shape();
+		private var _alwaysOnTop		: Boolean					= false;
+		
 		public function get postProcessEffect() : IEffect
 		{
 			return _postProcessEffect;
 		}
 
-		public function set postProcessEffect(value : IEffect):void
+		public function set postProcessEffect(value : IEffect) : void
 		{
 			_postProcessEffect = value;
 		}
@@ -236,6 +241,17 @@ package aerys.minko.render
 			return _visitors;
 		}
 		
+		public function get alwaysOnTop() : Boolean
+		{
+			return _alwaysOnTop;
+		}
+		
+		public function set alwaysOnTop(value : Boolean) : void
+		{
+			_alwaysOnTop = value;
+			updateRectangle();
+		}
+		
 		/**
 		 * Creates a new Viewport object.
 		 *
@@ -262,7 +278,7 @@ package aerys.minko.render
 		
 		private function addedToStageHandler(event : Event) : void
 		{
-			var stageId	: int 		= 0;
+			var stageId	: int	= 0;
 			
 			_stage3d = stage.stage3Ds[stageId];
 			
@@ -287,6 +303,14 @@ package aerys.minko.render
 			}
 			
 			resizeHandler();
+			
+			stage.addEventListener(Event.ADDED, displayObjectAddedToStageHandler);
+		}
+		
+		private function displayObjectAddedToStageHandler(event : Event) : void
+		{
+			if (event.target.parent == stage)
+				updateMask();
 		}
 		
 		private function removedFromStage(event : Event) : void
@@ -344,20 +368,57 @@ package aerys.minko.render
 		{
 			if (_stage3d)
 			{
-				var origin : Point = localToGlobal(ZERO2);
+				var origin 	: Point 	= localToGlobal(ZERO2);
+				var width	: Number	= Math.min(2048, _width);
+				var height	: Number	= Math.min(2048, _height);
 				
 				_stage3d.x = origin.x;
 				_stage3d.y = origin.y;
 				
+				updateMask();
+				
 				if (_stage3d.context3D)
 				{
 					_stage3d.context3D.configureBackBuffer(
-						Math.min(2048, _width),
-						Math.min(2048, _height),
+						width,
+						height,
 						_antiAliasing, 
 						true
 					);
 				}
+			}
+		}
+		
+		private function updateMask() : void
+		{
+			var numChildren : int = stage.numChildren;
+			var i 			: int = 0;
+			
+			if (_alwaysOnTop)
+			{
+				var origin 	: Point 	= localToGlobal(ZERO2);
+				var gfx		: Graphics	= _mask.graphics;
+				
+				gfx.clear();
+				gfx.beginFill(0);
+				gfx.moveTo(0, 0);
+				gfx.lineTo(stage.stageWidth, 0);
+				gfx.lineTo(stage.stageWidth, stage.stageHeight);
+				gfx.lineTo(0., stage.stageHeight);
+				gfx.lineTo(0, 0);
+				gfx.moveTo(origin.x, origin.y);
+				gfx.lineTo(origin.x, origin.y + height);
+				gfx.lineTo(origin.x + width, origin.y + height);
+				gfx.lineTo(origin.x + width, origin.y);
+				gfx.endFill();
+				
+				for (i = 0; i < numChildren; ++i)
+					stage.getChildAt(i).mask = _mask;
+			}
+			else
+			{
+				for (i = 0; i < numChildren; ++i)
+					stage.getChildAt(i).mask = null;
 			}
 		}
 
