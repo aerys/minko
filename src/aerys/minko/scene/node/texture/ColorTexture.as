@@ -1,8 +1,8 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.ressource.IRessource;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.IResource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.texture.ColorTextureAction;
 	import aerys.minko.scene.node.AbstractScene;
@@ -20,7 +20,7 @@ package aerys.minko.scene.node.texture
 		 */		
 		public function get color() 		: uint 				{ return _color; }
 		public function get styleProperty() : int 				{ return _styleProperty; }
-		public function get ressource() 	: TextureRessource 	{ return null; }
+		public function get ressource() 	: TextureResource 	{ return null; }
 		
 		/**
 		 * Set texture color in ARGB format

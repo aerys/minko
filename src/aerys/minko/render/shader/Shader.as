@@ -3,7 +3,7 @@ package aerys.minko.render.shader
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.compiler.register.RegisterLimit;
@@ -22,9 +22,9 @@ package aerys.minko.render.shader
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import aerys.minko.render.ressource.ShaderRessource;
+	import aerys.minko.render.resource.ShaderResource;
 	
-	public class Shader extends ShaderRessource
+	public class Shader extends ShaderResource
 	{
 		use namespace minko;
 		
@@ -85,14 +85,14 @@ package aerys.minko.render.shader
 								   	   localData	: LocalData,
 									   worldData	: Object) : void
 		{
-			var texture 		: TextureRessource	= null;
+			var texture 		: TextureResource	= null;
 			var samplerStyleId 	: int				= 0;
 			var samplerCount 	: uint 				= _samplers.length;
 			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleId = _samplers[i];
-				texture = styleStack.get(samplerStyleId) as TextureRessource;
+				texture = styleStack.get(samplerStyleId) as TextureResource;
 				state.setTextureAt(i, texture);
 			}
 		}

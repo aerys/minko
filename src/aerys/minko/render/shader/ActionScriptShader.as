@@ -4,7 +4,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
@@ -352,7 +352,7 @@ package aerys.minko.render.shader
 				
 				if (diffuseStyle is uint || diffuseStyle is Vector4)
 					return getStyleParameter(4, BasicStyle.DIFFUSE);
-				else if (diffuseStyle is TextureRessource)
+				else if (diffuseStyle is TextureResource)
 					return sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
 				else
 					throw new Error('Invalid BasicStyle.DIFFUSE value.');

@@ -4,8 +4,8 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.ressource.ShaderRessource;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.ShaderResource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.math.Matrix4x4;
@@ -109,10 +109,10 @@ package aerys.minko.render.renderer.state
 			
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: ShaderRessource			= null;
+		private var _shader				: ShaderResource			= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
-		private var _textures			: Vector.<TextureRessource>	= new Vector.<TextureRessource>(8, true);
+		private var _textures			: Vector.<TextureResource>	= new Vector.<TextureResource>(8, true);
 	
 		private var _vertexStream		: IVertexStream				= null;
 		minko_render var _indexStream	: IndexStream				= null;
@@ -163,7 +163,7 @@ package aerys.minko.render.renderer.state
 			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
-		public function get shader() : ShaderRessource
+		public function get shader() : ShaderResource
 		{
 			return _setFlags & SHADER ? _shader : null;
 		}
@@ -204,7 +204,7 @@ package aerys.minko.render.renderer.state
 			++_version;
 		}
 		
-		public function set shader(value : ShaderRessource) : void
+		public function set shader(value : ShaderResource) : void
 		{
 			_shader = value;
 			_setFlags |= SHADER;
@@ -253,7 +253,7 @@ package aerys.minko.render.renderer.state
 			++_version;
 		}
 		
-		public function setTextureAt(index : int, texture : TextureRessource) : void
+		public function setTextureAt(index : int, texture : TextureResource) : void
 		{
 			var flag : uint = TEXTURE_1 << index;
 			
@@ -440,7 +440,7 @@ package aerys.minko.render.renderer.state
 			{
 				// set textures
 				var textureFlag			: uint				= TEXTURE_1 << i;
-				var textureRessource	: TextureRessource 	= _textures[i];
+				var textureRessource	: TextureResource 	= _textures[i];
 				var texture				: TextureBase 		= (_setFlags & textureFlag)
 											  	  			  ? textureRessource.getNativeTexture(context)
 											  	  			  : null;

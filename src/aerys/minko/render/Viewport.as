@@ -252,6 +252,7 @@ package aerys.minko.render
 		public function set alwaysOnTop(value : Boolean) : void
 		{
 			_alwaysOnTop = value;
+			
 			updateRectangle();
 			updateStageListeners();
 		}
@@ -282,15 +283,20 @@ package aerys.minko.render
 		
 		private function addedToStageHandler(event : Event) : void
 		{
-			var stageId	: int	= 0;
-			
-			_stage3d = stage.stage3Ds[stageId];
-			
-			while (_stage3d.willTrigger(Event.CONTEXT3D_CREATE))
-				_stage3d = stage.stage3Ds[int(++stageId)];
-			
-			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
-			_stage3d.requestContext3D(Context3DRenderMode.AUTO);
+			if (!_stage3d)
+			{
+				var stageId	: int	= 0;
+				
+				_stage3d = stage.stage3Ds[stageId];
+				
+				while (_stage3d.willTrigger(Event.CONTEXT3D_CREATE))
+					_stage3d = stage.stage3Ds[int(++stageId)];
+				
+				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+				_stage3d.requestContext3D(Context3DRenderMode.AUTO);
+				
+				stage.addEventListener(Event.ADDED, displayObjectAddedToStageHandler);
+			}
 			
 			if (!_logoIsHidden)
 				showLogo();
@@ -308,8 +314,12 @@ package aerys.minko.render
 			
 			resizeHandler();
 			updateStageListeners();
-			
-			stage.addEventListener(Event.ADDED, displayObjectAddedToStageHandler);
+		}
+		
+		public function dispose() : void
+		{
+			if (_stage3d && _stage3d.context3D)
+				_stage3d.context3D.dispose();
 		}
 		
 		private function displayObjectAddedToStageHandler(event : Event) : void

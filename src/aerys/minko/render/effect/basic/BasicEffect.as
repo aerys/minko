@@ -10,7 +10,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.render.shader.node.Components;
@@ -106,7 +106,7 @@ package aerys.minko.render.effect.basic
 				hash += '_colorFromVertex';
 			else if (diffuseStyle is uint || diffuseStyle is Vector4)
 				hash += '_colorFromConstant';
-			else if (diffuseStyle is TextureRessource)
+			else if (diffuseStyle is TextureResource)
 				hash += '_colorFromTexture';
 			else
 				throw new Error('Invalid BasicStyle.DIFFUSE value');

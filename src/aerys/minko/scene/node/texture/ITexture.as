@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.IVersionnable;
 	
@@ -17,6 +17,6 @@ package aerys.minko.scene.node.texture
 	{
 		function get styleProperty() : int;
 		
-		function get ressource() : TextureRessource;
+		function get ressource() : TextureResource;
 	}
 }

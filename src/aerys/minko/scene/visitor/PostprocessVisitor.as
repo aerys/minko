@@ -2,7 +2,7 @@ package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.node.IScene;

@@ -1,6 +1,6 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.render.ressource.VertexBufferRessource;
+	import aerys.minko.render.resource.VertexBufferResource;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;

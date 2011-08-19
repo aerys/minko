@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
 	
@@ -27,7 +27,7 @@ package aerys.minko.scene.node.texture
 		
 		private var _matrix		: Matrix			= new Matrix();
 		
-		private var _ressource	: TextureRessource	= new TextureRessource();
+		private var _ressource	: TextureResource	= new TextureResource();
 				
 		public function get version() : uint
 		{
@@ -44,7 +44,7 @@ package aerys.minko.scene.node.texture
 			_styleProp = value;
 		}
 		
-		public function get ressource() : TextureRessource
+		public function get ressource() : TextureResource
 		{
 			return _ressource;
 		}

@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.ressource.TextureRessource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
@@ -17,11 +17,11 @@ package aerys.minko.scene.node.texture
 		private var _size			: uint				= 0;
 		private var _nodes			: Array				= new Array();
 		private var _empty			: Array				= new Array();
-		private var _ressource		: TextureRessource	= new TextureRessource();
+		private var _ressource		: TextureResource	= new TextureResource();
 		private var _styleProperty	: int				= 0;
 		
 		public function get styleProperty() : int				{ return _styleProperty; }
-		public function get ressource() 	: TextureRessource	{ return _ressource; }
+		public function get ressource() 	: TextureResource	{ return _ressource; }
 		public function get version() 		: uint				{ return _version; }
 		public function get size() 			: uint				{ return _bitmapData.width; }
 		
