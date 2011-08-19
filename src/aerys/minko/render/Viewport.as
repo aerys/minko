@@ -414,6 +414,7 @@ package aerys.minko.render
 			
 			if (_alwaysOnTop)
 			{
+				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 				stage.addEventListener(MouseEvent.CLICK, stageMouseHandler);
 				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
 				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
@@ -426,6 +427,7 @@ package aerys.minko.render
 			}
 			else
 			{
+				stage.removeEventListener(Event.RESIZE, stageResizeHandler);
 				stage.removeEventListener(MouseEvent.CLICK, stageMouseHandler);
 				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
 				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
@@ -436,6 +438,11 @@ package aerys.minko.render
 				stage.removeEventListener(MouseEvent.ROLL_OUT, stageMouseHandler);
 				stage.removeEventListener(MouseEvent.ROLL_OVER, stageMouseHandler);
 			}
+		}
+		
+		private function stageResizeHandler(event : Event) : void
+		{
+			updateRectangle();
 		}
 		
 		private function stageMouseHandler(event : MouseEvent) : void
@@ -497,8 +504,18 @@ package aerys.minko.render
 			if (!_logoIsHidden)
 				showLogo();
 			
-			if (_visitors && _visitors.length != 0)
+			// update Stage3D position if necessary
+			if (_stage3d)
 			{
+				var positionOnStage	: Point	= localToGlobal(ZERO2);
+				
+				if (_stageX != positionOnStage.x || _stageY != positionOnStage.y)
+					updateRectangle();
+			}
+			
+			// handle all visitor
+			if (_visitors && _visitors.length != 0)
+			{								
 				var time : Number = getTimer();
 		
 				// create the data sources the visitors are going to write and read from during render.
