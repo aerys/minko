@@ -6,7 +6,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.node.group.Joint;
@@ -86,7 +86,7 @@ package aerys.minko.scene.action.mesh
 			}
 			else
 			{
-				var transformNode : ITransformable = currentNode as ITransformable;
+				var transformNode : ITransformableScene = currentNode as ITransformableScene;
 				
 				if (transformNode != null)
 					TMP_LOCAL_MATRIX.push().multiply(transformNode.transform);
@@ -112,8 +112,8 @@ package aerys.minko.scene.action.mesh
 											  skinningDQd			: Vector.<Vector4>,
 											  boneMatrices			: Vector.<Matrix4x4>) : void
 		{
-			if (currentNode is ITransformable)
-				TMP_LOCAL_MATRIX.push().multiply(ITransformable(currentNode).transform);
+			if (currentNode is ITransformableScene)
+				TMP_LOCAL_MATRIX.push().multiply(ITransformableScene(currentNode).transform);
 			
 			// FIXME same patch than line 87
 			if (currentNode is Joint || currentNode is TransformGroup) 
@@ -147,7 +147,7 @@ package aerys.minko.scene.action.mesh
 					fillSkinningMatrices(child, jointNames, bindShapeMatrix, invBindMatrices, skinningDQn, skinningDQd, boneMatrices);
 			}
 			
-			if (currentNode is ITransformable)
+			if (currentNode is ITransformableScene)
 				TMP_LOCAL_MATRIX.pop();
 		}
 	}

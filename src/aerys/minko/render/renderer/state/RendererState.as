@@ -382,7 +382,7 @@ package aerys.minko.render.renderer.state
 					}
 					else
 					{
-						context.setRenderToTexture(_renderTarget.textureRessource.getNativeTexture(context),
+						context.setRenderToTexture(_renderTarget.textureResource.getNativeTexture(context),
 												   _renderTarget.useDepthAndStencil,
 												   _renderTarget.antiAliasing);
 					}
@@ -504,7 +504,7 @@ package aerys.minko.render.renderer.state
 				}
 				else
 				{
-					context.setRenderToTexture(_renderTarget.textureRessource.getNativeTexture(context),
+					context.setRenderToTexture(_renderTarget.textureResource.getNativeTexture(context),
 											   _renderTarget.useDepthAndStencil,
 											   _renderTarget.antiAliasing);
 				}

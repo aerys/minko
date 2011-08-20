@@ -3,7 +3,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.scene.action.style.PopStyleAction;
 	import aerys.minko.scene.action.style.PushStyleAction;
-	import aerys.minko.scene.node.IStyledScene;
+	import aerys.minko.scene.node.IStylableScene;
 	
 	/**
 	 * StyleGroup enables setting style properties that will
@@ -12,7 +12,7 @@ package aerys.minko.scene.node.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class StyleGroup extends Group implements IStyledScene
+	public class StyleGroup extends Group implements IStylableScene
 	{
 		private var _style			: Style		= new Style();
 		private var _styleEnabled	: Boolean	= true;

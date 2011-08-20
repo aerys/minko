@@ -2,7 +2,7 @@ package aerys.minko.scene.action.style
 {
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.IStyledScene;
+	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
@@ -22,7 +22,7 @@ package aerys.minko.scene.action.style
 		
 		public function run(scene:IScene, visitor:ISceneVisitor, renderer:IRenderer):Boolean
 		{
-			var styled : IStyledScene = scene as IStyledScene;
+			var styled : IStylableScene = scene as IStylableScene;
 			
 			if (styled.styleEnabled)
 				visitor.renderingData.styleStack.push(styled.style);

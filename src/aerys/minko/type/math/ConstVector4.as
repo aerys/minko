@@ -2,7 +2,7 @@ package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko;
 
-	public class ConstVector4 extends Vector4
+	public final class ConstVector4 extends Vector4
 	{
 		use namespace minko;
 		

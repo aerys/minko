@@ -38,7 +38,7 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class Viewport extends Sprite implements IVersionnable
+	public final class Viewport extends Sprite implements IVersionnable
 	{
 		use namespace minko;
 		

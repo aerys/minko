@@ -40,7 +40,7 @@ package aerys.minko.render.effect.common
 			state.blending			= Blending.NORMAL;
 			state.priority			= _priority;
 			state.renderTarget		= _renderTarget || (world[ViewportData] as ViewportData).renderTarget;
-			state.shader			= SHADER;
+			state.shader			= SHADER.resource;
 			state.triangleCulling	= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			
 			var triangleCullingModifier : Number = state.triangleCulling == TriangleCulling.BACK ? 1.0 : -1.0;

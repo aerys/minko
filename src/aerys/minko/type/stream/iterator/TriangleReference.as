@@ -8,7 +8,7 @@ package aerys.minko.type.stream.iterator
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 
-	public class TriangleReference
+	public final class TriangleReference
 	{
 		use namespace minko;
 		use namespace minko_stream;

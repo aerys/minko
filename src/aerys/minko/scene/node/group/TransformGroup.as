@@ -2,7 +2,7 @@
 {
 	import aerys.minko.scene.action.transform.PopTransformAction;
 	import aerys.minko.scene.action.transform.PushTransformAction;
-	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.type.math.Transform3D;
 	
 	/**
@@ -10,7 +10,7 @@
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class TransformGroup extends Group implements ITransformable
+	public class TransformGroup extends Group implements ITransformableScene
 	{
 		private var _transform	: Transform3D		= new Transform3D();
 			

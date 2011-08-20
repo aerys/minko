@@ -2,7 +2,7 @@ package aerys.minko.scene.action.transform
 {
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
@@ -22,7 +22,7 @@ package aerys.minko.scene.action.transform
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var transformable : ITransformable = scene as ITransformable;
+			var transformable : ITransformableScene = scene as ITransformableScene;
 			
 			if (!transformable)
 				throw new Error("TransformAction can only be applied to ITransformable nodes.");

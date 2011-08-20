@@ -6,7 +6,7 @@ package aerys.minko.render.resource
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
 
-	public class IndexBufferResource implements IResource
+	public final class IndexBufferResource implements IResource
 	{
 		use namespace minko_stream;
 		

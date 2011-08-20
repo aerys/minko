@@ -1,25 +1,15 @@
 package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.effect.IEffect;
-	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.SinglePassEffect;
-	import aerys.minko.render.effect.fog.FogStyle;
 	import aerys.minko.render.effect.skinning.SkinningStyle;
 	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.resource.TextureResource;
-	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SValue;
-	import aerys.minko.render.shader.node.Components;
-	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
-	import aerys.minko.scene.data.ViewportData;
-	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.skinning.SkinningMethod;
 	
@@ -28,11 +18,6 @@ package aerys.minko.render.effect.basic
 	[StyleParameter(name="basic diffuse map",type="texture")]
 	[StyleParameter(name="basic diffuse multiplier",type="color")]
 	
-	[StyleParameter(name="fog enabled",type="boolean")]
-	[StyleParameter(name="fog color",type="color")]
-	[StyleParameter(name="fog start",type="number")]
-	[StyleParameter(name="fog distance",type="number")]
-
 	public class BasicEffect extends SinglePassEffect
 	{
 		public function BasicEffect(priority		: Number		= 0,
@@ -59,6 +44,23 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputPosition() : SValue
 		{
+			var skinningMethod	: uint	= getStyleConstant(SkinningStyle.METHOD, SkinningMethod.DISABLED)
+										  as uint;
+			
+			// handle skinning
+			if (skinningMethod != SkinningMethod.DISABLED)
+			{
+				var maxInfluences	: uint		= getStyleConstant(SkinningStyle.MAX_INFLUENCES, 0)
+												  as uint;
+				var numBones		: uint		= getStyleConstant(SkinningStyle.NUM_BONES, 0)
+												  as uint;
+				var skinnedPosition	: SValue	= getVertexSkinnedPosition(skinningMethod,
+																		   maxInfluences,
+																		   numBones);
+				
+				return multiply4x4(skinnedPosition, localToScreenMatrix);
+			}
+			
 			return vertexClipspacePosition;
 		}
 		
@@ -67,29 +69,8 @@ package aerys.minko.render.effect.basic
 			var diffuse : SValue	= diffuseColor;
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MULTIPLIER))
-			{
-				var diffuseMultiplier : SValue	= getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER);
-				
-				diffuse.scaleBy(copy(diffuseMultiplier));
-			}
-			
-			// fog
-			if (getStyleConstant(FogStyle.FOG_ENABLED, false))
-			{
-				var zFar		: SValue = styleIsSet(FogStyle.DISTANCE)
-										  ? getStyleParameter(1, FogStyle.DISTANCE)
-										  : getWorldParameter(1, CameraData, CameraData.Z_FAR);
-				var fogColor 	: SValue = styleIsSet(FogStyle.COLOR)
-										  ? getStyleParameter(3, FogStyle.COLOR)
-										  : float3(0., 0., 0.);
-				var fogStart	: SValue = styleIsSet(FogStyle.START)
-										  ? getStyleParameter(1, FogStyle.START)
-										  : float(0.);
-				
-				fogColor = getFogColor(fogStart, zFar, fogColor); 
-				diffuse  = blend(fogColor, diffuse, Blending.ALPHA);
-			}
-			
+				diffuse.scaleBy(copy(getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER)));
+						
 			return diffuse;
 		}
 		
@@ -121,15 +102,6 @@ package aerys.minko.render.effect.basic
 				hash += ",maxInfluences=" + style.get(SkinningStyle.MAX_INFLUENCES, 0);
 				hash += ",numBones=" + style.get(SkinningStyle.NUM_BONES, 0);
 				hash += ")";
-			}
-			
-			if (style.get(FogStyle.FOG_ENABLED, false))
-			{
-				hash += "_fog(";
-				hash += "start=" + style.get(FogStyle.START, 0.);
-				hash += ",distance=" + style.get(FogStyle.DISTANCE, 0.);
-				hash += ",color=" + style.get(FogStyle.COLOR, 0);
-				hash += ")"
 			}
 			
 			return hash;

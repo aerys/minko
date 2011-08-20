@@ -1,15 +1,11 @@
 package aerys.minko.type.stream
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.render.resource.VertexBufferResource;
 	import aerys.minko.type.IVersionnable;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
-	public class VertexStreamList implements IVersionnable, IVertexStream
+	public final class VertexStreamList implements IVersionnable, IVertexStream
 	{
-		use namespace minko;
-		
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
 		private var _streamVersions	: Vector.<int>			= new Vector.<int>();
 		private var _format			: VertexFormat			= new VertexFormat();

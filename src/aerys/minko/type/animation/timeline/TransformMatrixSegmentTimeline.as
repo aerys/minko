@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.type.math.Matrix4x4;
 
 	public class TransformMatrixSegmentTimeline implements ITimeline
@@ -29,7 +29,7 @@ package aerys.minko.type.animation.timeline
 		
 		public function updateAt(t : uint, scene : IScene) : void
 		{
-			var out			: Matrix4x4 = ITransformable(scene).transform;
+			var out			: Matrix4x4 = ITransformableScene(scene).transform;
 			var i			: uint;
 			var timesLength : uint = _times.length;
 			

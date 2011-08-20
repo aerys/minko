@@ -1,6 +1,6 @@
 package aerys.minko.type.math
 {
-	public class Quaternion
+	public final class Quaternion
 	{
 		private static const TMP_QUATERNION : Quaternion = new Quaternion();
 		

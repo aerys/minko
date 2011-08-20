@@ -6,7 +6,6 @@ package aerys.minko.render.effect.basic
 	{
 		public static const DIFFUSE				: int	= Style.getStyleId("basic diffuse");
 		public static const DIFFUSE_MULTIPLIER	: int	= Style.getStyleId("basic diffuse multiplier");
-		public static const NORMAL_MAP			: int	= Style.getStyleId("basic normal map");
 		
 		public static const BLENDING			: int	= Style.getStyleId("basic blending");
 		

@@ -13,17 +13,17 @@ package aerys.minko.render
 		private var _width				: uint				= 0;
 		private var _height				: uint				= 0;
 		
-		minko   var _textureRessource	: TextureResource	= null;
+		minko   var _textureResource	: TextureResource	= null;
 		private var _useDepthAndStencil	: Boolean			= false;
 		private var _antiAliasing		: int				= 0.;
 		private var _surface			: int				= 0;
 		private var _backgroundColor	: uint				= 0;
 		
-		public function get type()					: uint				{ return _textureRessource == null ? BACKBUFFER : TEXTURE; }
+		public function get type()					: uint				{ return _textureResource == null ? BACKBUFFER : TEXTURE; }
 		public function get width()					: uint				{ return _width; }
 		public function get height()				: uint				{ return _height; }
 		
-		public function get textureRessource() 		: TextureResource	{ return _textureRessource; }
+		public function get textureResource() 		: TextureResource	{ return _textureResource; }
 		public function get useDepthAndStencil()	: Boolean			{ return _useDepthAndStencil; }
 		public function get antiAliasing()			: int				{ return _antiAliasing; }
 		public function get backgroundColor()		: uint				{ return _backgroundColor; }
@@ -43,7 +43,7 @@ package aerys.minko.render
 			
 			if (type == BACKBUFFER)
 			{
-				_textureRessource	= null;
+				_textureResource	= null;
 			}
 			else if (type == TEXTURE)
 			{
@@ -53,8 +53,8 @@ package aerys.minko.render
 				if ((width & (width - 1)) != 0)
 					throw new Error('Texture size must be a power of 2.');
 				
-				_textureRessource = new TextureResource();
-				_textureRessource.setSize(width, height);
+				_textureResource = new TextureResource();
+				_textureResource.setSize(width, height);
 			}
 		}
 		

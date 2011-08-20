@@ -4,14 +4,14 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.node.IStyledScene;
+	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	
 	import flash.utils.getTimer;
 	
-	public class KeyframedMesh extends AbstractScene implements IMesh, IStyledScene
+	public class KeyframedMesh extends AbstractScene implements IMesh, IStylableScene
 	{
 		private var _style				: Style;
 		

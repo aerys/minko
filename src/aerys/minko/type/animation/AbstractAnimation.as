@@ -1,7 +1,7 @@
 package aerys.minko.type.animation
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.ITransformable;
+	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.scene.node.group.Group;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
@@ -37,11 +37,11 @@ package aerys.minko.type.animation
 				var timeline		: ITimeline	= _timelines[i];
 				var timelineTarget	: String	= timeline.target;
 				
-				var target			: ITransformable; 
+				var target			: ITransformableScene; 
 				if (_playingOn.name == timelineTarget)
-					target = ITransformable(_playingOn);
+					target = ITransformableScene(_playingOn);
 				else if (_playingOn is Group)
-					target = ITransformable(Group(_playingOn).getDescendantByName(timelineTarget));
+					target = ITransformableScene(Group(_playingOn).getDescendantByName(timelineTarget));
 				
 				if (!target)
 					continue;

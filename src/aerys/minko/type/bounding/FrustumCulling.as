@@ -8,7 +8,7 @@ package aerys.minko.type.bounding
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	final public class FrustumCulling
+	public final class FrustumCulling
 	{
 		/**
 		 * Disable frustum culling.

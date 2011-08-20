@@ -3,6 +3,7 @@ package aerys.minko.render.shader
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.resource.ShaderResource;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
@@ -22,17 +23,22 @@ package aerys.minko.render.shader
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import aerys.minko.render.resource.ShaderResource;
 	
-	public class Shader extends ShaderResource
+	public class Shader
 	{
 		use namespace minko;
 		
+		protected var _resource		: ShaderResource;
 		protected var _vsConstData	: Vector.<Number>;
 		protected var _fsConstData	: Vector.<Number>;
 		protected var _vsParams		: Vector.<ParameterAllocation>;
 		protected var _fsParams		: Vector.<ParameterAllocation>;
 		protected var _samplers		: Vector.<int>;
+		
+		public function get resource() : ShaderResource
+		{
+			return _resource;
+		}
 		
 		public static function create(outputPosition	: INode,
 									  outputColor		: INode) : Shader
@@ -58,8 +64,9 @@ package aerys.minko.render.shader
 			_vsParams		= vertexShaderParameters;
 			_fsParams		= fragmentShaderParameters;
 			_samplers		= samplers;
+			_resource 		= new ShaderResource(vertexShader, fragmentShader, vertexInput);
 			
-			super(vertexShader, fragmentShader, vertexInput);
+			super();
 			
 			if (_vsConstData.length > RegisterLimit.VS_MAX_CONSTANT * 4)
 				throw new Error();
@@ -75,7 +82,7 @@ package aerys.minko.render.shader
 			setTextures(state, style, local, world);
 			setConstants(state, style, local, world);
 			
-			state.shader = this;
+			state.shader = _resource;
 			
 			return true;
 		}

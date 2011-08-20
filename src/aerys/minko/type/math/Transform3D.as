@@ -9,7 +9,7 @@ package aerys.minko.type.math
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 	
-	public class Transform3D extends Matrix4x4
+	public final class Transform3D extends Matrix4x4
 	{
 		use namespace minko;
 		

@@ -1,6 +1,6 @@
 package aerys.minko.type.skinning
 {
-	public class SkinningMethod
+	public final class SkinningMethod
 	{
 		public static const DISABLED		: uint = 0;
 		public static const DUAL_QUATERNION : uint = 1;

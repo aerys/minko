@@ -14,7 +14,7 @@ package aerys.minko.type.stream.iterator
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class TriangleIterator extends Proxy
+	public final class TriangleIterator extends Proxy
 	{
 		use namespace minko;
 		use namespace minko_stream;

@@ -1,29 +1,29 @@
 package aerys.minko.type.stream.format
 {
-	public class VertexComponent
+	public final class VertexComponent
 	{
 		private static const INSTANCIATED_COMPONENTS	: Object = new Object();
 		
-		public static const XYZ			: VertexComponent 	= VertexComponent.create(["x", "y", "z"], VertexComponentType.FLOAT_3);
-		public static const UV			: VertexComponent 	= VertexComponent.create(["u", "v"], VertexComponentType.FLOAT_2);
-		public static const RGB			: VertexComponent 	= VertexComponent.create(["r", "g", "b"], VertexComponentType.FLOAT_3);
-		public static const RGBA		: VertexComponent 	= VertexComponent.create(["r", "g", "b", "a"], VertexComponentType.FLOAT_4);
-		public static const NORMAL		: VertexComponent 	= VertexComponent.create(["nx", "ny", "nz"], VertexComponentType.FLOAT_3);
-		public static const ST			: VertexComponent 	= VertexComponent.create(["s", "t"], VertexComponentType.FLOAT_2);
+		public static const XYZ			: VertexComponent 	= create(["x", "y", "z"], VertexComponentType.FLOAT_3);
+		public static const UV			: VertexComponent 	= create(["u", "v"], VertexComponentType.FLOAT_2);
+		public static const RGB			: VertexComponent 	= create(["r", "g", "b"], VertexComponentType.FLOAT_3);
+		public static const RGBA		: VertexComponent 	= create(["r", "g", "b", "a"], VertexComponentType.FLOAT_4);
+		public static const NORMAL		: VertexComponent 	= create(["nx", "ny", "nz"], VertexComponentType.FLOAT_3);
+		public static const ST			: VertexComponent 	= create(["s", "t"], VertexComponentType.FLOAT_2);
 		
-		public static const TANGENT		: VertexComponent	= VertexComponent.create(["tx", "ty", "tz"], VertexComponentType.FLOAT_3);
+		public static const TANGENT		: VertexComponent	= create(["tx", "ty", "tz"], VertexComponentType.FLOAT_3);
 		
-		public static const BONE0		: VertexComponent	= VertexComponent.create(["boneId0", "boneWeight0"], VertexComponentType.FLOAT_2);
-		public static const BONE1		: VertexComponent	= VertexComponent.create(["boneId1", "boneWeight1"], VertexComponentType.FLOAT_2);
-		public static const BONE2		: VertexComponent	= VertexComponent.create(["boneId2", "boneWeight2"], VertexComponentType.FLOAT_2);
-		public static const BONE3		: VertexComponent	= VertexComponent.create(["boneId3", "boneWeight3"], VertexComponentType.FLOAT_2);
-		public static const BONE4		: VertexComponent	= VertexComponent.create(["boneId4", "boneWeight4"], VertexComponentType.FLOAT_2);
-		public static const BONE5		: VertexComponent	= VertexComponent.create(["boneId5", "boneWeight5"], VertexComponentType.FLOAT_2);
-		public static const BONE6		: VertexComponent	= VertexComponent.create(["boneId6", "boneWeight6"], VertexComponentType.FLOAT_2);
-		public static const BONE7		: VertexComponent	= VertexComponent.create(["boneId7", "boneWeight7"], VertexComponentType.FLOAT_2);
+		public static const BONE0		: VertexComponent	= create(["boneId0", "boneWeight0"], VertexComponentType.FLOAT_2);
+		public static const BONE1		: VertexComponent	= create(["boneId1", "boneWeight1"], VertexComponentType.FLOAT_2);
+		public static const BONE2		: VertexComponent	= create(["boneId2", "boneWeight2"], VertexComponentType.FLOAT_2);
+		public static const BONE3		: VertexComponent	= create(["boneId3", "boneWeight3"], VertexComponentType.FLOAT_2);
+		public static const BONE4		: VertexComponent	= create(["boneId4", "boneWeight4"], VertexComponentType.FLOAT_2);
+		public static const BONE5		: VertexComponent	= create(["boneId5", "boneWeight5"], VertexComponentType.FLOAT_2);
+		public static const BONE6		: VertexComponent	= create(["boneId6", "boneWeight6"], VertexComponentType.FLOAT_2);
+		public static const BONE7		: VertexComponent	= create(["boneId7", "boneWeight7"], VertexComponentType.FLOAT_2);
 		
-		public static const BONES		: Vector.<VertexComponent> = 
-			Vector.<VertexComponent>([ BONE0, BONE1, BONE2, BONE3, BONE4, BONE5, BONE6, BONE7 ]);
+		public static const BONES		: Vector.<VertexComponent> = Vector.<VertexComponent>([BONE0, BONE1, BONE2, BONE3,
+																							   BONE4, BONE5, BONE6, BONE7]);
 		
 		private var _nativeFormat		: int;
 		private var _fields				: Vector.<String>;
@@ -49,8 +49,9 @@ package aerys.minko.type.stream.format
 		public function VertexComponent(fields : Array, nativeFormat : int) 
 		{
 			var implodedFields : String = nativeFormat.toString() + '_' + fields.join("_");
+			
 			if (INSTANCIATED_COMPONENTS[implodedFields])
-				throw new Error('This component was already defined. Use VertexComponent.create instead');
+				throw new Error('This component was already defined. Use VertexComponent.create() instead');
 			
 			_offsets		= new Object();
 			_nativeFormat	= nativeFormat;
@@ -70,6 +71,5 @@ package aerys.minko.type.stream.format
 		{
 			return _fields.join(', ');
 		}
-		
 	}
 }

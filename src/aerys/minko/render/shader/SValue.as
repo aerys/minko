@@ -76,7 +76,7 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public dynamic class SValue extends Proxy
+	public dynamic final class SValue extends Proxy
 	{
 		internal var _node	: INode	= null;
 		

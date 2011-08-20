@@ -7,7 +7,7 @@ package aerys.minko.render.resource
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
 	
-	public class ShaderResource implements IResource
+	public final class ShaderResource implements IResource
 	{
 		use namespace minko_render;
 		

@@ -3,7 +3,7 @@ package aerys.minko.render.effect
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.type.IVersionnable;
 
-	public class Style implements IVersionnable
+	public final class Style implements IVersionnable
 	{
 		use namespace minko_render;
 		
