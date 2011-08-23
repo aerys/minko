@@ -1,11 +1,11 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.render.resource.VertexBufferResource;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public interface IVertexStream extends IVersionnable
+	public interface IVertexStream extends IVersionable
 	{
 		function get format() 			: VertexFormat;
 		function get length()			: uint;

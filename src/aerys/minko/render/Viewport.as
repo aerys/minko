@@ -15,7 +15,7 @@ package aerys.minko.render
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	import aerys.minko.scene.visitor.WorldDataVisitor;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	
 	import flash.display.DisplayObject;
 	import flash.display.Graphics;
@@ -38,13 +38,11 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public final class Viewport extends Sprite implements IVersionnable
+	public final class Viewport extends Sprite
 	{
 		use namespace minko;
 		
 		private static const ZERO2		: Point						= new Point();
-		
-		private var _version			: uint						= 0;
 		
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
@@ -52,6 +50,7 @@ package aerys.minko.render
 		private var _stageY				: Number					= 0.;
 		private var _autoResize			: Boolean					= false;
 		private var _antiAliasing		: int						= 0;
+		private var _invalidRectangle	: Boolean					= true;
 		
 		private var _visitors			: Vector.<ISceneVisitor>	= null;
 		
@@ -86,21 +85,22 @@ package aerys.minko.render
 			_postProcessEffect = value;
 		}
 
-		public function get version() : uint
-		{
-			return _version;
-		}
-		
 		override public function set x(value : Number) : void
 		{
-			super.x = value;
-			updateRectangle();
+			if (value != x)
+			{
+				super.x = value;
+				_invalidRectangle = true;
+			}
 		}
 		
 		override public function set y(value : Number) : void
 		{
-			super.y = value;
-			updateRectangle();
+			if (value != y)
+			{
+				super.y = value;
+				_invalidRectangle = true;
+			}
 		}
 		
 		/**
@@ -118,9 +118,7 @@ package aerys.minko.render
 			if (value != _width)
 			{
 				_width = value;
-				++_version;
-				
-				resetStage3D();
+				_invalidRectangle = true;
 			}
 		}
 		
@@ -149,9 +147,7 @@ package aerys.minko.render
 			if (value != _height)
 			{
 				_height = value;
-				++_version;
-				
-				resetStage3D();
+				_invalidRectangle = true;
 			}
 		}
 		
@@ -171,9 +167,7 @@ package aerys.minko.render
 			if (value != _antiAliasing)
 			{
 				_antiAliasing = value;
-				++_version;
-				
-				resetStage3D();
+				_invalidRectangle = true;
 			}
 		}
 		
@@ -253,7 +247,7 @@ package aerys.minko.render
 		{
 			_alwaysOnTop = value;
 			
-			updateRectangle();
+			_invalidRectangle = true;
 			updateStageListeners();
 		}
 		
@@ -263,16 +257,15 @@ package aerys.minko.render
 		 * @param width The width of the viewport.
 		 * @param height The height of the viewport.
 		 */
-		public function Viewport(width			: uint		= 0,
+		public function Viewport(antiAliasing	: int		= 0,
+								 width			: uint		= 0,
 								 height			: uint		= 0,
-								 autoResize		: Boolean	= true,
-								 antiAliasing	: int		= 0,
 								 rendererType	: Class 	= null)
 		{
 			this.width = width;
 			this.height = height;
 			
-			_autoResize		= autoResize;
+			_autoResize		= width == 0 && height == 0;
 			_antiAliasing	= antiAliasing;
 			_rendererClass	= rendererType || DefaultRenderer;
 			_viewportData	= new ViewportData(this);
@@ -356,7 +349,7 @@ package aerys.minko.render
 				}
 			}
 			
-			resetStage3D();
+			_invalidRectangle = true;
 			
 			if (!_logoIsHidden)
 				showLogo();
@@ -509,8 +502,11 @@ package aerys.minko.render
 			{
 				var positionOnStage	: Point	= localToGlobal(ZERO2);
 				
-				if (_stageX != positionOnStage.x || _stageY != positionOnStage.y)
+				if (_invalidRectangle || _stageX != positionOnStage.x
+					|| _stageY != positionOnStage.y)
+				{
 					updateRectangle();
+				}
 			}
 			
 			// handle all visitor

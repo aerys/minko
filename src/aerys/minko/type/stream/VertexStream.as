@@ -2,14 +2,14 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.VertexBufferResource;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.utils.ByteArray;
 	
-	public final class VertexStream implements IVersionnable, IVertexStream
+	public final class VertexStream implements IVersionable, IVertexStream
 	{
 		use namespace minko_stream;
 		

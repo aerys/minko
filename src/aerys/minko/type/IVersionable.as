@@ -1,6 +1,6 @@
 package aerys.minko.type
 {
-	public interface IVersionnable
+	public interface IVersionable
 	{
 		function get version() : uint;
 	}

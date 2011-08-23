@@ -1,9 +1,9 @@
 package aerys.minko.render.effect
 {
 	import aerys.minko.ns.minko_render;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 
-	public final class Style implements IVersionnable
+	public final class Style implements IVersionable
 	{
 		use namespace minko_render;
 		

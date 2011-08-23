@@ -7,7 +7,7 @@ package aerys.minko.render.renderer.state
 	import aerys.minko.render.resource.ShaderResource;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
@@ -29,7 +29,7 @@ package aerys.minko.render.renderer.state
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
 	
-	public final class RendererState implements IVersionnable
+	public final class RendererState implements IVersionable
 	{
 		use namespace minko;
 		use namespace minko_render;

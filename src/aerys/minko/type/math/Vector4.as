@@ -2,11 +2,11 @@ package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	
 	import flash.geom.Vector3D;
 
-	public class Vector4 implements IVersionnable
+	public class Vector4 implements IVersionable
 	{
 		use namespace minko;
 		
