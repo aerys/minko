@@ -4,8 +4,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.VertexStreamList;
 
 	/**
 	 * The IMesh interface define the properties available in any mesh object.

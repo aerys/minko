@@ -5,6 +5,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
+	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.scene.node.group.Group;
@@ -13,11 +14,13 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.node.group.TransformGroup;
 	import aerys.minko.scene.node.mesh.SkinnedMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	public class PushMeshSkinAction implements IAction
 	{
+		private static const VECTOR4_FACTORY		: Factory	= Factory.getFactory(Vector4);
 		private static const TMP_LOCAL_MATRIX		: Matrix4x4	= new Matrix4x4();
 		private static const TMP_SKINNING_MATRIX	: Matrix4x4 = new Matrix4x4();
 		private static const EMPTY_STYLE			: Style		= new Style();
@@ -34,6 +37,13 @@ package aerys.minko.scene.action.mesh
 		public function run(scene		: IScene, 
 							visitor		: ISceneVisitor, 
 							renderer	: IRenderer) : Boolean
+		{
+			loadSkinningData(scene, visitor.renderingData.styleStack);
+			return true;
+		}
+		
+		public function loadSkinningData(scene		: IScene,
+										 styleStack	: StyleStack) : void
 		{
 			var skinnedMesh			: SkinnedMesh			= SkinnedMesh(scene);
 			
@@ -58,15 +68,13 @@ package aerys.minko.scene.action.mesh
 				fillSkinningMatrices(skeletonReference, jointNames, bindShapeMatrix, invBindMatrices, skinningDQn, skinningDQd, boneMatrices);
 			
 			// write all needed data into the stylestack for futher rendering
-			visitor.renderingData.styleStack.push(EMPTY_STYLE);
-			visitor.renderingData.styleStack.set(SkinningStyle.MAX_INFLUENCES, skinnedMesh.maxInfluences);
-			visitor.renderingData.styleStack.set(SkinningStyle.NUM_BONES, jointCount);
-			visitor.renderingData.styleStack.set(SkinningStyle.BONE_QN, skinningDQn);
-			visitor.renderingData.styleStack.set(SkinningStyle.BONE_QD, skinningDQd);
-			visitor.renderingData.styleStack.set(SkinningStyle.BIND_SHAPE, bindShapeMatrix);
-			visitor.renderingData.styleStack.set(SkinningStyle.BONE_MATRICES, boneMatrices);
-			
-			return true;
+			styleStack.push(EMPTY_STYLE);
+			styleStack.set(SkinningStyle.MAX_INFLUENCES, skinnedMesh.maxInfluences);
+			styleStack.set(SkinningStyle.NUM_BONES, jointCount);
+			styleStack.set(SkinningStyle.BONE_QN, skinningDQn);
+			styleStack.set(SkinningStyle.BONE_QD, skinningDQd);
+			styleStack.set(SkinningStyle.BIND_SHAPE, bindShapeMatrix);
+			styleStack.set(SkinningStyle.BONE_MATRICES, boneMatrices);
 		}
 		
 		private function findSkeletonRoot(currentNode		: IGroup,
@@ -131,8 +139,8 @@ package aerys.minko.scene.action.mesh
 							.multiply(invBindMatrices[i]);
 						
 						boneMatrices[i] = Matrix4x4.copy(matrix);
-						skinningDQn[i]	= new Vector4();
-						skinningDQd[i]	= new Vector4();
+						skinningDQn[i]	= Vector4(VECTOR4_FACTORY.create(true));
+						skinningDQd[i]	= Vector4(VECTOR4_FACTORY.create(true));
 						matrix.toDualQuaternion(skinningDQn[i], skinningDQd[i]);
 						break;
 					}

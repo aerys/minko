@@ -10,10 +10,6 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.VertexStreamList;
 	
-	import avmplus.getQualifiedClassName;
-	
-	import flash.net.getClassByAlias;
-	
 	/**
 	 * The AbstractMeshModifier class provides basic support for mesh
 	 * modifiers and can be extended in order to be specialized. 
@@ -77,8 +73,9 @@ package aerys.minko.scene.node.mesh.modifier
 			
 			if (_target)
 			{
-				if (getClassByAlias(getQualifiedClassName(_target)) == type)
+				if (_target is type)
 					descendants.push(_target);
+				
 				if (_target is ISearchableScene)
 					(_target as ISearchableScene).getDescendantsByType(type, descendants);
 			}

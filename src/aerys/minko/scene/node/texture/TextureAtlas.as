@@ -2,12 +2,10 @@ package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.resource.TextureResource;
-	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
 	
 	import flash.display.BitmapData;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
 	public class TextureAtlas extends AbstractScene implements ITexture
@@ -17,11 +15,11 @@ package aerys.minko.scene.node.texture
 		private var _size			: uint				= 0;
 		private var _nodes			: Array				= new Array();
 		private var _empty			: Array				= new Array();
-		private var _ressource		: TextureResource	= new TextureResource();
+		private var _resource		: TextureResource	= new TextureResource();
 		private var _styleProperty	: int				= 0;
 		
 		public function get styleProperty() : int				{ return _styleProperty; }
-		public function get ressource() 	: TextureResource	{ return _ressource; }
+		public function get resource() 	: TextureResource	{ return _resource; }
 		public function get version() 		: uint				{ return _version; }
 		public function get size() 			: uint				{ return _bitmapData.width; }
 		
@@ -47,7 +45,7 @@ package aerys.minko.scene.node.texture
 			var rectangle : Rectangle	= getRectangle(bitmapData.width, bitmapData.height);
 		
 			_bitmapData.copyPixels(bitmapData, bitmapData.rect, rectangle.topLeft);
-			_ressource.setContentFromBitmapData(_bitmapData, true);
+			_resource.setContentFromBitmapData(_bitmapData, true);
 			
 			return rectangle.clone();
 		}

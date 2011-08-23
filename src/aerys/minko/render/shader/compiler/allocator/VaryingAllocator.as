@@ -1,12 +1,13 @@
 package aerys.minko.render.shader.compiler.allocator
 {
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 
 	public class VaryingAllocator extends Allocator
 	{
-		public function VaryingAllocator(registerCount : uint = 8)
+		public function VaryingAllocator()
 		{
-			super(registerCount);
+			super(RegisterLimit.MAX_VARYING);
 		}
 		
 		override public function getWriteMask(op : INode) : uint

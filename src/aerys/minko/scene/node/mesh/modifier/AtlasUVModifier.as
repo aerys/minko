@@ -3,10 +3,10 @@ package aerys.minko.scene.node.mesh.modifier
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.iterator.VertexIterator;
-	import aerys.minko.type.stream.iterator.VertexReference;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
+	import aerys.minko.type.stream.iterator.VertexIterator;
+	import aerys.minko.type.stream.iterator.VertexReference;
 	
 	import flash.geom.Rectangle;
 	

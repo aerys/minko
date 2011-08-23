@@ -15,9 +15,11 @@ package aerys.minko.scene.action.mesh
 			return _instance || (_instance = new PopMeshSkinAction());
 		}
 		
-		public function get type() : uint		{ return ActionType.UPDATE_STYLE; }
+		public function get type() : uint { return ActionType.UPDATE_STYLE; }
 		
-		public function run(scene:IScene, visitor:ISceneVisitor, renderer:IRenderer):Boolean
+		public function run(scene		: IScene, 
+							visitor		: ISceneVisitor,
+							renderer	: IRenderer) : Boolean
 		{
 			visitor.renderingData.styleStack.pop();
 			

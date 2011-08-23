@@ -385,7 +385,7 @@ package aerys.minko.render.shader.compiler.register
 			return swizzle;
 		}
 		
-		public static function stringifySwizzle(swizzle : uint) : String 
+		public static function stringify(swizzle : uint) : String 
 		{
 			return swizzle != XYZW ? '.' + STRINGS[swizzle] : '';
 		}

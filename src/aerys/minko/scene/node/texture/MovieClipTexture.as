@@ -1,6 +1,5 @@
 package aerys.minko.scene.node.texture
 {
-	import flash.display.BitmapData;
 	import flash.display.MovieClip;
 
 	/**

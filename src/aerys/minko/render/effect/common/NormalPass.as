@@ -36,16 +36,16 @@ package aerys.minko.render.effect.common
 										local		: LocalData, 
 										world		: Dictionary) : Boolean
 		{
+			var triangleCulling		: uint		= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
+			var normalMultiplier	: Number	= triangleCulling == TriangleCulling.BACK ? 1.0 : -1.0;
+			
+			styleStack.set(BasicStyle.NORMAL_MULTIPLIER, normalMultiplier);
+			
 			state.depthTest			= CompareMode.LESS;
 			state.blending			= Blending.NORMAL;
 			state.priority			= _priority;
 			state.renderTarget		= _renderTarget || (world[ViewportData] as ViewportData).renderTarget;
-			state.shader			= SHADER.resource;
-			state.triangleCulling	= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			
-			var triangleCullingModifier : Number = state.triangleCulling == TriangleCulling.BACK ? 1.0 : -1.0;
-			
-			styleStack.set(BasicStyle.NORMAL_MULTIPLIER, triangleCullingModifier);
+			state.triangleCulling	= triangleCulling
 			
 			SHADER.fillRenderState(state, styleStack, local, world);
 			

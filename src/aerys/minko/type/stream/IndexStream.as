@@ -16,12 +16,12 @@ package aerys.minko.type.stream
 		
 		private var _version	: uint					= 0;
 		private var _dynamic	: Boolean				= false;
-		private var _ressource	: IndexBufferResource	= null;
+		private var _resource	: IndexBufferResource	= null;
 		private var _length		: uint					= 0;
 		
 		public function get version() 	: uint					{ return _version; }
 		public function get dynamic()	: Boolean				{ return _dynamic; }
-		public function get ressource()	: IndexBufferResource	{ return _ressource; }
+		public function get resource()	: IndexBufferResource	{ return _resource; }
 		public function get length()	: uint					{ return _length; }
 		
 		public function set length(value : uint) : void
@@ -74,7 +74,7 @@ package aerys.minko.type.stream
 									dynamic	: Boolean) : void
 		{
 			_dynamic = dynamic;
-			_ressource = new IndexBufferResource(this);
+			_resource = new IndexBufferResource(this);
 			
 			if (indices)
 			{
@@ -210,7 +210,7 @@ package aerys.minko.type.stream
 		
 		public function disposeLocalData() : void
 		{
-			if (length != ressource.numIndices)
+			if (length != resource.numIndices)
 				throw new Error("Unable to dispose local data: "
 								+ "some intices have not been uploaded.");
 			

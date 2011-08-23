@@ -19,6 +19,11 @@ package aerys.minko.scene.data
 		protected var _renderTarget				: RenderTarget;
 		protected var _backbufferRenderTarger	: RenderTarget;
 		
+		public function get frameId() : uint
+		{
+			return _viewport.frameId;
+		}
+		
 		public function get ratio() : Number
 		{
 			return _viewport.width / _viewport.height;

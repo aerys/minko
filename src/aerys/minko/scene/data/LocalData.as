@@ -1,8 +1,9 @@
 package aerys.minko.scene.data
 {
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.math.Matrix4x4;
 
-	public final class LocalData
+	public final class LocalData implements IVersionable
 	{
 		private static const _SCREEN_TO_UV : Matrix4x4 = new Matrix4x4(
 			0.5,		0.0,		0.0,	0.0,
@@ -50,6 +51,11 @@ package aerys.minko.scene.data
 		protected var _globalToScreen					: Matrix4x4;
 		protected var _globalToScreen_viewVersion		: uint;
 		protected var _globalToScreen_projectionVersion	: uint;
+		
+		public function get version() : uint
+		{
+			return _world.version + _view.version + _projection.version;
+		}
 		
 		public function get view() : Matrix4x4
 		{

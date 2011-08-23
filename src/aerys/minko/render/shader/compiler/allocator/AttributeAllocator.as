@@ -1,27 +1,25 @@
 package aerys.minko.render.shader.compiler.allocator
 {
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.leaf.Attribute;
 	
-
 	public class AttributeAllocator extends Allocator
 	{
-		public function AttributeAllocator(registerCount	: uint = 8)
+		public function AttributeAllocator()
 		{
-			super(registerCount);
+			super(RegisterLimit.VS_MAX_ATTRIBUTE);
 		}
 		
-		public function getAllocations() : Array
+		public function getAllocations() : Vector.<Attribute>
 		{
-			var allocLength	: uint	= _allocations.length;
-			var result		: Array	= new Array();
+			var allocLength	: uint					= _allocations.length;
+			var attributes	: Vector.<Attribute>	= new Vector.<Attribute>(allocLength, true);
 			
-			for (var i:int = 0; i < allocLength; ++i)
-			{
-				var alloc : Allocation	= _allocations[i];
-				result.push(alloc.node);
-			}
+			for (var i : int = 0; i < allocLength; ++i)
+				attributes[i] = Attribute(_allocations[i].node);
 			
-			return result;
+			return attributes;
 		}
 		
 		override public function getWriteMask(op : INode) : uint

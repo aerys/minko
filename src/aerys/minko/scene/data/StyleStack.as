@@ -2,9 +2,9 @@ package aerys.minko.scene.data
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.type.Factory;
+	import aerys.minko.type.IVersionable;
 
-	public final class StyleStack
+	public final class StyleStack implements IVersionable
 	{
 		use namespace minko_render;
 		
@@ -12,9 +12,16 @@ package aerys.minko.scene.data
 		private static var _free	: Vector.<Array>	= new Vector.<Array>();
 		private static var _numFree	: int				= 0;
 		
-		private var _data 	: Vector.<Array>	= Vector.<Array>([_empty]);
-		private var _size	: int				= 1;
-		private var _cache	: Array				= new Array();
+		private var _data 		: Vector.<Array>	= Vector.<Array>([_empty]);
+		private var _size		: int				= 1;
+		private var _cache		: Array				= new Array();
+		
+		private var _version	: uint				= 1;
+		
+		public function get version() : uint
+		{
+			return _version;
+		}
 		
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
@@ -70,6 +77,8 @@ package aerys.minko.scene.data
 			_cache[styleId] = value;
 			top[styleId] = value;
 			
+			++_version;
+			
 			return this;
 		}
 
@@ -77,6 +86,8 @@ package aerys.minko.scene.data
 		{
 			_data[int(_size++)] = style._data;
 			_data[int(_size++)] = _empty;
+			
+			_version += style.version + 1;
 		}
 		
 		public function pop() : void
@@ -87,9 +98,9 @@ package aerys.minko.scene.data
 				_free[int(_numFree++)] = free;
 			
 			_size -= 2;
-			
 			_cache.length = 0;
+			
+			++_version;
 		}
-		
 	}
 }

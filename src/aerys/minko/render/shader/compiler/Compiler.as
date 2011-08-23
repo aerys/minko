@@ -41,25 +41,26 @@ package aerys.minko.render.shader.compiler
 		internal static const TMP_ALLOC_FIELD_HEIGHT	: uint = 25;
 		
 		// Nodes
-		protected var _clipspacePosNode	: INode;
-		protected var _vertexOps		: Vector.<INode>;
-		protected var _colorNode		: INode;
+		protected var _clipspacePosNode			: INode;
+		protected var _vertexOps				: Vector.<INode>;
+		protected var _colorNode				: INode;
 		
 		// Allocators
-		protected var _attrAllocator	: AttributeAllocator;
-		protected var _varyingAllocator	: VaryingAllocator;
-		protected var _vsTmpAllocator	: Allocator;
-		protected var _vsConstAllocator	: ConstantAllocator;
-		protected var _fsTmpAllocator	: Allocator;
-		protected var _fsConstAllocator	: ConstantAllocator;
+		protected var _attrAllocator			: AttributeAllocator;
+		protected var _varyingAllocator			: VaryingAllocator;
+		protected var _vsTmpAllocator			: Allocator;
+		protected var _vsConstAllocator			: ConstantAllocator;
+		protected var _fsTmpAllocator			: Allocator;
+		protected var _fsConstAllocator			: ConstantAllocator;
 		
 		// Additional data that will be needed for shader usage
-		protected var _vertexInput		: Vector.<VertexComponent>;
-		protected var _vsConstData		: Vector.<Number>;
-		protected var _fsConstData		: Vector.<Number>;
-		protected var _vsParams			: Vector.<ParameterAllocation>;
-		protected var _fsParams			: Vector.<ParameterAllocation>;
-		protected var _samplers			: Vector.<int>;
+		protected var _vertexInputComponents	: Vector.<VertexComponent>;
+		protected var _vertexInputIndices		: Vector.<uint>;
+		protected var _vsConstData				: Vector.<Number>;
+		protected var _fsConstData				: Vector.<Number>;
+		protected var _vsParams					: Vector.<ParameterAllocation>;
+		protected var _fsParams					: Vector.<ParameterAllocation>;
+		protected var _samplers					: Vector.<int>;
 		
 		public function load(clipspacePos	: INode, 
 							 color			: INode) : void
@@ -109,18 +110,17 @@ package aerys.minko.render.shader.compiler
 		
 		protected function reset() : void
 		{
-			_vertexInput		= null;
+			_vertexOps				= new Vector.<INode>();
+			_vertexInputComponents	= new Vector.<VertexComponent>();
+			_vertexInputIndices		= new Vector.<uint>();
+			_colorNode				= null;
 			
-			_vertexOps			= new Vector.<INode>();
-			_vertexInput		= new Vector.<VertexComponent>();
-			_colorNode			= null;
-			
-			_attrAllocator		= new AttributeAllocator(RegisterLimit.VS_MAX_ATTRIBUTE);
-			_varyingAllocator	= new VaryingAllocator(RegisterLimit.MAX_VARYING);
-			_vsTmpAllocator		= new Allocator(RegisterLimit.VS_MAX_TEMPORARY);
-			_vsConstAllocator	= new ConstantAllocator(RegisterLimit.VS_MAX_CONSTANT);
-			_fsTmpAllocator		= new Allocator(RegisterLimit.FG_MAX_TEMPORARY);
-			_fsConstAllocator	= new ConstantAllocator(RegisterLimit.FG_MAX_CONSTANT);
+			_attrAllocator			= new AttributeAllocator();
+			_varyingAllocator		= new VaryingAllocator();
+			_vsTmpAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY);
+			_vsConstAllocator		= new ConstantAllocator(true);
+			_fsTmpAllocator			= new Allocator(RegisterLimit.FG_MAX_TEMPORARY);
+			_fsConstAllocator		= new ConstantAllocator(false);
 		}
 		
 		protected function wrapRootNodes() : void
@@ -176,9 +176,14 @@ package aerys.minko.render.shader.compiler
 		
 		protected function createAllocationTables() : void
 		{
-			var a : Array = _attrAllocator.getAllocations();
-			for (var i : int = 0; i < a.length; ++i)
-				_vertexInput.push(Attribute(a[i]).vertexComponent);
+			var attributes		: Vector.<Attribute>	= _attrAllocator.getAllocations();
+			var attributeCount	: uint					= attributes.length;
+			for (var i : int = 0; i < attributeCount; ++i)
+			{
+				var attribute : Attribute = attributes[i];
+				_vertexInputComponents.push(attribute.component);
+				_vertexInputIndices.push(attribute.componentIndex);
+			}
 			
 			_vsConstData	= _vsConstAllocator.computeConstantAllocation();
 			_fsConstData	= _fsConstAllocator.computeConstantAllocation();
@@ -192,9 +197,11 @@ package aerys.minko.render.shader.compiler
 			var fragmentShader	: ByteArray	= compileFragmentShader();
 			
 			return new Shader(
-				vertexShader, fragmentShader, _vertexInput, 
-				_vsConstData, _fsConstData, _vsParams, 
-				_fsParams, _samplers
+				vertexShader, fragmentShader,
+				_vertexInputComponents, _vertexInputIndices,
+				_samplers,
+				_vsConstData, _fsConstData, 
+				_vsParams, _fsParams
 			);
 		}
 		
@@ -238,9 +245,9 @@ package aerys.minko.render.shader.compiler
 		public function writeAttributeAllocationSummary() : String
 		{
 			var result : String = '';
-			var inputCount : uint = _vertexInput.length;
+			var inputCount : uint = _vertexInputComponents.length;
 			for (var i : uint = 0; i < inputCount; ++i)
-				result += 'va' + i + "             " + _vertexInput[i].toString() + "\n";
+				result += 'va' + i + "             " + _vertexInputComponents[i].toString() + "\n";
 			return result;
 		}
 		

@@ -50,13 +50,9 @@ package aerys.minko.render.effect.basic
 			// handle skinning
 			if (skinningMethod != SkinningMethod.DISABLED)
 			{
-				var maxInfluences	: uint		= getStyleConstant(SkinningStyle.MAX_INFLUENCES, 0)
-												  as uint;
-				var numBones		: uint		= getStyleConstant(SkinningStyle.NUM_BONES, 0)
-												  as uint;
-				var skinnedPosition	: SValue	= getVertexSkinnedPosition(skinningMethod,
-																		   maxInfluences,
-																		   numBones);
+				var maxInfluences	: uint		= getStyleConstant(SkinningStyle.MAX_INFLUENCES, 0) as uint;
+				var numBones		: uint		= getStyleConstant(SkinningStyle.NUM_BONES, 0) as uint;
+				var skinnedPosition	: SValue	= getVertexSkinnedPosition(skinningMethod, maxInfluences, numBones);
 				
 				return multiply4x4(skinnedPosition, localToScreenMatrix);
 			}

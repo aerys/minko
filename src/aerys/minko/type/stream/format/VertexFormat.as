@@ -21,20 +21,6 @@ package aerys.minko.type.stream.format
 		public function get components() 		: Vector.<VertexComponent> 	{ return _components; }
 		public function get dwordsPerVertex()	: int						{ return _dwordsPerVertex; }
 		
-		public function get componentList()		: Vector.<VertexComponent>
-		{
-			var vertexComponents	: Object					= components;
-			var vertexComponentList : Vector.<VertexComponent>	= new Vector.<VertexComponent>();
-			
-			for (var key : String in vertexComponents)
-				if (vertexComponents[key] != undefined && vertexComponents[key] is VertexComponent)
-					vertexComponentList.push(vertexComponents[key] as VertexComponent);
-			
-			vertexComponentList = vertexComponentList.sort(sortComponentsByOffsets);
-			
-			return vertexComponentList;
-		}
-		
 		private function sortComponentsByOffsets(component1 : VertexComponent,
 												 component2 : VertexComponent) : int
 		{
@@ -111,7 +97,7 @@ package aerys.minko.type.stream.format
 		}
 		
 		/**
-		 * Determine if this Vertex3DFormat has the specified component
+		 * Determine if this VertexFormat has the specified component
 		 */
 		public function hasComponent(component : VertexComponent) : Boolean
 		{
@@ -119,7 +105,7 @@ package aerys.minko.type.stream.format
 		}
 		
 		/**
-		 * Determine if this Vertex3DFormat is a subset of the Vertex3DFormat passed in attribute
+		 * Determine if this VertexFormat is a subset of the VertexFormat passed in attribute
 		 */ 
 		public function isSubsetOf(otherVertexFormat : VertexFormat) : Boolean
 		{

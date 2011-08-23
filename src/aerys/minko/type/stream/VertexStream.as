@@ -21,14 +21,14 @@ package aerys.minko.type.stream
 		private var _version		: uint					= 0;
 		
 		private var _format			: VertexFormat			= null;
-		private var _ressource		: VertexBufferResource		= null;
+		private var _resource		: VertexBufferResource	= null;
 		private var _length			: uint					= 0;
 		
-		public function get format()	: VertexFormat		{ return _format; }
-		public function get version()	: uint				{ return _version; }
-		public function get dynamic()	: Boolean			{ return _dynamic; }
-		public function get ressource()	: VertexBufferResource	{ return _ressource; }
-		public function get length()	: uint				{ return _length; }
+		public function get format()	: VertexFormat			{ return _format; }
+		public function get version()	: uint					{ return _version; }
+		public function get dynamic()	: Boolean				{ return _dynamic; }
+		public function get resource()	: VertexBufferResource	{ return _resource; }
+		public function get length()	: uint					{ return _length; }
 		
 		public function VertexStream(data 		: Vector.<Number>	= null,
 									 format		: VertexFormat 		= null,
@@ -43,7 +43,7 @@ package aerys.minko.type.stream
 									format	: VertexFormat 		= null,
 									dynamic	: Boolean			= false) : void
 		{
-			_ressource = new VertexBufferResource(this);
+			_resource = new VertexBufferResource(this);
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data && data.length && data.length % _format.dwordsPerVertex)
@@ -69,10 +69,7 @@ package aerys.minko.type.stream
 		
 		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
-			if (_format.components.indexOf(vertexComponent) != -1)
-				return this;
-			
-			return null;
+			return _format.components.indexOf(vertexComponent) != -1 ? this : null;
 		}
 		
 		public function getSubStreamById(id : int) : VertexStream
@@ -108,7 +105,7 @@ package aerys.minko.type.stream
 		
 		public function disposeLocalData() : void
 		{
-			if (length != ressource.numVertices)
+			if (length != resource.numVertices)
 				throw new Error("Unable to dispose local data: "
 								+ "some vertices have not been uploaded.");
 			
@@ -157,7 +154,7 @@ package aerys.minko.type.stream
 			
 			var newVertexStreamData			: Vector.<Number>			= new Vector.<Number>();
 			
-			var components					: Vector.<VertexComponent>	= vertexFormat.componentList;
+			var components					: Vector.<VertexComponent>	= vertexFormat.components;
 			var numComponents				: uint						= components.length;
 			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(numComponents, true);
 			var componentSizes				: Vector.<uint>				= new Vector.<uint>(numComponents, true);

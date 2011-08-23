@@ -15,10 +15,6 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.math.Transform3D;
-	
-	import avmplus.getQualifiedClassName;
-	
-	import flash.net.getClassByAlias;
 
 	/**
 	 * Model objects are visible scene objects. They contain references to:

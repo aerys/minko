@@ -27,7 +27,7 @@ package aerys.minko.scene.node.texture
 		
 		private var _matrix		: Matrix			= new Matrix();
 		
-		private var _ressource	: TextureResource	= new TextureResource();
+		private var _resource	: TextureResource	= new TextureResource();
 				
 		public function get version() : uint
 		{
@@ -44,9 +44,9 @@ package aerys.minko.scene.node.texture
 			_styleProp = value;
 		}
 		
-		public function get ressource() : TextureResource
+		public function get resource() : TextureResource
 		{
-			return _ressource;
+			return _resource;
 		}
 		
 		protected function get bitmapData() : BitmapData
@@ -80,7 +80,7 @@ package aerys.minko.scene.node.texture
 			
 			++_version;
 			
-			_ressource.setContentFromBitmapData(_data, _mipmapping);
+			_resource.setContentFromBitmapData(_data, _mipmapping);
 		}
 		
 		public function BitmapTexture(bitmapData 	: BitmapData 	= null,
