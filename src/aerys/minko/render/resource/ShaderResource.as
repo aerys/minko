@@ -15,23 +15,28 @@ package aerys.minko.render.resource
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
 		
-		minko_render var _vertexInput	: Vector.<VertexComponent> 	= null;
-		minko_render var _nativeProgram	: Program3D					= null;
+		minko_render var _vertexComponents	: Vector.<VertexComponent> 	= null;
+		minko_render var _vertexIndices		: Vector.<uint>				= null;
+		minko_render var _nativeProgram		: Program3D					= null;
 		
 		public function ShaderResource(vertexShader 	: ByteArray,
-							   fragmentShader	: ByteArray,
-							   vertexInput		: Vector.<VertexComponent>)
+									   fragmentShader	: ByteArray,
+									   vertexComponents	: Vector.<VertexComponent>,
+									   vertexIndices	: Vector.<uint>)
 		{
-			update(vertexShader, fragmentShader, vertexInput);
+			update(vertexShader, fragmentShader, vertexComponents, vertexIndices);
 		}
 		
 		public function update(vertexShader 	: ByteArray,
 							   fragmentShader	: ByteArray,
-							   vertexInput		: Vector.<VertexComponent>) : void
+							   vertexComponents	: Vector.<VertexComponent>,
+							   vertexIndices	: Vector.<uint>) : void
 		{
-			_vertexShader = vertexShader;
-			_fragmentShader = fragmentShader;
-			_vertexInput = vertexInput.concat();
+			_vertexShader		= vertexShader;
+			_fragmentShader		= fragmentShader;
+			_vertexComponents	= vertexComponents.concat();
+			_vertexIndices		= vertexIndices.concat();
+			
 			_update = true;
 		}
 		

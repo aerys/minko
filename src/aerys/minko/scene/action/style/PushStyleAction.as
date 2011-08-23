@@ -1,11 +1,11 @@
 package aerys.minko.scene.action.style
 {
 	import aerys.minko.render.renderer.IRenderer;
+	import aerys.minko.scene.action.ActionType;
+	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.action.ActionType;
-	import aerys.minko.scene.action.IAction;
 	
 	public class PushStyleAction implements IAction
 	{

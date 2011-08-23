@@ -12,9 +12,6 @@ package aerys.minko.scene.node.group
 		public function Joint()
 		{
 			super();
-			
-//			var debugCubeMesh : Model = new Model(new NormalMeshModifier(new CubeMesh()), new ColorTexture(0xffFF0000));
-//			addChild(debugCubeMesh);
 		}
 
 		public function get boneName() : String
@@ -22,7 +19,7 @@ package aerys.minko.scene.node.group
 			return _boneName;
 		}
 
-		public function set boneName(value : String):void
+		public function set boneName(value : String) : void
 		{
 			_boneName = value;
 		}

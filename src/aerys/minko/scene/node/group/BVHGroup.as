@@ -1,11 +1,8 @@
 package aerys.minko.scene.node.group
 {
-	import aerys.minko.type.bounding.FrustumCulling;
-	import aerys.minko.scene.node.camera.ICamera;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.RenderingVisitor;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.ConstVector4;
 
@@ -22,20 +19,5 @@ package aerys.minko.scene.node.group
 		{
 			super (children);
 		}
-		
-//		override public function visited(query : ISceneVisitor) : void
-//		{
-//			if (query is RenderingVisitor)
-//			{
-//				var renderingQuery 	: RenderingVisitor 	= query as RenderingVisitor;
-//				var camera			: ICamera			= renderingQuery.camera;
-//				
-//				if (renderingQuery && camera
-//					&& camera.frustum.testBoundedVolume(this, renderingQuery.transform.world) == 0)
-//				{
-//					return ;
-//				}
-//			}
-//		}
 	}
 }

@@ -1,18 +1,18 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.style.PopStyleAction;
+	import aerys.minko.ns.minko_stream;
 	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.action.mesh.PopMeshSkinAction;
 	import aerys.minko.scene.action.mesh.PushMeshSkinAction;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
+	
+	use namespace minko_stream;
 	
 	public class SkinnedMesh extends AbstractScene implements IMesh
 	{
@@ -53,7 +53,7 @@ package aerys.minko.scene.node.mesh
 		{
 			super();
 			
-			name					= 'SkinnedMesh';
+			_name					= 'SkinnedMesh';
 			
 			_skeletonReference		= skeletonReference;
 			_skeletonRootName		= skeletonRootName;
@@ -62,7 +62,7 @@ package aerys.minko.scene.node.mesh
 			_jointNames				= jointNames;
 			_inverseBindMatrices	= inverseBindMatrices;
 			
-			_maxInfluences = getMaxInfluencesFromVertexFormat(_mesh.vertexStream.format);
+			_maxInfluences			= getMaxInfluencesFromVertexFormat(_mesh.vertexStream.format);
 			
 			actions.push(PushMeshSkinAction.pushMeshSkinAction,
 						 MeshAction.meshAction,
@@ -77,5 +77,6 @@ package aerys.minko.scene.node.mesh
 					break;
 			return i;
 		}
+		
 	}
 }

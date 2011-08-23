@@ -1,113 +1,65 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.action.mesh.MeshAction;
+	import aerys.minko.scene.action.mesh.KeyframedMeshAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
-	
-	import flash.utils.getTimer;
 	
 	public class KeyframedMesh extends AbstractScene implements IMesh, IStylableScene
 	{
-		private var _style				: Style;
+		private var _style					: Style;
 		
-		private var _startTime			: uint;
-		private var _isPlaying			: Boolean;
-		private var _playHeadTime		: uint;
+		private var _frameId				: Number;
 		
+		private var _indexStream 			: IndexStream;
+		private var _vertexStreams			: Vector.<IVertexStream>;
+		private var _adjacentVertexStreams	: Vector.<IVertexStream>;
 		
+		public function get style()					: Style						{ return _style; }
+		public function get styleEnabled()			: Boolean					{ return true; }
 		
+		public function get version()				: uint						{ return 0; }
+		public function get indexStream()			: IndexStream				{ return _indexStream; }
 		
-		private var _times				: Vector.<uint>;
-		private var _duration			: uint;
+		public function get vertexStreams()			: Vector.<IVertexStream>	{ return _vertexStreams; }
 		
-		private var _indexStream 		: IndexStream;
-		private var _vertexStreams		: Vector.<VertexStream>;
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		public function get style()			: Style					{ return _style; }
-		public function get styleEnabled()	: Boolean				{ return true; }
-		public function get version()		: uint					{ return 0; }
-		public function get indexStream()	: IndexStream			{ return _indexStream; }
-		public function get vertexStreams()	: Vector.<VertexStream>	{ return _vertexStreams; }
-		
-		public function get vertexStream()	: IVertexStream
+		public function get vertexStream()			: IVertexStream
 		{
-			var playHeadTime : uint = (_isPlaying ? getTimer() - _startTime : _playHeadTime) % _duration;
-			
-			var timeCount : uint = _times.length;
-			for (var timeId : uint = 0; timeId < timeCount; ++timeId)
-				if (_times[timeId] >= playHeadTime)
-					break;
-			
-			if (timeId == 0)
-				return _vertexStreams[0];
-			else if (timeId == timeCount)
-				return _vertexStreams[timeCount - 1];
-			else
-			{
-//				var lastTime	 : uint = _times[timeId - 1];
-//				var nextTime	 : uint = _times[timeId];
-//				var ratio		 : uint = (playHeadTime - lastTime) / (nextTime - lastTime);
-				
-				return _vertexStreams[timeId - 1];
-			}
+			return _vertexStreams[Math.floor(_frameId)];
 		}
 		
-		public function get playHeadTime():uint
+		public function get adjacentVertexStreams()	: Vector.<IVertexStream>
 		{
-			return _playHeadTime;
+			_adjacentVertexStreams[0]	= _vertexStreams[Math.floor(_frameId)];
+			_adjacentVertexStreams[1]	= _vertexStreams[Math.ceil(_frameId)];
+			return _adjacentVertexStreams;
+		}
+		
+		public function get frameId() : Number
+		{
+			return _frameId;
 		}
 
-		public function set playHeadTime(value:uint):void
+		public function set frameId(v : Number) : void
 		{
-			_playHeadTime = value;
+			_frameId = v;
 		}
 
-		public function KeyframedMesh(vertexStreams : Vector.<VertexStream>,
-									  times			: Vector.<uint>,
-									  duration		: uint,
+		public function KeyframedMesh(vertexStreams : Vector.<IVertexStream>,
 									  indexStream	: IndexStream = null)
 		{
 			super();
 			
-			_isPlaying		= false;
-			_indexStream	= indexStream;
-			_vertexStreams	= vertexStreams;
+			_adjacentVertexStreams	= new Vector.<IVertexStream>(2, true);
+			_indexStream			= indexStream;
+			_vertexStreams			= vertexStreams;
 			
-			_times			= times;
-			_duration		= duration;
-			
-			// a keyframed mesh is rendered using a the common mesh action.
-			// only the shader needs to change
-			actions[0]		= MeshAction.meshAction;
+			actions[0]				= KeyframedMeshAction.keyframedMeshAction;
 			
 			if (!_indexStream)
-				_indexStream = new IndexStream(null, vertexStream.length, vertexStream.dynamic);
-		}
-		
-		public function start() : void
-		{
-			_startTime = getTimer();
-			_isPlaying = true;
-		}
-		
-		public function stop() : void
-		{
-			_isPlaying = false;
-			
+				_indexStream = new IndexStream(null, _vertexStreams[0].length, _vertexStreams[0].dynamic);
 		}
 		
 	}

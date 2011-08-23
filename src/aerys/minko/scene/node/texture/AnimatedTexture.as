@@ -1,15 +1,8 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.render.resource.IResource;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.texture.AnimatedTextureAction;
-	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.Group;
-	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.scene.visitor.RenderingVisitor;
-	
-	import flash.display.BitmapData;
-	import flash.utils.getTimer;
 	
 	public class AnimatedTexture extends Group implements ITexture
 	{
@@ -49,7 +42,7 @@ package aerys.minko.scene.node.texture
 		/**
 		 * @todo implement
 		 */
-		public function get ressource() : TextureResource
+		public function get resource() : TextureResource
 		{
 			throw new Error('Implement me');
 		}

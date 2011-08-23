@@ -1,47 +1,10 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
-	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.fog.Fog;
-	import aerys.minko.render.shader.node.leaf.AbstractConstant;
-	import aerys.minko.render.shader.node.leaf.Attribute;
-	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.leaf.Sampler;
-	import aerys.minko.render.shader.node.leaf.StyleParameter;
-	import aerys.minko.render.shader.node.leaf.TransformParameter;
-	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.render.shader.node.operation.builtin.Cosine;
-	import aerys.minko.render.shader.node.operation.builtin.CrossProduct;
-	import aerys.minko.render.shader.node.operation.builtin.Divide;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
-	import aerys.minko.render.shader.node.operation.builtin.Fractional;
-	import aerys.minko.render.shader.node.operation.builtin.Maximum;
-	import aerys.minko.render.shader.node.operation.builtin.Minimum;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply3x3;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
-	import aerys.minko.render.shader.node.operation.builtin.Negate;
-	import aerys.minko.render.shader.node.operation.builtin.Normalize;
-	import aerys.minko.render.shader.node.operation.builtin.Power;
-	import aerys.minko.render.shader.node.operation.builtin.Reciprocal;
-	import aerys.minko.render.shader.node.operation.builtin.ReciprocalRoot;
-	import aerys.minko.render.shader.node.operation.builtin.Saturate;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
-	import aerys.minko.render.shader.node.operation.builtin.Sine;
-	import aerys.minko.render.shader.node.operation.builtin.SquareRoot;
-	import aerys.minko.render.shader.node.operation.builtin.Substract;
-	import aerys.minko.render.shader.node.operation.builtin.Texture;
-	import aerys.minko.render.shader.node.operation.manipulation.Blend;
-	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
-	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
-	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
+	import aerys.minko.render.shader.node.leaf.*;
+	import aerys.minko.render.shader.node.operation.builtin.*;
+	import aerys.minko.render.shader.node.operation.manipulation.*;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
@@ -49,12 +12,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.skinning.MatrixSkinnedPosition;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.scene.data.StyleStack;
-	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.skinning.SkinningMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
-	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{

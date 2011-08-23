@@ -1,7 +1,6 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 
 	/**
 	 * The IScene is the the most basic definition of a scene graph node.

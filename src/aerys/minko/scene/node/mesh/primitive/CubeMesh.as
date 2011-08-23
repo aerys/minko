@@ -2,7 +2,6 @@ package aerys.minko.scene.node.mesh.primitive
 {
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.VertexStreamList;
 
 	/**
 	 * The CubeMesh class represent a cubic mesh.

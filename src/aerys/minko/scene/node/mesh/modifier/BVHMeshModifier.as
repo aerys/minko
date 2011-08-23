@@ -1,12 +1,11 @@
 package aerys.minko.scene.node.mesh.modifier
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.scene.action.BoundingVolumeAction;
 	import aerys.minko.scene.node.mesh.IMesh;
-	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.VertexStream;

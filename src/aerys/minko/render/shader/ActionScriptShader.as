@@ -8,13 +8,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.fog.Fog;
-	import aerys.minko.render.shader.node.leaf.AbstractConstant;
-	import aerys.minko.render.shader.node.leaf.Attribute;
-	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.leaf.Sampler;
-	import aerys.minko.render.shader.node.leaf.StyleParameter;
-	import aerys.minko.render.shader.node.leaf.TransformParameter;
-	import aerys.minko.render.shader.node.leaf.WorldParameter;
+	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;

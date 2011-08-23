@@ -84,7 +84,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			if (registerType != RegisterType.OUTPUT)
 				_asmCode += registerNumber;
 			
-			_asmCode += RegisterMask.stringifyMask(writeMask);
+			_asmCode += RegisterMask.stringify(writeMask);
 		}
 		
 		override protected function outputSamplerSource(index		: uint,
@@ -121,7 +121,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 				_asmCode += '[';
 				_asmCode += RegisterType.stringifyType(indexRegisterType, _isVertexShader);
 				_asmCode += registerNumber;
-				_asmCode += RegisterSwizzling.stringifySwizzle(indexRegisterComponentSelect).substr(0, 2);
+				_asmCode += RegisterSwizzling.stringify(indexRegisterComponentSelect).substr(0, 2);
 				
 				if (indirectOffset != 0)
 					_asmCode += ' + ' + indirectOffset.toString(); 
@@ -129,7 +129,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 				_asmCode += ']';
 			}
 			
-			_asmCode += RegisterSwizzling.stringifySwizzle(swizzle);
+			_asmCode += RegisterSwizzling.stringify(swizzle);
 		}
 		
 		override protected function outputEmptySource() : void

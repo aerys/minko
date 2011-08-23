@@ -12,7 +12,7 @@ package aerys.minko.type.stream
 		function get dynamic()			: Boolean;
 		
 		function deleteVertexByIndex(index : uint) : Boolean;
-		function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream;
+		function getSubStreamByComponent(component : VertexComponent) : VertexStream;
 		function getSubStreamById(id : int) : VertexStream;
 	}
 }

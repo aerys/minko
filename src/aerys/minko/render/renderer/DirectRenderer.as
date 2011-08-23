@@ -51,7 +51,7 @@ package aerys.minko.render.renderer
 			if (_actualState != _currentState)
 				_currentState.prepareContext(_context, _actualState);
 			
-			_context.drawTriangles(indexStream.ressource.getIndexBuffer3D(_context),
+			_context.drawTriangles(indexStream.resource.getIndexBuffer3D(_context),
 								   offset,
 								   numTriangles);
 			

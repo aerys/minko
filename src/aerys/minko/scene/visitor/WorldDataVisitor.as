@@ -3,15 +3,11 @@ package aerys.minko.scene.visitor
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.ITransformableScene;
-	import aerys.minko.scene.node.IWorldObject;
-	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.IWorldData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
-	import aerys.minko.scene.data.WorldDataList;
+	import aerys.minko.scene.node.IScene;
 	
 	import flash.utils.Dictionary;
 	
@@ -43,7 +39,6 @@ package aerys.minko.scene.visitor
 		{
 			_worldData = worldData;
 			_localData = localData;
-			
 			_numNodes = 0;
 			visit(scene);
 			

@@ -7,8 +7,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.VertexStreamList;
-	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	public class Mesh extends AbstractScene implements IMesh
@@ -126,7 +124,6 @@ package aerys.minko.scene.node.mesh
 			var numMeshes 			: uint 				= meshes.length;
 			var totalVertices		: int				= 0;
 			var totalIndices		: int				= 0;
-			
 			var vertexSize			: int				= vertexFormat.dwordsPerVertex;
 			
 			for (var i : uint = 0; i < numMeshes; ++i)

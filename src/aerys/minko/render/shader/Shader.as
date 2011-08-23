@@ -1,6 +1,5 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.resource.ShaderResource;
@@ -8,7 +7,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.compiler.register.RegisterLimit;
-	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
@@ -16,7 +14,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
-	import aerys.minko.type.log.DebugLevel;
+	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -28,12 +26,17 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
-		protected var _resource		: ShaderResource;
-		protected var _vsConstData	: Vector.<Number>;
-		protected var _fsConstData	: Vector.<Number>;
-		protected var _vsParams		: Vector.<ParameterAllocation>;
-		protected var _fsParams		: Vector.<ParameterAllocation>;
-		protected var _samplers		: Vector.<int>;
+		protected var _resource					: ShaderResource;
+		
+		protected var _lastFrameId				: uint;
+		protected var _lastStyleStackVersion	: uint;
+		protected var _lastTransformVersion		: uint;
+		
+		protected var _vsConstData				: Vector.<Number>;
+		protected var _fsConstData				: Vector.<Number>;
+		protected var _vsParams					: Vector.<ParameterAllocation>;
+		protected var _fsParams					: Vector.<ParameterAllocation>;
+		protected var _samplers					: Vector.<int>;
 		
 		public function get resource() : ShaderResource
 		{
@@ -50,39 +53,47 @@ package aerys.minko.render.shader
 			return compiler.compileShader();
 		}
 	
-		public function Shader(vertexShader					: ByteArray,
-							   fragmentShader				: ByteArray,
-							   vertexInput					: Vector.<VertexComponent>,
-							   vertexShaderConstantData		: Vector.<Number>,
-							   fragmentShaderConstantData	: Vector.<Number>,
-							   vertexShaderParameters		: Vector.<ParameterAllocation>,
-							   fragmentShaderParameters		: Vector.<ParameterAllocation>,
-							   samplers						: Vector.<int>)
+		public function Shader(vertexShader				: ByteArray,
+							   fragmentShader			: ByteArray,
+							   vertexInputComponents	: Vector.<VertexComponent>,
+							   vertexInputIndices		: Vector.<uint>,
+							   samplers					: Vector.<int>,
+							   vertexConstantData		: Vector.<Number>,
+							   fragmentConstantData		: Vector.<Number>,
+							   vertexParameters			: Vector.<ParameterAllocation>,
+							   fragmentParameters		: Vector.<ParameterAllocation>)
 		{
-			_vsConstData	= vertexShaderConstantData;
-			_fsConstData	= fragmentShaderConstantData;
-			_vsParams		= vertexShaderParameters;
-			_fsParams		= fragmentShaderParameters;
+			_lastStyleStackVersion	= uint.MAX_VALUE;
+			_lastTransformVersion	= uint.MAX_VALUE;
+			
+			_vsConstData	= vertexConstantData;
+			_fsConstData	= fragmentConstantData;
+			_vsParams		= vertexParameters;
+			_fsParams		= fragmentParameters;
 			_samplers		= samplers;
-			_resource 		= new ShaderResource(vertexShader, fragmentShader, vertexInput);
 			
-			super();
-			
-			if (_vsConstData.length > RegisterLimit.VS_MAX_CONSTANT * 4)
-				throw new Error();
-			if (_fsConstData.length > RegisterLimit.FG_MAX_CONSTANT * 4)
-				throw new Error();
+			_resource 		= new ShaderResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
 		}
 		
-		public function fillRenderState(state	: RendererState, 
-										style	: StyleStack, 
-										local	: LocalData, 
-										world	: Dictionary) : Boolean
+		public function fillRenderState(state		: RendererState, 
+										styleStack	: StyleStack, 
+										local		: LocalData, 
+										world		: Dictionary) : Boolean
 		{
-			setTextures(state, style, local, world);
-			setConstants(state, style, local, world);
+			if (_lastFrameId != world[ViewportData].frameId)
+			{
+				_lastFrameId			= world[ViewportData].frameId;
+				_lastStyleStackVersion	= uint.MAX_VALUE;
+				_lastTransformVersion	= uint.MAX_VALUE;
+			}
+			
+			setTextures(state, styleStack, local, world);
+			setConstants(state, styleStack, local, world);
 			
 			state.shader = _resource;
+			
+			_lastStyleStackVersion	= styleStack.version;
+			_lastTransformVersion	= styleStack.version;
 			
 			return true;
 		}
@@ -98,8 +109,9 @@ package aerys.minko.render.shader
 			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
-				samplerStyleId = _samplers[i];
-				texture = styleStack.get(samplerStyleId) as TextureResource;
+				samplerStyleId	= _samplers[i];
+				texture			= styleStack.get(samplerStyleId) as TextureResource;
+				
 				state.setTextureAt(i, texture);
 			}
 		}
@@ -129,6 +141,10 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
+				if ((param is StyleParameter && styleStack.version == _lastStyleStackVersion) ||
+					(param is TransformParameter && local.version == _lastTransformVersion))
+					continue;
+				
 				var data : Object = getParameterData(param, styleStack, local, world);
 				
 				loadParameterData(paramAlloc, constData, data);
@@ -143,34 +159,22 @@ package aerys.minko.render.shader
 			if (param is StyleParameter)
 			{
 				if (param._index != -1)
-				{
 					return styleStack.get(param._key as int).getItem(param._index)[param._field];
-				}
 				else if (param._field != null)
-				{
 					return styleStack.get(param._key as int)[param._field];
-				}
 				else
-				{
 					return styleStack.get(param._key as int, null);
-				}
 			}
 			else if (param is WorldParameter)
 			{
 				var paramClass : Class = WorldParameter(param)._class;
 				
 				if (param._index != -1)
-				{
 					return world[paramClass].getItem(param._index)[param._field];
-				}
 				else if (param._field != null)
-				{
 					return world[paramClass][param._field];
-				}
 				else
-				{
 					return world[paramClass];
-				}
 			}
 			else if (param is TransformParameter)
 			{

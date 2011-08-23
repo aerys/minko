@@ -3,7 +3,6 @@ package aerys.minko.scene.node.mesh.primitive
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.VertexStreamList;
 
 	/**
 	 * The CylinderMesh class represents a cylinder mesh.

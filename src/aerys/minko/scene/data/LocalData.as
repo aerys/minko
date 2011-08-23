@@ -51,6 +51,11 @@ package aerys.minko.scene.data
 		protected var _globalToScreen_viewVersion		: uint;
 		protected var _globalToScreen_projectionVersion	: uint;
 		
+		public function get version() : uint
+		{
+			return _world.version + _view.version + _projection.version;
+		}
+		
 		public function get view() : Matrix4x4
 		{
 			return _view;

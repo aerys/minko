@@ -28,7 +28,7 @@ package aerys.minko.render.shader.compiler.allocator
 			_maxOffset		= 4 * registerCount;
 		}
 		
-		public static function getWriteMask(localOffset:uint, size:uint) : uint
+		public static function getWriteMask(localOffset : uint, size : uint) : uint
 		{
 			if (localOffset != 0 && localOffset + size > 4)
 				throw new Error('localoffset + size must be < 4');
@@ -46,9 +46,9 @@ package aerys.minko.render.shader.compiler.allocator
 		
 		public function getWriteMask(op : INode) : uint
 		{
-			var alloc		: Allocation = _opUsage[op] as Allocation;
-			var localOffset	: uint = alloc.offset % 4;
-			var size		: uint = alloc.size;
+			var alloc		: Allocation	= _opUsage[op] as Allocation;
+			var localOffset	: uint			= alloc.offset % 4;
+			var size		: uint			= alloc.size;
 			
 			return Allocator.getWriteMask(localOffset, size);
 		}
@@ -158,9 +158,8 @@ package aerys.minko.render.shader.compiler.allocator
 					))
 					return false;
 			}
+			
 			return true;
 		}
-		
 	}
-	
 }

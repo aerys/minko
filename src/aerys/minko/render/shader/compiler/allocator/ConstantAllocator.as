@@ -1,14 +1,15 @@
 package aerys.minko.render.shader.compiler.allocator
 {
+	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.Constant;
 
 	public class ConstantAllocator extends Allocator
 	{
-		public function ConstantAllocator(registerCount : uint = 8)
+		public function ConstantAllocator(vertexShader : Boolean)
 		{
-			super(registerCount);
+			super(vertexShader ? RegisterLimit.VS_MAX_CONSTANT : RegisterLimit.FG_MAX_CONSTANT);
 		}
 		
 		override public function allocate(op			: INode, 

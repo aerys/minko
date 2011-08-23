@@ -9,7 +9,7 @@ package aerys.minko.scene.action.group
 	
 	public class GroupAction implements IAction
 	{
-		private static const TYPE	: uint		= ActionType.RECURSE;
+		private static const TYPE	: uint	 = ActionType.RECURSE;
 		
 		private static var _instance	 :  GroupAction	= null;
 		

@@ -1,12 +1,9 @@
 package aerys.minko.scene.visitor
 {
-	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.mesh.primitive.QuadMesh;
 	import aerys.minko.type.stream.iterator.VertexIterator;
 	import aerys.minko.type.stream.iterator.VertexReference;
