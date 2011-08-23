@@ -150,6 +150,62 @@ package aerys.minko.type.stream
 									dynamic);
 		}
 		
+		public static function extractSubStream(source			: IVertexStream,
+										 		vertexFormat 	: VertexFormat	= null) : VertexStream
+		{
+			vertexFormat ||= source.format;
+			
+			var newVertexStreamData			: Vector.<Number>			= new Vector.<Number>();
+			
+			var components					: Vector.<VertexComponent>	= vertexFormat.componentList;
+			var numComponents				: uint						= components.length;
+			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(numComponents, true);
+			var componentSizes				: Vector.<uint>				= new Vector.<uint>(numComponents, true);
+			var componentDwordsPerVertex	: Vector.<uint>				= new Vector.<uint>(numComponents, true);
+			var componentDatas				: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(numComponents, true);
+			
+			var totalVertices				: int						= 0;
+			var totalIndices				: int						= 0;
+			
+			// cache get offsets, sizes, and buffers for each components
+			for (var k : int = 0; k < numComponents; ++k)
+			{
+				var vertexComponent	: VertexComponent	= components[k];
+				var subVertexStream	: VertexStream		= source.getSubStreamByComponent(vertexComponent);
+				var subvertexFormat	: VertexFormat		= subVertexStream.format;
+				
+				componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
+				componentDwordsPerVertex[k]	= subvertexFormat.dwordsPerVertex;
+				componentSizes[k]			= vertexComponent.dwords;
+				componentDatas[k]			= subVertexStream._data;
+			}
+			
+			// push vertex data into the new buffer.
+			var numVertices : uint 	= source.length;
+			
+			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
+			{
+				for (var componentId : int = 0; componentId < numComponents; ++componentId)
+				{
+					var vertexData		: Vector.<Number>	= componentDatas[componentId];
+					var componentSize	: uint				= componentSizes[componentId];
+					var componentOffset	: uint				= componentOffsets[componentId]
+															  + vertexId * componentDwordsPerVertex[componentId];
+					var componentLimit	: uint				= componentSize + componentOffset;
+					
+					for (var n : int = componentOffset; n < componentLimit; ++n, ++totalVertices)
+						newVertexStreamData[totalVertices] = vertexData[n];
+				}
+			}
+			
+			// avoid copying data vectors
+			var newVertexStream		: VertexStream	= new VertexStream(null, vertexFormat);
+			
+			newVertexStream._data = newVertexStreamData;
+			newVertexStream.invalidate();
+			
+			return newVertexStream;
+		}
 
 		public static function fromByteArray(bytes 		: ByteArray,
 											 count		: int,

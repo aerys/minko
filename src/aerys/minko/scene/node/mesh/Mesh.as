@@ -120,20 +120,14 @@ package aerys.minko.scene.node.mesh
 		private static function createMesh(meshes		: Vector.<IMesh>,
 										   vertexFormat	: VertexFormat) : IMesh
 		{
+			var newIndexStreamData 	: Vector.<uint>		= new Vector.<uint>();
+			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>();
 			
-			var newIndexStreamData 			: Vector.<uint>				= new Vector.<uint>();
-			var newVertexStreamData			: Vector.<Number>			= new Vector.<Number>();
+			var numMeshes 			: uint 				= meshes.length;
+			var totalVertices		: int				= 0;
+			var totalIndices		: int				= 0;
 			
-			var components					: Vector.<VertexComponent>	= vertexFormat.componentList;
-			var numComponents				: uint						= components.length;
-			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(numComponents, true);
-			var componentSizes				: Vector.<uint>				= new Vector.<uint>(numComponents, true);
-			var componentDwordsPerVertex	: Vector.<uint>				= new Vector.<uint>(numComponents, true);
-			var componentDatas				: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(numComponents, true);
-			
-			var numMeshes 					: uint 						= meshes.length;
-			var totalVertices				: int						= 0;
-			var totalIndices				: int						= 0;
+			var vertexSize			: int				= vertexFormat.dwordsPerVertex;
 			
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
@@ -142,42 +136,20 @@ package aerys.minko.scene.node.mesh
 			
 				// append index data
 				var indexData	: Vector.<uint>		= mesh.indexStream._data;
-				var indexCount	: uint				= indexData.length;
-				var indexOffset	: uint				= newVertexStreamData.length / vertexFormat.dwordsPerVertex;
+				var numIndices	: uint				= indexData.length;
+				var offset		: int				= totalVertices / vertexFormat.dwordsPerVertex;
 				
-				for (var j : int = 0; j < indexCount; ++j, ++totalIndices)
-					newIndexStreamData[totalIndices] = indexData[j] + indexOffset;
-				
-				// get offsets, sizes, and buffers for components in the current mesh.
-				for (var k : int = 0; k < numComponents; ++k)
-				{
-					var vertexComponent	: VertexComponent	= components[k];
-					var subVertexStream	: VertexStream		= vertexStream.getSubStreamByComponent(vertexComponent);
-					var subvertexFormat	: VertexFormat		= subVertexStream.format;
-					
-					componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
-					componentDwordsPerVertex[k]	= subvertexFormat.dwordsPerVertex;
-					componentSizes[k]			= vertexComponent.dwords;
-					componentDatas[k]			= subVertexStream._data;
-				}
+				for (var j : int = 0; j < numIndices; ++j, ++totalIndices)
+					newIndexStreamData[totalIndices] = indexData[j] + offset;
 				
 				// push vertex data into the new buffer.
-				var numVertices : uint 	= mesh.vertexStream.length;
+				var substream			: VertexStream		= VertexStream.extractSubStream(mesh.vertexStream,
+																							vertexFormat);
+				var substreamData		: Vector.<Number>	= substream._data;
+				var substreamDataLength	: uint 				= substreamData.length;
 				
-				for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
-				{
-					for (var componentId : int = 0; componentId < numComponents; ++componentId)
-					{
-						var vertexData		: Vector.<Number>	= componentDatas[componentId];
-						var componentSize	: uint				= componentSizes[componentId];
-						var componentOffset	: uint				= componentOffsets[componentId]
-																  + vertexId * componentDwordsPerVertex[componentId];
-						var componentLimit	: uint				= componentSize + componentOffset;
-						
-						for (var n : int = componentOffset; n < componentLimit; ++n, ++totalVertices)
-							newVertexStreamData[totalVertices] = vertexData[n];
-					}
-				}
+				for (j = 0; j < substreamDataLength; ++j, ++totalVertices)
+					newVertexStreamData[totalVertices] = substreamData[j];
 			}
 			
 			// avoid copying data vectors
