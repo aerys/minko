@@ -63,6 +63,7 @@ package aerys.minko.render.shader
 							   vertexParameters			: Vector.<ParameterAllocation>,
 							   fragmentParameters		: Vector.<ParameterAllocation>)
 		{
+			_lastFrameId			= uint.MAX_VALUE;
 			_lastStyleStackVersion	= uint.MAX_VALUE;
 			_lastTransformVersion	= uint.MAX_VALUE;
 			
@@ -87,13 +88,13 @@ package aerys.minko.render.shader
 				_lastTransformVersion	= uint.MAX_VALUE;
 			}
 			
+			
 			setTextures(state, styleStack, local, world);
 			setConstants(state, styleStack, local, world);
 			
 			state.shader = _resource;
-			
 			_lastStyleStackVersion	= styleStack.version;
-			_lastTransformVersion	= styleStack.version;
+			_lastTransformVersion	= local.version;
 			
 			return true;
 		}
@@ -141,12 +142,12 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
+				
 				if ((param is StyleParameter && styleStack.version == _lastStyleStackVersion) ||
 					(param is TransformParameter && local.version == _lastTransformVersion))
 					continue;
 				
 				var data : Object = getParameterData(param, styleStack, local, world);
-				
 				loadParameterData(paramAlloc, constData, data);
 			}
 		}
