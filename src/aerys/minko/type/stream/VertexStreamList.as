@@ -49,19 +49,33 @@ package aerys.minko.type.stream
 			return vertexStreamList;
 		}
 		
-		public function pushVertexStream(vertexStream : VertexStream, force : Boolean = false) : void 
+		public function pushVertexStream(vertexStream : IVertexStream, force : Boolean = false) : void 
 		{
 			if (length && vertexStream.length != length)
 				throw new Error('All VertexStream must have the same total number of vertices.');
 			
-			_streams.push(vertexStream);
-			_streamVersions.push(vertexStream.version);
-			
-			_format.unionWith(vertexStream.format, force);
-			
 			_dynamic ||= vertexStream;
-			
+			_format.unionWith(vertexStream.format, force);
 			++_version;
+			
+			if (vertexStream is VertexStream)
+			{
+				_streams.push(vertexStream);
+				_streamVersions.push(vertexStream.version);
+			}
+			else if (vertexStream is VertexStreamList)
+			{
+				var vsList			: VertexStreamList		= VertexStreamList(vertexStream);
+				var streamsCount	: uint					= vsList._streams.length;
+				
+				for (var streamId : uint = 0; streamId < streamsCount; ++streamId)
+				{
+					_streams.push(vsList._streams[streamId]);
+					_streamVersions.push(vsList._streamVersions[streamId]);
+				}
+			}
+			else
+				throw new Error('Unknown VertexStream type.');
 		}
 		
 		public function getSubStreamById(id : int) : VertexStream

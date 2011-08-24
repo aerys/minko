@@ -55,6 +55,7 @@ package aerys.minko.scene.node.mesh
 			_adjacentVertexStreams	= new Vector.<IVertexStream>(2, true);
 			_indexStream			= indexStream;
 			_vertexStreams			= vertexStreams;
+			_frameId				= 0;
 			
 			actions[0]				= KeyframedMeshAction.keyframedMeshAction;
 			

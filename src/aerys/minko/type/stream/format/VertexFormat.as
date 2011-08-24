@@ -160,5 +160,10 @@ package aerys.minko.type.stream.format
 			
 			return clone;
 		}
+		
+		public function toString() : String
+		{
+			return _components.join('|');
+		}
 	}
 }
