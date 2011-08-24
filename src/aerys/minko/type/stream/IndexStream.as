@@ -2,13 +2,13 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.IndexBufferResource;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
-	public final dynamic class IndexStream extends Proxy implements IVersionnable
+	public final dynamic class IndexStream extends Proxy implements IVersionable
 	{
 		use namespace minko_stream;
 		

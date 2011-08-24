@@ -1,6 +1,6 @@
 ﻿package aerys.minko.scene.node.camera 
 {
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.IWorldObject;
 	import aerys.minko.type.math.Vector4;
@@ -9,7 +9,7 @@
 	 * ...
 	 * @author Jean-Marc Le Roux
 	 */
-	public interface ICamera extends IScene, IVersionnable, IWorldObject
+	public interface ICamera extends IScene, IVersionable, IWorldObject
 	{
 		function get enabled() 		: Boolean;
 		

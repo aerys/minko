@@ -2,10 +2,9 @@ package aerys.minko.scene.data
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 
-	public final class StyleStack implements IVersionnable
+	public final class StyleStack implements IVersionable
 	{
 		use namespace minko_render;
 		

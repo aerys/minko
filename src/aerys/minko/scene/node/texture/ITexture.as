@@ -2,7 +2,7 @@ package aerys.minko.scene.node.texture
 {
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	
 	/**
 	 * <p>Common interface for all the materials.</p>
@@ -13,7 +13,7 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public interface ITexture extends IScene, IVersionnable
+	public interface ITexture extends IScene, IVersionable
 	{
 		function get styleProperty()	: int;
 		function get resource()		: TextureResource;

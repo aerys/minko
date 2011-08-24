@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 
@@ -11,7 +11,7 @@ package aerys.minko.scene.node.mesh
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public interface IMesh extends IScene, IVersionnable
+	public interface IMesh extends IScene, IVersionable
 	{
 		/**
 		 * The VertexStream object containing the mesh geometry data. 

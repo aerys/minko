@@ -13,7 +13,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
-	import aerys.minko.type.IVersionnable;
+	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.math.Transform3D;
 
 	/**
@@ -34,7 +34,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Model extends AbstractScene implements ISearchableScene, ITransformableScene, IStylableScene, IVersionnable, IEffectTarget
+	public class Model extends AbstractScene implements ISearchableScene, ITransformableScene, IStylableScene, IVersionable, IEffectTarget
 	{
 		use namespace minko;
 		
