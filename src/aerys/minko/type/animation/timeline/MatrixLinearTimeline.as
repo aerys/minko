@@ -54,7 +54,7 @@ package aerys.minko.type.animation.timeline
 				var nextMatrix			: Matrix4x4 = _values[timeId];
 				
 				Matrix4x4.copy(previousMatrix, out);
-				previousMatrix.interpolateTo(nextMatrix, 1 - interpolationRatio);
+				out.interpolateTo(nextMatrix, 1 - interpolationRatio);
 			}
 		}
 		
