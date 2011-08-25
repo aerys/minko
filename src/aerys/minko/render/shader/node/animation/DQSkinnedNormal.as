@@ -1,6 +1,6 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
@@ -34,8 +34,8 @@ package aerys.minko.render.shader.node.skinning
 			}
 			else
 			{
-				var dQnList : StyleParameter = new StyleParameter(4 * numBones, SkinningStyle.BONE_QN);
-				var dQdList : StyleParameter = new StyleParameter(4 * numBones, SkinningStyle.BONE_QD);
+				var dQnList : StyleParameter = new StyleParameter(4 * numBones, AnimationStyle.BONE_QN);
+				var dQdList : StyleParameter = new StyleParameter(4 * numBones, AnimationStyle.BONE_QD);
 				
 				var dQn : INode; 
 				var dQd : INode;

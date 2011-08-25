@@ -17,7 +17,7 @@ package aerys.minko.scene.action.group
 	{
 		public static const animationGroupAction : AnimationGroupAction = new AnimationGroupAction();
 		
-		private static const TYPE : uint = ActionType.ALL; // ???? FIXME
+		private static const TYPE : uint = ActionType.UPDATE_LOCAL_DATA; // more or less
 		
 		public function get type():uint
 		{

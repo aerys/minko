@@ -2,7 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.node.Components;
@@ -14,14 +14,14 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.render.shader.node.skinning.DQSkinnedPosition;
-	import aerys.minko.render.shader.node.skinning.MatrixSkinnedPosition;
+	import aerys.minko.render.shader.node.animation.DQSkinnedPosition;
+	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.geom.Point;

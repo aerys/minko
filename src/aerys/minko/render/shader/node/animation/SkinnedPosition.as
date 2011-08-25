@@ -1,8 +1,8 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.leaf.Attribute;
-	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class SkinnedPosition extends Dummy
@@ -22,15 +22,18 @@ package aerys.minko.render.shader.node.skinning
 		{
 			switch (skinningMethod)
 			{
-				case SkinningMethod.DISABLED :
+				case AnimationMethod.DISABLED :
 					_node = new Attribute(VertexComponent.XYZ);
 					break ;
-				case SkinningMethod.MATRIX :
+				
+				case AnimationMethod.MATRIX_SKINNING :
 					_node = new MatrixSkinnedPosition(maxInfluences, numBones);
 					break ;
-				case SkinningMethod.DUAL_QUATERNION :
+				
+				case AnimationMethod.DUAL_QUATERNION_SKINNING :
 					_node = new DQSkinnedPosition(maxInfluences, numBones);
 					break ;
+				
 				default :
 					throw new Error('Unknown SkinningMethod.');
 			}

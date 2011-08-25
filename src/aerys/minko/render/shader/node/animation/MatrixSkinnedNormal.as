@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	
 	public class MatrixSkinnedNormal extends Dummy
 	{
@@ -32,9 +32,9 @@ package aerys.minko.render.shader.node.skinning
 			}
 			else
 			{
-				inNormal = new Multiply3x3(inNormal, new StyleParameter(16, SkinningStyle.BIND_SHAPE));
+				inNormal = new Multiply3x3(inNormal, new StyleParameter(16, AnimationStyle.BIND_SHAPE));
 				
-				var skinningMatrices : StyleParameter = new StyleParameter(16 * numBones, SkinningStyle.BONE_MATRICES);
+				var skinningMatrices : StyleParameter = new StyleParameter(16 * numBones, AnimationStyle.BONE_MATRICES);
 				
 				if (maxInfluences == 1)
 				{

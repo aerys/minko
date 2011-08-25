@@ -2,17 +2,18 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.animation.DQSkinnedPosition;
+	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
+	import aerys.minko.render.shader.node.animation.MorphedPosition;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
 	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.render.shader.node.skinning.DQSkinnedPosition;
-	import aerys.minko.render.shader.node.skinning.MatrixSkinnedPosition;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 
 	public class ActionScriptShaderPart
@@ -745,23 +746,6 @@ package aerys.minko.render.shader
 			
 			// handle only size == 4 (#20)
 			return new SValue(new VariadicExtract(i, c as AbstractConstant, 4));
-		}
-		
-		protected final function getVertexSkinnedPosition(skinningMethod	: uint,
-														  maxInfluences		: uint,
-														  numBones			: uint) : SValue
-		{
-			switch (skinningMethod)
-			{
-				case SkinningMethod.DISABLED :
-					return vertexPosition;
-				case SkinningMethod.MATRIX :
-					return new SValue(new MatrixSkinnedPosition(maxInfluences, numBones));
-				case SkinningMethod.DUAL_QUATERNION :
-					return new SValue(new DQSkinnedPosition(maxInfluences, numBones));
-				default :
-					throw new Error('Unknown skinning method.');
-			}
 		}
 		
 		protected final function getNode(value : Object) : INode

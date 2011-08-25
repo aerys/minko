@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.shader.node.Dummy;
@@ -6,7 +6,7 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.leaf.Attribute;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
-	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class SkinnedNormal extends Dummy

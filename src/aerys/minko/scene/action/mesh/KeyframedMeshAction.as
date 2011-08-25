@@ -3,6 +3,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IEffectPass;
 	import aerys.minko.render.effect.Style;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.scene.action.ActionType;
@@ -65,7 +66,7 @@ package aerys.minko.scene.action.mesh
 			var frameId			: Number					= mesh.frameId;
 			
 			styleStack.push(EMPTY_STYLE);
-			styleStack.set(55555, frameId - (frameId << 0));
+			styleStack.set(AnimationStyle.MORPHING_RATIO, frameId - (frameId << 0));
 			
 			for (var j : int = 0; j < numPasses; ++j)
 			{

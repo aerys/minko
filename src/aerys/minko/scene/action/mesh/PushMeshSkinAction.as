@@ -1,7 +1,7 @@
 package aerys.minko.scene.action.mesh
 {
 	import aerys.minko.render.effect.Style;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
@@ -69,12 +69,12 @@ package aerys.minko.scene.action.mesh
 			
 			// write all needed data into the stylestack for futher rendering
 			styleStack.push(EMPTY_STYLE);
-			styleStack.set(SkinningStyle.MAX_INFLUENCES, skinnedMesh.maxInfluences);
-			styleStack.set(SkinningStyle.NUM_BONES, jointCount);
-			styleStack.set(SkinningStyle.BONE_QN, skinningDQn);
-			styleStack.set(SkinningStyle.BONE_QD, skinningDQd);
-			styleStack.set(SkinningStyle.BIND_SHAPE, bindShapeMatrix);
-			styleStack.set(SkinningStyle.BONE_MATRICES, boneMatrices);
+			styleStack.set(AnimationStyle.MAX_INFLUENCES, skinnedMesh.maxInfluences);
+			styleStack.set(AnimationStyle.NUM_BONES, jointCount);
+			styleStack.set(AnimationStyle.BONE_QN, skinningDQn);
+			styleStack.set(AnimationStyle.BONE_QD, skinningDQd);
+			styleStack.set(AnimationStyle.BIND_SHAPE, bindShapeMatrix);
+			styleStack.set(AnimationStyle.BONE_MATRICES, boneMatrices);
 		}
 		
 		private function findSkeletonRoot(currentNode		: IGroup,

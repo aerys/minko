@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
@@ -21,7 +21,7 @@ package aerys.minko.render.shader.node.skinning
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	
 	public class DQSkinnedPosition extends Dummy
 	{
@@ -37,11 +37,11 @@ package aerys.minko.render.shader.node.skinning
 			}
 			else
 			{
-				inVertexPosition = new Multiply4x4(inVertexPosition, new StyleParameter(16, SkinningStyle.BIND_SHAPE));
+				inVertexPosition = new Multiply4x4(inVertexPosition, new StyleParameter(16, AnimationStyle.BIND_SHAPE));
 				inVertexPosition = new Extract(inVertexPosition, Components.XYZ);
 				
-				var dQnList : StyleParameter = new StyleParameter(4 * numBones, SkinningStyle.BONE_QN);
-				var dQdList : StyleParameter = new StyleParameter(4 * numBones, SkinningStyle.BONE_QD);
+				var dQnList : StyleParameter = new StyleParameter(4 * numBones, AnimationStyle.BONE_QN);
+				var dQdList : StyleParameter = new StyleParameter(4 * numBones, AnimationStyle.BONE_QD);
 				
 				var dQn : INode; 
 				var dQd : INode;

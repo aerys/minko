@@ -1,6 +1,6 @@
-package aerys.minko.render.shader.node.skinning
+package aerys.minko.render.shader.node.animation
 {
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;
@@ -32,9 +32,9 @@ package aerys.minko.render.shader.node.skinning
 			}
 			else
 			{
-				inVertexPosition = new Multiply4x4(inVertexPosition, new StyleParameter(16, SkinningStyle.BIND_SHAPE));
+				inVertexPosition = new Multiply4x4(inVertexPosition, new StyleParameter(16, AnimationStyle.BIND_SHAPE));
 				
-				var skinningMatrices : StyleParameter = new StyleParameter(16 * numBones, SkinningStyle.BONE_MATRICES);
+				var skinningMatrices : StyleParameter = new StyleParameter(16 * numBones, AnimationStyle.BONE_MATRICES);
 				
 				if (maxInfluences == 1)
 				{
