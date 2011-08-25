@@ -351,13 +351,22 @@ package aerys.minko.render.shader
 		 */
 		private final function toFloat(size : int, values : Array) : SValue
 		{
-			var inputSize 	: uint 	= 0;
 			var numValues	: uint	= values.length;
-			var result		: INode	= null;
 			var i 			: int 	= 0;
+			
+			// directly return a constant if we have a Vector.<Number>
+			while (i < numValues && values[i] is Number)
+				++i;
+			
+			if (i >= numValues)
+				return new SValue(new Constant(Vector.<Number>(values)));
+			
+			// build the value otherwise
+			var inputSize 	: uint 	= 0;
+			var result		: INode	= null;
 			var value 		: INode	= null;
 			var validValue	: INode	= null;
-			
+		
 			for (i = 0; i < numValues && size > 0; ++i)
 			{
 				value = getNode(values[i]);
@@ -380,7 +389,7 @@ package aerys.minko.render.shader
 					result = result ? new Combine(result, value) : value;
 			}
 			
-			if (size > 0)
+			/*if (size > 0)
 			{
 				var last 	: INode 	= null;
 				var zero	: Constant	= new Constant(0.);
@@ -405,7 +414,7 @@ package aerys.minko.render.shader
 						result = result ? new Combine(result, zero) : zero;
 					size--;
 				}
-			}
+			}*/
 			
 			return new SValue(result);
 		}

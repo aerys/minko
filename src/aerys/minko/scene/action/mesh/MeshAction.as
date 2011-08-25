@@ -54,8 +54,6 @@ package aerys.minko.scene.action.mesh
 			
 			var indexStream 	: IndexStream				= mesh.indexStream;
 			var vertexStream	: IVertexStream				= mesh.vertexStream;
-			var vertexStreams	: Vector.<IVertexStream>	= new Vector.<IVertexStream>();
-			vertexStreams[0] = vertexStream;
 			
 			var passes			: Vector.<IEffectPass>		= effect.getPasses(styleStack, localData, worldData);
 			var numPasses 		: int 						= passes.length;
@@ -67,7 +65,7 @@ package aerys.minko.scene.action.mesh
 				
 				if (pass.fillRenderState(state, styleStack, localData, worldData))
 				{
-					state.vertexStreams = vertexStreams;
+					state.setVertexStreamAt(vertexStream, 0);
 					state.indexStream = indexStream;
 					
 					renderer.pushState(state);

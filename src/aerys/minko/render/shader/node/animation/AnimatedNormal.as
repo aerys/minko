@@ -9,9 +9,9 @@ package aerys.minko.render.shader.node.animation
 	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
-	public class SkinnedNormal extends Dummy
+	public class AnimatedNormal extends Dummy
 	{
-		public function SkinnedNormal(skinningMethod	: uint,
+		public function AnimatedNormal(skinningMethod	: uint,
 									  maxInfluences		: uint,
 									  numBones			: uint)
 		{
@@ -20,26 +20,33 @@ package aerys.minko.render.shader.node.animation
 			initialize(skinningMethod, maxInfluences, numBones);
 		}
 		
-		private function initialize(skinningMethod	: uint,
-									maxInfluences	: uint,
-									numBones		: uint) : void
+		private function initialize(animationMethod	: uint,
+									maxInfluences	: uint	= 0,
+									numBones		: uint	= 0) : void
 		{
 			var normal : INode = new Attribute(VertexComponent.NORMAL);
 			
-			/*switch (skinningMethod)
+			switch (animationMethod)
 			{
-				case SkinningMethod.DISABLED :
+				case AnimationMethod.DISABLED :
 					normal = new Attribute(VertexComponent.NORMAL);
 					break ;
-				case SkinningMethod.MATRIX :
+				
+				case AnimationMethod.MORPHING :
+					normal = new MorphedNormal();
+					break ;
+				
+				case AnimationMethod.MATRIX_SKINNING :
 					normal = new MatrixSkinnedNormal(maxInfluences, numBones);
 					break ;
-				case SkinningMethod.DUAL_QUATERNION :
+				
+				case AnimationMethod.DUAL_QUATERNION_SKINNING :
 					normal = new DQSkinnedNormal(maxInfluences, numBones);
 					break ;
+				
 				default :
-					throw new Error('Unknown SkinningMethod.');
-			}*/
+					throw new Error('Unknown animation method.');
+			}
 			
 			_node = normal;
 		}

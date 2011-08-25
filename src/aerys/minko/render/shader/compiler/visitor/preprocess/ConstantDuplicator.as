@@ -71,8 +71,8 @@ package aerys.minko.render.shader.compiler.visitor.preprocess
 			else if (shaderNode is Interpolate)
 			{
 				if (_isVertexShader)
-					throw new Error('Found an interpolation node reachable ' +
-						'from the clipspace position node');
+					throw new Error('Found an interpolation node reachable '
+									+ 'from the clipspace position node');
 				
 				_isVertexShader = true;
 				shaderNode.accept(this);

@@ -54,23 +54,36 @@ package aerys.minko.scene.node.texture
 			return _data;
 		}
 		
-		public function updateFromBitmapData(value 	: BitmapData,
-											 smooth	: Boolean	= true) : void
+		public function updateFromBitmapData(value 		: BitmapData,
+											 smooth		: Boolean	= true,
+											 downSample	: Boolean	= false) : void
 		{
-			var size 	: int = 1;
-			var w 		: int = value.width;
-			var h 		: int = value.height;
+			var bitmapWidth 	: int 	= value.width;
+			var bitmapHeight	: int 	= value.height;
 			
-			while (size < w || size < h)
-				size <<= 1;
+			var w				: int	= 1;
+			var h				: int	= 1;
 			
-			if (!_data || _data.width != size || _data.height != size)
-				_data = new BitmapData(size, size, value.transparent, 0);
+			while (w < bitmapWidth)
+				w <<= 1;
+			while (h < bitmapHeight)
+				h <<= 1;
+			
+			if (downSample)
+			{
+				if (w > bitmapWidth)
+					w >>>= 1;
+				if (h > bitmapHeight)
+					h >>>= 1;
+			}
+			
+			if (!_data || _data.width != w || _data.height != h)
+				_data = new BitmapData(w, h, value.transparent, 0);
 				
-			if (size != w || size != h)
+			if (w != bitmapWidth || h != bitmapHeight)
 			{
 				_matrix.identity();
-				_matrix.scale(size / value.width, size / value.height);
+				_matrix.scale(w / bitmapWidth, h / bitmapHeight);
 				_data.draw(value, _matrix, null, null, null, smooth);
 			}
 			else

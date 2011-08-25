@@ -91,12 +91,12 @@ package aerys.minko.render.renderer
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{
-					var iStream : IndexStream	= state._indexStream;
+					var iStream : IndexStream	= state.indexStream;
 					var iBuffer : IndexBuffer3D = iStream.resource.getIndexBuffer3D(_context);
 					var count	: int			= numTriangles[j];
 					
 					_numTriangles += count == -1
-									 ? state._indexStream.length / 3.
+									 ? iStream.length / 3.
 									 : count;
 					
 					_context.drawTriangles(iBuffer, offsets[j], count);

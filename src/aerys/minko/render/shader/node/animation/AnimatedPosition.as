@@ -5,9 +5,9 @@ package aerys.minko.render.shader.node.animation
 	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
-	public class SkinnedPosition extends Dummy
+	public class AnimatedPosition extends Dummy
 	{
-		public function SkinnedPosition(skinningMethod	: uint,
+		public function AnimatedPosition(skinningMethod	: uint,
 										maxInfluences	: uint,
 										numBones		: uint)
 		{
@@ -16,14 +16,18 @@ package aerys.minko.render.shader.node.animation
 			initialize(skinningMethod, maxInfluences, numBones);
 		}
 		
-		private function initialize(skinningMethod	: uint,
+		private function initialize(animationMethod	: uint,
 									maxInfluences	: uint,
 									numBones		: uint) : void
 		{
-			switch (skinningMethod)
+			switch (animationMethod)
 			{
 				case AnimationMethod.DISABLED :
 					_node = new Attribute(VertexComponent.XYZ);
+					break ;
+				
+				case AnimationMethod.MORPHING :
+					_node = new MorphedPosition();
 					break ;
 				
 				case AnimationMethod.MATRIX_SKINNING :
@@ -35,7 +39,7 @@ package aerys.minko.render.shader.node.animation
 					break ;
 				
 				default :
-					throw new Error('Unknown SkinningMethod.');
+					throw new Error('Unknown animation method.');
 			}
 		}
 	}

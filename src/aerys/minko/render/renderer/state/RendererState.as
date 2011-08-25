@@ -102,7 +102,7 @@ package aerys.minko.render.renderer.state
 		private var _textures			: Vector.<TextureResource>	= new Vector.<TextureResource>(8, true);
 	
 		private var _vertexStreams		: Vector.<IVertexStream>	= new Vector.<IVertexStream>();
-		minko_render var _indexStream	: IndexStream				= null;
+		private var _indexStream		: IndexStream				= null;
 		
 		private var _vertexConstants	: Vector.<Number>			= new Vector.<Number>();
 		private var _fragmentConstants	: Vector.<Number>			= new Vector.<Number>();
@@ -165,6 +165,11 @@ package aerys.minko.render.renderer.state
 			return _setFlags & DEPTH_MASK ? _depthTest : 0;
 		}
 		
+		public function get indexStream() : IndexStream
+		{
+			return _setFlags & INDEX_STREAM ? _indexStream : null;
+		}
+		
 		public function set priority(value : Number) : void
 		{
 			_priority = value;
@@ -213,9 +218,11 @@ package aerys.minko.render.renderer.state
 			_setFlags |= DEPTH_MASK;
 		}
 		
-		public function set vertexStreams(value : Vector.<IVertexStream>) : void
+		public function setVertexStreamAt(vertexStream 	: IVertexStream,
+										  index			: int) : void
 		{
-			_vertexStreams = value;
+			_vertexStreams[index] = vertexStream;
+			
 			_setFlags |= VERTEX_STREAM;
 		}
 		

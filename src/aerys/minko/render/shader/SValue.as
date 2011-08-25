@@ -218,6 +218,11 @@ package aerys.minko.render.shader
 			return this;
 		}
 		
+		override flash_proxy function callProperty(name : *, ...arguments) : *
+		{
+			
+		}
+		
 		override flash_proxy function getProperty(name : *) : *
 		{
 			return new SValue(new Extract(_node, getComponentsFromString(name)));

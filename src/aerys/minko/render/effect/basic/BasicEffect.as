@@ -89,7 +89,7 @@ package aerys.minko.render.effect.basic
 			
 			if (style.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
 			{
-				hash += "_skin(";
+				hash += "_animation(";
 				hash += "method=" + style.get(AnimationStyle.METHOD);
 				hash += ",maxInfluences=" + style.get(AnimationStyle.MAX_INFLUENCES, 0);
 				hash += ",numBones=" + style.get(AnimationStyle.NUM_BONES, 0);

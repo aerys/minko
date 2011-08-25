@@ -45,7 +45,7 @@ package aerys.minko.render.renderer
 		public function drawTriangles(offset		: uint	= 0,
 									  numTriangles	: int	= -1) : void
 		{
-			var indexStream : IndexStream 	= _currentState._indexStream; 
+			var indexStream : IndexStream 	= _currentState.indexStream; 
 			var t 			: int 			= getTimer();
 		
 			if (_actualState != _currentState)

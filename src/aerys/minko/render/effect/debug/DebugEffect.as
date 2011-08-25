@@ -1,12 +1,12 @@
 package aerys.minko.render.effect.debug
 {
 	import aerys.minko.render.effect.SinglePassEffect;
-	import aerys.minko.render.effect.skinning.SkinningStyle;
+	import aerys.minko.render.effect.animation.AnimationShaderPart;
+	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
-	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.skinning.SkinningMethod;
+	import aerys.minko.type.animation.AnimationMethod;
 	
 	import flash.utils.Dictionary;
 
@@ -26,21 +26,15 @@ package aerys.minko.render.effect.debug
 			_vertexColor = vertexNormal.dotProduct3(lightDir);
 			_vertexColor = float4(multiply(_vertexColor, COLOR.rgb), COLOR.a);
 			
-			// perform skinning
-			var skinningMethod	: uint	= getStyleConstant(SkinningStyle.METHOD, SkinningMethod.DISABLED)
-									      as uint;
+			var animationShaderPart : AnimationShaderPart = new AnimationShaderPart();
 			
-			// handle skinning
-			if (skinningMethod != SkinningMethod.DISABLED)
-			{
-				var maxInfluences	: uint		= getStyleConstant(SkinningStyle.MAX_INFLUENCES, 0) as uint;
-				var numBones		: uint		= getStyleConstant(SkinningStyle.NUM_BONES, 0) as uint;
-				var skinnedPosition	: SValue	= getVertexSkinnedPosition(skinningMethod, maxInfluences, numBones);
-				
-				return multiply4x4(skinnedPosition, localToScreenMatrix);
-			}
+			var animationMethod		: uint	= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED) as uint;
+			var maxInfluences		: uint	= getStyleConstant(AnimationStyle.MAX_INFLUENCES, 0) as uint;
+			var numBones			: uint	= getStyleConstant(AnimationStyle.NUM_BONES, 0) as uint;
 			
-			return vertexClipspacePosition;
+			var animationPosition	: SValue	= animationShaderPart.getVertexPosition(animationMethod, maxInfluences, numBones);
+			
+			return multiply4x4(animationPosition, localToScreenMatrix);
 		}
 		
 		override protected function getOutputColor() : SValue
@@ -54,12 +48,12 @@ package aerys.minko.render.effect.debug
 		{
 			var hash 			: String	= "debug";
 			
-			if (style.get(SkinningStyle.METHOD, SkinningMethod.DISABLED) != SkinningMethod.DISABLED)
+			if (style.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
 			{
-				hash += "_skin(";
-				hash += "method=" + style.get(SkinningStyle.METHOD);
-				hash += ",maxInfluences=" + style.get(SkinningStyle.MAX_INFLUENCES, 0);
-				hash += ",numBones=" + style.get(SkinningStyle.NUM_BONES, 0);
+				hash += "_animation(";
+				hash += "method=" + style.get(AnimationStyle.METHOD);
+				hash += ",maxInfluences=" + style.get(AnimationStyle.MAX_INFLUENCES, 0);
+				hash += ",numBones=" + style.get(AnimationStyle.NUM_BONES, 0);
 				hash += ")";
 			}
 			

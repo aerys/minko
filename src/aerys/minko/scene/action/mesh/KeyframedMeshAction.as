@@ -43,6 +43,9 @@ package aerys.minko.scene.action.mesh
 			if (!mesh)
 				throw new Error();
 			
+			var currentFrame	: IVertexStream	= mesh.currentFrameVertexStream;
+			var nextFrame		: IVertexStream	= mesh.nextFrameVertexStream;
+			
 			// invalidate world objects cache
 			for each (var worldObject : IWorldData in visitor.worldData)
 				worldObject.invalidate();
@@ -53,12 +56,11 @@ package aerys.minko.scene.action.mesh
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleStack		= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
-			var effect			: IEffect			= effectStack[effectStack.length - 1];
+			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			
 			if (!effect)
 				throw new Error("Unable to draw without an effect.");
 			
-			var vertexStreams	: Vector.<IVertexStream>	= mesh.adjacentVertexStreams;
 			var indexStream 	: IndexStream				= mesh.indexStream;
 			var passes			: Vector.<IEffectPass>		= effect.getPasses(renderingData.styleStack, localData, worldData);
 			var numPasses 		: int 						= passes.length;
@@ -73,11 +75,12 @@ package aerys.minko.scene.action.mesh
 				var pass	: IEffectPass	= passes[j];
 				var state	: RendererState	= RendererState.create(true);
 				
-				state.vertexStreams = vertexStreams;
-				state.indexStream = indexStream;
-				
 				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
 				{
+					state.indexStream = indexStream;
+					state.setVertexStreamAt(currentFrame, 0);
+					state.setVertexStreamAt(nextFrame, 1);
+
 					renderer.pushState(state);
 					renderer.drawTriangles();
 				}

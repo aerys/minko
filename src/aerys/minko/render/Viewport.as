@@ -276,6 +276,9 @@ package aerys.minko.render
 		
 		private function addedToStageHandler(event : Event) : void
 		{
+			// 30 fps is "better for GPU scheduling"
+			stage.frameRate = 30.;
+			
 			if (!_stage3d)
 			{
 				var stageId	: int	= 0;
