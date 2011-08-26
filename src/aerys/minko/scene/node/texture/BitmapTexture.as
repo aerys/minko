@@ -18,25 +18,21 @@ package aerys.minko.scene.node.texture
 	 */
 	public class BitmapTexture extends AbstractScene implements ITexture
 	{
-		private var _version	: uint				= 0;
+		private static const TMP_MATRIX : Matrix = new Matrix();
 		
+		private var _version	: uint				= 0;
 		private var _data		: BitmapData		= null;
 		private var _mipmapping	: Boolean			= false;
-		
 		private var _styleProp	: int				= -1;
-		
-		private var _matrix		: Matrix			= new Matrix();
-		
 		private var _resource	: TextureResource	= new TextureResource();
 				
-		public function get version() : uint
-		{
-			return _version;
-		}
+		public function get version()		: uint				{ return _version;		}
+		public function get styleProperty() : int				{ return _styleProp;	}
+		public function get resource()		: TextureResource	{ return _resource;		}
 		
-		public function get styleProperty() : int
+		protected function get bitmapData()	: BitmapData
 		{
-			return _styleProp;
+			return _data;
 		}
 		
 		public function set styleProperty(value : int) : void
@@ -44,37 +40,24 @@ package aerys.minko.scene.node.texture
 			_styleProp = value;
 		}
 		
-		public function get resource() : TextureResource
-		{
-			return _resource;
-		}
-		
-		protected function get bitmapData() : BitmapData
-		{
-			return _data;
-		}
-		
 		public function updateFromBitmapData(value 		: BitmapData,
 											 smooth		: Boolean	= true,
 											 downSample	: Boolean	= false) : void
 		{
-			var bitmapWidth 	: int 	= value.width;
-			var bitmapHeight	: int 	= value.height;
-			
-			var w				: int	= 1;
-			var h				: int	= 1;
-			
-			while (w < bitmapWidth)
-				w <<= 1;
-			while (h < bitmapHeight)
-				h <<= 1;
+			var bitmapWidth		: uint = value.width;
+			var bitmapHeight	: uint = value.height;
+			var w				: int;
+			var h				: int;
 			
 			if (downSample)
 			{
-				if (w > bitmapWidth)
-					w >>>= 1;
-				if (h > bitmapHeight)
-					h >>>= 1;
+				w = 1 << Math.floor(Math.log(bitmapWidth) * Math.LOG2E);
+				h = 1 << Math.floor(Math.log(bitmapHeight) * Math.LOG2E);
+			}
+			else
+			{
+				w = 1 << Math.ceil(Math.log(bitmapWidth) * Math.LOG2E);
+				h = 1 << Math.ceil(Math.log(bitmapHeight) * Math.LOG2E);
 			}
 			
 			if (!_data || _data.width != w || _data.height != h)
@@ -82,9 +65,9 @@ package aerys.minko.scene.node.texture
 				
 			if (w != bitmapWidth || h != bitmapHeight)
 			{
-				_matrix.identity();
-				_matrix.scale(w / bitmapWidth, h / bitmapHeight);
-				_data.draw(value, _matrix, null, null, null, smooth);
+				TMP_MATRIX.identity();
+				TMP_MATRIX.scale(w / bitmapWidth, h / bitmapHeight);
+				_data.draw(value, TMP_MATRIX, null, null, null, smooth);
 			}
 			else
 			{
@@ -101,11 +84,10 @@ package aerys.minko.scene.node.texture
 									  styleProp		: int			= -1)
 		{
 			_mipmapping	= mipmapping;
+			_styleProp	= styleProp != -1 ? styleProp : BasicStyle.DIFFUSE;
 			
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
-			
-			_styleProp = styleProp != -1 ? styleProp : BasicStyle.DIFFUSE;
 			
 			actions[0] = TextureAction.textureAction;
 		}
@@ -114,7 +96,6 @@ package aerys.minko.scene.node.texture
 												 size 	: int 		= 0,
 												 smooth : Boolean 	= false) : BitmapTexture
 		{
-			var matrix : Matrix = null;
 			var bmp : BitmapData = new BitmapData(size || source.width,
 												  size || source.height,
 												  true,
@@ -122,11 +103,11 @@ package aerys.minko.scene.node.texture
 			
 			if (size)
 			{
-				matrix = new Matrix();
-				matrix.scale(source.width / size, source.height / size);
+				TMP_MATRIX.identity();
+				TMP_MATRIX.scale(source.width / size, source.height / size);
 			}
 			
-			bmp.draw(source, matrix, null, null, null, smooth);
+			bmp.draw(source, TMP_MATRIX, null, null, null, smooth);
 			
 			return new BitmapTexture(bmp);
 		}

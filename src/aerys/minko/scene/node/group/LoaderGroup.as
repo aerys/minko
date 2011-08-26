@@ -5,6 +5,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
 	import aerys.minko.type.parser.IParser;
+	import aerys.minko.type.parser.atf.ATFParser;
 	
 	import flash.display.Bitmap;
 	import flash.display.IBitmapDrawable;
@@ -78,6 +79,8 @@ package aerys.minko.scene.node.group
 		public function LoaderGroup()
 		{
 			super();
+			
+			registerParser('atf', new ATFParser());
 			
 			_dispatcher = new EventDispatcher(this);
 		}

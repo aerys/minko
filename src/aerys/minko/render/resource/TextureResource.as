@@ -1,12 +1,11 @@
 package aerys.minko.render.resource
 {
-	import aerys.minko.render.RenderTarget;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix;
+	import flash.utils.ByteArray;
 
 	public class TextureResource implements IResource
 	{
@@ -14,6 +13,8 @@ package aerys.minko.render.resource
 		private var _mipmap		: Boolean;
 		
 		private var _bitmapData	: BitmapData;
+		private var _atf		: ByteArray;
+		
 		private var _width		: Number;
 		private var _height		: Number;
 		
@@ -59,6 +60,11 @@ package aerys.minko.render.resource
 			_update	= true;
 		}
 		
+		public function setContentFromATF(atf : ByteArray) : void
+		{
+			_atf = atf;
+		}
+		
 		public function getNativeTexture(context : Context3D) : Texture
 		{
 			if (!_texture && _width && _height)
@@ -71,43 +77,52 @@ package aerys.minko.render.resource
 				_update = true;
 			}
 			
-			if (_bitmapData && _update)
+			if (_update)
 			{
+				
 				_update = false;
 				
-				if (_mipmap)
+				if (_bitmapData)
 				{
-					var level 		: int 			= 0;
-					var size		: int 			= _bitmapData.width;
-					var transparent	: Boolean		= _bitmapData.transparent;
-					var tmp 		: BitmapData 	= new BitmapData(size,
-																	 size,
-																	 transparent,
-																	 0);
-					var transform 	: Matrix 		= new Matrix();
-					
-					while (size >= 1)
+					if (_mipmap)
 					{
-						tmp.draw(_bitmapData, transform, null, null, null, true);
-						_texture.uploadFromBitmapData(tmp, level);
+						var level 		: int 			= 0;
+						var size		: int 			= _bitmapData.width;
+						var transparent	: Boolean		= _bitmapData.transparent;
+						var tmp 		: BitmapData 	= new BitmapData(size,
+																		 size,
+																		 transparent,
+																		 0);
+						var transform 	: Matrix 		= new Matrix();
 						
-						transform.scale(.5, .5);
-						level++;
-						size >>= 1;
-						if (tmp.transparent)
-							tmp.fillRect(tmp.rect, 0);
+						while (size >= 1)
+						{
+							tmp.draw(_bitmapData, transform, null, null, null, true);
+							_texture.uploadFromBitmapData(tmp, level);
+							
+							transform.scale(.5, .5);
+							level++;
+							size >>= 1;
+							if (tmp.transparent)
+								tmp.fillRect(tmp.rect, 0);
+						}
+						
+						if (transparent)
+							tmp.dispose();
 					}
-					
-					if (transparent)
-						tmp.dispose();
+					else
+					{
+						_texture.uploadFromBitmapData(_bitmapData, 0);
+						_bitmapData.dispose();
+					}
 				}
-				else
+				else if (_atf)
 				{
-					_texture.uploadFromBitmapData(_bitmapData, 0);
-					_bitmapData.dispose();
+					_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
 				}
 			}
 			
+			_atf = null;
 			_bitmapData = null;
 			
 			return _texture;
