@@ -270,6 +270,8 @@ package aerys.minko.render
 			_rendererClass	= rendererType || DefaultRenderer;
 			_viewportData	= new ViewportData(this);
 			
+			_invalidRectangle	= true;
+			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
 		}

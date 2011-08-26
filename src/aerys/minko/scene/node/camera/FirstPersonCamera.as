@@ -19,11 +19,14 @@ package aerys.minko.scene.node.camera
 		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
+		private var _rotationVersion	: uint	= uint(-1);
+		private var _positionVersion	: uint	= uint(-1);
+		
 		private var _version	: uint		= 0;
 		private var _ghostMode	: Boolean	= false;
-		private var _rotation	: Vector4	= new Vector4();
+		private var _rotation	: Vector4	= new Vector4(0., Math.PI *.5);
 		
-		override public function get version():uint
+		override public function get version() : uint
 		{
 			return super.version + _rotation.version + _version;
 		}
@@ -41,7 +44,29 @@ package aerys.minko.scene.node.camera
 		
 		public function get rotation() : Vector4
 		{
+			if (_rotation.x >= MAX_ROTATION_X)
+				_rotation.x = MAX_ROTATION_X;
+			else if (_rotation.x <= MIN_ROTATION_X)
+				_rotation.x = MIN_ROTATION_X;
+
 			return _rotation;
+		}
+		
+		override public function get lookAt() : Vector4
+		{
+			var lookAt	: Vector4	= super.lookAt;
+			
+			if (_rotation.version != _rotationVersion || _positionVersion != position.version)
+			{
+				_rotationVersion = _rotation.version;
+				_positionVersion = position.version;
+				
+				lookAt.x = position.x + Math.cos(_rotation.y) * Math.cos(_rotation.x);
+				lookAt.y = position.y + Math.sin(_rotation.x);
+				lookAt.z = position.z + Math.sin(_rotation.y) * Math.cos(_rotation.x);
+			}
+			
+			return lookAt;
 		}
 		
 		public function FirstPersonCamera(ghostMode : Boolean = false)
@@ -49,22 +74,6 @@ package aerys.minko.scene.node.camera
 			super();
 			
 			_ghostMode = ghostMode;
-			
-			_rotation.y = Math.PI / 2.;
-		}
-		
-		override public function getData(localData : LocalData) : IWorldData
-		{
-			if (_rotation.x >= MAX_ROTATION_X)
-				_rotation.x = MAX_ROTATION_X;
-			else if (_rotation.x <= MIN_ROTATION_X)
-				_rotation.x = MIN_ROTATION_X;
-			
-			lookAt.x = position.x + Math.cos(_rotation.y) * Math.cos(_rotation.x);
-			lookAt.y = position.y + Math.sin(_rotation.x);
-			lookAt.z = position.z + Math.sin(_rotation.y) * Math.cos(_rotation.x);
-			
-			return super.getData(localData);
 		}
 		
 		public function walk(distance : Number) : void

@@ -18,8 +18,6 @@ package aerys.minko.scene.data
 		public static const Z_FAR			: String = 'zFar';
 		public static const Z_FAR_PARTS		: String = 'zFarParts';
 		
-		public static const VIEW			: String = 'view';
-		public static const PROJECTION		: String = 'projection';
 		public static const LOCAL_POSITION	: String = 'localPosition';
 		public static const LOCAL_LOOK_AT	: String = 'localLookAt';
 		
@@ -102,42 +100,19 @@ package aerys.minko.scene.data
 				_zFarParts = new Vector4(0, 0.25 * _zFar, 0.5 * _zFar, 0.75 * _zFar);
 				_zFarParts_invalidated = false;
 			}
+			
 			return _zFarParts;
-		}
-		
-		public function get view() : Matrix4x4
-		{
-			if (_view_positionVersion != _position.version ||
-				_view_lookAtVersion != _lookAt.version ||
-				_view_upVersion != _up.version)
-			{
-				_view = Matrix4x4.lookAtLH(_position, _lookAt, _up, _view);
-				
-				_view_positionVersion	= _position.version;
-				_view_lookAtVersion		= _lookAt.version;
-				_view_upVersion			= _lookAt.version;
-			}
-			
-			return _view;
-		}
-		
-		public function get projection() : Matrix4x4
-		{
-			var ratio : Number = _worldData[ViewportData].ratio;
-			
-			_projection = Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
-			
-			return _projection;
 		}
 		
 		public function get frustrum() : Frustum
 		{
-			var projectionMatrix : Matrix4x4 = projection;
+			var projectionMatrix : Matrix4x4 = _localData.projection;
 			
 			if (_frustum_projectionVersion != projectionMatrix.version)
 			{
 				if (_frustum == null)
 					_frustum = new Frustum();
+				
 				_frustum.updateWithProjectionMatrix(projectionMatrix);
 				_frustum_projectionVersion = projectionMatrix.version;
 			}
@@ -202,22 +177,19 @@ package aerys.minko.scene.data
 			_up = v;
 		}
 		
-		public function set fov(v : Number) : void
+		public function set fieldOfView(v : Number) : void
 		{
 			_fov = v;
-			_projection_invalidated = true;
 		}
 		
 		public function set zNear(v : Number) : void
 		{
 			_zNear = v;
-			_projection_invalidated = true;
 		}
 		
 		public function set zFar(v : Number) : void
 		{
 			_zFar = v;
-			_projection_invalidated = true;
 		}
 		
 		public function CameraData()
@@ -241,13 +213,13 @@ package aerys.minko.scene.data
 		
 		public function reset() : void 
 		{
-			_position	= null;
+			/*_position	= null;
 			_lookAt		= null;
 			_up			= null;
 			
 			_fov	= -1;
 			_zNear	= -1;
-			_zFar	= -1;
+			_zFar	= -1;*/
 			
 			_view_positionVersion			= uint.MAX_VALUE;
 			_view_lookAtVersion				= uint.MAX_VALUE;

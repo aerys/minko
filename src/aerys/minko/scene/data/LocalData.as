@@ -182,15 +182,19 @@ package aerys.minko.scene.data
 		
 		public function LocalData()
 		{
-			_world								= new Matrix4x4();
-			_view								= new Matrix4x4();
-			_projection							= new Matrix4x4();
+			_world		= new Matrix4x4();
+			_view		= new Matrix4x4();
+			_projection	= new Matrix4x4();
 			
 			reset();
 		}
 		
 		public function reset() : void
 		{
+			_world.identity();
+			_view.identity();
+			_projection.identity();
+			
 			_viewInverse_viewVersion			= uint.MAX_VALUE;
 			_worldInverse_worldVersion			= uint.MAX_VALUE;
 			_localToView_viewVersion			= uint.MAX_VALUE;
