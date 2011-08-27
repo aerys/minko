@@ -8,13 +8,13 @@ package aerys.minko.scene.data
 	{
 		use namespace minko_render;
 		
-		private static var _empty	: Array 			= new Array();
+		private static var _empty	: Array 			= [];
 		private static var _free	: Vector.<Array>	= new Vector.<Array>();
 		private static var _numFree	: int				= 0;
 		
 		private var _data 		: Vector.<Array>	= Vector.<Array>([_empty]);
 		private var _size		: int				= 1;
-		private var _cache		: Array				= new Array();
+		private var _cache		: Array				= [];
 		
 		private var _version	: uint				= 1;
 		
@@ -68,7 +68,7 @@ package aerys.minko.scene.data
 				}
 				else
 				{
-					top = new Array();
+					top = [];
 				}
 				
 				_data[int(_size - 1)] = top;

@@ -77,20 +77,7 @@ package aerys.minko.type.stream
 			return this;
 		}
 		
-		public function push(...data) : void
-		{
-			var dataLength : int = data.length;
-			
-			if (dataLength % _format.dwordsPerVertex)
-				throw new Error("Invalid data length.");
-			
-			for (var i : int = 0; i < dataLength; i++)
-				_data.push(data[i]);
-			
-			invalidate();
-		}
-		
-		public function pushData(data : Vector.<Number>) : void
+		public function push(data : Vector.<Number>) : void
 		{
 			var dataLength : int = data.length;
 			
