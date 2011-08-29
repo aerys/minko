@@ -77,6 +77,11 @@ package aerys.minko.type.stream
 			return this;
 		}
 		
+		public function get(i : int) : Number
+		{
+			return _data[i];
+		}
+		
 		public function push(data : Vector.<Number>) : void
 		{
 			var dataLength : int = data.length;

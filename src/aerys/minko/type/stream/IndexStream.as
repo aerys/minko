@@ -163,19 +163,6 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 		
-		public function push(...parameters) : IndexStream
-		{
-			var numIndices 	: int = parameters.length;
-			var length 		: int = length;
-
-			for (var i : int = 0; i < numIndices; ++i, ++length)
-				_data[length] = int(parameters[i]);
-			
-			invalidate();
-			
-			return this;
-		}
-		
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
 			var index 	: int = int(name);
@@ -194,9 +181,9 @@ package aerys.minko.type.stream
 			return true;
 		}
 		
-		public function pushIndices(indices : Vector.<uint>,
-									offset	: uint 	= 0,
-									count	: uint	= 0) : void
+		public function push(indices 	: Vector.<uint>,
+							 offset		: uint 	= 0,
+							 count		: uint	= 0) : void
 		{
 			var l : int = _data.length;
 			
