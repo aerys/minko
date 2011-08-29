@@ -64,6 +64,7 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IEffect					= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
+		private var _localData			: LocalData					= new LocalData();
 		
 		private var _postProcessEffect	: IEffect					= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
@@ -247,7 +248,7 @@ package aerys.minko.render
 		{
 			_alwaysOnTop = value;
 			
-			_invalidRectangle = true;
+			updateMask();
 			updateStageListeners();
 		}
 		
@@ -270,8 +271,31 @@ package aerys.minko.render
 			_rendererClass	= rendererType || DefaultRenderer;
 			_viewportData	= new ViewportData(this);
 			
+			addEventListener(Event.ADDED, addedHandler);
+			addEventListener(Event.REMOVED, removedHandler);
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
+		}
+		
+		private function addedHandler(event : Event) : void
+		{
+			if (_autoResize)
+			{
+				parent.addEventListener(Event.RESIZE, resizeHandler);
+				
+				if (parent == stage)
+				{
+					stage.align = StageAlign.TOP_LEFT;
+					stage.scaleMode = StageScaleMode.NO_SCALE;
+				}
+			}
+			
+			resizeHandler();
+		}
+		
+		private function removedHandler(event : Event) : void
+		{
+			parent.removeEventListener(Event.RESIZE, resizeHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
@@ -290,38 +314,36 @@ package aerys.minko.render
 				
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 				_stage3d.requestContext3D(Context3DRenderMode.AUTO);
-				
-				stage.addEventListener(Event.ADDED, displayObjectAddedToStageHandler);
 			}
 			
 			if (!_logoIsHidden)
 				showLogo();
 			
-			if (_autoResize)
-			{
-				parent.addEventListener(Event.RESIZE, resizeHandler);
-				
-				if (parent == stage)
-				{
-					stage.align = StageAlign.TOP_LEFT;
-					stage.scaleMode = StageScaleMode.NO_SCALE;
-				}
-			}
-			
-			resizeHandler();
 			updateStageListeners();
+			updateMask();
 		}
 		
 		public function dispose() : void
 		{
 			if (_stage3d && _stage3d.context3D)
 				_stage3d.context3D.dispose();
+			_stage3d = null;
 		}
 		
 		private function displayObjectAddedToStageHandler(event : Event) : void
 		{
-			if (event.target.parent == stage)
+			var displayObject	: DisplayObject	= event.target as DisplayObject;
+			
+			if (displayObject.parent == stage)
 				updateMask();
+		}
+		
+		private function displayObjectRemovedFromStageHandler(event : Event) : void
+		{
+			var displayObject	: DisplayObject	= event.target as DisplayObject;
+			
+			if (_autoResize && displayObject.parent == stage)
+				displayObject.mask = null;
 		}
 		
 		private function removedFromStage(event : Event) : void
@@ -411,6 +433,8 @@ package aerys.minko.render
 			if (_alwaysOnTop)
 			{
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
+				stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+				stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
 				stage.addEventListener(MouseEvent.CLICK, stageMouseHandler);
 				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
 				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
@@ -424,6 +448,8 @@ package aerys.minko.render
 			else
 			{
 				stage.removeEventListener(Event.RESIZE, stageResizeHandler);
+				stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+				stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
 				stage.removeEventListener(MouseEvent.CLICK, stageMouseHandler);
 				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
 				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
@@ -458,6 +484,9 @@ package aerys.minko.render
 		
 		private function updateMask() : void
 		{
+			if (!stage)
+				return ;
+			
 			var numChildren : int = stage.numChildren;
 			var i 			: int = 0;
 			
@@ -518,9 +547,10 @@ package aerys.minko.render
 				var time : Number = getTimer();
 		
 				// create the data sources the visitors are going to write and read from during render.
-				var localData		: LocalData		= new LocalData();
 				var worldData		: Dictionary	= new Dictionary();
 				var renderingData	: RenderingData	= new RenderingData();
+				
+				_localData.reset();
 				
 				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
@@ -528,7 +558,7 @@ package aerys.minko.render
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
-					visitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
+					visitor.processSceneGraph(scene, _localData, worldData, renderingData, _renderer);
 				
 				renderingData.effects.pop();
 					
@@ -539,7 +569,7 @@ package aerys.minko.render
 				if (_postProcessEffect != null)
 				{
 					renderingData.effects.push(_postProcessEffect);
-					_postProcessVisitor.processSceneGraph(scene, localData, worldData, renderingData, _renderer);
+					_postProcessVisitor.processSceneGraph(scene, _localData, worldData, renderingData, _renderer);
 					renderingData.effects.pop();
 				}
 				

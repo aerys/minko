@@ -72,6 +72,7 @@ package aerys.minko.scene.data
 												  as WorldDataList;
 			
 			newStyleObjList._objects	= _objects.concat();
+			
 			return newStyleObjList;
 		}
 		

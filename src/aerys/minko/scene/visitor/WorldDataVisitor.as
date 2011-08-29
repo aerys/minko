@@ -47,13 +47,13 @@ package aerys.minko.scene.visitor
 			
 			// update our transformManager if there is a camera, or
 			// set it to null to render to screenspace otherwise
-			var cameraData : CameraData = worldData[CameraData] as CameraData;
+			/*var cameraData : CameraData = worldData[CameraData] as CameraData;
 			
 			if (cameraData)
 			{
 				localData.view			= cameraData.view;
 				localData.projection	= cameraData.projection;
-			}
+			}*/
 		}
 		
 		public function visit(scene : IScene) : void

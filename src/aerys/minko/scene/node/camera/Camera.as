@@ -1,11 +1,7 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.minko.scene.action.WorldObjectAction;
+	import aerys.minko.scene.action.camera.CameraAction;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.data.CameraData;
-	import aerys.minko.scene.data.IWorldData;
-	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -29,16 +25,11 @@ package aerys.minko.scene.node.camera
 	 */
 	public class Camera extends AbstractScene implements ICamera
 	{
-		protected static const CAMERA_DATA : Factory = Factory.getFactory(CameraData);
-		
 		public static const DEFAULT_FOV				: Number			= Math.PI * .25;
 		public static const DEFAULT_NEAR_CLIPPING	: Number			= .1;
 		public static const DEFAULT_FAR_CLIPPING	: Number			= 1000.;
 		
 		private static const RAW_DATA				: Vector.<Number>	= new Vector.<Number>();
-		
-		protected var _view			: Matrix4x4	= new Matrix4x4();
-		protected var _projection	: Matrix4x4	= new Matrix4x4();
 		
 		private var _version		: uint		= 0;
 		
@@ -117,33 +108,7 @@ package aerys.minko.scene.node.camera
 			this.nearClipping = nearClipping;
 			this.farClipping = farClipping;
 			
-			actions[0] = WorldObjectAction.worldObjectAction;
+			actions[0] = new CameraAction();
 		}
-		
-		public function getData(localData : LocalData) : IWorldData
-		{
-			if (!_enabled)
-				return null;
-			
-			var cameraData 		: CameraData	= CAMERA_DATA.create(true) as CameraData;
-			var worldMatrix		: Matrix4x4		= localData.world;
-			var worldPosition	: Vector4		= worldMatrix.multiplyVector(position);
-			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(lookAt);
-			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(up)
-															 .normalize();
-			
-			cameraData.reset();
-			
-			cameraData.position		= worldPosition;
-			cameraData.lookAt		= worldLookAt;
-			cameraData.up			= worldUp;
-			
-			cameraData.fov			= fieldOfView;
-			cameraData.zNear		= nearClipping;
-			cameraData.zFar			= farClipping;
-			
-			return cameraData;
-		}
-		
 	}
 }

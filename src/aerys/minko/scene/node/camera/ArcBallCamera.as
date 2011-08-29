@@ -1,7 +1,5 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.minko.scene.data.IWorldData;
-	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.type.math.Vector4;
 	
 	/**
@@ -20,8 +18,12 @@ package aerys.minko.scene.node.camera
 		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
-		private var _distance	: Number	= 1.;
-		private var _rotation	: Vector4	= new Vector4(0., 0., 0., 0.);
+		private var _rotationVersion	: uint		= uint(-1);
+		private var _invalidPosition	: Boolean	= true;
+		private var _lookAtVersion		: uint		= uint(-1);
+		
+		private var _distance			: Number	= 1.;
+		private var _rotation			: Vector4	= new Vector4(0., Math.PI * .5, 0., 0.);
 		
 		override public function get version():uint
 		{
@@ -33,7 +35,6 @@ package aerys.minko.scene.node.camera
 			super();
 			
 			lookAt.set(0., 0., 0.);
-			rotation.y = Math.PI * .5;
 		}
 		
 		/**
@@ -47,6 +48,9 @@ package aerys.minko.scene.node.camera
 		public function set distance(value : Number) : void
 		{
 			_distance = value;
+			if (_distance <= 0.)
+				_distance = EPSILON;
+			_invalidPosition = true;
 		}
 		
 		/**
@@ -58,25 +62,30 @@ package aerys.minko.scene.node.camera
 		 */
 		public function get rotation() : Vector4
 		{
-			return _rotation;
-		}
-
-		override public function getData(localData : LocalData) : IWorldData
-		{
 			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
 			else if (_rotation.x <= MIN_ROTATION_X)
 				_rotation.x = MIN_ROTATION_X;
-		
-			if (_distance <= 0.)
-				_distance = EPSILON;
-
-			position.x = lookAt.x - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
-			position.y = lookAt.y - _distance * Math.sin(_rotation.x);
-			position.z = lookAt.z - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);
 			
-			return super.getData(localData);
+			return _rotation;
 		}
 		
+		override public function get position() : Vector4
+		{
+			var pos : Vector4 = super.position;
+			
+			if (_invalidPosition || _rotationVersion != _rotation.version || _lookAtVersion != lookAt.version)
+			{
+				_invalidPosition = false;
+				_rotationVersion = _rotation.version;
+				_lookAtVersion = lookAt.version;
+				
+				pos.x = lookAt.x - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
+				pos.y = lookAt.y - _distance * Math.sin(_rotation.x);
+				pos.z = lookAt.z - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);			
+			}
+			
+			return pos;
+		}
 	}
 }
