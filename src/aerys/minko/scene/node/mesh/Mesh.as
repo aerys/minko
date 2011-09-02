@@ -11,7 +11,6 @@ package aerys.minko.scene.node.mesh
 	
 	public class Mesh extends AbstractScene implements IMesh
 	{
-		use namespace minko;
 		use namespace minko_stream;
 		
 		private static var _id : uint = 0;
@@ -130,7 +129,7 @@ package aerys.minko.scene.node.mesh
 			{
 				var mesh			: IMesh			= meshes[i];
 				var vertexStream	: IVertexStream	= mesh.vertexStream;
-			
+				
 				// append index data
 				var indexData	: Vector.<uint>		= mesh.indexStream._data;
 				var numIndices	: uint				= indexData.length;

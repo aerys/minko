@@ -88,7 +88,6 @@ package aerys.minko.render.shader
 				_lastTransformVersion	= uint.MAX_VALUE;
 			}
 			
-			
 			setTextures(state, styleStack, local, world);
 			setConstants(state, styleStack, local, world);
 			

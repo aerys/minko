@@ -2,29 +2,16 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.resource.TextureResource;
-	import aerys.minko.render.shader.node.Components;
-	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.fog.Fog;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
-	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
-	import aerys.minko.render.shader.node.operation.math.Product;
-	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.render.shader.node.animation.DQSkinnedPosition;
-	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
-	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.animation.AnimationMethod;
-	import aerys.minko.type.stream.format.VertexComponent;
 	
-	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
 	/**
@@ -112,13 +99,15 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
-		private var _hashToShader	: Object		= new Object();
+		private var _hashToShader		: Object		= new Object();
 		
-		private var _invalid		: Boolean		= true;
+		private var _styleStack			: StyleStack	= null;
+		private var _local				: LocalData		= null;
+		private var _world				: Dictionary	= null;
 		
-		private var _styleStack		: StyleStack	= null;
-		private var _local			: LocalData		= null;
-		private var _world			: Dictionary	= null;
+		private var _lastFrameId		: uint			= 0;
+		private var _styleStackVersion	: uint			= 0;
+		private var _lastShader			: Shader		= null;
 		
 		protected function get diffuseColor() : SValue
 		{
@@ -142,18 +131,28 @@ package aerys.minko.render.shader
 										local	: LocalData, 
 										world	: Dictionary) : Boolean
 		{
-			var hash 	: String 		= getDataHash(style, local, world);
-			var shader 	: Shader = _hashToShader[hash];
-			
+			var frameId	: uint		= (world[ViewportData] as ViewportData).frameId;
+			var shader 	: Shader	= _lastShader;
+
 			_styleStack = style;
 			_local = local;
 			_world = world;
 			
-			if (!shader || _invalid)
+			if (frameId != _lastFrameId  || _styleStack.version != _styleStackVersion || !_lastShader)
 			{
-				_invalid = false;
-				_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
-															 getOutputColor()._node);
+				var hash 	: String 	= getDataHash(style, local, world);
+			
+				shader = _hashToShader[hash];
+				
+				if (!shader)
+				{
+					_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
+												  				 getOutputColor()._node);
+				}
+
+				_lastFrameId = frameId;
+				_styleStackVersion = _styleStack.version;
+				_lastShader = shader;
 			}
 			
 			shader.fillRenderState(state, style, local, world);
@@ -221,24 +220,6 @@ package aerys.minko.render.shader
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
 			return _styleStack.isSet(styleId);
-		}
-		
-		/**
-		 * Invalidate both the vertex and fragment shader bytecode and force it
-		 * to be recompiled next time the shader will be used to draw
-		 * triangles.
-		 * 
-		 * <p>You can use the "invalidate" method to force the shader
-		 * compilation anytime a value used in conditionnals or loop
-		 * statements changes.</p>
-		 * 
-		 * <p>If you do not want to have to maniually invalidate the shader
-		 * bytecode, you should implement the "getHash" method properly.</p>
-		 * 
-		 */
-		public function invalidate() : void
-		{
-			_invalid = true;
 		}
 		
 		public function dispose() : void

@@ -161,6 +161,18 @@ package aerys.minko.type.stream.format
 			return clone;
 		}
 		
+		public function equals(vertexFormat : VertexFormat) : Boolean
+		{
+			var numComponents1	: int	= _components.length;
+			var numComponents2	: int	= vertexFormat._components.length;
+			
+			for (var i : int = 0; i < numComponents1 && i < numComponents2; ++i)
+				if (_components[i] != vertexFormat.components[i])
+					return false;
+			
+			return i == numComponents1 && i == numComponents2;
+		}
+		
 		public function toString() : String
 		{
 			return _components.join('|');

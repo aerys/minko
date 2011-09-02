@@ -89,8 +89,8 @@ package aerys.minko.type.stream.iterator
 		
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
-			var index 			: int 			= int(name);
-			var deletedIndices 	: Vector.<int> 	= _ib.deleteFaceByIndex(index);
+			var index 			: int 				= int(name);
+			var deletedIndices 	: Vector.<uint> 	= _ib.deleteTriangleByIndex(index);
 			
 			if (deletedIndices)
 			{

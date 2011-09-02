@@ -561,11 +561,11 @@ package aerys.minko.render
 					visitor.processSceneGraph(scene, _localData, worldData, renderingData, _renderer);
 				
 				renderingData.effects.pop();
-					
+				
 				_numTriangles = _renderer.numTriangles;
 				_drawTime = _renderer.drawingTime;
 				
-				// execute postprocessing
+				// execute post-processing
 				if (_postProcessEffect != null)
 				{
 					renderingData.effects.push(_postProcessEffect);

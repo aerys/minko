@@ -26,23 +26,23 @@ package aerys.minko.type.stream.iterator
 		minko var _index	: int				= 0;
 		minko var _update	: uint				= UPDATE_ALL;
 
-		private var _ib		: IndexStream		= null;
+		private var _istream	: IndexStream		= null;
 		
-		private var _v0		: VertexReference	= null;
-		private var _v1		: VertexReference	= null;
-		private var _v2		: VertexReference	= null;
+		private var _v0			: VertexReference	= null;
+		private var _v1			: VertexReference	= null;
+		private var _v2			: VertexReference	= null;
 		
-		private var _i0		: int				= 0;
-		private var _i1		: int				= 0;
-		private var _i2		: int				= 0;
+		private var _i0			: int				= 0;
+		private var _i1			: int				= 0;
+		private var _i2			: int				= 0;
 		
-		private var _v0v	: uint				= 0;
-		private var _v1v	: uint				= 0;
-		private var _v2v	: uint				= 0;
+		private var _v0v		: uint				= 0;
+		private var _v1v		: uint				= 0;
+		private var _v2v		: uint				= 0;
 		
-		private var _normal	: Vector4			= null;
-		private var _plane	: Plane				= null;
-		private var _center	: Vector4			= null;
+		private var _normal		: Vector4			= null;
+		private var _plane		: Plane				= null;
+		private var _center		: Vector4			= null;
 		
 		public function get index()	: int				{ return _index; }
 		
@@ -50,9 +50,9 @@ package aerys.minko.type.stream.iterator
 		public function get v1() 	: VertexReference	{ return _v1; }
 		public function get v2() 	: VertexReference	{ return _v2; }
 		
-		public function get i0() 	: int				{ return _ib._data[int(_index * 3)]; }
-		public function get i1() 	: int				{ return _ib._data[int(_index * 3 + 1)]; }
-		public function get i2() 	: int				{ return _ib._data[int(_index * 3 + 2)]; }
+		public function get i0() 	: int				{ return _istream._data[int(_index * 3)]; }
+		public function get i1() 	: int				{ return _istream._data[int(_index * 3 + 1)]; }
+		public function get i2() 	: int				{ return _istream._data[int(_index * 3 + 2)]; }
 		
 		private function get updateNormal() : Boolean	{ return (_update & UPDATE_NORMAL) || _v0.version != _v0v
 																 || _v1.version != _v1v || _v2.version != _v2v; }
@@ -124,27 +124,24 @@ package aerys.minko.type.stream.iterator
 		
 		public function set i0(value : int) : void
 		{
-			_ib._data[int(_index * 3)] = value;
-			_ib._update = true;
-			_ib._version++;
+			_istream._data[int(_index * 3)] = value;
+			_istream.invalidate();
 			_v0._index = value;
 			_update |= UPDATE_ALL;
 		}
 		
 		public function set i1(value : int) : void
 		{
-			_ib._data[int(_index * 3 + 1)] = value;
-			_ib._update = true;
-			_ib._version++;
+			_istream._data[int(_index * 3 + 1)] = value;
+			_istream.invalidate();
 			_v1._index = value;
 			_update |= UPDATE_ALL;
 		}
 		
 		public function set i2(value : int) : void
 		{
-			_ib._data[int(_index * 3 + 2)] = value;
-			_ib._update = true;
-			_ib._version++;
+			_istream._data[int(_index * 3 + 2)] = value;
+			_istream.invalidate();
 			_v2._index = value;
 			_update |= UPDATE_ALL;
 		}
@@ -153,7 +150,7 @@ package aerys.minko.type.stream.iterator
 										  indexStream	: IndexStream,
 										  index 		: int)
 		{
-			_ib = indexStream;
+			_istream = indexStream;
 			
 			_index = index;
 			
