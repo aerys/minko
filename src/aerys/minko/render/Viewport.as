@@ -27,6 +27,7 @@ package aerys.minko.render
 	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.TouchEvent;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
@@ -432,30 +433,37 @@ package aerys.minko.render
 				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 				stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 				stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-				stage.addEventListener(MouseEvent.CLICK, stageMouseHandler);
-				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
-				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
-				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageMouseHandler);
-				stage.addEventListener(MouseEvent.MOUSE_OUT, stageMouseHandler);
-				stage.addEventListener(MouseEvent.MOUSE_OVER, stageMouseHandler);
-				stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageMouseHandler);
-				stage.addEventListener(MouseEvent.ROLL_OUT, stageMouseHandler);
-				stage.addEventListener(MouseEvent.ROLL_OVER, stageMouseHandler);
+				stage.addEventListener(MouseEvent.CLICK, stageEventHandler);
+				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+				stage.addEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+				stage.addEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
+				
 			}
 			else
 			{
 				stage.removeEventListener(Event.RESIZE, stageResizeHandler);
 				stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 				stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-				stage.removeEventListener(MouseEvent.CLICK, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_OUT, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_OVER, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.ROLL_OUT, stageMouseHandler);
-				stage.removeEventListener(MouseEvent.ROLL_OVER, stageMouseHandler);
+				stage.removeEventListener(MouseEvent.CLICK, stageEventHandler);
+				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
 			}
 		}
 		
@@ -464,7 +472,7 @@ package aerys.minko.render
 			updateRectangle();
 		}
 		
-		private function stageMouseHandler(event : MouseEvent) : void
+		private function stageEventHandler(event : Object) : void
 		{
 			if (!_alwaysOnTop || event.target == this)
 				return ;
