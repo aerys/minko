@@ -71,7 +71,7 @@ package aerys.minko.render.renderer
 			_numStates = 0;
 		}
 		
-		public function present() : void
+		public function drawToBackBuffer() : void
 		{
 			var time : int = getTimer();
 			
@@ -105,7 +105,15 @@ package aerys.minko.render.renderer
 				actualState = state;
 			}
 			
-			_context.present();
+			_drawingTime += getTimer() - time;
+		}
+		
+		public function present() : void
+		{
+			var time : int = getTimer();
+			
+			if (_numStates != 0)
+				_context.present();
 			
 			_drawingTime += getTimer() - time;
 			++_frame;

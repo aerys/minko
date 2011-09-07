@@ -50,7 +50,7 @@ package aerys.minko.scene.visitor
 			_renderer.clear();
 			visit(scene);
 			
-			_renderer.present();
+			_renderer.drawToBackBuffer();
 		}
 		
 		public function visit(scene : IScene) : void

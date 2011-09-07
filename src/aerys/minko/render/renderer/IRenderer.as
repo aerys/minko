@@ -25,8 +25,8 @@ package aerys.minko.render.renderer
 					   stencil	: uint		= 0,
 					   mask		: uint		= 0xffffffff) : void;
 		
+		function drawToBackBuffer() : void;
 		function present() : void;
-		
 		function dumpBackbuffer(bitmapData : BitmapData) : void;
 		
 	}
