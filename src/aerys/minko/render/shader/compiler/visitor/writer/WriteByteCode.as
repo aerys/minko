@@ -1,9 +1,13 @@
 package aerys.minko.render.shader.compiler.visitor.writer
 {
 	import aerys.minko.render.shader.compiler.allocator.Allocator;
+	import aerys.minko.render.shader.compiler.register.RegisterMask;
+	import aerys.minko.render.shader.compiler.register.RegisterSwizzling;
 	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
+	import aerys.minko.render.shader.node.operation.manipulation.Combine;
+	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
@@ -48,6 +52,49 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			
 			return _bytecode;
 		}
+		
+		
+		
+		
+		
+		
+		override protected function visitCombineNode(node : Combine) : void
+		{
+			node.accept(this);
+			
+			// we know node is not writing to op/oc, because it's a combine node.
+			var resultLocalOffset : uint = getAllocatorFor(node).getLocalOffset(node); 
+			
+			var mask1 : uint;
+			mask1 = RegisterMask.createContinuous(node.arg1.size);
+			mask1 = RegisterMask.offset(mask1, resultLocalOffset);
+			outputMoveIntruction(node.arg1, node, mask1);
+			
+			var mask2 : uint;
+			mask2 = RegisterMask.createContinuous(node.arg2.size);
+			mask2 = RegisterMask.offset(mask2, resultLocalOffset + node.arg1.size);
+			
+			var swizzle2 : uint = getReadSwizzle(node.arg2, node);
+			swizzle2 = RegisterSwizzling.writeOffset(node.arg1.size, swizzle2);
+			
+			_bytecode.writeUnsignedInt(OPCODE_MOVE);
+			registerWrite(node, mask2)
+			
+			var argument : INode = node.arg2;
+			while (argument is Extract)
+				argument = Extract(argument).arg1;
+			
+			registerReadFromCommon(argument, node, swizzle2);
+			registerRead(null, node);
+		}
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		protected function outputHeader() : void
 		{

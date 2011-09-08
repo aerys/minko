@@ -98,7 +98,12 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			node.accept(this);
 		}
 		
-		private function visitCombineNode(node : Combine) : void
+//		protected function visitCombineNode(node : Combine) : void
+//		{
+//			throw new Error('Must be overriden.');
+//		}
+		
+		protected function visitCombineNode(node : Combine) : void
 		{
 			node.accept(this);
 			
@@ -192,7 +197,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			}
 		}
 		
-		private function registerReadFromCommon(argument	: INode,
+		protected function registerReadFromCommon(argument	: INode,
 												operation	: AbstractOperation,
 												swizzle		: uint) : void
 		{
@@ -237,11 +242,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			);
 		}
 		
-		/**
-		 * fixme : copy&past
-		 * please refactor
-		 */
-		private function getReadSwizzle(argument : INode, operation : INode) : uint
+		protected function getReadSwizzle(argument : INode, operation : INode) : uint
 		{
 			var swizzle : uint;
 			if (argument.size > 4)
@@ -318,7 +319,7 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			throw new Error('Unknown node type');
 		}
 		
-		private function getAllocatorFor(node : INode) : Allocator
+		protected function getAllocatorFor(node : INode) : Allocator
 		{
 			if (node is Extract)
 				throw new Error('Extract nodes are not allocated to memory.');
