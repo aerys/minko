@@ -26,9 +26,7 @@ package aerys.minko.render.renderer
 					   mask		: uint		= 0xffffffff) : void;
 		
 		function drawToBackBuffer() : void;
-		
 		function present() : void;
-		
 		function dumpBackbuffer(bitmapData : BitmapData) : void;
 		
 	}

@@ -43,7 +43,7 @@
 			var index			: int			= _index * format.dwordsPerVertex
 												  + format.getOffsetForField(name);
 			
-			return stream._data[index];
+			return stream.get(index);
 		}
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
@@ -57,8 +57,7 @@
 			var index			: int			= _index * format.dwordsPerVertex
 												  + format.getOffsetForField(name);
 			
-			stream._data[index] = value as Number;
-			stream.invalidate();
+			stream.set(index, value as Number);
 		}
 		
 		public function VertexReference(stream 	: IVertexStream,

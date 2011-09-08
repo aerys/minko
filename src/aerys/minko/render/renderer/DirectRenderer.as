@@ -77,10 +77,6 @@ package aerys.minko.render.renderer
 			_currentState = null;
 		}
 		
-		public function drawToBackBuffer() : void
-		{
-		}
-		
 		public function present() : void
 		{
 			var time : int = getTimer();
@@ -89,6 +85,11 @@ package aerys.minko.render.renderer
 			
 			_drawingTime += getTimer() - time;
 			++_frame;
+		}
+		
+		public function drawToBackBuffer() : void
+		{
+			
 		}
 		
 		public function dumpBackbuffer(bitmapData : BitmapData) : void

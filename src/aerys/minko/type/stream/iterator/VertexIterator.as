@@ -107,9 +107,27 @@ package aerys.minko.type.stream.iterator
 			if (_istream)
 				index = _istream._data[index];
 
-			var vertex : VertexReference	= new VertexReference(_vstream, index);
+			var vertex : VertexReference	= _vertex;
 			
-			vertex._propertyToStream = _propertyToStream;
+			if (_singleReference)
+			{
+				if (!_vertex)
+				{
+					_vertex = new VertexReference(_vstream, index);
+					_vertex._propertyToStream = _propertyToStream;
+				}
+				else
+				{
+					_vertex._index = index;
+				}
+				
+				vertex = _vertex;
+			}
+			else
+			{
+				vertex = new VertexReference(_vstream, index);
+				vertex._propertyToStream = _propertyToStream;
+			}
 			
 			return vertex;
 		}

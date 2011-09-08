@@ -8,7 +8,7 @@ package aerys.minko.type.stream
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
-	public final dynamic class IndexStream extends Proxy implements IVersionable
+	public final class IndexStream implements IVersionable
 	{
 		use namespace minko_stream;
 		
@@ -94,7 +94,7 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 		
-		override flash_proxy function getProperty(name : *) : *
+		/*override flash_proxy function getProperty(name : *) : *
 		{
 			return _data[int(name)];
 		}
@@ -116,6 +116,43 @@ package aerys.minko.type.stream
 		override flash_proxy function nextValue(index : int) : *
 		{
 			return _data[int(index - 1)];
+		}
+		
+		override flash_proxy function deleteProperty(name : *) : Boolean
+		{
+		var index 	: int = int(name);
+		var length 	: int = length;
+		
+		if (index > length)
+		return false;
+		
+		for (var i : int = index; i < length - 1; ++i)
+		_data[i] = _data[int(i + 1)];
+		
+		_data.length = length - 1;
+		
+		invalidate();
+		
+		return true;
+		}*/
+		
+		public function get(index : int) : uint
+		{
+			return _data[index];
+		}
+		
+		public function set(index : int, value : uint) : void
+		{
+			_data[index] = value;
+		}
+		
+		public function deleteTriangleByIndex(index : int) : Vector.<uint>
+		{
+			var deletedIndices : Vector.<uint> = _data.splice(index, 3);
+			
+			invalidate();
+			
+			return deletedIndices;
 		}
 		
 		public function getIndices(indices : Vector.<uint> = null) : Vector.<uint>
@@ -163,40 +200,9 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 		
-		public function push(...parameters) : IndexStream
-		{
-			var numIndices 	: int = parameters.length;
-			var length 		: int = length;
-
-			for (var i : int = 0; i < numIndices; ++i, ++length)
-				_data[length] = int(parameters[i]);
-			
-			invalidate();
-			
-			return this;
-		}
-		
-		override flash_proxy function deleteProperty(name : *) : Boolean
-		{
-			var index 	: int = int(name);
-			var length 	: int = length;
-			
-			if (index > length)
-				return false;
-			
-			for (var i : int = index; i < length - 1; ++i)
-				_data[i] = _data[int(i + 1)];
-			
-			_data.length = length - 1;
-			
-			invalidate();
-			
-			return true;
-		}
-		
-		public function pushIndices(indices : Vector.<uint>,
-									offset	: uint 	= 0,
-									count	: uint	= 0) : void
+		public function push(indices 	: Vector.<uint>,
+							 offset		: uint 	= 0,
+							 count		: uint	= 0) : void
 		{
 			var l : int = _data.length;
 			
@@ -216,6 +222,32 @@ package aerys.minko.type.stream
 			
 			_data = null;
 			_dynamic = false;
+		}
+		
+		public static function concat(streams : Vector.<IndexStream>) : IndexStream
+		{
+			var numStreams		: int			= streams.length;
+			var data			: Vector.<uint>	= new Vector.<uint>();
+			var totalIndices	: int			= 0;
+			var offset			: int			= 0;
+			
+			for (var i : int = 0; i < numStreams; ++i)
+			{
+				var streamData 	: Vector.<uint>	= streams[i]._data;
+				var numIndices	: int			= streamData.length;
+				
+				for (var j : int = 0; j < numIndices; ++j, ++totalIndices)
+					data[totalIndices] = offset + streamData[j];
+				
+				offset = totalIndices;
+			}
+			
+			var stream	: IndexStream	= new IndexStream();
+			
+			stream._data = data;
+			stream.invalidate();
+			
+			return stream;
 		}
 	}
 }

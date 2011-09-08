@@ -9,13 +9,13 @@ package aerys.minko.type.stream
 	
 	import flash.utils.ByteArray;
 	
-	public final class VertexStream implements IVersionable, IVertexStream
+	public class VertexStream implements IVersionable, IVertexStream
 	{
 		use namespace minko_stream;
 		
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 		
-		minko_stream var _data		: Vector.<Number>		= null;
+		minko_stream var _data			: Vector.<Number>		= null;
 		
 		private var _dynamic		: Boolean				= false;
 		private var _version		: uint					= 0;
@@ -29,6 +29,17 @@ package aerys.minko.type.stream
 		public function get dynamic()	: Boolean				{ return _dynamic; }
 		public function get resource()	: VertexBufferResource	{ return _resource; }
 		public function get length()	: uint					{ return _length; }
+		
+		protected function get data() : Vector.<Number>
+		{
+			return _data;
+		}
+		
+		protected function set data(value : Vector.<Number>) : void
+		{
+			_data = value;
+			invalidate();
+		}
 		
 		public function VertexStream(data 		: Vector.<Number>	= null,
 									 format		: VertexFormat 		= null,
@@ -77,6 +88,17 @@ package aerys.minko.type.stream
 			return this;
 		}
 		
+		public function get(i : int) : Number
+		{
+			return _data[i];
+		}
+		
+		public function set(i : int, value : Number) : void
+		{
+			_data[i] = value;
+			invalidate();
+		}
+		
 		public function push(data : Vector.<Number>) : void
 		{
 			var dataLength : int = data.length;
@@ -100,10 +122,15 @@ package aerys.minko.type.stream
 			_dynamic = false;
 		}
 		
-		minko_stream function invalidate() : void
+		protected function invalidate() : void
 		{
 			_length = _data.length / _format.dwordsPerVertex;
 			++_version;
+		}
+		
+		minko_stream function invalidate() : void
+		{
+			protected::invalidate();
 		}
 		
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
@@ -185,10 +212,27 @@ package aerys.minko.type.stream
 			// avoid copying data vectors
 			var newVertexStream		: VertexStream	= new VertexStream(null, vertexFormat);
 			
-			newVertexStream._data = newVertexStreamData;
-			newVertexStream.invalidate();
+			newVertexStream.data = newVertexStreamData;
 			
 			return newVertexStream;
+		}
+		
+		public static function concat(streams : Vector.<IVertexStream>) : VertexStream
+		{
+			var format		: VertexFormat	= streams[0].format;
+			var numStreams 	: int			= streams.length;
+			
+			for (var i : int = 0; i < numStreams; ++i)
+				if (!streams[i].format.equals(format))
+					throw new Error("All vertex streams must have the same format.");
+			
+			// a bit expensive... but hey, it works :)
+			var stream	: VertexStream	= extractSubStream(streams[0], format);
+
+			for  (i = 1; i < numStreams; ++i)
+				stream.data = stream.data.concat(extractSubStream(streams[i], format).data);
+			
+			return stream;
 		}
 
 		public static function fromByteArray(bytes 		: ByteArray,
@@ -238,8 +282,7 @@ package aerys.minko.type.stream
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.dwordsPerVertex * count * dwordSize;
 			
-			stream._data = data;
-			stream.invalidate();
+			stream.data = data;
 
 			return stream;
 		}
