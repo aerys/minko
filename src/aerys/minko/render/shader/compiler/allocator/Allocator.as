@@ -57,7 +57,10 @@ package aerys.minko.render.shader.compiler.allocator
 		{
 			var alloc : Allocation = _opUsage[op] as Allocation;
 			if (alloc == null)
-				throw new Error('Unable to compiler shader: an allocation is missing. Did you forget an interpolation node?');
+			{
+				throw new Error('Unable to compiler shader: an allocation is missing.'
+								+ 'There might be a missing vertex to fragment shader intepolation.');
+			}
 			
 			return alloc.offset % 4;
 		}

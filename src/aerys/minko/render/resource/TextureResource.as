@@ -79,7 +79,6 @@ package aerys.minko.render.resource
 			
 			if (_update)
 			{
-				
 				_update = false;
 				
 				if (_bitmapData)

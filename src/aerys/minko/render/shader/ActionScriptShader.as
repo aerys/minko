@@ -10,6 +10,7 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
+	import aerys.minko.scene.data.WorldDataList;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.utils.Dictionary;
@@ -220,6 +221,11 @@ package aerys.minko.render.shader
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
 			return _styleStack.isSet(styleId);
+		}
+		
+		protected final function getWorldDataList(key : Class) : WorldDataList
+		{
+			return _world[key];
 		}
 		
 		public function dispose() : void

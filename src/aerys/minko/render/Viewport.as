@@ -280,6 +280,9 @@ package aerys.minko.render
 		
 		private function addedHandler(event : Event) : void
 		{
+			if (event.target != this)
+				return ;
+			
 			if (_autoResize)
 			{
 				parent.addEventListener(Event.RESIZE, resizeHandler);
@@ -346,6 +349,9 @@ package aerys.minko.render
 		
 		private function removedFromStage(event : Event) : void
 		{
+			if (event.target != this)
+				return ;
+			
 			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 			_stage3d.context3D.dispose();
 			_stage3d = null;

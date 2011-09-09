@@ -2,9 +2,6 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.animation.DQSkinnedPosition;
-	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
-	import aerys.minko.render.shader.node.animation.MorphedPosition;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
@@ -13,7 +10,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.CameraData;
 	import aerys.minko.scene.data.LocalData;
-	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 
 	public class ActionScriptShaderPart
@@ -534,6 +530,11 @@ package aerys.minko.render.shader
 		protected final function fractional(value : Object) : SValue
 		{
 			return new SValue(new Fractional(getNode(value)));
+		}
+		
+		protected final function absolute(value : Object) : SValue
+		{
+			return new SValue(new Absolute(getNode(value)));
 		}
 		
 		protected final function modulo(value : Object, base : Object) : SValue

@@ -41,27 +41,35 @@ package aerys.minko.scene.data
 		protected var _zFar		: Number;
 		
 		// computed data
-		protected var _zFarParts						: Vector4;
-		protected var _zFarParts_invalidated			: Boolean;
+		protected var _direction							: Vector4;
+		protected var _direction_positionVersion			: uint;
+		protected var _direction_lookAtVersion				: uint;
 		
-		protected var _view								: Matrix4x4;
-		protected var _view_positionVersion				: uint;
-		protected var _view_lookAtVersion				: uint;
-		protected var _view_upVersion					: uint;
+		protected var _zFarParts							: Vector4;
+		protected var _zFarParts_invalidated				: Boolean;
 		
-		protected var _projection						: Matrix4x4;
-		protected var _projection_invalidated			: Boolean;
+		protected var _view									: Matrix4x4;
+		protected var _view_positionVersion					: uint;
+		protected var _view_lookAtVersion					: uint;
+		protected var _view_upVersion						: uint;
 		
-		protected var _localPosition					: Vector4;
-		protected var _localPosition_positionVersion	: uint;
-		protected var _localPosition_worldVersion		: uint;
+		protected var _projection							: Matrix4x4;
+		protected var _projection_invalidated				: Boolean;
 		
-		protected var _localLookAt						: Vector4;
-		protected var _localLookAt_lookAtVersion		: uint;
-		protected var _localLookAt_worldVersion			: uint;
+		protected var _localPosition						: Vector4;
+		protected var _localPosition_positionVersion		: uint;
+		protected var _localPosition_worldInverseVersion	: uint;
 		
-		protected var _frustum							: Frustum;
-		protected var _frustum_projectionVersion		: uint;
+		protected var _localLookAt							: Vector4;
+		protected var _localLookAt_lookAtVersion			: uint;
+		protected var _localLookAt_worldInverseVersion		: uint;
+		
+		protected var _localDirection						: Vector4;
+		protected var _localDirection_positionVersion		: uint;
+		protected var _localDirection_lookAtVersion			: uint;
+		
+		protected var _frustum								: Frustum;
+		protected var _frustum_projectionVersion			: uint;
 		
 		public function get position() : Vector4
 		{
@@ -120,16 +128,33 @@ package aerys.minko.scene.data
 			return _frustum;
 		}
 		
+		public function get direction() : Vector4
+		{
+			var positionVector	: Vector4 = position;
+			var lookAtVector	: Vector4 = lookAt;
+			
+			if (_direction_positionVersion != positionVector.version ||
+				_direction_lookAtVersion != lookAtVector.version)
+			{
+				_direction = Vector4.subtract(lookAtVector, positionVector, _direction);
+				_direction.normalize();
+				_direction_positionVersion	= positionVector.version;
+				_direction_lookAtVersion	= lookAtVector.version;
+			}
+			
+			return _direction;
+		}
+		
 		public function get localPosition() : Vector4
 		{
-			var worldMatrix : Matrix4x4 = _localData.world;
+			var worldInverseMatrix : Matrix4x4 = _localData.worldInverse;
 			
 			if (_localPosition_positionVersion != _position.version ||
-				_localPosition_worldVersion != worldMatrix.version)
+				_localPosition_worldInverseVersion != worldInverseMatrix.version)
 			{
-				_localPosition = worldMatrix.multiplyVector(_position, _localPosition);
-				_localPosition_positionVersion	= _position.version;
-				_localPosition_worldVersion		= worldMatrix.version;
+				_localPosition = worldInverseMatrix.multiplyVector(_position, _localPosition);
+				_localPosition_positionVersion		= _position.version;
+				_localPosition_worldInverseVersion	= worldInverseMatrix.version;
 			}
 			
 			return _localPosition;
@@ -137,14 +162,14 @@ package aerys.minko.scene.data
 		
 		public function get localLookAt() : Vector4
 		{
-			var worldMatrix : Matrix4x4 = _localData.world;
+			var worldInverseMatrix : Matrix4x4 = _localData.worldInverse;
 			
 			if (_localLookAt_lookAtVersion != _lookAt.version ||
-				_localLookAt_worldVersion != worldMatrix.version)
+				_localLookAt_worldInverseVersion != worldInverseMatrix.version)
 			{
-				_localLookAt = worldMatrix.multiplyVector(_lookAt, _localLookAt);
-				_localLookAt_lookAtVersion	= _lookAt.version;
-				_localLookAt_worldVersion	= worldMatrix.version;
+				_localLookAt = worldInverseMatrix.multiplyVector(_lookAt, _localLookAt);
+				_localLookAt_lookAtVersion 			= _lookAt.version;
+				_localLookAt_worldInverseVersion 	= worldInverseMatrix.version;
 			}
 			
 			return _localLookAt;
@@ -152,14 +177,19 @@ package aerys.minko.scene.data
 		
 		public function get localDirection() : Vector4
 		{
-			// FIXME: handle cache
-			return Vector4.subtract(localLookAt, localPosition).normalize();
-		}
-		
-		public function get direction() : Vector4
-		{
-			// FIXME: handle cache
-			return Vector4.subtract(lookAt, position).normalize();
+			var localPositionVector	: Vector4 = localPosition;
+			var localLookAtVector	: Vector4 = localLookAt;
+			
+			if (_localDirection_positionVersion != localPositionVector.version ||
+				_localDirection_lookAtVersion != localLookAtVector.version)
+			{
+				_localDirection = Vector4.subtract(localLookAtVector, localPositionVector, _localDirection);
+				_localDirection.normalize();
+				_localDirection_positionVersion	= localPositionVector.version;
+				_localDirection_lookAtVersion	= localLookAtVector.version;
+			}
+			
+			return _localDirection;
 		}
 		
 		public function set position(v : Vector4) : void
@@ -213,22 +243,26 @@ package aerys.minko.scene.data
 		
 		public function reset() : void 
 		{
-			/*_position	= null;
+			_position	= null;
 			_lookAt		= null;
 			_up			= null;
 			
 			_fov	= -1;
 			_zNear	= -1;
-			_zFar	= -1;*/
+			_zFar	= -1;
 			
-			_view_positionVersion			= uint.MAX_VALUE;
-			_view_lookAtVersion				= uint.MAX_VALUE;
-			_view_upVersion					= uint.MAX_VALUE;
-			_localPosition_positionVersion	= uint.MAX_VALUE;
-			_localPosition_worldVersion		= uint.MAX_VALUE;
-			_localLookAt_lookAtVersion		= uint.MAX_VALUE;
-			_localLookAt_worldVersion		= uint.MAX_VALUE;
-			_frustum_projectionVersion		= uint.MAX_VALUE;
+			_direction_positionVersion			= uint.MAX_VALUE;
+			_direction_lookAtVersion			= uint.MAX_VALUE;
+			_view_positionVersion				= uint.MAX_VALUE;
+			_view_lookAtVersion					= uint.MAX_VALUE;
+			_view_upVersion						= uint.MAX_VALUE;
+			_localPosition_positionVersion		= uint.MAX_VALUE;
+			_localPosition_worldInverseVersion	= uint.MAX_VALUE;
+			_localLookAt_lookAtVersion			= uint.MAX_VALUE;
+			_localLookAt_worldInverseVersion	= uint.MAX_VALUE;
+			_localDirection_positionVersion		= uint.MAX_VALUE;
+			_localDirection_lookAtVersion		= uint.MAX_VALUE;
+			_frustum_projectionVersion			= uint.MAX_VALUE;
 			
 			_zFarParts_invalidated	= true;
 			_projection_invalidated = true;
