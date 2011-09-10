@@ -37,13 +37,13 @@ package aerys.minko.scene.visitor
 		}
 		
 		public function processSceneGraph(scene			: IScene, 
-										  transformData		: TransformData, 
+										  transformData	: TransformData, 
 										  worldData		: Dictionary, 
 										  renderingData	: RenderingData,
 										  renderer		: IRenderer) : void
 		{
 			_worldData		= worldData;
-			_transformData		= transformData;
+			_transformData	= transformData;
 			_renderingData	= renderingData; 
 			_renderer		= renderer;
 			
@@ -59,9 +59,9 @@ package aerys.minko.scene.visitor
 			var numActions	: int				= actions.length;
 			var action		: IAction			= null;
 			
-			_ancestors.push(_parent);
-			_parent = _current;
-			_current = scene;
+//			_ancestors.push(_parent);
+//			_parent = _current;
+//			_current = scene;
 			
 			for (var i : int = 0; i < numActions; ++i)
 				if (((action = actions[i]).type & ACTIONS_TYPES) && !action.run(scene, this, _renderer))
@@ -70,8 +70,8 @@ package aerys.minko.scene.visitor
 			// update statistical data
 			++_numNodes;
 			
-			_current = _parent;
-			_parent = _ancestors.pop();
+//			_current = _parent;
+//			_parent = _ancestors.pop();
 		}
 	}
 }

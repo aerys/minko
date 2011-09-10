@@ -11,15 +11,17 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
+	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 	
 	public class Shader
 	{
@@ -190,9 +192,11 @@ package aerys.minko.render.shader
 			var offset	: uint	= paramAlloc._offset;
 			var size	: uint	= paramAlloc._parameter._size;
 			
-			if (data is int)
+//			if (data is int)
+			if (data is Number)
 			{
-				var intData : int = data as int;
+				//var intData : int = data as int;
+				var intData : Number = data as Number;
 				
 				if (size == 1)
 				{
@@ -211,14 +215,13 @@ package aerys.minko.render.shader
 				}
 				else if (size == 4)
 				{
-					
 					constData[offset] = ((intData & 0xFF000000) >>> 24) / 255.;
 					constData[int(offset + 1)] = ((intData & 0x00FF0000) >>> 16) / 255.;
 					constData[int(offset + 2)] = ((intData & 0x0000FF00) >>> 8) / 255.;
 					constData[int(offset + 3)] = ((intData & 0x000000FF)) / 255.;
 				}
 			}
-			else if (data is uint)
+			/*else if (data is uint)
 			{
 				var uintData : uint = data as uint;
 				
@@ -245,18 +248,18 @@ package aerys.minko.render.shader
 					constData[int(offset + 2)] = ((uintData & 0x0000FF00) >>> 8) / 255.;
 					constData[int(offset + 3)] = ((uintData & 0x000000FF)) / 255.;
 				}
-			}
-			else if (data is Number)
+			}*/
+			/*else if (data is Number)
 			{
 				if (size != 1)
 					throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
 						'defined as size=' + size + ' but only a Number was found');
 				
 				constData[offset] = data as Number;
-			}
+			}*/
 			else if (data is Vector4)
 			{
-				var vectorData : Vector4 = data as Vector4;
+				var vectorData : Vector3D = (data as Vector4)._vector;
 				
 				constData[offset] = vectorData.x;
 				size >= 2 && (constData[int(offset + 1)] = vectorData.y);
@@ -274,7 +277,7 @@ package aerys.minko.render.shader
 				
 				for (var j : uint = 0; j < vectorVectorDataLength; ++j)
 				{
-					vectorData = vectorVectorData[j];
+					vectorData = vectorVectorData[j]._vector;
 					
 					constData[offset + 4 * j] = vectorData.x;
 					constData[int(offset + 4 * j + 1)] = vectorData.y;
@@ -285,12 +288,10 @@ package aerys.minko.render.shader
 			else if (data is Vector.<Matrix3D>)
 			{
 				var matrixVectorData		: Vector.<Matrix3D>	= data as Vector.<Matrix3D>; 
-				var matrixVectorDataLength	: uint					= matrixVectorData.length;
+				var matrixVectorDataLength	: uint				= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
-				{
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
-				}
 			}
 			else if (data == null)
 			{

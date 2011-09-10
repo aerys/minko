@@ -124,7 +124,7 @@ package aerys.minko.render.shader
 			
 			if (frameId != _lastFrameId  || _styleStack.version != _styleStackVersion || !_lastShader)
 			{
-				var hash 	: String 	= getDataHash(style, transform, world);
+				var hash : String 	= getDataHash(style, transform, world);
 			
 				shader = _hashToShader[hash];
 				
@@ -133,7 +133,7 @@ package aerys.minko.render.shader
 					_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
 												  				 getOutputColor()._node);
 				}
-
+				
 				_lastFrameId = frameId;
 				_styleStackVersion = _styleStack.version;
 				_lastShader = shader;

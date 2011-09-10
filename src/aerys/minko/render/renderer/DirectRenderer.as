@@ -49,7 +49,7 @@ package aerys.minko.render.renderer
 			var t 			: int 			= getTimer();
 		
 			if (_actualState != _currentState)
-				_currentState.prepareContext(_context, _actualState);
+				_currentState.prepareContextDelta(_context, _actualState);
 			
 			_context.drawTriangles(indexStream.resource.getIndexBuffer3D(_context),
 								   offset,

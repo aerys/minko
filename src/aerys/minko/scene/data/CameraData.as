@@ -227,9 +227,9 @@ package aerys.minko.scene.data
 			reset()
 		}
 		
-		public function setDataProvider(styleStack	: StyleStack, 
+		public function setDataProvider(styleStack		: StyleStack, 
 										transformData	: TransformData,
-										worldData	: Dictionary) : void
+										worldData		: Dictionary) : void
 		{
 			_styleStack	= styleStack;
 			_transformData	= transformData;

@@ -34,7 +34,6 @@ package aerys.minko.render.effect.basic
 		{
 			super.fillRenderState(state, style, transform, world);
 			
-			state.depthTest	= CompareMode.LESS;
 			state.priority	= state.priority + .5;
 			
 			if (state.blending != Blending.NORMAL)

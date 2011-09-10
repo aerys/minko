@@ -87,7 +87,10 @@ package aerys.minko.render.renderer
 				var numTriangles 	: Vector.<int> 	= state.numTriangles;
 				var numCalls 		: int 			= offsets.length;
 				
-				state.prepareContext(_context, actualState);
+				if (actualState)
+					state.prepareContextDelta(_context, actualState);
+				else
+					state.prepareContext(_context);
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{

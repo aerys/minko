@@ -16,8 +16,12 @@ package aerys.minko.scene.action.camera
 	{
 		private var _cameraData	: CameraData	= null;
 		
-		private var _view		: Matrix3D		= new Matrix3D();
-		private var _projection	: Matrix3D		= new Matrix3D();
+		private var _view			: Matrix3D		= new Matrix3D();
+		private var _projection		: Matrix3D		= new Matrix3D();
+		
+		private var _worldPosition	: Vector4		= new Vector4();
+		private var _worldLookAt	: Vector4		= new Vector4();
+		private var _worldUp		: Vector4		= new Vector4();
 		
 		protected function get cameraData() : CameraData	{ return _cameraData; }
 		
@@ -36,20 +40,21 @@ package aerys.minko.scene.action.camera
 			if (!camera.enabled)
 				return false;
 			
-			var transformData		: TransformData		= visitor.transformData;
+			var transformData	: TransformData	= visitor.transformData;
 			var viewportData	: ViewportData	= visitor.worldData[ViewportData]
 												  as ViewportData;
 			var worldMatrix		: Matrix3D		= transformData.world;
-			var worldPosition	: Vector4		= worldMatrix.transformVector(camera.position);
-			var worldLookAt		: Vector4		= worldMatrix.transformVector(camera.lookAt);
-			var worldUp			: Vector4		= worldMatrix.deltaTransformVector(camera.up)
-															 .normalize();
+			
+			worldMatrix.transformVector(camera.position, _worldPosition);
+			worldMatrix.transformVector(camera.lookAt, _worldLookAt);
+			worldMatrix.deltaTransformVector(camera.up, _worldUp);
+			_worldUp.normalize()
 			
 			_cameraData.reset();
 			
-			_cameraData.position	= worldPosition;
-			_cameraData.lookAt		= worldLookAt;
-			_cameraData.up			= worldUp;
+			_cameraData.position	= _worldPosition;
+			_cameraData.lookAt		= _worldLookAt;
+			_cameraData.up			= _worldUp;
 			
 			_cameraData.fieldOfView	= camera.fieldOfView;
 			_cameraData.zNear		= camera.nearClipping;
@@ -64,9 +69,9 @@ package aerys.minko.scene.action.camera
 								   viewportData.height);
 			updateViewMatrix(_view,
 							 camera,
-							 worldPosition,
-							 worldLookAt,
-							 worldUp);
+							 _worldPosition,
+							 _worldLookAt,
+							 _worldUp);
 			
 			transformData.projection 	= _projection;
 			transformData.view			= _view;
@@ -80,10 +85,10 @@ package aerys.minko.scene.action.camera
 												  viewportHeight	: int) : void
 		{
 			Matrix3D.perspectiveFoVLH(camera.fieldOfView,
-									   viewportWidth / viewportHeight,
-									   camera.nearClipping,
-									   camera.farClipping,
-									   projection);
+									  viewportWidth / viewportHeight,
+									  camera.nearClipping,
+									  camera.farClipping,
+									  projection);
 		}
 		
 		protected function updateViewMatrix(view		: Matrix3D,

@@ -40,7 +40,7 @@ package aerys.minko.render.resource
 			_update = true;
 		}
 		
-		public function prepare(context : Context3D) : void
+		public function getProgram3D(context : Context3D) : Program3D
 		{
 			if (!_nativeProgram)
 			{
@@ -54,7 +54,7 @@ package aerys.minko.render.resource
 				_nativeProgram.upload(_vertexShader, _fragmentShader);
 			}
 			
-			context.setProgram(_nativeProgram);
+			return _nativeProgram;
 		}
 		
 		public function dispose() : void
