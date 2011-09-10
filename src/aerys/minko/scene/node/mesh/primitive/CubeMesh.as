@@ -7,11 +7,8 @@ package aerys.minko.scene.node.mesh.primitive
 	 * The CubeMesh class represent a cubic mesh.
 	 * @author Jean-Marc Le Roux
 	 */
-	public class CubeMesh extends aerys.minko.scene.node.mesh.Mesh
+	public class CubeMesh extends Mesh
 	{
-		private static const ONE_THIRD	: Number	= 1. / 3.;
-		private static const TWO_THIRD	: Number	= 2. / 3.;
-		
 		private static var _instance	: CubeMesh	= null;
 		
 		/**

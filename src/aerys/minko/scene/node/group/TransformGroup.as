@@ -3,7 +3,7 @@
 	import aerys.minko.scene.action.transform.PopTransformAction;
 	import aerys.minko.scene.action.transform.PushTransformAction;
 	import aerys.minko.scene.node.ITransformableScene;
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.type.math.Matrix3D;
 	
 	/**
 	 * TransformGroup apply a 3D transform to their children.
@@ -12,12 +12,12 @@
 	 */
 	public class TransformGroup extends Group implements ITransformableScene
 	{
-		private var _transform	: Transform3D		= new Transform3D();
+		private var _transform	: Matrix3D		= new Matrix3D();
 			
 		/**
-		 * The Transform3D object defining the transform of the object into world-space.
+		 * The Matrix3D object defining the transform of the object into world-space.
 		 */
-		public function get transform() : Transform3D		{ return _transform; }
+		public function get transform() : Matrix3D		{ return _transform; }
 		
 		public function TransformGroup(...children) 
 		{

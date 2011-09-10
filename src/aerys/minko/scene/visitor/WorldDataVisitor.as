@@ -27,10 +27,6 @@ package aerys.minko.scene.visitor
 		public function get renderingData()	: RenderingData		{ return null; }
 		public function get ancestors()		: Vector.<IScene>	{ return null; }
 		
-		public function WorldDataVisitor()
-		{
-		}
-		
 		public function processSceneGraph(scene			: IScene,
 										  localData		: LocalData,
 										  worldData		: Dictionary,
@@ -44,16 +40,6 @@ package aerys.minko.scene.visitor
 			
 			for each (var worldObject : IWorldData in worldData)
 				worldObject.setDataProvider(renderingData.styleStack, localData, worldData);
-			
-			// update our transformManager if there is a camera, or
-			// set it to null to render to screenspace otherwise
-			/*var cameraData : CameraData = worldData[CameraData] as CameraData;
-			
-			if (cameraData)
-			{
-				localData.view			= cameraData.view;
-				localData.projection	= cameraData.projection;
-			}*/
 		}
 		
 		public function visit(scene : IScene) : void

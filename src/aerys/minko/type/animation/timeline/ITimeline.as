@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 
 	public interface ITimeline
 	{

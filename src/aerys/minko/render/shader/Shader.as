@@ -6,7 +6,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
-	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
@@ -15,7 +14,7 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
@@ -141,12 +140,12 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
-				
 				if ((param is StyleParameter && styleStack.version == _lastStyleStackVersion) ||
 					(param is TransformParameter && local.version == _lastTransformVersion))
 					continue;
 				
 				var data : Object = getParameterData(param, styleStack, local, world);
+				
 				loadParameterData(paramAlloc, constData, data);
 			}
 		}
@@ -264,9 +263,9 @@ package aerys.minko.render.shader
 				size >= 3 && (constData[int(offset + 2)] = vectorData.z);
 				size >= 4 && (constData[int(offset + 3)] = vectorData.w);
 			}
-			else if (data is Matrix4x4)
+			else if (data is Matrix3D)
 			{
-				(data as Matrix4x4).getRawData(constData, offset, true);
+				(data as Matrix3D).getRawData(constData, offset, true);
 			}
 			else if (data is Vector.<Vector4>)
 			{
@@ -283,9 +282,9 @@ package aerys.minko.render.shader
 					constData[int(offset + 4 * j + 3)] = vectorData.w;
 				}
 			}
-			else if (data is Vector.<Matrix4x4>)
+			else if (data is Vector.<Matrix3D>)
 			{
-				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>; 
+				var matrixVectorData		: Vector.<Matrix3D>	= data as Vector.<Matrix3D>; 
 				var matrixVectorDataLength	: uint					= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)

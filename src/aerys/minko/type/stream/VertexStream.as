@@ -8,6 +8,7 @@ package aerys.minko.type.stream
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
 	
 	public class VertexStream implements IVersionable, IVertexStream
 	{
@@ -23,6 +24,7 @@ package aerys.minko.type.stream
 		private var _format			: VertexFormat			= null;
 		private var _resource		: VertexBufferResource	= null;
 		private var _length			: uint					= 0;
+		private var _componentToStream	: Dictionary		= new Dictionary(true);
 		
 		public function get format()	: VertexFormat			{ return _format; }
 		public function get version()	: uint					{ return _version; }
@@ -80,12 +82,7 @@ package aerys.minko.type.stream
 		
 		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
-			return _format.components.indexOf(vertexComponent) != -1 ? this : null;
-		}
-		
-		public function getSubStreamById(id : int) : VertexStream
-		{
-			return this;
+			return _format.hasComponent(vertexComponent) ? this : null;
 		}
 		
 		public function get(i : int) : Number

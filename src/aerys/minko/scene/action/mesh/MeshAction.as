@@ -34,6 +34,7 @@ package aerys.minko.scene.action.mesh
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var mesh : IMesh	= scene as IMesh;
+			
 			if (!mesh)
 				throw new Error();
 			
@@ -47,16 +48,16 @@ package aerys.minko.scene.action.mesh
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleStack		= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
-			var effect			: IEffect			= effectStack[effectStack.length - 1];
+			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			
 			if (!effect)
 				throw new Error("Unable to draw without an effect.");
 			
-			var indexStream 	: IndexStream				= mesh.indexStream;
-			var vertexStream	: IVertexStream				= mesh.vertexStream;
+			var indexStream 	: IndexStream			= mesh.indexStream;
+			var vertexStream	: IVertexStream			= mesh.vertexStream;
 			
-			var passes			: Vector.<IEffectPass>		= effect.getPasses(styleStack, localData, worldData);
-			var numPasses 		: int 						= passes.length;
+			var passes			: Vector.<IEffectPass>	= effect.getPasses(styleStack, localData, worldData);
+			var numPasses 		: int 					= passes.length;
 			
 			for (var j : int = 0; j < numPasses; ++j)
 			{

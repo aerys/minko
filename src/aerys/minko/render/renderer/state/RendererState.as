@@ -427,36 +427,45 @@ package aerys.minko.render.renderer.state
 					context.setTextureAt(i, texture);
 			}
 			
-			if ((_setFlags & VERTEX_STREAM) != 0
-				&& (((current._setFlags & VERTEX_STREAM) == 0 || current._vertexStreams != _vertexStreams)
-					|| ((_setFlags & SHADER) != 0 && ((current._setFlags & SHADER) == 0 || current._shader != _shader))))
+			if ((_setFlags & VERTEX_STREAM) != 0)
 			{
+				var invalidStreams	: Boolean	= false;
+				var numStreams		: int		= _vertexStreams.length;
 				
-				var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
-				var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
-				var numInputs				: int						= vertexInputComponents.length;
+				invalidStreams ||= ((_setFlags & SHADER) != 0) && ((current._setFlags & SHADER) == 0 || current._shader != _shader);
+				invalidStreams ||= ((current._setFlags & VERTEX_STREAM) == 0) && (current._vertexStreams.length != numStreams);
+
+				for (i = 0; i < numStreams && !invalidStreams; ++i)
+					invalidStreams ||= current._vertexStreams[i] != _vertexStreams[i];
 				
-				for (i = 0; i < numInputs; ++i)
+				if (invalidStreams)
 				{
-					var component	: VertexComponent	= vertexInputComponents[i];
-					var index		: uint				= vertexInputIndices[i];
+					var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
+					var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
+					var numInputs				: int						= vertexInputComponents.length;
 					
-					if (component)
+					for (i = 0; i < numInputs; ++i)
 					{
-						var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
+						var component	: VertexComponent	= vertexInputComponents[i];
+						var index		: uint				= vertexInputIndices[i];
 						
-						if (!stream)
-							throw new Error("Missing vertex components: " + component.toString());
-						
-						var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
-						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
-						
-						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
+						if (component)
+						{
+							var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
+							
+							if (!stream)
+								throw new Error("Missing vertex component: " + component.toString());
+							
+							var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
+							var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
+							
+							context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
+						}
 					}
+					
+					while (i < 8)
+						context.setVertexBufferAt(i++, null);
 				}
-				
-				while (i < 8)
-					context.setVertexBufferAt(i++, null);	
 			}
 			
 			if (_setFlags & DEPTH_MASK

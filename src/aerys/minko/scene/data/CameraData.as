@@ -1,7 +1,7 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.math.Frustum;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.utils.Dictionary;
@@ -48,12 +48,12 @@ package aerys.minko.scene.data
 		protected var _zFarParts							: Vector4;
 		protected var _zFarParts_invalidated				: Boolean;
 		
-		protected var _view									: Matrix4x4;
+		protected var _view									: Matrix3D;
 		protected var _view_positionVersion					: uint;
 		protected var _view_lookAtVersion					: uint;
 		protected var _view_upVersion						: uint;
 		
-		protected var _projection							: Matrix4x4;
+		protected var _projection							: Matrix3D;
 		protected var _projection_invalidated				: Boolean;
 		
 		protected var _localPosition						: Vector4;
@@ -114,7 +114,7 @@ package aerys.minko.scene.data
 		
 		public function get frustrum() : Frustum
 		{
-			var projectionMatrix : Matrix4x4 = _localData.projection;
+			var projectionMatrix : Matrix3D = _localData.projection;
 			
 			if (_frustum_projectionVersion != projectionMatrix.version)
 			{
@@ -147,12 +147,12 @@ package aerys.minko.scene.data
 		
 		public function get localPosition() : Vector4
 		{
-			var worldInverseMatrix : Matrix4x4 = _localData.worldInverse;
+			var worldInverseMatrix : Matrix3D = _localData.worldInverse;
 			
 			if (_localPosition_positionVersion != _position.version ||
 				_localPosition_worldInverseVersion != worldInverseMatrix.version)
 			{
-				_localPosition = worldInverseMatrix.multiplyVector(_position, _localPosition);
+				_localPosition = worldInverseMatrix.transformVector(_position, _localPosition);
 				_localPosition_positionVersion		= _position.version;
 				_localPosition_worldInverseVersion	= worldInverseMatrix.version;
 			}
@@ -162,12 +162,12 @@ package aerys.minko.scene.data
 		
 		public function get localLookAt() : Vector4
 		{
-			var worldInverseMatrix : Matrix4x4 = _localData.worldInverse;
+			var worldInverseMatrix : Matrix3D = _localData.worldInverse;
 			
 			if (_localLookAt_lookAtVersion != _lookAt.version ||
 				_localLookAt_worldInverseVersion != worldInverseMatrix.version)
 			{
-				_localLookAt = worldInverseMatrix.multiplyVector(_lookAt, _localLookAt);
+				_localLookAt = worldInverseMatrix.transformVector(_lookAt, _localLookAt);
 				_localLookAt_lookAtVersion 			= _lookAt.version;
 				_localLookAt_worldInverseVersion 	= worldInverseMatrix.version;
 			}

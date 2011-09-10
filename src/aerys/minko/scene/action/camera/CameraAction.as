@@ -10,15 +10,15 @@ package aerys.minko.scene.action.camera
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
 	public class CameraAction implements IAction
 	{
 		private var _cameraData	: CameraData	= null;
 		
-		private var _view		: Matrix4x4		= new Matrix4x4();
-		private var _projection	: Matrix4x4		= new Matrix4x4();
+		private var _view		: Matrix3D		= new Matrix3D();
+		private var _projection	: Matrix3D		= new Matrix3D();
 		
 		protected function get cameraData() : CameraData	{ return _cameraData; }
 		
@@ -40,10 +40,10 @@ package aerys.minko.scene.action.camera
 			var localData		: LocalData		= visitor.localData;
 			var viewportData	: ViewportData	= visitor.worldData[ViewportData]
 												  as ViewportData;
-			var worldMatrix		: Matrix4x4		= localData.world;
-			var worldPosition	: Vector4		= worldMatrix.multiplyVector(camera.position);
-			var worldLookAt		: Vector4		= worldMatrix.multiplyVector(camera.lookAt);
-			var worldUp			: Vector4		= worldMatrix.deltaMultiplyVector(camera.up)
+			var worldMatrix		: Matrix3D		= localData.world;
+			var worldPosition	: Vector4		= worldMatrix.transformVector(camera.position);
+			var worldLookAt		: Vector4		= worldMatrix.transformVector(camera.lookAt);
+			var worldUp			: Vector4		= worldMatrix.deltaTransformVector(camera.up)
 															 .normalize();
 			
 			_cameraData.reset();
@@ -75,25 +75,25 @@ package aerys.minko.scene.action.camera
 			return true;
 		}
 		
-		protected function updateProjectionMatrix(projection		: Matrix4x4,
+		protected function updateProjectionMatrix(projection		: Matrix3D,
 												  camera			: ICamera,
 												  viewportWidth		: int,
 												  viewportHeight	: int) : void
 		{
-			Matrix4x4.perspectiveFoVLH(camera.fieldOfView,
+			Matrix3D.perspectiveFoVLH(camera.fieldOfView,
 									   viewportWidth / viewportHeight,
 									   camera.nearClipping,
 									   camera.farClipping,
 									   projection);
 		}
 		
-		protected function updateViewMatrix(view		: Matrix4x4,
+		protected function updateViewMatrix(view		: Matrix3D,
 											camera		: ICamera,
 											eyePosition	: Vector4,
 											lookAt		: Vector4,
 											up			: Vector4) : void
 		{
-			Matrix4x4.lookAtLH(eyePosition, lookAt, up, view);
+			Matrix3D.lookAtLH(eyePosition, lookAt, up, view);
 		}
 	}
 }

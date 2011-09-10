@@ -15,14 +15,14 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.node.mesh.SkinnedMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
 	public class PushMeshSkinAction implements IAction
 	{
 		private static const VECTOR4_FACTORY		: Factory	= Factory.getFactory(Vector4);
-		private static const TMP_LOCAL_MATRIX		: Matrix4x4	= new Matrix4x4();
-		private static const TMP_SKINNING_MATRIX	: Matrix4x4 = new Matrix4x4();
+		private static const TMP_LOCAL_MATRIX		: Matrix3D	= new Matrix3D();
+		private static const TMP_SKINNING_MATRIX	: Matrix3D = new Matrix3D();
 		private static const EMPTY_STYLE			: Style		= new Style();
 		
 		private static var _instance : PushMeshSkinAction	= null;
@@ -51,15 +51,15 @@ package aerys.minko.scene.action.mesh
 			var skeletonReference	: IGroup				= skinnedMesh.skeletonReference;
 			
 			var jointNames			: Vector.<String>		= skinnedMesh.jointNames;
-			var bindShapeMatrix		: Matrix4x4				= skinnedMesh.bindShapeMatrix;
-			var invBindMatrices		: Vector.<Matrix4x4>	= skinnedMesh.inverseBindMatrices;
+			var bindShapeMatrix		: Matrix3D				= skinnedMesh.bindShapeMatrix;
+			var invBindMatrices		: Vector.<Matrix3D>	= skinnedMesh.inverseBindMatrices;
 			
 			var jointCount			: uint					= jointNames.length;
 			
 			// Create a vector to store each quaternion, and another one for matrices
 			var skinningDQn			: Vector.<Vector4>		= new Vector.<Vector4>(jointCount);
 			var skinningDQd			: Vector.<Vector4>		= new Vector.<Vector4>(jointCount);
-			var boneMatrices		: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>(jointCount);
+			var boneMatrices		: Vector.<Matrix3D>	= new Vector.<Matrix3D>(jointCount);
 			
 			// if skeletonRootName is unknown, we search for the bones directly from skeletonReference
 			if (skeletonRootName != null)
@@ -80,11 +80,11 @@ package aerys.minko.scene.action.mesh
 		private function findSkeletonRoot(currentNode		: IGroup,
 										  skeletonRootName	: String,
 										  jointNames		: Vector.<String>,
-										  bindShapeMatrix	: Matrix4x4,
-										  invBindMatrices	: Vector.<Matrix4x4>,
+										  bindShapeMatrix	: Matrix3D,
+										  invBindMatrices	: Vector.<Matrix3D>,
 										  skinningDQn		: Vector.<Vector4>,
 										  skinningDQd		: Vector.<Vector4>,
-										  boneMatrices		: Vector.<Matrix4x4>) : void
+										  boneMatrices		: Vector.<Matrix3D>) : void
 		{
 			// FIXME this patch is because in some collada files, joints are not tagged as such, and must be fixed ASAP in the importer
 			if (/*currentNode is Joint && */currentNode.name == skeletonRootName)
@@ -97,7 +97,7 @@ package aerys.minko.scene.action.mesh
 				var transformNode : ITransformableScene = currentNode as ITransformableScene;
 				
 				if (transformNode != null)
-					TMP_LOCAL_MATRIX.push().multiply(transformNode.transform);
+					TMP_LOCAL_MATRIX.push().prepend(transformNode.transform);
 				
 				var numChildren : uint = currentNode.numChildren;
 				for (var i : uint = 0; i < numChildren; ++i)
@@ -114,14 +114,14 @@ package aerys.minko.scene.action.mesh
 		
 		private function fillSkinningMatrices(currentNode			: IGroup,
 											  jointNames			: Vector.<String>,
-											  bindShapeMatrix		: Matrix4x4,
-											  invBindMatrices		: Vector.<Matrix4x4>,
+											  bindShapeMatrix		: Matrix3D,
+											  invBindMatrices		: Vector.<Matrix3D>,
 											  skinningDQn			: Vector.<Vector4>,
 											  skinningDQd			: Vector.<Vector4>,
-											  boneMatrices			: Vector.<Matrix4x4>) : void
+											  boneMatrices			: Vector.<Matrix3D>) : void
 		{
 			if (currentNode is ITransformableScene)
-				TMP_LOCAL_MATRIX.push().multiply(ITransformableScene(currentNode).transform);
+				TMP_LOCAL_MATRIX.push().prepend(ITransformableScene(currentNode).transform);
 			
 			// FIXME same patch than line 87
 			if (currentNode is Joint || currentNode is TransformGroup) 
@@ -133,12 +133,12 @@ package aerys.minko.scene.action.mesh
 				for (var i : uint = 0; i < jointCount; ++i)
 					if (jointNames[i] == currentJointName)
 					{
-						var matrix : Matrix4x4 = TMP_SKINNING_MATRIX
+						var matrix : Matrix3D = TMP_SKINNING_MATRIX
 							.identity()
-							.multiply(TMP_LOCAL_MATRIX)
-							.multiply(invBindMatrices[i]);
+							.prepend(TMP_LOCAL_MATRIX)
+							.prepend(invBindMatrices[i]);
 						
-						boneMatrices[i] = Matrix4x4.copy(matrix);
+						boneMatrices[i] = Matrix3D.copy(matrix);
 						skinningDQn[i]	= Vector4(VECTOR4_FACTORY.create(true));
 						skinningDQd[i]	= Vector4(VECTOR4_FACTORY.create(true));
 						matrix.toDualQuaternion(skinningDQn[i], skinningDQd[i]);
