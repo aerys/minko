@@ -58,7 +58,21 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputColor() : SValue
 		{
-			var diffuse : SValue	= diffuseColor;
+			var diffuse : SValue	= null;
+			
+			if (styleIsSet(BasicStyle.DIFFUSE))
+			{
+				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
+				
+				if (diffuseStyle is uint || diffuseStyle is Vector4)
+					diffuse = getStyleParameter(4, BasicStyle.DIFFUSE);
+				else if (diffuseStyle is TextureResource)
+					diffuse = sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
+				else
+					throw new Error('Invalid BasicStyle.DIFFUSE value.');
+			}
+			else
+				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MULTIPLIER))
 				diffuse.scaleBy(copy(getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER)));

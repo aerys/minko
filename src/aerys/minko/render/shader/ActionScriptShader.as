@@ -110,23 +110,6 @@ package aerys.minko.render.shader
 		private var _styleStackVersion	: uint			= 0;
 		private var _lastShader			: Shader		= null;
 		
-		protected function get diffuseColor() : SValue
-		{
-			if (styleIsSet(BasicStyle.DIFFUSE))
-			{
-				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
-				
-				if (diffuseStyle is uint || diffuseStyle is Vector4)
-					return getStyleParameter(4, BasicStyle.DIFFUSE);
-				else if (diffuseStyle is TextureResource)
-					return sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
-				else
-					throw new Error('Invalid BasicStyle.DIFFUSE value.');
-			}
-			else
-				return float4(interpolate(vertexRGBColor).rgb, 1.);
-		}
-		
 		public function fillRenderState(state		: RendererState, 
 										style		: StyleStack, 
 										transform	: TransformData, 
