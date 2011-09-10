@@ -6,7 +6,7 @@ package aerys.minko.scene.action.transform
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class PopTransformAction implements IAction
+	public final class PopTransformAction implements IAction
 	{
 		private static const TYPE		: uint					= ActionType.UPDATE_LOCAL_DATA;
 		

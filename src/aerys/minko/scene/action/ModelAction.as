@@ -5,7 +5,7 @@ package aerys.minko.scene.action
 	import aerys.minko.scene.node.Model;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class ModelAction implements IAction
+	public final class ModelAction implements IAction
 	{
 		private static const TYPE		: uint			= ActionType.RECURSE;
 		

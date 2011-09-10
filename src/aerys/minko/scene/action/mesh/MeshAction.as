@@ -18,7 +18,7 @@ package aerys.minko.scene.action.mesh
 	
 	import flash.utils.Dictionary;
 	
-	public class MeshAction implements IAction
+	public final class MeshAction implements IAction
 	{
 		private static const TYPE			: uint		= ActionType.RENDER;
 		

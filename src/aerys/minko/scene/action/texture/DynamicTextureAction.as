@@ -17,7 +17,7 @@ package aerys.minko.scene.action.texture
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class DynamicTextureAction implements IAction
+	public final class DynamicTextureAction implements IAction
 	{
 		private var _lastFrame	: int			= uint(-1);
 		private var _bitmapData	: BitmapData	= null;

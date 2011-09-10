@@ -12,7 +12,7 @@ package aerys.minko.scene.action.texture
 	import flash.display.BitmapData;
 	import flash.utils.getTimer;
 	
-	public class AnimatedTextureAction implements IAction
+	public final class AnimatedTextureAction implements IAction
 	{
 		private static const NO_TEXTURE	: ITexture	= new BitmapTexture(new BitmapData(1, 1, false, 0));
 		

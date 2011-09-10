@@ -8,7 +8,7 @@ package aerys.minko.scene.action.effect
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class PopEffectAction implements IAction
+	public final class PopEffectAction implements IAction
 	{
 		private var _effects	: Vector.<IEffect>	= new Vector.<IEffect>();
 		

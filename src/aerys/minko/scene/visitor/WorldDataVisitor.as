@@ -11,7 +11,7 @@ package aerys.minko.scene.visitor
 	
 	import flash.utils.Dictionary;
 	
-	public class WorldDataVisitor implements ISceneVisitor
+	public final class WorldDataVisitor implements ISceneVisitor
 	{
 		private static const ACTIONS_TYPES	: uint	= ActionType.UPDATE_WORLD_DATA
 													  | ActionType.UPDATE_LOCAL_DATA

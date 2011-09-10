@@ -8,7 +8,7 @@ package aerys.minko.scene.action.effect
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class PushEffectAction implements IAction
+	public final class PushEffectAction implements IAction
 	{
 		public function get type() : uint		{ return ActionType.UPDATE_SELF; }
 		

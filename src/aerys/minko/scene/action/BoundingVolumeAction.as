@@ -7,7 +7,7 @@ package aerys.minko.scene.action
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	
-	public class BoundingVolumeAction implements IAction
+	public final class BoundingVolumeAction implements IAction
 	{
 		private static const TYPE	: uint	= ActionType.RECURSE;
 		

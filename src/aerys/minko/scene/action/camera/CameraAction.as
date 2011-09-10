@@ -9,11 +9,10 @@ package aerys.minko.scene.action.camera
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
-	public class CameraAction implements IAction
+	public final class CameraAction implements IAction
 	{
 		private var _cameraData	: CameraData	= null;
 		

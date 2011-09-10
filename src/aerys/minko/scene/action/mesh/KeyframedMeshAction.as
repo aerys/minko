@@ -20,7 +20,7 @@ package aerys.minko.scene.action.mesh
 	
 	import flash.utils.Dictionary;
 	
-	public class KeyframedMeshAction implements IAction
+	public final class KeyframedMeshAction implements IAction
 	{
 		private static const TYPE			: uint		= ActionType.RENDER;
 		private static const EMPTY_STYLE	: Style		= new Style();

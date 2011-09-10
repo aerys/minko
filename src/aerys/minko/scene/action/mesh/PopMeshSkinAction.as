@@ -6,7 +6,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class PopMeshSkinAction implements IAction
+	public final class PopMeshSkinAction implements IAction
 	{
 		private static var _instance : PopMeshSkinAction	= null;
 		

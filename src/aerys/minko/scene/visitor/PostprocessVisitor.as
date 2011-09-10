@@ -10,7 +10,7 @@ package aerys.minko.scene.visitor
 	
 	import flash.utils.Dictionary;
 	
-	public class PostprocessVisitor extends RenderingVisitor
+	public final class PostprocessVisitor extends RenderingVisitor
 	{
 		private static const QUAD : QuadMesh = createQuad();
 		

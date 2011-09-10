@@ -13,7 +13,7 @@ package aerys.minko.scene.action.group
 	
 	use namespace minko;
 	
-	public class AnimationGroupAction implements IAction
+	public final class AnimationGroupAction implements IAction
 	{
 		public static const animationGroupAction : AnimationGroupAction = new AnimationGroupAction();
 		

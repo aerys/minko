@@ -18,7 +18,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
-	public class PushMeshSkinAction implements IAction
+	public final class PushMeshSkinAction implements IAction
 	{
 		private static const VECTOR4_FACTORY		: Factory	= Factory.getFactory(Vector4);
 		private static const TMP_LOCAL_MATRIX		: Matrix3D	= new Matrix3D();
