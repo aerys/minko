@@ -12,7 +12,7 @@ package aerys.minko.scene.action.camera
 	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	
-	public final class CameraAction implements IAction
+	public class CameraAction implements IAction
 	{
 		private var _cameraData	: CameraData	= null;
 		
