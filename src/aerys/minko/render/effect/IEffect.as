@@ -1,6 +1,6 @@
 package aerys.minko.render.effect
 {
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	
 	import flash.utils.Dictionary;
@@ -9,7 +9,7 @@ package aerys.minko.render.effect
 	public interface IEffect
 	{
 		function getPasses(styleStack	: StyleStack, 
-						   local		: LocalData, 
+						   local		: TransformData, 
 						   world		: Dictionary) : Vector.<IEffectPass>;
 	}
 }

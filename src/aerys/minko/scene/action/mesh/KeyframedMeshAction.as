@@ -9,7 +9,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.data.IWorldData;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.node.IScene;
@@ -51,7 +51,7 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var localData		: LocalData			= visitor.localData;
+			var transformData		: TransformData			= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleStack		= renderingData.styleStack;
@@ -62,7 +62,7 @@ package aerys.minko.scene.action.mesh
 				throw new Error("Unable to draw without an effect.");
 			
 			var indexStream 	: IndexStream				= mesh.indexStream;
-			var passes			: Vector.<IEffectPass>		= effect.getPasses(renderingData.styleStack, localData, worldData);
+			var passes			: Vector.<IEffectPass>		= effect.getPasses(renderingData.styleStack, transformData, worldData);
 			var numPasses 		: int 						= passes.length;
 			
 			var frameId			: Number					= mesh.frameId;
@@ -75,7 +75,7 @@ package aerys.minko.scene.action.mesh
 				var pass	: IEffectPass	= passes[j];
 				var state	: RendererState	= RendererState.create(true);
 				
-				if (pass.fillRenderState(state, renderingData.styleStack, localData, worldData))
+				if (pass.fillRenderState(state, renderingData.styleStack, transformData, worldData))
 				{
 					state.indexStream = indexStream;
 					state.setVertexStreamAt(currentFrame, 0);

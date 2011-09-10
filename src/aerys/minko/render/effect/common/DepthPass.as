@@ -9,7 +9,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.PackedDepth;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	
@@ -32,7 +32,7 @@ package aerys.minko.render.effect.common
 		
 		public function fillRenderState(state		: RendererState,
 										styleStack	: StyleStack, 
-										local		: LocalData,
+										local		: TransformData,
 										world		: Dictionary) : Boolean
 		{
 			state.blending			= Blending.NORMAL;

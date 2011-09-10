@@ -11,7 +11,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Matrix3D;
@@ -77,7 +77,7 @@ package aerys.minko.render.shader
 		
 		public function fillRenderState(state		: RendererState, 
 										styleStack	: StyleStack, 
-										local		: LocalData, 
+										local		: TransformData, 
 										world		: Dictionary) : Boolean
 		{
 			if (_lastFrameId != world[ViewportData].frameId)
@@ -99,7 +99,7 @@ package aerys.minko.render.shader
 		
 		protected function setTextures(state		: RendererState,
 									   styleStack	: StyleStack,
-								   	   localData	: LocalData,
+								   	   transformData	: TransformData,
 									   worldData	: Object) : void
 		{
 			var texture 		: TextureResource	= null;
@@ -117,7 +117,7 @@ package aerys.minko.render.shader
 		
 		protected function setConstants(state		: RendererState,
 									    styleStack	: StyleStack,
-										local		: LocalData,
+										local		: TransformData,
 										world		: Dictionary) : void
 		{
 			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
@@ -130,7 +130,7 @@ package aerys.minko.render.shader
 		protected function updateConstData(constData	: Vector.<Number>, 
 										   paramsAllocs	: Vector.<ParameterAllocation>, 
 										   styleStack	: StyleStack,
-										   local		: LocalData,
+										   local		: TransformData,
 										   world		: Dictionary) : void
 		{
 			var paramLength	: int = paramsAllocs.length;
@@ -152,7 +152,7 @@ package aerys.minko.render.shader
 		
 		private function getParameterData(param			: AbstractParameter,
 										  styleStack	: StyleStack,
-										  local			: LocalData,
+										  local			: TransformData,
 										  world			: Dictionary) : Object
 		{
 			if (param is StyleParameter)

@@ -3,7 +3,7 @@ package aerys.minko.scene.data
 	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.math.Matrix3D;
 
-	public final class LocalData implements IVersionable
+	public final class TransformData implements IVersionable
 	{
 		private static const _SCREEN_TO_UV : Matrix3D = new Matrix3D(
 			0.5,		0.0,		0.0,	0.0,
@@ -180,7 +180,7 @@ package aerys.minko.scene.data
 			Matrix3D.copy(value, _projection);
 		}
 		
-		public function LocalData()
+		public function TransformData()
 		{
 			_world		= new Matrix3D();
 			_view		= new Matrix3D();

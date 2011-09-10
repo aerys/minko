@@ -9,7 +9,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.CameraData;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
 
 	public class ActionScriptShaderPart
@@ -174,12 +174,12 @@ package aerys.minko.render.shader
 		 */
 		protected function get localToScreenMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_SCREEN));
+			return new SValue(new TransformParameter(16, TransformData.LOCAL_TO_SCREEN));
 		}
 		
 		protected function get worldToScreenMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.WORLD_TO_SCREEN));
+			return new SValue(new TransformParameter(16, TransformData.WORLD_TO_SCREEN));
 		}
 		
 		/**
@@ -189,7 +189,7 @@ package aerys.minko.render.shader
 		 */
 		protected function get localToWorldMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.WORLD));
+			return new SValue(new TransformParameter(16, TransformData.WORLD));
 		}
 		
 		/**
@@ -199,7 +199,7 @@ package aerys.minko.render.shader
 		 */
 		protected function get localToViewMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.LOCAL_TO_VIEW));
+			return new SValue(new TransformParameter(16, TransformData.LOCAL_TO_VIEW));
 		}
 		
 		/**
@@ -209,7 +209,7 @@ package aerys.minko.render.shader
 		 */
 		protected function get worldToLocalMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.WORLD_INVERSE));
+			return new SValue(new TransformParameter(16, TransformData.WORLD_INVERSE));
 		}
 		
 		/**
@@ -219,17 +219,17 @@ package aerys.minko.render.shader
 		 */
 		protected function get worldToViewMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.VIEW));
+			return new SValue(new TransformParameter(16, TransformData.VIEW));
 		}
 		
 		protected function get viewToWorldMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.VIEW_INVERSE));
+			return new SValue(new TransformParameter(16, TransformData.VIEW_INVERSE));
 		}
 		
 		protected function get viewMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.VIEW));
+			return new SValue(new TransformParameter(16, TransformData.VIEW));
 		}
 		
 		/**
@@ -239,7 +239,7 @@ package aerys.minko.render.shader
 		 */
 		protected function get projectionMatrix() : SValue
 		{
-			return new SValue(new TransformParameter(16, LocalData.PROJECTION));
+			return new SValue(new TransformParameter(16, TransformData.PROJECTION));
 		}
 		
 		/*protected function get diffuseColor() : SValue
@@ -260,7 +260,7 @@ package aerys.minko.render.shader
 		}*/
 		
 		/*public function ActionScriptShaderPart(style	: StyleStack, 
-											   local	: LocalData, 
+											   transform	: TransformData, 
 											   world	: Dictionary)
 		{
 			_styleStack = style;

@@ -12,7 +12,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.builtin.Normalize;
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.render.shader.node.operation.packing.PackNormalizedVectorToColor;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class WorldNormal extends Dummy implements IVertexNode
@@ -32,7 +32,7 @@ package aerys.minko.render.shader.node.common
 			var worldNormal : INode = new Normalize(
 				new Multiply3x3(
 					normal,
-					new TransformParameter(16, LocalData.WORLD)
+					new TransformParameter(16, TransformData.WORLD)
 				)
 			);
 			

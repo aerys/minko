@@ -9,7 +9,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.SValue;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.math.Vector4;
@@ -27,12 +27,12 @@ package aerys.minko.render.effect.basic
 			super(priority, renderTarget);
 		}
 		
-		override public function fillRenderState(state	: RendererState, 
-												 style	: StyleStack, 
-												 local	: LocalData, 
-												 world	: Dictionary) : Boolean
+		override public function fillRenderState(state		: RendererState, 
+												 style		: StyleStack, 
+												 transform	: TransformData, 
+												 world		: Dictionary) : Boolean
 		{
-			super.fillRenderState(state, style, local, world);
+			super.fillRenderState(state, style, transform, world);
 			
 			state.depthTest	= CompareMode.LESS;
 			state.priority	= state.priority + .5;
@@ -67,7 +67,7 @@ package aerys.minko.render.effect.basic
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
-												local	: LocalData,
+												transform	: TransformData,
 												world	: Dictionary) : String
 		{
 			var hash 			: String	= "basic";

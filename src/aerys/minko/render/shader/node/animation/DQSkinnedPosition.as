@@ -19,7 +19,7 @@ package aerys.minko.render.shader.node.animation
 	import aerys.minko.render.shader.node.operation.manipulation.RootWrapper;
 	import aerys.minko.render.shader.node.operation.manipulation.VariadicExtract;
 	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.render.effect.animation.AnimationStyle;
 	

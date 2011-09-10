@@ -28,7 +28,7 @@ package aerys.minko.scene.data
 		
 		// data provider
 		protected var _styleStack	: StyleStack;
-		protected var _localData	: LocalData;
+		protected var _transformData	: TransformData;
 		protected var _worldData	: Dictionary;
 		
 		// data available on initialisation
@@ -114,7 +114,7 @@ package aerys.minko.scene.data
 		
 		public function get frustrum() : Frustum
 		{
-			var projectionMatrix : Matrix3D = _localData.projection;
+			var projectionMatrix : Matrix3D = _transformData.projection;
 			
 			if (_frustum_projectionVersion != projectionMatrix.version)
 			{
@@ -147,7 +147,7 @@ package aerys.minko.scene.data
 		
 		public function get localPosition() : Vector4
 		{
-			var worldInverseMatrix : Matrix3D = _localData.worldInverse;
+			var worldInverseMatrix : Matrix3D = _transformData.worldInverse;
 			
 			if (_localPosition_positionVersion != _position.version ||
 				_localPosition_worldInverseVersion != worldInverseMatrix.version)
@@ -162,7 +162,7 @@ package aerys.minko.scene.data
 		
 		public function get localLookAt() : Vector4
 		{
-			var worldInverseMatrix : Matrix3D = _localData.worldInverse;
+			var worldInverseMatrix : Matrix3D = _transformData.worldInverse;
 			
 			if (_localLookAt_lookAtVersion != _lookAt.version ||
 				_localLookAt_worldInverseVersion != worldInverseMatrix.version)
@@ -228,11 +228,11 @@ package aerys.minko.scene.data
 		}
 		
 		public function setDataProvider(styleStack	: StyleStack, 
-										localData	: LocalData,
+										transformData	: TransformData,
 										worldData	: Dictionary) : void
 		{
 			_styleStack	= styleStack;
-			_localData	= localData;
+			_transformData	= transformData;
 			_worldData	= worldData;
 		}
 		

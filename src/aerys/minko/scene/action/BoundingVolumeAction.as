@@ -20,7 +20,7 @@ package aerys.minko.scene.action
 				var bv 		: IBoundingVolume 	= scene as IBoundingVolume;
 				var camData : CameraData 		= visitor.worldData[CameraData] as CameraData;
 				
-				if (camData && !camData.frustrum.testBoundedVolume(bv, visitor.localData.localToView))
+				if (camData && !camData.frustrum.testBoundedVolume(bv, visitor.transformData.localToView))
 					return false;
 				
 				visitor.visit((scene as IMeshModifier).target);

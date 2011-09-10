@@ -21,7 +21,7 @@ package aerys.minko.scene.action.transform
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			visitor.localData.world.pop();
+			visitor.transformData.world.pop();
 			
 			return true;
 		}

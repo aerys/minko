@@ -4,7 +4,7 @@ package aerys.minko.render.effect.debug
 	import aerys.minko.render.effect.animation.AnimationShaderPart;
 	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.shader.SValue;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.type.animation.AnimationMethod;
 	
@@ -43,7 +43,7 @@ package aerys.minko.render.effect.debug
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
-												local	: LocalData,
+												transform	: TransformData,
 												world	: Dictionary) : String
 		{
 			var hash 			: String	= "debug";

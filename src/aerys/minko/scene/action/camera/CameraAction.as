@@ -4,7 +4,7 @@ package aerys.minko.scene.action.camera
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.data.CameraData;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.camera.ICamera;
@@ -36,10 +36,10 @@ package aerys.minko.scene.action.camera
 			if (!camera.enabled)
 				return false;
 			
-			var localData		: LocalData		= visitor.localData;
+			var transformData		: TransformData		= visitor.transformData;
 			var viewportData	: ViewportData	= visitor.worldData[ViewportData]
 												  as ViewportData;
-			var worldMatrix		: Matrix3D		= localData.world;
+			var worldMatrix		: Matrix3D		= transformData.world;
 			var worldPosition	: Vector4		= worldMatrix.transformVector(camera.position);
 			var worldLookAt		: Vector4		= worldMatrix.transformVector(camera.lookAt);
 			var worldUp			: Vector4		= worldMatrix.deltaTransformVector(camera.up)
@@ -68,8 +68,8 @@ package aerys.minko.scene.action.camera
 							 worldLookAt,
 							 worldUp);
 			
-			localData.projection 	= _projection;
-			localData.view			= _view;
+			transformData.projection 	= _projection;
+			transformData.view			= _view;
 			
 			return true;
 		}
