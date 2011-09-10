@@ -1,7 +1,7 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.resource.IndexBufferResource;
+	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.type.IVersionable;
 	
 	import flash.utils.ByteArray;
@@ -16,12 +16,12 @@ package aerys.minko.type.stream
 		
 		private var _version	: uint					= 0;
 		private var _dynamic	: Boolean				= false;
-		private var _resource	: IndexBufferResource	= null;
+		private var _resource	: IndexBuffer3DResource	= null;
 		private var _length		: uint					= 0;
 		
 		public function get version() 	: uint					{ return _version; }
 		public function get dynamic()	: Boolean				{ return _dynamic; }
-		public function get resource()	: IndexBufferResource	{ return _resource; }
+		public function get resource()	: IndexBuffer3DResource	{ return _resource; }
 		public function get length()	: uint					{ return _length; }
 		
 		public function set length(value : uint) : void
@@ -74,7 +74,7 @@ package aerys.minko.type.stream
 									dynamic	: Boolean) : void
 		{
 			_dynamic = dynamic;
-			_resource = new IndexBufferResource(this);
+			_resource = new IndexBuffer3DResource(this);
 			
 			if (indices)
 			{

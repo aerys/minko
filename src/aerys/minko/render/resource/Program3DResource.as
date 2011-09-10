@@ -7,7 +7,7 @@ package aerys.minko.render.resource
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
 	
-	public final class ShaderResource implements IResource
+	public final class Program3DResource implements IResource
 	{
 		use namespace minko_render;
 		
@@ -19,7 +19,7 @@ package aerys.minko.render.resource
 		minko_render var _vertexIndices		: Vector.<uint>				= null;
 		minko_render var _nativeProgram		: Program3D					= null;
 		
-		public function ShaderResource(vertexShader 	: ByteArray,
+		public function Program3DResource(vertexShader 	: ByteArray,
 									   fragmentShader	: ByteArray,
 									   vertexComponents	: Vector.<VertexComponent>,
 									   vertexIndices	: Vector.<uint>)

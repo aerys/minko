@@ -2,8 +2,8 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.resource.ShaderResource;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.node.INode;
@@ -25,7 +25,7 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 		
-		protected var _resource					: ShaderResource;
+		protected var _resource					: Program3DResource;
 		
 		protected var _lastFrameId				: uint;
 		protected var _lastStyleStackVersion	: uint;
@@ -37,7 +37,7 @@ package aerys.minko.render.shader
 		protected var _fsParams					: Vector.<ParameterAllocation>;
 		protected var _samplers					: Vector.<int>;
 		
-		public function get resource() : ShaderResource
+		public function get resource() : Program3DResource
 		{
 			return _resource;
 		}
@@ -72,7 +72,7 @@ package aerys.minko.render.shader
 			_fsParams		= fragmentParameters;
 			_samplers		= samplers;
 			
-			_resource 		= new ShaderResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
+			_resource 		= new Program3DResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
 		}
 		
 		public function fillRenderState(state		: RendererState, 
@@ -102,14 +102,14 @@ package aerys.minko.render.shader
 								   	   transformData	: TransformData,
 									   worldData	: Object) : void
 		{
-			var texture 		: TextureResource	= null;
+			var texture 		: Texture3DResource	= null;
 			var samplerStyleId 	: int				= 0;
 			var samplerCount 	: uint 				= _samplers.length;
 			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleId	= _samplers[i];
-				texture			= styleStack.get(samplerStyleId) as TextureResource;
+				texture			= styleStack.get(samplerStyleId) as Texture3DResource;
 				
 				state.setTextureAt(i, texture);
 			}

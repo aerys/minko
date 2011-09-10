@@ -65,7 +65,7 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IEffect					= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
-		private var _transformData			: TransformData					= new TransformData();
+		private var _transformData		: TransformData				= new TransformData();
 		
 		private var _postProcessEffect	: IEffect					= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
@@ -604,7 +604,8 @@ package aerys.minko.render
 		{
 			var logo : Sprite = Minko.logo;
 			
-			addChild(logo);
+			if (logo.parent != this)
+				addChild(logo);
 			
 			logo.x = 5;
 			logo.y = _height - logo.height - 5;

@@ -1,7 +1,7 @@
 package aerys.minko.render
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	
 	public class RenderTarget
 	{
@@ -13,7 +13,7 @@ package aerys.minko.render
 		private var _width				: uint				= 0;
 		private var _height				: uint				= 0;
 		
-		minko   var _textureResource	: TextureResource	= null;
+		minko   var _textureResource	: Texture3DResource	= null;
 		private var _useDepthAndStencil	: Boolean			= false;
 		private var _antiAliasing		: int				= 0.;
 		private var _surface			: int				= 0;
@@ -23,7 +23,7 @@ package aerys.minko.render
 		public function get width()					: uint				{ return _width; }
 		public function get height()				: uint				{ return _height; }
 		
-		public function get textureResource() 		: TextureResource	{ return _textureResource; }
+		public function get textureResource() 		: Texture3DResource	{ return _textureResource; }
 		public function get useDepthAndStencil()	: Boolean			{ return _useDepthAndStencil; }
 		public function get antiAliasing()			: int				{ return _antiAliasing; }
 		public function get backgroundColor()		: uint				{ return _backgroundColor; }
@@ -53,7 +53,7 @@ package aerys.minko.render
 				if ((width & (width - 1)) != 0)
 					throw new Error('Texture size must be a power of 2.');
 				
-				_textureResource = new TextureResource();
+				_textureResource = new Texture3DResource();
 				_textureResource.setSize(width, height);
 			}
 		}

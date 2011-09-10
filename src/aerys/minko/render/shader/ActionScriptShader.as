@@ -3,7 +3,7 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;

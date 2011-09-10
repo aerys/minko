@@ -1,7 +1,7 @@
 package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.resource.VertexBufferResource;
+	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.type.IVersionable;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
@@ -22,14 +22,14 @@ package aerys.minko.type.stream
 		private var _version		: uint					= 0;
 		
 		private var _format			: VertexFormat			= null;
-		private var _resource		: VertexBufferResource	= null;
+		private var _resource		: VertexBuffer3DResource	= null;
 		private var _length			: uint					= 0;
 		private var _componentToStream	: Dictionary		= new Dictionary(true);
 		
 		public function get format()	: VertexFormat			{ return _format; }
 		public function get version()	: uint					{ return _version; }
 		public function get dynamic()	: Boolean				{ return _dynamic; }
-		public function get resource()	: VertexBufferResource	{ return _resource; }
+		public function get resource()	: VertexBuffer3DResource	{ return _resource; }
 		public function get length()	: uint					{ return _length; }
 		
 		protected function get data() : Vector.<Number>
@@ -56,7 +56,7 @@ package aerys.minko.type.stream
 									format	: VertexFormat 		= null,
 									dynamic	: Boolean			= false) : void
 		{
-			_resource = new VertexBufferResource(this);
+			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
 			
 			if (data && data.length && data.length % _format.dwordsPerVertex)
