@@ -110,7 +110,7 @@ package aerys.minko.render.shader.compiler.allocator
 			
 			var allocLength:uint = _allocations.length;
 			
-			for (var i:int = 0; i < allocLength; ++i)
+			for (var i : int = 0; i < allocLength; ++i)
 			{
 				var success			: Boolean		= false;
 				var alloc			: Allocation	= _allocations[i];
