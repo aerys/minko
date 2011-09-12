@@ -5,7 +5,7 @@ package aerys.minko.scene.action
 		public static const RENDER				: uint	= 1 << 1;
 		
 		public static const UPDATE_SELF			: uint	= 1 << 2;
-		public static const UPDATE_LOCAL_DATA	: uint	= 1 << 3;
+		public static const UPDATE_TRANSFORM_DATA	: uint	= 1 << 3;
 		public static const UPDATE_WORLD_DATA	: uint	= 1 << 4;
 		public static const UPDATE_STYLE		: uint	= 1 << 5;
 		public static const UPDATE_EFFECTS		: uint	= 1 << 6;

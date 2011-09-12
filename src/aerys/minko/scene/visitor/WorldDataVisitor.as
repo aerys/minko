@@ -14,11 +14,11 @@ package aerys.minko.scene.visitor
 	public final class WorldDataVisitor implements ISceneVisitor
 	{
 		private static const ACTIONS_TYPES	: uint	= ActionType.UPDATE_WORLD_DATA
-													  | ActionType.UPDATE_LOCAL_DATA
+													  | ActionType.UPDATE_TRANSFORM_DATA
 													  | ActionType.RECURSE;
 		
 		protected var _worldData		: Dictionary	= null;
-		protected var _transformData		: TransformData		= null;
+		protected var _transformData	: TransformData	= null;
 		protected var _numNodes			: uint			= 0;
 		
 		public function get numNodes()		: uint				{ return _numNodes; }
