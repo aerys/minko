@@ -25,6 +25,11 @@ package aerys.minko.scene.node.group
 		
 		private var _labels						: Vector.<TimeLabel>;
 		
+		public function get isPlaying() : Boolean
+		{
+			return _isPlaying;
+		}
+		
 		/**
 		 * @return Specifies the number of the frame in which the playhead is located in the timeline of the AnimationGroup instance.
 		 */		
@@ -148,8 +153,7 @@ package aerys.minko.scene.node.group
 		
 		public function resetPlaybackWindow() : void
 		{
-			_loopBeginTime	= 0;
-			_loopEndTime	= _totalTime;
+			setPlaybackWindow();
 		}
 		
 		private function getTime(time : Object) : uint
