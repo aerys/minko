@@ -1,5 +1,7 @@
 package aerys.minko.type
 {
+	import aerys.minko.render.renderer.state.RendererState;
+	
 	import flash.utils.Dictionary;
 
 	public final class Factory
@@ -40,14 +42,14 @@ package aerys.minko.type
 			return result;
 		}
 		
-		public function free(myManaged : Object) : void
+		public function free(value : Object) : void
 		{
-			_free[int(_numFree++)] = myManaged;
+			_free[int(_numFree++)] = value;
 		}
 		
-		public function mark(myManaged : Object) : void
+		public function mark(value : Object) : void
 		{
-			_mark[int(_numMarked++)] = myManaged;
+			_mark[int(_numMarked++)] = value;
 		}
 		
 		public function sweep() : uint

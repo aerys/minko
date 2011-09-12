@@ -7,7 +7,7 @@ package aerys.minko.scene.action.texture
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class TextureAction implements IAction
+	public final class TextureAction implements IAction
 	{
 		private static const TYPE	: uint		= ActionType.UPDATE_STYLE;
 		

@@ -1,7 +1,7 @@
 package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.node.IScene;
 	
@@ -13,7 +13,7 @@ package aerys.minko.scene.visitor
 	 */
 	public interface ISceneVisitor
 	{
-		function get localData() 		: LocalData;
+		function get transformData() 		: TransformData;
 		function get worldData() 		: Dictionary;
 		function get renderingData()	: RenderingData;
 		function get numNodes()			: uint;
@@ -22,7 +22,7 @@ package aerys.minko.scene.visitor
 		function visit(scene : IScene) : void;
 		
 		function processSceneGraph(scene			: IScene, 
-								   localData		: LocalData, 
+								   transformData		: TransformData, 
 								   worldData		: Dictionary, 
 								   renderingData	: RenderingData,
 								   renderer			: IRenderer) : void;

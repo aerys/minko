@@ -7,7 +7,7 @@ package aerys.minko.render.effect
 	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.render.renderer.state.TriangleCulling;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	
@@ -31,18 +31,18 @@ package aerys.minko.render.effect
 		}
 		
 		public function getPasses(styleStack 	: StyleStack,
-								  local 		: LocalData,
+								  local 		: TransformData,
 								  world 		: Dictionary) : Vector.<IEffectPass>
 		{
 			return _passes;
 		}
 		
-		override public function fillRenderState(state	: RendererState, 
-												 style	: StyleStack, 
-												 local	: LocalData, 
-												 world	: Dictionary)  :  Boolean
+		override public function fillRenderState(state		: RendererState, 
+												 style		: StyleStack, 
+												 transform	: TransformData, 
+												 world		: Dictionary)  :  Boolean
 		{
-			super.fillRenderState(state, style, local, world);
+			super.fillRenderState(state, style, transform, world);
 			
 			state.depthTest			= CompareMode.LESS;
 			state.blending			= style.get(BasicStyle.BLENDING, Blending.NORMAL) as uint;

@@ -2,31 +2,32 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.resource.ShaderResource;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
-	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.leaf.AbstractParameter;
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
+	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 	
 	public class Shader
 	{
 		use namespace minko;
 		
-		protected var _resource					: ShaderResource;
+		protected var _resource					: Program3DResource;
 		
 		protected var _lastFrameId				: uint;
 		protected var _lastStyleStackVersion	: uint;
@@ -38,7 +39,7 @@ package aerys.minko.render.shader
 		protected var _fsParams					: Vector.<ParameterAllocation>;
 		protected var _samplers					: Vector.<int>;
 		
-		public function get resource() : ShaderResource
+		public function get resource() : Program3DResource
 		{
 			return _resource;
 		}
@@ -73,12 +74,12 @@ package aerys.minko.render.shader
 			_fsParams		= fragmentParameters;
 			_samplers		= samplers;
 			
-			_resource 		= new ShaderResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
+			_resource 		= new Program3DResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
 		}
 		
 		public function fillRenderState(state		: RendererState, 
 										styleStack	: StyleStack, 
-										local		: LocalData, 
+										local		: TransformData, 
 										world		: Dictionary) : Boolean
 		{
 			if (_lastFrameId != world[ViewportData].frameId)
@@ -100,17 +101,17 @@ package aerys.minko.render.shader
 		
 		protected function setTextures(state		: RendererState,
 									   styleStack	: StyleStack,
-								   	   localData	: LocalData,
+								   	   transformData	: TransformData,
 									   worldData	: Object) : void
 		{
-			var texture 		: TextureResource	= null;
+			var texture 		: Texture3DResource	= null;
 			var samplerStyleId 	: int				= 0;
 			var samplerCount 	: uint 				= _samplers.length;
 			
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleId	= _samplers[i];
-				texture			= styleStack.get(samplerStyleId) as TextureResource;
+				texture			= styleStack.get(samplerStyleId) as Texture3DResource;
 				
 				state.setTextureAt(i, texture);
 			}
@@ -118,7 +119,7 @@ package aerys.minko.render.shader
 		
 		protected function setConstants(state		: RendererState,
 									    styleStack	: StyleStack,
-										local		: LocalData,
+										local		: TransformData,
 										world		: Dictionary) : void
 		{
 			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
@@ -131,7 +132,7 @@ package aerys.minko.render.shader
 		protected function updateConstData(constData	: Vector.<Number>, 
 										   paramsAllocs	: Vector.<ParameterAllocation>, 
 										   styleStack	: StyleStack,
-										   local		: LocalData,
+										   local		: TransformData,
 										   world		: Dictionary) : void
 		{
 			var paramLength	: int = paramsAllocs.length;
@@ -141,19 +142,19 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
-				
 				if ((param is StyleParameter && styleStack.version == _lastStyleStackVersion) ||
 					(param is TransformParameter && local.version == _lastTransformVersion))
 					continue;
 				
 				var data : Object = getParameterData(param, styleStack, local, world);
+				
 				loadParameterData(paramAlloc, constData, data);
 			}
 		}
 		
 		private function getParameterData(param			: AbstractParameter,
 										  styleStack	: StyleStack,
-										  local			: LocalData,
+										  local			: TransformData,
 										  world			: Dictionary) : Object
 		{
 			if (param is StyleParameter)
@@ -191,9 +192,11 @@ package aerys.minko.render.shader
 			var offset	: uint	= paramAlloc._offset;
 			var size	: uint	= paramAlloc._parameter._size;
 			
-			if (data is int)
+//			if (data is int)
+			if (data is Number)
 			{
-				var intData : int = data as int;
+				//var intData : int = data as int;
+				var intData : Number = data as Number;
 				
 				if (size == 1)
 				{
@@ -212,14 +215,13 @@ package aerys.minko.render.shader
 				}
 				else if (size == 4)
 				{
-					
 					constData[offset] = ((intData & 0xFF000000) >>> 24) / 255.;
 					constData[int(offset + 1)] = ((intData & 0x00FF0000) >>> 16) / 255.;
 					constData[int(offset + 2)] = ((intData & 0x0000FF00) >>> 8) / 255.;
 					constData[int(offset + 3)] = ((intData & 0x000000FF)) / 255.;
 				}
 			}
-			else if (data is uint)
+			/*else if (data is uint)
 			{
 				var uintData : uint = data as uint;
 				
@@ -246,27 +248,27 @@ package aerys.minko.render.shader
 					constData[int(offset + 2)] = ((uintData & 0x0000FF00) >>> 8) / 255.;
 					constData[int(offset + 3)] = ((uintData & 0x000000FF)) / 255.;
 				}
-			}
-			else if (data is Number)
+			}*/
+			/*else if (data is Number)
 			{
 				if (size != 1)
 					throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
 						'defined as size=' + size + ' but only a Number was found');
 				
 				constData[offset] = data as Number;
-			}
+			}*/
 			else if (data is Vector4)
 			{
-				var vectorData : Vector4 = data as Vector4;
+				var vectorData : Vector3D = (data as Vector4)._vector;
 				
 				constData[offset] = vectorData.x;
 				size >= 2 && (constData[int(offset + 1)] = vectorData.y);
 				size >= 3 && (constData[int(offset + 2)] = vectorData.z);
 				size >= 4 && (constData[int(offset + 3)] = vectorData.w);
 			}
-			else if (data is Matrix4x4)
+			else if (data is Matrix3D)
 			{
-				(data as Matrix4x4).getRawData(constData, offset, true);
+				(data as Matrix3D).getRawData(constData, offset, true);
 			}
 			else if (data is Vector.<Vector4>)
 			{
@@ -275,7 +277,7 @@ package aerys.minko.render.shader
 				
 				for (var j : uint = 0; j < vectorVectorDataLength; ++j)
 				{
-					vectorData = vectorVectorData[j];
+					vectorData = vectorVectorData[j]._vector;
 					
 					constData[offset + 4 * j] = vectorData.x;
 					constData[int(offset + 4 * j + 1)] = vectorData.y;
@@ -283,15 +285,13 @@ package aerys.minko.render.shader
 					constData[int(offset + 4 * j + 3)] = vectorData.w;
 				}
 			}
-			else if (data is Vector.<Matrix4x4>)
+			else if (data is Vector.<Matrix3D>)
 			{
-				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>; 
-				var matrixVectorDataLength	: uint					= matrixVectorData.length;
+				var matrixVectorData		: Vector.<Matrix3D>	= data as Vector.<Matrix3D>; 
+				var matrixVectorDataLength	: uint				= matrixVectorData.length;
 				
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
-				{
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);
-				}
 			}
 			else if (data == null)
 			{

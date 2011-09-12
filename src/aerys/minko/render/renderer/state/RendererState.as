@@ -2,8 +2,8 @@ package aerys.minko.render.renderer.state
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.resource.ShaderResource;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
@@ -96,10 +96,10 @@ package aerys.minko.render.renderer.state
 		
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: ShaderResource			= null;
+		private var _shader				: Program3DResource			= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
-		private var _textures			: Vector.<TextureResource>	= new Vector.<TextureResource>(8, true);
+		private var _textures			: Vector.<Texture3DResource>	= new Vector.<Texture3DResource>(8, true);
 	
 		private var _vertexStreams		: Vector.<IVertexStream>	= new Vector.<IVertexStream>();
 		private var _indexStream		: IndexStream				= null;
@@ -145,7 +145,7 @@ package aerys.minko.render.renderer.state
 			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
-		public function get shader() : ShaderResource
+		public function get shader() : Program3DResource
 		{
 			return _setFlags & SHADER ? _shader : null;
 		}
@@ -188,7 +188,7 @@ package aerys.minko.render.renderer.state
 			_setFlags |= RENDER_TARGET;
 		}
 		
-		public function set shader(value : ShaderResource) : void
+		public function set shader(value : Program3DResource) : void
 		{
 			_shader = value;
 			_setFlags |= SHADER;
@@ -232,7 +232,7 @@ package aerys.minko.render.renderer.state
 			_setFlags |= INDEX_STREAM;
 		}
 		
-		public function setTextureAt(index : int, texture : TextureResource) : void
+		public function setTextureAt(index : int, texture : Texture3DResource) : void
 		{
 			var flag : uint = TEXTURE_1 << index;
 			
@@ -263,122 +263,115 @@ package aerys.minko.render.renderer.state
 			_setFlags |= VERTEX_CONSTS;
 		}
 		
-		public function prepareContext(context : Context3D, current : RendererState = null) : void
+		public function prepareContext(context : Context3D) : void
 		{
-			if (current)
-			{
-				prepareContextDelta(context, current);
-			}
-			else
-			{
-				if (_setFlags & SHADER)
-					_shader.prepare(context);
-				
-				if (_setFlags & VERTEX_CONSTS)
-					context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
-
-				if (_setFlags & FRAGMENT_CONSTS)
-					context.setProgramConstantsFromVector(PT_FRAGMENT, 0, _fragmentConstants);
-				
-				if (_setFlags & TRIANGLE_CULLING)
-					context.setCulling((_triangleCulling & TC_FRONT) && (_triangleCulling & TC_BACK)
-									   ? Context3DTriangleFace.FRONT_AND_BACK
-									   : CULLING_STR[_triangleCulling]);
-				
-				if (_setFlags & COLOR_MASK)
-					context.setColorMask((_colorMask & ColorMask.COLOR_RED) != 0,
-										 (_colorMask & ColorMask.COLOR_GREEN) != 0,
-										 (_colorMask & ColorMask.COLOR_BLUE) != 0,
-										 (_colorMask & ColorMask.COLOR_ALPHA) != 0);
-				
-				if (_setFlags & BLENDING)
-					context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
-											BLENDING_STR[int(_blending >>> 16)]);
-				
-				context.setScissorRectangle(_setFlags & SCISSOR_RECTANGLE ? _rectangle : null);
-				
-				for (var i : int = 0; i < 8; ++i)
-				{
-					// set texture
-					if (_setFlags & (TEXTURE_1 << i))
-						context.setTextureAt(i, _textures[i].getNativeTexture(context));
-					else
-						context.setTextureAt(i, null);
-				}
+			if (_setFlags & SHADER)
+				context.setProgram(_shader.getProgram3D(context));
 			
-				if ((_setFlags & VERTEX_STREAM) != 0 || (_setFlags & SHADER) != 0)
-				{
-					var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
-					var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
-					var numInputs				: int						= vertexInputComponents.length;
-					
-					for (i = 0; i < numInputs; ++i)
-					{
-						var component	: VertexComponent	= vertexInputComponents[i];
-						var index		: uint				= vertexInputIndices[i];
-						
-						if (component)
-						{
-							var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
-							
-							if (!stream)
-								throw new Error("Missing vertex components: " + component.toString());
-							
-							var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
-							var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
-							
-							context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
-						}
-					}
-					
-					while (i < 8)
-						context.setVertexBufferAt(i++, null);
-				}
-				
-				if (_setFlags & DEPTH_MASK)
-				{
-					for (var j : int = 0; j < 8; ++j)
-					{
-						if (_depthTest == COMPARE_FLAGS[j])
-						{
-							context.setDepthTest(true, COMPARE_STR[j]);
-							
-							break ;
-						}
-					}
-				}
-				
-				if (_setFlags & RENDER_TARGET)
-				{
-					if (!_renderTarget)
-					{
-						throw new Error('RenderTarget cannot be undefined');
-					}
-					else if (_renderTarget.type == RenderTarget.BACKBUFFER)
-					{
-						context.setRenderToBackBuffer();
-					}
-					else
-					{
-						context.setRenderToTexture(_renderTarget.textureResource.getNativeTexture(context),
-												   _renderTarget.useDepthAndStencil,
-												   _renderTarget.antiAliasing);
-					}
-					
-					var color : uint = _renderTarget.backgroundColor;
+			if (_setFlags & VERTEX_CONSTS)
+				context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
 
-					context.clear(((color >> 16) & 0xff) / 255.,
-								  ((color >> 8) & 0xff) / 255.,
-								  (color & 0xff) / 255.,
-								  ((color >> 24) & 0xff) / 255.);
+			if (_setFlags & FRAGMENT_CONSTS)
+				context.setProgramConstantsFromVector(PT_FRAGMENT, 0, _fragmentConstants);
+			
+			if (_setFlags & TRIANGLE_CULLING)
+				context.setCulling((_triangleCulling & TC_FRONT) && (_triangleCulling & TC_BACK)
+								   ? Context3DTriangleFace.FRONT_AND_BACK
+								   : CULLING_STR[_triangleCulling]);
+			
+			if (_setFlags & COLOR_MASK)
+				context.setColorMask((_colorMask & ColorMask.COLOR_RED) != 0,
+									 (_colorMask & ColorMask.COLOR_GREEN) != 0,
+									 (_colorMask & ColorMask.COLOR_BLUE) != 0,
+									 (_colorMask & ColorMask.COLOR_ALPHA) != 0);
+			
+			if (_setFlags & BLENDING)
+				context.setBlendFactors(BLENDING_STR[int(_blending & 0xffff)],
+										BLENDING_STR[int(_blending >>> 16)]);
+			
+			context.setScissorRectangle(_setFlags & SCISSOR_RECTANGLE ? _rectangle : null);
+			
+			for (var i : int = 0; i < 8; ++i)
+			{
+				// set texture
+				if (_setFlags & (TEXTURE_1 << i))
+					context.setTextureAt(i, _textures[i].getNativeTexture(context));
+				else
+					context.setTextureAt(i, null);
+			}
+		
+			if ((_setFlags & VERTEX_STREAM) != 0 || (_setFlags & SHADER) != 0)
+			{
+				var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
+				var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
+				var numInputs				: int						= vertexInputComponents.length;
+				
+				for (i = 0; i < numInputs; ++i)
+				{
+					var component	: VertexComponent	= vertexInputComponents[i];
+					var index		: uint				= vertexInputIndices[i];
+					
+					if (component)
+					{
+						var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
+						
+						if (!stream)
+							throw new Error("Missing vertex components: " + component.toString());
+						
+						var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
+						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
+						
+						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
+					}
 				}
+				
+				while (i < 8)
+					context.setVertexBufferAt(i++, null);
+			}
+			
+			if (_setFlags & DEPTH_MASK)
+			{
+				for (var j : int = 0; j < 8; ++j)
+				{
+					if (_depthTest == COMPARE_FLAGS[j])
+					{
+						context.setDepthTest(true, COMPARE_STR[j]);
+						
+						break ;
+					}
+				}
+			}
+			
+			if (_setFlags & RENDER_TARGET)
+			{
+				if (!_renderTarget)
+				{
+					throw new Error('RenderTarget cannot be undefined');
+				}
+				else if (_renderTarget.type == RenderTarget.BACKBUFFER)
+				{
+					context.setRenderToBackBuffer();
+				}
+				else
+				{
+					context.setRenderToTexture(_renderTarget.textureResource.getNativeTexture(context),
+											   _renderTarget.useDepthAndStencil,
+											   _renderTarget.antiAliasing);
+				}
+				
+				var color : uint = _renderTarget.backgroundColor;
+
+				context.clear(((color >> 16) & 0xff) / 255.,
+							  ((color >> 8) & 0xff) / 255.,
+							  (color & 0xff) / 255.,
+							  ((color >> 24) & 0xff) / 255.);
 			}
 		}
 		
-		private function prepareContextDelta(context : Context3D, current : RendererState) : void
+		public function prepareContextDelta(context : Context3D, current : RendererState) : void
 		{
 			if (_setFlags & SHADER && _shader != current._shader)
-				_shader.prepare(context);
+				context.setProgram(_shader.getProgram3D(context));
 			
 			if (_setFlags & VERTEX_CONSTS)
 				context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
@@ -418,7 +411,7 @@ package aerys.minko.render.renderer.state
 			{
 				// set textures
 				var textureFlag			: uint				= TEXTURE_1 << i;
-				var textureResource		: TextureResource 	= _textures[i];
+				var textureResource		: Texture3DResource = _textures[i];
 				var texture				: TextureBase 		= (_setFlags & textureFlag)
 											  	  			  ? textureResource.getNativeTexture(context)
 											  	  			  : null;
@@ -427,36 +420,45 @@ package aerys.minko.render.renderer.state
 					context.setTextureAt(i, texture);
 			}
 			
-			if ((_setFlags & VERTEX_STREAM) != 0
-				&& (((current._setFlags & VERTEX_STREAM) == 0 || current._vertexStreams != _vertexStreams)
-					|| ((_setFlags & SHADER) != 0 && ((current._setFlags & SHADER) == 0 || current._shader != _shader))))
+			if ((_setFlags & VERTEX_STREAM) != 0)
 			{
+				var invalidStreams	: Boolean	= false;
+				var numStreams		: int		= _vertexStreams.length;
 				
-				var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
-				var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
-				var numInputs				: int						= vertexInputComponents.length;
-				
-				for (i = 0; i < numInputs; ++i)
+				invalidStreams ||= ((_setFlags & SHADER) != 0) && ((current._setFlags & SHADER) == 0 || current._shader != _shader);
+				invalidStreams ||= ((current._setFlags & VERTEX_STREAM) == 0) && (current._vertexStreams.length != numStreams);
+
+				for (i = 0; i < numStreams && !invalidStreams; ++i)
+					invalidStreams ||= current._vertexStreams[i] != _vertexStreams[i];
+			
+				if (invalidStreams)
 				{
-					var component	: VertexComponent	= vertexInputComponents[i];
-					var index		: uint				= vertexInputIndices[i];
+					var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
+					var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
+					var numInputs				: int						= vertexInputComponents.length;
 					
-					if (component)
+					for (i = 0; i < numInputs; ++i)
 					{
-						var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
+						var component	: VertexComponent	= vertexInputComponents[i];
+						var index		: uint				= vertexInputIndices[i];
 						
-						if (!stream)
-							throw new Error("Missing vertex components: " + component.toString());
-						
-						var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
-						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
-						
-						context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
+						if (component)
+						{
+							var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
+							
+							if (!stream)
+								throw new Error("Missing vertex component: " + component.toString());
+							
+							var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
+							var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);
+							
+							context.setVertexBufferAt(i, vertexBuffer, vertexOffset, component.nativeFormatString);
+						}
 					}
+					
+					while (i < 8)
+						context.setVertexBufferAt(i++, null);
 				}
-				
-				while (i < 8)
-					context.setVertexBufferAt(i++, null);	
 			}
 			
 			if (_setFlags & DEPTH_MASK
@@ -490,6 +492,7 @@ package aerys.minko.render.renderer.state
 											   _renderTarget.useDepthAndStencil,
 											   _renderTarget.antiAliasing);
 				}
+				
 				var color : uint = _renderTarget.backgroundColor;
 				
 				context.clear(((color >> 16) & 0xff) / 255.,

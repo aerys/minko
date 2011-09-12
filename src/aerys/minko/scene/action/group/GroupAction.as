@@ -7,7 +7,7 @@ package aerys.minko.scene.action.group
 	import aerys.minko.scene.node.group.IGroup;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class GroupAction implements IAction
+	public final class GroupAction implements IAction
 	{
 		private static const TYPE	: uint	 = ActionType.RECURSE;
 		

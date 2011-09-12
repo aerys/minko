@@ -7,7 +7,7 @@ package aerys.minko.render.resource
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
 
-	public class TextureResource implements IResource
+	public class Texture3DResource implements IResource
 	{
 		private var _texture	: Texture	= null;
 		private var _mipmap		: Boolean;
@@ -20,7 +20,7 @@ package aerys.minko.render.resource
 		
 		private var _update		: Boolean;
 		
-		public function TextureResource()
+		public function Texture3DResource()
 		{
 		}
 		
@@ -79,7 +79,6 @@ package aerys.minko.render.resource
 			
 			if (_update)
 			{
-				
 				_update = false;
 				
 				if (_bitmapData)

@@ -6,7 +6,7 @@ package aerys.minko.render
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
@@ -65,7 +65,7 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IEffect					= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
-		private var _localData			: LocalData					= new LocalData();
+		private var _transformData		: TransformData				= new TransformData();
 		
 		private var _postProcessEffect	: IEffect					= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
@@ -280,6 +280,9 @@ package aerys.minko.render
 		
 		private function addedHandler(event : Event) : void
 		{
+			if (event.target != this)
+				return ;
+			
 			if (_autoResize)
 			{
 				parent.addEventListener(Event.RESIZE, resizeHandler);
@@ -346,6 +349,9 @@ package aerys.minko.render
 		
 		private function removedFromStage(event : Event) : void
 		{
+			if (event.target != this)
+				return ;
+			
 			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 			_stage3d.context3D.dispose();
 			_stage3d = null;
@@ -555,7 +561,7 @@ package aerys.minko.render
 				var worldData		: Dictionary	= new Dictionary();
 				var renderingData	: RenderingData	= new RenderingData();
 				
-				_localData.reset();
+				_transformData.reset();
 				
 				// push viewport related data into the data sources
 				worldData[ViewportData] = _viewportData;
@@ -563,7 +569,7 @@ package aerys.minko.render
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
-					visitor.processSceneGraph(scene, _localData, worldData, renderingData, _renderer);
+					visitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
 				
 				renderingData.effects.pop();
 				
@@ -574,7 +580,7 @@ package aerys.minko.render
 				if (_postProcessEffect != null)
 				{
 					renderingData.effects.push(_postProcessEffect);
-					_postProcessVisitor.processSceneGraph(scene, _localData, worldData, renderingData, _renderer);
+					_postProcessVisitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
 					renderingData.effects.pop();
 				}
 				
@@ -598,7 +604,8 @@ package aerys.minko.render
 		{
 			var logo : Sprite = Minko.logo;
 			
-			addChild(logo);
+			if (logo.parent != this)
+				addChild(logo);
 			
 			logo.x = 5;
 			logo.y = _height - logo.height - 5;

@@ -241,7 +241,7 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		public function updateWithProjectionMatrix(matrix : Matrix4x4) : void
+		public function updateWithProjectionMatrix(matrix : Matrix3D) : void
 		{
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
 			
@@ -286,7 +286,7 @@ package aerys.minko.type.math
 		 * 
 		 */
 		public function testVector(vector 		: Vector4,
-								   transform	: Matrix4x4 	= null,
+								   transform	: Matrix3D 	= null,
 								   mask			: int 			= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
@@ -294,7 +294,7 @@ package aerys.minko.type.math
 			var d		: Number	= 0.;
 			
 			if (transform)
-				vector = transform.multiplyVector(vector);
+				vector = transform.transformVector(vector);
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
@@ -320,7 +320,7 @@ package aerys.minko.type.math
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 */
 		public function testBoundingSphere(sphere 		: BoundingSphere,
-										   transform	: Matrix4x4	= null,
+										   transform	: Matrix3D	= null,
 										   culling		: int 		= 0xffffff) : int
 		{
 			var center	: Vector4	= sphere.center;
@@ -334,9 +334,9 @@ package aerys.minko.type.math
 			
 			if (transform != null)
 			{
-				var scale	: Vector4	= transform.deltaMultiplyVector(ConstVector4.ONE);
+				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
 
-				center = transform.multiplyVector(sphere.center);
+				center = transform.transformVector(sphere.center);
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 			}
 						
@@ -367,7 +367,7 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundingBox(box			: BoundingBox,
-										transform	: Matrix4x4 	= null,
+										transform	: Matrix3D 	= null,
 										culling		: int			= 0xffffffff) : uint
 		{
 			var result		: uint				= 0;
@@ -382,7 +382,7 @@ package aerys.minko.type.math
 			if (transform != null)
 			{
 				_boxVertices.length = 0;
-				transform.multiplyRawVectors(vertices, _boxVertices);
+				transform.transformRawVectors(vertices, _boxVertices);
 				vertices = _boxVertices;
 			}
 			
@@ -473,7 +473,7 @@ package aerys.minko.type.math
 		 * 
 		 */
 		public function testBoundedVolume(volume		: IBoundingVolume,
-								 	      transform		: Matrix4x4	= null,
+								 	      transform		: Matrix3D	= null,
 								 		  cullingMask	: int 		= 0xffffffff) : uint
 		{
 			cullingMask = cullingMask & volume.frustumCulling;
@@ -497,7 +497,7 @@ package aerys.minko.type.math
 			{
 				vertices = _boxVertices;
 				vertices.length = 0;
-				transform.multiplyRawVectors(box._vertices, vertices);
+				transform.transformRawVectors(box._vertices, vertices);
 			}
 			
 			var x1	: Number	= vertices[0];
@@ -527,10 +527,10 @@ package aerys.minko.type.math
 			
 			if (transform)
 			{
-				var scale	: Vector4	= transform.deltaMultiplyVector(ConstVector4.ONE);
+				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
 
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
-				center = transform.multiplyVector(center);
+				center = transform.transformVector(center);
 			}
 			
 			for (var i : int = 0; i < 6; i++)
@@ -581,7 +581,7 @@ package aerys.minko.type.math
 			return result || INSIDE;
 		}
 		
-		public function toProjectionMatrix(out : Matrix4x4 = null) : Matrix4x4
+		public function toProjectionMatrix(out : Matrix3D = null) : Matrix3D
 		{
 			var r	: Plane = _planes[RIGHT];
 			var l	: Plane = _planes[LEFT];
@@ -607,7 +607,7 @@ package aerys.minko.type.math
 			var d14	: Number = -n.d;
 			var d15	: Number = -(l.d - r.d) / 2;
 			
-			out ||= new Matrix4x4();
+			out ||= new Matrix3D();
 			out.setRawData(Vector.<Number>([ 
 				d0,		d1, 	d2, 	d3,
 				d4, 	d5, 	d6, 	d7, 

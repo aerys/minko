@@ -7,7 +7,7 @@ package aerys.minko.scene.action.style
 	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	
-	public class PushStyleAction implements IAction
+	public final class PushStyleAction implements IAction
 	{
 		private static const TYPE		: uint				= ActionType.UPDATE_STYLE;
 		

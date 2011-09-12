@@ -116,7 +116,7 @@ package aerys.minko.scene.data
 		}
 		
 		public function setDataProvider(styleStack	: StyleStack, 
-										localData	: LocalData,
+										transformData	: TransformData,
 										worldData	: Dictionary) : void
 		{
 		}

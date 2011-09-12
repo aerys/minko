@@ -7,10 +7,10 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.renderer.state.Blending;
 	import aerys.minko.render.renderer.state.CompareMode;
 	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.resource.TextureResource;
+	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.SValue;
-	import aerys.minko.scene.data.LocalData;
 	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.animation.AnimationMethod;
 	import aerys.minko.type.math.Vector4;
 	
@@ -27,14 +27,13 @@ package aerys.minko.render.effect.basic
 			super(priority, renderTarget);
 		}
 		
-		override public function fillRenderState(state	: RendererState, 
-												 style	: StyleStack, 
-												 local	: LocalData, 
-												 world	: Dictionary) : Boolean
+		override public function fillRenderState(state		: RendererState, 
+												 style		: StyleStack, 
+												 transform	: TransformData, 
+												 world		: Dictionary) : Boolean
 		{
-			super.fillRenderState(state, style, local, world);
+			super.fillRenderState(state, style, transform, world);
 			
-			state.depthTest	= CompareMode.LESS;
 			state.priority	= state.priority + .5;
 			
 			if (state.blending != Blending.NORMAL)
@@ -58,7 +57,21 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputColor() : SValue
 		{
-			var diffuse : SValue	= diffuseColor;
+			var diffuse : SValue	= null;
+			
+			if (styleIsSet(BasicStyle.DIFFUSE))
+			{
+				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
+				
+				if (diffuseStyle is uint || diffuseStyle is Vector4)
+					diffuse = getStyleParameter(4, BasicStyle.DIFFUSE);
+				else if (diffuseStyle is Texture3DResource)
+					diffuse = sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
+				else
+					throw new Error('Invalid BasicStyle.DIFFUSE value.');
+			}
+			else
+				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
 			
 			if (styleIsSet(BasicStyle.DIFFUSE_MULTIPLIER))
 				diffuse.scaleBy(copy(getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER)));
@@ -67,7 +80,7 @@ package aerys.minko.render.effect.basic
 		}
 		
 		override protected function getDataHash(style	: StyleStack,
-												local	: LocalData,
+												transform	: TransformData,
 												world	: Dictionary) : String
 		{
 			var hash 			: String	= "basic";
@@ -79,7 +92,7 @@ package aerys.minko.render.effect.basic
 				hash += '_colorFromVertex';
 			else if (diffuseStyle is uint || diffuseStyle is Vector4)
 				hash += '_colorFromConstant';
-			else if (diffuseStyle is TextureResource)
+			else if (diffuseStyle is Texture3DResource)
 				hash += '_colorFromTexture';
 			else
 				throw new Error('Invalid BasicStyle.DIFFUSE value');

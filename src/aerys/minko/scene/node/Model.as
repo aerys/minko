@@ -14,7 +14,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.type.IVersionable;
-	import aerys.minko.type.math.Transform3D;
+	import aerys.minko.type.math.Matrix3D;
 
 	/**
 	 * Model objects are visible scene objects. They contain references to:
@@ -22,7 +22,7 @@ package aerys.minko.scene.node
 	 * <li>an IMesh object (geometry)</li>
 	 * <li>an ITexture object (texture data)</li>
 	 * <li>a Style object (cascading rendering style parameters)</li>
-	 * <li>and a Transform3D object (position, rotation and scale)</li>
+	 * <li>and a Matrix3D object (position, rotation and scale)</li>
 	 * </ul>
 	 * 
 	 * <p>
@@ -43,7 +43,7 @@ package aerys.minko.scene.node
 		private var _mesh			: IMesh				= null;
 		private var _texture		: ITexture			= null;
 		
-		private var _transform		: Transform3D		= new Transform3D();
+		private var _transform		: Matrix3D		= new Matrix3D();
 		private var _visible		: Boolean			= true;
 		
 		private var _effect			: IEffect			= null;
@@ -60,13 +60,13 @@ package aerys.minko.scene.node
 		}
 		
 		/**
-		 * The Transform3D object (position, rotation and scale) used
+		 * The Matrix3D object (position, rotation and scale) used
 		 * to render the object.
 		 *  
 		 * @return 
 		 * 
 		 */
-		public function get transform() : Transform3D			{ return _transform; }
+		public function get transform() : Matrix3D			{ return _transform; }
 		/**
 		 * The IMesh3D object (geometry) used to render the object.
 		 *  

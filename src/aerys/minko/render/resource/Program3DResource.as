@@ -7,7 +7,7 @@ package aerys.minko.render.resource
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
 	
-	public final class ShaderResource implements IResource
+	public final class Program3DResource implements IResource
 	{
 		use namespace minko_render;
 		
@@ -19,7 +19,7 @@ package aerys.minko.render.resource
 		minko_render var _vertexIndices		: Vector.<uint>				= null;
 		minko_render var _nativeProgram		: Program3D					= null;
 		
-		public function ShaderResource(vertexShader 	: ByteArray,
+		public function Program3DResource(vertexShader 	: ByteArray,
 									   fragmentShader	: ByteArray,
 									   vertexComponents	: Vector.<VertexComponent>,
 									   vertexIndices	: Vector.<uint>)
@@ -40,7 +40,7 @@ package aerys.minko.render.resource
 			_update = true;
 		}
 		
-		public function prepare(context : Context3D) : void
+		public function getProgram3D(context : Context3D) : Program3D
 		{
 			if (!_nativeProgram)
 			{
@@ -54,7 +54,7 @@ package aerys.minko.render.resource
 				_nativeProgram.upload(_vertexShader, _fragmentShader);
 			}
 			
-			context.setProgram(_nativeProgram);
+			return _nativeProgram;
 		}
 		
 		public function dispose() : void

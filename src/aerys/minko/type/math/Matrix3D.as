@@ -5,55 +5,53 @@ package aerys.minko.type.math
 	import aerys.minko.type.IVersionable;
 	
 	import flash.geom.Matrix3D;
-	import flash.geom.Orientation3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 
-	public class Matrix4x4 implements IVersionable
+	public final class Matrix3D implements IVersionable
 	{
 		use namespace minko;
 		
-		private static const FACTORY			: Factory	= Factory.getFactory(Matrix4x4);
+		private static const FACTORY			: Factory			= Factory.getFactory(Matrix3D);
+		
+		private static const RAD2DEG			: Number			= 180. / Math.PI;
+		private static const DEG2RAD			: Number			= Math.PI / 180.;
 		
 		private static const TMP_VECTOR			: Vector.<Number>	= new Vector.<Number>();
-		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
+		private static const TMP_VECTOR4		: Vector4			= new Vector4();
+		private static const TMP_MATRIX			: Matrix3D			= new Matrix3D();
 		
-		private static const UPDATE_NONE		: uint		= 0;
-		private static const UPDATE_DATA		: uint		= 1;
-		private static const UPDATE_MATRIX		: uint		= 2;
-		private static const UPDATE_ALL			: uint		= UPDATE_DATA | UPDATE_MATRIX;
+		private static const UPDATE_NONE		: uint				= 0;
+		private static const UPDATE_DATA		: uint				= 1;
+		private static const UPDATE_MATRIX		: uint				= 2;
+		private static const UPDATE_ALL			: uint				= UPDATE_DATA | UPDATE_MATRIX;
 		
-		protected var _matrix		: Matrix3D			= new Matrix3D();
-		
-		private var _invalid	: Boolean			= false;
+		protected var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		
 		private var _version	: uint				= 0;
 		private var _data		: Vector.<Number>	= new Vector.<Number>();
 		
-		minko function getMatrix3D() : Matrix3D
-		{
-			return validMatrix3D;
-		}
-		
-		protected function get validMatrix3D() : Matrix3D
-		{
-			if (invalid)
-				updateMatrix();
-			
-			return _matrix;
-		}
-		
-		protected function get invalid() : Boolean
-		{
-			return _invalid;
-		}
-		
 		public function get version()	: uint		{ return _version; }
 		
-		public function Matrix4x4(m11 : Number	= 1., m12 : Number	= 0., m13 : Number	= 0., m14 : Number	= 0.,
-								  m21 : Number	= 0., m22 : Number	= 1., m23 : Number	= 0., m24 : Number	= 0.,
-								  m31 : Number	= 0., m32 : Number	= 0., m33 : Number	= 1., m34 : Number	= 0.,
-								  m41 : Number	= 0., m42 : Number	= 0., m43 : Number	= 0., m44 : Number	= 1.)
+		public function set translationX(value : Number) : void
+		{
+			updateTranslation(value,NaN, NaN);
+		}
+		
+		public function set translationY(value : Number) : void
+		{
+			updateTranslation(NaN, value, NaN);
+		}
+		
+		public function set translationZ(value : Number) : void
+		{
+			updateTranslation(NaN, NaN, value);
+		}
+		
+		public function Matrix3D(m11 : Number	= 1., m12 : Number	= 0., m13 : Number	= 0., m14 : Number	= 0.,
+								 m21 : Number	= 0., m22 : Number	= 1., m23 : Number	= 0., m24 : Number	= 0.,
+								 m31 : Number	= 0., m32 : Number	= 0., m33 : Number	= 1., m34 : Number	= 0.,
+								 m41 : Number	= 0., m42 : Number	= 0., m43 : Number	= 0., m44 : Number	= 1.)
 		{
 			initialize(m11, m12, m13, m14,
 					   m21, m22, m23, m24,
@@ -72,63 +70,122 @@ package aerys.minko.type.math
 							m31, m32, m33, m34,
 							m41, m42, m43, m44);
 			
-			validMatrix3D.copyRawDataFrom(TMP_VECTOR);
+			_matrix.copyRawDataFrom(TMP_VECTOR);
 		}
 		
-		protected function invalidate() : void
+		public function push() : Matrix3D
 		{
-			_invalid = true;
-			++_version;
-		}
-		
-		protected function updateMatrix() : void
-		{
-			_invalid = false;
-		}
-		
-		public function push() : Matrix4x4
-		{
-			validMatrix3D.copyRawDataTo(_data, _data.length);
+			_matrix.copyRawDataTo(_data, _data.length);
 			
 			return this;
 		}
 		
-		public function pop() : Matrix4x4
+		public function pop() : Matrix3D
 		{
 			var dataLength : int = _data.length;
 			
 			if (dataLength)
 			{
-				validMatrix3D.copyRawDataFrom(_data, dataLength - 16);
+				_matrix.copyRawDataFrom(_data, dataLength - 16);
 				_data.length = dataLength - 16;
-				invalidate();
+				++_version;
 			}
 			
 			return this;
 		}
 		
-		public function multiply(m : Matrix4x4) : Matrix4x4
+		public function prepend(m : Matrix3D) : Matrix3D
 		{
-			validMatrix3D.prepend(m.validMatrix3D);
-			
-			invalidate();
+			_matrix.prepend(m._matrix);
+			++_version;
 			
 			return this;
 		}
 		
-		public function multiplyInverse(m : Matrix4x4) : Matrix4x4
+		public function append(m : Matrix3D) : Matrix3D
 		{
-			validMatrix3D.append(m.validMatrix3D);
-			
-			invalidate();
+			_matrix.append(m._matrix);
+			++_version;
 			
 			return this;
 		}
 		
-		public function multiplyVector(input 	: Vector4,
-									   output	: Vector4	= null) : Vector4
+		public function appendRotation(radians		: Number,
+									   axis			: Vector4,
+									   pivotPoint	: Vector4	= null) : Matrix3D
 		{
-			var v : Vector3D = validMatrix3D.transformVector(input._vector);
+			_matrix.appendRotation(radians * RAD2DEG,
+				axis._vector,
+				pivotPoint ? pivotPoint._vector : null);
+			++_version;
+			
+			return this;
+		}
+		
+		public function appendScale(x	: Number,
+									y	: Number	= 1.,
+									z	: Number	= 1.) : Matrix3D
+		{
+			_matrix.appendScale(x, y, z);
+			++_version;
+			
+			return this;
+		}
+		
+		public function appendUniformScale(scale : Number) : Matrix3D
+		{
+			_matrix.appendScale(scale, scale, scale);
+			++_version;
+			
+			return this;
+		}
+		
+		public function appendTranslation(x : Number,
+										  y : Number = 0.,
+										  z : Number = 0.) : Matrix3D
+		{
+			_matrix.appendTranslation(x, y, z);
+			++_version;
+			
+			return this;
+		}
+		
+		public function prependRotation(radians		: Number,
+										axis		: Vector4,
+										pivotPoint	: Vector4 = null) : Matrix3D
+		{
+			_matrix.prependRotation(radians * RAD2DEG, 
+									axis._vector,
+									pivotPoint ? pivotPoint._vector : null);
+			++_version;
+			
+			return this;
+		}
+		
+		public function prependScale(x	: Number,
+									 y	: Number = 1.,
+									 z	: Number = 1.) : Matrix3D
+		{
+			_matrix.prependScale(x, y, z);
+			++_version;
+			
+			return this;
+		}
+		
+		public function prependTranslation(x : Number,
+										   y : Number	= 1.,
+										   z : Number	= 1.) : Matrix3D
+		{
+			_matrix.prependTranslation(x, y, z);
+			++_version;
+			
+			return this;
+		}
+		
+		public function transformVector(input 	: Vector4,
+									    output	: Vector4	= null) : Vector4
+		{
+			var v : Vector3D = _matrix.transformVector(input._vector);
 			
 			output ||= new Vector4();
 			output.set(v.x, v.y, v.z, v.w);
@@ -136,10 +193,10 @@ package aerys.minko.type.math
 			return output;
 		}
 		
-		public function deltaMultiplyVector(input 	: Vector4,
-											output	: Vector4	= null) : Vector4
+		public function deltaTransformVector(input 	: Vector4,
+											 output	: Vector4	= null) : Vector4
 		{
-			var v : Vector3D = validMatrix3D.deltaTransformVector(input._vector);
+			var v : Vector3D = _matrix.deltaTransformVector(input._vector);
 			
 			output ||= new Vector4();			
 			output.set(v.x, v.y, v.z, v.w);
@@ -147,38 +204,38 @@ package aerys.minko.type.math
 			return output;
 		}
 		
-		public function multiplyRawVectors(input 	: Vector.<Number>,
-										   output	: Vector.<Number> = null) : Vector.<Number>
+		public function transformRawVectors(input 	: Vector.<Number>,
+										    output	: Vector.<Number> = null) : Vector.<Number>
 		{
 			output ||= new Vector.<Number>();
-			validMatrix3D.transformVectors(input, output);
+			_matrix.transformVectors(input, output);
 			
 			return output;
 		}
 		
-		public function identity() : Matrix4x4
+		public function identity() : Matrix3D
 		{
-			validMatrix3D.identity();
+			_matrix.identity();
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
 		
-		public function invert() : Matrix4x4
+		public function invert() : Matrix3D
 		{
-			validMatrix3D.invert();
+			_matrix.invert();
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
 		
-		public function transpose() : Matrix4x4
+		public function transpose() : Matrix3D
 		{
-			validMatrix3D.transpose();
+			_matrix.transpose();
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
@@ -186,7 +243,7 @@ package aerys.minko.type.math
 		public function projectVector(input 	: Vector4,
 									  output	: Vector4 = null) : Vector4
 		{
-			var v : Vector3D = Utils3D.projectVector(validMatrix3D, input._vector);
+			var v : Vector3D = Utils3D.projectVector(_matrix, input._vector);
 			
 			output ||= new Vector4();
 			output.set(v.x, v.y, v.z, v.w);
@@ -199,40 +256,40 @@ package aerys.minko.type.math
 								   transposed	: Boolean 		  = false) : Vector.<Number>
 		{
 			out ||= new Vector.<Number>();
-			validMatrix3D.copyRawDataTo(out, offset, transposed);
+			_matrix.copyRawDataTo(out, offset, transposed);
 			
 			return out;
 		}
 		
 		public function setRawData(input		: Vector.<Number>,
 								   offset		: int		= 0,
-								   transposed	: Boolean	= false) : Matrix4x4
+								   transposed	: Boolean	= false) : Matrix3D
 		{
 			_matrix.copyRawDataFrom(input, offset, transposed);
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
 		
 		public function pointAt(pos	: Vector4,
 								at	: Vector4	= null,
-								up	: Vector4	= null) : Matrix4x4
+								up	: Vector4	= null) : Matrix3D
 		{
-			validMatrix3D.pointAt(pos._vector,
+			_matrix.pointAt(pos._vector,
 								  at ? at._vector : null,
 								  up ? up._vector : null);
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
 		
-		public function interpolateTo(target : Matrix4x4, percent : Number) : Matrix4x4
+		public function interpolateTo(target : Matrix3D, percent : Number) : Matrix3D
 		{
-			validMatrix3D.interpolateTo(target.validMatrix3D, percent);
+			_matrix.interpolateTo(target._matrix, percent);
 			
-			invalidate();
+			++_version;
 			
 			return this;
 		}
@@ -241,7 +298,37 @@ package aerys.minko.type.math
 									   output	: Vector.<Number>,
 									   uvt		: Vector.<Number>) : void
 		{
-			Utils3D.projectVectors(validMatrix3D, input, output, uvt);
+			Utils3D.projectVectors(_matrix, input, output, uvt);
+		}
+		
+		public function setTranslation(x : Number, y : Number, z : Number) : Matrix3D
+		{
+			updateTranslation(x, y, z);
+			
+			return this;
+		}
+		
+		public function getTranslation(output : Vector4 = null) : Vector4
+		{
+			output ||= new Vector4();
+			_matrix.copyColumnTo(3, output._vector);
+			
+			return output;
+		}
+		
+		private function updateTranslation(x : Number, y : Number, z : Number) : void
+		{
+			var position : Vector4	= getTranslation(TMP_VECTOR4);
+			
+			if (!isNaN(x))
+				position.x = x;
+			if (!isNaN(y))
+				position.y = y;
+			if (!isNaN(z))
+				position.z = z;
+			
+			_matrix.copyColumnFrom(3, position._vector);
+			++_version;	
 		}
 		
 		public function toDualQuaternion(n : Vector4,
@@ -309,27 +396,28 @@ package aerys.minko.type.math
 			return getRawData().toString();
 		}
 		
-		public static function multiply(m1 	: Matrix4x4,
-										m2 	: Matrix4x4,
-										out	: Matrix4x4	= null) : Matrix4x4
+		public static function multiply(m1 	: Matrix3D,
+										m2 	: Matrix3D,
+										out	: Matrix3D	= null) : Matrix3D
 		{
 			out = copy(m1, out);
-			out.multiply(m2);
+			out.prepend(m2);
 			
 			return out;
 		}
 		
-		public static function copy(source	: Matrix4x4,
-									target 	: Matrix4x4 = null) : Matrix4x4
+		public static function copy(source	: Matrix3D,
+									target 	: Matrix3D = null) : Matrix3D
 		{
-			target ||= FACTORY.create() as Matrix4x4;
-			source.validMatrix3D.copyToMatrix3D(target.validMatrix3D);
+			target ||= FACTORY.create() as Matrix3D;
+			source._matrix.copyToMatrix3D(target._matrix);
+			target._version++;
 						
 			return target;
 		}
 		
-		public static function invert(input		: Matrix4x4,
-							   		  output	: Matrix4x4	= null) : Matrix4x4
+		public static function invert(input		: Matrix3D,
+							   		  output	: Matrix3D	= null) : Matrix3D
 		{
 			output = copy(input, output);
 			output.invert();
@@ -357,7 +445,7 @@ package aerys.minko.type.math
 		public static function lookAtLH(eye 	: Vector4,
 										lookAt 	: Vector4,
 										up		: Vector4,
-										out		: Matrix4x4 = null) : Matrix4x4
+										out		: Matrix3D = null) : Matrix3D
 		{
 			var z_axis	: Vector4	= null;
 			var	x_axis	: Vector4	= null;
@@ -374,7 +462,7 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
 						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
 						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
@@ -403,7 +491,7 @@ package aerys.minko.type.math
 		public static function lookAtRH(eye 	: Vector4,
 										lookAt	: Vector4,
 										up		: Vector4,
-										out		: Matrix4x4 = null) : Matrix4x4
+										out		: Matrix3D = null) : Matrix3D
 		{
 			var z_axis	: Vector4	= null;
 			var	x_axis	: Vector4	= null;
@@ -420,7 +508,7 @@ package aerys.minko.type.math
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
 						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
 						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
@@ -433,14 +521,14 @@ package aerys.minko.type.math
 												ratio	: Number,
 												zNear	: Number,
 												zFar 	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
+												out		: Matrix3D = null) : Matrix3D
 		{
 			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
 			var	x_scale		: Number	= y_scale / ratio;
 			var	m33			: Number	= zFar / (zFar - zNear);
 			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
 			
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(x_scale,	0.,			0.,		0.,
 						   0.,		y_scale,	0.,		0.,
 						   0.,		0.,			m33,	1.,
@@ -453,9 +541,9 @@ package aerys.minko.type.math
 									   h		: Number,
 									   zNear	: Number,
 									   zFar		: Number,
-									   out		: Matrix4x4 = null) : Matrix4x4
+									   out		: Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(2. / w,	0.,		0.,						0.,
 						   0.,		2. / h,	0.,						0.,
 						   0.,		0.,		1. / (zFar - zNear),	0.,
@@ -468,9 +556,9 @@ package aerys.minko.type.math
 									   h		: Number,
 									   zNear	: Number,
 									   zFar		: Number,
-									   out		: Matrix4x4 = null) : Matrix4x4
+									   out		: Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(2. / w,	0.,		0.,						0.,
 						   0.,		2. / h,	0.,						0.,
 						   0.,		0.,		1. / (zNear - zFar),	0.,
@@ -485,9 +573,9 @@ package aerys.minko.type.math
 												t		: Number,
 												zNear	: Number,
 												zFar	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
+												out		: Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(2. / (r - l),		0.,					0.,						0.,
 						   0.,					2. / (t - b),		0.,						0.,
 						   0.,					0.,					1. / (zFar - zNear),	0.,
@@ -502,9 +590,9 @@ package aerys.minko.type.math
 												t		: Number,
 												zNear	: Number,
 												zFar	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
+												out		: Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			out.initialize(2. / (r - l),		0.,					0.,						0.,
 						   0.,					2. / (t - b),		0.,						0.,
 						   0.,					0.,					1. / (zNear - zFar),	0.,
@@ -513,9 +601,9 @@ package aerys.minko.type.math
 			return out;
 		}
 		
-		public static function fromQuaternion(quaternion : Vector4, out : Matrix4x4 = null) : Matrix4x4
+		public static function fromQuaternion(quaternion : Vector4, out : Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			
 			var x : Number = quaternion.x;
 			var y : Number = quaternion.y;
@@ -540,9 +628,9 @@ package aerys.minko.type.math
 			return out;
 		}
 		
-		public static function fromDualQuaternion(dQn : Vector4, dQd : Vector4, out : Matrix4x4 = null) : Matrix4x4
+		public static function fromDualQuaternion(dQn : Vector4, dQd : Vector4, out : Matrix3D = null) : Matrix3D
 		{
-			out ||= FACTORY.create() as Matrix4x4;
+			out ||= FACTORY.create() as Matrix3D;
 			
 			var len2Inv	: Number = 1 / (dQn.w * dQn.w + dQn.x * dQn.x + dQn.y * dQn.y + dQn.z * dQn.z);
 			
@@ -583,9 +671,9 @@ package aerys.minko.type.math
 		
 		public static function fromRawData(data			: Vector.<Number>,
 										   offset		: int		= 0,
-										   transposed	: Boolean	= false) : Matrix4x4
+										   transposed	: Boolean	= false) : Matrix3D
 		{
-			return (FACTORY.create() as Matrix4x4).setRawData(data, offset, transposed);
+			return (FACTORY.create() as Matrix3D).setRawData(data, offset, transposed);
 		}
 		
 	}

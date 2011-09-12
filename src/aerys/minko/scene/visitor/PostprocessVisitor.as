@@ -1,7 +1,7 @@
 package aerys.minko.scene.visitor
 {
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.primitive.QuadMesh;
@@ -10,7 +10,7 @@ package aerys.minko.scene.visitor
 	
 	import flash.utils.Dictionary;
 	
-	public class PostprocessVisitor extends RenderingVisitor
+	public final class PostprocessVisitor extends RenderingVisitor
 	{
 		private static const QUAD : QuadMesh = createQuad();
 		
@@ -33,13 +33,13 @@ package aerys.minko.scene.visitor
 		}
 		
 		override public function processSceneGraph(scene			: IScene, 
-												   localData		: LocalData, 
+												   transformData		: TransformData, 
 												   worldData		: Dictionary, 
 												   renderingData	: RenderingData, 
 												   renderer			: IRenderer) : void
 		{
 			scene = QUAD;
-			super.processSceneGraph(scene, localData, worldData, renderingData, renderer);
+			super.processSceneGraph(scene, transformData, worldData, renderingData, renderer);
 		}
 	}
 }

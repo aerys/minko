@@ -9,7 +9,7 @@ package aerys.minko.render.resource
 	import flash.display3D.VertexBuffer3D;
 	import flash.utils.Dictionary;
 
-	public class VertexBufferResource implements IResource
+	public class VertexBuffer3DResource implements IResource
 	{
 		use namespace minko_stream;
 		
@@ -20,7 +20,7 @@ package aerys.minko.render.resource
 		
 		public function get numVertices() : uint	{ return _numVertices; }
 		
-		public function VertexBufferResource(source : VertexStream)
+		public function VertexBuffer3DResource(source : VertexStream)
 		{
 			_stream = source;
 		}

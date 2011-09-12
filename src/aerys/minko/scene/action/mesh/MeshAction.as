@@ -7,7 +7,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.data.IWorldData;
-	import aerys.minko.scene.data.LocalData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.node.IScene;
@@ -18,7 +18,7 @@ package aerys.minko.scene.action.mesh
 	
 	import flash.utils.Dictionary;
 	
-	public class MeshAction implements IAction
+	public final class MeshAction implements IAction
 	{
 		private static const TYPE			: uint		= ActionType.RENDER;
 		
@@ -34,6 +34,7 @@ package aerys.minko.scene.action.mesh
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var mesh : IMesh	= scene as IMesh;
+			
 			if (!mesh)
 				throw new Error();
 			
@@ -42,28 +43,28 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var localData		: LocalData			= visitor.localData;
+			var transformData		: TransformData			= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleStack		= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
-			var effect			: IEffect			= effectStack[effectStack.length - 1];
+			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			
 			if (!effect)
 				throw new Error("Unable to draw without an effect.");
 			
-			var indexStream 	: IndexStream				= mesh.indexStream;
-			var vertexStream	: IVertexStream				= mesh.vertexStream;
+			var indexStream 	: IndexStream			= mesh.indexStream;
+			var vertexStream	: IVertexStream			= mesh.vertexStream;
 			
-			var passes			: Vector.<IEffectPass>		= effect.getPasses(styleStack, localData, worldData);
-			var numPasses 		: int 						= passes.length;
+			var passes			: Vector.<IEffectPass>	= effect.getPasses(styleStack, transformData, worldData);
+			var numPasses 		: int 					= passes.length;
 			
 			for (var j : int = 0; j < numPasses; ++j)
 			{
 				var pass	: IEffectPass	= passes[j];
 				var state	: RendererState	= RendererState.create();
 				
-				if (pass.fillRenderState(state, styleStack, localData, worldData))
+				if (pass.fillRenderState(state, styleStack, transformData, worldData))
 				{
 					state.setVertexStreamAt(vertexStream, 0);
 					state.indexStream = indexStream;
