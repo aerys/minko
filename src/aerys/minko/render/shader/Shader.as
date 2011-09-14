@@ -21,7 +21,6 @@ package aerys.minko.render.shader
 	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
 	
 	public class Shader
 	{
