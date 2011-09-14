@@ -76,7 +76,7 @@ package aerys.minko.render.shader.node.leaf
 				else
 				{
 					throw new Error("Constants can only be (vector or array of) int,"
-									+ " uint, Number, Point, Vector4 or Matrix4x4 values.");
+									+ " uint, Number, Point, Vector4 or Matrix3D values.");
 				}
 			}
 			
