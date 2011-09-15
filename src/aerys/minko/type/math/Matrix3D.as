@@ -344,8 +344,6 @@ package aerys.minko.type.math
 			var ny		: Number;
 			var nz		: Number;
 			
-			var plop 	: Number = 0;
-			
 			if (mTrace > 0)
 			{
 				s = 2.0 * Math.sqrt(mTrace + 1.0);

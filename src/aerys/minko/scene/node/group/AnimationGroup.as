@@ -178,5 +178,16 @@ package aerys.minko.scene.node.group
 			
 			return timeValue;
 		}
+		
+		public function clone() : AnimationGroup
+		{
+			var clone		: AnimationGroup = new AnimationGroup(_timelines, _labels);
+			var numChildren	: uint = this.numChildren;
+			
+			for (var childId : uint = 0; childId < numChildren; ++childId)
+				clone.addChild(getChildAt(childId));
+			
+			return clone;
+		}
 	}
 }
