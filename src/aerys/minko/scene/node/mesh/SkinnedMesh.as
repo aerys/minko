@@ -44,7 +44,7 @@ package aerys.minko.scene.node.mesh
 		public function get jointNames()			: Vector.<String>		{ return _jointNames; }
 		public function get inverseBindMatrices()	: Vector.<Matrix3D>	{ return _inverseBindMatrices; }
 		
-		public function SkinnedMesh(mesh				: Mesh,
+		public function SkinnedMesh(mesh				: IMesh,
 									skeletonReference	: IGroup,
 									skeletonRootName	: String,
 									bindShapeMatrix		: Matrix3D,
