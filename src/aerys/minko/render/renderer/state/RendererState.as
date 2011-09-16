@@ -360,7 +360,7 @@ package aerys.minko.render.renderer.state
 				}
 				
 				var color : uint = _renderTarget.backgroundColor;
-
+				
 				context.clear(((color >> 16) & 0xff) / 255.,
 							  ((color >> 8) & 0xff) / 255.,
 							  (color & 0xff) / 255.,
