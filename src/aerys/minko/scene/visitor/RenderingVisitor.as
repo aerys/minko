@@ -47,7 +47,6 @@ package aerys.minko.scene.visitor
 			_renderingData	= renderingData; 
 			_renderer		= renderer;
 			
-			_renderer.clear();
 			visit(scene);
 			
 			_renderer.drawToBackBuffer();

@@ -26,6 +26,7 @@ package aerys.minko.scene.data
 		public static const LOCAL_TO_UV					: String = 'localToUv';
 		
 		public static const WORLD_TO_SCREEN				: String = 'worldToScreen';
+		public static const WORLD_TO_UV					: String = 'worldToUv';
 		
 		protected var _world							: Matrix3D;
 		protected var _view								: Matrix3D;
@@ -51,6 +52,9 @@ package aerys.minko.scene.data
 		protected var _globalToScreen					: Matrix3D;
 		protected var _globalToScreen_viewVersion		: uint;
 		protected var _globalToScreen_projectionVersion	: uint;
+		
+		protected var _globalToUv						: Matrix3D;
+		protected var _globalToUv_globalToScreenVersion	: uint;
 		
 		public function get version() : uint
 		{
@@ -163,6 +167,20 @@ package aerys.minko.scene.data
 			}
 			
 			return _globalToScreen;
+		}
+		
+		public function get worldToUv() : Matrix3D
+		{
+			var worldToScreenMatrix	: Matrix3D = worldToScreen;
+			var screentoUvMatrix	: Matrix3D = screentoUv;
+			
+			if (_globalToUv_globalToScreenVersion != worldToScreenMatrix.version)
+			{
+				_globalToUv = Matrix3D.multiply(screentoUvMatrix, worldToScreenMatrix, _globalToUv);
+				_globalToUv_globalToScreenVersion = worldToScreenMatrix.version;
+			}
+
+			return _globalToUv;
 		}
 		
 		public function set world(value : Matrix3D) : void
