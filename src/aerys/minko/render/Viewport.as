@@ -567,6 +567,8 @@ package aerys.minko.render
 				worldData[ViewportData] = _viewportData;
 				renderingData.effects.push(defaultEffect);
 				
+				_renderer.clear();
+				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
