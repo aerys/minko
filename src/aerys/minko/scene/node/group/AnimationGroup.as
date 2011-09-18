@@ -11,6 +11,9 @@ package aerys.minko.scene.node.group
 	
 	public class AnimationGroup extends Group
 	{
+		public static var TIMER_FEED			: Function = getTimer;
+		
+		
 		minko var _timelines					: Vector.<ITimeline>;
 		
 		minko var _isPlaying					: Boolean;
@@ -20,6 +23,8 @@ package aerys.minko.scene.node.group
 			
 		minko var _lastTimerTick				: uint;
 		minko var _currentTime					: uint;
+		
+		minko var _onComplete					: Function = null;
 		
 		private var _totalTime					: uint;
 		
@@ -102,10 +107,15 @@ package aerys.minko.scene.node.group
 				if (_totalTime < _timelines[timelineId].duration)
 					_totalTime = _timelines[timelineId].duration;
 			
+			actions.unshift(AnimationGroupAction.animationGroupAction);
+
 			setPlaybackWindow(0, _totalTime);
 			gotoAndPlay(0);
-			
-			actions.unshift(AnimationGroupAction.animationGroupAction);
+		}
+		
+		public function onComplete(f : Function) : void
+		{
+			_onComplete = f;
 		}
 		
 		public function gotoAndPlay(time : Object) : void
@@ -133,7 +143,7 @@ package aerys.minko.scene.node.group
 		public function play() : void
 		{
 			_isPlaying		= true;
-			_lastTimerTick	= getTimer();
+			_lastTimerTick	= TIMER_FEED();
 		}
 		
 		public function stop() : void
