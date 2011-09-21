@@ -53,11 +53,6 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			return _bytecode;
 		}
 		
-		
-		
-		
-		
-		
 		override protected function visitCombineNode(node : Combine) : void
 		{
 			node.accept(this);
@@ -87,14 +82,6 @@ package aerys.minko.render.shader.compiler.visitor.writer
 			registerReadFromCommon(argument, node, swizzle2);
 			registerRead(null, node);
 		}
-		
-		
-		
-		
-		
-		
-		
-		
 		
 		protected function outputHeader() : void
 		{

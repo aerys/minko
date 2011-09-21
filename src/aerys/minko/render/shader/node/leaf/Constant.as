@@ -38,7 +38,7 @@ package aerys.minko.render.shader.node.leaf
 		{
 			for each (var value : Object in values)
 			{
-				if (value is int || value is uint || value is Number)
+				if (value is Number)
 				{
 					_constants[int(offset++)] = value as Number;
 				}

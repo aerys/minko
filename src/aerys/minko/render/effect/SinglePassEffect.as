@@ -37,17 +37,17 @@ package aerys.minko.render.effect
 			return _passes;
 		}
 		
-		override public function fillRenderState(state		: RendererState, 
-												 style		: StyleStack, 
-												 transform	: TransformData, 
-												 world		: Dictionary)  :  Boolean
+		override public function fillRenderState(state			: RendererState, 
+												 styleData		: StyleStack, 
+												 transformData	: TransformData, 
+												 worldData		: Dictionary)  :  Boolean
 		{
-			super.fillRenderState(state, style, transform, world);
+			super.fillRenderState(state, styleData, transformData, worldData);
 			
 			state.depthTest			= CompareMode.LESS;
-			state.blending			= style.get(BasicStyle.BLENDING, Blending.NORMAL) as uint;
-			state.triangleCulling	= style.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
-			state.renderTarget		= _renderTarget || (world[ViewportData] as ViewportData).renderTarget;
+			state.blending			= styleData.get(BasicStyle.BLENDING, Blending.NORMAL) as uint;
+			state.triangleCulling	= styleData.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
+			state.renderTarget		= _renderTarget || (worldData[ViewportData] as ViewportData).renderTarget;
 			state.priority			= _priority;
 			state.rectangle			= null;
 			

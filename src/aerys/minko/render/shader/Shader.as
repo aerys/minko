@@ -92,7 +92,7 @@ package aerys.minko.render.shader
 			setTextures(state, styleStack, local, world);
 			setConstants(state, styleStack, local, world);
 			
-			state.shader = _resource;
+			state.program = _resource;
 			_lastStyleStackVersion	= styleStack.version;
 			_lastTransformVersion	= local.version;
 			

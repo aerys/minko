@@ -2,9 +2,10 @@ package aerys.minko.render.shader.node.operation.manipulation
 {
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
+	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.ICommutativeOperation;
 	
-	public class Combine extends AbstractOperation
+	public class Combine extends AbstractOperation implements IAlignedOperation
 	{
 		override public function get size() : uint
 		{

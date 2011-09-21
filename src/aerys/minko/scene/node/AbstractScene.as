@@ -2,9 +2,10 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.action.IAction;
 	
+	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 	
-	public class AbstractScene implements IScene
+	public class AbstractScene extends EventDispatcher implements IScene
 	{
 		private static var _id	: uint			= 0;
 		

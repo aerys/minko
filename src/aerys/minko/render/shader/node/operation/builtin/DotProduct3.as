@@ -4,6 +4,7 @@ package aerys.minko.render.shader.node.operation.builtin
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.ICommutativeOperation;
+	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
 	
 	public class DotProduct3 extends AbstractOperation implements IAlignedOperation, ICommutativeOperation
 	{

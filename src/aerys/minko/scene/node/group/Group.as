@@ -8,6 +8,9 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 	import flash.net.getClassByAlias;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -32,6 +35,8 @@ package aerys.minko.scene.node.group
 		
 		private var _children		: Vector.<IScene>	= null;
 		private var _numChildren	: int				= 0;
+		
+		private var _dispatcher		: EventDispatcher	= null;
 		
 		public function get name()		: String			{ return _name; }
 		public function get parents()	: Vector.<IScene>	{ return _parents; }
@@ -62,6 +67,7 @@ package aerys.minko.scene.node.group
 		{
 			super();
 			
+			_dispatcher = new EventDispatcher(this);
 			_name = AbstractScene.getDefaultSceneName(this);
 
 			initialize(children);
@@ -132,6 +138,7 @@ package aerys.minko.scene.node.group
 			
 			_children[position] = scene;
 			scene.parents.push(this);
+			scene.dispatchEvent(new Event(Event.ADDED));
 			
 			++_numChildren;
 			
@@ -158,10 +165,12 @@ package aerys.minko.scene.node.group
 		{
 			if (position < _numChildren)
 			{
-				var removedParents : Vector.<IScene> = _children[position].parents;
+				var removedParents 	: Vector.<IScene> 	= _children[position].parents;
+				var scene			: IScene			= _children.splice(position, 1)[0];
 				
-				_children.splice(position, 1);
 				removedParents.splice(removedParents.indexOf(this), 1);
+
+				scene.dispatchEvent(new Event(Event.REMOVED));
 				
 				--_numChildren;
 			}
@@ -262,6 +271,37 @@ package aerys.minko.scene.node.group
 		override flash_proxy function nextValue(index : int) : *
 		{
 			return _children[int(index - 1)];
+		}
+		
+		public function addEventListener(type				: String,
+										 listener			: Function,
+										 useCapture 		: Boolean	= false,
+										 priority			: int		= 0,
+										 useWeakReference	: Boolean	= false) : void
+		{
+			_dispatcher.addEventListener(type, listener, useCapture, priority, useWeakReference);
+		}
+		
+		public function removeEventListener(type		: String,
+											listener	: Function,
+											useCapture	: Boolean	= false) : void
+		{
+			_dispatcher.removeEventListener(type, listener, useCapture);
+		}
+		
+		public function dispatchEvent(event : Event) : Boolean
+		{
+			return willTrigger(event.type) && dispatchEvent(event);
+		}
+		
+		public function hasEventListener(type : String) : Boolean
+		{
+			return _dispatcher.hasEventListener(type);
+		}
+		
+		public function willTrigger(type : String) : Boolean
+		{
+			return _dispatcher.willTrigger(type);
 		}
 	}
 }
