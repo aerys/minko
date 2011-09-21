@@ -19,9 +19,21 @@ package aerys.minko.scene.action.group
 		
 		private static const TYPE : uint = ActionType.UPDATE_TRANSFORM_DATA; // more or less
 		
-		public function get type():uint
+		private var _loop			: Boolean	= true;
+		
+		public function get type() : uint
 		{
 			return TYPE;
+		}
+		
+		public function get loop() : Boolean
+		{
+			return _loop;
+		}
+
+		public function set loop(value : Boolean) : void
+		{
+			_loop = value;
 		}
 		
 		public function run(scene		: IScene,
@@ -30,13 +42,24 @@ package aerys.minko.scene.action.group
 		{
 			var animationGroup	: AnimationGroup = AnimationGroup(scene);
 			
-			var timer : uint = getTimer();
+			var timer : uint = AnimationGroup.TIMER_FEED();
 			if (animationGroup._isPlaying)
 			{
+				var previousTime	: uint	= animationGroup._currentTime;
+
 				animationGroup._currentTime = animationGroup._loopBeginTime + (
 					animationGroup._currentTime + timer
 					- animationGroup._lastTimerTick - animationGroup._loopBeginTime) %
 					(animationGroup._loopEndTime - animationGroup._loopBeginTime);
+				
+				if (animationGroup._onComplete != null && previousTime > animationGroup._currentTime)
+				{
+					animationGroup._currentTime = previousTime;
+					animationGroup._isPlaying = false;
+					animationGroup._onComplete(animationGroup);
+
+					return true;
+				}
 			}
 			
 			animationGroup._lastTimerTick	= timer;

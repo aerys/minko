@@ -21,7 +21,6 @@ package aerys.minko.render.shader
 	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
 	
 	public class Shader
 	{
@@ -301,7 +300,7 @@ package aerys.minko.render.shader
 			else
 			{
 				throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
-					'neither a int, a Number, a Vector4 or a Matrix4x4. Unable to ' +
+					'neither a int, a Number, a Vector4 or a Matrix3D. Unable to ' +
 					'map it to a shader constant.');	
 			}
 		}
