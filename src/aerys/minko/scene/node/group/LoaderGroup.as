@@ -21,6 +21,7 @@ package aerys.minko.scene.node.group
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.describeType;
 
 	/**
 	 * The LoaderGroup class is the interface to load any 3D related content
@@ -47,9 +48,10 @@ package aerys.minko.scene.node.group
 	{
 		private static const NATIVE_FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS		: Object	= new Object();
+		private static const PARSER_CLASS	: String	= "aerys.minko.type.parser::IParser";
 		
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
-		private var _loaderToPosition	: Dictionary		= new Dictionary(true);
+		private var _positions			: Dictionary		= new Dictionary(true);
 		private var _loaderToOptions	: Dictionary		= new Dictionary(true);
 		
 		private var _dispatcher			: EventDispatcher	= null;
@@ -72,17 +74,22 @@ package aerys.minko.scene.node.group
 			return new LoaderGroup().loadBytes(bytes);
 		}
 		
-		public static function registerParser(extension : String,
-											  parser 	: IParser) : void
+		public static function registerParser(extension 	: String,
+											  parserClass 	: Class) : void
 		{
-			PARSERS[extension] = parser;
+			var interfaces : XMLList = describeType(parserClass).factory.implementsInterface;
+			
+			if (interfaces.(@type == PARSER_CLASS).length() == 0)
+				throw new Error("The parser class must implement IParser.");
+			
+			PARSERS[extension] = parserClass;
 		}
 		
 		public function LoaderGroup()
 		{
 			super();
 			
-			registerParser('atf', new ATFParser());
+			registerParser('atf', ATFParser);
 			
 			_dispatcher = new EventDispatcher(this);
 		}
@@ -100,7 +107,7 @@ package aerys.minko.scene.node.group
 			{
 				var loader : Loader = new Loader();
 				
-				_loaderToPosition[loader] = numChildren;
+				_positions[loader] = numChildren;
 				
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 														  loaderCompleteHandler);
@@ -111,17 +118,17 @@ package aerys.minko.scene.node.group
 				var urlLoader 	: URLLoader	= new URLLoader();
 				var uri			: String	= request.url;
 				var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
-				var parser		: IParser	= PARSERS[extension.toLocaleLowerCase()];
+				var parserClass	: Class		= PARSERS[extension.toLocaleLowerCase()];
 				
-				if (!parser)
+				if (!parserClass)
 				{
 					throw new Error("No data parser registered for extension '"
 									+ extension + "'.");
 				}
 
 				_loaderToURI[urlLoader] = request.url;
-				_loaderToPosition[loader] = numChildren;
-				_loaderToOptions[loader] = parserOptions;
+				_positions[urlLoader] = numChildren;
+				_loaderToOptions[urlLoader] = parserOptions;
 				
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
@@ -135,21 +142,20 @@ package aerys.minko.scene.node.group
 		
 		public function loadBytes(bytes : ByteArray, parserOptions : ParserOptions = null) : LoaderGroup
 		{
+			++_total;
+			
 			// try to find a parser
 			for (var extension : String in PARSERS)
 			{
-				var parser : IParser = PARSERS[extension];
+				var parserClass 	: Class				= PARSERS[extension];
+				var parser 			: IParser 			= new parserClass();
 				
 				bytes.position = 0;
+				parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
 				
 				if (parser.parse(bytes, parserOptions))
 				{
-					var data	: Vector.<IScene>	= parser.data;
-					var length	: int				= data ? data.length : 0;
-					
-					for (var i : int = 0; i < length; ++i)
-						addChild(data[i]);
-					
+					_positions[parser] = numChildren;
 					return this;
 				}
 			}
@@ -159,7 +165,6 @@ package aerys.minko.scene.node.group
 			
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
 			loader.loadBytes(bytes);
-			++_total;
 			
 			return this;
 		}
@@ -206,22 +211,19 @@ package aerys.minko.scene.node.group
 		{
 			var loader 		: URLLoader			= event.target as URLLoader;
 			var uri			: String			= _loaderToURI[loader];
-			var offset		: uint				= _loaderToPosition[loader];
+			var offset		: uint				= _positions[loader];
 			var options		: ParserOptions		= _loaderToOptions[loader];
 			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
-			var parser		: IParser			= PARSERS[extension.toLocaleLowerCase()];
-			var data		: Vector.<IScene>	= parser.parse(loader.data as ByteArray, options)
-												  ? parser.data
-												  : null;
-			var length		: int				= data ? data.length : 0;
+			var parserClass	: Class				= PARSERS[extension.toLocaleLowerCase()];
+			var parser		: IParser			= new parserClass();
 			
-			for (var i : int = 0; i < length; ++i)
-				addChildAt(data[i], offset + i);
-			
-			++_loaded;
+			if (parser.parse(loader.data as ByteArray, options))
+			{
+				_positions[parser] = numChildren;
+				parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
+			}
 
-			if (_loaded == _total)
-				dispatchEvent(new Event(Event.COMPLETE));
+			complete();
 		}
 		
 		private function loaderCompleteHandler(event : Event) : void
@@ -234,8 +236,27 @@ package aerys.minko.scene.node.group
 			else if (info.content is Bitmap)
 				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
 			
-			addChildAt(texture, _loaderToPosition[info.loader]);
+//			texture.name = info.url;
+			addChildAt(texture, _positions[info.loader]);
 			
+			complete()
+		}
+		
+		private function parserCompleteHandler(event : Event) : void
+		{
+			var parser 	: IParser			= event.target as IParser;
+			var data	: Vector.<IScene>	= parser.data;
+			var offset	: int				= _positions[parser];
+			var length	: int				= data ? data.length : 0;
+			
+			for (var i : int = 0; i < length; ++i)
+				addChildAt(data[i], offset + i);
+			
+			complete();
+		}
+		
+		private function complete() : void
+		{
 			++_loaded;
 			
 			if (_loaded == _total)
