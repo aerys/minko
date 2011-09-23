@@ -1,16 +1,17 @@
 package aerys.minko.render.effect.debug
 {
+	import aerys.minko.render.effect.IRenderingEffect;
 	import aerys.minko.render.effect.SinglePassEffect;
 	import aerys.minko.render.effect.animation.AnimationShaderPart;
 	import aerys.minko.render.effect.animation.AnimationStyle;
 	import aerys.minko.render.shader.SValue;
-	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.animation.AnimationMethod;
 	
 	import flash.utils.Dictionary;
 
-	public class DebugEffect extends SinglePassEffect
+	public class DebugEffect extends SinglePassEffect implements IRenderingEffect
 	{
 		private const COLOR			: SValue	= float4(.5, .5, .5, 1.);
 		
