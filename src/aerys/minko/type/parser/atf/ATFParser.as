@@ -25,7 +25,8 @@ package aerys.minko.type.parser.atf
 			{
 				data.position = 0;
 				
-				_data = Vector.<IScene>([new ATFTexture(data)]);
+				if (options.loadTextures)
+					_data = Vector.<IScene>([new ATFTexture(data)]);
 				
 				dispatchEvent(new Event(Event.COMPLETE));
 				

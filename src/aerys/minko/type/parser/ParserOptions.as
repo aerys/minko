@@ -5,7 +5,8 @@ package aerys.minko.type.parser
 		private var _loadTextures				: Boolean	= true;
 		private var _textureFilenameFunction	: Function	= null;
 		private var _textureFunction			: Function	= null;
-		private var _sceneFunction				: Function	= null;
+		
+//		private var _sceneFunction				: Function	= null;
 		
 		private var _loadMeshes					: Boolean	= true;
 		private var _mergeMeshes				: Boolean	= false;
@@ -15,7 +16,7 @@ package aerys.minko.type.parser
 		public function get loadTextures()				: Boolean	{ return _loadTextures; }
 		public function get textureFilenameFunction()	: Function	{ return _textureFilenameFunction; }
 		public function get textureFunction()			: Function	{ return _textureFunction; }
-		public function get sceneFunction()				: Function	{ return _sceneFunction; }
+//		public function get sceneFunction()				: Function	{ return _sceneFunction; }
 
 		public function get loadMeshes()				: Boolean	{ return _loadMeshes; }
 		public function get mergeMeshes()				: Boolean	{ return _mergeMeshes; }
@@ -37,10 +38,10 @@ package aerys.minko.type.parser
 			_textureFunction = value;
 		}
 		
-		public function set sceneFunction(value : Function) : void
+		/*public function set sceneFunction(value : Function) : void
 		{
 			_sceneFunction = value;
-		}
+		}*/
 		
 		public function set loadMeshes(value : Boolean) : void
 		{

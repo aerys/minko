@@ -36,9 +36,9 @@ package aerys.minko.scene.node.texture
 			_styleProperty = value;
 		}
 		
-		public function ColorTexture(rgba : uint = 0x000000ff)
+		public function ColorTexture(argb : uint = 0xff000000)
 		{
-			_color			= rgba;
+			_color			= argb;
 			_styleProperty	= BasicStyle.DIFFUSE;
 			
 			actions[0]		= ColorTextureAction.colorTextureAction;

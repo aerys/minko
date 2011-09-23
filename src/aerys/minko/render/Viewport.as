@@ -4,6 +4,7 @@ package aerys.minko.render
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
 	import aerys.minko.render.effect.IPostProcessEffect;
+	import aerys.minko.render.effect.IRenderingEffect;
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
@@ -63,7 +64,7 @@ package aerys.minko.render
 		private var _stage3d			: Stage3D					= null;
 		private var _rendererClass		: Class						= null;
 		private var _renderer			: IRenderer					= null;
-		private var _defaultEffect		: IEffect					= new BasicEffect();
+		private var _defaultEffect		: IRenderingEffect			= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
 		private var _transformData		: TransformData				= new TransformData();
 		
@@ -173,12 +174,12 @@ package aerys.minko.render
 			}
 		}
 		
-		public function get defaultEffect() : IEffect
+		public function get defaultEffect() : IRenderingEffect
 		{
 			return _defaultEffect;
 		}
 		
-		public function set defaultEffect(value : IEffect) : void
+		public function set defaultEffect(value : IRenderingEffect) : void
 		{
 			_defaultEffect = value;
 		}

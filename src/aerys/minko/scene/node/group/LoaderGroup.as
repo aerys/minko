@@ -232,7 +232,6 @@ package aerys.minko.scene.node.group
 			else if (info.content is Bitmap)
 				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
 			
-//			texture.name = info.url;
 			addChildAt(texture, _positions[info.loader]);
 			
 			complete()
@@ -240,12 +239,12 @@ package aerys.minko.scene.node.group
 		
 		private function parserCompleteHandler(event : Event) : void
 		{
-			var parser 	: IParser			= event.target as IParser;
-			var data	: Vector.<IScene>	= parser.data;
-			var offset	: int				= _positions[parser];
-			var length	: int				= data ? data.length : 0;
+			var parser 		: IParser			= event.target as IParser;
+			var data		: Vector.<IScene>	= parser.data;
+			var numNodes	: int				= data ? data.length : 0;
+			var offset		: int				= _positions[parser];
 			
-			for (var i : int = 0; i < length; ++i)
+			for (var i : int = 0; i < numNodes; ++i)
 				addChildAt(data[i], offset + i);
 			
 			complete();
