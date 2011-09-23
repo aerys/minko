@@ -291,7 +291,7 @@ package aerys.minko.scene.node.group
 		
 		public function dispatchEvent(event : Event) : Boolean
 		{
-			return willTrigger(event.type) && dispatchEvent(event);
+			return willTrigger(event.type) && _dispatcher.dispatchEvent(event);
 		}
 		
 		public function hasEventListener(type : String) : Boolean

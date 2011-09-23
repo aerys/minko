@@ -102,9 +102,9 @@ package aerys.minko.render.shader
 		
 		private var _hashToShader		: Object		= new Object();
 		
-		private var _styleStack			: StyleStack	= null;
-		private var _local				: TransformData		= null;
-		private var _world				: Dictionary	= null;
+		private var _styleData			: StyleStack	= null;
+		private var _transformData		: TransformData	= null;
+		private var _worldData			: Dictionary	= null;
 		
 		private var _lastFrameId		: uint			= 0;
 		private var _styleStackVersion	: uint			= 0;
@@ -118,11 +118,11 @@ package aerys.minko.render.shader
 			var frameId	: uint		= (world[ViewportData] as ViewportData).frameId;
 			var shader 	: Shader	= _lastShader;
 
-			_styleStack = style;
-			_local = transform;
-			_world = world;
+			_styleData = style;
+			_transformData = transform;
+			_worldData = world;
 			
-			if (frameId != _lastFrameId  || _styleStack.version != _styleStackVersion || !_lastShader)
+			if (frameId != _lastFrameId  || _styleData.version != _styleStackVersion || !_lastShader)
 			{
 				var hash : String 	= getDataHash(style, transform, world);
 			
@@ -135,7 +135,7 @@ package aerys.minko.render.shader
 				}
 				
 				_lastFrameId = frameId;
-				_styleStackVersion = _styleStack.version;
+				_styleStackVersion = _styleData.version;
 				_lastShader = shader;
 			}
 			
@@ -192,7 +192,7 @@ package aerys.minko.render.shader
 		 */
 		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
 		{
-			return _styleStack.get(styleId, defaultValue);
+			return _styleData.get(styleId, defaultValue);
 		}
 		
 		/**
@@ -203,12 +203,12 @@ package aerys.minko.render.shader
 		 */
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
-			return _styleStack.isSet(styleId);
+			return _styleData.isSet(styleId);
 		}
 		
 		protected final function getWorldDataList(key : Class) : WorldDataList
 		{
-			return _world[key];
+			return _worldData[key];
 		}
 		
 		public function dispose() : void

@@ -3,6 +3,7 @@ package aerys.minko.type.parser.atf
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.texture.ATFTexture;
 	import aerys.minko.type.parser.IParser;
+	import aerys.minko.type.parser.ParserOptions;
 	
 	import flash.utils.ByteArray;
 	
@@ -15,7 +16,7 @@ package aerys.minko.type.parser.atf
 			return _data;
 		}
 		
-		public function parse(data : ByteArray) : Boolean
+		public function parse(data : ByteArray, options : ParserOptions) : Boolean
 		{
 			data.position = 0;
 			

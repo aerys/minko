@@ -3,11 +3,12 @@ package aerys.minko.render
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IPostProcessEffect;
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -15,7 +16,6 @@ package aerys.minko.render
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	import aerys.minko.scene.visitor.WorldDataVisitor;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionable;
 	
 	import flash.display.DisplayObject;
 	import flash.display.Graphics;
@@ -67,7 +67,7 @@ package aerys.minko.render
 		private var _backgroundColor	: int						= 0;
 		private var _transformData		: TransformData				= new TransformData();
 		
-		private var _postProcessEffect	: IEffect					= null;
+		private var _postProcessEffect	: IPostProcessEffect		= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
 		
 		private var _viewportData		: ViewportData				= null;
@@ -77,12 +77,12 @@ package aerys.minko.render
 		private var _mask				: Shape						= new Shape();
 		private var _alwaysOnTop		: Boolean					= false;
 		
-		public function get postProcessEffect() : IEffect
+		public function get postProcessEffect() : IPostProcessEffect
 		{
 			return _postProcessEffect;
 		}
 
-		public function set postProcessEffect(value : IEffect) : void
+		public function set postProcessEffect(value : IPostProcessEffect) : void
 		{
 			_postProcessEffect = value;
 		}

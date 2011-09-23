@@ -5,6 +5,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.scene.node.texture.MovieClipTexture;
 	import aerys.minko.type.parser.IParser;
+	import aerys.minko.type.parser.ParserOptions;
 	import aerys.minko.type.parser.atf.ATFParser;
 	
 	import flash.display.Bitmap;
@@ -49,6 +50,7 @@ package aerys.minko.scene.node.group
 		
 		private var _loaderToURI		: Dictionary		= new Dictionary(true);
 		private var _loaderToPosition	: Dictionary		= new Dictionary(true);
+		private var _loaderToOptions	: Dictionary		= new Dictionary(true);
 		
 		private var _dispatcher			: EventDispatcher	= null;
 		
@@ -92,7 +94,7 @@ package aerys.minko.scene.node.group
 		 * @return The LoaderGroup object itself.
 		 * 
 		 */
-		public function load(request : URLRequest) : LoaderGroup
+		public function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			if (request.url.match(NATIVE_FORMATS))
 			{
@@ -119,6 +121,7 @@ package aerys.minko.scene.node.group
 
 				_loaderToURI[urlLoader] = request.url;
 				_loaderToPosition[loader] = numChildren;
+				_loaderToOptions[loader] = parserOptions;
 				
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
@@ -130,7 +133,7 @@ package aerys.minko.scene.node.group
 			return this;
 		}
 		
-		public function loadBytes(bytes : ByteArray) : LoaderGroup
+		public function loadBytes(bytes : ByteArray, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			// try to find a parser
 			for (var extension : String in PARSERS)
@@ -139,7 +142,7 @@ package aerys.minko.scene.node.group
 				
 				bytes.position = 0;
 				
-				if (parser.parse(bytes))
+				if (parser.parse(bytes, parserOptions))
 				{
 					var data	: Vector.<IScene>	= parser.data;
 					var length	: int				= data ? data.length : 0;
@@ -161,7 +164,7 @@ package aerys.minko.scene.node.group
 			return this;
 		}
 		
-		public function loadClass(asset : Class) : LoaderGroup
+		public function loadClass(asset : Class, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			var assetObject : Object 	= new asset();
 			
@@ -193,7 +196,7 @@ package aerys.minko.scene.node.group
 			}
 			else if (assetObject is ByteArray)
 			{
-				return loadBytes(assetObject as ByteArray);
+				return loadBytes(assetObject as ByteArray, parserOptions);
 			}
 			
 			return this;
@@ -204,9 +207,10 @@ package aerys.minko.scene.node.group
 			var loader 		: URLLoader			= event.target as URLLoader;
 			var uri			: String			= _loaderToURI[loader];
 			var offset		: uint				= _loaderToPosition[loader];
+			var options		: ParserOptions		= _loaderToOptions[loader];
 			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
 			var parser		: IParser			= PARSERS[extension.toLocaleLowerCase()];
-			var data		: Vector.<IScene>	= parser.parse(loader.data as ByteArray)
+			var data		: Vector.<IScene>	= parser.parse(loader.data as ByteArray, options)
 												  ? parser.data
 												  : null;
 			var length		: int				= data ? data.length : 0;

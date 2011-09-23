@@ -1,6 +1,7 @@
 package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.effect.IRenderingEffect;
 	import aerys.minko.render.effect.SinglePassEffect;
 	import aerys.minko.render.effect.animation.AnimationShaderPart;
 	import aerys.minko.render.effect.animation.AnimationStyle;
@@ -19,7 +20,7 @@ package aerys.minko.render.effect.basic
 	[StyleParameter(name="basic diffuse map",type="texture")]
 	[StyleParameter(name="basic diffuse multiplier",type="color")]
 	
-	public class BasicEffect extends SinglePassEffect
+	public class BasicEffect extends SinglePassEffect implements IRenderingEffect
 	{
 		public function BasicEffect(priority		: Number		= 0,
 								  	renderTarget	: RenderTarget	= null)

@@ -31,8 +31,8 @@ package aerys.minko.render.effect
 		}
 		
 		public function getPasses(styleStack 	: StyleStack,
-								  local 		: TransformData,
-								  world 		: Dictionary) : Vector.<IEffectPass>
+								  transformData : TransformData,
+								  worldData 	: Dictionary) : Vector.<IEffectPass>
 		{
 			return _passes;
 		}

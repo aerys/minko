@@ -8,6 +8,6 @@ package aerys.minko.type.parser
 	{
 		function get data() : Vector.<IScene>;
 		
-		function parse(data : ByteArray) : Boolean
+		function parse(data : ByteArray, options : ParserOptions) : Boolean
 	}
 }
