@@ -33,17 +33,17 @@ package aerys.minko.scene.node.debug
 			
 			text.text = "x";
 			tmp.draw(text);
-			repereX.texture = new BitmapTexture(tmp);
+			repereX.textures.addChild(new BitmapTexture(tmp));
 			
 			tmp.fillRect(tmp.rect, 0xff00ff00);
 			text.text = "y";
 			tmp.draw(text);
-			repereY.texture = new BitmapTexture(tmp);
+			repereY.textures.addChild(new BitmapTexture(tmp));
 			
 			tmp.fillRect(tmp.rect, 0xff0000ff);
 			text.text = "z";
 			tmp.draw(text);
-			repereZ.texture = new BitmapTexture(tmp);
+			repereZ.textures.addChild(new BitmapTexture(tmp));
 			
 			repereX.transform.appendTranslation(1, 0, 0);
 			repereY.transform.appendTranslation(0, 1, 0);

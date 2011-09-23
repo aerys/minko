@@ -30,19 +30,19 @@ package aerys.minko.render.effect.common
 			_renderTarget		= renderTarget;
 		}
 		
-		public function fillRenderState(state		: RendererState,
-										styleStack	: StyleStack, 
-										local		: TransformData,
-										world		: Dictionary) : Boolean
+		public function fillRenderState(state			: RendererState,
+										styleData		: StyleStack, 
+										transformData	: TransformData,
+										worldData		: Dictionary) : Boolean
 		{
 			state.blending			= Blending.NORMAL;
 			state.priority			= _priority;
-			state.renderTarget		= _renderTarget || world[ViewportData].renderTarget;
+			state.renderTarget		= _renderTarget || worldData[ViewportData].renderTarget;
 			state.program			= SHADER.resource;
 //			state.triangleCulling	= styleStack.get(BasicStyle.TRIANGLE_CULLING, TriangleCulling.BACK) as uint;
 			state.triangleCulling	= TriangleCulling.FRONT;
 			
-			SHADER.fillRenderState(state, styleStack, local, world);
+			SHADER.fillRenderState(state, styleData, transformData, worldData);
 			
 			return true;
 		}

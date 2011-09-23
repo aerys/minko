@@ -43,7 +43,7 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var transformData		: TransformData			= visitor.transformData;
+			var transformData	: TransformData		= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleStack		= renderingData.styleStack;
