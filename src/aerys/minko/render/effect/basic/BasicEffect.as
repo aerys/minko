@@ -80,13 +80,13 @@ package aerys.minko.render.effect.basic
 			return diffuse;
 		}
 		
-		override protected function getDataHash(style	: StyleStack,
-												transform	: TransformData,
-												world	: Dictionary) : String
+		override protected function getDataHash(styleData		: StyleStack,
+												transformData	: TransformData,
+												worldData		: Dictionary) : String
 		{
 			var hash 			: String	= "basic";
-			var diffuseStyle 	: Object 	= style.isSet(BasicStyle.DIFFUSE)
-											  ? style.get(BasicStyle.DIFFUSE)
+			var diffuseStyle 	: Object 	= styleData.isSet(BasicStyle.DIFFUSE)
+											  ? styleData.get(BasicStyle.DIFFUSE)
 											  : null;
 			
 			if (diffuseStyle == null)
@@ -98,15 +98,15 @@ package aerys.minko.render.effect.basic
 			else
 				throw new Error('Invalid BasicStyle.DIFFUSE value');
 			
-			if (style.isSet(BasicStyle.DIFFUSE_MULTIPLIER))
+			if (styleData.isSet(BasicStyle.DIFFUSE_MULTIPLIER))
 				hash += "_diffuseMultiplier";
 			
-			if (style.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
+			if (styleData.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
 			{
 				hash += "_animation(";
-				hash += "method=" + style.get(AnimationStyle.METHOD);
-				hash += ",maxInfluences=" + style.get(AnimationStyle.MAX_INFLUENCES, 0);
-				hash += ",numBones=" + style.get(AnimationStyle.NUM_BONES, 0);
+				hash += "method=" + styleData.get(AnimationStyle.METHOD);
+				hash += ",maxInfluences=" + styleData.get(AnimationStyle.MAX_INFLUENCES, 0);
+				hash += ",numBones=" + styleData.get(AnimationStyle.NUM_BONES, 0);
 				hash += ")";
 			}
 			
