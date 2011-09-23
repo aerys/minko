@@ -59,19 +59,19 @@ package aerys.minko.scene.node.group
 		private var _total				: uint				= 0;
 		private var _loaded				: uint				= 0;
 		
-		public static function load(request : URLRequest) : LoaderGroup
+		public static function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
-			return new LoaderGroup().load(request);
+			return new LoaderGroup().load(request, parserOptions);
 		}
 		
-		public static function loadClass(asset : Class) : LoaderGroup
+		public static function loadClass(asset : Class, parserOptions : ParserOptions = null) : LoaderGroup
 		{
-			return new LoaderGroup().loadClass(asset);
+			return new LoaderGroup().loadClass(asset, parserOptions);
 		}
 		
-		public static function loadBytes(bytes : ByteArray) : LoaderGroup
+		public static function loadBytes(bytes : ByteArray, parserOptions : ParserOptions = null) : LoaderGroup
 		{
-			return new LoaderGroup().loadBytes(bytes);
+			return new LoaderGroup().loadBytes(bytes, parserOptions);
 		}
 		
 		public static function registerParser(extension 	: String,
