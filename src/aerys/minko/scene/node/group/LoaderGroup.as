@@ -147,17 +147,16 @@ package aerys.minko.scene.node.group
 			// try to find a parser
 			for (var extension : String in PARSERS)
 			{
-				var parserClass 	: Class				= PARSERS[extension];
-				var parser 			: IParser 			= new parserClass();
+				var parserClass : Class		= PARSERS[extension];
+				var parser 		: IParser 	= new parserClass();
 				
 				bytes.position = 0;
+				_positions[parser] = numChildren;
+				
 				parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
 				
 				if (parser.parse(bytes, parserOptions))
-				{
-					_positions[parser] = numChildren;
 					return this;
-				}
 			}
 			
 			// no parser was found, try to load as a native format
@@ -217,13 +216,10 @@ package aerys.minko.scene.node.group
 			var parserClass	: Class				= PARSERS[extension.toLocaleLowerCase()];
 			var parser		: IParser			= new parserClass();
 			
-			if (parser.parse(loader.data as ByteArray, options))
-			{
-				_positions[parser] = numChildren;
-				parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
-			}
-
-			complete();
+			parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
+			_positions[parser] = numChildren;
+			
+			parser.parse(loader.data as ByteArray, options);
 		}
 		
 		private function loaderCompleteHandler(event : Event) : void

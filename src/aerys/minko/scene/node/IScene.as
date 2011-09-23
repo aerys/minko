@@ -13,6 +13,8 @@ package aerys.minko.scene.node
 	public interface IScene extends IEventDispatcher
 	{
 		function get name()		: String;
+		function set name(value : String) : void;
+		
 		function get parents()	: Vector.<IScene>;
 		function get actions()	: Vector.<IAction>;
 	}

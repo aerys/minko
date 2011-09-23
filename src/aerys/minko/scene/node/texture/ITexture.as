@@ -17,7 +17,5 @@ package aerys.minko.scene.node.texture
 	{
 		function get styleProperty()	: int;
 		function get resource()			: Texture3DResource;
-		
-		function set name(value : String) : void;
 	}
 }
