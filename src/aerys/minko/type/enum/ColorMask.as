@@ -1,4 +1,4 @@
-package aerys.minko.render.renderer.state
+package aerys.minko.type.enum
 {
 	public final class ColorMask
 	{

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.node.operation.manipulation
 {
-	import aerys.minko.render.renderer.state.Blending;
-	import aerys.minko.render.renderer.state.BlendingSource;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.BlendingSource;
 	import aerys.minko.render.shader.node.Components;
 	import aerys.minko.render.shader.node.Dummy;
 	import aerys.minko.render.shader.node.INode;

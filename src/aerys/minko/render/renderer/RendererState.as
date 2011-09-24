@@ -1,4 +1,4 @@
-package aerys.minko.render.renderer.state
+package aerys.minko.render.renderer
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
@@ -18,6 +18,9 @@ package aerys.minko.render.renderer.state
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
+	import aerys.minko.type.enum.ColorMask;
+	import aerys.minko.type.enum.CompareMode;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	public final class RendererState
 	{

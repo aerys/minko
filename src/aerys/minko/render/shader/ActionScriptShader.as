@@ -2,7 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
@@ -142,24 +142,6 @@ package aerys.minko.render.shader
 			shader.fillRenderState(state, style, transform, world);
 			
 			return true;
-		}
-		
-		/**
-		 * The getDataHash method returns a String computed from the style, local and world data.
-		 * This value is used as a hash that defines all the values used as conditionnals in the
-		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
-		 *  
-		 * @param style
-		 * @param local
-		 * @param world
-		 * @return 
-		 * 
-		 */
-		protected function getDataHash(style	: StyleStack, 
-									   transform	: TransformData, 
-									   world	: Dictionary) : String
-		{
-			return "";
 		}
 		
 		/**

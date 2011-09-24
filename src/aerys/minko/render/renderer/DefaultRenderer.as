@@ -4,7 +4,6 @@ package aerys.minko.render.renderer
 	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.renderer.state.RendererState;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.stream.IndexStream;

@@ -9,8 +9,11 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
+	
+	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{
@@ -692,5 +695,25 @@ package aerys.minko.render.shader
 			
 			return new Constant(value);
 		}
+		
+		
+		/**
+		 * The getDataHash method returns a String computed from the style, local and world data.
+		 * This value is used as a hash that defines all the values used as conditionnals in the
+		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
+		 *  
+		 * @param style
+		 * @param local
+		 * @param world
+		 * @return 
+		 * 
+		 */
+		public function getDataHash(styleData		: StyleStack, 
+									transformData	: TransformData, 
+									worldData		: Dictionary) : String
+		{
+			return null;
+		}
+		
 	}
 }

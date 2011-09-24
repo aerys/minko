@@ -13,21 +13,20 @@ package aerys.minko.render.effect.debug
 
 	public class VertexNormalColorEffect extends SinglePassEffect implements IRenderingEffect
 	{
+		private static const ANIMATION	: AnimationShaderPart	= new AnimationShaderPart();
+		
 		private var _vertexNormal	: SValue	= null;
 		
 		override protected function getOutputPosition() : SValue
 		{
-			var animationShaderPart : AnimationShaderPart = new AnimationShaderPart();
+			var animationMethod		: uint		= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED) as uint;
+			var maxInfluences		: uint		= getStyleConstant(AnimationStyle.MAX_INFLUENCES, 0) as uint;
+			var numBones			: uint		= getStyleConstant(AnimationStyle.NUM_BONES, 0) as uint;
+			var vertexPosition		: SValue	= ANIMATION.getVertexPosition(animationMethod, maxInfluences, numBones);
 			
-			var animationMethod		: uint	= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED) as uint;
-			var maxInfluences		: uint	= getStyleConstant(AnimationStyle.MAX_INFLUENCES, 0) as uint;
-			var numBones			: uint	= getStyleConstant(AnimationStyle.NUM_BONES, 0) as uint;
+			_vertexNormal	= ANIMATION.getVertexNormal(animationMethod, maxInfluences, numBones);
 			
-			var animationPosition	: SValue	= animationShaderPart.getVertexPosition(animationMethod, maxInfluences, numBones);
-			
-			_vertexNormal	= animationShaderPart.getVertexNormal(animationMethod, maxInfluences, numBones);
-			
-			return multiply4x4(animationPosition, localToScreenMatrix);
+			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
 		
 		override protected function getOutputColor() : SValue
@@ -35,22 +34,11 @@ package aerys.minko.render.effect.debug
 			return divide(add(1., interpolate(_vertexNormal)), 2.);
 		}
 		
-		override protected function getDataHash(styleData		: StyleStack,
-												transformData	: TransformData,
-												worldData		: Dictionary) : String
+		override public function getDataHash(styleData		: StyleStack,
+											 transformData	: TransformData,
+											 worldData		: Dictionary) : String
 		{
-			var hash : String	= "vertexNormalColor";
-			
-			if (styleData.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
-			{
-				hash += "_animation(";
-				hash += "method=" + styleData.get(AnimationStyle.METHOD);
-				hash += ",maxInfluences=" + styleData.get(AnimationStyle.MAX_INFLUENCES, 0);
-				hash += ",numBones=" + styleData.get(AnimationStyle.NUM_BONES, 0);
-				hash += ")";
-			}
-			
-			return hash;
+			return "vertexNormalColor" + ANIMATION.getDataHash(styleData, transformData, worldData);
 		}
 	}
 }

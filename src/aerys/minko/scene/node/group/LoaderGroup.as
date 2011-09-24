@@ -103,7 +103,9 @@ package aerys.minko.scene.node.group
 		 */
 		public function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
-			if (request.url.match(NATIVE_FORMATS))
+			var uri	: String	= request.url.toLocaleLowerCase();
+			
+			if (uri.match(NATIVE_FORMATS))
 			{
 				var loader : Loader = new Loader();
 				
@@ -116,9 +118,8 @@ package aerys.minko.scene.node.group
 			else
 			{
 				var urlLoader 	: URLLoader	= new URLLoader();
-				var uri			: String	= request.url;
 				var extension	: String	= uri.substr(uri.lastIndexOf(".") + 1);
-				var parserClass	: Class		= PARSERS[extension.toLocaleLowerCase()];
+				var parserClass	: Class		= PARSERS[extension];
 				
 				if (!parserClass)
 				{

@@ -2,10 +2,10 @@ package aerys.minko.render.effect
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.renderer.state.Blending;
-	import aerys.minko.render.renderer.state.CompareMode;
-	import aerys.minko.render.renderer.state.RendererState;
-	import aerys.minko.render.renderer.state.TriangleCulling;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.CompareMode;
+	import aerys.minko.render.renderer.RendererState;
+	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.StyleStack;

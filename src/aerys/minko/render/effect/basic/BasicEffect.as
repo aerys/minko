@@ -5,9 +5,9 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.effect.SinglePassEffect;
 	import aerys.minko.render.effect.animation.AnimationShaderPart;
 	import aerys.minko.render.effect.animation.AnimationStyle;
-	import aerys.minko.render.renderer.state.Blending;
-	import aerys.minko.render.renderer.state.CompareMode;
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.CompareMode;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.SValue;
 	import aerys.minko.scene.data.StyleStack;
@@ -17,11 +17,13 @@ package aerys.minko.render.effect.basic
 	
 	import flash.utils.Dictionary;
 	
-	[StyleParameter(name="basic diffuse map",type="texture")]
-	[StyleParameter(name="basic diffuse multiplier",type="color")]
+	[StyleParameter(name="basic diffuse map", type="texture")]
+	[StyleParameter(name="basic diffuse multiplier", type="color")]
 	
 	public class BasicEffect extends SinglePassEffect implements IRenderingEffect
 	{
+		private static const ANIMATION	: AnimationShaderPart	= new AnimationShaderPart();
+		
 		public function BasicEffect(priority		: Number		= 0,
 								  	renderTarget	: RenderTarget	= null)
 		{
@@ -45,15 +47,12 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getOutputPosition() : SValue
 		{
-			var animationShaderPart : AnimationShaderPart = new AnimationShaderPart();
+			var animationMethod		: uint		= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED) as uint;
+			var maxInfluences		: uint		= getStyleConstant(AnimationStyle.MAX_INFLUENCES, 0) as uint;
+			var numBones			: uint		= getStyleConstant(AnimationStyle.NUM_BONES, 0) as uint;
+			var vertexPosition		: SValue	= ANIMATION.getVertexPosition(animationMethod, maxInfluences, numBones);
 			
-			var animationMethod		: uint	= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED) as uint;
-			var maxInfluences		: uint	= getStyleConstant(AnimationStyle.MAX_INFLUENCES, 0) as uint;
-			var numBones			: uint	= getStyleConstant(AnimationStyle.NUM_BONES, 0) as uint;
-			
-			var animationPosition	: SValue	= animationShaderPart.getVertexPosition(animationMethod, maxInfluences, numBones);
-			
-			return multiply4x4(animationPosition, localToScreenMatrix);
+			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
 		
 		override protected function getOutputColor() : SValue
@@ -80,7 +79,7 @@ package aerys.minko.render.effect.basic
 			return diffuse;
 		}
 		
-		override protected function getDataHash(styleData		: StyleStack,
+		override public function getDataHash(styleData		: StyleStack,
 												transformData	: TransformData,
 												worldData		: Dictionary) : String
 		{
@@ -101,14 +100,7 @@ package aerys.minko.render.effect.basic
 			if (styleData.isSet(BasicStyle.DIFFUSE_MULTIPLIER))
 				hash += "_diffuseMultiplier";
 			
-			if (styleData.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
-			{
-				hash += "_animation(";
-				hash += "method=" + styleData.get(AnimationStyle.METHOD);
-				hash += ",maxInfluences=" + styleData.get(AnimationStyle.MAX_INFLUENCES, 0);
-				hash += ",numBones=" + styleData.get(AnimationStyle.NUM_BONES, 0);
-				hash += ")";
-			}
+			hash += ANIMATION.getDataHash(styleData, transformData, worldData)
 			
 			return hash;
 		}

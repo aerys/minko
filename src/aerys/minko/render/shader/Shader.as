@@ -1,7 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
