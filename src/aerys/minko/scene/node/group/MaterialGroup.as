@@ -34,11 +34,17 @@ package aerys.minko.scene.node.group
 			_textures.dispatchEvent(new Event(Event.ADDED));
 		}
 		
-		public function MaterialGroup(effect : IRenderingEffect, ...children)
+		public function MaterialGroup(effect : IRenderingEffect, ...textures)
 		{
-			super(children);
+			super();
 			
+			initialize(effect, textures);
+		}
+		
+		private function initialize(effect : IRenderingEffect, textures : Array) : void
+		{
 			_effect = effect;
+			_textures = new Group(textures);
 			
 			actions.unshift(MaterialGroupAction.materialGroupAction,
 							new PushEffectAction());
