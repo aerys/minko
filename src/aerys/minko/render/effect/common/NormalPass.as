@@ -11,7 +11,7 @@ package aerys.minko.render.effect.common
 	import aerys.minko.render.shader.node.common.ClipspacePosition;
 	import aerys.minko.render.shader.node.common.WorldNormal;
 	import aerys.minko.scene.data.TransformData;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.ViewportData;
 	
 	import flash.utils.Dictionary;
@@ -32,7 +32,7 @@ package aerys.minko.render.effect.common
 		}
 		
 		public function fillRenderState(state			: RendererState,
-										styleData		: StyleStack, 
+										styleData		: StyleData, 
 										transformData	: TransformData, 
 										worldData		: Dictionary) : Boolean
 		{

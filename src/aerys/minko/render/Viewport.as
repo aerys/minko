@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
-	import aerys.minko.render.effect.IPostProcessEffect;
+	import aerys.minko.render.effect.IPostProcessingEffect;
 	import aerys.minko.render.effect.IRenderingEffect;
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
@@ -68,7 +68,7 @@ package aerys.minko.render
 		private var _backgroundColor	: int						= 0;
 		private var _transformData		: TransformData				= new TransformData();
 		
-		private var _postProcessEffect	: IPostProcessEffect		= null;
+		private var _postProcessEffect	: IPostProcessingEffect		= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
 		
 		private var _viewportData		: ViewportData				= null;
@@ -78,12 +78,12 @@ package aerys.minko.render
 		private var _mask				: Shape						= new Shape();
 		private var _alwaysOnTop		: Boolean					= false;
 		
-		public function get postProcessEffect() : IPostProcessEffect
+		public function get postProcessEffect() : IPostProcessingEffect
 		{
 			return _postProcessEffect;
 		}
 
-		public function set postProcessEffect(value : IPostProcessEffect) : void
+		public function set postProcessEffect(value : IPostProcessingEffect) : void
 		{
 			_postProcessEffect = value;
 		}

@@ -27,7 +27,7 @@ package aerys.minko.scene.data
 		public static const FRUSTUM			: String = 'frustum';
 		
 		// data provider
-		protected var _styleStack	: StyleStack;
+		protected var _styleStack	: StyleData;
 		protected var _transformData	: TransformData;
 		protected var _worldData	: Dictionary;
 		
@@ -227,7 +227,7 @@ package aerys.minko.scene.data
 			reset()
 		}
 		
-		public function setDataProvider(styleStack		: StyleStack, 
+		public function setDataProvider(styleStack		: StyleData, 
 										transformData	: TransformData,
 										worldData		: Dictionary) : void
 		{

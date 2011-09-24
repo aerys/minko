@@ -7,8 +7,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
-	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.data.WorldDataList;
 	import aerys.minko.type.math.Vector4;
@@ -96,13 +96,13 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class ActionScriptShader extends ActionScriptShaderPart
+	public class ActionScriptShader extends ActionScriptShaderPart implements IShader
 	{
 		use namespace minko;
 		
 		private var _hashToShader		: Object		= new Object();
 		
-		private var _styleData			: StyleStack	= null;
+		private var _styleData			: StyleData	= null;
 		private var _transformData		: TransformData	= null;
 		private var _worldData			: Dictionary	= null;
 		
@@ -110,21 +110,21 @@ package aerys.minko.render.shader
 		private var _styleStackVersion	: uint			= 0;
 		private var _lastShader			: Shader		= null;
 		
-		public function fillRenderState(state		: RendererState, 
-										style		: StyleStack, 
-										transform	: TransformData, 
-										world		: Dictionary) : Boolean
+		public function fillRenderState(state			: RendererState, 
+										styleData		: StyleData, 
+										transformData	: TransformData, 
+										worldData		: Dictionary) : void
 		{
-			var frameId	: uint		= (world[ViewportData] as ViewportData).frameId;
+			var frameId	: uint		= (worldData[ViewportData] as ViewportData).frameId;
 			var shader 	: Shader	= _lastShader;
 
-			_styleData = style;
-			_transformData = transform;
-			_worldData = world;
+			_styleData = styleData;
+			_transformData = transformData;
+			_worldData = worldData;
 			
 			if (frameId != _lastFrameId  || _styleData.version != _styleStackVersion || !_lastShader)
 			{
-				var hash : String 	= getDataHash(style, transform, world);
+				var hash : String 	= getDataHash(styleData, transformData, worldData);
 			
 				shader = _hashToShader[hash];
 				
@@ -139,9 +139,7 @@ package aerys.minko.render.shader
 				_lastShader = shader;
 			}
 			
-			shader.fillRenderState(state, style, transform, world);
-			
-			return true;
+			shader.fillRenderState(state, styleData, transformData, worldData);
 		}
 		
 		/**

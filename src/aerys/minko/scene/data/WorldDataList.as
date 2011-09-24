@@ -26,7 +26,7 @@ package aerys.minko.scene.data
 			_objects = new Vector.<IWorldData>();
 		}
 		
-		public function setDataProvider(styleStack	: StyleStack, 
+		public function setDataProvider(styleStack	: StyleData, 
 										transformData	: TransformData,
 										worldData	: Dictionary) : void
 		{

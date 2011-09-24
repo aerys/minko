@@ -9,7 +9,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.data.IWorldData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -46,7 +46,7 @@ package aerys.minko.scene.action.mesh
 			var transformData	: TransformData		= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
-			var styleStack		: StyleStack		= renderingData.styleStack;
+			var styleStack		: StyleData		= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
 			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			

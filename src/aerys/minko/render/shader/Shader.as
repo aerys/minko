@@ -11,7 +11,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Matrix3D;
@@ -22,7 +22,7 @@ package aerys.minko.render.shader
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
-	public class Shader
+	public class Shader implements IShader
 	{
 		use namespace minko;
 		
@@ -80,9 +80,9 @@ package aerys.minko.render.shader
 		}
 		
 		public function fillRenderState(state			: RendererState, 
-										styleData		: StyleStack, 
+										styleData		: StyleData, 
 										transformData	: TransformData, 
-										worldData		: Dictionary) : Boolean
+										worldData		: Dictionary) : void
 		{
 			if (_lastFrameId != worldData[ViewportData].frameId)
 			{
@@ -97,12 +97,10 @@ package aerys.minko.render.shader
 			state.program = _resource;
 			_lastStyleStackVersion	= styleData.version;
 			_lastTransformVersion	= transformData.version;
-			
-			return true;
 		}
 		
 		protected function setTextures(state			: RendererState,
-									   styleData		: StyleStack,
+									   styleData		: StyleData,
 								   	   transformData	: TransformData,
 									   worldData		: Object) : void
 		{
@@ -120,7 +118,7 @@ package aerys.minko.render.shader
 		}
 		
 		protected function setConstants(state			: RendererState,
-									    styleData		: StyleStack,
+									    styleData		: StyleData,
 										transformData	: TransformData,
 										worldData		: Dictionary) : void
 		{
@@ -133,7 +131,7 @@ package aerys.minko.render.shader
 		
 		protected function updateConstData(constData		: Vector.<Number>, 
 										   paramsAllocs		: Vector.<ParameterAllocation>, 
-										   styleData		: StyleStack,
+										   styleData		: StyleData,
 										   transformData	: TransformData,
 										   worldData		: Dictionary) : void
 		{
@@ -155,18 +153,21 @@ package aerys.minko.render.shader
 		}
 		
 		private function getParameterData(param			: AbstractParameter,
-										  styleData		: StyleStack,
+										  styleData		: StyleData,
 										  transformData	: TransformData,
 										  worldData		: Dictionary) : Object
 		{
 			if (param is StyleParameter)
 			{
+				var defaultValue	: Object	= (param as StyleParameter).defaultValue;
+				var value			: Object	= styleData.get(param._key as int, defaultValue);
+				
 				if (param._index != -1)
-					return styleData.get(param._key as int).getItem(param._index)[param._field];
+					return value.getItem(param._index)[param._field];
 				else if (param._field != null)
-					return styleData.get(param._key as int)[param._field];
+					return value[param._field];
 				else
-					return styleData.get(param._key as int, null);
+					return value;
 			}
 			else if (param is WorldParameter)
 			{

@@ -8,7 +8,7 @@ package aerys.minko.render.effect.animation
 	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
 	import aerys.minko.render.shader.node.animation.MorphedNormal;
 	import aerys.minko.render.shader.node.animation.MorphedPosition;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.animation.AnimationMethod;
 	
@@ -63,7 +63,7 @@ package aerys.minko.render.effect.animation
 			}
 		}
 		
-		override public function getDataHash(styleData		: StyleStack,
+		override public function getDataHash(styleData		: StyleData,
 											 transformData	: TransformData,
 											 worldData		: Dictionary) : String
 		{

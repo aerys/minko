@@ -9,7 +9,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.CameraData;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
@@ -140,6 +140,16 @@ package aerys.minko.render.shader
 		protected function get cameraDirection() : SValue
 		{
 			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
+		}
+		
+		protected function get cameraNearClipping() : SValue
+		{
+			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_NEAR));
+		}
+		
+		protected function get cameraFarClipping() : SValue
+		{
+			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_FAR));
 		}
 		
 		/**
@@ -613,18 +623,14 @@ package aerys.minko.render.shader
 			return new SValue(new TransformParameter(size, key));
 		}
 		
-		protected final function getStyleParameter(size 	: uint,
-												   key 		: int,
-												   field 	: String 	= null,
-												   index 	: int 		= -1) : SValue
+		protected final function getStyleParameter(size 		: uint,
+												   key 			: int,
+												   defaultValue	: Object	= null,
+												   field 		: String 	= null,
+												   index 		: int 		= -1) : SValue
 		{
-			return new SValue(new StyleParameter(size, key, field, index));
+			return new SValue(new StyleParameter(size, key, defaultValue, field, index));
 		}
-		
-		/*protected final function getConstant(value : Object) : SValue
-		{
-			return new SValue(getNode(value));
-		}*/
 		
 		protected final function extract(value : Object, component : uint) : SValue
 		{
@@ -634,6 +640,18 @@ package aerys.minko.render.shader
 		protected final function blend(color1 : Object, color2 : Object, blending : uint) : SValue
 		{
 			return new SValue(new Blend(getNode(color1), getNode(color2), blending));
+		}
+		
+		protected final function mix(a : Object, b : Object, factor : Object) : SValue
+		{
+			var factorNode : INode = getNode(factor);
+			
+			return new SValue(
+				new Add(
+					new Multiply(getNode(a), new Substract(new Constant(1.), factorNode)),
+					new Multiply(getNode(b), factorNode)
+				)
+			);
 		}
 		
 		protected final function length(vector : Object) : SValue
@@ -708,7 +726,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		public function getDataHash(styleData		: StyleStack, 
+		public function getDataHash(styleData		: StyleData, 
 									transformData	: TransformData, 
 									worldData		: Dictionary) : String
 		{

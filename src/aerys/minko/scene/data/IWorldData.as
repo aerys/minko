@@ -4,7 +4,7 @@ package aerys.minko.scene.data
 
 	public interface IWorldData
 	{
-		function setDataProvider(styleStack	: StyleStack, 
+		function setDataProvider(styleStack	: StyleData, 
 								 transformData	: TransformData,
 								 worldData	: Dictionary) : void
 		
