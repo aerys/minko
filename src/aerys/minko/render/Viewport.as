@@ -353,9 +353,9 @@ package aerys.minko.render
 			if (event.target != this)
 				return ;
 			
-			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
-			_stage3d.context3D.dispose();
-			_stage3d = null;
+//			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+//			_stage3d.context3D.dispose();
+//			_stage3d = null;
 		}
 		
 		private function resizeHandler(event : Event = null) : void

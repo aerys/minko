@@ -46,8 +46,8 @@ package aerys.minko.scene.node.group
 			_effect = effect;
 			_textures = new Group(textures);
 			
-			actions.unshift(MaterialGroupAction.materialGroupAction,
-							new PushEffectAction());
+			actions.unshift(new PushEffectAction(),
+							MaterialGroupAction.materialGroupAction);
 			actions.push(new PopEffectAction());
 		}
 	}

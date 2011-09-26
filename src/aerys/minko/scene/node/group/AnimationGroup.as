@@ -76,12 +76,12 @@ package aerys.minko.scene.node.group
 		 */
 		public function get labels() : Vector.<TimeLabel>
 		{
-			return _labels.slice();
+			return _labels;//.slice();
 		}
 		
 		public function set labels(v : Vector.<TimeLabel>) : void
 		{
-			_labels = v.slice();
+			_labels = v//.slice();
 			_labels = _labels.sort(TimeLabel.sort);
 		}
 		

@@ -34,5 +34,15 @@ package aerys.minko.scene.node
 			return className.substr(className.lastIndexOf(":") + 1)
 				   + "_" + (++_id);
 		}
+		
+		public function reparent(replacement : IScene) : void
+		{
+			var numParents : int = 0;
+			
+			for (var i : int = 0; i < numParents; ++i)
+			{
+				
+			}
+		}
 	}
 }

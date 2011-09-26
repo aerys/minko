@@ -16,6 +16,7 @@ package aerys.minko.scene.node.group
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.events.ProgressEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
@@ -111,6 +112,8 @@ package aerys.minko.scene.node.group
 				
 				_positions[loader] = numChildren;
 				
+				loader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS,
+														  loaderEventHandler);
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 														  loaderCompleteHandler);
 				loader.load(request);
@@ -132,6 +135,7 @@ package aerys.minko.scene.node.group
 				_loaderToOptions[urlLoader] = parserOptions;
 				
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+				urlLoader.addEventListener(ProgressEvent.PROGRESS, loaderEventHandler);
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
 				urlLoader.load(request);
 			}
@@ -182,6 +186,8 @@ package aerys.minko.scene.node.group
 				{
 					var texture : MovieClipTexture = new MovieClipTexture();
 					
+					contentLoader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS,
+																	 loaderEventHandler);
 					contentLoader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 					function(e : Event) : void
 					{
@@ -205,6 +211,11 @@ package aerys.minko.scene.node.group
 			}
 			
 			return this;
+		}
+		
+		private function loaderEventHandler(event : Event) : void
+		{
+			dispatchEvent(event.clone());
 		}
 		
 		private function urlLoaderCompleteHandler(event : Event) : void

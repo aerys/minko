@@ -25,6 +25,8 @@ package aerys.minko.render.effect
 		protected function get renderTarget() 	: RenderTarget			{ return _renderTarget; }
 		protected function get passes()			: Vector.<IEffectPass>	{ return _passes; }
 		
+		public function get shader() : IShader	{ return _shader; } 
+		
 		public function SinglePassEffect(shader			: IShader,
 										 priority		: Number				= 0.,
 										 renderTarget	: RenderTarget			= null)
