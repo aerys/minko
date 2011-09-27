@@ -2,9 +2,10 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.action.IAction;
 	
+	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 	
-	public class AbstractScene implements IScene
+	public class AbstractScene extends EventDispatcher implements IScene
 	{
 		private static var _id	: uint			= 0;
 		
@@ -32,6 +33,16 @@ package aerys.minko.scene.node
 			
 			return className.substr(className.lastIndexOf(":") + 1)
 				   + "_" + (++_id);
+		}
+		
+		public function reparent(replacement : IScene) : void
+		{
+			var numParents : int = 0;
+			
+			for (var i : int = 0; i < numParents; ++i)
+			{
+				
+			}
 		}
 	}
 }

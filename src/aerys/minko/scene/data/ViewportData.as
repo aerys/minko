@@ -115,7 +115,7 @@ package aerys.minko.scene.data
 			_viewport = viewport;
 		}
 		
-		public function setDataProvider(styleStack	: StyleStack, 
+		public function setDataProvider(styleStack	: StyleData, 
 										transformData	: TransformData,
 										worldData	: Dictionary) : void
 		{

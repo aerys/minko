@@ -130,10 +130,12 @@ package aerys.minko.render.shader.compiler.allocator
 					}
 				
 				if (!success)
+				{
 					throw new Error('Unable to allocate: all ' + _maxOffset / 4 
-						+ ' registers are full, or too fragmented to allocate '
-						+ alloc.size + ' contiguous ' + (!alloc.aligned ? 'non-' : '')
-						+ 'aligned floats');
+									+ ' registers are full, or too fragmented to allocate '
+									+ alloc.size + ' contiguous ' + (!alloc.aligned ? 'non-' : '')
+									+ 'aligned floats');
+				}
 			}
 		}
 		
@@ -159,7 +161,9 @@ package aerys.minko.render.shader.compiler.allocator
 						(endOffset > allocOffset && endOffset <= allocEndOffset) ||
 						(offset <= allocOffset && endOffset >= allocEndOffset)
 					))
+				{
 					return false;
+				}
 			}
 			
 			return true;

@@ -4,7 +4,7 @@ package aerys.minko.scene.data
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.type.IVersionable;
 
-	public final class StyleStack implements IVersionable
+	public final class StyleData implements IVersionable
 	{
 		use namespace minko_render;
 		
@@ -55,7 +55,7 @@ package aerys.minko.scene.data
 			return get(id, _empty) !== _empty;
 		}
 		
-		public function set(styleId : int, value : Object) : StyleStack
+		public function set(styleId : int, value : Object) : StyleData
 		{
 			var top : Array = _data[int(_size - 1)];
 			

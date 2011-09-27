@@ -80,7 +80,7 @@ package aerys.minko.render.shader
 	{
 		internal var _node	: INode	= null;
 		
-		public final function get length() : SValue
+		/*public final function get length() : SValue
 		{
 			if (_node.size == 2)
 			{
@@ -102,7 +102,7 @@ package aerys.minko.render.shader
 				return new SValue(new SquareRoot(new DotProduct4(_node, _node)));
 			
 			throw new Error("Unable to get the length of a value with size > 4.");
-		}
+		}*/
 		
 		public function SValue(value : Object)
 		{
@@ -116,10 +116,8 @@ package aerys.minko.render.shader
 			
 			for (var i : int = 0; i < numArgs; ++i)
 				p.addTerm(args[i]._node);
-			
-			_node = p;
-			
-			return this;
+						
+			return new SValue(p);
 		}
 		
 		public final function scaleBy(arg : Object) : SValue
@@ -146,9 +144,7 @@ package aerys.minko.render.shader
 		
 		public final function pow(exp : Object) : SValue
 		{
-			_node = new Power(_node, getNode(exp));
-			
-			return this;
+			return new SValue(new Power(_node, getNode(exp)));
 		}
 		
 		public final function add(value : Object) : SValue
@@ -216,11 +212,6 @@ package aerys.minko.render.shader
 			_node = new SetIfLessThan(getNode(test), getNode(value));
 			
 			return this;
-		}
-		
-		override flash_proxy function callProperty(name : *, ...arguments) : *
-		{
-			
 		}
 		
 		override flash_proxy function getProperty(name : *) : *

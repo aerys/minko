@@ -31,21 +31,42 @@ package aerys.minko.type.math
 		private var _version	: uint				= 0;
 		private var _data		: Vector.<Number>	= new Vector.<Number>();
 		
-		public function get version()	: uint		{ return _version; }
+		public function get version()		: uint		{ return _version; }
+		public function get translationX()	: Number	{ return getTranslation(TMP_VECTOR4).x; }
+		public function get translationY()	: Number	{ return getTranslation(TMP_VECTOR4).y; }
+		public function get translationZ()	: Number	{ return getTranslation(TMP_VECTOR4).z; }
+		public function get rotationX()		: Number	{ return getRotation(TMP_VECTOR4).x; }
+		public function get rotationY()		: Number	{ return getRotation(TMP_VECTOR4).y; }
+		public function get rotationZ()		: Number	{ return getRotation(TMP_VECTOR4).z; }
 		
 		public function set translationX(value : Number) : void
 		{
-			updateTranslation(value,NaN, NaN);
+			setTranslation(value, NaN, NaN);
 		}
 		
 		public function set translationY(value : Number) : void
 		{
-			updateTranslation(NaN, value, NaN);
+			setTranslation(NaN, value, NaN);
 		}
 		
 		public function set translationZ(value : Number) : void
 		{
-			updateTranslation(NaN, NaN, value);
+			setTranslation(NaN, NaN, value);
+		}
+		
+		public function set rotationX(value : Number) : void
+		{
+			setRotation(value, NaN, NaN);
+		}
+		
+		public function set rotationY(value : Number) : void
+		{
+			setRotation(NaN, value, NaN);
+		}
+		
+		public function set rotationZ(value : Number) : void
+		{
+			setRotation(NaN, NaN, value);
 		}
 		
 		public function Matrix3D(m11 : Number	= 1., m12 : Number	= 0., m13 : Number	= 0., m14 : Number	= 0.,
@@ -115,8 +136,8 @@ package aerys.minko.type.math
 									   pivotPoint	: Vector4	= null) : Matrix3D
 		{
 			_matrix.appendRotation(radians * RAD2DEG,
-				axis._vector,
-				pivotPoint ? pivotPoint._vector : null);
+								   axis._vector,
+								   pivotPoint ? pivotPoint._vector : null);
 			++_version;
 			
 			return this;
@@ -303,21 +324,6 @@ package aerys.minko.type.math
 		
 		public function setTranslation(x : Number, y : Number, z : Number) : Matrix3D
 		{
-			updateTranslation(x, y, z);
-			
-			return this;
-		}
-		
-		public function getTranslation(output : Vector4 = null) : Vector4
-		{
-			output ||= new Vector4();
-			_matrix.copyColumnTo(3, output._vector);
-			
-			return output;
-		}
-		
-		private function updateTranslation(x : Number, y : Number, z : Number) : void
-		{
 			var position : Vector4	= getTranslation(TMP_VECTOR4);
 			
 			if (!isNaN(x))
@@ -328,7 +334,45 @@ package aerys.minko.type.math
 				position.z = z;
 			
 			_matrix.copyColumnFrom(3, position._vector);
-			++_version;	
+			++_version;
+			
+			return this;
+		}
+		
+		public function getRotation(output : Vector4 = null) : Vector4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			
+			output ||= new Vector4();
+			output._vector = components[1];
+			
+			return output;
+		}
+		
+		public function setRotation(x : Number, y : Number, z : Number) : Matrix3D
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			var rotation	: Vector3D			= components[1];
+			
+			if (!isNaN(x))
+				rotation.x = x;
+			if (!isNaN(y))
+				rotation.y = y;
+			if (!isNaN(z))
+				rotation.z = z;
+			
+			++_version;
+			_matrix.recompose(components);
+			
+			return this;
+		}
+		
+		public function getTranslation(output : Vector4 = null) : Vector4
+		{
+			output ||= new Vector4();
+			_matrix.copyColumnTo(3, output._vector);
+			
+			return output;
 		}
 		
 		public function toDualQuaternion(n : Vector4,

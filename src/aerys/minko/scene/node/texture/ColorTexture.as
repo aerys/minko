@@ -36,7 +36,7 @@ package aerys.minko.scene.node.texture
 			_styleProperty = value;
 		}
 		
-		public function ColorTexture(argb : uint = 0xffffffff)
+		public function ColorTexture(argb : uint = 0xff000000)
 		{
 			_color			= argb;
 			_styleProperty	= BasicStyle.DIFFUSE;

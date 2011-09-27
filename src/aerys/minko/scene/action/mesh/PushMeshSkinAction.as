@@ -5,7 +5,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.ITransformableScene;
 	import aerys.minko.scene.node.group.Group;
@@ -43,7 +43,7 @@ package aerys.minko.scene.action.mesh
 		}
 		
 		public function loadSkinningData(scene		: IScene,
-										 styleStack	: StyleStack) : void
+										 styleStack	: StyleData) : void
 		{
 			var skinnedMesh			: SkinnedMesh			= SkinnedMesh(scene);
 			

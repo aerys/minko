@@ -1,7 +1,6 @@
 package aerys.minko.render.renderer
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.renderer.state.RendererState;
 	
 	import flash.display.BitmapData;
 

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
@@ -11,7 +11,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.leaf.StyleParameter;
 	import aerys.minko.render.shader.node.leaf.TransformParameter;
 	import aerys.minko.render.shader.node.leaf.WorldParameter;
-	import aerys.minko.scene.data.StyleStack;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.type.math.Matrix3D;
@@ -22,7 +22,7 @@ package aerys.minko.render.shader
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
-	public class Shader
+	public class Shader implements IShader
 	{
 		use namespace minko;
 		
@@ -73,35 +73,36 @@ package aerys.minko.render.shader
 			_fsParams		= fragmentParameters;
 			_samplers		= samplers;
 			
-			_resource 		= new Program3DResource(vertexShader, fragmentShader, vertexInputComponents, vertexInputIndices);
+			_resource 		= new Program3DResource(vertexShader,
+													fragmentShader,
+													vertexInputComponents,
+													vertexInputIndices);
 		}
 		
-		public function fillRenderState(state		: RendererState, 
-										styleStack	: StyleStack, 
-										local		: TransformData, 
-										world		: Dictionary) : Boolean
+		public function fillRenderState(state			: RendererState, 
+										styleData		: StyleData, 
+										transformData	: TransformData, 
+										worldData		: Dictionary) : void
 		{
-			if (_lastFrameId != world[ViewportData].frameId)
+			if (_lastFrameId != worldData[ViewportData].frameId)
 			{
-				_lastFrameId			= world[ViewportData].frameId;
+				_lastFrameId			= worldData[ViewportData].frameId;
 				_lastStyleStackVersion	= uint.MAX_VALUE;
 				_lastTransformVersion	= uint.MAX_VALUE;
 			}
 			
-			setTextures(state, styleStack, local, world);
-			setConstants(state, styleStack, local, world);
+			setTextures(state, styleData, transformData, worldData);
+			setConstants(state, styleData, transformData, worldData);
 			
-			state.shader = _resource;
-			_lastStyleStackVersion	= styleStack.version;
-			_lastTransformVersion	= local.version;
-			
-			return true;
+			state.program = _resource;
+			_lastStyleStackVersion	= styleData.version;
+			_lastTransformVersion	= transformData.version;
 		}
 		
-		protected function setTextures(state		: RendererState,
-									   styleStack	: StyleStack,
+		protected function setTextures(state			: RendererState,
+									   styleData		: StyleData,
 								   	   transformData	: TransformData,
-									   worldData	: Object) : void
+									   worldData		: Object) : void
 		{
 			var texture 		: Texture3DResource	= null;
 			var samplerStyleId 	: int				= 0;
@@ -110,29 +111,29 @@ package aerys.minko.render.shader
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleId	= _samplers[i];
-				texture			= styleStack.get(samplerStyleId) as Texture3DResource;
+				texture			= styleData.get(samplerStyleId) as Texture3DResource;
 				
 				state.setTextureAt(i, texture);
 			}
 		}
 		
-		protected function setConstants(state		: RendererState,
-									    styleStack	: StyleStack,
-										local		: TransformData,
-										world		: Dictionary) : void
+		protected function setConstants(state			: RendererState,
+									    styleData		: StyleData,
+										transformData	: TransformData,
+										worldData		: Dictionary) : void
 		{
-			updateConstData(_vsConstData, _vsParams, styleStack, local, world);
-			updateConstData(_fsConstData, _fsParams, styleStack, local, world);
+			updateConstData(_vsConstData, _vsParams, styleData, transformData, worldData);
+			updateConstData(_fsConstData, _fsParams, styleData, transformData, worldData);
 			
 			state.setVertexConstants(_vsConstData);
 			state.setFragmentConstants(_fsConstData);
 		}
 		
-		protected function updateConstData(constData	: Vector.<Number>, 
-										   paramsAllocs	: Vector.<ParameterAllocation>, 
-										   styleStack	: StyleStack,
-										   local		: TransformData,
-										   world		: Dictionary) : void
+		protected function updateConstData(constData		: Vector.<Number>, 
+										   paramsAllocs		: Vector.<ParameterAllocation>, 
+										   styleData		: StyleData,
+										   transformData	: TransformData,
+										   worldData		: Dictionary) : void
 		{
 			var paramLength	: int = paramsAllocs.length;
 			
@@ -141,44 +142,47 @@ package aerys.minko.render.shader
 				var paramAlloc	: ParameterAllocation	= paramsAllocs[i];
 				var param		: AbstractParameter		= paramAlloc._parameter;
 				
-				if ((param is StyleParameter && styleStack.version == _lastStyleStackVersion) ||
-					(param is TransformParameter && local.version == _lastTransformVersion))
+				if ((param is StyleParameter && styleData.version == _lastStyleStackVersion) ||
+					(param is TransformParameter && transformData.version == _lastTransformVersion))
 					continue;
 				
-				var data : Object = getParameterData(param, styleStack, local, world);
+				var data : Object = getParameterData(param, styleData, transformData, worldData);
 				
 				loadParameterData(paramAlloc, constData, data);
 			}
 		}
 		
 		private function getParameterData(param			: AbstractParameter,
-										  styleStack	: StyleStack,
-										  local			: TransformData,
-										  world			: Dictionary) : Object
+										  styleData		: StyleData,
+										  transformData	: TransformData,
+										  worldData		: Dictionary) : Object
 		{
 			if (param is StyleParameter)
 			{
+				var defaultValue	: Object	= (param as StyleParameter).defaultValue;
+				var value			: Object	= styleData.get(param._key as int, defaultValue);
+				
 				if (param._index != -1)
-					return styleStack.get(param._key as int).getItem(param._index)[param._field];
+					return value.getItem(param._index)[param._field];
 				else if (param._field != null)
-					return styleStack.get(param._key as int)[param._field];
+					return value[param._field];
 				else
-					return styleStack.get(param._key as int, null);
+					return value;
 			}
 			else if (param is WorldParameter)
 			{
 				var paramClass : Class = WorldParameter(param)._class;
 				
 				if (param._index != -1)
-					return world[paramClass].getItem(param._index)[param._field];
+					return worldData[paramClass].getItem(param._index)[param._field];
 				else if (param._field != null)
-					return world[paramClass][param._field];
+					return worldData[paramClass][param._field];
 				else
-					return world[paramClass];
+					return worldData[paramClass];
 			}
 			else if (param is TransformParameter)
 			{
-				return local[param._key];
+				return transformData[param._key];
 			}
 			else 
 				throw new Error('Unknown parameter type');
@@ -220,42 +224,6 @@ package aerys.minko.render.shader
 					constData[int(offset + 3)] = ((intData & 0x000000FF)) / 255.;
 				}
 			}
-			/*else if (data is uint)
-			{
-				var uintData : uint = data as uint;
-				
-				if (size == 1)
-				{
-					constData[offset] = uintData;
-				}
-				else if (size == 2)
-				{
-					constData[offset] = ((uintData & 0xFFFF0000) >>> 16) / Number(0xffff);
-					constData[int(offset + 2)] = (uintData & 0x0000FFFF) / Number(0xffff);
-				}
-				else if (size == 3)
-				{
-					constData[offset] = ((uintData & 0xFF0000) >>> 16) / 255.;
-					constData[int(offset + 1)] = ((uintData & 0x00FF00) >>> 8) / 255.;
-					constData[int(offset + 2)] = (uintData & 0x0000FF) / 255.;
-				}
-				else if (size == 4)
-				{
-					
-					constData[offset] = ((uintData & 0xFF000000) >>> 24) / 255.;
-					constData[int(offset + 1)] = ((uintData & 0x00FF0000) >>> 16) / 255.;
-					constData[int(offset + 2)] = ((uintData & 0x0000FF00) >>> 8) / 255.;
-					constData[int(offset + 3)] = ((uintData & 0x000000FF)) / 255.;
-				}
-			}*/
-			/*else if (data is Number)
-			{
-				if (size != 1)
-					throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
-						'defined as size=' + size + ' but only a Number was found');
-				
-				constData[offset] = data as Number;
-			}*/
 			else if (data is Vector4)
 			{
 				var vectorData : Vector3D = (data as Vector4)._vector;

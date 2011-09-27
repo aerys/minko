@@ -26,7 +26,7 @@ package aerys.minko.scene.action.camera
 		protected function get cameraData() : CameraData	{ return _cameraData; }
 		
 		public function get type() 			: uint			{ return ActionType.UPDATE_WORLD_DATA
-																	 | ActionType.UPDATE_LOCAL_DATA; }
+																	 | ActionType.UPDATE_TRANSFORM_DATA; }
 		
 		public function CameraAction(cameraData : CameraData = null)
 		{

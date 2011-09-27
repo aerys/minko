@@ -25,7 +25,7 @@ package aerys.minko.scene.action
 			if (!model.visible)
 				return false;
 			
-			model.texture && visitor.visit(model.texture);
+			model.textures && visitor.visit(model.textures);
 			model.mesh && visitor.visit(model.mesh);
 			
 			return true;

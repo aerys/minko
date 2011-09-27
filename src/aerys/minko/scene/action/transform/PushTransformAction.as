@@ -9,7 +9,7 @@ package aerys.minko.scene.action.transform
 	
 	public final class PushTransformAction implements IAction
 	{
-		private static const TYPE		: uint					= ActionType.UPDATE_LOCAL_DATA;
+		private static const TYPE		: uint					= ActionType.UPDATE_TRANSFORM_DATA;
 		
 		private static var _instance	: PushTransformAction	= null;
 		

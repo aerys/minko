@@ -1,4 +1,4 @@
-package aerys.minko.render.renderer.state
+package aerys.minko.render.renderer
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
@@ -18,6 +18,9 @@ package aerys.minko.render.renderer.state
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
+	import aerys.minko.type.enum.ColorMask;
+	import aerys.minko.type.enum.CompareMode;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	public final class RendererState
 	{
@@ -96,7 +99,7 @@ package aerys.minko.render.renderer.state
 		
 		private var _renderTarget		: RenderTarget				= null;
 		private var _blending			: uint						= 0;
-		private var _shader				: Program3DResource			= null;
+		private var _program			: Program3DResource			= null;
 		private var _colorMask			: uint						= 0;
 		private var _triangleCulling	: uint						= 0;
 		private var _textures			: Vector.<Texture3DResource>	= new Vector.<Texture3DResource>(8, true);
@@ -145,9 +148,9 @@ package aerys.minko.render.renderer.state
 			return _setFlags & COLOR_MASK ? _colorMask : null; 
 		}
 		
-		public function get shader() : Program3DResource
+		public function get program() : Program3DResource
 		{
-			return _setFlags & SHADER ? _shader : null;
+			return _setFlags & SHADER ? _program : null;
 		}
 		
 		public function get blending() : uint
@@ -188,9 +191,9 @@ package aerys.minko.render.renderer.state
 			_setFlags |= RENDER_TARGET;
 		}
 		
-		public function set shader(value : Program3DResource) : void
+		public function set program(value : Program3DResource) : void
 		{
-			_shader = value;
+			_program = value;
 			_setFlags |= SHADER;
 		}
 		
@@ -266,7 +269,7 @@ package aerys.minko.render.renderer.state
 		public function prepareContext(context : Context3D) : void
 		{
 			if (_setFlags & SHADER)
-				context.setProgram(_shader.getProgram3D(context));
+				context.setProgram(_program.getProgram3D(context));
 			
 			if (_setFlags & VERTEX_CONSTS)
 				context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
@@ -302,8 +305,8 @@ package aerys.minko.render.renderer.state
 		
 			if ((_setFlags & VERTEX_STREAM) != 0 || (_setFlags & SHADER) != 0)
 			{
-				var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
-				var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
+				var vertexInputComponents	: Vector.<VertexComponent> 	= _program._vertexComponents;
+				var vertexInputIndices		: Vector.<uint>				= _program._vertexIndices;
 				var numInputs				: int						= vertexInputComponents.length;
 				
 				for (i = 0; i < numInputs; ++i)
@@ -370,8 +373,8 @@ package aerys.minko.render.renderer.state
 		
 		public function prepareContextDelta(context : Context3D, current : RendererState) : void
 		{
-			if (_setFlags & SHADER && _shader != current._shader)
-				context.setProgram(_shader.getProgram3D(context));
+			if (_setFlags & SHADER && _program != current._program)
+				context.setProgram(_program.getProgram3D(context));
 			
 			if (_setFlags & VERTEX_CONSTS)
 				context.setProgramConstantsFromVector(PT_VERTEX, 0, _vertexConstants);
@@ -425,7 +428,7 @@ package aerys.minko.render.renderer.state
 				var invalidStreams	: Boolean	= false;
 				var numStreams		: int		= _vertexStreams.length;
 				
-				invalidStreams ||= ((_setFlags & SHADER) != 0) && ((current._setFlags & SHADER) == 0 || current._shader != _shader);
+				invalidStreams ||= ((_setFlags & SHADER) != 0) && ((current._setFlags & SHADER) == 0 || current._program != _program);
 				invalidStreams ||= ((current._setFlags & VERTEX_STREAM) == 0) && (current._vertexStreams.length != numStreams);
 
 				for (i = 0; i < numStreams && !invalidStreams; ++i)
@@ -433,8 +436,8 @@ package aerys.minko.render.renderer.state
 			
 				if (invalidStreams)
 				{
-					var vertexInputComponents	: Vector.<VertexComponent> 	= _shader._vertexComponents;
-					var vertexInputIndices		: Vector.<uint>				= _shader._vertexIndices;
+					var vertexInputComponents	: Vector.<VertexComponent> 	= _program._vertexComponents;
+					var vertexInputIndices		: Vector.<uint>				= _program._vertexIndices;
 					var numInputs				: int						= vertexInputComponents.length;
 					
 					for (i = 0; i < numInputs; ++i)

@@ -22,7 +22,7 @@ package aerys.minko.scene.action.group
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var group 		 :  IGroup 	= scene as IGroup;
+			var group 		 :  IGroup 	= IGroup(scene);
 			var numChildren  :  int 	= group.numChildren;
 			
 			for (var childIndex : uint = 0; childIndex < numChildren; ++childIndex)

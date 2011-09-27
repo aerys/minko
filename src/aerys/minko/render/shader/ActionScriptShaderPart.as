@@ -9,11 +9,16 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.math.Product;
 	import aerys.minko.render.shader.node.operation.math.Sum;
 	import aerys.minko.scene.data.CameraData;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
+	
+	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{
+		private static const SIZE_TO_COMPONENTS	: Vector.<uint>	= Vector.<uint>([Components.X, Components.XY, Components.XYZ]);
+		
 		/**
 		 * The position of the current vertex in clipspace (normalized
 		 * screenspace).
@@ -46,36 +51,6 @@ package aerys.minko.render.shader
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
-		
-		/**
-		 * The position of the current vertex in local space. 
-		 * @return 
-		 * 
-		 */
-		/*protected function get vertexSkinnedPosition() : SValue
-		{
-			var maxInfluences	: uint; 
-			var numBones		: uint;
-			
-			switch (_styleStack.get(SkinningStyle.METHOD, SkinningMethod.DISABLED))
-			{
-				case SkinningMethod.DISABLED :
-					return vertexPosition;
-					
-				case SkinningMethod.MATRIX :
-					maxInfluences	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
-					numBones		= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
-					return new SValue(new MatrixSkinnedPosition(maxInfluences, numBones));
-					
-				case SkinningMethod.DUAL_QUATERNION :
-					maxInfluences	= _styleStack.get(SkinningStyle.MAX_INFLUENCES, 0) as uint;
-					numBones		= _styleStack.get(SkinningStyle.NUM_BONES, 0) as uint;
-					return new SValue(new DQSkinnedPosition(maxInfluences, numBones));
-					
-				default :
-					throw new Error('Unknown SkinningMethod.');
-			}
-		}*/
 		
 		/**
 		 * The RGB color of the current vertex. 
@@ -178,6 +153,16 @@ package aerys.minko.render.shader
 			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
 		}
 		
+		protected function get cameraNearClipping() : SValue
+		{
+			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_NEAR));
+		}
+		
+		protected function get cameraFarClipping() : SValue
+		{
+			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_FAR));
+		}
+		
 		/**
 		 * The local-to-screen (= world * view * projection) transformation matrix. 
 		 * @return 
@@ -253,56 +238,6 @@ package aerys.minko.render.shader
 			return new SValue(new TransformParameter(16, TransformData.PROJECTION));
 		}
 		
-		/*protected function get diffuseColor() : SValue
-		{
-			if (styleIsSet(BasicStyle.DIFFUSE))
-			{
-				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
-				
-				if (diffuseStyle is uint || diffuseStyle is Vector4)
-					return getStyleParameter(4, BasicStyle.DIFFUSE);
-				else if (diffuseStyle is TextureResource)
-					return sampleTexture(BasicStyle.DIFFUSE, interpolate(vertexUV));
-				else
-					throw new Error('Invalid BasicStyle.DIFFUSE value.');
-			}
-			else
-				return float4(interpolate(vertexRGBColor).rgb, 1.);
-		}*/
-		
-		/*public function ActionScriptShaderPart(style	: StyleStack, 
-											   transform	: TransformData, 
-											   world	: Dictionary)
-		{
-			_styleStack = style;
-			_local = local;
-			_world = world;
-		}*/
-		
-		/**
-		 * Return a style value that will be passed as a shader constant.
-		 * 
-		 * @param styleId
-		 * @param defaultValue
-		 * @return 
-		 * 
-		 */
-		/*protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
-		{
-			return _styleStack.get(styleId, defaultValue);
-		}*/
-		
-		/**
-		 * Return whether a specific style is set or not. 
-		 * @param styleId
-		 * @return 
-		 * 
-		 */
-		/*protected final function styleIsSet(styleId : int) : Boolean
-		{
-			return _styleStack.isSet(styleId);
-		}*/
-		
 		/**
 		 * Interpolate vertex shader values to make them usable inside the
 		 * fragment shader.
@@ -356,7 +291,7 @@ package aerys.minko.render.shader
 		 * @return 
 		 * 
 		 */
-		private final function toFloat(size : int, values : Array) : SValue
+		private function toFloat(size : int, values : Array) : SValue
 		{
 			var numValues	: uint	= values.length;
 			var i 			: int 	= 0;
@@ -369,7 +304,6 @@ package aerys.minko.render.shader
 				return new SValue(new Constant(Vector.<Number>(values)));
 			
 			// build the value otherwise
-			var inputSize 	: uint 	= 0;
 			var result		: INode	= null;
 			var value 		: INode	= null;
 			var validValue	: INode	= null;
@@ -383,12 +317,10 @@ package aerys.minko.render.shader
 				
 				validValue = value;
 				
-				var sizeToComponents	: Array	= [Components.X, Components.XY, Components.XYZ];
-				
 				size -= value.size;
 				if (size < 0)
 				{
-					var extract : Extract = new Extract(value, sizeToComponents[int(value.size + size - 1)]);
+					var extract : Extract = new Extract(value, SIZE_TO_COMPONENTS[int(value.size + size - 1)]);
 					
 					result = result ? new Combine(result, extract) : extract;
 				}
@@ -396,32 +328,30 @@ package aerys.minko.render.shader
 					result = result ? new Combine(result, value) : value;
 			}
 			
-			/*if (size > 0)
+			if (size > 0)
 			{
-				var last 	: INode 	= null;
-				var zero	: Constant	= new Constant(0.);
+				var last 	: uint		= Components.X;
+				var comps	: uint		= 0x4444;
 				
 				if (validValue)
 				{
-					if (validValue.size == 1)
-						last = new Extract(validValue, Components.X);
-					else if (validValue.size == 2)
-						last = new Extract(validValue, Components.Y);
+					if (validValue.size == 2)
+						last = Components.Y;
 					else if (validValue.size == 3)
-						last = new Extract(validValue, Components.Z);
+						last = Components.Z;
 					else if (validValue.size == 4)
-						last = new Extract(validValue, Components.W);
+						last = Components.W;
 				}
 				
+				last &= 0xf;
 				while (size)
 				{
-					if (last)
-						result = new Combine(result, last);
-					else
-						result = result ? new Combine(result, zero) : zero;
+					comps = (comps << 4) | last; 
 					size--;
 				}
-			}*/
+				
+				result = new Combine(result, new Extract(validValue, comps & 0xffff));
+			}
 			
 			return new SValue(result);
 		}
@@ -598,6 +528,11 @@ package aerys.minko.render.shader
 			return new SValue(sub);
 		}
 		
+		protected final function dotProduct2(u : Object, v : Object) : SValue
+		{
+			return new SValue(dotProduct3(float3(float2(u), 0.), float3(float2(v), 0.)));
+		}
+		
 		protected final function dotProduct3(u : Object, v : Object) : SValue
 		{
 			return new SValue(new DotProduct3(getNode(u), getNode(v)));
@@ -698,24 +633,20 @@ package aerys.minko.render.shader
 			return new SValue(new WorldParameter(size, key, field, index));
 		}
 		
-		protected final function getLocalParameter(size		: uint, 
-												   key		: Object) : SValue
+		protected final function getTransformParameter(size		: uint, 
+												   	   key		: Object) : SValue
 		{
 			return new SValue(new TransformParameter(size, key));
 		}
 		
-		protected final function getStyleParameter(size 	: uint,
-												   key 		: int,
-												   field 	: String 	= null,
-												   index 	: int 		= -1) : SValue
+		protected final function getStyleParameter(size 		: uint,
+												   key 			: int,
+												   defaultValue	: Object	= null,
+												   field 		: String 	= null,
+												   index 		: int 		= -1) : SValue
 		{
-			return new SValue(new StyleParameter(size, key, field, index));
+			return new SValue(new StyleParameter(size, key, defaultValue, field, index));
 		}
-		
-		/*protected final function getConstant(value : Object) : SValue
-		{
-			return new SValue(getNode(value));
-		}*/
 		
 		protected final function extract(value : Object, component : uint) : SValue
 		{
@@ -727,16 +658,27 @@ package aerys.minko.render.shader
 			return new SValue(new Blend(getNode(color1), getNode(color2), blending));
 		}
 		
+		protected final function mix(a : Object, b : Object, factor : Object) : SValue
+		{
+			var factorNode : INode = getNode(factor);
+			
+			return new SValue(
+				new Add(
+					new Multiply(getNode(a), new Substract(new Constant(1.), factorNode)),
+					new Multiply(getNode(b), factorNode)
+				)
+			);
+		}
+		
 		protected final function length(vector : Object) : SValue
 		{
 			var v : INode = getNode(vector);
 			
 			if (v.size == 2)
 			{
-				var x : INode = new Extract(v, Components.X);
-				var y : INode = new Extract(v, Components.Y);
+				var v3 : SValue = float3(v, 0.);
 				
-				return new SValue(sqrt(add(multiply(x, x), multiply(y, y))));
+				return new SValue(sqrt(dotProduct3(v3, v3)));
 			}
 			else if (v.size == 3)
 				return new SValue(sqrt(dotProduct3(v, v)));
@@ -787,5 +729,25 @@ package aerys.minko.render.shader
 			
 			return new Constant(value);
 		}
+		
+		
+		/**
+		 * The getDataHash method returns a String computed from the style, local and world data.
+		 * This value is used as a hash that defines all the values used as conditionnals in the
+		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
+		 *  
+		 * @param style
+		 * @param local
+		 * @param world
+		 * @return 
+		 * 
+		 */
+		public function getDataHash(styleData		: StyleData, 
+									transformData	: TransformData, 
+									worldData		: Dictionary) : String
+		{
+			return null;
+		}
+		
 	}
 }

@@ -1,7 +1,7 @@
 package aerys.minko.scene.action.effect
 {
 	import aerys.minko.render.effect.IEffect;
-	import aerys.minko.render.effect.IEffectTarget;
+	import aerys.minko.scene.node.IEffectScene;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
@@ -16,7 +16,7 @@ package aerys.minko.scene.action.effect
 		
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var effect : IEffect = (scene as IEffectTarget).effect;
+			var effect : IEffect = (scene as IEffectScene).effect;
 			
 			if (effect)
 				visitor.renderingData.effects.pop();

@@ -2,13 +2,13 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
+	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
-	import aerys.minko.scene.data.StyleStack;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.data.WorldDataList;
 	import aerys.minko.type.math.Vector4;
@@ -96,35 +96,35 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class ActionScriptShader extends ActionScriptShaderPart
+	public class ActionScriptShader extends ActionScriptShaderPart implements IShader
 	{
 		use namespace minko;
 		
 		private var _hashToShader		: Object		= new Object();
 		
-		private var _styleStack			: StyleStack	= null;
-		private var _local				: TransformData		= null;
-		private var _world				: Dictionary	= null;
+		private var _styleData			: StyleData	= null;
+		private var _transformData		: TransformData	= null;
+		private var _worldData			: Dictionary	= null;
 		
 		private var _lastFrameId		: uint			= 0;
 		private var _styleStackVersion	: uint			= 0;
 		private var _lastShader			: Shader		= null;
 		
-		public function fillRenderState(state		: RendererState, 
-										style		: StyleStack, 
-										transform	: TransformData, 
-										world		: Dictionary) : Boolean
+		public function fillRenderState(state			: RendererState, 
+										styleData		: StyleData, 
+										transformData	: TransformData, 
+										worldData		: Dictionary) : void
 		{
-			var frameId	: uint		= (world[ViewportData] as ViewportData).frameId;
+			var frameId	: uint		= (worldData[ViewportData] as ViewportData).frameId;
 			var shader 	: Shader	= _lastShader;
 
-			_styleStack = style;
-			_local = transform;
-			_world = world;
+			_styleData = styleData;
+			_transformData = transformData;
+			_worldData = worldData;
 			
-			if (frameId != _lastFrameId  || _styleStack.version != _styleStackVersion || !_lastShader)
+			if (frameId != _lastFrameId  || _styleData.version != _styleStackVersion || !_lastShader)
 			{
-				var hash : String 	= getDataHash(style, transform, world);
+				var hash : String 	= getDataHash(styleData, transformData, worldData);
 			
 				shader = _hashToShader[hash];
 				
@@ -135,31 +135,11 @@ package aerys.minko.render.shader
 				}
 				
 				_lastFrameId = frameId;
-				_styleStackVersion = _styleStack.version;
+				_styleStackVersion = _styleData.version;
 				_lastShader = shader;
 			}
 			
-			shader.fillRenderState(state, style, transform, world);
-			
-			return true;
-		}
-		
-		/**
-		 * The getDataHash method returns a String computed from the style, local and world data.
-		 * This value is used as a hash that defines all the values used as conditionnals in the
-		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
-		 *  
-		 * @param style
-		 * @param local
-		 * @param world
-		 * @return 
-		 * 
-		 */
-		protected function getDataHash(style	: StyleStack, 
-									   transform	: TransformData, 
-									   world	: Dictionary) : String
-		{
-			return "";
+			shader.fillRenderState(state, styleData, transformData, worldData);
 		}
 		
 		/**
@@ -192,7 +172,7 @@ package aerys.minko.render.shader
 		 */
 		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
 		{
-			return _styleStack.get(styleId, defaultValue);
+			return _styleData.get(styleId, defaultValue);
 		}
 		
 		/**
@@ -203,12 +183,12 @@ package aerys.minko.render.shader
 		 */
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
-			return _styleStack.isSet(styleId);
+			return _styleData.isSet(styleId);
 		}
 		
 		protected final function getWorldDataList(key : Class) : WorldDataList
 		{
-			return _world[key];
+			return _worldData[key];
 		}
 		
 		public function dispose() : void

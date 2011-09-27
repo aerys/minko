@@ -3,11 +3,13 @@ package aerys.minko.render
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.IEffect;
+	import aerys.minko.render.effect.IPostProcessingEffect;
+	import aerys.minko.render.effect.IRenderingEffect;
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
-	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
@@ -15,7 +17,6 @@ package aerys.minko.render
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	import aerys.minko.scene.visitor.WorldDataVisitor;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionable;
 	
 	import flash.display.DisplayObject;
 	import flash.display.Graphics;
@@ -63,11 +64,11 @@ package aerys.minko.render
 		private var _stage3d			: Stage3D					= null;
 		private var _rendererClass		: Class						= null;
 		private var _renderer			: IRenderer					= null;
-		private var _defaultEffect		: IEffect					= new BasicEffect();
+		private var _defaultEffect		: IRenderingEffect			= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
 		private var _transformData		: TransformData				= new TransformData();
 		
-		private var _postProcessEffect	: IEffect					= null;
+		private var _postProcessEffect	: IPostProcessingEffect		= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
 		
 		private var _viewportData		: ViewportData				= null;
@@ -77,12 +78,12 @@ package aerys.minko.render
 		private var _mask				: Shape						= new Shape();
 		private var _alwaysOnTop		: Boolean					= false;
 		
-		public function get postProcessEffect() : IEffect
+		public function get postProcessEffect() : IPostProcessingEffect
 		{
 			return _postProcessEffect;
 		}
 
-		public function set postProcessEffect(value : IEffect) : void
+		public function set postProcessEffect(value : IPostProcessingEffect) : void
 		{
 			_postProcessEffect = value;
 		}
@@ -173,12 +174,12 @@ package aerys.minko.render
 			}
 		}
 		
-		public function get defaultEffect() : IEffect
+		public function get defaultEffect() : IRenderingEffect
 		{
 			return _defaultEffect;
 		}
 		
-		public function set defaultEffect(value : IEffect) : void
+		public function set defaultEffect(value : IRenderingEffect) : void
 		{
 			_defaultEffect = value;
 		}
@@ -352,9 +353,9 @@ package aerys.minko.render
 			if (event.target != this)
 				return ;
 			
-			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
-			_stage3d.context3D.dispose();
-			_stage3d = null;
+//			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+//			_stage3d.context3D.dispose();
+//			_stage3d = null;
 		}
 		
 		private function resizeHandler(event : Event = null) : void

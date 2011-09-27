@@ -19,6 +19,7 @@ package aerys.minko.scene.node.mesh
 		 * 
 		 */
 		function get vertexStream()	: IVertexStream;
+		
 		/**
 		 * The IndexStream object containing the mesh indices. 
 		 * @return 

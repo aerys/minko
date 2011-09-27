@@ -1,6 +1,6 @@
 package aerys.minko.type
 {
-	import aerys.minko.render.renderer.state.RendererState;
+	import aerys.minko.render.renderer.RendererState;
 	
 	import flash.utils.Dictionary;
 

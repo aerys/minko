@@ -80,9 +80,9 @@ package aerys.minko.scene.node.camera
 				_rotationVersion = _rotation.version;
 				_lookAtVersion = lookAt.version;
 				
-				pos.x = lookAt.x - _distance * Math.cos(_rotation.y) * Math.cos(_rotation.x);
-				pos.y = lookAt.y - _distance * Math.sin(_rotation.x);
-				pos.z = lookAt.z - _distance * Math.sin(_rotation.y) * Math.cos(_rotation.x);			
+				pos.x = lookAt.x - _distance * Math.cos(rotation.y) * Math.cos(rotation.x);
+				pos.y = lookAt.y - _distance * Math.sin(rotation.x);
+				pos.z = lookAt.z - _distance * Math.sin(rotation.y) * Math.cos(rotation.x);			
 			}
 			
 			return pos;

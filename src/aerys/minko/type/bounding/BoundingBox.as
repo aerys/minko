@@ -83,7 +83,7 @@ package aerys.minko.type.bounding
 			return _vertices.concat();
 		}
 		
-		public function update(min : Vector4 = null,
+		public function update(min : Vector4 	= null,
 							   max : Vector4	= null) : void
 		{
 			var vmin : Vector3D	= _min._vector;

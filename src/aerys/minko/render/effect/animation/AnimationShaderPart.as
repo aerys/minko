@@ -8,7 +8,11 @@ package aerys.minko.render.effect.animation
 	import aerys.minko.render.shader.node.animation.MatrixSkinnedPosition;
 	import aerys.minko.render.shader.node.animation.MorphedNormal;
 	import aerys.minko.render.shader.node.animation.MorphedPosition;
+	import aerys.minko.scene.data.StyleData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.animation.AnimationMethod;
+	
+	import flash.utils.Dictionary;
 	
 	public class AnimationShaderPart extends ActionScriptShaderPart
 	{
@@ -59,5 +63,21 @@ package aerys.minko.render.effect.animation
 			}
 		}
 		
+		override public function getDataHash(styleData		: StyleData,
+											 transformData	: TransformData,
+											 worldData		: Dictionary) : String
+		{
+			var hash : String = "_animation";
+			
+			if (styleData.get(AnimationStyle.METHOD, AnimationMethod.DISABLED) != AnimationMethod.DISABLED)
+			{
+				hash += "(method=" + styleData.get(AnimationStyle.METHOD)
+						+ ",maxInfluences=" + styleData.get(AnimationStyle.MAX_INFLUENCES, 0)
+						+ ",numBones=" + styleData.get(AnimationStyle.NUM_BONES, 0)
+						+ ")";
+			}
+			
+			return hash;
+		}
 	}
 }

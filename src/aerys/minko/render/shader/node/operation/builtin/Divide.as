@@ -2,6 +2,7 @@ package aerys.minko.render.shader.node.operation.builtin
 {
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
+	import aerys.minko.render.shader.node.operation.IAlignedOperation;
 	import aerys.minko.render.shader.node.operation.IComponentWiseOperation;
 	
 	public class Divide extends AbstractOperation implements IComponentWiseOperation

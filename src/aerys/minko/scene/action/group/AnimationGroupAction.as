@@ -17,7 +17,7 @@ package aerys.minko.scene.action.group
 	{
 		public static const animationGroupAction : AnimationGroupAction = new AnimationGroupAction();
 		
-		private static const TYPE	: uint		= ActionType.UPDATE_LOCAL_DATA; // more or less
+		private static const TYPE : uint = ActionType.UPDATE_TRANSFORM_DATA; // more or less
 		
 		private var _loop			: Boolean	= true;
 		
