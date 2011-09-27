@@ -127,6 +127,17 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 		
+		
+		/**
+		 * The weight of the current vertex for the wireframe effect. 
+		 * @return 
+		 * 
+		 */
+		protected function get vertexWeight() : SValue
+		{
+			return new SValue(new Attribute(VertexComponent.WIRE));
+		}
+		
 		/**
 		 * The direction of the camera in local space. 
 		 * @return 
@@ -610,6 +621,11 @@ package aerys.minko.render.shader
 		protected final function multiply3x3(a : Object, b : Object) : SValue
 		{
 			return new SValue(new Multiply3x3(getNode(a), getNode(b)));
+		}
+		
+		protected final function multiply3x4(a : Object, b : Object) : SValue
+		{
+			return new SValue(new Multiply3x4(getNode(a), getNode(b)));
 		}
 		
 		protected final function cos(angle : Object) : SValue
