@@ -86,7 +86,7 @@ package aerys.minko.render.resource
 					if (_mipmap)
 					{
 						var level 		: int 			= 0;
-						var size		: int 			= _bitmapData.width;
+						var size		: int 			= _width > _height ? _width : _height;
 						var transparent	: Boolean		= _bitmapData.transparent;
 						var tmp 		: BitmapData 	= new BitmapData(size,
 																		 size,
@@ -106,8 +106,7 @@ package aerys.minko.render.resource
 								tmp.fillRect(tmp.rect, 0);
 						}
 						
-						if (transparent)
-							tmp.dispose();
+						tmp.dispose();
 					}
 					else
 					{
