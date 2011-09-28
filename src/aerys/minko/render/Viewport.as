@@ -8,6 +8,7 @@ package aerys.minko.render
 	import aerys.minko.render.effect.basic.BasicEffect;
 	import aerys.minko.render.renderer.DefaultRenderer;
 	import aerys.minko.render.renderer.IRenderer;
+	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
@@ -579,6 +580,19 @@ package aerys.minko.render
 				_numTriangles = _renderer.numTriangles;
 				_drawTime = _renderer.drawingTime;
 				
+				if (_numTriangles == 0)
+				{
+					var clearState : RendererState	= RendererState.create();
+
+					if (_postProcessEffect != null)
+						clearState.renderTarget = _viewportData.renderTarget;
+					else
+						clearState.renderTarget = _viewportData.backBufferRenderTarget;
+					
+					_renderer.pushState(clearState);
+					_renderer.drawToBackBuffer();
+				}
+					
 				// execute post-processing
 				if (_postProcessEffect != null)
 				{
