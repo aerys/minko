@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.action.IAction;
 	
 	import flash.events.IEventDispatcher;
@@ -15,7 +16,7 @@ package aerys.minko.scene.node
 		function get name()		: String;
 		function set name(value : String) : void;
 		
-		function get parents()	: Vector.<IScene>;
+		function get parents()	: SceneIterator;
 		function get actions()	: Vector.<IAction>;
 	}
 }

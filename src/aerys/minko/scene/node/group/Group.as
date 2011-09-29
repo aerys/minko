@@ -1,5 +1,7 @@
 package aerys.minko.scene.node.group
 {
+	import aerys.minko.ns.minko;
+	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.action.group.GroupAction;
 	import aerys.minko.scene.node.AbstractScene;
@@ -27,10 +29,12 @@ package aerys.minko.scene.node.group
 	 */
 	public dynamic class Group extends Proxy implements IGroup
 	{
+		use namespace minko;
+		
 		private static var _id		: uint				= 0;
 		
 		private var _name			: String			= null;
-		private var _parents		: Vector.<IScene>	= new Vector.<IScene>();
+		private var _parents		: SceneIterator		= new SceneIterator();
 		private var _actions		: Vector.<IAction>	= Vector.<IAction>([GroupAction.groupAction]);
 		
 		private var _children		: Vector.<IScene>	= null;
@@ -39,7 +43,7 @@ package aerys.minko.scene.node.group
 		private var _dispatcher		: EventDispatcher	= null;
 		
 		public function get name()		: String			{ return _name; }
-		public function get parents()	: Vector.<IScene>	{ return _parents; }
+		public function get parents()	: SceneIterator		{ return _parents; }
 		public function get actions()	: Vector.<IAction>	{ return _actions; }
 		
 		public function set name(value : String) : void
@@ -137,7 +141,7 @@ package aerys.minko.scene.node.group
 				position = _numChildren;
 			
 			_children[position] = scene;
-			scene.parents.push(this);
+			scene.parents._items.push(this);
 			scene.dispatchEvent(new Event(Event.ADDED));
 			
 			++_numChildren;
@@ -165,7 +169,7 @@ package aerys.minko.scene.node.group
 		{
 			if (position < _numChildren)
 			{
-				var removedParents 	: Vector.<IScene> 	= _children[position].parents;
+				var removedParents 	: Vector.<IScene> 	= _children[position].parents._items;
 				var scene			: IScene			= _children.splice(position, 1)[0];
 				
 				removedParents.splice(removedParents.indexOf(this), 1);

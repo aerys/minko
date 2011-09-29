@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.mesh.modifier
 {
+	import aerys.minko.ns.minko;
 	import aerys.minko.scene.action.mesh.MeshAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.IScene;
@@ -18,6 +19,8 @@ package aerys.minko.scene.node.mesh.modifier
 	 */
 	public class AbstractMeshModifier extends AbstractScene implements IMeshModifier
 	{
+		use namespace minko;
+		
 		private var _target 			: IMesh				= null;
 		
 		protected var _indexStream		: IndexStream		= null;
@@ -88,7 +91,7 @@ package aerys.minko.scene.node.mesh.modifier
 			var numStreams : int = streams.length;
 			
 			_target = target;
-			_target.parents.push(this);
+			_target.parents._items.push(this);
 			
 			_vertexStreamList = target.vertexStream is VertexStreamList
 								? (target.vertexStream as VertexStreamList).clone()
