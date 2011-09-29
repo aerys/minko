@@ -13,6 +13,8 @@ package aerys.minko.scene
 		
 		minko var _items	: Vector.<IScene>	= new Vector.<IScene>();
 		
+		public function get length() : int	{ return _items.length; }
+		
 		public function SceneIterator()
 		{
 			super();
