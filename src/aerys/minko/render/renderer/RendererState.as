@@ -5,6 +5,9 @@ package aerys.minko.render.renderer
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.type.Factory;
+	import aerys.minko.type.enum.ColorMask;
+	import aerys.minko.type.enum.CompareMode;
+	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -15,12 +18,10 @@ package aerys.minko.render.renderer
 	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTriangleFace;
+	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
-	import aerys.minko.type.enum.ColorMask;
-	import aerys.minko.type.enum.CompareMode;
-	import aerys.minko.type.enum.TriangleCulling;
 	
 	public final class RendererState
 	{
@@ -114,19 +115,9 @@ package aerys.minko.render.renderer
 		private var _depthTest			: uint						= 0;
 		
 		private var _priority			: Number					= 0.;
-		
-		private var _offsets			: Vector.<uint>				= new Vector.<uint>();
-		private var _numTriangles		: Vector.<int>				= new Vector.<int>();
-		
-		public function get offsets() : Vector.<uint>
-		{
-			return _offsets;
-		}
-		
-		public function get numTriangles() : Vector.<int>
-		{
-			return _numTriangles;
-		}
+
+		private var _drawCalls			: Vector.<int>				= new Vector.<int>();
+		private var _numDrawCalls		: int						= 0;
 		
 		public function get priority() : Number
 		{
@@ -266,7 +257,32 @@ package aerys.minko.render.renderer
 			_setFlags |= VERTEX_CONSTS;
 		}
 		
-		public function prepareContext(context : Context3D) : void
+		public function apply(context : Context3D, previous : RendererState) : uint
+		{
+			if (previous)
+				prepareContextDelta(context, previous);
+			else
+				prepareContext(context);
+			
+			if (_numDrawCalls != 0)
+			{
+				var indexBuffer 	: IndexBuffer3D = _indexStream.resource.getIndexBuffer3D(context);
+				var numTriangles	: int			= 0;
+				
+				for (var i : int = 0; i < _numDrawCalls; ++i)
+				{
+					var count : int = 0;
+					
+					numTriangles += count == -1 ? _indexStream.length / 3 : count;
+					
+					context.drawTriangles(indexBuffer, _drawCalls[int(i * 2)], _drawCalls[int(i * 2 + 1)]);
+				}
+			}
+			
+			return numTriangles;
+		}
+		
+		private function prepareContext(context : Context3D) : void
 		{
 			if (_setFlags & SHADER)
 				context.setProgram(_program.getProgram3D(context));
@@ -371,7 +387,7 @@ package aerys.minko.render.renderer
 			}
 		}
 		
-		public function prepareContextDelta(context : Context3D, current : RendererState) : void
+		private function prepareContextDelta(context : Context3D, current : RendererState) : void
 		{
 			if (_setFlags & SHADER && _program != current._program)
 				context.setProgram(_program.getProgram3D(context));
@@ -505,6 +521,13 @@ package aerys.minko.render.renderer
 			}
 		}
 		
+		public function drawTriangles(offset : int = 0, numTriangles : int = -1) : void
+		{
+			_drawCalls[int(_numDrawCalls * 2)] = offset;
+			_drawCalls[int(_numDrawCalls * 2 + 1)] = numTriangles;
+			_numDrawCalls++;
+		}
+		
 		public static function sort(states : Vector.<RendererState>, numStates : int) : void
 		{
 			var n 	: int 				= numStates;//states.length;
@@ -611,8 +634,7 @@ package aerys.minko.render.renderer
 			var state : RendererState	= FACTORY.create(temporary) as RendererState;
 			
 			state._setFlags = 0;
-			state._offsets.length = 0;
-			state._numTriangles.length = 0;
+			state._numDrawCalls = 0;
 			
 			return state;
 		}

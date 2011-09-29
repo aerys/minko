@@ -12,7 +12,7 @@ package aerys.minko.scene.node.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class StyleGroup extends Group implements IStylableScene
+	public dynamic class StyleGroup extends Group implements IStylableScene
 	{
 		private var _style			: Style		= new Style();
 		private var _styleEnabled	: Boolean	= true;

@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.camera
 {
+	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Vector4;
 	
 	/**
@@ -7,7 +8,8 @@ package aerys.minko.scene.node.camera
 	 * point in space.
 	 * 
 	 * The position of the camera will be computed according to the look-at point and the
-	 * rotation angles given by the "rotation" property.
+	 * rotation angles given by the "rotation" property. Therefore, setting the
+	 * (components of) the 'position' property will have no effect.
 	 *  
 	 * @author Jean-Marc Le Roux
 	 * 
@@ -18,14 +20,14 @@ package aerys.minko.scene.node.camera
 		private static const MAX_ROTATION_X	: Number	= Math.PI / 2. - EPSILON;
 		private static const MIN_ROTATION_X	: Number	= -MAX_ROTATION_X;
 		
-		private var _rotationVersion	: uint		= uint(-1);
-		private var _invalidPosition	: Boolean	= true;
-		private var _lookAtVersion		: uint		= uint(-1);
+		private var _rotationVersion	: uint			= uint(-1);
+		private var _invalidPosition	: Boolean		= true;
+		private var _lookAtVersion		: uint			= uint(-1);
 		
-		private var _distance			: Number	= 1.;
-		private var _rotation			: Vector4	= new Vector4(0., Math.PI * .5, 0., 0.);
+		private var _distance			: Number		= 1.;
+		private var _rotation			: Vector4		= new Vector4(0., Math.PI * .5, 0., 0.);
 		
-		override public function get version():uint
+		override public function get version() : uint
 		{
 			return super.version + _rotation.version;
 		}
@@ -62,10 +64,10 @@ package aerys.minko.scene.node.camera
 		 */
 		public function get rotation() : Vector4
 		{
-			if (_rotation.x >= MAX_ROTATION_X)
+			/*if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
 			else if (_rotation.x <= MIN_ROTATION_X)
-				_rotation.x = MIN_ROTATION_X;
+				_rotation.x = MIN_ROTATION_X;*/
 			
 			return _rotation;
 		}

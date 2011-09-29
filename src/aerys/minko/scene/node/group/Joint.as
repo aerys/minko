@@ -5,7 +5,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.node.mesh.primitive.CubeMesh;
 	import aerys.minko.scene.node.texture.ColorTexture;
 	
-	public class Joint extends TransformGroup
+	public dynamic class Joint extends TransformGroup
 	{
 		private var _boneName : String;
 		

@@ -45,7 +45,7 @@ package aerys.minko.scene.node.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class LoaderGroup extends Group implements IEventDispatcher
+	public dynamic class LoaderGroup extends Group implements IEventDispatcher
 	{
 		private static const NATIVE_FORMATS	: RegExp	= /^.*\.(swf|jpg|png)$/s
 		private static const PARSERS		: Object	= new Object();

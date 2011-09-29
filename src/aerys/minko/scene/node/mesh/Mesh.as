@@ -43,6 +43,14 @@ package aerys.minko.scene.node.mesh
 			_indexStream = value;
 		}
 
+		/**
+		 *  
+		 * @param vertexStream
+		 * @param indexStream The IndexStream to use. If the 'vertexStream' argument
+		 * is set and not IndexStream is provided, a dummy IndexStream will be created
+		 * using the IndexStream.dummy() method.
+		 * 
+		 */
 		public function Mesh(vertexStream	: IVertexStream	= null,
 							 indexStream	: IndexStream 	= null)
 		{

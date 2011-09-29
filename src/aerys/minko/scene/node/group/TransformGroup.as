@@ -10,7 +10,7 @@
 	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class TransformGroup extends Group implements ITransformableScene
+	public dynamic class TransformGroup extends Group implements ITransformableScene
 	{
 		private var _transform	: Matrix3D		= new Matrix3D();
 			

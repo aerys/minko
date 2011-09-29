@@ -9,7 +9,7 @@ package aerys.minko.scene.node.group
 	
 	import flash.events.Event;
 
-	public class MaterialGroup extends StyleGroup implements IEffectScene
+	public dynamic class MaterialGroup extends StyleGroup implements IEffectScene
 	{
 		private var _effect		: IRenderingEffect	= null;
 		private var _textures	: IGroup			= new Group();

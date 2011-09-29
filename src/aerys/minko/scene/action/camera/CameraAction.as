@@ -50,12 +50,16 @@ package aerys.minko.scene.action.camera
 			worldMatrix.deltaTransformVector(camera.up, _worldUp);
 			_worldUp.normalize()
 			
-			_cameraData.reset();
+			/*var viewDirection 	: Vector4 	= Vector4.subtract(_worldLookAt, _worldPosition).normalize();
+			var dotProduct		: Number	= Vector4.dotProduct(viewDirection, _worldUp);
 			
+			if (dotProduct == 1. || dotProduct == -1.)
+				_worldLookAt.x += 1e-100;*/
+				
+			_cameraData.reset();
 			_cameraData.position	= _worldPosition;
 			_cameraData.lookAt		= _worldLookAt;
 			_cameraData.up			= _worldUp;
-			
 			_cameraData.fieldOfView	= camera.fieldOfView;
 			_cameraData.zNear		= camera.nearClipping;
 			_cameraData.zFar		= camera.farClipping;

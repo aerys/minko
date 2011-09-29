@@ -47,8 +47,8 @@ package aerys.minko.render.renderer
 			var indexStream : IndexStream 	= _currentState.indexStream; 
 			var t 			: int 			= getTimer();
 		
-			if (_actualState != _currentState)
-				_currentState.prepareContextDelta(_context, _actualState);
+			/*if (_actualState != _currentState)
+				_currentState.prepareContextDelta(_context, _actualState);*/
 			
 			_context.drawTriangles(indexStream.resource.getIndexBuffer3D(_context),
 								   offset,
@@ -59,16 +59,8 @@ package aerys.minko.render.renderer
 			_actualState = _currentState;
 		}
 	
-		public function clear(red 		: Number	= 0.,
-							  green 	: Number	= 0.,
-							  blue 		: Number	= 0.,
-							  alpha 	: Number	= 1.,
-							  depth 	: Number	= 1.,
-							  stencil	: uint		= 0,
-							  mask		: uint		= 0xffffffff) : void
+		public function reset() : void
 		{
-			_context.clear(red, green, blue, alpha, depth, stencil, mask);
-			
 			_numTriangles = 0;
 			_drawingTime = 0;
 			

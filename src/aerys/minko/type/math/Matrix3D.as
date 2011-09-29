@@ -16,6 +16,7 @@ package aerys.minko.type.math
 		
 		private static const RAD2DEG			: Number			= 180. / Math.PI;
 		private static const DEG2RAD			: Number			= Math.PI / 180.;
+		private static const EPSILON			: Number			= 1e-100;
 		
 		private static const TMP_VECTOR			: Vector.<Number>	= new Vector.<Number>();
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
@@ -298,8 +299,8 @@ package aerys.minko.type.math
 								up	: Vector4	= null) : Matrix3D
 		{
 			_matrix.pointAt(pos._vector,
-								  at ? at._vector : null,
-								  up ? up._vector : null);
+							at ? at._vector : null,
+							up ? up._vector : null);
 			
 			++_version;
 			
@@ -500,6 +501,12 @@ package aerys.minko.type.math
 			x_axis = Vector4.crossProduct(up, z_axis).normalize();
 			y_axis = Vector4.crossProduct(z_axis, x_axis).normalize();
 			
+			if (Vector4.equals(x_axis, ConstVector4.ZERO) || Vector4.equals(y_axis, ConstVector4.ZERO))
+			{
+				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
+								+ 'and the up vector appear to be the same.');
+			}
+			
 			m41 = -Vector4.dotProduct(x_axis, eye);
 			m42 = -Vector4.dotProduct(y_axis, eye);
 			m43 = -Vector4.dotProduct(z_axis, eye);
@@ -545,6 +552,12 @@ package aerys.minko.type.math
 			z_axis = Vector4.subtract(eye, lookAt).normalize();
 			x_axis = Vector4.crossProduct(up, z_axis).normalize();
 			y_axis = Vector4.crossProduct(z_axis, x_axis).normalize();
+			
+			if (Vector4.equals(x_axis, ConstVector4.ZERO) || Vector4.equals(y_axis, ConstVector4.ZERO))
+			{
+				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
+								+ 'and the up vector appear to be the same.');
+			}
 			
 			m41 = -Vector4.dotProduct(x_axis, eye);
 			m42 = -Vector4.dotProduct(y_axis, eye);

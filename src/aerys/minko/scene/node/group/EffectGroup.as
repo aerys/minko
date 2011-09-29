@@ -11,7 +11,7 @@ package aerys.minko.scene.node.group
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class EffectGroup extends Group implements IEffectScene
+	public dynamic class EffectGroup extends Group implements IEffectScene
 	{
 		private var _effect	: IRenderingEffect	= null;
 		

@@ -51,17 +51,10 @@ package aerys.minko.render.renderer
 		
 		public function drawTriangles(offset : uint = 0, numTriangles : int = -1) : void
 		{
-			_currentState.offsets.push(offset);
-			_currentState.numTriangles.push(numTriangles);
+			_currentState.drawTriangles(offset, numTriangles);
 		}
 		
-		public function clear(red		: Number	= 0.,
-							  green		: Number	= 0.,
-							  blue		: Number	= 0.,
-							  alpha		: Number	= 1.,
-							  depth		: Number	= 1.,
-							  stencil	: uint		= 0,
-							  mask		: uint		= 0xffffffff)  :void
+		public function reset()  :void
 		{
 			_numTriangles = 0;
 			_drawingTime = 0;
@@ -77,34 +70,13 @@ package aerys.minko.render.renderer
 			if (SORT && _numStates > 1)
 				RendererState.sort(_states, _numStates);
 			
-			var actualState : RendererState = null;
-			
+			_currentState = null;
 			for (var i : int = 0; i < _numStates; ++i)
 			{
-				var state			: RendererState = _states[i];
-				var offsets 		: Vector.<uint>	= state.offsets;
-				var numTriangles 	: Vector.<int> 	= state.numTriangles;
-				var numCalls 		: int 			= offsets.length;
-				
-				if (actualState)
-					state.prepareContextDelta(_context, actualState);
-				else
-					state.prepareContext(_context);
-				
-				for (var j : int = 0; j < numCalls; ++j)
-				{
-					var iStream : IndexStream	= state.indexStream;
-					var iBuffer : IndexBuffer3D = iStream.resource.getIndexBuffer3D(_context);
-					var count	: int			= numTriangles[j];
-					
-					_numTriangles += count == -1
-									 ? iStream.length / 3.
-									 : count;
-					
-					_context.drawTriangles(iBuffer, offsets[j], count);
-				}
-				
-				actualState = state;
+				var state	: RendererState = _states[i];
+
+				_numTriangles += state.apply(_context, _currentState);
+				_currentState = state;
 			}
 			
 			_drawingTime += getTimer() - time;

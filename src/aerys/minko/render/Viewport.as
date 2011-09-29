@@ -57,10 +57,10 @@ package aerys.minko.render
 		
 		private var _visitors			: Vector.<ISceneVisitor>	= null;
 		
-		private var _time				: int						= 0;
+		private var _renderingTime		: int						= 0;
+		private var _drawingTime		: int						= 0;
 		private var _sceneSize			: uint						= 0;
 		private var _numTriangles		: uint						= 0;
-		private var _drawTime			: int						= 0;
 		
 		private var _stage3d			: Stage3D					= null;
 		private var _rendererClass		: Class						= null;
@@ -214,12 +214,12 @@ package aerys.minko.render
 		 */
 		public function get renderingTime() : uint
 		{
-			return _time;
+			return _renderingTime;
 		}
 		
 		public function get drawingTime() : int
 		{
-			return _drawTime;
+			return _drawingTime;
 		}
 		
 		public function get renderMode() : String
@@ -565,20 +565,21 @@ package aerys.minko.render
 				
 				_transformData.reset();
 				
-				// push viewport related data into the data sources
+				// push viewport related data into the world data
 				worldData[ViewportData] = _viewportData;
 				renderingData.effects.push(defaultEffect);
 				
-				_renderer.clear();
+				_renderer.reset();
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
 					visitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
 				
 				renderingData.effects.pop();
+				_renderingTime	= getTimer() - time;
 				
 				_numTriangles = _renderer.numTriangles;
-				_drawTime = _renderer.drawingTime;
+				_drawingTime = _renderer.drawingTime;
 				
 				if (_numTriangles == 0)
 				{
@@ -603,18 +604,17 @@ package aerys.minko.render
 				
 				_renderer.present();
 				
-				_sceneSize	= visitors[0].numNodes;
-				_time		= getTimer() - time;
-				_drawTime	+= _renderer.drawingTime;
+				_sceneSize		= visitors[0].numNodes;
+				_drawingTime	+= _renderer.drawingTime;
 			}
 			else
 			{
-				_time = 0;
+				_renderingTime = 0;
 				_numTriangles = 0;
-				_drawTime = 0;
+				_drawingTime = 0;
 			}
 			
-			Factory.sweep();
+			//Factory.sweep();
 		}
 		
 		public function showLogo() : void
