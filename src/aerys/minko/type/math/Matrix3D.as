@@ -27,10 +27,8 @@ package aerys.minko.type.math
 		private static const UPDATE_MATRIX		: uint				= 2;
 		private static const UPDATE_ALL			: uint				= UPDATE_DATA | UPDATE_MATRIX;
 		
-		protected var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
-		
-		private var _version	: uint				= 0;
-		private var _data		: Vector.<Number>	= new Vector.<Number>();
+		private var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		private var _version	: uint					= 0;
 		
 		public function get version()		: uint		{ return _version; }
 		public function get translationX()	: Number	{ return getTranslation(TMP_VECTOR4).x; }

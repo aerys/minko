@@ -33,7 +33,7 @@ package aerys.minko.scene.node.group
 		
 		private function addedHandler(event : Event) : void
 		{
-			if (parents.length != 0)
+			if (parents.length > 1)
 				throw new Error('GlobalTransformGroup can have only one parent.');
 		}
 	}
