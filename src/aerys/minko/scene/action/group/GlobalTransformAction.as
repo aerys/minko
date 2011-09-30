@@ -25,7 +25,7 @@ package aerys.minko.scene.action.group
 		{
 			var globalTransformGroup : GlobalTransformGroup = GlobalTransformGroup(scene);
 			
-			Matrix3D.copy(visitor.transformData.world, globalTransformGroup.transform);
+			Matrix3D.copy(visitor.transformData.world, globalTransformGroup.localToGlobalTransform);
 			
 			return true;
 		}

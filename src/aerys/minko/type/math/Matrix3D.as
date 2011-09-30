@@ -27,8 +27,10 @@ package aerys.minko.type.math
 		private static const UPDATE_MATRIX		: uint				= 2;
 		private static const UPDATE_ALL			: uint				= UPDATE_DATA | UPDATE_MATRIX;
 		
-		private var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		private var _version	: uint					= 0;
+		private var _data		: Vector.<Number>		= new Vector.<Number>();
+		private var _numPushes	: int					= 0;
+		private var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		
 		public function get version()		: uint		{ return _version; }
 		public function get translationX()	: Number	{ return getTranslation(TMP_VECTOR4).x; }
@@ -95,21 +97,20 @@ package aerys.minko.type.math
 		
 		public function push() : Matrix3D
 		{
-			_matrix.copyRawDataTo(_data, _data.length);
+			_matrix.copyRawDataTo(_data, _numPushes * 16);
+			_numPushes++;
 			
 			return this;
 		}
 		
 		public function pop() : Matrix3D
 		{
-			var dataLength : int = _data.length;
+			if (_numPushes == 0)
+				throw new Error('There is no data to pop.');
 			
-			if (dataLength)
-			{
-				_matrix.copyRawDataFrom(_data, dataLength - 16);
-				_data.length = dataLength - 16;
-				++_version;
-			}
+			_numPushes--;
+			_matrix.copyRawDataFrom(_data, _numPushes * 16);
+			++_version;
 			
 			return this;
 		}
