@@ -22,6 +22,7 @@ package aerys.minko.render.renderer
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
+	import flash.system.System;
 	
 	public final class RendererState
 	{
@@ -38,8 +39,9 @@ package aerys.minko.render.renderer
 		private static const PT_VERTEX				: String			= Context3DProgramType.VERTEX;
 		private static const PT_FRAGMENT			: String			= Context3DProgramType.FRAGMENT;
 		
-		private static const TMP_VECTOR				: Vector.<Number>	= new Vector.<Number>();
-
+		private static const TMP_NUMBERS			: Vector.<Number>	= new Vector.<Number>(0xffff, true);
+		private static const TMP_INTS				: Vector.<int>		= new Vector.<int>(0xffff, true);
+		
 		private static const BLENDING_STR			: Vector.<String>	= Vector.<String>([Context3DBlendFactor.DESTINATION_ALPHA,
 																						   Context3DBlendFactor.DESTINATION_COLOR,
 																						   Context3DBlendFactor.ONE,
@@ -259,6 +261,8 @@ package aerys.minko.render.renderer
 		
 		public function apply(context : Context3D, previous : RendererState) : uint
 		{
+			var totalTriangles	: uint	= 0;
+			
 			if (previous)
 				prepareContextDelta(context, previous);
 			else
@@ -267,19 +271,17 @@ package aerys.minko.render.renderer
 			if (_numDrawCalls != 0)
 			{
 				var indexBuffer 	: IndexBuffer3D = _indexStream.resource.getIndexBuffer3D(context);
-				var numTriangles	: int			= 0;
 				
 				for (var i : int = 0; i < _numDrawCalls; ++i)
 				{
-					var count : int = 0;
+					var numTriangles : int = _drawCalls[int(i * 2 + 1)];
 					
-					numTriangles += count == -1 ? _indexStream.length / 3 : count;
-					
-					context.drawTriangles(indexBuffer, _drawCalls[int(i * 2)], _drawCalls[int(i * 2 + 1)]);
+					totalTriangles += numTriangles == -1 ? _indexStream.length / 3 : numTriangles;
+					context.drawTriangles(indexBuffer, _drawCalls[int(i * 2)], numTriangles);
 				}
 			}
 			
-			return numTriangles;
+			return totalTriangles;
 		}
 		
 		private function prepareContext(context : Context3D) : void
@@ -530,49 +532,50 @@ package aerys.minko.render.renderer
 		
 		public static function sort(states : Vector.<RendererState>, numStates : int) : void
 		{
-			var n 	: int 				= numStates;//states.length;
-			var a	: Vector.<Number> 	= new Vector.<Number>(n);
-			var i	: int 				= 0;
-			var j	: int 				= 0;
-			var k	: int 				= 0;
-			var t	: int				= 0;
+			var n 		: int 				= numStates;//states.length;
+			var i		: int 				= 0;
+			var j		: int 				= 0;
+			var k		: int 				= 0;
+			var t		: int				= 0;
+			var state 	: RendererState		= states[0];
+			var anmin	: Number 			= -state._priority;
+			var nmax	: int  				= 0;
+			var p		: Number			= 0.;
 			
 			for (i = 0; i < n; ++i)
-				a[i] = -states[i]._priority;
-			
-			var m		: int 			= Math.ceil(n * .125);
-			var l		: Vector.<int> 	= new Vector.<int>(m);
-			var anmin	: Number 		= a[0];
-			var nmax	: int  			= 0;
-			var nmove	: int 			= 0;
-			
-			for (i = 1; i < n; ++i)
 			{
-				if (a[i] < anmin)
-					anmin = a[i];
-				if (a[i] > a[nmax])
+				state = states[i];
+				p = -state._priority;
+				
+				TMP_INTS[i] = 0;
+				TMP_NUMBERS[i] = p;
+				if (p < anmin)
+					anmin = p;
+				else if (p > Number(TMP_NUMBERS[nmax]))
 					nmax = i;
 			}
 			
-			if (anmin == a[nmax])
+			if (anmin == Number(TMP_NUMBERS[nmax]))
 				return ;
 			
-			var c1	: Number = (m - 1) / (a[nmax] - anmin);
+			var m		: int 	= Math.ceil(n * .125);
+			var nmove	: int 	= 0;
+			var c1		: Number = (m - 1) / (Number(TMP_NUMBERS[nmax]) - anmin);
 			
 			for (i = 0; i < n; ++i)
 			{
-				k = int(c1 * (a[i] - anmin));
-				++l[k];
+				k = int(c1 * (Number(TMP_NUMBERS[i]) - anmin));
+				TMP_INTS[k] = int(TMP_INTS[k]) + 1;
 			}
 			
 			for (k = 1; k < m; ++k)
-				l[k] += l[int(k-1)];
+				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
 			
-			var hold		: Number 		= a[nmax];
+			var hold		: Number 		= Number(TMP_NUMBERS[nmax]);
 			var holdState 	: RendererState = states[nmax];
 			
-			a[nmax] = a[0];
-			a[0] = hold;
+			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
+			TMP_NUMBERS[0] = hold;
 			states[nmax] = states[0];
 			states[0] = holdState;
 			
@@ -585,47 +588,51 @@ package aerys.minko.render.renderer
 			
 			while (nmove < i)
 			{
-				while (j > (l[k]-1))
-					k = int(c1 * (a[int(++j)] - anmin));
+				while (j > int(TMP_INTS[k]) - 1)
+				{
+					++j;
+					k = int(c1 * (Number(TMP_NUMBERS[j]) - anmin));
+				}
 				
-				flash = a[j];
-				flashState = states[j];
+				flash = Number(TMP_NUMBERS[j]);
+				flashState = RendererState(states[j]);
 				
-				while (!(j == l[k]))
+				while (!(j == int(TMP_INTS[k])))
 				{
 					k = int(c1 * (flash - anmin));
 					
-					hold = a[ (t = int(l[k]-1)) ];
-					holdState = states[t];
+					t = int(TMP_INTS[k]) - 1;
+					hold = Number(TMP_NUMBERS[t]);
+					holdState = RendererState(states[t]);
 					
-					a[t] = flash;
+					TMP_NUMBERS[t] = flash;
 					states[t] = flashState;
 					
 					flash = hold;
 					flashState = holdState;
 					
-					--l[k];
+					TMP_INTS[k] = int(TMP_INTS[k]) - 1;
 					++nmove;
 				}
 			}
 			
 			for (j = 1; j < n; ++j)
 			{
-				hold = a[j];
+				hold = Number(TMP_NUMBERS[j]);
 				holdState = states[j];
 				
 				i = int(j - 1);
-				while (i >= 0 && a[i] > hold)
+				while (i >= 0 && Number(TMP_NUMBERS[i]) > hold)
 				{
 					// not trivial
-					a[int(i+1)] = a[i];
-					states[int(i+1)] = states[i];
+					TMP_NUMBERS[int(i + 1)] = Number(TMP_NUMBERS[i]);
+					states[int(i + 1)] = states[i];
 					
 					--i;
 				}
 				
-				a[int(i+1)] = hold;
-				states[int(i+1)] = holdState;
+				TMP_NUMBERS[int(i + 1)] = hold;
+				states[int(i + 1)] = holdState;
 			}
 		}
 		

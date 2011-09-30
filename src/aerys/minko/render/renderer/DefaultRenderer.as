@@ -30,10 +30,10 @@ package aerys.minko.render.renderer
 		private var _states			: Vector.<RendererState>	= new Vector.<RendererState>();
 		private var _numStates		: int						= 0;
 		
-		public function get numTriangles()	: uint			{ return _numTriangles; }
-		public function get viewport()		: Viewport		{ return _viewport; }
-		public function get drawingTime()	: int			{ return _drawingTime; }
-		public function get frameId()		: uint			{ return _frame; }
+		public function get numTriangles()	: uint		{ return _numTriangles; }
+		public function get viewport()		: Viewport	{ return _viewport; }
+		public function get drawingTime()	: int		{ return _drawingTime; }
+		public function get frameId()		: uint		{ return _frame; }
 		
 		public function DefaultRenderer(viewport : Viewport, context : Context3D)
 		{
@@ -54,7 +54,7 @@ package aerys.minko.render.renderer
 			_currentState.drawTriangles(offset, numTriangles);
 		}
 		
-		public function reset()  :void
+		public function reset() : void
 		{
 			_numTriangles = 0;
 			_drawingTime = 0;

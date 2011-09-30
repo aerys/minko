@@ -33,7 +33,7 @@ package aerys.minko.scene.visitor
 		}
 		
 		override public function processSceneGraph(scene			: IScene, 
-												   transformData		: TransformData, 
+												   transformData	: TransformData, 
 												   worldData		: Dictionary, 
 												   renderingData	: RenderingData, 
 												   renderer			: IRenderer) : void

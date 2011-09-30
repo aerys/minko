@@ -61,7 +61,11 @@ package aerys.minko.scene.node.texture
 			}
 			
 			if (!_data || _data.width != w || _data.height != h)
+			{
+				if (_data)
+					_data.dispose();
 				_data = new BitmapData(w, h, value.transparent, 0);
+			}
 				
 			if (w != bitmapWidth || h != bitmapHeight)
 			{

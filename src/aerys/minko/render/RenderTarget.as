@@ -47,8 +47,8 @@ package aerys.minko.render
 			}
 			else if (type == TEXTURE)
 			{
-				if (width != height) 
-					throw new Error('Width and height must be equal for texture rendering.');
+				/*if (width != height) 
+					throw new Error('Width and height must be equal for texture rendering.');*/
 				
 				if ((width & (width - 1)) != 0)
 					throw new Error('Texture size must be a power of 2.');

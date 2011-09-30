@@ -614,7 +614,7 @@ package aerys.minko.render
 				_drawingTime = 0;
 			}
 			
-			//Factory.sweep();
+			Factory.sweep();
 		}
 		
 		public function showLogo() : void

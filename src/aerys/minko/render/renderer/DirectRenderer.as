@@ -44,18 +44,11 @@ package aerys.minko.render.renderer
 		public function drawTriangles(offset		: uint	= 0,
 									  numTriangles	: int	= -1) : void
 		{
-			var indexStream : IndexStream 	= _currentState.indexStream; 
-			var t 			: int 			= getTimer();
+			var t : int	= getTimer();
 		
-			/*if (_actualState != _currentState)
-				_currentState.prepareContextDelta(_context, _actualState);*/
-			
-			_context.drawTriangles(indexStream.resource.getIndexBuffer3D(_context),
-								   offset,
-								   numTriangles);
+			_numTriangles += _currentState.apply(_context, _actualState);
 			
 			_drawingTime += getTimer() - t;
-			_numTriangles += numTriangles == -1 ? indexStream.length / 3. : numTriangles;
 			_actualState = _currentState;
 		}
 	
