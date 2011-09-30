@@ -9,6 +9,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.type.parser.atf.ATFParser;
 	
 	import flash.display.Bitmap;
+	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
@@ -200,6 +201,10 @@ package aerys.minko.scene.node.group
 				{
 					addChild(new MovieClipTexture(mc));
 				}
+			}
+			else if (assetObject is BitmapData)
+			{
+				addChild(new BitmapTexture(assetObject as BitmapData));
 			}
 			else if (assetObject is IBitmapDrawable)
 			{
