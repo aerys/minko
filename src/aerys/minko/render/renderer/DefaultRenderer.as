@@ -18,6 +18,7 @@ package aerys.minko.render.renderer
 		use namespace minko;
 		use namespace minko_render;
 	
+		private static const RS		: Factory					= Factory.getFactory(RendererState);
 		private static const SORT	: Boolean					= true;
 		
 		private var _context		: Context3D					= null;

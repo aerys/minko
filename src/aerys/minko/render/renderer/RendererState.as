@@ -532,15 +532,16 @@ package aerys.minko.render.renderer
 		
 		public static function sort(states : Vector.<RendererState>, numStates : int) : void
 		{
-			var n 		: int 				= numStates;//states.length;
-			var i		: int 				= 0;
-			var j		: int 				= 0;
-			var k		: int 				= 0;
-			var t		: int				= 0;
-			var state 	: RendererState		= states[0];
-			var anmin	: Number 			= -state._priority;
-			var nmax	: int  				= 0;
-			var p		: Number			= 0.;
+			var n 		: int 			= numStates;//states.length;
+			var i		: int 			= 0;
+			var j		: int 			= 0;
+			var k		: int 			= 0;
+			var t		: int			= 0;
+			var state 	: RendererState	= states[0];
+			var anmin	: Number 		= -state._priority;
+			var nmax	: int  			= 0;
+			var p		: Number		= 0.;
+			var sorted	: Boolean		= true;
 			
 			for (i = 0; i < n; ++i)
 			{
@@ -554,7 +555,7 @@ package aerys.minko.render.renderer
 				else if (p > Number(TMP_NUMBERS[nmax]))
 					nmax = i;
 			}
-			
+
 			if (anmin == Number(TMP_NUMBERS[nmax]))
 				return ;
 			
@@ -636,9 +637,9 @@ package aerys.minko.render.renderer
 			}
 		}
 		
-		public static function create(temporary : Boolean = true) : RendererState
+		public static function create() : RendererState
 		{
-			var state : RendererState	= FACTORY.create(temporary) as RendererState;
+			var state : RendererState	= FACTORY.create(true) as RendererState;
 			
 			state._setFlags = 0;
 			state._numDrawCalls = 0;

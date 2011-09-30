@@ -46,10 +46,9 @@ package aerys.minko.render.shader.node.leaf
 		
 		override public function toString() : String
 		{
-			return "Parameter\\n" 
-				+ "name=" + name + ", "
+			return "Parameter[name=" + name + ", "
 				+ "index=" + index  + ", "
-				+ "field=" + field;
+				+ "field=" + field + "]";
 		}
 	}
 }

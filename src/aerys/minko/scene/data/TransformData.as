@@ -146,7 +146,7 @@ package aerys.minko.scene.data
 			
 			if (_localToUv_localToScreenVersion != localToScreenMatrix.version)
 			{
-				_localToUv = Matrix3D.multiply(screenToUvMatrix, localToScreenMatrix);
+				_localToUv = Matrix3D.multiply(screenToUvMatrix, localToScreenMatrix, _localToUv);
 				_localToUv_localToScreenVersion = localToScreenMatrix.version;
 			}
 			

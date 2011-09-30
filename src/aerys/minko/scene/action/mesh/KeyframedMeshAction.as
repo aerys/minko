@@ -51,10 +51,10 @@ package aerys.minko.scene.action.mesh
 				worldObject.invalidate();
 			
 			// pass "ready to draw" data to the renderer.
-			var transformData		: TransformData			= visitor.transformData;
+			var transformData	: TransformData		= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
-			var styleStack		: StyleData		= renderingData.styleStack;
+			var styleStack		: StyleData			= renderingData.styleStack;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
 			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			
@@ -73,7 +73,7 @@ package aerys.minko.scene.action.mesh
 			for (var j : int = 0; j < numPasses; ++j)
 			{
 				var pass	: IEffectPass	= passes[j];
-				var state	: RendererState	= RendererState.create(true);
+				var state	: RendererState	= RendererState.create();
 				
 				if (pass.fillRenderState(state, renderingData.styleStack, transformData, worldData))
 				{

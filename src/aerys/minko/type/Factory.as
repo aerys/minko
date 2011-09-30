@@ -29,8 +29,12 @@ package aerys.minko.type
 		public function create(autoMark : Boolean 	= false,
 							   values 	: Object 	= null) : Object
 		{
-			var result : Object = _numFree ? _free[int(--_numFree)]
-										   : new _class();
+			var result : Object = null;
+			
+			if (_numFree != 0)
+				result = _free[int(--_numFree)];
+			else
+				result = new _class();
 			
 			if (values)
 				for (var property : String in values)

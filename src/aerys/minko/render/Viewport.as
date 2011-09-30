@@ -67,7 +67,9 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IRenderingEffect			= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
+		
 		private var _transformData		: TransformData				= new TransformData();
+		private var _renderingData		: RenderingData				= new RenderingData();
 		
 		private var _postProcessEffect	: IPostProcessingEffect		= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
@@ -561,21 +563,20 @@ package aerys.minko.render
 		
 				// create the data sources the visitors are going to write and read from during render.
 				var worldData		: Dictionary	= new Dictionary();
-				var renderingData	: RenderingData	= new RenderingData();
 				
 				_transformData.reset();
 				
 				// push viewport related data into the world data
 				worldData[ViewportData] = _viewportData;
-				renderingData.effects.push(defaultEffect);
+				_renderingData.effects.push(defaultEffect);
 				
 				_renderer.reset();
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
-					visitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
+					visitor.processSceneGraph(scene, _transformData, worldData, _renderingData, _renderer);
 				
-				renderingData.effects.pop();
+				_renderingData.effects.pop();
 				_renderingTime	= getTimer() - time;
 				
 				_numTriangles = _renderer.numTriangles;
@@ -597,9 +598,9 @@ package aerys.minko.render
 				// execute post-processing
 				if (_postProcessEffect != null)
 				{
-					renderingData.effects.push(_postProcessEffect);
-					_postProcessVisitor.processSceneGraph(scene, _transformData, worldData, renderingData, _renderer);
-					renderingData.effects.pop();
+					_renderingData.effects.push(_postProcessEffect);
+					_postProcessVisitor.processSceneGraph(scene, _transformData, worldData, _renderingData, _renderer);
+					_renderingData.effects.pop();
 				}
 				
 				_renderer.present();

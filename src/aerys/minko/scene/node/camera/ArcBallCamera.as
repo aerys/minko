@@ -64,10 +64,10 @@ package aerys.minko.scene.node.camera
 		 */
 		public function get rotation() : Vector4
 		{
-			/*if (_rotation.x >= MAX_ROTATION_X)
+			if (_rotation.x >= MAX_ROTATION_X)
 				_rotation.x = MAX_ROTATION_X;
 			else if (_rotation.x <= MIN_ROTATION_X)
-				_rotation.x = MIN_ROTATION_X;*/
+				_rotation.x = MIN_ROTATION_X;
 			
 			return _rotation;
 		}

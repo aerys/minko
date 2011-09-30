@@ -262,14 +262,11 @@ package aerys.minko.render.shader
 			}
 			else if (data == null)
 			{
-				throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
-					'null and required by automatic shader');	
+				throw new Error(paramAlloc.toString() + ' is null but required by shader.');	
 			}
 			else
 			{
-				throw new Error('Parameter ' + paramAlloc.toString() + ' is ' +
-					'neither a int, a Number, a Vector4 or a Matrix3D. Unable to ' +
-					'map it to a shader constant.');	
+				throw new Error(paramAlloc.toString() + ' has an unsupported type.');	
 			}
 		}
 	}

@@ -27,18 +27,18 @@ package aerys.minko.scene.data
 		public static const FRUSTUM			: String = 'frustum';
 		
 		// data provider
-		protected var _styleStack	: StyleData;
+		protected var _styleStack		: StyleData;
 		protected var _transformData	: TransformData;
-		protected var _worldData	: Dictionary;
+		protected var _worldData		: Dictionary;
 		
 		// data available on initialisation
-		protected var _position	: Vector4;
-		protected var _lookAt	: Vector4;
-		protected var _up		: Vector4;
+		protected var _position			: Vector4;
+		protected var _lookAt			: Vector4;
+		protected var _up				: Vector4;
 		
-		protected var _fov		: Number;
-		protected var _zNear	: Number;
-		protected var _zFar		: Number;
+		protected var _fov				: Number;
+		protected var _zNear			: Number;
+		protected var _zFar				: Number;
 		
 		// computed data
 		protected var _direction							: Vector4;
