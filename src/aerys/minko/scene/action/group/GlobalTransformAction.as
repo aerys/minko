@@ -6,7 +6,7 @@ package aerys.minko.scene.action.group
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.group.GlobalTransformGroup;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 
 	public class GlobalTransformAction implements IAction
 	{
@@ -25,8 +25,8 @@ package aerys.minko.scene.action.group
 		{
 			var globalTransformGroup : GlobalTransformGroup = GlobalTransformGroup(scene);
 
-			Matrix3D.copy(visitor.transformData.world, globalTransformGroup.localToGlobalTransform);
-
+			Matrix4x4.copy(visitor.transformData.world, globalTransformGroup.localToGlobalTransform);
+			
 			return true;
 		}
 	}

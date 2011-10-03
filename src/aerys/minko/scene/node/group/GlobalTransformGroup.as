@@ -1,8 +1,8 @@
 package aerys.minko.scene.node.group
 {
 	import aerys.minko.scene.action.group.GlobalTransformAction;
-	import aerys.minko.type.math.Matrix3D;
-
+	import aerys.minko.type.math.Matrix4x4;
+	
 	import flash.events.Event;
 
 	/**
@@ -24,9 +24,9 @@ package aerys.minko.scene.node.group
 	 */
 	public class GlobalTransformGroup extends Group
 	{
-		private var _globalTransform	: Matrix3D	= new Matrix3D();
+		private var _globalTransform	: Matrix4x4	= new Matrix4x4();
 
-		public function get localToGlobalTransform() : Matrix3D	{ return _globalTransform; }
+		public function get localToGlobalTransform() : Matrix4x4	{ return _globalTransform; }
 
 		public function GlobalTransformGroup(...children)
 		{

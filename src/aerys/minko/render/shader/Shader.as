@@ -14,10 +14,10 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.format.VertexComponent;
-
+	
 	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
@@ -233,9 +233,9 @@ package aerys.minko.render.shader
 				size >= 3 && (constData[int(offset + 2)] = vectorData.z);
 				size >= 4 && (constData[int(offset + 3)] = vectorData.w);
 			}
-			else if (data is Matrix3D)
+			else if (data is Matrix4x4)
 			{
-				(data as Matrix3D).getRawData(constData, offset, true);
+				(data as Matrix4x4).getRawData(constData, offset, true);
 			}
 			else if (data is Vector.<Vector4>)
 			{
@@ -252,10 +252,10 @@ package aerys.minko.render.shader
 					constData[int(offset + 4 * j + 3)] = vectorData.w;
 				}
 			}
-			else if (data is Vector.<Matrix3D>)
+			else if (data is Vector.<Matrix4x4>)
 			{
-				var matrixVectorData		: Vector.<Matrix3D>	= data as Vector.<Matrix3D>;
-				var matrixVectorDataLength	: uint				= matrixVectorData.length;
+				var matrixVectorData		: Vector.<Matrix4x4>	= data as Vector.<Matrix4x4>;
+				var matrixVectorDataLength	: uint					= matrixVectorData.length;
 
 				for (var i : uint = 0; i < matrixVectorDataLength; ++i)
 					matrixVectorData[i].getRawData(constData, offset + i * 16, true);

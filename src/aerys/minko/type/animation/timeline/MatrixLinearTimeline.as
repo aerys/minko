@@ -1,15 +1,15 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.type.math.Matrix3D;
-
+	import aerys.minko.type.math.Matrix4x4;
+	
 	public class MatrixLinearTimeline implements ITimeline
 	{
 		private var _targetName		: String;
 		private var _propertyName	: String;
 
 		private var _timeTable		: Vector.<uint>
-		private var _values			: Vector.<Matrix3D>;
+		private var _values			: Vector.<Matrix4x4>;
 
 		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
@@ -18,7 +18,7 @@ package aerys.minko.type.animation.timeline
 		public function MatrixLinearTimeline(targetName		: String,
 											 propertyName	: String,
 											 timeTable		: Vector.<uint>,
-											 matrices		: Vector.<Matrix3D>)
+											 matrices		: Vector.<Matrix4x4>)
 		{
 			_targetName		= targetName;
 			_propertyName	= propertyName;
@@ -32,28 +32,28 @@ package aerys.minko.type.animation.timeline
 			var timeCount	: uint = _timeTable.length;
 
 			// change matrix value.
-			var out : Matrix3D = scene[_propertyName];
+			var out : Matrix4x4 = scene[_propertyName];
 			if (!out)
 				throw new Error(_propertyName + ' property was not found on scene node named ' + _targetName);
 
 			if (timeId == 0)
 			{
-				Matrix3D.copy(_values[0], out);
+				Matrix4x4.copy(_values[0], out);
 			}
 			else if (timeId == timeCount)
 			{
-				Matrix3D.copy(_values[timeCount - 1], out);
+				Matrix4x4.copy(_values[int(timeCount - 1)], out);
 			}
 			else
 			{
-				var previousTime		: Number	= _timeTable[timeId - 1];
+				var previousTime		: Number	= _timeTable[int(timeId - 1)];
 				var nextTime			: Number	= _timeTable[timeId];
 				var interpolationRatio	: Number	= (t - previousTime) / (nextTime - previousTime);
-
-				var previousMatrix		: Matrix3D = _values[timeId - 1];
-				var nextMatrix			: Matrix3D = _values[timeId];
-
-				Matrix3D.copy(previousMatrix, out);
+				
+				var previousMatrix		: Matrix4x4 = _values[int(timeId - 1)];
+				var nextMatrix			: Matrix4x4 = _values[timeId];
+				
+				Matrix4x4.copy(previousMatrix, out);
 				out.interpolateTo(nextMatrix, 1 - interpolationRatio);
 			}
 		}

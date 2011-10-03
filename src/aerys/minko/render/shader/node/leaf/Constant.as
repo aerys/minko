@@ -2,7 +2,7 @@ package aerys.minko.render.shader.node.leaf
 {
 	import aerys.minko.render.shader.node.INode;
 	import aerys.minko.type.math.ConstVector4;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
 	import flash.geom.Point;
@@ -61,14 +61,14 @@ package aerys.minko.render.shader.node.leaf
 					_constants[int(offset++)] = vector.z;
 					_constants[int(offset++)] = isNaN(vector.w) ? 0. : vector.w;
 				}
-				else if (value is Matrix3D)
+				else if (value is Matrix4x4)
 				{
-					(value as Matrix3D).getRawData(_constants, offset);
+					(value as Matrix4x4).getRawData(_constants, offset);
 				}
-				else if (value is Vector.<int> 			|| value is Vector.<uint>
-						 || value is Vector.<Number>	|| value is Vector.<Point>
-						 || value is Vector.<Vector4>	|| value is Vector.<ConstVector4>
-						 || value is Vector.<Matrix3D>	|| value is Array)
+				else if (value is Vector.<int> || value is Vector.<uint>
+						 || value is Vector.<Number> || value is Vector.<Point>
+						 || value is Vector.<Vector4> || value is Vector.<ConstVector4>
+						 || value is Vector.<Matrix4x4> || value is Array)
 				{
 					offset = serialize(value, offset);
 				}

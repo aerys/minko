@@ -241,7 +241,7 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		public function updateWithProjectionMatrix(matrix : Matrix3D) : void
+		public function updateWithProjectionMatrix(matrix : Matrix4x4) : void
 		{
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
 
@@ -286,7 +286,7 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testVector(vector 		: Vector4,
-								   transform	: Matrix3D 	= null,
+								   transform	: Matrix4x4 	= null,
 								   mask			: int 			= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
@@ -320,7 +320,7 @@ package aerys.minko.type.math
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 */
 		public function testBoundingSphere(sphere 		: BoundingSphere,
-										   transform	: Matrix3D	= null,
+										   transform	: Matrix4x4	= null,
 										   culling		: int 		= 0xffffff) : int
 		{
 			var center	: Vector4	= sphere.center;
@@ -367,7 +367,7 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundingBox(box			: BoundingBox,
-										transform	: Matrix3D 	= null,
+										transform	: Matrix4x4 	= null,
 										culling		: int			= 0xffffffff) : uint
 		{
 			var result		: uint				= 0;
@@ -473,7 +473,7 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundedVolume(volume		: IBoundingVolume,
-								 	      transform		: Matrix3D	= null,
+								 	      transform		: Matrix4x4	= null,
 								 		  cullingMask	: int 		= 0xffffffff) : uint
 		{
 			cullingMask = cullingMask & volume.frustumCulling;
@@ -580,8 +580,8 @@ package aerys.minko.type.math
 
 			return result || INSIDE;
 		}
-
-		public function toProjectionMatrix(out : Matrix3D = null) : Matrix3D
+		
+		public function toProjectionMatrix(out : Matrix4x4 = null) : Matrix4x4
 		{
 			var r	: Plane = _planes[RIGHT];
 			var l	: Plane = _planes[LEFT];
@@ -606,9 +606,9 @@ package aerys.minko.type.math
 			var d13	: Number = t.d - (l.d + r.d) / 2;
 			var d14	: Number = -n.d;
 			var d15	: Number = -(l.d - r.d) / 2;
-
-			out ||= new Matrix3D();
-			out.setRawData(Vector.<Number>([
+			
+			out ||= new Matrix4x4();
+			out.setRawData(Vector.<Number>([ 
 				d0,		d1, 	d2, 	d3,
 				d4, 	d5, 	d6, 	d7,
 				d8, 	d9, 	d10, 	d11,

@@ -3,7 +3,7 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.scene.action.camera.CameraAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.type.math.ConstVector4;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
 	/**

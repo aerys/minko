@@ -18,7 +18,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.node.operation.manipulation.Combine;
 	import aerys.minko.render.shader.node.operation.manipulation.Extract;
 	import aerys.minko.render.shader.node.operation.math.Product;
-
+	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
