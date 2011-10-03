@@ -8,7 +8,7 @@ package aerys.minko.type.animation.timeline
 		function get duration()		: uint;
 		function get targetName()	: String;
 		function get propertyName()	: String;
-		
+
 		function updateAt(t : uint, scene : IScene) : void;
 		function clone() : ITimeline;
 		function reverse() : void;

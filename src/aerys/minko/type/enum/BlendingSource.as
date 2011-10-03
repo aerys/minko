@@ -11,7 +11,7 @@ package aerys.minko.type.enum
 		public static const SOURCE_ALPHA				: uint	= 6;
 		public static const SOURCE_COLOR				: uint	= 7;
 		public static const ZERO						: uint	= 8;
-		
+
 		public static const DEFAULT						: uint	= ONE;
 	}
 }

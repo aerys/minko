@@ -17,7 +17,7 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Matrix3D;
 	import aerys.minko.type.math.Vector4;
-	
+
 	public final class PushMeshSkinAction implements IAction
 	{
 		private static const VECTOR4_FACTORY		: Factory	= Factory.getFactory(Vector4);
@@ -29,32 +29,32 @@ package aerys.minko.scene.action.mesh
 		private var _skinningDQn	: Vector.<Vector4>	= new Vector.<Vector4>();
 		private var _skinningDQd	: Vector.<Vector4>	= new Vector.<Vector4>();
 		private var _style			: Style				= null;
-		
+
 		public function get type() : uint		{ return ActionType.UPDATE_STYLE; }
-		
-		public function run(scene		: IScene, 
-							visitor		: ISceneVisitor, 
+
+		public function run(scene		: IScene,
+							visitor		: ISceneVisitor,
 							renderer	: IRenderer) : Boolean
 		{
 			loadSkinningData(scene, visitor.renderingData.styleStack);
-			
+
 			return true;
 		}
-		
+
 		public function loadSkinningData(scene		: IScene,
 										 styleStack	: StyleData) : void
 		{
 			var skinnedMesh			: SkinnedMesh			= SkinnedMesh(scene);
-			
+
 			var skeletonRootName	: String				= skinnedMesh.skeletonRootName;
 			var skeletonReference	: IGroup				= skinnedMesh.skeletonReference;
-			
+
 			var jointNames			: Vector.<String>		= skinnedMesh.jointNames;
 			var bindShapeMatrix		: Matrix3D				= skinnedMesh.bindShapeMatrix;
 			var invBindMatrices		: Vector.<Matrix3D>		= skinnedMesh.inverseBindMatrices;
-			
+
 			var jointCount			: uint					= jointNames.length;
-			
+
 			if (jointCount > _boneMatrices.length)
 			{
 				for (var i : int = _boneMatrices.length; i < jointCount; ++i)
@@ -64,16 +64,16 @@ package aerys.minko.scene.action.mesh
 					_skinningDQn[i] = new Vector4();
 				}
 			}
-			
+
 			// if skeletonRootName is unknown, we search for the bones directly from skeletonReference
 			if (skeletonRootName != null)
 				findSkeletonRoot(skeletonReference, skeletonRootName, jointNames, bindShapeMatrix, invBindMatrices);
 			else
 				fillSkinningMatrices(skeletonReference, jointNames, bindShapeMatrix, invBindMatrices);
-			
+
 			// write all needed data into the stylestack for futher rendering
 //			styleStack.push(EMPTY_STYLE);
-			
+
 			if (_style == null)
 			{
 				_style = new Style();
@@ -86,7 +86,7 @@ package aerys.minko.scene.action.mesh
 			}
 			styleStack.push(_style);
 		}
-		
+
 		private function findSkeletonRoot(currentNode		: IGroup,
 										  skeletonRootName	: String,
 										  jointNames		: Vector.<String>,
@@ -102,10 +102,10 @@ package aerys.minko.scene.action.mesh
 			else
 			{
 				var transformNode : ITransformableScene = currentNode as ITransformableScene;
-				
+
 				if (transformNode != null)
 					TMP_LOCAL_MATRIX.push().prepend(transformNode.transform);
-				
+
 				var numChildren : uint = currentNode.numChildren;
 				for (var i : uint = 0; i < numChildren; ++i)
 				{
@@ -113,12 +113,12 @@ package aerys.minko.scene.action.mesh
 					if (child != null)
 						findSkeletonRoot(child, skeletonRootName, jointNames, bindShapeMatrix, invBindMatrices);
 				}
-				
+
 				if (transformNode != null)
 					TMP_LOCAL_MATRIX.pop();
 			}
 		}
-		
+
 		private function fillSkinningMatrices(currentNode			: IGroup,
 											  jointNames			: Vector.<String>,
 											  bindShapeMatrix		: Matrix3D,
@@ -126,14 +126,14 @@ package aerys.minko.scene.action.mesh
 		{
 			if (currentNode is ITransformableScene)
 				TMP_LOCAL_MATRIX.push().prepend(ITransformableScene(currentNode).transform);
-			
+
 			// FIXME same patch than line 87
-			if (currentNode is Joint || currentNode is TransformGroup) 
+			if (currentNode is Joint || currentNode is TransformGroup)
 			{
 				// FIXME same as line 87
 				var currentJointName	: String	= currentNode is Joint ? Joint(currentNode).boneName : currentNode.name;
 				var jointCount			: uint		= jointNames.length;
-				
+
 				for (var i : uint = 0; i < jointCount; ++i)
 					if (jointNames[i] == currentJointName)
 					{
@@ -141,24 +141,24 @@ package aerys.minko.scene.action.mesh
 							.identity()
 							.prepend(TMP_LOCAL_MATRIX)
 							.prepend(invBindMatrices[i]);
-						
+
 						Matrix3D.copy(matrix, _boneMatrices[i]);
 						matrix.toDualQuaternion(_skinningDQn[i], _skinningDQd[i]);
-						
+
 						break ;
 					}
 			}
-			
+
 			var numChildren : uint = currentNode.numChildren;
-			
+
 			for (i = 0; i < numChildren; ++i)
 			{
 				var child : Group = currentNode.getChildAt(i) as Group;
-				
+
 				if (child != null)
 					fillSkinningMatrices(child, jointNames, bindShapeMatrix, invBindMatrices);
 			}
-			
+
 			if (currentNode is ITransformableScene)
 				TMP_LOCAL_MATRIX.pop();
 		}

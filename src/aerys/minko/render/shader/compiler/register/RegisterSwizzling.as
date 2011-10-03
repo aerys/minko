@@ -9,7 +9,7 @@ package aerys.minko.render.shader.compiler.register
 		private static const Y	: uint = 0x1;
 		private static const Z	: uint = 0x2;
 		private static const W	: uint = 0x3;
-		
+
 		public static const XXXX : uint = X | (X << 2) | (X << 4) | (X << 6);
 		public static const XXXY : uint = X | (X << 2) | (X << 4) | (Y << 6);
 		public static const XXXZ : uint = X | (X << 2) | (X << 4) | (Z << 6);
@@ -266,7 +266,7 @@ package aerys.minko.render.shader.compiler.register
 		public static const WWWY : uint = W | (W << 2) | (W << 4) | (Y << 6);
 		public static const WWWZ : uint = W | (W << 2) | (W << 4) | (Z << 6);
 		public static const WWWW : uint = W | (W << 2) | (W << 4) | (W << 6);
-		
+
 		public static const STRINGS:Vector.<String> = Vector.<String>([
 			'xxxx', 'yxxx', 'zxxx', 'wxxx', 'xyxx', 'yyxx', 'zyxx', 'wyxx',		//   0 - 8
 			'xzxx', 'yzxx', 'zzxx', 'wzxx', 'xwxx', 'ywxx', 'zwxx', 'wwxx',		//   8 - 16
@@ -301,11 +301,11 @@ package aerys.minko.render.shader.compiler.register
 			'xxww', 'yxww', 'zxww', 'wxww', 'xyww', 'yyww', 'zyww', 'wyww',		// 240 - 248
 			'xzww', 'yzww', 'zzww', 'wzww', 'xwww', 'ywww', 'zwww', 'wwww'		// 248 - 256
 		]);
-		
-		
+
+
 		private static const TMP_UNPACKED_INPUT_SWIZZLE		: Vector.<uint> = new Vector.<uint>(4, true);
 		private static const TMP_UNPACKED_CUSTOM_SWIZZLE	: Vector.<uint> = new Vector.<uint>(4, true);
-		
+
 		/**
 		 * @fixme should be implemented only with bitmasks to be way faster
 		 */
@@ -316,22 +316,22 @@ package aerys.minko.render.shader.compiler.register
 			TMP_UNPACKED_INPUT_SWIZZLE[1]	= 0x3 & (inputSwizzle >>> 4);
 			TMP_UNPACKED_INPUT_SWIZZLE[2]	= 0x3 & (inputSwizzle >>> 2);
 			TMP_UNPACKED_INPUT_SWIZZLE[3]	= 0x3 & inputSwizzle;
-			
+
 			TMP_UNPACKED_CUSTOM_SWIZZLE[0]	= 0x3 & (modifier >>> 6);
 			TMP_UNPACKED_CUSTOM_SWIZZLE[1]	= 0x3 & (modifier >>> 4);
 			TMP_UNPACKED_CUSTOM_SWIZZLE[2]	= 0x3 & (modifier >>> 2);
 			TMP_UNPACKED_CUSTOM_SWIZZLE[3]	= 0x3 & modifier;
-			
+
 			// compose and pack again
 			var finalSw : uint =
 				(TMP_UNPACKED_CUSTOM_SWIZZLE[3 - TMP_UNPACKED_INPUT_SWIZZLE[0]] << 6) |
 				(TMP_UNPACKED_CUSTOM_SWIZZLE[3 - TMP_UNPACKED_INPUT_SWIZZLE[1]] << 4) |
 				(TMP_UNPACKED_CUSTOM_SWIZZLE[3 - TMP_UNPACKED_INPUT_SWIZZLE[2]] << 2) |
 				(TMP_UNPACKED_CUSTOM_SWIZZLE[3 - TMP_UNPACKED_INPUT_SWIZZLE[3]]);
-			
+
 			return finalSw;
 		}
-		
+
 		public static function createContinuous(size : uint) : uint
 		{
 			if (size == 1) return RegisterSwizzling.XXXX;
@@ -340,13 +340,13 @@ package aerys.minko.render.shader.compiler.register
 			else if (size == 4)	return RegisterSwizzling.XYZW;
 			else throw new Error('Invalid size : ' + size.toString());
 		}
-		
-		public static function readOffset(offset	: int, 
+
+		public static function readOffset(offset	: int,
 										  swizzle	: uint) : uint
 		{
 			return swizzle + offset * (0x1 | (0x1 << 2) | (0x1 << 4) | (0x1 << 6));
 		}
-		
+
 		public static function writeOffset(writeOffsetValue	: int,
 										   swizzle			: uint) : uint
 		{
@@ -355,7 +355,7 @@ package aerys.minko.render.shader.compiler.register
 			{
 				// left shift
 				bitsToInject = swizzle & 0x3;
-				
+
 				for (i = 0; i < writeOffsetValue; ++i)
 					swizzle = ((swizzle << 2) | bitsToInject) & 0xFF;
 			}
@@ -364,31 +364,30 @@ package aerys.minko.render.shader.compiler.register
 				// right shift
 				writeOffsetValue = - writeOffsetValue;
 				bitsToInject = (swizzle >>> 6) << 6;
-				
+
 				for (i = 0; i < writeOffsetValue; ++i)
 					swizzle = (swizzle >>> 2) | bitsToInject;
 			}
-			
+
 			return swizzle;
 		}
-		
-		public static function createReadyToUse(readOffsetValue		: uint, 
-												writeOffsetValue	: uint, 
+
+		public static function createReadyToUse(readOffsetValue		: uint,
+												writeOffsetValue	: uint,
 												size				: uint) : uint
 		{
 			var swizzle : uint;
-			
+
 			swizzle = createContinuous(size);
 			swizzle = readOffset(readOffsetValue, swizzle);
 			swizzle = writeOffset(writeOffsetValue, swizzle);
-			
+
 			return swizzle;
 		}
-		
-		public static function stringify(swizzle : uint) : String 
+
+		public static function stringify(swizzle : uint) : String
 		{
 			return swizzle != XYZW ? '.' + STRINGS[swizzle] : '';
 		}
-		
 	}
 }

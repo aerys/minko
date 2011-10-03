@@ -7,14 +7,14 @@ package aerys.minko.scene.action
 	/**
 	 * IAction objects define what actions should be executed when
 	 * a scene graph node is traversed.
-	 *  
+	 *
 	 * @author Jean-Marc Le Roux
-	 * 
+	 *
 	 */
 	public interface IAction
 	{
 		function get type() : uint;
-		
+
 		function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean;
 	}
 }

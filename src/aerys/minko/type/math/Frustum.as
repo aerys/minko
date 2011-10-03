@@ -8,7 +8,7 @@ package aerys.minko.type.math
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	
+
 	/**
 	 * The frustum is the geometrical six-sided 3D shape which represents
 	 * the visible space. This space is contained inside a truncated pyramid
@@ -19,7 +19,7 @@ package aerys.minko.type.math
 	 * <code>testBoundingSphere</code> or <code>testBoundingVolume</code>.
 	 * They can be used to test whether a bounding volume is inside, outside
 	 * or spanning the view volume. This process is called "frustum culling".
-	 * 
+	 *
 	 * Each visiblity check method can take up to 3 arguments:
 	 * <ul>
 	 * <li>
@@ -34,7 +34,7 @@ package aerys.minko.type.math
 	 * (optional).
 	 * </li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>Bitmasks are divided into 6 quartets (or half octet or 4-uplet of
 	 * bits). Each quartet stands for a side. Sides are distributed as follow:
 	 * </p>
@@ -63,7 +63,7 @@ package aerys.minko.type.math
 	 * </tr>
 	 * </table>
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * The semantic of each quartet depends on the use of the bitmask:
 	 * <ul>
@@ -77,34 +77,34 @@ package aerys.minko.type.math
 	 * and is spanning
 	 * </li>
 	 * </ul>
-	 * As a result, the bitmask returned by a visiblity check method can not 
+	 * As a result, the bitmask returned by a visiblity check method can not
 	 * have non-zero quartet if the corresponding argument bitmask quartet was
 	 * set to zero: sides that are not tested can not give test results!
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Visibility check methods use bitmasks both as arguments and return
-	 * values. This way, it is easy to specify which sides must be tested and 
+	 * values. This way, it is easy to specify which sides must be tested and
 	 * which sides where subsequently tested positive as a result.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * The culling bitmask of a visibility check method is build using the
 	 * <code>FrustumCulling</code> enumeration.
 	 * </p>
-	 * 
+	 *
 	 * Examples:
 	 * <listing>
 	 * // test "sphere" against all the 6 sides of the view frustum
 	 * frustum.testBoundingSphere(sphere, transform, FrustumCulling.ENABLED);
-	 * 
+	 *
 	 * // test "sphere" against both the left and the right sides of the view frustum
-	 * frustum.testBoundingSphere(sphere, transform, FrustumCulling.LEFT | FrustumCulling.RIGHT);	
-	 * 
+	 * frustum.testBoundingSphere(sphere, transform, FrustumCulling.LEFT | FrustumCulling.RIGHT);
+	 *
 	 * // test "box" against every side of the view frustum except the far one
 	 * frustum.testBoundingBox(sphere, transform, FrustumCulling.ENABLED ^ FrustumCulling.FAR);
 	 * </listing>
-	 * 
+	 *
 	 * <p>
 	 * The result bitmask of a visibility check method is build as follow:
 	 * </p>
@@ -134,13 +134,13 @@ package aerys.minko.type.math
 	 * {
 	 * 	// code...
 	 * }
-	 * 
+	 *
 	 * // if "sphere" spans the left side when transformed with "transform" and tested against left and right sides
 	 * if (frustum.testBoundingSphere(sphere, transform, FrustumCulling.LEFT | FrustumCulling.RIGHT) &amp; Frustum.SPANNING_LEFT)
 	 * {
 	 * 	// code...
 	 * }
-	 * 
+	 *
 	 * // if "box" is outside the view frustum when transformed with "transform"
 	 * // note: as Frustum.OUTSIDE == 0, we could test "if (!frustum.testBoundingSphere..."
 	 * if (frustum.testBoundingBox(box, transform, FrustumCulling.ENABLED) == Frustum.OUTSIDE)
@@ -148,13 +148,13 @@ package aerys.minko.type.math
 	 * 	// code...
 	 * }
 	 * </listing>
-	 * 
+	 *
 	 * <p>
 	 * The returned bitmask can then be used as the clipping bitmask for the
 	 * <code>clipTrianglePath</code> method. As a result, clipping will occur
 	 * only on the spanning planes.
 	 * </p>
-	 * 
+	 *
 	 * Example:
 	 * <listing>
 	 * // check the visibility of "volume" and clip "path" against the apropriate sides:
@@ -162,18 +162,18 @@ package aerys.minko.type.math
 	 * public function testAndClip(frustum : Frustum, volume : IBoundedVolume, path : GraphicsTrianglePath) : Boolean
 	 * {
 	 * 	var culling : uint = frustum.testBoundingVolume(volume, transform, FrustumCulling.ENABLED);
-	 * 
+	 *
 	 * 	// if culling == Frustum.OUTSIDE == 0
 	 * 	if (!culling)
 	 * 		return false; // the volume is not visible
-	 * 
+	 *
 	 * 	// clip the triangle path only on the spanning planes
 	 * 	return frustum.clipTrianglePath(path, culling);
 	 * }
 	 * </listing>
 	 * </li>
 	 * </ul>
-	 * 
+	 *
 	 * @see FrustumCulling
 	 *
 	 * @author Jean-Marc Le Roux
@@ -182,10 +182,10 @@ package aerys.minko.type.math
 	public final class Frustum
 	{
 		use namespace minko;
-		
+
 		public static const OUTSIDE				: uint				= 0x00000000;
 		public static const INSIDE				: uint				= 0xf0000000;
-		
+
 		minko static const LEFT					: int				= 0;
 		minko static const TOP					: int				= 1;
 		minko static const RIGHT				: int				= 2;
@@ -195,7 +195,7 @@ package aerys.minko.type.math
 
 		minko static const CULLING_SPHERE		: uint				= 0x00000001;
 		minko static const CULLING_BOX			: uint				= 0x00000002;
-		
+
 		minko static const CLIPPING				: uint				= 0x00000001;
 		minko static const CLIPPING_IGNORE		: uint				= 0x00000002;
 		minko static const CLIPPING_DISCARD		: uint				= 0x00000004;
@@ -210,13 +210,13 @@ package aerys.minko.type.math
 		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
 
 		private static const TMP_DATA			: Vector.<Number>	= new Vector.<Number>();
-		
+
 		private static const THICKNESS			: Number			= 0.01;
-		
+
 		minko var _planes			: Vector.<Plane>	= new Vector.<Plane>(6, true);
-		
+
 		private var _boxVertices	: Vector.<Number>	= new Vector.<Number>();
-		
+
 		public function updateFromDescription(fov	: Number,
 											  ratio	: Number,
 											  zNear	: Number,
@@ -226,7 +226,7 @@ package aerys.minko.type.math
 			var	x_scale		: Number	= y_scale / ratio;
 			var	m33			: Number	= zFar / (zFar - zNear);
 			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
-			
+
 			_planes[RIGHT]	= new Plane(-x_scale,	0,			1,			0);
 			_planes[LEFT]	= new Plane(x_scale,	0,			1,			0);
 			_planes[TOP]	= new Plane(0,			-y_scale,	1,			0);
@@ -234,7 +234,7 @@ package aerys.minko.type.math
 			_planes[NEAR]	= new Plane(0,			0,			m33,		-m43);
 			_planes[FAR]	= new Plane(0,			0,			1 - m33,	m43);
 		}
-		
+
 		/**
 		 * Update the frustum planes according to the specified project matrix.
 		 *
@@ -244,46 +244,46 @@ package aerys.minko.type.math
 		public function updateWithProjectionMatrix(matrix : Matrix3D) : void
 		{
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
-			
+
 			_planes[RIGHT] = new Plane(data[3] - data[0],
 									   data[7] - data[4],
 									   data[11] - data[8],
 									   data[12] - data[15]);
-			
+
 			_planes[LEFT] = new Plane(data[3] + data[0],
 									  data[7] + data[4],
 									  data[11] + data[8],
 									  -data[15] - data[12]);
-			
+
 			_planes[TOP] = new Plane(data[3] - data[1],
 									 data[7] - data[5],
 									 data[11] - data[9],
 									 data[13] + data[15]);
-			
+
 			_planes[BOTTOM] = new Plane(data[3] + data[1],
 									    data[7] + data[5],
 									    data[11] + data[9],
 									    -data[15] - data[13]);
-			
+
 			_planes[NEAR] = new Plane(data[2],
 									  data[6],
 									  data[10],
 									  -data[14]);
-			
+
 			_planes[FAR] = new Plane(data[3] - data[2],
 									 data[7] - data[6],
 									 data[11] - data[10],
 									 data[14] - data[15]);
 		}
-		
+
 		/**
 		 * Test whether a 3D point is inside or outside the frustum.
-		 * 
+		 *
 		 * @param myVector The 3D position to test.
 		 * @param myTransform The 3D transform to apply to the 3D position before testing it.
 		 * @param myMask The culling mask.
-		 * @return 
-		 * 
+		 * @return
+		 *
 		 */
 		public function testVector(vector 		: Vector4,
 								   transform	: Matrix3D 	= null,
@@ -292,25 +292,25 @@ package aerys.minko.type.math
 			var result	: uint 		= 0;
 			var p 		: Plane	= null;
 			var d		: Number	= 0.;
-			
+
 			if (transform)
 				vector = transform.transformVector(vector);
-			
+
 			for (var i : int = 0; i < 6; ++i)
 			{
 				if (((CULLING_SPHERE << (i << 2)) & mask) == 0)
 					continue ;
-				
+
 				p = _planes[i];
 				d = p._a * vector.x + p._b * vector.y + p._c * vector.z - p._d;
-				
+
 				if (d < 0.)
 					return OUTSIDE;
 			}
-			
+
 			return INSIDE;
 		}
-		
+
 		/**
 		 * Test wether a bounding sphere is inside, outside or spanning the planes of the frustum.
 		 *
@@ -328,10 +328,10 @@ package aerys.minko.type.math
 			var result	: int		= 0;
 			var p 		: Plane	= null;
 			var d 		: Number	= 0.;
-		
+
 			if (!culling)
 				return INSIDE;
-			
+
 			if (transform != null)
 			{
 				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
@@ -339,24 +339,24 @@ package aerys.minko.type.math
 				center = transform.transformVector(sphere.center);
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 			}
-						
+
 			for (var i : int = 0; i < 6; ++i)
 			{
 				if (((CULLING_SPHERE << (i << 2)) & culling) == 0)
 					continue ;
-				
+
 				p = _planes[i];
 				d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
-				
+
 				if (d + radius < 0.0)
 					return OUTSIDE;
 				else if (d - radius <= 0.0)
 					result |= SPANNING << (i << 2);
 			}
-			
+
 			return result || INSIDE;
 		}
-		
+
 		/**
 		 * Test wether a bounding sphere is inside, outside or spanning the planes of the frustum.
 		 *
@@ -374,10 +374,10 @@ package aerys.minko.type.math
 			var count		: int				= 0;
 			var vertices	: Vector.<Number>	= box._vertices;
 			var p			: Plane				= null;
-			
+
 			if (!culling)
 				return INSIDE;
-			
+
 			// transform vertices
 			if (transform != null)
 			{
@@ -385,7 +385,7 @@ package aerys.minko.type.math
 				transform.transformRawVectors(vertices, _boxVertices);
 				vertices = _boxVertices;
 			}
-			
+
 			var x1	: Number	= vertices[0];
 			var y1	: Number	= vertices[1];
 			var z1	: Number	= vertices[2];
@@ -410,19 +410,19 @@ package aerys.minko.type.math
 			var x8	: Number	= vertices[21];
 			var y8	: Number	= vertices[22];
 			var z8	: Number	= vertices[23];
-			
+
 			for (var i : int = 0; i < 6; ++i)
 			{
 				if (((CULLING_BOX << (i << 2)) & culling) == 0)
 					continue ;
-				
+
 				p = _planes[i];
-				
+
 				var pa	: Number	= p.a;
 				var pb	: Number	= p.b;
 				var pc	: Number	= p.c;
 				var pd	: Number	= p.d;
-				
+
 				// test vertices
 				count = pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
 				count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
@@ -432,20 +432,20 @@ package aerys.minko.type.math
 				count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
 				count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
 				count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
-				
+
 				if (count == -8)
 					return OUTSIDE;
 				else if (count != 8)
 					result |= SPANNING << (i << 2);
 			}
-			
+
 			return result || INSIDE;
 		}
-		
+
 		/**
 		 * Test both the bounding sphere and the bouding box of a IBoundedVolume object with the
 		 * specified 3D transform against the specified sides.
-		 * 
+		 *
 		 * The bounding sphere is tested first. If spanning, the bounding box is tested against
 		 * the spanning sides only. The result is a bitmask with the following possible values:
 		 * <ul>
@@ -454,7 +454,7 @@ package aerys.minko.type.math
 		 * <li>if the IBoundedVolume is "spanning" the view frustum, each of the last 6 quartets are set to
 		 * 0xf if the corresponding side is spanning and 0 otherwise.</li>
 		 * </ul>
-		 * 
+		 *
 		 * Example:
 		 * <code>
 		 * // if "volume" spans the far plane when transformed with "transform"
@@ -463,43 +463,43 @@ package aerys.minko.type.math
 		 * 	// code...
 		 * }
 		 * </code>
-		 * 
+		 *
 		 * @param myVolume The IBoundedVolume object to test.
 		 * @param myTransform The local-to-view space tranfrom to use.
 		 * @param myCulling The bitmask of the sides to test.
-		 * 
+		 *
 		 * @return A bitmask describing whether the volume is inside/outside the view frustum or
 		 * the spanning planes.
-		 * 
+		 *
 		 */
 		public function testBoundedVolume(volume		: IBoundingVolume,
 								 	      transform		: Matrix3D	= null,
 								 		  cullingMask	: int 		= 0xffffffff) : uint
 		{
 			cullingMask = cullingMask & volume.frustumCulling;
-			
+
 			var box		: BoundingBox		= volume.boundingBox;
-			
+
 			if (!cullingMask)
 				return INSIDE;
-			
+
 			if ((cullingMask & FrustumCulling.SPHERE) == 0)
 				return testBoundingBox(box, transform, cullingMask);
-			
+
 			var sphere		: BoundingSphere	= volume.boundingSphere;
 			var center		: Vector4			= sphere.center;
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
 			var vertices	: Vector.<Number>	= box._vertices;
 			var count		: int				= 0;
-			
+
 			if ((cullingMask & FrustumCulling.BOX) != 0 && transform != null)
 			{
 				vertices = _boxVertices;
 				vertices.length = 0;
 				transform.transformRawVectors(box._vertices, vertices);
 			}
-			
+
 			var x1	: Number	= vertices[0];
 			var y1	: Number	= vertices[1];
 			var z1	: Number	= vertices[2];
@@ -524,7 +524,7 @@ package aerys.minko.type.math
 			var x8	: Number	= vertices[21];
 			var y8	: Number	= vertices[22];
 			var z8	: Number	= vertices[23];
-			
+
 			if (transform)
 			{
 				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
@@ -532,17 +532,17 @@ package aerys.minko.type.math
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 				center = transform.transformVector(center);
 			}
-			
+
 			for (var i : int = 0; i < 6; i++)
 			{
 				var p 	: Plane		= _planes[i];
 				var d 	: Number	= 0;
-				
+
 				// bounding sphere
 				if (((CULLING_SPHERE << (i << 2)) & cullingMask))
 				{
 					d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
-					
+
 					if (d + radius < .0)
 						return OUTSIDE;
 					else if (d - radius > .0)
@@ -556,7 +556,7 @@ package aerys.minko.type.math
 					var pb	: Number	= p.b;
 					var pc	: Number	= p.c;
 					var pd	: Number	= p.d;
-					
+
 					// test vertices
 					count += pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
 					count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
@@ -566,7 +566,7 @@ package aerys.minko.type.math
 					count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
 					count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
 					count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
-					
+
 					if (count == -8)
 						return OUTSIDE;
 					else if (count != 8)
@@ -577,10 +577,10 @@ package aerys.minko.type.math
 					result |= SPANNING << (i << 2);
 				}
 			}
-			
+
 			return result || INSIDE;
 		}
-		
+
 		public function toProjectionMatrix(out : Matrix3D = null) : Matrix3D
 		{
 			var r	: Plane = _planes[RIGHT];
@@ -589,7 +589,7 @@ package aerys.minko.type.math
 			var b	: Plane = _planes[BOTTOM];
 			var n	: Plane = _planes[NEAR];
 			var f	: Plane = _planes[FAR];
-			
+
 			var d0	: Number = (l.a - r.a) / 2;
 			var d1	: Number = (b.a - t.a) / 2;
 			var d2	: Number = n.a;
@@ -606,17 +606,17 @@ package aerys.minko.type.math
 			var d13	: Number = t.d - (l.d + r.d) / 2;
 			var d14	: Number = -n.d;
 			var d15	: Number = -(l.d - r.d) / 2;
-			
+
 			out ||= new Matrix3D();
-			out.setRawData(Vector.<Number>([ 
+			out.setRawData(Vector.<Number>([
 				d0,		d1, 	d2, 	d3,
-				d4, 	d5, 	d6, 	d7, 
+				d4, 	d5, 	d6, 	d7,
 				d8, 	d9, 	d10, 	d11,
 				d12,	d13,	d14,	d15
 			]));
-			
+
 			return out;
 		}
-		
+
 	}
 }

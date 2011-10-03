@@ -11,14 +11,14 @@ package aerys.minko.scene.node.mesh.primitive
 	{
 		private static const DEFAULT_NUM_COLS	: uint	= 8;
 		private static const DEFAULT_NUM_ROWS	: uint	= 2;
-		
+
 		private static var _instance	: CylinderMesh	= null;
-		
+
 		public static function get cylinderMesh() : CylinderMesh
 		{
 			if (!_instance)
 				_instance = new CylinderMesh();
-			
+
 			return (_instance);
 		}
 		/**
@@ -33,20 +33,20 @@ package aerys.minko.scene.node.mesh.primitive
 			var ib	: Vector.<uint>		= new Vector.<uint>();
 			var uv	: Vector.<Number>	= new Vector.<Number>();
 			var ii  : int 				= 0;
-			
+
 			for (var i : uint = 0; i < numCols; ++i)
 			{
 				var ix : Number = i / (numCols - 1) * Math.PI * 2.0;
-				
+
 				for (var j : uint = 0; j < numRows; ++j)
 				{
 					var iy : Number = j / (numRows - 1) - 0.5;
-					
+
 					vb.push(0.5 * Math.cos(ix), iy, 0.5 * Math.sin(ix));
 					uv.push(i / (numCols - 1), 1. - j / (numRows - 1));
 				}
 			}
-			
+
 			for (var ik : int = 0 ; ik != numCols - 1; ++ik)
 			{
 				for (var jk : int = 0; jk != numRows - 1; jk++)
@@ -56,9 +56,9 @@ package aerys.minko.scene.node.mesh.primitive
 				}
 				++ii;
 			}
-			
+
 			super(VertexStream.fromPositionsAndUVs(vb, uv), new IndexStream(ib));
 		}
-		
+
 	}
 }

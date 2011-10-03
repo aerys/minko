@@ -3,9 +3,9 @@ package aerys.minko.type.bounding
 	/**
 	 * The FrustumClipping enumeration exposes the required flags to
 	 * parametrize the frustum culling process.
-	 * 
+	 *
 	 * @see Frustum
-	 * 
+	 *
 	 * @author Jean-Marc Le Roux
 	 */
 	public final class FrustumCulling
@@ -14,7 +14,7 @@ package aerys.minko.type.bounding
 		 * Disable frustum culling.
 		 */
 		public static const DISABLED		: uint	= 0;
-		
+
 		/**
 		 * Enabled frustum culling on the left plane.
 		 */
@@ -51,7 +51,7 @@ package aerys.minko.type.bounding
 		public static const FAR_SPHERE		: uint	= 0x00100000;
 		public static const FAR_BOX			: uint	= 0x00200000;
 		public static const FAR				: uint	= NEAR_BOX | NEAR_SPHERE;
-		
+
 		/**
 		 * Enabled frustum culling.
 		 */

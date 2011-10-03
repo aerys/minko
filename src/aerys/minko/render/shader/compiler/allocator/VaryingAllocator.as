@@ -9,18 +9,18 @@ package aerys.minko.render.shader.compiler.allocator
 		{
 			super(RegisterLimit.MAX_VARYING);
 		}
-		
+
 		override public function getWriteMask(op : INode) : uint
 		{
 			return 0xf;
 		}
-		
-		override public function allocate(op			: INode, 
+
+		override public function allocate(op			: INode,
 										  operationId	: uint = 0) : void
 		{
 			return super.allocate(op, 0);
 		}
-		
+
 		override public function computeRegisterState(alignEverything : Boolean = false):void
 		{
 			return super.computeRegisterState(true);

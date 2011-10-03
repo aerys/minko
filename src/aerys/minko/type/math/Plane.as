@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-	
+
 	import flash.geom.Vector3D;
 
 	/**

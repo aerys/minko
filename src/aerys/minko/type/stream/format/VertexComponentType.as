@@ -9,7 +9,7 @@ package aerys.minko.type.stream.format
 		public static const FLOAT_3		: int			= 2;
 		public static const FLOAT_4		: int			= 3;
 		public static const BYTES_4		: int			= 4;
-		
+
 		public static const NB_DWORDS	: Vector.<int>		= Vector.<int>([1, 2, 3, 4, 4]);
 		public static const STRINGS		: Vector.<String>	= Vector.<String>([Context3DVertexBufferFormat.FLOAT_1,
 																			   Context3DVertexBufferFormat.FLOAT_2,

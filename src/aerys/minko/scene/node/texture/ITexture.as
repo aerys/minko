@@ -3,7 +3,7 @@ package aerys.minko.scene.node.texture
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.IVersionable;
-	
+
 	/**
 	 * <p>Common interface for all the materials.</p>
 	 * <p>Materials use the "decorator" design pattern: each material is defined as a decorator
