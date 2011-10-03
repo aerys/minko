@@ -4,31 +4,45 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.action.group.AnimationGroupAction;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
-
+	
 	import flash.utils.getTimer;
 
 	use namespace minko;
 
 	public class AnimationGroup extends Group
 	{
-		public static var TIMER_FEED			: Function = getTimer;
+		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
+		
+		minko var _timelines		: Vector.<ITimeline>	= null;
 
+		minko var _isPlaying		: Boolean				= false;
 
-		minko var _timelines					: Vector.<ITimeline>;
+		minko var _loopBeginTime	: uint					= 0;
+		minko var _loopEndTime		: uint					= 0;
 
-		minko var _isPlaying					: Boolean;
+		minko var _lastTimerTick	: uint					= 0;
+		minko var _currentTime		: uint					= 0;
+		
+		minko var _onComplete		: Function 				= null;
 
-		minko var _loopBeginTime				: uint;
-		minko var _loopEndTime					: uint;
+		private var _totalTime		: uint					= 0;
 
-		minko var _lastTimerTick				: uint;
-		minko var _currentTime					: uint;
-
-		minko var _onComplete					: Function = null;
-
-		private var _totalTime					: uint;
-
-		private var _labels						: Vector.<TimeLabel>;
+		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
+		
+		private var _labels			: Vector.<TimeLabel>	= null;
+		
+		public function get timeFunction() : Function
+		{
+			return _timeFunction;
+		}
+		
+		public function set timeFunction(value : Function) : void
+		{
+			if (value == null)
+				throw new Error("Invalid argument.");
+			
+			_timeFunction = value;
+		}
 
 		public function get isPlaying() : Boolean
 		{
@@ -143,7 +157,7 @@ package aerys.minko.scene.node.group
 		public function play() : void
 		{
 			_isPlaying		= true;
-			_lastTimerTick	= TIMER_FEED();
+			_lastTimerTick	= _timeFunction();
 		}
 
 		public function stop() : void

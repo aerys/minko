@@ -22,7 +22,7 @@ package aerys.minko.scene.action.mesh
 	{
 		private static const VECTOR4_FACTORY		: Factory	= Factory.getFactory(Vector4);
 		private static const TMP_LOCAL_MATRIX		: Matrix4x4	= new Matrix4x4();
-		private static const TMP_SKINNING_MATRIX	: Matrix4x4 	= new Matrix4x4();
+		private static const TMP_SKINNING_MATRIX	: Matrix4x4 = new Matrix4x4();
 		private static const EMPTY_STYLE			: Style		= new Style();
 
 		private var _boneMatrices	: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>();

@@ -40,9 +40,9 @@ package aerys.minko.scene.action.group
 							visitor		: ISceneVisitor,
 							renderer	: IRenderer) : Boolean
 		{
-			var animationGroup	: AnimationGroup = AnimationGroup(scene);
-
-			var timer : uint = AnimationGroup.TIMER_FEED();
+			var animationGroup	: AnimationGroup 	= AnimationGroup(scene);
+			var timer 			: uint 				= animationGroup.timeFunction();
+			
 			if (animationGroup._isPlaying)
 			{
 				var previousTime	: uint	= animationGroup._currentTime;
