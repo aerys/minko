@@ -20,12 +20,12 @@ package aerys.minko.scene.action.style
 		
 		public function get type() : uint		{ return TYPE; }
 		
-		public function run(scene:IScene, visitor:ISceneVisitor, renderer:IRenderer):Boolean
+		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var styled : IStylableScene = scene as IStylableScene;
+			var styled : IStylableScene = IStylableScene(scene);
 			
 			if (styled.styleEnabled)
-				visitor.renderingData.styleStack.push(styled.style);
+				visitor.renderingData.styleData.push(styled.style);
 			
 			return true;
 		}

@@ -27,7 +27,7 @@ package aerys.minko.scene.action.style
 			var styled : IStylableScene = scene as IStylableScene;
 			
 			if (styled.styleEnabled)
-				visitor.renderingData.styleStack.pop();
+				visitor.renderingData.styleData.pop();
 			
 			return true;
 		}

@@ -35,7 +35,7 @@ package aerys.minko.scene.action.texture
 			var blue	: uint = color & 0xff;
 			
 			color = (red << 24) | (green << 16) | (blue << 8) | (alpha); 
-			visitor.renderingData.styleStack.set(BasicStyle.DIFFUSE, color);
+			visitor.renderingData.styleData.set(BasicStyle.DIFFUSE, color);
 			
 			return true;
 		}

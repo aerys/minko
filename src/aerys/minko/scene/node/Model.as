@@ -16,7 +16,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.node.texture.ITexture;
 	import aerys.minko.type.IVersionable;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.events.Event;
 
@@ -47,7 +47,7 @@ package aerys.minko.scene.node
 		private var _mesh			: IMesh				= null;
 		private var _textures		: IGroup			= null;
 		
-		private var _transform		: Matrix3D			= new Matrix3D();
+		private var _transform		: Matrix4x4			= new Matrix4x4();
 		private var _visible		: Boolean			= true;
 		
 		private var _effect			: IRenderingEffect	= null;
@@ -61,7 +61,7 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function get transform() : Matrix3D	{ return _transform; }
+		public function get transform() : Matrix4x4	{ return _transform; }
 		
 		/**
 		 * The IMesh3D object (geometry) used to render the object.

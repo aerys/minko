@@ -39,7 +39,7 @@ package aerys.minko.scene.visitor
 			visit(scene);
 			
 			for each (var worldObject : IWorldData in worldData)
-				worldObject.setDataProvider(renderingData.styleStack, transformData, worldData);
+				worldObject.setDataProvider(renderingData.styleData, transformData, worldData);
 		}
 		
 		public function visit(scene : IScene) : void

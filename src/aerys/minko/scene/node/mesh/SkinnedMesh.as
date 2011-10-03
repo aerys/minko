@@ -6,7 +6,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.action.mesh.PushMeshSkinAction;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.group.IGroup;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -21,9 +21,9 @@ package aerys.minko.scene.node.mesh
 		private var _mesh					: IMesh;
 		private var _skeletonRootName		: String;
 		private var _skeletonReference		: IGroup;
-		private var _bindShapeMatrix		: Matrix3D;
+		private var _bindShapeMatrix		: Matrix4x4;
 		private var _jointNames				: Vector.<String>;
-		private var _inverseBindMatrices	: Vector.<Matrix3D>;
+		private var _inverseBindMatrices	: Vector.<Matrix4x4>;
 		private var _maxInfluences			: uint;
 		
 		public function set skeletonReference(v : IGroup) : void { _skeletonReference = v; }
@@ -39,17 +39,17 @@ package aerys.minko.scene.node.mesh
 		public function get mesh()					: IMesh					{ return _mesh; }
 		public function get skeletonRootName()		: String				{ return _skeletonRootName; }
 		public function get skeletonReference()		: IGroup				{ return _skeletonReference; }
-		public function get bindShapeMatrix()		: Matrix3D				{ return _bindShapeMatrix; }
+		public function get bindShapeMatrix()		: Matrix4x4				{ return _bindShapeMatrix; }
 
 		public function get jointNames()			: Vector.<String>		{ return _jointNames; }
-		public function get inverseBindMatrices()	: Vector.<Matrix3D>	{ return _inverseBindMatrices; }
+		public function get inverseBindMatrices()	: Vector.<Matrix4x4>	{ return _inverseBindMatrices; }
 		
 		public function SkinnedMesh(mesh				: IMesh,
 									skeletonReference	: IGroup,
 									skeletonRootName	: String,
-									bindShapeMatrix		: Matrix3D,
+									bindShapeMatrix		: Matrix4x4,
 									jointNames			: Vector.<String>,
-									inverseBindMatrices	: Vector.<Matrix3D>)
+									inverseBindMatrices	: Vector.<Matrix4x4>)
 		{
 			super();
 			

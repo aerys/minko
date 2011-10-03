@@ -9,15 +9,15 @@ package aerys.minko.scene.action.camera
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.camera.ICamera;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	public class CameraAction implements IAction
 	{
 		private var _cameraData	: CameraData	= null;
 		
-		private var _view			: Matrix3D		= new Matrix3D();
-		private var _projection		: Matrix3D		= new Matrix3D();
+		private var _view			: Matrix4x4		= new Matrix4x4();
+		private var _projection		: Matrix4x4		= new Matrix4x4();
 		
 		private var _worldPosition	: Vector4		= new Vector4();
 		private var _worldLookAt	: Vector4		= new Vector4();
@@ -43,7 +43,7 @@ package aerys.minko.scene.action.camera
 			var transformData	: TransformData	= visitor.transformData;
 			var viewportData	: ViewportData	= visitor.worldData[ViewportData]
 												  as ViewportData;
-			var worldMatrix		: Matrix3D		= transformData.world;
+			var worldMatrix		: Matrix4x4		= transformData.world;
 			
 			worldMatrix.transformVector(camera.position, _worldPosition);
 			worldMatrix.transformVector(camera.lookAt, _worldLookAt);
@@ -83,25 +83,25 @@ package aerys.minko.scene.action.camera
 			return true;
 		}
 		
-		protected function updateProjectionMatrix(projection		: Matrix3D,
+		protected function updateProjectionMatrix(projection		: Matrix4x4,
 												  camera			: ICamera,
 												  viewportWidth		: int,
 												  viewportHeight	: int) : void
 		{
-			Matrix3D.perspectiveFoVLH(camera.fieldOfView,
+			Matrix4x4.perspectiveFoVLH(camera.fieldOfView,
 									  viewportWidth / viewportHeight,
 									  camera.nearClipping,
 									  camera.farClipping,
 									  projection);
 		}
 		
-		protected function updateViewMatrix(view		: Matrix3D,
+		protected function updateViewMatrix(view		: Matrix4x4,
 											camera		: ICamera,
 											eyePosition	: Vector4,
 											lookAt		: Vector4,
 											up			: Vector4) : void
 		{
-			Matrix3D.lookAtLH(eyePosition, lookAt, up, view);
+			Matrix4x4.lookAtLH(eyePosition, lookAt, up, view);
 		}
 	}
 }

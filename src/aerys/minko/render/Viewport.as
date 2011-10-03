@@ -47,6 +47,9 @@ package aerys.minko.render
 		
 		private static const ZERO2		: Point						= new Point();
 		
+		private const TRANSFORM_DATA	: TransformData				= new TransformData();
+		private const RENDERING_DATA	: RenderingData				= new RenderingData();
+		
 		private var _width				: Number					= 0.;
 		private var _height				: Number					= 0.;
 		private var _stageX				: Number					= 0.;
@@ -67,9 +70,6 @@ package aerys.minko.render
 		private var _renderer			: IRenderer					= null;
 		private var _defaultEffect		: IRenderingEffect			= new BasicEffect();
 		private var _backgroundColor	: int						= 0;
-		
-		private var _transformData		: TransformData				= new TransformData();
-		private var _renderingData		: RenderingData				= new RenderingData();
 		
 		private var _postProcessEffect	: IPostProcessingEffect		= null;
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
@@ -563,25 +563,26 @@ package aerys.minko.render
 		
 				// create the data sources the visitors are going to write and read from during render.
 				var worldData		: Dictionary	= new Dictionary();
-				
-				_transformData.reset();
+
+				// reset
+				TRANSFORM_DATA.reset();
+				RENDERING_DATA.reset();
+				_renderer.reset();
 				
 				// push viewport related data into the world data
 				worldData[ViewportData] = _viewportData;
-				_renderingData.effects.push(defaultEffect);
-				
-				_renderer.reset();
+				RENDERING_DATA.effects.push(defaultEffect);
 				
 				// execute all visitors
 				for each (var visitor : ISceneVisitor in _visitors)
-					visitor.processSceneGraph(scene, _transformData, worldData, _renderingData, _renderer);
+					visitor.processSceneGraph(scene, TRANSFORM_DATA, worldData, RENDERING_DATA, _renderer);
 				
-				_renderingData.effects.pop();
+				RENDERING_DATA.effects.pop();
 				_renderingTime	= getTimer() - time;
-				
 				_numTriangles = _renderer.numTriangles;
 				_drawingTime = _renderer.drawingTime;
 				
+				// force clear if nothing was rendered
 				if (_numTriangles == 0)
 				{
 					var clearState : RendererState	= RendererState.create();
@@ -598,9 +599,9 @@ package aerys.minko.render
 				// execute post-processing
 				if (_postProcessEffect != null)
 				{
-					_renderingData.effects.push(_postProcessEffect);
-					_postProcessVisitor.processSceneGraph(scene, _transformData, worldData, _renderingData, _renderer);
-					_renderingData.effects.pop();
+					RENDERING_DATA.effects.push(_postProcessEffect);
+					_postProcessVisitor.processSceneGraph(scene, TRANSFORM_DATA, worldData, RENDERING_DATA, _renderer);
+					RENDERING_DATA.effects.pop();
 				}
 				
 				_renderer.present();

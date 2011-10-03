@@ -1,11 +1,11 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.IVersionable;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 
 	public final class TransformData implements IVersionable
 	{
-		private static const _SCREEN_TO_UV : Matrix3D = new Matrix3D(
+		private static const _SCREEN_TO_UV : Matrix4x4 = new Matrix4x4(
 			0.5,		0.0,		0.0,	0.0,
 			0.0, 		-0.5,		0.0,	0.0,
 			0.0,		0.0,		1.0,	0.0,
@@ -28,32 +28,32 @@ package aerys.minko.scene.data
 		public static const WORLD_TO_SCREEN				: String = 'worldToScreen';
 		public static const WORLD_TO_UV					: String = 'worldToUv';
 		
-		protected var _world							: Matrix3D;
-		protected var _view								: Matrix3D;
-		protected var _projection						: Matrix3D;
+		protected var _world							: Matrix4x4;
+		protected var _view								: Matrix4x4;
+		protected var _projection						: Matrix4x4;
 		
-		protected var _viewInverse						: Matrix3D;
+		protected var _viewInverse						: Matrix4x4;
 		protected var _viewInverse_viewVersion			: uint;
 		
-		protected var _worldInverse						: Matrix3D;
+		protected var _worldInverse						: Matrix4x4;
 		protected var _worldInverse_worldVersion		: uint;
 		
-		protected var _localToView						: Matrix3D;
+		protected var _localToView						: Matrix4x4;
 		protected var _localToView_viewVersion			: uint;
 		protected var _localToView_worldVersion			: uint;
 		
-		protected var _localToScreen					: Matrix3D;
+		protected var _localToScreen					: Matrix4x4;
 		protected var _localToScreen_localToViewVersion : uint;
 		protected var _localToScreen_projectionVersion	: uint;
 		
-		protected var _localToUv						: Matrix3D;
+		protected var _localToUv						: Matrix4x4;
 		protected var _localToUv_localToScreenVersion	: uint;
 		
-		protected var _globalToScreen					: Matrix3D;
+		protected var _globalToScreen					: Matrix4x4;
 		protected var _globalToScreen_viewVersion		: uint;
 		protected var _globalToScreen_projectionVersion	: uint;
 		
-		protected var _globalToUv						: Matrix3D;
+		protected var _globalToUv						: Matrix4x4;
 		protected var _globalToUv_globalToScreenVersion	: uint;
 		
 		public function get version() : uint
@@ -61,56 +61,56 @@ package aerys.minko.scene.data
 			return _world.version + _view.version + _projection.version;
 		}
 		
-		public function get view() : Matrix3D
+		public function get view() : Matrix4x4
 		{
 			return _view;
 		}
 		
-		public function get world() : Matrix3D
+		public function get world() : Matrix4x4
 		{
 			return _world;
 		}
 		
-		public function get projection() : Matrix3D
+		public function get projection() : Matrix4x4
 		{
 			return _projection;
 		}
 		
-		public function get worldInverse() : Matrix3D
+		public function get worldInverse() : Matrix4x4
 		{
-			var worldMatrix : Matrix3D = world;
+			var worldMatrix : Matrix4x4 = world;
 			
 			if (_worldInverse_worldVersion != worldMatrix.version)
 			{
-				_worldInverse = Matrix3D.invert(worldMatrix, _worldInverse);
+				_worldInverse = Matrix4x4.invert(worldMatrix, _worldInverse);
 				_worldInverse_worldVersion = worldMatrix.version;
 			}
 			
 			return _worldInverse;
 		}
 		
-		public function get viewInverse() : Matrix3D
+		public function get viewInverse() : Matrix4x4
 		{
-			var viewMatrix : Matrix3D = view;
+			var viewMatrix : Matrix4x4 = view;
 			
 			if (_viewInverse_viewVersion != viewMatrix.version)
 			{
-				_viewInverse = Matrix3D.invert(viewMatrix, _viewInverse);
+				_viewInverse = Matrix4x4.invert(viewMatrix, _viewInverse);
 				_viewInverse_viewVersion = viewMatrix.version;
 			}
 			
 			return _viewInverse;
 		}
 		
-		public function get localToView() : Matrix3D
+		public function get localToView() : Matrix4x4
 		{
-			var worldMatrix	: Matrix3D = world;
-			var viewMatrix	: Matrix3D = view;
+			var worldMatrix	: Matrix4x4 = world;
+			var viewMatrix	: Matrix4x4 = view;
 			
 			if (_localToView_worldVersion != worldMatrix.version ||
 				_localToView_viewVersion != viewMatrix.version)
 			{
-				_localToView = Matrix3D.multiply(viewMatrix, worldMatrix, _localToView);
+				_localToView = Matrix4x4.multiply(viewMatrix, worldMatrix, _localToView);
 				_localToView_worldVersion	= worldMatrix.version;
 				_localToView_viewVersion	= viewMatrix.version;
 			}
@@ -118,15 +118,15 @@ package aerys.minko.scene.data
 			return _localToView;
 		}
 		
-		public function get localToScreen() : Matrix3D
+		public function get localToScreen() : Matrix4x4
 		{
-			var localToViewMatrix	: Matrix3D = localToView;
-			var projectionMatrix	: Matrix3D = projection;
+			var localToViewMatrix	: Matrix4x4 = localToView;
+			var projectionMatrix	: Matrix4x4 = projection;
 			
 			if (_localToScreen_localToViewVersion != localToViewMatrix.version ||
 				_localToScreen_projectionVersion != projectionMatrix.version)
 			{
-				_localToScreen = Matrix3D.multiply(projectionMatrix, localToViewMatrix, _localToScreen);
+				_localToScreen = Matrix4x4.multiply(projectionMatrix, localToViewMatrix, _localToScreen);
 				_localToScreen_localToViewVersion	= localToViewMatrix.version;
 				_localToScreen_projectionVersion	= projectionMatrix.version;
 			}
@@ -134,34 +134,34 @@ package aerys.minko.scene.data
 			return _localToScreen;
 		}
 		
-		public function get screentoUv() : Matrix3D
+		public function get screentoUv() : Matrix4x4
 		{
 			return _SCREEN_TO_UV;
 		}
 		
-		public function get localToUv() : Matrix3D
+		public function get localToUv() : Matrix4x4
 		{
-			var localToScreenMatrix : Matrix3D = localToScreen;
-			var screenToUvMatrix	: Matrix3D = screentoUv;
+			var localToScreenMatrix : Matrix4x4 = localToScreen;
+			var screenToUvMatrix	: Matrix4x4 = screentoUv;
 			
 			if (_localToUv_localToScreenVersion != localToScreenMatrix.version)
 			{
-				_localToUv = Matrix3D.multiply(screenToUvMatrix, localToScreenMatrix, _localToUv);
+				_localToUv = Matrix4x4.multiply(screenToUvMatrix, localToScreenMatrix, _localToUv);
 				_localToUv_localToScreenVersion = localToScreenMatrix.version;
 			}
 			
 			return _localToUv;
 		}
 		
-		public function get worldToScreen() : Matrix3D
+		public function get worldToScreen() : Matrix4x4
 		{
-			var projectionMatrix	: Matrix3D = projection;
-			var viewMatrix			: Matrix3D = view;
+			var projectionMatrix	: Matrix4x4 = projection;
+			var viewMatrix			: Matrix4x4 = view;
 			
 			if (_globalToScreen_projectionVersion != projectionMatrix.version ||
 				_globalToScreen_viewVersion != viewMatrix.version)
 			{
-				_globalToScreen = Matrix3D.multiply(projectionMatrix, viewMatrix, _globalToScreen);
+				_globalToScreen = Matrix4x4.multiply(projectionMatrix, viewMatrix, _globalToScreen);
 				_globalToScreen_projectionVersion	= projectionMatrix.version;
 				_globalToScreen_viewVersion			= viewMatrix.version;
 			}
@@ -169,40 +169,40 @@ package aerys.minko.scene.data
 			return _globalToScreen;
 		}
 		
-		public function get worldToUv() : Matrix3D
+		public function get worldToUv() : Matrix4x4
 		{
-			var worldToScreenMatrix	: Matrix3D = worldToScreen;
-			var screentoUvMatrix	: Matrix3D = screentoUv;
+			var worldToScreenMatrix	: Matrix4x4 = worldToScreen;
+			var screentoUvMatrix	: Matrix4x4 = screentoUv;
 			
 			if (_globalToUv_globalToScreenVersion != worldToScreenMatrix.version)
 			{
-				_globalToUv = Matrix3D.multiply(screentoUvMatrix, worldToScreenMatrix, _globalToUv);
+				_globalToUv = Matrix4x4.multiply(screentoUvMatrix, worldToScreenMatrix, _globalToUv);
 				_globalToUv_globalToScreenVersion = worldToScreenMatrix.version;
 			}
 
 			return _globalToUv;
 		}
 		
-		public function set world(value : Matrix3D) : void
+		public function set world(value : Matrix4x4) : void
 		{
-			Matrix3D.copy(value, _world);
+			Matrix4x4.copy(value, _world);
 		}
 		
-		public function set view(value : Matrix3D) : void
+		public function set view(value : Matrix4x4) : void
 		{
-			Matrix3D.copy(value, _view);
+			Matrix4x4.copy(value, _view);
 		}
 		
-		public function set projection(value : Matrix3D) : void
+		public function set projection(value : Matrix4x4) : void
 		{
-			Matrix3D.copy(value, _projection);
+			Matrix4x4.copy(value, _projection);
 		}
 		
 		public function TransformData()
 		{
-			_world		= new Matrix3D();
-			_view		= new Matrix3D();
-			_projection	= new Matrix3D();
+			_world		= new Matrix4x4();
+			_view		= new Matrix4x4();
+			_projection	= new Matrix4x4();
 			
 			reset();
 		}

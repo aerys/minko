@@ -46,7 +46,7 @@ package aerys.minko.scene.action.mesh
 			var transformData	: TransformData		= visitor.transformData;
 			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
-			var styleStack		: StyleData			= renderingData.styleStack;
+			var styleStack		: StyleData			= renderingData.styleData;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
 			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
 			

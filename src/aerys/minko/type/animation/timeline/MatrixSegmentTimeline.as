@@ -1,14 +1,14 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.scene.node.IScene;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 
 	public class MatrixSegmentTimeline implements ITimeline
 	{
 		private var _targetName		: String;
 		private var _propertyName	: String;
 		private var _timeTable		: Vector.<uint>
-		private var _matrices		: Vector.<Matrix3D>
+		private var _matrices		: Vector.<Matrix4x4>
 		
 		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
@@ -17,7 +17,7 @@ package aerys.minko.type.animation.timeline
 		public function MatrixSegmentTimeline(targetName 	: String,
 											  propertyName	: String,
 											  timeTable 	: Vector.<uint>,
-											  values		: Vector.<Matrix3D>)
+											  values		: Vector.<Matrix4x4>)
 		{
 			_targetName		= targetName;
 			_propertyName	= propertyName;
@@ -31,14 +31,14 @@ package aerys.minko.type.animation.timeline
 			var timeCount	: uint = _timeTable.length;
 			
 			// change matrix value
-			var out : Matrix3D = scene[_propertyName];
+			var out : Matrix4x4 = scene[_propertyName];
 			if (!out)
 				throw new Error(_propertyName + ' property was not found on scene node named ' + _targetName);
 			
 			if (timeId == 0)
-				Matrix3D.copy(_matrices[0], out);
+				Matrix4x4.copy(_matrices[0], out);
 			else
-				Matrix3D.copy(_matrices[timeId - 1], out);
+				Matrix4x4.copy(_matrices[timeId - 1], out);
 		}
 		
 		private function getIndexForTime(t : uint) : uint

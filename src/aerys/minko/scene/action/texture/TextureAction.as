@@ -29,7 +29,7 @@ package aerys.minko.scene.action.texture
 			if (!texture)
 				throw new Error();
 			
-			visitor.renderingData.styleStack.set(texture.styleProperty, texture.resource);
+			visitor.renderingData.styleData.set(texture.styleProperty, texture.resource);
 			
 			return true;
 		}

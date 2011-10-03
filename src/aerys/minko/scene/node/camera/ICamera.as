@@ -3,7 +3,7 @@
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.IVersionable;
-	import aerys.minko.type.math.Matrix3D;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	/**

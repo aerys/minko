@@ -21,7 +21,7 @@ package aerys.minko.scene.action.mesh
 							visitor		: ISceneVisitor,
 							renderer	: IRenderer) : Boolean
 		{
-			visitor.renderingData.styleStack.pop();
+			visitor.renderingData.styleData.pop();
 			
 			return true;
 		}
