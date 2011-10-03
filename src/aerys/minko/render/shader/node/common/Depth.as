@@ -11,23 +11,23 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
+
 	public class Depth extends Dummy implements IVertexNode
 	{
 		public function get interpolated() : INode
 		{
 			return new Interpolate(this);
 		}
-		
+
 		public function Depth()
 		{
 			var viewPosition	: INode = new Multiply4x4(
 				new Attribute(VertexComponent.XYZ),
 				new TransformParameter(16, TransformData.LOCAL_TO_VIEW)
 			);
-			
+
 			var depth : INode = new Extract(viewPosition, Components.Z);
-			
+
 			super(depth);
 		}
 	}

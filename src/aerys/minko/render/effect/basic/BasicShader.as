@@ -8,11 +8,10 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.scene.data.StyleData;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.animation.AnimationMethod;
-	import aerys.minko.type.math.ConstVector4;
 	import aerys.minko.type.math.Vector4;
-	
+
 	import flash.utils.Dictionary;
-	
+
 	public class BasicShader extends ActionScriptShader
 	{
 		private static const ANIMATION	: AnimationShaderPart	= new AnimationShaderPart();
@@ -26,18 +25,18 @@ package aerys.minko.render.effect.basic
 			var numBones		: uint		= getStyleConstant(AnimationStyle.NUM_BONES, 0)
 											  as uint;
 			var vertexPosition	: SValue	= ANIMATION.getVertexPosition(animationMethod, maxInfluences, numBones);
-			
+
 			return multiply4x4(vertexPosition, localToScreenMatrix);
 		}
-		
+
 		override protected function getOutputColor() : SValue
 		{
 			var diffuse : SValue	= null;
-			
+
 			if (styleIsSet(BasicStyle.DIFFUSE))
 			{
 				var diffuseStyle	: Object 	= getStyleConstant(BasicStyle.DIFFUSE);
-				
+
 				if (diffuseStyle is uint || diffuseStyle is Vector4)
 					diffuse = copy(getStyleParameter(4, BasicStyle.DIFFUSE));
 				else if (diffuseStyle is Texture3DResource)
@@ -47,12 +46,12 @@ package aerys.minko.render.effect.basic
 			}
 			else
 				diffuse = float4(interpolate(vertexRGBColor).rgb, 1.);
-			
+
 			diffuse.scaleBy(getStyleParameter(4, BasicStyle.DIFFUSE_MULTIPLIER,	0xffffffff));
-			
+
 			return diffuse;
 		}
-		
+
 		override public function getDataHash(styleData		: StyleData,
 											 transformData	: TransformData,
 											 worldData		: Dictionary) : String
@@ -61,7 +60,7 @@ package aerys.minko.render.effect.basic
 			var diffuseStyle 	: Object 	= styleData.isSet(BasicStyle.DIFFUSE)
 											  ? styleData.get(BasicStyle.DIFFUSE)
 											  : null;
-			
+
 			if (diffuseStyle == null)
 				hash += '_colorFromVertex';
 			else if (diffuseStyle is uint || diffuseStyle is Vector4)
@@ -70,9 +69,9 @@ package aerys.minko.render.effect.basic
 				hash += '_colorFromTexture';
 			else
 				throw new Error('Invalid BasicStyle.DIFFUSE value');
-			
+
 			hash += ANIMATION.getDataHash(styleData, transformData, worldData)
-			
+
 			return hash;
 		}
 	}

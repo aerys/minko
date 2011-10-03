@@ -2,23 +2,23 @@ package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
+
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
-	
+
 	public final class Program3DResource implements IResource
 	{
 		use namespace minko_render;
-		
+
 		private var _update			: Boolean	= false;
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
-		
+
 		minko_render var _vertexComponents	: Vector.<VertexComponent> 	= null;
 		minko_render var _vertexIndices		: Vector.<uint>				= null;
 		minko_render var _nativeProgram		: Program3D					= null;
-		
+
 		public function Program3DResource(vertexShader 	: ByteArray,
 									   fragmentShader	: ByteArray,
 									   vertexComponents	: Vector.<VertexComponent>,
@@ -26,7 +26,7 @@ package aerys.minko.render.resource
 		{
 			update(vertexShader, fragmentShader, vertexComponents, vertexIndices);
 		}
-		
+
 		public function update(vertexShader 	: ByteArray,
 							   fragmentShader	: ByteArray,
 							   vertexComponents	: Vector.<VertexComponent>,
@@ -36,10 +36,10 @@ package aerys.minko.render.resource
 			_fragmentShader		= fragmentShader;
 			_vertexComponents	= vertexComponents.concat();
 			_vertexIndices		= vertexIndices.concat();
-			
+
 			_update = true;
 		}
-		
+
 		public function getProgram3D(context : Context3D) : Program3D
 		{
 			if (!_nativeProgram)
@@ -47,16 +47,16 @@ package aerys.minko.render.resource
 				_nativeProgram = context.createProgram();
 				_update = true;
 			}
-			
+
 			if (_update)
 			{
 				_update = false;
 				_nativeProgram.upload(_vertexShader, _fragmentShader);
 			}
-			
+
 			return _nativeProgram;
 		}
-		
+
 		public function dispose() : void
 		{
 			_nativeProgram.dispose();

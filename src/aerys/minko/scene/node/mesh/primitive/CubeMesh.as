@@ -10,7 +10,7 @@ package aerys.minko.scene.node.mesh.primitive
 	public class CubeMesh extends Mesh
 	{
 		private static var _instance	: CubeMesh	= null;
-		
+
 		/**
 		 * A unit sized CubeMesh object. Use this property instead of "new CubeMesh()" in order
 		 * to avoid pointless memory consumption.
@@ -25,7 +25,7 @@ package aerys.minko.scene.node.mesh.primitive
 		public function CubeMesh()
 		{
 			var vb 	: Vector.<Number> = new Vector.<Number>();
-				
+
 			vb.push(
 				// top
 				0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
@@ -46,9 +46,9 @@ package aerys.minko.scene.node.mesh.primitive
 				0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5,
 				0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5
 			);
-			
+
 			var uv : Vector.<Number>	= new Vector.<Number>();
-			
+
 			uv.push(
 				// top
 				1., 0., 0., 1., 1., 1.,
@@ -61,7 +61,7 @@ package aerys.minko.scene.node.mesh.primitive
 				1., 0., 0., 1., 1., 1.,
 				// front
 				0., 0., 0., 1., 1., 0.,
-				0., 1., 1., 1., 1., 0.,														   
+				0., 1., 1., 1., 1., 0.,
 				// left
 				1., 1., 0., 0., 0., 1.,
 				0., 0., 1., 1., 1., 0.,
@@ -69,9 +69,9 @@ package aerys.minko.scene.node.mesh.primitive
 				1., 1., 1., 0., 0., 0.,
 				0., 0., 0., 1., 1., 1.
 			);
-			
+
 			super(VertexStream.fromPositionsAndUVs(vb, uv));
 		}
-		
+
 	}
 }

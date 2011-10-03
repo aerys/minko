@@ -1,9 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
-	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.renderer.RendererState;
-	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.render.shader.node.leaf.*;
 	import aerys.minko.render.shader.node.operation.builtin.*;
 	import aerys.minko.render.shader.node.operation.manipulation.*;
@@ -11,21 +9,20 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.data.WorldDataList;
-	import aerys.minko.type.math.Vector4;
-	
+
 	import flash.utils.Dictionary;
-	
+
 	/**
 	 * <p>Shader objects define vertex and fragment shaders with
 	 * ActionScript code.</p>
-	 * 
+	 *
 	 * <p>ActionScript shaders make it possible to write dynamic, parametric
 	 * and OOP oriented shaders taking benefits of all the features of
 	 * ActionScript. They fully integrate with the rest of your ActionScript
 	 * code and the application development process. Thus, they allow to
 	 * greatly simplify shaders writing and the rendering process as a whole.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Because ActionScript shaders are just actual ActionScript code, they
 	 * can take into account the scene configuration (the number of lights,
@@ -34,7 +31,7 @@ package aerys.minko.render.shader
 	 * handle many usecases by generating a different shader bytecode anytime
 	 * the rendering or the scene configuration changes.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * To create your own shaders using ActionScript code, you should extend
 	 * the Shader class and override the following methods:</p>
@@ -44,7 +41,7 @@ package aerys.minko.render.shader
 	 * <li>getHash (optionnal): this method should return a hash value
 	 * that will be used as a unique key to identify the shader</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Those methods and other shader dedicated methods heavily rely on
 	 * two data types:
@@ -57,7 +54,7 @@ package aerys.minko.render.shader
 	 * <li>SValue: return values are types as SValue objects. They represent
 	 * hardware memory proxies.</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * ActionScript shaders workflow at runtime is as follow:
 	 * </p>
@@ -73,7 +70,7 @@ package aerys.minko.render.shader
 	 * <li>The compiled AGAL bytecode is then uploaded and used to render the
 	 * scene.</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * You should always remember both getOutputPosition and getOutputColor
 	 * are <b>never</b> executed on the graphics hardware. Instead, they help
@@ -92,27 +89,27 @@ package aerys.minko.render.shader
 	 * turned into a static fixed shader constant.</li>
 	 * <li>If you want to use updatable values, you should use parameters.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @author Jean-Marc Le Roux
-	 * 
+	 *
 	 */
 	public class ActionScriptShader extends ActionScriptShaderPart implements IShader
 	{
 		use namespace minko;
-		
+
 		private var _hashToShader		: Object		= new Object();
-		
+
 		private var _styleData			: StyleData	= null;
 		private var _transformData		: TransformData	= null;
 		private var _worldData			: Dictionary	= null;
-		
+
 		private var _lastFrameId		: uint			= 0;
 		private var _styleStackVersion	: uint			= 0;
 		private var _lastShader			: Shader		= null;
-		
-		public function fillRenderState(state			: RendererState, 
-										styleData		: StyleData, 
-										transformData	: TransformData, 
+
+		public function fillRenderState(state			: RendererState,
+										styleData		: StyleData,
+										transformData	: TransformData,
 										worldData		: Dictionary) : void
 		{
 			var frameId	: uint		= (worldData[ViewportData] as ViewportData).frameId;
@@ -121,76 +118,76 @@ package aerys.minko.render.shader
 			_styleData = styleData;
 			_transformData = transformData;
 			_worldData = worldData;
-			
+
 			if (frameId != _lastFrameId  || _styleData.version != _styleStackVersion || !_lastShader)
 			{
 				var hash : String 	= getDataHash(styleData, transformData, worldData);
-			
+
 				shader = _hashToShader[hash];
-				
+
 				if (!shader)
 				{
 					_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
 												  				 getOutputColor()._node);
 				}
-				
+
 				_lastFrameId = frameId;
 				_styleStackVersion = _styleData.version;
 				_lastShader = shader;
 			}
-			
+
 			shader.fillRenderState(state, styleData, transformData, worldData);
 		}
-		
+
 		/**
-		 * The getOutputPosition method implements a vertex shader using ActionScript code. 
-		 * @return 
-		 * 
+		 * The getOutputPosition method implements a vertex shader using ActionScript code.
+		 * @return
+		 *
 		 */
 		protected function getOutputPosition() : SValue
 		{
 			throw new Error();
 		}
-		
+
 		/**
 		 * The getOutputColor method implements a fragment shader using ActionScript code.
-		 * @return 
-		 * 
+		 * @return
+		 *
 		 */
 		protected function getOutputColor() : SValue
 		{
 			throw new Error();
 		}
-		
+
 		/**
 		 * Return a style value that will be passed as a shader constant.
-		 * 
+		 *
 		 * @param styleId
 		 * @param defaultValue
-		 * @return 
-		 * 
+		 * @return
+		 *
 		 */
 		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
 		{
 			return _styleData.get(styleId, defaultValue);
 		}
-		
+
 		/**
-		 * Return whether a specific style is set or not. 
+		 * Return whether a specific style is set or not.
 		 * @param styleId
-		 * @return 
-		 * 
+		 * @return
+		 *
 		 */
 		protected final function styleIsSet(styleId : int) : Boolean
 		{
 			return _styleData.isSet(styleId);
 		}
-		
+
 		protected final function getWorldDataList(key : Class) : WorldDataList
 		{
 			return _worldData[key];
 		}
-		
+
 		public function dispose() : void
 		{
 			for each (var shader : Shader in _hashToShader)

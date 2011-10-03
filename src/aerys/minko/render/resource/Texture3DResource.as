@@ -11,25 +11,25 @@ package aerys.minko.render.resource
 	{
 		private var _texture	: Texture	= null;
 		private var _mipmap		: Boolean;
-		
+
 		private var _bitmapData	: BitmapData;
 		private var _atf		: ByteArray;
-		
+
 		private var _width		: Number;
 		private var _height		: Number;
-		
+
 		private var _update		: Boolean;
-		
+
 		public function Texture3DResource()
 		{
 		}
-		
-		public function get width():Number
+
+		public function get width() : Number
 		{
 			return _width;
 		}
 
-		public function get height():Number
+		public function get height() : Number
 		{
 			return _height;
 		}
@@ -39,11 +39,11 @@ package aerys.minko.render.resource
 			_width	= width;
 			_height	= height;
 		}
-		
+
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
 								   				 mipmap		: Boolean) : void
 		{
-			if (_texture 
+			if (_texture
 				&& (mipmap != _mipmap
 					|| bitmapData.width != _width
 					|| bitmapData.height != _height))
@@ -51,20 +51,20 @@ package aerys.minko.render.resource
 				_texture.dispose();
 				_texture = null;
 			}
-			
+
 			_bitmapData	= bitmapData;
 			_width = bitmapData.width;
 			_height = bitmapData.height;
-			
+
 			_mipmap	= mipmap;
 			_update	= true;
 		}
-		
+
 		public function setContentFromATF(atf : ByteArray) : void
 		{
 			_atf = atf;
 		}
-		
+
 		public function getNativeTexture(context : Context3D) : Texture
 		{
 			if (!_texture && _width && _height)
@@ -73,14 +73,14 @@ package aerys.minko.render.resource
 												 _height,
 												 Context3DTextureFormat.BGRA,
 												 _bitmapData == null);
-				
+
 				_update = true;
 			}
-			
+
 			if (_update)
 			{
 				_update = false;
-				
+
 				if (_bitmapData)
 				{
 					if (_mipmap)
@@ -93,26 +93,26 @@ package aerys.minko.render.resource
 																		 transparent,
 																		 0);
 						var transform 	: Matrix 		= new Matrix();
-						
+
 						while (size >= 1)
 						{
 							tmp.draw(_bitmapData, transform, null, null, null, true);
 							_texture.uploadFromBitmapData(tmp, level);
-							
+
 							transform.scale(.5, .5);
 							level++;
 							size >>= 1;
 							if (tmp.transparent)
 								tmp.fillRect(tmp.rect, 0);
 						}
-						
+
 						tmp.dispose();
 					}
 					else
 					{
 						_texture.uploadFromBitmapData(_bitmapData, 0);
 					}
-					
+
 					_bitmapData.dispose();
 				}
 				else if (_atf)
@@ -120,13 +120,13 @@ package aerys.minko.render.resource
 					_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
 				}
 			}
-			
+
 			_atf = null;
 			_bitmapData = null;
-			
+
 			return _texture;
 		}
-		
+
 		public function dispose() : void
 		{
 			_texture.dispose();

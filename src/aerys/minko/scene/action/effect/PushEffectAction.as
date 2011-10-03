@@ -7,18 +7,18 @@ package aerys.minko.scene.action.effect
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.visitor.ISceneVisitor;
-	
+
 	public final class PushEffectAction implements IAction
 	{
 		public function get type() : uint		{ return ActionType.UPDATE_SELF; }
-		
+
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
 			var effect : IEffect = (scene as IEffectScene).effect;
-			
+
 			if (effect)
 				visitor.renderingData.effects.push(effect);
-			
+
 			return true;
 		}
 	}

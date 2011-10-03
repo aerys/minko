@@ -6,39 +6,39 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.node.IStylableScene;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-	
+
 	public class KeyframedMesh extends AbstractScene implements IMesh, IStylableScene
 	{
 		private var _style					: Style;
-		
+
 		private var _frameId				: Number;
-		
+
 		private var _indexStream 			: IndexStream;
 		private var _vertexStreams			: Vector.<IVertexStream>;
-		
+
 		public function get style()					: Style						{ return _style; }
 		public function get styleEnabled()			: Boolean					{ return true; }
-		
+
 		public function get version()				: uint						{ return 0; }
 		public function get indexStream()			: IndexStream				{ return _indexStream; }
-		
+
 		public function get vertexStreams()			: Vector.<IVertexStream>	{ return _vertexStreams; }
-		
+
 		public function get vertexStream()			: IVertexStream
 		{
 			return _vertexStreams[Math.floor(_frameId)];
 		}
-		
+
 		public function get currentFrameVertexStream() : IVertexStream
 		{
 			return _vertexStreams[Math.floor(_frameId)];
 		}
-		
+
 		public function get nextFrameVertexStream() : IVertexStream
 		{
-			return _vertexStreams[Math.ceil(_frameId)]	
+			return _vertexStreams[Math.ceil(_frameId)]
 		}
-		
+
 		public function get frameId() : Number
 		{
 			return _frameId;
@@ -53,16 +53,16 @@ package aerys.minko.scene.node.mesh
 									  indexStream	: IndexStream = null)
 		{
 			super();
-			
+
 			_indexStream	= indexStream;
 			_vertexStreams	= vertexStreams;
 			_frameId		= 0;
-			
+
 			actions[0]		= KeyframedMeshAction.keyframedMeshAction;
-			
+
 			if (!_indexStream)
 				_indexStream = new IndexStream(null, _vertexStreams[0].length, _vertexStreams[0].dynamic);
 		}
-		
+
 	}
 }
