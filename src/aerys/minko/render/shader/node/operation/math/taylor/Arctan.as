@@ -29,7 +29,7 @@ package aerys.minko.render.shader.node.operation.math.taylor
 	 * Also, http://en.wikipedia.org/wiki/Inverse_trigonometric_functions features
 	 * another serie from Euler, which is said to be better.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class Arctan extends Dummy
 	{

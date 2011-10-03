@@ -13,7 +13,7 @@ package aerys.minko.scene.node.group
 	 * The global world transform matrix is available in the 'transform' property.
 	 * Each time the node is traversed, the world matrix as it is is copied into the
 	 * 'transform' property. Thus, <strong>modifying the 'transform' property will have
-	 * no effect</strong></li>.
+	 * no effect</strong>.
 	 * 
 	 * In order to be able to compute a valid global world transform matrix,
 	 * GlobalTransformGroup nodes require that there is only one and single path from them

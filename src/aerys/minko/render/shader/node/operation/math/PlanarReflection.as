@@ -12,7 +12,7 @@ package aerys.minko.render.shader.node.operation.math
 	/**
 	 * Reflect a vector against a plane
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class PlanarReflection extends Dummy
 	{

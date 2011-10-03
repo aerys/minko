@@ -15,7 +15,7 @@ package aerys.minko.render.shader.compiler.visitor.allocator
 	/**
 	 * Allocates registers for the fragment allocator.
 	 *  
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class FragmentAllocator extends AbstractAllocator
 	{

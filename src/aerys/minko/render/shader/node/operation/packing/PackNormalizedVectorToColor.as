@@ -10,7 +10,7 @@ package aerys.minko.render.shader.node.operation.packing
 	/**
 	 * Pack a normalized vector of size 3 into a color.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class PackNormalizedVectorToColor extends Dummy
 	{

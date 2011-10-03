@@ -9,7 +9,7 @@ package aerys.minko.render.shader.node.operation.math.taylor
 	/**
 	 * FIXME: it should be less error prone to use arcsin(x) = 2*arctan(sqrt(1 - x^2) / (1 + x))
 	 * (and btw this node is completly untested)
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class Arcsin extends Sum
 	{

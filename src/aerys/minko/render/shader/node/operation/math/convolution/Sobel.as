@@ -11,7 +11,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 	 * Sobel filter
 	 * This implementation uses two 3x3 convolution matrices.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 * @see http://en.wikipedia.org/wiki/Sobel_operator
 	 */	
 	public class Sobel extends Dummy

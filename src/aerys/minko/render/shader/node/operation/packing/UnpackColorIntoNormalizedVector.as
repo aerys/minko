@@ -11,7 +11,7 @@ package aerys.minko.render.shader.node.operation.packing
 	/**
 	 * Unpack a vector packed with PackNormalizedVectorToColor
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */	
 	public class UnpackColorIntoNormalizedVector extends Dummy
 	{

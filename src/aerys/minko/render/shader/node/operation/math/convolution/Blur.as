@@ -6,7 +6,7 @@ package aerys.minko.render.shader.node.operation.math.convolution
 	
 	/**
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 */
 	public class Blur extends Dummy
 	{
