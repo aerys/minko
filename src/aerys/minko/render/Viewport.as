@@ -319,6 +319,8 @@ package aerys.minko.render
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 				_stage3d.requestContext3D(Context3DRenderMode.AUTO);
 			}
+			
+			_stage3d.visible = true;
 
 			if (!_logoIsHidden)
 				showLogo();
@@ -354,6 +356,8 @@ package aerys.minko.render
 		{
 			if (event.target != this)
 				return ;
+			
+			_stage3d.visible = false;
 
 //			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 //			_stage3d.context3D.dispose();
