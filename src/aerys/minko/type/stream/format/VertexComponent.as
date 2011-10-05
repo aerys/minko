@@ -10,7 +10,6 @@ package aerys.minko.type.stream.format
 		public static const RGBA		: VertexComponent 	= create(["r", "g", "b", "a"], VertexComponentType.FLOAT_4);
 		public static const NORMAL		: VertexComponent 	= create(["nx", "ny", "nz"], VertexComponentType.FLOAT_3);
 		public static const ST			: VertexComponent 	= create(["s", "t"], VertexComponentType.FLOAT_2);
-		public static const WIRE		: VertexComponent 	= create(["w1", "w2", "w3"], VertexComponentType.FLOAT_3);
 
 		public static const TANGENT		: VertexComponent	= create(["tx", "ty", "tz"], VertexComponentType.FLOAT_3);
 
