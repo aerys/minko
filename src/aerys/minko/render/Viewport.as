@@ -17,7 +17,7 @@ package aerys.minko.render
 	import aerys.minko.scene.visitor.RenderingVisitor;
 	import aerys.minko.scene.visitor.WorldDataVisitor;
 	import aerys.minko.type.Factory;
-
+	
 	import flash.display.DisplayObject;
 	import flash.display.Graphics;
 	import flash.display.Shape;
@@ -56,6 +56,7 @@ package aerys.minko.render
 		private var _autoResize			: Boolean					= false;
 		private var _antiAliasing		: int						= 0;
 		private var _invalidRectangle	: Boolean					= true;
+		private var _upperLeft			: Point						= null;
 
 		private var _visitors			: Vector.<ISceneVisitor>	= null;
 
@@ -319,6 +320,8 @@ package aerys.minko.render
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 				_stage3d.requestContext3D(Context3DRenderMode.AUTO);
 			}
+			
+			_stage3d.visible = true;
 
 			if (!_logoIsHidden)
 				showLogo();
@@ -354,6 +357,8 @@ package aerys.minko.render
 		{
 			if (event.target != this)
 				return ;
+			
+			_stage3d.visible = false;
 
 //			_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
 //			_stage3d.context3D.dispose();
@@ -391,7 +396,7 @@ package aerys.minko.render
 		{
 			if (_stage3d && _stage3d.context3D && _width && _height)
 			{
-				updateRectangle();
+				update();
 
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 
@@ -404,16 +409,24 @@ package aerys.minko.render
 			}
 		}
 
-		private function updateRectangle() : void
+		private function update() : void
 		{
 			if (_stage3d)
 			{
-				var origin 	: Point 	= localToGlobal(ZERO2);
+				_upperLeft = localToGlobal(ZERO2);
+
+				if (_width > 2048)
+					_stageX = (_width - 2048) / 2.;
+				else
+					_stageX = _upperLeft.x;
+				
+				if (_height > 2048)
+					_stageY = (_height - 2048) / 2.;
+				else
+					_stageY = _upperLeft.y;
+
 				var width	: Number	= Math.min(2048, _width);
 				var height	: Number	= Math.min(2048, _height);
-
-				_stageX = origin.x;
-				_stageY = origin.y;
 
 				_stage3d.x = _stageX;
 				_stage3d.y = _stageY;
@@ -478,7 +491,7 @@ package aerys.minko.render
 
 		private function stageResizeHandler(event : Event) : void
 		{
-			updateRectangle();
+			update();
 		}
 
 		private function stageEventHandler(event : Object) : void
@@ -548,10 +561,12 @@ package aerys.minko.render
 			{
 				var positionOnStage	: Point	= localToGlobal(ZERO2);
 
-				if (_invalidRectangle || _stageX != positionOnStage.x
-					|| _stageY != positionOnStage.y)
+				if (_invalidRectangle
+					|| _upperLeft.x != positionOnStage.x
+					|| _upperLeft.y != positionOnStage.y)
 				{
-					updateRectangle();
+					update();
+					_invalidRectangle = false;
 				}
 			}
 

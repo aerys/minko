@@ -102,17 +102,6 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 
-
-		/**
-		 * The weight of the current vertex for the wireframe effect.
-		 * @return
-		 *
-		 */
-		protected function get vertexWeight() : SValue
-		{
-			return new SValue(new Attribute(VertexComponent.WIRE));
-		}
-
 		/**
 		 * The direction of the camera in local space.
 		 * @return
