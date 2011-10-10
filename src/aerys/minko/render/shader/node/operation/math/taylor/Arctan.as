@@ -51,7 +51,10 @@ package aerys.minko.render.shader.node.operation.math.taylor
 				// (2 operations with x, and 2 operations with 1 / x)
 				var coeff	: INode = new Constant(Math.pow(-1, k) / (2 * k + 1), Math.pow(-1, (k + 1)) / (2 * (k + 1) + 1));
 				var pow		: INode = new Constant(2 * k + 1, 2 * (k + 1) + 1);
-				var term	: INode = new Multiply(new Extract(coeff, Components.XYXY), new Power(x, new Extract(pow, Components.XYXY)));
+				var term	: INode = new Multiply(
+					new Extract(coeff, Components.XYXY), 
+					new Power(x, new Extract(pow, Components.XYXY))
+				);
 				
 				sum.addTerm(new Extract(term, Components.XZ));
 				sum.addTerm(new Extract(term, Components.YW));
