@@ -2,15 +2,15 @@ package aerys.minko.render.shader.compiler.allocator
 {
 	import aerys.minko.render.shader.node.INode;
 
-	public class Allocation 
+	public class Allocation
 	{
 		protected var _beginId	: uint;
 		protected var _endId	: uint;
 		protected var _aligned	: Boolean;
-		
+
 		protected var _offset	: uint;
 		protected var _node		: INode;
-		
+
 		public function get offset():uint
 		{
 			return _offset;
@@ -30,7 +30,7 @@ package aerys.minko.render.shader.compiler.allocator
 		{
 			return _node.size;
 		}
-		
+
 		public function get beginId() : uint
 		{
 			return _beginId;
@@ -40,7 +40,7 @@ package aerys.minko.render.shader.compiler.allocator
 		{
 			return _endId;
 		}
-		
+
 		public function set offset(v : uint):void
 		{
 			_offset = v;
@@ -55,8 +55,8 @@ package aerys.minko.render.shader.compiler.allocator
 		{
 			_endId = v;
 		}
-		
-		public function Allocation(operationId	: uint, 
+
+		public function Allocation(operationId	: uint,
 								   node			: INode)
 		{
 			_aligned	= false;

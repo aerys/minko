@@ -342,7 +342,7 @@ package aerys.minko.render.shader.node
 		public static const WWWY : uint = 3 | (3 << 4) | (3 << 8) | (1 << 12);
 		public static const WWWZ : uint = 3 | (3 << 4) | (3 << 8) | (2 << 12);
 		public static const WWWW : uint = 3 | (3 << 4) | (3 << 8) | (3 << 12);
-		
+
 		public static const R : uint = X
 		public static const G : uint = Y
 		public static const B : uint = Z
@@ -683,33 +683,38 @@ package aerys.minko.render.shader.node
 		public static const AAAG : uint = WWWY
 		public static const AAAB : uint = WWWZ
 		public static const AAAA : uint = WWWW
-		
+
 		public static function getSwizzle(part : uint) : uint
 		{
-			var part1	: uint = part & 0xF;
-			var part2	: uint = (part >>> 4) & 0xF;
-			var part3	: uint = (part >>> 8) & 0xF;
-			var part4	: uint = (part >>> 12) & 0xF;
-			
+			var part1	: uint = part			& 0xF;
+			var part2	: uint = (part >>> 4)	& 0xF;
+			var part3	: uint = (part >>> 8)	& 0xF;
+			var part4	: uint = (part >>> 12)	& 0xF;
+
 			if (part2 == 4) part2 = part1;
 			if (part3 == 4) part3 = part2;
 			if (part4 == 4) part4 = part3;
-			
+
 			return part1 | (part2 << 2) | (part3 << 4) | (part4 << 6);
 		}
-		
+
 		public static function getSize(part : uint) : uint
 		{
-			var part1	: uint = part & 0xF;
-			var part2	: uint = (part >>> 4) & 0xF;
-			var part3	: uint = (part >>> 8) & 0xF;
-			var part4	: uint = (part >>> 12) & 0xF;
-			
-			if (part1 == 4) return 0;
-			else if (part2 == 4) return 1;
-			else if (part3 == 4) return 2;
-			else if (part4 == 4) return 3;
-			else return 4;
+			var part1	: uint = part			& 0xF;
+			var part2	: uint = (part >>> 4)	& 0xF;
+			var part3	: uint = (part >>> 8)	& 0xF;
+			var part4	: uint = (part >>> 12)	& 0xF;
+
+			if (part1 == 4)
+				return 0;
+			else if (part2 == 4)
+				return 1;
+			else if (part3 == 4)
+				return 2;
+			else if (part4 == 4)
+				return 3;
+			else
+				return 4;
 		}
 
 	}

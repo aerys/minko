@@ -12,7 +12,7 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.manipulation.Interpolate;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
+
 	public class UV extends Dummy implements IVertexNode
 	{
 		public function get interpolated() : INode
@@ -23,27 +23,27 @@ package aerys.minko.render.shader.node.common
 					new TransformParameter(16, TransformData.LOCAL_TO_UV)
 				)
 			);
-			
+
 			var uv : INode = new Divide(
-				simpleUv, 
+				simpleUv,
 				new Extract(simpleUv, Components.W)
 			);
-			
+
 			return uv;
 		}
-		
+
 		public function UV()
 		{
 			var simpleUv : INode = new Multiply4x4(
 				new Attribute(VertexComponent.XYZ),
 				new TransformParameter(16, TransformData.LOCAL_TO_UV)
 			);
-			
+
 			var uv : INode = new Divide(
-				simpleUv, 
+				simpleUv,
 				new Extract(simpleUv, Components.W)
 			);
-			
+
 			super(uv);
 		}
 	}

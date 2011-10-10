@@ -20,30 +20,30 @@ package aerys.minko.render.shader.node.operation.math.taylor
 	 * Use a taylor serie to calculate arctan(x).
 	 * This can be seldomly used in shaders that need to switch from uv textures to polar coordinates,
 	 * but can be replaced by a less expensive function almost every time.
-	 * 
+	 *
 	 * We are using the fact that arctan(x) = Pi / 2 - arctan(1/x), and arctan(-x) = - arctan(x)
 	 * to compute only in the [0, 1] interval
-	 * 
+	 *
 	 * Maybe we should center the taylor serie in 1/2, better than 0.
-	 * 
+	 *
 	 * Also, http://en.wikipedia.org/wiki/Inverse_trigonometric_functions features
 	 * another serie from Euler, which is said to be better.
-	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
-	 */	
+	 *
+	 * @author Romain Gilliotte
+	 */
 	public class Arctan extends Dummy
 	{
 		public function Arctan(arg : INode, numIterations : uint = 9)
 		{
 			var xSign : INode = new Divide(arg, new Absolute(arg));
 			arg = new Absolute(arg);
-			
+
 			// x = (arg, arg, 1/arg, 1/arg)
 			var x	: INode	= new Combine(
 				new Extract(arg, Components.XX),
 				new Extract(new Reciprocal(arg), Components.XX)
 			);
-			
+
 			var sum	: Sum	= new Sum();
 			for (var k : uint = 0; k < numIterations; k += 2)
 			{
@@ -59,12 +59,12 @@ package aerys.minko.render.shader.node.operation.math.taylor
 				sum.addTerm(new Extract(term, Components.XZ));
 				sum.addTerm(new Extract(term, Components.YW));
 			}
-			
+
 			var xIsLowerThan1	: INode = new SetIfLessThan(new Absolute(arg), new Constant(1));
 			var xIsBiggerThan1	: INode = new Substract(new Constant(1), xIsLowerThan1);
 			var resultLower		: INode = new Extract(sum, Components.X);
 			var resultBigger	: INode = new Substract(new Constant(Math.PI / 2), new Extract(sum, Components.Y));
-			
+
 			var result			: INode = new Add(
 				new Multiply(xIsLowerThan1, resultLower),
 				new Multiply(xIsBiggerThan1, resultBigger)

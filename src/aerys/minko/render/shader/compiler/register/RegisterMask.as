@@ -17,13 +17,13 @@ package aerys.minko.render.shader.compiler.register
 		public static const XZW		: uint = X | Z | W;			// 13
 		public static const YZW		: uint = Y | Z | W;			// 14
 		public static const XYZW	: uint	= X | Y | Z | W;	// 15
-		
+
 		public static const STRINGS:Vector.<String> = Vector.<String>([
-			'', 'x', 'y', 'xy', 'z', 'xz', 
+			'', 'x', 'y', 'xy', 'z', 'xz',
 			'yz', 'xyz', 'w', 'xw', 'yw',
 			'xyw', 'zw', 'xzw', 'yzw', 'xyzw'
 		]);
-		
+
 		public static function createContinuous(size : uint) : uint
 		{
 			if (size == 1)
@@ -37,15 +37,15 @@ package aerys.minko.render.shader.compiler.register
 			else
 				throw new Error('Invalid size for mask');
 		}
-		
+
 		public static function offset(mask : uint, value : int) : uint
 		{
-			if (value < 0) 
+			if (value < 0)
 				return mask >>> (- value);
 			else
 				return mask << value;
 		}
-		
+
 		public static function stringify(mask : uint) : String
 		{
 			return mask != XYZW ? '.' + STRINGS[mask] : '';

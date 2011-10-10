@@ -14,30 +14,30 @@ package aerys.minko.render.shader.node.common
 	import aerys.minko.render.shader.node.operation.packing.PackNormalizedVectorToColor;
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
+
 	public class WorldNormal extends Dummy implements IVertexNode
 	{
 		public function get interpolated() : INode
 		{
 			return new Interpolate(this);
 		}
-		
+
 		public function WorldNormal()
 		{
 			var normal : INode = new Multiply(
 				new StyleParameter(1, BasicStyle.NORMAL_MULTIPLIER),
 				new Attribute(VertexComponent.NORMAL)
 			);
-			
+
 			var worldNormal : INode = new Normalize(
 				new Multiply3x3(
 					normal,
 					new TransformParameter(16, TransformData.WORLD)
 				)
 			);
-			
+
 			var result : INode = new PackNormalizedVectorToColor(worldNormal);
-			
+
 			super(result);
 		}
 	}

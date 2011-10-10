@@ -7,22 +7,23 @@ package aerys.minko.scene.node.mesh
 
 	/**
 	 * The IMesh interface define the properties available in any mesh object.
-	 *  
+	 *
 	 * @author Jean-Marc Le Roux
-	 * 
+	 *
 	 */
 	public interface IMesh extends IScene, IVersionable
 	{
 		/**
-		 * The VertexStream object containing the mesh geometry data. 
-		 * @return 
-		 * 
+		 * The VertexStream object containing the mesh geometry data.
+		 * @return
+		 *
 		 */
 		function get vertexStream()	: IVertexStream;
+
 		/**
-		 * The IndexStream object containing the mesh indices. 
-		 * @return 
-		 * 
+		 * The IndexStream object containing the mesh indices.
+		 * @return
+		 *
 		 */
 		function get indexStream()	: IndexStream;
 	}
