@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko;
+	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.Texture3DResource;
@@ -113,6 +114,12 @@ package aerys.minko.render.shader
 				samplerStyleId	= _samplers[i];
 				texture			= styleData.get(samplerStyleId) as Texture3DResource;
 
+				if (!texture)
+				{
+					throw new Error("Texture '" + Style.getStyleName(samplerStyleId)
+									+ "' is required by shader.");
+				}
+				
 				state.setTextureAt(i, texture);
 			}
 		}

@@ -16,21 +16,21 @@ package aerys.minko.type.stream
 
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 
-		minko_stream var _data			: Vector.<Number>		= null;
+		minko_stream var _data			: Vector.<Number>			= null;
 
-		private var _dynamic		: Boolean				= false;
-		private var _version		: uint					= 0;
+		private var _dynamic			: Boolean					= false;
+		private var _version			: uint						= 0;
 
-		private var _format			: VertexFormat			= null;
-		private var _resource		: VertexBuffer3DResource	= null;
-		private var _length			: uint					= 0;
-		private var _componentToStream	: Dictionary		= new Dictionary(true);
+		private var _format				: VertexFormat				= null;
+		private var _resource			: VertexBuffer3DResource	= null;
+		private var _length				: uint						= 0;
+		private var _componentToStream	: Dictionary				= new Dictionary(true);
 
-		public function get format()	: VertexFormat			{ return _format; }
-		public function get version()	: uint					{ return _version; }
-		public function get dynamic()	: Boolean				{ return _dynamic; }
+		public function get format()	: VertexFormat				{ return _format; }
+		public function get version()	: uint						{ return _version; }
+		public function get dynamic()	: Boolean					{ return _dynamic; }
 		public function get resource()	: VertexBuffer3DResource	{ return _resource; }
-		public function get length()	: uint					{ return _length; }
+		public function get length()	: uint						{ return _length; }
 
 		protected function get data() : Vector.<Number>
 		{

@@ -17,8 +17,8 @@ package aerys.minko.render.shader.node.animation
 	{
 		public function MorphedNormal()
 		{
-			var lastNormal	: INode = new Attribute(VertexComponent.XYZ, 0);
-			var nextNormal	: INode = new Attribute(VertexComponent.XYZ, 1);
+			var lastNormal	: INode = new Attribute(VertexComponent.NORMAL, 0);
+			var nextNormal	: INode = new Attribute(VertexComponent.NORMAL, 1);
 			var ratio		: INode = new StyleParameter(1, AnimationStyle.MORPHING_RATIO);
 
 			var result		: INode = new Add(

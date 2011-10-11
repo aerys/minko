@@ -7,7 +7,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.type.parser.IParser;
 	import aerys.minko.type.parser.ParserOptions;
 	import aerys.minko.type.parser.atf.ATFParser;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
@@ -60,7 +60,8 @@ package aerys.minko.scene.node.group
 
 		private var _total				: uint				= 0;
 		private var _loaded				: uint				= 0;
-
+		private var _content			: Vector.<IScene>	= new Vector.<IScene>();
+		
 		public static function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			return new LoaderGroup().load(request, parserOptions);
@@ -105,19 +106,20 @@ package aerys.minko.scene.node.group
 		 */
 		public function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
-			var uri	: String	= request.url.toLocaleLowerCase();
-
+			var uri				: String	= request.url.toLocaleLowerCase();
+			var loaderObject	: Object	= null;
+			
 			if (uri.match(NATIVE_FORMATS))
 			{
 				var loader : Loader = new Loader();
-
-				_positions[loader] = numChildren;
 
 				loader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS,
 														  loaderEventHandler);
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 														  loaderCompleteHandler);
 				loader.load(request);
+				
+				loaderObject = loader;
 			}
 			else
 			{
@@ -131,15 +133,17 @@ package aerys.minko.scene.node.group
 									+ extension + "'.");
 				}
 
-				_loaderToURI[urlLoader] = request.url;
-				_positions[urlLoader] = numChildren;
-				_loaderToOptions[urlLoader] = parserOptions;
-
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				urlLoader.addEventListener(ProgressEvent.PROGRESS, loaderEventHandler);
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
 				urlLoader.load(request);
+				
+				loaderObject = urlLoader;
 			}
+
+			_loaderToURI[loaderObject] = request.url;
+			_positions[loaderObject] = _total;
+			_loaderToOptions[loaderObject] = parserOptions;
 
 			++_total;
 
@@ -149,7 +153,7 @@ package aerys.minko.scene.node.group
 		public function loadBytes(bytes : ByteArray, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			++_total;
-
+			
 			// try to find a parser
 			for (var extension : String in PARSERS)
 			{
@@ -157,7 +161,7 @@ package aerys.minko.scene.node.group
 				var parser 		: IParser 	= new parserClass();
 
 				bytes.position = 0;
-				_positions[parser] = numChildren;
+				_positions[parser] = _total - 1;
 
 				parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
 
@@ -170,6 +174,8 @@ package aerys.minko.scene.node.group
 
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
 			loader.loadBytes(bytes);
+			
+			_positions[loader] = _total - 1;
 
 			return this;
 		}
@@ -177,7 +183,7 @@ package aerys.minko.scene.node.group
 		public function loadClass(asset : Class, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			var assetObject : Object 	= new asset();
-
+			
 			if (assetObject is MovieClip)
 			{
 				var mc 				: MovieClip	= assetObject as MovieClip;
@@ -195,26 +201,29 @@ package aerys.minko.scene.node.group
 						texture.source = contentLoader.content as MovieClip;
 					});
 
-					addChild(texture);
+					addLoadedContentAt(texture, _total);
 				}
 				else
 				{
-					addChild(new MovieClipTexture(mc));
+					addLoadedContentAt(new MovieClipTexture(mc), _total);
 				}
 			}
 			else if (assetObject is BitmapData)
 			{
-				addChild(new BitmapTexture(assetObject as BitmapData));
+				addLoadedContentAt(new BitmapTexture(assetObject as BitmapData), _total);
 			}
 			else if (assetObject is IBitmapDrawable)
 			{
-				addChild(BitmapTexture.fromDisplayObject(assetObject as Bitmap));
+				addLoadedContentAt(BitmapTexture.fromDisplayObject(assetObject as Bitmap), _total);
 			}
 			else if (assetObject is ByteArray)
 			{
 				return loadBytes(assetObject as ByteArray, parserOptions);
 			}
 
+			++_total;
+			complete();
+			
 			return this;
 		}
 
@@ -234,7 +243,7 @@ package aerys.minko.scene.node.group
 			var parser		: IParser			= new parserClass();
 
 			parser.addEventListener(Event.COMPLETE, parserCompleteHandler);
-			_positions[parser] = numChildren;
+			_positions[parser] = _positions[loader];
 
 			parser.parse(loader.data as ByteArray, options);
 		}
@@ -248,10 +257,10 @@ package aerys.minko.scene.node.group
 				texture = new MovieClipTexture(info.content as MovieClip);
 			else if (info.content is Bitmap)
 				texture = new BitmapTexture((info.content as Bitmap).bitmapData);
+			
+			addLoadedContentAt(texture, _positions[info.loader]);
 
-			addChildAt(texture, _positions[info.loader]);
-
-			complete()
+			complete();
 		}
 
 		private function parserCompleteHandler(event : Event) : void
@@ -262,9 +271,27 @@ package aerys.minko.scene.node.group
 			var offset		: int				= _positions[parser];
 
 			for (var i : int = 0; i < numNodes; ++i)
-				addChildAt(data[i], offset + i);
+				addLoadedContentAt(data[i], offset + i);
 
 			complete();
+		}
+		
+		private function addLoadedContentAt(content : IScene, index : int) : void
+		{
+			var count : int = _content.length;
+			
+			if (index < count)
+			{
+				if (_content[index])
+					for (; count > index; --count)
+						_content[count] = _content[int(count - 1)];
+			}
+			else
+			{
+				_content.length = index + 1;
+			}
+			
+			_content[index] = content;
 		}
 
 		private function complete() : void
@@ -272,7 +299,11 @@ package aerys.minko.scene.node.group
 			++_loaded;
 
 			if (_loaded == _total)
+			{
+				rawChildren = _content.concat();
+				
 				dispatchEvent(new Event(Event.COMPLETE));
+			}
 		}
 	}
 }
