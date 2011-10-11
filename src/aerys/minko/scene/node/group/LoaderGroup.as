@@ -62,6 +62,9 @@ package aerys.minko.scene.node.group
 		private var _loaded				: uint				= 0;
 		private var _content			: Vector.<IScene>	= new Vector.<IScene>();
 		
+		public function get numLoadedItems()	: uint	{ return _loaded; }
+		public function get numTotalItems()		: uint	{ return _total; }
+		
 		public static function load(request : URLRequest, parserOptions : ParserOptions = null) : LoaderGroup
 		{
 			return new LoaderGroup().load(request, parserOptions);

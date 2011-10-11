@@ -7,15 +7,15 @@ package aerys.minko.scene.action.mesh
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
 	import aerys.minko.scene.data.IWorldData;
-	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.RenderingData;
 	import aerys.minko.scene.data.StyleData;
+	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.IMesh;
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-
+	
 	import flash.utils.Dictionary;
 
 	public final class MeshAction implements IAction
@@ -33,10 +33,8 @@ package aerys.minko.scene.action.mesh
 
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var mesh : IMesh	= scene as IMesh;
-
-			if (!mesh)
-				throw new Error();
+			var mesh 		: IMesh			= IMesh(scene);
+			var worldData	: Dictionary	= visitor.worldData;
 
 			// invalidate world objects cache
 			for each (var worldObject : IWorldData in visitor.worldData)
@@ -44,18 +42,17 @@ package aerys.minko.scene.action.mesh
 
 			// pass "ready to draw" data to the renderer.
 			var transformData	: TransformData		= visitor.transformData;
-			var worldData		: Dictionary		= visitor.worldData;
 			var renderingData	: RenderingData		= visitor.renderingData;
 			var styleStack		: StyleData			= renderingData.styleData;
 			var effectStack		: Vector.<IEffect>	= renderingData.effects;
-			var effect			: IEffect			= effectStack[int(effectStack.length - 1)];
-
-			if (!effect)
+			var numEffects		: int				= effectStack.length;
+			
+			if (numEffects == 0)
 				throw new Error("Unable to draw without an effect.");
-
+			
+			var effect			: IEffect				= effectStack[int(numEffects - 1)];
 			var indexStream 	: IndexStream			= mesh.indexStream;
 			var vertexStream	: IVertexStream			= mesh.vertexStream;
-
 			var passes			: Vector.<IEffectPass>	= effect.getPasses(styleStack, transformData, worldData);
 			var numPasses 		: int 					= passes.length;
 
