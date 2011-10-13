@@ -35,9 +35,10 @@ package aerys.minko.scene.action.mesh
 		{
 			var mesh 		: IMesh			= IMesh(scene);
 			var worldData	: Dictionary	= visitor.worldData;
+			
 
 			// invalidate world objects cache
-			for each (var worldObject : IWorldData in visitor.worldData)
+			for each (var worldObject : IWorldData in worldData)
 				worldObject.invalidate();
 
 			// pass "ready to draw" data to the renderer.

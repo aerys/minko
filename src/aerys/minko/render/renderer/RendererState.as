@@ -263,7 +263,9 @@ package aerys.minko.render.renderer
 			var totalTriangles	: uint	= 0;
 
 			if (previous)
+			{
 				prepareContextDelta(context, previous);
+			}
 			else
 				prepareContext(context);
 

@@ -15,7 +15,7 @@
 		private var _transform	: Matrix4x4		= new Matrix4x4();
 
 		/**
-		 * The Matrix3D object defining the transform of the object into world-space.
+		 * The Matrix4x4 object defining the transform of the object into world-space.
 		 */
 		public function get transform() : Matrix4x4		{ return _transform; }
 

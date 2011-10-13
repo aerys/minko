@@ -28,7 +28,7 @@ package aerys.minko.scene.action.transform
 				throw new Error("TransformAction can only be applied to ITransformable nodes.");
 
 			visitor.transformData.world.push()
-							 	   .prepend(transformable.transform);
+							 	 .prepend(transformable.transform);
 
 			return true;
 		}
