@@ -10,8 +10,13 @@ package aerys.minko.scene.node.mesh.modifier
 		private static const RGB_FORMAT		: VertexFormat	= new VertexFormat(VertexComponent.RGB);
 		private static const RGBA_FORMAT	: VertexFormat	= new VertexFormat(VertexComponent.RGBA);
 
-		private var _colors	: Vector.<uint>	= null;
+		protected var _colors	: Vector.<uint>	= null;
 
+		public function get colors () : Vector.<uint>
+		{
+			return _colors;
+		}
+		
 		public function ColorMeshModifier(target 	: IMesh,
 										  colors 	: Vector.<uint>,
 										  withAlpha	: Boolean	= false)
@@ -20,7 +25,7 @@ package aerys.minko.scene.node.mesh.modifier
 
 			super(target, getColorStream(target, withAlpha));
 		}
-
+		
 		private function getColorStream(target : IMesh, withAlpha : Boolean) : VertexStream
 		{
 			var numVertices	: int				= target.vertexStream.length;
