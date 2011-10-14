@@ -75,12 +75,23 @@ package aerys.minko.render
 		private var _postProcessVisitor	: ISceneVisitor				= new PostprocessVisitor();
 
 		private var _viewportData		: ViewportData				= null;
+		private var _downScaleRT		: Boolean					= false;
 
 		private var _logoIsHidden		: Boolean					= false;
 
 		private var _mask				: Shape						= new Shape();
 		private var _alwaysOnTop		: Boolean					= false;
 
+		public function get downScaleRenderTarget() : Boolean
+		{
+			return _downScaleRT;
+		}
+		
+		public function set downScaleRenderTarget(value : Boolean) : void
+		{
+			_downScaleRT = value;
+		}
+		
 		public function get postProcessEffect() : IPostProcessingEffect
 		{
 			return _postProcessEffect;
@@ -424,7 +435,6 @@ package aerys.minko.render
 					_stageY = (_height - 2048) / 2.;
 				else
 					_stageY = _upperLeft.y;
-
 				var width	: Number	= Math.min(2048, _width);
 				var height	: Number	= Math.min(2048, _height);
 

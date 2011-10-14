@@ -3,7 +3,7 @@ package aerys.minko.scene.data
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.IEffect;
-
+	
 	import flash.display.Stage;
 	import flash.utils.Dictionary;
 
@@ -17,7 +17,7 @@ package aerys.minko.scene.data
 
 		protected var _viewport					: Viewport;
 		protected var _renderTarget				: RenderTarget;
-		protected var _backbufferRenderTarger	: RenderTarget;
+		protected var _backbufferRenderTarget	: RenderTarget;
 
 		public function get frameId() : uint
 		{
@@ -57,6 +57,7 @@ package aerys.minko.scene.data
 		public function get renderTarget() : RenderTarget
 		{
 			var viewportHasPostProcess : Boolean = _viewport.postProcessEffect != null;
+			
 			if (!viewportHasPostProcess)
 				return backBufferRenderTarget;
 
@@ -64,9 +65,11 @@ package aerys.minko.scene.data
 			var viewportHeight			: int	= _viewport.height;
 			var viewportAntialias		: int	= _viewport.antiAliasing;
 			var viewportBgColor			: int	= _viewport.backgroundColor;
-			var size					: uint	= 1 << Math.min(11, Math.ceil(Math.log(Math.max(viewportWidth, viewportHeight)) * Math.LOG2E));
-
-			if (_renderTarget == null
+			var viewportSize			: int	= Math.max(viewportWidth, viewportHeight);
+			var bitshift				: int	= Math.min(11, Math.ceil(Math.log(viewportSize) * Math.LOG2E));
+			var size					: uint	= 1 << (bitshift - (viewportSize & 0x1 != 0 && _viewport.downScaleRenderTarget ? 1 : 0));
+			
+			if (_renderTarget 			== null
 				|| size					!= _renderTarget.width
 				|| size					!= _renderTarget.height
 				|| viewportAntialias	!= _renderTarget.antiAliasing
@@ -85,19 +88,19 @@ package aerys.minko.scene.data
 			var viewportAntialias		: int		= _viewport.antiAliasing;
 			var viewportBgColor			: int		= _viewport.backgroundColor;
 
-			if (_backbufferRenderTarger == null
-				|| viewportWidth		!= _backbufferRenderTarger.width
-				|| viewportHeight		!= _backbufferRenderTarger.height
-				|| viewportAntialias	!= _backbufferRenderTarger.antiAliasing
-				|| viewportBgColor		!= _backbufferRenderTarger.backgroundColor)
+			if (_backbufferRenderTarget == null
+				|| viewportWidth		!= _backbufferRenderTarget.width
+				|| viewportHeight		!= _backbufferRenderTarget.height
+				|| viewportAntialias	!= _backbufferRenderTarget.antiAliasing
+				|| viewportBgColor		!= _backbufferRenderTarget.backgroundColor)
 			{
-				_backbufferRenderTarger = new RenderTarget(
+				_backbufferRenderTarget = new RenderTarget(
 					RenderTarget.BACKBUFFER,
 					viewportWidth, viewportHeight,
 					viewportBgColor, true, viewportAntialias);
 			}
 
-			return _backbufferRenderTarger;
+			return _backbufferRenderTarget;
 		}
 
 		public function get stage() : Stage

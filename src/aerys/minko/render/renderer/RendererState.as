@@ -446,7 +446,7 @@ package aerys.minko.render.renderer
 				var numStreams		: int		= _vertexStreams.length;
 
 				invalidStreams ||= ((_setFlags & SHADER) != 0) && ((current._setFlags & SHADER) == 0 || current._program != _program);
-				invalidStreams ||= ((current._setFlags & VERTEX_STREAM) == 0) && (current._vertexStreams.length != numStreams);
+				invalidStreams ||= ((current._setFlags & VERTEX_STREAM) == 0) || (current._vertexStreams.length != numStreams);
 
 				for (i = 0; i < numStreams && !invalidStreams; ++i)
 					invalidStreams ||= current._vertexStreams[i] != _vertexStreams[i];

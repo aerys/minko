@@ -103,6 +103,9 @@ package aerys.minko.scene.node.group
 
 		public function getChildIndex(child : IScene) : int
 		{
+			if (child == null)
+				throw new Error("The 'child' parameter cannot be null.");
+			
 			for (var i : int = 0; i < _numChildren; i++)
 				if (_children[i] === child)
 					return i;
