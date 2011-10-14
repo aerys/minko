@@ -136,10 +136,11 @@ package aerys.minko.scene.action.mesh
 				for (var i : uint = 0; i < jointCount; ++i)
 					if (jointNames[i] == currentJointName)
 					{
-						var matrix : Matrix4x4 = TMP_SKINNING_MATRIX
-							.identity()
-							.prepend(TMP_LOCAL_MATRIX)
-							.prepend(invBindMatrices[i]);
+						var matrix : Matrix4x4 = TMP_SKINNING_MATRIX;
+						
+						matrix.identity()
+							  .prepend(TMP_LOCAL_MATRIX)
+							  .prepend(invBindMatrices[i]);
 
 						Matrix4x4.copy(matrix, _boneMatrices[i]);
 						matrix.toDualQuaternion(_skinningDQn[i], _skinningDQd[i]);

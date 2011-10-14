@@ -191,6 +191,14 @@ package aerys.minko.type.math
 
 			return this;
 		}
+		
+		public function prependUniformScale(scale : Number) : Matrix4x4
+		{
+			_matrix.prependScale(scale, scale, scale);
+			++_version;
+			
+			return this;
+		}
 
 		public function prependTranslation(x : Number,
 										   y : Number	= 1.,

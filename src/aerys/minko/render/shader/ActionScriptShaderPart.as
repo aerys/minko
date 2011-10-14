@@ -407,19 +407,32 @@ package aerys.minko.render.shader
 		/**
 		 * Retrieve the RGBA color of a pixel of a texture.
 		 *
-		 * @param styleId
-		 * @param uv
-		 * @param filtering
-		 * @param mipMapping
-		 * @param wrapping
+		 * @param styleId The style id of the texture to sample.
+		 * @param uv The UV texture coordinates to sample.
+		 * @param filtering The texture filtering to use. The value must be one of the following constants:
+		 * <ul>
+		 * <li>Sampler.FILTER_NEAREST</li>
+		 * <li>FILTER_LINEAR</li>
+		 * </ul>
+		 * @param mipMapping The mip mapping to use. The value must be one of the following constants:
+		 * <ul>
+		 * <li>Sampler.MIPMAP_DISABLE</li>
+		 * <li>Sampler.MIPMAP_NEAREST</li>
+		 * <li>Sampler.MIPMAP_LINEAR</li>
+		 * </ul>
+		 * @param wrapping The texture wrapping to use. The value must be one of the following constants:
+		 * <ul>
+		 * <li>Sampler.WRAPPING_CLAMP</li>
+		 * <li>Sampler.WRAPPING_REPEAT</li>
+		 * </ul>
 		 * @return
 		 *
 		 */
 		protected final function sampleTexture(styleId 		: int,
 											   uv 			: Object,
-											   filtering	: uint	= Sampler.FILTER_LINEAR,
-											   mipMapping	: uint	= Sampler.MIPMAP_LINEAR,
-											   wrapping		: uint	= Sampler.WRAPPING_REPEAT) : SValue
+											   filtering	: uint	= 1,
+											   mipMapping	: uint	= 2,
+											   wrapping		: uint	= 1) : SValue
 		{
 			return new SValue(new Texture(getNode(uv), new Sampler(styleId, filtering, mipMapping, wrapping)));
 		}
