@@ -3,14 +3,15 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.IVersionable;
-
+	
 	import flash.geom.Matrix3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 
+	use namespace minko;
+		
 	public final class Matrix4x4 implements IVersionable
 	{
-		use namespace minko;
 		
 		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
 		private static const RAD2DEG			: Number			= 180. / Math.PI;
@@ -29,7 +30,7 @@ package aerys.minko.type.math
 		private var _version	: uint					= 0;
 		private var _data		: Vector.<Number>		= new Vector.<Number>();
 		private var _numPushes	: int					= 0;
-		private var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		minko var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 
 		public function get version()		: uint		{ return _version; }
 		public function get translationX()	: Number	{ return getTranslation(TMP_VECTOR4).x; }
@@ -321,23 +322,6 @@ package aerys.minko.type.math
 			Utils3D.projectVectors(_matrix, input, output, uvt);
 		}
 		
-		public function setTranslation(x : Number, y : Number, z : Number) : Matrix4x4
-		{
-			var position : Vector4	= getTranslation(TMP_VECTOR4);
-
-			if (!isNaN(x))
-				position.x = x;
-			if (!isNaN(y))
-				position.y = y;
-			if (!isNaN(z))
-				position.z = z;
-
-			_matrix.copyColumnFrom(3, position._vector);
-			++_version;
-
-			return this;
-		}
-
 		public function getRotation(output : Vector4 = null) : Vector4
 		{
 			var components 	: Vector.<Vector3D>	= _matrix.decompose();
@@ -372,6 +356,51 @@ package aerys.minko.type.math
 			_matrix.copyColumnTo(3, output._vector);
 
 			return output;
+		}
+		
+		public function setTranslation(x : Number, y : Number, z : Number) : Matrix4x4
+		{
+			var position : Vector4	= getTranslation(TMP_VECTOR4);
+			
+			if (!isNaN(x))
+				position.x = x;
+			if (!isNaN(y))
+				position.y = y;
+			if (!isNaN(z))
+				position.z = z;
+			
+			_matrix.copyColumnFrom(3, position._vector);
+			++_version;
+			
+			return this;
+		}
+		
+		public function getScale(output : Vector4 = null) : Vector4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			
+			output ||= new Vector4();
+			output._vector = components[2];
+			
+			return output;
+		}
+		
+		public function setScale(x : Number, y : Number, z : Number) : Matrix4x4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			var scale		: Vector3D			= components[2];
+			
+			if (!isNaN(x))
+				scale.x = x;
+			if (!isNaN(y))
+				scale.y = y;
+			if (!isNaN(z))
+				scale.z = z;
+			
+			++_version;
+			_matrix.recompose(components);
+			
+			return this;
 		}
 
 		public function toDualQuaternion(n : Vector4,
