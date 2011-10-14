@@ -7,7 +7,7 @@ package aerys.minko.scene.node.group
 	import aerys.minko.type.parser.IParser;
 	import aerys.minko.type.parser.ParserOptions;
 	import aerys.minko.type.parser.atf.ATFParser;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.IBitmapDrawable;
@@ -148,6 +148,7 @@ package aerys.minko.scene.node.group
 
 		public function loadBytes(bytes : ByteArray, parserOptions : ParserOptions = null) : LoaderGroup
 		{
+			parserOptions ||= new ParserOptions();
 			++_total;
 
 			// try to find a parser
@@ -228,7 +229,7 @@ package aerys.minko.scene.node.group
 			var loader 		: URLLoader			= event.target as URLLoader;
 			var uri			: String			= _loaderToURI[loader];
 			var offset		: uint				= _positions[loader];
-			var options		: ParserOptions		= _loaderToOptions[loader];
+			var options		: ParserOptions		= _loaderToOptions[loader] || new ParserOptions();
 			var extension	: String			= uri.substr(uri.lastIndexOf(".") + 1);
 			var parserClass	: Class				= PARSERS[extension.toLocaleLowerCase()];
 			var parser		: IParser			= new parserClass();
