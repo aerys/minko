@@ -338,7 +338,11 @@ package aerys.minko.render.renderer
 						var stream 			: VertexStream 		= _vertexStreams[index].getSubStreamByComponent(component);
 
 						if (!stream)
-							throw new Error("Missing vertex components: " + component.toString());
+						{
+							throw new Error("Vertex components '" + component.toString()
+											+ "' are missing but required by the '"
+											+ _program.name + "' shader.");
+						}
 
 						var vertexBuffer 	: VertexBuffer3D	= stream.resource.getVertexBuffer3D(context);
 						var vertexOffset 	: int				= stream.format.getOffsetForComponent(component);

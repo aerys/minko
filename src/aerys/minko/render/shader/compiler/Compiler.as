@@ -178,9 +178,11 @@ package aerys.minko.render.shader.compiler
 		{
 			var attributes		: Vector.<Attribute>	= _attrAllocator.getAllocations();
 			var attributeCount	: uint					= attributes.length;
+			
 			for (var i : int = 0; i < attributeCount; ++i)
 			{
 				var attribute : Attribute = attributes[i];
+				
 				_vertexInputComponents.push(attribute.component);
 				_vertexInputIndices.push(attribute.componentIndex);
 			}
@@ -191,12 +193,13 @@ package aerys.minko.render.shader.compiler
 			_fsParams		= _fsConstAllocator.computeParameterAllocation();
 		}
 
-		public function compileShader() : Shader
+		public function compileShader(name : String) : Shader
 		{
 			var vertexShader	: ByteArray = compileVertexShader();
 			var fragmentShader	: ByteArray	= compileFragmentShader();
 
 			return new Shader(
+				name,
 				vertexShader, fragmentShader,
 				_vertexInputComponents, _vertexInputIndices,
 				_samplers,

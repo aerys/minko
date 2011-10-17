@@ -2,7 +2,7 @@ package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.type.stream.format.VertexComponent;
-
+	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
@@ -11,6 +11,7 @@ package aerys.minko.render.resource
 	{
 		use namespace minko_render;
 
+		private var _name			: String	= null;
 		private var _update			: Boolean	= false;
 		private var _vertexShader	: ByteArray	= null;
 		private var _fragmentShader	: ByteArray	= null;
@@ -18,12 +19,17 @@ package aerys.minko.render.resource
 		minko_render var _vertexComponents	: Vector.<VertexComponent> 	= null;
 		minko_render var _vertexIndices		: Vector.<uint>				= null;
 		minko_render var _nativeProgram		: Program3D					= null;
-
-		public function Program3DResource(vertexShader 	: ByteArray,
-									   fragmentShader	: ByteArray,
-									   vertexComponents	: Vector.<VertexComponent>,
-									   vertexIndices	: Vector.<uint>)
+		
+		public function get name() : String	{ return _name; }
+		
+		public function Program3DResource(name				: String,
+										  vertexShader 		: ByteArray,
+									   	  fragmentShader	: ByteArray,
+									   	  vertexComponents	: Vector.<VertexComponent>,
+									      vertexIndices		: Vector.<uint>)
 		{
+			_name = name;
+			
 			update(vertexShader, fragmentShader, vertexComponents, vertexIndices);
 		}
 

@@ -9,8 +9,11 @@ package aerys.minko.render.shader
 	import aerys.minko.scene.data.TransformData;
 	import aerys.minko.scene.data.ViewportData;
 	import aerys.minko.scene.data.WorldDataList;
-
+	
+	import avmplus.getQualifiedClassName;
+	
 	import flash.utils.Dictionary;
+	import flash.utils.getDefinitionByName;
 
 	/**
 	 * <p>Shader objects define vertex and fragment shaders with
@@ -99,13 +102,25 @@ package aerys.minko.render.shader
 
 		private var _hashToShader		: Object		= new Object();
 
-		private var _styleData			: StyleData	= null;
+		private var _styleData			: StyleData		= null;
 		private var _transformData		: TransformData	= null;
 		private var _worldData			: Dictionary	= null;
 
 		private var _lastFrameId		: uint			= 0;
 		private var _styleStackVersion	: uint			= 0;
 		private var _lastShader			: Shader		= null;
+		
+		private var _name				: String		= null;
+		
+		public function get name() : String
+		{
+			return _name;
+		}
+		
+		public function ActionScriptShader(name : String = null)
+		{
+			_name = name || getQualifiedClassName(this);
+		}
 
 		public function fillRenderState(state			: RendererState,
 										styleData		: StyleData,
@@ -127,7 +142,8 @@ package aerys.minko.render.shader
 
 				if (!shader)
 				{
-					_hashToShader[hash] = shader = Shader.create(getOutputPosition()._node,
+					_hashToShader[hash] = shader = Shader.create(_name,
+																 getOutputPosition()._node,
 												  				 getOutputColor()._node);
 				}
 

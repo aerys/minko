@@ -16,6 +16,11 @@ package aerys.minko.render.effect.basic
 	{
 		private static const ANIMATION	: AnimationShaderPart	= new AnimationShaderPart();
 
+		public function BasicShader()
+		{
+			super("basic");
+		}
+		
 		override protected function getOutputPosition() : SValue
 		{
 			var animationMethod	: uint		= getStyleConstant(AnimationStyle.METHOD, AnimationMethod.DISABLED)

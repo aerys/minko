@@ -27,6 +27,8 @@ package aerys.minko.render.shader
 	{
 		use namespace minko;
 
+		protected var _name						: String;
+		
 		protected var _resource					: Program3DResource;
 
 		protected var _lastFrameId				: uint;
@@ -38,23 +40,30 @@ package aerys.minko.render.shader
 		protected var _vsParams					: Vector.<ParameterAllocation>;
 		protected var _fsParams					: Vector.<ParameterAllocation>;
 		protected var _samplers					: Vector.<int>;
+		
+		public function get name() : String
+		{
+			return _name;
+		}
 
 		public function get resource() : Program3DResource
 		{
 			return _resource;
 		}
 
-		public static function create(outputPosition	: INode,
+		public static function create(name				: String,
+									  outputPosition	: INode,
 									  outputColor		: INode) : Shader
 		{
-			var compiler : Compiler = new Compiler();
-
+			var compiler 	: Compiler 	= new Compiler();
+			
 			compiler.load(outputPosition, outputColor);
-
-			return compiler.compileShader();
+			
+			return compiler.compileShader(name);
 		}
 
-		public function Shader(vertexShader				: ByteArray,
+		public function Shader(name						: String,
+							   vertexShader				: ByteArray,
 							   fragmentShader			: ByteArray,
 							   vertexInputComponents	: Vector.<VertexComponent>,
 							   vertexInputIndices		: Vector.<uint>,
@@ -74,7 +83,8 @@ package aerys.minko.render.shader
 			_fsParams		= fragmentParameters;
 			_samplers		= samplers;
 
-			_resource 		= new Program3DResource(vertexShader,
+			_resource 		= new Program3DResource(name,
+													vertexShader,
 													fragmentShader,
 													vertexInputComponents,
 													vertexInputIndices);

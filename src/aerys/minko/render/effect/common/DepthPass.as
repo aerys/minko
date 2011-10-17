@@ -16,8 +16,9 @@ package aerys.minko.render.effect.common
 
 	public class DepthPass implements IEffectPass
 	{
-		protected static var SHADER			: Shader		=
-			Shader.create(new ClipspacePosition(), new PackedDepth());
+		protected static var SHADER			: Shader		= Shader.create("depth pass",
+																			new ClipspacePosition(),
+																			new PackedDepth());
 
 		protected var _priority				: Number		= 0.;
 		protected var _renderTarget			: RenderTarget	= null;
@@ -25,8 +26,8 @@ package aerys.minko.render.effect.common
 		public function DepthPass(priority		: Number		= 0,
 								  renderTarget	: RenderTarget	= null)
 		{
-			_priority			= priority;
-			_renderTarget		= renderTarget;
+			_priority		= priority;
+			_renderTarget	= renderTarget;
 		}
 
 		public function fillRenderState(state			: RendererState,

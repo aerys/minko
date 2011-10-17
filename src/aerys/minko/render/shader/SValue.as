@@ -72,31 +72,7 @@ package aerys.minko.render.shader
 	public dynamic final class SValue extends Proxy
 	{
 		internal var _node	: INode	= null;
-
-		/*public final function get length() : SValue
-		{
-			if (_node.size == 2)
-			{
-				var x : INode = new Extract(_node, Components.X);
-				var y : INode = new Extract(_node, Components.Y);
-
-				return new SValue(
-					new SquareRoot(
-						new Add(
-							new Multiply(x, x),
-							new Multiply(y, y)
-						)
-					)
-				);
-			}
-			else if (_node.size == 3)
-				return new SValue(new SquareRoot(new DotProduct3(_node, _node)));
-			else if (_node.size == 4)
-				return new SValue(new SquareRoot(new DotProduct4(_node, _node)));
-
-			throw new Error("Unable to get the length of a value with size > 4.");
-		}*/
-
+		
 		public function SValue(value : Object)
 		{
 			_node = getNode(value);

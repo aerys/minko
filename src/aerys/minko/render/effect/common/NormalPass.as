@@ -18,7 +18,8 @@ package aerys.minko.render.effect.common
 
 	public class NormalPass implements IEffectPass
 	{
-		protected static const SHADER : Shader = Shader.create(new ClipspacePosition(),
+		protected static const SHADER : Shader = Shader.create("normal pass",
+															   new ClipspacePosition(),
 															   new WorldNormal().interpolated);
 
 		protected var _priority		: Number;
