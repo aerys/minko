@@ -14,9 +14,11 @@ package aerys.minko.scene.node.group
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;
 	import flash.display.MovieClip;
+	import flash.errors.IOError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
@@ -120,6 +122,8 @@ package aerys.minko.scene.node.group
 														  loaderEventHandler);
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 														  loaderCompleteHandler);
+				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR,
+														  ioErrorHandler);
 				loader.load(request);
 				
 				loaderObject = loader;
@@ -139,6 +143,7 @@ package aerys.minko.scene.node.group
 				urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
 				urlLoader.addEventListener(ProgressEvent.PROGRESS, loaderEventHandler);
 				urlLoader.addEventListener(Event.COMPLETE, urlLoaderCompleteHandler);
+				urlLoader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 				urlLoader.load(request);
 				
 				loaderObject = urlLoader;
@@ -177,6 +182,7 @@ package aerys.minko.scene.node.group
 			var loader 	: Loader 	= new Loader();
 
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loaderCompleteHandler);
+			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
 			loader.loadBytes(bytes);
 			
 			_positions[loader] = _total - 1;
@@ -199,6 +205,8 @@ package aerys.minko.scene.node.group
 
 					contentLoader.contentLoaderInfo.addEventListener(ProgressEvent.PROGRESS,
 																	 loaderEventHandler);
+					contentLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR,
+																	 ioErrorHandler);
 					contentLoader.contentLoaderInfo.addEventListener(Event.COMPLETE,
 					function(e : Event) : void
 					{
@@ -231,6 +239,11 @@ package aerys.minko.scene.node.group
 			return this;
 		}
 
+		private function ioErrorHandler(event : IOErrorEvent) : void
+		{
+			dispatchEvent(event.clone());
+		}
+		
 		private function loaderEventHandler(event : Event) : void
 		{
 			dispatchEvent(event.clone());
