@@ -31,6 +31,7 @@ package aerys.minko.scene.node.mesh
 		/**
 		 * IMesh implementation
 		 */
+		
 		public function get version()				: uint					{ return _mesh.version; }
 		public function get vertexStream()			: IVertexStream			{ return _mesh.vertexStream; }
 		public function get indexStream()			: IndexStream			{ return _mesh.indexStream; }

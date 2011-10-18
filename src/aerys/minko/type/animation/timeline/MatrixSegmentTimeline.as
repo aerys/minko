@@ -1,8 +1,11 @@
 package aerys.minko.type.animation.timeline
 {
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.math.Matrix4x4;
 
+	use namespace minko_animation;
+	
 	public class MatrixSegmentTimeline implements ITimeline
 	{
 		private var _targetName		: String;
@@ -13,8 +16,8 @@ package aerys.minko.type.animation.timeline
 		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
-		public function get matrices()		: Vector.<Matrix4x4>	{ return _matrices; }
-		public function get timeTable()		: Vector.<uint>			{ return _timeTable; }
+		minko_animation function get matrices()		: Vector.<Matrix4x4>	{ return _matrices; }
+		minko_animation function get timeTable()		: Vector.<uint>			{ return _timeTable; }
 		
 		
 		public function MatrixSegmentTimeline(targetName 	: String,
