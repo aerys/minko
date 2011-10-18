@@ -13,7 +13,10 @@ package aerys.minko.type.animation.timeline
 		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
-
+		public function get matrices()		: Vector.<Matrix4x4>	{ return _matrices; }
+		public function get timeTable()		: Vector.<uint>			{ return _timeTable; }
+		
+		
 		public function MatrixSegmentTimeline(targetName 	: String,
 											  propertyName	: String,
 											  timeTable 	: Vector.<uint>,

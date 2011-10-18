@@ -12,7 +12,9 @@ package aerys.minko.type.animation.timeline
 		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _deltaTime * (_values.length - 1); }
-
+		public function get deltaTime() 	: uint 		{ return _deltaTime; }
+		public function get values()		: Vector.<Number> { return _values; }
+		
 		public function ScalarLinearRegularTimeline(targetName		: String,
 													propertyName	: String,
 													deltaTime 		: uint,
