@@ -69,7 +69,7 @@ package aerys.minko.scene.node.mesh
 			{
 				_indexStream = new IndexStream(null,
 											   vertexStream.length,
-											   vertexStream.dynamic);
+											   vertexStream.isDynamic);
 			}
 
 			actions[0] = MeshAction.meshAction;

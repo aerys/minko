@@ -97,7 +97,7 @@ package aerys.minko.scene.node.mesh.modifier
 				}
 			}
 
-			return new VertexStream(normals, normalsFormat, vertexStream.dynamic);
+			return new VertexStream(normals, normalsFormat, vertexStream.isDynamic);
 		}
 
 	}

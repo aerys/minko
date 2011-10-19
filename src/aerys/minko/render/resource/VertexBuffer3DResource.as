@@ -44,7 +44,7 @@ package aerys.minko.render.resource
 				_streamVersion = _stream.version;
 				_numVertices = numVertices;
 
-				if (!_stream.dynamic)
+				if (!_stream.isDynamic)
 					_stream.disposeLocalData();
 			}
 

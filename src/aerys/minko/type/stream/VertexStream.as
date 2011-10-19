@@ -28,7 +28,7 @@ package aerys.minko.type.stream
 
 		public function get format()	: VertexFormat				{ return _format; }
 		public function get version()	: uint						{ return _version; }
-		public function get dynamic()	: Boolean					{ return _dynamic; }
+		public function get isDynamic()	: Boolean					{ return _dynamic; }
 		public function get resource()	: VertexBuffer3DResource	{ return _resource; }
 		public function get length()	: uint						{ return _length; }
 
@@ -45,16 +45,16 @@ package aerys.minko.type.stream
 
 		public function VertexStream(data 		: Vector.<Number>	= null,
 									 format		: VertexFormat 		= null,
-									 dynamic	: Boolean			= false)
+									 isDynamic	: Boolean			= false)
 		{
 			super();
 
-			initialize(data, format, dynamic);
+			initialize(data, format, isDynamic);
 		}
 
 		private function initialize(data 	: Vector.<Number>	= null,
 									format	: VertexFormat 		= null,
-									dynamic	: Boolean			= false) : void
+									isDynamic	: Boolean			= false) : void
 		{
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
@@ -63,7 +63,7 @@ package aerys.minko.type.stream
 				throw new Error("Incompatible vertex format: the data length does not match.");
 
 			_data = data ? data.concat() : new Vector.<Number>();
-			_dynamic = dynamic;
+			_dynamic = isDynamic;
 
 			invalidate();
 		}
@@ -132,7 +132,7 @@ package aerys.minko.type.stream
 
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
 												   uvs		 	: Vector.<Number> 	= null,
-												   dynamic		: Boolean			= false) : VertexStream
+												   isDynamic		: Boolean			= false) : VertexStream
 		{
 			var numVertices : int 				= positions.length / 3;
 			var stride 		: int 				= uvs ? 5 : 3;
@@ -155,7 +155,7 @@ package aerys.minko.type.stream
 
 			return new VertexStream(data,
 									uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ,
-									dynamic);
+									isDynamic);
 		}
 
 		public static function extractSubStream(source			: IVertexStream,
@@ -236,7 +236,7 @@ package aerys.minko.type.stream
 											 count		: int,
 											 formatIn	: VertexFormat,
 											 formatOut	: VertexFormat	= null,
-											 dynamic	: Boolean		= false,
+											 isDynamic	: Boolean		= false,
 											 reader 	: Function 		= null,
 											 dwordSize	: uint			= 4) : VertexStream
 		{
@@ -245,7 +245,7 @@ package aerys.minko.type.stream
 
 			var dataLength		: int						= 0;
 			var data			: Vector.<Number>			= null;
-			var stream			: VertexStream				= new VertexStream(null, formatOut, dynamic);
+			var stream			: VertexStream				= new VertexStream(null, formatOut, isDynamic);
 			var start			: int						= bytes.position;
 			var componentsOut	: Vector.<VertexComponent>	= formatOut.components;
 			var numComponents	: int						= componentsOut.length;
