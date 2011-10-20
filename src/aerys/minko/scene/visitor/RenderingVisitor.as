@@ -16,7 +16,7 @@ package aerys.minko.scene.visitor
 		protected var _renderer			: IRenderer;
 		protected var _numNodes			: uint;
 
-		protected var _transformData		: TransformData;
+		protected var _transformData	: TransformData;
 		protected var _worldData		: Dictionary;
 		protected var _renderingData	: RenderingData;
 
@@ -24,7 +24,7 @@ package aerys.minko.scene.visitor
 		protected var _current			: IScene			= null;
 		protected var _ancestors		: Vector.<IScene>	= new Vector.<IScene>();
 
-		public function get transformData()		: TransformData			{ return _transformData; }
+		public function get transformData()	: TransformData		{ return _transformData; }
 		public function get worldData()		: Dictionary		{ return _worldData; }
 		public function get renderingData()	: RenderingData		{ return _renderingData; }
 		public function get ancestors()		: Vector.<IScene>	{ return _ancestors; }

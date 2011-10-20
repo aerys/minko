@@ -34,7 +34,7 @@ package aerys.minko.scene.node.group
 			_textures.dispatchEvent(new Event(Event.ADDED));
 		}
 
-		public function MaterialGroup(effect : IRenderingEffect, ...textures)
+		public function MaterialGroup(effect : IRenderingEffect = null, ...textures)
 		{
 			super();
 

@@ -22,10 +22,7 @@ package aerys.minko.scene.action.transform
 
 		public function run(scene : IScene, visitor : ISceneVisitor, renderer : IRenderer) : Boolean
 		{
-			var transformable : ITransformableScene = scene as ITransformableScene;
-
-			if (!transformable)
-				throw new Error("TransformAction can only be applied to ITransformable nodes.");
+			var transformable : ITransformableScene = ITransformableScene(scene);
 
 			visitor.transformData.world.push()
 							 	 .prepend(transformable.transform);
