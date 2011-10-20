@@ -6,7 +6,8 @@ package aerys.minko.scene.node.group
 	import aerys.minko.scene.action.effect.PushEffectAction;
 	import aerys.minko.scene.action.group.MaterialGroupAction;
 	import aerys.minko.scene.node.IEffectScene;
-
+	import aerys.minko.scene.node.IScene;
+	
 	import flash.events.Event;
 
 	public dynamic class MaterialGroup extends StyleGroup implements IEffectScene
@@ -49,6 +50,28 @@ package aerys.minko.scene.node.group
 			actions.unshift(new PushEffectAction(),
 							MaterialGroupAction.materialGroupAction);
 			actions.push(new PopEffectAction());
+		}
+		
+		override public function getDescendantByName(name : String) : IScene
+		{
+			var descendant 	: IScene	= null;
+			
+			if (_textures)
+				descendant = _textures.getDescendantByName(name);
+			
+			if (!descendant)
+				descendant = super.getDescendantByName(name);
+			
+			return descendant;
+		}
+		
+		override public function getDescendantsByType(type 			: Class,
+													  descendants 	: Vector.<IScene> = null) : Vector.<IScene>
+		{
+			if (_textures)
+				_textures.getDescendantsByType(type, descendants);
+			
+			return super.getDescendantsByType(type, descendants);
 		}
 	}
 }
