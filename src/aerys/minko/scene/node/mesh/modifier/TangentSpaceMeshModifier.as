@@ -183,7 +183,7 @@ package aerys.minko.scene.node.mesh.modifier
 			if (withNormals)
 				format.addComponent(VertexComponent.NORMAL);
 
-			return new VertexStream(data, format, xyzStream.dynamic);
+			return new VertexStream(data, format, xyzStream.isDynamic);
 		}
 	}
 }

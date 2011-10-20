@@ -20,7 +20,7 @@ package aerys.minko.type.stream
 		private var _length		: uint					= 0;
 
 		public function get version() 	: uint					{ return _version; }
-		public function get dynamic()	: Boolean				{ return _dynamic; }
+		public function get isDynamic()	: Boolean				{ return _dynamic; }
 		public function get resource()	: IndexBuffer3DResource	{ return _resource; }
 		public function get length()	: uint					{ return _length; }
 
@@ -57,11 +57,11 @@ package aerys.minko.type.stream
 
 		public function IndexStream(data 	: Vector.<uint> = null,
 									length	: uint			= 0,
-									dynamic	: Boolean		= false)
+									isDynamic	: Boolean		= false)
 		{
 			super();
 
-			initialize(data, length, dynamic);
+			initialize(data, length, isDynamic);
 		}
 
 		minko_stream function invalidate() : void
@@ -71,9 +71,9 @@ package aerys.minko.type.stream
 
 		private function initialize(indices : Vector.<uint>,
 									length 	: uint,
-									dynamic	: Boolean) : void
+									isDynamic	: Boolean) : void
 		{
-			_dynamic = dynamic;
+			_dynamic = isDynamic;
 			_resource = new IndexBuffer3DResource(this);
 
 			if (indices)

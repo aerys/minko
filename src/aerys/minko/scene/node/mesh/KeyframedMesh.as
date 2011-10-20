@@ -61,7 +61,7 @@ package aerys.minko.scene.node.mesh
 			actions[0]		= KeyframedMeshAction.keyframedMeshAction;
 
 			if (!_indexStream)
-				_indexStream = new IndexStream(null, _vertexStreams[0].length, _vertexStreams[0].dynamic);
+				_indexStream = new IndexStream(null, _vertexStreams[0].length, _vertexStreams[0].isDynamic);
 		}
 
 	}

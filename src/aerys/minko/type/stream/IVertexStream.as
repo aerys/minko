@@ -9,7 +9,7 @@ package aerys.minko.type.stream
 	{
 		function get format() 			: VertexFormat;
 		function get length()			: uint;
-		function get dynamic()			: Boolean;
+		function get isDynamic()			: Boolean;
 
 		function deleteVertexByIndex(index : uint) : Boolean;
 		function getSubStreamByComponent(component : VertexComponent) : VertexStream;

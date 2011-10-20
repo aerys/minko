@@ -16,7 +16,7 @@ package aerys.minko.type.stream
 		private var _dynamic		: Boolean				= false;
 
 		public function get version()		: uint 				{ return _version; }
-		public function get dynamic()		: Boolean 			{ return _dynamic; }
+		public function get isDynamic()		: Boolean 			{ return _dynamic; }
 		public function get format()		: VertexFormat		{ return _format; }
 		public function get numStreams()	: uint				{ return _streams.length; }
 
