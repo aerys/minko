@@ -220,7 +220,22 @@ package aerys.minko.type.math
 
 			return this;
 		}
-
+		
+		public function mirror(direction : Vector4) : Vector4
+		{
+			// double projection onto direction
+			var d : Number = 2 * Vector4.dotProduct (this, direction) / direction.length;
+			
+			_vector.x -= direction.x * d;
+			_vector.y -= direction.y * d;
+			_vector.z -= direction.z * d;
+			
+			++_version;
+			_update = UPDATE_NONE;
+			
+			return this;
+		}
+		
 		public function crossProduct(vector : Vector4) : Vector4
 		{
 			var x : Number = _vector.x;
