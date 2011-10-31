@@ -4,7 +4,7 @@ package aerys.minko.scene.node.texture
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.scene.action.texture.TextureAction;
 	import aerys.minko.scene.node.AbstractScene;
-
+	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
@@ -29,7 +29,9 @@ package aerys.minko.scene.node.texture
 		public function get version()		: uint				{ return _version;		}
 		public function get styleProperty() : int				{ return _styleProp;	}
 		public function get resource()		: Texture3DResource	{ return _resource;		}
-
+		public function get mipmapping()	: Boolean			{ return _mipmapping;	}
+		protected function get data() 			: BitmapData		{ return _data;			}
+		
 		protected function get bitmapData()	: BitmapData
 		{
 			return _data;
