@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.texture
 {
+	import aerys.minko.ns.minko;
 	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.resource.Texture3DResource;
 	import aerys.minko.scene.action.texture.TextureAction;
@@ -16,6 +17,9 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
+	
+	use namespace minko;
+	
 	public class BitmapTexture extends AbstractScene implements ITexture
 	{
 		private static const TMP_MATRIX : Matrix = new Matrix();
@@ -30,7 +34,7 @@ package aerys.minko.scene.node.texture
 		public function get styleProperty() : int				{ return _styleProp;	}
 		public function get resource()		: Texture3DResource	{ return _resource;		}
 		public function get mipmapping()	: Boolean			{ return _mipmapping;	}
-		protected function get data() 			: BitmapData		{ return _data;			}
+		minko function get data() 			: BitmapData		{ return _data;			}
 		
 		protected function get bitmapData()	: BitmapData
 		{
