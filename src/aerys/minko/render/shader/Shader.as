@@ -254,6 +254,16 @@ package aerys.minko.render.shader
 			{
 				(data as Matrix4x4).getRawData(constData, offset, true);
 			}
+			else if (data is Vector.<Number>)
+			{
+				var vectorNumberData		: Vector.<Number>	= data as Vector.<Number>;
+				var vectorNumberDatalength	: uint				= vectorNumberData.length;
+				
+				for (var k : int = 0; k < size; ++k)
+				{
+					constData[offset + k] = vectorNumberData[k];
+				}
+			}
 			else if (data is Vector.<Vector4>)
 			{
 				var vectorVectorData		: Vector.<Vector4>	= data as Vector.<Vector4>;
