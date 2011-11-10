@@ -6,7 +6,7 @@ package aerys.minko.type.stream
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
 	import aerys.minko.type.stream.format.VertexFormat;
-
+	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
@@ -232,16 +232,15 @@ package aerys.minko.type.stream
 			return stream;
 		}
 
-		public static function fromByteArray(bytes 		: ByteArray,
-											 count		: int,
-											 formatIn	: VertexFormat,
-											 formatOut	: VertexFormat	= null,
-											 isDynamic	: Boolean		= false,
-											 reader 	: Function 		= null,
-											 dwordSize	: uint			= 4) : VertexStream
+		public static function fromByteArray(bytes 			: ByteArray,
+											 count			: int,
+											 formatIn		: VertexFormat,
+											 formatOut		: VertexFormat	= null,
+											 isDynamic		: Boolean		= false,
+											 functionReader : Dictionary	= null,
+											 dwordSize		: uint			= 4) : VertexStream
 		{
 			formatOut ||= formatIn;
-			reader ||= bytes.readFloat;
 
 			var dataLength		: int						= 0;
 			var data			: Vector.<Number>			= null;
@@ -261,7 +260,16 @@ package aerys.minko.type.stream
 				{
 					bytes.position = start + formatIn.dwordsPerVertex * vertexId * dwordSize
 									+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
-
+					
+					var reader : Function = null;
+					
+					if (functionReader[componentsOut[componentId].nativeFormatString])
+						reader = functionReader[componentsOut[componentId].nativeFormatString];
+					else if (functionReader["defaut"])
+						reader = functionReader["defaut"];
+					else
+						reader = bytes.readFloat;
+					
 					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
