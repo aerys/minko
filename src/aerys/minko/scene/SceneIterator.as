@@ -7,7 +7,7 @@ package aerys.minko.scene
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
-	public class SceneIterator extends Proxy
+	public dynamic class SceneIterator extends Proxy
 	{
 		use namespace minko;
 

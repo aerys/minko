@@ -1,13 +1,15 @@
 package aerys.minko.render.shader.node.operation.manipulation
 {
 	import aerys.minko.render.shader.node.Components;
+	import aerys.minko.render.shader.node.IFragmentNode;
 	import aerys.minko.render.shader.node.INode;
+	import aerys.minko.render.shader.node.IVertexNode;
 	import aerys.minko.render.shader.node.leaf.AbstractConstant;
 	import aerys.minko.render.shader.node.leaf.Constant;
 	import aerys.minko.render.shader.node.operation.AbstractOperation;
 	import aerys.minko.render.shader.node.operation.builtin.Multiply;
 
-	public class VariadicExtract extends AbstractOperation
+	public class VariadicExtract extends AbstractOperation implements IVertexNode
 	{
 		private var _cellSize : uint;
 
@@ -26,6 +28,11 @@ package aerys.minko.render.shader.node.operation.manipulation
 			return _cellSize;
 		}
 
+		public function get interpolated() : INode
+		{
+			return new Interpolate(this);
+		}
+		
 		public function VariadicExtract(index		: INode,
 										table		: AbstractConstant,
 										cellSize	: uint)
@@ -36,7 +43,6 @@ package aerys.minko.render.shader.node.operation.manipulation
 			if (cellSize != 4)
 			{
 				leftOperand = new Multiply(leftOperand, new Constant(cellSize / 4));
-
 			}
 			// the following is a patch to adobe's agal validator.
 			// we have to fill a complete register for the index to work

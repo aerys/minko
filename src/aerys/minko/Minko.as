@@ -10,7 +10,7 @@ package aerys.minko
 
 	public class Minko
 	{
-		public static const VERSION	: String		= "1.0 beta";
+		public static const VERSION	: String		= "1.1 beta";
 		public static const URL		: String		= "http://aerys.in/minko";
 
 		private static var _logger		: ILogger	= null;
