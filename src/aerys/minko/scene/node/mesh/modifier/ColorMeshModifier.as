@@ -29,9 +29,9 @@ package aerys.minko.scene.node.mesh.modifier
 		private function getColorStream(target : IMesh, withAlpha : Boolean) : VertexStream
 		{
 			var numVertices	: int				= target.vertexStream.length;
-			var colors 		: Vector.<Number> 	= new Vector.<Number>(numVertices * 3, true);
-			var ii			: int				= 0;
 			var size		: int				= withAlpha ? 4 : 3;
+			var colors 		: Vector.<Number> 	= new Vector.<Number>(numVertices * size, true);
+			var ii			: int				= 0;
 
 			for (var i : int = 0; i < numVertices; ++i)
 			{
