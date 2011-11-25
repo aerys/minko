@@ -639,7 +639,7 @@ package aerys.minko.render
 				_numTriangles = 0;
 				_drawingTime = 0;
 			}
-
+						
 			Factory.sweep();
 		}
 

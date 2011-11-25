@@ -4,7 +4,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.effect.Style;
 	import aerys.minko.render.renderer.RendererState;
 	import aerys.minko.render.resource.Program3DResource;
-	import aerys.minko.render.resource.Texture3DResource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.allocator.ParameterAllocation;
 	import aerys.minko.render.shader.node.INode;
@@ -115,14 +115,14 @@ package aerys.minko.render.shader
 								   	   transformData	: TransformData,
 									   worldData		: Object) : void
 		{
-			var texture 		: Texture3DResource	= null;
+			var texture 		: TextureResource	= null;
 			var samplerStyleId 	: int				= 0;
 			var samplerCount 	: uint 				= _samplers.length;
 
 			for (var i : int = 0; i < samplerCount; ++i)
 			{
 				samplerStyleId	= _samplers[i];
-				texture			= styleData.get(samplerStyleId) as Texture3DResource;
+				texture			= styleData.get(samplerStyleId) as TextureResource;
 
 				if (!texture)
 				{

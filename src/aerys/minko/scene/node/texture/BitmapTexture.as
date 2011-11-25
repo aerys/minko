@@ -1,11 +1,5 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.resource.Texture3DResource;
-	import aerys.minko.scene.action.texture.TextureAction;
-	import aerys.minko.scene.node.AbstractScene;
-	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
@@ -17,33 +11,16 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	
-	use namespace minko;
-	
-	public class BitmapTexture extends AbstractScene implements ITexture
+	public class BitmapTexture extends Texture
 	{
 		private static const TMP_MATRIX : Matrix = new Matrix();
 
-		private var _version	: uint				= 0;
-		private var _data		: BitmapData		= null;
-		private var _mipmapping	: Boolean			= false;
-		private var _styleProp	: int				= -1;
-		private var _resource	: Texture3DResource	= new Texture3DResource();
+		private var _data		: BitmapData	= null;
+		private var _mipmapping	: Boolean		= false;
 
-		public function get version()		: uint				{ return _version;		}
-		public function get styleProperty() : int				{ return _styleProp;	}
-		public function get resource()		: Texture3DResource	{ return _resource;		}
-		public function get mipmapping()	: Boolean			{ return _mipmapping;	}
-		minko function get data() 			: BitmapData		{ return _data;			}
-		
 		protected function get bitmapData()	: BitmapData
 		{
 			return _data;
-		}
-
-		public function set styleProperty(value : int) : void
-		{
-			_styleProp = value;
 		}
 
 		public function updateFromBitmapData(value 		: BitmapData,
@@ -69,7 +46,11 @@ package aerys.minko.scene.node.texture
 			if (!_data || _data.width != w || _data.height != h)
 			{
 				if (_data)
+				{
 					_data.dispose();
+					_data = null;
+				}
+				
 				_data = new BitmapData(w, h, value.transparent, 0);
 			}
 
@@ -84,22 +65,20 @@ package aerys.minko.scene.node.texture
 				_data.draw(value, null, null, null, null, smooth);
 			}
 
-			++_version;
-
-			_resource.setContentFromBitmapData(_data, _mipmapping);
+			resource.setContentFromBitmapData(_data, _mipmapping);
+			_data = null;
 		}
 
 		public function BitmapTexture(bitmapData 	: BitmapData 	= null,
 									  mipmapping	: Boolean		= true,
 									  styleProp		: int			= -1)
 		{
+			super(null, styleProp);
+			
 			_mipmapping	= mipmapping;
-			_styleProp	= styleProp != -1 ? styleProp : BasicStyle.DIFFUSE;
 
 			if (bitmapData)
 				updateFromBitmapData(bitmapData);
-
-			actions[0] = TextureAction.textureAction;
 		}
 
 		public static function fromDisplayObject(source : DisplayObject,

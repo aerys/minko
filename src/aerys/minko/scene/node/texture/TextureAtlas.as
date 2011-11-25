@@ -1,43 +1,26 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.render.effect.basic.BasicStyle;
-	import aerys.minko.render.resource.Texture3DResource;
-	import aerys.minko.scene.action.texture.TextureAction;
-	import aerys.minko.scene.node.AbstractScene;
-
 	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
 
-	public class TextureAtlas extends AbstractScene implements ITexture
+	public class TextureAtlas extends Texture
 	{
-		private var _version		: uint				= 0;
 		private var _bitmapData		: BitmapData		= null;
 		private var _size			: uint				= 0;
 		private var _nodes			: Array				= new Array();
 		private var _empty			: Array				= new Array();
-		private var _resource		: Texture3DResource	= new Texture3DResource();
-		private var _styleProperty	: int				= 0;
 
-		public function get styleProperty() : int				{ return _styleProperty; }
-		public function get resource() 	: Texture3DResource	{ return _resource; }
-		public function get version() 		: uint				{ return _version; }
-		public function get size() 			: uint				{ return _bitmapData.width; }
-
-		public function set styleProperty(value : int) : void
-		{
-			_styleProperty = value;
-		}
+		public function get size() 	: uint	{ return _bitmapData.width; }
 
 		public function TextureAtlas(size 				: uint 		= 2048,
 									 transparent 		: Boolean 	= true,
 									 backgroundColor 	: uint 		= 0x000000)
 		{
+			super();
+			
 			_size = size;
 			_nodes[0] = new Rectangle(0, 0, _size, _size);
-			_styleProperty = BasicStyle.DIFFUSE;
 			_bitmapData = new BitmapData(_size, _size, transparent, backgroundColor);
-
-			actions.push(new TextureAction());
 		}
 
 		public function addBitmapData(bitmapData : BitmapData) : Rectangle
@@ -45,7 +28,7 @@ package aerys.minko.scene.node.texture
 			var rectangle : Rectangle	= getRectangle(bitmapData.width, bitmapData.height);
 
 			_bitmapData.copyPixels(bitmapData, bitmapData.rect, rectangle.topLeft);
-			_resource.setContentFromBitmapData(_bitmapData, true);
+			resource.setContentFromBitmapData(_bitmapData, true);
 
 			return rectangle.clone();
 		}

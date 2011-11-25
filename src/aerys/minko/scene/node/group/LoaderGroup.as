@@ -264,6 +264,13 @@ package aerys.minko.scene.node.group
 
 			parser.parse(loader.data as ByteArray, options);
 		}
+		
+		override public function addChildAt(scene:IScene, position:uint):IGroup
+		{
+			addLoadedContentAt(scene, position);
+			
+			return this;
+		}
 
 		private function loaderCompleteHandler(event : Event) : void
 		{

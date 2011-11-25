@@ -1,6 +1,6 @@
 package aerys.minko.scene.node.texture
 {
-	import aerys.minko.render.resource.Texture3DResource;
+	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.texture.AnimatedTextureAction;
 	import aerys.minko.scene.node.group.Group;
 
@@ -43,7 +43,7 @@ package aerys.minko.scene.node.texture
 		/**
 		 * @todo implement
 		 */
-		public function get resource() : Texture3DResource
+		public function get resource() : TextureResource
 		{
 			return currentFrameTexture.resource;
 		}

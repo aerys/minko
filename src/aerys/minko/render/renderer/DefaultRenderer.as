@@ -87,7 +87,7 @@ package aerys.minko.render.renderer
 
 			if (_numStates != 0)
 				_context.present();
-
+			
 			_drawingTime += getTimer() - time;
 			++_frame;
 		}
