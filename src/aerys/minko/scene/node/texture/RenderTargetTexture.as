@@ -12,9 +12,9 @@ package aerys.minko.scene.node.texture
 		}
 		
 		public function RenderTargetTexture(width 			: int,
-								   height 			: int,
-								   backGroundColor	: uint	= 0,
-								   styleProperty 	: int 	= 0)
+											height 			: int,
+											backGroundColor	: uint	= 0,
+											styleProperty 	: int 	= -1)
 		{
 			_renderTarget = new RenderTarget(RenderTarget.TEXTURE, width, height, backGroundColor);
 			

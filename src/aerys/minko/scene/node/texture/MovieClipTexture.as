@@ -43,7 +43,8 @@ package aerys.minko.scene.node.texture
 			}
 		}
 
-		public function MovieClipTexture(source : MovieClip = null)
+		public function MovieClipTexture(source 		: MovieClip = null,
+										 styleProperty	: int	= -1)
 		{
 			super();
 

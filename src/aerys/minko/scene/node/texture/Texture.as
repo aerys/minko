@@ -33,7 +33,7 @@ package aerys.minko.scene.node.texture
 		}
 		
 		public function Texture(resource 		: TextureResource	= null,
-								styleProperty	: int				= 0)
+								styleProperty	: int				= -1)
 		{
 			_resource = resource || new TextureResource();
 			_styleProperty = styleProperty != -1 ? styleProperty : BasicStyle.DIFFUSE;

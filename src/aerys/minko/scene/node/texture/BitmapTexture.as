@@ -71,9 +71,9 @@ package aerys.minko.scene.node.texture
 
 		public function BitmapTexture(bitmapData 	: BitmapData 	= null,
 									  mipmapping	: Boolean		= true,
-									  styleProp		: int			= -1)
+									  styleProperty	: int			= -1)
 		{
-			super(null, styleProp);
+			super(null, styleProperty);
 			
 			_mipmapping	= mipmapping;
 

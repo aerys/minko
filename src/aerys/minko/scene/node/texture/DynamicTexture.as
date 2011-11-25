@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.texture
 {
 	import aerys.minko.scene.action.texture.DynamicTextureAction;
-
+	
 	import flash.display.DisplayObject;
 
 	/**
@@ -26,10 +26,11 @@ package aerys.minko.scene.node.texture
 
 		public function get source() : DisplayObject	{ return _source; }
 
-		public function DynamicTexture(source 		: DisplayObject,
-									   mipmapping	: Boolean	= true)
+		public function DynamicTexture(source 			: DisplayObject,
+									   mipmapping		: Boolean	= true,
+									   styleProperty	: int		= -1)
 		{
-			super(null, mipmapping);
+			super(null, mipmapping, styleProperty);
 
 			_source = source;
 

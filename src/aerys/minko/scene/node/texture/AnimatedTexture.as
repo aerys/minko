@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.texture
 {
+	import aerys.minko.render.effect.basic.BasicStyle;
 	import aerys.minko.render.resource.TextureResource;
 	import aerys.minko.scene.action.texture.AnimatedTextureAction;
 	import aerys.minko.scene.node.group.Group;
@@ -30,11 +31,13 @@ package aerys.minko.scene.node.texture
 			_stypeProp = value;
 		}
 
-		public function AnimatedTexture(framerate : Number = DEFAULT_FRAMERATE)
+		public function AnimatedTexture(framerate 		: Number 	= DEFAULT_FRAMERATE,
+										styleProperty	: int		= -1)
 		{
 			super();
-
+			
 			_framerate = framerate;
+			_stypeProp = styleProperty == -1 ? BasicStyle.DIFFUSE : styleProperty;
 
 			actions.length = 0;
 			actions[0] = new AnimatedTextureAction();
