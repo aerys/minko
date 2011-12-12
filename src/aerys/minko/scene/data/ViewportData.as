@@ -56,7 +56,7 @@ package aerys.minko.scene.data
 
 		public function get renderTarget() : RenderTarget
 		{
-			var viewportHasPostProcess : Boolean = _viewport.postProcessEffect != null;
+			var viewportHasPostProcess : Boolean = _viewport.postProcessingEffect != null;
 			
 			if (!viewportHasPostProcess)
 				return backBufferRenderTarget;

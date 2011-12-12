@@ -1,7 +1,7 @@
 package aerys.minko
 {
 	import aerys.minko.type.log.ILogger;
-
+	
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -10,7 +10,7 @@ package aerys.minko
 
 	public class Minko
 	{
-		public static const VERSION	: String		= "1.1 beta";
+		public static const VERSION	: String		= "1.2 beta";
 		public static const URL		: String		= "http://aerys.in/minko";
 
 		private static var _logger		: ILogger	= null;

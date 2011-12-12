@@ -20,10 +20,6 @@ package aerys.minko.render.resource
 
 		private var _update		: Boolean;
 
-		public function TextureResource()
-		{
-		}
-
 		public function get width() : Number
 		{
 			return _width;
