@@ -1,5 +1,7 @@
 package aerys.minko.scene.node.texture
 {
+	import aerys.minko.ns.minko;
+	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
@@ -11,16 +13,24 @@ package aerys.minko.scene.node.texture
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
+	
+	use namespace minko;
+	
 	public class BitmapTexture extends Texture
 	{
 		private static const TMP_MATRIX : Matrix = new Matrix();
 
-		private var _data		: BitmapData	= null;
+		minko var _data		: BitmapData	= null;
 		private var _mipmapping	: Boolean		= false;
 
 		protected function get bitmapData()	: BitmapData
 		{
 			return _data;
+		}
+		
+		public function get mipmapping():Boolean
+		{
+			return _mipmapping;
 		}
 
 		public function updateFromBitmapData(value 		: BitmapData,
@@ -100,5 +110,7 @@ package aerys.minko.scene.node.texture
 
 			return new BitmapTexture(bmp);
 		}
+
+
 	}
 }
