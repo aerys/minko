@@ -32,8 +32,8 @@ The detailed list is available on [our website](http://aerys.in/minko/features).
 Documentation
 -------------
 
-* [Tutorials](hub.aerys.in/minko/v1/tutorials)
-* [Technical articles](hub.aerys.in/minko/v1/articles)
+* [Tutorials](http://hub.aerys.in/minko/v1/tutorials)
+* [Technical articles](http://hub.aerys.in/minko/v1/articles)
 
 Contribute
 ----------
