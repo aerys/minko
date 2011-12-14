@@ -4,7 +4,7 @@ package aerys.minko.type.stream.iterator
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.format.VertexComponent;
-
+	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
@@ -130,6 +130,17 @@ package aerys.minko.type.stream.iterator
 			}
 
 			return vertex;
+		}
+		
+		override flash_proxy function setProperty(name : *, value : *) : void
+		{
+			var ref			: VertexReference			= flash_proxy::getProperty(int(name));
+			var obj 		: Object 					= Object(value);
+			var components	: Vector.<VertexComponent>	= _vstream.format.components;
+			
+			for each (var component : VertexComponent in components)
+				for each (var field : String in component.fields)
+					ref[field] = Number(obj[field]);
 		}
 
 		override flash_proxy function deleteProperty(name : *) : Boolean

@@ -209,6 +209,7 @@ package aerys.minko.type.math
 		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
 		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
 
+		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 		private static const TMP_DATA			: Vector.<Number>	= new Vector.<Number>();
 
 		private static const THICKNESS			: Number			= 0.01;
@@ -290,11 +291,11 @@ package aerys.minko.type.math
 								   mask			: int 			= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
-			var p 		: Plane	= null;
+			var p 		: Plane		= null;
 			var d		: Number	= 0.;
 
 			if (transform)
-				vector = transform.transformVector(vector);
+				vector = transform.transformVector(vector, TMP_VECTOR4);
 
 			for (var i : int = 0; i < 6; ++i)
 			{
@@ -336,7 +337,7 @@ package aerys.minko.type.math
 			{
 				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
 
-				center = transform.transformVector(sphere.center);
+				center = transform.transformVector(sphere.center, TMP_VECTOR4);
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
 			}
 
@@ -530,7 +531,7 @@ package aerys.minko.type.math
 				var scale	: Vector4	= transform.deltaTransformVector(ConstVector4.ONE);
 
 				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
-				center = transform.transformVector(center);
+				center = transform.transformVector(center, TMP_VECTOR4);
 			}
 
 			for (var i : int = 0; i < 6; i++)
@@ -608,12 +609,12 @@ package aerys.minko.type.math
 			var d15	: Number = -(l.d - r.d) / 2;
 			
 			out ||= new Matrix4x4();
-			out.setRawData(Vector.<Number>([ 
+			out.initialize( 
 				d0,		d1, 	d2, 	d3,
 				d4, 	d5, 	d6, 	d7,
 				d8, 	d9, 	d10, 	d11,
 				d12,	d13,	d14,	d15
-			]));
+			);
 
 			return out;
 		}

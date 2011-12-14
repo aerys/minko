@@ -4,6 +4,7 @@ package aerys.minko.type.stream.format
 	{
 		private static const INSTANCIATED_COMPONENTS	: Object = new Object();
 
+		public static const XY			: VertexComponent 	= create(["x", "y"], VertexComponentType.FLOAT_2);
 		public static const XYZ			: VertexComponent 	= create(["x", "y", "z"], VertexComponentType.FLOAT_3);
 		public static const UV			: VertexComponent 	= create(["u", "v"], VertexComponentType.FLOAT_2);
 		public static const RGB			: VertexComponent 	= create(["r", "g", "b"], VertexComponentType.FLOAT_3);

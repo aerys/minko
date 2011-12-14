@@ -18,7 +18,8 @@ package aerys.minko.type.math
 		private static const DEG2RAD			: Number			= Math.PI / 180.;
 		private static const EPSILON			: Number			= 1e-100;
 
-		private static const TMP_VECTOR			: Vector.<Number>	= new Vector.<Number>();
+		private static const TMP_NUMBERS_IN		: Vector.<Number>	= new Vector.<Number>();
+		private static const TMP_NUMBERS_OUT	: Vector.<Number>	= new Vector.<Number>();
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
 		
@@ -86,13 +87,13 @@ package aerys.minko.type.math
 								   m31 : Number, m32 : Number, m33 : Number, m34 : Number,
 								   m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
 		{
-			TMP_VECTOR.length = 0;
-			TMP_VECTOR.push(m11, m12, m13, m14,
+			TMP_NUMBERS_IN.length = 0;
+			TMP_NUMBERS_IN.push(m11, m12, m13, m14,
 							m21, m22, m23, m24,
 							m31, m32, m33, m34,
 							m41, m42, m43, m44);
 
-			_matrix.copyRawDataFrom(TMP_VECTOR);
+			_matrix.copyRawDataFrom(TMP_NUMBERS_IN);
 		}
 		
 		public function push() : Matrix4x4
@@ -214,10 +215,17 @@ package aerys.minko.type.math
 		public function transformVector(input 	: Vector4,
 									    output	: Vector4	= null) : Vector4
 		{
-			var v : Vector3D = _matrix.transformVector(input._vector);
+			var vin : Vector3D = input._vector;
+			
+			TMP_NUMBERS_IN[0] = vin.x;
+			TMP_NUMBERS_IN[1] = vin.y;
+			TMP_NUMBERS_IN[2] = vin.z;
+			TMP_NUMBERS_IN.length = 3;
+			
+			_matrix.transformVectors(TMP_NUMBERS_IN, TMP_NUMBERS_OUT);
 
 			output ||= new Vector4();
-			output.set(v.x, v.y, v.z, v.w);
+			output.set(TMP_NUMBERS_OUT[0], TMP_NUMBERS_OUT[1], TMP_NUMBERS_OUT[2], vin.w);
 
 			return output;
 		}
@@ -414,7 +422,7 @@ package aerys.minko.type.math
 		public function toDualQuaternion(n : Vector4,
 										 d : Vector4) : void
 		{
-			var m : Vector.<Number> = TMP_VECTOR
+			var m : Vector.<Number> = TMP_NUMBERS_IN
 			_matrix.copyRawDataTo(m, 0, true);
 
 			var mTrace	: Number = m[0] + m[5] + m[10];

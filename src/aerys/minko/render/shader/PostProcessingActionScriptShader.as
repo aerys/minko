@@ -36,6 +36,25 @@ package aerys.minko.render.shader
 	{
 		public static const BACKBUFFER_STYLE_ID	: int	= Style.getStyleId("post processing backbuffer");
 		
+		public function PostProcessingActionScriptShader(name : String = null)
+		{
+			super(name);
+		}
+		
+		protected final function sampleBackBuffer(uv 			: Object,
+												  filtering		: uint	= 1,
+												  mipMapping	: uint	= 2,
+												  wrapping		: uint	= 1) : SValue
+		{
+			return sampleTexture(
+				BACKBUFFER_STYLE_ID,
+				uv,
+				filtering,
+				mipMapping,
+				wrapping
+			);
+		}
+		
 		/**
 		 * Returns the clipspace vertex position without modifications because
 		 * this is what most of post-processing shaders will do. The method
@@ -51,9 +70,7 @@ package aerys.minko.render.shader
 		
 		override protected function getOutputColor() : SValue
 		{
-			var pixelColor : SValue = sampleTexture(BACKBUFFER_STYLE_ID, interpolate(vertexUV));
-			
-			return getFinalColor(pixelColor);
+			return getFinalColor(sampleBackBuffer(interpolate(vertexUV)));
 		}
 		
 		/**

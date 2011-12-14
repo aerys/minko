@@ -54,7 +54,7 @@ package aerys.minko.render.shader.compiler.allocator
 			var alloc : Allocation = _opUsage[op] as Allocation;
 			if (alloc == null)
 			{
-				throw new Error('Unable to compiler shader: an allocation is missing.'
+				throw new Error('Unable to compiler shader: an allocation is missing. '
 								+ 'There might be a missing vertex to fragment shader intepolation.');
 			}
 
@@ -71,7 +71,7 @@ package aerys.minko.render.shader.compiler.allocator
 								 operationId	: uint = 0) : void
 		{
 			if (_opUsage[op])
-				throw new Error('A result was already allocated for this operation');
+				throw new Error('A result was already allocated for this operation.');
 
 			var alloc : Allocation = new Allocation(operationId, op);
 			if (op is IAlignedOperation)
@@ -86,7 +86,7 @@ package aerys.minko.render.shader.compiler.allocator
 									aligned		: Boolean) : void
 		{
 			if (!_opUsage[op])
-				throw new Error('There is no allocated result for operation ' + op.toString());
+				throw new Error('There is no allocated result for operation \'' + op.toString() + '\'.');
 
 			var allocation : Allocation = _opUsage[op] as Allocation;
 			allocation.endId	= operationId;
@@ -130,7 +130,7 @@ package aerys.minko.render.shader.compiler.allocator
 					throw new Error('Unable to allocate: all ' + _maxOffset / 4
 									+ ' registers are full, or too fragmented to allocate '
 									+ alloc.size + ' contiguous ' + (!alloc.aligned ? 'non-' : '')
-									+ 'aligned floats');
+									+ 'aligned floats.');
 				}
 			}
 		}

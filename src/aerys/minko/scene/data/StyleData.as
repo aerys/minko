@@ -25,14 +25,14 @@ package aerys.minko.scene.data
 
 		public final function get(styleId : uint, defaultValue : Object = null) : Object
 		{
-			if (_cache.hasOwnProperty(styleId))
+			if (_cache[styleId] !== undefined)
 				return _cache[styleId];
 
 			for (var i : int = _size - 1; i >= 0; --i)
 			{
 				var data : Array = _data[i];
 
-				if (data.hasOwnProperty(styleId))
+				if (data[styleId] !== undefined)
 				{
 					var item : Object = data[styleId];
 

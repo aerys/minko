@@ -48,7 +48,7 @@ package aerys.minko.scene.action.camera
 
 			worldMatrix.transformVector(camera.position, _worldPosition);
 			worldMatrix.transformVector(camera.lookAt, _worldLookAt);
-			worldMatrix.deltaTransformVector(camera.up, _worldUp);
+			worldMatrix.transformVector(camera.up, _worldUp);
 			_worldUp.normalize()
 
 			/*var viewDirection 	: Vector4 	= Vector4.subtract(_worldLookAt, _worldPosition).normalize();

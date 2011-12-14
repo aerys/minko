@@ -51,7 +51,7 @@ package aerys.minko.render.shader
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
-
+		
 		/**
 		 * The RGB color of the current vertex.
 		 * @return
