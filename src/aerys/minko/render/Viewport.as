@@ -298,24 +298,21 @@ package aerys.minko.render
 		{
 			if (event.target != this)
 				return ;
+
+			stage.align = StageAlign.TOP_LEFT;
+			stage.scaleMode = StageScaleMode.NO_SCALE;
 			
 			if (_autoResize)
 			{
 				parent.addEventListener(Event.RESIZE, resizeHandler);
-				
-				if (parent == stage)
-				{
-					stage.align = StageAlign.TOP_LEFT;
-					stage.scaleMode = StageScaleMode.NO_SCALE;
-				}
+				resizeHandler();
 			}
-			
-			resizeHandler();
 		}
 		
 		private function removedHandler(event : Event) : void
 		{
-			parent.removeEventListener(Event.RESIZE, resizeHandler);
+			if (event.target == this)
+				parent.removeEventListener(Event.RESIZE, resizeHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
@@ -329,7 +326,7 @@ package aerys.minko.render
 				while (_stage3d.willTrigger(Event.CONTEXT3D_CREATE))
 					_stage3d = stage.stage3Ds[int(++stageId)];
 				
-				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, resetStage3D);
+				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3DCreatedHandler);
 				_stage3d.requestContext3D(Context3DRenderMode.AUTO);
 			}
 			
@@ -404,12 +401,10 @@ package aerys.minko.render
 				showLogo();
 		}
 		
-		private function resetStage3D(event : Event = null) : void
+		private function context3DCreatedHandler(event : Event = null) : void
 		{
 			if (_stage3d && _stage3d.context3D && _width && _height)
 			{
-				update();
-				
 				_renderer = new _rendererClass(this, _stage3d.context3D);
 				
 				_visitors = Vector.<ISceneVisitor>([
@@ -421,7 +416,7 @@ package aerys.minko.render
 			}
 		}
 		
-		private function update() : void
+		private function updateSizeAndPosition() : void
 		{
 			if (_stage3d)
 			{
@@ -503,7 +498,7 @@ package aerys.minko.render
 		
 		private function stageResizeHandler(event : Event) : void
 		{
-			update();
+			updateSizeAndPosition();
 		}
 		
 		private function stageEventHandler(event : Object) : void
@@ -577,7 +572,7 @@ package aerys.minko.render
 					|| _upperLeft.x != positionOnStage.x
 					|| _upperLeft.y != positionOnStage.y)
 				{
-					update();
+					updateSizeAndPosition();
 					_invalidRectangle = false;
 				}
 			}
