@@ -18,7 +18,8 @@ package aerys.minko.scene.node.texture
 	
 	public class BitmapTexture extends Texture
 	{
-		private static const TMP_MATRIX : Matrix = new Matrix();
+		private static const MAX_SIZE	: int		= 2048;
+		private static const TMP_MATRIX : Matrix 	= new Matrix();
 
 		minko var _data		: BitmapData	= null;
 		private var _mipmapping	: Boolean		= false;
@@ -52,6 +53,11 @@ package aerys.minko.scene.node.texture
 				w = 1 << Math.ceil(Math.log(bitmapWidth) * Math.LOG2E);
 				h = 1 << Math.ceil(Math.log(bitmapHeight) * Math.LOG2E);
 			}
+			
+			if (w > MAX_SIZE)
+				w = MAX_SIZE;
+			if (h > MAX_SIZE)
+				h = MAX_SIZE;
 
 			if (!_data || _data.width != w || _data.height != h)
 			{
