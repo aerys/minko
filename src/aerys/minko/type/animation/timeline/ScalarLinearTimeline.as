@@ -4,23 +4,19 @@ package aerys.minko.type.animation.timeline
 
 	public class ScalarLinearTimeline implements ITimeline
 	{
-		private var _targetName		: String;
-		private var _propertyName	: String;
-		private var _values			: Vector.<Number>;
-		private var _timeTable		: Vector.<uint>
+		protected var _propertyName	: String;
+		protected var _timeTable	: Vector.<uint>
+		protected var _values		: Vector.<Number>;
 
-		public function get target()	: String	{ return _targetName; }
-		public function get propertyName()	: String	{ return _propertyName; }
-		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
+		public function get propertyName()	: String			{ return _propertyName; }
+		public function get duration()		: uint				{ return _timeTable[_timeTable.length - 1]; }
 		public function get values()		: Vector.<Number>	{ return _values; }
 		public function get timeTable()		: Vector.<uint>		{ return _timeTable; }
 		
-		public function ScalarLinearTimeline(targetName		: String,
-											 propertyName	: String,
+		public function ScalarLinearTimeline(propertyName	: String,
 											 timeTable 		: Vector.<uint>,
 											 values			: Vector.<Number>)
 		{
-			_targetName		= targetName;
 			_propertyName	= propertyName;
 			_timeTable		= timeTable;
 			_values			= values;
@@ -75,7 +71,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new ScalarLinearTimeline(_targetName, _propertyName, _timeTable.slice(), _values.slice());
+			return new ScalarLinearTimeline(_propertyName, _timeTable.slice(), _values.slice());
 		}
 
 		public function reverse() : void
