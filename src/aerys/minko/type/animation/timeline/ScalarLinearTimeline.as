@@ -9,7 +9,7 @@ package aerys.minko.type.animation.timeline
 		private var _values			: Vector.<Number>;
 		private var _timeTable		: Vector.<uint>
 
-		public function get targetName()	: String	{ return _targetName; }
+		public function get target()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
 		public function get values()		: Vector.<Number>	{ return _values; }

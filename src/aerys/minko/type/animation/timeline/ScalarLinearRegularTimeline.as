@@ -4,23 +4,19 @@ package aerys.minko.type.animation.timeline
 
 	public class ScalarLinearRegularTimeline implements ITimeline
 	{
-		private var _targetName		: String;
 		private var _propertyName	: String;
 		private var _deltaTime		: uint;
 		private var _values			: Vector.<Number>;
 
-		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _deltaTime * (_values.length - 1); }
 		public function get deltaTime() 	: uint 		{ return _deltaTime; }
 		public function get values()		: Vector.<Number> { return _values; }
 		
-		public function ScalarLinearRegularTimeline(targetName		: String,
-													propertyName	: String,
+		public function ScalarLinearRegularTimeline(propertyName	: String,
 													deltaTime 		: uint,
 													values			: Vector.<Number>)
 		{
-			_targetName		= targetName;
 			_propertyName	= propertyName;
 			_deltaTime		= deltaTime;
 			_values			= values;
@@ -39,7 +35,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new ScalarLinearRegularTimeline(_targetName, _propertyName, _deltaTime, _values.slice());
+			return new ScalarLinearRegularTimeline(_propertyName, _deltaTime, _values.slice());
 		}
 
 		public function reverse() : void

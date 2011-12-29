@@ -65,9 +65,11 @@ package aerys.minko.scene.node.mesh
 
 			_maxInfluences			= getMaxInfluencesFromVertexFormat(_mesh.vertexStream.format);
 
-			actions.push(new PushMeshSkinAction(),
-						 MeshAction.meshAction,
-						 PopMeshSkinAction.popMeshSkinAction);
+			actions.push(
+				new PushMeshSkinAction(),
+				MeshAction.meshAction,
+				PopMeshSkinAction.popMeshSkinAction)
+				;
 		}
 
 		private function getMaxInfluencesFromVertexFormat(vertexFormat : VertexFormat) : uint

@@ -6,7 +6,6 @@ package aerys.minko.type.animation.timeline
 	public interface ITimeline
 	{
 		function get duration()		: uint;
-		function get targetName()	: String;
 		function get propertyName()	: String;
 
 		function updateAt(t : uint, scene : IScene) : void;

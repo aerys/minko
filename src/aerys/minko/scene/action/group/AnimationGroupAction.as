@@ -1,6 +1,6 @@
 package aerys.minko.scene.action.group
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.render.renderer.IRenderer;
 	import aerys.minko.scene.action.ActionType;
 	import aerys.minko.scene.action.IAction;
@@ -9,12 +9,11 @@ package aerys.minko.scene.action.group
 	import aerys.minko.scene.visitor.ISceneVisitor;
 	import aerys.minko.type.animation.timeline.ITimeline;
 
-	import flash.utils.getTimer;
-
-	use namespace minko;
 
 	public final class AnimationGroupAction implements IAction
 	{
+		use namespace minko_animation;
+	
 		public static const animationGroupAction : AnimationGroupAction = new AnimationGroupAction();
 
 		private static const TYPE : uint = ActionType.UPDATE_TRANSFORM_DATA; // more or less
@@ -70,8 +69,7 @@ package aerys.minko.scene.action.group
 			for (var i : uint = 0; i < timelinesCount; ++i)
 			{
 				var timeline	: ITimeline	= timelines[i];
-				var targetName	: String	= timeline.targetName;
-				var target		: IScene	= animationGroup.getDescendantByName(targetName);
+				var target		: IScene	= animationGroup._targets[i];
 
 				if (target != null)
 					timeline.updateAt(animationGroup._currentTime, target);

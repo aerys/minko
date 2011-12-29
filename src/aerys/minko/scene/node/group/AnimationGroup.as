@@ -1,34 +1,31 @@
 package aerys.minko.scene.node.group
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.action.group.AnimationGroupAction;
+	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	import flash.utils.getTimer;
 
-	use namespace minko;
 
 	public class AnimationGroup extends Group
 	{
+		use namespace minko_animation;
+	
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
-		minko var _timelines		: Vector.<ITimeline>	= null;
-
-		minko var _isPlaying		: Boolean				= false;
-
-		minko var _loopBeginTime	: uint					= 0;
-		minko var _loopEndTime		: uint					= 0;
-
-		minko var _lastTimerTick	: uint					= 0;
-		minko var _currentTime		: uint					= 0;
-		
-		minko var _onComplete		: Function 				= null;
+		minko_animation var _timelines		: Vector.<ITimeline>	= null;
+		minko_animation var _targets		: Vector.<IScene>		= null;
+		minko_animation var _isPlaying		: Boolean				= false;
+		minko_animation var _loopBeginTime	: uint					= 0;
+		minko_animation var _loopEndTime	: uint					= 0;
+		minko_animation var _lastTimerTick	: uint					= 0;
+		minko_animation var _currentTime	: uint					= 0;
+		minko_animation var _onComplete		: Function 				= null;
 
 		private var _totalTime		: uint					= 0;
-
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
-		
 		private var _labels			: Vector.<TimeLabel>	= null;
 		
 		public function get timeFunction() : Function
@@ -108,12 +105,14 @@ package aerys.minko.scene.node.group
 		}
 
 		public function AnimationGroup(timelines	: Vector.<ITimeline>,
+									   targets		: Vector.<IScene>,
 									   labels		: Vector.<TimeLabel> = null,
 									   ...children)
 		{
 			super(children);
 
 			_timelines	= timelines;
+			_targets	= targets;
 			_labels		= labels || new Vector.<TimeLabel>();
 
 			var timelineCount : uint = _timelines.length;
@@ -205,7 +204,7 @@ package aerys.minko.scene.node.group
 
 		public function clone() : AnimationGroup
 		{
-			var clone		: AnimationGroup 	= new AnimationGroup(_timelines, _labels);
+			var clone		: AnimationGroup 	= new AnimationGroup(_timelines, _targets, _labels);
 			var numChildren	: uint 				= this.numChildren;
 
 			for (var childId : uint = 0; childId < numChildren; ++childId)

@@ -8,24 +8,18 @@ package aerys.minko.type.animation.timeline
 	
 	public class MatrixSegmentTimeline implements ITimeline
 	{
-		private var _targetName		: String;
 		private var _propertyName	: String;
-		private var _timeTable		: Vector.<uint>
-		private var _matrices		: Vector.<Matrix4x4>
+		
+		minko_animation var _timeTable		: Vector.<uint>
+		minko_animation var _matrices		: Vector.<Matrix4x4>
 
-		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
-		minko_animation function get matrices()		: Vector.<Matrix4x4>	{ return _matrices; }
-		minko_animation function get timeTable()		: Vector.<uint>			{ return _timeTable; }
 		
-		
-		public function MatrixSegmentTimeline(targetName 	: String,
-											  propertyName	: String,
+		public function MatrixSegmentTimeline(propertyName	: String,
 											  timeTable 	: Vector.<uint>,
 											  values		: Vector.<Matrix4x4>)
 		{
-			_targetName		= targetName;
 			_propertyName	= propertyName;
 			_timeTable		= timeTable;
 			_matrices		= values;
@@ -39,7 +33,13 @@ package aerys.minko.type.animation.timeline
 			// change matrix value
 			var out : Matrix4x4 = scene[_propertyName];
 			if (!out)
-				throw new Error(_propertyName + ' property was not found on scene node named ' + _targetName);
+			{
+				throw new Error(
+					"'" + _propertyName
+					+ "' could not be found in scene node '"
+					+ scene.name + "'"
+				);
+			}
 
 			if (timeId == 0)
 				Matrix4x4.copy(_matrices[0], out);
@@ -70,7 +70,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearTimeline(_targetName, _propertyName, _timeTable.slice(), _matrices.slice());
+			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _matrices.slice());
 		}
 
 		public function reverse() : void

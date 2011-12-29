@@ -8,24 +8,20 @@ package aerys.minko.type.animation.timeline
 	
 	public class MatrixLinearTimeline implements ITimeline
 	{
-		private var _targetName		: String;
 		private var _propertyName	: String;
 
 		private var _timeTable		: Vector.<uint>
 		private var _values			: Vector.<Matrix4x4>;
 
-		public function get targetName()	: String	{ return _targetName; }
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
 		minko_animation function get matrices()		: Vector.<Matrix4x4>	{ return _values; }
 		minko_animation function get timeTable()		: Vector.<uint>			{ return _timeTable; }
 		
-		public function MatrixLinearTimeline(targetName		: String,
-											 propertyName	: String,
+		public function MatrixLinearTimeline(propertyName	: String,
 											 timeTable		: Vector.<uint>,
 											 matrices		: Vector.<Matrix4x4>)
 		{
-			_targetName		= targetName;
 			_propertyName	= propertyName;
 			_timeTable		= timeTable;
 			_values			= matrices;
@@ -39,7 +35,13 @@ package aerys.minko.type.animation.timeline
 			// change matrix value.
 			var out : Matrix4x4 = scene[_propertyName];
 			if (!out)
-				throw new Error(_propertyName + ' property was not found on scene node named ' + _targetName);
+			{
+				throw new Error(
+					"'" + _propertyName
+					+ "' could not be found in scene node '"
+					+ scene.name + "'"
+				);
+			}
 
 			if (timeId == 0)
 			{
@@ -59,7 +61,7 @@ package aerys.minko.type.animation.timeline
 				var nextMatrix			: Matrix4x4 = _values[timeId];
 				
 				Matrix4x4.copy(previousMatrix, out);
-				out.interpolateTo(nextMatrix, 1 - interpolationRatio);
+				out.interpolateTo(nextMatrix, interpolationRatio);
 			}
 		}
 
@@ -86,7 +88,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearTimeline(_targetName, _propertyName, _timeTable.slice(), _values.slice());
+			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _values.slice());
 		}
 
 		public function reverse() : void
