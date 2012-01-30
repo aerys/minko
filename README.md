@@ -1,6 +1,13 @@
 Minko
 =====
 
+Support
+-------
+
+* [Tutorials](http://hub.aerys.in/minko/v1/tutorials)
+* [Technical articles](http://hub.aerys.in/minko/v1/articles)
+* [Forum](http://answers.aerys.in)
+
 
 Description
 -----------
@@ -28,12 +35,6 @@ Features
 * ActionScript 3.0 Shaders
 
 The detailed list is available on [our website](http://aerys.in/minko/features).
-
-Documentation
--------------
-
-* [Tutorials](http://hub.aerys.in/minko/v1/tutorials)
-* [Technical articles](http://hub.aerys.in/minko/v1/articles)
 
 Contribute
 ----------
