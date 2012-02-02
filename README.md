@@ -34,7 +34,7 @@ Features
 * Extensions system
 * ActionScript 3.0 Shaders
 
-The detailed list is available on [our website](http://aerys.in/minko/features).
+The detailed list is available on [our website](http://hub.aerys.in/minko/v1/features).
 
 Contribute
 ----------
