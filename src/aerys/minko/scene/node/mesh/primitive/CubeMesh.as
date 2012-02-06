@@ -1,6 +1,8 @@
 package aerys.minko.scene.node.mesh.primitive
 {
+	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
 
 	/**
@@ -9,24 +11,12 @@ package aerys.minko.scene.node.mesh.primitive
 	 */
 	public class CubeMesh extends Mesh
 	{
-		private static var _instance	: CubeMesh	= null;
-
-		/**
-		 * A unit sized CubeMesh object. Use this property instead of "new CubeMesh()" in order
-		 * to avoid pointless memory consumption.
-		 */
-		public static function get cubeMesh() : CubeMesh
-		{
-			return _instance || (_instance = new CubeMesh());
-		}
 		/**
 		 * Creates a new CubeMesh object.
 		 */
-		public function CubeMesh()
+		public function CubeMesh(effect : Effect)
 		{
-			var vb 	: Vector.<Number> = new Vector.<Number>();
-
-			vb.push(
+			var xyz 	: Vector.<Number> = new <Number>[
 				// top
 				0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
 				0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5,
@@ -45,11 +35,9 @@ package aerys.minko.scene.node.mesh.primitive
 				// right
 				0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5,
 				0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5
-			);
+			];
 
-			var uv : Vector.<Number>	= new Vector.<Number>();
-
-			uv.push(
+			var uv : Vector.<Number>	= new <Number>[
 				// top
 				1., 0., 0., 1., 1., 1.,
 				1., 0., 0., 0., 0., 1.,
@@ -68,9 +56,9 @@ package aerys.minko.scene.node.mesh.primitive
 				// right
 				1., 1., 1., 0., 0., 0.,
 				0., 0., 0., 1., 1., 1.
-			);
+			];
 
-			super(VertexStream.fromPositionsAndUVs(vb, uv));
+			super(effect, new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)]);
 		}
 
 	}

@@ -3,6 +3,7 @@ package aerys.minko.type.stream.iterator
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
+	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.utils.Proxy;
@@ -44,6 +45,11 @@ package aerys.minko.type.stream.iterator
 
 		private var _propertyToStream	: Object			= new Object();
 
+		public function get vertexStream() : IVertexStream
+		{
+			return _vstream;
+		}
+		
 		public function get length() : int
 		{
 			return _istream ? _istream.length : _vstream.length;
@@ -79,11 +85,6 @@ package aerys.minko.type.stream.iterator
 		{
 			super();
 
-//			if (!vertexStream.dynamic)
-//				throw new Error("Unable to work on static VertexStream.");
-//			if (!indexStream.dynamic)
-//				throw new Error("Unable to work on static IndexStream.");
-
 			_vstream = vertexStream;
 			_istream = indexStream;
 			_singleReference = singleReference;
@@ -97,7 +98,7 @@ package aerys.minko.type.stream.iterator
 
 			for each (var component : VertexComponent in components)
 				for each (var field : String in component.fields)
-					_propertyToStream[field] = _vstream.getSubStreamByComponent(component);
+					_propertyToStream[field] = _vstream.getStreamByComponent(component);
 		}
 
 		override flash_proxy function getProperty(name : *) : *
@@ -139,8 +140,8 @@ package aerys.minko.type.stream.iterator
 			var components	: Vector.<VertexComponent>	= _vstream.format.components;
 			
 			for each (var component : VertexComponent in components)
-				for each (var field : String in component.fields)
-					ref[field] = Number(obj[field]);
+			for each (var field : String in component.fields)
+			ref[field] = Number(obj[field]);
 		}
 
 		override flash_proxy function deleteProperty(name : *) : Boolean

@@ -1,23 +1,11 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.leaf.Constant;
-	import aerys.minko.render.shader.node.operation.builtin.Add;
-	import aerys.minko.render.shader.node.operation.builtin.Divide;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct3;
-	import aerys.minko.render.shader.node.operation.builtin.DotProduct4;
-	import aerys.minko.render.shader.node.operation.builtin.Fractional;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply;
-	import aerys.minko.render.shader.node.operation.builtin.Multiply4x4;
-	import aerys.minko.render.shader.node.operation.builtin.Negate;
-	import aerys.minko.render.shader.node.operation.builtin.Normalize;
-	import aerys.minko.render.shader.node.operation.builtin.Power;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfGreaterEqual;
-	import aerys.minko.render.shader.node.operation.builtin.SetIfLessThan;
-	import aerys.minko.render.shader.node.operation.builtin.Substract;
-	import aerys.minko.render.shader.node.operation.manipulation.Combine;
-	import aerys.minko.render.shader.node.operation.manipulation.Extract;
-	import aerys.minko.render.shader.node.operation.math.Product;
+	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -39,7 +27,7 @@ package aerys.minko.render.shader
 	 * using CPU-side code. For the very same reason, most of the errors will
 	 * be detected at runtime only. The only available property is the size
 	 * (number of components) of the corresponding value (ie. 3D vector
-	 * operations will return SValue objects of size 3, cross-product will
+	 * operations will return SValue objects of size 3, dot-product will
 	 * return a scalar SValue object of size 1, ...).
 	 * </p>
 	 *
@@ -71,211 +59,132 @@ package aerys.minko.render.shader
 	 */
 	public dynamic final class SValue extends Proxy
 	{
-		internal var _node	: INode	= null;
+		use namespace minko_shader;
+		
+		minko_shader var _node	: INode	= null;
 		
 		public function SValue(value : Object)
 		{
 			_node = getNode(value);
 		}
 
-		public final function multiply(arg : Object, ...args) : SValue
+		public final function multiply(arg : Object) : SValue
 		{
-			var p 		: Product 	= new Product(_node, getNode(arg));
-			var numArgs : int 		= args.length;
-
-			for (var i : int = 0; i < numArgs; ++i)
-				p.addTerm(args[i]._node);
-
-			return new SValue(p);
+			return new SValue(new Instruction(Instruction.MUL, _node, getNode(arg)));
 		}
 
 		public final function scaleBy(arg : Object) : SValue
 		{
-			_node = new Multiply(_node, getNode(arg));
+			_node = new Instruction(Instruction.MUL, _node, getNode(arg));
 
 			return this;
 		}
 
 		public final function divide(arg : Object) : SValue
 		{
-			return new SValue(new Divide(_node, getNode(arg)));
+			return new SValue(new Instruction(Instruction.DIV, _node, getNode(arg)));
 		}
 
 		public final function modulo(base : Object) : SValue
 		{
 			var baseNode : INode = getNode(base);
-
-			return new SValue(new Multiply(
-				baseNode,
-				new Fractional(new Divide(_node, baseNode)))
+			
+			return new SValue(
+				new Instruction(Instruction.MUL, 
+					baseNode,
+					new Instruction(Instruction.FRC, 
+						new Instruction(Instruction.DIV, _node, baseNode)
+					)
+				)
 			);
 		}
 
-		public final function pow(exp : Object) : SValue
+		public final function pow(arg : Object) : SValue
 		{
-			return new SValue(new Power(_node, getNode(exp)));
+			return new SValue(new Instruction(Instruction.POW, _node, getNode(arg)));
 		}
 
 		public final function add(value : Object) : SValue
 		{
-			return new SValue(new Add(_node, getNode(value)));
+			return new SValue(new Instruction(Instruction.ADD, _node, getNode(value)));
 		}
 
 		public final function incrementBy(value : Object) : SValue
 		{
-			_node = new Add(_node, getNode(value));
+			_node = new Instruction(Instruction.ADD, _node, getNode(value));
 
 			return this;
 		}
 
 		public final function subtract(value : Object) : SValue
 		{
-			return new SValue(new Substract(_node, getNode(value)));
+			return new SValue(new Instruction(Instruction.SUB, _node, getNode(value)));
 		}
 
-		public final function decrement(value : Object) : SValue
+		public final function decrementBy(value : Object) : SValue
 		{
-			_node = new Substract(_node, getNode(value));
+			_node = new Instruction(Instruction.SUB, _node, getNode(value));
 
 			return this;
 		}
 
 		public final function dotProduct3(value : Object) : SValue
 		{
-			return new SValue(new DotProduct3(_node, getNode(value)));
+			return new SValue(new Instruction(Instruction.DP3, _node, getNode(value)));
 		}
 
 		public final function dotProduct4(value : Object) : SValue
 		{
-			return new SValue(new DotProduct4(_node, getNode(value)));
+			return new SValue(new Instruction(Instruction.DP4, _node, getNode(value)));
 		}
 
 		public final function multiply4x4(value : Object) : SValue
 		{
-			return new SValue(new Multiply4x4(_node, getNode(value)));
+			return new SValue(new Instruction(Instruction.M44, _node, getNode(value)));
 		}
 
 		public final function normalize() : SValue
 		{
-			_node = new Normalize(_node);
+			_node = new Instruction(Instruction.NRM, _node);
 
 			return this;
 		}
 
 		public final function negate() : SValue
 		{
-			_node = new Negate(_node);
+			_node = new Instruction(Instruction.NEG, _node);
 
 			return this;
 		}
 
-		public final function setIfGreaterEqual(test : Object, value : Object) : SValue
+		public final function greaterEqual(value : Object) : SValue
 		{
-			_node = new SetIfGreaterEqual(getNode(test), getNode(value));
-
-			return this;
+			return new SValue(new Instruction(Instruction.SGE, _node, getNode(value)));
 		}
-
-		public final function setIfLessThan(test : Object, value : Object) : SValue
+		
+		public final function lessThan(value : Object) : SValue
 		{
-			_node = new SetIfLessThan(getNode(test), getNode(value));
-
-			return this;
+			return new SValue(new Instruction(Instruction.SLT, _node, getNode(value)));
+		}
+		
+		public final function equal(value : Object) : SValue
+		{
+			return new SValue(new Instruction(Instruction.SEQ, _node, getNode(value)));
+		}
+		
+		public final function notEqual(value : Object) : SValue
+		{
+			return new SValue(new Instruction(Instruction.SNE, _node, getNode(value)));
 		}
 
 		override flash_proxy function getProperty(name : *) : *
 		{
-			return new SValue(new Extract(_node, getComponentsFromString(name)));
+			return new SValue(new Extract(_node, Components.stringToComponent(name)));
 		}
 
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var str 	: String	= String(name).toLowerCase();
-			var val 	: INode	 	= getNode(value);
-			var size 	: uint 		= _node.size;
-			var comps 	: uint 		= 0;
-
-			if (size == 1)
-				throw new Error("Unable to set component(s) of a value with size == 1.");
-
-			for (var i : int = 0; i < size; ++i)
-			{
-				var char : String = str.charAt(i);
-
-				if (char == "x" || char == "r")
-					comps |= i + 1;
-				else if (char == "y" || char == "g")
-					comps |= (i + 1) << 4;
-				else if (size >= 3 && (char == "z" || char == "b"))
-					comps |= (i + 1) << 8;
-				else if (size == 4 && (char == "w" || char == "a"))
-					comps |= (i + 1) << 12;
-				else if (char != "")
-				{
-					throw new Error("Unable to set the '"
-									+ char
-									+ "' component of a value of size "
-									+ size);
-				}
-			}
-
-			var result	: INode = null;
-
-			for (i = 0; i < size; ++i)
-			{
-				var rhc : int 	= ((comps >>> (i << 2)) & 0xf) - 1;
-				var ext : INode = null;
-
-				if (rhc >= 0)
-					ext = new Extract(val, rhc | 0x4440);
-				else
-					ext = new Extract(_node, i | 0x4440);
-
-				result = i == 0 ? ext : new Combine(result, ext);
-			}
-
-			_node = result;
-		}
-
-		private function getComponentsFromString(componentsString : String) : uint
-		{
-			var components 	: uint 	= 0;
-			var strlen		: int	= componentsString.length;
-			var size		: uint	= _node.size;
-
-			if (strlen > 4)
-				throw new Error("'" + componentsString + "' is not a valid component.");
-
-			componentsString = componentsString.toLowerCase();
-
-			for (var i : int = 0; i < 4; ++i)
-			{
-				if (i < strlen)
-				{
-					var c : String = componentsString.charAt(i);
-
-					if (c == "x" || c == "r")
-						components |= 0 << (i << 2);
-					else if (size >= 2 && (c == "y" || c == "g"))
-						components |= 1 << (i << 2);
-					else if (size >= 3 && (c == "z" || c == "b"))
-						components |= 2 << (i << 2);
-					else if (size == 4 && (c == "w" || c == "a"))
-						components |= 3 << (i << 2);
-					else
-					{
-						throw new Error("Unkown component '"
-										+ c + "' on a value with size "
-										+ size + ".");
-					}
-				}
-				else
-				{
-					components |= 4 << (i << 2);
-				}
-			}
-
-			return components;
+			throw new Error('implement me, it should be easy with an overwriter');
 		}
 
 		private function getNode(value : Object) : INode

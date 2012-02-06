@@ -1,8 +1,8 @@
 package aerys.minko.type.bounding
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.type.math.ConstVector4;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.math.Vector4;
+
 
 	/**
 	 * The BoundingSphere class represents a sphere that contains the maximum extend of an object
@@ -12,21 +12,26 @@ package aerys.minko.type.bounding
 	 */
 	public final class BoundingSphere
 	{
-		use namespace minko;
+		use namespace minko_math;
 
-		private var _center	: ConstVector4	= new ConstVector4();
-
+		private var _center	: Vector4	= new Vector4();
 		private var _radius	: Number	= 0;
 
 		/**
 		 * The position of the center of the bounding sphere.
 		 */
-		public function get center()	: ConstVector4	{ return _center; }
+		public function get center() : Vector4
+		{
+			return _center;
+		}
 
 		/**
 		 * The radius of the bounding sphere.
 		 */
-		public function get radius()	: Number	{return _radius;}
+		public function get radius() : Number
+		{
+			return _radius;
+		}
 
 		/**
 		 * Creates a new BoundingSphere object with the specified center and radius.
@@ -40,6 +45,18 @@ package aerys.minko.type.bounding
 			_center._vector.z = center.z;
 
 			_radius = radius;
+			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_center.changed.add(centerChangedHandler);
+		}
+		
+		private function centerChangedHandler(center : Vector4, property : String) : void
+		{
+			throw new Error("This property is read-only.");
 		}
 
 		/**
@@ -60,7 +77,7 @@ package aerys.minko.type.bounding
 			return new BoundingSphere(center, radius);
 		}
 
-		minko function update(min : Vector4, max : Vector4) : void
+		minko_math function update(min : Vector4, max : Vector4) : void
 		{
 			_center._vector.x = (max.x + min.x) / 2.;
 			_center._vector.y = (max.y + min.y) / 2.;

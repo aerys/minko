@@ -1,14 +1,21 @@
 package aerys.minko.type.math
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionable;
-
+	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.Signal;
+	
 	import flash.geom.Vector3D;
 
-	public class Vector4 implements IVersionable
+	public class Vector4 implements IDataProvider
 	{
-		use namespace minko;
+		use namespace minko_math;
+		
+		public static const X_AXIS				: Vector4	= new Vector4(1., 0., 0.);
+		public static const Y_AXIS				: Vector4	= new Vector4(0., 1., 0.);
+		public static const Z_AXIS				: Vector4	= new Vector4(0., 0., 1.);
+		public static const ZERO				: Vector4	= new Vector4(0., 0., 0., 0.);
+		public static const ONE					: Vector4	= new Vector4(1., 1., 1., 1.);
 
 		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
 
@@ -17,20 +24,34 @@ package aerys.minko.type.math
 		private static const UPDATE_LENGTH_SQ	: uint		= 2;
 		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 
-		minko var _vector		: Vector3D	= new Vector3D();
+		minko_math var _vector	: Vector3D	= new Vector3D();
 
-		private var _version	: uint		= 0;
 		private var _update		: uint		= 0;
 
 		private var _length		: Number	= 0.;
 		private var _lengthSq	: Number	= 0.;
+		
+		private var _changed	: Signal	= new Signal();
 
-		public function get version()	: uint		{ return _version; }
-
-		public function get x()			: Number	{ return _vector.x; }
-		public function get y()			: Number	{ return _vector.y; }
-		public function get z()			: Number	{ return _vector.z; }
-		public function get w()			: Number	{ return _vector.w; }
+		public function get x()	: Number
+		{
+			return _vector.x;
+		}
+		
+		public function get y()	: Number
+		{
+			return _vector.y;
+		}
+		
+		public function get z() : Number
+		{
+			return _vector.z;
+		}
+		
+		public function get w()	: Number
+		{
+			return _vector.w;
+		}
 
 		public function get lengthSquared()	: Number
 		{
@@ -55,13 +76,18 @@ package aerys.minko.type.math
 			return _length;
 		}
 
+		public function get changed() : Signal
+		{
+			return _changed;
+		}
+		
 		public function set x(value : Number) : void
 		{
 			if (value != _vector.x)
 			{
 				_vector.x = value;
 				_update = UPDATE_ALL;
-				++_version;
+				_changed.execute(this, "x");
 			}
 		}
 
@@ -71,7 +97,7 @@ package aerys.minko.type.math
 			{
 				_vector.y = value;
 				_update = UPDATE_ALL;
-				++_version;
+				_changed.execute(this, "y");
 			}
 		}
 
@@ -81,7 +107,7 @@ package aerys.minko.type.math
 			{
 				_vector.z = value;
 				_update = UPDATE_ALL;
-				++_version;
+				_changed.execute(this, "z");
 			}
 		}
 
@@ -91,7 +117,7 @@ package aerys.minko.type.math
 			{
 				_vector.w = value;
 				_update = UPDATE_ALL;
-				++_version;
+				_changed.execute(this, "w");
 			}
 		}
 
@@ -163,7 +189,7 @@ package aerys.minko.type.math
 		{
 			_vector.incrementBy(vector._vector);
 
-			++_version;
+			_changed.execute(this, null);
 			_update = UPDATE_ALL;
 
 			return this;
@@ -173,7 +199,7 @@ package aerys.minko.type.math
 		{
 			_vector.decrementBy(vector._vector);
 
-			++_version;
+			_changed.execute(this, null);
 			_update = UPDATE_ALL;
 
 			return this;
@@ -183,7 +209,7 @@ package aerys.minko.type.math
 		{
 			_vector.scaleBy(scale);
 
-			++_version;
+			_changed.execute(this, null);
 			_update = UPDATE_ALL;
 
 			return this;
@@ -195,7 +221,7 @@ package aerys.minko.type.math
 			_vector.y /= _vector.w;
 			_vector.z /= _vector.w;
 
-			++_version;
+			_changed.execute(this, null);
 			_update = UPDATE_ALL;
 
 			return this;
@@ -214,7 +240,7 @@ package aerys.minko.type.math
 				_length = 1.;
 				_lengthSq = 1.;
 
-				++_version;
+				_changed.execute(this, null);
 				_update = UPDATE_NONE;
 			}
 
@@ -232,7 +258,7 @@ package aerys.minko.type.math
 			_vector.z = x * vector._vector.y - vector._vector.x * y;
 
 			_update = UPDATE_ALL;
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -254,7 +280,7 @@ package aerys.minko.type.math
 				_vector.z = z;
 				_vector.w = w;
 
-				++_version;
+				_changed.execute(this, null);
 				_update = UPDATE_ALL;
 			}
 

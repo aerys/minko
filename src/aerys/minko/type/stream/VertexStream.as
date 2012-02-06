@@ -2,36 +2,50 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
-	import aerys.minko.type.IVersionable;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
 	import aerys.minko.type.stream.format.VertexFormat;
-
+	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
-	public class VertexStream implements IVersionable, IVertexStream
+	public final class VertexStream implements IVertexStream
 	{
 		use namespace minko_stream;
 
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 
-		minko_stream var _data			: Vector.<Number>			= null;
+		minko_stream var _data			: Vector.<Number>	= null;
+		minko_stream var _localDispose	: Boolean			= false;
 
-		private var _dynamic			: Boolean					= false;
-		private var _version			: uint						= 0;
+		private var _usage		: uint						= 0;
+		private var _format		: VertexFormat				= null;
+		private var _resource	: VertexBuffer3DResource	= null;
+		private var _length		: uint						= 0;
+		
+		private var _changed	: Signal					= new Signal();
 
-		private var _format				: VertexFormat				= null;
-		private var _resource			: VertexBuffer3DResource	= null;
-		private var _length				: uint						= 0;
-		private var _componentToStream	: Dictionary				= new Dictionary(true);
-
-		public function get format()	: VertexFormat				{ return _format; }
-		public function get version()	: uint						{ return _version; }
-		public function get isDynamic()	: Boolean					{ return _dynamic; }
-		public function get resource()	: VertexBuffer3DResource	{ return _resource; }
-		public function get length()	: uint						{ return _length; }
-
+		public function get format() : VertexFormat
+		{
+			return _format;
+		}
+		
+		public function get usage() : uint
+		{
+			return _usage;
+		}
+		
+		public function get resource() : VertexBuffer3DResource
+		{
+			return _resource;
+		}
+		
+		public function get length() : uint
+		{
+			return _length;
+		}
+		
 		protected function get data() : Vector.<Number>
 		{
 			return _data;
@@ -40,21 +54,26 @@ package aerys.minko.type.stream
 		protected function set data(value : Vector.<Number>) : void
 		{
 			_data = value;
-			invalidate();
+			_changed.execute(this, null);
+		}
+		
+		public function get changed() : Signal
+		{
+			return _changed;
 		}
 
-		public function VertexStream(data 		: Vector.<Number>	= null,
-									 format		: VertexFormat 		= null,
-									 isDynamic	: Boolean			= false)
+		public function VertexStream(usage		: uint,
+									 format		: VertexFormat,
+									 data 		: Vector.<Number>	= null)
 		{
 			super();
 
-			initialize(data, format, isDynamic);
+			initialize(data, format, usage);
 		}
 
-		private function initialize(data 	: Vector.<Number>	= null,
-									format	: VertexFormat 		= null,
-									isDynamic	: Boolean			= false) : void
+		private function initialize(data 		: Vector.<Number>,
+									format		: VertexFormat,
+									usage		: uint) : void
 		{
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
@@ -63,9 +82,10 @@ package aerys.minko.type.stream
 				throw new Error("Incompatible vertex format: the data length does not match.");
 
 			_data = data ? data.concat() : new Vector.<Number>();
-			_dynamic = isDynamic;
+			_usage = usage;
 
-			invalidate();
+			_changed.add(changedHandler);
+			changedHandler(this, null);
 		}
 
 		public function deleteVertexByIndex(index : uint) : Boolean
@@ -75,29 +95,35 @@ package aerys.minko.type.stream
 
 			_data.splice(index, _format.dwordsPerVertex);
 
-			invalidate();
+			_changed.execute(this, null);
 
 			return true;
 		}
 
-		public function getSubStreamByComponent(vertexComponent : VertexComponent) : VertexStream
+		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			return _format.hasComponent(vertexComponent) ? this : null;
 		}
 
 		public function get(i : int) : Number
 		{
+			checkReadUsage(this);
+			
 			return _data[i];
 		}
 
 		public function set(i : int, value : Number) : void
 		{
+			checkWriteUsage(this);
+			
 			_data[i] = value;
-			invalidate();
+			_changed.execute(this, null);
 		}
 
 		public function push(data : Vector.<Number>) : void
 		{
+			checkWriteUsage(this);
+			
 			var dataLength : int = data.length;
 
 			if (dataLength % _format.dwordsPerVertex)
@@ -106,33 +132,30 @@ package aerys.minko.type.stream
 			for (var i : int = 0; i < dataLength; i++)
 				_data.push(data[i]);
 
-			invalidate();
+			_changed.execute(this, null);
 		}
 
-		public function disposeLocalData() : void
+		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
-			if (length != resource.numVertices)
-				throw new Error("Unable to dispose local data: "
-								+ "some vertices have not been uploaded.");
-
-			_data = null;
-			_dynamic = false;
+			if (waitForUpload)
+				_localDispose = true;
+			else
+				_data.length = 0;
+		}
+		
+		public function dispose() : void
+		{
+			resource.dispose();
 		}
 
-		protected function invalidate() : void
+		private function changedHandler(stream : VertexStream, property : String) : void
 		{
 			_length = _data.length / _format.dwordsPerVertex;
-			++_version;
-		}
-
-		minko_stream function invalidate() : void
-		{
-			protected::invalidate();
 		}
 
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
 												   uvs		 	: Vector.<Number> 	= null,
-												   isDynamic		: Boolean			= false) : VertexStream
+												   usage		: uint				= 0) : VertexStream
 		{
 			var numVertices : int 				= positions.length / 3;
 			var stride 		: int 				= uvs ? 5 : 3;
@@ -153,12 +176,15 @@ package aerys.minko.type.stream
 				}
 			}
 
-			return new VertexStream(data,
-									uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ,
-									isDynamic);
+			return new VertexStream(
+				usage,
+				uvs ? VertexFormat.XYZ_UV : VertexFormat.XYZ,
+				data
+			);
 		}
 
 		public static function extractSubStream(source			: IVertexStream,
+												usage			: uint,
 										 		vertexFormat 	: VertexFormat	= null) : VertexStream
 		{
 			vertexFormat ||= source.format;
@@ -179,9 +205,11 @@ package aerys.minko.type.stream
 			for (var k : int = 0; k < numComponents; ++k)
 			{
 				var vertexComponent	: VertexComponent	= components[k];
-				var subVertexStream	: VertexStream		= source.getSubStreamByComponent(vertexComponent);
+				var subVertexStream	: VertexStream		= source.getStreamByComponent(vertexComponent);
 				var subvertexFormat	: VertexFormat		= subVertexStream.format;
 
+				checkReadUsage(subVertexStream);
+				
 				componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
 				componentDwordsPerVertex[k]	= subvertexFormat.dwordsPerVertex;
 				componentSizes[k]			= vertexComponent.dwords;
@@ -207,14 +235,36 @@ package aerys.minko.type.stream
 			}
 
 			// avoid copying data vectors
-			var newVertexStream		: VertexStream	= new VertexStream(null, vertexFormat);
+			var newVertexStream		: VertexStream	= new VertexStream(usage, vertexFormat);
 
 			newVertexStream.data = newVertexStreamData;
 
 			return newVertexStream;
 		}
+		
+		private static function checkReadUsage(stream : VertexStream) : void
+		{
+			if (!(stream._usage & StreamUsage.READ))
+			{
+				throw new Error(
+					"Unable to read from vertex stream: stream usage "
+					+ "is not set to StreamUsage.READ."
+				);
+			}
+		}
+		
+		private static function checkWriteUsage(stream : VertexStream) : void
+		{
+			if (!(stream._usage & StreamUsage.WRITE))
+			{
+				throw new Error(
+					"Unable to write in vertex stream: stream usage "
+					+ "is not set to StreamUsage.WRITE."
+				);
+			}
+		}
 
-		public static function concat(streams : Vector.<IVertexStream>) : VertexStream
+		public static function concat(streams : Vector.<IVertexStream>, usage : uint) : VertexStream
 		{
 			var format		: VertexFormat	= streams[0].format;
 			var numStreams 	: int			= streams.length;
@@ -224,44 +274,52 @@ package aerys.minko.type.stream
 					throw new Error("All vertex streams must have the same format.");
 
 			// a bit expensive... but hey, it works :)
-			var stream	: VertexStream	= extractSubStream(streams[0], format);
+			var stream	: VertexStream	= extractSubStream(streams[0], usage, format);
 
 			for  (i = 1; i < numStreams; ++i)
-				stream.data = stream.data.concat(extractSubStream(streams[i], format).data);
+				stream.data = stream.data.concat(extractSubStream(streams[i], usage, format).data);
 
 			return stream;
 		}
 
-		public static function fromByteArray(bytes 		: ByteArray,
-											 count		: int,
-											 formatIn	: VertexFormat,
-											 formatOut	: VertexFormat	= null,
-											 isDynamic	: Boolean		= false,
-											 reader 	: Function 		= null,
-											 dwordSize	: uint			= 4) : VertexStream
+		public static function fromByteArray(bytes 			: ByteArray,
+											 count			: int,
+											 formatIn		: VertexFormat,
+											 formatOut		: VertexFormat	= null,
+											 usage			: uint			= 0,
+											 functionReader : Dictionary	= null,
+											 dwordSize		: uint			= 4) : VertexStream
 		{
 			formatOut ||= formatIn;
-			reader ||= bytes.readFloat;
-
+			
 			var dataLength		: int						= 0;
 			var data			: Vector.<Number>			= null;
-			var stream			: VertexStream				= new VertexStream(null, formatOut, isDynamic);
+			var stream			: VertexStream				= new VertexStream(usage, formatOut, null);
 			var start			: int						= bytes.position;
 			var componentsOut	: Vector.<VertexComponent>	= formatOut.components;
 			var numComponents	: int						= componentsOut.length;
 			var nativeFormats	: Vector.<int>				= new Vector.<int>(numComponents, true);
-
+			
 			for (var k : int = 0; k < numComponents; k++)
 				nativeFormats[k] = componentsOut[k].nativeFormat;
-
+			
 			data = new Vector.<Number>(formatOut.dwordsPerVertex * count, true);
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
 					bytes.position = start + formatIn.dwordsPerVertex * vertexId * dwordSize
-									+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
-
+						+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
+					
+					var reader : Function = null;
+					
+					if (functionReader[componentsOut[componentId].nativeFormatString])
+						reader = functionReader[componentsOut[componentId].nativeFormatString];
+					else if (functionReader["defaut"])
+						reader = functionReader["defaut"];
+					else
+						reader = bytes.readFloat;
+					
 					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
@@ -278,11 +336,10 @@ package aerys.minko.type.stream
 			}
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.dwordsPerVertex * count * dwordSize;
-
+			
 			stream.data = data;
-
+			
 			return stream;
 		}
-
 	}
 }

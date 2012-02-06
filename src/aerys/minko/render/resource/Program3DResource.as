@@ -1,6 +1,7 @@
 package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_render;
+	import aerys.minko.ns.minko_shader;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display3D.Context3D;
@@ -10,11 +11,13 @@ package aerys.minko.render.resource
 	public final class Program3DResource implements IResource
 	{
 		use namespace minko_render;
+		use namespace minko_shader;
 
-		private var _name			: String	= null;
-		private var _update			: Boolean	= false;
-		private var _vertexShader	: ByteArray	= null;
-		private var _fragmentShader	: ByteArray	= null;
+		private var _name					: String	= null;
+		private var _update					: Boolean	= false;
+		
+		minko_shader var _vertexShader		: ByteArray	= null;
+		minko_shader var _fragmentShader	: ByteArray	= null;
 
 		minko_render var _vertexComponents	: Vector.<VertexComponent> 	= null;
 		minko_render var _vertexIndices		: Vector.<uint>				= null;
@@ -65,7 +68,8 @@ package aerys.minko.render.resource
 
 		public function dispose() : void
 		{
-			_nativeProgram.dispose();
+			if (_nativeProgram)
+				_nativeProgram.dispose();
 		}
 	}
 }

@@ -6,7 +6,7 @@ package aerys.minko.type.animation.timeline
 
 	use namespace minko_animation;
 	
-	public class MatrixSegmentTimeline implements ITimeline
+	public final class MatrixSegmentTimeline implements ITimeline
 	{
 		private var _propertyName	: String;
 		
@@ -25,26 +25,28 @@ package aerys.minko.type.animation.timeline
 			_matrices		= values;
 		}
 
-		public function updateAt(t : uint, scene : IScene) : void
+		public function updateAt(t : int, scene : IScene) : void
 		{
-			var timeId		: uint = getIndexForTime(t);
-			var timeCount	: uint = _timeTable.length;
+			var reverse		: Boolean	= t < 0;
+			var timeId		: uint 		= getIndexForTime(reverse ? duration - t : t);
+			var timeCount	: uint 		= _timeTable.length;
 
 			// change matrix value
 			var out : Matrix4x4 = scene[_propertyName];
+			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
 					+ "' could not be found in scene node '"
-					+ scene.name + "'"
+					+ scene.name + "'."
 				);
 			}
 
 			if (timeId == 0)
 				Matrix4x4.copy(_matrices[0], out);
 			else
-				Matrix4x4.copy(_matrices[timeId - 1], out);
+				Matrix4x4.copy(_matrices[int(timeId - 1)], out);
 		}
 
 		private function getIndexForTime(t : uint) : uint
@@ -71,12 +73,6 @@ package aerys.minko.type.animation.timeline
 		public function clone() : ITimeline
 		{
 			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _matrices.slice());
-		}
-
-		public function reverse() : void
-		{
-			_timeTable.reverse();
-			_matrices.reverse();
 		}
 	}
 }

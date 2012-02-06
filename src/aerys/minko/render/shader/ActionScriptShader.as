@@ -1,19 +1,15 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.render.renderer.RendererState;
-	import aerys.minko.render.shader.node.leaf.*;
-	import aerys.minko.render.shader.node.operation.builtin.*;
-	import aerys.minko.render.shader.node.operation.manipulation.*;
-	import aerys.minko.scene.data.StyleData;
-	import aerys.minko.scene.data.TransformData;
-	import aerys.minko.scene.data.ViewportData;
-	import aerys.minko.scene.data.WorldDataList;
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.DrawCall;
+	import aerys.minko.render.RendererState;
+	import aerys.minko.render.shader.compiler.Compiler;
+	import aerys.minko.render.shader.compiler.ShaderGraph;
+	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
-	import avmplus.getQualifiedClassName;
-	
-	import flash.utils.Dictionary;
-	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
+	import aerys.minko.render.shader.compiler.ShaderProgram;
 
 	/**
 	 * <p>Shader objects define vertex and fragment shaders with
@@ -98,63 +94,59 @@ package aerys.minko.render.shader
 	 */
 	public class ActionScriptShader extends ActionScriptShaderPart implements IShader
 	{
-		use namespace minko;
-
-		private var _hashToShader		: Object		= new Object();
-
-		private var _styleData			: StyleData		= null;
-		private var _transformData		: TransformData	= null;
-		private var _worldData			: Dictionary	= null;
-
-		private var _lastFrameId		: uint			= 0;
-		private var _styleStackVersion	: uint			= 0;
-		private var _lastShader			: Shader		= null;
+		use namespace minko_render;
+		use namespace minko_shader;
 		
-		private var _name				: String		= null;
+		private var _name				: String			= null;
+		private var _state				: RendererState		= new RendererState();
+		private var _program			: ShaderProgram		= null;
+		
+		minko_shader var _kills			: Vector.<INode>	= new <INode>[];
 		
 		public function get name() : String
 		{
 			return _name;
 		}
 		
+		public function get state() : RendererState
+		{
+			return _state;
+		}
+		
 		public function ActionScriptShader(name : String = null)
 		{
-			_name = name || getQualifiedClassName(this);
+			super(this);
+			
+			initialize();
 		}
-
-		public function fillRenderState(state			: RendererState,
-										styleData		: StyleData,
-										transformData	: TransformData,
-										worldData		: Dictionary) : void
+		
+		
+		public function createDrawCall() : DrawCall
 		{
-			var frameId	: uint		= (worldData[ViewportData] as ViewportData).frameId;
-			var shader 	: Shader	= _lastShader;
-
-			_styleData = styleData;
-			_transformData = transformData;
-			_worldData = worldData;
-
-			if (frameId != _lastFrameId  || _styleData.version != _styleStackVersion || !_lastShader)
-			{
-				var hash : String 	= getDataHash(styleData, transformData, worldData);
-
-				shader = _hashToShader[hash];
-
-				if (!shader)
-				{
-					_hashToShader[hash] = shader = Shader.create(_name,
-																 getOutputPosition()._node,
-												  				 getOutputColor()._node);
-				}
-
-				_lastFrameId = frameId;
-				_styleStackVersion = _styleData.version;
-				_lastShader = shader;
-			}
-
-			shader.fillRenderState(state, styleData, transformData, worldData);
+			return new DrawCall(
+				_program.vertexShaderConstants.concat(),
+				_program.fragmentShaderConstants.concat(),
+				_program.program._vertexComponents,
+				_program.program._vertexIndices,
+				_program.bindings
+			);
 		}
-
+		
+		private function initialize() : void
+		{
+			_name = name || getQualifiedClassName(this);
+			
+			var shaderGraph : ShaderGraph = new ShaderGraph(
+				getOutputPosition()._node, 
+				getOutputColor()._node, 
+				_kills
+			);
+			
+			Compiler.load(shaderGraph, 0xffffffff);
+			_program = Compiler.compileShader(_name);
+			_state.program = _program.program;
+		}
+		
 		/**
 		 * The getOutputPosition method implements a vertex shader using ActionScript code.
 		 * @return
@@ -174,40 +166,10 @@ package aerys.minko.render.shader
 		{
 			throw new Error();
 		}
-
-		/**
-		 * Return a style value that will be passed as a shader constant.
-		 *
-		 * @param styleId
-		 * @param defaultValue
-		 * @return
-		 *
-		 */
-		protected final function getStyleConstant(styleId : int, defaultValue : Object = null) : Object
-		{
-			return _styleData.get(styleId, defaultValue);
-		}
-
-		/**
-		 * Return whether a specific style is set or not.
-		 * @param styleId
-		 * @return
-		 *
-		 */
-		protected final function styleIsSet(styleId : int) : Boolean
-		{
-			return _styleData.isSet(styleId);
-		}
-
-		protected final function getWorldDataList(key : Class) : WorldDataList
-		{
-			return _worldData[key];
-		}
-
+		
 		public function dispose() : void
 		{
-			for each (var shader : Shader in _hashToShader)
-				shader.resource.dispose();
+			_program.dispose();
 		}
 	}
 }

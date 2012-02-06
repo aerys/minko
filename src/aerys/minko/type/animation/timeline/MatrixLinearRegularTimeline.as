@@ -27,40 +27,40 @@ package aerys.minko.type.animation.timeline
 			_values			= matrices;
 		}
 
-		public function updateAt(t : uint, scene : IScene) : void
+		public function updateAt(t : int, scene : IScene) : void
 		{
-			var previousTimeId	 : int = Math.floor(t / _deltaTime);
-			var nextTimeId		 : int = Math.ceil(t / _deltaTime);
-			var timeCount	: uint = _values.length;
+			var time			: uint	= t < 0 ? duration + t : t;
+			var timeCount		: uint 	= _values.length;
+			var previousTimeId	: int 	= Math.floor(time / _deltaTime);
+			var nextTimeId		: int 	= (previousTimeId + 1) % timeCount;
 
 			// change matrix value.
 			var out : Matrix4x4 = scene[_propertyName];
+			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
 					+ "' could not be found in scene node '"
-					+ scene.name + "'"
+					+ scene.name + "'."
 				);
 			}
 			
-			if (previousTimeId == 0)
-			{
-				Matrix4x4.copy(_values[0], out);
-			}
-			else if (previousTimeId >= timeCount)
-			{
-				Matrix4x4.copy(_values[int(timeCount - 1)], out);
-			}
+			var previousTime		: Number	= previousTimeId * _deltaTime;
+			var nextTime			: Number	= nextTimeId * _deltaTime;
+			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
+			var previousMatrix		: Matrix4x4 = _values[previousTimeId];
+			var nextMatrix			: Matrix4x4 = _values[nextTimeId];
+			
+			if (t < 0)
+				interpolationRatio = 1 - interpolationRatio;
+			
+			if (interpolationRatio == 0.)
+				Matrix4x4.copy(previousMatrix, out);
+			else if (interpolationRatio == 1.)
+				Matrix4x4.copy(nextMatrix, out);
 			else
 			{
-				var previousTime		: Number	= previousTimeId * _deltaTime;
-				var nextTime			: Number	= nextTimeId * _deltaTime;
-				var interpolationRatio	: Number	= (t - previousTime) / (nextTime - previousTime);
-				
-				var previousMatrix		: Matrix4x4 = _values[previousTimeId];
-				var nextMatrix			: Matrix4x4 = _values[nextTimeId];
-				
 				Matrix4x4.copy(previousMatrix, out);
 				out.interpolateTo(nextMatrix, interpolationRatio);
 			}
@@ -68,12 +68,11 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearRegularTimeline(_propertyName, _deltaTime, _values.slice());
-		}
-
-		public function reverse() : void
-		{
-			_values.reverse();
+			return new MatrixLinearRegularTimeline(
+				_propertyName,
+				_deltaTime,
+				_values.slice()
+			);
 		}
 	}
 }

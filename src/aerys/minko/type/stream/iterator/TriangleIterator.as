@@ -1,10 +1,9 @@
 package aerys.minko.type.stream.iterator
 {
-	import aerys.minko.ns.minko;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
-
+	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
@@ -16,7 +15,6 @@ package aerys.minko.type.stream.iterator
 	 */
 	public final class TriangleIterator extends Proxy
 	{
-		use namespace minko;
 		use namespace minko_stream;
 
 		private var _singleReference	: Boolean			= true;

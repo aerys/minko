@@ -44,7 +44,7 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public static function substract(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
+		public static function subtract(q1 : Quaternion, q2 : Quaternion, out : Quaternion = null) : Quaternion
 		{
 			out ||= new Quaternion();
 			out._r = q1._r - q2._r;
@@ -176,9 +176,9 @@ package aerys.minko.type.math
 			return Quaternion.isNotEqual(this, q);
 		}
 
-		public function substract(q : Quaternion) : Quaternion
+		public function subtract(q : Quaternion) : Quaternion
 		{
-			return Quaternion.substract(this, q, this);
+			return Quaternion.subtract(this, q, this);
 		}
 
 		public function add(q : Quaternion) : Quaternion

@@ -2,10 +2,11 @@
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.stream.IVertexStream;
+	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
-
+	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
@@ -32,6 +33,13 @@
 		 */
 		public function get index() : int	{ return _index; }
 
+		public function VertexReference(stream 	: IVertexStream,
+								 		index	: int	= -1)
+		{
+			_stream = stream;
+			_index = index == -1 ? stream.length : index;
+		}
+
 		override flash_proxy function getProperty(name : *) : *
 		{
 			if (!_propertyToStream)
@@ -39,6 +47,10 @@
 
 			var propertyName 	: String 		= name;
 			var stream 			: VertexStream	= _propertyToStream[propertyName];
+			
+			if (!(stream.usage & StreamUsage.READ))
+				throw new Error("Unable to read data from vertex stream.");
+			
 			var format 			: VertexFormat 	= stream.format;
 			var index			: int			= _index * format.dwordsPerVertex
 												  + format.getOffsetForField(name);
@@ -53,18 +65,15 @@
 
 			var propertyName 	: String 		= name;
 			var stream 			: VertexStream 	= _propertyToStream[propertyName];
+			
+			if (!(stream.usage & StreamUsage.WRITE))
+				throw new Error("Unable to write data into vertex stream.");
+			
 			var format 			: VertexFormat 	= stream.format;
 			var index			: int			= _index * format.dwordsPerVertex
 												  + format.getOffsetForField(name);
 
 			stream.set(index, value as Number);
-		}
-
-		public function VertexReference(stream 	: IVertexStream,
-								 		index	: int	= -1)
-		{
-			_stream = stream;
-			_index = index == -1 ? stream.length : index;
 		}
 
 		private function initialize() : void
@@ -75,7 +84,7 @@
 
 			for each (var component : VertexComponent in components)
 				for each (var field : String in component.fields)
-					_propertyToStream[field] = _stream.getSubStreamByComponent(component);
+					_propertyToStream[field] = _stream.getStreamByComponent(component);
 		}
 
 		public function toString() : String

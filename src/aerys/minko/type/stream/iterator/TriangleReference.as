@@ -1,6 +1,6 @@
 package aerys.minko.type.stream.iterator
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.math.Plane;
@@ -10,21 +10,19 @@ package aerys.minko.type.stream.iterator
 
 	public final class TriangleReference
 	{
-		use namespace minko;
 		use namespace minko_stream;
+		use namespace minko_math;
 
 		private static const VECTOR4				: Factory	= Factory.getFactory(Vector4);
 
-		private static const UPDATE_NONE			: uint		= 0;
-		private static const UPDATE_NORMAL			: uint		= 1;
-		private static const UPDATE_PLANE			: uint		= 2;
-		private static const UPDATE_CENTER			: uint		= 4;
+		minko_stream static const UPDATE_NONE		: uint		= 0;
+		minko_stream static const UPDATE_NORMAL		: uint		= 1;
+		minko_stream static const UPDATE_PLANE		: uint		= 2;
+		minko_stream static const UPDATE_CENTER		: uint		= 4;
+		minko_stream static const UPDATE_ALL		: uint		= 1 | 2 | 4;
 
-		minko static const UPDATE_ALL				: uint		= UPDATE_NORMAL | UPDATE_PLANE
-															  	  | UPDATE_CENTER;
-
-		minko var _index	: int				= 0;
-		minko var _update	: uint				= UPDATE_ALL;
+		minko_stream var _index		: int			= 0;
+		minko_stream var _update	: uint			= UPDATE_ALL;
 
 		private var _istream	: IndexStream		= null;
 

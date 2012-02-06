@@ -1,9 +1,9 @@
 package aerys.minko.type.math
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
-
+	
 	import flash.geom.Vector3D;
 
 	/**
@@ -15,7 +15,7 @@ package aerys.minko.type.math
 	 */
 	public final class Plane
 	{
-		use namespace minko;
+		use namespace minko_math;
 
 		//{ region consts
 		public static const POINT_INFRONT		: uint		= 1;
@@ -52,22 +52,25 @@ package aerys.minko.type.math
 		public static const DEFAULT_THICKNESS	: Number	= .01;
 		//} endregion
 
-		minko var _a	: Number	= 0.;
-		minko var _b	: Number	= 0.;
-		minko var _c	: Number	= 0.;
-		minko var _d	: Number	= 0.;
+		minko_math var _a		: Number	= 0.;
+		minko_math var _b		: Number	= 0.;
+		minko_math var _c		: Number	= 0.;
+		minko_math var _d		: Number	= 0.;
+		minko_math var _normal	: Vector4	= new Vector4();
 
 		public function get a() : Number	{ return _a; }
 		public function get b() : Number	{ return _b; }
 		public function get c() : Number	{ return _c; }
 		public function get d() : Number	{ return _d; }
-
+		
+		public function get normal() : Vector4
+		{
+			_normal.set(_a, _b, _c);
+			return _normal;
+		}
+		
 		/**
 		 * Creates a new Plane object.
-		 * @param	myA
-		 * @param	myB
-		 * @param	myC
-		 * @param	myD
 		 */
 		public function Plane(a	: Number 	= 0.,
 							  b	: Number 	= 0.,
@@ -81,7 +84,76 @@ package aerys.minko.type.math
 
 			normalize();
 		}
-
+		
+		/**
+		 * Create a new Plane from a polygon defined by 3 set of (x, _b, _c) tuples.
+		 * 
+		 * @return The Plane containing the specified polygon.
+		 */
+		static public function fromTriangle(x1 : Number, y1 : Number, z1 : Number,
+											x2 : Number, y2 : Number, z2 : Number,
+											x3 : Number, y3 : Number, z3 : Number) : Plane
+		{
+			var plane : Plane = new Plane();
+			
+			plane.setFromTriangle(
+				x1, y1, z1,
+				x2, y2, z2,
+				x3, y3, z3
+			);
+			
+			return plane;
+		}
+		
+		public function setFromTriangle(x1 : Number, y1 : Number, z1 : Number,
+										x2 : Number, y2 : Number, z2 : Number,
+										x3 : Number, y3 : Number, z3 : Number) : void
+		{
+			var nx : Number = (y1 - y3) * (z1 - z2) - (z1 - z3) * (y1 - y2);
+			var ny : Number = (z1 - z3) * (x1 - x2) - (x1 - x3) * (z1 - z2);
+			var nz : Number = (x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2);
+			
+			_a = nx;
+			_b = ny;
+			_c = nz;
+			_d = x1 * nx + y1 * ny + z1 * nz;
+			
+			normalize();
+		}
+		
+		public function set(a : Number, b : Number, c : Number, d : Number) : void
+		{
+			_a = a;
+			_b = b;
+			_c = c;
+			_d = d;
+		}
+			
+		public function intersectWith(plane1 : Plane, 
+									  plane2 : Plane) : Vector4
+		{
+			var X : uint = 0;
+			var Y : uint = 1;
+			var Z : uint = 2;
+			
+			var s : Vector.<Vector.<Number>>;
+			
+			s = createGaussianFromPlanes(this, plane1, plane2);
+			sortGaussian(s);
+			simplifyGaussian(s, 1, 0, X);	// remove x from (1)
+			simplifyGaussian(s, 2, 0, X);	// remove x from (2)
+			simplifyGaussian(s, 2, 1, Y);	// remove y from (2)
+			simplifyGaussian(s, 1, 2, Z);	// remove z from (1)
+			simplifyGaussian(s, 0, 1, Y);	// remove y from (0)
+			simplifyGaussian(s, 0, 2, Z);	// remove z from (0)
+			
+			return new Vector4(
+				s[0][3] / s[0][0],
+				s[1][3] / s[1][1],
+				s[2][3] / s[2][2]
+			);
+		}
+		
 		public function normalize() : Number
 		{
 			var mag	: Number	= Math.sqrt(_a * _a + _b * _b + _c * _c);
@@ -97,19 +169,65 @@ package aerys.minko.type.math
 			return mag;
 		}
 
-		public function project(v : Vector4) : Vector4
+		/**
+		 * @fixme This looks like wrong to me (romain). Where is the d component in there?
+		 */		
+		public function project(v : Vector4, out : Vector4 = null) : Vector4
 		{
 			var scale : Number = _a * v.x + _b * v.y + _c * v.z;
-
-			return new Vector4(v.x - scale * _a,
-							   v.y - scale * _b,
-							   v.z - scale * _c);
+			
+			out ||= new Vector4();
+			out.set(v._vector.x - scale * _a,
+					v._vector.y - scale * _b,
+					v._vector.z - scale * _c);
+			
+			return out;
 		}
-
+		
+		public function reflect(v : Vector4, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			// project origin (could be any other point, but we need a point on the plane)
+			var opX : Number = _a * _d;
+			var opY : Number = _b * _d;
+			var opZ : Number = _c * _d;
+			
+			// om = op + pm, with p on the plane
+			var pmX : Number = v._vector.x - opX;
+			var pmY : Number = v._vector.y - opY;
+			var pmZ : Number = v._vector.z - opZ;
+			
+			// reflect pm
+			var dotProduct : Number = pmX * _a + pmY * _b + pmZ * _c; 
+			var rpmX : Number = pmX - 2 * dotProduct * _a;
+			var rpmY : Number = pmY - 2 * dotProduct * _b;
+			var rpmZ : Number = pmZ - 2 * dotProduct * _c;
+			
+			// r(om) = r(op) + r(pm) = op + dr(pm)
+			out.set(rpmX + opX, rpmY + opY, rpmZ + opZ, 0);
+			
+			return out;
+		}
+		
+		public function deltaReflect(v : Vector4, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			var dotProduct : Number = v.x * _a + v.y * _b + v.z * _c; 
+			
+			out.set(
+				v._vector.x - 2 * dotProduct * _a,
+				v._vector.y - 2 * dotProduct * _b,
+				v._vector.z - 2 * dotProduct * _c,
+				0
+			);
+			
+			return out;
+		}
+		
 		/**
 		 * Test a 3D point is coinciding, infront or behind the plane.
-		 * @param	myPoint
-		 * @param	myThickness
 		 * @return
 		 */
 		public final function testPoint(x 			: Number,
@@ -133,8 +251,8 @@ package aerys.minko.type.math
 		public final function testRay(origin 	: Vector4,
 									  target	: Vector4) : uint
 		{
-			var distOrigin	: Number	= _a * origin.x + _b * origin.y + _c * origin.z - _d;
-			var distTarget	: Number	= _a * target.x + _b * target.y + _c * target.z - _d;
+			var distOrigin : Number = _a * origin._vector.x + _b * origin._vector.y + _c * origin._vector.z - _d;
+			var distTarget : Number = _a * target._vector.x + _b * target._vector.y + _c * target._vector.z - _d;
 
 			var r : uint = 0;
 
@@ -163,27 +281,27 @@ package aerys.minko.type.math
 		 * @param	myThickness
 		 * @return
 		 */
-		public final function testTriangle(myX1 : Number, myY1 : Number, myZ1 : Number,
-										   myX2 : Number, myY2 : Number, myZ2 : Number,
-										   myX3 : Number, myY3 : Number, myZ3 : Number,
-										   myThickness 	: Number = DEFAULT_THICKNESS)	: uint
+		public final function testTriangle(x1 : Number, y1 : Number, z1 : Number,
+										   x2 : Number, y2 : Number, z2 : Number,
+										   x3 : Number, y3 : Number, z3 : Number,
+										   thickness 	: Number = DEFAULT_THICKNESS)	: uint
 		{
 			var test	: Number	= 0;
 			var result  : uint 		= 0;
-			var s		: Number	= -myThickness;
-			var t		: Number	= myThickness;
+			var s		: Number	= -thickness;
+			var t		: Number	= thickness;
 
-			test = _a * myX1 + _b * myY1 + _c * myZ1 - _d;
+			test = _a * x1 + _b * y1 + _c * z1 - _d;
 			result = ((test >= s && test <= t) ? POINT_COINCIDING
 											 : ((test < 0.) ? POINT_BEHIND
 														    : POINT_INFRONT)) << 16;
 
-			test = _a * myX2 + _b * myY2 + _c * myZ2 - _d;
+			test = _a * x2 + _b * y2 + _c * z2 - _d;
 			result |= ((test >= s && test <= t) ? POINT_COINCIDING
 											  : ((test < 0.) ? POINT_BEHIND
 														     : POINT_INFRONT)) << 8;
 
-			test = _a * myX3 + _b * myY3 + _c * myZ3 - _d;
+			test = _a * x3 + _b * y3 + _c * z3 - _d;
 			result |= (test >= s && test <= t) ? POINT_COINCIDING
 											 : ((test < 0.) ? POINT_BEHIND
 														    : POINT_INFRONT);
@@ -191,12 +309,12 @@ package aerys.minko.type.math
 			// if coplanar
 			if (result == POLYGON_COINCIDING)
 			{
-				var x1x2 : Number = myX1 - myX2;
-				var x1x3 : Number = myX1 - myX3;
-				var y1y2 : Number = myY1 - myY2;
-				var y1y3 : Number = myY1 - myY3;
-				var z1z2 : Number = myZ1 - myZ2;
-				var z1z3 : Number = myZ1 - myZ3;
+				var x1x2 : Number = x1 - x2;
+				var x1x3 : Number = x1 - x3;
+				var y1y2 : Number = y1 - y2;
+				var y1y3 : Number = y1 - y3;
+				var z1z2 : Number = z1 - z2;
+				var z1z3 : Number = z1 - z3;
 				var dot : Number = _a * (y1y3 * z1z2 - z1z3 * y1y2)
 								   + _b * (z1z3 * x1x2 - x1x3 * z1z2)
 								   + _c * (x1x3 * y1y2 - y1y3 * x1x2);
@@ -218,28 +336,57 @@ package aerys.minko.type.math
 				   + _c + ", " + _d + ")";
 		}
 
-		/**
-		 * Create a new Plane from a polygon defined by 3 set of (x, _b, _c) tuples.
-		 * @param	myX1
-		 * @param	myY1
-		 * @param	myZ1
-		 * @param	myX2
-		 * @param	myY2
-		 * @param	myZ2
-		 * @param	myX3
-		 * @param	myY3
-		 * @param	myZ3
-		 * @return The Plane containing the specified polygon.
-		 */
-		static public function fromTriangle(myX1 : Number, myY1 : Number, myZ1 : Number,
-											myX2 : Number, myY2 : Number, myZ2 : Number,
-											myX3 : Number, myY3 : Number, myZ3 : Number) : Plane
+		private function createGaussianFromPlanes(plane1 : Plane, 
+												  plane2 : Plane, 
+												  plane3 : Plane) : Vector.<Vector.<Number>>
 		{
-			var nx : Number = (myY1 - myY3) * (myZ1 - myZ2) - (myZ1 - myZ3) * (myY1 - myY2);
-			var ny : Number = (myZ1 - myZ3) * (myX1 - myX2) - (myX1 - myX3) * (myZ1 - myZ2);
-			var nz : Number = (myX1 - myX3) * (myY1 - myY2) - (myY1 - myY3) * (myX1 - myX2);
-
-			return new Plane(nx, ny, nz, myX1 * nx + myY1 * ny + myZ1 * nz);
+			var planes	: Vector.<Plane>			= Vector.<Plane>([plane1, plane2, plane3]);
+			var s		: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(3, true);
+			
+			for (var lineId : uint = 0; lineId < 3; ++lineId)
+			{
+				var plane	: Plane				= planes[lineId];
+				var line	: Vector.<Number>	= s[lineId] = new Vector.<Number>(4, true);
+				
+				line[0] = plane._a;
+				line[1] = plane._b;
+				line[2] = plane._c;
+				line[3] = plane._d;
+			}
+			return s;
 		}
+		
+		private function sortGaussian(s : Vector.<Vector.<Number>>) : void
+		{
+			var swapWith : uint = 1;
+			for (var lineId : uint = 0; lineId < 3; ++lineId)
+			{
+				if (s[lineId][lineId] == 0)
+				{
+					var tmp : Vector.<Number> = s[lineId];
+					s[lineId] = s[lineId + swapWith];
+					s[lineId + swapWith] = tmp;
+					++swapWith;
+					--lineId;
+				}
+				else
+				{
+					swapWith = 1;
+				}
+			}
+		}
+		
+		private function simplifyGaussian(s					: Vector.<Vector.<Number>>,
+										  targetLine		: uint,
+										  sourceLine		: uint,
+										  targetComponent	: uint) : void
+		{
+			var ratio : Number = s[targetLine][targetComponent] / s[targetComponent][targetComponent];
+			s[targetLine][0] -= s[sourceLine][0] * ratio;
+			s[targetLine][1] -= s[sourceLine][1] * ratio;
+			s[targetLine][2] -= s[sourceLine][2] * ratio;
+			s[targetLine][3] -= s[sourceLine][3] * ratio;
+		}
+		
 	}
 }

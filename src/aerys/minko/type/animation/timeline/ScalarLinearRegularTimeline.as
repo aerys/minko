@@ -1,5 +1,6 @@
 package aerys.minko.type.animation.timeline
 {
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.node.IScene;
 
 	public class ScalarLinearRegularTimeline implements ITimeline
@@ -10,8 +11,16 @@ package aerys.minko.type.animation.timeline
 
 		public function get propertyName()	: String	{ return _propertyName; }
 		public function get duration()		: uint		{ return _deltaTime * (_values.length - 1); }
-		public function get deltaTime() 	: uint 		{ return _deltaTime; }
-		public function get values()		: Vector.<Number> { return _values; }
+
+		minko_animation function get deltaTime() : uint
+		{
+			return _deltaTime;
+		}
+		
+		minko_animation function get values() : Vector.<Number>
+		{
+			return _values;
+		}
 		
 		public function ScalarLinearRegularTimeline(propertyName	: String,
 													deltaTime 		: uint,
@@ -22,11 +31,15 @@ package aerys.minko.type.animation.timeline
 			_values			= values;
 		}
 
-		public function updateAt(t : uint, scene : IScene) : void
+		public function updateAt(t : int, scene : IScene) : void
 		{
-			var previousTimeId		: uint		= Math.floor(t / _deltaTime);
-			var nextTimeId			: uint		= Math.ceil(t / _deltaTime);
-			var interpolationRatio	: Number	= (t % _deltaTime) / _deltaTime;
+			var time				: int		= t < 0 ? duration + t : t;
+			var previousTimeId		: uint		= Math.floor(time / _deltaTime);
+			var nextTimeId			: uint		= Math.ceil(time / _deltaTime);
+			var interpolationRatio	: Number	= (time % _deltaTime) / _deltaTime;
+			
+			if (t < 0)
+				interpolationRatio = 1 - interpolationRatio;
 
 			scene[_propertyName] =
 				(1 - interpolationRatio) * _values[previousTimeId] +
@@ -36,11 +49,6 @@ package aerys.minko.type.animation.timeline
 		public function clone() : ITimeline
 		{
 			return new ScalarLinearRegularTimeline(_propertyName, _deltaTime, _values.slice());
-		}
-
-		public function reverse() : void
-		{
-			_values.reverse();
 		}
 	}
 }

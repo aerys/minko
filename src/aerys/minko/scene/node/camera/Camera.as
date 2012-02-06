@@ -1,114 +1,167 @@
 package aerys.minko.scene.node.camera
 {
-	import aerys.minko.scene.action.camera.CameraAction;
+	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.Visitor;
 	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.type.math.ConstVector4;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.IScene;
+	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-
-	/**
-	 * The AbstractCamera3D is the the base camera class. It should
-	 * <strong>not</strong> be used directly. One should use the
-	 * <code>ArcBallCamera3D</code> or the <code>FirstPersonCamera3D</code>
-	 * classes or extend this one.
-	 *
-	 * <p>
-	 * When extending this class to create a new camera class, one should
-	 * override the <code>invalidateTransform</code> method.
-	 * </p>
-	 *
-	 * @see ArcBallCamera
-	 * @see FirstPersonCamera
-	 *
-	 * @author Jean-Marc Le Roux
-	 *
-	 */
-	public class Camera extends AbstractScene implements ICamera
+	
+	public class Camera extends AbstractScene
 	{
-		public static const DEFAULT_FOV				: Number			= Math.PI * .25;
-		public static const DEFAULT_NEAR_CLIPPING	: Number			= .1;
-		public static const DEFAULT_FAR_CLIPPING	: Number			= 1000.;
-
-		private static const RAW_DATA				: Vector.<Number>	= new Vector.<Number>();
-
-		private var _version		: uint		= 0;
-
-		private var _enabled		: Boolean	= true;
-
-		private var _update			: uint		= 0;
-
-		private var _position		: Vector4	= new Vector4(0., 0., 0., 0.);
-		private var _lookAt			: Vector4	= Vector4.copy(ConstVector4.Z_AXIS);
-		private var _up				: Vector4	= Vector4.copy(ConstVector4.Y_AXIS);
-
-		private var _fov			: Number	= 0.;
-		private var _zNear			: Number	= 0.;
-		private var _zFar			: Number	= 0.;
-
-		public function get version() : uint
+		public static const DEFAULT_FOV				: Number	= Math.PI * .25;
+		public static const DEFAULT_ZNEAR	: Number	= .1;
+		public static const DEFAULT_ZFAR	: Number	= 1000.;
+		
+		private var _position		: Vector4	= new Vector4(0, 0, 0);
+		private var _lookAt			: Vector4	= new Vector4(0, 0, 1);
+		private var _up				: Vector4	= new Vector4(0, 1, 0);
+		
+		private var _worldToView	: Matrix4x4	= new Matrix4x4();
+		private var _worldPosition	: Vector4	= new Vector4();
+		private var _worldLookAt	: Vector4	= new Vector4();
+		private var _worldUp		: Vector4	= new Vector4();
+		
+		private var _fov			: Number	= 0;
+		private var _zNear			: Number	= 0;
+		private var _zFar			: Number	= 0;
+		private var _frustum		: Frustum	= new Frustum();
+		private var _projection		: Matrix4x4	= new Matrix4x4();
+		
+		public function get position() : Vector4
 		{
-			return _version + _position.version + _lookAt.version + _up.version;
+			return _position;
 		}
-
-		public function get position() 		: Vector4	{ return _position; }
-		public function get lookAt()		: Vector4	{ return _lookAt; }
-		public function get up()			: Vector4	{ return _up; }
-
-		public function get fieldOfView()	: Number	{ return _fov; }
-		public function get nearClipping()	: Number	{ return _zNear; }
-		public function get farClipping()	: Number	{ return _zFar; }
-
-		/**
-		 * Specify whether the camera is active or not. If the camera is
-		 * not active, it will not push its 3D transformation into the
-		 * stack and will not affect the rendering.
-		 *
-		 * @return <code>true</code> is the camera is enabled,
-		 * <code>false</code> otherwise
-		 */
-		public function get enabled() 	: Boolean 	{ return _enabled; }
-		/**
-		 * The <code>x</code> component of the look-at vector.
-		 */
-
-		public function set enabled(value : Boolean) : void
+		
+		public function get lookAt() : Vector4
 		{
-			if (value != _enabled)
-			{
-				_enabled = value;
-				++_version;
-			}
+			return _lookAt;
 		}
-
+		
+		public function get up() : Vector4
+		{
+			return _up;
+		}
+		
+		public function get worldPosition() : Vector4
+		{
+			return _worldPosition;
+		}
+		
+		public function get worldLookAt() : Vector4
+		{			
+			return _worldLookAt;
+		}
+		
+		public function get worldUp() : Vector4
+		{
+			return _worldUp;
+		}
+		
+		public function get worldToView() : Matrix4x4
+		{
+			return _worldToView;
+		}
+		
+		public function get projection() : Matrix4x4
+		{
+			return _projection;
+		}
+		
+		public function get fieldOfView() : Number
+		{
+			return _fov;
+		}
 		public function set fieldOfView(value : Number) : void
 		{
 			_fov = value;
 		}
-
-		public function set nearClipping(value : Number) : void
+		
+		public function get zNear() : Number
+		{
+			return _zNear;
+		}
+		public function set zNear(value : Number) : void
 		{
 			_zNear = value;
 		}
-
-		public function set farClipping(value : Number) : void
+		
+		public function get zFar() : Number
+		{
+			return _zFar;
+		}
+		public function set zFar(value : Number) : void
 		{
 			_zFar = value;
 		}
-
-		public function get isSingle() : Boolean
+		
+		public function Camera(viewport		: Viewport,
+							   fieldOfView	: Number	= DEFAULT_FOV,
+							   zNear		: Number	= DEFAULT_ZNEAR,
+							   zFar			: Number	= DEFAULT_ZFAR)
 		{
-			return true;
+			super();
+			
+			_fov = fieldOfView;
+			_zNear = zNear;
+			_zFar = zFar;
+			
+			initialize(viewport);
 		}
-
-		public function Camera(fieldOfView 	: Number 	= DEFAULT_FOV,
-							   nearClipping	: Number	= DEFAULT_NEAR_CLIPPING,
-							   farClipping	: Number	= DEFAULT_FAR_CLIPPING)
+		
+		private function initialize(viewport : Viewport) : void
 		{
-			this.fieldOfView = fieldOfView;
-			this.nearClipping = nearClipping;
-			this.farClipping = farClipping;
-
-			actions[0] = new CameraAction();
+			updateProjection(viewport.width / viewport.height);
+			
+			added.add(addedHandler);
+			removed.add(removedHandler);
+		}
+		
+		private function viewportChangedHandler(viewport : Viewport, property : String) : void
+		{
+			if (property == "width" || property == "height")
+				updateProjection(viewport.width / viewport.height);
+		}
+		
+		private function updateProjection(ratio : Number) : void
+		{
+			Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
+			_frustum.updateFromDescription(_fov, ratio, _zNear, _zFar);
+		}
+		
+		private function addedHandler(child : Camera, parent : Group) : void
+		{
+			parentTransformChangedHandler(parent.localToWorld, null);
+			parent.localToWorld.changed.add(parentTransformChangedHandler);
+		}
+		
+		private function removedHandler(child : Camera, parent : Group) : void
+		{
+			parent.localToWorld.changed.remove(parentTransformChangedHandler);
+			Matrix4x4.lookAtLH(
+				_position,
+				_lookAt,
+				_up,
+				_worldToView
+			);
+		}
+		
+		private function parentTransformChangedHandler(transform : Matrix4x4,
+													   key		 : String) : void
+		{
+			transform.transformVector(_position, _worldPosition);
+			transform.transformVector(_lookAt, _worldLookAt);
+			transform.deltaTransformVector(_up, _worldUp);
+			_worldUp.normalize();
+			
+			Matrix4x4.lookAtLH(
+				_worldPosition,
+				_worldLookAt,
+				_worldUp,
+				_worldToView
+			);
 		}
 	}
 }

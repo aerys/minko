@@ -4,19 +4,26 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	use namespace minko_animation;
-	
 	public class MatrixLinearTimeline implements ITimeline
 	{
+		use namespace minko_animation;
+		
 		private var _propertyName	: String;
-
 		private var _timeTable		: Vector.<uint>
 		private var _values			: Vector.<Matrix4x4>;
 
 		public function get propertyName()	: String	{ return _propertyName; }
-		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
-		minko_animation function get matrices()		: Vector.<Matrix4x4>	{ return _values; }
-		minko_animation function get timeTable()		: Vector.<uint>			{ return _timeTable; }
+		public function get duration()		: uint		{ return _timeTable[int(_timeTable.length - 1)]; }
+		
+		minko_animation function get timeTable() : Vector.<uint>
+		{
+			return _timeTable;
+		}
+		
+		minko_animation function get matrices() : Vector.<Matrix4x4>
+		{
+			return _values;
+		}
 		
 		public function MatrixLinearTimeline(propertyName	: String,
 											 timeTable		: Vector.<uint>,
@@ -27,42 +34,38 @@ package aerys.minko.type.animation.timeline
 			_values			= matrices;
 		}
 
-		public function updateAt(t : uint, scene : IScene) : void
+		public function updateAt(t : int, scene : IScene) : void
 		{
-			var timeId		: uint = getIndexForTime(t);
-			var timeCount	: uint = _timeTable.length;
-
+			var time		: uint	= t < 0 ? duration + t : t;
+			var timeId		: uint 	= getIndexForTime(time);
+			var timeCount	: uint 	= _timeTable.length;
+			
+			if (timeId >= timeCount)
+				timeId = timeCount - 1;
+			
 			// change matrix value.
 			var out : Matrix4x4 = scene[_propertyName];
+			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
 					+ "' could not be found in scene node '"
-					+ scene.name + "'"
+					+ scene.name + "'."
 				);
 			}
 
-			if (timeId == 0)
-			{
-				Matrix4x4.copy(_values[0], out);
-			}
-			else if (timeId == timeCount)
-			{
-				Matrix4x4.copy(_values[int(timeCount - 1)], out);
-			}
-			else
-			{
-				var previousTime		: Number	= _timeTable[int(timeId - 1)];
-				var nextTime			: Number	= _timeTable[timeId];
-				var interpolationRatio	: Number	= (t - previousTime) / (nextTime - previousTime);
-				
-				var previousMatrix		: Matrix4x4 = _values[int(timeId - 1)];
-				var nextMatrix			: Matrix4x4 = _values[timeId];
-				
-				Matrix4x4.copy(previousMatrix, out);
-				out.interpolateTo(nextMatrix, interpolationRatio);
-			}
+			var previousTime		: Number	= _timeTable[int(timeId - 1)];
+			var nextTime			: Number	= _timeTable[timeId];
+			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
+			var previousMatrix		: Matrix4x4 = _values[int(timeId - 1)];
+			var nextMatrix			: Matrix4x4 = _values[timeId];
+			
+			if (t < 0)
+				interpolationRatio = 1 - interpolationRatio;
+			
+			Matrix4x4.copy(previousMatrix, out);
+			out.interpolateTo(nextMatrix, interpolationRatio);
 		}
 
 		private function getIndexForTime(t : uint) : uint
@@ -89,12 +92,6 @@ package aerys.minko.type.animation.timeline
 		public function clone() : ITimeline
 		{
 			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _values.slice());
-		}
-
-		public function reverse() : void
-		{
-			_timeTable.reverse();
-			_values.reverse();
 		}
 	}
 }

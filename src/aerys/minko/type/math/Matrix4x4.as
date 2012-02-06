@@ -1,25 +1,24 @@
 package aerys.minko.type.math
 {
-	import aerys.minko.ns.minko;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.IVersionable;
+	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.Signal;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 
-	use namespace minko;
+	use namespace minko_math;
 		
-	public final class Matrix4x4 implements IVersionable
+	public final class Matrix4x4 implements IDataProvider
 	{
-		
 		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
 		private static const RAD2DEG			: Number			= 180. / Math.PI;
 		private static const DEG2RAD			: Number			= Math.PI / 180.;
 		private static const EPSILON			: Number			= 1e-100;
 
-		private static const TMP_NUMBERS_IN		: Vector.<Number>	= new Vector.<Number>();
-		private static const TMP_NUMBERS_OUT	: Vector.<Number>	= new Vector.<Number>();
+		private static const TMP_VECTOR			: Vector.<Number>	= new Vector.<Number>();
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
 		
@@ -28,19 +27,24 @@ package aerys.minko.type.math
 		private static const UPDATE_MATRIX		: uint				= 2;
 		private static const UPDATE_ALL			: uint				= UPDATE_DATA | UPDATE_MATRIX;
 
-		private var _version	: uint					= 0;
 		private var _data		: Vector.<Number>		= new Vector.<Number>();
 		private var _numPushes	: int					= 0;
-		minko var _matrix		: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		
+		private var _changed	: Signal				= new Signal();
+		
+		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 
-		public function get version()		: uint		{ return _version; }
 		public function get translationX()	: Number	{ return getTranslation(TMP_VECTOR4).x; }
 		public function get translationY()	: Number	{ return getTranslation(TMP_VECTOR4).y; }
 		public function get translationZ()	: Number	{ return getTranslation(TMP_VECTOR4).z; }
 		public function get rotationX()		: Number	{ return getRotation(TMP_VECTOR4).x; }
 		public function get rotationY()		: Number	{ return getRotation(TMP_VECTOR4).y; }
 		public function get rotationZ()		: Number	{ return getRotation(TMP_VECTOR4).z; }
-
+		public function get scaleX()		: Number	{ return getScale(TMP_VECTOR4).x; }
+		public function get scaleY()		: Number	{ return getScale(TMP_VECTOR4).y; }
+		public function get scaleZ()		: Number	{ return getScale(TMP_VECTOR4).z; }
+		public function get changed() 		: Signal	{ return _changed; }
+		
 		public function set translationX(value : Number) : void
 		{
 			setTranslation(value, NaN, NaN);
@@ -82,18 +86,19 @@ package aerys.minko.type.math
 					   m41, m42, m43, m44);
 		}
 
-		public function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
-								   m21 : Number, m22 : Number, m23 : Number, m24 : Number,
-								   m31 : Number, m32 : Number, m33 : Number, m34 : Number,
-								   m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
+		private function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
+									m21 : Number, m22 : Number, m23 : Number, m24 : Number,
+									m31 : Number, m32 : Number, m33 : Number, m34 : Number,
+									m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
 		{
-			TMP_NUMBERS_IN.length = 0;
-			TMP_NUMBERS_IN.push(m11, m12, m13, m14,
+			TMP_VECTOR.length = 0;
+			TMP_VECTOR.push(m11, m12, m13, m14,
 							m21, m22, m23, m24,
 							m31, m32, m33, m34,
 							m41, m42, m43, m44);
 
-			_matrix.copyRawDataFrom(TMP_NUMBERS_IN);
+			_matrix.copyRawDataFrom(TMP_VECTOR);
+			_changed.execute(this, null);
 		}
 		
 		public function push() : Matrix4x4
@@ -111,7 +116,7 @@ package aerys.minko.type.math
 			
 			_numPushes--;
 			_matrix.copyRawDataFrom(_data, _numPushes * 16);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -119,7 +124,7 @@ package aerys.minko.type.math
 		public function prepend(m : Matrix4x4) : Matrix4x4
 		{
 			_matrix.prepend(m._matrix);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -127,7 +132,7 @@ package aerys.minko.type.math
 		public function append(m : Matrix4x4) : Matrix4x4
 		{
 			_matrix.append(m._matrix);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -139,7 +144,7 @@ package aerys.minko.type.math
 			_matrix.appendRotation(radians * RAD2DEG,
 								   axis._vector,
 								   pivotPoint ? pivotPoint._vector : null);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -149,7 +154,7 @@ package aerys.minko.type.math
 									z	: Number	= 1.) : Matrix4x4
 		{
 			_matrix.appendScale(x, y, z);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -157,7 +162,7 @@ package aerys.minko.type.math
 		public function appendUniformScale(scale : Number) : Matrix4x4
 		{
 			_matrix.appendScale(scale, scale, scale);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -167,7 +172,7 @@ package aerys.minko.type.math
 										  z : Number = 0.) : Matrix4x4
 		{
 			_matrix.appendTranslation(x, y, z);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -179,7 +184,7 @@ package aerys.minko.type.math
 			_matrix.prependRotation(radians * RAD2DEG,
 									axis._vector,
 									pivotPoint ? pivotPoint._vector : null);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -189,7 +194,7 @@ package aerys.minko.type.math
 									 z	: Number = 1.) : Matrix4x4
 		{
 			_matrix.prependScale(x, y, z);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -197,7 +202,7 @@ package aerys.minko.type.math
 		public function prependUniformScale(scale : Number) : Matrix4x4
 		{
 			_matrix.prependScale(scale, scale, scale);
-			++_version;
+			_changed.execute(this, null);
 			
 			return this;
 		}
@@ -207,7 +212,7 @@ package aerys.minko.type.math
 										   z : Number	= 1.) : Matrix4x4
 		{
 			_matrix.prependTranslation(x, y, z);
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -215,17 +220,10 @@ package aerys.minko.type.math
 		public function transformVector(input 	: Vector4,
 									    output	: Vector4	= null) : Vector4
 		{
-			var vin : Vector3D = input._vector;
-			
-			TMP_NUMBERS_IN[0] = vin.x;
-			TMP_NUMBERS_IN[1] = vin.y;
-			TMP_NUMBERS_IN[2] = vin.z;
-			TMP_NUMBERS_IN.length = 3;
-			
-			_matrix.transformVectors(TMP_NUMBERS_IN, TMP_NUMBERS_OUT);
+			var v : Vector3D = _matrix.transformVector(input._vector);
 
 			output ||= new Vector4();
-			output.set(TMP_NUMBERS_OUT[0], TMP_NUMBERS_OUT[1], TMP_NUMBERS_OUT[2], vin.w);
+			output.set(v.x, v.y, v.z, v.w);
 
 			return output;
 		}
@@ -254,7 +252,7 @@ package aerys.minko.type.math
 		{
 			_matrix.identity();
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -263,7 +261,7 @@ package aerys.minko.type.math
 		{
 			_matrix.invert();
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -272,7 +270,7 @@ package aerys.minko.type.math
 		{
 			_matrix.transpose();
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -304,7 +302,7 @@ package aerys.minko.type.math
 		{
 			_matrix.copyRawDataFrom(input, offset, transposed);
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -313,11 +311,13 @@ package aerys.minko.type.math
 								at	: Vector4	= null,
 								up	: Vector4	= null) : Matrix4x4
 		{
-			_matrix.pointAt(pos._vector,
-							at ? at._vector : null,
-							up ? up._vector : null);
+			_matrix.pointAt(
+				pos._vector,
+				at ? at._vector : null,
+				up ? up._vector : null
+			);
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -326,7 +326,7 @@ package aerys.minko.type.math
 		{
 			_matrix.interpolateTo(target._matrix, percent);
 
-			++_version;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -344,7 +344,7 @@ package aerys.minko.type.math
 
 			output ||= new Vector4();
 			output._vector = components[1];
-
+			
 			return output;
 		}
 		
@@ -360,7 +360,7 @@ package aerys.minko.type.math
 			if (!isNaN(z))
 				rotation.z = z;
 
-			++_version;
+			_changed.execute(this, null);
 			_matrix.recompose(components);
 
 			return this;
@@ -386,7 +386,7 @@ package aerys.minko.type.math
 				position.z = z;
 			
 			_matrix.copyColumnFrom(3, position._vector);
-			++_version;
+			_changed.execute(this, null);
 			
 			return this;
 		}
@@ -413,7 +413,7 @@ package aerys.minko.type.math
 			if (!isNaN(z))
 				scale.z = z;
 			
-			++_version;
+			_changed.execute(this, null);
 			_matrix.recompose(components);
 			
 			return this;
@@ -422,7 +422,7 @@ package aerys.minko.type.math
 		public function toDualQuaternion(n : Vector4,
 										 d : Vector4) : void
 		{
-			var m : Vector.<Number> = TMP_NUMBERS_IN
+			var m : Vector.<Number> = TMP_VECTOR
 			_matrix.copyRawDataTo(m, 0, true);
 
 			var mTrace	: Number = m[0] + m[5] + m[10];
@@ -497,7 +497,7 @@ package aerys.minko.type.math
 		{
 			target ||= FACTORY.create() as Matrix4x4;
 			source._matrix.copyToMatrix3D(target._matrix);
-			target._version++;
+			target._changed.execute(target, null);
 
 			return target;
 		}
@@ -533,33 +533,62 @@ package aerys.minko.type.math
 										up		: Vector4,
 										out		: Matrix4x4 = null) : Matrix4x4
 		{
-			var z_axis	: Vector4	= null;
-			var	x_axis	: Vector4	= null;
-			var	y_axis	: Vector4	= null;
-			var	m41		: Number	= 0.;
-			var	m42		: Number	= 0.;
-			var	m43		: Number	= 0.;
-
-			z_axis = Vector4.subtract(lookAt, eye).normalize();
-			x_axis = Vector4.crossProduct(up, z_axis).normalize();
-			y_axis = Vector4.crossProduct(z_axis, x_axis).normalize();
-
-			if (Vector4.equals(x_axis, ConstVector4.ZERO) || Vector4.equals(y_axis, ConstVector4.ZERO))
+			
+			var eye_X		: Number = eye._vector.x;
+			var eye_Y		: Number = eye._vector.y;
+			var eye_Z		: Number = eye._vector.z;
+			
+			var l : Number;
+			
+			var z_axis_X	: Number = lookAt._vector.x - eye_X;
+			var z_axis_Y	: Number = lookAt._vector.y - eye_Y;
+			var z_axis_Z	: Number = lookAt._vector.z - eye_Z;
+			
+			l = 1 / Math.sqrt(z_axis_X * z_axis_X + z_axis_Y * z_axis_Y + z_axis_Z * z_axis_Z);
+			
+			z_axis_X *= l;
+			z_axis_Y *= l;
+			z_axis_Z *= l;
+			
+			var x_axis_X : Number = up._vector.y * z_axis_Z - z_axis_Y * up._vector.z;
+			var x_axis_Y : Number = up._vector.z * z_axis_X - z_axis_Z * up._vector.x;
+			var x_axis_Z : Number = up._vector.x * z_axis_Y - z_axis_X * up._vector.y;
+			
+			l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
+			
+			x_axis_X *= l;
+			x_axis_Y *= l;
+			x_axis_Z *= l;
+			
+			var y_axis_X : Number = z_axis_Y * x_axis_Z - x_axis_Y * z_axis_Z;
+			var y_axis_Y : Number = z_axis_Z * x_axis_X - x_axis_Z * z_axis_X;
+			var y_axis_Z : Number = z_axis_X * x_axis_Y - x_axis_X * z_axis_Y;
+			
+			l = 1 / Math.sqrt(y_axis_X * y_axis_X + y_axis_Y * y_axis_Y + y_axis_Z * y_axis_Z);
+			
+			y_axis_X *= l;
+			y_axis_Y *= l;
+			y_axis_Z *= l;
+			
+			if ((x_axis_X == 0 && x_axis_Y == 0 && x_axis_Z == 0) 
+				|| (y_axis_X == 0 && y_axis_Y == 0 && y_axis_Z == 0))
 			{
 				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
-								+ 'and the up vector appear to be the same.');
+					+ 'and the up vector appear to be the same.');
 			}
-
-			m41 = -Vector4.dotProduct(x_axis, eye);
-			m42 = -Vector4.dotProduct(y_axis, eye);
-			m43 = -Vector4.dotProduct(z_axis, eye);
 			
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
-						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
-						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
-						   m41,			m42,		m43,		1.);
-
+			var	m41			: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
+			var	m42			: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
+			var	m43			: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
+			
+			out ||= Matrix4x4(FACTORY.create());
+			out.initialize(
+				x_axis_X,	y_axis_X,	z_axis_X,	0.,
+				x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
+				x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
+				m41,		m42,		m43,		1.
+			);
+			
 			return out;
 		}
 
@@ -585,32 +614,60 @@ package aerys.minko.type.math
 										up		: Vector4,
 										out		: Matrix4x4 = null) : Matrix4x4
 		{
-			var z_axis	: Vector4	= null;
-			var	x_axis	: Vector4	= null;
-			var	y_axis	: Vector4	= null;
-			var	m41		: Number	= 0.;
-			var	m42		: Number	= 0.;
-			var	m43		: Number	= 0.;
-
-			z_axis = Vector4.subtract(eye, lookAt).normalize();
-			x_axis = Vector4.crossProduct(up, z_axis).normalize();
-			y_axis = Vector4.crossProduct(z_axis, x_axis).normalize();
-
-			if (Vector4.equals(x_axis, ConstVector4.ZERO) || Vector4.equals(y_axis, ConstVector4.ZERO))
+			var eye_X		: Number = eye._vector.x;
+			var eye_Y		: Number = eye._vector.y;
+			var eye_Z		: Number = eye._vector.z;
+			
+			var l : Number;
+			
+			var z_axis_X	: Number = eye_X - lookAt._vector.x;
+			var z_axis_Y	: Number = eye_Y - lookAt._vector.y;
+			var z_axis_Z	: Number = eye_Z - lookAt._vector.z;
+			
+			l = 1 / Math.sqrt(z_axis_X * z_axis_X + z_axis_Y * z_axis_Y + z_axis_Z * z_axis_Z);
+			
+			z_axis_X *= l;
+			z_axis_Y *= l;
+			z_axis_Z *= l;
+			
+			var x_axis_X : Number = up._vector.y * z_axis_Z - z_axis_Y * up._vector.z;
+			var x_axis_Y : Number = up._vector.z * z_axis_X - z_axis_Z * up._vector.x;
+			var x_axis_Z : Number = up._vector.x * z_axis_Y - z_axis_X * up._vector.y;
+			
+			l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
+			
+			x_axis_X *= l;
+			x_axis_Y *= l;
+			x_axis_Z *= l;
+			
+			var y_axis_X : Number = z_axis_Y * x_axis_Z - x_axis_Y * z_axis_Z;
+			var y_axis_Y : Number = z_axis_Z * x_axis_X - x_axis_Z * z_axis_X;
+			var y_axis_Z : Number = z_axis_X * x_axis_Y - x_axis_X * z_axis_Y;
+			
+			l = 1 / Math.sqrt(y_axis_X * y_axis_X + y_axis_Y * y_axis_Y + y_axis_Z * y_axis_Z);
+			
+			y_axis_X *= l;
+			y_axis_Y *= l;
+			y_axis_Z *= l;
+			
+			if ((x_axis_X == 0 && x_axis_Y == 0 && x_axis_Z == 0) 
+				|| (y_axis_X == 0 && y_axis_Y == 0 && y_axis_Z == 0))
 			{
 				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
 								+ 'and the up vector appear to be the same.');
 			}
-
-			m41 = -Vector4.dotProduct(x_axis, eye);
-			m42 = -Vector4.dotProduct(y_axis, eye);
-			m43 = -Vector4.dotProduct(z_axis, eye);
 			
+			var	m41			: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
+			var	m42			: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
+			var	m43			: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
+
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(x_axis.x,	y_axis.x,	z_axis.x,	0.,
-						   x_axis.y,	y_axis.y,	z_axis.y,	0.,
-						   x_axis.z,	y_axis.z,	z_axis.z,	0.,
-						   m41,			m42,		m43,		1.);
+			out.initialize(
+				x_axis_X,	y_axis_X,	z_axis_X,	0.,
+				x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
+				x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
+				m41,		m42,		m43,		1.
+			);
 
 			return out;
 		}
@@ -621,17 +678,17 @@ package aerys.minko.type.math
 												zFar 	: Number,
 												out		: Matrix4x4 = null) : Matrix4x4
 		{
-			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
-			var	x_scale		: Number	= y_scale / ratio;
-			var	m33			: Number	= zFar / (zFar - zNear);
-			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
-			
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(x_scale,	0.,			0.,		0.,
-						   0.,		y_scale,	0.,		0.,
-						   0.,		0.,			m33,	1.,
-						   0.,		0.,			m43,	0.);
-
+			
+			var fd : Number = 1. / Math.tan(fov * 0.5);
+			
+			out.initialize(
+				fd / ratio,	0.,								0.,		0.,
+				0.,			fd,								0.,		0.,
+				0.,			0.,			 zFar / (zFar - zNear),		1.,
+				0.,			0.,	-zNear * zFar / (zFar - zNear),		0.
+			);
+			
 			return out;
 		}
 
@@ -642,10 +699,12 @@ package aerys.minko.type.math
 									   out		: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(2. / w,	0.,		0.,						0.,
-						   0.,		2. / h,	0.,						0.,
-						   0.,		0.,		1. / (zFar - zNear),	0.,
-						   0.,		0.,		zNear / (zNear - zFar),	1.);
+			out.initialize(
+				2. / w,	0.,		0.,						0.,
+				0.,		2. / h,	0.,						0.,
+				0.,		0.,		1. / (zFar - zNear),	0.,
+				0.,		0.,		zNear / (zNear - zFar),	1.
+			);
 
 			return out;
 		}
@@ -657,10 +716,12 @@ package aerys.minko.type.math
 									   out		: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(2. / w,	0.,		0.,						0.,
-						   0.,		2. / h,	0.,						0.,
-						   0.,		0.,		1. / (zNear - zFar),	0.,
-						   0.,		0.,		zNear / (zNear - zFar),	1.);
+			out.initialize(
+				2. / w,	0.,		0.,						0.,
+				0.,		2. / h,	0.,						0.,
+				0.,		0.,		1. / (zNear - zFar),	0.,
+				0.,		0.,		zNear / (zNear - zFar),	1.
+			);
 
 			return out;
 		}
@@ -674,10 +735,12 @@ package aerys.minko.type.math
 												out		: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(2. / (r - l),		0.,					0.,						0.,
-						   0.,					2. / (t - b),		0.,						0.,
-						   0.,					0.,					1. / (zFar - zNear),	0.,
-						   (l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.);
+			out.initialize(
+				2. / (r - l),		0.,					0.,						0.,
+				0.,					2. / (t - b),		0.,						0.,
+				0.,					0.,					1. / (zFar - zNear),	0.,
+				(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.
+			);
 
 			return out;
 		}
@@ -691,10 +754,12 @@ package aerys.minko.type.math
 												out		: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(2. / (r - l),		0.,					0.,						0.,
-						   0.,					2. / (t - b),		0.,						0.,
-						   0.,					0.,					1. / (zNear - zFar),	0.,
-						   (l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.);
+			out.initialize(
+				2. / (r - l),		0.,					0.,						0.,
+				0.,					2. / (t - b),		0.,						0.,
+				0.,					0.,					1. / (zNear - zFar),	0.,
+				(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.
+			);
 
 			return out;
 		}
@@ -718,10 +783,12 @@ package aerys.minko.type.math
 			var zz : Number = z * z;
 			var ww : Number = w * w;
 
-			out.initialize(xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
-						   xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
-						   xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
-						   0.,					0.,					0.,					1.);
+			out.initialize(
+				xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
+				xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
+				xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
+				0.,					0.,					0.,					1.
+			);
 
 			return out;
 		}

@@ -1,39 +1,60 @@
 package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.type.stream.IVertexStream;
+	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
-
+	
 	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
 
-	public class VertexBuffer3DResource implements IResource
+	public final class VertexBuffer3DResource implements IResource
 	{
 		use namespace minko_stream;
 
 		private var _stream			: VertexStream		= null;
-		private var _streamVersion	: uint				= 0;
+		private var _update			: Boolean			= true;
 		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 
-		public function get numVertices() : uint	{ return _numVertices; }
+		public function get numVertices() : uint
+		{
+			return _numVertices;
+		}
 
 		public function VertexBuffer3DResource(source : VertexStream)
 		{
 			_stream = source;
+			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_stream.changed.add(vertexStreamChangedHandler);
+		}
+		
+		private function vertexStreamChangedHandler(vertexStream 	: VertexStream,
+													property 		: String) : void
+		{
+			_update = true;
 		}
 
 		public function getVertexBuffer3D(context : Context3D) : VertexBuffer3D
 		{
-			var update		: Boolean			= _stream.version != _streamVersion;
-			var numVertices	: uint				= _stream.length;
+			var update		: Boolean	= _update;
+			var numVertices	: uint		= _stream.length;
 
 			if (numVertices && (!_vertexBuffer || numVertices != _numVertices))
 			{
 				if (_vertexBuffer)
 					_vertexBuffer.dispose();
 
-				_vertexBuffer = context.createVertexBuffer(_stream.length,
-														   _stream.format.dwordsPerVertex);
+				_vertexBuffer = context.createVertexBuffer(
+					numVertices,
+					_stream.format.dwordsPerVertex
+				);
+				
 				update = true;
 			}
 
@@ -41,11 +62,11 @@ package aerys.minko.render.resource
 			{
 				_vertexBuffer.uploadFromVector(_stream._data, 0, numVertices);
 
-				_streamVersion = _stream.version;
+				_update = false;
 				_numVertices = numVertices;
 
-				if (!_stream.isDynamic)
-					_stream.disposeLocalData();
+				if (!(_stream.usage & StreamUsage.READ) || _stream._localDispose)
+					_stream.disposeLocalData(false);
 			}
 
 			return _vertexBuffer;
@@ -53,7 +74,11 @@ package aerys.minko.render.resource
 
 		public function dispose() : void
 		{
-			_vertexBuffer.dispose();
+			if (_vertexBuffer)
+			{
+				_vertexBuffer.dispose();
+				_vertexBuffer = null;
+			}
 		}
 	}
 }

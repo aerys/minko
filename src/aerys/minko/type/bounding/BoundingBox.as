@@ -1,10 +1,8 @@
 package aerys.minko.type.bounding
 {
-	import aerys.minko.ns.minko;
-	import aerys.minko.type.math.ConstVector4;
-	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.math.Vector4;
-
+	
 	import flash.geom.Vector3D;
 
 	/**
@@ -15,22 +13,22 @@ package aerys.minko.type.bounding
 	 */
 	public final class BoundingBox
 	{
-		use namespace minko;
+		use namespace minko_math;
 
-		minko var _min		: ConstVector4		= new ConstVector4();
-		minko var _max		: ConstVector4		= new ConstVector4();
+		minko_math var _min			: Vector4		= new Vector4();
+		minko_math var _max			: Vector4		= new Vector4();
 
-		minko var _vertices	: Vector.<Number>	= new Vector.<Number>(24, true);
+		minko_math var _vertices	: Vector.<Number>	= new Vector.<Number>(24, true);
 
 		/**
 		 * The bottom-left corner of the bounding box.
 		 */
-		public function get min()	: ConstVector4	{ return _min; }
+		public function get min()	: Vector4	{ return _min; }
 
 		/**
 		 * The top-right corner of the bounding box.
 		 */
-		public function get max()	: ConstVector4	{ return _max; }
+		public function get max()	: Vector4	{ return _max; }
 
 		/**
 		 * Creates a new BoundingBox object.

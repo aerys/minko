@@ -1,45 +1,31 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.render.shader.node.Components;
-	import aerys.minko.render.shader.node.INode;
-	import aerys.minko.render.shader.node.leaf.*;
-	import aerys.minko.render.shader.node.operation.builtin.*;
-	import aerys.minko.render.shader.node.operation.manipulation.*;
-	import aerys.minko.render.shader.node.operation.math.PlanarReflection;
-	import aerys.minko.render.shader.node.operation.math.Product;
-	import aerys.minko.render.shader.node.operation.math.Sum;
-	import aerys.minko.scene.data.CameraData;
-	import aerys.minko.scene.data.StyleData;
-	import aerys.minko.scene.data.TransformData;
+	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.shader.compiler.Serializer;
+	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
+	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.stream.format.VertexComponent;
-
+	
 	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{
-		private static const SIZE_TO_COMPONENTS	: Vector.<uint>	= Vector.<uint>([Components.X, Components.XY, Components.XYZ]);
-
-		/**
-		 * The position of the current vertex in clipspace (normalized
-		 * screenspace).
-		 *
-		 * @return
-		 *
-		 */
-		protected function get vertexClipspacePosition() : SValue
+		use namespace minko_shader;
+		
+		private var _main	: ActionScriptShader	= null;
+		
+		protected final function get main() : ActionScriptShader
 		{
-			return multiply4x4(vertexPosition, localToScreenMatrix);
-		}
-
-
-		/**
-		 * The position of the current vertex in world space.
-		 * @return
-		 *
-		 */
-		protected function get vertexWorldPosition() : SValue
-		{
-			return multiply4x4(vertexPosition, localToWorldMatrix);
+			return _main;
 		}
 
 		/**
@@ -51,7 +37,7 @@ package aerys.minko.render.shader
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
-		
+
 		/**
 		 * The RGB color of the current vertex.
 		 * @return
@@ -102,131 +88,11 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 
-		/**
-		 * The direction of the camera in local space.
-		 * @return
-		 *
-		 */
-		protected function get cameraLocalDirection() : SValue
+		public function ActionScriptShaderPart(main : ActionScriptShader) : void
 		{
-			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_DIRECTION));
+			_main = main;
 		}
-
-		/**
-		 * The position of the camera in world space.
-		 * @return
-		 *
-		 */
-		protected function get cameraPosition() : SValue
-		{
-			return new SValue(new WorldParameter(3, CameraData, CameraData.POSITION));
-		}
-
-		/**
-		 * The position of the camera in local space.
-		 * @return
-		 *
-		 */
-		protected function get cameraLocalPosition() : SValue
-		{
-			return new SValue(new WorldParameter(3, CameraData, CameraData.LOCAL_POSITION));
-		}
-
-		/**
-		 * The direction of the camera in world space.
-		 * @return
-		 *
-		 */
-		protected function get cameraDirection() : SValue
-		{
-			return new SValue(new WorldParameter(3, CameraData, CameraData.DIRECTION));
-		}
-
-		protected function get cameraNearClipping() : SValue
-		{
-			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_NEAR));
-		}
-
-		protected function get cameraFarClipping() : SValue
-		{
-			return new SValue(new WorldParameter(1, CameraData, CameraData.Z_FAR));
-		}
-
-		/**
-		 * The local-to-screen (= world * view * projection) transformation matrix.
-		 * @return
-		 *
-		 */
-		protected function get localToScreenMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.LOCAL_TO_SCREEN));
-		}
-
-		protected function get worldToScreenMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.WORLD_TO_SCREEN));
-		}
-
-		/**
-		 * The local-to-world (= world) transformation matrix.
-		 * @return
-		 *
-		 */
-		protected function get localToWorldMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.WORLD));
-		}
-
-		/**
-		 * The local-to-view (= world * view) transformation matrix.
-		 * @return
-		 *
-		 */
-		protected function get localToViewMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.LOCAL_TO_VIEW));
-		}
-
-		/**
-		 * The world-to-local (= world^-1) transformation matrix.
-		 * @return
-		 *
-		 */
-		protected function get worldToLocalMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.WORLD_INVERSE));
-		}
-
-		/**
-		 * The world-to-view (= world * view) transformation matrix.
-		 * @return
-		 *
-		 */
-		protected function get worldToViewMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.VIEW));
-		}
-
-		protected function get viewToWorldMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.VIEW_INVERSE));
-		}
-
-		protected function get viewMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.VIEW));
-		}
-
-		/**
-		 * The view-to-clipspace (= projection) matrix.
-		 * @return
-		 *
-		 */
-		protected function get projectionMatrix() : SValue
-		{
-			return new SValue(new TransformParameter(16, TransformData.PROJECTION));
-		}
-
+		
 		/**
 		 * Interpolate vertex shader values to make them usable inside the
 		 * fragment shader.
@@ -282,88 +148,51 @@ package aerys.minko.render.shader
 		 */
 		private function toFloat(size : int, values : Array) : SValue
 		{
-			var numValues	: uint	= values.length;
-			var i 			: int 	= 0;
-
-			// directly return a constant if we have a Vector.<Number>
-			while (i < numValues && values[i] is Number)
-				++i;
-
-			if (i >= numValues)
-				return new SValue(new Constant(Vector.<Number>(values)));
-
-			// build the value otherwise
-			var result		: INode	= null;
-			var value 		: INode	= null;
-			var validValue	: INode	= null;
-
-			for (i = 0; i < numValues && size > 0; ++i)
+			var currentOffset	: uint = 0;
+			
+			var args			: Vector.<INode>	= new Vector.<INode>();
+			var components		: Vector.<uint>		= new Vector.<uint>();
+			
+			for each (var value : Object in values)
 			{
-				value = getNode(values[i]);
-
-				if (!value)
-					continue ;
-
-				validValue = value;
-
-				size -= value.size;
-				if (size < 0)
-				{
-					var extract : Extract = new Extract(value, SIZE_TO_COMPONENTS[int(value.size + size - 1)]);
-
-					result = result ? new Combine(result, extract) : extract;
-				}
-				else
-					result = result ? new Combine(result, value) : value;
+				var node		: INode	= getNode(value);
+				var nodeSize	: uint	= node.size;
+				
+				if (currentOffset + nodeSize > size)
+					throw new Error('Invalid size specified: buffer is too big');
+				
+				args.push(node);
+				components.push(Components.createContinuous(currentOffset, 0, nodeSize, nodeSize));
+				currentOffset += nodeSize;
 			}
-
-			if (size > 0)
-			{
-				var last 	: uint		= Components.X;
-				var comps	: uint		= 0x4444;
-
-				if (validValue)
-				{
-					if (validValue.size == 2)
-						last = Components.Y;
-					else if (validValue.size == 3)
-						last = Components.Z;
-					else if (validValue.size == 4)
-						last = Components.W;
-				}
-
-				last &= 0xf;
-				while (size)
-				{
-					comps = (comps << 4) | last;
-					size--;
-				}
-
-				result = new Combine(result, new Extract(validValue, comps & 0xffff));
-			}
-
-			return new SValue(result);
-		}
-
-		protected final function copy(value : Object) : SValue
-		{
-			return new SValue(new RootWrapper(getNode(value)));
+			
+			if (currentOffset != size)
+				throw new Error('Invalid size specified. Expected ' + size + ' got ' + currentOffset + '.');
+			
+			return new SValue(new Overwriter(args, components));
 		}
 
 		protected final function float(value : Object) : SValue
 		{
 			var node : INode = getNode(value);
-
-			return new SValue(node.size == 1 ? node : new Extract(node, Components.X));
+			if (node.size == 1)
+				return new SValue(node);
+			else
+				throw new Error('Invalid argument');
 		}
 
 		protected final function float2(x : Object, y : Object = null) : SValue
 		{
-			return toFloat(2, [x, y]);
+			if (x != null && y == null)
+				return toFloat(2, [x]);
+			else if (x != null && y != null)
+				return toFloat(2, [x, y]);
+			else
+				throw new Error('Invalid arguments');
 		}
 
 		/**
-		 * Create a new SVAlue object of size 3 by combining 3 scalar values.
+		 * Create a new SValue object of size 3 by combining 3 scalar values.
 		 *
 		 * <p>This method is an alias of the "combine" method. You should prefer this
 		 * method everytime you want to build an SValue object of size 3 because this
@@ -379,7 +208,14 @@ package aerys.minko.render.shader
 										y : Object = null,
 										z : Object = null) : SValue
 		{
-			return toFloat(3, [x, y, z]);
+			if (x != null && y == null && z == null)
+				return toFloat(3, [x]);
+			else if (x != null && y != null && z == null)
+				return toFloat(3, [x, y]);
+			else if (x != null && y != null && z != null)
+				return toFloat(3, [x, y, z]);
+			else
+				throw new Error('Invalid arguments');
 		}
 
 		/**
@@ -401,7 +237,61 @@ package aerys.minko.render.shader
 										z : Object = null,
 										w : Object = null) : SValue
 		{
-			return toFloat(4, [x, y, z, w]);
+			if (x != null && y == null && z == null && w == null)
+				return toFloat(4, [x]);
+			else if (x != null && y != null && z == null && w == null)
+				return toFloat(4, [x, y]);
+			else if (x != null && y != null && z != null && w == null)
+				return toFloat(4, [x, y, z]);
+			else if (x != null && y != null && z != null && w != null)
+				return toFloat(4, [x, y, z, w]);
+			else
+				throw new Error('Invalid arguments');
+		}
+		
+		/**
+		 * Convert an ARGB uint to an RGBA float4 SValue object.
+		 *  
+		 * @param argb
+		 * @return 
+		 * 
+		 */
+		protected final function rgba(argb : uint) : SValue
+		{
+			return float4(
+				((argb >> 16) & 0xff) / 255.,
+				((argb >> 8) & 0xff) / 255.,
+				(argb & 0xff) / 255.,
+				((argb >>> 24) & 0xff) / 255.
+			);
+		}
+		
+		/**
+		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value. 
+		 * @param scalar
+		 * @return 
+		 * 
+		 */
+		protected final function pack(scalar : Object) : SValue
+		{
+			var bitSh	: SValue = float4(256. * 256. * 256., 256. * 256, 256., 1.);
+			var bitMsk	: SValue = float4(0., 1. / 256., 1. / 256., 1. / 256.);
+			var comp	: SValue = fractional(multiply(getNode(scalar), bitSh));
+			
+			return subtract(comp, multiply(comp.xxyz, bitMsk));
+		}
+		
+		/**
+		 * Unack a [0 .. 1] scalar value from a float4 RGBA color value. 
+		 * @param packedScalar
+		 * @return 
+		 * 
+		 */
+		protected final function unpack(packedScalar : Object) : SValue
+		{
+			var bitSh : SValue = float4(1. / (256. * 256. * 256.), 1. / (256. * 256.), 1. / 256., 1.);
+			
+			return dotProduct4(packedScalar, bitSh);
 		}
 
 		/**
@@ -428,14 +318,28 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected final function sampleTexture(styleId 		: int,
+		/*protected final function sampleTexture(styleId		: int,
 											   uv 			: Object,
-											   filtering	: uint	= 1,
-											   mipMapping	: uint	= 2,
-											   wrapping		: uint	= 1) : SValue
+											   filtering	: uint	= 1, // SamplerFilter.LINEAR
+											   mipMapping	: uint	= 0, // SamplerMipmap.DISABLE
+											   wrapping		: uint	= 1, // SamplerWrapping.REPEAT
+											   dimension	: uint	= 0) : SValue // SamplerDimension.FLAT
 		{
-			return new SValue(new Texture(getNode(uv), new Sampler(styleId, filtering, mipMapping, wrapping)));
-		}
+			return new SValue(
+				new Instruction(
+					Instruction.TEX,
+					getNode(uv), 
+					new Sampler(
+						'unnamed parameter',
+						new StyleParameterAccessor(styleId),
+						filtering, 
+						mipMapping, 
+						wrapping, 
+						dimension
+					)
+				)
+			);
+		}*/
 
 		/**
 		 * Compute term-to-term scalar multiplication.
@@ -448,13 +352,12 @@ package aerys.minko.render.shader
 		 */
 		protected final function multiply(value1 : Object, value2 : Object, ...args) : SValue
 		{
-			var p 		: Product 	= new Product(getNode(value1), getNode(value2));
-			var numArgs : int 		= args.length;
-
-			for (var i : int = 0; i < numArgs; ++i)
-				p.addTerm(getNode(args[i]))
-
-			return new SValue(p);
+			var result : SValue = new SValue(new Instruction(Instruction.MUL, getNode(value1), getNode(value2)));
+			
+			for each (var arg : Object in args)
+				result = multiply(result, arg);
+			
+			return result;
 		}
 
 		/**
@@ -467,32 +370,32 @@ package aerys.minko.render.shader
 		 */
 		protected final function divide(value1 : Object, value2 : Object) : SValue
 		{
-			return new SValue(new Divide(getNode(value1), getNode(value2)));
+			return new SValue(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
 		}
 
 		protected final function fractional(value : Object) : SValue
 		{
-			return new SValue(new Fractional(getNode(value)));
+			return new SValue(new Instruction(Instruction.FRC, getNode(value)));
 		}
 
 		protected final function absolute(value : Object) : SValue
 		{
-			return new SValue(new Absolute(getNode(value)));
+			return new SValue(new Instruction(Instruction.ABS, getNode(value)));
+		}
+		
+		protected final function sign(value : Object) : SValue
+		{
+			return divide(value, absolute(value));
 		}
 
 		protected final function modulo(value : Object, base : Object) : SValue
 		{
-			var baseNode : INode = getNode(base);
-
-			return new SValue(new Multiply(
-				baseNode,
-				new Fractional(new Divide(getNode(value), baseNode)))
-			);
+			return multiply(base, fractional(divide(value, base)));
 		}
 
 		protected final function reciprocal(value : Object) : SValue
 		{
-			return new SValue(new Reciprocal(getNode(value)));
+			return new SValue(new Instruction(Instruction.RCP, getNode(value)));
 		}
 
 		/**
@@ -505,149 +408,169 @@ package aerys.minko.render.shader
 		 */
 		protected final function power(base : Object, exp : Object) : SValue
 		{
-			return new SValue(new Power(getNode(base), getNode(exp)));
+			return new SValue(new Instruction(Instruction.POW, getNode(base), getNode(exp)));
 		}
 
-		protected final function add(value1 : Object, value2 : Object, ...values) : SValue
+		protected final function add(value1 : Object, value2 : Object, ...args) : SValue
 		{
-			var sum		: Sum	= new Sum(getNode(value1), getNode(value2));
-			var numArgs : int	= values.length;
-
-			for (var i : int = 0; i < numArgs; ++i)
-				sum.addTerm(getNode(values[i]))
-
-			return new SValue(sum);
+			var result : SValue = new SValue(new Instruction(Instruction.ADD, getNode(value1), getNode(value2)));
+			
+			for each (var arg : Object in args)
+				result = add(result, arg);
+			
+			return result;
 		}
 
-		protected final function subtract(value1 : Object, value2 : Object, ...values) : SValue
+		protected final function subtract(value1 : Object, value2 : Object) : SValue
 		{
-			var sub			: Substract	= new Substract(getNode(value1), getNode(value2));
-			var numValues	: int		= values.length;
-
-			for (var i : int = 0; i < numValues; ++i)
-				sub = new Substract(sub, getNode(values[i]));
-
-			return new SValue(sub);
+			return new SValue(new Instruction(Instruction.SUB, getNode(value1), getNode(value2)));
 		}
 
 		protected final function dotProduct2(u : Object, v : Object) : SValue
 		{
-			return new SValue(dotProduct3(float3(float2(u), 0.), float3(float2(v), 0.)));
+			var c : SValue = float3(1, 1, 0);
+			return dotProduct3(multiply(u.xyy, c), v.xyy);
 		}
 
 		protected final function dotProduct3(u : Object, v : Object) : SValue
 		{
-			return new SValue(new DotProduct3(getNode(u), getNode(v)));
+			return new SValue(new Instruction(Instruction.DP3, getNode(u), getNode(v)));
 		}
 
 		protected final function dotProduct4(u : Object, v : Object) : SValue
 		{
-			return new SValue(new DotProduct4(getNode(u), getNode(v)));
+			return new SValue(new Instruction(Instruction.DP4, getNode(u), getNode(v)));
 		}
 
 		protected final function cross(u : Object, v : Object) : SValue
 		{
-			return new SValue(new CrossProduct(getNode(u), getNode(v)));
+			return new SValue(new Instruction(Instruction.CRS, getNode(u), getNode(v)));
 		}
 
 		protected final function multiply4x4(a : Object, b : Object) : SValue
 		{
-			return new SValue(new Multiply4x4(getNode(a), getNode(b)));
+			return new SValue(new Instruction(Instruction.M44, getNode(a), getNode(b)));
 		}
 
 		protected final function multiply3x3(a : Object, b : Object) : SValue
 		{
-			return new SValue(new Multiply3x3(getNode(a), getNode(b)));
+			return new SValue(new Instruction(Instruction.M33, getNode(a), getNode(b)));
 		}
 
 		protected final function multiply3x4(a : Object, b : Object) : SValue
 		{
-			return new SValue(new Multiply3x4(getNode(a), getNode(b)));
+			return new SValue(new Instruction(Instruction.M34, getNode(a), getNode(b)));
 		}
 
 		protected final function cos(angle : Object) : SValue
 		{
-			return new SValue(new Cosine(getNode(angle)));
+			return new SValue(new Instruction(Instruction.COS, getNode(angle)));
 		}
 
 		protected final function sin(angle : Object) : SValue
 		{
-			return new SValue(new Sine(getNode(angle)));
+			return new SValue(new Instruction(Instruction.SIN, getNode(angle)));
 		}
-
+		
+		protected final function tan(angle : Object) : SValue
+		{
+			return divide(sin(angle), cos(angle));
+		}
+		
+		protected final function acos(angle : Object, numIterations : uint = 6) : SValue
+		{
+			var roughtGuess	: SValue = multiply(Math.PI / 2, subtract(1, angle));
+			
+			for (var stepId : uint = 0; stepId < numIterations; ++stepId)
+				roughtGuess = add(
+					roughtGuess, 
+					divide(
+						subtract(cos(roughtGuess), angle),
+						sin(roughtGuess)
+					)
+				);
+			
+			return roughtGuess;
+		}
+		
+		protected final function asin(angle : Object, numIterations : uint = 6) : SValue
+		{
+			return subtract(Math.PI / 2, acos(angle, numIterations));
+		}
+		
+		protected final function atan(angle : Object, numIterations : uint = 6) : SValue
+		{
+			return asin(multiply(angle, rsqrt(add(1, multiply(angle, angle)))), numIterations);
+		}
+		
+		protected final function atan2(y : Object, x : Object, numIterations : uint = 6) : SValue
+		{
+			var xy		: SValue = float2(x, y);
+			var xyNrm	: SValue = sqrt(dotProduct2(xy, xy));
+			
+			return multiply(2, atan(divide(subtract(xyNrm, x), y), numIterations));
+		}
+		
 		protected final function normalize(vector : Object) : SValue
 		{
-			return new SValue(new Normalize(getNode(vector)));
+			return new SValue(new Instruction(Instruction.NRM, getNode(vector)));
 		}
 
 		protected final function negate(value : Object) : SValue
 		{
-			return new SValue(new Negate(getNode(value)));
+			return new SValue(new Instruction(Instruction.NEG, getNode(value)));
 		}
 
 		protected final function saturate(value : Object) : SValue
 		{
-			return new SValue(new Saturate(getNode(value)));
+			return new SValue(new Instruction(Instruction.SAT, getNode(value)));
+		}
+		
+		protected final function min(a : Object, b : Object) : SValue
+		{
+			return new SValue(new Instruction(Instruction.MIN, getNode(a), getNode(b)));
 		}
 
-		protected final function max(a : Object, b : Object, ...values) : SValue
+		protected final function max(a : Object, b : Object) : SValue
 		{
-			var max 		: Maximum 	= new Maximum(getNode(a), getNode(b));
-			var numValues 	: int		= values.length;
-
-			for (var i : int = 0; i < numValues; ++i)
-				max = new Maximum(max, getNode(values[i]));
-
-			return new SValue(max);
+			return new SValue(new Instruction(Instruction.MAX, getNode(a), getNode(b)));
 		}
 
-		protected final function min(a : Object, b : Object, ...values) : SValue
+		protected final function greaterEqual(a : Object, b : Object) : SValue
 		{
-			var max 		: Minimum 	= new Minimum(getNode(a), getNode(b));
-			var numValues 	: int 		= values.length;
-
-			for (var i : int = 0; i < numValues; ++i)
-				max = new Minimum(max, getNode(values[i]));
-
-			return new SValue(max);
+			return new SValue(new Instruction(Instruction.SGE, getNode(a), getNode(b)));
 		}
 
-		protected final function ifGreaterEqual(a : Object, b : Object) : SValue
+		protected final function lessThan(a : Object, b : Object) : SValue
 		{
-			return new SValue(new SetIfGreaterEqual(getNode(a), getNode(b)));
+			return new SValue(new Instruction(Instruction.SLT, getNode(a), getNode(b)));
 		}
 
-		protected final function ifLessThan(a : Object, b : Object) : SValue
+		protected final function equal(a : Object, b : Object) : SValue
 		{
-			return new SValue(new SetIfLessThan(getNode(a), getNode(b)));
+			return new SValue(new Instruction(Instruction.SEQ, getNode(a), getNode(b)));
+		}
+		
+		protected final function notEqual(a : Object, b : Object) : SValue
+		{
+			return new SValue(new Instruction(Instruction.SNE, getNode(a), getNode(b)));
+		}
+		
+		protected final function reflect(vector : Object, normal : Object) : SValue
+		{
+			return subtract(vector, multiply(2, dotProduct3(vector, normal), normal));
 		}
 
-		protected final function getReflectedVector(vector : Object, normal : Object) : SValue
+		protected final function getParameter(key	: String,
+											  size	: uint) : SValue
 		{
-			return new SValue(new PlanarReflection(getNode(vector), getNode(normal)));
-		}
-
-		protected final function getWorldParameter(size		: uint,
-												   key		: Class,
-												   field	: String	= null,
-												   index	: int		= -1) : SValue
-		{
-			return new SValue(new WorldParameter(size, key, field, index));
-		}
-
-		protected final function getTransformParameter(size		: uint,
-												   	   key		: Object) : SValue
-		{
-			return new SValue(new TransformParameter(size, key));
-		}
-
-		protected final function getStyleParameter(size 		: uint,
-												   key 			: int,
-												   defaultValue	: Object	= null,
-												   field 		: String 	= null,
-												   index 		: int 		= -1) : SValue
-		{
-			return new SValue(new StyleParameter(size, key, defaultValue, field, index));
+			return new SValue(
+				new Parameter(
+					key,
+					size,
+					null
+				)
+			);
 		}
 
 		protected final function extract(value : Object, component : uint) : SValue
@@ -655,21 +578,9 @@ package aerys.minko.render.shader
 			return new SValue(new Extract(getNode(value), component));
 		}
 
-		protected final function blend(color1 : Object, color2 : Object, blending : uint) : SValue
-		{
-			return new SValue(new Blend(getNode(color1), getNode(color2), blending));
-		}
-
 		protected final function mix(a : Object, b : Object, factor : Object) : SValue
 		{
-			var factorNode : INode = getNode(factor);
-
-			return new SValue(
-				new Add(
-					new Multiply(getNode(a), new Substract(new Constant(1.), factorNode)),
-					new Multiply(getNode(b), factorNode)
-				)
-			);
+			return add(a, multiply(factor, subtract(b, a)));
 		}
 
 		protected final function length(vector : Object) : SValue
@@ -678,9 +589,7 @@ package aerys.minko.render.shader
 
 			if (v.size == 2)
 			{
-				var v3 : SValue = float3(v, 0.);
-
-				return new SValue(sqrt(dotProduct3(v3, v3)));
+				return new SValue(sqrt(dotProduct2(v, v)));
 			}
 			else if (v.size == 3)
 			{
@@ -696,30 +605,36 @@ package aerys.minko.render.shader
 
 		protected final function sqrt(scalar : Object) : SValue
 		{
-			return new SValue(new SquareRoot(getNode(scalar)));
+			return new SValue(new Instruction(Instruction.SQT, getNode(scalar)));
 		}
 
 		protected final function rsqrt(scalar : Object) : SValue
 		{
-			return new SValue(new ReciprocalRoot(getNode(scalar)));
+			return new SValue(new Instruction(Instruction.RSQ, getNode(scalar)));
 		}
 
-		protected final function getVertexAttribute(vertexComponent : VertexComponent) : SValue
+		protected final function getVertexAttribute(vertexComponent : VertexComponent,
+													componentId		: uint = 0) : SValue
 		{
-			return new SValue(new Attribute(vertexComponent));
+			return new SValue(new Attribute(vertexComponent, componentId));
+		}
+		
+		protected final function kill(value : Object) : void
+		{
+			main.minko_shader::_kills.push(getNode(value));
 		}
 
 		protected final function getConstantByIndex(constant 	: Object,
-													index		: Object) : SValue
+													index		: Object,
+													isMatrix	: Boolean) : SValue
 		{
 			var c	: INode	= getNode(constant);
 			var i	: INode	= getNode(index);
 
-			if (!(c is AbstractConstant))
+			if (!(c is Parameter || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
 
-			// handle only size == 4 (#20)
-			return new SValue(new VariadicExtract(i, c as AbstractConstant, 4));
+			return new SValue(new VariadicExtract(i, c, isMatrix));
 		}
 
 		protected final function getNode(value : Object) : INode
@@ -736,21 +651,7 @@ package aerys.minko.render.shader
 			return new Constant(value);
 		}
 
-
-		/**
-		 * The getDataHash method returns a String computed from the style, local and world data.
-		 * This value is used as a hash that defines all the values used as conditionnals in the
-		 * vertex (getOutputPosition) or frament (getOutputColor) shaders.
-		 *
-		 * @param style
-		 * @param local
-		 * @param world
-		 * @return
-		 *
-		 */
-		public function getDataHash(styleData		: StyleData,
-									transformData	: TransformData,
-									worldData		: Dictionary) : String
+		public function getSignature() : Object
 		{
 			return null;
 		}
