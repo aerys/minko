@@ -1,7 +1,10 @@
 package aerys.minko.render
 {
-	import aerys.minko.scene.Visitor;
+	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	
 	import flash.display.Stage;
@@ -12,20 +15,23 @@ package aerys.minko.render
 
 	public final class Viewport
 	{
-		private var _stage3d		: Stage3D	= null;
+		use namespace minko_scene;
 		
-		private var _renderer		: Renderer	= null;
-		private var _visitor		: Visitor	= null;
+		private var _stage3d		: Stage3D		= null;
 		
-		private var _width			: uint		= 0;
-		private var _height			: uint		= 0;
-		private var _antiAliasing	: uint		= 0;
-		private var _autoResize		: Boolean	= false;
+		private var _renderingList	: RenderingList = new RenderingList();
 		
-		private var _changed		: Signal	= new Signal();
+		private var _width			: uint			= 0;
+		private var _height			: uint			= 0;
+		private var _antiAliasing	: uint			= 0;
+		private var _autoResize		: Boolean		= false;
 		
-		private var _renderingTime	: int		= 0;
-		private var _drawingTime	: int		= 0;
+		private var _changed		: Signal		= new Signal();
+		
+		private var _visitingTime	: int			= 0;
+		private var _renderingTime	: int			= 0;
+		private var _numTriangles	: uint			= 0;
+		private var _sceneSize		: uint			= 0;
 		
 		public function get width() : uint
 		{
@@ -49,12 +55,12 @@ package aerys.minko.render
 		
 		public function get sceneSize() : uint
 		{
-			return _visitor ? _visitor.numVisitedNodes : 0;
+			return _sceneSize;
 		}
 		
 		public function get numTriangles() : uint
 		{
-			return _renderer ? _renderer.numTriangles : 0;
+			return _numTriangles;
 		}
 		
 		public function get changed() : Signal
@@ -62,14 +68,14 @@ package aerys.minko.render
 			return _changed;
 		}
 		
+		public function get visitingTime() : int
+		{
+			return _visitingTime;
+		}
+		
 		public function get renderingTime() : int
 		{
 			return _renderingTime;
-		}
-		
-		public function get drawingTime() : int
-		{
-			return _drawingTime;
 		}
 		
 		public function Viewport(stage	 		: Stage,
@@ -94,17 +100,14 @@ package aerys.minko.render
 		
 		private function context3dCreatedHandler(event : Event) : void
 		{
-			_renderer = new Renderer(_stage3d.context3D);
-			_visitor = new Visitor(this, _renderer);
-			
 			updateRectangle();
 		}
 		
 		private function updateRectangle() : void
 		{
-			if (_renderer)
+			if (_stage3d && _stage3d.context3D)
 			{
-				_renderer.configureBackBuffer(
+				_stage3d.context3D.configureBackBuffer(
 					_width,
 					_height,
 					_antiAliasing,
@@ -113,24 +116,60 @@ package aerys.minko.render
 			}
 		}
 		
-		public function render(scene : IScene) : void
+		public function render(scene : IScene, list : RenderingList = null) : void
 		{
-			if (_visitor)
+			_numTriangles = 0;
+			list ||= _renderingList;
+			list.clear();
+			
+			var context : Context3D = _stage3d.context3D;
+			var time 	: int 		= getTimer();
+			
+			// visit
+			_sceneSize = 0;
+			visitRecursive(scene, list);
+			_visitingTime = getTimer() - time;
+			
+			// render
+			renderList(list);
+		}
+		
+		public function renderList(list : RenderingList) : void
+		{
+			var context : Context3D = _stage3d.context3D;
+			
+			if (context)
 			{
-				var time : int = getTimer();
+				var time	: int	= getTimer();
 				
-				_renderer.clear();
-				
-				_visitor.reset();
-				_visitor.visit(scene);
-//				_visitor.visitRecursive(scene);
-				
-				_renderer.render();
+				_numTriangles = _renderingList.render(context);
+				context.present();
 				_renderingTime = getTimer() - time;
+			}
+		}
+		
+		private function visitRecursive(scene : IScene, list : RenderingList) : void
+		{
+			++_sceneSize;
+			
+			if (scene is Group)
+			{
+				var group 		: Group 			= scene as Group;
+				var children 	: Vector.<IScene>	= group._children;
+				var numChildren : int 				= children.length;
 				
-				time = getTimer();
-				_renderer.present();
-				_drawingTime = getTimer() - time;
+				for (var childrenId : int = 0; childrenId < numChildren; ++childrenId)
+					visitRecursive(children[childrenId], list);
+			}
+			else if (scene is Mesh)
+			{
+				var mesh		: Mesh							= scene as Mesh;
+				var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
+				var drawCalls	: Vector.<DrawCall>				= mesh._calls;
+				var numPasses 	: int 							= passes.length;
+				
+				for (var i : int = 0; i < numPasses; ++i)
+					list.pushDrawCall(passes[i].state, drawCalls[i]);
 			}
 		}
 	}

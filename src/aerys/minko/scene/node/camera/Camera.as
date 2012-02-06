@@ -1,17 +1,15 @@
 package aerys.minko.scene.node.camera
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.IScene;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	public class Camera extends AbstractScene
 	{
-		public static const DEFAULT_FOV				: Number	= Math.PI * .25;
+		public static const DEFAULT_FOV		: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR	: Number	= .1;
 		public static const DEFAULT_ZFAR	: Number	= 1000.;
 		

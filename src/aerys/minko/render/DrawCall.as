@@ -12,12 +12,13 @@ package aerys.minko.render
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
+	import flash.display3D.VertexBuffer3D;
 	
 	public final class DrawCall
 	{
-		private var _vsConstants	: Vector.<Number>					= null;
-		private var _fsConstants	: Vector.<Number>					= null;
-		private var _fsTextures	: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
+		private var _vsConstants		: Vector.<Number>					= null;
+		private var _fsConstants		: Vector.<Number>					= null;
+		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		private var _bindings			: Vector.<IParameterBinding>		= null;
 		private var _nameToBinding		: Object							= {};
 		
@@ -29,7 +30,7 @@ package aerys.minko.render
 		private var _inputIndices		: Vector.<uint>						= null;
 		
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
-		private var _firstIndex			: int								= 0
+		private var _firstIndex			: int								= 0;
 		private var _numTriangles		: int								= 0;
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
@@ -109,31 +110,31 @@ package aerys.minko.render
 			);
 			context.setTextureAt(
 				1,
-				_fsTextures[1] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[1] ? _fsTextures[1].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				2,
-				_fsTextures[2] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[2] ? _fsTextures[2].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				3,
-				_fsTextures[3] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[3] ? _fsTextures[3].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				4,
-				_fsTextures[4] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[4] ? _fsTextures[4].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				5,
-				_fsTextures[5] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[5] ? _fsTextures[5].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				6,
-				_fsTextures[6] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[6] ? _fsTextures[6].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				7,
-				_fsTextures[7] ? _fsTextures[0].getNativeTexture(context) : null
+				_fsTextures[7] ? _fsTextures[7].getNativeTexture(context) : null
 			);
 			
 			context.setVertexBufferAt(

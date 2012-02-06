@@ -1,11 +1,9 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	import flash.events.Event;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
@@ -35,6 +33,7 @@ package aerys.minko.scene.node
 		
 		private var _added			: Signal			= new Signal();
 		private var _removed		: Signal			= new Signal();
+		private var _visited		: Signal			= new Signal();
 
 		public function get parent() : Group
 		{
@@ -89,6 +88,11 @@ package aerys.minko.scene.node
 		public function get removed() : Signal
 		{
 			return _removed;
+		}
+		
+		public function get visited() : Signal
+		{
+			return _visited;
 		}
 		
 		public function Group(...children)
@@ -322,12 +326,6 @@ package aerys.minko.scene.node
 		override flash_proxy function nextValue(index : int) : *
 		{
 			return _children[int(index - 1)];
-		}
-		
-		public function visit(visitor : Visitor) : void
-		{
-			for (var i : int = 0; i < _numChildren; ++i)
-				visitor.visit(_children[i]);
 		}
 	}
 }

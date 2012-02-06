@@ -1,13 +1,10 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.type.Signal;
 	
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 
-	public class AbstractScene extends EventDispatcher implements IScene
+	public class AbstractScene implements IScene
 	{
 		private static var _id	: uint		= 0;
 
@@ -16,6 +13,7 @@ package aerys.minko.scene.node
 		
 		private var _added		: Signal	= new Signal();
 		private var _removed	: Signal	= new Signal();
+		private var _visited	: Signal	= new Signal();
 
 		public function get parent() : Group
 		{
@@ -51,24 +49,16 @@ package aerys.minko.scene.node
 			return _removed;
 		}
 
+		public function get visited() : Signal
+		{
+			return _visited;
+		}
+		
 		public function AbstractScene()
 		{
 			_name = getDefaultSceneName(this);
 		}
 
-		public function visit(visitor : Visitor) : void
-		{
-			// nothing
-		}
-		
-		override public function dispatchEvent(event : Event) : Boolean
-		{
-			if (willTrigger(event.type))
-				return super.dispatchEvent(event);
-			
-			return false;
-		}
-		
 		public static function getDefaultSceneName(scene : IScene) : String
 		{
 			var className : String = getQualifiedClassName(scene);
