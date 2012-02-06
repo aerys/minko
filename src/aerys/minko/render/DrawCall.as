@@ -197,14 +197,12 @@ package aerys.minko.render
 			var binding : IParameterBinding = _nameToBinding[name] as IParameterBinding;
 			
 			if (binding)
-			{
-				binding.set(
-					_vsConstants,
-					_fsConstants,
-					null,
-					value
-				);
-			}
+				binding.set(_vsConstants, _fsConstants, _fsTextures, value);
+		}
+		
+		public function hasParameter(name : String) : Boolean
+		{
+			return _nameToBinding[name] != null;
 		}
 	}
 }

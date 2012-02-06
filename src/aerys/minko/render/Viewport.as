@@ -9,6 +9,8 @@ package aerys.minko.render
 	
 	import flash.display.Stage;
 	import flash.display.Stage3D;
+	import flash.display.StageAlign;
+	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
 	import flash.events.Event;
 	import flash.utils.getTimer;
@@ -33,6 +35,8 @@ package aerys.minko.render
 		private var _numTriangles	: uint			= 0;
 		private var _sceneSize		: uint			= 0;
 		
+		private var _updateRect		: Boolean		= false;
+		
 		public function get width() : uint
 		{
 			return _width;
@@ -40,6 +44,7 @@ package aerys.minko.render
 		public function set width(value : uint) : void
 		{
 			_width = value;
+			_updateRect = true;
 			_changed.execute(this, "width");
 		}
 		
@@ -50,6 +55,7 @@ package aerys.minko.render
 		public function set height(value : uint) : void
 		{
 			_height = value;
+			_updateRect = true;
 			_changed.execute(this, "height");
 		}
 		
@@ -92,33 +98,46 @@ package aerys.minko.render
 		private function initialize(stage : Stage) : void
 		{
 			_autoResize = _width == 0 && _height == 0;
+			if (_autoResize)
+			{
+				stage.scaleMode = StageScaleMode.NO_SCALE;
+				stage.align = StageAlign.TOP_LEFT;
+				stage.addEventListener(Event.RESIZE, stageResizedHandler);
+				
+				width = stage.stageWidth;
+				height = stage.stageHeight;
+			}
 
 			_stage3d = stage.stage3Ds[0];
 			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
 			_stage3d.requestContext3D();
 		}
 		
+		private function stageResizedHandler(event : Event) : void
+		{
+			var stage : Stage = event.target as Stage;
+			
+			width = stage.stageWidth;
+			height = stage.stageHeight;
+		}
+		
 		private function context3dCreatedHandler(event : Event) : void
 		{
-			updateRectangle();
+			_updateRect = true;
 		}
 		
 		private function updateRectangle() : void
 		{
-			if (_stage3d && _stage3d.context3D)
-			{
-				_stage3d.context3D.configureBackBuffer(
-					_width,
-					_height,
-					_antiAliasing,
-					true
-				);
-			}
+			_stage3d.context3D.configureBackBuffer(
+				_width,
+				_height,
+				_antiAliasing,
+				true
+			);
 		}
 		
 		public function render(scene : IScene, list : RenderingList = null) : void
 		{
-			_numTriangles = 0;
 			list ||= _renderingList;
 			list.clear();
 			
@@ -138,11 +157,19 @@ package aerys.minko.render
 		{
 			var context : Context3D = _stage3d.context3D;
 			
+			_numTriangles = 0;
+			_renderingTime = 0;
+			if (list != _renderingList)
+				_visitingTime = 0;
+			
 			if (context)
 			{
 				var time	: int	= getTimer();
 				
-				_numTriangles = _renderingList.render(context);
+				if (_updateRect)
+					updateRectangle();
+				
+				_numTriangles = list.render(context);
 				context.present();
 				_renderingTime = getTimer() - time;
 			}
@@ -151,6 +178,9 @@ package aerys.minko.render
 		private function visitRecursive(scene : IScene, list : RenderingList) : void
 		{
 			++_sceneSize;
+			
+			if (scene.visited.numCallbacks != 0)
+				scene.visited.execute(this);
 			
 			if (scene is Group)
 			{

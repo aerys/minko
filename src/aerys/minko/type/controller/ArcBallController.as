@@ -22,6 +22,8 @@ package aerys.minko.type.controller
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
 		public static const DEFAULT_SENSITIVITY		: Number	= 0.001;
 		
+		private static const MIN_SPEED	: Number	= 0.01;
+		
 		private var _targets		: Vector.<IScene>	= null;
 		
 		private var _tracking		: Boolean			= false;
@@ -145,16 +147,25 @@ package aerys.minko.type.controller
 		
 		private function enterFrameHandler(event : Event) : void
 		{
-			rotateX(_speed.x);
-			rotateY(_speed.y);
+			if (_speed.x != 0. || _speed.y != 0.)
+			{
+				rotateX(_speed.x);
+				rotateY(_speed.y);
+			}
 			
 			_speed.x *= _speedScale;
+			if (_speed.x < MIN_SPEED && _speed.x > -MIN_SPEED)
+				_speed.x = 0.;
+			
 			_speed.y *= _speedScale;
+			if (_speed.y < MIN_SPEED && _speed.y > -MIN_SPEED)
+				_speed.y = 0.;
 		}
 		
 		private function startDrag(event : Event) : void
 		{
 			_tracking = true;
+			_speed.setTo(0, 0);
 			
 			if (_useHandCursor)
 				Mouse.cursor = MouseCursor.HAND;

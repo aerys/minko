@@ -1,7 +1,6 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
@@ -14,8 +13,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
-	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{
@@ -33,7 +30,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected function get vertexPosition() : SValue
+		protected function get vertexXYZ() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
@@ -318,7 +315,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		/*protected final function sampleTexture(styleId		: int,
+		protected final function sampleTexture(name			: String,
 											   uv 			: Object,
 											   filtering	: uint	= 1, // SamplerFilter.LINEAR
 											   mipMapping	: uint	= 0, // SamplerMipmap.DISABLE
@@ -330,8 +327,8 @@ package aerys.minko.render.shader
 					Instruction.TEX,
 					getNode(uv), 
 					new Sampler(
-						'unnamed parameter',
-						new StyleParameterAccessor(styleId),
+						name,
+						null,
 						filtering, 
 						mipMapping, 
 						wrapping, 
@@ -339,7 +336,7 @@ package aerys.minko.render.shader
 					)
 				)
 			);
-		}*/
+		}
 
 		/**
 		 * Compute term-to-term scalar multiplication.

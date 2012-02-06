@@ -56,9 +56,27 @@ package aerys.minko.scene.node
 		
 		public function AbstractScene()
 		{
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			_name = getDefaultSceneName(this);
+			
+			_added.add(addedHandler);
+			_removed.add(removedHandler);
 		}
 
+		protected function addedHandler(child : IScene, parent : Group) : void
+		{
+			// nothing
+		}
+		
+		protected function removedHandler(child : IScene, parent : Group) : void
+		{
+			// nothing
+		}
+		
 		public static function getDefaultSceneName(scene : IScene) : String
 		{
 			var className : String = getQualifiedClassName(scene);

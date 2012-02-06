@@ -95,6 +95,17 @@ package aerys.minko.render.shader.compiler
 			}
 		}
 		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		public static function serializeUnknownLength(data		: Object, 
 													  target	: Vector.<Number>, 
 													  offset	: uint) : void
