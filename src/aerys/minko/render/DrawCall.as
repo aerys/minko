@@ -15,9 +15,9 @@ package aerys.minko.render
 	
 	public final class DrawCall
 	{
-		private var _vertexConstants	: Vector.<Number>					= null;
-		private var _fragmentConstants	: Vector.<Number>					= null;
-		private var _textureResources	: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
+		private var _vsConstants	: Vector.<Number>					= null;
+		private var _fsConstants	: Vector.<Number>					= null;
+		private var _fsTextures	: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		private var _bindings			: Vector.<IParameterBinding>		= null;
 		private var _nameToBinding		: Object							= {};
 		
@@ -60,19 +60,19 @@ package aerys.minko.render
 			}
 		}
 		
-		public function DrawCall(vertexConstants 		: Vector.<Number>,
-								 fragmentConstants 		: Vector.<Number>,
-								 textureResources		: Vector.<ITextureResource>,
+		public function DrawCall(vsConstants 			: Vector.<Number>,
+								 fsConstants 			: Vector.<Number>,
+								 fsTextures				: Vector.<ITextureResource>,
 								 vertexInputComponents	: Vector.<VertexComponent>,
 								 vertexInputIndices		: Vector.<uint>,
 								 bindings				: Vector.<IParameterBinding>)
 		{
-			_vertexConstants = vertexConstants.concat();
-			_fragmentConstants = fragmentConstants.concat();
-			_textureResources = textureResources.concat();
-			_inputComponents = vertexInputComponents;
-			_inputIndices = vertexInputIndices;
-			_bindings = bindings;
+			_vsConstants		= vsConstants.concat();
+			_fsConstants		= fsConstants.concat();
+			_fsTextures			= fsTextures.concat();
+			_inputComponents	= vertexInputComponents;
+			_inputIndices		= vertexInputIndices;
+			_bindings			= bindings;
 			
 			initialize();
 		}
@@ -94,46 +94,46 @@ package aerys.minko.render
 			context.setProgramConstantsFromVector(
 				Context3DProgramType.VERTEX,
 				0,
-				_vertexConstants
+				_vsConstants
 			);
 			
 			context.setProgramConstantsFromVector(
 				Context3DProgramType.FRAGMENT,
 				0,
-				_fragmentConstants
+				_fsConstants
 			);
 			
 			context.setTextureAt(
 				0,
-				_textureResources[0] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[0] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				1,
-				_textureResources[1] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[1] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				2,
-				_textureResources[2] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[2] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				3,
-				_textureResources[3] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[3] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				4,
-				_textureResources[4] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[4] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				5,
-				_textureResources[5] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[5] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				6,
-				_textureResources[6] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[6] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			context.setTextureAt(
 				7,
-				_textureResources[7] ? _textureResources[0].getNativeTexture(context) : null
+				_fsTextures[7] ? _fsTextures[0].getNativeTexture(context) : null
 			);
 			
 			context.setVertexBufferAt(
@@ -198,8 +198,8 @@ package aerys.minko.render
 			if (binding)
 			{
 				binding.set(
-					_vertexConstants,
-					_fragmentConstants,
+					_vsConstants,
+					_fsConstants,
 					null,
 					value
 				);

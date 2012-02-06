@@ -4,7 +4,7 @@ package aerys.minko.scene
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.Renderer;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.shader.IShader;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.IScene;
 	import aerys.minko.scene.node.mesh.Mesh;
@@ -67,10 +67,10 @@ package aerys.minko.scene
 				}
 				else if (scene is Mesh)
 				{
-					var mesh		: Mesh				= scene as Mesh;
-					var passes		: Vector.<IShader>	= mesh.effect.passes;
-					var drawCalls	: Vector.<DrawCall>	= mesh._calls;
-					var numPasses 	: int 				= passes.length;
+					var mesh		: Mesh							= scene as Mesh;
+					var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
+					var drawCalls	: Vector.<DrawCall>				= mesh._calls;
+					var numPasses 	: int 							= passes.length;
 					
 					for (var i : int = 0; i < numPasses; ++i)
 						renderer.pushDrawCall(passes[i].state, drawCalls[i]);
@@ -91,10 +91,10 @@ package aerys.minko.scene
 			}
 			else if (scene is Mesh)
 			{
-				var mesh		: Mesh				= scene as Mesh;
-				var passes		: Vector.<IShader>	= mesh.effect.passes;
-				var drawCalls	: Vector.<DrawCall>	= mesh._calls;
-				var numPasses 	: int 				= passes.length;
+				var mesh		: Mesh							= scene as Mesh;
+				var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
+				var drawCalls	: Vector.<DrawCall>				= mesh._calls;
+				var numPasses 	: int 							= passes.length;
 				
 				for (var i : int = 0; i < numPasses; ++i)
 					renderer.pushDrawCall(passes[i].state, drawCalls[i]);

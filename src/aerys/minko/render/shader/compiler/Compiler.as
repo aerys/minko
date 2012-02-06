@@ -9,6 +9,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.graph.visitors.MergeVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.OverwriterCleanerVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.RemoveExtractsVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.RemoveUselessComputation;
 	import aerys.minko.render.shader.compiler.graph.visitors.ResolveConstantComputationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.ResolveParametrizedComputationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.WriteDot;
@@ -29,6 +30,7 @@ package aerys.minko.render.shader.compiler
 		private static const OVERWRITER_CLEANER		: OverwriterCleanerVisitor				= new OverwriterCleanerVisitor();
 		private static const RESOLVE_CONSTANT		: ResolveConstantComputationVisitor		= new ResolveConstantComputationVisitor();
 		private static const RESOLVE_PARAMETRIZED	: ResolveParametrizedComputationVisitor	= new ResolveParametrizedComputationVisitor();
+		private static const REMOVE_USELESS			: RemoveUselessComputation				= new RemoveUselessComputation();
 		private static const COPY_INSERTER			: CopyInserterVisitor					= new CopyInserterVisitor();
 		private static const ALLOCATOR				: AllocationVisitor						= new AllocationVisitor();
 		private static const INTERPOLATE_FINDER		: InterpolateFinder						= new InterpolateFinder();
@@ -43,37 +45,25 @@ package aerys.minko.render.shader.compiler
 		
 		private static var _vertexComponents	: Vector.<VertexComponent>;
 		private static var _vertexIndices		: Vector.<uint>;
-		private static var _vertexConstants		: Vector.<Number>;
-		private static var _fragmentConstants	: Vector.<Number>;
+		private static var _vsConstants			: Vector.<Number>;
+		private static var _fsConstants			: Vector.<Number>;
 		private static var _textures			: Vector.<ITextureResource>;
 		
-//			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
-//			else
 		public static function load(shaderGraph	: ShaderGraph,
 									flags		: uint) : void
 		{
-			
-			var dotter : WriteDot = new WriteDot();
-			dotter.process(shaderGraph);
-			trace(dotter.result);
-			
 			// execute consecutive visitors to optimize the shader graph.
 			REMOVE_EXTRACT		.process(shaderGraph);
 			MERGER				.process(shaderGraph);
 			
 			OVERWRITER_CLEANER	.process(shaderGraph);
-			
-			
 			RESOLVE_CONSTANT	.process(shaderGraph);
+			REMOVE_USELESS		.process(shaderGraph);
 			
-			dotter = new WriteDot();
-			dotter.process(shaderGraph);
-			trace(dotter.result);
+//			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
 			RESOLVE_PARAMETRIZED.process(shaderGraph);
-			
+//			else
 //			COPY_INSERTER.process(shaderGraph);
-			
-			
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
@@ -85,28 +75,29 @@ package aerys.minko.render.shader.compiler
 			_bindings			= ALLOCATOR.parameterBindings;
 			_vertexComponents	= ALLOCATOR.vertexComponents;
 			_vertexIndices		= ALLOCATOR.vertexIndices;
-			_vertexConstants	= ALLOCATOR.vertexConstants;
-			_fragmentConstants	= ALLOCATOR.fragmentConstants;
+			_vsConstants	= ALLOCATOR.vertexConstants;
+			_fsConstants	= ALLOCATOR.fragmentConstants;
 			_textures			= ALLOCATOR.textures;
 		}
 		
-		public static function compileShader(name : String) : ShaderProgram
+		public static function compileShader(name : String) : Program3DResource
 		{
-			var vertexProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
-			var fragmentProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
+			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
+			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
 			
-			// fixme: vertexComponents and indices have little to do here.
 			var program : Program3DResource = new Program3DResource(
-				name, 
-				vertexProgram, fragmentProgram, 
-				_vertexComponents, _vertexIndices
+				name,
+				vsProgram,
+				fsProgram,
+				_vertexComponents,
+				_vertexIndices,
+				_vsConstants,
+				_fsConstants,
+				_textures,
+				_bindings
 			);
 			
-			
-			
-			trace(compileStringShader());
-			
-			return new ShaderProgram(name, program, _vertexConstants, _fragmentConstants, _textures, _bindings);
+			return program;
 		}
 		
 		public static function compileStringShader() : String

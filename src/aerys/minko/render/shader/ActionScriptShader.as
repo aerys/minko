@@ -1,15 +1,14 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RendererState;
+	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
 	import flash.utils.getQualifiedClassName;
-	import aerys.minko.render.shader.compiler.ShaderProgram;
 
 	/**
 	 * <p>Shader objects define vertex and fragment shaders with
@@ -92,16 +91,14 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class ActionScriptShader extends ActionScriptShaderPart implements IShader
+	public class ActionScriptShader extends ActionScriptShaderPart
 	{
-		use namespace minko_render;
 		use namespace minko_shader;
 		
-		private var _name				: String			= null;
-		private var _state				: RendererState		= new RendererState();
-		private var _program			: ShaderProgram		= null;
+		private var _name		: String			= null;
+		private var _state		: RendererState		= new RendererState();
 		
-		minko_shader var _kills			: Vector.<INode>	= new <INode>[];
+		minko_shader var _kills	: Vector.<INode>	= new <INode>[];
 		
 		public function get name() : String
 		{
@@ -123,12 +120,15 @@ package aerys.minko.render.shader
 		
 		public function createDrawCall() : DrawCall
 		{
+			var resource : Program3DResource = _state.program;
+			
 			return new DrawCall(
-				_program.vertexShaderConstants.concat(),
-				_program.fragmentShaderConstants.concat(),
-				_program.program._vertexComponents,
-				_program.program._vertexIndices,
-				_program.bindings
+				resource._vsConstants,
+				resource._fsConstants,
+				resource._fsTextures,
+				resource._vertexComponents,
+				resource._vertexIndices,
+				resource._bindings
 			);
 		}
 		
@@ -143,8 +143,7 @@ package aerys.minko.render.shader
 			);
 			
 			Compiler.load(shaderGraph, 0xffffffff);
-			_program = Compiler.compileShader(_name);
-			_state.program = _program.program;
+			_state.program = Compiler.compileShader(_name);
 		}
 		
 		/**
@@ -165,11 +164,6 @@ package aerys.minko.render.shader
 		protected function getOutputColor() : SValue
 		{
 			throw new Error();
-		}
-		
-		public function dispose() : void
-		{
-			_program.dispose();
 		}
 	}
 }

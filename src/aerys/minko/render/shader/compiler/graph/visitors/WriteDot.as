@@ -130,6 +130,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				appendNode(accessor, 'darkorange3', 'EvalExpAccessor');
 				appendLink(accessor, EvalExpAccessor(accessor).tree);
 			}
+			else
+				throw new Error('Unknown accessor type.');
 		}
 		
 		override protected function visitSampler(sampler		: Sampler, 

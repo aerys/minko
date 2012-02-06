@@ -1,20 +1,21 @@
 package aerys.minko.render.effect
 {
-	import aerys.minko.render.shader.IShader;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.type.Signal;
+	
+	import flash.display.Shader;
 
 	public class Effect
 	{
-		private var _passes		: Vector.<IShader>	= null;
-		
-		private var _changed	: Signal			= new Signal();
+		private var _passes		: Vector.<ActionScriptShader>	= null;
+		private var _changed	: Signal						= new Signal();
 		
 		public function get changed() : Signal
 		{
 			return _changed;
 		}
 		
-		public function get passes() : Vector.<IShader>
+		public function get passes() : Vector.<ActionScriptShader>
 		{
 			return _passes;
 		}
@@ -29,7 +30,7 @@ package aerys.minko.render.effect
 			while (passes[0] is Array)
 				passes = passes[0];
 			
-			_passes = Vector.<IShader>(passes);
+			_passes = Vector.<ActionScriptShader>(passes);
 		}
 	}
 }

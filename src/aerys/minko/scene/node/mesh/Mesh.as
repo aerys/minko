@@ -4,7 +4,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.IShader;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
@@ -16,6 +16,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
+	import flash.display.Shader;
 	import flash.utils.Dictionary;
 
 	public class Mesh extends AbstractScene
@@ -78,8 +79,8 @@ package aerys.minko.scene.node.mesh
 				
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
 		{
-			var passes		: Vector.<IShader>	= _effect.passes;
-			var numPasses 	: int 				= passes.length;
+			var passes		: Vector.<ActionScriptShader>	= _effect.passes;
+			var numPasses 	: int 							= passes.length;
 			
 			_calls.length = 0;
 			for (var i : int = 0; i < numPasses; ++i)

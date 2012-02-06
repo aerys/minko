@@ -54,7 +54,5 @@ package aerys.minko.render.shader.compiler.sequence
 			
 			return asmCode;
 		}
-		
-		
 	}
 }

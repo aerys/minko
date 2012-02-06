@@ -1,13 +1,7 @@
 package aerys.minko.render
 {
-	import aerys.minko.Minko;
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.IShader;
-	import aerys.minko.type.log.DebugLevel;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
-	import flash.utils.Dictionary;
 
 	public final class Renderer
 	{

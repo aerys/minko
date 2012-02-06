@@ -35,7 +35,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (interpolate.arg is Constant)
 			{
 				replaceInParentAndSwizzle(interpolate, interpolate.arg, interpolate.components);
-				forgetVisiting(interpolate, isVertexShader);
+//				forgetVisiting(interpolate, isVertexShader);
 			}
 		}
 		
@@ -82,6 +82,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var numArgs		: uint			 = args.length;
 			var components	: Vector.<uint>	 = overwriter.components;
 			var argId		: uint;
+			
+			// remove the whole node if we reduced numArgs to 1
+			if (numArgs == 1)
+			{
+				replaceInParentAndSwizzle(overwriter, args[0], components[0]);
+				//				forgetVisiting(overwriter, isVertexShader);
+				return;
+			}
 			
 			// start by visiting sons
 			for (argId = 0; argId < numArgs; ++argId)
