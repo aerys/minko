@@ -237,7 +237,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				var alloc		: SimpleAllocation	= _allocations[bindableConstant];
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
-				if (tree)
+				if (!tree)
 					result.push(binder);
 				else
 				{
