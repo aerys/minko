@@ -1,10 +1,10 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.type.Signal;
 
-	public interface IScene
+	public interface ISceneNode
 	{
+		function get root() : Group;
 		function get parent() : Group;
 		function set parent(value : Group) : void;
 		
@@ -13,5 +13,6 @@ package aerys.minko.scene.node
 		
 		function get added() : Signal;
 		function get removed() : Signal;
+		function get visited() : Signal;
 	}
 }

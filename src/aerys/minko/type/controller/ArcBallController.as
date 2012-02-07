@@ -1,7 +1,7 @@
 package aerys.minko.type.controller
 {
 	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -22,7 +22,9 @@ package aerys.minko.type.controller
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
 		public static const DEFAULT_SENSITIVITY		: Number	= 0.001;
 		
-		private var _targets		: Vector.<IScene>	= null;
+		private static const MIN_SPEED	: Number	= 0.01;
+		
+		private var _targets		: Vector.<ISceneNode>	= null;
 		
 		private var _tracking		: Boolean			= false;
 		private var _x				: Number			= 0.;
@@ -46,7 +48,7 @@ package aerys.minko.type.controller
 		
 		private var _touchPointId	: int				= 0;
 
-		public function get targets() : Vector.<IScene>
+		public function get targets() : Vector.<ISceneNode>
 		{
 			return _targets;
 		}
@@ -113,7 +115,7 @@ package aerys.minko.type.controller
 		
 		public function ArcBallController(...targets)
 		{
-			_targets = Vector.<IScene>(targets);
+			_targets = Vector.<ISceneNode>(targets);
 		
 			_sensitivity = DEFAULT_SENSITIVITY;
 			
@@ -145,16 +147,32 @@ package aerys.minko.type.controller
 		
 		private function enterFrameHandler(event : Event) : void
 		{
-			rotateX(_speed.x);
-			rotateY(_speed.y);
+			if (_speed.x != 0. || _speed.y != 0.)
+			{
+				for (var i : int = _targets.length - 1; i >= 0; --i)
+				{
+					var transform : Matrix4x4 = (_targets[i] as Group).transform;
+					
+					transform.lock();
+					rotateX(_speed.x);
+					rotateY(_speed.y);
+					transform.unlock();
+				}
+			}
 			
 			_speed.x *= _speedScale;
+			if (_speed.x < MIN_SPEED && _speed.x > -MIN_SPEED)
+				_speed.x = 0.;
+			
 			_speed.y *= _speedScale;
+			if (_speed.y < MIN_SPEED && _speed.y > -MIN_SPEED)
+				_speed.y = 0.;
 		}
 		
 		private function startDrag(event : Event) : void
 		{
 			_tracking = true;
+			_speed.setTo(0, 0);
 			
 			if (_useHandCursor)
 				Mouse.cursor = MouseCursor.HAND;

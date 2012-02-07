@@ -1,22 +1,30 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.type.Signal;
 	
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.utils.getQualifiedClassName;
 
-	public class AbstractScene extends EventDispatcher implements IScene
+	public class AbstractScene implements ISceneNode
 	{
 		private static var _id	: uint		= 0;
 
 		private var _name		: String	= null;
+		private var _root		: Group		= null;
 		private var _parent		: Group		= null;
 		
 		private var _added		: Signal	= new Signal();
 		private var _removed	: Signal	= new Signal();
+		private var _visited	: Signal	= new Signal();
 
+		public function get name() : String
+		{
+			return _name;
+		}
+		public function set name(value : String) : void
+		{
+			_name = value;
+		}
+		
 		public function get parent() : Group
 		{
 			return _parent;
@@ -32,13 +40,9 @@ package aerys.minko.scene.node
 				_added.execute(this, _parent);
 		}
 		
-		public function get name() : String
+		public function get root() : Group
 		{
-			return _name;
-		}
-		public function set name(value : String) : void
-		{
-			_name = value;
+			return _root;
 		}
 		
 		public function get added() : Signal
@@ -51,25 +55,35 @@ package aerys.minko.scene.node
 			return _removed;
 		}
 
+		public function get visited() : Signal
+		{
+			return _visited;
+		}
+		
 		public function AbstractScene()
 		{
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			_name = getDefaultSceneName(this);
+			
+			_added.add(addedHandler);
+			_removed.add(removedHandler);
 		}
 
-		public function visit(visitor : Visitor) : void
+		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			// nothing
 		}
 		
-		override public function dispatchEvent(event : Event) : Boolean
+		protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
-			if (willTrigger(event.type))
-				return super.dispatchEvent(event);
-			
-			return false;
+			// nothing
 		}
 		
-		public static function getDefaultSceneName(scene : IScene) : String
+		public static function getDefaultSceneName(scene : ISceneNode) : String
 		{
 			var className : String = getQualifiedClassName(scene);
 

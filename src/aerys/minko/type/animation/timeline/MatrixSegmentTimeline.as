@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 
 	use namespace minko_animation;
@@ -25,7 +25,7 @@ package aerys.minko.type.animation.timeline
 			_matrices		= values;
 		}
 
-		public function updateAt(t : int, scene : IScene) : void
+		public function updateAt(t : int, scene : ISceneNode) : void
 		{
 			var reverse		: Boolean	= t < 0;
 			var timeId		: uint 		= getIndexForTime(reverse ? duration - t : t);

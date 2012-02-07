@@ -39,13 +39,14 @@ package aerys.minko.render.shader.compiler.graph
 									color		: INode,
 									kills		: Vector.<INode>)
 		{
-			_position			= position;
-			_positionComponents	= Components.createContinuous(0, 0, 4, position.size);
-			_interpolates		= new Vector.<INode>();
-			_color				= color;
-			_colorComponents	= Components.createContinuous(0, 0, 4, color.size);
-			_kills				= kills;
-			_killComponents		= new Vector.<uint>();
+			_position				= position;
+			_positionComponents		= Components.createContinuous(0, 0, 4, position.size);
+			_interpolates			= new Vector.<INode>();
+			_color					= color;
+			_colorComponents		= Components.createContinuous(0, 0, 4, color.size);
+			_kills					= kills;
+			_killComponents			= new Vector.<uint>();
+			_computableConstants	= new Object();
 			
 			var numKills : uint = kills.length;
 			for (var killId : uint = 0; killId < numKills; ++killId)

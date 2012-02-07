@@ -1,16 +1,24 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.AbstractSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.type.enum.SamplerDimension;
+	import aerys.minko.type.enum.SamplerFilter;
+	import aerys.minko.type.enum.SamplerMipmap;
+	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
 
 	public class ActionScriptShaderPart
@@ -29,7 +37,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected function get vertexPosition() : SValue
+		protected function get vertexXYZ() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
 		}
@@ -314,28 +322,11 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		/*protected final function sampleTexture(styleId		: int,
-											   uv 			: Object,
-											   filtering	: uint	= 1, // SamplerFilter.LINEAR
-											   mipMapping	: uint	= 0, // SamplerMipmap.DISABLE
-											   wrapping		: uint	= 1, // SamplerWrapping.REPEAT
-											   dimension	: uint	= 0) : SValue // SamplerDimension.FLAT
+		protected final function sampleTexture(texture	: SValue,
+											   uv 		: Object) : SValue // SamplerDimension.FLAT
 		{
-			return new SValue(
-				new Instruction(
-					Instruction.TEX,
-					getNode(uv), 
-					new Sampler(
-						'unnamed parameter',
-						new StyleParameterAccessor(styleId),
-						filtering, 
-						mipMapping, 
-						wrapping, 
-						dimension
-					)
-				)
-			);
-		}*/
+			return new SValue(new Instruction(Instruction.TEX, getNode(uv), getNode(texture)));
+		}
 
 		/**
 		 * Compute term-to-term scalar multiplication.
@@ -557,12 +548,6 @@ package aerys.minko.render.shader
 			return subtract(vector, multiply(2, dotProduct3(vector, normal), normal));
 		}
 
-		protected final function getBindableConstant(key	: String,
-													 size	: uint) : SValue
-		{
-			return new SValue(new BindableConstant(key, size));
-		}
-
 		protected final function extract(value : Object, component : uint) : SValue
 		{
 			return new SValue(new Extract(getNode(value), component));
@@ -614,20 +599,44 @@ package aerys.minko.render.shader
 			main.minko_shader::_kills.push(getNode(value));
 		}
 
-		protected final function getConstantByIndex(constant 	: Object,
-													index		: Object,
-													isMatrix	: Boolean) : SValue
+		protected final function getParameter(bindingName	: String,
+											  size			: uint) : SValue
+		{
+			return new SValue(new BindableConstant(bindingName, size));
+		}
+		
+		protected final function getTexture(textureResource : TextureResource,
+											filter			: uint = SamplerFilter.LINEAR,
+											mipmap			: uint = SamplerMipmap.DISABLE,
+											wrapping		: uint = SamplerWrapping.REPEAT,
+											dimension		: uint = SamplerDimension.FLAT) : SValue
+		{
+			return new SValue(new Sampler(textureResource, filter, mipmap, wrapping, dimension));
+		}
+		
+		protected final function getTextureParameter(bindingName	: String,
+													 filter			: uint = SamplerFilter.LINEAR,
+													 mipmap			: uint = SamplerMipmap.DISABLE,
+													 wrapping		: uint = SamplerWrapping.REPEAT,
+													 dimension		: uint = SamplerDimension.FLAT) : SValue
+		{
+			return new SValue(new BindableSampler(bindingName, filter, mipmap, wrapping, dimension));
+		}
+		
+		protected final function getFieldFromArray(constant 	: Object,
+												   index		: Object,
+												   isMatrix	: Boolean) : SValue
 		{
 			var c	: INode	= getNode(constant);
 			var i	: INode	= getNode(index);
-
+			
 			if (!(c is BindableConstant || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
-
+			
 			return new SValue(new VariadicExtract(i, c, isMatrix));
 		}
-
-		protected final function getNode(value : Object) : INode
+		
+		private final function getNode(value : Object) : INode
 		{
 			if (value === null)
 				return null;
@@ -639,11 +648,6 @@ package aerys.minko.render.shader
 				return (value as SValue)._node;
 
 			return new Constant(value);
-		}
-
-		public function getSignature() : Object
-		{
-			return null;
 		}
 	}
 }

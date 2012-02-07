@@ -76,13 +76,15 @@ package aerys.minko.render.shader.compiler
 			_bindings			= ALLOCATOR.parameterBindings;
 			_vertexComponents	= ALLOCATOR.vertexComponents;
 			_vertexIndices		= ALLOCATOR.vertexIndices;
-			_vsConstants	= ALLOCATOR.vertexConstants;
-			_fsConstants	= ALLOCATOR.fragmentConstants;
+			_vsConstants		= ALLOCATOR.vertexConstants;
+			_fsConstants		= ALLOCATOR.fragmentConstants;
 			_textures			= ALLOCATOR.textures;
 		}
 		
 		public static function compileShader(name : String) : Program3DResource
 		{
+			trace(compileStringShader());
+			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
 			

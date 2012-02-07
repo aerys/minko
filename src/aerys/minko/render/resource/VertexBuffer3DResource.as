@@ -1,6 +1,7 @@
 package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
@@ -16,6 +17,13 @@ package aerys.minko.render.resource
 		private var _update			: Boolean			= true;
 		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
+		
+		private var _uploaded		: Signal			= new Signal();
+		
+		public function get uploaded() : Signal
+		{
+			return _uploaded;
+		}
 
 		public function get numVertices() : uint
 		{
@@ -61,6 +69,7 @@ package aerys.minko.render.resource
 			if (_vertexBuffer && update)
 			{
 				_vertexBuffer.uploadFromVector(_stream._data, 0, numVertices);
+				_uploaded.execute(this);
 
 				_update = false;
 				_numVertices = numVertices;

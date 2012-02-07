@@ -258,7 +258,7 @@ package aerys.minko.type.math
 		 * @param myTransform
 		 *
 		 */
-		public function updateFromProjection(matrix : Matrix4x4) : void
+		public function updateFromMatrix(matrix : Matrix4x4) : void
 		{
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
 

@@ -38,6 +38,9 @@ package aerys.minko.render
 		{
 			var numTriangles : uint = 0;
 			
+			// FIXME: handle render targets
+			context.clear();
+			
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
 			
 			// sort states
