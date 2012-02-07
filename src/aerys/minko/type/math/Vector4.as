@@ -2,8 +2,8 @@ package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.IDataProvider;
 	
 	import flash.geom.Vector3D;
 
@@ -31,26 +31,71 @@ package aerys.minko.type.math
 		private var _length		: Number	= 0.;
 		private var _lengthSq	: Number	= 0.;
 		
+		private var _locked		: Boolean	= false;
 		private var _changed	: Signal	= new Signal();
-
+		
 		public function get x()	: Number
 		{
 			return _vector.x;
+		}
+		public function set x(value : Number) : void
+		{
+			if (value != _vector.x)
+			{
+				_vector.x = value;
+				_update = UPDATE_ALL;
+				
+				if (!_locked)
+					_changed.execute(this, "x");
+			}
 		}
 		
 		public function get y()	: Number
 		{
 			return _vector.y;
 		}
+		public function set y(value : Number) : void
+		{
+			if (value != _vector.y)
+			{
+				_vector.y = value;
+				_update = UPDATE_ALL;
+				
+				if (!_locked)
+					_changed.execute(this, "y");
+			}
+		}
 		
 		public function get z() : Number
 		{
 			return _vector.z;
 		}
+		public function set z(value : Number) : void
+		{
+			if (value != _vector.z)
+			{
+				_vector.z = value;
+				_update = UPDATE_ALL;
+				
+				if (!_locked)
+					_changed.execute(this, "z");
+			}
+		}
 		
 		public function get w()	: Number
 		{
 			return _vector.w;
+		}
+		public function set w(value : Number) : void
+		{
+			if (value != _vector.w)
+			{
+				_vector.w = value;
+				_update = UPDATE_ALL;
+				
+				if (!_locked)
+					_changed.execute(this, "w");
+			}
 		}
 
 		public function get lengthSquared()	: Number
@@ -75,52 +120,17 @@ package aerys.minko.type.math
 
 			return _length;
 		}
+		
+		public function get locked() : Boolean
+		{
+			return _locked;
+		}
 
 		public function get changed() : Signal
 		{
 			return _changed;
 		}
 		
-		public function set x(value : Number) : void
-		{
-			if (value != _vector.x)
-			{
-				_vector.x = value;
-				_update = UPDATE_ALL;
-				_changed.execute(this, "x");
-			}
-		}
-
-		public function set y(value : Number) : void
-		{
-			if (value != _vector.y)
-			{
-				_vector.y = value;
-				_update = UPDATE_ALL;
-				_changed.execute(this, "y");
-			}
-		}
-
-		public function set z(value : Number) : void
-		{
-			if (value != _vector.z)
-			{
-				_vector.z = value;
-				_update = UPDATE_ALL;
-				_changed.execute(this, "z");
-			}
-		}
-
-		public function set w(value : Number) : void
-		{
-			if (value != _vector.w)
-			{
-				_vector.w = value;
-				_update = UPDATE_ALL;
-				_changed.execute(this, "w");
-			}
-		}
-
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
@@ -320,7 +330,19 @@ package aerys.minko.type.math
 		public static function normalize(v : Vector4, out : Vector4 = null) : Vector4
 		{
 			out = copy(v, out);
+			
 			return out.normalize();
+		}
+		
+		public function lock() : void
+		{
+			_locked = true;
+		}
+		
+		public function unlock() : void
+		{
+			_locked = false;
+			_changed.execute(this, null);
 		}
 	}
 }

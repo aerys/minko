@@ -5,5 +5,9 @@ package aerys.minko.type.data
 	public interface IDataProvider
 	{
 		function get changed() : Signal;
+		
+		function get locked() : Boolean;
+		function lock() : void;
+		function unlock() : void;
 	}
 }

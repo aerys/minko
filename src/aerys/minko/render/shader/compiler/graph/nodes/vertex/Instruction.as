@@ -165,11 +165,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 						_size = 1;
 						break;
 					
-					case M33: case NRM:
+					case M33: case M34: case NRM:
 						_size = 3;
 						break;
 					
-					case TEX: case M34: case M44:
+					case TEX: case M44:
 						_size = 4;
 						break;
 						

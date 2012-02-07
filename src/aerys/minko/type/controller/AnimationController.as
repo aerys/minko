@@ -1,6 +1,6 @@
 package aerys.minko.type.controller
 {
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
@@ -12,7 +12,7 @@ package aerys.minko.type.controller
 		
 		private var _enabled		: Boolean				= true;
 		private var _timelines		: Vector.<ITimeline>	= null;
-		private var _targets		: Vector.<IScene>		= null;
+		private var _targets		: Vector.<ISceneNode>		= null;
 		private var _isPlaying		: Boolean				= false;
 		private var _loopBeginTime	: uint					= 0;
 		private var _loopEndTime	: uint					= 0;
@@ -22,19 +22,19 @@ package aerys.minko.type.controller
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
 		private var _labels			: Vector.<TimeLabel>	= null;
 		
-		public function get targets() : Vector.<IScene>
+		public function get targets() : Vector.<ISceneNode>
 		{
 			return _targets;
 		}
 		
 		public function AnimationController(timelines	: Vector.<ITimeline>,
-											targets		: Vector.<IScene>)
+											targets		: Vector.<ISceneNode>)
 		{
 			initialize(timelines, targets);
 		}
 		
 		private function initialize(timelines	: Vector.<ITimeline>,
-									targets		: Vector.<IScene>) : void
+									targets		: Vector.<ISceneNode>) : void
 		{
 			_timelines = timelines;
 			_targets = targets;
@@ -136,7 +136,7 @@ package aerys.minko.type.controller
 			for (var i : uint = 0; i < timelinesCount; ++i)
 			{
 				var timeline	: ITimeline	= timelines[i];
-				var target		: IScene	= _targets[i];
+				var target		: ISceneNode	= _targets[i];
 				
 				if (target != null)
 					timeline.updateAt(_currentTime, target);

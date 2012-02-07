@@ -475,7 +475,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						var instructionArgReplacement : Instruction = new Instruction(instructionArg.id, instructionArg.arg1, instructionArg.arg2);
 						
 						instructionArgReplacement.arg1Components = Components.applyCombination(instructionArg.arg1Components, component);
-						instructionArgReplacement.arg2Components = Components.applyCombination(instructionArg.arg2Components, component);
+						if (!instructionArgReplacement.isSingle)
+							instructionArgReplacement.arg2Components = Components.applyCombination(instructionArg.arg2Components, component);
 						
 						// push instruction, allocate and report usages.
 						pushInstruction(instructionArgReplacement, isVertexShader);

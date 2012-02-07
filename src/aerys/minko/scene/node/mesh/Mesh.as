@@ -6,6 +6,10 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.node.AbstractScene;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.data.DataBinding;
+	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
@@ -16,7 +20,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
-	import flash.display.Shader;
 	import flash.utils.Dictionary;
 
 	public class Mesh extends AbstractScene
@@ -35,12 +38,17 @@ package aerys.minko.scene.node.mesh
 			VertexComponent.NORMAL
 		);
 		
-		minko_scene var _calls		: Vector.<DrawCall>			= new <DrawCall>[];
+		minko_scene var _drawCalls	: Vector.<DrawCall>			= new <DrawCall>[];
 		
-		private var _bindings		: Dictionary				= new Dictionary(true);
+		private var _bindings		: DataBinding				= new DataBinding(_drawCalls);
 		private var _effect			: Effect					= null;
 		private var _vertexStreams	: Vector.<IVertexStream>	= null;
 		private var _indexStream	: IndexStream				= null;
+		
+		public function get bindings() : DataBinding
+		{
+			return _bindings;
+		}
 		
 		public function get effect() : Effect
 		{
@@ -65,16 +73,36 @@ package aerys.minko.scene.node.mesh
 			_vertexStreams = vertexStreams;
 			_indexStream = indexStream;
 			
+			initialize();
+			
+			this.effect = effect;
+		}
+		
+		private function initialize() : void
+		{
 			if (!_indexStream && _vertexStreams && _vertexStreams.length)
 			{
 				_indexStream = new IndexStream(
 					StreamUsage.STATIC,
 					null,
-					vertexStreams[0].length
+					_vertexStreams[0].length
 				);
 			}
+		}
+		
+		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+		{
+			super.addedHandler(child, parent);
 			
-			this.effect = effect;
+			_bindings.addParameter("local to world", parent.localToWorld);
+		}
+		
+		override protected function removedHandler(child : ISceneNode, parent : Group) : void
+		{
+			super.removedHandler(child, parent);
+			
+			_bindings.removeParameter("local to world");
+			_bindings.update();
 		}
 				
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
@@ -82,7 +110,7 @@ package aerys.minko.scene.node.mesh
 			var passes		: Vector.<ActionScriptShader>	= _effect.passes;
 			var numPasses 	: int 							= passes.length;
 			
-			_calls.length = 0;
+			_drawCalls.length = 0;
 			for (var i : int = 0; i < numPasses; ++i)
 			{
 				var drawCall 	: DrawCall 					= passes[i].createDrawCall();
@@ -100,42 +128,12 @@ package aerys.minko.scene.node.mesh
 				}
 				
 				drawCall.setStreams(_vertexStreams, _indexStream);
-				_calls[i] = drawCall;
+				_drawCalls[i] = drawCall;
 			}
+			
+			_bindings.update();
 		}
-		
-		public function setParameter(name : String, value	: Object) : void
-		{
-			var numCalls : int = _calls.length;
-			
-			for (var callId : int = 0; callId < numCalls; ++callId)
-				_calls[callId].setParameter(name, value);
-		}
-		
-		public function bindParameter(parameterName : String,
-									  source		: IDataProvider,
-									  key			: String	= null) : void
-		{
-			var bindingTable : Object = _bindings[source] as Object;
-			
-			if (!bindingTable)
-				_bindings[source] = bindingTable = {};
-			
-			bindingTable[key] = parameterName;
-			source.changed.add(parameterChangedHandler);
-			
-			setParameter(parameterName, key ? source[key] : source);
-		}
-		
-		private final function parameterChangedHandler(source : IDataProvider, key : String) : void
-		{
-			var bindingTable : Object = _bindings[source] as Object;
-			var parameterName : String = bindingTable[key] as String;
-			
-			if (parameterName)
-				setParameter(parameterName, key ? source[key] : source);
-		}
-		
+				
 		public function clone() : Mesh
 		{
 			return new Mesh(_effect, _vertexStreams.concat(), _indexStream);

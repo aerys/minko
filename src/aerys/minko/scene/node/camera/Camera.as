@@ -1,19 +1,31 @@
 package aerys.minko.scene.node.camera
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.Visitor;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public class Camera extends AbstractScene
+	public class Camera extends AbstractScene implements IBindable
 	{
-		public static const DEFAULT_FOV				: Number	= Math.PI * .25;
-		public static const DEFAULT_ZNEAR	: Number	= .1;
-		public static const DEFAULT_ZFAR	: Number	= 1000.;
+		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
+		public static const DEFAULT_ZNEAR		: Number	= .1;
+		public static const DEFAULT_ZFAR		: Number	= 1000.;
+		
+		private static const DATA_DESCRIPTOR	: Object	= {
+			"camera position"		: "position",
+			"camera look at"		: "lookAt",
+			"camera up"				: "up",
+			"camera world position"	: "worldPosition",
+			"camera world look at"	: "worldLookAt",
+			"camera world up"		: "worldUp",
+			"world to view"			: "worldToView",
+			"projection"			: "projection"
+		}
 		
 		private var _position		: Vector4	= new Vector4(0, 0, 0);
 		private var _lookAt			: Vector4	= new Vector4(0, 0, 1);
@@ -29,6 +41,9 @@ package aerys.minko.scene.node.camera
 		private var _zFar			: Number	= 0;
 		private var _frustum		: Frustum	= new Frustum();
 		private var _projection		: Matrix4x4	= new Matrix4x4();
+		
+		private var _locked			: Boolean	= false;
+		private var _changed		: Signal	= new Signal();
 		
 		public function get position() : Vector4
 		{
@@ -97,6 +112,21 @@ package aerys.minko.scene.node.camera
 			_zFar = value;
 		}
 		
+		public function get locked() : Boolean
+		{
+			return _locked;
+		}
+		
+		public function get changed() : Signal
+		{
+			return _changed;
+		}
+		
+		public function get dataDescriptor() : Object
+		{
+			return DATA_DESCRIPTOR;
+		}
+		
 		public function Camera(viewport		: Viewport,
 							   fieldOfView	: Number	= DEFAULT_FOV,
 							   zNear		: Number	= DEFAULT_ZNEAR,
@@ -114,9 +144,35 @@ package aerys.minko.scene.node.camera
 		private function initialize(viewport : Viewport) : void
 		{
 			updateProjection(viewport.width / viewport.height);
+			viewport.changed.add(viewportChangedHandler);
 			
-			added.add(addedHandler);
-			removed.add(removedHandler);
+			_position.changed.add(positionChangedHandler);
+			_lookAt.changed.add(lookAtChangedHandler);
+			_up.changed.add(upChangedHandler);
+		}
+		
+		private function positionChangedHandler(value : Object, property : Object) : void
+		{
+			if (!_locked)
+				_changed.execute(this, "position");
+			
+			updateWorldToView();
+		}
+		
+		private function lookAtChangedHandler(value : Object, property : Object) : void
+		{
+			if (!_locked)
+				_changed.execute(this, "lookAt");
+			
+			updateWorldToView();
+		}
+		
+		private function upChangedHandler(value : Object, property : Object) : void
+		{
+			if (!_locked)
+				_changed.execute(this, "up");
+			
+			updateWorldToView();
 		}
 		
 		private function viewportChangedHandler(viewport : Viewport, property : String) : void
@@ -129,16 +185,23 @@ package aerys.minko.scene.node.camera
 		{
 			Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
 			_frustum.updateFromDescription(_fov, ratio, _zNear, _zFar);
+			
+			if (!_locked)
+				_changed.execute(this, "projection");
 		}
 		
-		private function addedHandler(child : Camera, parent : Group) : void
+		override protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
+			super.addedHandler(child, parent);
+			
 			parentTransformChangedHandler(parent.localToWorld, null);
 			parent.localToWorld.changed.add(parentTransformChangedHandler);
 		}
 		
-		private function removedHandler(child : Camera, parent : Group) : void
+		override protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
+			super.removedHandler(child, parent);
+			
 			parent.localToWorld.changed.remove(parentTransformChangedHandler);
 			Matrix4x4.lookAtLH(
 				_position,
@@ -151,9 +214,16 @@ package aerys.minko.scene.node.camera
 		private function parentTransformChangedHandler(transform : Matrix4x4,
 													   key		 : String) : void
 		{
-			transform.transformVector(_position, _worldPosition);
-			transform.transformVector(_lookAt, _worldLookAt);
-			transform.deltaTransformVector(_up, _worldUp);
+			updateWorldToView();
+		}
+		
+		private function updateWorldToView() : void
+		{
+			var localToWorld : Matrix4x4 = parent.localToWorld;
+			
+			localToWorld.transformVector(_position, _worldPosition);
+			localToWorld.transformVector(_lookAt, _worldLookAt);
+			localToWorld.deltaTransformVector(_up, _worldUp);
 			_worldUp.normalize();
 			
 			Matrix4x4.lookAtLH(
@@ -162,6 +232,20 @@ package aerys.minko.scene.node.camera
 				_worldUp,
 				_worldToView
 			);
+			
+			if (!_locked)
+				_changed.execute(this, "worldToView");
+		}
+		
+		public function lock() : void
+		{
+			_locked = true;
+		}
+		
+		public function unlock() : void
+		{
+			_locked = false;
+			_changed.execute(this, null);
 		}
 	}
 }
