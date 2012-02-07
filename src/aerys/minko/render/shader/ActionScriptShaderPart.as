@@ -253,28 +253,6 @@ package aerys.minko.render.shader
 				throw new Error('Invalid arguments');
 		}
 		
-		protected final function floats(...values) : SValue
-		{
-			return toFloat(values.length, values);
-		}
-		
-		/**
-		 * Convert an ARGB uint to an RGBA float4 SValue object.
-		 *  
-		 * @param argb
-		 * @return 
-		 * 
-		 */
-		protected final function rgba(argb : uint) : SValue
-		{
-			return float4(
-				((argb >> 16) & 0xff) / 255.,
-				((argb >> 8) & 0xff) / 255.,
-				(argb & 0xff) / 255.,
-				((argb >>> 24) & 0xff) / 255.
-			);
-		}
-		
 		/**
 		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value. 
 		 * @param scalar
