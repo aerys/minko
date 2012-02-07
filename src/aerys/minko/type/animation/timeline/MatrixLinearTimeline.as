@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public class MatrixLinearTimeline implements ITimeline
@@ -34,7 +34,7 @@ package aerys.minko.type.animation.timeline
 			_values			= matrices;
 		}
 
-		public function updateAt(t : int, scene : IScene) : void
+		public function updateAt(t : int, scene : ISceneNode) : void
 		{
 			var time		: uint	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);

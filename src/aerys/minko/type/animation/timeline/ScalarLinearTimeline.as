@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 
 	public class ScalarLinearTimeline implements ITimeline
 	{
@@ -31,7 +31,7 @@ package aerys.minko.type.animation.timeline
 			_values			= values;
 		}
 
-		public function updateAt(t : int, scene : IScene):void
+		public function updateAt(t : int, scene : ISceneNode):void
 		{
 			var time		: int	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);

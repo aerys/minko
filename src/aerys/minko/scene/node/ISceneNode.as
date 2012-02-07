@@ -2,8 +2,9 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.type.Signal;
 
-	public interface IScene
+	public interface ISceneNode
 	{
+		function get root() : Group;
 		function get parent() : Group;
 		function set parent(value : Group) : void;
 		

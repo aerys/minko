@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	
@@ -136,7 +136,7 @@ package aerys.minko.render
 			);
 		}
 		
-		public function render(scene : IScene, list : RenderingList = null) : void
+		public function render(scene : ISceneNode, list : RenderingList = null) : void
 		{
 			list ||= _renderingList;
 			list.clear();
@@ -175,7 +175,7 @@ package aerys.minko.render
 			}
 		}
 		
-		private function visitRecursive(scene : IScene, list : RenderingList) : void
+		private function visitRecursive(scene : ISceneNode, list : RenderingList) : void
 		{
 			++_sceneSize;
 			
@@ -185,7 +185,7 @@ package aerys.minko.render
 			if (scene is Group)
 			{
 				var group 		: Group 			= scene as Group;
-				var children 	: Vector.<IScene>	= group._children;
+				var children 	: Vector.<ISceneNode>	= group._children;
 				var numChildren : int 				= children.length;
 				
 				for (var childrenId : int = 0; childrenId < numChildren; ++childrenId)
@@ -195,7 +195,7 @@ package aerys.minko.render
 			{
 				var mesh		: Mesh							= scene as Mesh;
 				var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
-				var drawCalls	: Vector.<DrawCall>				= mesh._calls;
+				var drawCalls	: Vector.<DrawCall>				= mesh._drawCalls;
 				var numPasses 	: int 							= passes.length;
 				
 				for (var i : int = 0; i < numPasses; ++i)

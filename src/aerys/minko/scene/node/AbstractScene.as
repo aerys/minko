@@ -4,17 +4,27 @@ package aerys.minko.scene.node
 	
 	import flash.utils.getQualifiedClassName;
 
-	public class AbstractScene implements IScene
+	public class AbstractScene implements ISceneNode
 	{
 		private static var _id	: uint		= 0;
 
 		private var _name		: String	= null;
+		private var _root		: Group		= null;
 		private var _parent		: Group		= null;
 		
 		private var _added		: Signal	= new Signal();
 		private var _removed	: Signal	= new Signal();
 		private var _visited	: Signal	= new Signal();
 
+		public function get name() : String
+		{
+			return _name;
+		}
+		public function set name(value : String) : void
+		{
+			_name = value;
+		}
+		
 		public function get parent() : Group
 		{
 			return _parent;
@@ -30,13 +40,9 @@ package aerys.minko.scene.node
 				_added.execute(this, _parent);
 		}
 		
-		public function get name() : String
+		public function get root() : Group
 		{
-			return _name;
-		}
-		public function set name(value : String) : void
-		{
-			_name = value;
+			return _root;
 		}
 		
 		public function get added() : Signal
@@ -67,17 +73,17 @@ package aerys.minko.scene.node
 			_removed.add(removedHandler);
 		}
 
-		protected function addedHandler(child : IScene, parent : Group) : void
+		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			// nothing
 		}
 		
-		protected function removedHandler(child : IScene, parent : Group) : void
+		protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
 			// nothing
 		}
 		
-		public static function getDefaultSceneName(scene : IScene) : String
+		public static function getDefaultSceneName(scene : ISceneNode) : String
 		{
 			var className : String = getQualifiedClassName(scene);
 

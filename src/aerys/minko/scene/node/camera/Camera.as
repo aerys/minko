@@ -3,7 +3,7 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.AbstractScene;
 	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.IScene;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;
@@ -42,6 +42,7 @@ package aerys.minko.scene.node.camera
 		private var _frustum		: Frustum	= new Frustum();
 		private var _projection		: Matrix4x4	= new Matrix4x4();
 		
+		private var _locked			: Boolean	= false;
 		private var _changed		: Signal	= new Signal();
 		
 		public function get position() : Vector4
@@ -111,6 +112,11 @@ package aerys.minko.scene.node.camera
 			_zFar = value;
 		}
 		
+		public function get locked() : Boolean
+		{
+			return _locked;
+		}
+		
 		public function get changed() : Signal
 		{
 			return _changed;
@@ -147,19 +153,25 @@ package aerys.minko.scene.node.camera
 		
 		private function positionChangedHandler(value : Object, property : Object) : void
 		{
-			_changed.execute(this, "position");
+			if (!_locked)
+				_changed.execute(this, "position");
+			
 			updateWorldToView();
 		}
 		
 		private function lookAtChangedHandler(value : Object, property : Object) : void
 		{
-			_changed.execute(this, "lookAt");
+			if (!_locked)
+				_changed.execute(this, "lookAt");
+			
 			updateWorldToView();
 		}
 		
 		private function upChangedHandler(value : Object, property : Object) : void
 		{
-			_changed.execute(this, "up");
+			if (!_locked)
+				_changed.execute(this, "up");
+			
 			updateWorldToView();
 		}
 		
@@ -174,10 +186,11 @@ package aerys.minko.scene.node.camera
 			Matrix4x4.perspectiveFoVLH(_fov, ratio, _zNear, _zFar, _projection);
 			_frustum.updateFromDescription(_fov, ratio, _zNear, _zFar);
 			
-			_changed.execute(this, "projection");
+			if (!_locked)
+				_changed.execute(this, "projection");
 		}
 		
-		override protected function addedHandler(child : IScene, parent : Group) : void
+		override protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			super.addedHandler(child, parent);
 			
@@ -185,7 +198,7 @@ package aerys.minko.scene.node.camera
 			parent.localToWorld.changed.add(parentTransformChangedHandler);
 		}
 		
-		override protected function removedHandler(child : IScene, parent : Group) : void
+		override protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
 			super.removedHandler(child, parent);
 			
@@ -220,7 +233,19 @@ package aerys.minko.scene.node.camera
 				_worldToView
 			);
 			
-			_changed.execute(this, "worldToView");
+			if (!_locked)
+				_changed.execute(this, "worldToView");
+		}
+		
+		public function lock() : void
+		{
+			_locked = true;
+		}
+		
+		public function unlock() : void
+		{
+			_locked = false;
+			_changed.execute(this, null);
 		}
 	}
 }
