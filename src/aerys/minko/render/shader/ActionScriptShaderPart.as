@@ -176,9 +176,9 @@ package aerys.minko.render.shader
 			return new SValue(new Overwriter(args, components));
 		}
 
-		protected final function float(value : Object) : SValue
+		protected final function float(x : Object) : SValue
 		{
-			var node : INode = getNode(value);
+			var node : INode = getNode(x);
 			if (node.size == 1)
 				return new SValue(node);
 			else
@@ -251,6 +251,11 @@ package aerys.minko.render.shader
 				return toFloat(4, [x, y, z, w]);
 			else
 				throw new Error('Invalid arguments');
+		}
+		
+		protected final function floats(...values) : SValue
+		{
+			return toFloat(values.length, values);
 		}
 		
 		/**
@@ -623,8 +628,8 @@ package aerys.minko.render.shader
 			return new SValue(new BindableSampler(bindingName, filter, mipmap, wrapping, dimension));
 		}
 		
-		protected final function getFieldFromArray(constant 	: Object,
-												   index		: Object,
+		protected final function getFieldFromArray(index	: Object,
+												   constant : Object,
 												   isMatrix	: Boolean) : SValue
 		{
 			var c	: INode	= getNode(constant);
@@ -636,18 +641,18 @@ package aerys.minko.render.shader
 			return new SValue(new VariadicExtract(i, c, isMatrix));
 		}
 		
-		private final function getNode(value : Object) : INode
+		private function getNode(value : Object) : INode
 		{
-			if (value === null)
-				return null;
-
 			if (value is INode)
 				return value as INode;
-
+			
 			if (value is SValue)
 				return (value as SValue)._node;
-
-			return new Constant(value);
+			
+			if (value is uint || value is int || value is Number)
+				return new Constant(new <Number>[Number(value)]);
+			
+			throw new Error('This type cannot be casted to a shader value.');
 		}
 	}
 }

@@ -11,6 +11,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 
 	public class ResolveConstantComputationVisitor extends AbstractVisitor
@@ -28,20 +29,37 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitInterpolate(interpolate	: Interpolate,
-													 isVertexShader	: Boolean) : void
+		override protected function visitInterpolate(interpolate:Interpolate, isVertexShader:Boolean):void
 		{
 			visit(interpolate.arg, true);
 			
 			if (interpolate.arg is Constant)
-			{
 				replaceInParentAndSwizzle(interpolate, interpolate.arg, interpolate.components);
-//				forgetVisiting(interpolate, isVertexShader);
+		}
+		
+		override protected function visitVariadicExtract(variadicExtract:VariadicExtract, isVertexShader:Boolean):void
+		{
+			if (!isVertexShader)
+				throw new Error('Indirect addressing can only be done in the vertex shader.');
+			
+			visit(variadicExtract.constant, true); // useless
+			visit(variadicExtract.index, true);
+			
+			if (variadicExtract.index is Constant && variadicExtract.constant is Constant)
+			{
+				var index : Number = Constant(variadicExtract.index).value[variadicExtract.indexComponentSelect];
+				
+				var result : Vector.<Number> = Evaluator.evaluateVariadicExtract(
+					index,
+					Constant(variadicExtract.constant).value,
+					variadicExtract.isMatrix
+				);
+				
+				replaceInParent(variadicExtract, new Constant(result));
 			}
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction,
-													 isVertexShader	: Boolean) : void
+		override protected function visitInstruction(instruction:Instruction, isVertexShader:Boolean):void
 		{
 			var isSingle : Boolean = instruction.isSingle;
 			
@@ -61,7 +79,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				orderedConstant1	= Evaluator.evaluateComponents(instruction.arg1Components, arg1AsConstant.value);
 				result				= Evaluator.EVALUTION_FUNCTIONS[instruction.id](orderedConstant1);
 				
-				replaceInParent(instruction, new Constant(result, result.length));
+				replaceInParent(instruction, new Constant(result));
 //				forgetVisiting(instruction, isVertexShader);
 			}
 			else if (!isSingle && arg1AsConstant != null && arg2AsConstant != null)
@@ -70,13 +88,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				orderedConstant2	= Evaluator.evaluateComponents(instruction.arg2Components, arg2AsConstant.value);
 				result				= Evaluator.EVALUTION_FUNCTIONS[instruction.id](orderedConstant1, orderedConstant2);
 				
-				replaceInParent(instruction, new Constant(result, result.length));
+				replaceInParent(instruction, new Constant(result));
 //				forgetVisiting(instruction, isVertexShader);
 			}
 		}
 		
-		override protected function visitOverwriter(overwriter		: Overwriter, 
-													isVertexShader	: Boolean) : void
+		override protected function visitOverwriter(overwriter:Overwriter, isVertexShader:Boolean):void
 		{
 			
 			var args		: Vector.<INode> = overwriter.args;
@@ -149,7 +166,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 			
 			// unshift the constant argument and component in the overwriter
-			args.unshift(new Constant(realFinalConstantData, realFinalConstantData.length));
+			args.unshift(new Constant(realFinalConstantData));
 			components.unshift(finalComponents);
 			++numArgs;
 			
@@ -164,34 +181,27 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			overwriter.invalidateHashAndSize();
 		}
 		
-		override protected function visitAttribute(attribute		: Attribute,
-												   isVertexShader	: Boolean) : void
+		override protected function visitAttribute(attribute:Attribute, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
+		override protected function visitConstant(constant:Constant, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitBindableConstant(bindableConstant	: BindableConstant, 
-														  isVertexShader	: Boolean) : void
+		override protected function visitBindableConstant(bindableConstant:BindableConstant, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitExtract(extract		: Extract,
-												 isVertexShader	: Boolean) : void
+		override protected function visitExtract(extract:Extract, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitSampler(sampler		: Sampler, 
-												 isVertexShader	: Boolean) : void
+		override protected function visitSampler(sampler:Sampler, isVertexShader:Boolean):void
 		{
-			
 		}
 		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
-														 isVertexShader		: Boolean) : void
+		override protected function visitBindableSampler(bindableSampler:BindableSampler, isVertexShader:Boolean):void
 		{
 		}
 		

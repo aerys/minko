@@ -10,6 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
@@ -51,6 +52,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 													 isVertexShader	: Boolean) : void
 		{
 			visit(interpolate.arg, true);
+		}
+		
+		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, 
+														 isVertexShader	 : Boolean) : void
+		{
+			if (!isVertexShader)
+				throw new Error('VariadicExtract can only be found on vertex shader.');
+			
+			visit(variadicExtract.index, true);
+			visit(variadicExtract.constant, true);
 		}
 		
 		override protected function visitOverwriter(overwriter		: Overwriter, 
@@ -157,39 +168,28 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			overwriter.invalidateHashAndSize();
 		}
 		
-		override protected function visitAttribute(attribute		: Attribute,
-												   isVertexShader	: Boolean) : void
-		{
-			
-		}
-		
-		override protected function visitExtract(extract		: Extract, 
-												 isVertexShader	: Boolean) : void
-		{
-			
-		}
-		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
+		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
 		{
 		}
 		
-		override protected function visitBindableConstant(parameter		: BindableConstant,
-														  isVertexShader	: Boolean) : void
+		override protected function visitExtract(extract : Extract, isVertexShader : Boolean):void
 		{
 		}
 		
-		override protected function visitSampler(sampler		: Sampler,
-												 isVertexShader	: Boolean) : void
+		override protected function visitConstant(constant : Constant, isVertexShader : Boolean):void
 		{
 		}
 		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
-														 isVertexShader		: Boolean) : void
+		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
 		{
 		}
 		
+		override protected function visitSampler(sampler : Sampler, isVertexShader : Boolean) : void
+		{
+		}
+		
+		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
+		{
+		}
 	}
-	
-	
 }

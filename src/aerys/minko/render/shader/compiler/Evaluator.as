@@ -41,6 +41,14 @@ package aerys.minko.render.shader.compiler
 			EVALUTION_FUNCTIONS[Instruction.SNE]	= evaluateSne;
 		}
 		
+		public static function evaluateVariadicExtract(index	: Number,
+													   values	: Vector.<Number>,
+													   isMatrix	: Boolean) : Vector.<Number>
+		{
+			var fieldSize : uint = isMatrix ? 16 : 4;
+			return values.slice(index * fieldSize, (index + 1) * fieldSize); 
+		}
+		
 		public static function evaluateComponents(components	: uint, 
 												  data			: Vector.<Number>) : Vector.<Number>
 		{

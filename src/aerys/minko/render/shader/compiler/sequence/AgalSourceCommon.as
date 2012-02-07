@@ -23,13 +23,13 @@ package aerys.minko.render.shader.compiler.sequence
 		public function get indirectOffset()				: uint		{ return _indirectOffset;				}
 		public function get registerNumber()				: uint		{ return _registerNumber;				}
 		
-		public function AgalSourceCommon(registerNumber				: uint,
-								   indirectOffset				: uint,
-								   swizzle						: uint,
-								   registerType					: uint,
-								   indexRegisterType			: uint,
-								   indexRegisterComponentSelect : uint,
-								   direct						: Boolean)
+		public function AgalSourceCommon(registerNumber					: uint,
+										 indirectOffset					: uint,
+										 swizzle						: uint,
+										 registerType					: uint,
+										 indexRegisterType				: uint,
+										 indexRegisterComponentSelect	: uint,
+										 direct							: Boolean)
 		{
 			_registerNumber					= registerNumber;
 			_indirectOffset					= indirectOffset;
@@ -64,7 +64,8 @@ package aerys.minko.render.shader.compiler.sequence
 				asmCode += '[';
 				asmCode += RegisterType.stringifyType(indexRegisterType, isVertexShader);
 				asmCode += registerNumber;
-				asmCode += Components.swizzleToString(indexRegisterComponentSelect).substr(0, 2);
+				asmCode += '.';
+				asmCode += Components.swizzleToString(indexRegisterComponentSelect).substr(0, 1);
 				
 				if (indirectOffset != 0)
 					asmCode += ' + ' + indirectOffset.toString();

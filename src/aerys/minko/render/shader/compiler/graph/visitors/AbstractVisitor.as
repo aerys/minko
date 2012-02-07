@@ -11,6 +11,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 
 	public class AbstractVisitor
@@ -79,6 +80,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visitConstant(Constant(node), isVertexShader);
 			else if (node is BindableConstant)
 				visitBindableConstant(BindableConstant(node), isVertexShader);
+			else if (node is VariadicExtract)
+				visitVariadicExtract(VariadicExtract(node), isVertexShader);
 			
 			else if (node is Sampler)
 				visitSampler(Sampler(node), isVertexShader);
@@ -194,6 +197,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						workDone = true;
 					}
 				}
+				else if (parent is VariadicExtract)
+				{
+					var variadicExtract : VariadicExtract = VariadicExtract(parent);
+					
+					if (variadicExtract.index === oldNode)
+					{
+						variadicExtract.index = newNode;
+						workDone = true;
+					}
+				}
 				else
 					throw new Error('Unknown shader graph vertex.');
 			}
@@ -284,6 +297,21 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						workDone			= true;
 					}
 				}
+				else if (parent is VariadicExtract)
+				{
+					var variadicExtract : VariadicExtract = VariadicExtract(parent);
+					
+					if (variadicExtract.index === node)
+					{
+						variadicExtract.indexComponentSelect += modifier & 0xff;
+						workDone			= true;
+					}
+					if (variadicExtract.constant === node)
+					{
+						throw new Error("This node cannot be swizzled");
+					}
+					
+				}
 				else
 					throw new Error('Unknown shader graph vertex.');
 				
@@ -345,6 +373,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 										   isVertexShader	: Boolean) : void
 		{
 			throw new Error('Must be overriden');	
+		}
+		
+		protected function visitVariadicExtract(variadicExtract : VariadicExtract,
+												isVertexShader	: Boolean) : void
+		{
+			throw new Error('Must be overriden');
 		}
 	}
 }

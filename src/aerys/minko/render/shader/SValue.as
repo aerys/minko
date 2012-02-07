@@ -1,11 +1,11 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
+	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -194,8 +194,11 @@ package aerys.minko.render.shader
 
 			if (value is SValue)
 				return (value as SValue)._node;
-
-			return new Constant(value);
+			
+			if (value is uint || value is int || value is Number)
+				return new Constant(new <Number>[Number(value)]);
+			
+			throw new Error('This type cannot be casted to a shader value.');
 		}
 	}
 }

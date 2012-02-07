@@ -10,6 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	public class ResolveParametrizedComputationVisitor extends AbstractVisitor
@@ -39,8 +40,18 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(interpolate.arg, true);
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction, 
-													 isVertexShader	: Boolean) : void
+		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void
+		{
+			if (!isVertexShader)
+				throw new Error('VariadicExtract are only available in the vertex shader.');
+			
+			visit(variadicExtract.index, true);
+			
+			if (_isComputable && _stack.length < 2)
+				replaceInParent(variadicExtract, createComputableConstant(variadicExtract));
+		}
+		
+		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
 		{
 			var isComputable1 : Boolean;
 			var isComputable2 : Boolean;

@@ -21,6 +21,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.register.RegisterLimit;
 	import aerys.minko.render.shader.compiler.register.RegisterType;
@@ -298,11 +299,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private function writeProgram(instructions	 : Vector.<Instruction>,
 									  isVertexShader : Boolean) : Vector.<AgalInstruction>
 		{
-			var allocator	: Allocator;
-			var sourceAlloc	: IAllocation;
-			var source1		: IAgalSource;
-			var source2		: IAgalSource;
-			
 			var result		: Vector.<AgalInstruction> = new Vector.<AgalInstruction>();
 			
 			for each (var instruction : Instruction in instructions)
@@ -310,50 +306,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				var destAlloc	: SimpleAllocation	= _allocations[instruction];
 				var destination	: AgalDestination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
 				
-				sourceAlloc	= _allocations[instruction.arg1];
-				source1		= new AgalSourceCommon(
-					sourceAlloc.registerId, 
-					0, // no variadic extracts for now...
-					sourceAlloc.getReadSwizzle(destAlloc.registerOffset, instruction.arg1Components),
-					sourceAlloc.type,
-					0, // no variadic extracts for now...
-					0,  // no variadic extracts for now...
-					true);
-				
-				if (!instruction.isSingle)
-				{
-					if (instruction.id != Instruction.TEX)
-					{
-						allocator	= getAllocatorFor(instruction.arg2, isVertexShader);
-						sourceAlloc	= _allocations[instruction.arg2];
-						source2		= new AgalSourceCommon(
-							sourceAlloc.registerId, 
-							0, // no variadic extracts for now...
-							sourceAlloc.getReadSwizzle(destAlloc.registerOffset, instruction.arg2Components),
-							sourceAlloc.type,
-							0, // no variadic extracts for now...
-							0,  // no variadic extracts for now...
-							true);
-					}
-					else if (instruction.arg2 is AbstractSampler)
-					{
-						var sampler : AbstractSampler = AbstractSampler(instruction.arg2);
-						
-						source2 = new AgalSourceSampler(
-							_samplers.indexOf(sampler),
-							sampler.dimension,
-							sampler.wrapping,
-							sampler.filter,
-							sampler.mipmap
-						);
-					}
-					else
-						throw new Error();
-				}
-				else
-				{
-					source2 = new AgalSourceEmpty();
-				}
+				var source1		: IAgalSource		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc);
+				var source2		: IAgalSource		= instruction.isSingle ? 
+					new AgalSourceEmpty() : 
+					getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc);
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
@@ -361,47 +317,92 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		override protected function visitAttribute(attribute		: Attribute,
-												   isVertexShader	: Boolean) : void
+		private function getSourceFor(argument			: INode, 
+									  readComponents	: uint, 
+									  destAlloc			: SimpleAllocation) : IAgalSource
 		{
-			_allocations[attribute] = getAllocatorFor(attribute, isVertexShader).allocate(attribute.size, true, 0);
-		}
-		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
-		{
-			_allocations[constant] = getAllocatorFor(constant, isVertexShader).allocate(constant.size, true, 0);
+			var source : IAgalSource;
 			
-			if (isVertexShader)
-				_vsConstants.push(constant);
+			if (argument is VariadicExtract)
+			{
+				var variadicExtract : VariadicExtract = VariadicExtract(argument);
+				
+				var constantAlloc	: IAllocation = _allocations[variadicExtract.constant];
+				var indexAlloc		: IAllocation = _allocations[variadicExtract.index];
+				
+				source = new AgalSourceCommon(
+					indexAlloc.registerId,
+					constantAlloc.registerId,
+					constantAlloc.getReadSwizzle(destAlloc.registerOffset, readComponents),
+					constantAlloc.type,
+					indexAlloc.type,
+					indexAlloc.registerOffset + variadicExtract.indexComponentSelect,
+					false
+				);
+				
+			}
+			else if (argument is AbstractSampler)
+			{
+				var sampler : AbstractSampler = AbstractSampler(argument);
+				
+				source = new AgalSourceSampler(
+					_samplers.indexOf(sampler),
+					sampler.dimension,
+					sampler.wrapping,
+					sampler.filter,
+					sampler.mipmap
+				);
+			}
 			else
-				_fsConstants.push(constant);
-		}
-		
-		override protected function visitBindableConstant(bindableConstant	: BindableConstant,
-														  isVertexShader	: Boolean) : void
-		{
-			_allocations[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
+			{
+				var sourceAlloc	: IAllocation = _allocations[argument];
+				source = new AgalSourceCommon(
+					sourceAlloc.registerId, 
+					0,
+					sourceAlloc.getReadSwizzle(destAlloc.registerOffset, readComponents),
+					sourceAlloc.type,
+					0,
+					0,
+					true
+				);
+			}
 			
-			if (isVertexShader)
-				_vsParams.push(bindableConstant);
+			return source;
+		}
+		
+		private function extendLifeTime(argument : INode, isVertexShader : Boolean) : void
+		{
+			var instructionCounter : uint = getInstructionCounter(isVertexShader);
+			
+			if (argument is Sampler)
+			{
+				// do nothing
+			}
+			else if (argument is VariadicExtract)
+			{
+				var variadicExtract : VariadicExtract = VariadicExtract(argument);
+				
+				IAllocation(_allocations[variadicExtract.constant]).extendLifeTime(instructionCounter);
+				IAllocation(_allocations[variadicExtract.index]).extendLifeTime(instructionCounter);
+			}
 			else
-				_fsParams.push(bindableConstant);
+			{
+				IAllocation(_allocations[argument]).extendLifeTime(instructionCounter);
+			}
 		}
 		
-		override protected function visitSampler(sampler		: Sampler,
-												 isVertexShader	: Boolean) : void
-		{
-			_samplers.push(sampler);
-			_textures[_samplers.length - 1] = sampler.textureResource;
-		}
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
-														 isVertexShader		: Boolean) : void
-		{
-			_samplers.push(bindableSampler);
-			_paramBindings.push(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
-		}
+		
+		
+		
 		
 		/**
 		 * For now we are combining nodes in order.
@@ -454,9 +455,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					subAllocs.push(_allocations[mov]);
 					subOffsets.push(minWriteOffset);
 					
-					IAllocation(_allocations[arg]).extendLifeTime(instructionCounter);
+					extendLifeTime(arg, isVertexShader);
+//					IAllocation(_allocations[arg]).extendLifeTime(instructionCounter);
 				}
-				// The overwriter argument is already allocated on temporaries, let's try to avoid wasting a mov instruction.
+					// The overwriter argument is already allocated on temporaries, let's try to avoid wasting a mov instruction.
 				else if (arg is Instruction)
 				{
 					var instructionArg : Instruction = Instruction(arg);
@@ -489,10 +491,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						subAllocs.push(_allocations[instructionArgReplacement]);
 						subOffsets.push(minWriteOffset);
 						
-						IAllocation(_allocations[instructionArgReplacement.arg1]).extendLifeTime(instructionCounter);
+						extendLifeTime(instructionArgReplacement.arg1, isVertexShader);
+//						IAllocation(_allocations[instructionArgReplacement.arg1]).extendLifeTime(instructionCounter);
 						
-						if (!instructionArgReplacement.isSingle && instructionArgReplacement.id != Instruction.TEX)
-							IAllocation(_allocations[instructionArgReplacement.arg2]).extendLifeTime(instructionCounter);
+						if (!instructionArgReplacement.isSingle)
+							extendLifeTime(instructionArgReplacement.arg2, isVertexShader);
+//							IAllocation(_allocations[instructionArgReplacement.arg2]).extendLifeTime(instructionCounter);
 					}
 					// if this is the first instruction of the overwriter, and the swizzle we need is x[y[z[w]?]?]?, we should
 					// ignore the mov instruction.
@@ -523,14 +527,24 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_allocations[instruction] = getAllocatorFor(instruction, isVertexShader).
 				allocate(instruction.size, instruction.isComponentWise, instructionCounter);
 			
-			IAllocation(_allocations[instruction.arg1]).extendLifeTime(instructionCounter);
+			extendLifeTime(instruction.arg1, isVertexShader);
+//			IAllocation(_allocations[instruction.arg1]).extendLifeTime(instructionCounter);
 			
-			if (!instruction.isSingle && instruction.id != Instruction.TEX)
-				IAllocation(_allocations[instruction.arg2]).extendLifeTime(instructionCounter);
+			if (!instruction.isSingle)
+				extendLifeTime(instruction.arg2, isVertexShader);
+//				IAllocation(_allocations[instruction.arg2]).extendLifeTime(instructionCounter);
 		}
 		
-		override protected function visitInterpolate(interpolate	: Interpolate,
-													 isVertexShader	: Boolean) : void
+		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void
+		{
+			if (!isVertexShader)
+				throw new Error('VariadicExtracts can only be found in the vertex shader.');
+			
+			visit(variadicExtract.constant, true);
+			visit(variadicExtract.index, true);
+		}
+		
+		override protected function visitInterpolate(interpolate : Interpolate, isVertexShader : Boolean) : void
 		{
 			if (isVertexShader)
 			{
@@ -543,6 +557,44 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				_vsInstructions.push(movInstruction);
 			}
 		}
+		
+		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
+		{
+			_allocations[attribute] = getAllocatorFor(attribute, isVertexShader).allocate(attribute.size, true, 0);
+		}
+		
+		override protected function visitConstant(constant : Constant, isVertexShader : Boolean) : void
+		{
+			_allocations[constant] = getAllocatorFor(constant, isVertexShader).allocate(constant.size, true, 0);
+			
+			if (isVertexShader)
+				_vsConstants.push(constant);
+			else
+				_fsConstants.push(constant);
+		}
+		
+		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
+		{
+			_allocations[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
+			
+			if (isVertexShader)
+				_vsParams.push(bindableConstant);
+			else
+				_fsParams.push(bindableConstant);
+		}
+		
+		override protected function visitSampler(sampler : Sampler, isVertexShader : Boolean) : void
+		{
+			_samplers.push(sampler);
+			_textures[_samplers.length - 1] = sampler.textureResource;
+		}
+		
+		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
+		{
+			_samplers.push(bindableSampler);
+			_paramBindings.push(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
+		}
+		
 		
 		override protected function visitExtract(extract		: Extract,
 												 isVertexShader	: Boolean) : void

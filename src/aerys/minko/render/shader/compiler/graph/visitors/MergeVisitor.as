@@ -10,6 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	
 	import flash.utils.Dictionary;
 
@@ -30,41 +31,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-		}
-		
-		override protected function visitAttribute(attribute		: Attribute,
-												   isVertexShader	: Boolean) : void
-		{
-			visitNonTraversable(attribute);
-		}
-		
-		override protected function visitConstant(constant		 : Constant,
-												  isVertexShader : Boolean) : void
-		{
-			visitNonTraversable(constant);
-		}
-		
-		override protected function visitBindableConstant(parameter		 : BindableConstant,
-														  isVertexShader : Boolean) : void
-		{
-			visitNonTraversable(parameter);
-		}
-		
-		override protected function visitSampler(sampler		: Sampler,
-												 isVertexShader	: Boolean) : void
-		{
-			visitNonTraversable(sampler);
-		}
-		
-		override protected function visitBindableSampler(bindableSampler : BindableSampler,
-														 isVertexShader	 : Boolean) : void
-		{
-			visitNonTraversable(bindableSampler);
-		}
-		override protected function visitExtract(extract		: Extract,
-												 isVertexShader	: Boolean) : void
-		{
-			throw new Error('Found invalid node: ' + extract.toString());
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction,
@@ -119,6 +85,62 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				for (var argId : uint = 0; argId < numArgs; ++argId)
 					visit(args[argId], isVertexShader);
 			}
+		}
+		
+		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, 
+														 isVertexShader	 : Boolean) : void
+		{
+			if (!isVertexShader)
+				throw new Error('VariadicExtract can only be found on vertex shaders.');
+			
+			var hash	: uint = variadicExtract.hash;
+			var variadicExtractEq : INode = _hashsToNodes[hash];
+			
+			if (variadicExtractEq)
+				replaceInParent(variadicExtract, variadicExtractEq);
+			else
+			{
+				_hashsToNodes[hash] = variadicExtract;
+				
+				visit(variadicExtract.index, true);
+				visit(variadicExtract.constant, true);
+			}
+		}
+		
+		override protected function visitExtract(extract		: Extract,
+												 isVertexShader	: Boolean) : void
+		{
+			throw new Error('Found invalid node: ' + extract.toString());
+		}
+		
+		override protected function visitAttribute(attribute		: Attribute,
+												   isVertexShader	: Boolean) : void
+		{
+			visitNonTraversable(attribute);
+		}
+		
+		override protected function visitConstant(constant		 : Constant,
+												  isVertexShader : Boolean) : void
+		{
+			visitNonTraversable(constant);
+		}
+		
+		override protected function visitBindableConstant(parameter		 : BindableConstant,
+														  isVertexShader : Boolean) : void
+		{
+			visitNonTraversable(parameter);
+		}
+		
+		override protected function visitSampler(sampler		: Sampler,
+												 isVertexShader	: Boolean) : void
+		{
+			visitNonTraversable(sampler);
+		}
+		
+		override protected function visitBindableSampler(bindableSampler : BindableSampler,
+														 isVertexShader	 : Boolean) : void
+		{
+			visitNonTraversable(bindableSampler);
 		}
 		
 		private function visitNonTraversable(node : INode) : void

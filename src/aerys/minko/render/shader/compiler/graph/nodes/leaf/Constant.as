@@ -24,16 +24,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return _value;
 		}
 		
-		public function Constant(value : Object, size : uint = 0)
+		public function Constant(value : Vector.<Number>)
 		{
-			_value = new Vector.<Number>();
-			
-			if (size == 0)
-				Serializer.serializeUnknownLength(value, _value, 0);
-			else
-				Serializer.serializeKnownLength(value, _value, 0, size);
-			
-			_hash = CRC32.computeForNumberVector(_value);
+			_value	= value;
+			_hash	= CRC32.computeForNumberVector(_value);
 		}
 		
 		public function toString() : String

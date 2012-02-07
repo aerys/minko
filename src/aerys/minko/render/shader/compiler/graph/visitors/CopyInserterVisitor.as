@@ -10,6 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 
 	public class CopyInserterVisitor extends AbstractVisitor
 	{
@@ -60,6 +61,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 				visit(args[argId], isVertexShader);
+		}
+		
+		override protected function visitVariadicExtract(variadicExtract	: VariadicExtract, 
+														 isVertexShader		: Boolean) : void
+		{
+			if (!isVertexShader)
+				throw new Error('Variadic extract are not supported in the fragment shader.');
+			
+			visit(variadicExtract.index, isVertexShader);
+			visit(variadicExtract.constant, isVertexShader);
 		}
 		
 		override protected function visitAttribute(attribute		: Attribute,

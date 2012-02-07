@@ -10,6 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	
 	public class RemoveUselessComputation extends AbstractVisitor
 	{
@@ -26,8 +27,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitInterpolate(interpolate	: Interpolate, 
-													 isVertexShader	: Boolean) : void
+		override protected function visitInterpolate(interpolate:Interpolate, isVertexShader:Boolean):void
 		{
 			visit(interpolate.arg, true);
 		}
@@ -102,40 +102,42 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		override protected function visitOverwriter(overwriter	   : Overwriter, 
-													isVertexShader : Boolean) : void
+		override protected function visitOverwriter(overwriter:Overwriter, isVertexShader:Boolean):void
 		{
 			for each (var arg : INode in overwriter.args)
 				visit(arg, isVertexShader);
 		}
 		
-		override protected function visitAttribute(attribute	  : Attribute, 
-												   isVertexShader : Boolean) : void
+		override protected function visitVariadicExtract(variadicExtract:VariadicExtract, isVertexShader:Boolean):void
+		{
+			if (!isVertexShader)
+				throw new Error('No indirect addressing should be done in the fragment shader.');
+			
+			visit(variadicExtract.index, true);
+			visit(variadicExtract.constant, true);
+		}
+		
+		override protected function visitAttribute(attribute:Attribute, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitConstant(constant		 : Constant, 
-												  isVertexShader : Boolean) : void
+		override protected function visitConstant(constant:Constant, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitBindableConstant(bindableConstant	: BindableConstant, 
-														  isVertexShader	: Boolean) : void
+		override protected function visitBindableConstant(bindableConstant:BindableConstant, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitSampler(sampler		: Sampler, 
-												 isVertexShader	: Boolean) : void
+		override protected function visitSampler(sampler:Sampler, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
-														 isVertexShader		: Boolean) : void
+		override protected function visitBindableSampler(bindableSampler:BindableSampler, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitExtract(extract		: Extract, 
-												 isVertexShader	: Boolean) : void
+		override protected function visitExtract(extract:Extract, isVertexShader:Boolean):void
 		{
 			throw new Error('Found invalid node: ' + extract.toString());
 		}

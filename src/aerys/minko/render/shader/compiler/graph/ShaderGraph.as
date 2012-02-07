@@ -18,7 +18,6 @@ package aerys.minko.render.shader.compiler.graph
 		
 		private var _computableConstants	: Object;
 		
-		
 		public function get position()		: INode				{ return _position;		}
 		public function get interpolates()	: Vector.<INode>	{ return _interpolates;	}
 		public function get color()			: INode				{ return _color;		}

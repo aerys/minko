@@ -62,7 +62,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		
 		public function Interpolate(arg : INode)
 		{
-			_arg = arg;
+			_arg		= arg;
+			_components	= Components.createContinuous(0, 0, arg.size, arg.size);
 		}
 		
 		public function toString() : String
