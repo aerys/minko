@@ -1,10 +1,10 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.accessor.EvalExpAccessor;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -14,7 +14,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	
 	public class ResolveParametrizedComputationVisitor extends AbstractVisitor
 	{
-		private var _isComputable : Boolean;
+		private static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';
+		
+		private var _isComputable			: Boolean;
+		private var _computableConstantId	: uint;
 		
 		public function ResolveParametrizedComputationVisitor()
 		{
@@ -23,6 +26,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			_computableConstantId = 0;	
 		}
 		
 		override protected function finish() : void
@@ -59,7 +63,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					// do nothing. this will be wrapped when going up
 					// if stack.length is 1, we should replace here
 					if (_stack.length < 2)
-						replaceInParent(instruction, new Parameter('wrappedParameter', instruction.size, new EvalExpAccessor(instruction)));
+					{
+						replaceInParent(instruction, createComputableConstant(instruction));
+					}
 				}
 				else
 				{
@@ -75,16 +81,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					// do nothing, go up, and hope for the best
 					// if we cannot go up, replace tree root by an evalexp parameter
 					if (_stack.length < 2)
-						replaceInParent(instruction, new Parameter('wrappedParameter', instruction.size, new EvalExpAccessor(instruction)));
+						replaceInParent(instruction, createComputableConstant(instruction));
 				}
 				else
 				{
 					// check if either arg1 or 2 is computable, and useful to compute
-					if (isComputable1 && !(instruction.arg1 is Constant || instruction.arg1 is Parameter))
-						instruction.arg1 = new Parameter('wrappedParameter', instruction.arg1.size, new EvalExpAccessor(instruction.arg1));
+					if (isComputable1 && !(instruction.arg1 is Constant || instruction.arg1 is BindableConstant))
+						instruction.arg1 = createComputableConstant(instruction.arg1);
 					
-					if (isComputable2 && !(instruction.arg2 is Constant || instruction.arg2 is Parameter))
-						instruction.arg2 = new Parameter('wrappedParameter', instruction.arg2.size, new EvalExpAccessor(instruction.arg2));
+					if (isComputable2 && !(instruction.arg2 is Constant || instruction.arg2 is BindableConstant))
+						instruction.arg2 = createComputableConstant(instruction.arg2);
 				}
 			}
 		}
@@ -138,7 +144,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				// if this is the tree root, we replace the overwriter by a parameter:
 				// this shader is going to be a simple "mov op, fc0"
 				if (_stack.length < 2)
-					replaceInParent(overwriter, new Parameter('wrappedParameter', overwriter.size, new EvalExpAccessor(overwriter)));
+					replaceInParent(overwriter, createComputableConstant(overwriter));
 				
 				// tell the parent we are computable
 				_isComputable = true;
@@ -154,7 +160,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			else if (computableArgsCount == 1)
 			{
 				// there is no need to replace it if it's already a parameter or a contant.
-				if (computableArgs[0] is Constant || computableArgs[0] is Parameter)
+				if (computableArgs[0] is Constant || computableArgs[0] is BindableConstant)
 				{
 					overwriter.args.unshift(computableArgs[0]);
 					overwriter.components.unshift(computableComps[0]);
@@ -162,7 +168,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				// we must replace it otherwise
 				else
 				{
-					overwriter.args.unshift(new Parameter('wrappedParameter', computableArgs[0].size, new EvalExpAccessor(computableArgs[0])));
+					overwriter.args.unshift(createComputableConstant(computableArgs[0]));
 					overwriter.components.unshift(computableComps[0]);
 				}
 				
@@ -218,7 +224,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				
 				var cpuOverwriter : Overwriter = new Overwriter(computableArgs, computableComps);
 				
-				overwriter.args.unshift(new Parameter('wrappedParameter', cpuOverwriter.size, new EvalExpAccessor(cpuOverwriter)));
+				overwriter.args.unshift(createComputableConstant(cpuOverwriter));
 				overwriter.components.unshift(finalComponent);
 				overwriter.invalidateHashAndSize();
 				
@@ -239,14 +245,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_isComputable = true;
 		}
 		
-		override protected function visitExtract(extract		: Extract, 
-												 isVertexShader	: Boolean) : void
-		{
-			throw new Error('Found invalid node: ' + extract.toString());
-		}
-		
-		override protected function visitParameter(parameter	  : Parameter, 
-												   isVertexShader : Boolean) : void
+		override protected function visitBindableConstant(bindableConstant	: BindableConstant,
+														  isVertexShader	: Boolean):void
 		{
 			_isComputable = true;
 		}
@@ -257,5 +257,24 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_isComputable = false;
 		}
 		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
+														 isVertexShader		: Boolean) : void
+		{
+			_isComputable = false;
+		}
+		
+		override protected function visitExtract(extract		: Extract, 
+												 isVertexShader	: Boolean) : void
+		{
+			throw new Error('Found invalid node: ' + extract.toString());
+		}
+		
+		private function createComputableConstant(computableNode : INode) : BindableConstant
+		{
+			var constantName : String = COMPUTABLE_CONSTANT_PREFIX + (_computableConstantId++);
+			_shaderGraph.computableConstants[constantName] = computableNode;
+			
+			return new BindableConstant(constantName, computableNode.size);
+		}
 	}
 }

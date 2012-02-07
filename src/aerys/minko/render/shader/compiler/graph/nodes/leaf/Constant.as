@@ -24,8 +24,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return _value;
 		}
 		
-		public function Constant(value	: Object, 
-								 size	: uint = 0)
+		public function Constant(value : Object, size : uint = 0)
 		{
 			_value = new Vector.<Number>();
 			

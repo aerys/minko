@@ -1,11 +1,10 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.accessor.EvalExpAccessor;
-	import aerys.minko.render.shader.accessor.IParameterAccessor;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -110,34 +109,22 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			appendNode(constant, 'plum1', 'Constant', constant.value.join());
 		}
 		
-		override protected function visitParameter(parameter		: Parameter, 
-												   isVertexShader	: Boolean) : void
+		override protected function visitBindableConstant(bindableConstant	: BindableConstant, 
+														  isVertexShader	: Boolean) : void
 		{
-			if (parameter.accessor != null)
-				visitAccessor(parameter.accessor);
-			
-			appendNode(parameter, 'palegreen1', 'Parameter', parameter.name);
-			if (parameter.accessor != null)
-				appendLink(parameter, parameter.accessor);
-		}
-		
-		private function visitAccessor(accessor : IParameterAccessor) : void
-		{
-			if (accessor is EvalExpAccessor)
-			{
-				visit(EvalExpAccessor(accessor).tree, false);
-				
-				appendNode(accessor, 'darkorange3', 'EvalExpAccessor');
-				appendLink(accessor, EvalExpAccessor(accessor).tree);
-			}
-			else
-				throw new Error('Unknown accessor type.');
+			appendNode(bindableConstant, 'palegreen1', 'Parameter', bindableConstant.bindingName);
 		}
 		
 		override protected function visitSampler(sampler		: Sampler, 
 												 isVertexShader	: Boolean) : void
 		{
 			appendNode(sampler, 'darkolivegreen3', 'Sampler');
+		}
+		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
+														 isVertexShader		: Boolean) : void
+		{
+			appendNode(bindableSampler, 'darkolivegreen3', 'BindableSampler', bindableSampler.bindingName);
 		}
 		
 		private function appendNode(node		: Object,

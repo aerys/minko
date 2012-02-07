@@ -1,79 +1,43 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
-	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.accessor.IParameterAccessor;
+	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
-	public class Sampler implements INode
+	public class Sampler extends AbstractSampler
 	{
-		private var _name		: String;
-		private var _accessor	: IParameterAccessor;
-		private var _hash		: uint;
+		/**
+		 * This vector is only used to compute the hash of the Sampler. 
+		 */		
+		private static const RESOURCES : Vector.<TextureResource> = new Vector.<TextureResource>();
 		
-		private var _filter		: uint;
-		private var _mipmap		: uint;
-		private var _wrapping	: uint;
-		private var _dimension	: uint;
+		private var _textureResource : TextureResource;
 		
-		public function get hash() : uint
+		public function get textureResource() : TextureResource
 		{
-			return _hash;
+			return _textureResource;
 		}
 		
-		public function get size() : uint
+		public function Sampler(textureResource	: TextureResource,
+								filter			: uint = 1, // SamplerFilter.LINEAR
+								mipmap			: uint = 0, // SamplerMipmap.DISABLE
+								wrapping		: uint = 1, // SamplerWrapping.REPEAT
+								dimension		: uint = 0) // SamplerDimension.FLAT
 		{
-			throw new Error('A Sampler has no size');
-		}
-		
-		public function get name() : String
-		{
-			return _name;
-		}
-		
-		public function get accessor() : IParameterAccessor
-		{
-			return _accessor;
-		}
-		
-		public function get filter() : uint 
-		{ 
-			return _filter;
-		}
-		
-		public function get mipmap() : uint
-		{
-			return _mipmap;	
-		}
-		
-		public function get wrapping() : uint 
-		{ 
-			return _wrapping;	
-		}	
-		
-		public function get dimension() : uint
-		{
-			return _dimension;
-		}
-		
-		public function Sampler(name		: String,
-								accessor	: IParameterAccessor	= null,
-								filter		: uint					= 1, // SamplerFilter.LINEAR
-								mipmap		: uint					= 0, // SamplerMipmap.DISABLE
-								wrapping	: uint					= 1, // SamplerWrapping.REPEAT
-								dimension	: uint					= 0) // SamplerDimension.FLAT
-		{
-			_name		= name;
-			_accessor	= accessor;
-			_filter		= filter;
-			_mipmap		= mipmap;
-			_wrapping	= wrapping;
-			_dimension	= dimension;
+			_textureResource = textureResource;
 			
-			_hash		= CRC32.computeForString('Sampler' + name + (accessor == null ? '' : accessor.hash.toString())); 
+			var textureResourceId : int = RESOURCES.indexOf(textureResource);
+			if (textureResourceId === -1)
+			{
+				RESOURCES.push(textureResource);
+				textureResourceId = RESOURCES.length - 1;
+			}
+			
+			var hash : uint = CRC32.computeForString('Sampler' + textureResourceId);
+			
+			super(hash, filter, mipmap, wrapping, dimension);
 		}
 		
-		public function toString() : String
+		override public function toString() : String
 		{
 			return 'Sampler';
 		}

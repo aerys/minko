@@ -2,8 +2,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -37,14 +38,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visitNonTraversable(attribute);
 		}
 		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
+		override protected function visitConstant(constant		 : Constant,
+												  isVertexShader : Boolean) : void
 		{
 			visitNonTraversable(constant);
 		}
 		
-		override protected function visitParameter(parameter		: Parameter,
-												   isVertexShader	: Boolean) : void
+		override protected function visitBindableConstant(parameter		 : BindableConstant,
+														  isVertexShader : Boolean) : void
 		{
 			visitNonTraversable(parameter);
 		}
@@ -55,6 +56,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visitNonTraversable(sampler);
 		}
 		
+		override protected function visitBindableSampler(bindableSampler : BindableSampler,
+														 isVertexShader	 : Boolean) : void
+		{
+			visitNonTraversable(bindableSampler);
+		}
 		override protected function visitExtract(extract		: Extract,
 												 isVertexShader	: Boolean) : void
 		{

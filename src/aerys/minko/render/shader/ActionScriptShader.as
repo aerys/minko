@@ -5,7 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.RendererState;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
-	import aerys.minko.render.shader.compiler.ShaderGraph;
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
 	import flash.utils.getQualifiedClassName;

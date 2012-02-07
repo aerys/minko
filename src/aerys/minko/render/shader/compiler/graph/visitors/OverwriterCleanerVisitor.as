@@ -1,15 +1,16 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
 
@@ -17,11 +18,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	{
 		private static const TYPE_PRIORITY : Dictionary = new Dictionary();
 		{
-			TYPE_PRIORITY[Constant]		= 0;
-			TYPE_PRIORITY[Parameter]	= 1;
-			TYPE_PRIORITY[Attribute]	= 2;
-			TYPE_PRIORITY[Interpolate]	= 3;
-			TYPE_PRIORITY[Instruction]	= 4;
+			TYPE_PRIORITY[Constant]			= 0;
+			TYPE_PRIORITY[BindableConstant]	= 1;
+			TYPE_PRIORITY[Attribute]		= 2;
+			TYPE_PRIORITY[Interpolate]		= 3;
+			TYPE_PRIORITY[Instruction]		= 4;
 		}
 		
 		public function OverwriterCleanerVisitor()
@@ -162,29 +163,32 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 		}
 		
-		override protected function visitConstant(constant			: Constant, 
-												  isVertexShader	: Boolean) : void
-		{
-			
-		}
-		
 		override protected function visitExtract(extract		: Extract, 
 												 isVertexShader	: Boolean) : void
 		{
 			
 		}
 		
-		override protected function visitParameter(parameter		: Parameter, 
-												   isVertexShader	: Boolean) : void
+		override protected function visitConstant(constant			: Constant,
+												  isVertexShader	: Boolean) : void
 		{
-			
 		}
 		
-		override protected function visitSampler(sampler		: Sampler, 
+		override protected function visitBindableConstant(parameter		: BindableConstant,
+														  isVertexShader	: Boolean) : void
+		{
+		}
+		
+		override protected function visitSampler(sampler		: Sampler,
 												 isVertexShader	: Boolean) : void
 		{
-			
 		}
+		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
+														 isVertexShader		: Boolean) : void
+		{
+		}
+		
 	}
 	
 	

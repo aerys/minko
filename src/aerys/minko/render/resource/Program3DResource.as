@@ -2,7 +2,7 @@ package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.IParameterBinding;
+	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display3D.Context3D;
@@ -26,7 +26,7 @@ package aerys.minko.render.resource
 		minko_shader var _fsConstants		: Vector.<Number>				= null;
 		minko_shader var _fsTextures		: Vector.<ITextureResource>		= null;
 		
-		minko_shader var _bindings			: Vector.<IParameterBinding>	= null;
+		minko_shader var _bindings			: Vector.<IBinder>	= null;
 		
 		public function get name() : String
 		{
@@ -41,7 +41,7 @@ package aerys.minko.render.resource
 										  vsConstants		: Vector.<Number>,
 										  fsConstants		: Vector.<Number>,
 										  fsTextures		: Vector.<ITextureResource>,
-										  bindings			: Vector.<IParameterBinding>)
+										  bindings			: Vector.<IBinder>)
 		{
 			_name				= name;
 			

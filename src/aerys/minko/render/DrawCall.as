@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.IParameterBinding;
+	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -18,7 +18,7 @@ package aerys.minko.render
 		private var _vsConstants	: Vector.<Number>					= null;
 		private var _fsConstants	: Vector.<Number>					= null;
 		private var _fsTextures	: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
-		private var _bindings			: Vector.<IParameterBinding>		= null;
+		private var _bindings			: Vector.<IBinder>		= null;
 		private var _nameToBinding		: Object							= {};
 		
 		private var _numVertexBuffers	: int								= 0;
@@ -65,7 +65,7 @@ package aerys.minko.render
 								 fsTextures				: Vector.<ITextureResource>,
 								 vertexInputComponents	: Vector.<VertexComponent>,
 								 vertexInputIndices		: Vector.<uint>,
-								 bindings				: Vector.<IParameterBinding>)
+								 bindings				: Vector.<IBinder>)
 		{
 			_vsConstants		= vsConstants.concat();
 			_fsConstants		= fsConstants.concat();
@@ -83,9 +83,9 @@ package aerys.minko.render
 			
 			for (var bindingId : int = 0; bindingId < numBindings; ++bindingId)
 			{
-				var binding : IParameterBinding = _bindings[bindingId];
+				var binding : IBinder = _bindings[bindingId];
 				
-				_nameToBinding[binding.name] = binding;
+				_nameToBinding[binding.bindingName] = binding;
 			}
 		}
 		
@@ -193,7 +193,7 @@ package aerys.minko.render
 		public function setParameter(name 	: String,
 									 value 	: Object) : void
 		{
-			var binding : IParameterBinding = _nameToBinding[name] as IParameterBinding;
+			var binding : IBinder = _nameToBinding[name] as IBinder;
 			
 			if (binding)
 			{

@@ -1,12 +1,10 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
@@ -14,8 +12,6 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
-	import flash.utils.Dictionary;
 
 	public class ActionScriptShaderPart
 	{
@@ -561,16 +557,10 @@ package aerys.minko.render.shader
 			return subtract(vector, multiply(2, dotProduct3(vector, normal), normal));
 		}
 
-		protected final function getParameter(key	: String,
-											  size	: uint) : SValue
+		protected final function getBindableConstant(key	: String,
+													 size	: uint) : SValue
 		{
-			return new SValue(
-				new Parameter(
-					key,
-					size,
-					null
-				)
-			);
+			return new SValue(new BindableConstant(key, size));
 		}
 
 		protected final function extract(value : Object, component : uint) : SValue
@@ -631,7 +621,7 @@ package aerys.minko.render.shader
 			var c	: INode	= getNode(constant);
 			var i	: INode	= getNode(index);
 
-			if (!(c is Parameter || c is Constant))
+			if (!(c is BindableConstant || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
 
 			return new SValue(new VariadicExtract(i, c, isMatrix));

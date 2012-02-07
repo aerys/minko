@@ -6,6 +6,8 @@ package aerys.minko.render.shader.compiler
 	{
 		private static const POLYNOMIAL 		: uint			= 0x04c11db7;
 		private static const CRC_TABLE			: Vector.<uint>	= new Vector.<uint>(256, true);
+		private static const TMP_BYTEARRAY		: ByteArray		= new ByteArray();
+		
 		private static var CRC_TABLE_READY		: Boolean		= false;
 		
 		private static function generateCrcTable() : void
@@ -50,21 +52,21 @@ package aerys.minko.render.shader.compiler
 		
 		public static function computeForString(s : String) : uint
 		{
-			var byteArray : ByteArray = new ByteArray();
-			byteArray.writeUTFBytes(s);
-			
-			return computeForByteArray(byteArray); 
+			TMP_BYTEARRAY.length = TMP_BYTEARRAY.position = 0;
+			TMP_BYTEARRAY.writeUTFBytes(s);
+			return computeForByteArray(TMP_BYTEARRAY); 
 		}
 		
 		public static function computeForNumberVector(v : Vector.<Number>) : uint
 		{
-			var byteArray	: ByteArray	= new ByteArray();
 			var length		: uint		= v.length;
 			
-			for (var i : uint = 0; i < length; ++i)
-				byteArray.writeDouble(v[i]);
+			TMP_BYTEARRAY.length = TMP_BYTEARRAY.position = 0;
 			
-			return computeForByteArray(byteArray);
+			for (var i : uint = 0; i < length; ++i)
+				TMP_BYTEARRAY.writeDouble(v[i]);
+			
+			return computeForByteArray(TMP_BYTEARRAY);
 		}
 	}
 }

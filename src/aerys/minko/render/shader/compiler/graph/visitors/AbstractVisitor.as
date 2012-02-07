@@ -1,18 +1,17 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.ShaderGraph;
-	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
-	
-	import flash.utils.Dictionary;
+	import aerys.minko.render.shader.compiler.register.Components;
 
 	public class AbstractVisitor
 	{
@@ -36,8 +35,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			start();
 			
-			visit(_shaderGraph.outputPosition, true);
-			visit(_shaderGraph.outputColor, false);
+			visit(_shaderGraph.position, true);
+			visit(_shaderGraph.color, false);
 			for each (var kill : INode in _shaderGraph.kills)
 				visit(kill, false);
 			
@@ -70,16 +69,22 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			_stack.push(node);
 			
+			if (node is Extract)
+				visitExtract(Extract(node), isVertexShader);
+			
 			if (node is Attribute)
 				visitAttribute(Attribute(node), isVertexShader);
+			
 			else if (node is Constant)
 				visitConstant(Constant(node), isVertexShader);
-			else if (node is Parameter)
-				visitParameter(Parameter(node), isVertexShader);
+			else if (node is BindableConstant)
+				visitBindableConstant(BindableConstant(node), isVertexShader);
+			
 			else if (node is Sampler)
 				visitSampler(Sampler(node), isVertexShader);
-			else if (node is Extract)
-				visitExtract(Extract(node), isVertexShader);
+			else if (node is BindableSampler)
+				visitBindableSampler(BindableSampler(node), isVertexShader);
+			
 			else if (node is Instruction)
 				visitInstruction(Instruction(node), isVertexShader);
 			else if (node is Interpolate)
@@ -116,16 +121,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			if (_stack.length < 2)
 			{
-				if (_shaderGraph.outputPosition === oldNode)
+				if (_shaderGraph.position === oldNode)
 				{
-					_shaderGraph.outputPosition	= newNode;
-					workDone					= true;
+					_shaderGraph.position	= newNode;
+					workDone				= true;
 				}
 				
-				if (_shaderGraph.outputColor === oldNode)
+				if (_shaderGraph.color === oldNode)
 				{
-					_shaderGraph.outputColor	= newNode;
-					workDone					= true;
+					_shaderGraph.color	= newNode;
+					workDone			= true;
 				}
 				
 				var numKills : uint = _shaderGraph.kills.length;
@@ -205,15 +210,15 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (_stack.length < 2)
 			{
 				
-				if (_shaderGraph.outputPosition === node)
+				if (_shaderGraph.position === node)
 				{
-					_shaderGraph.outputPositionComponents = Components.applyCombination(modifier, _shaderGraph.outputPositionComponents);
+					_shaderGraph.positionComponents = Components.applyCombination(modifier, _shaderGraph.positionComponents);
 					workDone					= true;
 				}
 				
-				if (_shaderGraph.outputColor === node)
+				if (_shaderGraph.color === node)
 				{
-					_shaderGraph.outputColorComponents = Components.applyCombination(modifier, _shaderGraph.outputColorComponents);
+					_shaderGraph.colorComponents = Components.applyCombination(modifier, _shaderGraph.colorComponents);
 					workDone					= true;
 				}
 				
@@ -221,7 +226,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				for (var killId : uint = 0; killId < numKills; ++killId)
 					if (_shaderGraph.kills[killId] === node)
 					{
-						_shaderGraph.killsComponents[killId]	= Components.applyCombination(modifier, _shaderGraph.killsComponents[killId]);
+						_shaderGraph.killComponents[killId]	= Components.applyCombination(modifier, _shaderGraph.killComponents[killId]);
 						workDone					= true;
 					}
 			}
@@ -300,16 +305,22 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('Must be overriden');
 		}
 		
-		protected function visitParameter(parameter			: Parameter,
-										  isVertexShader	: Boolean) : void
+		protected function visitBindableConstant(bindableConstant	: BindableConstant,
+												 isVertexShader		: Boolean) : void
 		{
-			throw new Error('Must be overriden');	
+			throw new Error('Must be overriden');
 		}
 		
-		protected function visitSampler(sampler			: Sampler,
+		protected function visitSampler(sampler			: Sampler, 
 										isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');	
+			throw new Error('Must be overriden');
+		}
+		
+		protected function visitBindableSampler(bindableSampler	: BindableSampler,
+												isVertexShader	: Boolean) : void
+		{
+			throw new Error('Must be overriden');
 		}
 		
 		protected function visitExtract(extract			: Extract,

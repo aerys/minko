@@ -2,8 +2,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -35,8 +36,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visit(instruction.arg2, isVertexShader);
 			}
 			
-			if ((instruction.arg1 is Constant || instruction.arg1 is Parameter) && 
-				(instruction.isSingle || (instruction.arg2 is Constant || instruction.arg2 is Parameter)))
+			if ((instruction.arg1 is Constant || instruction.arg1 is BindableConstant) && 
+				(instruction.isSingle || (instruction.arg2 is Constant || instruction.arg2 is BindableConstant)))
 			{
 				instruction.arg1 = new Instruction(Instruction.MOV, instruction.arg1);
 			}
@@ -47,7 +48,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			visit(interpolate.arg, true);
 			
-			if (interpolate.arg is Constant || interpolate.arg is Parameter)
+			if (interpolate.arg is Constant || interpolate.arg is BindableConstant)
 				interpolate.arg = new Instruction(Instruction.MOV, interpolate.arg);
 		}
 		
@@ -71,7 +72,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitParameter(parameter		: Parameter,
+		override protected function visitBindableConstant(parameter		: BindableConstant,
 												   isVertexShader	: Boolean) : void
 		{
 		}
@@ -81,11 +82,15 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
+														 isVertexShader		: Boolean) : void
+		{
+		}
+		
 		override protected function visitExtract(extract		: Extract,
 												 isVertexShader	: Boolean) : void
 		{
 			throw new Error('Extracts cannot be found at this stage of compilation.');
 		}
-		
 	}
 }

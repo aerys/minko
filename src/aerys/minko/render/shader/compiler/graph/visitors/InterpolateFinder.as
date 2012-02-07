@@ -2,8 +2,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -19,7 +20,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
-			_shaderGraph.interpolates = new Vector.<INode>();
 		}
 		
 		override protected function finish() : void
@@ -49,11 +49,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitConstant(constant			: Constant, 
-												  isVertexShader	: Boolean) : void
-		{
-		}
-		
 		override protected function visitExtract(extract		: Extract,
 												 isVertexShader	: Boolean) : void
 		{
@@ -66,13 +61,23 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_shaderGraph.interpolates.push(interpolate);
 		}
 		
-		override protected function visitParameter(parameter		: Parameter, 
-												   isVertexShader	: Boolean) : void
+		override protected function visitConstant(constant			: Constant,
+												  isVertexShader	: Boolean) : void
 		{
 		}
 		
-		override protected function visitSampler(sampler		: Sampler, 
+		override protected function visitBindableConstant(parameter			: BindableConstant,
+														  isVertexShader	: Boolean) : void
+		{
+		}
+		
+		override protected function visitSampler(sampler		: Sampler,
 												 isVertexShader	: Boolean) : void
+		{
+		}
+		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
+														 isVertexShader		: Boolean) : void
 		{
 		}
 	}

@@ -1,11 +1,8 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
+	import aerys.minko.render.shader.compiler.register.Components;
 	
 	public class Overwriter implements INode
 	{

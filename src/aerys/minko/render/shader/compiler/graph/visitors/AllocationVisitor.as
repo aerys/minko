@@ -1,17 +1,21 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.ConstantParameterBinding;
-	import aerys.minko.render.shader.binding.IParameterBinding;
-	import aerys.minko.render.shader.binding.TextureParameterBinding;
-	import aerys.minko.render.shader.compiler.ShaderGraph;
+	import aerys.minko.render.shader.binding.ConstantBinder;
+	import aerys.minko.render.shader.binding.EvalExp;
+	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.render.shader.binding.ProxyConstantBinder;
+	import aerys.minko.render.shader.binding.TextureBinder;
 	import aerys.minko.render.shader.compiler.allocation.Allocator;
 	import aerys.minko.render.shader.compiler.allocation.IAllocation;
 	import aerys.minko.render.shader.compiler.allocation.SimpleAllocation;
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.AbstractSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Parameter;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -29,8 +33,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.utils.Dictionary;
-	
-	import mx.binding.utils.BindingUtils;
 
 	public class AllocationVisitor extends AbstractVisitor
 	{
@@ -53,16 +55,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private var _vsConstants			: Vector.<Constant>;
 		private var _fsConstants			: Vector.<Constant>;
 		
-		private var _vsParams				: Vector.<Parameter>;
-		private var _fsParams				: Vector.<Parameter>;
+		private var _vsParams				: Vector.<BindableConstant>;
+		private var _fsParams				: Vector.<BindableConstant>;
 		
-		private var _samplers				: Vector.<Sampler>;
+		private var _samplers				: Vector.<BindableSampler>;
 		
 		// final compiled program
 		private var _vsProgram				: Vector.<AgalInstruction>;
 		private var _fsProgram				: Vector.<AgalInstruction>;
 		
-		private var _paramBindings			: Vector.<IParameterBinding>;
+		private var _paramBindings			: Vector.<IBinder>;
 		
 		private var _vertexComponents		: Vector.<VertexComponent>;
 		private var _vertexIndices			: Vector.<uint>;
@@ -71,7 +73,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private var _fragmentConstants		: Vector.<Number>;
 		private var _textures				: Vector.<ITextureResource>;
 		
-		public function get parameterBindings() : Vector.<IParameterBinding>
+		public function get parameterBindings() : Vector.<IBinder>
 		{
 			return _paramBindings;
 		}
@@ -114,7 +116,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		public function AllocationVisitor()
 		{
 			super(true);
-			
 		}
 		
 		override protected function start() : void
@@ -138,18 +139,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsInstructions				= new Vector.<Instruction>();
 			_vsConstants				= new Vector.<Constant>();
 			_fsConstants				= new Vector.<Constant>();
-			_vsParams					= new Vector.<Parameter>();
-			_fsParams					= new Vector.<Parameter>();
-			_samplers					= new Vector.<Sampler>();
+			_vsParams					= new Vector.<BindableConstant>();
+			_fsParams					= new Vector.<BindableConstant>();
+			_samplers					= new Vector.<BindableSampler>();
 			
 			// final compiled data
-//			_vsProgram					= new Vector.<AgalInstruction>();
-//			_fsProgram					= new Vector.<AgalInstruction>();
-			_paramBindings				= new Vector.<IParameterBinding>();
+			_paramBindings				= new Vector.<IBinder>();
 			_vertexComponents			= new Vector.<VertexComponent>();
 			_vertexIndices				= new Vector.<uint>();
-//			_vertexConstants			= new Vector.<Number>();
-//			_fragmentConstants			= new Vector.<Number>();
 			_textures					= new Vector.<ITextureResource>(8, true);
 		}
 		
@@ -162,28 +159,22 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			start();
 			_shaderGraph = shaderGraph;
 			
-			var opMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.outputPosition);
-			var ocMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.outputColor);
-			opMove.arg1Components = _shaderGraph.outputPositionComponents;
-			ocMove.arg1Components = _shaderGraph.outputColorComponents;
+			var opMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.position);
+			var ocMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.color);
 			
-			_shaderGraph.outputPosition	= opMove;
-			_shaderGraph.outputColor	= ocMove;
+			opMove.arg1Components	= _shaderGraph.positionComponents;
+			ocMove.arg1Components	= _shaderGraph.colorComponents;
+			_shaderGraph.position	= opMove;
+			_shaderGraph.color		= ocMove;
 			
-			visit(_shaderGraph.outputPosition, true);
+			visit(_shaderGraph.position, true);
 			for (i = 0; i < numInterpolates; ++i)
-			{
 				visit(_shaderGraph.interpolates[i], true);
-				// do something here to interpolate
-			}
 			
-			visit(_shaderGraph.outputColor, false);
+			visit(_shaderGraph.color, false);
 			
 			for (i = 0; i < numKills; ++i)
-			{
 				visit(_shaderGraph.kills[i], false);
-				// do something here to kill
-			}
 			
 			finish();
 		}
@@ -234,22 +225,29 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_vertexComponents.length = _vertexIndices.length = maxRegisterId + 1;
 		}
 		
-		private function createConstantParameterBindings(params			: Vector.<Parameter>,
-														 isVertexShader	: Boolean) : Vector.<IParameterBinding>
+		private function createConstantParameterBindings(bindableConstants	: Vector.<BindableConstant>,
+														 isVertexShader		: Boolean) : Vector.<IBinder>
 		{
-			var result : Vector.<IParameterBinding> = new Vector.<IParameterBinding>();
+			var result : Vector.<IBinder> = new Vector.<IBinder>();
 			
-			for each (var parameter : Parameter in params)
+			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
-				var alloc	: SimpleAllocation	= _allocations[parameter];
-				var binding	: IParameterBinding	= new ConstantParameterBinding(
-					parameter.name,
-					alloc.offset,
-					alloc.maxSize,
-					isVertexShader,
-					parameter.accessor
-				);
-				result.push(binding);
+				var bindingName : String			= bindableConstant.bindingName;
+				var tree		: INode				= _shaderGraph.computableConstants[bindingName];
+				var alloc		: SimpleAllocation	= _allocations[bindableConstant];
+				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
+				
+				if (tree)
+					result.push(binder);
+				else
+				{
+					var evalExp				: EvalExp					= new EvalExp(tree);
+					var inBindableConsts	: Vector.<BindableConstant> = evalExp.bindableConstants;
+					var inBinders			: Vector.<IBinder>			= new Vector.<IBinder>();
+					
+					for each (var inBindableConst : BindableConstant in inBindableConsts)
+						result.push(new ProxyConstantBinder(bindingName, binder, evalExp));
+				}
 			}
 			
 			return result;
@@ -280,9 +278,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					 result[offset] = data[localOffset];
 			}
 			
-			var parameters : Vector.<Parameter> = isVertexShader ? _vsParams : _fsParams;
+			var parameters : Vector.<BindableConstant> = isVertexShader ? _vsParams : _fsParams;
 			
-			for each (var parameter : Parameter in parameters)
+			for each (var parameter : BindableConstant in parameters)
 			{
 				alloc		= _allocations[parameter];
 				offsetBegin	= alloc.offset;
@@ -337,9 +335,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 							0,  // no variadic extracts for now...
 							true);
 					}
-					else
+					else if (instruction.arg2 is AbstractSampler)
 					{
-						var sampler : Sampler = Sampler(instruction.arg2);
+						var sampler : AbstractSampler = AbstractSampler(instruction.arg2);
 						
 						source2 = new AgalSourceSampler(
 							_samplers.indexOf(sampler),
@@ -349,6 +347,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 							sampler.mipmap
 						);
 					}
+					else
+						throw new Error();
 				}
 				else
 				{
@@ -378,26 +378,29 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				_fsConstants.push(constant);
 		}
 		
-		override protected function visitParameter(parameter		: Parameter,
-												   isVertexShader	: Boolean) : void
+		override protected function visitBindableConstant(bindableConstant	: BindableConstant,
+														  isVertexShader	: Boolean) : void
 		{
-			_allocations[parameter] = getAllocatorFor(parameter, isVertexShader).allocate(parameter.size, true, 0);
+			_allocations[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
 			
 			if (isVertexShader)
-				_vsParams.push(parameter);
+				_vsParams.push(bindableConstant);
 			else
-				_fsParams.push(parameter);
+				_fsParams.push(bindableConstant);
 		}
 		
 		override protected function visitSampler(sampler		: Sampler,
 												 isVertexShader	: Boolean) : void
 		{
 			_samplers.push(sampler);
-			
-			var samplerId		: uint				= _samplers.length - 1;
-			var samplerBinding	: IParameterBinding	= new TextureParameterBinding(sampler.name, samplerId, sampler.accessor);
-			
-			_paramBindings.push(samplerBinding);
+			_textures[_samplers.length - 1] = sampler.textureResource;
+		}
+		
+		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
+														 isVertexShader		: Boolean) : void
+		{
+			_samplers.push(bindableSampler);
+			_paramBindings.push(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
 		}
 		
 		/**
@@ -431,7 +434,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
 				// The overwriter argument is not allocated on temporaries, we have to use a mov instruction no matter what.
-				if (arg is Attribute || arg is Constant || arg is Parameter || arg is Interpolate)
+				if (arg is Attribute || arg is Constant || arg is BindableConstant || arg is Interpolate)
 				{
 					
 					// visit the constant/attribute/etc to allocate it.
@@ -498,19 +501,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						throw new Error('This cannot be happening. Go fix your code.');
 					}
 				}
-				else if (arg is Overwriter || arg is Extract || arg is Sampler)
+				else if (arg is Overwriter || arg is Extract || arg is Sampler || arg is BindableSampler)
 					throw new Error('This cannot be happening. Go fix your code.');
 			}
 			
 			_allocations[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
-		}
-		
-		private function ts(s : String, ...args) : void
-		{
-			for each (var arg : uint in args)
-				s += ', ' + Components.componentToString(arg);
-			
-			trace(s);
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction,
@@ -558,10 +553,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 										 isVertexShader	: Boolean) : Allocator
 		{
 			// if this is the root node, it has a different allocator.
-			if (node === _shaderGraph.outputPosition)
+			if (node === _shaderGraph.position)
 				return _opAllocator;
 			
-			if (node === _shaderGraph.outputColor)
+			if (node === _shaderGraph.color)
 				return _ocAllocator;
 			
 			if (_shaderGraph.kills.indexOf(node) !== -1)
@@ -573,7 +568,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (node is Instruction || node is Overwriter) // yes overwriter's destination is always in temporary space
 				return isVertexShader ? _vsTempAllocator : _fsTempAllocator;
 			
-			if (node is Constant || node is Parameter)
+			if (node is Constant || node is BindableConstant)
 				return isVertexShader ? _vsConstAllocator : _fsConstAllocator;
 			
 			if (node is Attribute)
@@ -588,7 +583,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (node is Interpolate)
 				return _varyingAllocator;
 			
-			if (node is Sampler)
+			if (node is BindableSampler || node is Sampler)
 			{
 				if (!isVertexShader)
 					return null;

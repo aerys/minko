@@ -6,8 +6,6 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
-	
-	import flashx.textLayout.elements.SpecialCharacterElement;
 
 	public class Instruction implements INode
 	{

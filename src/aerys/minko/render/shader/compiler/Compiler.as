@@ -2,7 +2,7 @@ package aerys.minko.render.shader.compiler
 {
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.IParameterBinding;
+	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.InterpolateFinder;
@@ -18,6 +18,7 @@ package aerys.minko.render.shader.compiler
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 
 	public class Compiler
 	{
@@ -41,7 +42,7 @@ package aerys.minko.render.shader.compiler
 		
 		private static var _vertexSequence		: Vector.<AgalInstruction>;
 		private static var _fragmentSequence	: Vector.<AgalInstruction>;
-		private static var _bindings			: Vector.<IParameterBinding>;
+		private static var _bindings			: Vector.<IBinder>;
 		
 		private static var _vertexComponents	: Vector.<VertexComponent>;
 		private static var _vertexIndices		: Vector.<uint>;
