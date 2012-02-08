@@ -2,8 +2,8 @@ package aerys.minko.scene.camera
 {
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.AbstractSceneNode;
-	import aerys.minko.scene.Group;
 	import aerys.minko.scene.ISceneNode;
+	import aerys.minko.scene.group.Group;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;
@@ -24,7 +24,8 @@ package aerys.minko.scene.camera
 			"camera world look at"	: "worldLookAt",
 			"camera world up"		: "worldUp",
 			"world to view"			: "worldToView",
-			"projection"			: "projection"
+			"projection"			: "projection",
+			"world to screen"		: "worldToScreen"
 		}
 		
 		private var _position		: Vector4	= new Vector4(0, 0, 0);
@@ -41,6 +42,8 @@ package aerys.minko.scene.camera
 		private var _zFar			: Number	= 0;
 		private var _frustum		: Frustum	= new Frustum();
 		private var _projection		: Matrix4x4	= new Matrix4x4();
+		
+		private var _worldToScreen	: Matrix4x4	= new Matrix4x4();
 		
 		private var _locked			: Boolean	= false;
 		private var _changed		: Signal	= new Signal();
@@ -188,6 +191,8 @@ package aerys.minko.scene.camera
 			
 			if (!_locked)
 				_changed.execute(this, "projection");
+			
+			updateWorldToScreen();
 		}
 		
 		override protected function addedHandler(child : ISceneNode, parent : Group) : void
@@ -235,6 +240,16 @@ package aerys.minko.scene.camera
 			
 			if (!_locked)
 				_changed.execute(this, "worldToView");
+			
+			updateWorldToScreen();
+		}
+		
+		private function updateWorldToScreen() : void
+		{
+			Matrix4x4.multiply(_projection, _worldToView, _worldToScreen);
+			
+			if (!_locked)
+				_changed.execute(this, "worldToScreen");
 		}
 		
 		public function lock() : void

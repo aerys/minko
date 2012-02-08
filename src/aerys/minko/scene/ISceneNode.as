@@ -1,6 +1,7 @@
 package aerys.minko.scene
 {
 	import aerys.minko.type.Signal;
+	import aerys.minko.scene.group.Group;
 
 	public interface ISceneNode
 	{
@@ -13,6 +14,5 @@ package aerys.minko.scene
 		
 		function get added() : Signal;
 		function get removed() : Signal;
-		function get visited() : Signal;
 	}
 }

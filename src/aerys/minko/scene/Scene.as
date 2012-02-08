@@ -4,23 +4,24 @@ package aerys.minko.scene
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.scene.group.Group;
 	import aerys.minko.scene.mesh.Mesh;
+	import aerys.minko.type.controller.IController;
 	import aerys.minko.type.data.IBindable;
 
 	public final class Scene extends Group
 	{
 		use namespace minko_scene;
 		
-		private var _size				: uint					= 0;
+		private var _list				: RenderingList				= new RenderingList();
 		
-		private var _list				: RenderingList			= new RenderingList();
+		private var _bindables			: Vector.<IBindable>		= new <IBindable>[];
+		private var _meshes				: Vector.<Mesh>				= new <Mesh>[];
+		private var _controllers		: Vector.<IController>		= new <IController>[];
 		
-		private var _bindables			: Vector.<IBindable>	= new <IBindable>[];
-		private var _meshes				: Vector.<Mesh>			= new <Mesh>[];
-		
-		private var _invalidList		: Boolean				= false;
-		private var _invalidBindings	: Boolean				= false;
-		private var _locked				: Boolean				= false;
+		private var _invalidList		: Boolean					= false;
+		private var _invalidBindings	: Boolean					= false;
+		private var _locked				: Boolean					= false;
 		
 		public function get renderingList() : RenderingList
 		{
@@ -33,11 +34,6 @@ package aerys.minko.scene
 		public function get locked() : Boolean
 		{
 			return _locked;
-		}
-		
-		public function get size() : uint
-		{
-			return _size;
 		}
 		
 		public function Scene(...children)
@@ -74,26 +70,22 @@ package aerys.minko.scene
 				bindableAddedHandler(child as IBindable);
 			else if (child is Group)
 				groupAddedHandler(child as Group);
-			else
-				++_size;
 		}
 		
 		private function childRemovedHandler(group : Group, child : ISceneNode) : void
 		{
+			trace("remove", group, child);
+			
 			if (child is Mesh)
 				meshRemovedHandler(child as Mesh);
 			else if (child is IBindable)
 				bindableRemovedHandler(child as IBindable);
 			else if (child is Group)
 				groupRemovedHandler(child as Group);
-			else
-				--_size;
 		}
 		
 		private function meshAddedHandler(mesh : Mesh) : void
 		{
-			++_size;
-			
 			_invalidList = true;
 			
 			if (_locked)
@@ -111,8 +103,6 @@ package aerys.minko.scene
 		
 		private function meshRemovedHandler(mesh : Mesh) : void
 		{
-			--_size;
-
 			_invalidList = true;
 			
 			if (_locked)
@@ -134,8 +124,6 @@ package aerys.minko.scene
 		
 		private function bindableAddedHandler(bindable : IBindable) : void
 		{
-			++_size;
-			
 			_bindables.push(bindable);
 			
 			if (_locked)
@@ -151,8 +139,6 @@ package aerys.minko.scene
 		
 		private function bindableRemovedHandler(bindable : IBindable) : void
 		{
-			--_size;
-			
 			if (_locked)
 			{
 				_invalidBindings = true;
@@ -172,8 +158,6 @@ package aerys.minko.scene
 		
 		private function groupAddedHandler(group : Group) : void
 		{
-			++_size;
-			
 			if (_locked)
 			{
 				_invalidBindings = true;
@@ -203,8 +187,6 @@ package aerys.minko.scene
 		
 		private function groupRemovedHandler(group : Group) : void
 		{
-			--_size;
-			
 			if (_locked)
 			{
 				_invalidBindings = true;
@@ -236,20 +218,27 @@ package aerys.minko.scene
 		{
 			if (_invalidList)
 			{
-				var numMeshes : int = _meshes.length;
-				
 				_list.clear();
+				
+				var newMeshes	: Vector.<ISceneNode>	= getDescendantsByType(Mesh);
+				var numMeshes 	: int 					= newMeshes.length;
+				
+				trace("updateRenderingList", numMeshes);
 				
 				for (var meshIndex : int = 0; meshIndex < numMeshes; ++meshIndex)
 				{
-					var mesh		: Mesh							= _meshes[meshIndex];
+					var mesh		: Mesh							= newMeshes[meshIndex] as Mesh;
 					var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
 					var numPasses	: int							= passes.length;
 					var drawCalls 	: Vector.<DrawCall>				= mesh._drawCalls;
 					
+					_meshes[meshIndex] = mesh;
+					
 					for (var i : int = 0; i < numPasses; ++i)
 						_list.pushDrawCall(passes[i].state, drawCalls[i]);
 				}
+				
+				_meshes.length = numMeshes;
 				
 				_invalidList = false;
 			}

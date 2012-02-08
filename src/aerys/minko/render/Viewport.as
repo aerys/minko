@@ -2,7 +2,7 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.Group;
+	import aerys.minko.scene.group.Group;
 	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.scene.Scene;
 	import aerys.minko.scene.mesh.Mesh;

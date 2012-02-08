@@ -6,12 +6,9 @@ package aerys.minko.scene.mesh
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.AbstractSceneNode;
-	import aerys.minko.scene.Group;
 	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.scene.Scene;
 	import aerys.minko.type.data.DataBinding;
-	import aerys.minko.type.data.IBindable;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
@@ -20,8 +17,6 @@ package aerys.minko.scene.mesh
 	import aerys.minko.type.stream.VertexStreamList;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
-	
-	import flash.utils.Dictionary;
 
 	public class Mesh extends AbstractSceneNode
 	{
@@ -103,7 +98,7 @@ package aerys.minko.scene.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			_bindings.removeParameter("local to world");
-			_bindings.update();
+			_bindings.clear();
 		}
 				
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
@@ -132,7 +127,7 @@ package aerys.minko.scene.mesh
 				_drawCalls[i] = drawCall;
 			}
 			
-			_bindings.update();
+			_bindings.clear();
 		}
 				
 		public function clone() : Mesh

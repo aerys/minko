@@ -38,7 +38,7 @@ package aerys.minko.render
 		
 		public function render(context : Context3D) : uint
 		{
-			var numTriangles : uint = 0;
+			var numTriangles : uint 	= 0;
 			
 			// FIXME: handle render targets
 			context.clear();
@@ -55,14 +55,20 @@ package aerys.minko.render
 			// apply states
 			for (var i : int = 0; i < _numStates; ++i)
 			{
-				var state 		: RendererState		= _states[i];
-				var calls 		: Vector.<DrawCall> = _calls[state];
-				var numCalls	: int				= calls.length;
+				var state 			: RendererState		= _states[i];
+				var calls 			: Vector.<DrawCall> = _calls[state];
+				var numCalls		: int				= calls.length;
+				var call			: DrawCall			= null;
+				var previousCall	: DrawCall			= null;
 				
 				state.apply(context);
 				
 				for (var j : int = 0; j < numCalls; ++j)
-					numTriangles += calls[j].apply(context);
+				{
+					call = calls[j]
+					numTriangles += call.apply(context, previousCall);
+					previousCall = call;
+				}
 			}
 			
 			return numTriangles;

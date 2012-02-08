@@ -1,6 +1,9 @@
-package aerys.minko.scene
+package aerys.minko.scene.group
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.scene.AbstractSceneNode;
+	import aerys.minko.scene.ISceneNode;
+	import aerys.minko.scene.Scene;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -23,18 +26,18 @@ package aerys.minko.scene
 		private static var _id			: uint					= 0;
 		
 		minko_scene var _children		: Vector.<ISceneNode>	= null;
+		minko_scene var _numChildren	: uint					= 0;
 
 		private var _name				: String				= null;
 		private var _root				: Group					= null;
 		private var _parent				: Group					= null;
 		
-		private var _numChildren		: int					= 0;
+		private var _numDescendants		: uint					= 0;
 		private var _transform			: Matrix4x4				= new Matrix4x4();
 		private var _localToWorld		: Matrix4x4				= new Matrix4x4();
 		
 		private var _added				: Signal				= new Signal();
 		private var _removed			: Signal				= new Signal();
-		private var _visited			: Signal				= new Signal();
 		private var _addedToScene		: Signal				= new Signal();
 		private var _removedFromScene	: Signal				= new Signal();
 		private var _childAdded			: Signal				= new Signal();
@@ -60,18 +63,35 @@ package aerys.minko.scene
 		}
 		public function set parent(value : Group) : void
 		{
+			// remove child
 			if (_parent)
 			{
 				var oldParent : Group = _parent;
+				
+				oldParent._children.splice(
+					oldParent.getChildIndex(this),
+					1
+				);
+				
+				parent._numChildren--;
+				oldParent._childRemoved.execute(oldParent, this);
 				
 				_parent = null;
 				_removed.execute(this, oldParent);
 			}
 			
+			// set parent
 			_parent = value;
 			
+			// add child
 			if (_parent)
+			{
+				_parent._children[parent._numChildren] = this;
+				_parent._numChildren++;
+				_parent._childAdded.execute(_parent, this);
+
 				_added.execute(this, _parent);
+			}
 		}
 
 		/**
@@ -80,6 +100,11 @@ package aerys.minko.scene
 		public function get numChildren() : uint
 		{
 			return _numChildren;
+		}
+		
+		public function get numDescendants() : uint
+		{
+			return _numDescendants;
 		}
 		
 		/**
@@ -103,11 +128,6 @@ package aerys.minko.scene
 		public function get removed() : Signal
 		{
 			return _removed;
-		}
-		
-		public function get visited() : Signal
-		{
-			return _visited;
 		}
 		
 		public function get addedToScene() : Signal
@@ -201,6 +221,8 @@ package aerys.minko.scene
 					childGroup.childRemoved.add(_childRemoved.execute);
 				}
 			}
+			
+			_numDescendants += (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
 		private function childRemovedHandler(group : Group, child : ISceneNode) : void
@@ -215,6 +237,8 @@ package aerys.minko.scene
 					childGroup.childRemoved.remove(_childRemoved.execute);
 				}
 			}
+			
+			_numDescendants -= (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
 		private function transformChangedHandler(transform 	: Matrix4x4	= null,
@@ -257,28 +281,23 @@ package aerys.minko.scene
 		 *
 		 * @param	scene The child to add.
 		 */
-		public function addChild(scene : ISceneNode) : Group
+		public function addChild(node : ISceneNode) : Group
 		{
-			return addChildAt(scene, _numChildren);
+			return addChildAt(node, _numChildren);
 		}
 
-		public function addChildAt(scene : ISceneNode, position : uint) : Group
+		public function addChildAt(node : ISceneNode, position : uint) : Group
 		{
-			if (!scene)
+			if (!node)
 				throw new Error("Parameter 'scene' must not be null.");
 
-			if (position < _numChildren)
-				for (var i : int = _numChildren; i > position; --i)
-					_children[i] = _children[int(i - 1)];
-			else
-				position = _numChildren;
+			node.parent = this;
 
-			_children[position] = scene;
-			scene.parent = this;
-			_childAdded.execute(this, scene);
-
-			++_numChildren;
-
+			for (var i : int = _numChildren - 1; i > position; --i)
+				_children[i] = _children[int(i - 1)];
+			
+			_children[position] = node;
+			
 			return this;
 		}
 
@@ -290,25 +309,15 @@ package aerys.minko.scene
 		 */
 		public function removeChild(child : ISceneNode) : Group
 		{
-			var childIndex : int = getChildIndex(child);
-
-			if (childIndex == -1)
-				throw new Error('The scene node is not a child of the caller.');
-
-			return removeChildAt(childIndex);
+			return removeChildAt(getChildIndex(child));
 		}
 
 		public function removeChildAt(position : uint) : Group
 		{
-			if (position < _numChildren)
-			{
-				var scene	: ISceneNode	= _children.splice(position, 1)[0];
-
-				scene.parent = null;
-				_childRemoved.execute(this, scene);
-
-				--_numChildren;
-			}
+			if (position >= _numChildren || position < 0)
+				throw new Error('The scene node is not a child of the caller.');
+			
+			(_children[position] as ISceneNode).parent = null;
 
 			return this;
 		}
@@ -332,7 +341,7 @@ package aerys.minko.scene
 			descendants ||= new Vector.<ISceneNode>();
 			
 			var descendant 	: ISceneNode 	= getChildByName(name);
-			var numChildren	: int 		= numChildren;
+			var numChildren	: int 			= numChildren;
 			
 			if (descendants)
 				descendants.push(descendants);
@@ -351,14 +360,12 @@ package aerys.minko.scene
 		public function getDescendantsByType(type 			: Class,
 											 descendants 	: Vector.<ISceneNode> = null) : Vector.<ISceneNode>
 		{
-			var numChildren	: int 	= numChildren;
-
 			descendants ||= new Vector.<ISceneNode>();
 
-			for (var i : int = 0; i < numChildren; ++i)
+			for (var i : int = 0; i < _numChildren; ++i)
 			{
 				var child	: ISceneNode	= _children[i];
-				var group 	: Group 	= child as Group;
+				var group 	: Group 		= child as Group;
 
 				if (child is type)
 					descendants.push(child);

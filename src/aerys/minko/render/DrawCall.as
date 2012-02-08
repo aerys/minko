@@ -20,11 +20,12 @@ package aerys.minko.render
 		private var _vsConstants		: Vector.<Number>					= null;
 		private var _fsConstants		: Vector.<Number>					= null;
 		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
+		
 		private var _bindings			: Object							= null;
 		private var _dataStore			: Dictionary						= new Dictionary();
 		
-		private var _numVertexBuffers	: int								= 0;
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
+		private var _numVertexBuffers	: int								= 0;
 		private var _offsets			: Vector.<int>						= new Vector.<int>(8, true);
 		private var _formats			: Vector.<String>					= new Vector.<String>(8, true);
 		private var _inputComponents	: Vector.<VertexComponent>			= null;
@@ -37,6 +38,21 @@ package aerys.minko.render
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
 			return _inputComponents;
+		}
+		
+		public function DrawCall(vsConstants 			: Vector.<Number>,
+								 fsConstants 			: Vector.<Number>,
+								 fsTextures				: Vector.<ITextureResource>,
+								 vertexInputComponents	: Vector.<VertexComponent>,
+								 vertexInputIndices		: Vector.<uint>,
+								 bindings				: Object)
+		{
+			_vsConstants		= vsConstants.concat();
+			_fsConstants		= fsConstants.concat();
+			_fsTextures			= fsTextures.concat();
+			_inputComponents	= vertexInputComponents;
+			_inputIndices		= vertexInputIndices;
+			_bindings			= bindings;
 		}
 		
 		public function setStreams(vertexStreams 	: Vector.<IVertexStream>,
@@ -62,22 +78,8 @@ package aerys.minko.render
 			}
 		}
 		
-		public function DrawCall(vsConstants 			: Vector.<Number>,
-								 fsConstants 			: Vector.<Number>,
-								 fsTextures				: Vector.<ITextureResource>,
-								 vertexInputComponents	: Vector.<VertexComponent>,
-								 vertexInputIndices		: Vector.<uint>,
-								 bindings				: Object)
-		{
-			_vsConstants		= vsConstants.concat();
-			_fsConstants		= fsConstants.concat();
-			_fsTextures			= fsTextures.concat();
-			_inputComponents	= vertexInputComponents;
-			_inputIndices		= vertexInputIndices;
-			_bindings			= bindings;
-		}
-		
-		public function apply(context : Context3D) : uint
+		public function apply(context 	: Context3D,
+							  previous	: DrawCall) : uint
 		{
 			context.setProgramConstantsFromVector(
 				Context3DProgramType.VERTEX,
@@ -91,87 +93,29 @@ package aerys.minko.render
 				_fsConstants
 			);
 			
-			context.setTextureAt(
-				0,
-				_fsTextures[0] ? _fsTextures[0].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				1,
-				_fsTextures[1] ? _fsTextures[1].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				2,
-				_fsTextures[2] ? _fsTextures[2].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				3,
-				_fsTextures[3] ? _fsTextures[3].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				4,
-				_fsTextures[4] ? _fsTextures[4].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				5,
-				_fsTextures[5] ? _fsTextures[5].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				6,
-				_fsTextures[6] ? _fsTextures[6].getNativeTexture(context) : null
-			);
-			context.setTextureAt(
-				7,
-				_fsTextures[7] ? _fsTextures[7].getNativeTexture(context) : null
-			);
+			var numTextures	: int	= _fsTextures.length;
+			var maxTextures	: int	= previous ? previous._fsTextures.length : 8;
+			var maxBuffers	: int	= previous ? previous._numVertexBuffers : 8;
+			var i 			: int 	= 0;
+				
+			for (i = 0; i < numTextures; ++i)
+				context.setTextureAt(i, _fsTextures[i].getNativeTexture(context));
 			
-			context.setVertexBufferAt(
-				0,
-				_vertexBuffers[0] ? _vertexBuffers[0].getVertexBuffer3D(context) : null,
-				_offsets[0],
-				_formats[0]
-			);
-			context.setVertexBufferAt(
-				1,
-				_vertexBuffers[1] ? _vertexBuffers[1].getVertexBuffer3D(context) : null,
-				_offsets[1],
-				_formats[1]
-			);
-			context.setVertexBufferAt(
-				2,
-				_vertexBuffers[2] ? _vertexBuffers[2].getVertexBuffer3D(context) : null,
-				_offsets[2],
-				_formats[2]
-			);
-			context.setVertexBufferAt(
-				3,
-				_vertexBuffers[3] ? _vertexBuffers[3].getVertexBuffer3D(context) : null,
-				_offsets[3],
-				_formats[3]
-			);
-			context.setVertexBufferAt(
-				4,
-				_vertexBuffers[4] ? _vertexBuffers[4].getVertexBuffer3D(context) : null,
-				_offsets[4],
-				_formats[4]
-			);
-			context.setVertexBufferAt(
-				5,
-				_vertexBuffers[5] ? _vertexBuffers[5].getVertexBuffer3D(context) : null,
-				_offsets[5],
-				_formats[5]
-			);
-			context.setVertexBufferAt(
-				6,
-				_vertexBuffers[6] ? _vertexBuffers[6].getVertexBuffer3D(context) : null,
-				_offsets[6],
-				_formats[6]
-			);
-			context.setVertexBufferAt(
-				7,
-				_vertexBuffers[7] ? _vertexBuffers[7].getVertexBuffer3D(context) : null,
-				_offsets[7],
-				_formats[7]
-			);
+			while (i < maxTextures)
+				context.setTextureAt(i++, null);
+			
+			for (i = 0; i < _numVertexBuffers; ++i)
+			{
+				context.setVertexBufferAt(
+					i,
+					_vertexBuffers[i].getVertexBuffer3D(context),
+					_offsets[i],
+					_formats[i]
+				);
+			}
+			
+			while (i < maxBuffers)
+				context.setVertexBufferAt(i++, null);
 			
 			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context));
 			

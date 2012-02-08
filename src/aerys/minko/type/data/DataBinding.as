@@ -111,7 +111,7 @@ package aerys.minko.type.data
 			}
 		}
 		
-		public function update() : void
+		public function clear() : void
 		{
 			for (var source : Object in _bindings)
 			{

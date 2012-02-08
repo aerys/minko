@@ -1,11 +1,15 @@
 package aerys.minko.scene
 {
+	import aerys.minko.ns.minko_scene;
+	import aerys.minko.scene.group.Group;
 	import aerys.minko.type.Signal;
 	
 	import flash.utils.getQualifiedClassName;
 
 	public class AbstractSceneNode implements ISceneNode
 	{
+		use namespace minko_scene;
+		
 		private static var _id			: uint		= 0;
 
 		private var _name				: String	= null;
@@ -14,7 +18,6 @@ package aerys.minko.scene
 		
 		private var _added				: Signal	= new Signal();
 		private var _removed			: Signal	= new Signal();
-		private var _visited			: Signal	= new Signal();
 		private var _addedToScene		: Signal	= new Signal();
 		private var _removedFromScene	: Signal	= new Signal();
 
@@ -33,18 +36,35 @@ package aerys.minko.scene
 		}
 		public function set parent(value : Group) : void
 		{
+			// remove child
 			if (_parent)
 			{
 				var oldParent : Group = _parent;
+				
+				oldParent._children.splice(
+					oldParent.getChildIndex(this),
+					1
+				);
+				
+				parent._numChildren--;
+				oldParent.childRemoved.execute(oldParent, this);
 				
 				_parent = null;
 				_removed.execute(this, oldParent);
 			}
 			
+			// set parent
 			_parent = value;
 			
+			// add child
 			if (_parent)
+			{
+				_parent._children[_parent.numChildren] = this;
+				_parent._numChildren++;
+				_parent.childAdded.execute(_parent, this);
+				
 				_added.execute(this, _parent);
+			}
 		}
 		
 		public function get root() : Group
@@ -62,11 +82,6 @@ package aerys.minko.scene
 			return _removed;
 		}
 
-		public function get visited() : Signal
-		{
-			return _visited;
-		}
-		
 		public function get addedToScene() : Signal
 		{
 			return _addedToScene;

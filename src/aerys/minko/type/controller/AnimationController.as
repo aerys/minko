@@ -12,7 +12,7 @@ package aerys.minko.type.controller
 		
 		private var _enabled		: Boolean				= true;
 		private var _timelines		: Vector.<ITimeline>	= null;
-		private var _targets		: Vector.<ISceneNode>		= null;
+		private var _targets		: Vector.<ISceneNode>	= null;
 		private var _isPlaying		: Boolean				= false;
 		private var _loopBeginTime	: uint					= 0;
 		private var _loopEndTime	: uint					= 0;
