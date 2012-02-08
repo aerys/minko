@@ -1,13 +1,14 @@
-package aerys.minko.scene.node.mesh
+package aerys.minko.scene.mesh
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.AbstractSceneNode;
+	import aerys.minko.scene.Group;
+	import aerys.minko.scene.ISceneNode;
+	import aerys.minko.scene.Scene;
 	import aerys.minko.type.data.DataBinding;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.data.IDataProvider;
@@ -22,7 +23,7 @@ package aerys.minko.scene.node.mesh
 	
 	import flash.utils.Dictionary;
 
-	public class Mesh extends AbstractScene
+	public class Mesh extends AbstractSceneNode
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
@@ -90,16 +91,16 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
-			super.addedHandler(child, parent);
+			super.addedToSceneHandler(child, scene);
 			
 			_bindings.addParameter("local to world", parent.localToWorld);
 		}
 		
-		override protected function removedHandler(child : ISceneNode, parent : Group) : void
+		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
-			super.removedHandler(child, parent);
+			super.removedFromSceneHandler(child, scene);
 			
 			_bindings.removeParameter("local to world");
 			_bindings.update();

@@ -1,4 +1,4 @@
-package aerys.minko.scene.node
+package aerys.minko.scene
 {
 	import aerys.minko.type.Signal;
 

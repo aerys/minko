@@ -1,4 +1,4 @@
-package aerys.minko.scene.node
+package aerys.minko.scene
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.type.Signal;
@@ -20,21 +20,25 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		private static var _id		: uint					= 0;
+		private static var _id			: uint					= 0;
 		
-		minko_scene var _children	: Vector.<ISceneNode>	= null;
+		minko_scene var _children		: Vector.<ISceneNode>	= null;
 
-		private var _name			: String				= null;
-		private var _root			: Group					= null;
-		private var _parent			: Group					= null;
+		private var _name				: String				= null;
+		private var _root				: Group					= null;
+		private var _parent				: Group					= null;
 		
-		private var _numChildren	: int					= 0;
-		private var _transform		: Matrix4x4				= new Matrix4x4();
-		private var _localToWorld	: Matrix4x4				= new Matrix4x4();
+		private var _numChildren		: int					= 0;
+		private var _transform			: Matrix4x4				= new Matrix4x4();
+		private var _localToWorld		: Matrix4x4				= new Matrix4x4();
 		
-		private var _added			: Signal				= new Signal();
-		private var _removed		: Signal				= new Signal();
-		private var _visited		: Signal				= new Signal();
+		private var _added				: Signal				= new Signal();
+		private var _removed			: Signal				= new Signal();
+		private var _visited			: Signal				= new Signal();
+		private var _addedToScene		: Signal				= new Signal();
+		private var _removedFromScene	: Signal				= new Signal();
+		private var _childAdded			: Signal				= new Signal();
+		private var _childRemoved		: Signal				= new Signal();
 
 		public function get name() : String
 		{
@@ -57,7 +61,12 @@ package aerys.minko.scene.node
 		public function set parent(value : Group) : void
 		{
 			if (_parent)
-				_removed.execute(this, _parent);
+			{
+				var oldParent : Group = _parent;
+				
+				_parent = null;
+				_removed.execute(this, oldParent);
+			}
 			
 			_parent = value;
 			
@@ -101,41 +110,111 @@ package aerys.minko.scene.node
 			return _visited;
 		}
 		
+		public function get addedToScene() : Signal
+		{
+			return _addedToScene;
+		}
+		
+		public function get removedFromScene() : Signal
+		{
+			return _removedFromScene;
+		}
+		
+		public function get childAdded() : Signal
+		{
+			return _childAdded;
+		}
+		
+		public function get childRemoved() : Signal
+		{
+			return _childRemoved;
+		}
+		
 		public function Group(...children)
 		{
 			super();
 
-			initialize(children);
+			initialize();
+			initializeChildren(children);
 		}
 
-		private function initialize(children : Array) : void
+		protected function initialize() : void
 		{
-			_name = AbstractScene.getDefaultSceneName(this);
-			_children = new Vector.<ISceneNode>();
+			_root = this;
+			_name = AbstractSceneNode.getDefaultSceneName(this);
+			_children = new <ISceneNode>[];
 
+			_added.add(addedHandler);
+			_removed.add(removedHandler);
+			_transform.changed.add(transformChangedHandler);
+			_childAdded.add(childAddedHandler);
+			_childRemoved.add(childRemovedHandler);
+		}
+		
+		private function initializeChildren(children : Array) : void
+		{
 			while (children.length == 1 && children[0] is Array)
 				children = children[0];
-
+			
 			var childrenNum : uint = children.length;
 			
 			for (var childrenIndex : uint = 0; childrenIndex < childrenNum; ++childrenIndex)
 				addChild(ISceneNode(children[childrenIndex]));
-			
-			_added.add(addedHandler);
-			_removed.add(removedHandler);
-			_transform.changed.add(transformChangedHandler);
 		}
 		
 		private function addedHandler(child : ISceneNode, parent : Group) : void
 		{
+			var oldRoot : Group = _root;
+			
+			_root = parent.root;
+			if (_root is Scene && !(oldRoot is Scene))
+				_addedToScene.execute(this, _root);
+			
 			transformChangedHandler();
 			parent.transform.changed.add(transformChangedHandler);
+			
+			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
+				_children[childIndex].added.execute(this, parent);
 		}
 		
 		private function removedHandler(child : ISceneNode, parent : Group) : void
 		{
+			_root = parent.root;
+			_removedFromScene.execute(this, _root);
+			
 			transformChangedHandler();
 			parent.transform.changed.remove(transformChangedHandler);
+			
+			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
+				_children[childIndex].removed.execute(this, parent);
+		}
+		
+		private function childAddedHandler(group : Group, child : ISceneNode) : void
+		{
+			if (group == this)
+			{
+				var childGroup : Group = child as Group;
+				
+				if (childGroup)
+				{
+					childGroup.childAdded.add(_childAdded.execute);
+					childGroup.childRemoved.add(_childRemoved.execute);
+				}
+			}
+		}
+		
+		private function childRemovedHandler(group : Group, child : ISceneNode) : void
+		{
+			if (group == this)
+			{
+				var childGroup : Group = child as Group;
+				
+				if (childGroup)
+				{
+					childGroup.childAdded.remove(_childAdded.execute);
+					childGroup.childRemoved.remove(_childRemoved.execute);
+				}
+			}
 		}
 		
 		private function transformChangedHandler(transform 	: Matrix4x4	= null,
@@ -196,6 +275,7 @@ package aerys.minko.scene.node
 
 			_children[position] = scene;
 			scene.parent = this;
+			_childAdded.execute(this, scene);
 
 			++_numChildren;
 
@@ -225,6 +305,7 @@ package aerys.minko.scene.node
 				var scene	: ISceneNode	= _children.splice(position, 1)[0];
 
 				scene.parent = null;
+				_childRemoved.execute(this, scene);
 
 				--_numChildren;
 			}

@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public class MatrixLinearTimeline implements ITimeline

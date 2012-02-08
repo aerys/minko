@@ -1,7 +1,7 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.mesh.primitive
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.mesh.Mesh;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
 

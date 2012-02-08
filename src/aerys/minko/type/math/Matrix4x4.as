@@ -561,11 +561,6 @@ package aerys.minko.type.math
 			d.set(dx, dy, dz, dw);
 		}
 
-		public function toString() : String
-		{
-			return getRawData().toString();
-		}
-		
 		public function lock() : void
 		{
 			_locked = true;

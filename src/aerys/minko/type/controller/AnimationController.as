@@ -1,6 +1,6 @@
 package aerys.minko.type.controller
 {
-	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	

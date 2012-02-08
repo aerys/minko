@@ -1,16 +1,16 @@
-package aerys.minko.scene.node.camera
+package aerys.minko.scene.camera
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.node.AbstractScene;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.AbstractSceneNode;
+	import aerys.minko.scene.Group;
+	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public class Camera extends AbstractScene implements IBindable
+	public class Camera extends AbstractSceneNode implements IBindable
 	{
 		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR		: Number	= .1;

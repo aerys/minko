@@ -1,7 +1,7 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.ISceneNode;
 
 	public class ScalarLinearRegularTimeline implements ITimeline
 	{

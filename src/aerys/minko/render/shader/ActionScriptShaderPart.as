@@ -306,7 +306,7 @@ package aerys.minko.render.shader
 		 *
 		 */
 		protected final function sampleTexture(texture	: SValue,
-											   uv 		: Object) : SValue // SamplerDimension.FLAT
+											   uv 		: Object) : SValue
 		{
 			return new SValue(new Instruction(Instruction.TEX, getNode(uv), getNode(texture)));
 		}

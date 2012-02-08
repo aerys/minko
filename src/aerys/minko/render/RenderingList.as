@@ -11,6 +11,7 @@ package aerys.minko.render
 		private var _calls			: Dictionary				= new Dictionary();
 		private var _states			: Vector.<RendererState>	= new Vector.<RendererState>();
 		private var _numStates		: int						= 0;
+		private var _sorted			: Boolean					= false;
 		
 		public function clear() : void
 		{
@@ -32,6 +33,7 @@ package aerys.minko.render
 			}
 			
 			calls.push(call);
+			_sorted = false;
 		}
 		
 		public function render(context : Context3D) : uint
@@ -44,7 +46,11 @@ package aerys.minko.render
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
 			
 			// sort states
-			RendererState.sort(_states, _numStates);
+			if (!_sorted)
+			{
+				RendererState.sort(_states, _numStates);
+				_sorted = true;
+			}
 			
 			// apply states
 			for (var i : int = 0; i < _numStates; ++i)

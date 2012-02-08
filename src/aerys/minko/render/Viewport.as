@@ -2,9 +2,11 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.Group;
+	import aerys.minko.scene.ISceneNode;
+	import aerys.minko.scene.Scene;
+	import aerys.minko.scene.mesh.Mesh;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
 	
 	import flash.display.Stage;
@@ -30,10 +32,8 @@ package aerys.minko.render
 		
 		private var _changed		: Signal		= new Signal();
 		
-		private var _visitingTime	: int			= 0;
 		private var _renderingTime	: int			= 0;
 		private var _numTriangles	: uint			= 0;
-		private var _sceneSize		: uint			= 0;
 		
 		private var _updateRect		: Boolean		= false;
 		
@@ -59,11 +59,6 @@ package aerys.minko.render
 			_changed.execute(this, "height");
 		}
 		
-		public function get sceneSize() : uint
-		{
-			return _sceneSize;
-		}
-		
 		public function get numTriangles() : uint
 		{
 			return _numTriangles;
@@ -72,11 +67,6 @@ package aerys.minko.render
 		public function get changed() : Signal
 		{
 			return _changed;
-		}
-		
-		public function get visitingTime() : int
-		{
-			return _visitingTime;
 		}
 		
 		public function get renderingTime() : int
@@ -136,31 +126,13 @@ package aerys.minko.render
 			);
 		}
 		
-		public function render(scene : ISceneNode, list : RenderingList = null) : void
+		public function render(scene : Scene) : void
 		{
-			list ||= _renderingList;
-			list.clear();
-			
-			var context : Context3D = _stage3d.context3D;
-			var time 	: int 		= getTimer();
-			
-			// visit
-			_sceneSize = 0;
-			visitRecursive(scene, list);
-			_visitingTime = getTimer() - time;
-			
-			// render
-			renderList(list);
-		}
-		
-		public function renderList(list : RenderingList) : void
-		{
-			var context : Context3D = _stage3d.context3D;
+			var context : Context3D 	= _stage3d.context3D;
+			var list	: RenderingList	= scene.renderingList;
 			
 			_numTriangles = 0;
 			_renderingTime = 0;
-			if (list != _renderingList)
-				_visitingTime = 0;
 			
 			if (context)
 			{
@@ -173,34 +145,8 @@ package aerys.minko.render
 				context.present();
 				_renderingTime = getTimer() - time;
 			}
-		}
-		
-		private function visitRecursive(scene : ISceneNode, list : RenderingList) : void
-		{
-			++_sceneSize;
 			
-			if (scene.visited.numCallbacks != 0)
-				scene.visited.execute(this);
-			
-			if (scene is Group)
-			{
-				var group 		: Group 			= scene as Group;
-				var children 	: Vector.<ISceneNode>	= group._children;
-				var numChildren : int 				= children.length;
-				
-				for (var childrenId : int = 0; childrenId < numChildren; ++childrenId)
-					visitRecursive(children[childrenId], list);
-			}
-			else if (scene is Mesh)
-			{
-				var mesh		: Mesh							= scene as Mesh;
-				var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
-				var drawCalls	: Vector.<DrawCall>				= mesh._drawCalls;
-				var numPasses 	: int 							= passes.length;
-				
-				for (var i : int = 0; i < numPasses; ++i)
-					list.pushDrawCall(passes[i].state, drawCalls[i]);
-			}
+			Factory.sweep();
 		}
 	}
 }
