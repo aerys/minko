@@ -1,47 +1,43 @@
 package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.compiler.Serializer;
 	
 	import flash.utils.Dictionary;
 	
 	public class ProxyConstantBinder implements IBinder
 	{
 		private var _bindingName	: String;
-		private var _size			: uint;
-		private var _evalExp		: EvalExp;
-		private var _masterBinding	: IBinder;
+		private var _binders		: Vector.<IBinder>;
+		private var _numBinders		: uint;
 		
 		public function get bindingName() : String
 		{
 			return _bindingName;
 		}
 		
-		public function ProxyConstantBinder(bindingName		: String,
-											size			: uint,
-											masterBinding	: IBinder,
-											evalExp			: EvalExp)
+		public function ProxyConstantBinder(bindingName	: String)
 		{
 			_bindingName	= bindingName;
-			_masterBinding	= masterBinding;
-			_evalExp		= evalExp;
-			_size			= size;
+			_binders		= new Vector.<IBinder>();
 		}
 		
-		public function set(vsConstData		: Vector.<Number>, 
-							fsConstData		: Vector.<Number>, 
-							textures		: Vector.<ITextureResource>, 
-							value			: Object,
-							dataStore		: Dictionary) : void
+		public function addBinder(binder : IBinder) : void
 		{
-			if (!dataStore[_bindingName])
-				dataStore[_bindingName] = new Vector.<Number>();
+			if (binder.bindingName != _bindingName)
+				throw new Error('Invalid binder.');
 			
-			Serializer.serializeKnownLength(value, dataStore[_bindingName], 0, _size);
-			
-			var result : Vector.<Number> = _evalExp.compute(dataStore);
-			if (result != null)
-				_masterBinding.set(vsConstData, fsConstData, textures, result, dataStore);
+			_binders.push(binder);
+			++_numBinders;
+		}
+		
+		public function set(vsConstData	: Vector.<Number>, 
+							fsConstData	: Vector.<Number>, 
+							textures	: Vector.<ITextureResource>, 
+							value		: Object, 
+							dataStore	: Dictionary) : void
+		{
+			for (var binderId : uint = 0; binderId < _numBinders; ++binderId)
+				IBinder(_binders[binderId]).set(vsConstData, fsConstData, textures, value, dataStore);
 		}
 	}
 }

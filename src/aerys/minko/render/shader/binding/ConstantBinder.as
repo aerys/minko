@@ -7,7 +7,7 @@ package aerys.minko.render.shader.binding
 	
 	public class ConstantBinder implements IBinder
 	{
-		private var _name			: String;
+		private var _bindingName	: String;
 		private var _offset			: uint;
 		private var _size			: uint;
 		private var _isVertexShader	: Boolean;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.binding
 		 */		
 		public function get bindingName() : String
 		{
-			return _name;
+			return _bindingName;
 		}
 		
 		public function ConstantBinder(name				: String,
@@ -25,7 +25,7 @@ package aerys.minko.render.shader.binding
 									   size				: uint,
 									   isVertexShader	: Boolean)
 		{
-			_name			= name;
+			_bindingName	= name;
 			_offset			= offset;
 			_size			= size;
 			_isVertexShader	= isVertexShader;

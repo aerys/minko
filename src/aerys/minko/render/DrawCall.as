@@ -20,10 +20,8 @@ package aerys.minko.render
 		private var _vsConstants		: Vector.<Number>					= null;
 		private var _fsConstants		: Vector.<Number>					= null;
 		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
-		private var _bindings			: Vector.<IBinder>					= null;
+		private var _bindings			: Object							= null;
 		private var _dataStore			: Dictionary						= new Dictionary();
-
-		private var _nameToBinding		: Object							= {};
 		
 		private var _numVertexBuffers	: int								= 0;
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
@@ -69,7 +67,7 @@ package aerys.minko.render
 								 fsTextures				: Vector.<ITextureResource>,
 								 vertexInputComponents	: Vector.<VertexComponent>,
 								 vertexInputIndices		: Vector.<uint>,
-								 bindings				: Vector.<IBinder>)
+								 bindings				: Object)
 		{
 			_vsConstants		= vsConstants.concat();
 			_fsConstants		= fsConstants.concat();
@@ -77,20 +75,6 @@ package aerys.minko.render
 			_inputComponents	= vertexInputComponents;
 			_inputIndices		= vertexInputIndices;
 			_bindings			= bindings;
-			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
-			var numBindings : int = _bindings.length;
-			
-			for (var bindingId : int = 0; bindingId < numBindings; ++bindingId)
-			{
-				var binding : IBinder = _bindings[bindingId];
-				
-				_nameToBinding[binding.bindingName] = binding;
-			}
 		}
 		
 		public function apply(context : Context3D) : uint
@@ -197,7 +181,7 @@ package aerys.minko.render
 		public function setParameter(name 	: String,
 									 value 	: Object) : void
 		{
-			var binding : IBinder = _nameToBinding[name] as IBinder;
+			var binding : IBinder = _bindings[name] as IBinder;
 			
 			if (binding)
 				binding.set(_vsConstants, _fsConstants, _fsTextures, value, _dataStore);
@@ -205,7 +189,7 @@ package aerys.minko.render
 		
 		public function hasParameter(name : String) : Boolean
 		{
-			return _nameToBinding[name] != null;
+			return _bindings[name] != null;
 		}
 	}
 }

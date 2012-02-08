@@ -3,6 +3,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.ConstantBinder;
 	import aerys.minko.render.shader.binding.EvalExp;
+	import aerys.minko.render.shader.binding.EvalExpConstantBinder;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.render.shader.binding.ProxyConstantBinder;
 	import aerys.minko.render.shader.binding.TextureBinder;
@@ -65,7 +66,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private var _vsProgram				: Vector.<AgalInstruction>;
 		private var _fsProgram				: Vector.<AgalInstruction>;
 		
-		private var _paramBindings			: Vector.<IBinder>;
+		private var _paramBindings			: Object;
 		
 		private var _vertexComponents		: Vector.<VertexComponent>;
 		private var _vertexIndices			: Vector.<uint>;
@@ -74,7 +75,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private var _fragmentConstants		: Vector.<Number>;
 		private var _textures				: Vector.<ITextureResource>;
 		
-		public function get parameterBindings() : Vector.<IBinder>
+		public function get parameterBindings() : Object
 		{
 			return _paramBindings;
 		}
@@ -145,7 +146,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_samplers					= new Vector.<BindableSampler>();
 			
 			// final compiled data
-			_paramBindings				= new Vector.<IBinder>();
+			_paramBindings				= new Object();
 			_vertexComponents			= new Vector.<VertexComponent>();
 			_vertexIndices				= new Vector.<uint>();
 			_textures					= new Vector.<ITextureResource>(8, true);
@@ -189,11 +190,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				allocator.computeRegisterState();
 			}
 			
-			_paramBindings			= _paramBindings.concat(createConstantParameterBindings(_vsParams, true));
+			createConstantParameterBindings(_vsParams, true);
+			createConstantParameterBindings(_fsParams, false);
+			
 			_vertexConstants		= createConstantTables(_vsConstants, true);
 			_vsProgram				= writeProgram(_vsInstructions, true);
 			
-			_paramBindings			= _paramBindings.concat(createConstantParameterBindings(_fsParams, false));
 			_fragmentConstants		= createConstantTables(_fsConstants, false);
 			_fsProgram				= writeProgram(_fsInstructions, false);
 			
@@ -227,10 +229,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		}
 		
 		private function createConstantParameterBindings(bindableConstants	: Vector.<BindableConstant>,
-														 isVertexShader		: Boolean) : Vector.<IBinder>
+														 isVertexShader		: Boolean) : void
 		{
-			var result : Vector.<IBinder> = new Vector.<IBinder>();
-			
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
 				var bindingName : String			= bindableConstant.bindingName;
@@ -239,7 +239,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
 				if (!tree)
-					result.push(binder);
+					insertNewBinder(binder);
 				else
 				{
 					var evalExp				: EvalExp					= new EvalExp(tree);
@@ -247,11 +247,27 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					var inBinders			: Vector.<IBinder>			= new Vector.<IBinder>();
 					
 					for each (var inBindableConst : BindableConstant in inBindableConsts)
-						result.push(new ProxyConstantBinder(inBindableConst.bindingName, inBindableConst.size, binder, evalExp));
+						insertNewBinder(new EvalExpConstantBinder(inBindableConst.bindingName, inBindableConst.size, binder, evalExp));
 				}
 			}
+		}
+		
+		private function insertNewBinder(binder : IBinder) : void
+		{
+			var bindingName : String	= binder.bindingName;
+			var oldBinding	: IBinder	= _paramBindings[bindingName];
 			
-			return result;
+			if (oldBinding == null)
+				_paramBindings[bindingName] = binder;
+			else if (oldBinding is ProxyConstantBinder)
+				ProxyConstantBinder(oldBinding).addBinder(binder);
+			else
+			{
+				var proxy : ProxyConstantBinder = new ProxyConstantBinder(bindingName);
+				proxy.addBinder(oldBinding);
+				proxy.addBinder(binder);
+				_paramBindings[bindingName] = proxy;
+			}
 		}
 		
 		private function createConstantTables(constants		 : Vector.<Constant>,
@@ -391,19 +407,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-		
-		
-		
-		
 		/**
 		 * For now we are combining nodes in order.
 		 * To minimize program break, could be better to make cases depending on how many
@@ -456,9 +459,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					subOffsets.push(minWriteOffset);
 					
 					extendLifeTime(arg, isVertexShader);
-//					IAllocation(_allocations[arg]).extendLifeTime(instructionCounter);
 				}
-					// The overwriter argument is already allocated on temporaries, let's try to avoid wasting a mov instruction.
+				// The overwriter argument is already allocated on temporaries, let's try to avoid wasting a mov instruction.
 				else if (arg is Instruction)
 				{
 					var instructionArg : Instruction = Instruction(arg);
@@ -492,11 +494,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						subOffsets.push(minWriteOffset);
 						
 						extendLifeTime(instructionArgReplacement.arg1, isVertexShader);
-//						IAllocation(_allocations[instructionArgReplacement.arg1]).extendLifeTime(instructionCounter);
 						
 						if (!instructionArgReplacement.isSingle)
 							extendLifeTime(instructionArgReplacement.arg2, isVertexShader);
-//							IAllocation(_allocations[instructionArgReplacement.arg2]).extendLifeTime(instructionCounter);
 					}
 					// if this is the first instruction of the overwriter, and the swizzle we need is x[y[z[w]?]?]?, we should
 					// ignore the mov instruction.
@@ -590,9 +590,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
 		{
 			_samplers.push(bindableSampler);
-			_paramBindings.push(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
+			insertNewBinder(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
 		}
-		
 		
 		override protected function visitExtract(extract		: Extract,
 												 isVertexShader	: Boolean) : void

@@ -55,7 +55,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				{
 					var curM33 : Instruction = Instruction(currentArg);
 					
-					matrices	= matrices == null ? curM33.arg2 : new Instruction(Instruction.MUL_MAT33, curM33.arg2);
+					matrices	= matrices == null ? curM33.arg2 : new Instruction(Instruction.MUL_MAT33, matrices, curM33.arg2);
 					currentArg	= Instruction(currentArg).arg1;
 					++numMerged;
 				}

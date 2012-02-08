@@ -20,13 +20,13 @@ package aerys.minko.render.resource
 		private var _vsProgram			: ByteArray	= null;
 		private var _fsProgram			: ByteArray	= null;
 		
-		minko_shader var _vertexComponents	: Vector.<VertexComponent> 		= null;
-		minko_shader var _vertexIndices		: Vector.<uint>					= null;
-		minko_shader var _vsConstants		: Vector.<Number>				= null;
-		minko_shader var _fsConstants		: Vector.<Number>				= null;
-		minko_shader var _fsTextures		: Vector.<ITextureResource>		= null;
+		minko_shader var _vertexComponents	: Vector.<VertexComponent> 	= null;
+		minko_shader var _vertexIndices		: Vector.<uint>				= null;
+		minko_shader var _vsConstants		: Vector.<Number>			= null;
+		minko_shader var _fsConstants		: Vector.<Number>			= null;
+		minko_shader var _fsTextures		: Vector.<ITextureResource>	= null;
 		
-		minko_shader var _bindings			: Vector.<IBinder>	= null;
+		minko_shader var _bindings			: Object					= null;
 		
 		public function get name() : String
 		{
@@ -41,7 +41,7 @@ package aerys.minko.render.resource
 										  vsConstants		: Vector.<Number>,
 										  fsConstants		: Vector.<Number>,
 										  fsTextures		: Vector.<ITextureResource>,
-										  bindings			: Vector.<IBinder>)
+										  bindings			: Object)
 		{
 			_name				= name;
 			

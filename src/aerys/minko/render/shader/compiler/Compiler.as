@@ -44,7 +44,7 @@ package aerys.minko.render.shader.compiler
 		
 		private static var _vertexSequence		: Vector.<AgalInstruction>;
 		private static var _fragmentSequence	: Vector.<AgalInstruction>;
-		private static var _bindings			: Vector.<IBinder>;
+		private static var _bindings			: Object;
 		
 		private static var _vertexComponents	: Vector.<VertexComponent>;
 		private static var _vertexIndices		: Vector.<uint>;
@@ -61,14 +61,14 @@ package aerys.minko.render.shader.compiler
 			MERGER					.process(shaderGraph);
 			
 			OVERWRITER_CLEANER		.process(shaderGraph);
-			RESOLVE_CONSTANT		.process(shaderGraph);
-			REMOVE_USELESS			.process(shaderGraph);
+//			RESOLVE_CONSTANT		.process(shaderGraph);
+//			REMOVE_USELESS			.process(shaderGraph);
 //			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
-				RESOLVE_PARAMETRIZED	.process(shaderGraph);
+//				RESOLVE_PARAMETRIZED	.process(shaderGraph);
 //			else
 //				COPY_INSERTER.process(shaderGraph);
 			
-			MATRIX_TRANSFORMATION	.process(shaderGraph);
+//			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
