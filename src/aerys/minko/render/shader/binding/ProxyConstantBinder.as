@@ -1,12 +1,16 @@
 package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.resource.texture.ITextureResource;
+	import aerys.minko.render.shader.compiler.Serializer;
+	
+	import flash.utils.Dictionary;
 	
 	public class ProxyConstantBinder implements IBinder
 	{
+		private var _bindingName	: String;
+		private var _size			: uint;
 		private var _evalExp		: EvalExp;
 		private var _masterBinding	: IBinder;
-		private var _bindingName	: String;
 		
 		public function get bindingName() : String
 		{
@@ -14,23 +18,30 @@ package aerys.minko.render.shader.binding
 		}
 		
 		public function ProxyConstantBinder(bindingName		: String,
+											size			: uint,
 											masterBinding	: IBinder,
 											evalExp			: EvalExp)
 		{
 			_bindingName	= bindingName;
+			_masterBinding	= masterBinding;
 			_evalExp		= evalExp;
+			_size			= size;
 		}
 		
 		public function set(vsConstData		: Vector.<Number>, 
 							fsConstData		: Vector.<Number>, 
 							textures		: Vector.<ITextureResource>, 
-							value			: Object) : void
+							value			: Object,
+							dataStore		: Dictionary) : void
 		{
-			_evalExp.changeBindedConstant(_bindingName, value);
+			if (!dataStore[_bindingName])
+				dataStore[_bindingName] = new Vector.<Number>();
 			
-			var result : Vector.<Number> = _evalExp.result;
+			Serializer.serializeKnownLength(value, dataStore[_bindingName], 0, _size);
+			
+			var result : Vector.<Number> = _evalExp.compute(dataStore);
 			if (result != null)
-				_masterBinding.set(vsConstData, fsConstData, textures, result);
+				_masterBinding.set(vsConstData, fsConstData, textures, result, dataStore);
 		}
 	}
 }

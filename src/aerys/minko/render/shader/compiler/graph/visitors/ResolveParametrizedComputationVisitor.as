@@ -15,8 +15,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	
 	public class ResolveParametrizedComputationVisitor extends AbstractVisitor
 	{
-		private static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';
-		
 		private var _isComputable			: Boolean;
 		private var _computableConstantId	: uint;
 		
@@ -282,7 +280,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		private function createComputableConstant(computableNode : INode) : BindableConstant
 		{
-			var constantName : String = COMPUTABLE_CONSTANT_PREFIX + (_computableConstantId++);
+			var constantName : String = BindableConstant.COMPUTABLE_CONSTANT_PREFIX + (_computableConstantId++);
 			_shaderGraph.computableConstants[constantName] = computableNode;
 			
 			return new BindableConstant(constantName, computableNode.size);

@@ -5,6 +5,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	
 	public class BindableConstant implements INode
 	{
+		public static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';
+		
 		private var _hash			: uint;
 		private var _bindingName	: String;
 		private var _size			: uint;

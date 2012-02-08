@@ -13,6 +13,7 @@ package aerys.minko.render
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.VertexBuffer3D;
+	import flash.utils.Dictionary;
 	
 	public final class DrawCall
 	{
@@ -20,6 +21,7 @@ package aerys.minko.render
 		private var _fsConstants		: Vector.<Number>					= null;
 		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		private var _bindings			: Vector.<IBinder>					= null;
+		private var _dataStore			: Dictionary						= new Dictionary();
 
 		private var _nameToBinding		: Object							= {};
 		
@@ -198,7 +200,7 @@ package aerys.minko.render
 			var binding : IBinder = _nameToBinding[name] as IBinder;
 			
 			if (binding)
-				binding.set(_vsConstants, _fsConstants, _fsTextures, value);
+				binding.set(_vsConstants, _fsConstants, _fsTextures, value, _dataStore);
 		}
 		
 		public function hasParameter(name : String) : Boolean

@@ -247,7 +247,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					var inBinders			: Vector.<IBinder>			= new Vector.<IBinder>();
 					
 					for each (var inBindableConst : BindableConstant in inBindableConsts)
-						result.push(new ProxyConstantBinder(bindingName, binder, evalExp));
+						result.push(new ProxyConstantBinder(inBindableConst.bindingName, inBindableConst.size, binder, evalExp));
 				}
 			}
 			
@@ -528,11 +528,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				allocate(instruction.size, instruction.isComponentWise, instructionCounter);
 			
 			extendLifeTime(instruction.arg1, isVertexShader);
-//			IAllocation(_allocations[instruction.arg1]).extendLifeTime(instructionCounter);
 			
 			if (!instruction.isSingle)
 				extendLifeTime(instruction.arg2, isVertexShader);
-//				IAllocation(_allocations[instruction.arg2]).extendLifeTime(instructionCounter);
 		}
 		
 		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void

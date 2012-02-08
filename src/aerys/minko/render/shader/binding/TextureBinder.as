@@ -31,7 +31,8 @@ package aerys.minko.render.shader.binding
 		public function set(vsConstData 	: Vector.<Number>,
 							fsConstData 	: Vector.<Number>,
 							textures		: Vector.<ITextureResource>,
-							value			: Object) : void
+							value			: Object,
+							dataStore		: Dictionary) : void
 		{
 			textures[_samplerId] = TextureResource(value);
 		}

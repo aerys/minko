@@ -3,9 +3,11 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.InterpolateFinder;
+	import aerys.minko.render.shader.compiler.graph.visitors.MatrixTransformationGrouper;
 	import aerys.minko.render.shader.compiler.graph.visitors.MergeVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.OverwriterCleanerVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.RemoveExtractsVisitor;
@@ -18,7 +20,6 @@ package aerys.minko.render.shader.compiler
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
-	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 
 	public class Compiler
 	{
@@ -36,6 +37,7 @@ package aerys.minko.render.shader.compiler
 		private static const ALLOCATOR				: AllocationVisitor						= new AllocationVisitor();
 		private static const INTERPOLATE_FINDER		: InterpolateFinder						= new InterpolateFinder();
 		private static const WRITE_DOT				: WriteDot								= new WriteDot();
+		private static const MATRIX_TRANSFORMATION	: MatrixTransformationGrouper			= new MatrixTransformationGrouper();
 		
 		
 		private static var _shaderGraph			: ShaderGraph;
@@ -55,17 +57,18 @@ package aerys.minko.render.shader.compiler
 		{
 			
 			// execute consecutive visitors to optimize the shader graph.
-			REMOVE_EXTRACT		.process(shaderGraph);
-			MERGER				.process(shaderGraph);
+			REMOVE_EXTRACT			.process(shaderGraph);
+			MERGER					.process(shaderGraph);
 			
-			OVERWRITER_CLEANER	.process(shaderGraph);
-			RESOLVE_CONSTANT	.process(shaderGraph);
-			REMOVE_USELESS		.process(shaderGraph);
-			
+			OVERWRITER_CLEANER		.process(shaderGraph);
+			RESOLVE_CONSTANT		.process(shaderGraph);
+			REMOVE_USELESS			.process(shaderGraph);
 //			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
-			RESOLVE_PARAMETRIZED.process(shaderGraph);
+				RESOLVE_PARAMETRIZED	.process(shaderGraph);
 //			else
-//			COPY_INSERTER.process(shaderGraph);
+//				COPY_INSERTER.process(shaderGraph);
+			
+			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
@@ -84,7 +87,7 @@ package aerys.minko.render.shader.compiler
 		
 		public static function compileShader(name : String) : Program3DResource
 		{
-//			trace(compileStringShader());
+			trace(compileStringShader());
 //			trace('vs', _vsConstants);
 //			trace('fs', _fsConstants);
 			

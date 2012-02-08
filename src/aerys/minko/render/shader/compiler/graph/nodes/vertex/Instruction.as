@@ -41,6 +41,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		public static const SEQ : uint = 0x2c;
 		public static const SNE : uint = 0x2d;
 		
+		public static const MUL_MAT33 : uint = 0x100;
+		public static const MUL_MAT44 : uint = 0x101;
+		
 		public static const NAME : Dictionary = new Dictionary();
 		{
 			NAME[MOV] = 'mov';		NAME[ADD] = 'add';		NAME[SUB] = 'sub';
@@ -54,41 +57,47 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			NAME[M44] = 'm44';		NAME[M34] = 'm34';		NAME[TEX] = 'tex';
 			NAME[SGE] = 'sge';		NAME[SLT] = 'slt';		NAME[SEQ] = 'seq';
 			NAME[SNE] = 'sne';
+			
+			NAME[MUL_MAT33] = 'mulMat33';
+			NAME[MUL_MAT44] = 'mulMat44';
 		}
 		
 		private static const FLAGS : Dictionary = new Dictionary();
 		{
-			FLAGS[MOV] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
-			FLAGS[ADD] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE | InstructionFlag.LINEAR;
-			FLAGS[SUB] = InstructionFlag.COMPONENT_WISE | InstructionFlag.LINEAR;
-			FLAGS[MUL] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE | InstructionFlag.LINEAR;
-			FLAGS[DIV] = InstructionFlag.COMPONENT_WISE | InstructionFlag.LINEAR;
-			FLAGS[RCP] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
-			FLAGS[MIN] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
-			FLAGS[MAX] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
-			FLAGS[FRC] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[SQT] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[RSQ] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[POW] = InstructionFlag.COMPONENT_WISE;
-			FLAGS[LOG] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[EXP] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[NRM] = InstructionFlag.SINGLE;
-			FLAGS[SIN] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[COS] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[CRS] = 0;
-			FLAGS[DP3] = 0;
-			FLAGS[DP4] = 0;
-			FLAGS[ABS] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[NEG] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
-			FLAGS[SAT] = InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
-			FLAGS[M33] = InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
-			FLAGS[M44] = InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
-			FLAGS[M34] = InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
-			FLAGS[TEX] = InstructionFlag.FRAGMENT_ONLY;
-			FLAGS[SGE] = InstructionFlag.COMPONENT_WISE;
-			FLAGS[SLT] = InstructionFlag.COMPONENT_WISE;
-			FLAGS[SEQ] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
-			FLAGS[SNE] = InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
+			FLAGS[MOV] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
+			FLAGS[ADD] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE | InstructionFlag.LINEAR;
+			FLAGS[SUB] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.LINEAR;
+			FLAGS[MUL] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE | InstructionFlag.LINEAR;
+			FLAGS[DIV] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.LINEAR;
+			FLAGS[RCP] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
+			FLAGS[MIN] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
+			FLAGS[MAX] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
+			FLAGS[FRC] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[SQT] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[RSQ] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[POW] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
+			FLAGS[LOG] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[EXP] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[NRM] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SINGLE;
+			FLAGS[SIN] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[COS] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[CRS] = InstructionFlag.AVAILABLE_ALL;
+			FLAGS[DP3] = InstructionFlag.AVAILABLE_ALL;
+			FLAGS[DP4] = InstructionFlag.AVAILABLE_ALL;
+			FLAGS[ABS] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[NEG] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE | InstructionFlag.LINEAR;
+			FLAGS[SAT] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.SINGLE;
+			FLAGS[M33] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
+			FLAGS[M44] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
+			FLAGS[M34] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
+			FLAGS[TEX] = InstructionFlag.AVAILABLE_FS;
+			FLAGS[SGE] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
+			FLAGS[SLT] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
+			FLAGS[SEQ] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
+			FLAGS[SNE] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE | InstructionFlag.COMMUTATIVE;
+			
+			FLAGS[MUL_MAT33] = InstructionFlag.AVAILABLE_CPU | InstructionFlag.ASSOCIATIVE;
+			FLAGS[MUL_MAT44] = InstructionFlag.AVAILABLE_CPU | InstructionFlag.ASSOCIATIVE;
 		}
 		
 		private var _id				: uint;
@@ -108,6 +117,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		public function get id() : uint
 		{
 			return _id;
+		}
+		
+		public function get name() : String
+		{
+			return NAME[_id];
 		}
 		
 		public function get arg1() : INode
@@ -130,9 +144,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return _arg2Components;
 		}
 		
-		public function get name() : String
+		public function get isAssociative() : Boolean
 		{
-			return NAME[_id];
+			return (FLAGS[_id] & InstructionFlag.ASSOCIATIVE) != 0;
 		}
 		
 		public function get isComponentWise() : Boolean
@@ -266,22 +280,22 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 									arg1			: INode,
 									arg2			: INode = null)
 		{
-			
-			_id				= id;
-			
 			_sizeIsValid	= false;
 			_hashIsValid	= false;
-			
+			_id				= id;
 			_arg1			= arg1;
-			_arg1Components	= Components.createContinuous(0, 0, _arg1.size, _arg1.size);
+			
+			_arg1Components	= id == MUL_MAT33 || id == MUL_MAT44 ? 
+				Components.createContinuous(0, 0, 4, 4) :
+				Components.createContinuous(0, 0, _arg1.size, _arg1.size)
 			
 			if (!isSingle)
 			{
-				_arg2			= arg2;
+				_arg2 = arg2;
 				
 				if ((FLAGS[id] & InstructionFlag.SPECIAL_MATRIX) != 0)
 					_arg2Components	= Components.createContinuous(0, 0, 4, 4);
-				else if (id != TEX)
+				else if (id != TEX && id != MUL_MAT33 && id != MUL_MAT44)
 					_arg2Components	= Components.createContinuous(0, 0, _arg2.size, _arg2.size);
 			}
 		}

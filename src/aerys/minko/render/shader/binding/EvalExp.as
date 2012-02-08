@@ -17,37 +17,16 @@ package aerys.minko.render.shader.binding
 		private var _bindableConstants	: Vector.<BindableConstant>;
 		private var _binderNames		: Vector.<String>;
 		private var _constantSizes		: Object;
-		private var _constantValues		: Dictionary;
-		
-		private var _dirty				: Boolean;
-		private var _allSet				: Boolean;
-		private var _result				: Vector.<Number>
 		
 		public function get bindableConstants() : Vector.<BindableConstant>
 		{
 			return _bindableConstants;
 		}
 		
-		public function get result() : Vector.<Number>
-		{
-			if (_dirty && _allSet)
-			{
-				_result = visit(_tree);
-				_dirty	= false;
-			}
-			
-			return _result;
-		}
-		
 		public function EvalExp(tree : INode)
 		{
-			_dirty				= true;
-			_allSet				= false;
 			_tree				= tree;
-			
-			_constantValues		= new Dictionary();
 			_bindableConstants	= getBindableConstants(tree);
-			
 			_binderNames		= new Vector.<String>();
 			_constantSizes		= new Object();
 			
@@ -72,6 +51,7 @@ package aerys.minko.render.shader.binding
 			if (tree is Instruction)
 			{
 				var instruction : Instruction = Instruction(tree);
+				
 				getBindableConstantsRec(instruction.arg1, bindableConstants);
 				if (!instruction.isSingle)
 					getBindableConstantsRec(instruction.arg2, bindableConstants);
@@ -79,8 +59,9 @@ package aerys.minko.render.shader.binding
 			else if (tree is Overwriter)
 			{
 				var overwriter : Overwriter = Overwriter(tree);
+				
 				for each (var arg : INode in overwriter.args)
-				getBindableConstantsRec(arg, bindableConstants);
+					getBindableConstantsRec(arg, bindableConstants);
 			}
 			else if (tree is BindableConstant)
 			{
@@ -88,37 +69,29 @@ package aerys.minko.render.shader.binding
 			}
 		}
 		
-		public function changeBindedConstant(name : String, value : Object) : void
+		public function compute(dataStore : Dictionary) : Vector.<Number>
 		{
-			if (!_constantValues[name])
-				_constantValues[name] = new Vector.<Number>();
+			var numBinders	: uint		= _binderNames.length;
+			var allSet		: Boolean	= true;
 			
-			Serializer.serializeKnownLength(value, _constantValues[name], 0, _constantSizes[name]);
+			for (var binderId : uint = 0; binderId < numBinders; ++binderId)
+				if (!dataStore[_binderNames[binderId]])
+				{
+					allSet = false;
+					break;
+				}
 			
-			if (!_allSet)
-			{
-				var numBinders : uint = _binderNames.length;
-				
-				_allSet	= true;
-				for (var binderId : uint = 0; binderId < numBinders; ++binderId)
-					if (!_constantValues[_binderNames[binderId]])
-					{
-						_allSet = false;
-						break;
-					}
-			}
-			
-			_dirty = true;
+			return allSet ? visit(_tree, dataStore) : null;
 		}
 		
-		private function visit(node	: INode) : Vector.<Number>
+		private function visit(node	: INode, dataStore : Dictionary) : Vector.<Number>
 		{
 			if (node is Constant)
 				return Constant(node).value;
 			
 			else if (node is BindableConstant)
 			{
-				return _constantValues[BindableConstant(node).bindingName];
+				return dataStore[BindableConstant(node).bindingName];
 			}
 			
 			else if (node is Instruction)
@@ -127,11 +100,13 @@ package aerys.minko.render.shader.binding
 				var arg1 : Vector.<Number>;
 				var arg2 : Vector.<Number>;
 				
-				arg1 = visit(instruction.arg1);
-				arg1 = Evaluator.evaluateComponents(instruction.arg1Components, arg1);
+				arg1 = visit(instruction.arg1, dataStore);
+				if (arg1.length <= 4)
+					arg1 = Evaluator.evaluateComponents(instruction.arg1Components, arg1);
 				
-				arg2 = visit(instruction.arg2);
-				arg2 = Evaluator.evaluateComponents(instruction.arg2Components, arg2);
+				arg2 = visit(instruction.arg2, dataStore);
+				if (arg2.length <= 4)
+					arg2 = Evaluator.evaluateComponents(instruction.arg2Components, arg2);
 				
 				return Evaluator.EVALUTION_FUNCTIONS[instruction.id](arg1, arg2);
 			}
@@ -148,7 +123,7 @@ package aerys.minko.render.shader.binding
 				var result					: Vector.<Number>	= new Vector.<Number>(overwriterSize, true);
 				for (var argId : uint = 0; argId < overwriterNumArgs; ++argId)
 				{
-					tmpVec = visit(overwriterArgs[argId]);
+					tmpVec = visit(overwriterArgs[argId], dataStore);
 					tmpVec = Evaluator.evaluateComponentWithHoles(overwriterComponents[argId], tmpVec);
 					for (var i : uint = 0; i < overwriterSize; ++i)
 						if (!isNaN(tmpVec[i]))

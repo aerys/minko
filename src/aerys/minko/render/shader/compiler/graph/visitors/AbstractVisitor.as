@@ -56,8 +56,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('Must be overriden');
 		}
 		
-		protected function visit(node			: INode, 
-								 isVertexShader	: Boolean) : void
+		protected function visit(node : INode, isVertexShader : Boolean) : void
 		{
 			var visitationTable : Vector.<INode> = isVertexShader ? _visitedInVs : _visitedInFs;
 			if (visitationTable != null)
@@ -109,16 +108,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visitationTable.splice(index, 1);
 		}
 		
-		protected function replaceInParentAndSwizzle(oldNode	: INode,
-													 newNode	: INode,
-													 modifier	: uint) : void
+		protected function replaceInParentAndSwizzle(oldNode : INode, newNode : INode, modifier : uint) : void
 		{
 			swizzleParent(oldNode, modifier);
 			replaceInParent(oldNode, newNode);
 		}
 		
-		protected function replaceInParent(oldNode : INode,
-										   newNode : INode) : void
+		protected function replaceInParent(oldNode : INode, newNode : INode) : void
 		{
 			var workDone : Boolean = false;
 			

@@ -99,6 +99,29 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					}
 					break;
 				
+				case Instruction.DIV:
+					if (arg2Value == 1)
+					{
+						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
+						return;
+					}
+					break;
+				
+				case Instruction.SUB:
+					if (arg1Value == 0)
+					{
+						var negate : Instruction = new Instruction(Instruction.NEG, instruction.arg1);
+						negate.arg1Components = instruction.arg1Components;
+						replaceInParent(instruction, negate);
+						return;
+					}
+					
+					if (arg2Value == 0)
+					{
+						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
+						return;
+					}
+					break;
 			}
 		}
 		

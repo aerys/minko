@@ -93,8 +93,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (!isVertexShader)
 				throw new Error('VariadicExtract can only be found on vertex shaders.');
 			
-			var hash	: uint = variadicExtract.hash;
-			var variadicExtractEq : INode = _hashsToNodes[hash];
+			var hash				: uint = variadicExtract.hash;
+			var variadicExtractEq	: INode = _hashsToNodes[hash];
 			
 			if (variadicExtractEq)
 				replaceInParent(variadicExtract, variadicExtractEq);

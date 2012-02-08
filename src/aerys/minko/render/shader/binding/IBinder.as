@@ -1,6 +1,8 @@
 package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.resource.texture.ITextureResource;
+	
+	import flash.utils.Dictionary;
 
 	public interface IBinder
 	{
@@ -21,6 +23,7 @@ package aerys.minko.render.shader.binding
 		function set(vsConstData 	: Vector.<Number>,
 					 fsConstData 	: Vector.<Number>,
 					 textures		: Vector.<ITextureResource>,
-					 value			: Object) : void;
+					 value			: Object,
+					 dataStore		: Dictionary) : void;
 	}
 }
