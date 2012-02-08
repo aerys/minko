@@ -149,7 +149,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_paramBindings				= new Object();
 			_vertexComponents			= new Vector.<VertexComponent>();
 			_vertexIndices				= new Vector.<uint>();
-			_textures					= new Vector.<ITextureResource>(8, true);
+			_textures					= new Vector.<ITextureResource>();
 		}
 		
 		override public function process(shaderGraph : ShaderGraph) : void
@@ -590,6 +590,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
 		{
 			_samplers.push(bindableSampler);
+			_textures[_samplers.length - 1] = null;
 			insertNewBinder(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
 		}
 		
