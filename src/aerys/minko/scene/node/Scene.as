@@ -1,9 +1,9 @@
-package aerys.minko.scene
+package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.RenderingList;
-	import aerys.minko.scene.mesh.Mesh;
-	import aerys.minko.type.controller.AbstractController;
+	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.data.IBindable;
 	
 	import flash.utils.Dictionary;

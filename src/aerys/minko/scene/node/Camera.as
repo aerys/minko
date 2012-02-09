@@ -1,9 +1,6 @@
-package aerys.minko.scene.camera
+package aerys.minko.scene.node
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.AbstractSceneNode;
-	import aerys.minko.scene.ISceneNode;
-	import aerys.minko.scene.Group;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;
@@ -86,6 +83,11 @@ package aerys.minko.scene.camera
 		public function get projection() : Matrix4x4
 		{
 			return _projection;
+		}
+		
+		public function get worldToScreen() : Matrix4x4
+		{
+			return _worldToScreen;
 		}
 		
 		public function get fieldOfView() : Number

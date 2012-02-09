@@ -1,13 +1,13 @@
-package aerys.minko.scene.mesh
+package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.AbstractSceneNode;
-	import aerys.minko.scene.ISceneNode;
-	import aerys.minko.scene.Scene;
+	import aerys.minko.scene.node.AbstractSceneNode;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.data.DataBinding;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;

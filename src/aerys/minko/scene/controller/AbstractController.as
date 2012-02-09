@@ -1,6 +1,6 @@
-package aerys.minko.type.controller
+package aerys.minko.scene.controller
 {
-	import aerys.minko.scene.Group;
+	import aerys.minko.scene.node.Group;
 
 	public class AbstractController
 	{

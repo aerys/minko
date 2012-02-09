@@ -1,6 +1,6 @@
-package aerys.minko.type.controller
+package aerys.minko.scene.controller
 {
-	import aerys.minko.scene.Group;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	

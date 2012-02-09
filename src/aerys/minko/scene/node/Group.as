@@ -1,8 +1,8 @@
-package aerys.minko.scene
+package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.controller.AbstractController;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.utils.Proxy;
