@@ -1,57 +1,34 @@
 package aerys.minko.scene
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
-	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.group.Group;
 	import aerys.minko.scene.mesh.Mesh;
-	import aerys.minko.type.controller.IController;
+	import aerys.minko.type.controller.AbstractController;
 	import aerys.minko.type.data.IBindable;
+	
+	import flash.utils.Dictionary;
 
 	public final class Scene extends Group
 	{
 		use namespace minko_scene;
 		
-		private var _list				: RenderingList				= new RenderingList();
+		private var _list			: RenderingList			= new RenderingList();
 		
-		private var _bindables			: Vector.<IBindable>		= new <IBindable>[];
-		private var _meshes				: Vector.<Mesh>				= new <Mesh>[];
-		private var _controllers		: Vector.<IController>		= new <IController>[];
+		private var _bindables		: Vector.<IBindable>	= new <IBindable>[];
+		private var _meshes			: Vector.<Mesh>			= new <Mesh>[];
+		private var _controllers	: Vector.<Group>		= new <Group>[];
 		
-		private var _invalidList		: Boolean					= false;
-		private var _invalidBindings	: Boolean					= false;
-		private var _locked				: Boolean					= false;
+		private var _invalid		: Boolean				= false;
+		private var _locked			: Boolean				= false;
 		
 		public function get renderingList() : RenderingList
 		{
-			if (_invalidList)
-				updateRenderingList();
-			
 			return _list;
-		}
-		
-		public function get locked() : Boolean
-		{
-			return _locked;
 		}
 		
 		public function Scene(...children)
 		{
 			super(children);
-		}
-		
-		public function lock() : void
-		{
-			_locked = true;
-		}
-		
-		public function unlock() : void
-		{
-			_locked = false;
-			
-			updateBindings();
-			updateRenderingList();
 		}
 		
 		override protected function initialize() : void
@@ -74,8 +51,6 @@ package aerys.minko.scene
 		
 		private function childRemovedHandler(group : Group, child : ISceneNode) : void
 		{
-			trace("remove", group, child);
-			
 			if (child is Mesh)
 				meshRemovedHandler(child as Mesh);
 			else if (child is IBindable)
@@ -86,11 +61,9 @@ package aerys.minko.scene
 		
 		private function meshAddedHandler(mesh : Mesh) : void
 		{
-			_invalidList = true;
-			
 			if (_locked)
 			{
-				_invalidBindings = true;
+				_invalid = true;
 			}
 			else
 			{
@@ -98,16 +71,16 @@ package aerys.minko.scene
 				
 				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
 					mesh.bindings.add(_bindables[bindableIndex]);
+				
+				_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
 			}
 		}
 		
 		private function meshRemovedHandler(mesh : Mesh) : void
 		{
-			_invalidList = true;
-			
 			if (_locked)
 			{
-				_invalidBindings = true;
+				_invalid = true;
 			}
 			else
 			{
@@ -119,19 +92,21 @@ package aerys.minko.scene
 				
 				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
 					mesh.bindings.remove(_bindables[bindableIndex]);
+				
+				_list.removeDrawCalls(mesh.effect.passes, mesh._drawCalls);
 			}
 		}
 		
 		private function bindableAddedHandler(bindable : IBindable) : void
 		{
-			_bindables.push(bindable);
-			
 			if (_locked)
 			{
-				_invalidBindings = true;
+				_invalid = true;
 			}
 			else
 			{
+				_bindables.push(bindable);
+				
 				for (var meshIndex : int = _meshes.length - 1; meshIndex >= 0; --meshIndex)
 					_meshes[meshIndex].bindings.add(bindable);
 			}
@@ -141,7 +116,7 @@ package aerys.minko.scene
 		{
 			if (_locked)
 			{
-				_invalidBindings = true;
+				_invalid = true;
 			}
 			else
 			{
@@ -160,27 +135,40 @@ package aerys.minko.scene
 		{
 			if (_locked)
 			{
-				_invalidBindings = true;
-				_invalidList = true;
+				_invalid = true;
 			}
 			else
 			{
+				// add meshes
 				var newMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(Mesh);
-				var meshIndex	: int					= newMeshes.length - 1;
+				var numMeshes	: int					= newMeshes.length;
 				
-				while (meshIndex >= 0)
-				{
+				for (var meshIndex : int = 0; meshIndex < numMeshes; ++meshIndex)
 					meshAddedHandler(newMeshes[meshIndex] as Mesh);
-					--meshIndex;
-				}
 				
+				// add bindables
 				var newBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IBindable);
-				var bindableIndex	: int					= newBindables.length - 1;
+				var numBindables	: int					= newBindables.length;
 				
-				while (bindableIndex >= 0)
-				{
+				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
 					bindableAddedHandler(newBindables[bindableIndex] as IBindable);
-					--bindableIndex;
+				
+				// add controllers
+				group.controllerChanged.add(controllerChangedHandler);
+				
+				var newGroups	: Vector.<ISceneNode>	= group.getDescendantsByType(Group);
+				var numGroups	: int					= newGroups.length;
+				
+				for (var groupIndex : int = 0; groupIndex < numGroups; ++groupIndex)
+				{
+					group = newGroups[groupIndex] as Group;
+					
+					var controller : AbstractController	= group.controller;
+					
+					group.controllerChanged.add(controllerChangedHandler);
+					
+					if (controller)
+						_controllers.push(group);
 				}
 			}
 		}
@@ -189,107 +177,123 @@ package aerys.minko.scene
 		{
 			if (_locked)
 			{
-				_invalidBindings = true;
-				_invalidList = true;
+				_invalid = true;
 			}
 			else
 			{
+				// remove meshes
 				var oldMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(Mesh);
-				var meshIndex	: int					= oldMeshes.length - 1;
-				
-				while (meshIndex >= 0)
-				{
-					meshRemovedHandler(oldMeshes[meshIndex] as Mesh);
-					--meshIndex;
-				}
-				
-				var oldBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IBindable);
-				var bindableIndex	: int					= oldBindables.length - 1;
-				
-				while (bindableIndex >= 0)
-				{
-					bindableRemovedHandler(oldBindables[bindableIndex] as IBindable);
-					--bindableIndex;
-				}
-			}
-		}
-		
-		private function updateRenderingList() : void
-		{
-			if (_invalidList)
-			{
-				_list.clear();
-				
-				var newMeshes	: Vector.<ISceneNode>	= getDescendantsByType(Mesh);
-				var numMeshes 	: int 					= newMeshes.length;
-				
-				trace("updateRenderingList", numMeshes);
+				var numMeshes	: int					= oldMeshes.length;
 				
 				for (var meshIndex : int = 0; meshIndex < numMeshes; ++meshIndex)
+					meshRemovedHandler(oldMeshes[meshIndex] as Mesh);
+				
+				// remove bindables
+				var oldBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IBindable);
+				var numBindables	: int					= oldBindables.length;
+				
+				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
+					bindableRemovedHandler(oldBindables[bindableIndex] as IBindable);
+				
+				// remove controllers
+				group.controllerChanged.remove(controllerChangedHandler);
+				
+				var newGroups	: Vector.<ISceneNode>	= group.getDescendantsByType(Group);
+				var numGroups	: int					= 0;
+				
+				for (var groupIndex : int = 0; groupIndex < numGroups; ++groupIndex)
 				{
-					var mesh		: Mesh							= newMeshes[meshIndex] as Mesh;
-					var passes		: Vector.<ActionScriptShader>	= mesh.effect.passes;
-					var numPasses	: int							= passes.length;
-					var drawCalls 	: Vector.<DrawCall>				= mesh._drawCalls;
+					group = newGroups[groupIndex] as Group;
 					
-					_meshes[meshIndex] = mesh;
+					var controller : AbstractController	= group.controller;
 					
-					for (var i : int = 0; i < numPasses; ++i)
-						_list.pushDrawCall(passes[i].state, drawCalls[i]);
+					group.controllerChanged.remove(controllerChangedHandler);
+					
+					if (controller)
+						removeController(controller);
 				}
-				
-				_meshes.length = numMeshes;
-				
-				_invalidList = false;
 			}
 		}
 		
-		private function updateBindings() : void
+		private function controllerChangedHandler(group 		: Group,
+												  oldController : AbstractController,
+												  newController : AbstractController) : void
 		{
-			if (_invalidBindings)
+			if (oldController != null)
 			{
-				var numMeshes 		: int 		= _meshes.length;
-				var meshIndex 		: int 		= 0;
-				var mesh			: Mesh		= null;
-				var numBindables	: int		= _bindables.length;
-				var bindableIndex 	: int 		= 0;
-				var bindable		: IBindable	= null;
+				if (newController == null)
+					removeController(oldController);
+			}
+			else
+			{
+				_controllers.push(group);
+			}
+		}
+		
+		private function removeController(controller : AbstractController) : void
+		{
+			var controllerIndex	: int = _controllers.length - 1;
+			
+			while ((_controllers[controllerIndex] as Group).controller != controller)
+				--controllerIndex;
+			
+			_controllers.splice(controllerIndex, 1);
+		}
+		
+		public function update() : void
+		{
+			// update controllers
+			var numControllers 	: int 		= _controllers.length;
+			var time			: Number	= new Date().time;
+			
+			for (var ctrlIndex : int = 0; ctrlIndex  < numControllers; ++ctrlIndex)
+			{
+				var ctrlGroup : Group = _controllers[ctrlIndex] as Group;
 				
-				// remove all bindings
+				ctrlGroup.controller.tick(ctrlGroup, time);
+			}
+			
+			if (_invalid)
+			{
+				// clear
+				var numMeshes 		: int	= _meshes.length;
+				var meshIndex 		: int 	= 0;
+				var numBindables	: int	= _bindables.length;
+				var bindableIndex 	: int 	= 0;
+				
 				for (meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
-				{
-					mesh = _meshes[meshIndex];
-					
 					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
-						mesh.bindings.remove(_bindables[bindableIndex]);
-				}
+						(_meshes[meshIndex] as Mesh).bindings.remove(_bindables[bindableIndex]);
 				
-				// empty lists
 				_meshes.length = 0;
 				_bindables.length = 0;
+				_list.clear();
 				
-				// get new meshes and add bindings
+				// fill
 				var newMeshes		: Vector.<ISceneNode>	= getDescendantsByType(Mesh);
 				var newBindables	: Vector.<ISceneNode>	= getDescendantsByType(IBindable);
-				var filled			: Boolean				= false;
+				var added			: Dictionary			= new Dictionary(true);
 				
 				numMeshes = newMeshes.length;
+				numBindables = newBindables.length;
+				
 				for (meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
 				{
-					mesh = newMeshes[meshIndex] as Mesh;
+					var mesh 	: Mesh 	= newMeshes[meshIndex] as Mesh;
+					
 					_meshes[meshIndex] = mesh;
+					_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
 					
 					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
 					{
-						bindable = newBindables[bindableIndex] as IBindable;
-						mesh.bindings.add(bindable);
+						var bindable : IBindable = newBindables[bindableIndex] as IBindable;
 						
-						if (filled)
-							_bindables[bindableIndex] = bindable;
+						mesh.bindings.add(bindable);
+						_bindables[bindableIndex] = bindable;
 					}
-					
-					filled = true;
 				}
+			
+				_invalid = false;
 			}
 		}
 	}

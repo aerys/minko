@@ -1,50 +1,37 @@
 package aerys.minko.type.controller
 {
+	import aerys.minko.scene.Group;
 	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	import flash.utils.getTimer;
 
-	public class AnimationController implements IController
+	public final class AnimationController extends AbstractController
 	{
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
-		private var _enabled		: Boolean				= true;
-		private var _timelines		: Vector.<ITimeline>	= null;
-		private var _targets		: Vector.<ISceneNode>	= null;
+		private var _timeline		: ITimeline				= null;
 		private var _isPlaying		: Boolean				= false;
 		private var _loopBeginTime	: uint					= 0;
 		private var _loopEndTime	: uint					= 0;
 		private var _currentTime	: uint					= 0;
 		
-		private var _totalTime		: uint					= 0;
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
 		private var _labels			: Vector.<TimeLabel>	= null;
 		
-		public function get targets() : Vector.<ISceneNode>
+		private var _lastTime		: Number				= 0;
+		
+		public function AnimationController(timeline	: ITimeline)
 		{
-			return _targets;
+			initialize(timeline);
 		}
 		
-		public function AnimationController(timelines	: Vector.<ITimeline>,
-											targets		: Vector.<ISceneNode>)
+		private function initialize(timeline	: ITimeline) : void
 		{
-			initialize(timelines, targets);
-		}
-		
-		private function initialize(timelines	: Vector.<ITimeline>,
-									targets		: Vector.<ISceneNode>) : void
-		{
-			_timelines = timelines;
-			_targets = targets;
+			_timeline = timeline;
 			
-			var numTimelines : uint = _timelines.length;
-			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
-				if (_totalTime < _timelines[timelineId].duration)
-					_totalTime = _timelines[timelineId].duration;
-			
-			setPlaybackWindow(0, _totalTime);
+			setPlaybackWindow(0, timeline.duration);
 			gotoAndPlay(0);
 		}
 		
@@ -84,7 +71,7 @@ package aerys.minko.type.controller
 										  endTime	: Object = null) : void
 		{
 			_loopBeginTime	= beginTime != null ? getTime(beginTime) : 0;
-			_loopEndTime	= endTime != null ? getTime(endTime) : _totalTime;
+			_loopEndTime	= endTime != null ? getTime(endTime) : _timeline.duration;
 			
 			if (_currentTime < _loopBeginTime || _currentTime > _loopEndTime)
 				_currentTime = _loopBeginTime;
@@ -106,6 +93,7 @@ package aerys.minko.type.controller
 			else if (time is String)
 			{
 				var labelCount : uint = _labels.length;
+				
 				for (var labelId : uint = 0; labelId < labelCount; ++labelId)
 					if (_labels[labelId].name == time)
 						timeValue = _labels[labelId].time;
@@ -118,29 +106,25 @@ package aerys.minko.type.controller
 			return timeValue;
 		}
 		
-		public function step(deltaT : uint) : void
+		override protected function updateOnTime(time : Number) : Boolean
 		{
-			if (!_enabled)
-				return ;
-			
 			if (_isPlaying)
 			{
-				_currentTime = _loopBeginTime
-							   + (_currentTime + deltaT - _loopBeginTime)
-							   	  %	(_loopEndTime - _loopBeginTime);
-			}
-			
-			var timelines		: Vector.<ITimeline> 	= _timelines;
-			var timelinesCount	: uint					= timelines.length;
-			
-			for (var i : uint = 0; i < timelinesCount; ++i)
-			{
-				var timeline	: ITimeline	= timelines[i];
-				var target		: ISceneNode	= _targets[i];
+				var deltaT : Number = time - _lastTime;
 				
-				if (target != null)
-					timeline.updateAt(_currentTime, target);
-			}
+				_currentTime = _loopBeginTime
+					+ (_currentTime + deltaT - _loopBeginTime)
+					%	(_loopEndTime - _loopBeginTime);
+			}				
+			
+			_lastTime = time;
+			
+			return _isPlaying;
+		}
+		
+		override protected function updateTarget(target:Group):void
+		{
+			_timeline.updateAt(_currentTime, target);
 		}
 	}
 }

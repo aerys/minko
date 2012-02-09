@@ -1,7 +1,6 @@
 package aerys.minko.type.controller
 {
-	import aerys.minko.scene.group.Group;
-	import aerys.minko.scene.ISceneNode;
+	import aerys.minko.scene.Group;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -16,42 +15,39 @@ package aerys.minko.type.controller
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
 
-	public class ArcBallController implements IController
+	public final class ArcBallController extends AbstractController
 	{
 		public static const DEFAULT_MAX_ZOOM		: Number	= 100.0;
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
 		public static const DEFAULT_SENSITIVITY		: Number	= 0.001;
 		
-		private static const MIN_SPEED	: Number	= 0.01;
+		private static const MIN_SPEED				: Number	= 0.01;
 		
-		private var _targets		: Vector.<ISceneNode>	= null;
+		private var _transform		: Matrix4x4	= new Matrix4x4();
 		
-		private var _tracking		: Boolean			= false;
-		private var _x				: Number			= 0.;
-		private var _y				: Number			= 0.;
+		private var _tracking		: Boolean	= false;
+		private var _x				: Number	= 0.;
+		private var _y				: Number	= 0.;
 		
-		private var _sensitivity	: Number			= 0.;
-		private var _lockedOnPoles	: Boolean			= true;
-		private var _invertX		: Boolean			= false;
-		private var _invertY		: Boolean			= false;
+		private var _sensitivity	: Number	= 0.;
+		private var _lockedOnPoles	: Boolean	= true;
+		private var _invertX		: Boolean	= false;
+		private var _invertY		: Boolean	= false;
 		
-		private var _rotationX		: Number			= 0.0;
-		private var _rotationY		: Number			= 0.0;
+		private var _rotationX		: Number	= 0.0;
+		private var _rotationY		: Number	= 0.0;
 		
-		private var _minZoom		: Number			= 0.0;
-		private var _maxZoom		: Number			= 100.;
+		private var _minZoom		: Number	= 0.0;
+		private var _maxZoom		: Number	= 100.;
 		
-		private var _speedScale		: Number			= .9;
-		private var _speed			: Point				= new Point();
+		private var _speedScale		: Number	= .9;
+		private var _speed			: Point		= new Point();
 		
-		private var _useHandCursor	: Boolean			= true;
+		private var _useHandCursor	: Boolean	= true;
 		
-		private var _touchPointId	: int				= 0;
-
-		public function get targets() : Vector.<ISceneNode>
-		{
-			return _targets;
-		}
+		private var _invalid		: Boolean	= false;
+		private var _lastTime		: Number	= 0.;
+		private var _lastTarget		: Group		= null;
 
 		public function get mouseSensitivity() : Number
 		{
@@ -113,10 +109,8 @@ package aerys.minko.type.controller
 			_useHandCursor = value;
 		}
 		
-		public function ArcBallController(...targets)
+		public function ArcBallController()
 		{
-			_targets = Vector.<ISceneNode>(targets);
-		
 			_sensitivity = DEFAULT_SENSITIVITY;
 			
 			_minZoom = DEFAULT_MIN_ZOOM;
@@ -127,8 +121,6 @@ package aerys.minko.type.controller
 		{
 			Multitouch.inputMode = MultitouchInputMode.GESTURE;
 			
-			dispatcher.addEventListener(Event.ENTER_FRAME, enterFrameHandler);
-
 			dispatcher.addEventListener(MouseEvent.MOUSE_DOWN, startDrag);
 			dispatcher.addEventListener(MouseEvent.MOUSE_UP, stopDrag);
 			dispatcher.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler); 
@@ -137,27 +129,18 @@ package aerys.minko.type.controller
 		
 		public function unbindDefaultControls(dispatcher : IEventDispatcher) : void
 		{
-			dispatcher.removeEventListener(Event.ENTER_FRAME, enterFrameHandler);
-			
 			dispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, startDrag);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, stopDrag);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler); 
 			dispatcher.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 		}
 		
-		private function enterFrameHandler(event : Event) : void
+		override protected function updateOnTime(time : Number) : Boolean
 		{
 			if (_speed.x != 0. || _speed.y != 0.)
 			{
-				for (var i : int = _targets.length - 1; i >= 0; --i)
-				{
-					var transform : Matrix4x4 = (_targets[i] as Group).transform;
-					
-					transform.lock();
-					rotateX(_speed.x);
-					rotateY(_speed.y);
-					transform.unlock();
-				}
+				rotateX(_speed.x);
+				rotateY(_speed.y);
 			}
 			
 			_speed.x *= _speedScale;
@@ -167,6 +150,17 @@ package aerys.minko.type.controller
 			_speed.y *= _speedScale;
 			if (_speed.y < MIN_SPEED && _speed.y > -MIN_SPEED)
 				_speed.y = 0.;
+			
+			var mustUpdate : Boolean = _invalid;
+			
+			_invalid = false;
+			
+			return mustUpdate;
+		}
+		
+		override protected function updateTarget(target:Group):void
+		{
+			Matrix4x4.copy(_transform, target.transform);
 		}
 		
 		private function startDrag(event : Event) : void
@@ -203,22 +197,17 @@ package aerys.minko.type.controller
 			
 			if (angle != 0.)
 			{
-				for (var i : int = _targets.length - 1; i >= 0; --i)
-				{
-					var target : Group = Group(_targets[i]);
-					
-					target.transform.prependRotation(angle, Vector4.X_AXIS);
-				}
+				_transform.prependRotation(angle, Vector4.X_AXIS);
+				_invalid = true;
 			}
 		}
 		
 		public function rotateY(angle : Number) : void
 		{
-			for (var i : int = _targets.length - 1; i >= 0; --i)
+			if (angle != 0.)
 			{
-				var target : Group = Group(_targets[i]);
-
-				target.transform.appendRotation(angle, Vector4.Y_AXIS);
+				_transform.appendRotation(angle, Vector4.Y_AXIS);
+				_invalid = true;
 			}
 		}
 		
@@ -226,16 +215,12 @@ package aerys.minko.type.controller
 		{
 			distance += 1;
 			
-			for (var i : int = _targets.length - 1; i >= 0; --i)
-			{
-				var target : Group = Group(_targets[i]);
-				
-				target.transform.prependScale(
+			_transform.prependScale(
 					distance,
 					Math.abs(distance),
 					distance
-				);
-			}
+			);
+			_invalid = true;
 		}
 		
 		private function drag(x : Number, y : Number) : void
@@ -244,6 +229,7 @@ package aerys.minko.type.controller
 			{
 				_speed.x += (y - _y) * _sensitivity * (_invertX ? -1 : 1);
 				_speed.y += (x - _x) * _sensitivity * (_invertY ? -1 : 1);
+				_invalid = true;
 			}
 			
 			_x = x;
@@ -252,12 +238,8 @@ package aerys.minko.type.controller
 		
 		public function setPivot(x : Number, y : Number, z : Number) : void
 		{
-			for (var i : int = _targets.length - 1; i >= 0; --i)
-			{
-				var transform : Matrix4x4 = Group(_targets[i]).transform;
-				
-				transform.setTranslation(x, y, z);
-			}
+			_transform.setTranslation(x, y, z);
+			_invalid = true;
 		}
 		
 		private function mouseMoveHandler(event : MouseEvent) : void

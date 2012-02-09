@@ -3,7 +3,7 @@ package aerys.minko.scene.camera
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.AbstractSceneNode;
 	import aerys.minko.scene.ISceneNode;
-	import aerys.minko.scene.group.Group;
+	import aerys.minko.scene.Group;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IBindable;
 	import aerys.minko.type.math.Frustum;

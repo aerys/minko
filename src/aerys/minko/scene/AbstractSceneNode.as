@@ -1,7 +1,6 @@
 package aerys.minko.scene
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.scene.group.Group;
 	import aerys.minko.type.Signal;
 	
 	import flash.utils.getQualifiedClassName;
@@ -118,8 +117,12 @@ package aerys.minko.scene
 		
 		protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
+			var oldRoot : Group = _root;
+			
 			_root = parent.root;
-			_removedFromScene.execute(this, _root);
+			
+			if (oldRoot is Scene)
+				_removedFromScene.execute(this, oldRoot);
 		}
 		
 		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void

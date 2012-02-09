@@ -1,6 +1,7 @@
 package aerys.minko.render
 {
 	import aerys.minko.Minko;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.display3D.Context3D;
@@ -8,32 +9,76 @@ package aerys.minko.render
 
 	public final class RenderingList
 	{
-		private var _calls			: Dictionary				= new Dictionary();
-		private var _states			: Vector.<RendererState>	= new Vector.<RendererState>();
-		private var _numStates		: int						= 0;
-		private var _sorted			: Boolean					= false;
+		private var _stateToDrawCalls	: Dictionary				= new Dictionary();
+		private var _numDrawCalls		: uint						= 0;
+		
+		private var _states				: Vector.<RendererState>	= new Vector.<RendererState>();
+		private var _numStates			: int						= 0;
+		
+		private var _sorted				: Boolean					= false;
+		
+		public function get numDrawCalls() : uint
+		{
+			return _numDrawCalls;
+		}
 		
 		public function clear() : void
 		{
 			_numStates = 0;
-			_calls = new Dictionary();
+			_stateToDrawCalls = new Dictionary();
 		}
 		
-		public function pushDrawCall(state 	: RendererState,
-									 call	: DrawCall) : void
+		public function addDrawCalls(passes		: Vector.<ActionScriptShader>,
+									 drawCalls	: Vector.<DrawCall>) : void
 		{
-			var calls : Vector.<DrawCall>	= _calls[state] as Vector.<DrawCall>;
+			var numPasses	: int	= passes.length;
 			
-			if (!calls)
+			_numDrawCalls += numPasses;
+			
+			for (var i : int = 0; i < numPasses; ++i)
 			{
-				calls = new Vector.<DrawCall>();
-				_calls[state] = calls;
-				_states[_numStates] = state;
-				++_numStates;
+				var state 	: RendererState 	= (passes[i] as ActionScriptShader).state;
+				var calls 	: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+				
+				if (!calls)
+				{
+					_stateToDrawCalls[state] = new <DrawCall>[drawCalls[i]];
+					_states[_numStates] = state;
+					++_numStates;
+					
+					_sorted = false;
+				}
+				else
+				{
+					calls.push(drawCalls[i]);
+				}
 			}
+		}
+		
+		public function removeDrawCalls(passes		: Vector.<ActionScriptShader>,
+										drawCalls	: Vector.<DrawCall>) : void
+		{
+			var numPasses	: int	= passes.length;
 			
-			calls.push(call);
-			_sorted = false;
+			_numDrawCalls -= numPasses;
+			
+			for (var i : int = 0; i < numPasses; ++i)
+			{
+				var toDelete	: DrawCall			= drawCalls[i] as DrawCall;
+				var state 		: RendererState 	= (passes[i] as ActionScriptShader).state;
+				var calls 		: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+				var numCalls	: int				= calls.length - 1;
+				
+				while (numCalls >= 0)
+				{
+					if (calls[numCalls] == toDelete)
+						calls.splice(numCalls, 1);
+					--numCalls;
+				}
+				
+				if (calls.length == 0)
+					_states.splice(_states.indexOf(state), 1);
+			}
 		}
 		
 		public function render(context : Context3D) : uint
@@ -56,7 +101,7 @@ package aerys.minko.render
 			for (var i : int = 0; i < _numStates; ++i)
 			{
 				var state 			: RendererState		= _states[i];
-				var calls 			: Vector.<DrawCall> = _calls[state];
+				var calls 			: Vector.<DrawCall> = _stateToDrawCalls[state];
 				var numCalls		: int				= calls.length;
 				var call			: DrawCall			= null;
 				var previousCall	: DrawCall			= null;

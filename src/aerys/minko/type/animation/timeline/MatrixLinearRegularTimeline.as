@@ -13,10 +13,25 @@ package aerys.minko.type.animation.timeline
 		private var _deltaTime		: uint;
 		private var _values			: Vector.<Matrix4x4>;
 
-		public function get propertyName()		: String				{ return _propertyName; }
-		public function get duration()			: uint					{ return _deltaTime * (_values.length - 1); }
-		public function get deltaTime() 		: uint 					{ return _deltaTime; }
-		minko_animation function get matrices()	: Vector.<Matrix4x4>	{ return _values; }
+		public function get propertyName() : String
+		{
+			return _propertyName;
+		}
+		
+		public function get duration() : uint
+		{
+			return _deltaTime * (_values.length - 1);
+		}
+		
+		public function get deltaTime() : uint
+		{
+			return _deltaTime;
+		}
+		
+		minko_animation function get matrices()	: Vector.<Matrix4x4>
+		{
+			return _values;
+		}
 		
 		public function MatrixLinearRegularTimeline(propertyName	: String,
 													deltaTime		: uint,
@@ -31,11 +46,11 @@ package aerys.minko.type.animation.timeline
 		{
 			var time			: uint	= t < 0 ? duration + t : t;
 			var timeCount		: uint 	= _values.length;
-			var previousTimeId	: int 	= Math.floor(time / _deltaTime);
+			var previousTimeId	: int 	= int(time / _deltaTime);
 			var nextTimeId		: int 	= (previousTimeId + 1) % timeCount;
 
 			// change matrix value.
-			var out : Matrix4x4 = scene[_propertyName];
+			var out : Matrix4x4 = scene[_propertyName] as Matrix4x4;
 			
 			if (!out)
 			{
@@ -49,8 +64,8 @@ package aerys.minko.type.animation.timeline
 			var previousTime		: Number	= previousTimeId * _deltaTime;
 			var nextTime			: Number	= nextTimeId * _deltaTime;
 			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
-			var previousMatrix		: Matrix4x4 = _values[previousTimeId];
-			var nextMatrix			: Matrix4x4 = _values[nextTimeId];
+			var previousMatrix		: Matrix4x4 = _values[previousTimeId] as Matrix4x4;
+			var nextMatrix			: Matrix4x4 = _values[nextTimeId] as Matrix4x4;
 			
 			if (t < 0)
 				interpolationRatio = 1 - interpolationRatio;
@@ -61,8 +76,12 @@ package aerys.minko.type.animation.timeline
 				Matrix4x4.copy(nextMatrix, out);
 			else
 			{
-				Matrix4x4.copy(previousMatrix, out);
-				out.interpolateTo(nextMatrix, interpolationRatio);
+				Matrix4x4.interpolate(
+					previousMatrix,
+					nextMatrix,
+					interpolationRatio,
+					out
+				);
 			}
 		}
 

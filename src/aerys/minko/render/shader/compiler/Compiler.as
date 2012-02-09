@@ -2,7 +2,6 @@ package aerys.minko.render.shader.compiler
 {
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;

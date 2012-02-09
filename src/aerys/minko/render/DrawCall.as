@@ -12,7 +12,6 @@ package aerys.minko.render
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
-	import flash.display3D.VertexBuffer3D;
 	import flash.utils.Dictionary;
 	
 	public final class DrawCall

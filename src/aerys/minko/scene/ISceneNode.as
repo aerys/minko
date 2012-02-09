@@ -1,7 +1,6 @@
 package aerys.minko.scene
 {
 	import aerys.minko.type.Signal;
-	import aerys.minko.scene.group.Group;
 
 	public interface ISceneNode
 	{

@@ -2,7 +2,7 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.scene.group.Group;
+	import aerys.minko.scene.Group;
 	import aerys.minko.scene.ISceneNode;
 	import aerys.minko.scene.Scene;
 	import aerys.minko.scene.mesh.Mesh;
@@ -128,6 +128,8 @@ package aerys.minko.render
 		
 		public function render(scene : Scene) : void
 		{
+			scene.update();
+			
 			var context : Context3D 	= _stage3d.context3D;
 			var list	: RenderingList	= scene.renderingList;
 			

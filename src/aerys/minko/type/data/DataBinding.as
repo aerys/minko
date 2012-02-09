@@ -124,11 +124,13 @@ package aerys.minko.type.data
 		
 		private function parameterChangedHandler(source : IDataProvider, key : Object) : void
 		{
+			key ||= NO_KEY;
+			
 			var bindingTable 	: Object = _bindings[source] as Object;
 			var parameterName 	: String = bindingTable[key] as String;
 			
 			if (parameterName)
-				setParameter(parameterName, key ? source[key] : source);
+				setParameter(parameterName, key !== NO_KEY ? source[key] : source);
 		}
 	}
 }

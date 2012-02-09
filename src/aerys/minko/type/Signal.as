@@ -18,7 +18,7 @@ package aerys.minko.type
 		
 		public function remove(callback : Function) : void
 		{
-			var startIndex : uint = _numCallbacks - 1;
+			var startIndex : int = _numCallbacks - 1;
 			
 			while (startIndex >= 0 && _callbacks[startIndex] != callback)
 				--startIndex;

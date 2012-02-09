@@ -200,9 +200,11 @@ package aerys.minko.type.math
 									   axis			: Vector4,
 									   pivotPoint	: Vector4	= null) : Matrix4x4
 		{
-			_matrix.appendRotation(radians * RAD2DEG,
-								   axis._vector,
-								   pivotPoint ? pivotPoint._vector : null);
+			_matrix.appendRotation(
+				radians * RAD2DEG,
+				axis._vector,
+				pivotPoint ? pivotPoint._vector : null
+			);
 			
 			if (!_locked)
 				_changed.execute(this, null);
@@ -506,7 +508,8 @@ package aerys.minko.type.math
 		public function toDualQuaternion(n : Vector4,
 										 d : Vector4) : void
 		{
-			var m : Vector.<Number> = TMP_VECTOR
+			var m : Vector.<Number> = TMP_VECTOR;
+			
 			_matrix.copyRawDataTo(m, 0, true);
 
 			var mTrace	: Number = m[0] + m[5] + m[10];
@@ -576,12 +579,14 @@ package aerys.minko.type.math
 										m2 	: Matrix4x4,
 										out	: Matrix4x4	= null) : Matrix4x4
 		{
-			if (out)
-				out.lock();
+			out ||= FACTORY.create() as Matrix4x4;
 			
-			out = copy(m1, out);
-			out.prepend(m2);
-			out.unlock();
+			m1._matrix.copyToMatrix3D(out._matrix);
+			out._matrix.prepend(m2._matrix);
+			
+			// inlined unlock
+			if (!out._locked)
+				out._changed.execute(out, null);
 
 			return out;
 		}
@@ -597,6 +602,21 @@ package aerys.minko.type.math
 
 			return target;
 		}
+		
+		public static function interpolate(m1 		: Matrix4x4,
+										   m2		: Matrix4x4,
+										   ratio	: Number,
+										   out		: Matrix4x4	= null) : void
+		{
+			out ||= FACTORY.create() as Matrix4x4;
+			
+			m1._matrix.copyToMatrix3D(out._matrix);
+			out._matrix.interpolateTo(m2._matrix, ratio);
+			
+			if (!out._locked)
+				out._changed.execute(out, null);
+		}
+										   
 		
 		public static function invert(input		: Matrix4x4,
 							   		  output	: Matrix4x4	= null) : Matrix4x4

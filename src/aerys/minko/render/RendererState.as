@@ -118,7 +118,7 @@ package aerys.minko.render
 		
 		private function initialize() : void
 		{
-			_triangleCulling = Context3DTriangleFace.BACK;
+			_triangleCulling = Context3DTriangleFace.FRONT;
 			_disableDepthWrite = true;
 			_compareMode = Context3DCompareMode.LESS;
 			_blending = Blending.NORMAL;
