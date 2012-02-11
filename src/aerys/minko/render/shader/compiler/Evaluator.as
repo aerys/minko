@@ -502,9 +502,9 @@ package aerys.minko.render.shader.compiler
 			var result : Vector.<Number> = Vector.<Number>(VEC_FACTORY.create(true));
 			result.length = 3;
 			
-			result[0] = arg1[0] * arg2[0] + arg1[1] * arg2[4] + arg1[2] * arg2[8];
-			result[1] = arg1[0] * arg2[1] + arg1[1] * arg2[5] + arg1[2] * arg2[9];
-			result[2] = arg1[0] * arg2[2] + arg1[1] * arg2[6] + arg1[2] * arg2[10];
+			result[0] = arg1[0] * arg2[0] + arg1[1] * arg2[1] + arg1[2] * arg2[2];
+			result[1] = arg1[0] * arg2[4] + arg1[1] * arg2[5] + arg1[2] * arg2[6];
+			result[2] = arg1[0] * arg2[8] + arg1[1] * arg2[9] + arg1[2] * arg2[10];
 			
 			return result;
 		}
@@ -515,10 +515,10 @@ package aerys.minko.render.shader.compiler
 			var result : Vector.<Number> = Vector.<Number>(VEC_FACTORY.create(true));
 			result.length = 4;
 			
-			result[0] = arg1[0] * arg2[0] + arg1[1] * arg2[4] + arg1[2] * arg2[8] + arg1[3] * arg2[12];
-			result[1] = arg1[0] * arg2[1] + arg1[1] * arg2[5] + arg1[2] * arg2[9] + arg1[3] * arg2[13];
-			result[2] = arg1[0] * arg2[2] + arg1[1] * arg2[6] + arg1[2] * arg2[10] + arg1[3] * arg2[14];
-			result[3] = arg1[0] * arg2[3] + arg1[1] * arg2[7] + arg1[2] * arg2[11] + arg1[3] * arg2[15];
+			result[0] = arg1[0] * arg2[0] + arg1[1] * arg2[1] + arg1[2] * arg2[2] + arg1[3] * arg2[3];
+			result[1] = arg1[0] * arg2[4] + arg1[1] * arg2[5] + arg1[2] * arg2[6] + arg1[3] * arg2[7];
+			result[2] = arg1[0] * arg2[8] + arg1[1] * arg2[9] + arg1[2] * arg2[10] + arg1[3] * arg2[11];
+			result[3] = arg1[0] * arg2[12] + arg1[1] * arg2[13] + arg1[2] * arg2[14] + arg1[3] * arg2[15];
 			
 			return result;
 		}
