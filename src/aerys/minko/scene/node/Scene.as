@@ -155,6 +155,8 @@ package aerys.minko.scene.node
 				
 				// add controllers
 				group.controllerChanged.add(controllerChangedHandler);
+				if (group.controller)
+					_controllers.push(group);
 				
 				var newGroups	: Vector.<ISceneNode>	= group.getDescendantsByType(Group);
 				var numGroups	: int					= newGroups.length;
@@ -196,7 +198,11 @@ package aerys.minko.scene.node
 					bindableRemovedHandler(oldBindables[bindableIndex] as IBindable);
 				
 				// remove controllers
+				var controller : AbstractController	= group.controller;
+				
 				group.controllerChanged.remove(controllerChangedHandler);
+				if (controller)
+					removeController(controller);
 				
 				var newGroups	: Vector.<ISceneNode>	= group.getDescendantsByType(Group);
 				var numGroups	: int					= 0;
@@ -204,8 +210,7 @@ package aerys.minko.scene.node
 				for (var groupIndex : int = 0; groupIndex < numGroups; ++groupIndex)
 				{
 					group = newGroups[groupIndex] as Group;
-					
-					var controller : AbstractController	= group.controller;
+					controller = group.controller;
 					
 					group.controllerChanged.remove(controllerChangedHandler);
 					

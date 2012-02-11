@@ -20,10 +20,10 @@ package aerys.minko.render.shader.binding
 		 * @param textures Fragment shader textures samplers.
 		 * @param value The value to be set.
 		 */		
-		function set(vsConstData 	: Vector.<Number>,
-					 fsConstData 	: Vector.<Number>,
-					 textures		: Vector.<ITextureResource>,
-					 value			: Object,
-					 dataStore		: Dictionary) : void;
+		function set(cpuConstants	: Dictionary,
+					 vsConstants 	: Vector.<Number>,
+					 fsConstants 	: Vector.<Number>,
+					 fsTextures		: Vector.<ITextureResource>,
+					 value			: Object) : void;
 	}
 }

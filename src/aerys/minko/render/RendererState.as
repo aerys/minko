@@ -33,19 +33,16 @@ package aerys.minko.render
 			Context3DBlendFactor.ZERO
 		];
 		
-		private var _priority				: Number				= 0.;
+		private var _priority			: Number				= 0.;
 		
-		private var _renderTarget			: AbstractRenderTarget	= null;
-		private var _program				: Program3DResource		= null;
-		private var _vertexConstants		: Vector.<Number>		= null;
-		private var _fragmentConstants		: Vector.<Number>		= null;
+		private var _vertexConstants	: Vector.<Number>		= null;
+		private var _fragmentConstants	: Vector.<Number>		= null;
 		
-		private var _blending				: uint					= 0;
-		private var _compareMode			: String				= null;
-		private var _disableDepthWrite		: Boolean				= false;
-		private var _colorMask				: uint					= 0;
-		private var _triangleCulling		: String				= null;
-		private var _rectangle				: Rectangle				= null;
+		private var _renderTarget		: AbstractRenderTarget	= null;
+		private var _program			: Program3DResource		= null;
+		private var _compareMode		: String				= null;
+		private var _disableDepthWrite	: Boolean				= false;
+		private var _rectangle			: Rectangle				= null;
 		
 		public function get vertexShaderConstants() : Vector.<Number>
 		{
@@ -66,15 +63,6 @@ package aerys.minko.render
 			_rectangle = value;
 		}
 		
-		public function get blending() : uint
-		{
-			return _blending;
-		}
-		public function set blending(value : uint) : void
-		{
-			_blending = value;
-		}
-	
 		public function get compareMode() : String
 		{
 			return _compareMode;
@@ -82,15 +70,6 @@ package aerys.minko.render
 		public function set compareMode(value : String) : void
 		{
 			_compareMode = value;
-		}
-		
-		public function get triangleCulling() : String
-		{
-			return _triangleCulling;
-		}
-		public function set triangleCulling(value : String) : void
-		{
-			_triangleCulling = value;
 		}
 		
 		public function get disableDepthWrite() : Boolean
@@ -118,35 +97,15 @@ package aerys.minko.render
 		
 		private function initialize() : void
 		{
-			_triangleCulling = Context3DTriangleFace.FRONT;
-			_disableDepthWrite = true;
 			_compareMode = Context3DCompareMode.LESS;
-			_blending = Blending.NORMAL;
-			_colorMask = ColorMask.RGBA;
+			_disableDepthWrite = true;
 		}
 		
 		public function apply(context : Context3D) : void
 		{
 			context.setProgram(_program.getProgram3D(context));
-			
-			context.setColorMask(
-				(_colorMask & ColorMask.RED) != 0,
-				(_colorMask & ColorMask.GREEN) != 0,
-				(_colorMask & ColorMask.BLUE) != 0,
-				(_colorMask & ColorMask.ALPHA) != 0
-			);
-			
-			context.setBlendFactors(
-				BLENDING_STR[int(_blending & 0xffff)],
-				BLENDING_STR[int(_blending >>> 16)]
-			);
-			
-			context.setCulling(_triangleCulling);
-			
-			context.setDepthTest(
-				_disableDepthWrite,
-				_compareMode
-			);
+			context.setScissorRectangle(_rectangle);
+			context.setDepthTest(_disableDepthWrite, _compareMode);
 		}
 		
 		public static function sort(states : Vector.<RendererState>, numStates : int) : void

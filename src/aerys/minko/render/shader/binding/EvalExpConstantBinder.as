@@ -28,20 +28,20 @@ package aerys.minko.render.shader.binding
 			_size			= size;
 		}
 		
-		public function set(vsConstData		: Vector.<Number>, 
-							fsConstData		: Vector.<Number>, 
-							textures		: Vector.<ITextureResource>, 
-							value			: Object,
-							dataStore		: Dictionary) : void
+		public function set(cpuConstants	: Dictionary,
+							vsConstants		: Vector.<Number>, 
+							fsConstants		: Vector.<Number>,
+							fsTextures		: Vector.<ITextureResource>, 
+							value			: Object) : void
 		{
-			if (!dataStore[_bindingName])
-				dataStore[_bindingName] = new Vector.<Number>();
+			if (!cpuConstants[_bindingName])
+				cpuConstants[_bindingName] = new Vector.<Number>();
 			
-			Serializer.serializeKnownLength(value, dataStore[_bindingName], 0, _size);
+			Serializer.serializeKnownLength(value, cpuConstants[_bindingName], 0, _size);
 			
-			var result : Vector.<Number> = _evalExp.compute(dataStore);
+			var result : Vector.<Number> = _evalExp.compute(cpuConstants);
 			if (result != null)
-				_masterBinding.set(vsConstData, fsConstData, textures, result, dataStore);
+				_masterBinding.set(cpuConstants, vsConstants, fsConstants, fsTextures, result);
 		}
 	}
 }

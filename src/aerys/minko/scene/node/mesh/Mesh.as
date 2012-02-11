@@ -4,7 +4,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.ShaderTemplate;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -127,13 +127,13 @@ package aerys.minko.scene.node.mesh
 			if (!_indexStream)
 				return ;
 			
-			var passes		: Vector.<ActionScriptShader>	= _effect.passes;
-			var numPasses 	: int 							= passes.length;
+			var passes		: Vector.<ShaderTemplate>	= _effect.passes;
+			var numPasses 	: int 						= passes.length;
 			
 			_drawCalls.length = 0;
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var drawCall 	: DrawCall 					= passes[i].createDrawCall();
+				var drawCall 	: DrawCall 					= passes[i].drawCallTemplate.clone();
 				var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
 				
 				if (components.indexOf(VertexComponent.TANGENT) >= 0

@@ -34,14 +34,14 @@ package aerys.minko.render.shader.binding
 		/**
 		 * @inheritDoc
 		 */		
-		public function set(vsConstData 	: Vector.<Number>,
-							fsConstData 	: Vector.<Number>,
+		public function set(cpuConstants	: Dictionary,
+							vsConstants 	: Vector.<Number>,
+							fsConstants 	: Vector.<Number>,
 							textures		: Vector.<ITextureResource>,
-							value			: Object,
-							dataStore		: Dictionary) : void
+							value			: Object) : void
 		{
-			var constData : Vector.<Number> = _isVertexShader ? vsConstData : fsConstData;
-			Serializer.serializeKnownLength(value, constData, _offset, _size);
+			var constants : Vector.<Number> = _isVertexShader ? vsConstants : fsConstants;
+			Serializer.serializeKnownLength(value, constants, _offset, _size);
 		}
 	}
 }

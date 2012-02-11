@@ -21,13 +21,13 @@ package aerys.minko.render.shader
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
 
-	public class ActionScriptShaderPart
+	public class ShaderTemplatePart
 	{
 		use namespace minko_shader;
 		
-		private var _main	: ActionScriptShader	= null;
+		private var _main	: ShaderTemplate	= null;
 		
-		protected final function get main() : ActionScriptShader
+		protected final function get main() : ShaderTemplate
 		{
 			return _main;
 		}
@@ -92,7 +92,7 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 
-		public function ActionScriptShaderPart(main : ActionScriptShader) : void
+		public function ShaderTemplatePart(main : ShaderTemplate) : void
 		{
 			_main = main;
 		}
