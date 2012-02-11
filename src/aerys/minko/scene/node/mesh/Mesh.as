@@ -60,13 +60,28 @@ package aerys.minko.scene.node.mesh
 			effectChangedHandler(_effect);
 		}
 		
+		public function get vertexStreams() : Vector.<IVertexStream>
+		{
+			return _vertexStreams;
+		}
+		
+		public function get indexStream() : IndexStream
+		{
+			return _indexStream;
+		}
+		public function set indexStream(value : IndexStream) : void
+		{
+			_indexStream = value;
+			updateDrawCalls();
+		}
+		
 		public function Mesh(effect			: Effect,
-							 vertexStreams	: Vector.<IVertexStream>,
-							 indexStream	: IndexStream	= null)
+							 vertexStreams	: Vector.<IVertexStream>	= null,
+							 indexStream	: IndexStream				= null)
 		{
 			super();
 
-			_vertexStreams = vertexStreams;
+			_vertexStreams = vertexStreams || new Vector.<IVertexStream>();
 			_indexStream = indexStream;
 			
 			initialize();
@@ -103,6 +118,15 @@ package aerys.minko.scene.node.mesh
 				
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
 		{
+			updateDrawCalls();
+			_bindings.clear();
+		}
+		
+		private function updateDrawCalls() : void
+		{
+			if (!_indexStream)
+				return ;
+			
 			var passes		: Vector.<ActionScriptShader>	= _effect.passes;
 			var numPasses 	: int 							= passes.length;
 			
@@ -118,7 +142,7 @@ package aerys.minko.scene.node.mesh
 					computeTangentSpace(StreamUsage.STATIC);
 				}
 				else if (components.indexOf(VertexComponent.NORMAL) >= 0
-						 && _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
+					&& _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
 				{
 					computeNormals(StreamUsage.STATIC);
 				}
@@ -126,8 +150,6 @@ package aerys.minko.scene.node.mesh
 				drawCall.setStreams(_vertexStreams, _indexStream);
 				_drawCalls[i] = drawCall;
 			}
-			
-			_bindings.clear();
 		}
 				
 		public function clone() : Mesh
