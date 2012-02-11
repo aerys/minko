@@ -22,6 +22,11 @@ package aerys.minko.render
 			return _numDrawCalls;
 		}
 		
+		public function get numRendererStates() : uint
+		{
+			return _numStates;
+		}
+		
 		public function clear() : void
 		{
 			_numStates = 0;
@@ -77,7 +82,11 @@ package aerys.minko.render
 				}
 				
 				if (calls.length == 0)
+				{
 					_states.splice(_states.indexOf(state), 1);
+					delete _stateToDrawCalls[state];
+					--_numStates;
+				}
 			}
 		}
 		

@@ -251,7 +251,7 @@ package aerys.minko.scene.node
 			var numControllers 	: int 		= _controllers.length;
 			var time			: Number	= new Date().time;
 			
-			for (var ctrlIndex : int = 0; ctrlIndex  < numControllers; ++ctrlIndex)
+			for (var ctrlIndex : int = 0; ctrlIndex < numControllers; ++ctrlIndex)
 			{
 				var ctrlGroup : Group = _controllers[ctrlIndex] as Group;
 				

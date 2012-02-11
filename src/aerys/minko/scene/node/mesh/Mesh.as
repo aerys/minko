@@ -154,7 +154,11 @@ package aerys.minko.scene.node.mesh
 				
 		public function clone() : Mesh
 		{
-			return new Mesh(_effect, _vertexStreams.concat(), _indexStream);
+			var clone : Mesh = new Mesh(_effect, _vertexStreams.concat(), _indexStream);
+			
+			clone.name = name;
+			
+			return clone;
 		}
 		
 		private function computeNormals(usage : uint) : void

@@ -139,7 +139,7 @@ package aerys.minko.scene.controller
 					+ (_currentTime + deltaT - _loopBeginTime)
 					%	(_loopEndTime - _loopBeginTime);
 				
-				if(lastCurrentTime > _currentTime)
+				if (lastCurrentTime > _currentTime)
 					_looped.execute(this);
 			}				
 			
