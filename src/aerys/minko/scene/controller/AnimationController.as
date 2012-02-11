@@ -10,6 +10,7 @@ package aerys.minko.scene.controller
 
 	public class AnimationController extends AbstractController
 	{
+
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
 		private var _timeline		: ITimeline				= null;
@@ -26,6 +27,11 @@ package aerys.minko.scene.controller
 		private var _looped			: Signal 				= new Signal();
 		private var _started		: Signal				= new Signal();
 		private var _stopped		: Signal				= new Signal();
+
+		public function get timeline():ITimeline
+		{
+			return _timeline;
+		}
 
 		public function get started():Signal
 		{
