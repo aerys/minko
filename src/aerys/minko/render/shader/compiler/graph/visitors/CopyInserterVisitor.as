@@ -31,26 +31,17 @@ package aerys.minko.render.shader.compiler.graph.visitors
 													 isVertexShader	: Boolean) : void
 		{
 			visit(instruction.arg1, isVertexShader);
-			
 			if (!instruction.isSingle)
-			{
 				visit(instruction.arg2, isVertexShader);
-			}
 			
-			if ((instruction.arg1 is Constant || instruction.arg1 is BindableConstant) && 
-				(instruction.isSingle || (instruction.arg2 is Constant || instruction.arg2 is BindableConstant)))
-			{
+			if (isConstant(instruction.arg1) && (instruction.isSingle || isConstant(instruction.arg2)))
 				instruction.arg1 = new Instruction(Instruction.MOV, instruction.arg1);
-			}
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate,
 													 isVertexShader	: Boolean) : void
 		{
 			visit(interpolate.arg, true);
-			
-			if (interpolate.arg is Constant || interpolate.arg is BindableConstant)
-				interpolate.arg = new Instruction(Instruction.MOV, interpolate.arg);
 		}
 		
 		override protected function visitOverwriter(overwriter		: Overwriter,
@@ -102,6 +93,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 												 isVertexShader	: Boolean) : void
 		{
 			throw new Error('Extracts cannot be found at this stage of compilation.');
+		}
+		
+		private function isConstant(node : INode) : Boolean
+		{
+			return node is Constant || node is BindableConstant || node is VariadicExtract;
 		}
 	}
 }

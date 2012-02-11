@@ -62,10 +62,8 @@ package aerys.minko.render.shader.compiler
 			OVERWRITER_CLEANER		.process(shaderGraph);
 			RESOLVE_CONSTANT		.process(shaderGraph);
 			REMOVE_USELESS			.process(shaderGraph);
-//			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
-				RESOLVE_PARAMETRIZED	.process(shaderGraph);
-//			else
-//				COPY_INSERTER.process(shaderGraph);
+			RESOLVE_PARAMETRIZED	.process(shaderGraph);
+			COPY_INSERTER			.process(shaderGraph);
 			
 			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
