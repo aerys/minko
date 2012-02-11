@@ -121,10 +121,20 @@ package aerys.minko.render.shader.compiler.register
 		{
 			var result : uint = 0;
 			
-			result |= getReadAtIndex(0, input1) == _ ? getReadAtIndex(0, input1) : getReadAtIndex(0, input2);
-			result |= (getReadAtIndex(1, input1) == _ ? getReadAtIndex(1, input1) : getReadAtIndex(1, input2)) << 8;
-			result |= (getReadAtIndex(2, input1) == _ ? getReadAtIndex(2, input1) : getReadAtIndex(2, input2)) << 16;
-			result |= (getReadAtIndex(3, input1) == _ ? getReadAtIndex(3, input1) : getReadAtIndex(3, input2)) << 24;
+			var inputX1 : uint = getReadAtIndex(0, input1);
+			var inputY1 : uint = getReadAtIndex(1, input1);
+			var inputZ1 : uint = getReadAtIndex(2, input1);
+			var inputW1 : uint = getReadAtIndex(3, input1);
+			
+			var inputX2 : uint = getReadAtIndex(0, input2);
+			var inputY2 : uint = getReadAtIndex(1, input2);
+			var inputZ2 : uint = getReadAtIndex(2, input2);
+			var inputW2 : uint = getReadAtIndex(3, input2);
+			
+			result |= (inputX1 != _ ? inputX1 : inputX2);
+			result |= (inputY1 != _ ? inputY1 : inputY2) << 8;
+			result |= (inputZ1 != _ ? inputZ1 : inputZ2) << 16;
+			result |= (inputW1 != _ ? inputW1 : inputW2) << 24;
 			
 			return result;
 		}
@@ -263,12 +273,12 @@ package aerys.minko.render.shader.compiler.register
 											  component	: uint) : uint
 		{
 			if (offset > W)
-				throw new Error('Invalid offset');
+				throw new ArgumentError('Invalid offset');
 			
 			var result : uint = (component >>> (8 * offset)) & 0xff;
 			
 			if (result > _)
-				throw new Error('wtf?');
+				throw new ArgumentError('Invalid Component');
 			
 			return result;
 		}

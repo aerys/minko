@@ -86,17 +86,32 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			
 			_sizeIsValid	= false;
 			_hashIsValid	= false;
+			
+			checkComponents();
 		}
 		
 		public function invalidateHashAndSize() : void
 		{
 			_hashIsValid = false;
 			_sizeIsValid = false;
+			
+			checkComponents();
 		}
 		
 		public function toString() : String
 		{
 			return 'Overwriter';
+		}
+		
+		private function checkComponents() : void
+		{
+			var numArgs : uint = _args.length;
+			if (numArgs != _components.length)
+				throw new Error('An overwriter must have has many arguments than components');
+			
+			for (var componentId : uint = 0; componentId < numArgs; ++componentId)
+				if (_components[componentId] == Components.____)
+					throw new Error('Cannot set an empty component.');
 		}
 	}
 }
