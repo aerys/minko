@@ -91,14 +91,15 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 *
 	 */
-	public class ActionScriptShader extends ActionScriptShaderPart
+	public class ShaderTemplate extends ShaderTemplatePart
 	{
 		use namespace minko_shader;
 		
-		private var _name		: String			= null;
-		private var _state		: RendererState		= new RendererState();
+		private var _name				: String			= null;
+		private var _state				: RendererState		= new RendererState();
+		private var _drawCallTemplate	: DrawCall			= null;
 		
-		minko_shader var _kills	: Vector.<INode>	= new <INode>[];
+		minko_shader var _kills			: Vector.<INode>	= new <INode>[];
 		
 		public function get name() : String
 		{
@@ -110,19 +111,34 @@ package aerys.minko.render.shader
 			return _state;
 		}
 		
-		public function ActionScriptShader(name : String = null)
+		public function get drawCallTemplate() : DrawCall
+		{
+			return _drawCallTemplate;
+		}
+		
+		public function ShaderTemplate(name : String = null)
 		{
 			super(this);
 			
 			initialize();
 		}
 		
-		
-		public function createDrawCall() : DrawCall
+		private function initialize() : void
 		{
+			_name = name || getQualifiedClassName(this);
+			
+			var shaderGraph : ShaderGraph = new ShaderGraph(
+				getClipspacePosition()._node, 
+				getPixelColor()._node, 
+				_kills
+			);
+			
+			Compiler.load(shaderGraph, 0xffffffff);
+			_state.program = Compiler.compileShader(_name);
+			
 			var resource : Program3DResource = _state.program;
 			
-			return new DrawCall(
+			_drawCallTemplate = new DrawCall(
 				resource._vsConstants,
 				resource._fsConstants,
 				resource._fsTextures,
@@ -132,26 +148,12 @@ package aerys.minko.render.shader
 			);
 		}
 		
-		private function initialize() : void
-		{
-			_name = name || getQualifiedClassName(this);
-			
-			var shaderGraph : ShaderGraph = new ShaderGraph(
-				getOutputPosition()._node, 
-				getOutputColor()._node, 
-				_kills
-			);
-			
-			Compiler.load(shaderGraph, 0xffffffff);
-			_state.program = Compiler.compileShader(_name);
-		}
-		
 		/**
 		 * The getOutputPosition method implements a vertex shader using ActionScript code.
 		 * @return
 		 *
 		 */
-		protected function getOutputPosition() : SValue
+		protected function getClipspacePosition() : SValue
 		{
 			throw new Error();
 		}
@@ -161,7 +163,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected function getOutputColor() : SValue
+		protected function getPixelColor() : SValue
 		{
 			throw new Error();
 		}
