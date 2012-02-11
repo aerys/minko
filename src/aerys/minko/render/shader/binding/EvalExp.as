@@ -104,11 +104,16 @@ package aerys.minko.render.shader.binding
 				if (arg1.length <= 4)
 					arg1 = Evaluator.evaluateComponents(instruction.arg1Components, arg1);
 				
-				arg2 = visit(instruction.arg2, dataStore);
-				if (arg2.length <= 4)
-					arg2 = Evaluator.evaluateComponents(instruction.arg2Components, arg2);
+				if (!instruction.isSingle)
+				{
+					arg2 = visit(instruction.arg2, dataStore);
+					if (arg2.length <= 4)
+						arg2 = Evaluator.evaluateComponents(instruction.arg2Components, arg2);
+					
+					return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1, arg2);
+				}
 				
-				return Evaluator.EVALUTION_FUNCTIONS[instruction.id](arg1, arg2);
+				return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1);
 			}
 			
 			else if (node is Overwriter)

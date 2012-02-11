@@ -77,7 +77,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (isSingle && arg1AsConstant != null)
 			{
 				orderedConstant1	= Evaluator.evaluateComponents(instruction.arg1Components, arg1AsConstant.value);
-				result				= Evaluator.EVALUTION_FUNCTIONS[instruction.id](orderedConstant1);
+				result				= Evaluator.EVALUATION_FUNCTIONS[instruction.id](orderedConstant1);
 				
 				replaceInParent(instruction, new Constant(result));
 //				forgetVisiting(instruction, isVertexShader);
@@ -86,7 +86,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				orderedConstant1	= Evaluator.evaluateComponents(instruction.arg1Components, arg1AsConstant.value);
 				orderedConstant2	= Evaluator.evaluateComponents(instruction.arg2Components, arg2AsConstant.value);
-				result				= Evaluator.EVALUTION_FUNCTIONS[instruction.id](orderedConstant1, orderedConstant2);
+				result				= Evaluator.EVALUATION_FUNCTIONS[instruction.id](orderedConstant1, orderedConstant2);
 				
 				replaceInParent(instruction, new Constant(result));
 //				forgetVisiting(instruction, isVertexShader);

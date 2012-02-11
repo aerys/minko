@@ -10,41 +10,41 @@ package aerys.minko.render.shader.compiler
 	{
 		private static const VEC_FACTORY : Factory = Factory.getFactory(Class(Vector.<Number>));
 		
-		public static const EVALUTION_FUNCTIONS	: Dictionary = new Dictionary();
+		public static const EVALUATION_FUNCTIONS	: Dictionary = new Dictionary();
 		{
-			EVALUTION_FUNCTIONS[Instruction.MOV]	= evaluateMov;
-			EVALUTION_FUNCTIONS[Instruction.ADD]	= evaluateAdd;
-			EVALUTION_FUNCTIONS[Instruction.SUB]	= evaluateSub;
-			EVALUTION_FUNCTIONS[Instruction.MUL]	= evaluateMul;
-			EVALUTION_FUNCTIONS[Instruction.DIV]	= evaluateDiv;
-			EVALUTION_FUNCTIONS[Instruction.RCP]	= evaluateRcp;
-			EVALUTION_FUNCTIONS[Instruction.MIN]	= evaluateMin;
-			EVALUTION_FUNCTIONS[Instruction.MAX]	= evaluateMax;
-			EVALUTION_FUNCTIONS[Instruction.FRC]	= evaluateFrc;
-			EVALUTION_FUNCTIONS[Instruction.SQT]	= evaluateSqt;
-			EVALUTION_FUNCTIONS[Instruction.RSQ]	= evaluateRsq;
-			EVALUTION_FUNCTIONS[Instruction.POW]	= evaluatePow;
-			EVALUTION_FUNCTIONS[Instruction.LOG]	= evaluateLog;
-			EVALUTION_FUNCTIONS[Instruction.EXP]	= evaluateExp;
-			EVALUTION_FUNCTIONS[Instruction.NRM]	= evaluateNrm;
-			EVALUTION_FUNCTIONS[Instruction.SIN]	= evaluateSin;
-			EVALUTION_FUNCTIONS[Instruction.COS]	= evaluateCos;
-			EVALUTION_FUNCTIONS[Instruction.CRS]	= evaluateCrs;
-			EVALUTION_FUNCTIONS[Instruction.DP3]	= evaluateDp3;
-			EVALUTION_FUNCTIONS[Instruction.DP4]	= evaluateDp4;
-			EVALUTION_FUNCTIONS[Instruction.ABS]	= evaluateAbs;
-			EVALUTION_FUNCTIONS[Instruction.NEG]	= evaluateNeg;
-			EVALUTION_FUNCTIONS[Instruction.SAT]	= evaluateSat;
-			EVALUTION_FUNCTIONS[Instruction.M33]	= evaluateM33;
-			EVALUTION_FUNCTIONS[Instruction.M44]	= evaluateM44;
-			EVALUTION_FUNCTIONS[Instruction.M34]	= evaluateM34;
-			EVALUTION_FUNCTIONS[Instruction.SGE]	= evaluateSge;
-			EVALUTION_FUNCTIONS[Instruction.SLT]	= evaluateSlt;
-			EVALUTION_FUNCTIONS[Instruction.SEQ]	= evaluateSeq;
-			EVALUTION_FUNCTIONS[Instruction.SNE]	= evaluateSne;
+			EVALUATION_FUNCTIONS[Instruction.MOV]	= evaluateMov;
+			EVALUATION_FUNCTIONS[Instruction.ADD]	= evaluateAdd;
+			EVALUATION_FUNCTIONS[Instruction.SUB]	= evaluateSub;
+			EVALUATION_FUNCTIONS[Instruction.MUL]	= evaluateMul;
+			EVALUATION_FUNCTIONS[Instruction.DIV]	= evaluateDiv;
+			EVALUATION_FUNCTIONS[Instruction.RCP]	= evaluateRcp;
+			EVALUATION_FUNCTIONS[Instruction.MIN]	= evaluateMin;
+			EVALUATION_FUNCTIONS[Instruction.MAX]	= evaluateMax;
+			EVALUATION_FUNCTIONS[Instruction.FRC]	= evaluateFrc;
+			EVALUATION_FUNCTIONS[Instruction.SQT]	= evaluateSqt;
+			EVALUATION_FUNCTIONS[Instruction.RSQ]	= evaluateRsq;
+			EVALUATION_FUNCTIONS[Instruction.POW]	= evaluatePow;
+			EVALUATION_FUNCTIONS[Instruction.LOG]	= evaluateLog;
+			EVALUATION_FUNCTIONS[Instruction.EXP]	= evaluateExp;
+			EVALUATION_FUNCTIONS[Instruction.NRM]	= evaluateNrm;
+			EVALUATION_FUNCTIONS[Instruction.SIN]	= evaluateSin;
+			EVALUATION_FUNCTIONS[Instruction.COS]	= evaluateCos;
+			EVALUATION_FUNCTIONS[Instruction.CRS]	= evaluateCrs;
+			EVALUATION_FUNCTIONS[Instruction.DP3]	= evaluateDp3;
+			EVALUATION_FUNCTIONS[Instruction.DP4]	= evaluateDp4;
+			EVALUATION_FUNCTIONS[Instruction.ABS]	= evaluateAbs;
+			EVALUATION_FUNCTIONS[Instruction.NEG]	= evaluateNeg;
+			EVALUATION_FUNCTIONS[Instruction.SAT]	= evaluateSat;
+			EVALUATION_FUNCTIONS[Instruction.M33]	= evaluateM33;
+			EVALUATION_FUNCTIONS[Instruction.M44]	= evaluateM44;
+			EVALUATION_FUNCTIONS[Instruction.M34]	= evaluateM34;
+			EVALUATION_FUNCTIONS[Instruction.SGE]	= evaluateSge;
+			EVALUATION_FUNCTIONS[Instruction.SLT]	= evaluateSlt;
+			EVALUATION_FUNCTIONS[Instruction.SEQ]	= evaluateSeq;
+			EVALUATION_FUNCTIONS[Instruction.SNE]	= evaluateSne;
 			
-			EVALUTION_FUNCTIONS[Instruction.MUL_MAT33] = evaluateMulMat33;
-			EVALUTION_FUNCTIONS[Instruction.MUL_MAT44] = evaluateMulMat44;
+			EVALUATION_FUNCTIONS[Instruction.MUL_MAT33] = evaluateMulMat33;
+			EVALUATION_FUNCTIONS[Instruction.MUL_MAT44] = evaluateMulMat44;
 		}
 		
 		public static function evaluateVariadicExtract(index	: Number,
