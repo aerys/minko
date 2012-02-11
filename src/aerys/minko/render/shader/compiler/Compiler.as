@@ -60,14 +60,14 @@ package aerys.minko.render.shader.compiler
 			MERGER					.process(shaderGraph);
 			
 			OVERWRITER_CLEANER		.process(shaderGraph);
-//			RESOLVE_CONSTANT		.process(shaderGraph);
-//			REMOVE_USELESS			.process(shaderGraph);
+			RESOLVE_CONSTANT		.process(shaderGraph);
+			REMOVE_USELESS			.process(shaderGraph);
 //			if ((flags & COMPUTE_CONSTANTS_IN_CPU) != 0)
-//				RESOLVE_PARAMETRIZED	.process(shaderGraph);
+				RESOLVE_PARAMETRIZED	.process(shaderGraph);
 //			else
 //				COPY_INSERTER.process(shaderGraph);
 			
-//			MATRIX_TRANSFORMATION	.process(shaderGraph);
+			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);

@@ -13,7 +13,6 @@ package aerys.minko.render.shader.compiler.allocation
 	 */	
 	public class Allocator
 	{
-//		private var _nodeToAllocation		: Dictionary;
 		private var _allocations			: Vector.<IAllocation>;
 		
 		private var _type					: uint;
@@ -89,10 +88,11 @@ package aerys.minko.render.shader.compiler.allocation
 								 componentWise	: Boolean,
 								 operationId	: uint = 0) : SimpleAllocation
 		{
+			if (size == 0 || (size > 4 && size % 4 != 0))
+				throw new Error('Invalid allocation size.');
+			
 			var alloc : SimpleAllocation = new SimpleAllocation(operationId, !componentWise, size, _type);
-			
 			_allocations.push(alloc);
-			
 			return alloc;
 		}
 		

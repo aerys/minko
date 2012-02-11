@@ -71,18 +71,11 @@ package aerys.minko.type.animation.timeline
 				interpolationRatio = 1 - interpolationRatio;
 			
 			if (interpolationRatio == 0.)
-				Matrix4x4.copy(previousMatrix, out);
+				out.copyFrom(previousMatrix);
 			else if (interpolationRatio == 1.)
-				Matrix4x4.copy(nextMatrix, out);
+				out.copyFrom(nextMatrix);
 			else
-			{
-				Matrix4x4.interpolate(
-					previousMatrix,
-					nextMatrix,
-					interpolationRatio,
-					out
-				);
-			}
+				out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
 		}
 
 		public function clone() : ITimeline

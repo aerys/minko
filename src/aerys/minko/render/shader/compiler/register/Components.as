@@ -13,6 +13,8 @@ package aerys.minko.render.shader.compiler.register
 		public static const W : uint = 3;
 		public static const _ : uint = 4;
 		
+		public static const ____ : uint = _ | (_ << 8) | (_ << 16) | (_ << 24);
+		
 		/**
 		 * String equivalent of each byte in a component part
 		 */		

@@ -38,42 +38,42 @@ package aerys.minko.render.shader.compiler.graph.visitors
 
 	public class AllocationVisitor extends AbstractVisitor
 	{
-		private var _allocations			: Dictionary;
+		private var _allocations		: Dictionary;
 		
 		// allocators
-		private var _opAllocator			: Allocator;
-		private var _ocAllocator			: Allocator;
-		private var _attributeAllocator		: Allocator;
-		private var _vsConstAllocator		: Allocator;
-		private var _fsConstAllocator		: Allocator;
-		private var _vsTempAllocator		: Allocator;
-		private var _fsTempAllocator		: Allocator;
-		private var _varyingAllocator		: Allocator;
+		private var _opAllocator		: Allocator;
+		private var _ocAllocator		: Allocator;
+		private var _attributeAllocator	: Allocator;
+		private var _vsConstAllocator	: Allocator;
+		private var _fsConstAllocator	: Allocator;
+		private var _vsTempAllocator	: Allocator;
+		private var _fsTempAllocator	: Allocator;
+		private var _varyingAllocator	: Allocator;
 		
 		// first pass data
-		private var _vsInstructions			: Vector.<Instruction>;
-		private var _fsInstructions			: Vector.<Instruction>;
+		private var _vsInstructions		: Vector.<Instruction>;
+		private var _fsInstructions		: Vector.<Instruction>;
 		
-		private var _vsConstants			: Vector.<Constant>;
-		private var _fsConstants			: Vector.<Constant>;
+		private var _vsConstants		: Vector.<Constant>;
+		private var _fsConstants		: Vector.<Constant>;
 		
-		private var _vsParams				: Vector.<BindableConstant>;
-		private var _fsParams				: Vector.<BindableConstant>;
+		private var _vsParams			: Vector.<BindableConstant>;
+		private var _fsParams			: Vector.<BindableConstant>;
 		
-		private var _samplers				: Vector.<BindableSampler>;
+		private var _samplers			: Vector.<BindableSampler>;
 		
 		// final compiled program
-		private var _vsProgram				: Vector.<AgalInstruction>;
-		private var _fsProgram				: Vector.<AgalInstruction>;
+		private var _vsProgram			: Vector.<AgalInstruction>;
+		private var _fsProgram			: Vector.<AgalInstruction>;
 		
-		private var _paramBindings			: Object;
+		private var _paramBindings		: Object;
 		
-		private var _vertexComponents		: Vector.<VertexComponent>;
-		private var _vertexIndices			: Vector.<uint>;
+		private var _vertexComponents	: Vector.<VertexComponent>;
+		private var _vertexIndices		: Vector.<uint>;
 		
-		private var _vertexConstants		: Vector.<Number>;
-		private var _fragmentConstants		: Vector.<Number>;
-		private var _textures				: Vector.<ITextureResource>;
+		private var _vertexConstants	: Vector.<Number>;
+		private var _fragmentConstants	: Vector.<Number>;
+		private var _textures			: Vector.<ITextureResource>;
 		
 		public function get parameterBindings() : Object
 		{
@@ -228,8 +228,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_vertexComponents.length = _vertexIndices.length = maxRegisterId + 1;
 		}
 		
-		private function createConstantParameterBindings(bindableConstants	: Vector.<BindableConstant>,
-														 isVertexShader		: Boolean) : void
+		private function createConstantParameterBindings(bindableConstants : Vector.<BindableConstant>, isVertexShader : Boolean) : void
 		{
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
@@ -270,8 +269,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		private function createConstantTables(constants		 : Vector.<Constant>,
-											  isVertexShader : Boolean) : Vector.<Number>
+		private function createConstantTables(constants : Vector.<Constant>, isVertexShader : Boolean) : Vector.<Number>
 		{
 			var result		: Vector.<Number> = new Vector.<Number>();
 			var alloc		: SimpleAllocation;
@@ -312,8 +310,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function writeProgram(instructions	 : Vector.<Instruction>,
-									  isVertexShader : Boolean) : Vector.<AgalInstruction>
+		private function writeProgram(instructions : Vector.<Instruction>, isVertexShader : Boolean) : Vector.<AgalInstruction>
 		{
 			var result		: Vector.<AgalInstruction> = new Vector.<AgalInstruction>();
 			
@@ -333,9 +330,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument			: INode, 
-									  readComponents	: uint, 
-									  destAlloc			: SimpleAllocation) : IAgalSource
+		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation) : IAgalSource
 		{
 			var source : IAgalSource;
 			
@@ -414,8 +409,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		 * 
 		 * Also, we need to process all constants nodes in one call.
 		 */
-		override protected function visitOverwriter(overwriter		: Overwriter, 
-													isVertexShader	: Boolean) : void
+		override protected function visitOverwriter(overwriter : Overwriter, isVertexShader : Boolean) : void
 		{
 			var overwriterAllocator : Allocator = getAllocatorFor(overwriter, isVertexShader);
 			
@@ -513,8 +507,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_allocations[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction,
-													 isVertexShader	: Boolean) : void
+		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
 		{
 			visit(instruction.arg1, isVertexShader);
 			if (!instruction.isSingle)
@@ -594,14 +587,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			insertNewBinder(new TextureBinder(bindableSampler.bindingName, _samplers.length - 1));
 		}
 		
-		override protected function visitExtract(extract		: Extract,
-												 isVertexShader	: Boolean) : void
+		override protected function visitExtract(extract : Extract, isVertexShader : Boolean) : void
 		{
 			throw new Error('There cannot be any extract left at this point of shader compilation. Go fix your code.');
 		}
 		
-		private function getAllocatorFor(node			: INode, 
-										 isVertexShader	: Boolean) : Allocator
+		private function getAllocatorFor(node : INode, isVertexShader : Boolean) : Allocator
 		{
 			// if this is the root node, it has a different allocator.
 			if (node === _shaderGraph.position)

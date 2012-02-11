@@ -57,8 +57,8 @@ package aerys.minko.render
 		public function setStreams(vertexStreams 	: Vector.<IVertexStream>,
 								   indexStream		: IndexStream) : void
 		{
-			_numVertexBuffers = _inputComponents.length;
-			_indexBuffer = indexStream.resource;
+			_numVertexBuffers	= _inputComponents.length;
+			_indexBuffer		= indexStream.resource;
 			
 			for (var i : int = 0; i < _numVertexBuffers; ++i)
 			{
@@ -68,6 +68,9 @@ package aerys.minko.render
 				if (component)
 				{
 					var stream 	: VertexStream	= vertexStreams[index].getStreamByComponent(component);
+					if (stream == null)
+						throw new Error('Missing vertex component: ' + component.toString() + '.');
+					
 					var format 	: VertexFormat 	= stream.format;
 					
 					_vertexBuffers[i] = stream.resource;

@@ -154,6 +154,16 @@ package aerys.minko.type.math
 				_changed.execute(this, null);
 		}
 		
+		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
+		{
+			_matrix.copyFrom(matrix._matrix);
+			
+			if (!_locked)
+				_changed.execute(this, null);
+			
+			return this;
+		}
+		
 		public function push() : Matrix4x4
 		{
 			_matrix.copyRawDataTo(_data, _numPushes * 16);
@@ -354,7 +364,7 @@ package aerys.minko.type.math
 
 			return this;
 		}
-
+		
 		public function projectVector(input 	: Vector4,
 									  output	: Vector4 = null) : Vector4
 		{
@@ -397,8 +407,9 @@ package aerys.minko.type.math
 				at ? at._vector : null,
 				up ? up._vector : null
 			);
-
-			_changed.execute(this, null);
+			
+			if (!_locked)
+				_changed.execute(this, null);
 
 			return this;
 		}
@@ -412,7 +423,18 @@ package aerys.minko.type.math
 
 			return this;
 		}
-
+		
+		public function interpolateBetween(m1 : Matrix4x4, m2 : Matrix4x4, ratio : Number) : Matrix4x4
+		{
+			_matrix.copyFrom(m1._matrix);
+			_matrix.interpolateTo(m2._matrix, ratio);
+			
+			if (!_locked)
+				_changed.execute(this, null);
+			
+			return this;
+		}
+		
 		public function projectVectors(input 	: Vector.<Number>,
 									   output	: Vector.<Number>,
 									   uvt		: Vector.<Number>) : void
@@ -441,9 +463,11 @@ package aerys.minko.type.math
 				rotation.y = y;
 			if (!isNaN(z))
 				rotation.z = z;
-
-			_changed.execute(this, null);
+			
 			_matrix.recompose(components);
+			
+			if (!_locked)
+				_changed.execute(this, null);
 
 			return this;
 		}
@@ -452,7 +476,7 @@ package aerys.minko.type.math
 		{
 			output ||= new Vector4();
 			_matrix.copyColumnTo(3, output._vector);
-
+			
 			return output;
 		}
 		
@@ -616,14 +640,16 @@ package aerys.minko.type.math
 			if (!out._locked)
 				out._changed.execute(out, null);
 		}
-										   
 		
 		public static function invert(input		: Matrix4x4,
 							   		  output	: Matrix4x4	= null) : Matrix4x4
 		{
 			output = copy(input, output);
 			output.invert();
-
+			
+			if (!output._locked)
+				output._changed.execute(output, null);
+			
 			return output;
 		}
 

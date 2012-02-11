@@ -44,9 +44,9 @@ package aerys.minko.type.animation.timeline
 			}
 
 			if (timeId == 0)
-				Matrix4x4.copy(_matrices[0], out);
+				out.copyFrom(_matrices[0]);
 			else
-				Matrix4x4.copy(_matrices[int(timeId - 1)], out);
+				out.copyFrom(_matrices[int(timeId - 1)]);
 		}
 
 		private function getIndexForTime(t : uint) : uint

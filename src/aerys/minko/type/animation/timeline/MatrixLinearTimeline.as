@@ -64,8 +64,7 @@ package aerys.minko.type.animation.timeline
 			if (t < 0)
 				interpolationRatio = 1 - interpolationRatio;
 			
-			Matrix4x4.copy(previousMatrix, out);
-			out.interpolateTo(nextMatrix, interpolationRatio);
+			out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
 		}
 
 		private function getIndexForTime(t : uint) : uint

@@ -28,6 +28,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		public function BindableConstant(bindingName : String, size : uint)
 		{
+			if (size == 0)
+				throw new Error('Cannot create a zero-sized parameter');
+			
+			if (size > 4 && size % 4 != 0)
+				throw new Error('Size of a parameter must be either less or equal than 4, or a multiple of 4');
+			
 			_bindingName	= bindingName;
 			_size			= size;
 			_hash			= CRC32.computeForString('BindableConstant_' + bindingName + '_' + size);
@@ -35,7 +41,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		public function toString() : String
 		{
-			return 'BindableConstant';
+			return 'BindableConstant_' + bindingName + '_' + size;
 		}
 	}
 }

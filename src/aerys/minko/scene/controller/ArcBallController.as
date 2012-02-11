@@ -160,7 +160,7 @@ package aerys.minko.scene.controller
 		
 		override protected function updateTarget(target:Group):void
 		{
-			Matrix4x4.copy(_transform, target.transform);
+			target.transform.copyFrom(_transform);
 		}
 		
 		private function startDrag(event : Event) : void
