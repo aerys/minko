@@ -186,14 +186,15 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			// more than one argument is computable in CPU, we have to merge them, and shift them back into the overwriter.
 			else
 			{
-				// we are going to decompote this overwriter into 2 overwriters...
+				// we are going to decompose this overwriter into 2 overwriters...
 				
 				// first we find holes
 				numArgs = computableArgs.length;
-				var currentWrite : uint = 0;
+				var currentWrite		: uint = 0;
 				var resultingComponents : uint = computableComps[0];
+				  
 				for (argId = 1; argId < numArgs; ++argId) // the order doesn't really matters...
-					resultingComponents = Components.applyOverwriting(resultingComponents, computableComps[argId]);
+					resultingComponents = Components.applyOverwriting(computableComps[argId], resultingComponents);
 				
 				var xIsHole : Boolean = ((resultingComponents >>> (8 * 0)) & 0xff) == 4;
 				var yIsHole : Boolean = ((resultingComponents >>> (8 * 1)) & 0xff) == 4;
@@ -215,20 +216,26 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				// it would make no sense).
 				for (argId = 0; argId < numArgs; ++argId)
 				{
+					var cpuComponent : uint = computableComps[argId];
+					
+					throw new Error('This is bugged. Fix it before using.');
+					
 					if (xIsHole)
 						// this one is easy, we just make the first byte fall into the bit bucket
-						computableComps[argId] = computableComps[argId] >>> 8 | (4 << (3 * 8));
+						cpuComponent = cpuComponent >>> 8 | (4 << (3 * 8));
 					
 					if (yIsHole)
 						// remove bits 8 to 15
-						computableComps[argId] = (computableComps[argId] & 0xff) | ((computableComps[argId] >>> 8) & (~0xff)) | (4 << (3 * 8));
+						cpuComponent = (cpuComponent & 0xff) | ((cpuComponent >>> 8) & (~0xff)) | (4 << (3 * 8));
 					
 					if (zIsHole)
-						computableComps[argId] = (computableComps[argId] & 0xffff) | ((computableComps[argId] >>> 8) & (~0xffff)) | (4 << (3 * 8));
+						cpuComponent = (cpuComponent & 0xffff) | ((cpuComponent >>> 8) & (~0xffff)) | (4 << (3 * 8));
 					
 					if (wIsHole)
 						// useless
-						computableComps[argId] = (computableComps[argId] & 0xffffff) | (4 << (3 * 8));
+						cpuComponent = (cpuComponent & 0xffffff) | (4 << (3 * 8));
+					
+					computableComps[argId] = cpuComponent;
 				}
 				
 				var cpuOverwriter : Overwriter = new Overwriter(computableArgs, computableComps);

@@ -255,6 +255,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		
 		public function set arg1Components(v : uint) : void
 		{
+			if (v == Components.____)
+				throw new Error("Component cannot be empty.");
+			
+			if (_arg1.size < Components.getMaxReadOffset(v))
+				throw new Error('Component is reading too far.');
+			
 			if (v != _arg1Components)
 			{
 				_arg1Components	= v;
@@ -267,6 +273,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		{
 			if (isSingle || _id === TEX)
 				throw new Error('arg2Components cannot be set, this is a single operation');
+			
+			if (v == Components.____)
+				throw new Error("Component cannot be empty.");
+			
+			if (_arg2.size < Components.getMaxReadOffset(v))
+				throw new Error('Component is reading too far.');
 			
 			if (v != _arg2Components)
 			{
