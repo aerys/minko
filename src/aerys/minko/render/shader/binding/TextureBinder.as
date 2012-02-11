@@ -28,13 +28,13 @@ package aerys.minko.render.shader.binding
 		/**
 		 * @inheritDoc
 		 */		
-		public function set(vsConstData 	: Vector.<Number>,
+		public function set(cpuConstants	: Dictionary,
+							vsConstData 	: Vector.<Number>,
 							fsConstData 	: Vector.<Number>,
-							textures		: Vector.<ITextureResource>,
-							value			: Object,
-							dataStore		: Dictionary) : void
+							fsTextures		: Vector.<ITextureResource>,
+							value			: Object) : void
 		{
-			textures[_samplerId] = TextureResource(value);
+			fsTextures[_samplerId] = TextureResource(value);
 		}
 	}
 }

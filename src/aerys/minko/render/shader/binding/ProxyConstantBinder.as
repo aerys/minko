@@ -30,14 +30,14 @@ package aerys.minko.render.shader.binding
 			++_numBinders;
 		}
 		
-		public function set(vsConstData	: Vector.<Number>, 
-							fsConstData	: Vector.<Number>, 
-							textures	: Vector.<ITextureResource>, 
-							value		: Object, 
-							dataStore	: Dictionary) : void
+		public function set(cpuConstants	: Dictionary,
+							vsConstants		: Vector.<Number>, 
+							fsConstants		: Vector.<Number>,
+							fsTextures		: Vector.<ITextureResource>, 
+							value			: Object) : void
 		{
 			for (var binderId : uint = 0; binderId < _numBinders; ++binderId)
-				IBinder(_binders[binderId]).set(vsConstData, fsConstData, textures, value, dataStore);
+				IBinder(_binders[binderId]).set(cpuConstants, vsConstants, fsConstants, fsTextures, value);
 		}
 	}
 }
