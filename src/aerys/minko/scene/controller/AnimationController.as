@@ -2,12 +2,13 @@ package aerys.minko.scene.controller
 {
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	import flash.utils.getTimer;
 
-	public final class AnimationController extends AbstractController
+	public class AnimationController extends AbstractController
 	{
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
@@ -22,6 +23,25 @@ package aerys.minko.scene.controller
 		
 		private var _lastTime		: Number				= 0;
 		
+		private var _looped			: Signal 				= new Signal();
+		private var _started		: Signal				= new Signal();
+		private var _stopped		: Signal				= new Signal();
+
+		public function get started():Signal
+		{
+			return _started;
+		}
+		
+		public function get stopped() : Signal
+		{
+			return _stopped;
+		}
+
+		public function get looped():Signal
+		{
+			return _looped;
+		}
+
 		public function AnimationController(timeline	: ITimeline)
 		{
 			initialize(timeline);
@@ -60,11 +80,13 @@ package aerys.minko.scene.controller
 		public function play() : void
 		{
 			_isPlaying		= true;
+			_started.execute(this);
 		}
 		
 		public function stop() : void
 		{
 			_isPlaying = false;
+			_stopped.execute(this);
 		}
 		
 		public function setPlaybackWindow(beginTime	: Object = null,
@@ -111,10 +133,14 @@ package aerys.minko.scene.controller
 			if (_isPlaying)
 			{
 				var deltaT : Number = time - _lastTime;
+				var lastCurrentTime : Number = _currentTime;
 				
 				_currentTime = _loopBeginTime
 					+ (_currentTime + deltaT - _loopBeginTime)
 					%	(_loopEndTime - _loopBeginTime);
+				
+				if(lastCurrentTime > _currentTime)
+					_looped.execute(this);
 			}				
 			
 			_lastTime = time;
