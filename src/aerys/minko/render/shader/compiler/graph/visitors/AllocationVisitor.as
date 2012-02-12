@@ -385,7 +385,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			var instructionCounter : uint = getInstructionCounter(isVertexShader);
 			
-			if (argument is Sampler)
+			if (argument is Sampler || argument is BindableSampler)
 			{
 				// do nothing
 			}

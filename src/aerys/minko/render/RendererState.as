@@ -41,7 +41,7 @@ package aerys.minko.render
 		private var _renderTarget		: AbstractRenderTarget	= null;
 		private var _program			: Program3DResource		= null;
 		private var _compareMode		: String				= null;
-		private var _disableDepthWrite	: Boolean				= false;
+		private var _enableDepthWrite	: Boolean				= false;
 		private var _rectangle			: Rectangle				= null;
 		
 		public function get priority():Number
@@ -81,13 +81,13 @@ package aerys.minko.render
 			_compareMode = value;
 		}
 		
-		public function get disableDepthWrite() : Boolean
+		public function get enableDepthWrite() : Boolean
 		{
-			return _disableDepthWrite;
+			return _enableDepthWrite;
 		}
-		public function set disableDepthWrite(value : Boolean) : void
+		public function set enableDepthWrite(value : Boolean) : void
 		{
-			_disableDepthWrite = value;
+			_enableDepthWrite = value;
 		}
 		
 		public function get program() : Program3DResource
@@ -107,14 +107,14 @@ package aerys.minko.render
 		private function initialize() : void
 		{
 			_compareMode = Context3DCompareMode.LESS;
-			_disableDepthWrite = true;
+			_enableDepthWrite = true;
 		}
 		
 		public function apply(context : Context3D) : void
 		{
 			context.setProgram(_program.getProgram3D(context));
 			context.setScissorRectangle(_rectangle);
-			context.setDepthTest(_disableDepthWrite, _compareMode);
+			context.setDepthTest(_enableDepthWrite, _compareMode);
 		}
 		
 		public static function sort(states : Vector.<RendererState>, numStates : int) : void
