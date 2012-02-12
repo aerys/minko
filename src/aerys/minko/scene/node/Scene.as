@@ -2,8 +2,8 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.RenderingList;
-	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.data.IBindable;
 	
 	import flash.utils.Dictionary;
@@ -251,7 +251,7 @@ package aerys.minko.scene.node
 			var numControllers 	: int 		= _controllers.length;
 			var time			: Number	= new Date().time;
 			
-			for (var ctrlIndex : int = 0; ctrlIndex  < numControllers; ++ctrlIndex)
+			for (var ctrlIndex : int = numControllers - 1; ctrlIndex >= 0; --ctrlIndex)
 			{
 				var ctrlGroup : Group = _controllers[ctrlIndex] as Group;
 				

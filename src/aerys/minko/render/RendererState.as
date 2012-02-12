@@ -44,6 +44,15 @@ package aerys.minko.render
 		private var _disableDepthWrite	: Boolean				= false;
 		private var _rectangle			: Rectangle				= null;
 		
+		public function get priority():Number
+		{
+			return _priority;
+		}
+		public function set priority(value:Number):void
+		{
+			_priority = value;
+		}
+
 		public function get vertexShaderConstants() : Vector.<Number>
 		{
 			return _vertexConstants;
