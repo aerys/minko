@@ -61,7 +61,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		private var _vsParams			: Vector.<BindableConstant>;
 		private var _fsParams			: Vector.<BindableConstant>;
 		
-		private var _samplers			: Vector.<BindableSampler>;
+		private var _samplers			: Vector.<AbstractSampler>;
 		
 		// final compiled program
 		private var _vsProgram			: Vector.<AgalInstruction>;
@@ -145,7 +145,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsConstants				= new Vector.<Constant>();
 			_vsParams					= new Vector.<BindableConstant>();
 			_fsParams					= new Vector.<BindableConstant>();
-			_samplers					= new Vector.<BindableSampler>();
+			_samplers					= new Vector.<AbstractSampler>();
 			
 			// final compiled data
 			_paramBindings				= new Object();
