@@ -432,9 +432,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
 				// The overwriter argument is not allocated on temporaries, we have to use a mov instruction no matter what.
-				if (arg is Attribute || arg is Constant || arg is BindableConstant || arg is Interpolate)
+				if (arg is Attribute || arg is Constant || arg is BindableConstant || arg is Interpolate || arg is VariadicExtract)
 				{
-					
 					// visit the constant/attribute/etc to allocate it.
 					visit(arg, isVertexShader);
 					
@@ -501,7 +500,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					}
 				}
 				else if (arg is Overwriter || arg is Extract || arg is Sampler || arg is BindableSampler)
+				{
 					throw new Error('This cannot be happening. Go fix your code.');
+				}
+				else
+				{
+					throw new Error('Unknown node type.');
+				}
 			}
 			
 			_allocations[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);

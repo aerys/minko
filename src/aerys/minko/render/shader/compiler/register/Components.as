@@ -7,11 +7,11 @@ package aerys.minko.render.shader.compiler.register
 	 */	
 	public final class Components
 	{
-		public static const X : uint = 0;
-		public static const Y : uint = 1;
-		public static const Z : uint = 2;
-		public static const W : uint = 3;
-		public static const _ : uint = 4;
+		private static const X : uint = 0;
+		private static const Y : uint = 1;
+		private static const Z : uint = 2;
+		private static const W : uint = 3;
+		private static const _ : uint = 4;
 		
 		public static const ____ : uint = _ | (_ << 8) | (_ << 16) | (_ << 24);
 		

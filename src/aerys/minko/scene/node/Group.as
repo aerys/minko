@@ -377,7 +377,7 @@ package aerys.minko.scene.node
 				var group : Group = _children[i] as Group;
 
 				if (group)
-					descendant = group.getDescendantByName(name, descendants);
+					group.getDescendantsByName(name, descendants);
 			}
 
 			return descendants;

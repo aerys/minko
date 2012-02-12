@@ -80,7 +80,7 @@ package aerys.minko.render.shader.compiler
 			for (var i : uint = 0; i < 4; ++i)
 			{
 				var index : uint = Components.getReadAtIndex(i, components);
-				newData[i] = index != Components._ ? data[index] : NaN;
+				newData[i] = index != 4 ? data[index] : NaN;
 			}
 			
 			return newData;
