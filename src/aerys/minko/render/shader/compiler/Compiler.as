@@ -60,7 +60,7 @@ package aerys.minko.render.shader.compiler
 			MERGER					.process(shaderGraph);
 			
 			OVERWRITER_CLEANER		.process(shaderGraph);
-			RESOLVE_CONSTANT		.process(shaderGraph);
+//			RESOLVE_CONSTANT		.process(shaderGraph);
 //			REMOVE_USELESS			.process(shaderGraph);
 			//RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
