@@ -55,10 +55,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 				for (var argId : uint = 0; argId < numArgs; ++argId)
 				{
 					var component : uint = _components[argId];
-					xDefined ||= Components.getReadAtIndex(0, component) != Components._;
-					yDefined ||= Components.getReadAtIndex(1, component) != Components._;
-					zDefined ||= Components.getReadAtIndex(2, component) != Components._;
-					wDefined ||= Components.getReadAtIndex(3, component) != Components._;
+					xDefined ||= Components.getReadAtIndex(0, component) != 4;
+					yDefined ||= Components.getReadAtIndex(1, component) != 4;
+					zDefined ||= Components.getReadAtIndex(2, component) != 4;
+					wDefined ||= Components.getReadAtIndex(3, component) != 4;
 				}
 				
 				if (xDefined && !yDefined && !zDefined && !wDefined)

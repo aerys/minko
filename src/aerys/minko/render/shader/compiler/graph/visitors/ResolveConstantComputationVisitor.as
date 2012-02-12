@@ -142,7 +142,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				for (var writeIndex : uint = 0; writeIndex < 4; ++writeIndex)
 				{
 					var readIndex : uint = Components.getReadAtIndex(writeIndex, component);
-					if (readIndex != Components._)
+					if (readIndex != 4)
 						finalConstantData[writeIndex] = constant.value[readIndex];
 				}
 			}
@@ -156,7 +156,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				if (isNaN(finalConstantData[writeIndex]))
 				{
-					finalComponents |= Components._ << (8 * writeIndex);
+					finalComponents |= 4 << (8 * writeIndex);
 				}
 				else
 				{
