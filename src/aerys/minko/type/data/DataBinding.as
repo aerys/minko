@@ -16,7 +16,7 @@ package aerys.minko.type.data
 			_drawCalls = drawCalls;
 		}
 		
-		public function add(bindable : IBindable) : void
+		public function add(bindable : IBindable) : DataBinding
 		{
 			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
 			var numCalls 		: int 		= _drawCalls.length;
@@ -33,9 +33,11 @@ package aerys.minko.type.data
 						addParameter(parameter, bindable, key);
 				}
 			}
+			
+			return this;
 		}
 		
-		public function remove(bindable : IBindable) : void
+		public function remove(bindable : IBindable) : DataBinding
 		{
 			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
 			var numCalls 		: int 		= _drawCalls.length;
@@ -52,19 +54,23 @@ package aerys.minko.type.data
 						removeParameter(parameterName);
 				}
 			}
+			
+			return this;
 		}
 		
-		public function setParameter(parameter : String, value : Object) : void
+		public function setParameter(parameter : String, value : Object) : DataBinding
 		{
 			var numCalls : int = _drawCalls.length;
 			
 			for (var callId : int = 0; callId < numCalls; ++callId)
 				_drawCalls[callId].setParameter(parameter, value);
+			
+			return this;
 		}
 		
 		public function addParameter(parameter 	: String,
 									 source		: IDataProvider,
-									 key		: Object	= null) : void
+									 key		: Object	= null) : DataBinding
 		{
 			var bindingTable : Object = _bindings[source] as Object;
 			
@@ -79,9 +85,11 @@ package aerys.minko.type.data
 			bindingTable[key] = parameter;
 			
 			setParameter(parameter, key !== NO_KEY ? source[key] : source);
+			
+			return this;
 		}
 		
-		public function removeParameter(parameter : String) : void
+		public function removeParameter(parameter : String) : DataBinding
 		{
 			for (var source : Object in _bindings)
 			{
@@ -109,9 +117,11 @@ package aerys.minko.type.data
 					delete _bindings[source];
 				}
 			}
+			
+			return this;
 		}
 		
-		public function clear() : void
+		public function clear() : DataBinding
 		{
 			for (var source : Object in _bindings)
 			{
@@ -120,6 +130,8 @@ package aerys.minko.type.data
 				for (var key : String in bindingTable)
 					removeParameter(bindingTable[key]);
 			}
+			
+			return this;
 		}
 		
 		private function parameterChangedHandler(source : IDataProvider, key : Object) : void
