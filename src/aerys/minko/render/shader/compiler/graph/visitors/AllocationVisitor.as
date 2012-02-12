@@ -551,6 +551,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitInterpolate(interpolate : Interpolate, isVertexShader : Boolean) : void
 		{
+			
+			
+			
 			if (isVertexShader)
 			{
 				visit(interpolate.arg, true);

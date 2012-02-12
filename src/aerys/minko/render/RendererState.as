@@ -41,7 +41,7 @@ package aerys.minko.render
 		private var _renderTarget		: AbstractRenderTarget	= null;
 		private var _program			: Program3DResource		= null;
 		private var _compareMode		: String				= null;
-		private var _enableDepthWrite	: Boolean				= false;
+		private var _enableDepthWrite	: Boolean				= true;
 		private var _rectangle			: Rectangle				= null;
 		
 		public function get priority():Number

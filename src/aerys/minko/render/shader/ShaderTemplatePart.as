@@ -101,6 +101,21 @@ package aerys.minko.render.shader
 		{
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
+		
+		protected function get localToWorld() : SValue
+		{
+			return getParameter("local to world", 16);
+		}
+		
+		protected function get worldToView() : SValue
+		{
+			return getParameter("world to view", 16);
+		}
+		
+		protected function get projection() : SValue
+		{
+			return getParameter("projection", 16);
+		}
 
 		public function ShaderTemplatePart(main : ShaderTemplate) : void
 		{
