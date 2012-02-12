@@ -170,7 +170,8 @@ package aerys.minko.render.shader.compiler.allocation
 		
 		public function toString() : String
 		{
-			return '[operation=' + _beginId + '-' + _endId + '][offset=' + _offset + '-' + _size + '][alignement=' + _aligned + ']'; 
+			return '[operation=' + _beginId + '-' + _endId + '][offset=' + _offset 
+				+ '-' + _size + '][alignement=' + _aligned + '][type=' + _type + ']'; 
 		}
 	}
 }

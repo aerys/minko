@@ -38,7 +38,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 
 	public class AllocationVisitor extends AbstractVisitor
 	{
-		private var _allocations		: Dictionary;
+		private var _vsAllocations		: Dictionary;
+		private var _fsAllocations		: Dictionary;
 		
 		// allocators
 		private var _opAllocator		: Allocator;
@@ -134,7 +135,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
 			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true);
 			
-			_allocations				= new Dictionary();
+			_vsAllocations				= new Dictionary();
+			_fsAllocations				= new Dictionary();
 			
 			// first pass data
 			_vsInstructions				= new Vector.<Instruction>();
@@ -209,11 +211,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_vertexComponents	= new Vector.<VertexComponent>(8);
 			_vertexIndices		= new Vector.<uint>(8);
 			
-			for (var node : Object in _allocations)
+			for (var node : Object in _vsAllocations)
 			{
 				if (node is Attribute)
 				{
-					var registerId	: uint				= SimpleAllocation(_allocations[node]).registerId;
+					var registerId	: uint				= SimpleAllocation(_vsAllocations[node]).registerId;
 					var component	: VertexComponent	= Attribute(node).component;
 					var index		: uint				= Attribute(node).componentId;
 					
@@ -234,7 +236,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var bindingName : String			= bindableConstant.bindingName;
 				var tree		: INode				= _shaderGraph.computableConstants[bindingName];
-				var alloc		: SimpleAllocation	= _allocations[bindableConstant];
+				var alloc		: SimpleAllocation	= (isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant];
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
 				if (!tree)
@@ -280,7 +282,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var data		: Vector.<Number>	= constant.value;
 				
-				alloc		= _allocations[constant];
+				alloc		= (isVertexShader ? _vsAllocations : _fsAllocations)[constant];
 				offsetBegin	= alloc.offset;
 				offsetLimit	= offsetBegin + alloc.maxSize;
 				
@@ -297,7 +299,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for each (var parameter : BindableConstant in parameters)
 			{
-				alloc		= _allocations[parameter];
+				alloc		= (isVertexShader ? _vsAllocations : _fsAllocations)[parameter];
 				offsetBegin	= alloc.offset;
 				offsetLimit	= offsetBegin + alloc.maxSize;
 				
@@ -316,13 +318,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for each (var instruction : Instruction in instructions)
 			{
-				var destAlloc	: SimpleAllocation	= _allocations[instruction];
+				var destAlloc	: SimpleAllocation	= (isVertexShader ? _vsAllocations : _fsAllocations)[instruction];
 				var destination	: AgalDestination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
 				
-				var source1		: IAgalSource		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc);
+				var source1		: IAgalSource		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
 				var source2		: IAgalSource		= instruction.isSingle ? 
 					new AgalSourceEmpty() : 
-					getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc);
+					getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
@@ -330,7 +332,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation) : IAgalSource
+		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation, isVertexShader : Boolean) : IAgalSource
 		{
 			var source : IAgalSource;
 			
@@ -338,8 +340,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var variadicExtract : VariadicExtract = VariadicExtract(argument);
 				
-				var constantAlloc	: IAllocation = _allocations[variadicExtract.constant];
-				var indexAlloc		: IAllocation = _allocations[variadicExtract.index];
+				var constantAlloc	: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.constant];
+				var indexAlloc		: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.index];
 				
 				source = new AgalSourceCommon(
 					indexAlloc.registerId,
@@ -366,7 +368,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 			else
 			{
-				var sourceAlloc	: IAllocation = _allocations[argument];
+				var sourceAlloc	: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[argument];
+				
 				source = new AgalSourceCommon(
 					sourceAlloc.registerId, 
 					0,
@@ -393,12 +396,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var variadicExtract : VariadicExtract = VariadicExtract(argument);
 				
-				IAllocation(_allocations[variadicExtract.constant]).extendLifeTime(instructionCounter);
-				IAllocation(_allocations[variadicExtract.index]).extendLifeTime(instructionCounter);
+				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.constant]).extendLifeTime(instructionCounter);
+				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.index]).extendLifeTime(instructionCounter);
 			}
 			else
 			{
-				IAllocation(_allocations[argument]).extendLifeTime(instructionCounter);
+				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[argument]).extendLifeTime(instructionCounter);
 			}
 		}
 		
@@ -446,9 +449,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					instructionCounter = getInstructionCounter(isVertexShader);
 					
 					// allocate the result of the mov, and report usage of the constant.
-					_allocations[mov] = getAllocatorFor(mov, isVertexShader).allocate(mov.size, true, instructionCounter);
+					(isVertexShader ? _vsAllocations : _fsAllocations)[mov] = getAllocatorFor(mov, isVertexShader).allocate(mov.size, true, instructionCounter);
 					
-					subAllocs.push(_allocations[mov]);
+					subAllocs.push((isVertexShader ? _vsAllocations : _fsAllocations)[mov]);
 					subOffsets.push(minWriteOffset);
 					
 					extendLifeTime(arg, isVertexShader);
@@ -480,10 +483,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						
 						instructionCounter = getInstructionCounter(isVertexShader);
 						
-						_allocations[instructionArgReplacement] = getAllocatorFor(instructionArgReplacement, isVertexShader).
+						(isVertexShader ? _vsAllocations : _fsAllocations)[instructionArgReplacement] = getAllocatorFor(instructionArgReplacement, isVertexShader).
 							allocate(instructionArgReplacement.size, instructionArgReplacement.isComponentWise, instructionCounter);
 						
-						subAllocs.push(_allocations[instructionArgReplacement]);
+						subAllocs.push((isVertexShader ? _vsAllocations : _fsAllocations)[instructionArgReplacement]);
 						subOffsets.push(minWriteOffset);
 						
 						extendLifeTime(instructionArgReplacement.arg1, isVertexShader);
@@ -509,7 +512,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				}
 			}
 			
-			_allocations[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
+			if ((isVertexShader ? _vsAllocations : _fsAllocations)[overwriter])
+				throw new Error("This instruction was already allocated");
+			
+			(isVertexShader ? _vsAllocations : _fsAllocations)[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
 		}
 		
 		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
@@ -522,7 +528,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			var instructionCounter	: uint = getInstructionCounter(isVertexShader);
 			
-			_allocations[instruction] = getAllocatorFor(instruction, isVertexShader).
+			if ((isVertexShader ? _vsAllocations : _fsAllocations)[instruction])
+				throw new Error("This instruction was already allocated");
+			
+			(isVertexShader ? _vsAllocations : _fsAllocations)[instruction] = getAllocatorFor(instruction, isVertexShader).
 				allocate(instruction.size, instruction.isComponentWise, instructionCounter);
 			
 			extendLifeTime(instruction.arg1, isVertexShader);
@@ -547,7 +556,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visit(interpolate.arg, true);
 				
 				var movInstruction : Instruction = new Instruction(Instruction.MOV, interpolate.arg);
-				_allocations[movInstruction] = _allocations[interpolate] =
+				
+				if ((isVertexShader ? _vsAllocations : _fsAllocations)[movInstruction])
+					throw new Error("This interpolate was already allocated");
+				
+				_vsAllocations[movInstruction] = _fsAllocations[interpolate] =
 					_varyingAllocator.allocate(movInstruction.size, true, getInstructionCounter(true));
 				
 				_vsInstructions.push(movInstruction);
@@ -556,12 +569,18 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
 		{
-			_allocations[attribute] = getAllocatorFor(attribute, isVertexShader).allocate(attribute.size, true, 0);
+			if ((isVertexShader ? _vsAllocations : _fsAllocations)[attribute])
+				throw new Error("This attribute was already allocated");
+			
+			(isVertexShader ? _vsAllocations : _fsAllocations)[attribute] = getAllocatorFor(attribute, isVertexShader).allocate(attribute.size, true, 0);
 		}
 		
 		override protected function visitConstant(constant : Constant, isVertexShader : Boolean) : void
 		{
-			_allocations[constant] = getAllocatorFor(constant, isVertexShader).allocate(constant.size, true, 0);
+			if ((isVertexShader ? _vsAllocations : _fsAllocations)[constant])
+				throw new Error("This constant was already allocated");
+			
+			(isVertexShader ? _vsAllocations : _fsAllocations)[constant] = getAllocatorFor(constant, isVertexShader).allocate(constant.size, true, 0);
 			
 			if (isVertexShader)
 				_vsConstants.push(constant);
@@ -571,7 +590,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
 		{
-			_allocations[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
+			if ((isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant])
+				throw new Error("This bindable constant was already allocated");
+			
+			(isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
 			
 			if (isVertexShader)
 				_vsParams.push(bindableConstant);

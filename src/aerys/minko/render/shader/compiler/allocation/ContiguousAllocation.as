@@ -113,5 +113,16 @@ package aerys.minko.render.shader.compiler.allocation
 			else
 				throw new Error('Unknown allocation type.');
 		}
+		
+		
+		public function toString() : String
+		{
+			var result : String;
+			result = 'Contiguous\n';
+			for each (var subAlloc : SimpleAllocation in _subAllocations)
+				result += "\t" + subAlloc.toString() + "\n";
+				
+			return result;
+		}
 	}
 }
