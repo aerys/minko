@@ -61,11 +61,11 @@ package aerys.minko.render.shader.compiler
 			
 			OVERWRITER_CLEANER		.process(shaderGraph);
 			RESOLVE_CONSTANT		.process(shaderGraph);
-			REMOVE_USELESS			.process(shaderGraph);
+//			REMOVE_USELESS			.process(shaderGraph);
 			//RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
 			
-			MATRIX_TRANSFORMATION	.process(shaderGraph);
+			//MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
