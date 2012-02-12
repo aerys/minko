@@ -10,14 +10,13 @@ package aerys.minko.scene.controller
 
 	public class AnimationController extends AbstractController
 	{
-
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
 		private var _timeline		: ITimeline				= null;
 		private var _isPlaying		: Boolean				= false;
-		private var _loopBeginTime	: uint					= 0;
-		private var _loopEndTime	: uint					= 0;
-		private var _currentTime	: uint					= 0;
+		private var _loopBeginTime	: int					= 0;
+		private var _loopEndTime	: int					= 0;
+		private var _currentTime	: int					= 0;
 		
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
 		private var _labels			: Vector.<TimeLabel>	= null;
@@ -53,7 +52,7 @@ package aerys.minko.scene.controller
 			initialize(timeline);
 		}
 		
-		private function initialize(timeline	: ITimeline) : void
+		private function initialize(timeline : ITimeline) : void
 		{
 			_timeline = timeline;
 			
@@ -63,23 +62,25 @@ package aerys.minko.scene.controller
 		
 		public function gotoAndPlay(time : Object) : void
 		{
-			var timeValue : uint = getTime(time);
+			var timeValue : uint = getAnimationTime(time);
 			
 			if (timeValue < _loopBeginTime || timeValue > _loopEndTime)
 				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
 			
 			_currentTime = timeValue;
+			_lastTime = _timeFunction != null ? _timeFunction() : getTimer();
 			play();
 		}
 		
 		public function gotoAndStop(time : Object) : void
 		{
-			var timeValue : uint = getTime(time);
+			var timeValue : uint = getAnimationTime(time);
 			
 			if (timeValue < _loopBeginTime || timeValue > _loopEndTime)
 				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
 			
 			_currentTime = timeValue;
+			_lastTime = _timeFunction != null ? _timeFunction() : getTimer();
 			stop();
 		}
 		
@@ -98,8 +99,8 @@ package aerys.minko.scene.controller
 		public function setPlaybackWindow(beginTime	: Object = null,
 										  endTime	: Object = null) : void
 		{
-			_loopBeginTime	= beginTime != null ? getTime(beginTime) : 0;
-			_loopEndTime	= endTime != null ? getTime(endTime) : _timeline.duration;
+			_loopBeginTime	= beginTime != null ? getAnimationTime(beginTime) : 0;
+			_loopEndTime	= endTime != null ? getAnimationTime(endTime) : _timeline.duration;
 			
 			if (_currentTime < _loopBeginTime || _currentTime > _loopEndTime)
 				_currentTime = _loopBeginTime;
@@ -110,7 +111,7 @@ package aerys.minko.scene.controller
 			setPlaybackWindow();
 		}
 		
-		private function getTime(time : Object) : uint
+		private function getAnimationTime(time : Object) : uint
 		{
 			var timeValue : uint;
 			
@@ -138,6 +139,9 @@ package aerys.minko.scene.controller
 		{
 			if (_isPlaying)
 			{
+				if (_timeFunction != null)
+					time = _timeFunction();
+				
 				var deltaT : Number = time - _lastTime;
 				var lastCurrentTime : Number = _currentTime;
 				

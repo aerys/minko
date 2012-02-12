@@ -100,7 +100,7 @@ package aerys.minko.render
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
 			
 			// sort states
-			//if (!_sorted)
+			if (!_sorted)
 			{
 				RendererState.sort(_states, _numStates);
 				_sorted = true;
