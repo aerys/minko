@@ -32,6 +32,11 @@ package aerys.minko.render.shader
 			return _main;
 		}
 
+		protected function get vertexId() : SValue
+		{
+			return new SValue(new Attribute(VertexComponent.ID));
+		}
+		
 		/**
 		 * The position of the current vertex in local space.
 		 * @return
@@ -40,6 +45,11 @@ package aerys.minko.render.shader
 		protected function get vertexXYZ() : SValue
 		{
 			return new SValue(new Attribute(VertexComponent.XYZ));
+		}
+		
+		protected function get vertexXY() : SValue
+		{
+			return new SValue(new Attribute(VertexComponent.XY));
 		}
 
 		/**
@@ -308,6 +318,8 @@ package aerys.minko.render.shader
 		protected final function sampleTexture(texture	: SValue,
 											   uv 		: Object) : SValue
 		{
+			
+			
 			return new SValue(new Instruction(Instruction.TEX, getNode(uv), getNode(texture)));
 		}
 

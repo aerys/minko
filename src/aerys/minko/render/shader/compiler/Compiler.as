@@ -85,8 +85,8 @@ package aerys.minko.render.shader.compiler
 		public static function compileShader(name : String) : Program3DResource
 		{
 			trace(compileStringShader());
-//			trace('vs', _vsConstants);
-//			trace('fs', _fsConstants);
+			trace('vs', _vsConstants);
+			trace('fs', _fsConstants);
 			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
