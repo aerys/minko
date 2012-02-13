@@ -118,6 +118,7 @@ package aerys.minko.render
 		
 		private function updateRectangle() : void
 		{
+			_updateRect = false;
 			_stage3d.context3D.configureBackBuffer(
 				_width,
 				_height,
