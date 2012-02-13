@@ -30,6 +30,7 @@ package aerys.minko.render
 		public function clear() : void
 		{
 			_numStates = 0;
+			_numDrawCalls = 0;
 			_stateToDrawCalls = new Dictionary();
 		}
 		
@@ -72,20 +73,26 @@ package aerys.minko.render
 				var toDelete	: DrawCall			= drawCalls[i] as DrawCall;
 				var state 		: RendererState 	= (passes[i] as ShaderTemplate).state;
 				var calls 		: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
-				var numCalls	: int				= calls.length - 1;
+				var numCalls	: int				= calls.length;
 				
-				while (numCalls >= 0)
+				for (var callId : int = 0; callId < numCalls; ++callId)
 				{
-					if (calls[numCalls] == toDelete)
-						calls.splice(numCalls, 1);
-					--numCalls;
+					if (calls[callId] == toDelete)
+					{
+						--numCalls;
+						calls[callId] = calls[numCalls];
+						calls.length = numCalls;
+						
+						break ;
+					}
 				}
 				
 				if (calls.length == 0)
 				{
-					_states.splice(_states.indexOf(state), 1);
-					delete _stateToDrawCalls[state];
 					--_numStates;
+					_states[_states.indexOf(state)] = _states[_numStates];
+					
+					delete _stateToDrawCalls[state];
 				}
 			}
 		}
