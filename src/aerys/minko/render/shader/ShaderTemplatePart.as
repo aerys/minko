@@ -112,6 +112,11 @@ package aerys.minko.render.shader
 			return getParameter("world to view", 16);
 		}
 		
+		protected function get worldToScreen() : SValue
+		{
+			return getParameter("world to screen", 16);
+		}
+		
 		protected function get projection() : SValue
 		{
 			return getParameter("projection", 16);
