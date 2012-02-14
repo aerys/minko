@@ -609,11 +609,6 @@ package aerys.minko.render.shader
 			return new SValue(new Instruction(Instruction.RSQ, getNode(scalar)));
 		}
 		
-		protected final function floor(value : Object) : SValue
-		{
-			return subtract(value, fractional(value));
-		}
-
 		protected final function getVertexAttribute(vertexComponent : VertexComponent,
 													componentId		: uint = 0) : SValue
 		{
