@@ -3,15 +3,10 @@ package aerys.minko.render
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.target.AbstractRenderTarget;
-	import aerys.minko.type.enum.Blending;
-	import aerys.minko.type.enum.ColorMask;
-	import aerys.minko.type.stream.format.VertexComponent;
 	
-	import flash.display.TriangleCulling;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DCompareMode;
-	import flash.display3D.Context3DTriangleFace;
 	import flash.geom.Rectangle;
 
 	public final class RendererState
@@ -108,6 +103,7 @@ package aerys.minko.render
 		{
 			_compareMode = Context3DCompareMode.LESS;
 			_enableDepthWrite = true;
+			_rectangle = null;
 		}
 		
 		public function apply(context : Context3D) : void

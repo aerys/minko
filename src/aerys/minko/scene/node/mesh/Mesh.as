@@ -412,25 +412,6 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		public function applyTransform(transform : Matrix4x4) : void
-		{
-			var numStreams	: int	= _vertexStreams.length;
-			
-			for (var vertexStreamId : int = 0; vertexStreamId < numStreams; ++vertexStreamId)
-			{
-				var stream		: IVertexStream		= _vertexStreams[vertexStreamId];
-				var xyzStream	: VertexStream		= VertexStream.extractSubStream(
-					stream,
-					StreamUsage.STATIC,
-					new VertexFormat(VertexComponent.XYZ)
-				);
-				
-				xyzStream._data = transform.transformRawVectors(xyzStream._data);
-				
-				pushVertexStream(vertexStreamId, xyzStream, true);
-			}
-		}
-		
 		private function pushVertexStream(index 		: int,
 										  vertexStream 	: VertexStream,
 										  force 		: Boolean	= false) : void

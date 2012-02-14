@@ -1,8 +1,8 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.type.Signal;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.utils.Proxy;
@@ -366,15 +366,15 @@ package aerys.minko.scene.node
 		{
 			descendants ||= new Vector.<ISceneNode>();
 			
-			var descendant 	: ISceneNode 	= getChildByName(name);
-			var numChildren	: int 			= numChildren;
+			var numChildren	: int 	= numChildren;
 			
-			if (descendants)
-				descendants.push(descendants);
-
-			for (var i : int = 0; i < numChildren && !descendant; ++i)
+			for (var i : int = 0; i < numChildren; ++i)
 			{
-				var group : Group = _children[i] as Group;
+				var child : ISceneNode = _children[i];
+				var group : Group = child as Group;
+				
+				if (child.name == name)
+					descendants.push(child);
 
 				if (group)
 					group.getDescendantsByName(name, descendants);

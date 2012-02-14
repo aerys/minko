@@ -12,6 +12,8 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
+		private static const TMP_SCENE_VECTOR	: Vector.<ISceneNode>	= new Vector.<ISceneNode>();
+		
 		private var _list			: RenderingList			= new RenderingList();
 		
 		private var _bindables		: Vector.<IBindable>	= new <IBindable>[];
@@ -26,9 +28,24 @@ package aerys.minko.scene.node
 			return _list;
 		}
 		
+		public function get locked() : Boolean
+		{
+			return _locked;
+		}
+		
 		public function Scene(...children)
 		{
 			super(children);
+		}
+		
+		public function lock() : void
+		{
+			_locked = true;
+		}
+		
+		public function unlock() : void
+		{
+			_locked = false;
 		}
 		
 		override protected function initialize() : void
@@ -84,11 +101,13 @@ package aerys.minko.scene.node
 			}
 			else
 			{
+				var numMeshes : int = _meshes.length - 1;
 				var meshIndex : int = 0;
 				
 				while (_meshes[meshIndex] != mesh)
 					++meshIndex;
-				_meshes.splice(meshIndex, 1);
+				_meshes[meshIndex] = _meshes[numMeshes];
+				_meshes.length = numMeshes;
 				
 				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
 					mesh.bindings.remove(_bindables[bindableIndex]);
@@ -120,11 +139,13 @@ package aerys.minko.scene.node
 			}
 			else
 			{
-				var bindableIndex : int = 0;
+				var numBindables	: int	= _bindables.length - 1;
+				var bindableIndex 	: int 	= 0;
 				
 				while (_bindables[bindableIndex] != bindable)
 					++bindableIndex;
-				_bindables.splice(bindableIndex, 1);
+				_bindables[bindableIndex] = _bindables[numBindables];
+				_bindables.length = numBindables;
 				
 				for (var meshIndex : int = _meshes.length - 1; meshIndex >= 0; --meshIndex)
 					_meshes[meshIndex].bindings.remove(bindable);
@@ -139,16 +160,27 @@ package aerys.minko.scene.node
 			}
 			else
 			{
+				
 				// add meshes
-				var newMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(Mesh);
-				var numMeshes	: int					= newMeshes.length;
+				TMP_SCENE_VECTOR.length = 0;
+				
+				var newMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(
+					Mesh,
+					TMP_SCENE_VECTOR
+				);
+				var numMeshes	: int	= newMeshes.length;
 				
 				for (var meshIndex : int = 0; meshIndex < numMeshes; ++meshIndex)
 					meshAddedHandler(newMeshes[meshIndex] as Mesh);
 				
 				// add bindables
-				var newBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IBindable);
-				var numBindables	: int					= newBindables.length;
+				TMP_SCENE_VECTOR.length = 0;
+				
+				var newBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(
+					IBindable,
+					TMP_SCENE_VECTOR
+				);
+				var numBindables	: int	= newBindables.length;
 				
 				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
 					bindableAddedHandler(newBindables[bindableIndex] as IBindable);
@@ -237,12 +269,14 @@ package aerys.minko.scene.node
 		
 		private function removeController(controller : AbstractController) : void
 		{
-			var controllerIndex	: int = _controllers.length - 1;
+			var numControllers 	: int	= _controllers.length - 1;
+			var controllerIndex	: int	= 0;
 			
 			while ((_controllers[controllerIndex] as Group).controller != controller)
-				--controllerIndex;
+				controllerIndex++;
 			
-			_controllers.splice(controllerIndex, 1);
+			_controllers[controllerIndex] = _controllers[numControllers];
+			_controllers.length = numControllers;
 		}
 		
 		public function update() : void
