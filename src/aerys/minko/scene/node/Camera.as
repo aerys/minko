@@ -2,12 +2,12 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.render.Viewport;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IBindable;
+	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public class Camera extends AbstractSceneNode implements IBindable
+	public class Camera extends AbstractSceneNode implements IDataProvider
 	{
 		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR		: Number	= .1;

@@ -3,7 +3,7 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.node.ISceneNode;
 
-	public class ScalarLinearTimeline implements ITimeline
+	public class ScalarTimeline implements ITimeline
 	{
 		protected var _propertyName	: String;
 		protected var _timeTable	: Vector.<uint>
@@ -22,7 +22,7 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function ScalarLinearTimeline(propertyName	: String,
+		public function ScalarTimeline(propertyName	: String,
 											 timeTable 		: Vector.<uint>,
 											 values			: Vector.<Number>)
 		{
@@ -31,7 +31,7 @@ package aerys.minko.type.animation.timeline
 			_values			= values;
 		}
 
-		public function updateAt(t : int, scene : ISceneNode):void
+		public function updateAt(t : int, target : Object):void
 		{
 			var time		: int	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
@@ -45,7 +45,7 @@ package aerys.minko.type.animation.timeline
 			if (t < 0.)
 				interpolationRatio = 1. - interpolationRatio;
 			
-			scene[_propertyName] =
+			target[_propertyName] =
 				(1 - interpolationRatio) * _values[timeId - 1] +
 				interpolationRatio * _values[timeId];
 		}
@@ -73,7 +73,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new ScalarLinearTimeline(_propertyName, _timeTable.slice(), _values.slice());
+			return new ScalarTimeline(_propertyName, _timeTable.slice(), _values.slice());
 		}
 	}
 }

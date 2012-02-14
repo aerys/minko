@@ -4,6 +4,8 @@ package aerys.minko.type.data
 
 	public interface IDataProvider
 	{
+		function get dataDescriptor() : Object;
+		
 		function get changed() : Signal;
 		
 		function get locked() : Boolean;

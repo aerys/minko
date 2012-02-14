@@ -4,7 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.data.IBindable;
+	import aerys.minko.type.data.IDataProvider;
 	
 	import flash.utils.Dictionary;
 
@@ -16,7 +16,7 @@ package aerys.minko.scene.node
 		
 		private var _list			: RenderingList			= new RenderingList();
 		
-		private var _bindables		: Vector.<IBindable>	= new <IBindable>[];
+		private var _bindables		: Vector.<IDataProvider>	= new <IDataProvider>[];
 		private var _meshes			: Vector.<Mesh>			= new <Mesh>[];
 		private var _controllers	: Vector.<Group>		= new <Group>[];
 		
@@ -60,8 +60,8 @@ package aerys.minko.scene.node
 		{
 			if (child is Mesh)
 				meshAddedHandler(child as Mesh);
-			else if (child is IBindable)
-				bindableAddedHandler(child as IBindable);
+			else if (child is IDataProvider)
+				bindableAddedHandler(child as IDataProvider);
 			else if (child is Group)
 				groupAddedHandler(child as Group);
 		}
@@ -70,8 +70,8 @@ package aerys.minko.scene.node
 		{
 			if (child is Mesh)
 				meshRemovedHandler(child as Mesh);
-			else if (child is IBindable)
-				bindableRemovedHandler(child as IBindable);
+			else if (child is IDataProvider)
+				bindableRemovedHandler(child as IDataProvider);
 			else if (child is Group)
 				groupRemovedHandler(child as Group);
 		}
@@ -116,7 +116,7 @@ package aerys.minko.scene.node
 			}
 		}
 		
-		private function bindableAddedHandler(bindable : IBindable) : void
+		private function bindableAddedHandler(bindable : IDataProvider) : void
 		{
 			if (_locked)
 			{
@@ -131,7 +131,7 @@ package aerys.minko.scene.node
 			}
 		}
 		
-		private function bindableRemovedHandler(bindable : IBindable) : void
+		private function bindableRemovedHandler(bindable : IDataProvider) : void
 		{
 			if (_locked)
 			{
@@ -177,13 +177,13 @@ package aerys.minko.scene.node
 				TMP_SCENE_VECTOR.length = 0;
 				
 				var newBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(
-					IBindable,
+					IDataProvider,
 					TMP_SCENE_VECTOR
 				);
 				var numBindables	: int	= newBindables.length;
 				
 				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
-					bindableAddedHandler(newBindables[bindableIndex] as IBindable);
+					bindableAddedHandler(newBindables[bindableIndex] as IDataProvider);
 				
 				// add controllers
 				group.controllerChanged.add(controllerChangedHandler);
@@ -223,11 +223,11 @@ package aerys.minko.scene.node
 					meshRemovedHandler(oldMeshes[meshIndex] as Mesh);
 				
 				// remove bindables
-				var oldBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IBindable);
+				var oldBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IDataProvider);
 				var numBindables	: int					= oldBindables.length;
 				
 				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
-					bindableRemovedHandler(oldBindables[bindableIndex] as IBindable);
+					bindableRemovedHandler(oldBindables[bindableIndex] as IDataProvider);
 				
 				// remove controllers
 				var controller : AbstractController	= group.controller;
@@ -310,7 +310,7 @@ package aerys.minko.scene.node
 				
 				// fill
 				var newMeshes		: Vector.<ISceneNode>	= getDescendantsByType(Mesh);
-				var newBindables	: Vector.<ISceneNode>	= getDescendantsByType(IBindable);
+				var newBindables	: Vector.<ISceneNode>	= getDescendantsByType(IDataProvider);
 				var added			: Dictionary			= new Dictionary(true);
 				
 				numMeshes = newMeshes.length;
@@ -325,7 +325,7 @@ package aerys.minko.scene.node
 					
 					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
 					{
-						var bindable : IBindable = newBindables[bindableIndex] as IBindable;
+						var bindable : IDataProvider = newBindables[bindableIndex] as IDataProvider;
 						
 						mesh.bindings.add(bindable);
 						_bindables[bindableIndex] = bindable;

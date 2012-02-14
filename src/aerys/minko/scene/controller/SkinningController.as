@@ -3,13 +3,13 @@ package aerys.minko.scene.controller
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IBindable;
+	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
 
-	public class SkinningController extends AbstractController implements IBindable
+	public class SkinningController extends AbstractController implements IDataProvider
 	{
 		use namespace minko_math;
 		

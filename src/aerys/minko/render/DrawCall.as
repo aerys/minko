@@ -21,7 +21,7 @@ package aerys.minko.render
 	
 	public final class DrawCall
 	{
-		private static const BLENDING_STR			: Vector.<String>	= new <String>[
+		private static const BLENDING_STR	: Vector.<String>	= new <String>[
 			Context3DBlendFactor.DESTINATION_ALPHA,
 			Context3DBlendFactor.DESTINATION_COLOR,
 			Context3DBlendFactor.ONE,

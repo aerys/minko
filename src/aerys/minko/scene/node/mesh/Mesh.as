@@ -113,7 +113,6 @@ package aerys.minko.scene.node.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			_bindings.removeParameter("local to world");
-			_bindings.clear();
 		}
 				
 		private function effectChangedHandler(effect : Effect, property : String = null) : void

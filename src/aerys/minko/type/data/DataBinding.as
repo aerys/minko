@@ -16,7 +16,7 @@ package aerys.minko.type.data
 			_drawCalls = drawCalls;
 		}
 		
-		public function add(bindable : IBindable) : DataBinding
+		public function add(bindable : IDataProvider) : DataBinding
 		{
 			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
 			var numCalls 		: int 		= _drawCalls.length;
@@ -37,7 +37,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function remove(bindable : IBindable) : DataBinding
+		public function remove(bindable : IDataProvider) : DataBinding
 		{
 			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
 			var numCalls 		: int 		= _drawCalls.length;

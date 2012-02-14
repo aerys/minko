@@ -34,6 +34,11 @@ package aerys.minko.type.math
 		private var _changed	: Signal				= new Signal();
 		
 		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		
+		public function get dataDescriptor() : Object
+		{
+			return null;
+		}
 
 		public function get translationX() : Number
 		{

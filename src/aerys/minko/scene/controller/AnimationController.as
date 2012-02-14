@@ -5,6 +5,8 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
+	import aerys.minko.type.animation.timeline.ScalarRegularTimeline;
+	import aerys.minko.type.data.DataProvider;
 	
 	import flash.utils.getTimer;
 
@@ -12,11 +14,15 @@ package aerys.minko.scene.controller
 	{
 		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
-		private var _timeline		: ITimeline				= null;
+		private var _timelines		: Vector.<ITimeline>	= new Vector.<ITimeline>();
 		private var _isPlaying		: Boolean				= false;
 		private var _loopBeginTime	: int					= 0;
 		private var _loopEndTime	: int					= 0;
+		private var _looping		: Boolean				= true;
 		private var _currentTime	: int					= 0;
+		private var _totalTime		: int					= 0;
+		
+		private var _target			: Object				= null;
 		
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
 		private var _labels			: Vector.<TimeLabel>	= null;
@@ -26,11 +32,6 @@ package aerys.minko.scene.controller
 		private var _looped			: Signal 				= new Signal();
 		private var _started		: Signal				= new Signal();
 		private var _stopped		: Signal				= new Signal();
-
-		public function get timeline():ITimeline
-		{
-			return _timeline;
-		}
 
 		public function get started():Signal
 		{
@@ -46,17 +47,44 @@ package aerys.minko.scene.controller
 		{
 			return _looped;
 		}
-
-		public function AnimationController(timeline	: ITimeline)
+		
+		public function get totalTime() : int
 		{
-			initialize(timeline);
+			return _totalTime;
 		}
 		
-		private function initialize(timeline : ITimeline) : void
+		public function get looping() : Boolean
 		{
-			_timeline = timeline;
+			return _looping;
+		}
+		public function set looping(value : Boolean) : void
+		{
+			_looping = value;
+		}
+
+		public function AnimationController(timelines			: Vector.<ITimeline>,
+											alternativeTarget	: Object	= null)
+		{
+			_timelines = timelines;
+			_target = alternativeTarget;
 			
-			setPlaybackWindow(0, timeline.duration);
+			initialize();
+		}
+		
+		public function getTimeline(index : uint = 0) : ITimeline
+		{
+			return _timelines[index];
+		}
+		
+		private function initialize() : void
+		{
+			var numTimelines : uint = _timelines.length;
+			
+			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
+				if (_totalTime < _timelines[timelineId].duration)
+					_totalTime = _timelines[timelineId].duration;
+			
+			setPlaybackWindow(0, _totalTime);
 			gotoAndPlay(0);
 		}
 		
@@ -86,7 +114,7 @@ package aerys.minko.scene.controller
 		
 		public function play() : void
 		{
-			_isPlaying		= true;
+			_isPlaying = true;
 			_started.execute(this);
 		}
 		
@@ -100,7 +128,7 @@ package aerys.minko.scene.controller
 										  endTime	: Object = null) : void
 		{
 			_loopBeginTime	= beginTime != null ? getAnimationTime(beginTime) : 0;
-			_loopEndTime	= endTime != null ? getAnimationTime(endTime) : _timeline.duration;
+			_loopEndTime	= endTime != null ? getAnimationTime(endTime) : _totalTime;
 			
 			if (_currentTime < _loopBeginTime || _currentTime > _loopEndTime)
 				_currentTime = _loopBeginTime;
@@ -142,15 +170,25 @@ package aerys.minko.scene.controller
 				if (_timeFunction != null)
 					time = _timeFunction();
 				
-				var deltaT : Number = time - _lastTime;
+				var deltaT 			: Number = time - _lastTime;
 				var lastCurrentTime : Number = _currentTime;
 				
 				_currentTime = _loopBeginTime
 					+ (_currentTime + deltaT - _loopBeginTime)
-					%	(_loopEndTime - _loopBeginTime);
+					% (_loopEndTime - _loopBeginTime);
 				
 				if (lastCurrentTime > _currentTime)
-					_looped.execute(this);
+				{
+					if (_looping)
+						_looped.execute(this);
+					else
+					{
+						_currentTime = _totalTime;
+						stop();
+						
+						return true;
+					}
+				}
 			}				
 			
 			_lastTime = time;
@@ -158,9 +196,19 @@ package aerys.minko.scene.controller
 			return _isPlaying;
 		}
 		
-		override protected function updateTarget(target:Group):void
+		override protected function updateTarget(target : Group) : void
 		{
-			_timeline.updateAt(_currentTime, target);
+			var numTimelines : int = _timelines.length;
+			
+			for (var i : int = 0; i < numTimelines; ++i)
+			{
+				var timeline : ITimeline = _timelines[i] as ITimeline;
+				
+				timeline.updateAt(
+					_currentTime % timeline.duration,
+					_target || target
+				);
+			}
 		}
 	}
 }

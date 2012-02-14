@@ -110,7 +110,7 @@ package aerys.minko.scene.node
 		{
 			var oldRoot : Group = _root;
 			
-			_root = parent.root;
+			_root = this.parent.root;
 			if (_root is Scene)
 				_addedToScene.execute(this, _root);
 		}
@@ -119,8 +119,7 @@ package aerys.minko.scene.node
 		{
 			var oldRoot : Group = _root;
 			
-			_root = parent.root;
-			
+			_root = this.parent.root;
 			if (oldRoot is Scene)
 				_removedFromScene.execute(this, oldRoot);
 		}

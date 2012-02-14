@@ -126,10 +126,13 @@ package aerys.minko.scene.node
 		}
 		public function set controller(value : AbstractController) : void
 		{
-			var oldController : AbstractController	= _controller;
-			
-			_controller = value;
-			_controllerChanged.execute(this, oldController, value);
+			if (value != _controller)
+			{
+				var oldController : AbstractController	= _controller;
+				
+				_controller = value;
+				_controllerChanged.execute(this, oldController, value);
+			}
 		}
 		
 		public function get added() : Signal
@@ -219,16 +222,19 @@ package aerys.minko.scene.node
 		
 		private function removedHandler(child : ISceneNode, parent : Group) : void
 		{
-			var oldRoot : Group = _root;
-			
-			_root = parent.root;
-			if (oldRoot is Scene)
-				_removedFromScene.execute(this, oldRoot);
-			
 			if (child == this)
 			{
+				_root = this;
 				transformChangedHandler();
 				parent.localToWorld.changed.remove(transformChangedHandler);
+			}
+			else
+			{
+				var oldRoot : Group = _root;
+				
+				_root = parent.root;
+				if (oldRoot is Scene)
+					_removedFromScene.execute(this, oldRoot);
 			}
 			
 			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)

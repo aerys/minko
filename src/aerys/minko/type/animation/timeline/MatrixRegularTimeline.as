@@ -1,12 +1,11 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	use namespace minko_animation;
 	
-	public class MatrixLinearRegularTimeline implements ITimeline
+	public class MatrixRegularTimeline implements ITimeline
 	{
 		private var _propertyName	: String;
 
@@ -28,12 +27,12 @@ package aerys.minko.type.animation.timeline
 			return _deltaTime;
 		}
 		
-		minko_animation function get matrices()	: Vector.<Matrix4x4>
+		public function get matrices() : Vector.<Matrix4x4>
 		{
 			return _values;
 		}
 		
-		public function MatrixLinearRegularTimeline(propertyName	: String,
+		public function MatrixRegularTimeline(propertyName	: String,
 													deltaTime		: uint,
 													matrices		: Vector.<Matrix4x4>)
 		{
@@ -42,7 +41,7 @@ package aerys.minko.type.animation.timeline
 			_values			= matrices;
 		}
 
-		public function updateAt(t : int, scene : ISceneNode) : void
+		public function updateAt(t : int, target : Object) : void
 		{
 			var time			: uint	= t < 0 ? duration + t : t;
 			var timeCount		: uint 	= _values.length;
@@ -50,14 +49,14 @@ package aerys.minko.type.animation.timeline
 			var nextTimeId		: int 	= (previousTimeId + 1) % timeCount;
 
 			// change matrix value.
-			var out : Matrix4x4 = scene[_propertyName] as Matrix4x4;
+			var out : Matrix4x4 = target[_propertyName] as Matrix4x4;
 			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
-					+ "' could not be found in scene node '"
-					+ scene.name + "'."
+					+ "' could not be found in '"
+					+ target.name + "'."
 				);
 			}
 			
@@ -80,7 +79,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearRegularTimeline(
+			return new MatrixRegularTimeline(
 				_propertyName,
 				_deltaTime,
 				_values.slice()

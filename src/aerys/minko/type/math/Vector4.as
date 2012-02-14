@@ -23,6 +23,13 @@ package aerys.minko.type.math
 		private static const UPDATE_LENGTH		: uint		= 1;
 		private static const UPDATE_LENGTH_SQ	: uint		= 2;
 		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
+		
+		private static const DATA_DESCRIPTOR	: Object	= {
+			"x"	: "x",
+			"y"	: "y",
+			"z"	: "z",
+			"w"	: "w"
+		}
 
 		minko_math var _vector	: Vector3D	= new Vector3D();
 
@@ -33,6 +40,11 @@ package aerys.minko.type.math
 		
 		private var _locked		: Boolean	= false;
 		private var _changed	: Signal	= new Signal();
+		
+		public function get dataDescriptor() : Object
+		{
+			return DATA_DESCRIPTOR;
+		}
 		
 		public function get x()	: Number
 		{

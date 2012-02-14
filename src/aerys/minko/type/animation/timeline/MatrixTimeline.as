@@ -4,7 +4,7 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	public class MatrixLinearTimeline implements ITimeline
+	public class MatrixTimeline implements ITimeline
 	{
 		use namespace minko_animation;
 		
@@ -25,7 +25,7 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function MatrixLinearTimeline(propertyName	: String,
+		public function MatrixTimeline(propertyName	: String,
 											 timeTable		: Vector.<uint>,
 											 matrices		: Vector.<Matrix4x4>)
 		{
@@ -34,7 +34,7 @@ package aerys.minko.type.animation.timeline
 			_values			= matrices;
 		}
 
-		public function updateAt(t : int, scene : ISceneNode) : void
+		public function updateAt(t : int, target : Object) : void
 		{
 			var time		: uint	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
@@ -44,14 +44,14 @@ package aerys.minko.type.animation.timeline
 				timeId = timeCount - 1;
 			
 			// change matrix value.
-			var out : Matrix4x4 = scene[_propertyName];
+			var out : Matrix4x4 = target[_propertyName];
 			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
-					+ "' could not be found in scene node '"
-					+ scene.name + "'."
+					+ "' could not be found in '"
+					+ target.name + "'."
 				);
 			}
 
@@ -90,7 +90,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _values.slice());
+			return new MatrixTimeline(_propertyName, _timeTable.slice(), _values.slice());
 		}
 	}
 }

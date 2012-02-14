@@ -25,21 +25,21 @@ package aerys.minko.type.animation.timeline
 			_matrices		= values;
 		}
 
-		public function updateAt(t : int, scene : ISceneNode) : void
+		public function updateAt(t : int, target : Object) : void
 		{
 			var reverse		: Boolean	= t < 0;
 			var timeId		: uint 		= getIndexForTime(reverse ? duration - t : t);
 			var timeCount	: uint 		= _timeTable.length;
 
 			// change matrix value
-			var out : Matrix4x4 = scene[_propertyName];
+			var out : Matrix4x4 = target[_propertyName];
 			
 			if (!out)
 			{
 				throw new Error(
 					"'" + _propertyName
-					+ "' could not be found in scene node '"
-					+ scene.name + "'."
+					+ "' could not be found in '"
+					+ target.name + "'."
 				);
 			}
 
@@ -72,7 +72,7 @@ package aerys.minko.type.animation.timeline
 
 		public function clone() : ITimeline
 		{
-			return new MatrixLinearTimeline(_propertyName, _timeTable.slice(), _matrices.slice());
+			return new MatrixTimeline(_propertyName, _timeTable.slice(), _matrices.slice());
 		}
 	}
 }
