@@ -474,6 +474,12 @@ package aerys.minko.render.shader
 			return new SValue(new Instruction(Instruction.SIN, getNode(angle)));
 		}
 		
+		protected final function floor(value : Object) : SValue
+		{
+			var v : INode = getNode(value);
+			return new SValue(new Instruction(Instruction.SUB, v, new Instruction(Instruction.FRC, v)));
+		}
+		
 		protected final function tan(angle : Object) : SValue
 		{
 			return divide(sin(angle), cos(angle));
