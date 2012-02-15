@@ -431,6 +431,7 @@ package aerys.minko.render.shader
 		protected final function dotProduct2(u : Object, v : Object) : SValue
 		{
 			var c : SValue = float3(1, 1, 0);
+			
 			return dotProduct3(multiply(u.xyy, c), v.xyy);
 		}
 
@@ -592,15 +593,15 @@ package aerys.minko.render.shader
 
 			if (v.size == 2)
 			{
-				return new SValue(sqrt(dotProduct2(v, v)));
+				return new SValue(sqrt(dotProduct2(vector, vector)));
 			}
 			else if (v.size == 3)
 			{
-				return new SValue(sqrt(dotProduct3(v, v)));
+				return new SValue(sqrt(dotProduct3(vector, vector)));
 			}
 			else if (v.size == 4)
 			{
-				return new SValue(sqrt(dotProduct4(v, v)));
+				return new SValue(sqrt(dotProduct4(vector, vector)));
 			}
 
 			throw new Error("Unable to get the length of a value with size > 4.");

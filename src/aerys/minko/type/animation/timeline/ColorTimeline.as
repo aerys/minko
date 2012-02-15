@@ -1,6 +1,6 @@
 package aerys.minko.type.animation.timeline
 {
-	public class ColorTimeline implements ITimeline
+	public final class ColorTimeline implements ITimeline
 	{
 		private var _propertyName	: String		= null;
 		private var _deltaTime		: uint			= 0;

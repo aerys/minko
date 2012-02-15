@@ -97,7 +97,7 @@ package aerys.minko.render
 			}
 		}
 		
-		public function render(context : Context3D) : uint
+		public function render(context : Context3D, backBuffer : RenderTarget) : uint
 		{
 			var numTriangles : uint 	= 0;
 			
@@ -114,6 +114,8 @@ package aerys.minko.render
 			}
 			
 			// apply states
+			var previous : RendererState = null;
+			
 			for (var i : int = 0; i < _numStates; ++i)
 			{
 				var state 			: RendererState		= _states[i];
@@ -122,7 +124,8 @@ package aerys.minko.render
 				var call			: DrawCall			= null;
 				var previousCall	: DrawCall			= null;
 				
-				state.apply(context);
+				state.apply(context, backBuffer, previous);
+				previous = state;
 				
 				for (var j : int = 0; j < numCalls; ++j)
 				{

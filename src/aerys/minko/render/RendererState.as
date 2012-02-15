@@ -2,7 +2,6 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.resource.Program3DResource;
-	import aerys.minko.render.target.AbstractRenderTarget;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
@@ -33,7 +32,7 @@ package aerys.minko.render
 		private var _vertexConstants	: Vector.<Number>		= null;
 		private var _fragmentConstants	: Vector.<Number>		= null;
 		
-		private var _renderTarget		: AbstractRenderTarget	= null;
+		private var _renderTarget		: RenderTarget			= null;
 		private var _program			: Program3DResource		= null;
 		private var _compareMode		: String				= null;
 		private var _enableDepthWrite	: Boolean				= true;
@@ -48,16 +47,6 @@ package aerys.minko.render
 			_priority = value;
 		}
 
-		public function get vertexShaderConstants() : Vector.<Number>
-		{
-			return _vertexConstants;
-		}
-		
-		public function get fragmentShaderConstants() : Vector.<Number>
-		{
-			return _fragmentConstants;
-		}
-		
 		public function get scissorRectangle() : Rectangle
 		{
 			return _rectangle;
@@ -94,6 +83,15 @@ package aerys.minko.render
 			_program = value;
 		}
 		
+		public function get renderTarget() : RenderTarget
+		{
+			return _renderTarget;
+		}
+		public function set renderTarget(value : RenderTarget) : void
+		{
+			_renderTarget = value;
+		}
+		
 		public function RendererState() : void
 		{
 			initialize();
@@ -106,8 +104,37 @@ package aerys.minko.render
 			_rectangle = null;
 		}
 		
-		public function apply(context : Context3D) : void
+		public function apply(context 		: Context3D,
+							  backBuffer	: RenderTarget,
+							  previous		: RendererState) : void
 		{
+			if (!previous || previous._renderTarget != _renderTarget)
+			{
+				if (_renderTarget)
+				{
+					context.setRenderToTexture(
+						_renderTarget.resource.getNativeTexture(context),
+						_renderTarget.useDepthAndStencil,
+						_renderTarget.antiAliasing,
+						_renderTarget.surfaceSelector
+					);
+				}
+				else
+				{
+					context.setRenderToBackBuffer();
+				}
+				
+				var rt : RenderTarget = _renderTarget || backBuffer;
+				var color : uint = rt.backgroundColor;
+				
+				context.clear(
+					((color >> 16) & 0xff) / 255.,
+					((color >> 8) & 0xff) / 255.,
+					(color & 0xff) / 255.,
+					((color >> 24) & 0xff) / 255.
+				);
+			}
+			
 			context.setProgram(_program.getProgram3D(context));
 			context.setScissorRectangle(_rectangle);
 			context.setDepthTest(_enableDepthWrite, _compareMode);
