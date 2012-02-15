@@ -180,7 +180,7 @@ package aerys.minko.render
 			var maxTextures	: int	= previous ? previous._fsTextures.length : 8;
 			var maxBuffers	: int	= previous ? previous._numVertexBuffers : 8;
 			var i 			: int 	= 0;
-				
+			
 			for (i = 0; i < numTextures; ++i)
 				context.setTextureAt(i, _fsTextures[i].getNativeTexture(context));
 			
