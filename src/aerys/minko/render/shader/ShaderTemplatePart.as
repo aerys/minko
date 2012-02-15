@@ -476,8 +476,7 @@ package aerys.minko.render.shader
 		
 		protected final function floor(value : Object) : SValue
 		{
-			var v : INode = getNode(value);
-			return new SValue(new Instruction(Instruction.SUB, v, new Instruction(Instruction.FRC, v)));
+			return subtract(value, fractional(value));
 		}
 		
 		protected final function tan(angle : Object) : SValue

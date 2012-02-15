@@ -106,13 +106,21 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitConstant(constant			: Constant, 
 												  isVertexShader	: Boolean) : void
 		{
-			appendNode(constant, 'plum1', 'Constant', constant.value.join());
+			appendNode(constant, 'plum1', 'Constant', constant.value.join(',\\n'));
 		}
 		
 		override protected function visitBindableConstant(bindableConstant	: BindableConstant, 
 														  isVertexShader	: Boolean) : void
 		{
 			appendNode(bindableConstant, 'palegreen1', 'Parameter', bindableConstant.bindingName);
+			
+			var subGraph : INode = _shaderGraph.computableConstants[bindableConstant.bindingName] as INode;
+			
+			if (subGraph != null)
+			{
+				visit(subGraph, false);
+				appendLink(bindableConstant, subGraph);
+			}
 		}
 		
 		override protected function visitSampler(sampler		: Sampler, 

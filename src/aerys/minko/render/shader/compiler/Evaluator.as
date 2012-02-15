@@ -370,6 +370,7 @@ package aerys.minko.render.shader.compiler
 		
 		public static function evaluateNrm(arg : Vector.<Number>) : Vector.<Number>
 		{
+			var length	: uint				= arg.length;
 			var dist	: Number			= 0;
 			var result	: Vector.<Number>	= Vector.<Number>(VEC_FACTORY.create(true));
 			result.length = 3;
@@ -383,7 +384,7 @@ package aerys.minko.render.shader.compiler
 			dist = Math.sqrt(dist);
 			
 			for (i = 0; i < 3; ++i)
-				result[i] = arg[i] / dist;
+				result[i] = arg[i < length ? i : length - 1] / dist;
 			
 			return result;
 		}

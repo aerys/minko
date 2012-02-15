@@ -13,12 +13,12 @@ package aerys.minko.render.resource
 	{
 		use namespace minko_shader;
 
-		private var _name				: String	= null;
-		private var _update				: Boolean	= false;
-		private var _nativeProgram		: Program3D	= null;
+		private var _name					: String					= null;
+		private var _update					: Boolean					= false;
+		private var _nativeProgram			: Program3D					= null;
 		
-		private var _vsProgram			: ByteArray	= null;
-		private var _fsProgram			: ByteArray	= null;
+		private var _vsProgram				: ByteArray					= null;
+		private var _fsProgram				: ByteArray					= null;
 		
 		minko_shader var _vertexComponents	: Vector.<VertexComponent> 	= null;
 		minko_shader var _vertexIndices		: Vector.<uint>				= null;
