@@ -479,6 +479,14 @@ package aerys.minko.render.shader
 			return subtract(value, fractional(value));
 		}
 		
+		protected final function ceil(value : Object) : SValue
+		{
+			var frac		: SValue = fractional(value);
+			var isNotWhole	: SValue = greaterEqual(frac, 0);
+			
+			return add(isNotWhole, subtract(value, frac));
+		}
+		
 		protected final function tan(angle : Object) : SValue
 		{
 			return divide(sin(angle), cos(angle));
