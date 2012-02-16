@@ -1,11 +1,13 @@
 package aerys.minko.render
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
+	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -21,17 +23,7 @@ package aerys.minko.render
 	
 	public final class DrawCall
 	{
-		private static const BLENDING_STR	: Vector.<String>	= new <String>[
-			Context3DBlendFactor.DESTINATION_ALPHA,
-			Context3DBlendFactor.DESTINATION_COLOR,
-			Context3DBlendFactor.ONE,
-			Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA,
-			Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR,
-			Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA,
-			Context3DBlendFactor.SOURCE_ALPHA,
-			Context3DBlendFactor.SOURCE_COLOR,
-			Context3DBlendFactor.ZERO
-		];
+		use namespace minko_render;
 		
 		private var _cpuConstants		: Dictionary						= new Dictionary();
 		private var _bindings			: Object							= null;
@@ -52,31 +44,36 @@ package aerys.minko.render
 		private var _fsConstants		: Vector.<Number>					= null;
 		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		
-		private var _blending			: uint								= 0;
-		private var _colorMask			: uint								= 0;
+		private var _blendingSource		: String							= null;
+		private var _blendingDest		: String							= null;
 		private var _triangleCulling	: String							= null;
+		private var _colorMaskR			: Boolean							= true;
+		private var _colorMaskG			: Boolean							= true;
+		private var _colorMaskB			: Boolean							= true;
+		private var _colorMaskA			: Boolean							= true;
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
 			return _vsInputComponents;
 		}
 		
-		public function get blending() : uint
+		public function set blending(v : uint) : void
 		{
-			return _blending;
-		}
-		public function set blending(value : uint) : void
-		{
-			_blending = value;
+			_blendingSource = Blending.STRINGS[int(v & 0xffff)];
+			_blendingDest	= Blending.STRINGS[int(v >>> 16)]
 		}
 		
-		public function get triangleCulling() : String
+		public function set triangleCulling(v : uint) : void
 		{
-			return _triangleCulling;
+			_triangleCulling = TriangleCulling.STRINGS[v];
 		}
-		public function set triangleCulling(value : String) : void
+		
+		public function set colorMask(v : uint) : void
 		{
-			_triangleCulling = value;
+			_colorMaskR = (v & ColorMask.RED) != 0;
+			_colorMaskG = (v & ColorMask.GREEN) != 0;
+			_colorMaskB = (v & ColorMask.BLUE) != 0;
+			_colorMaskA = (v & ColorMask.ALPHA) != 0;
 		}
 		
 		public function DrawCall(vsConstants 			: Vector.<Number>,
@@ -98,9 +95,9 @@ package aerys.minko.render
 		
 		private function initialize() : void
 		{
-			_triangleCulling = Context3DTriangleFace.FRONT;
-			_blending = Blending.NORMAL;
-			_colorMask = ColorMask.RGBA;
+			triangleCulling	= TriangleCulling.FRONT;
+			blending		= Blending.NORMAL;
+			colorMask		= ColorMask.RGBA;
 		}
 		
 		public function clone() : DrawCall
@@ -114,9 +111,13 @@ package aerys.minko.render
 				_bindings
 			);
 			
-			clone._triangleCulling = _triangleCulling;
-			clone._blending = _blending;
-			clone._colorMask = _colorMask;
+			clone._triangleCulling	= _triangleCulling;
+			clone._blendingSource	= _blendingSource;
+			clone._blendingDest		= _blendingDest;
+			clone._colorMaskR		= _colorMaskR;
+			clone._colorMaskG		= _colorMaskG;
+			clone._colorMaskB		= _colorMaskB;
+			clone._colorMaskA		= _colorMaskA;
 			
 			return clone;
 		}
@@ -150,18 +151,8 @@ package aerys.minko.render
 		public function apply(context 	: Context3D,
 							  previous	: DrawCall) : uint
 		{
-			context.setColorMask(
-				(_colorMask & ColorMask.RED) != 0,
-				(_colorMask & ColorMask.GREEN) != 0,
-				(_colorMask & ColorMask.BLUE) != 0,
-				(_colorMask & ColorMask.ALPHA) != 0
-			);
-			
-			context.setBlendFactors(
-				BLENDING_STR[int(_blending & 0xffff)],
-				BLENDING_STR[int(_blending >>> 16)]
-			);
-			
+			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
+			context.setBlendFactors(_blendingSource, _blendingDest);
 			context.setCulling(_triangleCulling);
 			
 			context.setProgramConstantsFromVector(
@@ -188,14 +179,12 @@ package aerys.minko.render
 				context.setTextureAt(i++, null);
 			
 			for (i = 0; i < _numVertexBuffers; ++i)
-			{
 				context.setVertexBufferAt(
 					i,
 					_vertexBuffers[i].getVertexBuffer3D(context),
 					_offsets[i],
 					_formats[i]
 				);
-			}
 			
 			while (i < maxBuffers)
 				context.setVertexBufferAt(i++, null);

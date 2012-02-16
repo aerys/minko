@@ -9,6 +9,7 @@ package aerys.minko.render
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
 	
+	import flash.display.BitmapData;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
@@ -36,6 +37,15 @@ package aerys.minko.render
 		private var _numTriangles		: uint			= 0;
 		
 		private var _invalidBackBuffer	: Boolean		= false;
+		
+		public function get visible() : Boolean
+		{
+			return _stage3d.visible;
+		}
+		public function set visible(v : Boolean) : void
+		{
+			_stage3d.visible = v;
+		}
 		
 		public function get width() : uint
 		{
@@ -157,7 +167,7 @@ package aerys.minko.render
 			);
 		}
 		
-		public function render(scene : Scene) : void
+		public function render(scene : Scene, target : BitmapData = null) : void
 		{
 			scene.update();
 			
@@ -169,13 +179,18 @@ package aerys.minko.render
 			
 			if (context)
 			{
-				var time	: int	= getTimer();
+				var time : int = getTimer();
 				
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
 				_numTriangles = list.render(context, _backBuffer);
-				context.present();
+				
+				if (target == null)
+					context.present();
+				else
+					context.drawToBitmapData(target);
+				
 				_renderingTime = getTimer() - time;
 			}
 			

@@ -9,7 +9,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.data.DataBinding;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -52,6 +51,9 @@ package aerys.minko.scene.node.mesh
 		}
 		public function set effect(value : Effect) : void
 		{
+			if (_effect == value)
+				return;
+			
 			if (_effect)
 				_effect.changed.remove(effectChangedHandler);
 			

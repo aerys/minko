@@ -8,7 +8,7 @@ package aerys.minko.render.effect
 	public class Effect
 	{
 		private var _passes		: Vector.<ShaderTemplate>	= null;
-		private var _changed	: Signal						= new Signal();
+		private var _changed	: Signal					= new Signal();
 		
 		public function get changed() : Signal
 		{
