@@ -9,6 +9,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
 	import flash.utils.getQualifiedClassName;
+	
+	use namespace minko_shader;
 
 	/**
 	 * <p>Shader objects define vertex and fragment shaders with
@@ -93,7 +95,6 @@ package aerys.minko.render.shader
 	 */
 	public class ShaderTemplate extends ShaderTemplatePart
 	{
-		use namespace minko_shader;
 		
 		private var _name				: String			= null;
 		private var _state				: RendererState		= new RendererState();
@@ -113,38 +114,42 @@ package aerys.minko.render.shader
 		
 		public function get drawCallTemplate() : DrawCall
 		{
+			if (!_drawCallTemplate)
+				initializeFromExtension();
+			
 			return _drawCallTemplate;
 		}
 		
 		public function ShaderTemplate(name : String = null)
 		{
 			super(this);
-			
-			initialize();
 		}
 		
-		private function initialize() : void
+		minko_shader function initializeFromExtension() : void
 		{
 			_name = name || getQualifiedClassName(this);
 			
-			var shaderGraph : ShaderGraph = new ShaderGraph(
-				getClipspacePosition()._node, 
-				getPixelColor()._node, 
-				_kills
-			);
+			var shaderGraph	: ShaderGraph;
+			var program		: Program3DResource;
+			var screenPos	: INode = getClipspacePosition()._node;
+			var pixelColor	: INode = getPixelColor()._node;
 			
+			shaderGraph = new ShaderGraph(screenPos, pixelColor, _kills);
 			Compiler.load(shaderGraph, 0xffffffff);
-			_state.program = Compiler.compileShader(_name);
-			
-			var resource : Program3DResource = _state.program;
-			
+			program = Compiler.compileShader(_name);
+			initializeFromProgram(program);
+		}
+		
+		minko_shader function initializeFromProgram(program : Program3DResource) : void
+		{
+			_state.program	  = program;
 			_drawCallTemplate = new DrawCall(
-				resource._vsConstants,
-				resource._fsConstants,
-				resource._fsTextures,
-				resource._vertexComponents,
-				resource._vertexIndices,
-				resource._bindings
+				program._vsConstants,
+				program._fsConstants,
+				program._fsTextures,
+				program._vertexComponents,
+				program._vertexIndices,
+				program._bindings
 			);
 		}
 		

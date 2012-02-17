@@ -487,8 +487,15 @@ package aerys.minko.render.shader
 		
 		protected final function floor(value : Object) : SValue
 		{
-			var v : INode = getNode(value);
-			return new SValue(new Instruction(Instruction.SUB, v, new Instruction(Instruction.FRC, v)));
+			return subtract(value, fractional(value));
+		}
+		
+		protected final function ceil(value : Object) : SValue
+		{
+			var frac		: SValue = fractional(value);
+			var isNotWhole	: SValue = greaterEqual(frac, 0);
+			
+			return add(isNotWhole, subtract(value, frac));
 		}
 		
 		protected final function tan(angle : Object) : SValue

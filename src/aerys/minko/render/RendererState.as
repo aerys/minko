@@ -15,18 +15,6 @@ package aerys.minko.render
 		
 		private static const TMP_NUMBERS			: Vector.<Number>	= new Vector.<Number>(0xffff, true);
 		private static const TMP_INTS				: Vector.<int>		= new Vector.<int>(0xffff, true);
-
-		private static const BLENDING_STR			: Vector.<String>	= new <String>[
-			Context3DBlendFactor.DESTINATION_ALPHA,
-			Context3DBlendFactor.DESTINATION_COLOR,
-			Context3DBlendFactor.ONE,
-			Context3DBlendFactor.ONE_MINUS_DESTINATION_ALPHA,
-			Context3DBlendFactor.ONE_MINUS_DESTINATION_COLOR,
-			Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA,
-			Context3DBlendFactor.SOURCE_ALPHA,
-			Context3DBlendFactor.SOURCE_COLOR,
-			Context3DBlendFactor.ZERO
-		];
 		
 		private var _priority			: Number				= 0.;
 		

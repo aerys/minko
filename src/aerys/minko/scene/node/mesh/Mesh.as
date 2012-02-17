@@ -53,6 +53,9 @@ package aerys.minko.scene.node.mesh
 		}
 		public function set effect(value : Effect) : void
 		{
+			if (_effect == value)
+				return ;
+			
 			_effect = value;
 			
 			updateDrawCalls();

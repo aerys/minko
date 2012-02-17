@@ -38,6 +38,15 @@ package aerys.minko.render
 		private var _enterFrame			: Signal		= new Signal();
 		private var _exitFrame			: Signal		= new Signal();
 		
+		public function get visible() : Boolean
+		{
+			return _stage3d.visible;
+		}
+		public function set visible(v : Boolean) : void
+		{
+			_stage3d.visible = v;
+		}
+		
 		public function get width() : uint
 		{
 			return _width;
@@ -176,7 +185,7 @@ package aerys.minko.render
 			
 			if (context)
 			{
-				var time	: int	= getTimer();
+				var time : int = getTimer();
 				
 				if (_invalidBackBuffer)
 					updateBackBuffer();
