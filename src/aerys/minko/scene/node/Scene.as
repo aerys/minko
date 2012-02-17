@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.scene.controller.AbstractController;
@@ -11,17 +12,18 @@ package aerys.minko.scene.node
 	public final class Scene extends Group
 	{
 		use namespace minko_scene;
+		use namespace minko_render;
 		
 		private static const TMP_SCENE_VECTOR	: Vector.<ISceneNode>	= new Vector.<ISceneNode>();
 		
-		private var _list			: RenderingList			= new RenderingList();
+		private var _list			: RenderingList				= new RenderingList();
 		
 		private var _bindables		: Vector.<IDataProvider>	= new <IDataProvider>[];
-		private var _meshes			: Vector.<Mesh>			= new <Mesh>[];
-		private var _controllers	: Vector.<Group>		= new <Group>[];
+		private var _meshes			: Vector.<Mesh>				= new <Mesh>[];
+		private var _controllers	: Vector.<Group>			= new <Group>[];
 		
-		private var _invalid		: Boolean				= false;
-		private var _locked			: Boolean				= false;
+		private var _invalid		: Boolean					= false;
+		private var _locked			: Boolean					= false;
 		
 		public function get renderingList() : RenderingList
 		{
@@ -89,7 +91,7 @@ package aerys.minko.scene.node
 				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
 					mesh.bindings.add(_bindables[bindableIndex]);
 				
-				_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
+				_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
 			}
 		}
 		
@@ -112,7 +114,7 @@ package aerys.minko.scene.node
 				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
 					mesh.bindings.remove(_bindables[bindableIndex]);
 				
-				_list.removeDrawCalls(mesh.effect.passes, mesh._drawCalls);
+				_list.removeDrawCalls(mesh.effect._passes, mesh._drawCalls);
 			}
 		}
 		
@@ -321,7 +323,7 @@ package aerys.minko.scene.node
 					var mesh 	: Mesh 	= newMeshes[meshIndex] as Mesh;
 					
 					_meshes[meshIndex] = mesh;
-					_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
+					_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
 					
 					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
 					{

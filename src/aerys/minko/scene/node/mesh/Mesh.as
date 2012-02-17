@@ -9,7 +9,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.data.DataBinding;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -60,11 +59,6 @@ package aerys.minko.scene.node.mesh
 			effectChangedHandler(_effect);
 		}
 		
-		public function get vertexStreams() : Vector.<IVertexStream>
-		{
-			return _vertexStreams;
-		}
-		
 		public function get indexStream() : IndexStream
 		{
 			return _indexStream;
@@ -75,7 +69,12 @@ package aerys.minko.scene.node.mesh
 			updateDrawCalls();
 		}
 		
-		public function Mesh(effect			: Effect,
+		public function get numVertexStreams() : uint
+		{
+			return _vertexStreams.length;
+		}
+		
+		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
 							 indexStream	: IndexStream				= null)
 		{
@@ -99,6 +98,18 @@ package aerys.minko.scene.node.mesh
 					_vertexStreams[0].length
 				);
 			}
+		}
+		
+		public function getVertexStream(index : uint = 0) : IVertexStream
+		{
+			return _vertexStreams[index];
+		}
+		
+		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
+		{
+			_vertexStreams[index] = vertexStream;
+			
+			updateDrawCalls();
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -126,13 +137,13 @@ package aerys.minko.scene.node.mesh
 			if (!_indexStream)
 				return ;
 			
-			var passes		: Vector.<ShaderTemplate>	= _effect.passes;
-			var numPasses 	: int 						= passes.length;
+			var numPasses 	: int 	= _effect.numPasses;
 			
 			_drawCalls.length = 0;
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var drawCall 	: DrawCall 					= passes[i].drawCallTemplate.clone();
+				var pass		: ShaderTemplate			= _effect.getPass(i);
+				var drawCall 	: DrawCall 					= pass.drawCallTemplate.clone();
 				var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
 				
 				if (components.indexOf(VertexComponent.TANGENT) >= 0
