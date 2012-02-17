@@ -1,6 +1,6 @@
 package aerys.minko.type.animation
 {
-	public class InterpolationType
+	public final class InterpolationType
 	{
 		public static const BEZIER_QUADRATIC	: uint = 0;
 		public static const BEZIER_CUBIC		: uint = 1;

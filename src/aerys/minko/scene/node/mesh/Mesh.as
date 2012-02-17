@@ -41,6 +41,8 @@ package aerys.minko.scene.node.mesh
 		private var _vertexStreams	: Vector.<IVertexStream>	= null;
 		private var _indexStream	: IndexStream				= null;
 		
+		private var _visible		: Boolean					= true;
+		
 		public function get bindings() : DataBinding
 		{
 			return _bindings;
@@ -73,6 +75,23 @@ package aerys.minko.scene.node.mesh
 		{
 			_indexStream = value;
 			updateDrawCalls();
+		}
+
+		public function get visible() : Boolean
+		{
+			return _visible;
+		}
+		public function set visible(value : Boolean) : void
+		{
+			if (value != _visible)
+			{
+				_visible = value;
+				
+				var numDrawCalls : int = _drawCalls.length;
+				
+				for (var callId : int = 0; callId < numDrawCalls; ++callId)
+					(_drawCalls[callId] as DrawCall).enabled = false;
+			}
 		}
 		
 		public function Mesh(effect			: Effect,

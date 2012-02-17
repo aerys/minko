@@ -56,6 +56,8 @@ package aerys.minko.render
 		private var _colorMask			: uint								= 0;
 		private var _triangleCulling	: String							= null;
 		
+		private var _enabled			: Boolean							= true;
+		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
 			return _vsInputComponents;
@@ -77,6 +79,15 @@ package aerys.minko.render
 		public function set triangleCulling(value : String) : void
 		{
 			_triangleCulling = value;
+		}
+
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
 		}
 		
 		public function DrawCall(vsConstants 			: Vector.<Number>,
@@ -150,6 +161,9 @@ package aerys.minko.render
 		public function apply(context 	: Context3D,
 							  previous	: DrawCall) : uint
 		{
+			if (!_enabled)
+				return 0;
+			
 			context.setColorMask(
 				(_colorMask & ColorMask.RED) != 0,
 				(_colorMask & ColorMask.GREEN) != 0,
