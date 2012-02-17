@@ -142,16 +142,18 @@ package aerys.minko.type.math
 					   m41, m42, m43, m44);
 		}
 
-		private function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
-									m21 : Number, m22 : Number, m23 : Number, m24 : Number,
-									m31 : Number, m32 : Number, m33 : Number, m34 : Number,
-									m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
+		public function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
+								   m21 : Number, m22 : Number, m23 : Number, m24 : Number,
+								   m31 : Number, m32 : Number, m33 : Number, m34 : Number,
+								   m41 : Number, m42 : Number, m43 : Number, m44 : Number) : void
 		{
 			TMP_VECTOR.length = 0;
-			TMP_VECTOR.push(m11, m12, m13, m14,
-							m21, m22, m23, m24,
-							m31, m32, m33, m34,
-							m41, m42, m43, m44);
+			TMP_VECTOR.push(
+				m11, m12, m13, m14,
+				m21, m22, m23, m24,
+				m31, m32, m33, m34,
+				m41, m42, m43, m44
+			);
 
 			_matrix.copyRawDataFrom(TMP_VECTOR);
 			

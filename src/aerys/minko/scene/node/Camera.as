@@ -226,6 +226,9 @@ package aerys.minko.scene.node
 		
 		private function updateWorldToView() : void
 		{
+			if (!parent)
+				return ;
+			
 			var localToWorld : Matrix4x4 = parent.localToWorld;
 			
 			localToWorld.transformVector(_position, _worldPosition);

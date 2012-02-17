@@ -102,24 +102,34 @@ package aerys.minko.render.shader
 			return new SValue(new Attribute(VertexComponent.TANGENT));
 		}
 		
-		protected function get localToWorld() : SValue
+		protected function get localToWorldMatrix() : SValue
 		{
 			return getParameter("local to world", 16);
 		}
 		
-		protected function get worldToView() : SValue
+		protected function get worldToViewMatrix() : SValue
 		{
 			return getParameter("world to view", 16);
 		}
 		
-		protected function get worldToScreen() : SValue
+		protected function get worldToScreenMatrix() : SValue
 		{
 			return getParameter("world to screen", 16);
 		}
 		
-		protected function get projection() : SValue
+		protected function get projectionMatrix() : SValue
 		{
 			return getParameter("projection", 16);
+		}
+		
+		protected function get cameraPosition() : SValue
+		{
+			return getParameter("camera position", 3);
+		}
+		
+		protected function get cameraWorldPosition() : SValue
+		{
+			return getParameter("camera world position", 3);
 		}
 
 		public function ShaderTemplatePart(main : ShaderTemplate) : void
@@ -619,6 +629,14 @@ package aerys.minko.render.shader
 		protected final function kill(value : Object) : void
 		{
 			main.minko_shader::_kills.push(getNode(value));
+		}
+		
+		protected final function localToScreen(vertex : Object) : SValue
+		{
+			return multiply4x4(
+				multiply4x4(vertex, localToWorldMatrix),
+				worldToScreenMatrix
+			);
 		}
 
 		protected final function getParameter(bindingName	: String,

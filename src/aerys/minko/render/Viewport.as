@@ -9,6 +9,7 @@ package aerys.minko.render
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
 	
+	import flash.display.BitmapData;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
@@ -29,13 +30,13 @@ package aerys.minko.render
 		private var _antiAliasing		: uint			= 0;
 		private var _backgroundColor	: uint			= 0;
 		private var _backBuffer			: RenderTarget	= null;
-		
-		private var _changed			: Signal		= new Signal();
+		private var _invalidBackBuffer	: Boolean		= false;
 		
 		private var _renderingTime		: int			= 0;
-		private var _numTriangles		: uint			= 0;
 		
-		private var _invalidBackBuffer	: Boolean		= false;
+		private var _changed			: Signal		= new Signal();
+		private var _enterFrame			: Signal		= new Signal();
+		private var _exitFrame			: Signal		= new Signal();
 		
 		public function get width() : uint
 		{
@@ -57,11 +58,6 @@ package aerys.minko.render
 			_height = value;
 			_invalidBackBuffer = true;
 			_changed.execute(this, "height");
-		}
-		
-		public function get numTriangles() : uint
-		{
-			return _numTriangles;
 		}
 		
 		public function get changed() : Signal
@@ -91,6 +87,16 @@ package aerys.minko.render
 		{
 			_antiAliasing = value;
 			_invalidBackBuffer = true;
+		}
+		
+		public function get enterFrame() : Signal
+		{
+			return _enterFrame;
+		}
+		
+		public function get exitFrame() : Signal
+		{
+			return _exitFrame;
 		}
 		
 		public function Viewport(stage	 		: Stage,
@@ -157,14 +163,15 @@ package aerys.minko.render
 			);
 		}
 		
-		public function render(scene : Scene) : void
+		public function render(scene : Scene, destination : BitmapData = null) : void
 		{
+			_enterFrame.execute(this, scene);
+			
 			scene.update();
 			
 			var context : Context3D 	= _stage3d.context3D;
 			var list	: RenderingList	= scene.renderingList;
 			
-			_numTriangles = 0;
 			_renderingTime = 0;
 			
 			if (context)
@@ -174,12 +181,19 @@ package aerys.minko.render
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
-				_numTriangles = list.render(context, _backBuffer);
-				context.present();
+				list.render(context, _backBuffer);
+				
+				if (destination)
+					context.drawToBitmapData(destination);
+				else
+					context.present();
+				
 				_renderingTime = getTimer() - time;
 			}
 			
 			Factory.sweep();
+			
+			_exitFrame.execute(this, scene);
 		}
 	}
 }
