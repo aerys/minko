@@ -1,6 +1,6 @@
 package aerys.minko.type.data
 {
-	import aerys.minko.render.DrawCall;
+	import aerys.minko.type.Signal;
 	
 	import flash.utils.Dictionary;
 
@@ -8,88 +8,104 @@ package aerys.minko.type.data
 	{
 		private static const NO_KEY	: String		= "__no_key__";
 		
-		private var _drawCalls	: Vector.<DrawCall>	= null;
-		private var _bindings	: Dictionary		= new Dictionary(true);
+		private var _bindings			: Dictionary				= new Dictionary(true);
+		private var _values				: Object					= {};
 		
-		public function DataBinding(drawCalls : Vector.<DrawCall>)
+		private var _propertyChanged	: Signal					= new Signal();
+		
+		public function get propertyChanged() : Signal
 		{
-			_drawCalls = drawCalls;
+			return _propertyChanged;
+		}
+		
+		public function DataBinding()
+		{
+		}
+		
+		public function clone() : DataBinding
+		{
+			var clone 			: DataBinding 	= new DataBinding();
+			var clonedBindings	: Dictionary	= clone._bindings;
+			
+			for (var source : Object in _bindings)
+			{
+				var bindingTable 	: Object 	= _bindings[source];
+				var clonedTable		: Object	= {};
+				
+				clonedBindings[source] = clonedTable;
+				
+				for (var key : String in bindingTable)
+					clonedTable[key] = bindingTable[key];
+			}
+			
+			return clone;
 		}
 		
 		public function add(bindable : IDataProvider) : DataBinding
 		{
 			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
-			var numCalls 		: int 		= _drawCalls.length;
 			
-			for (var parameter : String in dataDescriptor)
+			for (var propertyName : String in dataDescriptor)
 			{
-				var key : String = dataDescriptor[parameter];
-				
-				for (var callId : int = 0; callId < numCalls; ++callId)
-				{
-					var call : DrawCall = _drawCalls[callId];
-					
-					if (call.hasParameter(parameter))
-						addParameter(parameter, bindable, key);
-				}
+				addProperty(
+					propertyName,
+					bindable,
+					dataDescriptor[propertyName] as String
+				);
 			}
 			
 			return this;
 		}
 		
-		public function remove(bindable : IDataProvider) : DataBinding
+		public function remove(dataProvider : IDataProvider) : DataBinding
 		{
-			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
-			var numCalls 		: int 		= _drawCalls.length;
+			var dataDescriptor 	: Object 	= dataProvider.dataDescriptor;
 			
 			for (var parameterName : String in dataDescriptor)
-			{
-				var key : String = dataDescriptor[parameterName];
-				
-				for (var callId : int = 0; callId < numCalls; ++callId)
-				{
-					var call : DrawCall = _drawCalls[callId];
-					
-					if (call.hasParameter(parameterName))
-						removeParameter(parameterName);
-				}
-			}
+				removeProperty(parameterName);
 			
 			return this;
 		}
 		
-		public function setParameter(parameter : String, value : Object) : DataBinding
+		public function setProperty(propertyName : String, value : Object) : DataBinding
 		{
-			var numCalls : int = _drawCalls.length;
+			var oldValue : Object = _values[propertyName];
 			
-			for (var callId : int = 0; callId < numCalls; ++callId)
-				_drawCalls[callId].setParameter(parameter, value);
+			_values[propertyName] = value;
+			
+			_propertyChanged.execute(this, propertyName, oldValue, value);
 			
 			return this;
 		}
 		
-		public function addParameter(parameter 	: String,
-									 source		: IDataProvider,
-									 key		: Object	= null) : DataBinding
+		public function getProperty(propertyName : String) : Object
+		{
+			return _values[propertyName];
+		}
+		
+		public function addProperty(propertyName 	: String,
+									source			: IDataProvider,
+									key				: Object	= null) : DataBinding
 		{
 			var bindingTable : Object = _bindings[source] as Object;
 			
 			if (!bindingTable)
 			{
 				_bindings[source] = bindingTable = {};
-				source.changed.add(parameterChangedHandler);
+				source.changed.add(propertyChangedHandler);
 			}
 			
 			if (key === null)
 				key = NO_KEY;
-			bindingTable[key] = parameter;
 			
-			setParameter(parameter, key !== NO_KEY ? source[key] : source);
+			bindingTable[key] = propertyName;
+			
+			setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 			
 			return this;
 		}
 		
-		public function removeParameter(parameter : String) : DataBinding
+		public function removeProperty(propertyName : String) : DataBinding
 		{
 			for (var source : Object in _bindings)
 			{
@@ -101,7 +117,7 @@ package aerys.minko.type.data
 				{
 					++numKeys;
 					
-					if (bindingTable[key] == parameter)
+					if (bindingTable[key] == propertyName)
 					{
 						++numDeletedKeys;
 						delete bindingTable[key];
@@ -111,7 +127,7 @@ package aerys.minko.type.data
 				if (numKeys == numDeletedKeys)
 				{
 					(source as IDataProvider).changed.remove(
-						parameterChangedHandler
+						propertyChangedHandler
 					);
 					
 					delete _bindings[source];
@@ -128,21 +144,21 @@ package aerys.minko.type.data
 				var bindingTable 	: Object 	= _bindings[source];
 				
 				for (var key : String in bindingTable)
-					removeParameter(bindingTable[key]);
+					removeProperty(bindingTable[key]);
 			}
 			
 			return this;
 		}
 		
-		private function parameterChangedHandler(source : IDataProvider, key : Object) : void
+		private function propertyChangedHandler(source : IDataProvider, key : Object) : void
 		{
 			key ||= NO_KEY;
 			
 			var bindingTable 	: Object = _bindings[source] as Object;
-			var parameterName 	: String = bindingTable[key] as String;
+			var propertyName 	: String = bindingTable[key] as String;
 			
-			if (parameterName)
-				setParameter(parameterName, key !== NO_KEY ? source[key] : source);
+			if (propertyName)
+				setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 		}
 	}
 }

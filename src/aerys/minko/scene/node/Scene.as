@@ -88,8 +88,8 @@ package aerys.minko.scene.node
 			{
 				_meshes.push(mesh);
 				
-				for (var bindableIndex : int = _dataProviders.length - 1; bindableIndex >= 0; --bindableIndex)
-					mesh.bindings.add(_dataProviders[bindableIndex]);
+				for (var providerId : int = _dataProviders.length - 1; providerId >= 0; --providerId)
+					mesh.bindings.add(_dataProviders[providerId]);
 				
 				_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
 			}

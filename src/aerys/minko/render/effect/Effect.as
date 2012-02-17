@@ -10,14 +10,7 @@ package aerys.minko.render.effect
 	{
 		use namespace minko_render;
 		
-		minko_render var _passes		: Vector.<ShaderTemplate>	= null;
-		
-		private var _changed	: Signal					= new Signal();
-		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
+		minko_render var _passes	: Vector.<ShaderTemplate>	= null;
 		
 		public function get numPasses() : uint
 		{

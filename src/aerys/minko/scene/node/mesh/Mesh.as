@@ -35,7 +35,7 @@ package aerys.minko.scene.node.mesh
 		
 		minko_scene var _drawCalls	: Vector.<DrawCall>			= new <DrawCall>[];
 		
-		private var _bindings		: DataBinding				= new DataBinding(_drawCalls);
+		private var _localBinding	: DataBinding				= new DataBinding();
 		private var _effect			: Effect					= null;
 		private var _vertexStreams	: Vector.<IVertexStream>	= null;
 		private var _indexStream	: IndexStream				= null;
@@ -44,7 +44,7 @@ package aerys.minko.scene.node.mesh
 		
 		public function get bindings() : DataBinding
 		{
-			return _bindings;
+			return _localBinding;
 		}
 		
 		public function get effect() : Effect
@@ -53,12 +53,9 @@ package aerys.minko.scene.node.mesh
 		}
 		public function set effect(value : Effect) : void
 		{
-			if (_effect)
-				_effect.changed.remove(effectChangedHandler);
-			
 			_effect = value;
-			_effect.changed.add(effectChangedHandler);
-			effectChangedHandler(_effect);
+			
+			updateDrawCalls();
 		}
 		
 		public function get indexStream() : IndexStream
@@ -117,6 +114,8 @@ package aerys.minko.scene.node.mesh
 					_vertexStreams[0].length
 				);
 			}
+			
+			_localBinding.propertyChanged.add(dataBindingPropertyChangedHandler);
 		}
 		
 		public function getVertexStream(index : uint = 0) : IVertexStream
@@ -135,20 +134,19 @@ package aerys.minko.scene.node.mesh
 		{
 			super.addedToSceneHandler(child, scene);
 			
-			_bindings.addParameter("local to world", parent.localToWorld);
+			_localBinding.addProperty("local to world", parent.localToWorld);
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.removedFromSceneHandler(child, scene);
 			
-			_bindings.removeParameter("local to world");
+			_localBinding.removeProperty("local to world");
 		}
-				
+		
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
 		{
 			updateDrawCalls();
-			_bindings.clear();
 		}
 		
 		private function updateDrawCalls() : void
@@ -156,9 +154,9 @@ package aerys.minko.scene.node.mesh
 			if (!_indexStream)
 				return ;
 			
-			var numPasses 	: int 	= _effect.numPasses;
+			var numPasses 	: int 	= _effect ? _effect.numPasses : 0;
 			
-			_drawCalls.length = 0;
+			_drawCalls.length = numPasses;
 			for (var i : int = 0; i < numPasses; ++i)
 			{
 				var pass		: ShaderTemplate			= _effect.getPass(i);
@@ -171,7 +169,7 @@ package aerys.minko.scene.node.mesh
 					computeTangentSpace(StreamUsage.STATIC);
 				}
 				else if (components.indexOf(VertexComponent.NORMAL) >= 0
-					&& _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
+						 && _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
 				{
 					computeNormals(StreamUsage.STATIC);
 				}
@@ -180,12 +178,47 @@ package aerys.minko.scene.node.mesh
 				_drawCalls[i] = drawCall;
 			}
 		}
-				
-		public function clone() : Mesh
+		
+		private function dataBindingPropertyChangedHandler(dataBinding	: DataBinding,
+														   propertyName	: String,
+														   oldValue		: Object,
+														   newValue		: Object) : void
 		{
-			var clone : Mesh = new Mesh(_effect, _vertexStreams.concat(), _indexStream);
+			var numDrawCalls : int	= _drawCalls.length;
 			
+			for (var callId : int = 0; callId < numDrawCalls; ++callId)
+			{
+				(_drawCalls[callId] as DrawCall).setParameter(
+					propertyName,
+					newValue
+				);
+			}
+		}
+		
+		public function clone(withBindings : Boolean = true) : Mesh
+		{
+			var clone : Mesh = new Mesh();
+			
+			clone._effect = _effect;
+			clone._vertexStreams = _vertexStreams.concat();
+			clone._indexStream = _indexStream;
 			clone.name = name;
+			
+			if (withBindings)
+			{
+				clone._localBinding.propertyChanged.remove(
+					clone.dataBindingPropertyChangedHandler
+				);
+				clone._localBinding = _localBinding.clone();
+				clone._localBinding.propertyChanged.add(
+					clone.dataBindingPropertyChangedHandler
+				);
+			}
+			
+			var numDrawCalls	: int	= _drawCalls.length;
+			
+			for (var callId : int = 0; callId < numDrawCalls; ++callId)
+				clone._drawCalls[callId] = _drawCalls[callId].clone();
 			
 			return clone;
 		}

@@ -26,8 +26,9 @@ package aerys.minko.type
 			if (startIndex < 0)
 				throw new Error();
 			
-			_callbacks.splice(startIndex, 1);
 			--_numCallbacks;
+			_callbacks[startIndex] = _callbacks[_numCallbacks];
+			_callbacks.length = _numCallbacks;
 		}
 		
 		public function execute(...params) : void

@@ -14,7 +14,6 @@ package aerys.minko.render
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
-	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DTriangleFace;
 	import flash.utils.Dictionary;
@@ -128,6 +127,8 @@ package aerys.minko.render
 			clone._triangleCulling = _triangleCulling;
 			clone._blending = _blending;
 			clone._colorMask = _colorMask;
+			clone._vertexBuffers = _vertexBuffers.concat();
+			clone._indexBuffer = _indexBuffer;
 			
 			return clone;
 		}
@@ -219,13 +220,16 @@ package aerys.minko.render
 			return _indexBuffer.numIndices / 3;
 		}
 		
-		public function setParameter(name 	: String,
-									 value 	: Object) : void
+		public function setParameter(name : String, value : Object) : void
 		{
 			var binding : IBinder = _bindings[name] as IBinder;
 			
 			if (binding)
+			{
+				trace(name, _vsConstants);
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
+				trace(name, _vsConstants);
+			}
 		}
 		
 		public function hasParameter(name : String) : Boolean
