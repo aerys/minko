@@ -58,7 +58,10 @@ package aerys.minko.scene.node.mesh.primitive
 				0., 0., 0., 1., 1., 1.
 			];
 
-			super(effect, new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)]);
+			super(
+				effect,
+				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)]
+			);
 		}
 
 	}

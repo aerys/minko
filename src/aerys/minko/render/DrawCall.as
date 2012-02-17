@@ -30,7 +30,6 @@ package aerys.minko.render
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
 		private var _firstIndex			: int								= 0;
-		private var _numTriangles		: int								= 0;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
 		private var _numVertexBuffers	: int								= 0;
@@ -142,6 +141,9 @@ package aerys.minko.render
 			);
 			
 			clone._vertexBuffers = _vertexBuffers.concat();
+			clone._formats = _formats.concat();
+			clone._offsets = _offsets.concat();
+			clone._numVertexBuffers = _numVertexBuffers;
 			clone._indexBuffer = _indexBuffer;
 			
 			clone.triangleCulling = triangleCulling;
@@ -231,11 +233,7 @@ package aerys.minko.render
 			var binding : IBinder = _bindings[name] as IBinder;
 			
 			if (binding)
-			{
-				trace(name, _vsConstants);
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
-				trace(name, _vsConstants);
-			}
 		}
 		
 		public function hasParameter(name : String) : Boolean

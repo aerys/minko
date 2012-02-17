@@ -153,7 +153,7 @@ package aerys.minko.render
 			_numTriangles = 0;
 			
 			context.clear();
-			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.RENDERER) != 0;
+			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
 			
 			// sort states
 			if (!_sorted)
