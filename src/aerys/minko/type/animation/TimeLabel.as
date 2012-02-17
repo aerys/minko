@@ -1,6 +1,6 @@
 package aerys.minko.type.animation
 {
-	public class TimeLabel
+	public final class TimeLabel
 	{
 		private var _name : String;
 		private var _time : Number;

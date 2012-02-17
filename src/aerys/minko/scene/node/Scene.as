@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.scene.controller.AbstractController;
@@ -11,17 +12,18 @@ package aerys.minko.scene.node
 	public final class Scene extends Group
 	{
 		use namespace minko_scene;
+		use namespace minko_render;
 		
 		private static const TMP_SCENE_VECTOR	: Vector.<ISceneNode>	= new Vector.<ISceneNode>();
 		
-		private var _list			: RenderingList			= new RenderingList();
+		private var _list			: RenderingList				= new RenderingList();
 		
-		private var _bindables		: Vector.<IDataProvider>	= new <IDataProvider>[];
-		private var _meshes			: Vector.<Mesh>			= new <Mesh>[];
-		private var _controllers	: Vector.<Group>		= new <Group>[];
+		private var _dataProviders	: Vector.<IDataProvider>	= new <IDataProvider>[];
+		private var _meshes			: Vector.<Mesh>				= new <Mesh>[];
+		private var _controllers	: Vector.<Group>			= new <Group>[];
 		
-		private var _invalid		: Boolean				= false;
-		private var _locked			: Boolean				= false;
+		private var _invalid		: Boolean					= false;
+		private var _locked			: Boolean					= false;
 		
 		public function get renderingList() : RenderingList
 		{
@@ -61,7 +63,7 @@ package aerys.minko.scene.node
 			if (child is Mesh)
 				meshAddedHandler(child as Mesh);
 			else if (child is IDataProvider)
-				bindableAddedHandler(child as IDataProvider);
+				dataProviderAddedHandler(child as IDataProvider);
 			else if (child is Group)
 				groupAddedHandler(child as Group);
 		}
@@ -71,7 +73,7 @@ package aerys.minko.scene.node
 			if (child is Mesh)
 				meshRemovedHandler(child as Mesh);
 			else if (child is IDataProvider)
-				bindableRemovedHandler(child as IDataProvider);
+				dataProviderRemovedHandler(child as IDataProvider);
 			else if (child is Group)
 				groupRemovedHandler(child as Group);
 		}
@@ -86,10 +88,10 @@ package aerys.minko.scene.node
 			{
 				_meshes.push(mesh);
 				
-				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
-					mesh.bindings.add(_bindables[bindableIndex]);
+				for (var bindableIndex : int = _dataProviders.length - 1; bindableIndex >= 0; --bindableIndex)
+					mesh.bindings.add(_dataProviders[bindableIndex]);
 				
-				_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
+				_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
 			}
 		}
 		
@@ -109,14 +111,14 @@ package aerys.minko.scene.node
 				_meshes[meshIndex] = _meshes[numMeshes];
 				_meshes.length = numMeshes;
 				
-				for (var bindableIndex : int = _bindables.length - 1; bindableIndex >= 0; --bindableIndex)
-					mesh.bindings.remove(_bindables[bindableIndex]);
+				for (var bindableIndex : int = _dataProviders.length - 1; bindableIndex >= 0; --bindableIndex)
+					mesh.bindings.remove(_dataProviders[bindableIndex]);
 				
-				_list.removeDrawCalls(mesh.effect.passes, mesh._drawCalls);
+				_list.removeDrawCalls(mesh.effect._passes, mesh._drawCalls);
 			}
 		}
 		
-		private function bindableAddedHandler(bindable : IDataProvider) : void
+		private function dataProviderAddedHandler(dataProvider : IDataProvider) : void
 		{
 			if (_locked)
 			{
@@ -124,14 +126,14 @@ package aerys.minko.scene.node
 			}
 			else
 			{
-				_bindables.push(bindable);
+				_dataProviders.push(dataProvider);
 				
 				for (var meshIndex : int = _meshes.length - 1; meshIndex >= 0; --meshIndex)
-					_meshes[meshIndex].bindings.add(bindable);
+					_meshes[meshIndex].bindings.add(dataProvider);
 			}
 		}
 		
-		private function bindableRemovedHandler(bindable : IDataProvider) : void
+		private function dataProviderRemovedHandler(dataProvider : IDataProvider) : void
 		{
 			if (_locked)
 			{
@@ -139,16 +141,16 @@ package aerys.minko.scene.node
 			}
 			else
 			{
-				var numBindables	: int	= _bindables.length - 1;
+				var numBindables	: int	= _dataProviders.length - 1;
 				var bindableIndex 	: int 	= 0;
 				
-				while (_bindables[bindableIndex] != bindable)
+				while (_dataProviders[bindableIndex] != dataProvider)
 					++bindableIndex;
-				_bindables[bindableIndex] = _bindables[numBindables];
-				_bindables.length = numBindables;
+				_dataProviders[bindableIndex] = _dataProviders[numBindables];
+				_dataProviders.length = numBindables;
 				
 				for (var meshIndex : int = _meshes.length - 1; meshIndex >= 0; --meshIndex)
-					_meshes[meshIndex].bindings.remove(bindable);
+					_meshes[meshIndex].bindings.remove(dataProvider);
 			}
 		}
 		
@@ -176,14 +178,14 @@ package aerys.minko.scene.node
 				// add bindables
 				TMP_SCENE_VECTOR.length = 0;
 				
-				var newBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(
+				var newProviders	: Vector.<ISceneNode>	= group.getDescendantsByType(
 					IDataProvider,
 					TMP_SCENE_VECTOR
 				);
-				var numBindables	: int	= newBindables.length;
+				var numProviders	: int	= newProviders.length;
 				
-				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
-					bindableAddedHandler(newBindables[bindableIndex] as IDataProvider);
+				for (var providerId : int = 0; providerId < numProviders; ++providerId)
+					dataProviderAddedHandler(newProviders[providerId] as IDataProvider);
 				
 				// add controllers
 				group.controllerChanged.add(controllerChangedHandler);
@@ -223,11 +225,11 @@ package aerys.minko.scene.node
 					meshRemovedHandler(oldMeshes[meshIndex] as Mesh);
 				
 				// remove bindables
-				var oldBindables	: Vector.<ISceneNode>	= group.getDescendantsByType(IDataProvider);
-				var numBindables	: int					= oldBindables.length;
+				var oldProviders	: Vector.<ISceneNode>	= group.getDescendantsByType(IDataProvider);
+				var numProviders	: int					= oldProviders.length;
 				
-				for (var bindableIndex : int = 0; bindableIndex < numBindables; ++bindableIndex)
-					bindableRemovedHandler(oldBindables[bindableIndex] as IDataProvider);
+				for (var providerId : int = 0; providerId < numProviders; ++providerId)
+					dataProviderRemovedHandler(oldProviders[providerId] as IDataProvider);
 				
 				// remove controllers
 				var controller : AbstractController	= group.controller;
@@ -296,39 +298,39 @@ package aerys.minko.scene.node
 			{
 				// clear
 				var numMeshes 		: int	= _meshes.length;
-				var meshIndex 		: int 	= 0;
-				var numBindables	: int	= _bindables.length;
-				var bindableIndex 	: int 	= 0;
+				var meshId 			: int 	= 0;
+				var numProviders	: int	= _dataProviders.length;
+				var providerId 		: int 	= 0;
 				
-				for (meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
-					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
-						(_meshes[meshIndex] as Mesh).bindings.remove(_bindables[bindableIndex]);
+				for (meshId = 0; meshId < numMeshes; ++meshId)
+					for (providerId = 0; providerId < numProviders; ++providerId)
+						(_meshes[meshId] as Mesh).bindings.remove(_dataProviders[providerId]);
 				
 				_meshes.length = 0;
-				_bindables.length = 0;
+				_dataProviders.length = 0;
 				_list.clear();
 				
 				// fill
 				var newMeshes		: Vector.<ISceneNode>	= getDescendantsByType(Mesh);
-				var newBindables	: Vector.<ISceneNode>	= getDescendantsByType(IDataProvider);
+				var newProviders	: Vector.<ISceneNode>	= getDescendantsByType(IDataProvider);
 				var added			: Dictionary			= new Dictionary(true);
 				
 				numMeshes = newMeshes.length;
-				numBindables = newBindables.length;
+				numProviders = newProviders.length;
 				
-				for (meshIndex = 0; meshIndex < numMeshes; ++meshIndex)
+				for (meshId = 0; meshId < numMeshes; ++meshId)
 				{
-					var mesh 	: Mesh 	= newMeshes[meshIndex] as Mesh;
+					var mesh 	: Mesh 	= newMeshes[meshId] as Mesh;
 					
-					_meshes[meshIndex] = mesh;
-					_list.addDrawCalls(mesh.effect.passes, mesh._drawCalls);
+					_meshes[meshId] = mesh;
+					_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
 					
-					for (bindableIndex = 0; bindableIndex < numBindables; ++bindableIndex)
+					for (providerId = 0; providerId < numProviders; ++providerId)
 					{
-						var bindable : IDataProvider = newBindables[bindableIndex] as IDataProvider;
+						var bindable : IDataProvider = newProviders[providerId] as IDataProvider;
 						
 						mesh.bindings.add(bindable);
-						_bindables[bindableIndex] = bindable;
+						_dataProviders[providerId] = bindable;
 					}
 				}
 			

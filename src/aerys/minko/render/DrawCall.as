@@ -52,6 +52,8 @@ package aerys.minko.render
 		private var _colorMaskB			: Boolean							= true;
 		private var _colorMaskA			: Boolean							= true;
 		
+		private var _enabled			: Boolean							= true;
+		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
 			return _vsInputComponents;
@@ -74,6 +76,15 @@ package aerys.minko.render
 			_colorMaskG = (v & ColorMask.GREEN) != 0;
 			_colorMaskB = (v & ColorMask.BLUE) != 0;
 			_colorMaskA = (v & ColorMask.ALPHA) != 0;
+		}
+
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
 		}
 		
 		public function DrawCall(vsConstants 			: Vector.<Number>,
@@ -151,6 +162,9 @@ package aerys.minko.render
 		public function apply(context 	: Context3D,
 							  previous	: DrawCall) : uint
 		{
+			if (!_enabled)
+				return 0;
+			
 			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
 			context.setBlendFactors(_blendingSource, _blendingDest);
 			context.setCulling(_triangleCulling);

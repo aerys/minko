@@ -2,6 +2,7 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.type.Signal;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
@@ -25,6 +26,11 @@ package aerys.minko.render
 		private var _compareMode		: String				= null;
 		private var _enableDepthWrite	: Boolean				= true;
 		private var _rectangle			: Rectangle				= null;
+		
+		private var _enabled			: Boolean				= true;
+		
+		private var _begin				: Signal				= new Signal();
+		private var _end				: Signal				= new Signal();
 		
 		public function get priority():Number
 		{
@@ -78,6 +84,25 @@ package aerys.minko.render
 		public function set renderTarget(value : RenderTarget) : void
 		{
 			_renderTarget = value;
+		}
+		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
+		}
+
+		public function get begin() : Signal
+		{
+			return _begin;
+		}
+		
+		public function get end() : Signal
+		{
+			return _end;
 		}
 		
 		public function RendererState() : void

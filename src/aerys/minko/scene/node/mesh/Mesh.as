@@ -40,6 +40,8 @@ package aerys.minko.scene.node.mesh
 		private var _vertexStreams	: Vector.<IVertexStream>	= null;
 		private var _indexStream	: IndexStream				= null;
 		
+		private var _visible		: Boolean					= true;
+		
 		public function get bindings() : DataBinding
 		{
 			return _bindings;
@@ -62,11 +64,6 @@ package aerys.minko.scene.node.mesh
 			effectChangedHandler(_effect);
 		}
 		
-		public function get vertexStreams() : Vector.<IVertexStream>
-		{
-			return _vertexStreams;
-		}
-		
 		public function get indexStream() : IndexStream
 		{
 			return _indexStream;
@@ -76,8 +73,30 @@ package aerys.minko.scene.node.mesh
 			_indexStream = value;
 			updateDrawCalls();
 		}
+
+		public function get visible() : Boolean
+		{
+			return _visible;
+		}
+		public function set visible(value : Boolean) : void
+		{
+			if (value != _visible)
+			{
+				_visible = value;
+				
+				var numDrawCalls : int = _drawCalls.length;
+				
+				for (var callId : int = 0; callId < numDrawCalls; ++callId)
+					(_drawCalls[callId] as DrawCall).enabled = false;
+			}
+		}
 		
-		public function Mesh(effect			: Effect,
+		public function get numVertexStreams() : uint
+		{
+			return _vertexStreams.length;
+		}
+		
+		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
 							 indexStream	: IndexStream				= null)
 		{
@@ -101,6 +120,18 @@ package aerys.minko.scene.node.mesh
 					_vertexStreams[0].length
 				);
 			}
+		}
+		
+		public function getVertexStream(index : uint = 0) : IVertexStream
+		{
+			return _vertexStreams[index];
+		}
+		
+		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
+		{
+			_vertexStreams[index] = vertexStream;
+			
+			updateDrawCalls();
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -128,13 +159,13 @@ package aerys.minko.scene.node.mesh
 			if (!_indexStream)
 				return ;
 			
-			var passes		: Vector.<ShaderTemplate>	= _effect.passes;
-			var numPasses 	: int 						= passes.length;
+			var numPasses 	: int 	= _effect.numPasses;
 			
 			_drawCalls.length = 0;
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var drawCall 	: DrawCall 					= passes[i].drawCallTemplate.clone();
+				var pass		: ShaderTemplate			= _effect.getPass(i);
+				var drawCall 	: DrawCall 					= pass.drawCallTemplate.clone();
 				var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
 				
 				if (components.indexOf(VertexComponent.TANGENT) >= 0

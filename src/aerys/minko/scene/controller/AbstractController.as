@@ -5,14 +5,26 @@ package aerys.minko.scene.controller
 
 	public class AbstractController
 	{
-		private var _lastTime	: Number	= 0.0;
-		private var _lastTarget	: Group		= null;
+		private var _lastTime		: Number	= 0.0;
+		private var _lastTarget		: Group		= null;
 		
-		private var _ticked		: Signal	= new Signal();
+		private var _ticked			: Signal	= new Signal();
+		private var _targetAdded	: Signal	= new Signal();
+		private var _targetRemoved	: Signal	= new Signal();
 		
 		public function get ticked() : Signal
 		{
 			return _ticked;
+		}
+		
+		public function get targetAdded() : Signal
+		{
+			return _targetAdded;
+		}
+		
+		public function get targetRemoved() : Signal
+		{
+			return _targetRemoved;
 		}
 		
 		public function tick(target : Group, time : Number) : void
