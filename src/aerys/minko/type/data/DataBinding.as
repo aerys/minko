@@ -47,19 +47,22 @@ package aerys.minko.type.data
 			return clone;
 		}
 		
-		public function add(bindable : IDataProvider) : DataBinding
+		public function add(dataProvider : IDataProvider) : DataBinding
 		{
-			var dataDescriptor 	: Object 	= bindable.dataDescriptor;
+			var dataDescriptor 	: Object 	= dataProvider.dataDescriptor;
+			
+			dataProvider.changed.add(dataProviderChangedHandler);
 			
 			for (var propertyName : String in dataDescriptor)
 			{
-				addProperty(
+				watchProperty(
 					propertyName,
-					bindable,
-					dataDescriptor[propertyName] as String
+					dataProvider,
+					dataDescriptor[propertyName] as String,
+					dataProviderChangedHandler
 				);
 			}
-			
+						
 			return this;
 		}
 		
@@ -101,20 +104,7 @@ package aerys.minko.type.data
 									source			: IDataProvider,
 									key				: Object	= null) : DataBinding
 		{
-			var bindingTable : Object = _bindings[source] as Object;
-			
-			if (!bindingTable)
-			{
-				_bindings[source] = bindingTable = {};
-				source.changed.add(propertyChangedHandler);
-			}
-			
-			if (key === null)
-				key = NO_KEY;
-			
-			bindingTable[key] = propertyName;
-			
-			setProperty(propertyName, key !== NO_KEY ? source[key] : source);
+			watchProperty(propertyName, source, key, propertyChangedHandler);
 			
 			return this;
 		}
@@ -142,7 +132,9 @@ package aerys.minko.type.data
 				
 				if (numKeys == numDeletedKeys)
 				{
-					(source as IDataProvider).changed.remove(
+					var dataProvider : IDataProvider = source as IDataProvider;
+					
+					dataProvider.changed.remove(
 						propertyChangedHandler
 					);
 				}
@@ -162,6 +154,40 @@ package aerys.minko.type.data
 			}
 			
 			return this;
+		}
+		
+		private function watchProperty(propertyName 	: String,
+									   source			: IDataProvider,
+									   key				: Object,
+									   callback			: Function) : void
+		{
+			var bindingTable : Object = _bindings[source] as Object;
+			
+			if (!bindingTable)
+			{
+				_bindings[source] = bindingTable = {};
+				source.changed.add(callback);
+			}
+			
+			if (key === null)
+				key = NO_KEY;
+			
+			bindingTable[key] = propertyName;
+			
+			setProperty(propertyName, key !== NO_KEY ? source[key] : source);
+		}
+		
+		private function dataProviderChangedHandler(source : IDataProvider, key : Object) : void
+		{
+			key ||= NO_KEY;
+			
+			var bindingTable 	: Object = _bindings[source] as Object;
+			var propertyName 	: String = bindingTable[key] as String;
+			
+			if (!propertyName)
+				addProperty(source.dataDescriptor[key], source, key);
+			else
+				setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 		}
 		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void

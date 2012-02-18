@@ -7,13 +7,13 @@ package aerys.minko.type.data
 	
 	public dynamic class DataProvider extends Proxy implements IDataProvider
 	{
-		private var _descriptor	: Object	= {};
-		private var _data		: Object	= {};
+		private var _descriptor			: Object	= {};
+		private var _data				: Object	= {};
 		
-		private var _locked		: Boolean	= false;
-		private var _invalid	: Boolean	= false;
+		private var _locked				: Boolean	= false;
+		private var _invalid			: Boolean	= false;
 		
-		private var _changed	: Signal	= new Signal();
+		private var _changed			: Signal	= new Signal();
 		
 		public function get dataDescriptor() : Object
 		{
