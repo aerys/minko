@@ -55,12 +55,19 @@ package aerys.minko.type.data
 			
 			for (var propertyName : String in dataDescriptor)
 			{
-				watchProperty(
+				addProperty(
 					propertyName,
 					dataProvider,
-					dataDescriptor[propertyName] as String,
-					dataProviderChangedHandler
+					dataDescriptor[propertyName] as String
 				);
+			}
+			
+			if (dataProvider is IDynamicDataProvider)
+			{
+				var dynamicProvider : IDynamicDataProvider = dataProvider as IDynamicDataProvider;
+				
+				dynamicProvider.propertyAdded.add(dynamicPropertyAddedHandler);
+				dynamicProvider.propertyRemoved.add(dynamicPropertyRemovedHandler);
 			}
 						
 			return this;
@@ -104,7 +111,20 @@ package aerys.minko.type.data
 									source			: IDataProvider,
 									key				: Object	= null) : DataBinding
 		{
-			watchProperty(propertyName, source, key, propertyChangedHandler);
+			var bindingTable : Object = _bindings[source] as Object;
+			
+			if (!bindingTable)
+			{
+				_bindings[source] = bindingTable = {};
+				source.changed.add(propertyChangedHandler);
+			}
+			
+			if (key === null)
+				key = NO_KEY;
+			
+			bindingTable[key] = propertyName;
+			
+			setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 			
 			return this;
 		}
@@ -137,6 +157,21 @@ package aerys.minko.type.data
 					dataProvider.changed.remove(
 						propertyChangedHandler
 					);
+					
+					if (dataProvider is IDynamicDataProvider)
+					{
+						var dynamicProvider : IDynamicDataProvider = dataProvider
+							as IDynamicDataProvider;
+						
+						dynamicProvider.propertyAdded.remove(
+							dynamicPropertyAddedHandler
+						);
+						dynamicProvider.propertyRemoved.remove(
+							dynamicPropertyRemovedHandler
+						);
+					}
+					
+					delete _bindings[source];
 				}
 			}
 			
@@ -154,27 +189,6 @@ package aerys.minko.type.data
 			}
 			
 			return this;
-		}
-		
-		private function watchProperty(propertyName 	: String,
-									   source			: IDataProvider,
-									   key				: Object,
-									   callback			: Function) : void
-		{
-			var bindingTable : Object = _bindings[source] as Object;
-			
-			if (!bindingTable)
-			{
-				_bindings[source] = bindingTable = {};
-				source.changed.add(callback);
-			}
-			
-			if (key === null)
-				key = NO_KEY;
-			
-			bindingTable[key] = propertyName;
-			
-			setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 		}
 		
 		private function dataProviderChangedHandler(source : IDataProvider, key : Object) : void
@@ -199,6 +213,18 @@ package aerys.minko.type.data
 			
 			if (propertyName)
 				setProperty(propertyName, key !== NO_KEY ? source[key] : source);
+		}
+		
+		private function dynamicPropertyAddedHandler(source 	: IDynamicDataProvider,
+													 property	: String) : void
+		{
+			addProperty(property, source, source.dataDescriptor[property]);
+		}
+		
+		private function dynamicPropertyRemovedHandler(source 	: IDynamicDataProvider,
+													   property	: String) : void
+		{
+			removeProperty(property);
 		}
 	}
 }

@@ -5,7 +5,7 @@ package aerys.minko.type.data
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	public dynamic class DataProvider extends Proxy implements IDataProvider
+	public dynamic class DataProvider extends Proxy implements IDynamicDataProvider
 	{
 		private var _descriptor			: Object	= {};
 		private var _data				: Object	= {};
@@ -13,11 +13,23 @@ package aerys.minko.type.data
 		private var _locked				: Boolean	= false;
 		private var _invalid			: Boolean	= false;
 		
+		private var _propertyAdded		: Signal	= new Signal();
+		private var _propertyRemoved	: Signal	= new Signal();
 		private var _changed			: Signal	= new Signal();
 		
 		public function get dataDescriptor() : Object
 		{
 			return _descriptor;
+		}
+		
+		public function get propertyAdded() : Signal
+		{
+			return _propertyAdded;
+		}
+		
+		public function get propertyRemoved() : Signal
+		{
+			return _propertyRemoved;
 		}
 		
 		public function get changed() : Signal
@@ -56,6 +68,13 @@ package aerys.minko.type.data
 			setProperty(String(name), value);
 		}
 		
+		override flash_proxy function deleteProperty(name : *) : Boolean
+		{
+			removeProperty(String(name));
+			
+			return true;
+		}
+		
 		public function getProperty(name : String) : Object
 		{
 			return _data[name];
@@ -63,6 +82,9 @@ package aerys.minko.type.data
 		
 		public function setProperty(name : String, value : Object) : DataProvider
 		{
+			if (!_descriptor.hasOwnProperty(name))
+				_propertyAdded.execute(this, name);
+			
 			_descriptor[name] = name;
 			_data[name] = value;
 			
@@ -70,6 +92,16 @@ package aerys.minko.type.data
 				_invalid = true;
 			else
 				_changed.execute(this, name);
+			
+			return this;
+		}
+		
+		public function removeProperty(name : String) : DataProvider
+		{
+			delete _descriptor[name];
+			delete _data[name];
+			
+			_propertyRemoved.execute(this, name);
 			
 			return this;
 		}
