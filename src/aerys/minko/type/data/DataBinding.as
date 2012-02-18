@@ -64,7 +64,8 @@ package aerys.minko.type.data
 			
 			if (dataProvider is IDynamicDataProvider)
 			{
-				var dynamicProvider : IDynamicDataProvider = dataProvider as IDynamicDataProvider;
+				var dynamicProvider : IDynamicDataProvider = dataProvider
+					as IDynamicDataProvider;
 				
 				dynamicProvider.propertyAdded.add(dynamicPropertyAddedHandler);
 				dynamicProvider.propertyRemoved.add(dynamicPropertyRemovedHandler);

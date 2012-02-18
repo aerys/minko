@@ -1,6 +1,6 @@
 package aerys.minko.render.effect.basic
 {
-	import aerys.minko.render.shader.SValue;
+	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.ShaderTemplate;
 	import aerys.minko.type.enum.Blending;
 	
@@ -13,12 +13,12 @@ package aerys.minko.render.effect.basic
 			drawCallTemplate.blending = Blending.ALPHA;
 		}
 		
-		override protected function getClipspacePosition():SValue
+		override protected function getClipspacePosition():SFloat
 		{
 			return localToScreen(vertexXYZ);
 		}
 		
-		override protected function getPixelColor():SValue
+		override protected function getPixelColor():SFloat
 		{
 			return getParameter("color", 4);
 		}

@@ -91,7 +91,7 @@ package aerys.minko.scene.node.mesh
 				var numDrawCalls : int = _drawCalls.length;
 				
 				for (var callId : int = 0; callId < numDrawCalls; ++callId)
-					(_drawCalls[callId] as DrawCall).enabled = false;
+					(_drawCalls[callId] as DrawCall).enabled = value;
 			}
 		}
 		

@@ -158,7 +158,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected function getClipspacePosition() : SValue
+		protected function getClipspacePosition() : SFloat
 		{
 			throw new Error();
 		}
@@ -168,7 +168,7 @@ package aerys.minko.render.shader
 		 * @return
 		 *
 		 */
-		protected function getPixelColor() : SValue
+		protected function getPixelColor() : SFloat
 		{
 			throw new Error();
 		}
