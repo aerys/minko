@@ -6,6 +6,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.shader.ShaderTemplate;
 	import aerys.minko.scene.node.AbstractSceneNode;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.data.DataBinding;
@@ -157,24 +158,44 @@ package aerys.minko.scene.node.mesh
 			updateDrawCalls();
 		}
 		
+		override protected function addedHandler(child:ISceneNode, parent:Group):void
+		{
+			super.addedHandler(child, parent);
+			
+			if (child == this)
+				_localBinding.addProperty("local to world", parent.localToWorld);
+		}
+		
+		override protected function removedHandler(child:ISceneNode, parent:Group):void
+		{
+			super.removedHandler(child, parent);
+	
+			if (child == this)
+				_localBinding.removeProperty("local to world");
+		}
+		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.addedToSceneHandler(child, scene);
-			
-			addDataBinding(_localBinding);
-			_localBinding.addProperty("local to world", parent.localToWorld);
-			
-			addDataBinding(scene.globalBindings);
+	
+			if (child == this)
+			{
+				// enable local and blogal bindings
+				addDataBinding(_localBinding);
+				addDataBinding(scene.globalBindings);
+			}
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.removedFromSceneHandler(child, scene);
 			
-			removeDataBinding(_localBinding);
-			_localBinding.removeProperty("local to world");
-			
-			removeDataBinding(scene.globalBindings);
+			if (child == this)
+			{
+				// disable local and global bindings
+				removeDataBinding(_localBinding);
+				removeDataBinding(scene.globalBindings);
+			}
 		}
 		
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
@@ -272,20 +293,25 @@ package aerys.minko.scene.node.mesh
 		{
 			var clone : Mesh = new Mesh();
 			
-			clone._effect = _effect;
-			clone._vertexStreams = _vertexStreams.concat();
-			clone._indexStream = _indexStream;
-			clone.name = name;
-			
-			if (withBindings)
-				clone._localBinding = _localBinding.clone();
-			
-			var numDrawCalls	: int	= _drawCalls.length;
-			
-			for (var callId : int = 0; callId < numDrawCalls; ++callId)
-				clone._drawCalls[callId] = _drawCalls[callId].clone();
+			clone.copyFrom(this, withBindings);
 			
 			return clone;
+		}
+		
+		protected function copyFrom(source : Mesh, withBindings : Boolean) : void
+		{
+			_effect = source._effect;
+			_vertexStreams = source._vertexStreams.concat();
+			_indexStream = source._indexStream;
+			name = source.name;
+			
+			if (withBindings)
+				_localBinding = _localBinding.clone();
+			
+			var numDrawCalls	: int	= source._drawCalls.length;
+			
+			for (var callId : int = 0; callId < numDrawCalls; ++callId)
+				_drawCalls[callId] = source._drawCalls[callId].clone();
 		}
 		
 		private function computeNormals(usage : uint) : void

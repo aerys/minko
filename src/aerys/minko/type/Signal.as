@@ -24,7 +24,7 @@ package aerys.minko.type
 				--startIndex;
 			
 			if (startIndex < 0)
-				throw new Error();
+				throw new Error("This callback does not exist.");
 			
 			--_numCallbacks;
 			_callbacks[startIndex] = _callbacks[_numCallbacks];
