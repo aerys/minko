@@ -24,6 +24,9 @@ package aerys.minko.render
 	{
 		use namespace minko_render;
 		
+		private static const PROGRAM_TYPE_VERTEX	: String		= Context3DProgramType.VERTEX;
+		private static const PROGRAM_TYPE_FRAGMENT	: String		= Context3DProgramType.FRAGMENT;
+		
 		private var _cpuConstants		: Dictionary						= new Dictionary();
 		private var _bindings			: Object							= null;
 		
@@ -190,13 +193,13 @@ package aerys.minko.render
 			context.setCulling(_triangleCullingStr);
 			
 			context.setProgramConstantsFromVector(
-				Context3DProgramType.VERTEX,
+				PROGRAM_TYPE_VERTEX,
 				0,
 				_vsConstants
 			);
 			
 			context.setProgramConstantsFromVector(
-				Context3DProgramType.FRAGMENT,
+				PROGRAM_TYPE_FRAGMENT,
 				0,
 				_fsConstants
 			);

@@ -42,7 +42,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _visible		: Boolean					= true;
 		
-		public function get bindings() : DataBinding
+		public function get localBindings() : DataBinding
 		{
 			return _localBinding;
 		}
@@ -71,6 +71,12 @@ package aerys.minko.scene.node.mesh
 			updateDrawCalls();
 		}
 
+		/**
+		 * Whether the mesh is visible or not.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get visible() : Boolean
 		{
 			return _visible;
@@ -88,6 +94,12 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
+		/**
+		 * The number of available vertex streams.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get numVertexStreams() : uint
 		{
 			return _vertexStreams.length;
@@ -117,15 +129,27 @@ package aerys.minko.scene.node.mesh
 					_vertexStreams[0].length
 				);
 			}
-			
-			_localBinding.propertyChanged.add(dataBindingPropertyChangedHandler);
 		}
 		
+		/**
+		 * Get a vertex stream.
+		 *  
+		 * @param index
+		 * @return 
+		 * 
+		 */
 		public function getVertexStream(index : uint = 0) : IVertexStream
 		{
 			return _vertexStreams[index];
 		}
 		
+		/**
+		 * Set a vertex stream.
+		 *  
+		 * @param vertexStream
+		 * @param index
+		 * 
+		 */
 		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
 		{
 			_vertexStreams[index] = vertexStream;
@@ -137,14 +161,20 @@ package aerys.minko.scene.node.mesh
 		{
 			super.addedToSceneHandler(child, scene);
 			
+			addDataBinding(_localBinding);
 			_localBinding.addProperty("local to world", parent.localToWorld);
+			
+			addDataBinding(scene.globalBindings);
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.removedFromSceneHandler(child, scene);
 			
+			removeDataBinding(_localBinding);
 			_localBinding.removeProperty("local to world");
+			
+			removeDataBinding(scene.globalBindings);
 		}
 		
 		private function effectChangedHandler(effect : Effect, property : String = null) : void
@@ -182,6 +212,46 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
+		/**
+		 * Add a new data binding source and starts listening it.
+		 *  
+		 * @param dataBinding
+		 * 
+		 */
+		private function addDataBinding(dataBinding : DataBinding) : void
+		{
+			dataBinding.propertyChanged.add(
+				dataBindingPropertyChangedHandler
+			);
+			
+			var numProperties : uint = dataBinding.numProperties;
+			
+			for (var propId : uint = 0; propId < numProperties; ++propId)
+			{
+				var propertyName : String = dataBinding.getPropertyName(propId);
+				
+				dataBindingPropertyChangedHandler(
+					dataBinding,
+					propertyName,
+					null,
+					dataBinding.getProperty(propertyName)
+				);
+			}
+		}
+		
+		/**
+		 * Remove a data binding source and stop listening it.
+		 *  
+		 * @param dataBinding
+		 * 
+		 */
+		private function removeDataBinding(dataBinding : DataBinding) : void
+		{
+			dataBinding.propertyChanged.remove(
+				dataBindingPropertyChangedHandler
+			);
+		}
+		
 		private function dataBindingPropertyChangedHandler(dataBinding	: DataBinding,
 														   propertyName	: String,
 														   oldValue		: Object,
@@ -208,15 +278,7 @@ package aerys.minko.scene.node.mesh
 			clone.name = name;
 			
 			if (withBindings)
-			{
-				clone._localBinding.propertyChanged.remove(
-					clone.dataBindingPropertyChangedHandler
-				);
 				clone._localBinding = _localBinding.clone();
-				clone._localBinding.propertyChanged.add(
-					clone.dataBindingPropertyChangedHandler
-				);
-			}
 			
 			var numDrawCalls	: int	= _drawCalls.length;
 			

@@ -10,12 +10,18 @@ package aerys.minko.type.data
 		
 		private var _bindings			: Dictionary				= new Dictionary(true);
 		private var _values				: Object					= {};
+		private var _properties			: Vector.<String>			= new <String>[];
 		
 		private var _propertyChanged	: Signal					= new Signal();
 		
 		public function get propertyChanged() : Signal
 		{
 			return _propertyChanged;
+		}
+		
+		public function get numProperties() : uint
+		{
+			return _properties.length;
 		}
 		
 		public function DataBinding()
@@ -71,6 +77,9 @@ package aerys.minko.type.data
 		{
 			var oldValue : Object = _values[propertyName];
 			
+			if (!(_values.hasOwnProperty(propertyName)))
+				_properties.push(propertyName);
+			
 			_values[propertyName] = value;
 			
 			_propertyChanged.execute(this, propertyName, oldValue, value);
@@ -81,6 +90,11 @@ package aerys.minko.type.data
 		public function getProperty(propertyName : String) : Object
 		{
 			return _values[propertyName];
+		}
+		
+		public function getPropertyName(index : uint) : String
+		{
+			return _properties[index];
 		}
 		
 		public function addProperty(propertyName 	: String,
@@ -107,6 +121,8 @@ package aerys.minko.type.data
 		
 		public function removeProperty(propertyName : String) : DataBinding
 		{
+			var numSources	: int	= 0;
+			
 			for (var source : Object in _bindings)
 			{
 				var bindingTable 	: Object 	= _bindings[source];
@@ -129,8 +145,6 @@ package aerys.minko.type.data
 					(source as IDataProvider).changed.remove(
 						propertyChangedHandler
 					);
-					
-					delete _bindings[source];
 				}
 			}
 			
