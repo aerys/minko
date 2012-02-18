@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.IControllerTarget;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -17,7 +18,7 @@ package aerys.minko.scene.node
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class Group extends Proxy implements ISceneNode
+	public dynamic class Group extends Proxy implements ISceneNode, IControllerTarget
 	{
 		use namespace minko_scene;
 		

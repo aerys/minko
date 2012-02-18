@@ -1,23 +1,11 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
 
-	public class ScalarRegularTimeline implements ITimeline
+	public class ScalarRegularTimeline extends AbstractTimeline
 	{
-		private var _propertyName	: String;
-		private var _deltaTime		: uint;
-		private var _values			: Vector.<Number>;
-
-		public function get propertyName() : String
-		{
-			return _propertyName;
-		}
-		
-		public function get duration() : uint
-		{
-			return _deltaTime * (_values.length - 1);
-		}
+		private var _deltaTime		: uint				= 0;
+		private var _values			: Vector.<Number>	= null;
 
 		minko_animation function get deltaTime() : uint
 		{
@@ -29,17 +17,20 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function ScalarRegularTimeline(propertyName	: String,
-													deltaTime 		: uint,
-													values			: Vector.<Number>)
+		public function ScalarRegularTimeline(propertyPath	: String,
+											  deltaTime 	: uint,
+											  values		: Vector.<Number>)
 		{
-			_propertyName	= propertyName;
-			_deltaTime		= deltaTime;
-			_values			= values;
+			super(propertyPath, deltaTime * (values.length - 1));
+			
+			_deltaTime = deltaTime;
+			_values	= values;
 		}
 
-		public function updateAt(t : int, target : Object) : void
+		override public function updateAt(t : int, target : Object) : void
 		{
+			super.updateAt(t, target);
+			
 			var time				: int		= t < 0 ? duration + t : t;
 			var previousTimeId		: uint		= Math.floor(time / _deltaTime);
 			var nextTimeId			: uint		= Math.ceil(time / _deltaTime);
@@ -48,14 +39,18 @@ package aerys.minko.type.animation.timeline
 			if (t < 0)
 				interpolationRatio = 1 - interpolationRatio;
 
-			target[_propertyName] =
+			currentTarget[propertyName] =
 				(1 - interpolationRatio) * _values[previousTimeId] +
 				interpolationRatio * _values[nextTimeId];
 		}
 
-		public function clone() : ITimeline
+		override public function clone() : ITimeline
 		{
-			return new ScalarRegularTimeline(_propertyName, _deltaTime, _values.slice());
+			return new ScalarRegularTimeline(
+				propertyPath,
+				_deltaTime,
+				_values.slice()
+			);
 		}
 	}
 }

@@ -22,8 +22,6 @@ package aerys.minko.scene.controller
 		private var _currentTime	: int					= 0;
 		private var _totalTime		: int					= 0;
 		
-		private var _target			: Object				= null;
-		
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
 		private var _labels			: Vector.<TimeLabel>	= null;
 		
@@ -62,11 +60,11 @@ package aerys.minko.scene.controller
 			_looping = value;
 		}
 
-		public function AnimationController(timelines			: Vector.<ITimeline>,
-											alternativeTarget	: Object	= null)
+		public function AnimationController(timelines	: Vector.<ITimeline>)
 		{
+			super();
+			
 			_timelines = timelines;
-			_target = alternativeTarget;
 			
 			initialize();
 		}
@@ -196,9 +194,10 @@ package aerys.minko.scene.controller
 			return _isPlaying;
 		}
 		
-		override protected function updateTarget(target : Group) : void
+		override protected function updateTarget(target : IControllerTarget) : void
 		{
-			var numTimelines : int = _timelines.length;
+			var numTimelines 	: int 	= _timelines.length;
+			var group			: Group	= target as Group;
 			
 			for (var i : int = 0; i < numTimelines; ++i)
 			{
@@ -206,7 +205,7 @@ package aerys.minko.scene.controller
 				
 				timeline.updateAt(
 					_currentTime % timeline.duration,
-					_target || target
+					target
 				);
 			}
 		}

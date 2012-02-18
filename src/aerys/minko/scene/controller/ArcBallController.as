@@ -111,6 +111,8 @@ package aerys.minko.scene.controller
 		
 		public function ArcBallController()
 		{
+			super(Group);
+			
 			_sensitivity = DEFAULT_SENSITIVITY;
 			
 			_minZoom = DEFAULT_MIN_ZOOM;
@@ -158,9 +160,9 @@ package aerys.minko.scene.controller
 			return mustUpdate;
 		}
 		
-		override protected function updateTarget(target:Group):void
+		override protected function updateTarget(target : IControllerTarget):void
 		{
-			target.transform.copyFrom(_transform);
+			(target as Group).transform.copyFrom(_transform);
 		}
 		
 		private function startDrag(event : Event) : void

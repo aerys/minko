@@ -3,25 +3,19 @@ package aerys.minko.scene.controller
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Matrix3D;
 
-	public class SkinningController extends AbstractController implements IDataProvider
+	public class SkinningController extends AbstractController
 	{
 		use namespace minko_math;
 		
 		private static const WORLD_SKELETON_MATRIX	: Matrix3D	= new Matrix3D();
 		private static const TMP_SKINNING_MATRIX	: Matrix3D 	= new Matrix3D();
-		private static const DATA_DESCRIPTOR		: Object	=
-		{
-			"skinning matrices"		: "skinningMatrices",
-			"skinning num bones"	: "numBones",
-			"skinning dqn"			: "dqn",
-			"skinning dqd"			: "dqd"
-		};
+		
+		private var _skinningData		: DataProvider			= new DataProvider();
 		
 		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix4x4>	= null;
@@ -35,24 +29,9 @@ package aerys.minko.scene.controller
 		private var _locked				: Boolean				= false;
 		private var _changed			: Signal				= new Signal();
 		
-		public function get skinningMatrices() : Vector.<Number>
+		public function get skinningData() : DataProvider
 		{
-			return _matrices;
-		}
-		
-		public function get dataDescriptor() : Object
-		{
-			return DATA_DESCRIPTOR;
-		}
-		
-		public function get locked() : Boolean
-		{
-			return _locked;
-		}
-		
-		public function get changed() : Signal
-		{
-			return _changed;
+			return _skinningData;
 		}
 		
 		public function SkinningController(joints 			: Vector.<Group>,
@@ -62,17 +41,17 @@ package aerys.minko.scene.controller
 			
 			_joints = joints;
 			_invBindMatrices = invBindMatrices;
+			
+			initialize();
 		}
 		
-		public function lock() : void
+		private function initialize() : void
 		{
-			_locked = true;
-		}
-		
-		public function unlock() : void
-		{
-			_locked = false;
-			_changed.execute(this, null);
+			_skinningData.numBones = _numBones;
+			_skinningData.skinningMatrices = _matrices;
+			_skinningData.bindShapeMatrix = _bindShape;
+			_skinningData.dqn = _dqn;
+			_skinningData.dqd = _dqd;
 		}
 		
 		override protected function updateOnTime(time : Number) : Boolean

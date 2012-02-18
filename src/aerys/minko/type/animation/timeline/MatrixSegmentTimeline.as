@@ -6,40 +6,38 @@ package aerys.minko.type.animation.timeline
 
 	use namespace minko_animation;
 	
-	public final class MatrixSegmentTimeline implements ITimeline
+	public final class MatrixSegmentTimeline extends AbstractTimeline
 	{
-		private var _propertyName	: String;
-		
-		minko_animation var _timeTable		: Vector.<uint>
-		minko_animation var _matrices		: Vector.<Matrix4x4>
+		minko_animation var _timeTable	: Vector.<uint>			= null;
+		minko_animation var _matrices	: Vector.<Matrix4x4>	= null;
 
-		public function get propertyName()	: String	{ return _propertyName; }
-		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
-		
-		public function MatrixSegmentTimeline(propertyName	: String,
+		public function MatrixSegmentTimeline(propertyPath	: String,
 											  timeTable 	: Vector.<uint>,
 											  values		: Vector.<Matrix4x4>)
 		{
-			_propertyName	= propertyName;
-			_timeTable		= timeTable;
-			_matrices		= values;
+			super(propertyPath, timeTable[int(timeTable.length - 1)]);
+			
+			_timeTable = timeTable;
+			_matrices = values;
 		}
 
-		public function updateAt(t : int, target : Object) : void
+		override public function updateAt(t : int, target : Object) : void
 		{
+			super.updateAt(t, target);
+			
 			var reverse		: Boolean	= t < 0;
 			var timeId		: uint 		= getIndexForTime(reverse ? duration - t : t);
 			var timeCount	: uint 		= _timeTable.length;
 
 			// change matrix value
-			var out : Matrix4x4 = target[_propertyName];
+			var out : Matrix4x4 = currentTarget[propertyName];
 			
 			if (!out)
 			{
 				throw new Error(
-					"'" + _propertyName
+					"'" + propertyName
 					+ "' could not be found in '"
-					+ target.name + "'."
+					+ currentTarget + "'."
 				);
 			}
 
@@ -70,9 +68,13 @@ package aerys.minko.type.animation.timeline
 			return upperTimeId;
 		}
 
-		public function clone() : ITimeline
+		override public function clone() : ITimeline
 		{
-			return new MatrixTimeline(_propertyName, _timeTable.slice(), _matrices.slice());
+			return new MatrixTimeline(
+				propertyPath,
+				_timeTable.slice(),
+				_matrices.slice()
+			);
 		}
 	}
 }

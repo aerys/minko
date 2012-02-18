@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
 
 	public interface ISceneNode

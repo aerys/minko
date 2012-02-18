@@ -9,8 +9,13 @@ package aerys.minko.render.resource.texture
 
 	public interface ITextureResource extends IResource
 	{
-		function setContentFromBitmapData(bitmapData : BitmapData, mipmap : Boolean) : void;
+		function setContentFromBitmapData(bitmapData 	: BitmapData,
+										  mipmap 		: Boolean,
+										  smooth		: Boolean	= true,
+										  downSample	: Boolean	= false) : void;
+		
 		function setContentFromATF(atf : ByteArray) : void;
+		
 		function getNativeTexture(context : Context3D) : TextureBase;
 	}
 }

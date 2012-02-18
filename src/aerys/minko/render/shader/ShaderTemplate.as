@@ -49,9 +49,9 @@ package aerys.minko.render.shader
 	 * <ul>
 	 * <li>Object: arguments are typed has Object to ensure polymorphism. Any
 	 * of the following type can be used: int, uint, Number, Point, Vector4,
-	 * Matrix3D and SValue. Arguments with types different from SValue will
+	 * Matrix3D and SFloat. Arguments with types different from SFloat will
 	 * always be interpreted as static fixed constants.</li>
-	 * <li>SValue: return values are types as SValue objects. They represent
+	 * <li>SFloat: return values are types as SFloat objects. They represent
 	 * hardware memory proxies.</li>
 	 * </ul>
 	 *
@@ -64,7 +64,7 @@ package aerys.minko.render.shader
 	 * it is set and used directly.</li>
 	 * <li>Else, the getOutputPosition and getOutputColor methods are called.
 	 * Those methods transparently build and return a "shader graph"
-	 * encapsulated in an SValue object.</li>
+	 * encapsulated in an SFloat object.</li>
 	 * <li>This shader graph is then optimized, compiled into AGAL
 	 * bytecode and saved using the computed hash as a key.</li>
 	 * <li>The compiled AGAL bytecode is then uploaded and used to render the
@@ -84,8 +84,8 @@ package aerys.minko.render.shader
 	 * has been called or their is no shader bytecode associated with the
 	 * hash retrieve by calling the "getHash" method).</li>
 	 * <li>Conditionnals, loops and method calls with a return type different
-	 * from SValue are considered as static fixed CPU-side code.</li>
-	 * <li>Any value with a type different from SValue will be transparently
+	 * from SFloat are considered as static fixed CPU-side code.</li>
+	 * <li>Any value with a type different from SFloat will be transparently
 	 * turned into a static fixed shader constant.</li>
 	 * <li>If you want to use updatable values, you should use parameters.</li>
 	 * </ul>

@@ -132,6 +132,11 @@ package aerys.minko.render.shader
 			return getParameter("camera world position", 3);
 		}
 
+		protected function get time() : SFloat
+		{
+			return getParameter("time", 1);
+		}
+		
 		public function ShaderTemplatePart(main : ShaderTemplate) : void
 		{
 			_main = main;
@@ -141,7 +146,7 @@ package aerys.minko.render.shader
 		 * Interpolate vertex shader values to make them usable inside the
 		 * fragment shader.
 		 *
-		 * <p>Any SValue object comming from the vertex shader but used inside
+		 * <p>Any SFloat object comming from the vertex shader but used inside
 		 * the fragment shader should be interpolated first. This is what the
 		 * "interpolate" method does.</p>
 		 *
@@ -169,10 +174,10 @@ package aerys.minko.render.shader
 		 * used as an RGBA value:</p>
 		 *
 		 * <pre>
-		 * override protected function getOutputColor() : SValue
+		 * override protected function getOutputColor() : SFloat
 		 * {
 		 * 	// interpolate the vertex RGB color
-		 * 	var color : SValue = interpolate(vertexRGBColor);
+		 * 	var color : SFloat = interpolate(vertexRGBColor);
 		 *
 		 * 	// combine the RGB color with a constant alpha = 1.0
 		 * 	color = combine(color, 1.0);
@@ -236,10 +241,10 @@ package aerys.minko.render.shader
 		}
 
 		/**
-		 * Create a new SValue object of size 3 by combining 3 scalar values.
+		 * Create a new SFloat object of size 3 by combining 3 scalar values.
 		 *
 		 * <p>This method is an alias of the "combine" method. You should prefer this
-		 * method everytime you want to build an SValue object of size 3 because this
+		 * method everytime you want to build an SFloat object of size 3 because this
 		 * method will actually enforce it and "combine" will not.</p>
 		 *
 		 * @param x
@@ -263,10 +268,10 @@ package aerys.minko.render.shader
 		}
 
 		/**
-		 * Create a new SVAlue object of size 4 by combining 4 scalar values.
+		 * Create a new SFloat object of size 4 by combining 4 scalar values.
 		 *
 		 * <p>This method is an alias of the "combine" method. You should prefer this
-		 * method everytime you want to build an SValue object of size 4 because
+		 * method everytime you want to build an SFloat object of size 4 because
 		 * this method will actually enforce it and "combine" will not.</p>
 		 *
 		 * @param x

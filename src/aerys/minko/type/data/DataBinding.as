@@ -84,7 +84,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function setProperty(propertyName : String, value : Object) : DataBinding
+		private function setProperty(propertyName : String, value : Object) : DataBinding
 		{
 			var oldValue : Object = _values[propertyName];
 			
@@ -194,15 +194,33 @@ package aerys.minko.type.data
 		
 		private function dataProviderChangedHandler(source : IDataProvider, key : Object) : void
 		{
-			key ||= NO_KEY;
-			
 			var bindingTable 	: Object = _bindings[source] as Object;
-			var propertyName 	: String = bindingTable[key] as String;
+			var propertyName 	: String = null;
 			
-			if (!propertyName)
-				addProperty(source.dataDescriptor[key], source, key);
+			if (key)
+			{
+				// a single property has changed
+				propertyName = bindingTable[key] as String;
+				
+				if (!propertyName)
+					addProperty(source.dataDescriptor[key], source, key);
+				else
+					setProperty(propertyName, key !== NO_KEY ? source[key] : source);
+			}
 			else
-				setProperty(propertyName, key !== NO_KEY ? source[key] : source);
+			{
+				// "some" properties have changed (ie. DataProvider.invalidate() was called)
+				
+				for (var key : Object in bindingTable)
+				{
+					propertyName = bindingTable[key];
+					
+					if (!propertyName)
+						addProperty(source.dataDescriptor[key], source, key);
+					else
+						setProperty(propertyName, key !== NO_KEY ? source[key] : source);	
+				}
+			}
 		}
 		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void

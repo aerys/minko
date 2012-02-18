@@ -1,7 +1,5 @@
 package aerys.minko.render.resource.texture
 {
-	import aerys.minko.render.resource.IResource;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
@@ -12,6 +10,9 @@ package aerys.minko.render.resource.texture
 
 	public class TextureResource implements ITextureResource
 	{
+		private static const MAX_SIZE	: uint		= 2048;
+		private static const TMP_MATRIX	: Matrix	= new Matrix();
+		
 		private var _texture	: Texture	= null;
 		private var _mipmap		: Boolean;
 
@@ -40,8 +41,40 @@ package aerys.minko.render.resource.texture
 		}
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
-								   				 mipmap		: Boolean) : void
+								   				 mipmap		: Boolean,
+												 smooth		: Boolean	= true,
+												 downSample	: Boolean	= false) : void
 		{
+			var bitmapWidth		: uint 	= bitmapData.width;
+			var bitmapHeight	: uint 	= bitmapData.height;
+			var w				: int	= 0;
+			var h				: int	= 0;
+			
+			if (downSample)
+			{
+				w = 1 << Math.floor(Math.log(bitmapWidth) * Math.LOG2E);
+				h = 1 << Math.floor(Math.log(bitmapHeight) * Math.LOG2E);
+			}
+			else
+			{
+				w = 1 << Math.ceil(Math.log(bitmapWidth) * Math.LOG2E);
+				h = 1 << Math.ceil(Math.log(bitmapHeight) * Math.LOG2E);
+			}
+			
+			if (w > MAX_SIZE)
+				w = MAX_SIZE;
+			if (h > MAX_SIZE)
+				h = MAX_SIZE;
+			
+			_bitmapData	= new BitmapData(w, h, bitmapData.transparent, 0);
+			
+			if (w != bitmapWidth || h != bitmapHeight)
+			{
+				TMP_MATRIX.identity();
+				TMP_MATRIX.scale(w / bitmapWidth, h / bitmapHeight);
+				_bitmapData.draw(bitmapData, TMP_MATRIX, null, null, null, smooth);
+			}
+			
 			if (_texture
 				&& (mipmap != _mipmap
 					|| bitmapData.width != _width
@@ -51,9 +84,8 @@ package aerys.minko.render.resource.texture
 				_texture = null;
 			}
 
-			_bitmapData	= bitmapData;
-			_width = bitmapData.width;
-			_height = bitmapData.height;
+			_width = _bitmapData.width;
+			_height = _bitmapData.height;
 
 			_mipmap	= mipmap;
 			_update	= true;
@@ -82,46 +114,7 @@ package aerys.minko.render.resource.texture
 			{
 				_update = false;
 
-				if (_bitmapData)
-				{
-					if (_mipmap)
-					{
-						var level 		: int 			= 0;
-						var size		: int 			= _width > _height ? _width : _height;
-						var transparent	: Boolean		= _bitmapData.transparent;
-						var transform 	: Matrix 		= new Matrix();
-						var tmp 		: BitmapData 	= new BitmapData(
-							size,
-							size,
-							transparent,
-							0
-						);
-
-						while (size >= 1)
-						{
-							tmp.draw(_bitmapData, transform, null, null, null, true);
-							_texture.uploadFromBitmapData(tmp, level);
-							
-							transform.scale(.5, .5);
-							level++;
-							size >>= 1;
-							if (tmp.transparent)
-								tmp.fillRect(tmp.rect, 0);
-						}
-
-						tmp.dispose();
-					}
-					else
-					{
-						_texture.uploadFromBitmapData(_bitmapData, 0);
-					}
-
-					_bitmapData.dispose();
-				}
-				else if (_atf)
-				{
-					_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
-				}
+				uploadTextureWithMipMaps();
 			}
 
 			_atf = null;
@@ -129,7 +122,51 @@ package aerys.minko.render.resource.texture
 
 			return _texture;
 		}
-
+		
+		private function uploadTextureWithMipMaps() : void
+		{
+			if (_bitmapData)
+			{
+				if (_mipmap)
+				{
+					var level 		: int 			= 0;
+					var size		: int 			= _width > _height ? _width : _height;
+					var transparent	: Boolean		= _bitmapData.transparent;
+					var transform 	: Matrix 		= new Matrix();
+					var tmp 		: BitmapData 	= new BitmapData(
+						size,
+						size,
+						transparent,
+						0
+					);
+					
+					while (size >= 1)
+					{
+						tmp.draw(_bitmapData, transform, null, null, null, true);
+						_texture.uploadFromBitmapData(tmp, level);
+						
+						transform.scale(.5, .5);
+						level++;
+						size >>= 1;
+						if (tmp.transparent)
+							tmp.fillRect(tmp.rect, 0);
+					}
+					
+					tmp.dispose();
+				}
+				else
+				{
+					_texture.uploadFromBitmapData(_bitmapData, 0);
+				}
+				
+				_bitmapData.dispose();
+			}
+			else if (_atf)
+			{
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
+			}
+		}
+		
 		public function dispose() : void
 		{
 			_texture.dispose();

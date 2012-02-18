@@ -1,16 +1,19 @@
 package aerys.minko.scene.controller
 {
-	import aerys.minko.scene.node.Group;
 	import aerys.minko.type.Signal;
+	
+	import avmplus.getQualifiedClassName;
 
 	public class AbstractController
 	{
-		private var _lastTime		: Number	= 0.0;
-		private var _lastTarget		: Group		= null;
+		private var _lastTime		: Number			= 0.0;
+		private var _lastTarget		: IControllerTarget	= null;
 		
-		private var _ticked			: Signal	= new Signal();
-		private var _targetAdded	: Signal	= new Signal();
-		private var _targetRemoved	: Signal	= new Signal();
+		private var _targetType		: Class				= null;
+		
+		private var _ticked			: Signal			= new Signal();
+		private var _targetAdded	: Signal			= new Signal();
+		private var _targetRemoved	: Signal			= new Signal();
 		
 		public function get ticked() : Signal
 		{
@@ -27,7 +30,25 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function tick(target : Group, time : Number) : void
+		public function AbstractController(targetType : Class = null)
+		{
+			_targetType = targetType;
+		}
+		
+		private function targetAddedHandler(controller	: AbstractController,
+											target		: IControllerTarget) : void
+		{
+			if (_targetType && !(target is _targetType))
+			{
+				throw new Error(
+					"Controller '" + getQualifiedClassName(this)
+					+ " cannot target objects from class '"
+					+ getQualifiedClassName(target) + "'."
+				);
+			}
+		}
+		
+		public function tick(target : IControllerTarget, time : Number) : void
 		{
 			var update : Boolean	= false;
 			
@@ -53,7 +74,7 @@ package aerys.minko.scene.controller
 			return false;
 		}
 		
-		protected function updateTarget(target : Group) : void
+		protected function updateTarget(target : IControllerTarget) : void
 		{
 			// nothing
 		}

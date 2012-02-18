@@ -3,14 +3,10 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.node.ISceneNode;
 
-	public class ScalarTimeline implements ITimeline
+	public class ScalarTimeline extends AbstractTimeline
 	{
-		protected var _propertyName	: String;
 		protected var _timeTable	: Vector.<uint>
 		protected var _values		: Vector.<Number>;
-
-		public function get propertyName()	: String	{ return _propertyName; }
-		public function get duration()		: uint		{ return _timeTable[_timeTable.length - 1]; }
 
 		minko_animation function get timeTable() : Vector.<uint>
 		{
@@ -22,17 +18,20 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function ScalarTimeline(propertyName	: String,
-											 timeTable 		: Vector.<uint>,
-											 values			: Vector.<Number>)
+		public function ScalarTimeline(propertyPath	: String,
+									   timeTable 	: Vector.<uint>,
+									   values		: Vector.<Number>)
 		{
-			_propertyName	= propertyName;
-			_timeTable		= timeTable;
-			_values			= values;
+			super(propertyPath, timeTable[int(timeTable.length - 1)]);
+			
+			_timeTable = timeTable;
+			_values	= values;
 		}
 
-		public function updateAt(t : int, target : Object):void
+		override public function updateAt(t : int, target : Object):void
 		{
+			super.updateAt(t, target);
+			
 			var time		: int	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
 			var timeCount	: uint 	= _timeTable.length;
@@ -45,7 +44,7 @@ package aerys.minko.type.animation.timeline
 			if (t < 0.)
 				interpolationRatio = 1. - interpolationRatio;
 			
-			target[_propertyName] =
+			currentTarget[propertyName] =
 				(1 - interpolationRatio) * _values[timeId - 1] +
 				interpolationRatio * _values[timeId];
 		}
@@ -71,9 +70,13 @@ package aerys.minko.type.animation.timeline
 			return upperTimeId;
 		}
 
-		public function clone() : ITimeline
+		override public function clone() : ITimeline
 		{
-			return new ScalarTimeline(_propertyName, _timeTable.slice(), _values.slice());
+			return new ScalarTimeline(
+				propertyPath,
+				_timeTable.slice(),
+				_values.slice()
+			);
 		}
 	}
 }

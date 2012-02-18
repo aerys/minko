@@ -4,17 +4,13 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	public class MatrixTimeline implements ITimeline
+	public class MatrixTimeline extends AbstractTimeline
 	{
 		use namespace minko_animation;
 		
-		private var _propertyName	: String;
 		private var _timeTable		: Vector.<uint>
 		private var _values			: Vector.<Matrix4x4>;
 
-		public function get propertyName()	: String	{ return _propertyName; }
-		public function get duration()		: uint		{ return _timeTable[int(_timeTable.length - 1)]; }
-		
 		minko_animation function get timeTable() : Vector.<uint>
 		{
 			return _timeTable;
@@ -25,17 +21,20 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function MatrixTimeline(propertyName	: String,
-											 timeTable		: Vector.<uint>,
-											 matrices		: Vector.<Matrix4x4>)
+		public function MatrixTimeline(propertyPath	: String,
+									   timeTable	: Vector.<uint>,
+									   matrices		: Vector.<Matrix4x4>)
 		{
-			_propertyName	= propertyName;
-			_timeTable		= timeTable;
-			_values			= matrices;
+			super(propertyPath, timeTable[int(timeTable.length - 1)]);
+			
+			_timeTable = timeTable;
+			_values = matrices;
 		}
 
-		public function updateAt(t : int, target : Object) : void
+		override public function updateAt(t : int, target : Object) : void
 		{
+			super.updateAt(t, target);
+			
 			var time		: uint	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
 			var timeCount	: uint 	= _timeTable.length;
@@ -44,14 +43,14 @@ package aerys.minko.type.animation.timeline
 				timeId = timeCount - 1;
 			
 			// change matrix value.
-			var out : Matrix4x4 = target[_propertyName];
+			var out : Matrix4x4 = currentTarget[propertyName];
 			
 			if (!out)
 			{
 				throw new Error(
-					"'" + _propertyName
+					"'" + propertyName
 					+ "' could not be found in '"
-					+ target.name + "'."
+					+ currentTarget + "'."
 				);
 			}
 
@@ -88,9 +87,13 @@ package aerys.minko.type.animation.timeline
 			return upperTimeId;
 		}
 
-		public function clone() : ITimeline
+		override public function clone() : ITimeline
 		{
-			return new MatrixTimeline(_propertyName, _timeTable.slice(), _values.slice());
+			return new MatrixTimeline(
+				propertyPath,
+				_timeTable.slice(),
+				_values.slice()
+			);
 		}
 	}
 }

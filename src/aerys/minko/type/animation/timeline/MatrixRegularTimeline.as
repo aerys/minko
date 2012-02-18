@@ -1,27 +1,12 @@
 package aerys.minko.type.animation.timeline
 {
-	import aerys.minko.ns.minko_animation;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	use namespace minko_animation;
-	
-	public class MatrixRegularTimeline implements ITimeline
+	public final class MatrixRegularTimeline extends AbstractTimeline
 	{
-		private var _propertyName	: String;
+		private var _deltaTime	: uint;
+		private var _values		: Vector.<Matrix4x4>;
 
-		private var _deltaTime		: uint;
-		private var _values			: Vector.<Matrix4x4>;
-
-		public function get propertyName() : String
-		{
-			return _propertyName;
-		}
-		
-		public function get duration() : uint
-		{
-			return _deltaTime * (_values.length - 1);
-		}
-		
 		public function get deltaTime() : uint
 		{
 			return _deltaTime;
@@ -32,31 +17,34 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function MatrixRegularTimeline(propertyName	: String,
-													deltaTime		: uint,
-													matrices		: Vector.<Matrix4x4>)
+		public function MatrixRegularTimeline(propertyPath	: String,
+											  deltaTime		: uint,
+											  matrices		: Vector.<Matrix4x4>)
 		{
-			_propertyName	= propertyName;
-			_deltaTime		= deltaTime;
-			_values			= matrices;
+			super(propertyPath, deltaTime * (matrices.length - 1));
+			
+			_deltaTime = deltaTime;
+			_values	= matrices;
 		}
 
-		public function updateAt(t : int, target : Object) : void
+		override public function updateAt(t:int, target:Object):void
 		{
+			super.updateAt(t, target);
+			
 			var time			: uint	= t < 0 ? duration + t : t;
 			var timeCount		: uint 	= _values.length;
 			var previousTimeId	: int 	= int(time / _deltaTime);
 			var nextTimeId		: int 	= (previousTimeId + 1) % timeCount;
 
 			// change matrix value.
-			var out : Matrix4x4 = target[_propertyName] as Matrix4x4;
+			var out : Matrix4x4 = currentTarget[propertyName] as Matrix4x4;
 			
 			if (!out)
 			{
 				throw new Error(
-					"'" + _propertyName
+					"'" + propertyName
 					+ "' could not be found in '"
-					+ target.name + "'."
+					+ currentTarget + "'."
 				);
 			}
 			
@@ -77,10 +65,10 @@ package aerys.minko.type.animation.timeline
 				out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
 		}
 
-		public function clone() : ITimeline
+		override public function clone() : ITimeline
 		{
 			return new MatrixRegularTimeline(
-				_propertyName,
+				propertyPath,
 				_deltaTime,
 				_values.slice()
 			);

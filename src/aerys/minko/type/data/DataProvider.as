@@ -82,11 +82,13 @@ package aerys.minko.type.data
 		
 		public function setProperty(name : String, value : Object) : DataProvider
 		{
-			if (!_descriptor.hasOwnProperty(name))
-				_propertyAdded.execute(this, name);
+			var propertyExists : Boolean	= _descriptor.hasOwnProperty(name);
 			
 			_descriptor[name] = name;
 			_data[name] = value;
+			
+			if (!propertyExists)
+				_propertyAdded.execute(this, name);
 			
 			if (_locked)
 				_invalid = true;
@@ -104,6 +106,11 @@ package aerys.minko.type.data
 			_propertyRemoved.execute(this, name);
 			
 			return this;
+		}
+		
+		public function invalidate() : void
+		{
+			_changed.execute(this, null);
 		}
 	}
 }
