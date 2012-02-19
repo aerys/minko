@@ -2,9 +2,7 @@ package aerys.minko.render.effect
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.ShaderTemplate;
-	import aerys.minko.type.Signal;
-	
-	import flash.display.Shader;
+	import aerys.minko.type.data.DataBinding;
 
 	public class Effect
 	{
@@ -33,6 +31,11 @@ package aerys.minko.render.effect
 		public function getPass(index : uint = 0) : ShaderTemplate
 		{
 			return _passes[index];
+		}
+		
+		public function fork(data : DataBinding) : void
+		{
+			trace("fork");
 		}
 	}
 }

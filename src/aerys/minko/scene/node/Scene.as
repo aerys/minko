@@ -23,7 +23,6 @@ package aerys.minko.scene.node
 		private var _globalBindings	: DataBinding					= new DataBinding();
 		private var _globalData		: DataProvider					= new DataProvider();
 		private var _ctrlTargets	: Vector.<IControllerTarget>	= new <IControllerTarget>[];
-		
 
 		public function get renderingList() : RenderingList
 		{
@@ -223,7 +222,7 @@ package aerys.minko.scene.node
 			var numControllers 	: int 		= _ctrlTargets.length;
 			var time			: Number	= new Date().time - TIME_OFFSET;
 			
-			_globalData.setProperty("time", time);
+//			_globalData.setProperty("time", time);
 			
 			for (var ctrlIndex : int = numControllers - 1; ctrlIndex >= 0; --ctrlIndex)
 			{

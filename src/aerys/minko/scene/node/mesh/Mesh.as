@@ -4,6 +4,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.effect.EffectInstance;
 	import aerys.minko.render.shader.ShaderTemplate;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IControllerTarget;
@@ -45,6 +46,8 @@ package aerys.minko.scene.node.mesh
 		private var _localData			: DataProvider			= new DataProvider();
 		
 		private var _effect				: Effect				= null;
+		private var _effectInstance		: EffectInstance		= null;
+		
 		private var _indexStream		: IndexStream			= null;
 		
 		private var _visible			: Boolean				= true;
@@ -73,6 +76,7 @@ package aerys.minko.scene.node.mesh
 				return ;
 			
 			_effect = value;
+			_effectInstance = new EffectInstance(_effect, _localBindings);
 			
 			updateDrawCalls();
 		}
@@ -214,36 +218,16 @@ package aerys.minko.scene.node.mesh
 			return drawCall;
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.addedHandler(child, parent);
-			
-			if (child == this)
-			{
-				_localBindings
-					.add(_localData)
-					.addProperty("local to world", parent.localToWorld);
-			}
-		}
-		
-		override protected function removedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.removedHandler(child, parent);
-	
-			if (child == this)
-			{
-				_localBindings
-					.add(_localData)
-					.removeProperty("local to world");
-			}
-		}
-		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.addedToSceneHandler(child, scene);
 	
 			if (child == this)
 			{
+				_localBindings
+					.add(_localData)
+					.addProperty("local to world", parent.localToWorld);
+				
 				// enable local and blogal bindings
 				addDataBinding(_localBindings);
 				addDataBinding(scene.globalBindings);
@@ -256,6 +240,10 @@ package aerys.minko.scene.node.mesh
 			
 			if (child == this)
 			{
+				_localBindings
+					.remove(_localData)
+					.removeProperty("local to world");
+				
 				// disable local and global bindings
 				removeDataBinding(_localBindings);
 				removeDataBinding(scene.globalBindings);
