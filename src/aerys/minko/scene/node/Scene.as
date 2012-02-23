@@ -59,6 +59,7 @@ package aerys.minko.scene.node
 				var target : IControllerTarget = child as IControllerTarget;
 				
 				target.controllerChanged.add(controllerChangedHandler);
+				
 				if (target.controller)
 					_ctrlTargets.push(target);
 			}
@@ -130,8 +131,10 @@ package aerys.minko.scene.node
 				_globalBindings.add(newProviders[providerId] as IDataProvider);
 			
 			// add controllers
+			TMP_SCENE_VECTOR.length = 0;
 			var newTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(
-				IControllerTarget
+				IControllerTarget,
+				TMP_SCENE_VECTOR
 			);
 			var numTargets	: int					= newTargets.length;
 			
@@ -171,14 +174,16 @@ package aerys.minko.scene.node
 				_globalBindings.remove(oldProviders[providerId] as IDataProvider);
 			
 			// remove controllers
-			var newTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(
-				IControllerTarget
+			TMP_SCENE_VECTOR.length = 0;
+			var oldTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(
+				IControllerTarget,
+				TMP_SCENE_VECTOR
 			);
-			var numTargets	: int					= 0;
+			var numTargets	: int					= oldTargets.length;
 			
 			for (var targetId : int = 0; targetId < numTargets; ++targetId)
 			{
-				var target : IControllerTarget = newTargets[targetId]
+				var target : IControllerTarget = oldTargets[targetId]
 												 as IControllerTarget;
 				var controller : AbstractController	= target.controller;
 				
@@ -222,7 +227,7 @@ package aerys.minko.scene.node
 			var numControllers 	: int 		= _ctrlTargets.length;
 			var time			: Number	= new Date().time - TIME_OFFSET;
 			
-//			_globalData.setProperty("time", time);
+			_globalData.setProperty("time", time);
 			
 			for (var ctrlIndex : int = numControllers - 1; ctrlIndex >= 0; --ctrlIndex)
 			{

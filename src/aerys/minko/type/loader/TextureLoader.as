@@ -100,7 +100,7 @@ package aerys.minko.type.loader
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
 				_textureResource = new TextureResource();
-				_textureResource.setContentFromBitmapData(BitmapData(assetObject), _mipmap);
+				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
 				_complete.execute(this, _textureResource);
 			}
 			else if (assetObject is ByteArray)
