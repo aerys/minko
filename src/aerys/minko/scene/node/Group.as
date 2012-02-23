@@ -1,8 +1,10 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IControllerTarget;
+	import aerys.minko.scene.node.mesh.primitive.CubeMesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -28,14 +30,14 @@ package aerys.minko.scene.node
 		minko_scene var _numChildren	: uint					= 0;
 
 		private var _name				: String				= null;
-		private var _root				: Group					= null;
+		private var _root				: ISceneNode			= null;
 		private var _parent				: Group					= null;
 		
 		private var _numDescendants		: uint					= 0;
 		private var _transform			: Matrix4x4				= new Matrix4x4();
 		private var _localToWorld		: Matrix4x4				= new Matrix4x4();
 		
-		private var _controller			: AbstractController			= null;
+		private var _controller			: AbstractController	= null;
 		
 		private var _added				: Signal				= new Signal();
 		private var _removed			: Signal				= new Signal();
@@ -54,7 +56,7 @@ package aerys.minko.scene.node
 			_name = value;
 		}
 		
-		public function get root() : Group
+		public function get root() : ISceneNode
 		{
 			return _root;
 		}
@@ -209,9 +211,9 @@ package aerys.minko.scene.node
 		
 		private function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-			var oldRoot : Group = _root;
+			var oldRoot : ISceneNode = _root;
 			
-			_root = parent.root;
+			_root = _parent ? _parent.root : this;
 			if (_root is Scene)
 				_addedToScene.execute(this, _root);
 					
@@ -235,9 +237,9 @@ package aerys.minko.scene.node
 			}
 			else
 			{
-				var oldRoot : Group = _root;
+				var oldRoot : ISceneNode = _root;
 				
-				_root = parent.root;
+				_root = _parent ? _parent.root : this;
 				if (oldRoot is Scene)
 					_removedFromScene.execute(this, oldRoot);
 			}
