@@ -1,36 +1,63 @@
 package aerys.minko.render.effect
 {
+	import aerys.minko.render.DrawCall;
+	import aerys.minko.render.shader.ShaderInstance;
+	import aerys.minko.render.shader.ShaderSignature;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.data.DataBinding;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.DataBindings;
 
-	public class EffectInstance
+	public final class EffectInstance
 	{
-		private var _effect			: Effect			= null;
-		private var _dataBinding	: DataBinding		= null;
-		private var _watched		: Vector.<String>	= new <String>["test"];
+		private var _effect		: Effect					= null;
+		private var _target		: Mesh						= null;
 		
-		public function EffectInstance(effect : Effect, dataBinding : DataBinding)
+		private var _passes		: Vector.<ShaderInstance>	= new <ShaderInstance>[];
+		private var _drawCalls	: Vector.<DrawCall>			= new <DrawCall>[];
+		
+		public function get passes() : Vector.<ShaderInstance>
+		{
+			return _passes;
+		}
+		
+		public function get drawCalls() : Vector.<DrawCall>
+		{
+			return _drawCalls;
+		}
+		
+		public function EffectInstance(effect : Effect, target : Mesh)
 		{
 			_effect = effect;
-			_dataBinding = dataBinding;
+			_target = target;
 			
 			initialize();
 		}
 		
 		private function initialize() : void
 		{
-			_dataBinding.propertyChanged.add(propertyChangedHandler);
+			var numPasses 		: int			= _effect.numPasses;
+			var localBindings	: DataBindings	= _target.localBindings;
+			var globalBindings	: DataBindings	= (_target.root as Scene).globalBindings;
+			
+			for (var passId : int = 0; passId < numPasses; ++passId)
+			{
+				var instance 		: ShaderInstance 	= _effect.getPass(passId).instanciate(
+					localBindings,
+					globalBindings
+				);
+				var drawCall		: DrawCall			= instance.program.createDrawCall();
+				
+				_target.initializeDrawCall(drawCall);
+				
+				_passes[passId] = instance;
+				_drawCalls[passId] = drawCall;
+			}
 		}
 		
-		private function propertyChangedHandler(dataBinding		: DataBinding,
-												propertyName	: String,
-												oldValue		: Object,
-												newValue		: Object) : void
+		public function dispose() : void
 		{
-			if (_watched.indexOf(propertyName) >= 0)
-			{
-				_effect.fork(_dataBinding);
-			}
+			trace("EffectInstance.dispose()");
 		}
 	}
 }

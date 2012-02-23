@@ -5,16 +5,13 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.EffectInstance;
-	import aerys.minko.render.shader.ShaderTemplate;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IControllerTarget;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBinding;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -42,8 +39,7 @@ package aerys.minko.scene.node.mesh
 		minko_scene var _drawCalls		: Vector.<DrawCall>			= new <DrawCall>[];
 		minko_scene var _vertexStreams	: Vector.<IVertexStream>	= null;
 		
-		private var _localBindings		: DataBinding			= new DataBinding();
-		private var _localData			: DataProvider			= new DataProvider();
+		private var _localBindings		: DataBindings			= new DataBindings();
 		
 		private var _effect				: Effect				= null;
 		private var _effectInstance		: EffectInstance		= null;
@@ -56,14 +52,9 @@ package aerys.minko.scene.node.mesh
 		
 		private var _controllerChanged	: Signal				= new Signal();
 		
-		public function get effectBindings() : DataBinding
+		public function get localBindings() : DataBindings
 		{
 			return _localBindings;
-		}
-		
-		public function get effectData() : DataProvider
-		{
-			return _localData;
 		}
 		
 		public function get effect() : Effect
@@ -76,9 +67,8 @@ package aerys.minko.scene.node.mesh
 				return ;
 			
 			_effect = value;
-			_effectInstance = new EffectInstance(_effect, _localBindings);
 			
-			updateDrawCalls();
+			updateEffectInstance(root as Scene);
 		}
 		
 		public function get indexStream() : IndexStream
@@ -88,7 +78,8 @@ package aerys.minko.scene.node.mesh
 		public function set indexStream(value : IndexStream) : void
 		{
 			_indexStream = value;
-			updateDrawCalls();
+			
+			updateEffectInstance(root as Scene);
 		}
 
 		/**
@@ -194,12 +185,11 @@ package aerys.minko.scene.node.mesh
 		{
 			_vertexStreams[index] = vertexStream;
 			
-			updateDrawCalls();
+			updateEffectInstance(root as Scene);
 		}
 		
-		public function createDrawCall(pass : ShaderTemplate) : DrawCall
+		public function initializeDrawCall(drawCall	: DrawCall) : void
 		{
-			var drawCall 	: DrawCall 					= pass.drawCallTemplate.clone();
 			var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
 			
 			if (components.indexOf(VertexComponent.TANGENT) >= 0
@@ -214,8 +204,7 @@ package aerys.minko.scene.node.mesh
 			}
 			
 			drawCall.setStreams(_vertexStreams, _indexStream);
-			
-			return drawCall;
+			drawCall.setBindings(_localBindings, (root as Scene).globalBindings);
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -224,13 +213,9 @@ package aerys.minko.scene.node.mesh
 	
 			if (child == this)
 			{
-				_localBindings
-					.add(_localData)
-					.addProperty("local to world", parent.localToWorld);
-				
-				// enable local and blogal bindings
-				addDataBinding(_localBindings);
-				addDataBinding(scene.globalBindings);
+				_localBindings.addProperty("local to world", parent.localToWorld);
+
+				updateEffectInstance(scene);
 			}
 		}
 		
@@ -240,74 +225,34 @@ package aerys.minko.scene.node.mesh
 			
 			if (child == this)
 			{
-				_localBindings
-					.remove(_localData)
-					.removeProperty("local to world");
+				_localBindings.removeProperty("local to world");
 				
-				// disable local and global bindings
-				removeDataBinding(_localBindings);
-				removeDataBinding(scene.globalBindings);
+				updateEffectInstance(scene);
 			}
 		}
 		
-		private function effectChangedHandler(effect : Effect, property : String = null) : void
+		private function updateEffectInstance(scene : Scene) : void
 		{
-			updateDrawCalls();
-		}
-		
-		private function updateDrawCalls() : void
-		{
-			if (!_indexStream)
-				return ;
-			
-			var numPasses 	: int 	= _effect ? _effect.numPasses : 0;
-			
-			_drawCalls.length = numPasses;
-			for (var i : int = 0; i < numPasses; ++i)
-				_drawCalls[i] = createDrawCall(_effect.getPass(i));
-		}
-		
-		/**
-		 * Add a new data binding source and starts listening it.
-		 *  
-		 * @param dataBinding
-		 * 
-		 */
-		private function addDataBinding(dataBinding : DataBinding) : void
-		{
-			dataBinding.propertyChanged.add(
-				dataBindingPropertyChangedHandler
-			);
-			
-			var numProperties : uint = dataBinding.numProperties;
-			
-			for (var propId : uint = 0; propId < numProperties; ++propId)
+			if (_effectInstance)
 			{
-				var propertyName : String = dataBinding.getPropertyName(propId);
+				scene.renderingList.removeDrawCalls(
+					_effectInstance.passes, _effectInstance.drawCalls
+				);
 				
-				dataBindingPropertyChangedHandler(
-					dataBinding,
-					propertyName,
-					null,
-					dataBinding.getProperty(propertyName)
+				_effectInstance.dispose();
+				_effectInstance = null;
+			}
+			
+			if (scene && _effect)
+			{
+				_effectInstance = new EffectInstance(_effect, this);
+				scene.renderingList.addDrawCalls(
+					_effectInstance.passes, _effectInstance.drawCalls
 				);
 			}
 		}
 		
-		/**
-		 * Remove a data binding source and stop listening it.
-		 *  
-		 * @param dataBinding
-		 * 
-		 */
-		private function removeDataBinding(dataBinding : DataBinding) : void
-		{
-			dataBinding.propertyChanged.remove(
-				dataBindingPropertyChangedHandler
-			);
-		}
-		
-		private function dataBindingPropertyChangedHandler(dataBinding	: DataBinding,
+		private function dataBindingPropertyChangedHandler(dataBinding	: DataBindings,
 														   propertyName	: String,
 														   oldValue		: Object,
 														   newValue		: Object) : void

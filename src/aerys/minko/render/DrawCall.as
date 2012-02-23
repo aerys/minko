@@ -5,6 +5,7 @@ package aerys.minko.render
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.TriangleCulling;
@@ -15,9 +16,7 @@ package aerys.minko.render
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DProgramType;
-	import flash.display3D.Context3DTriangleFace;
 	import flash.utils.Dictionary;
 	
 	public final class DrawCall
@@ -29,6 +28,7 @@ package aerys.minko.render
 		
 		private var _cpuConstants		: Dictionary						= new Dictionary();
 		private var _bindings			: Object							= null;
+		private var _bindingsNames		: Vector.<String>					= new <String>[];
 		
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
@@ -108,6 +108,11 @@ package aerys.minko.render
 			_enabled = value;
 		}
 		
+		public function get numParameters() : uint
+		{
+			return _bindingsNames.length;
+		}
+		
 		public function DrawCall(vsConstants 			: Vector.<Number>,
 								 fsConstants 			: Vector.<Number>,
 								 fsTextures				: Vector.<ITextureResource>,
@@ -130,6 +135,9 @@ package aerys.minko.render
 			triangleCulling	= TriangleCulling.FRONT;
 			blending		= Blending.NORMAL;
 			colorMask		= ColorMask.RGBA;
+				
+			for (var bindingName : String in _bindings)
+				_bindingsNames.push(bindingName);
 		}
 		
 		public function clone() : DrawCall
@@ -239,9 +247,43 @@ package aerys.minko.render
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
 		}
 		
+		public function getParameterName(index : uint) : String
+		{
+			return _bindingsNames[index];
+		}
+		
 		public function hasParameter(name : String) : Boolean
 		{
 			return _bindings[name] != null;
+		}
+		
+		public function setBindings(localBindings	: DataBindings,
+									globalBindings	: DataBindings) : void
+		{
+			for (var parameter : String in _bindings)
+			{
+				localBindings.getPropertyChangedSignal(parameter).add(
+					parameterChangedHandler
+				);
+				
+				globalBindings.getPropertyChangedSignal(parameter).add(
+					parameterChangedHandler
+				);
+				
+				setParameter(
+					parameter,
+					localBindings.getProperty(parameter)
+					|| globalBindings.getProperty(parameter)
+				);
+			}
+		}
+		
+		private function parameterChangedHandler(dataBindings	: DataBindings,
+												 property		: String,
+												 oldValue		: Object,
+												 newValue		: Object) : void
+		{
+			setParameter(property, newValue);
 		}
 	}
 }

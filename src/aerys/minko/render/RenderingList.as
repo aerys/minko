@@ -1,7 +1,8 @@
 package aerys.minko.render
 {
 	import aerys.minko.Minko;
-	import aerys.minko.render.shader.ShaderTemplate;
+	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.ShaderInstance;
 	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.display3D.Context3D;
@@ -9,11 +10,11 @@ package aerys.minko.render
 
 	public final class RenderingList
 	{
-		private var _stateToDrawCalls	: Dictionary				= new Dictionary();
+		private var _shaderToDrawCalls	: Dictionary				= new Dictionary();
 		private var _numDrawCalls		: uint						= 0;
 		
-		private var _states				: Vector.<RendererState>	= new Vector.<RendererState>();
-		private var _numStates			: int						= 0;
+		private var _shaders			: Vector.<ShaderInstance>	= new Vector.<ShaderInstance>();
+		private var _numShaders			: int						= 0;
 		
 		private var _sorted				: Boolean					= false;
 		
@@ -24,9 +25,9 @@ package aerys.minko.render
 			return _numDrawCalls;
 		}
 		
-		public function get numRendererStates() : uint
+		public function get numShaderInstances() : uint
 		{
-			return _numStates;
+			return _numShaders;
 		}
 		
 		public function get numTriangles() : uint
@@ -36,24 +37,23 @@ package aerys.minko.render
 		
 		public function clear() : void
 		{
-			_numStates = 0;
+			_numShaders = 0;
 			_numDrawCalls = 0;
-			_stateToDrawCalls = new Dictionary();
+			_shaderToDrawCalls = new Dictionary();
 		}
 		
-		public function addDrawCall(pass		: ShaderTemplate,
+		public function addDrawCall(shader		: ShaderInstance,
 									drawCall	: DrawCall) : void
 		{
 			++_numDrawCalls;
 
-			var state	: RendererState		= pass.state;
-			var calls 	: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+			var calls 	: Vector.<DrawCall>	= _shaderToDrawCalls[shader] as Vector.<DrawCall>;
 			
 			if (!calls)
 			{
-				_stateToDrawCalls[state] = new <DrawCall>[drawCall];
-				_states[_numStates] = state;
-				++_numStates;
+				_shaderToDrawCalls[shader] = new <DrawCall>[drawCall];
+				_shaders[_numShaders] = shader;
+				++_numShaders;
 				
 				_sorted = false;
 			}
@@ -63,7 +63,7 @@ package aerys.minko.render
 			}
 		}
 		
-		public function addDrawCalls(passes		: Vector.<ShaderTemplate>,
+		public function addDrawCalls(passes		: Vector.<ShaderInstance>,
 									 drawCalls	: Vector.<DrawCall>) : void
 		{
 			var numPasses	: int	= passes.length;
@@ -72,14 +72,14 @@ package aerys.minko.render
 			
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var state 	: RendererState 	= (passes[i] as ShaderTemplate).state;
-				var calls 	: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+				var instance 	: ShaderInstance 	= passes[i] as ShaderInstance;
+				var calls 		: Vector.<DrawCall>	= _shaderToDrawCalls[instance] as Vector.<DrawCall>;
 				
 				if (!calls)
 				{
-					_stateToDrawCalls[state] = new <DrawCall>[drawCalls[i]];
-					_states[_numStates] = state;
-					++_numStates;
+					_shaderToDrawCalls[instance] = new <DrawCall>[drawCalls[i]];
+					_shaders[_numShaders] = instance;
+					++_numShaders;
 					
 					_sorted = false;
 				}
@@ -90,11 +90,11 @@ package aerys.minko.render
 			}
 		}
 		
-		public function removeDrawCall(pass			: ShaderTemplate,
+		public function removeDrawCall(pass			: ShaderInstance,
 									   drawCall		: DrawCall) : void
 		{
-			var state 		: RendererState 	= pass.state;
-			var calls 		: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+			var state 		: ShaderInstance 	= pass;
+			var calls 		: Vector.<DrawCall>	= _shaderToDrawCalls[state] as Vector.<DrawCall>;
 			var numCalls	: int				= calls.length - 1;
 			var callindex 	: int 				= calls.indexOf(drawCall);
 			
@@ -102,8 +102,8 @@ package aerys.minko.render
 			
 			if (numCalls == 0)
 			{
-				--_numStates;
-				delete _stateToDrawCalls[state];
+				--_numShaders;
+				delete _shaderToDrawCalls[state];
 			}
 			else
 			{
@@ -112,7 +112,7 @@ package aerys.minko.render
 			}
 		}
 		
-		public function removeDrawCalls(passes		: Vector.<ShaderTemplate>,
+		public function removeDrawCalls(passes		: Vector.<ShaderInstance>,
 										drawCalls	: Vector.<DrawCall>) : void
 		{
 			var numPasses	: int	= passes.length;
@@ -122,8 +122,8 @@ package aerys.minko.render
 			for (var i : int = 0; i < numPasses; ++i)
 			{
 				var toDelete	: DrawCall			= drawCalls[i] as DrawCall;
-				var state 		: RendererState 	= (passes[i] as ShaderTemplate).state;
-				var calls 		: Vector.<DrawCall>	= _stateToDrawCalls[state] as Vector.<DrawCall>;
+				var state 		: ShaderInstance 	= passes[i] as ShaderInstance;
+				var calls 		: Vector.<DrawCall>	= _shaderToDrawCalls[state] as Vector.<DrawCall>;
 				var numCalls	: int				= calls.length;
 				
 				for (var callId : int = 0; callId < numCalls; ++callId)
@@ -140,10 +140,10 @@ package aerys.minko.render
 				
 				if (calls.length == 0)
 				{
-					--_numStates;
-					_states[_states.indexOf(state)] = _states[_numStates];
+					--_numShaders;
+					_shaders[_shaders.indexOf(state)] = _shaders[_numShaders];
 					
-					delete _stateToDrawCalls[state];
+					delete _shaderToDrawCalls[state];
 				}
 			}
 		}
@@ -158,27 +158,27 @@ package aerys.minko.render
 			// sort states
 			if (!_sorted)
 			{
-				RendererState.sort(_states, _numStates);
+				ShaderInstance.sort(_shaders, _numShaders);
 				_sorted = true;
 			}
 			
 			// apply states
-			var previous 		: RendererState = null;
-			var callTriangles	: uint			= 0;
-			var call			: DrawCall		= null;
-			var previousCall	: DrawCall		= null;
+			var previous 		: ShaderInstance 	= null;
+			var callTriangles	: uint				= 0;
+			var call			: DrawCall			= null;
+			var previousCall	: DrawCall			= null;
 			
-			for (var i : int = 0; i < _numStates; ++i)
+			for (var i : int = 0; i < _numShaders; ++i)
 			{
-				var state 			: RendererState		= _states[i];
-				var calls 			: Vector.<DrawCall> = _stateToDrawCalls[state];
-				var numCalls		: int				= calls.length;
+				var shader 		: ShaderInstance	= _shaders[i];
+				var calls 		: Vector.<DrawCall> = _shaderToDrawCalls[shader];
+				var numCalls	: int				= calls.length;
 
-				if (state.enabled)
+//				if (state.enabled)
 				{
-					state.begin.execute(state, context, backBuffer, previous);
-					state.apply(context, backBuffer, previous);
-					previous = state;
+					shader.begin.execute(shader, context, backBuffer, previous);
+					shader.prepareContext(context, backBuffer, previous);
+					previous = shader;
 					
 					for (var j : int = 0; j < numCalls; ++j)
 					{
@@ -192,7 +192,7 @@ package aerys.minko.render
 						}
 					}
 					
-					state.end.execute(state, context, backBuffer, previous);
+					shader.end.execute(shader, context, backBuffer, previous);
 				}
 			}
 			

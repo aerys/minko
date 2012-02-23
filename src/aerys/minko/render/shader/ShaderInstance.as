@@ -1,46 +1,54 @@
-package aerys.minko.render
+package aerys.minko.render.shader
 {
-	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
 	
 	import flash.display3D.Context3D;
-	import flash.display3D.Context3DBlendFactor;
 	import flash.display3D.Context3DCompareMode;
 	import flash.geom.Rectangle;
 
-	public final class RendererState
+	public class ShaderInstance
 	{
-		use namespace minko_render;
 		
-		private static const TMP_NUMBERS			: Vector.<Number>	= new Vector.<Number>(0xffff, true);
-		private static const TMP_INTS				: Vector.<int>		= new Vector.<int>(0xffff, true);
+		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);
+		private static const TMP_INTS		: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
-		private var _priority			: Number				= 0.;
+		private var _owner				: Shader			= null;
+		private var _signature			: ShaderSignature	= null;
 		
-		private var _vertexConstants	: Vector.<Number>		= null;
-		private var _fragmentConstants	: Vector.<Number>		= null;
+		private var _priority			: Number			= 0.;
 		
-		private var _renderTarget		: RenderTarget			= null;
-		private var _program			: Program3DResource		= null;
-		private var _compareMode		: String				= null;
-		private var _enableDepthWrite	: Boolean				= true;
-		private var _rectangle			: Rectangle				= null;
+		private var _renderTarget		: RenderTarget		= null;
+		private var _program			: Program3DResource	= null;
+		private var _compareMode		: String			= null;
+		private var _enableDepthWrite	: Boolean			= true;
+		private var _rectangle			: Rectangle			= null;
 		
-		private var _enabled			: Boolean				= true;
+		private var _enabled			: Boolean			= true;
 		
-		private var _begin				: Signal				= new Signal();
-		private var _end				: Signal				= new Signal();
+		private var _begin				: Signal			= new Signal();
+		private var _end				: Signal			= new Signal();
 		
-		public function get priority():Number
+		public function get owner() : Shader
+		{
+			return _owner;
+		}
+		
+		public function get signature() : ShaderSignature
+		{
+			return _signature;
+		}
+		
+		public function get priority() : Number
 		{
 			return _priority;
 		}
-		public function set priority(value:Number):void
+		public function set priority(value : Number) : void
 		{
 			_priority = value;
 		}
-
+		
 		public function get scissorRectangle() : Rectangle
 		{
 			return _rectangle;
@@ -94,7 +102,7 @@ package aerys.minko.render
 		{
 			_enabled = value;
 		}
-
+		
 		public function get begin() : Signal
 		{
 			return _begin;
@@ -105,8 +113,12 @@ package aerys.minko.render
 			return _end;
 		}
 		
-		public function RendererState() : void
+		public final function ShaderInstance(owner 		: Shader,
+											 signature	: ShaderSignature)
 		{
+			_owner = owner;
+			_signature = signature;
+			
 			initialize();
 		}
 		
@@ -117,9 +129,9 @@ package aerys.minko.render
 			_rectangle = null;
 		}
 		
-		public function apply(context 		: Context3D,
-							  backBuffer	: RenderTarget,
-							  previous		: RendererState) : void
+		public function prepareContext(context 		: Context3D,
+									   backBuffer	: RenderTarget,
+									   previous		: ShaderInstance) : void
 		{
 			if (!previous || previous._renderTarget != _renderTarget)
 			{
@@ -153,21 +165,18 @@ package aerys.minko.render
 			context.setDepthTest(_enableDepthWrite, _compareMode);
 		}
 		
-		public static function sort(states : Vector.<RendererState>, numStates : int) : void
+		public static function sort(states : Vector.<ShaderInstance>, numStates : int) : void
 		{
-			if (numStates == 0)
-				return;
-			
-			var n 		: int 			= numStates; // states.length;
-			var i		: int 			= 0;
-			var j		: int 			= 0;
-			var k		: int 			= 0;
-			var t		: int			= 0;
-			var state 	: RendererState	= states[0];
-			var anmin	: Number 		= -state._priority;
-			var nmax	: int  			= 0;
-			var p		: Number		= 0.;
-			var sorted	: Boolean		= true;
+			var n 		: int 				= numStates; // states.length;
+			var i		: int 				= 0;
+			var j		: int 				= 0;
+			var k		: int 				= 0;
+			var t		: int				= 0;
+			var state 	: ShaderInstance	= states[0];
+			var anmin	: Number 			= -state._priority;
+			var nmax	: int  				= 0;
+			var p		: Number			= 0.;
+			var sorted	: Boolean			= true;
 			
 			for (i = 0; i < n; ++i)
 			{
@@ -198,16 +207,16 @@ package aerys.minko.render
 			for (k = 1; k < m; ++k)
 				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
 			
-			var hold		: Number 		= Number(TMP_NUMBERS[nmax]);
-			var holdState 	: RendererState = states[nmax];
+			var hold		: Number 			= Number(TMP_NUMBERS[nmax]);
+			var holdState 	: ShaderInstance 	= states[nmax] as ShaderInstance;
 			
 			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
 			TMP_NUMBERS[0] = hold;
 			states[nmax] = states[0];
 			states[0] = holdState;
 			
-			var flash		: Number		= 0.;
-			var flashState	: RendererState	= null;
+			var flash		: Number			= 0.;
+			var flashState	: ShaderInstance	= null;
 			
 			j = 0;
 			k = int(m - 1);
@@ -222,7 +231,7 @@ package aerys.minko.render
 				}
 				
 				flash = Number(TMP_NUMBERS[j]);
-				flashState = RendererState(states[j]);
+				flashState = states[j] as ShaderInstance;
 				
 				while (!(j == int(TMP_INTS[k])))
 				{
@@ -230,7 +239,7 @@ package aerys.minko.render
 					
 					t = int(TMP_INTS[k]) - 1;
 					hold = Number(TMP_NUMBERS[t]);
-					holdState = RendererState(states[t]);
+					holdState = states[t] as ShaderInstance;
 					
 					TMP_NUMBERS[t] = flash;
 					states[t] = flashState;

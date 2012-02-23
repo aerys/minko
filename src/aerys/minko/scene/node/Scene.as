@@ -6,7 +6,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IControllerTarget;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.data.DataBinding;
+	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
 
@@ -20,7 +20,7 @@ package aerys.minko.scene.node
 		
 		private var _list			: RenderingList					= new RenderingList();
 		
-		private var _globalBindings	: DataBinding					= new DataBinding();
+		private var _globalBindings	: DataBindings					= new DataBindings();
 		private var _globalData		: DataProvider					= new DataProvider();
 		private var _ctrlTargets	: Vector.<IControllerTarget>	= new <IControllerTarget>[];
 
@@ -29,9 +29,14 @@ package aerys.minko.scene.node
 			return _list;
 		}
 		
-		public function get globalBindings() : DataBinding
+		public function get globalBindings() : DataBindings
 		{
 			return _globalBindings;
+		}
+		
+		public function get globalData() : IDataProvider
+		{
+			return _globalData;
 		}
 		
 		public function Scene(...children)
@@ -63,13 +68,7 @@ package aerys.minko.scene.node
 					_ctrlTargets.push(target);
 			}
 			
-			if (child is Mesh)
-			{
-				var mesh : Mesh = child as Mesh;
-				
-				_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
-			}
-			else if (child is Group)
+			if (child is Group)
 				groupAddedHandler(child as Group);
 			
 		}
@@ -89,34 +88,12 @@ package aerys.minko.scene.node
 					removeController(target.controller);
 			}
 			
-			if (child is Mesh)
-			{
-				var mesh : Mesh = child as Mesh;
-				
-				_list.removeDrawCalls(mesh.effect._passes, mesh._drawCalls);
-			}
-			else if (child is Group)
+			if (child is Group)
 				groupRemovedHandler(child as Group);
 		}
 		
 		private function groupAddedHandler(group : Group) : void
 		{
-			// add meshes
-			TMP_SCENE_VECTOR.length = 0;
-			
-			var newMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(
-				Mesh,
-				TMP_SCENE_VECTOR
-			);
-			var numMeshes	: int	= newMeshes.length;
-			
-			for (var meshId : int = 0; meshId < numMeshes; ++meshId)
-			{
-				var mesh : Mesh = newMeshes[meshId] as Mesh;
-				
-				_list.addDrawCalls(mesh.effect._passes, mesh._drawCalls);
-			}
-			
 			// add data providers
 			TMP_SCENE_VECTOR.length = 0;
 			
@@ -150,17 +127,6 @@ package aerys.minko.scene.node
 		
 		private function groupRemovedHandler(group : Group) : void
 		{
-			// remove meshes
-			var oldMeshes	: Vector.<ISceneNode>	= group.getDescendantsByType(Mesh);
-			var numMeshes	: int					= oldMeshes.length;
-			
-			for (var meshId : int = 0; meshId < numMeshes; ++meshId)
-			{
-				var mesh : Mesh = oldMeshes[meshId] as Mesh;
-				
-				_list.removeDrawCalls(mesh.effect._passes, mesh._drawCalls);
-			}
-			
 			// remove data providers
 			var oldProviders	: Vector.<ISceneNode>	= group.getDescendantsByType(
 				IDataProvider

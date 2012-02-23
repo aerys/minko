@@ -606,6 +606,18 @@ package aerys.minko.type.math
 			_changed.execute(this, null);
 		}
 		
+		public function compareTo(matrix : Matrix4x4) : Boolean
+		{
+			_matrix.copyRawDataTo(TMP_VECTOR);
+			matrix._matrix.copyRawDataTo(TMP_VECTOR, 16);
+			
+			for (var i : int = 0; i < 16; ++i)
+				if (TMP_VECTOR[i] != TMP_VECTOR[int(i + 16)])
+					return false;
+			
+			return true;
+		}
+		
 		public static function multiply(m1 	: Matrix4x4,
 										m2 	: Matrix4x4,
 										out	: Matrix4x4	= null) : Matrix4x4
@@ -989,6 +1001,5 @@ package aerys.minko.type.math
 		{
 			return (FACTORY.create() as Matrix4x4).setRawData(data, offset, transposed);
 		}
-
 	}
 }

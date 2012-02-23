@@ -1,6 +1,7 @@
 package aerys.minko.render.resource
 {
-	import aerys.minko.ns.minko_shader;
+	import aerys.minko.ns.*;
+	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -11,22 +12,20 @@ package aerys.minko.render.resource
 
 	public final class Program3DResource implements IResource
 	{
-		use namespace minko_shader;
-
-		private var _name					: String					= null;
-		private var _update					: Boolean					= false;
-		private var _nativeProgram			: Program3D					= null;
+		private var _name				: String					= null;
+		private var _update				: Boolean					= false;
+		private var _nativeProgram		: Program3D					= null;
 		
-		private var _vsProgram				: ByteArray					= null;
-		private var _fsProgram				: ByteArray					= null;
+		private var _vsProgram			: ByteArray					= null;
+		private var _fsProgram			: ByteArray					= null;
 		
-		minko_shader var _vertexComponents	: Vector.<VertexComponent> 	= null;
-		minko_shader var _vertexIndices		: Vector.<uint>				= null;
-		minko_shader var _vsConstants		: Vector.<Number>			= null;
-		minko_shader var _fsConstants		: Vector.<Number>			= null;
-		minko_shader var _fsTextures		: Vector.<ITextureResource>	= null;
+		private var _vertexComponents	: Vector.<VertexComponent> 	= null;
+		private var _vertexIndices		: Vector.<uint>				= null;
+		private var _vsConstants		: Vector.<Number>			= null;
+		private var _fsConstants		: Vector.<Number>			= null;
+		private var _fsTextures			: Vector.<ITextureResource>	= null;
 		
-		minko_shader var _bindings			: Object					= null;
+		private var _bindings			: Object					= null;
 		
 		public function get name() : String
 		{
@@ -64,6 +63,18 @@ package aerys.minko.render.resource
 			}
 			
 			return _nativeProgram;
+		}
+		
+		public function createDrawCall() : DrawCall
+		{
+			return new DrawCall(
+				_vsConstants,
+				_fsConstants,
+				_fsTextures,
+				_vertexComponents,
+				_vertexIndices,
+				_bindings
+			);
 		}
 
 		public function dispose() : void
