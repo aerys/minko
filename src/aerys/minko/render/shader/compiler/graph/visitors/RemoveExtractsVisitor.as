@@ -111,6 +111,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			if (variadicExtract.constant is Extract)
 				throw new Error("Cannot use indirect adressing on a swizzled constant");
+			
 			visit(variadicExtract.constant, isVertexShader);
 		}
 		

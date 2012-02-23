@@ -77,13 +77,13 @@ package aerys.minko.type.stream
 		{
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
-
+			
 			if (data && data.length && data.length % _format.dwordsPerVertex)
 				throw new Error("Incompatible vertex format: the data length does not match.");
-
+			
 			_data = data ? data.concat() : new Vector.<Number>();
 			_usage = usage;
-
+			
 			_changed.add(changedHandler);
 			changedHandler(this, null);
 		}
@@ -188,9 +188,7 @@ package aerys.minko.type.stream
 										 		vertexFormat 	: VertexFormat	= null) : VertexStream
 		{
 			vertexFormat ||= source.format;
-
-			var newVertexStreamData			: Vector.<Number>			= new Vector.<Number>();
-
+			
 			var components					: Vector.<VertexComponent>	= vertexFormat.components;
 			var numComponents				: uint						= components.length;
 			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(numComponents, true);
@@ -199,7 +197,6 @@ package aerys.minko.type.stream
 			var componentDatas				: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>(numComponents, true);
 
 			var totalVertices				: int						= 0;
-			var totalIndices				: int						= 0;
 
 			// cache get offsets, sizes, and buffers for each components
 			for (var k : int = 0; k < numComponents; ++k)
@@ -207,7 +204,7 @@ package aerys.minko.type.stream
 				var vertexComponent	: VertexComponent	= components[k];
 				var subVertexStream	: VertexStream		= source.getStreamByComponent(vertexComponent);
 				var subvertexFormat	: VertexFormat		= subVertexStream.format;
-
+				
 				checkReadUsage(subVertexStream);
 				
 				componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
@@ -215,30 +212,29 @@ package aerys.minko.type.stream
 				componentSizes[k]			= vertexComponent.dwords;
 				componentDatas[k]			= subVertexStream._data;
 			}
-
+			
 			// push vertex data into the new buffer.
-			var numVertices : uint 	= source.length;
-
+			var numVertices			: uint 				= source.length;
+			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>(numVertices * vertexFormat.dwordsPerVertex);
+			
 			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
 					var vertexData		: Vector.<Number>	= componentDatas[componentId];
 					var componentSize	: uint				= componentSizes[componentId];
-					var componentOffset	: uint				= componentOffsets[componentId]
-															  + vertexId * componentDwordsPerVertex[componentId];
+					var componentOffset	: uint				= 
+						componentOffsets[componentId] + vertexId * componentDwordsPerVertex[componentId];
 					var componentLimit	: uint				= componentSize + componentOffset;
-
+					
 					for (var n : int = componentOffset; n < componentLimit; ++n, ++totalVertices)
 						newVertexStreamData[totalVertices] = vertexData[n];
 				}
 			}
-
+			
 			// avoid copying data vectors
-			var newVertexStream		: VertexStream	= new VertexStream(usage, vertexFormat);
-
+			var newVertexStream	 : VertexStream	= new VertexStream(usage, vertexFormat);
 			newVertexStream.data = newVertexStreamData;
-
 			return newVertexStream;
 		}
 		

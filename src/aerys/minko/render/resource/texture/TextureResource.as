@@ -74,6 +74,10 @@ package aerys.minko.render.resource.texture
 				TMP_MATRIX.scale(w / bitmapWidth, h / bitmapHeight);
 				_bitmapData.draw(bitmapData, TMP_MATRIX, null, null, null, smooth);
 			}
+			else
+			{
+				_bitmapData.draw(bitmapData, null, null, null, null, smooth);
+			}
 			
 			if (_texture
 				&& (mipmap != _mipmap

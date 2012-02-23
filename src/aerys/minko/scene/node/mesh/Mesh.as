@@ -137,6 +137,11 @@ package aerys.minko.scene.node.mesh
 				
 				_controller = value;
 				_controllerChanged.execute(this, oldController, value);
+				
+				if (oldController)
+					oldController.targetRemoved.execute(oldController, this);
+				
+				_controller.targetAdded.execute(_controller, this);
 			}
 		}
 		

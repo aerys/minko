@@ -2,7 +2,9 @@ package aerys.minko.scene.controller
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -17,69 +19,113 @@ package aerys.minko.scene.controller
 		
 		private var _skinningData		: DataProvider			= new DataProvider();
 		
+		private var _isDirty			: Boolean				= true;
+		
+		private var _skinningMethod		: uint					= uint.MAX_VALUE;
+		private var _bindShape			: Matrix4x4				= new Matrix4x4();
+		private var _skeletonRoot		: Group					= new Group();
 		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix4x4>	= null;
 		
-		private var _numBones			: uint					= 0;
+		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
 		private var _dqn				: Vector.<Number>		= new Vector.<Number>();
 		private var _dqd				: Vector.<Number>		= new Vector.<Number>();
-		private var _bindShape			: Matrix4x4				= new Matrix4x4();
-		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
-		
-		private var _locked				: Boolean				= false;
-		private var _changed			: Signal				= new Signal();
 		
 		public function get skinningData() : DataProvider
 		{
 			return _skinningData;
 		}
 		
-		public function SkinningController(joints 			: Vector.<Group>,
+		public function SkinningController(skinningMethod	: uint,
+										   skeletonRoot		: Group,
+										   joints 			: Vector.<Group>,
 										   invBindMatrices	: Vector.<Matrix4x4>)
 		{
-			super();
+			super(Mesh);
 			
-			_joints = joints;
-			_invBindMatrices = invBindMatrices;
+			_skinningMethod		= skinningMethod;
+			_skeletonRoot		= skeletonRoot;
+			_joints				= joints;
+			_invBindMatrices	= invBindMatrices;
 			
 			initialize();
 		}
 		
 		private function initialize() : void
 		{
-			_skinningData.numBones = _numBones;
-			_skinningData.skinningMatrices = _matrices;
-			_skinningData.bindShapeMatrix = _bindShape;
-			_skinningData.dqn = _dqn;
-			_skinningData.dqd = _dqd;
+			_skinningData.numBones = _joints.length;
+			
+			targetAdded.add(targetAddedHandler);
+			
+			for each (var joint : Group in _joints)
+				joint.localToWorld.changed.add(jointLocalToWorldChangedHandler)
+		}
+		
+		private function targetAddedHandler(controller	: SkinningController, 
+											mesh		: Mesh) : void
+		{
+			mesh.effectBindings.add(_skinningData);
+		}
+		
+		private function targetRemovedHandler(controlller	: SkinningController,
+											  mesh			: Mesh) : void
+		{
+			mesh.effectBindings.remove(_skinningData);
+		}
+		
+		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
+														 propertyName	: String) : void
+		{
+			_isDirty = true;
 		}
 		
 		override protected function updateOnTime(time : Number) : Boolean
 		{
+			if (!_isDirty)
+				return false;
 			
+			switch (_skinningMethod)
+			{
+				case SkinningMethod.MATRIX:
+					writeMatrices();
+					_skinningData.skinningMatrices = _skinningData;
+					break;
+				
+				case SkinningMethod.DUAL_QUATERNION:
+					writeMatrices();
+					writeDualQuaternions();
+					_skinningData.dqn = _dqn;
+					_skinningData.dqd = _dqd;
+					break;
+				
+				case SkinningMethod.DUAL_QUATERNION_SCALE:
+					throw new Error('This skinning method yet to be implemented.');
+					
+				default:
+					throw new Error('Invalid skinning method.');
+			}
+			
+			_isDirty = false;
 			
 			return false;
 		}
 		
-		private function updateSkinning(target : Group, dqSkinning : Boolean = false) : void
+		private function writeMatrices() : void
 		{
 			var numJoints	: int	= _joints.length;
 			
-			WORLD_SKELETON_MATRIX.copyFrom(target.localToWorld._matrix);
+			WORLD_SKELETON_MATRIX.copyFrom(_skeletonRoot.localToWorld._matrix);
 			
 			for (var jointIndex : int = 0; jointIndex < numJoints; ++jointIndex)
 			{
 				var joint			: Group 	= _joints[jointIndex];
-				var invBindMatrix 	: Matrix3D 	= (_invBindMatrices[jointIndex] as Matrix4x4)._matrix;
+				var invBindMatrix 	: Matrix3D 	= Matrix4x4(_invBindMatrices[jointIndex])._matrix;
 				
 				TMP_SKINNING_MATRIX.copyFrom(joint.localToWorld._matrix);
 				TMP_SKINNING_MATRIX.prepend(WORLD_SKELETON_MATRIX);
 				TMP_SKINNING_MATRIX.prepend(invBindMatrix);
 				TMP_SKINNING_MATRIX.copyRawDataTo(_matrices, jointIndex * 16, true);
 			}
-			
-			if (dqSkinning)
-				writeDualQuaternions();
 		}
 		
 		private function writeDualQuaternions() : void
