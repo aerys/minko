@@ -14,7 +14,7 @@ package aerys.minko.scene.node.mesh.primitive
 		/**
 		 * Creates a new CubeMesh object.
 		 */
-		public function CubeMesh(effect : Effect)
+		public function CubeMesh(effect : Effect, properties : Object = null)
 		{
 			var xyz 	: Vector.<Number> = new <Number>[
 				// top
@@ -60,7 +60,9 @@ package aerys.minko.scene.node.mesh.primitive
 
 			super(
 				effect,
-				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)]
+				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)],
+				null,
+				properties
 			);
 		}
 

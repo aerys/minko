@@ -257,24 +257,24 @@ package aerys.minko.render
 			return _bindings[name] != null;
 		}
 		
-		public function setBindings(localBindings	: DataBindings,
-									globalBindings	: DataBindings) : void
+		public function setBindings(meshBindings	: DataBindings,
+									sceneBindings	: DataBindings) : void
 		{
 			for (var parameter : String in _bindings)
 			{
-				localBindings.getPropertyChangedSignal(parameter).add(
+				meshBindings.getPropertyChangedSignal(parameter).add(
 					parameterChangedHandler
 				);
 				
-				globalBindings.getPropertyChangedSignal(parameter).add(
+				sceneBindings.getPropertyChangedSignal(parameter).add(
 					parameterChangedHandler
 				);
 				
-				setParameter(
-					parameter,
-					localBindings.getProperty(parameter)
-					|| globalBindings.getProperty(parameter)
-				);
+				var value : Object = meshBindings.getProperty(parameter)
+					|| sceneBindings.getProperty(parameter);
+
+				if (value)
+					setParameter(parameter, value);
 			}
 		}
 		

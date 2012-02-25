@@ -244,7 +244,12 @@ package aerys.minko.scene.node
 			);
 			
 			if (!_locked)
+			{
+				_changed.execute(this, "worldPosition");
+				_changed.execute(this, "worldLookAt");
+				_changed.execute(this, "worldUp");
 				_changed.execute(this, "worldToView");
+			}
 			
 			updateWorldToScreen();
 		}

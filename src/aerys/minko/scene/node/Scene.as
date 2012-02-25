@@ -4,6 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.ControllerMode;
 	import aerys.minko.scene.controller.IControllerTarget;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.data.DataBindings;
@@ -20,8 +21,7 @@ package aerys.minko.scene.node
 		
 		private var _list			: RenderingList					= new RenderingList();
 		
-		private var _globalBindings	: DataBindings					= new DataBindings();
-		private var _globalData		: DataProvider					= new DataProvider();
+		private var _bindings		: DataBindings					= new DataBindings();
 		private var _ctrlTargets	: Vector.<IControllerTarget>	= new <IControllerTarget>[];
 
 		public function get renderingList() : RenderingList
@@ -29,14 +29,9 @@ package aerys.minko.scene.node
 			return _list;
 		}
 		
-		public function get globalBindings() : DataBindings
+		public function get bindings() : DataBindings
 		{
-			return _globalBindings;
-		}
-		
-		public function get globalData() : IDataProvider
-		{
-			return _globalData;
+			return _bindings;
 		}
 		
 		public function Scene(...children)
@@ -48,8 +43,6 @@ package aerys.minko.scene.node
 		{
 			super.initialize();
 			
-			_globalBindings.add(_globalData);
-			
 			childAdded.add(childAddedHandler);
 			childRemoved.add(childRemovedHandler);
 		}
@@ -57,14 +50,15 @@ package aerys.minko.scene.node
 		private function childAddedHandler(group : Group, child : ISceneNode) : void
 		{
 			if (child is IDataProvider)
-				_globalBindings.add(child as IDataProvider);
+				_bindings.add(child as IDataProvider);
 			
 			if (child is IControllerTarget)
 			{
-				var target : IControllerTarget = child as IControllerTarget;
+				var target 		: IControllerTarget 	= child as IControllerTarget;
+				var controller	: AbstractController	= target.controller;
 				
 				target.controllerChanged.add(controllerChangedHandler);
-				if (target.controller)
+				if (controller && controller.mode == ControllerMode.TICK)
 					_ctrlTargets.push(target);
 			}
 			
@@ -76,16 +70,17 @@ package aerys.minko.scene.node
 		private function childRemovedHandler(group : Group, child : ISceneNode) : void
 		{
 			if (child is IDataProvider)
-				_globalBindings.remove(child as IDataProvider);
+				_bindings.remove(child as IDataProvider);
 			
 			if (child is IControllerTarget)
 			{
-				var target : IControllerTarget = child as IControllerTarget;
+				var target 		: IControllerTarget 	= child as IControllerTarget;
+				var controller	: AbstractController	= target.controller;
 				
 				target.controllerChanged.remove(controllerChangedHandler);
 				
-				if (target.controller)
-					removeController(target.controller);
+				if (controller && controller.mode == ControllerMode.TICK)
+					removeController(controller);
 			}
 			
 			if (child is Group)
@@ -104,7 +99,7 @@ package aerys.minko.scene.node
 			var numProviders	: int	= newProviders.length;
 			
 			for (var providerId : int = 0; providerId < numProviders; ++providerId)
-				_globalBindings.add(newProviders[providerId] as IDataProvider);
+				_bindings.add(newProviders[providerId] as IDataProvider);
 			
 			// add controllers
 			var newTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(
@@ -120,7 +115,7 @@ package aerys.minko.scene.node
 				
 				target.controllerChanged.add(controllerChangedHandler);
 				
-				if (controller)
+				if (controller && controller.mode == ControllerMode.TICK)
 					_ctrlTargets.push(target);
 			}
 		}
@@ -134,7 +129,7 @@ package aerys.minko.scene.node
 			var numProviders	: int					= oldProviders.length;
 			
 			for (var providerId : int = 0; providerId < numProviders; ++providerId)
-				_globalBindings.remove(oldProviders[providerId] as IDataProvider);
+				_bindings.remove(oldProviders[providerId] as IDataProvider);
 			
 			// remove controllers
 			var newTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(
@@ -150,7 +145,7 @@ package aerys.minko.scene.node
 				
 				target.controllerChanged.remove(controllerChangedHandler);
 				
-				if (controller)
+				if (controller && controller.mode == ControllerMode.TICK)
 					removeController(controller);
 			}
 		}
@@ -174,27 +169,27 @@ package aerys.minko.scene.node
 		{
 			var numControllers 	: int	= _ctrlTargets.length - 1;
 			var controllerIndex	: int	= 0;
-			
+		
 			while ((_ctrlTargets[controllerIndex] as IControllerTarget).controller != controller)
 				controllerIndex++;
-			
+		
 			_ctrlTargets[controllerIndex] = _ctrlTargets[numControllers];
 			_ctrlTargets.length = numControllers;
 		}
 		
 		public function update() : void
+
 		{
 			// update controllers
 			var numControllers 	: int 		= _ctrlTargets.length;
 			var time			: Number	= new Date().time - TIME_OFFSET;
 			
-//			_globalData.setProperty("time", time);
-			
+			_bindings.setProperty("time", time);
 			for (var ctrlIndex : int = numControllers - 1; ctrlIndex >= 0; --ctrlIndex)
 			{
 				var target : IControllerTarget = _ctrlTargets[ctrlIndex] as IControllerTarget;
 				
-				target.controller.tick(target, time);
+				target.controller.tick(target, time);false;
 			}
 		}
 	}

@@ -8,17 +8,11 @@ package aerys.minko.type.data
 	{
 		private static const NO_KEY	: String		= "__no_key__";
 		
-		private var _bindings			: Dictionary				= new Dictionary(true);
-		private var _values				: Object					= {};
-		private var _properties			: Vector.<String>			= new <String>[];
+		private var _bindings			: Dictionary		= new Dictionary(true);
+		private var _values				: Object			= {};
+		private var _properties			: Vector.<String>	= new <String>[];
 		
-//		private var _propertyChanged	: Signal					= new Signal();
-		private var _propertyChanged	: Object					= {};
-		
-		/*public function get propertyChanged() : Signal
-		{
-			return _propertyChanged;
-		}*/
+		private var _propertyChanged	: Object			= {};
 		
 		public function get numProperties() : uint
 		{
@@ -116,6 +110,14 @@ package aerys.minko.type.data
 			return this;
 		}
 		
+		public function setProperties(properties : Object) : DataBindings
+		{
+			for (var propertyName : String in properties)
+				setProperty(propertyName, properties[propertyName]);
+			
+			return this;
+		}
+		
 		public function getProperty(propertyName : String) : Object
 		{
 			return _values[propertyName];
@@ -195,13 +197,17 @@ package aerys.minko.type.data
 			}
 			
 			var numProperties	: int	= _properties.length - 1;
-			var propertyId		: int	= 0;
 			
-			while (_properties[propertyId] != propertyName)
-				++propertyId;
-			
-			_properties[propertyId] = _properties[numProperties];
+			_properties[_properties.indexOf(propertyName)] = _properties[numProperties];
 			_properties.length = numProperties;
+			
+			var oldValue : Object = _values[propertyName];
+			
+			delete _values[propertyName];
+			
+			getPropertyChangedSignal(propertyName).execute(
+				this, propertyName, oldValue, null
+			);
 			
 			return this;
 		}
@@ -237,7 +243,6 @@ package aerys.minko.type.data
 			else
 			{
 				// "some" properties have changed (ie. DataProvider.invalidate() was called)
-				
 				for (var key : Object in bindingTable)
 				{
 					propertyName = bindingTable[key];

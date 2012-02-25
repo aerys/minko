@@ -12,19 +12,21 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getPixelColor() : SFloat
 		{
-			if (localBindings.countProperty("diffuse color"))
+			if (meshBindings.propertyExists("diffuse map"))
 			{
-				return localBindings.getParameter("diffuse color", 4);
+				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuse map");
+				var uv			: SFloat	= interpolate(vertexUV);
+				
+				return sampleTexture(diffuseMap, uv);
 			}
-			else if (localBindings.countProperty("diffuse map"))
+			else if (meshBindings.propertyExists("diffuse color"))
 			{
-				 var diffuseMap	: SFloat	= localBindings.getTextureParameter("diffuse map");
-				 var uv			: SFloat	= interpolate(vertexUV);
-				 
-				 return sampleTexture(diffuseMap, uv);
+				return meshBindings.getParameter("diffuse color", 4);
 			}
 			
-			throw new Error("Local parameter 'diffuse color' or 'diffuse map' must be set.");
+			throw new Error(
+				"Local parameter 'diffuse color' or 'diffuse map' must be set."
+			);
 		}
 	}
 }

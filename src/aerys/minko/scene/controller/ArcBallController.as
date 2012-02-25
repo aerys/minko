@@ -111,7 +111,7 @@ package aerys.minko.scene.controller
 		
 		public function ArcBallController()
 		{
-			super(Group);
+			super(ControllerMode.TICK, Group);
 			
 			_sensitivity = DEFAULT_SENSITIVITY;
 			

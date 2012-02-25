@@ -8,17 +8,23 @@ package aerys.minko.render.shader
 	public final class ShaderSignature
 	{
 		public static const OPERATION_COUNT		: uint				= 1;
-		public static const OPERATION_COMPARE	: uint				= 2;
+		public static const OPERATION_GET		: uint				= 2;
 		
-		public static const SOURCE_LOCAL		: uint				= 4;
-		public static const SOURCE_GLOBAL		: uint				= 8;
+		public static const SOURCE_MESH			: uint				= 4;
+		public static const SOURCE_SCENE		: uint				= 8;
 		
 		private static const TMP_NUMBERS		: Vector.<Number>	= new <Number>[];
 		
+		private var _shader	: Shader			= null;
 		private var _hash	: String			= null;
 		private var _keys	: Vector.<String>	= new <String>[];
 		private var _values	: Vector.<Object>	= new <Object>[];
 		private var _flags	: Vector.<uint>		= new <uint>[];
+		
+		public function get shader() : Shader
+		{
+			return _shader;
+		}
 		
 		public function get hash() : String
 		{
@@ -30,8 +36,10 @@ package aerys.minko.render.shader
 			return _keys.length;
 		}
 		
-		public function ShaderSignature()
+		public function ShaderSignature(shader : Shader)
 		{
+			_shader = shader;
+			_hash = _shader.name;
 		}
 		
 		public function getKey(index : uint) : String
@@ -53,24 +61,21 @@ package aerys.minko.render.shader
 			_flags.push(flags);
 			
 			// update hash
-			if (!_hash)
-				_hash = "";
-			else
-				_hash += "_";
+			_hash += "_";
 			
-			if (flags & OPERATION_COMPARE)
+			if (flags & OPERATION_GET)
 			{
-				if (flags & SOURCE_GLOBAL)
-					_hash += "globalCompare('" + key + "')";
+				if (flags & SOURCE_SCENE)
+					_hash += "scene.get('" + key + "')";
 				else
-					_hash += "localCompare('" + key + "')";
+					_hash += "mesh.get('" + key + "')";
 			}
 			else if (flags & OPERATION_COUNT)
 			{
-				if (flags & SOURCE_GLOBAL)
-					_hash += "globalCount('" + key + "')";
+				if (flags & SOURCE_SCENE)
+					_hash += "scene.count('" + key + "')";
 				else
-					_hash += "localCount('" + key + "')";
+					_hash += "mesh.count('" + key + "')";
 			}
 			else
 				throw new Error();
@@ -78,8 +83,8 @@ package aerys.minko.render.shader
 			_hash += "=" + value;
 		}
 		
-		public function isValid(localBindings 	: DataBindings,
-								globalBindings	: DataBindings) : Boolean
+		public function isValid(meshBindings 	: DataBindings,
+								sceneBindings	: DataBindings) : Boolean
 		{
 			var numKeys	: int	= _keys.length;
 			
@@ -88,11 +93,11 @@ package aerys.minko.render.shader
 				var key		: String		= _keys[i];
 				var flags	: uint			= _flags[i];
 				var value	: Object		= _values[i];
-				var source	: DataBindings	= flags & SOURCE_GLOBAL
-					? globalBindings
-					: localBindings;
+				var source	: DataBindings	= flags & SOURCE_SCENE
+					? sceneBindings
+					: meshBindings;
 				
-				if (flags & OPERATION_COMPARE)
+				if (flags & OPERATION_GET)
 					return compare(source.getProperty(key), value);
 				else if (flags & OPERATION_COUNT)
 					return (source.getProperty(key) ? 1 : 0) == value;
@@ -101,50 +106,29 @@ package aerys.minko.render.shader
 			return true;
 		}
 		
-		public function checkBindings(dataBindings	: DataBindings,
-									  checkFlags	: uint) : Boolean
-		{
-			var numKeys	: int	= _keys.length;
-			
-			for (var i : int = 0; i < numKeys; ++i)
-			{
-				var key		: String		= _keys[i];
-				var flags	: uint			= _flags[i];
-				var value	: Object		= _values[i];
-				
-				if ((flags & checkFlags) == 0)
-					continue ;
-				
-				if (flags & OPERATION_COMPARE)
-					return compare(dataBindings.getProperty(key), value);
-				/*else if ((flags & OPERATION_COUNT)
-				&& !compare(source.countProperty(key), value))
-				return false;*/
-			}
-			
-			return false;
-		}
-		
 		public function checkProperty(propertyName	: String,
 									  value			: Object,
 									  checkFlags	: uint) : Boolean
 		{
-			var propertyId	: uint	= _keys.length - 1;
+			var propertyId	: int	= _keys.length - 1;
 			
-			while (_keys[propertyId] != propertyName)
+			while (propertyId >= 0 && _keys[propertyId] != propertyName)
 				--propertyId;
 			
-			var flags : uint = _flags[propertyId];
+			if (propertyId >= 0)
+			{
+				var flags : uint = _flags[propertyId];
+				
+				if ((flags & checkFlags) == 0)
+					return false;
+				
+				if (flags & OPERATION_GET)
+					return !compare(value, _values[propertyId]);
+				else if (flags & OPERATION_COUNT)
+					return value == null && _values[propertyId] == 0;
+			}
 			
-			if ((flags & checkFlags) == 0)
-				return false;
-			
-			if (flags & OPERATION_COMPARE)
-				return compare(value, _values[propertyId]);
-			else if (flags & OPERATION_COUNT)
-				throw new Error();
-			
-			return false;
+			return true;
 		}
 		
 		private function compare(value1 : Object, value2 : Object) : Boolean

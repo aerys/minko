@@ -1,11 +1,14 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	
 	import avmplus.getQualifiedClassName;
 
 	public class AbstractController
 	{
+		private var _mode			: uint				= 0;
+		
 		private var _lastTime		: Number			= 0.0;
 		private var _lastTarget		: IControllerTarget	= null;
 		
@@ -14,6 +17,11 @@ package aerys.minko.scene.controller
 		private var _ticked			: Signal			= new Signal();
 		private var _targetAdded	: Signal			= new Signal();
 		private var _targetRemoved	: Signal			= new Signal();
+		
+		public function get mode() : uint
+		{
+			return _mode;
+		}
 		
 		public function get ticked() : Signal
 		{
@@ -30,9 +38,11 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function AbstractController(targetType : Class = null)
+		public function AbstractController(mode		  : uint	= 1,
+										   targetType : Class 	= null)
 		{
-			_targetType = targetType;
+			_mode = mode;
+			_targetType = targetType || ISceneNode;
 		}
 		
 		private function targetAddedHandler(controller	: AbstractController,

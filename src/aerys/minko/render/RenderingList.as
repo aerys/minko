@@ -104,6 +104,11 @@ package aerys.minko.render
 			{
 				--_numShaders;
 				delete _shaderToDrawCalls[state];
+				
+				var numShaders : uint = _shaders.length - 1;
+				
+				_shaders[_shaders.indexOf(state)] = _shaders[numShaders];
+				_shaders.length = numShaders;
 			}
 			else
 			{

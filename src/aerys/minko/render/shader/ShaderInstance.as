@@ -165,14 +165,14 @@ package aerys.minko.render.shader
 			context.setDepthTest(_enableDepthWrite, _compareMode);
 		}
 		
-		public static function sort(states : Vector.<ShaderInstance>, numStates : int) : void
+		public static function sort(instances : Vector.<ShaderInstance>, numStates : int) : void
 		{
 			var n 		: int 				= numStates; // states.length;
 			var i		: int 				= 0;
 			var j		: int 				= 0;
 			var k		: int 				= 0;
 			var t		: int				= 0;
-			var state 	: ShaderInstance	= states[0];
+			var state 	: ShaderInstance	= instances[0];
 			var anmin	: Number 			= -state._priority;
 			var nmax	: int  				= 0;
 			var p		: Number			= 0.;
@@ -180,7 +180,7 @@ package aerys.minko.render.shader
 			
 			for (i = 0; i < n; ++i)
 			{
-				state = states[i];
+				state = instances[i];
 				p = -state._priority;
 				
 				TMP_INTS[i] = 0;
@@ -208,12 +208,12 @@ package aerys.minko.render.shader
 				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
 			
 			var hold		: Number 			= Number(TMP_NUMBERS[nmax]);
-			var holdState 	: ShaderInstance 	= states[nmax] as ShaderInstance;
+			var holdState 	: ShaderInstance 	= instances[nmax] as ShaderInstance;
 			
 			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
 			TMP_NUMBERS[0] = hold;
-			states[nmax] = states[0];
-			states[0] = holdState;
+			instances[nmax] = instances[0];
+			instances[0] = holdState;
 			
 			var flash		: Number			= 0.;
 			var flashState	: ShaderInstance	= null;
@@ -231,7 +231,7 @@ package aerys.minko.render.shader
 				}
 				
 				flash = Number(TMP_NUMBERS[j]);
-				flashState = states[j] as ShaderInstance;
+				flashState = instances[j] as ShaderInstance;
 				
 				while (!(j == int(TMP_INTS[k])))
 				{
@@ -239,10 +239,10 @@ package aerys.minko.render.shader
 					
 					t = int(TMP_INTS[k]) - 1;
 					hold = Number(TMP_NUMBERS[t]);
-					holdState = states[t] as ShaderInstance;
+					holdState = instances[t] as ShaderInstance;
 					
 					TMP_NUMBERS[t] = flash;
-					states[t] = flashState;
+					instances[t] = flashState;
 					
 					flash = hold;
 					flashState = holdState;
@@ -255,20 +255,20 @@ package aerys.minko.render.shader
 			for (j = 1; j < n; ++j)
 			{
 				hold = Number(TMP_NUMBERS[j]);
-				holdState = states[j];
+				holdState = instances[j];
 				
 				i = int(j - 1);
 				while (i >= 0 && Number(TMP_NUMBERS[i]) > hold)
 				{
 					// not trivial
 					TMP_NUMBERS[int(i + 1)] = Number(TMP_NUMBERS[i]);
-					states[int(i + 1)] = states[i];
+					instances[int(i + 1)] = instances[i];
 					
 					--i;
 				}
 				
 				TMP_NUMBERS[int(i + 1)] = hold;
-				states[int(i + 1)] = holdState;
+				instances[int(i + 1)] = holdState;
 			}
 		}
 	}

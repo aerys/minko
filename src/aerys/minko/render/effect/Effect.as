@@ -32,10 +32,5 @@ package aerys.minko.render.effect
 		{
 			return _passes[index];
 		}
-		
-		public function fork(data : DataBindings) : void
-		{
-			trace("fork");
-		}
 	}
 }

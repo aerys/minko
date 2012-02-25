@@ -102,37 +102,37 @@ package aerys.minko.render.shader
 		
 		protected function get localToWorldMatrix() : SFloat
 		{
-			return _main._localBindings.getParameter("local to world", 16);
+			return _main._meshBindings.getParameter("local to world", 16);
 		}
 		
 		protected function get worldToViewMatrix() : SFloat
 		{
-			return _main._globalBindings.getParameter("world to view", 16);
+			return _main._sceneBindings.getParameter("world to view", 16);
 		}
 		
 		protected function get worldToScreenMatrix() : SFloat
 		{
-			return _main._globalBindings.getParameter("world to screen", 16);
+			return _main._sceneBindings.getParameter("world to screen", 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
 		{
-			return _main._globalBindings.getParameter("projection", 16);
+			return _main._sceneBindings.getParameter("projection", 16);
 		}
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return _main._globalBindings.getParameter("camera position", 3);
+			return _main._sceneBindings.getParameter("camera position", 3);
 		}
 		
 		protected function get cameraWorldPosition() : SFloat
 		{
-			return _main._globalBindings.getParameter("camera world position", 3);
+			return _main._sceneBindings.getParameter("camera world position", 3);
 		}
 
 		protected function get time() : SFloat
 		{
-			return _main._globalBindings.getParameter("time", 1);
+			return _main._sceneBindings.getParameter("time", 1);
 		}
 		
 		public function ShaderPart(main : Shader) : void
@@ -322,6 +322,16 @@ package aerys.minko.render.shader
 			var bitSh : SFloat = float4(1. / (256. * 256. * 256.), 1. / (256. * 256.), 1. / 256., 1.);
 			
 			return dotProduct4(packedScalar, bitSh);
+		}
+		
+		protected final function rgba(color : uint) : SFloat
+		{
+			return float4(
+				((color >>> 24) & 0xff) / 255.,
+				((color >>> 16) & 0xff) / 255.,
+				((color >>> 8) & 0xff) / 255.,
+				(color & 0xff) / 255.
+			);
 		}
 
 		/**
