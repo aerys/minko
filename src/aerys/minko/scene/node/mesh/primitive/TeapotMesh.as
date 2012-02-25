@@ -2,6 +2,7 @@ package aerys.minko.scene.node.mesh.primitive
 {
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.type.loader.parser.GeometrySanitizer;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -185,7 +186,7 @@ package aerys.minko.scene.node.mesh.primitive
 			var indexData		: Vector.<uint>		= new Vector.<uint>();
 			var vertexData		: Vector.<Number>	= new Vector.<Number>();
 			
-			sanitizeBuffers(dirtyIndexData, dirtyVertexData, indexData, vertexData);
+			GeometrySanitizer.sanitizeBuffers(dirtyVertexData, dirtyIndexData, vertexData, indexData, 3);
 			
 			super(
 				effect,
@@ -269,46 +270,6 @@ package aerys.minko.scene.node.mesh.primitive
 			out.z = c0 * p0.z + c1 * p1.z + c2 * p2.z + c3 * p3.z;
 			
 			return out;
-		}
-		
-		private function sanitizeBuffers(dirtyIndexData 	: Vector.<uint>,
-										 dirtyVertexData	: Vector.<Number>,
-										 indexData			: Vector.<uint>, 
-										 vertexData			: Vector.<Number>) : void
-		{
-			var vertexIndex				: uint;
-			var verticesToIndex			: Object				= new Object();
-			
-			var tmpVertex				: Vector.<Number>		= new Vector.<Number>();
-			var tmpVertexComponentId	: uint					= 0;
-			
-			var numIndices				: uint					= dirtyIndexData.length;
-			var currentNumVertices		: uint					= 0;
-			
-			for (var indexId : uint = 0; indexId < numIndices; ++indexId)
-			{
-				tmpVertexComponentId  = 0;
-				
-				var positionIndex : int = 3 * dirtyIndexData[indexId];
-				tmpVertex[tmpVertexComponentId++] = dirtyVertexData[positionIndex];
-				tmpVertex[tmpVertexComponentId++] = dirtyVertexData[int(positionIndex + 1)];
-				tmpVertex[tmpVertexComponentId++] = dirtyVertexData[int(positionIndex + 2)];
-				
-				var joinedVertex	: String	= tmpVertex.join('|');
-				if (!verticesToIndex.hasOwnProperty(joinedVertex))
-				{
-					for (tmpVertexComponentId = 0; tmpVertexComponentId < 3; ++tmpVertexComponentId)
-						vertexData.push(tmpVertex[tmpVertexComponentId]);
-					
-					verticesToIndex[joinedVertex] = vertexIndex = currentNumVertices++;
-				}
-				else
-				{
-					vertexIndex = verticesToIndex[joinedVertex];
-				}
-				
-				indexData.push(vertexIndex);
-			}
 		}
 	}
 }

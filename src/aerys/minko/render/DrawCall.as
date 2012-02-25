@@ -283,7 +283,7 @@ package aerys.minko.render
 												 oldValue		: Object,
 												 newValue		: Object) : void
 		{
-			setParameter(property, newValue);
+			newValue && setParameter(property, newValue);
 		}
 	}
 }

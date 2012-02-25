@@ -9,16 +9,16 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		private static var _id			: uint		= 0;
+		private static var _id			: uint			= 0;
 
-		private var _name				: String	= null;
-		private var _root				: Group		= null;
-		private var _parent				: Group		= null;
+		private var _name				: String		= null;
+		private var _root				: ISceneNode	= null;
+		private var _parent				: Group			= null;
 		
-		private var _added				: Signal	= new Signal();
-		private var _removed			: Signal	= new Signal();
-		private var _addedToScene		: Signal	= new Signal();
-		private var _removedFromScene	: Signal	= new Signal();
+		private var _added				: Signal		= new Signal();
+		private var _removed			: Signal		= new Signal();
+		private var _addedToScene		: Signal		= new Signal();
+		private var _removedFromScene	: Signal		= new Signal();
 
 		public function get name() : String
 		{
@@ -66,7 +66,7 @@ package aerys.minko.scene.node
 			}
 		}
 		
-		public function get root() : Group
+		public function get root() : ISceneNode
 		{
 			return _root;
 		}
@@ -108,18 +108,18 @@ package aerys.minko.scene.node
 
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-			var oldRoot : Group = _root;
+			var oldRoot : ISceneNode = _root;
 			
-			_root = this.parent.root;
+			_root = _parent ? _parent.root : this;
 			if (_root is Scene)
 				_addedToScene.execute(this, _root);
 		}
 		
 		protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
-			var oldRoot : Group = _root;
+			var oldRoot : ISceneNode = _root;
 			
-			_root = this.parent.root;
+			_root = _parent ? _parent.root : this;
 			if (oldRoot is Scene)
 				_removedFromScene.execute(this, oldRoot);
 		}

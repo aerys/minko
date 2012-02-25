@@ -78,7 +78,7 @@ package aerys.minko.type.stream.format
 			{
 				var otherOffset : uint = _componentOffsets[otherComponent];
 				if (otherOffset > offset)
-					_componentOffsets[component] -= dwords;
+					_componentOffsets[otherComponent] -= dwords;
 			}
 
 			for (var fieldName : String in component.offsets)

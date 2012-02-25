@@ -60,12 +60,12 @@ package aerys.minko.render.shader.compiler
 			MERGER					.process(shaderGraph);
 			
 			OVERWRITER_CLEANER		.process(shaderGraph);
-//			RESOLVE_CONSTANT		.process(shaderGraph);
-//			REMOVE_USELESS			.process(shaderGraph);
-//			RESOLVE_PARAMETRIZED	.process(shaderGraph);
+			RESOLVE_CONSTANT		.process(shaderGraph);
+			REMOVE_USELESS			.process(shaderGraph);
+			RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
 			
-//			MATRIX_TRANSFORMATION	.process(shaderGraph);
+			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
@@ -84,10 +84,6 @@ package aerys.minko.render.shader.compiler
 		
 		public static function compileShader(name : String) : Program3DResource
 		{
-			trace(compileStringShader());
-			trace('vs', _vsConstants);
-			trace('fs', _fsConstants);
-			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
 			

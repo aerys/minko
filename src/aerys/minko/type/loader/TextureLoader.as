@@ -1,89 +1,115 @@
 package aerys.minko.type.loader
 {
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.type.Signal;
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.IBitmapDrawable;
+	import flash.display.DisplayObject;
 	import flash.display.Loader;
+	import flash.display.LoaderInfo;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.events.ProgressEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.system.LoaderContext;
 	import flash.utils.ByteArray;
+	import flash.utils.getQualifiedClassName;
 
-	public final class TextureLoader
+	public final class TextureLoader implements ILoader
 	{
-		public static function loadClass(classObject 		: Class,
-										 enableMipMapping 	: Boolean = true) : TextureResource
+		private var _progress			: Signal;
+		private var _error				: Signal;
+		private var _complete			: Signal;
+		
+		private var _mipmap				: Boolean;
+		private var _textureResource	: TextureResource;
+		
+		public function get progress() : Signal
 		{
-			return new TextureLoader().loadClass(classObject, enableMipMapping);
+			return _progress;
 		}
 		
-		public function TextureLoader()
+		public function get error() : Signal
 		{
+			return _error;
 		}
 		
-		public function loadClass(classObject 		: Class,
-								  enableMipMapping 	: Boolean = true) : TextureResource
+		public function get complete() : Signal
 		{
-			var assetObject : Object 			= new classObject();
+			return _complete;
+		}
+		
+		public function get textureResource() : TextureResource
+		{
+			return _textureResource;
+		}
+		
+		public function TextureLoader(enableMipmapping : Boolean = true)
+		{
+			_mipmap		= enableMipmapping;
 			
+			_error		= new Signal();
+			_progress	= new Signal();
+			_complete	= new Signal();
+		}
+		
+		public function load(request : URLRequest) : void
+		{
+			var loader : URLLoader = new URLLoader();
+			loader.dataFormat = URLLoaderDataFormat.BINARY;
+			loader.addEventListener(ProgressEvent.PROGRESS, onLoadProgressHandler);
+			loader.addEventListener(Event.COMPLETE, onLoadCompleteHandler);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, onLoadIoErrorEvent);
+			loader.load(request);
+		}
+		
+		private function onLoadIoErrorEvent(e : IOErrorEvent) : void
+		{
+			_error.execute(this, e.errorID, e.text);
+		}
+		
+		private function onLoadProgressHandler(e : ProgressEvent) : void
+		{
+			_progress.execute(this, e.bytesLoaded, e.bytesTotal);
+		}
+		
+		private function onLoadCompleteHandler(e : Event) : void
+		{
+			loadBytes(URLLoader(e.currentTarget).data);
+		}
+		
+		public function loadClass(classObject : Class) : void
+		{
+			var assetObject : Object		= new classObject();
 			
-			if (assetObject is BitmapData)
+			if (assetObject is Bitmap || assetObject is BitmapData)
 			{
-				return getResourceFromBitmapData(
-					assetObject as BitmapData,
-					enableMipMapping
-				);
-			}
-			else if (assetObject is IBitmapDrawable)
-			{
-				return getResourceFromBitmapData(
-					(assetObject as Bitmap).bitmapData,
-					enableMipMapping
-				);
+				var bitmapData : BitmapData = assetObject as BitmapData;
+				if (bitmapData == null)
+					bitmapData = Bitmap(assetObject).bitmapData;
+				
+				_textureResource = new TextureResource();
+				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
+				_complete.execute(this, _textureResource);
 			}
 			else if (assetObject is ByteArray)
 			{
-				return getResourceFromByteArray(
-					assetObject as ByteArray,
-					enableMipMapping
-				);
+				loadBytes(ByteArray(assetObject));
 			}
-			
-			throw new Error();
+			else
+			{
+				var className : String = getQualifiedClassName(classObject);
+				className = className.substr(className.lastIndexOf(':') + 1);
+				
+				throw new Error('No texture can be created from an object of type \'' + className + '\'');
+			}
 		}
 		
-		public function load(request 			: URLRequest,
-							 enableMipMapping 	: Boolean = true) : TextureResource
+		public function loadBytes(bytes : ByteArray) : void
 		{
-			var loader 		: Loader			= new Loader();
-			var resource 	: TextureResource 	= new TextureResource();
-			
-			loader.contentLoaderInfo.addEventListener(
-				Event.COMPLETE,
-				getLoaderCompleteHandler(resource, enableMipMapping)
-			);
-			loader.load(request);
-			
-			return resource;
-		}
-		
-		private function getResourceFromBitmapData(source 			: BitmapData,
-												   enableMipMapping	: Boolean) : TextureResource
-		{
-			var resource	: TextureResource	= new TextureResource();
-			
-			resource.setContentFromBitmapData(source, enableMipMapping);
-			
-			return resource;
-		}
-		
-		private function getResourceFromByteArray(bytes 			: ByteArray,
-												  enableMipMapping 	: Boolean) : TextureResource
-		{
-			var loader 		: Loader 			= new Loader();
-			var resource 	: TextureResource 	= new TextureResource();
-			
 			bytes.position = 0;
 			
 			if (bytes.readByte() == 'A'.charCodeAt(0) &&
@@ -91,30 +117,47 @@ package aerys.minko.type.loader
 				bytes.readByte() == 'F'.charCodeAt(0))
 			{
 				bytes.position = 0;
-				resource.setContentFromATF(bytes);
+				_textureResource = new TextureResource();
+				_textureResource.setContentFromATF(bytes);
+				_complete.execute(this, _textureResource);
 			}
 			else
 			{
-				loader.contentLoaderInfo.addEventListener(
-					Event.COMPLETE,
-					getLoaderCompleteHandler(resource, enableMipMapping)
-				);
+				bytes.position = 0;
+				
+				var loader : Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoadBytesComplete);
 				loader.loadBytes(bytes);
 			}
-			
-			return resource;
 		}
 		
-		private function getLoaderCompleteHandler(resource 			: TextureResource,
-												  enableMipMapping 	: Boolean) : Function
+		private function onLoadBytesComplete(e : Event) : void
 		{
-			return function(e : Event) : void
+			var displayObject : DisplayObject = LoaderInfo(e.currentTarget).content;
+			
+			if (displayObject is Bitmap)
 			{
-				resource.setContentFromBitmapData(
-					((e.target as Loader).content as Bitmap).bitmapData,
-					enableMipMapping
-				);
-			};
+				_textureResource = new TextureResource();
+				_textureResource.setContentFromBitmapData(Bitmap(displayObject).bitmapData, _mipmap);
+				_complete.execute(this, _textureResource);
+			}
+			else
+			{
+				var className : String = getQualifiedClassName(displayObject);
+				className = className.substr(className.lastIndexOf(':') + 1);
+				
+				throw new Error('No texture can be created from an object of type \'' + className + '\'');
+			}
+		}
+		
+		public static function loadClass(classObject 		: Class,
+										 enableMipMapping 	: Boolean = true) : TextureResource
+		{
+			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
+			
+			textureLoader.loadClass(classObject);
+			
+			return textureLoader.textureResource;
 		}
 	}
 }

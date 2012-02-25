@@ -1,16 +1,12 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	
-	import flash.display.ShaderInput;
-	import flash.display3D.Program3D;
-	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	
 	use namespace minko_shader;

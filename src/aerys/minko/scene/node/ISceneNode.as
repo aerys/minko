@@ -5,7 +5,7 @@ package aerys.minko.scene.node
 
 	public interface ISceneNode
 	{
-		function get root() : Group;
+		function get root() : ISceneNode;
 		function get parent() : Group;
 		function set parent(value : Group) : void;
 		
