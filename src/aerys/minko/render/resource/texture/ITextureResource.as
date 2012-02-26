@@ -11,7 +11,6 @@ package aerys.minko.render.resource.texture
 	{
 		function setContentFromBitmapData(bitmapData 	: BitmapData,
 										  mipmap 		: Boolean,
-										  smooth		: Boolean	= true,
 										  downSample	: Boolean	= false) : void;
 		
 		function setContentFromATF(atf : ByteArray) : void;

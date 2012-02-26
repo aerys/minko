@@ -1,10 +1,7 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.IControllerTarget;
-	import aerys.minko.scene.node.mesh.primitive.CubeMesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -20,32 +17,33 @@ package aerys.minko.scene.node
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class Group extends Proxy implements ISceneNode, IControllerTarget
+	public dynamic class Group extends Proxy implements ISceneNode
 	{
 		use namespace minko_scene;
 		
 		private static var _id			: uint					= 0;
 		
-		minko_scene var _children		: Vector.<ISceneNode>	= null;
-		minko_scene var _numChildren	: uint					= 0;
+		minko_scene var _children		: Vector.<ISceneNode>			= null;
+		minko_scene var _numChildren	: uint							= 0;
 
-		private var _name				: String				= null;
-		private var _root				: ISceneNode			= null;
-		private var _parent				: Group					= null;
+		private var _name				: String						= null;
+		private var _root				: ISceneNode					= null;
+		private var _parent				: Group							= null;
 		
-		private var _numDescendants		: uint					= 0;
-		private var _transform			: Matrix4x4				= new Matrix4x4();
-		private var _localToWorld		: Matrix4x4				= new Matrix4x4();
+		private var _numDescendants		: uint							= 0;
+		private var _transform			: Matrix4x4						= new Matrix4x4();
+		private var _localToWorld		: Matrix4x4						= new Matrix4x4();
 		
-		private var _controller			: AbstractController	= null;
+		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
-		private var _added				: Signal				= new Signal();
-		private var _removed			: Signal				= new Signal();
-		private var _addedToScene		: Signal				= new Signal();
-		private var _removedFromScene	: Signal				= new Signal();
-		private var _childAdded			: Signal				= new Signal();
-		private var _childRemoved		: Signal				= new Signal();
-		private var _controllerChanged	: Signal				= new Signal();
+		private var _added				: Signal						= new Signal();
+		private var _removed			: Signal						= new Signal();
+		private var _addedToScene		: Signal						= new Signal();
+		private var _removedFromScene	: Signal						= new Signal();
+		private var _childAdded			: Signal						= new Signal();
+		private var _childRemoved		: Signal						= new Signal();
+		private var _controllerAdded	: Signal						= new Signal();
+		private var _controllerRemoved	: Signal						= new Signal();
 
 		public function get name() : String
 		{
@@ -123,25 +121,6 @@ package aerys.minko.scene.node
 			return _localToWorld;
 		}
 		
-		public function get controller() : AbstractController
-		{
-			return _controller;
-		}
-		public function set controller(value : AbstractController) : void
-		{
-			if (value != _controller)
-			{
-				var oldController : AbstractController	= _controller;
-				
-				_controller = value;
-				_controllerChanged.execute(this, oldController, value);
-				
-				if (oldController)
-					oldController.targetRemoved.execute(oldController, this);
-				_controller.targetAdded.execute(_controller, this);
-			}
-		}
-		
 		public function get added() : Signal
 		{
 			return _added;
@@ -172,9 +151,19 @@ package aerys.minko.scene.node
 			return _childRemoved;
 		}
 		
-		public function get controllerChanged() : Signal
+		public function get numControllers() : uint
 		{
-			return _controllerChanged;
+			return _controllers.length;
+		}
+		
+		public function get controllerAdded() : Signal
+		{
+			return _controllerAdded;
+		}
+		
+		public function get controllerRemoved() : Signal
+		{
+			return _controllerRemoved;
 		}
 		
 		public function Group(...children)
@@ -459,6 +448,30 @@ package aerys.minko.scene.node
 		override flash_proxy function nextValue(index : int) : *
 		{
 			return _children[int(index - 1)];
+		}
+		
+		public function addController(controller : AbstractController) : void
+		{
+			_controllers.push(controller);
+
+			controller.targetAdded.execute(controller, this);
+			_controllerAdded.execute(this, controller);
+		}
+		
+		public function removeController(controller : AbstractController) : void
+		{
+			var numControllers	: uint = _controllers.length - 1;
+			
+			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
+			_controllers.length = numControllers;
+			
+			controller.targetRemoved.execute(controller, this);
+			_controllerRemoved.execute(this, controller);
+		}
+		
+		public function getController(index : uint) : AbstractController
+		{
+			return _controllers[index];
 		}
 	}
 }

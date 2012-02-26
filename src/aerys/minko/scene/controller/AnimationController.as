@@ -5,8 +5,6 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
-	import aerys.minko.type.animation.timeline.ScalarRegularTimeline;
-	import aerys.minko.type.data.DataProvider;
 	
 	import flash.utils.getTimer;
 
@@ -194,7 +192,7 @@ package aerys.minko.scene.controller
 			return _isPlaying;
 		}
 		
-		override protected function updateTarget(target : IControllerTarget) : void
+		override protected function updateTarget(target : ISceneNode) : void
 		{
 			var numTimelines 	: int 	= _timelines.length;
 			var group			: Group	= target as Group;

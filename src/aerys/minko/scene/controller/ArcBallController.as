@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -111,7 +112,7 @@ package aerys.minko.scene.controller
 		
 		public function ArcBallController()
 		{
-			super(ControllerMode.TICK, Group);
+			super(Group);
 			
 			_sensitivity = DEFAULT_SENSITIVITY;
 			
@@ -160,7 +161,7 @@ package aerys.minko.scene.controller
 			return mustUpdate;
 		}
 		
-		override protected function updateTarget(target : IControllerTarget):void
+		override protected function updateTarget(target : ISceneNode) : void
 		{
 			(target as Group).transform.copyFrom(_transform);
 		}

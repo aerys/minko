@@ -15,7 +15,7 @@ package aerys.minko.scene.controller
 	
 	import flash.utils.Dictionary;
 
-	public class RenderingController extends AbstractController
+	public final class RenderingController extends AbstractController
 	{
 		use namespace minko_scene;
 		
@@ -26,6 +26,8 @@ package aerys.minko.scene.controller
 			return _instance || (_instance = new RenderingController());
 		}
 		
+		private var _effect				: Effect					= null;
+		
 		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		private var _invalidSignatures	: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		private var _hashToInstance		: Object					= new Object();
@@ -33,9 +35,12 @@ package aerys.minko.scene.controller
 		private var _meshToPasses		: Dictionary				= new Dictionary(true);
 		private var _meshToDrawCalls	: Dictionary				= new Dictionary(true);
 		
-		public function RenderingController(mode : uint = ControllerMode.SIGNAL)
+		public function RenderingController(effect 	: Effect	= null,
+											mode 	: uint 		= ControllerMode.SIGNAL)
 		{
-			super(mode, Mesh);
+			super(Mesh, mode);
+			
+			_effect = effect;
 			
 			initialize();
 		}
@@ -51,6 +56,10 @@ package aerys.minko.scene.controller
 		{
 			target.addedToScene.add(meshAddedToSceneHandler);
 			target.removedFromScene.add(meshRemovedFromSceneHandler);
+			target.visibilityChanged.add(meshVisibilityChangedHandler);
+			
+			if (target.root is Scene)
+				meshAddedToSceneHandler(target, target.root as Scene);
 		}
 		
 		private function targetRemovedHandler(controller	: RenderingController,
@@ -58,12 +67,13 @@ package aerys.minko.scene.controller
 		{
 			target.addedToScene.remove(meshAddedToSceneHandler);
 			target.removedFromScene.remove(meshRemovedFromSceneHandler);
+			target.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
 		private function meshAddedToSceneHandler(mesh	: Mesh,
 												 scene	: Scene) : void
 		{
-			var effect		: Effect	= mesh.effect;
+			var effect		: Effect	= _effect || mesh.effect;
 			var numPasses	: uint		= effect.numPasses;
 			
 			for (var i : uint = 0; i < numPasses; ++i)
@@ -80,6 +90,16 @@ package aerys.minko.scene.controller
 			scene.renderingList.removeDrawCalls(
 				_meshToPasses[mesh], _meshToDrawCalls[mesh]
 			);
+		}
+		
+		private function meshVisibilityChangedHandler(mesh			: Mesh,
+													  visibility	: Boolean) : void
+		{
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numDrawCalls	: uint				= drawCalls.length;
+			
+			for (var callId : uint = 0; callId < numDrawCalls; ++callId)
+				(drawCalls[callId] as DrawCall).enabled = visibility;
 		}
 		
 		private function effectChangedHandler(mesh		: Mesh,

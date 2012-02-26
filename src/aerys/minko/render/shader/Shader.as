@@ -19,13 +19,14 @@ package aerys.minko.render.shader
 		minko_shader var _sceneBindings	: ShaderDataBindings	= null;
 		minko_shader var _kills			: Vector.<INode>		= new <INode>[];
 		
-		private var _name					: String					= null;
+		private var _name			: String					= null;
 		
-		private var _instances				: Object					= {};
-		private var _signatures				: Vector.<ShaderSignature>	= new <ShaderSignature>[];
+		private var _instances		: Object					= {};
+		private var _signatures		: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		
-		private var _instanciated			: Signal					= new Signal();
-		private var _instanceInvalidated	: Signal					= new Signal();
+		private var _instanciated	: Signal					= new Signal();
+		private var _begin			: Signal					= new Signal();
+		private var _end			: Signal					= new Signal();
 		
 		public function get name() : String
 		{
@@ -51,9 +52,14 @@ package aerys.minko.render.shader
 			return _instanciated;
 		}
 		
-		public function get instanceInvalidated() : Signal
+		public function get begin() : Signal
 		{
-			return _instanceInvalidated;
+			return _begin;
+		}
+		
+		public function get end() : Signal
+		{
+			return _end;
 		}
 		
 		public function Shader()
@@ -110,6 +116,7 @@ package aerys.minko.render.shader
 					
 					// compile the shader program
 					instance = new ShaderInstance(this, signature);
+					initializeInstance(instance);
 					
 					Compiler.load(new ShaderGraph(op, oc, _kills), 0xffffffff);
 					instance.program = Compiler.compileShader(_name);
@@ -130,6 +137,11 @@ package aerys.minko.render.shader
 		public function getInstanceBySignature(signature : ShaderSignature) : ShaderInstance
 		{
 			return _instances[signature.hash];
+		}
+		
+		protected function initializeInstance(instance : ShaderInstance) : void
+		{
+			// nothing
 		}
 		
 		protected function getVertexPosition() : SFloat

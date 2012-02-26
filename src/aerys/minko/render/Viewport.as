@@ -122,11 +122,12 @@ package aerys.minko.render
 									width	: uint,
 									height	: uint) : void
 		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			
 			_autoResize = width == 0 && height == 0;
 			if (_autoResize)
 			{
-				stage.scaleMode = StageScaleMode.NO_SCALE;
-				stage.align = StageAlign.TOP_LEFT;
 				stage.addEventListener(Event.RESIZE, stageResizedHandler);
 				
 				width = stage.stageWidth;

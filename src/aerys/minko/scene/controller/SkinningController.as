@@ -10,7 +10,7 @@ package aerys.minko.scene.controller
 	
 	import flash.geom.Matrix3D;
 
-	public class SkinningController extends RenderingController
+	public class SkinningController extends AbstractController
 	{
 		use namespace minko_math;
 		
@@ -99,7 +99,7 @@ package aerys.minko.scene.controller
 					break;
 				
 				case SkinningMethod.DUAL_QUATERNION_SCALE:
-					throw new Error('This skinning method yet to be implemented.');
+					throw new Error('This skinning method is yet to be implemented.');
 					
 				default:
 					throw new Error('Invalid skinning method.');

@@ -27,9 +27,6 @@ package aerys.minko.render.shader
 		
 		private var _enabled			: Boolean			= true;
 		
-		private var _begin				: Signal			= new Signal();
-		private var _end				: Signal			= new Signal();
-		
 		public function get owner() : Shader
 		{
 			return _owner;
@@ -103,16 +100,6 @@ package aerys.minko.render.shader
 			_enabled = value;
 		}
 		
-		public function get begin() : Signal
-		{
-			return _begin;
-		}
-		
-		public function get end() : Signal
-		{
-			return _end;
-		}
-		
 		public final function ShaderInstance(owner 		: Shader,
 											 signature	: ShaderSignature)
 		{
@@ -167,7 +154,7 @@ package aerys.minko.render.shader
 		
 		public static function sort(instances : Vector.<ShaderInstance>, numStates : int) : void
 		{
-			var n 		: int 				= numStates; // states.length;
+			var n 		: int 				= numStates;
 			var i		: int 				= 0;
 			var j		: int 				= 0;
 			var k		: int 				= 0;

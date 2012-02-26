@@ -3,8 +3,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.IControllerTarget;
 	import aerys.minko.scene.controller.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
@@ -19,7 +17,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public class Mesh extends AbstractSceneNode implements IControllerTarget
+	public class Mesh extends AbstractSceneNode
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
@@ -44,14 +42,10 @@ package aerys.minko.scene.node.mesh
 		
 		private var _visible				: Boolean					= true;
 		
-		private var _controller				: AbstractController		= null;
-		
-		private var _controllerChanged		: Signal					= new Signal();
 		private var _effectChanged			: Signal					= new Signal();
 /*		private var _vertexStreamChanged	: Signal					= new Signal();
 		private var _indexStreamChanged		: Signal					= new Signal();*/
-		private var _show					: Signal					= new Signal();
-		private var _hide					: Signal					= new Signal();
+		private var _visibilityChanged		: Signal					= new Signal();
 		
 		public function get bindings() : DataBindings
 		{
@@ -100,12 +94,7 @@ package aerys.minko.scene.node.mesh
 			_visible = value;
 			
 			if (oldVisible != value)
-			{
-				if (value)
-					_show.execute(this);
-				else
-					_hide.execute(this);
-			}
+				_visibilityChanged.execute(this, value);
 		}
 		
 		/**
@@ -119,28 +108,9 @@ package aerys.minko.scene.node.mesh
 			return _vertexStreams.length;
 		}
 		
-		public function get controller() : AbstractController
+		public function get visibilityChanged() : Signal
 		{
-			return _controller;
-		}
-		public function set controller(value : AbstractController) : void
-		{
-			if (value != _controller)
-			{
-				var oldController : AbstractController = _controller;
-				
-				_controller = value;
-				_controllerChanged.execute(this, oldController, value);
-				
-				if (oldController)
-					oldController.targetRemoved.execute(oldController, this);
-				_controller.targetAdded.execute(_controller, this);
-			}
-		}
-		
-		public function get controllerChanged() : Signal
-		{
-			return _controllerChanged;
+			return _visibilityChanged;
 		}
 		
 		public function Mesh(effect			: Effect					= null,
@@ -180,7 +150,7 @@ package aerys.minko.scene.node.mesh
 			if (properties)
 				_bindings.setProperties(properties);
 			
-			controller = RenderingController.renderingController;
+			addController(RenderingController.renderingController);
 		}
 		
 		/**
@@ -215,11 +185,7 @@ package aerys.minko.scene.node.mesh
 			super.addedToSceneHandler(child, scene);
 	
 			if (child == this)
-			{
 				_bindings.addProperty("local to world", parent.localToWorld);
-
-//				updateEffectInstance(scene);
-			}
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -227,58 +193,8 @@ package aerys.minko.scene.node.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			if (child == this)
-			{
 				_bindings.removeProperty("local to world");
-				
-//				updateEffectInstance(scene);
-			}
 		}
-		
-		/*private function updateEffectInstance(scene : Scene) : void
-		{
-			if (_effectInstance)
-			{
-				_effectInstance.dispose();
-				_effectInstance = null;
-			}
-			
-			if (scene && _effect)
-			{
-				_effectInstance = new EffectInstance(
-					_effect, _bindings, scene.bindings
-				);
-				_effectInstance.drawCallAdded.add(
-					drawCallAddedHandler
-				);
-				_effectInstance.fillRenderingList(scene.renderingList);
-				_effectInstance.enabled = _visible;
-			}
-		}*/
-		
-		/*private function drawCallAddedHandler(effectInstance	: EffectInstance,
-											  drawCall			: DrawCall) : void
-		{
-			configureDrawCall(drawCall);
-		}*/
-		
-		/*minko_scene function configureDrawCall(drawCall	: DrawCall) : void
-		{
-			var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
-			
-			if (components.indexOf(VertexComponent.TANGENT) >= 0
-				&& _vertexStreams[0].getStreamByComponent(VertexComponent.TANGENT) == null)
-			{
-				computeTangentSpace(StreamUsage.STATIC);
-			}
-			else if (components.indexOf(VertexComponent.NORMAL) >= 0
-				&& _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
-			{
-				computeNormals(StreamUsage.STATIC);
-			}
-			
-			drawCall.setStreams(_vertexStreams, _indexStream);
-			drawCall.setBindings(_bindings, (root as Scene).bindings);
-		}*/
 		
 		protected function copyFrom(source 			: Mesh,
 									withBindings 	: Boolean,

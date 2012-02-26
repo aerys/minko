@@ -136,10 +136,12 @@ package aerys.minko.type.math
 								  m31 : Number	= 0., m32 : Number	= 0., m33 : Number	= 1., m34 : Number	= 0.,
 								  m41 : Number	= 0., m42 : Number	= 0., m43 : Number	= 0., m44 : Number	= 1.)
 		{
-			initialize(m11, m12, m13, m14,
-					   m21, m22, m23, m24,
-					   m31, m32, m33, m34,
-					   m41, m42, m43, m44);
+			initialize(
+				m11, m12, m13, m14,
+				m21, m22, m23, m24,
+				m31, m32, m33, m34,
+				m41, m42, m43, m44
+			);
 		}
 
 		public function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,

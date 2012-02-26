@@ -42,7 +42,6 @@ package aerys.minko.render.resource.texture
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
 								   				 mipmap		: Boolean,
-												 smooth		: Boolean	= true,
 												 downSample	: Boolean	= false) : void
 		{
 			var bitmapWidth		: uint 	= bitmapData.width;
@@ -72,11 +71,11 @@ package aerys.minko.render.resource.texture
 			{
 				TMP_MATRIX.identity();
 				TMP_MATRIX.scale(w / bitmapWidth, h / bitmapHeight);
-				_bitmapData.draw(bitmapData, TMP_MATRIX, null, null, null, smooth);
+				_bitmapData.draw(bitmapData, TMP_MATRIX);
 			}
 			else
 			{
-				_bitmapData.draw(bitmapData, null, null, null, null, smooth);
+				_bitmapData.draw(bitmapData);
 			}
 			
 			if (_texture
