@@ -22,6 +22,7 @@ package aerys.minko.scene.controller
 		private var _isDirty			: Boolean				= true;
 		
 		private var _skinningMethod		: uint					= uint.MAX_VALUE;
+		private var _maxInfluences		: uint					= uint.MAX_VALUE;
 		private var _bindShape			: Matrix4x4				= new Matrix4x4();
 		private var _skeletonRoot		: Group					= new Group();
 		private var _joints				: Vector.<Group>		= null;
@@ -37,6 +38,7 @@ package aerys.minko.scene.controller
 		}
 		
 		public function SkinningController(skinningMethod	: uint,
+										   maxInfluences	: uint,
 										   skeletonRoot		: Group,
 										   joints 			: Vector.<Group>,
 										   invBindMatrices	: Vector.<Matrix4x4>)
@@ -44,6 +46,7 @@ package aerys.minko.scene.controller
 			super();
 			
 			_skinningMethod		= skinningMethod;
+			_maxInfluences		= maxInfluences;
 			_skeletonRoot		= skeletonRoot;
 			_joints				= joints;
 			_invBindMatrices	= invBindMatrices;
@@ -53,7 +56,10 @@ package aerys.minko.scene.controller
 		
 		private function initialize() : void
 		{
-			_skinningData.numBones = _joints.length;
+			_skinningData.skinningMethod		= _skinningMethod;
+			_skinningData.skinningNumBones		= _joints.length;
+			_skinningData.skinningBindShape		= _bindShape;
+			_skinningData.skinningMaxInfluences	= _maxInfluences;
 			
 			targetAdded.add(targetAddedHandler);
 			
@@ -94,8 +100,8 @@ package aerys.minko.scene.controller
 				case SkinningMethod.DUAL_QUATERNION:
 					writeMatrices();
 					writeDualQuaternions();
-					_skinningData.dqn = _dqn;
-					_skinningData.dqd = _dqd;
+					_skinningData.skinningDQn = _dqn;
+					_skinningData.skinningDQd = _dqd;
 					break;
 				
 				case SkinningMethod.DUAL_QUATERNION_SCALE:
