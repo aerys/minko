@@ -53,16 +53,6 @@ package aerys.minko.render.shader
 			_enabled = value;
 		}
 
-		protected function get meshBindings() : ShaderDataBindings
-		{
-			return _meshBindings;
-		}
-		
-		protected function get sceneBindings() : ShaderDataBindings
-		{
-			return _sceneBindings;
-		}
-		
 		public function get instanciated() : Signal
 		{
 			return _forked;

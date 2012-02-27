@@ -140,6 +140,16 @@ package aerys.minko.render.shader
 			_main = main;
 		}
 		
+		protected function get meshBindings() : ShaderDataBindings
+		{
+			return _main._meshBindings;
+		}
+		
+		protected function get sceneBindings() : ShaderDataBindings
+		{
+			return _main._sceneBindings;
+		}
+				
 		/**
 		 * Interpolate vertex shader values to make them usable inside the
 		 * fragment shader.
@@ -659,12 +669,6 @@ package aerys.minko.render.shader
 			);
 		}
 		
-		/*protected final function getParameter(bindingName	: String,
-											  size			: uint) : SFloat
-		{
-			return new SFloat(new BindableConstant(bindingName, size));
-		}*/
-		
 		protected final function getTexture(textureResource : TextureResource,
 											filter			: uint = SamplerFilter.LINEAR,
 											mipmap			: uint = SamplerMipmap.DISABLE,
@@ -673,15 +677,6 @@ package aerys.minko.render.shader
 		{
 			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension));
 		}
-		
-		/*protected final function getTextureParameter(bindingName	: String,
-													 filter			: uint = SamplerFilter.LINEAR,
-													 mipmap			: uint = SamplerMipmap.DISABLE,
-													 wrapping		: uint = SamplerWrapping.REPEAT,
-													 dimension		: uint = SamplerDimension.FLAT) : SFloat
-		{
-			return new SFloat(new BindableSampler(bindingName, filter, mipmap, wrapping, dimension));
-		}*/
 		
 		protected final function getFieldFromArray(index	: Object,
 												   constant : Object,
