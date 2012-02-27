@@ -136,10 +136,12 @@ package aerys.minko.type.math
 								  m31 : Number	= 0., m32 : Number	= 0., m33 : Number	= 1., m34 : Number	= 0.,
 								  m41 : Number	= 0., m42 : Number	= 0., m43 : Number	= 0., m44 : Number	= 1.)
 		{
-			initialize(m11, m12, m13, m14,
-					   m21, m22, m23, m24,
-					   m31, m32, m33, m34,
-					   m41, m42, m43, m44);
+			initialize(
+				m11, m12, m13, m14,
+				m21, m22, m23, m24,
+				m31, m32, m33, m34,
+				m41, m42, m43, m44
+			);
 		}
 
 		public function initialize(m11 : Number, m12 : Number, m13 : Number, m14 : Number,
@@ -606,6 +608,18 @@ package aerys.minko.type.math
 			_changed.execute(this, null);
 		}
 		
+		public function compareTo(matrix : Matrix4x4) : Boolean
+		{
+			_matrix.copyRawDataTo(TMP_VECTOR);
+			matrix._matrix.copyRawDataTo(TMP_VECTOR, 16);
+			
+			for (var i : int = 0; i < 16; ++i)
+				if (TMP_VECTOR[i] != TMP_VECTOR[int(i + 16)])
+					return false;
+			
+			return true;
+		}
+		
 		public static function multiply(m1 	: Matrix4x4,
 										m2 	: Matrix4x4,
 										out	: Matrix4x4	= null) : Matrix4x4
@@ -989,6 +1003,5 @@ package aerys.minko.type.math
 		{
 			return (FACTORY.create() as Matrix4x4).setRawData(data, offset, transposed);
 		}
-
 	}
 }

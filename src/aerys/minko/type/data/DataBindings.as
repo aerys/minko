@@ -4,33 +4,43 @@ package aerys.minko.type.data
 	
 	import flash.utils.Dictionary;
 
-	public final class DataBinding
+	public final class DataBindings
 	{
 		private static const NO_KEY	: String		= "__no_key__";
 		
-		private var _bindings			: Dictionary				= new Dictionary(true);
-		private var _values				: Object					= {};
-		private var _properties			: Vector.<String>			= new <String>[];
+		private var _bindings			: Dictionary		= new Dictionary(true);
+		private var _values				: Object			= {};
+		private var _properties			: Vector.<String>	= new <String>[];
 		
-		private var _propertyChanged	: Signal					= new Signal();
-		
-		public function get propertyChanged() : Signal
-		{
-			return _propertyChanged;
-		}
+		private var _propertyChanged	: Object			= {};
 		
 		public function get numProperties() : uint
 		{
 			return _properties.length;
 		}
 		
-		public function DataBinding()
+		public function DataBindings()
 		{
 		}
 		
-		public function clone() : DataBinding
+		public function propertyExists(propertyName : String) : Boolean
 		{
-			var clone 			: DataBinding 	= new DataBinding();
+			return _values.hasOwnProperty(propertyName);
+		}
+		
+		public function getPropertyChangedSignal(property : String) : Signal
+		{
+			var signal : Signal = _propertyChanged[property];
+			
+			if (!signal)
+				_propertyChanged[property] = signal = new Signal();
+			
+			return signal;
+		}
+		
+		public function clone() : DataBindings
+		{
+			var clone 			: DataBindings 	= new DataBindings();
 			var clonedBindings	: Dictionary	= clone._bindings;
 			
 			for (var source : Object in _bindings)
@@ -47,7 +57,7 @@ package aerys.minko.type.data
 			return clone;
 		}
 		
-		public function add(dataProvider : IDataProvider) : DataBinding
+		public function add(dataProvider : IDataProvider) : DataBindings
 		{
 			var dataDescriptor 	: Object 	= dataProvider.dataDescriptor;
 			
@@ -74,7 +84,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function remove(dataProvider : IDataProvider) : DataBinding
+		public function remove(dataProvider : IDataProvider) : DataBindings
 		{
 			var dataDescriptor 	: Object 	= dataProvider.dataDescriptor;
 			
@@ -84,7 +94,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		private function setProperty(propertyName : String, value : Object) : DataBinding
+		public function setProperty(propertyName : String, value : Object) : DataBindings
 		{
 			var oldValue : Object = _values[propertyName];
 			
@@ -93,7 +103,17 @@ package aerys.minko.type.data
 			
 			_values[propertyName] = value;
 			
-			_propertyChanged.execute(this, propertyName, oldValue, value);
+			getPropertyChangedSignal(propertyName).execute(
+				this, propertyName, oldValue, value
+			);
+			
+			return this;
+		}
+		
+		public function setProperties(properties : Object) : DataBindings
+		{
+			for (var propertyName : String in properties)
+				setProperty(propertyName, properties[propertyName]);
 			
 			return this;
 		}
@@ -110,7 +130,7 @@ package aerys.minko.type.data
 		
 		public function addProperty(propertyName 	: String,
 									source			: IDataProvider,
-									key				: Object	= null) : DataBinding
+									key				: Object	= null) : DataBindings
 		{
 			var bindingTable : Object = _bindings[source] as Object;
 			
@@ -130,7 +150,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function removeProperty(propertyName : String) : DataBinding
+		public function removeProperty(propertyName : String) : DataBindings
 		{
 			var numSources	: int	= 0;
 			
@@ -176,10 +196,23 @@ package aerys.minko.type.data
 				}
 			}
 			
+			var numProperties	: int	= _properties.length - 1;
+			
+			_properties[_properties.indexOf(propertyName)] = _properties[numProperties];
+			_properties.length = numProperties;
+			
+			var oldValue : Object = _values[propertyName];
+			
+			delete _values[propertyName];
+			
+			getPropertyChangedSignal(propertyName).execute(
+				this, propertyName, oldValue, null
+			);
+			
 			return this;
 		}
 		
-		public function clear() : DataBinding
+		public function clear() : DataBindings
 		{
 			for (var source : Object in _bindings)
 			{
@@ -210,7 +243,6 @@ package aerys.minko.type.data
 			else
 			{
 				// "some" properties have changed (ie. DataProvider.invalidate() was called)
-				
 				for (var key : Object in bindingTable)
 				{
 					propertyName = bindingTable[key];

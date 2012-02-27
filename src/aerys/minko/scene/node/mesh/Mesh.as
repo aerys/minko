@@ -4,17 +4,12 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.EffectInstance;
-	import aerys.minko.render.shader.ShaderTemplate;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.IControllerTarget;
+	import aerys.minko.scene.controller.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBinding;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -23,7 +18,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public class Mesh extends AbstractSceneNode implements IControllerTarget
+	public class Mesh extends AbstractSceneNode
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
@@ -39,31 +34,24 @@ package aerys.minko.scene.node.mesh
 			VertexComponent.NORMAL
 		);
 		
-		minko_scene var _drawCalls		: Vector.<DrawCall>			= new <DrawCall>[];
-		minko_scene var _vertexStreams	: Vector.<IVertexStream>	= null;
+		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 		
-		private var _localBindings		: DataBinding			= new DataBinding();
-		private var _localData			: DataProvider			= new DataProvider();
+		private var _effect				: Effect		= null;
+		private var _bindings			: DataBindings	= new DataBindings();
 		
-		private var _effect				: Effect				= null;
-		private var _effectInstance		: EffectInstance		= null;
+		private var _triangleCulling	: uint			= 0;
+		private var _blending			: uint			= 0;
 		
-		private var _indexStream		: IndexStream			= null;
+		private var _indexStream		: IndexStream	= null;
 		
-		private var _visible			: Boolean				= true;
+		private var _visible			: Boolean		= true;
 		
-		private var _controller			: AbstractController	= null;
+		private var _effectChanged		: Signal		= new Signal();
+		private var _visibilityChanged	: Signal		= new Signal();
 		
-		private var _controllerChanged	: Signal				= new Signal();
-		
-		public function get effectBindings() : DataBinding
+		public function get bindings() : DataBindings
 		{
-			return _localBindings;
-		}
-		
-		public function get effectData() : DataProvider
-		{
-			return _localData;
+			return _bindings;
 		}
 		
 		public function get effect() : Effect
@@ -75,10 +63,11 @@ package aerys.minko.scene.node.mesh
 			if (_effect == value)
 				return ;
 			
-			_effect = value;
-			_effectInstance = new EffectInstance(_effect, _localBindings);
+			var oldEffect : Effect = _effect;
 			
-			updateDrawCalls();
+			_effect = value;
+			
+			_effectChanged.execute(this, oldEffect, value);
 		}
 		
 		public function get indexStream() : IndexStream
@@ -88,7 +77,6 @@ package aerys.minko.scene.node.mesh
 		public function set indexStream(value : IndexStream) : void
 		{
 			_indexStream = value;
-			updateDrawCalls();
 		}
 
 		/**
@@ -103,15 +91,12 @@ package aerys.minko.scene.node.mesh
 		}
 		public function set visible(value : Boolean) : void
 		{
-			if (value != _visible)
-			{
-				_visible = value;
-				
-				var numDrawCalls : int = _drawCalls.length;
-				
-				for (var callId : int = 0; callId < numDrawCalls; ++callId)
-					(_drawCalls[callId] as DrawCall).enabled = value;
-			}
+			var oldVisible : Boolean = _visible;
+			
+			_visible = value;
+			
+			if (oldVisible != value)
+				_visibilityChanged.execute(this, value);
 		}
 		
 		/**
@@ -125,46 +110,36 @@ package aerys.minko.scene.node.mesh
 			return _vertexStreams.length;
 		}
 		
-		public function get controller() : AbstractController
+		public function get visibilityChanged() : Signal
 		{
-			return _controller;
-		}
-		public function set controller(value : AbstractController) : void
-		{
-			if (value != _controller)
-			{
-				var oldController : AbstractController = _controller;
-				
-				_controller = value;
-				_controllerChanged.execute(this, oldController, value);
-				
-				if (oldController)
-					oldController.targetRemoved.execute(oldController, this);
-				
-				_controller.targetAdded.execute(_controller, this);
-			}
+			return _visibilityChanged;
 		}
 		
-		public function get controllerChanged() : Signal
+		public function get triangleCulling() : uint
 		{
-			return _controllerChanged;
+			return _triangleCulling;
+		}
+		public function set triangleCulling(value : uint) : void
+		{
+			_triangleCulling = value;
 		}
 		
 		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
-							 indexStream	: IndexStream				= null)
+							 indexStream	: IndexStream				= null,
+							 properties		: Object					= null)
 		{
 			super();
 
 			_vertexStreams = vertexStreams || new Vector.<IVertexStream>();
 			_indexStream = indexStream;
 			
-			initialize();
+			initialize(properties);
 			
 			this.effect = effect;
 		}
 		
-		private function initialize() : void
+		private function initialize(properties : Object) : void
 		{
 			if (!_indexStream && _vertexStreams && _vertexStreams.length)
 			{
@@ -174,6 +149,23 @@ package aerys.minko.scene.node.mesh
 					_vertexStreams[0].length
 				);
 			}
+			
+			for each (var vstream : IVertexStream in _vertexStreams)
+			{
+				if (!vstream.format.equals(_vertexStreams[0].format))
+					throw new Error(
+						"All vertex streams must have the same vertex format"
+					);
+			}
+			
+			if (properties)
+				_bindings.setProperties(properties);
+			
+			var ctrl : RenderingController	= new RenderingController();
+			
+			ctrl.drawCallCreated.add(drawCallCreatedHandler);
+			
+			addController(ctrl);
 		}
 		
 		/**
@@ -188,39 +180,19 @@ package aerys.minko.scene.node.mesh
 			return _vertexStreams[index];
 		}
 		
-		/**
-		 * Set a vertex stream.
-		 *  
-		 * @param vertexStream
-		 * @param index
-		 * 
-		 */
 		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
 		{
 			_vertexStreams[index] = vertexStream;
-			
-			updateDrawCalls();
 		}
 		
-		public function createDrawCall(pass : ShaderTemplate) : DrawCall
+		public function clone(withBindings 	: Boolean 	= true,
+							  shareStreams	: Boolean	= true) : Mesh
 		{
-			var drawCall 	: DrawCall 					= pass.drawCallTemplate.clone();
-			var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
+			var clone : Mesh = new Mesh();
 			
-			if (components.indexOf(VertexComponent.TANGENT) >= 0
-				&& _vertexStreams[0].getStreamByComponent(VertexComponent.TANGENT) == null)
-			{
-				computeTangentSpace(StreamUsage.STATIC);
-			}
-			else if (components.indexOf(VertexComponent.NORMAL) >= 0
-				&& _vertexStreams[0].getStreamByComponent(VertexComponent.NORMAL) == null)
-			{
-				computeNormals(StreamUsage.STATIC);
-			}
+			clone.copyFrom(this, withBindings, shareStreams);
 			
-			drawCall.setStreams(_vertexStreams, _indexStream);
-			
-			return drawCall;
+			return clone;
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -228,15 +200,7 @@ package aerys.minko.scene.node.mesh
 			super.addedToSceneHandler(child, scene);
 	
 			if (child == this)
-			{
-				_localBindings
-					.add(_localData)
-					.addProperty("local to world", parent.localToWorld);
-				
-				// enable local and blogal bindings
-				addDataBinding(_localBindings);
-				addDataBinding(scene.globalBindings);
-			}
+				_bindings.addProperty("local to world", parent.localToWorld);
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -244,116 +208,28 @@ package aerys.minko.scene.node.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			if (child == this)
-			{
-				_localBindings
-					.remove(_localData)
-					.removeProperty("local to world");
+				_bindings.removeProperty("local to world");
+		}
+		
+		protected function copyFrom(source 			: Mesh,
+									withBindings 	: Boolean,
+									shareStreams	: Boolean) : void
+		{
+			if (shareStreams)
+				_vertexStreams = source._vertexStreams;
+			else
+				_vertexStreams = source._vertexStreams.concat();
 				
-				// disable local and global bindings
-				removeDataBinding(_localBindings);
-				removeDataBinding(scene.globalBindings);
-			}
-		}
-		
-		private function effectChangedHandler(effect : Effect, property : String = null) : void
-		{
-			updateDrawCalls();
-		}
-		
-		private function updateDrawCalls() : void
-		{
-			if (!_indexStream)
-				return ;
-			
-			var numPasses 	: int 	= _effect ? _effect.numPasses : 0;
-			
-			_drawCalls.length = numPasses;
-			for (var i : int = 0; i < numPasses; ++i)
-				_drawCalls[i] = createDrawCall(_effect.getPass(i));
-		}
-		
-		/**
-		 * Add a new data binding source and starts listening it.
-		 *  
-		 * @param dataBinding
-		 * 
-		 */
-		private function addDataBinding(dataBinding : DataBinding) : void
-		{
-			dataBinding.propertyChanged.add(
-				dataBindingPropertyChangedHandler
-			);
-			
-			var numProperties : uint = dataBinding.numProperties;
-			
-			for (var propId : uint = 0; propId < numProperties; ++propId)
-			{
-				var propertyName : String = dataBinding.getPropertyName(propId);
-				
-				dataBindingPropertyChangedHandler(
-					dataBinding,
-					propertyName,
-					null,
-					dataBinding.getProperty(propertyName)
-				);
-			}
-		}
-		
-		/**
-		 * Remove a data binding source and stop listening it.
-		 *  
-		 * @param dataBinding
-		 * 
-		 */
-		private function removeDataBinding(dataBinding : DataBinding) : void
-		{
-			dataBinding.propertyChanged.remove(
-				dataBindingPropertyChangedHandler
-			);
-		}
-		
-		private function dataBindingPropertyChangedHandler(dataBinding	: DataBinding,
-														   propertyName	: String,
-														   oldValue		: Object,
-														   newValue		: Object) : void
-		{
-			var numDrawCalls : int	= _drawCalls.length;
-			
-			for (var callId : int = 0; callId < numDrawCalls; ++callId)
-			{
-				(_drawCalls[callId] as DrawCall).setParameter(
-					propertyName,
-					newValue
-				);
-			}
-		}
-		
-		public function clone(withBindings : Boolean = true) : Mesh
-		{
-			var clone : Mesh = new Mesh();
-			
-			clone.copyFrom(this, withBindings);
-			
-			return clone;
-		}
-		
-		protected function copyFrom(source : Mesh, withBindings : Boolean) : void
-		{
-			_effect = source._effect;
-			_vertexStreams = source._vertexStreams.concat();
 			_indexStream = source._indexStream;
 			name = source.name;
 			
 			if (withBindings)
-				_localBindings = _localBindings.clone();
+				_bindings = _bindings.clone();
 			
-			var numDrawCalls	: int	= source._drawCalls.length;
-			
-			for (var callId : int = 0; callId < numDrawCalls; ++callId)
-				_drawCalls[callId] = source._drawCalls[callId].clone();
+			effect = source._effect;
 		}
 		
-		private function computeNormals(usage : uint) : void
+		public function computeNormals(streamUsage : uint) : void
 		{
 			var indices			: Vector.<uint>		= _indexStream._data;
 			var numTriangles	: int				= _indexStream.length / 3;
@@ -428,12 +304,12 @@ package aerys.minko.scene.node.mesh
 				
 				pushVertexStream(
 					streamId,
-					new VertexStream(usage, FORMAT_NORMALS, normals)
+					new VertexStream(streamUsage, FORMAT_NORMALS, normals)
 				);
 			}
 		}
 		
-		private function computeTangentSpace(usage : uint) : void
+		public function computeTangentSpace(streamUsage : uint) : void
 		{
 			var indices			: Vector.<uint>		= _indexStream._data;
 			var numTriangles	: int				= _indexStream.length / 3;
@@ -599,7 +475,7 @@ package aerys.minko.scene.node.mesh
 				
 				pushVertexStream(
 					streamId,
-					new VertexStream(usage, withNormals ? FORMAT_TN : FORMAT_TANGENTS, data)
+					new VertexStream(streamUsage, withNormals ? FORMAT_TN : FORMAT_TANGENTS, data)
 				);
 			}
 		}
@@ -614,6 +490,12 @@ package aerys.minko.scene.node.mesh
 				_vertexStreams[index] = stream = new VertexStreamList(stream);
 			
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
+		}
+		
+		private function drawCallCreatedHandler(controller	: RenderingController,
+												drawCall	: DrawCall) : void
+		{
+			
 		}
 	}
 }

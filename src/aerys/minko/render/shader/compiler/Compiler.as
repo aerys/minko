@@ -65,7 +65,7 @@ package aerys.minko.render.shader.compiler
 			RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
 			
-			MATRIX_TRANSFORMATION	.process(shaderGraph);
+//			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);

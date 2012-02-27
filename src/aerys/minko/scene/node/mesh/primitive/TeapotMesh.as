@@ -162,7 +162,10 @@ package aerys.minko.scene.node.mesh.primitive
 			new Vector3D(1.5, -0.84, 0.075), 		new Vector3D(0.798, -1.425, 0.0),		new Vector3D(1.425, -0.798, 0.0)
 		];
 		
-		public function TeapotMesh(effect : Effect, divs : uint = 10, streamsUsage : uint = 0)
+		public function TeapotMesh(effect 		: Effect,
+								   properties	: Object	= null,
+								   divs 		: uint 		= 10,
+								   streamsUsage : uint 		= 0)
 		{
 			var dirtyIndexData	: Vector.<uint>		= new Vector.<uint>();
 			var dirtyVertexData	: Vector.<Number>	= new Vector.<Number>();
@@ -193,7 +196,8 @@ package aerys.minko.scene.node.mesh.primitive
 				new <IVertexStream>[
 					new VertexStream(streamsUsage, VertexFormat.XYZ, vertexData)
 				],
-				new IndexStream(streamsUsage, indexData)
+				new IndexStream(streamsUsage, indexData),
+				properties
 			);
 			
 			if (divs < 1)

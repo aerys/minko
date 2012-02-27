@@ -47,14 +47,6 @@ package aerys.minko.type.loader
 			return _textureResource;
 		}
 		
-//		public static function loadClass(classObject 		: Class,
-//										 enableMipMapping 	: Boolean = true) : TextureLoader
-//		{
-//			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
-//			textureLoader.loadClass(classObject);
-//			return textureLoader;
-//		}
-		
 		public function TextureLoader(enableMipmapping : Boolean = true)
 		{
 			_mipmap		= enableMipmapping;
@@ -156,6 +148,16 @@ package aerys.minko.type.loader
 				
 				throw new Error('No texture can be created from an object of type \'' + className + '\'');
 			}
+		}
+		
+		public static function loadClass(classObject 		: Class,
+										 enableMipMapping 	: Boolean = true) : TextureResource
+		{
+			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
+			
+			textureLoader.loadClass(classObject);
+			
+			return textureLoader.textureResource;
 		}
 	}
 }

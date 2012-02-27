@@ -10,6 +10,7 @@ package aerys.minko.scene.node.mesh.primitive
 	public class QuadMesh extends Mesh
 	{
 		public function QuadMesh(effect			: Effect,
+								 properties		: Object	= null,
 								 doubleSided	: Boolean 	= false,
 								 width 			: uint 		= 1,
 								 height 		: uint 		= 0,
@@ -51,7 +52,8 @@ package aerys.minko.scene.node.mesh.primitive
 			super(
 				effect,
 				new <IVertexStream>[vstream],
-				new IndexStream(streamsUsage, indices)
+				new IndexStream(streamsUsage, indices),
+				properties
 			);
 		}
 

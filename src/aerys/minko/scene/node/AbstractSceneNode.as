@@ -1,6 +1,7 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
 	
 	import flash.utils.getQualifiedClassName;
@@ -9,16 +10,20 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		private static var _id			: uint			= 0;
+		private static var _id			: uint							= 0;
 
-		private var _name				: String		= null;
-		private var _root				: ISceneNode	= null;
-		private var _parent				: Group			= null;
+		private var _name				: String						= null;
+		private var _root				: ISceneNode					= null;
+		private var _parent				: Group							= null;
 		
-		private var _added				: Signal		= new Signal();
-		private var _removed			: Signal		= new Signal();
-		private var _addedToScene		: Signal		= new Signal();
-		private var _removedFromScene	: Signal		= new Signal();
+		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
+		
+		private var _added				: Signal						= new Signal();
+		private var _removed			: Signal						= new Signal();
+		private var _addedToScene		: Signal						= new Signal();
+		private var _removedFromScene	: Signal						= new Signal();
+		private var _controllerAdded	: Signal						= new Signal();
+		private var _controllerRemoved	: Signal						= new Signal();
 
 		public function get name() : String
 		{
@@ -91,6 +96,21 @@ package aerys.minko.scene.node
 			return _removedFromScene;
 		}
 		
+		public function get numControllers() : uint
+		{
+			return _controllers.length;
+		}
+		
+		public function get controllerAdded() : Signal
+		{
+			return _controllerAdded;
+		}
+		
+		public function get controllerRemoved() : Signal
+		{
+			return _controllerRemoved;
+		}
+		
 		public function AbstractSceneNode()
 		{
 			initialize();
@@ -132,6 +152,30 @@ package aerys.minko.scene.node
 		protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			// nothing
+		}
+		
+		public function addController(controller : AbstractController) : void
+		{
+			_controllers.push(controller);
+			
+			controller.targetAdded.execute(controller, this);
+			_controllerAdded.execute(this, controller);
+		}
+		
+		public function removeController(controller : AbstractController) : void
+		{
+			var numControllers	: uint = _controllers.length - 1;
+			
+			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
+			_controllers.length = numControllers;
+			
+			controller.targetRemoved.execute(controller, this);
+			_controllerRemoved.execute(this, controller);
+		}
+		
+		public function getController(index : uint) : AbstractController
+		{
+			return _controllers[index];
 		}
 		
 		public static function getDefaultSceneName(scene : ISceneNode) : String

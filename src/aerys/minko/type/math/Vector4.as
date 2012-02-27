@@ -181,17 +181,19 @@ package aerys.minko.type.math
 
 		public static function crossProduct(u : Vector4, v : Vector4) : Vector4
 		{
-			return new Vector4(u._vector.y * v._vector.z - v._vector.y * u._vector.z,
-							   u._vector.z * v._vector.x - v._vector.z * u._vector.x,
-							   u._vector.x * v._vector.y - v._vector.x * u._vector.y);
+			return new Vector4(
+				u._vector.y * v._vector.z - v._vector.y * u._vector.z,
+				u._vector.z * v._vector.x - v._vector.z * u._vector.x,
+				u._vector.x * v._vector.y - v._vector.x * u._vector.y
+			);
 		}
 
-		public static function equals(u : Vector4, v : Vector4, allFour : Boolean = false) : Boolean
+		public function compareTo(v : Vector4, allFour : Boolean = false) : Boolean
 		{
-			return u._vector.x == v._vector.x
-				   && u._vector.y == v._vector.y
-				   && u._vector.z == v._vector.z
-				   && (!allFour || (u._vector.w == v._vector.w));
+			return _vector.x == v._vector.x
+				   && _vector.y == v._vector.y
+				   && _vector.z == v._vector.z
+				   && (!allFour || (_vector.w == v._vector.w) || (isNaN(_vector.w) && isNaN(v._vector.w)));
 		}
 
 		public static function distance(u : Vector4, v : Vector4) : Number

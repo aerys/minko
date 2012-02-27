@@ -3,10 +3,8 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.AbstractSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
-	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
@@ -21,13 +19,13 @@ package aerys.minko.render.shader
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
 
-	public class ShaderTemplatePart
+	public class ShaderPart
 	{
 		use namespace minko_shader;
 		
-		private var _main	: ShaderTemplate	= null;
+		private var _main	: ActionScriptShader	= null;
 		
-		protected final function get main() : ShaderTemplate
+		protected final function get main() : ActionScriptShader
 		{
 			return _main;
 		}
@@ -104,40 +102,40 @@ package aerys.minko.render.shader
 		
 		protected function get localToWorldMatrix() : SFloat
 		{
-			return getParameter("local to world", 16);
+			return _main._meshBindings.getParameter("local to world", 16);
 		}
 		
 		protected function get worldToViewMatrix() : SFloat
 		{
-			return getParameter("world to view", 16);
+			return _main._sceneBindings.getParameter("world to view", 16);
 		}
 		
 		protected function get worldToScreenMatrix() : SFloat
 		{
-			return getParameter("world to screen", 16);
+			return _main._sceneBindings.getParameter("world to screen", 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
 		{
-			return getParameter("projection", 16);
+			return _main._sceneBindings.getParameter("projection", 16);
 		}
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return getParameter("camera position", 3);
+			return _main._sceneBindings.getParameter("camera position", 3);
 		}
 		
 		protected function get cameraWorldPosition() : SFloat
 		{
-			return getParameter("camera world position", 3);
+			return _main._sceneBindings.getParameter("camera world position", 3);
 		}
 
 		protected function get time() : SFloat
 		{
-			return getParameter("time", 1);
+			return _main._sceneBindings.getParameter("time", 1);
 		}
 		
-		public function ShaderTemplatePart(main : ShaderTemplate) : void
+		public function ShaderPart(main : ActionScriptShader) : void
 		{
 			_main = main;
 		}
@@ -324,6 +322,16 @@ package aerys.minko.render.shader
 			var bitSh : SFloat = float4(1. / (256. * 256. * 256.), 1. / (256. * 256.), 1. / 256., 1.);
 			
 			return dotProduct4(packedScalar, bitSh);
+		}
+		
+		protected final function rgba(color : uint) : SFloat
+		{
+			return float4(
+				((color >>> 24) & 0xff) / 255.,
+				((color >>> 16) & 0xff) / 255.,
+				((color >>> 8) & 0xff) / 255.,
+				(color & 0xff) / 255.
+			);
 		}
 
 		/**
@@ -640,7 +648,7 @@ package aerys.minko.render.shader
 		
 		protected final function kill(value : Object) : void
 		{
-			main.minko_shader::_kills.push(getNode(value));
+			main._kills.push(getNode(value));
 		}
 		
 		protected final function localToScreen(vertex : Object) : SFloat
@@ -650,12 +658,12 @@ package aerys.minko.render.shader
 				worldToScreenMatrix
 			);
 		}
-
-		protected final function getParameter(bindingName	: String,
+		
+		/*protected final function getParameter(bindingName	: String,
 											  size			: uint) : SFloat
 		{
 			return new SFloat(new BindableConstant(bindingName, size));
-		}
+		}*/
 		
 		protected final function getTexture(textureResource : TextureResource,
 											filter			: uint = SamplerFilter.LINEAR,
@@ -666,14 +674,14 @@ package aerys.minko.render.shader
 			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension));
 		}
 		
-		protected final function getTextureParameter(bindingName	: String,
+		/*protected final function getTextureParameter(bindingName	: String,
 													 filter			: uint = SamplerFilter.LINEAR,
 													 mipmap			: uint = SamplerMipmap.DISABLE,
 													 wrapping		: uint = SamplerWrapping.REPEAT,
 													 dimension		: uint = SamplerDimension.FLAT) : SFloat
 		{
 			return new SFloat(new BindableSampler(bindingName, filter, mipmap, wrapping, dimension));
-		}
+		}*/
 		
 		protected final function getFieldFromArray(index	: Object,
 												   constant : Object,

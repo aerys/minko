@@ -1,19 +1,27 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	
 	import avmplus.getQualifiedClassName;
 
 	public class AbstractController
 	{
-		private var _lastTime		: Number			= 0.0;
-		private var _lastTarget		: IControllerTarget	= null;
+		private var _mode			: uint			= 0;
 		
-		private var _targetType		: Class				= null;
+		private var _lastTime		: Number		= 0.0;
+		private var _lastTarget		: ISceneNode	= null;
 		
-		private var _ticked			: Signal			= new Signal();
-		private var _targetAdded	: Signal			= new Signal();
-		private var _targetRemoved	: Signal			= new Signal();
+		private var _targetType		: Class			= null;
+		
+		private var _ticked			: Signal		= new Signal();
+		private var _targetAdded	: Signal		= new Signal();
+		private var _targetRemoved	: Signal		= new Signal();
+		
+		public function get mode() : uint
+		{
+			return _mode;
+		}
 		
 		public function get ticked() : Signal
 		{
@@ -30,13 +38,15 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function AbstractController(targetType : Class = null)
+		public function AbstractController(targetType : Class 	= null,
+										   mode		  : uint	= 1)
 		{
-			_targetType = targetType;
+			_targetType = targetType || ISceneNode;
+			_mode = mode;
 		}
 		
 		private function targetAddedHandler(controller	: AbstractController,
-											target		: IControllerTarget) : void
+											target		: ISceneNode) : void
 		{
 			if (_targetType && !(target is _targetType))
 			{
@@ -48,7 +58,7 @@ package aerys.minko.scene.controller
 			}
 		}
 		
-		public function tick(target : IControllerTarget, time : Number) : void
+		public function tick(target : ISceneNode, time : Number) : void
 		{
 			var update : Boolean	= false;
 			
@@ -74,7 +84,7 @@ package aerys.minko.scene.controller
 			return false;
 		}
 		
-		protected function updateTarget(target : IControllerTarget) : void
+		protected function updateTarget(target : ISceneNode) : void
 		{
 			// nothing
 		}

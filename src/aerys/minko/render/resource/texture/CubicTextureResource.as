@@ -31,7 +31,6 @@ package aerys.minko.render.resource.texture
 		
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
 												 mipmap		: Boolean,
-												 smooth		: Boolean	= true,
 												 downSample	: Boolean	= false) : void
 		{
 			_bitmapDatas = new <BitmapData>[];

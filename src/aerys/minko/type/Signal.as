@@ -33,7 +33,9 @@ package aerys.minko.type
 		
 		public function execute(...params) : void
 		{
-			for (var i : uint = 0; i < _numCallbacks; ++i)
+			var numCallbacks : uint = _numCallbacks;
+			
+			for (var i : uint = 0; i < numCallbacks; ++i)
 				(_callbacks[i] as Function).apply(null, params);
 		}
 	}

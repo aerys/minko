@@ -41,7 +41,7 @@ package aerys.minko.scene.controller
 										   joints 			: Vector.<Group>,
 										   invBindMatrices	: Vector.<Matrix4x4>)
 		{
-			super(Mesh);
+			super();
 			
 			_skinningMethod		= skinningMethod;
 			_skeletonRoot		= skeletonRoot;
@@ -64,13 +64,13 @@ package aerys.minko.scene.controller
 		private function targetAddedHandler(controller	: SkinningController, 
 											mesh		: Mesh) : void
 		{
-			mesh.effectBindings.add(_skinningData);
+			mesh.bindings.add(_skinningData);
 		}
 		
 		private function targetRemovedHandler(controlller	: SkinningController,
 											  mesh			: Mesh) : void
 		{
-			mesh.effectBindings.remove(_skinningData);
+			mesh.bindings.remove(_skinningData);
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
@@ -99,7 +99,7 @@ package aerys.minko.scene.controller
 					break;
 				
 				case SkinningMethod.DUAL_QUATERNION_SCALE:
-					throw new Error('This skinning method yet to be implemented.');
+					throw new Error('This skinning method is yet to be implemented.');
 					
 				default:
 					throw new Error('Invalid skinning method.');

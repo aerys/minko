@@ -1,7 +1,7 @@
 package aerys.minko.render
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.shader.ShaderTemplate;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -108,6 +108,13 @@ package aerys.minko.render
 			return _exitFrame;
 		}
 		
+		public function get driverInfo() : String
+		{
+			return _stage3d && _stage3d.context3D
+				? _stage3d.context3D.driverInfo
+				: null;
+		}
+		
 		public function Viewport(stage	 		: Stage,
 								 antiAliasing	: uint	= 0,
 								 width			: uint 	= 0,
@@ -122,11 +129,12 @@ package aerys.minko.render
 									width	: uint,
 									height	: uint) : void
 		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+			
 			_autoResize = width == 0 && height == 0;
 			if (_autoResize)
 			{
-				stage.scaleMode = StageScaleMode.NO_SCALE;
-				stage.align = StageAlign.TOP_LEFT;
 				stage.addEventListener(Event.RESIZE, stageResizedHandler);
 				
 				width = stage.stageWidth;
