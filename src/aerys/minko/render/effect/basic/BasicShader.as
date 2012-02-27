@@ -1,13 +1,28 @@
 package aerys.minko.render.effect.basic
 {
-	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.parts.SkinningShaderPart;
 	
 	public class BasicShader extends ActionScriptShader
 	{
+		private var _skinning	: SkinningShaderPart	= null;
+		
+		public function BasicShader()
+		{
+			super();
+			
+			_skinning = new SkinningShaderPart(this);
+		}
+		
 		override protected function getVertexPosition() : SFloat
 		{
-			return localToScreen(vertexXYZ);
+			var vertexPosition	: SFloat = vertexXYZ;
+			
+			if (meshBindings.propertyExists("skinningMethod"))
+				vertexPosition = _skinning.skinPosition(vertexPosition);
+			
+			return localToScreen(vertexPosition);
 		}
 		
 		override protected function getPixelColor() : SFloat
