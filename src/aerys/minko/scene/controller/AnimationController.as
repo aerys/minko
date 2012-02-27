@@ -202,7 +202,7 @@ package aerys.minko.scene.controller
 				var timeline : ITimeline = _timelines[i] as ITimeline;
 				
 				timeline.updateAt(
-					_currentTime % timeline.duration,
+					_currentTime % (timeline.duration + 1),
 					target
 				);
 			}
