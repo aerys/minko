@@ -178,7 +178,7 @@ package aerys.minko.type.loader
 		private function onParseComplete(parser : IParser, loadedData : ISceneNode) : void
 		{
 			_data = loadedData;
-			_complete.execute(this);
+			_complete.execute(this, loadedData);
 		}
 	}
 }
