@@ -57,7 +57,7 @@ package aerys.minko.render.shader.parts
 		
 		private function matrixSkinPosition(inVertexPosition : SFloat) : SFloat
 		{
-			var numBones			: uint		= meshBindings.countProperty('skinningMatrices');
+			var numBones			: uint		= uint(meshBindings.getProperty('skinningNumBones'));
 			var maxInfluences		: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
 			var outVertexPosition	: SFloat	= null;
 			
@@ -87,7 +87,7 @@ package aerys.minko.render.shader.parts
 				}
 				else
 				{
-					outVertexPosition = float4(0);
+					outVertexPosition = float4(0, 0, 0, 0);
 					
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
@@ -112,7 +112,7 @@ package aerys.minko.render.shader.parts
 		{
 			inVertexNormal = inVertexNormal.xyz;
 			
-			var numBones		: uint		= meshBindings.countProperty('skinningMatrices');
+			var numBones		: uint		= uint(meshBindings.getProperty('skinningNumBones'));
 			var maxInfluences	: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
 			var outVertexNormal	: SFloat	= null;
 			
@@ -142,7 +142,7 @@ package aerys.minko.render.shader.parts
 				}
 				else
 				{
-					outVertexNormal = float4(0);
+					outVertexNormal = float4(0, 0, 0, 0);
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
 						jointAttr			= getVertexAttribute(VertexComponent.BONES[i]);
@@ -165,8 +165,8 @@ package aerys.minko.render.shader.parts
 		
 		private function dualQuaternionSkinPosition(inPosition : SFloat) : SFloat
 		{
-			var numBones		: uint		= meshBindings.countProperty('skinningMatrices');
-			var maxInfluences	: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones		: uint	= uint(meshBindings.getProperty('skinningNumBones'));
+			var maxInfluences	: uint	= uint(meshBindings.getProperty('skinningMaxInfluences'));
 			
 			var outVertexPosition	: SFloat	= null;
 			var result				: SFloat	= null;
@@ -197,8 +197,8 @@ package aerys.minko.render.shader.parts
 				}
 				else
 				{
-					dQn = float4(0);
-					dQd	= float4(0);
+					dQn = float4(0, 0, 0, 0);
+					dQd	= float4(0, 0, 0, 0);
 					
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
@@ -249,8 +249,8 @@ package aerys.minko.render.shader.parts
 		
 		private function dualQuaternionSkinNormal(inNormal : SFloat) : SFloat
 		{
-			var numBones		: uint	= meshBindings.countProperty('skinningMatrices');
-			var maxInfluences	: uint	= uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones		: uint = uint(meshBindings.getProperty('skinningNumBones'));
+			var maxInfluences	: uint = uint(meshBindings.getProperty('skinningMaxInfluences'));
 			
 			var outNormal	: SFloat = null;
 			
@@ -279,8 +279,8 @@ package aerys.minko.render.shader.parts
 				}
 				else
 				{
-					dQn = float4(0);
-					dQd	= float4(0);
+					dQn = float4(0, 0, 0, 0);
+					dQd	= float4(0, 0, 0, 0);
 					
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{

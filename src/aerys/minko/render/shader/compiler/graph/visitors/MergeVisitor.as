@@ -17,11 +17,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	public class MergeVisitor extends AbstractVisitor
 	{
 		private var _hashsToNodes	: Dictionary;
-		private var _visitMethods	: Dictionary;
 		
 		public function MergeVisitor()
 		{
-			super(false);
+			super(true);
 		}
 		
 		override protected function start() : void
@@ -36,54 +35,54 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitInstruction(instruction	: Instruction,
 													 isVertexShader	: Boolean) : void
 		{
-			var hash			: uint	= instruction.hash;
-			var instructionEq	: INode	= _hashsToNodes[hash];
 			
-			if (instructionEq)
-				replaceInParent(instruction, instructionEq);
+			if (_hashsToNodes[instruction.arg1.hash] != undefined)
+				instruction.arg1 = _hashsToNodes[instruction.arg1.hash];
 			else
 			{
-				_hashsToNodes[hash] = instruction;
-				
+				_hashsToNodes[instruction.arg1.hash] = instruction.arg1;
 				visit(instruction.arg1, isVertexShader);
-				if (!instruction.isSingle)
+			}
+			
+			if (!instruction.isSingle)
+			{
+				if (_hashsToNodes[instruction.arg2.hash] != undefined)
+					instruction.arg2 = _hashsToNodes[instruction.arg2.hash];
+				else
+				{
+					_hashsToNodes[instruction.arg2.hash] = instruction.arg2;
 					visit(instruction.arg2, isVertexShader);
+				}
 			}
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate,
 													 isVertexShader	: Boolean) : void
 		{
-			var hash			: uint	= interpolate.hash;
-			var interpolateEq	: INode	= _hashsToNodes[hash];
-			
-			if (interpolateEq)
-				replaceInParent(interpolate, interpolateEq);
+			if (_hashsToNodes[interpolate.arg.hash] != undefined)
+				interpolate.arg = _hashsToNodes[interpolate.arg.hash];
 			else
 			{
-				_hashsToNodes[hash] = interpolate;
-				
-				visit(interpolate.arg, true);
+				_hashsToNodes[interpolate.arg.hash] = interpolate.arg;
+				visit(interpolate.arg, false);
 			}
 		}
 		
 		override protected function visitOverwriter(overwriter		: Overwriter,
 													isVertexShader	: Boolean) : void
 		{
-			var hash			: uint	= overwriter.hash;
-			var overwriterEq	: INode	= _hashsToNodes[hash];
+			var args	: Vector.<INode>	= overwriter.args;
+			var numArgs	: uint				= args.length;
 			
-			if (overwriterEq)
-				replaceInParent(overwriter, overwriterEq);
-			else
+			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				_hashsToNodes[hash] = overwriter;
-				
-				var args	: Vector.<INode> = overwriter.args;
-				var numArgs	: uint = args.length;
-				
-				for (var argId : uint = 0; argId < numArgs; ++argId)
+				if (_hashsToNodes[args[argId].hash] != undefined)
+					args[argId] = _hashsToNodes[args[argId].hash];
+				else
+				{
+					_hashsToNodes[args[argId].hash] = args[argId];
 					visit(args[argId], isVertexShader);
+				}
 			}
 		}
 		
@@ -93,17 +92,20 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (!isVertexShader)
 				throw new Error('VariadicExtract can only be found on vertex shaders.');
 			
-			var hash				: uint = variadicExtract.hash;
-			var variadicExtractEq	: INode = _hashsToNodes[hash];
-			
-			if (variadicExtractEq)
-				replaceInParent(variadicExtract, variadicExtractEq);
+			if (_hashsToNodes[variadicExtract.index.hash] != undefined)
+				variadicExtract.index = _hashsToNodes[variadicExtract.index.hash];
 			else
 			{
-				_hashsToNodes[hash] = variadicExtract;
-				
-				visit(variadicExtract.index, true);
-				visit(variadicExtract.constant, true);
+				_hashsToNodes[variadicExtract.index.hash] = variadicExtract.index;
+				visit(variadicExtract.index, false);
+			}
+			
+			if (_hashsToNodes[variadicExtract.constant.hash] != undefined)
+				variadicExtract.constant = _hashsToNodes[variadicExtract.constant.hash];
+			else
+			{
+				_hashsToNodes[variadicExtract.constant.hash] = variadicExtract.constant;
+				visit(variadicExtract.constant, false);
 			}
 		}
 		
@@ -116,42 +118,26 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitAttribute(attribute		: Attribute,
 												   isVertexShader	: Boolean) : void
 		{
-			visitNonTraversable(attribute);
 		}
 		
 		override protected function visitConstant(constant		 : Constant,
 												  isVertexShader : Boolean) : void
 		{
-			visitNonTraversable(constant);
 		}
 		
 		override protected function visitBindableConstant(parameter		 : BindableConstant,
 														  isVertexShader : Boolean) : void
 		{
-			visitNonTraversable(parameter);
 		}
 		
 		override protected function visitSampler(sampler		: Sampler,
 												 isVertexShader	: Boolean) : void
 		{
-			visitNonTraversable(sampler);
 		}
 		
 		override protected function visitBindableSampler(bindableSampler : BindableSampler,
 														 isVertexShader	 : Boolean) : void
 		{
-			visitNonTraversable(bindableSampler);
-		}
-		
-		private function visitNonTraversable(node : INode) : void
-		{
-			var hash	: uint	= node.hash;
-			var nodeEq	: INode	= _hashsToNodes[hash];
-			
-			if (nodeEq)
-				replaceInParent(node, nodeEq);
-			else
-				_hashsToNodes[hash] = node;
 		}
 		
 	}
