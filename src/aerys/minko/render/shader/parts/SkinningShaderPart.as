@@ -108,7 +108,7 @@ package aerys.minko.render.shader.parts
 			return outVertexPosition;
 		}
 		
-		public function matrixSkinNormal(inVertexNormal : SFloat) : SFloat
+		private function matrixSkinNormal(inVertexNormal : SFloat) : SFloat
 		{
 			inVertexNormal = inVertexNormal.xyz;
 			
@@ -163,7 +163,7 @@ package aerys.minko.render.shader.parts
 		}
 		
 		
-		public function dualQuaternionSkinPosition(inPosition : SFloat) : SFloat
+		private function dualQuaternionSkinPosition(inPosition : SFloat) : SFloat
 		{
 			var numBones		: uint		= meshBindings.countProperty('skinningMatrices');
 			var maxInfluences	: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
@@ -247,7 +247,7 @@ package aerys.minko.render.shader.parts
 			return result;
 		}
 		
-		public function dualQuaternionSkinNormal(inNormal : SFloat) : SFloat
+		private function dualQuaternionSkinNormal(inNormal : SFloat) : SFloat
 		{
 			var numBones		: uint	= meshBindings.countProperty('skinningMatrices');
 			var maxInfluences	: uint	= uint(meshBindings.getProperty('skinningMaxInfluences'));
