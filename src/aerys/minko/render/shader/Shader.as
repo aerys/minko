@@ -1,55 +1,98 @@
 package aerys.minko.render.shader
 {
-	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.Compiler;
-	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBindings;
 	
-	import flash.utils.getQualifiedClassName;
-	
-	use namespace minko_shader;
-	
-	public class Shader extends ShaderPart
-	{
-		use namespace minko_shader;
-		
-		minko_shader var _meshBindings	: ShaderDataBindings	= null;
-		minko_shader var _sceneBindings	: ShaderDataBindings	= null;
-		minko_shader var _kills			: Vector.<INode>		= new <INode>[];
-		
-		private var _name			: String					= null;
-		
-		private var _instances		: Object					= {};
-		private var _signatures		: Vector.<ShaderSignature>	= new <ShaderSignature>[];
-		
-		private var _instanciated	: Signal					= new Signal();
-		private var _begin			: Signal					= new Signal();
-		private var _end			: Signal					= new Signal();
-		
-		public function get name() : String
-		{
-			return _name;
-		}
-		public function set name(value : String) : void
-		{
-			_name = value;
-		}
+	import flash.display3D.Context3D;
+	import flash.display3D.Context3DCompareMode;
+	import flash.geom.Rectangle;
 
-		protected function get meshBindings() : ShaderDataBindings
+	public class Shader
+	{
+		
+		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);
+		private static const TMP_INTS		: Vector.<int>		= new Vector.<int>(0xffff, true);
+		
+		private var _signature					: ShaderSignature	= null;
+		
+		private var _priority					: Number			= 0.;
+		
+		private var _renderTarget				: RenderTarget		= null;
+		private var _program					: Program3DResource	= null;
+		private var _compareMode				: String			= null;
+		private var _enableDepthWrite			: Boolean			= true;
+		private var _rectangle					: Rectangle			= null;
+		
+		private var _enabled					: Boolean			= true;
+		
+		private var _begin						: Signal			= new Signal();
+		private var _end						: Signal			= new Signal();
+		private var _addedToRenderingList		: Signal			= new Signal();
+		private var _removedFromRenderingList	: Signal			= new Signal();
+		
+		public function get signature() : ShaderSignature
 		{
-			return _meshBindings;
+			return _signature;
 		}
 		
-		protected function get sceneBindings() : ShaderDataBindings
+		public function get priority() : Number
 		{
-			return _sceneBindings;
+			return _priority;
+		}
+		public function set priority(value : Number) : void
+		{
+			_priority = value;
 		}
 		
-		public function get instanciated() : Signal
+		public function get scissorRectangle() : Rectangle
 		{
-			return _instanciated;
+			return _rectangle;
+		}
+		public function set scissorRectangle(value : Rectangle) : void
+		{
+			_rectangle = value;
+		}
+		
+		public function get compareMode() : String
+		{
+			return _compareMode;
+		}
+		public function set compareMode(value : String) : void
+		{
+			_compareMode = value;
+		}
+		
+		public function get enableDepthWrite() : Boolean
+		{
+			return _enableDepthWrite;
+		}
+		public function set enableDepthWrite(value : Boolean) : void
+		{
+			_enableDepthWrite = value;
+		}
+		
+		public function get program() : Program3DResource
+		{
+			return _program;
+		}
+		
+		public function get renderTarget() : RenderTarget
+		{
+			return _renderTarget;
+		}
+		public function set renderTarget(value : RenderTarget) : void
+		{
+			_renderTarget = value;
+		}
+		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
 		}
 		
 		public function get begin() : Signal
@@ -62,100 +105,173 @@ package aerys.minko.render.shader
 			return _end;
 		}
 		
-		public function Shader()
+		public function get addedToRenderingList() : Signal
 		{
-			super(this);
-			
-			_name = getQualifiedClassName(this);
+			return _addedToRenderingList;
 		}
 		
-		public function instanciate(meshBindings	: DataBindings,
-									sceneBindings	: DataBindings) : ShaderInstance
+		public function get removedFromRenderingList() : Signal
 		{
-			// find compatible signature
-			var numSignatures	: int 				= _signatures.length;
-			var signature		: ShaderSignature	= null;
+			return _removedFromRenderingList;
+		}
+		
+		public final function Shader(program	: Program3DResource,
+											 signature	: ShaderSignature	= null)
+		{
+			_program = program;
+			_signature = signature;
 			
-			for (var signId : int = 0; signId < numSignatures; ++signId)
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_compareMode = Context3DCompareMode.LESS;
+			_enableDepthWrite = true;
+			_rectangle = null;
+		}
+		
+		public function prepareContext(context 		: Context3D,
+									   backBuffer	: RenderTarget,
+									   previous		: Shader) : void
+		{
+			if (!previous || previous._renderTarget != _renderTarget)
 			{
-				signature = _signatures[signId];
-				
-				if (signature.isValid(meshBindings, sceneBindings))
-					break ;
-			}
-			
-			var instance : ShaderInstance	= signId < numSignatures
-				? _instances[signature.hash]
-				: null;
-			
-			// no valid signature found
-			if (!signature || !instance)
-			{
-				signature = new ShaderSignature(this);
-				_meshBindings = new ShaderDataBindings(
-					meshBindings,
-					signature,
-					ShaderSignature.SOURCE_MESH
-				);
-				_sceneBindings = new ShaderDataBindings(
-					sceneBindings,
-					signature,
-					ShaderSignature.SOURCE_SCENE
-				);
-				
-				// generate the a new signature by evaluating the program
-				var op	: INode = getVertexPosition()._node;
-				var oc	: INode = getPixelColor()._node;
-				
-				instance = _instances[signature.hash];
-				
-				if (!instance)
+				if (_renderTarget)
 				{
-					// the signature really doesn't exist so we add it to the list
-					_signatures.push(signature);
-					
-					// compile the shader program
-					instance = new ShaderInstance(this, signature);
-					initializeInstance(instance);
-					
-					Compiler.load(new ShaderGraph(op, oc, _kills), 0xffffffff);
-					instance.program = Compiler.compileShader(_name);
-					
-					// store the new instance
-					_instances[signature.hash] = instance;
-					
-					_instanciated.execute(this, instance);
+					context.setRenderToTexture(
+						_renderTarget.resource.getNativeTexture(context),
+						_renderTarget.useDepthAndStencil,
+						_renderTarget.antiAliasing,
+						_renderTarget.surfaceSelector
+					);
+				}
+				else
+				{
+					context.setRenderToBackBuffer();
 				}
 				
-				_meshBindings = null;
-				_sceneBindings = null;
+				var rt : RenderTarget = _renderTarget || backBuffer;
+				var color : uint = rt.backgroundColor;
+				
+				context.clear(
+					((color >> 16) & 0xff) / 255.,
+					((color >> 8) & 0xff) / 255.,
+					(color & 0xff) / 255.,
+					((color >> 24) & 0xff) / 255.
+				);
 			}
 			
-			return instance;
+			context.setProgram(_program.getProgram3D(context));
+			context.setScissorRectangle(_rectangle);
+			context.setDepthTest(_enableDepthWrite, _compareMode);
 		}
 		
-		public function getInstanceBySignature(signature : ShaderSignature) : ShaderInstance
+		public static function sort(instances : Vector.<Shader>, numStates : int) : void
 		{
-			return _instances[signature.hash];
-		}
-		
-		protected function initializeInstance(instance : ShaderInstance) : void
-		{
-			// nothing
-		}
-		
-		protected function getVertexPosition() : SFloat
-		{
-			throw new Error(
-				"The method 'getVertexPosition' must be implemented."
-			);
-		}
-
-		protected function getPixelColor() : SFloat
-		{
-			throw new Error(
-				"The method 'getVertexPosition' must be implemented."
-			);
+			var n 		: int 				= numStates;
+			var i		: int 				= 0;
+			var j		: int 				= 0;
+			var k		: int 				= 0;
+			var t		: int				= 0;
+			var state 	: Shader	= instances[0];
+			var anmin	: Number 			= -state._priority;
+			var nmax	: int  				= 0;
+			var p		: Number			= 0.;
+			var sorted	: Boolean			= true;
+			
+			for (i = 0; i < n; ++i)
+			{
+				state = instances[i];
+				p = -state._priority;
+				
+				TMP_INTS[i] = 0;
+				TMP_NUMBERS[i] = p;
+				if (p < anmin)
+					anmin = p;
+				else if (p > Number(TMP_NUMBERS[nmax]))
+					nmax = i;
+			}
+			
+			if (anmin == Number(TMP_NUMBERS[nmax]))
+				return ;
+			
+			var m		: int 	= Math.ceil(n * .125);
+			var nmove	: int 	= 0;
+			var c1		: Number = (m - 1) / (Number(TMP_NUMBERS[nmax]) - anmin);
+			
+			for (i = 0; i < n; ++i)
+			{
+				k = int(c1 * (Number(TMP_NUMBERS[i]) - anmin));
+				TMP_INTS[k] = int(TMP_INTS[k]) + 1;
+			}
+			
+			for (k = 1; k < m; ++k)
+				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
+			
+			var hold		: Number 			= Number(TMP_NUMBERS[nmax]);
+			var holdState 	: Shader 	= instances[nmax] as Shader;
+			
+			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
+			TMP_NUMBERS[0] = hold;
+			instances[nmax] = instances[0];
+			instances[0] = holdState;
+			
+			var flash		: Number			= 0.;
+			var flashState	: Shader	= null;
+			
+			j = 0;
+			k = int(m - 1);
+			i = int(n - 1);
+			
+			while (nmove < i)
+			{
+				while (j > int(TMP_INTS[k]) - 1)
+				{
+					++j;
+					k = int(c1 * (Number(TMP_NUMBERS[j]) - anmin));
+				}
+				
+				flash = Number(TMP_NUMBERS[j]);
+				flashState = instances[j] as Shader;
+				
+				while (!(j == int(TMP_INTS[k])))
+				{
+					k = int(c1 * (flash - anmin));
+					
+					t = int(TMP_INTS[k]) - 1;
+					hold = Number(TMP_NUMBERS[t]);
+					holdState = instances[t] as Shader;
+					
+					TMP_NUMBERS[t] = flash;
+					instances[t] = flashState;
+					
+					flash = hold;
+					flashState = holdState;
+					
+					TMP_INTS[k] = int(TMP_INTS[k]) - 1;
+					++nmove;
+				}
+			}
+			
+			for (j = 1; j < n; ++j)
+			{
+				hold = Number(TMP_NUMBERS[j]);
+				holdState = instances[j];
+				
+				i = int(j - 1);
+				while (i >= 0 && Number(TMP_NUMBERS[i]) > hold)
+				{
+					// not trivial
+					TMP_NUMBERS[int(i + 1)] = Number(TMP_NUMBERS[i]);
+					instances[int(i + 1)] = instances[i];
+					
+					--i;
+				}
+				
+				TMP_NUMBERS[int(i + 1)] = hold;
+				instances[int(i + 1)] = holdState;
+			}
 		}
 	}
 }

@@ -1,9 +1,9 @@
 package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.ActionScriptShader;
 	
-	public class BasicShader extends Shader
+	public class BasicShader extends ActionScriptShader
 	{
 		override protected function getVertexPosition() : SFloat
 		{

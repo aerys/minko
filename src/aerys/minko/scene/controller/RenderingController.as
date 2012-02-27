@@ -4,10 +4,11 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.ShaderInstance;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSignature;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -35,10 +36,16 @@ package aerys.minko.scene.controller
 		private var _meshToPasses		: Dictionary				= new Dictionary(true);
 		private var _meshToDrawCalls	: Dictionary				= new Dictionary(true);
 		
-		public function RenderingController(effect 	: Effect	= null,
-											mode 	: uint 		= ControllerMode.SIGNAL)
+		private var _drawCallCreated	: Signal					= new Signal();
+		
+		public function get drawCallCreated() : Signal
 		{
-			super(Mesh, mode);
+			return _drawCallCreated;
+		}
+		
+		public function RenderingController(effect 	: Effect	= null)
+		{
+			super(Mesh, ControllerMode.SIGNAL);
 			
 			_effect = effect;
 			
@@ -113,22 +120,22 @@ package aerys.minko.scene.controller
 											  mesh		: Mesh,
 											  passId 	: uint) : void
 		{
-			var meshBindings	: DataBindings				= mesh.bindings;
-			var sceneBindings	: DataBindings				= (mesh.root as Scene).bindings;
-			var instance		: ShaderInstance 			= effect.getPass(passId).instanciate(
+			var meshBindings	: DataBindings		= mesh.bindings;
+			var sceneBindings	: DataBindings		= (mesh.root as Scene).bindings;
+			var instance		: Shader 			= effect.getPass(passId).fork(
 				meshBindings,
 				sceneBindings
 			);
-			var drawCall		: DrawCall					= instance.program.createDrawCall();
-			var drawCalls		: Vector.<DrawCall>			= _meshToDrawCalls[mesh] as Vector.<DrawCall>;
-			var passes			: Vector.<ShaderInstance>	= _meshToPasses[mesh] as Vector.<ShaderInstance>;
+			var drawCall		: DrawCall			= instance.program.createDrawCall();
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh] as Vector.<DrawCall>;
+			var passes			: Vector.<Shader>	= _meshToPasses[mesh] as Vector.<Shader>;
 			
 			configureDrawCall(mesh, drawCall);
 			
 			if (!drawCalls)
 			{
 				_meshToDrawCalls[mesh] = new <DrawCall>[drawCall];
-				_meshToPasses[mesh] = new <ShaderInstance>[instance];
+				_meshToPasses[mesh] = new <Shader>[instance];
 			}
 			else
 			{
@@ -137,6 +144,8 @@ package aerys.minko.scene.controller
 			}
 			
 			watchSignature(instance.signature, meshBindings, sceneBindings);
+			
+			_drawCallCreated.execute(this, drawCall);
 		}
 		
 		private function configureDrawCall(mesh		: Mesh,
@@ -213,8 +222,8 @@ package aerys.minko.scene.controller
 			
 			for (var i : uint = 0; i < numSignatures; ++i)
 			{
-				var signature		: ShaderSignature = _signatures[i] as ShaderSignature;
-				var validSignature	: Boolean = signature.checkProperty(
+				var signature		: ShaderSignature 	= _signatures[i] as ShaderSignature;
+				var validSignature	: Boolean 			= signature.checkProperty(
 					propertyName,
 					newValue,
 					flags
@@ -227,14 +236,14 @@ package aerys.minko.scene.controller
 		
 		private function invalidateSignature(signature : ShaderSignature) : void
 		{
-			var instance	: ShaderInstance	= signature.shader.getInstanceBySignature(
+			var fork : Shader	= signature.shader.getForkBySignature(
 				signature
 			);
 			
 			for (var meshObject : Object in _meshToPasses)
 			{
-				var passes		: Vector.<ShaderInstance>	= _meshToPasses[meshObject];
-				var passId		: int						= passes.indexOf(instance);
+				var passes		: Vector.<Shader>	= _meshToPasses[meshObject];
+				var passId		: int				= passes.indexOf(fork);
 				
 				if (passId >= 0)
 				{

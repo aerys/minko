@@ -23,9 +23,9 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_shader;
 		
-		private var _main	: Shader	= null;
+		private var _main	: ActionScriptShader	= null;
 		
-		protected final function get main() : Shader
+		protected final function get main() : ActionScriptShader
 		{
 			return _main;
 		}
@@ -135,7 +135,7 @@ package aerys.minko.render.shader
 			return _main._sceneBindings.getParameter("time", 1);
 		}
 		
-		public function ShaderPart(main : Shader) : void
+		public function ShaderPart(main : ActionScriptShader) : void
 		{
 			_main = main;
 		}

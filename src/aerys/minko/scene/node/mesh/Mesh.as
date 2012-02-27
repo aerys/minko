@@ -2,6 +2,7 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
+	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.controller.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -33,19 +34,20 @@ package aerys.minko.scene.node.mesh
 			VertexComponent.NORMAL
 		);
 		
+		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 		
-		private var _effect					: Effect					= null;
-		private var _bindings				: DataBindings				= new DataBindings();
+		private var _effect				: Effect		= null;
+		private var _bindings			: DataBindings	= new DataBindings();
 		
-		minko_scene var _vertexStreams			: Vector.<IVertexStream>	= null;
-		private var _indexStream			: IndexStream				= null;
+		private var _triangleCulling	: uint			= 0;
+		private var _blending			: uint			= 0;
 		
-		private var _visible				: Boolean					= true;
+		private var _indexStream		: IndexStream	= null;
 		
-		private var _effectChanged			: Signal					= new Signal();
-/*		private var _vertexStreamChanged	: Signal					= new Signal();
-		private var _indexStreamChanged		: Signal					= new Signal();*/
-		private var _visibilityChanged		: Signal					= new Signal();
+		private var _visible			: Boolean		= true;
+		
+		private var _effectChanged		: Signal		= new Signal();
+		private var _visibilityChanged	: Signal		= new Signal();
 		
 		public function get bindings() : DataBindings
 		{
@@ -113,6 +115,15 @@ package aerys.minko.scene.node.mesh
 			return _visibilityChanged;
 		}
 		
+		public function get triangleCulling() : uint
+		{
+			return _triangleCulling;
+		}
+		public function set triangleCulling(value : uint) : void
+		{
+			_triangleCulling = value;
+		}
+		
 		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
 							 indexStream	: IndexStream				= null,
@@ -150,7 +161,11 @@ package aerys.minko.scene.node.mesh
 			if (properties)
 				_bindings.setProperties(properties);
 			
-			addController(RenderingController.renderingController);
+			var ctrl : RenderingController	= new RenderingController();
+			
+			ctrl.drawCallCreated.add(drawCallCreatedHandler);
+			
+			addController(ctrl);
 		}
 		
 		/**
@@ -475,6 +490,12 @@ package aerys.minko.scene.node.mesh
 				_vertexStreams[index] = stream = new VertexStreamList(stream);
 			
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
+		}
+		
+		private function drawCallCreatedHandler(controller	: RenderingController,
+												drawCall	: DrawCall) : void
+		{
+			
 		}
 	}
 }

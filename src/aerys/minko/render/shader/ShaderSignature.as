@@ -15,13 +15,13 @@ package aerys.minko.render.shader
 		
 		private static const TMP_NUMBERS		: Vector.<Number>	= new <Number>[];
 		
-		private var _shader	: Shader			= null;
+		private var _shader	: ActionScriptShader			= null;
 		private var _hash	: String			= null;
 		private var _keys	: Vector.<String>	= new <String>[];
 		private var _values	: Vector.<Object>	= new <Object>[];
 		private var _flags	: Vector.<uint>		= new <uint>[];
 		
-		public function get shader() : Shader
+		public function get shader() : ActionScriptShader
 		{
 			return _shader;
 		}
@@ -36,7 +36,7 @@ package aerys.minko.render.shader
 			return _keys.length;
 		}
 		
-		public function ShaderSignature(shader : Shader)
+		public function ShaderSignature(shader : ActionScriptShader)
 		{
 			_shader = shader;
 			_hash = _shader.name;

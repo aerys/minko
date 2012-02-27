@@ -229,6 +229,8 @@ package aerys.minko.scene.node
 			if (!parent)
 				return ;
 			
+			lock();
+			
 			var localToWorld : Matrix4x4 = parent.localToWorld;
 			
 			localToWorld.transformVector(_position, _worldPosition);
@@ -252,6 +254,8 @@ package aerys.minko.scene.node
 			}
 			
 			updateWorldToScreen();
+			
+			unlock();
 		}
 		
 		private function updateWorldToScreen() : void
