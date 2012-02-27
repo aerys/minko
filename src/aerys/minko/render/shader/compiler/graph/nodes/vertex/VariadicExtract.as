@@ -67,6 +67,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			_index = v;
 		}
 		
+		public function set constant(v : INode) : void
+		{
+			_hashIsValid = false;
+			_constant = v;
+		}
+		
 		public function VariadicExtract(index		: INode, 
 										constant	: INode,
 										isMatrix	: Boolean)

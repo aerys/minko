@@ -2,11 +2,14 @@ package aerys.minko.scene.controller
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.geom.Matrix3D;
 
@@ -22,7 +25,6 @@ package aerys.minko.scene.controller
 		private var _isDirty			: Boolean				= true;
 		
 		private var _skinningMethod		: uint					= uint.MAX_VALUE;
-		private var _maxInfluences		: uint					= uint.MAX_VALUE;
 		private var _bindShape			: Matrix4x4				= new Matrix4x4();
 		private var _skeletonRoot		: Group					= new Group();
 		private var _joints				: Vector.<Group>		= null;
@@ -38,7 +40,6 @@ package aerys.minko.scene.controller
 		}
 		
 		public function SkinningController(skinningMethod	: uint,
-										   maxInfluences	: uint,
 										   skeletonRoot		: Group,
 										   joints 			: Vector.<Group>,
 										   invBindMatrices	: Vector.<Matrix4x4>)
@@ -46,7 +47,6 @@ package aerys.minko.scene.controller
 			super();
 			
 			_skinningMethod		= skinningMethod;
-			_maxInfluences		= maxInfluences;
 			_skeletonRoot		= skeletonRoot;
 			_joints				= joints;
 			_invBindMatrices	= invBindMatrices;
@@ -59,7 +59,6 @@ package aerys.minko.scene.controller
 			_skinningData.skinningMethod		= _skinningMethod;
 			_skinningData.skinningNumBones		= _joints.length;
 			_skinningData.skinningBindShape		= _bindShape;
-			_skinningData.skinningMaxInfluences	= _maxInfluences;
 			
 			targetAdded.add(targetAddedHandler);
 			
@@ -70,13 +69,26 @@ package aerys.minko.scene.controller
 		private function targetAddedHandler(controller	: SkinningController, 
 											mesh		: Mesh) : void
 		{
+			var format			: VertexFormat	= mesh.getVertexStream().format;
+			var maxInfluences	: uint			= 
+				uint(format.hasComponent(VertexComponent.BONE0))
+				+ uint(format.hasComponent(VertexComponent.BONE1))
+				+ uint(format.hasComponent(VertexComponent.BONE2))
+				+ uint(format.hasComponent(VertexComponent.BONE3))
+				+ uint(format.hasComponent(VertexComponent.BONE4))
+				+ uint(format.hasComponent(VertexComponent.BONE5))
+				+ uint(format.hasComponent(VertexComponent.BONE6))
+				+ uint(format.hasComponent(VertexComponent.BONE7));
+			
 			mesh.bindings.add(_skinningData);
+			mesh.bindings.setProperty('skinningMaxInfluences', maxInfluences);
 		}
 		
 		private function targetRemovedHandler(controlller	: SkinningController,
 											  mesh			: Mesh) : void
 		{
 			mesh.bindings.remove(_skinningData);
+			mesh.bindings.removeProperty('skinningMaxInfluences');
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
@@ -136,15 +148,15 @@ package aerys.minko.scene.controller
 		
 		private function writeDualQuaternions() : void
 		{
-			var numQuaternions : int = _matrices.length >> 2;
+			var numQuaternions : int = _matrices.length / 16;
 			
-			_dqd.length = numQuaternions;
-			_dqn.length = numQuaternions;
+			_dqd.length = numQuaternions * 4;
+			_dqn.length = numQuaternions * 4;
 			
 			for (var quaternionId : int = 0; quaternionId < numQuaternions; ++quaternionId)
 			{
-				var matrixOffset 		: int = quaternionId << 4;
-				var quaternionOffset 	: int = quaternionId << 2;
+				var matrixOffset 		: int = quaternionId * 16;
+				var quaternionOffset 	: int = quaternionId * 4;
 				
 				var mTrace	: Number = _matrices[int(matrixOffset + 0)] + _matrices[int(matrixOffset + 5)] + _matrices[int(matrixOffset + 10)];
 				var s		: Number;
