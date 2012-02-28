@@ -80,7 +80,7 @@ package aerys.minko.render.shader.parts
 				if (maxInfluences == 1)
 				{
 					jointAttr			= getVertexAttribute(VertexComponent.BONES[0]);
-					jointId				= jointAttr.x;
+					jointId				= multiply(4, jointAttr.x);
 					jointSkinningMatrix	= getFieldFromArray(jointId, skinningMatrices, true);
 					
 					outVertexPosition = multiply4x4(inVertexPosition, jointSkinningMatrix);
@@ -92,7 +92,7 @@ package aerys.minko.render.shader.parts
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
 						jointAttr			= getVertexAttribute(VertexComponent.BONES[i]);
-						jointId				= jointAttr.x;
+						jointId				= multiply(4, jointAttr.x);
 						jointWeight			= jointAttr.y;
 						jointSkinningMatrix	= getFieldFromArray(jointId, skinningMatrices, true);
 						
