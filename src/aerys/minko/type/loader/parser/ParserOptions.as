@@ -106,7 +106,7 @@ package aerys.minko.type.loader.parser
 									  parser				: Class = null)
 		{
 			_loadDependencies = loadDependencies;
-			_dependencyURLRewriter = dependencyURLRewriter;
+			_dependencyURLRewriter = dependencyURLRewriter || _dependencyURLRewriter;
 			_mipmapTextures = mipmapTextures;
 			_meshEffect = meshEffect;
 			_vertexStreamUsage = vertexStreamUsage;
