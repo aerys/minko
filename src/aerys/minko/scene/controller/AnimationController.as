@@ -10,7 +10,7 @@ package aerys.minko.scene.controller
 
 	public class AnimationController extends AbstractController
 	{
-		public static const DEFAULT_TIME_FUNCTION	: Function = getTimer;
+		public static var DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
 		private var _timelines		: Vector.<ITimeline>	= new Vector.<ITimeline>();
 		private var _isPlaying		: Boolean				= false;

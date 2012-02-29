@@ -1,9 +1,13 @@
 package aerys.minko.type.animation.timeline
 {
+	import aerys.minko.ns.minko_animation;
+
 	public final class ColorTimeline extends AbstractTimeline
 	{
-		private var _deltaTime		: uint			= 0;
-		private var _values			: Vector.<uint>	= null;
+		use namespace minko_animation;
+		
+		minko_animation var _deltaTime		: uint			= 0;
+		minko_animation var _values			: Vector.<uint>	= null;
 		
 		public function ColorTimeline(propertyPath	: String,
 									  deltaTime		: uint,
