@@ -3,6 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.ControllerMode;
+	import aerys.minko.scene.controller.RenderingController;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.IDataProvider;
 

@@ -54,6 +54,11 @@ package aerys.minko.type.data
 					clonedTable[key] = bindingTable[key];
 			}
 			
+			for (var propertyName : String in _values)
+				clone._values[propertyName] = _values[propertyName];
+			
+			clone._properties = clone._properties.slice();
+			
 			return clone;
 		}
 		

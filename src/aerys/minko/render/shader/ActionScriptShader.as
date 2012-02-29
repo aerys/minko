@@ -25,7 +25,7 @@ package aerys.minko.render.shader
 		private var _name				: String					= null;
 		private var _enabled			: Boolean					= true;
 		
-		private var _forks			: Object					= {};
+		private var _forks				: Object					= {};
 		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		
 		private var _numPasses			: uint						= 0;
@@ -51,6 +51,8 @@ package aerys.minko.render.shader
 		public function set enabled(value : Boolean) : void
 		{
 			_enabled = value;
+			for each (var fork : Object in _forks)
+				(fork as Shader).enabled = value;
 		}
 
 		public function get instanciated() : Signal

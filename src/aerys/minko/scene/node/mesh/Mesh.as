@@ -185,12 +185,14 @@ package aerys.minko.scene.node.mesh
 			_vertexStreams[index] = vertexStream;
 		}
 		
-		public function clone(withBindings 	: Boolean 	= true,
+		public function clone(properties	: Object	= null,
+							  withBindings 	: Boolean 	= true,
 							  shareStreams	: Boolean	= true) : Mesh
 		{
 			var clone : Mesh = new Mesh();
 			
 			clone.copyFrom(this, withBindings, shareStreams);
+			clone.bindings.setProperties(properties);
 			
 			return clone;
 		}
@@ -224,7 +226,7 @@ package aerys.minko.scene.node.mesh
 			name = source.name;
 			
 			if (withBindings)
-				_bindings = _bindings.clone();
+				_bindings = source._bindings.clone();
 			
 			effect = source._effect;
 		}
