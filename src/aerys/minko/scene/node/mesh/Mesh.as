@@ -124,6 +124,20 @@ package aerys.minko.scene.node.mesh
 			_triangleCulling = value;
 		}
 		
+		public function get blending() : uint
+		{
+			return _blending;
+		}
+		public function set blending(value : uint) : void
+		{
+			_blending = value;
+		}
+		
+		public function get effectChanged() : Signal
+		{
+			return _effectChanged;
+		}
+		
 		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
 							 indexStream	: IndexStream				= null,
@@ -497,7 +511,8 @@ package aerys.minko.scene.node.mesh
 		private function drawCallCreatedHandler(controller	: RenderingController,
 												drawCall	: DrawCall) : void
 		{
-			
+//			drawCall.blending = _blending;
+//			drawCall.
 		}
 	}
 }

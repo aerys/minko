@@ -98,9 +98,15 @@ package aerys.minko.render.shader
 					: meshBindings;
 				
 				if (flags & OPERATION_GET)
-					return compare(source.getProperty(key), value);
+				{
+					if (!compare(source.getProperty(key), value))
+						return false;
+				}
 				else if (flags & OPERATION_COUNT)
-					return (source.getProperty(key) ? 1 : 0) == value;
+				{
+					if ((source.getProperty(key) ? 1 : 0) == value)
+						return false;
+				}
 			}
 			
 			return true;
@@ -137,7 +143,7 @@ package aerys.minko.render.shader
 			var count		: int		= 0;
 			
 			if (constructor != value2.constructor)
-				return true;
+				return false;
 			
 			if (constructor == Vector4)
 				return (value1 as Vector4).compareTo(value2 as Vector4, true);

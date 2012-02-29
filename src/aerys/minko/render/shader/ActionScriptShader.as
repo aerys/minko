@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.shader.compiler.Compiler;
@@ -159,6 +160,11 @@ package aerys.minko.render.shader
 			
 			fork.begin.add(shaderBeginHandler);
 			fork.end.add(shaderEndHandler);
+		}
+		
+		protected function initializeDrawCall(drawCall : DrawCall) : void
+		{
+			// nothing
 		}
 		
 		protected function getVertexPosition() : SFloat
