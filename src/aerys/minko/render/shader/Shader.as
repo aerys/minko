@@ -8,7 +8,7 @@ package aerys.minko.render.shader
 	import flash.display3D.Context3DCompareMode;
 	import flash.geom.Rectangle;
 
-	public class Shader
+	public final class Shader
 	{
 		
 		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);

@@ -198,7 +198,17 @@ package aerys.minko.render
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
-				list.render(context, _backBuffer);
+				if (list.render(context, _backBuffer) == 0)
+				{
+					var color : uint = _backBuffer.backgroundColor;
+					
+					context.clear(
+						((color >> 16) & 0xff) / 255.,
+						((color >> 8) & 0xff) / 255.,
+						(color & 0xff) / 255.,
+						((color >> 24) & 0xff) / 255.
+					);
+				}
 				
 				if (destination)
 					context.drawToBitmapData(destination);
