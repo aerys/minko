@@ -160,7 +160,6 @@ package aerys.minko.render
 		{
 			_numTriangles = 0;
 			
-			context.clear();
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
 			
 			// sort states
@@ -178,18 +177,18 @@ package aerys.minko.render
 			
 			for (var i : int = 0; i < _numShaders; ++i)
 			{
-				var shaderInstance 	: Shader	= _shaders[i];
-				var calls 			: Vector.<DrawCall> = _shaderToDrawCalls[shaderInstance];
-				var numCalls		: int				= calls.length;
+				var shader 		: Shader			= _shaders[i];
+				var calls 		: Vector.<DrawCall> = _shaderToDrawCalls[shader];
+				var numCalls	: int				= calls.length;
 
-				if (shaderInstance.enabled)
+				if (shader.enabled)
 				{
-					shaderInstance.begin.execute(
-						shaderInstance, context, backBuffer, previous
+					shader.begin.execute(
+						shader, context, backBuffer, previous
 					);
 					
-					shaderInstance.prepareContext(context, backBuffer, previous);
-					previous = shaderInstance;
+					shader.prepareContext(context, backBuffer, previous);
+					previous = shader;
 					
 					for (var j : int = 0; j < numCalls; ++j)
 					{
@@ -203,8 +202,8 @@ package aerys.minko.render
 						}
 					}
 					
-					shaderInstance.end.execute(
-						shaderInstance, context, backBuffer, previous
+					shader.end.execute(
+						shader, context, backBuffer, previous
 					);
 				}
 			}

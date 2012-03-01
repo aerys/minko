@@ -124,6 +124,20 @@ package aerys.minko.scene.node.mesh
 			_triangleCulling = value;
 		}
 		
+		public function get blending() : uint
+		{
+			return _blending;
+		}
+		public function set blending(value : uint) : void
+		{
+			_blending = value;
+		}
+		
+		public function get effectChanged() : Signal
+		{
+			return _effectChanged;
+		}
+		
 		public function Mesh(effect			: Effect					= null,
 							 vertexStreams	: Vector.<IVertexStream>	= null,
 							 indexStream	: IndexStream				= null,
@@ -185,12 +199,14 @@ package aerys.minko.scene.node.mesh
 			_vertexStreams[index] = vertexStream;
 		}
 		
-		public function clone(withBindings 	: Boolean 	= true,
+		public function clone(properties	: Object	= null,
+							  withBindings 	: Boolean 	= true,
 							  shareStreams	: Boolean	= true) : Mesh
 		{
 			var clone : Mesh = new Mesh();
 			
 			clone.copyFrom(this, withBindings, shareStreams);
+			clone.bindings.setProperties(properties);
 			
 			return clone;
 		}
@@ -224,7 +240,7 @@ package aerys.minko.scene.node.mesh
 			name = source.name;
 			
 			if (withBindings)
-				_bindings = _bindings.clone();
+				_bindings = source._bindings.clone();
 			
 			effect = source._effect;
 		}
@@ -495,7 +511,8 @@ package aerys.minko.scene.node.mesh
 		private function drawCallCreatedHandler(controller	: RenderingController,
 												drawCall	: DrawCall) : void
 		{
-			
+//			drawCall.blending = _blending;
+//			drawCall.
 		}
 	}
 }

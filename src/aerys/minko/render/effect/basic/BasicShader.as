@@ -2,6 +2,7 @@ package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.parts.SkinningShaderPart;
 	
 	public class BasicShader extends ActionScriptShader

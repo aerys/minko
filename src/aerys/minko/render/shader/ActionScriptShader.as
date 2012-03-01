@@ -1,6 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.shader.compiler.Compiler;
@@ -25,7 +26,7 @@ package aerys.minko.render.shader
 		private var _name				: String					= null;
 		private var _enabled			: Boolean					= true;
 		
-		private var _forks			: Object					= {};
+		private var _forks				: Object					= {};
 		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		
 		private var _numPasses			: uint						= 0;
@@ -51,6 +52,8 @@ package aerys.minko.render.shader
 		public function set enabled(value : Boolean) : void
 		{
 			_enabled = value;
+			for each (var fork : Object in _forks)
+				(fork as Shader).enabled = value;
 		}
 
 		public function get instanciated() : Signal
@@ -157,6 +160,11 @@ package aerys.minko.render.shader
 			
 			fork.begin.add(shaderBeginHandler);
 			fork.end.add(shaderEndHandler);
+		}
+		
+		protected function initializeDrawCall(drawCall : DrawCall) : void
+		{
+			// nothing
 		}
 		
 		protected function getVertexPosition() : SFloat
