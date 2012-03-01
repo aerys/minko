@@ -7,9 +7,11 @@ package aerys.minko.type.loader
 
 	public interface ILoader
 	{
-		function get progress()	: Signal;
-		function get error()	: Signal;
-		function get complete()	: Signal;
+		function get progress()		: Signal;
+		function get error()		: Signal;
+		function get complete()		: Signal;
+		
+		function get isComplete()	: Boolean;
 		
 		function load(urlRequest : URLRequest) : void;
 		function loadClass(classObject : Class) : void;

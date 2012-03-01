@@ -1,6 +1,9 @@
 package aerys.minko.type.loader.parser
 {
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.type.loader.ILoader;
+	import aerys.minko.type.loader.SceneLoader;
+	import aerys.minko.type.loader.TextureLoader;
 	
 	import flash.net.URLRequest;
 	
@@ -16,15 +19,13 @@ package aerys.minko.type.loader.parser
 	 */
 	public final class ParserOptions
 	{
-		public var debug : *; 
-		
-		private var _loadDependencies		: Boolean	= false;
-		private var _dependencyURLRewriter	: Function	= defaultRewriteDependencyFunction;
-		private var _mipmapTextures			: Boolean	= true;
-		private var _meshEffect				: Effect	= null;
-		private var _vertexStreamUsage		: uint		= 0;
-		private var _indexStreamUsage		: uint		= 0;
-		private var _parser					: Class		= null;
+		private var _loadDependencies			: Boolean	= false;
+		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
+		private var _mipmapTextures				: Boolean	= true;
+		private var _meshEffect					: Effect	= null;
+		private var _vertexStreamUsage			: uint		= 0;
+		private var _indexStreamUsage			: uint		= 0;
+		private var _parser						: Class		= null;
 		
 		public function get parser():Class
 		{
@@ -76,14 +77,14 @@ package aerys.minko.type.loader.parser
 			_mipmapTextures = value;
 		}
 		
-		public function get dependencyURLRewriter():Function
+		public function get dependencyLoaderClosure():Function
 		{
-			return _dependencyURLRewriter;
+			return _dependencyLoaderClosure;
 		}
 		
-		public function set dependencyURLRewriter(value:Function):void
+		public function set dependencyLoaderClosure(value:Function):void
 		{
-			_dependencyURLRewriter = value;
+			_dependencyLoaderClosure = value;
 		}
 		
 		public function get loadDependencies():Boolean
@@ -97,26 +98,41 @@ package aerys.minko.type.loader.parser
 		}
 
 		
-		public function ParserOptions(loadDependencies		: Boolean = false,
-									  dependencyURLRewriter : Function = null,
-									  mipmapTextures		: Boolean = true,
-									  meshEffect			: Effect = null,
-									  vertexStreamUsage		: uint = 0,
-									  indexStreamUsage		: uint = 0,
-									  parser				: Class = null)
+		public function ParserOptions(loadDependencies			: Boolean = false,
+									  dependencyLoaderClosure	: Function = null,
+									  mipmapTextures			: Boolean = true,
+									  meshEffect				: Effect = null,
+									  vertexStreamUsage			: uint = 0,
+									  indexStreamUsage			: uint = 0,
+									  parser					: Class = null)
 		{
-			_loadDependencies = loadDependencies;
-			_dependencyURLRewriter = dependencyURLRewriter || _dependencyURLRewriter;
-			_mipmapTextures = mipmapTextures;
-			_meshEffect = meshEffect;
-			_vertexStreamUsage = vertexStreamUsage;
-			_indexStreamUsage = indexStreamUsage;
-			_parser = parser;
+			_loadDependencies			= loadDependencies;
+			_dependencyLoaderClosure	= _dependencyLoaderClosure || _dependencyLoaderClosure;
+			_mipmapTextures				= mipmapTextures;
+			_meshEffect					= meshEffect;
+			_vertexStreamUsage			= vertexStreamUsage;
+			_indexStreamUsage			= indexStreamUsage;
+			_parser						= parser;
 		}
 		
-		private function defaultRewriteDependencyFunction(url : String) : String
+		private function defaultDependencyLoaderClosure(dependencyPath	: String,
+														isTexture		: Boolean,
+														options			: ParserOptions) : ILoader
 		{
-			return url;
+			var loader : ILoader;
+			
+			if (isTexture)
+			{
+				loader = new TextureLoader(true);
+				loader.load(new URLRequest(dependencyPath));
+			}
+			else
+			{
+				loader = new SceneLoader(options);
+				loader.load(new URLRequest(dependencyPath));
+			}
+			
+			return loader;
 		}
 	}
 }

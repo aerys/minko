@@ -39,10 +39,13 @@ package aerys.minko.type.loader
 		
 		private var _currentProgress		: Number;
 		private var _currentProgressChanged : Boolean;
+		private var _isComplete				: Boolean;
 		
 		public function get error()		: Signal { return _error;	 }
 		public function get progress()	: Signal { return _progress; }
 		public function get complete()	: Signal { return _complete; }
+		
+		public function get isComplete()	: Boolean  { return _isComplete; }
 		
 		public function get data() : ISceneNode { return _data; }
 		
@@ -69,11 +72,10 @@ package aerys.minko.type.loader
 			_progress		= new Signal();
 			_complete		= new Signal();
 			_data			= null;
+			_isComplete		= false;
 			
 			_parserOptions	= parserOptions;
 		}
-		
-		
 		
 		public function load(urlRequest : URLRequest) : void
 		{
@@ -135,18 +137,20 @@ package aerys.minko.type.loader
 			}
 			
 			_dependencies	 = _parser.getDependencies(byteArray);
-			_numDependencies = _dependencies != null ? _dependencies.length : 0;
+			_numDependencies = 0;
 			
-			if (_numDependencies != 0)
+			if (_dependencies != null)
 				for each (var dependency : ILoader in _dependencies)
-				{
-					dependency.error.add(decrementDependencyCounter);
-					dependency.complete.add(decrementDependencyCounter);
-				}
-			else
-			{
+					if (!dependency.isComplete)
+					{
+						dependency.error.add(decrementDependencyCounter);
+						dependency.complete.add(decrementDependencyCounter);
+						
+						_numDependencies++;
+					}
+			
+			if (_numDependencies == 0)
 				parse();
-			}
 		}
 		
 		private function decrementDependencyCounter(...args) : void
@@ -167,7 +171,7 @@ package aerys.minko.type.loader
 		
 		private function onParseError(parser : IParser) : void
 		{
-			
+			_isComplete = true;
 		}
 		
 		private function onParseProgress(parser : IParser, progress : Number) : void
@@ -177,6 +181,7 @@ package aerys.minko.type.loader
 		
 		private function onParseComplete(parser : IParser, loadedData : ISceneNode) : void
 		{
+			_isComplete = true;
 			_data = loadedData;
 			_complete.execute(this, loadedData);
 		}

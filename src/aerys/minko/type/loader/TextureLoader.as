@@ -24,6 +24,8 @@ package aerys.minko.type.loader
 		private var _error				: Signal;
 		private var _complete			: Signal;
 		
+		private var _isComplete			: Boolean;
+		
 		private var _mipmap				: Boolean;
 		private var _textureResource	: TextureResource;
 		
@@ -42,6 +44,11 @@ package aerys.minko.type.loader
 			return _complete;
 		}
 		
+		public function get isComplete() : Boolean
+		{
+			return _isComplete;
+		}
+		
 		public function get textureResource() : TextureResource
 		{
 			return _textureResource;
@@ -51,6 +58,7 @@ package aerys.minko.type.loader
 		{
 			_mipmap		= enableMipmapping;
 			
+			_isComplete = false;
 			_error		= new Signal();
 			_progress	= new Signal();
 			_complete	= new Signal();
@@ -94,6 +102,7 @@ package aerys.minko.type.loader
 				_textureResource = new TextureResource();
 				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
 				_complete.execute(this, _textureResource);
+				_isComplete = true;
 			}
 			else if (assetObject is ByteArray)
 			{
@@ -103,6 +112,8 @@ package aerys.minko.type.loader
 			{
 				var className : String = getQualifiedClassName(classObject);
 				className = className.substr(className.lastIndexOf(':') + 1);
+				
+				_isComplete = true;
 				
 				throw new Error('No texture can be created from an object of type \'' + className + '\'');
 			}
@@ -120,6 +131,7 @@ package aerys.minko.type.loader
 				_textureResource = new TextureResource();
 				_textureResource.setContentFromATF(bytes);
 				_complete.execute(this, _textureResource);
+				_isComplete = true;
 			}
 			else
 			{
@@ -140,12 +152,13 @@ package aerys.minko.type.loader
 				_textureResource = new TextureResource();
 				_textureResource.setContentFromBitmapData(Bitmap(displayObject).bitmapData, _mipmap);
 				_complete.execute(this, _textureResource);
+				_isComplete = true;
 			}
 			else
 			{
 				var className : String = getQualifiedClassName(displayObject);
 				className = className.substr(className.lastIndexOf(':') + 1);
-				
+				_isComplete = true;
 				throw new Error('No texture can be created from an object of type \'' + className + '\'');
 			}
 		}
