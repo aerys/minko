@@ -30,24 +30,54 @@ package aerys.minko.render.shader.compiler
 			CRC_TABLE_READY = true;
 		}
 		
-		public static function computeForByteArray(source : ByteArray) : uint
+		public static function computeForByteArrayChunk(source : ByteArray, length : uint) : uint
 		{
-			var length	 : uint = source.length;
-			var crcAccum : uint = uint(-1);
-			
 			if (!CRC_TABLE_READY)
 				generateCrcTable();
 			
-			source.position = 0;
+			var crcTable	: Vector.<uint> = CRC_TABLE;
+			var crcAccum 	: uint = uint(-1);
+			var length1		: uint = (length >> 2) << 2;
 			
-			for (var j : uint = 0; j < length; j++)
+			var j : uint = 0
+			var i : uint;
+			
+			for (; j < length1; j += 4)
 			{
-				var i : uint = ((crcAccum >> 24) ^ source.readUnsignedByte()) & 0xFF;
+				var data : uint = source.readUnsignedInt();
+				
+				i = ((crcAccum >> 24) ^ data) & 0xFF;
+				crcAccum = (crcAccum << 8) ^ crcTable[i];
+				data >>>= 8;
+				
+				i = ((crcAccum >> 24) ^ data) & 0xFF;
+				crcAccum = (crcAccum << 8) ^ crcTable[i];
+				data >>>= 8;
+				
+				i = ((crcAccum >> 24) ^ data) & 0xFF;
+				crcAccum = (crcAccum << 8) ^ crcTable[i];
+				data >>>= 8;
+				
+				i = ((crcAccum >> 24) ^ data) & 0xFF;
+				crcAccum = (crcAccum << 8) ^ crcTable[i];
+				data >>>= 8;
+			}
+			
+			for (; j < length; ++j)
+			{
+				i = ((crcAccum >> 24) ^ source.readUnsignedByte()) & 0xFF;
 				crcAccum = (crcAccum << 8) ^ CRC_TABLE[i];
 			}
+			
 			crcAccum = ~crcAccum;
 			
 			return crcAccum;
+		}
+		
+		public static function computeForByteArray(source : ByteArray) : uint
+		{
+			source.position = 0;
+			return computeForByteArrayChunk(source, source.length);
 		}
 		
 		public static function computeForString(s : String) : uint

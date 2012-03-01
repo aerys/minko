@@ -1,10 +1,13 @@
 package aerys.minko.type.loader.parser
 {
+	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	
+	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 
 	public class GeometrySanitizer
 	{
@@ -141,40 +144,55 @@ package aerys.minko.type.loader.parser
 		 */
 		public static function sanitizeBuffers(inVertexData		: Vector.<Number>,
 											   inIndexData	 	: Vector.<uint>,
-											   outVertexData	: Vector.<Number>,
-											   outIndexData		: Vector.<uint>, 
-											   dwordsPerVertex	: uint = 3) : void
+											   dwordsPerVertex	: uint = 3) : Vector.<Number>
 		{
-			var vertexIndex				: uint;
-			var verticesToIndex			: Object				= new Object();
+			var numDwords		: uint		= inVertexData.length;
+			var bytesPerVertex	: uint		= dwordsPerVertex * 4;
+			var numVertices		: uint		= numDwords / dwordsPerVertex;
 			
-			var tmpVertex				: Vector.<Number>		= new Vector.<Number>();
-			var tmpVertexComponentId	: uint					= 0;
+			var vertexCopy		: ByteArray	= new ByteArray();
+			for (var i : uint = 0; i < numDwords; ++i)
+				vertexCopy.writeFloat(inVertexData[i]);
 			
-			var numIndices				: uint					= inIndexData.length;
-			var currentNumVertices		: uint					= 0;
+			vertexCopy.position = 0;
+			var vertexHashes	: Vector.<uint> = new Vector.<uint>(numVertices, true);
+			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
+				vertexHashes[vertexId] = CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
 			
-			for (var indexId : uint = 0; indexId < numIndices; ++indexId)
+			var vertexIndex				: int;
+			
+			var tmpVertexComponentId	: int			= 0;
+			
+			var numIndices				: int			= inIndexData.length;
+			var currentNumVertices		: int			= 0;
+			
+			var outVertexData			: Vector.<Number> = new Vector.<Number>(numDwords);
+			var vertexPos				: int = 0;
+			var verticesToIndex			: Array = new Array();
+			
+			for (var indexId : int = 0; indexId < numIndices; ++indexId)
 			{
-				var positionIndex : int = dwordsPerVertex * inIndexData[indexId];
-				for (tmpVertexComponentId  = 0; tmpVertexComponentId < dwordsPerVertex; ++tmpVertexComponentId)
-					tmpVertex[tmpVertexComponentId] = inVertexData[uint(positionIndex + tmpVertexComponentId)];
+				var index		: int = inIndexData[indexId];
+				var vertexHash	: int = vertexHashes[index]; 
 				
-				var joinedVertex	: String	= tmpVertex.join('|');
-				if (verticesToIndex[joinedVertex] == undefined)
+				if (verticesToIndex[vertexHash] == undefined)
 				{
-					for (tmpVertexComponentId = 0; tmpVertexComponentId < dwordsPerVertex; ++tmpVertexComponentId)
-						outVertexData.push(tmpVertex[tmpVertexComponentId]);
+					var positionIndex	: int = dwordsPerVertex * index;
+					var positionLimit	: int = positionIndex + dwordsPerVertex;
 					
-					verticesToIndex[joinedVertex] = vertexIndex = currentNumVertices++;
+					for (; positionIndex < positionLimit; ++positionIndex)
+						outVertexData[int(vertexPos++)] = inVertexData[positionIndex];
+					
+					verticesToIndex[vertexHash] = vertexIndex = currentNumVertices++;
 				}
 				else
-				{
-					vertexIndex = verticesToIndex[joinedVertex];
-				}
+					vertexIndex = verticesToIndex[vertexHash];
 				
-				outIndexData.push(vertexIndex);
+				inIndexData[indexId] = vertexIndex;
 			}
+			
+			outVertexData.length = vertexPos;
+			return outVertexData;
 		}
 		
 	}

@@ -186,17 +186,14 @@ package aerys.minko.scene.node.mesh.primitive
 			
 			// this is slow and memory consuming and could be avoided by non duplicating all border
 			// vertices on genPatchVertexData and genPatchIndexData...
-			var indexData		: Vector.<uint>		= new Vector.<uint>();
-			var vertexData		: Vector.<Number>	= new Vector.<Number>();
-			
-			GeometrySanitizer.sanitizeBuffers(dirtyVertexData, dirtyIndexData, vertexData, indexData, 3);
+			var vertexData : Vector.<Number>	= GeometrySanitizer.sanitizeBuffers(dirtyVertexData, dirtyIndexData, 3);
 			
 			super(
 				effect,
 				new <IVertexStream>[
 					new VertexStream(streamsUsage, VertexFormat.XYZ, vertexData)
 				],
-				new IndexStream(streamsUsage, indexData),
+				new IndexStream(streamsUsage, dirtyIndexData),
 				properties
 			);
 			
