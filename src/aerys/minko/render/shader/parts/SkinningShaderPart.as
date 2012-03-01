@@ -184,16 +184,19 @@ package aerys.minko.render.shader.parts
 				inPosition = multiply4x4(inPosition, bindShape);
 				inPosition = inPosition.xyz;
 				
-				var dQn : SFloat;
-				var dQd : SFloat;
+				var jointAttr	: SFloat;
+				var jointId		: SFloat;
+				var jointWeight	: SFloat;
+				var dQn			: SFloat;
+				var dQd			: SFloat;
 				
 				if (maxInfluences == 1)
 				{
-					var singleJointAttr			: SFloat = getVertexAttribute(VertexComponent.BONES[0]);
-					var singleJointId			: SFloat = singleJointAttr.x;
+					jointAttr	= getVertexAttribute(VertexComponent.BONES[0]);
+					jointId		= jointAttr.x;
 					
-					dQn = getFieldFromArray(singleJointId, dQnList, false);
-					dQd = getFieldFromArray(singleJointId, dQdList, false);
+					dQn = getFieldFromArray(jointId, dQnList, false);
+					dQd = getFieldFromArray(jointId, dQdList, false);
 				}
 				else
 				{
@@ -202,10 +205,9 @@ package aerys.minko.render.shader.parts
 					
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
-						var jointAttr	: SFloat = getVertexAttribute(VertexComponent.BONES[i]);
-						
-						var jointId		: SFloat = jointAttr.x;
-						var jointWeight	: SFloat = jointAttr.y;
+						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
+						jointId		= jointAttr.x;
+						jointWeight	= jointAttr.y;
 						
 						var jointDQn	: SFloat = getFieldFromArray(jointId, dQnList, false);
 						var jointDQd	: SFloat = getFieldFromArray(jointId, dQdList, false);
@@ -264,18 +266,22 @@ package aerys.minko.render.shader.parts
 				var dQnList		: SFloat = meshBindings.getParameter('skinningDQn', 4 * numBones);
 				var dQdList		: SFloat = meshBindings.getParameter('skinningDQd', 4 * numBones);
 				
-				trace('why isn\'t the bind shape used???');
+				var jointAttr	: SFloat;
+				var jointId		: SFloat;
+				var jointWeight	: SFloat;
 				
-				var dQn : SFloat;
-				var dQd : SFloat;
+				var dQn			: SFloat;
+				var dQd			: SFloat;
+				
+				throw new Error('why isn\'t the bind shape used???');
 				
 				if (maxInfluences == 1)
 				{
-					var singleJointAttr		: SFloat = getVertexAttribute(VertexComponent.BONES[0]);
-					var singleJointId		: SFloat = singleJointAttr.x;
+					jointAttr	= getVertexAttribute(VertexComponent.BONES[0]);
+					jointId		= jointAttr.x;
 					
-					dQn = getFieldFromArray(singleJointId, dQnList, false);
-					dQd = getFieldFromArray(singleJointId, dQdList, false);
+					dQn = getFieldFromArray(jointId, dQnList, false);
+					dQd = getFieldFromArray(jointId, dQdList, false);
 				}
 				else
 				{
@@ -284,10 +290,9 @@ package aerys.minko.render.shader.parts
 					
 					for (var i : uint = 0; i < maxInfluences; ++i)
 					{
-						var jointAttr	: SFloat = getVertexAttribute(VertexComponent.BONES[i]);
-						
-						var jointId		: SFloat = jointAttr.x;
-						var jointWeight	: SFloat = jointAttr.y;
+						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
+						jointId		= jointAttr.x;
+						jointWeight	= jointAttr.y;
 						
 						var jointDQn	: SFloat = getFieldFromArray(jointId, dQnList, false);
 						var jointDQd	: SFloat = getFieldFromArray(jointId, dQdList, false);
