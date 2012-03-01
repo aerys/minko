@@ -3,46 +3,33 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.parts.SkinningShaderPart;
+	import aerys.minko.render.shader.parts.PixelColorShaderPart;
+	import aerys.minko.render.shader.parts.animation.SkinningShaderPart;
+	import aerys.minko.render.shader.parts.animation.VertexAnimationShaderPart;
 	
 	public class BasicShader extends ActionScriptShader
 	{
-		private var _skinning	: SkinningShaderPart	= null;
+		private var _vertexAnimationPart	: VertexAnimationShaderPart;
+		private var _pixelColorPart			: PixelColorShaderPart;
 		
 		public function BasicShader()
 		{
 			super();
 			
-			_skinning = new SkinningShaderPart(this);
+			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
+			_pixelColorPart			= new PixelColorShaderPart(this);
 		}
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			var vertexPosition	: SFloat = vertexXYZ;
-			
-			if (meshBindings.propertyExists("skinningMethod"))
-				vertexPosition = _skinning.skinPosition(vertexPosition);
+			var vertexPosition	: SFloat = _vertexAnimationPart.getAnimatedVertexPosition();
 			
 			return localToScreen(vertexPosition);
 		}
 		
 		override protected function getPixelColor() : SFloat
 		{
-			if (meshBindings.propertyExists("diffuse map"))
-			{
-				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuse map");
-				var uv			: SFloat	= interpolate(vertexUV);
-				
-				return sampleTexture(diffuseMap, uv);
-			}
-			else if (meshBindings.propertyExists("diffuse color"))
-			{
-				return meshBindings.getParameter("diffuse color", 4);
-			}
-			
-			throw new Error(
-				"Local parameter 'diffuse color' or 'diffuse map' must be set."
-			);
+			return _pixelColorPart.getPixelColor();
 		}
 	}
 }
