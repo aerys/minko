@@ -15,6 +15,7 @@ package aerys.minko.scene.node.mesh.primitive
 		private static const DEFAULT_NUM_MERIDIANS	: uint 	= 10;
 
 		public function SphereMesh(effect		: Effect,
+								   properties	: Object	= null,
 								   numParallels : uint 		= DEFAULT_NUM_PARALLELS,
 								   numMeridians : uint 		= 0,
 								   withNormals	: Boolean	= true,
@@ -135,7 +136,8 @@ package aerys.minko.scene.node.mesh.primitive
 			super(
 				effect,
 				new <IVertexStream>[list],
-				new IndexStream(streamsUsage, indices)
+				new IndexStream(streamsUsage, indices),
+				properties
 			);
 		}
 

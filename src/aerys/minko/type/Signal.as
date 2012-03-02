@@ -34,16 +34,13 @@ package aerys.minko.type
 				return ;
 			}
 			
-			var startIndex : int = _numCallbacks - 1;
+			var index : int = _callbacks.indexOf(callback);
 			
-			while (startIndex >= 0 && _callbacks[startIndex] != callback)
-				--startIndex;
-			
-			if (startIndex < 0)
+			if (index < 0)
 				throw new Error("This callback does not exist.");
 			
 			--_numCallbacks;
-			_callbacks[startIndex] = _callbacks[_numCallbacks];
+			_callbacks[index] = _callbacks[_numCallbacks];
 			_callbacks.length = _numCallbacks;
 		}
 		
@@ -57,10 +54,12 @@ package aerys.minko.type
 			var numAdded : uint = _toAdd.length;
 			for (var k : uint = 0; k < numAdded; ++k)
 				add(_toAdd[k]);
+			_toAdd.length = 0;
 			
 			var numRemoved : uint = _toRemove.length;
 			for (var j : uint = 0; j < numRemoved; ++j)
 				remove(_toRemove[j]);
+			_toRemove.length = 0;
 		}
 	}
 }

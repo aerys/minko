@@ -1,17 +1,34 @@
 package aerys.minko.render.effect.basic
 {
+	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.parts.SkinningShaderPart;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	public class BasicShader extends ActionScriptShader
 	{
 		private var _skinning	: SkinningShaderPart	= null;
 		
-		public function BasicShader()
+		/**
+		 * 
+		 * @param blending Default value is Blending.NORMAL.
+		 * @param triangleCulling Default value is TriangleCulling.FRONT.
+		 * @param priority Default value is 0.
+		 * @param target Default value is null.
+		 * 
+		 */
+		public function BasicShader(blending		: uint			= 524290,
+									triangleCulling	: uint			= 2,
+									priority		: Number		= 0,
+									target			: RenderTarget	= null)
 		{
-			super();
+			if (blending == Blending.ALPHA)
+				priority -= 0.5;
+			
+			super(blending, triangleCulling, priority, target);
 			
 			_skinning = new SkinningShaderPart(this);
 		}
@@ -28,20 +45,20 @@ package aerys.minko.render.effect.basic
 		
 		override protected function getPixelColor() : SFloat
 		{
-			if (meshBindings.propertyExists("diffuse map"))
+			if (meshBindings.propertyExists("diffuseMap"))
 			{
-				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuse map");
+				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuseMap");
 				var uv			: SFloat	= interpolate(vertexUV);
 				
 				return sampleTexture(diffuseMap, uv);
 			}
-			else if (meshBindings.propertyExists("diffuse color"))
+			else if (meshBindings.propertyExists("diffuseColor"))
 			{
-				return meshBindings.getParameter("diffuse color", 4);
+				return meshBindings.getParameter("diffuseColor", 4);
 			}
 			
 			throw new Error(
-				"Local parameter 'diffuse color' or 'diffuse map' must be set."
+				"Property 'diffuseColor' or 'diffuseMap' must be set."
 			);
 		}
 	}

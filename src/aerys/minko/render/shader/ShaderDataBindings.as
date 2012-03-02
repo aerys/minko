@@ -37,17 +37,12 @@ package aerys.minko.render.shader
 		
 		public function propertyExists(propertyName : String) : Boolean
 		{
-			return countProperty(propertyName) != 0;
-		}
-		
-		public function countProperty(propertyName : String) : uint
-		{
-			var value 	: uint 	= _dataBindings.propertyExists(propertyName) ? 1 : 0;
+			var value 	: Boolean 	= _dataBindings.propertyExists(propertyName);
 			
 			_signature.update(
 				propertyName,
 				value,
-				ShaderSignature.OPERATION_COUNT | _signatureFlags
+				ShaderSignature.OPERATION_EXISTS | _signatureFlags
 			);
 			
 			return value;

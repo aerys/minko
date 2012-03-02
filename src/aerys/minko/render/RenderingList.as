@@ -94,7 +94,7 @@ package aerys.minko.render
 		public function removeDrawCall(pass			: Shader,
 									   drawCall		: DrawCall) : void
 		{
-			var instance 	: Shader 	= pass;
+			var instance 	: Shader 			= pass;
 			var calls 		: Vector.<DrawCall>	= _shaderToDrawCalls[instance] as Vector.<DrawCall>;
 			var numCalls	: int				= calls.length - 1;
 			var callindex 	: int 				= calls.indexOf(drawCall);
@@ -130,7 +130,7 @@ package aerys.minko.render
 			for (var i : int = 0; i < numPasses; ++i)
 			{
 				var toDelete	: DrawCall			= drawCalls[i] as DrawCall;
-				var state 		: Shader 	= passes[i] as Shader;
+				var state 		: Shader 			= passes[i] as Shader;
 				var calls 		: Vector.<DrawCall>	= _shaderToDrawCalls[state] as Vector.<DrawCall>;
 				var numCalls	: int				= calls.length;
 				
@@ -146,7 +146,7 @@ package aerys.minko.render
 					}
 				}
 				
-				if (calls.length == 0)
+				if (numCalls == 0)
 				{
 					--_numShaders;
 					_shaders[_shaders.indexOf(state)] = _shaders[_numShaders];
@@ -183,11 +183,12 @@ package aerys.minko.render
 
 				if (shader.enabled)
 				{
+					shader.prepareContext(context, backBuffer, previous);
+					
 					shader.begin.execute(
 						shader, context, backBuffer, previous
 					);
 					
-					shader.prepareContext(context, backBuffer, previous);
 					previous = shader;
 					
 					for (var j : int = 0; j < numCalls; ++j)

@@ -158,7 +158,7 @@ package aerys.minko.scene.node
 		{
 			_controllers.push(controller);
 			
-			controller.targetAdded.execute(controller, this);
+			controller.addTarget(this);
 			_controllerAdded.execute(this, controller);
 		}
 		
@@ -169,7 +169,7 @@ package aerys.minko.scene.node
 			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
 			_controllers.length = numControllers;
 			
-			controller.targetRemoved.execute(controller, this);
+			controller.removeTarget(this);
 			_controllerRemoved.execute(this, controller);
 		}
 		

@@ -4,6 +4,7 @@ package aerys.minko.render.resource
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.display3D.Context3D;
@@ -27,9 +28,16 @@ package aerys.minko.render.resource
 		
 		private var _bindings			: Object					= null;
 		
+		private var _drawCallCreated	: Signal					= new Signal();
+		
 		public function get name() : String
 		{
 			return _name;
+		}
+		
+		public function get drawCallCreated() : Signal
+		{
+			return _drawCallCreated;
 		}
 		
 		public function Program3DResource(name				: String,
@@ -67,7 +75,7 @@ package aerys.minko.render.resource
 		
 		public function createDrawCall() : DrawCall
 		{
-			return new DrawCall(
+			var drawCall : DrawCall = new DrawCall(
 				_vsConstants,
 				_fsConstants,
 				_fsTextures,
@@ -75,6 +83,10 @@ package aerys.minko.render.resource
 				_vertexIndices,
 				_bindings
 			);
+			
+			_drawCallCreated.execute(this, drawCall);
+			
+			return drawCall;
 		}
 
 		public function dispose() : void

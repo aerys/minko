@@ -13,6 +13,7 @@ package aerys.minko.type.data
 		private var _properties			: Vector.<String>	= new <String>[];
 		
 		private var _propertyChanged	: Object			= {};
+		private var _propertyRemoved	: Object			= {};
 		
 		public function get numProperties() : uint
 		{
@@ -34,6 +35,16 @@ package aerys.minko.type.data
 			
 			if (!signal)
 				_propertyChanged[property] = signal = new Signal();
+			
+			return signal;
+		}
+		
+		public function getPropertyRemovedSignal(property : String) : Signal
+		{
+			var signal : Signal = _propertyRemoved[property];
+			
+			if (!signal)
+				_propertyRemoved[property] = signal = new Signal();
 			
 			return signal;
 		}
@@ -210,9 +221,12 @@ package aerys.minko.type.data
 			
 			delete _values[propertyName];
 			
-			getPropertyChangedSignal(propertyName).execute(
-				this, propertyName, oldValue, null
+			getPropertyRemovedSignal(propertyName).execute(
+				this, propertyName
 			);
+			/*getPropertyChangedSignal(propertyName).execute(
+				this, propertyName, oldValue, null
+			);*/
 			
 			return this;
 		}

@@ -4,11 +4,14 @@ package aerys.minko.render.shader
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.RenderingList;
+	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
 	import flash.utils.getQualifiedClassName;
@@ -19,12 +22,14 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_shader;
 		
-		minko_shader var _meshBindings	: ShaderDataBindings	= null;
-		minko_shader var _sceneBindings	: ShaderDataBindings	= null;
-		minko_shader var _kills			: Vector.<INode>		= new <INode>[];
+		minko_shader var _meshBindings	: ShaderDataBindings		= null;
+		minko_shader var _sceneBindings	: ShaderDataBindings		= null;
+		minko_shader var _kills			: Vector.<INode>			= new <INode>[];
 		
 		private var _name				: String					= null;
 		private var _enabled			: Boolean					= true;
+		
+		private var _shaderTemplate		: Shader					= new Shader(null);
 		
 		private var _forks				: Object					= {};
 		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
@@ -71,9 +76,30 @@ package aerys.minko.render.shader
 			return _end;
 		}
 		
-		public function ActionScriptShader()
+		protected function get forkTemplate() : Shader
+		{
+			return _shaderTemplate;
+		}
+		
+		/**
+		 *  
+		 * @param blending Default value is Blending.NORMAL.
+		 * @param triangleCulling Default value is TriangleCulling.FRONT.
+		 * @param priority Default value is 0.
+		 * @param renderTarget Default value is null.
+		 * 
+		 */
+		public function ActionScriptShader(blending			: uint			= 524290,
+										   triangleCulling	: uint			= 2,
+										   priority			: Number		= 0.,
+										   renderTarget		: RenderTarget	= null)
 		{
 			super(this);
+			
+			_shaderTemplate.blending = blending;
+			_shaderTemplate.triangleCulling = triangleCulling;
+			_shaderTemplate.priority = priority;
+			_shaderTemplate.renderTarget = renderTarget;
 			
 			_name = getQualifiedClassName(this);
 		}
@@ -125,7 +151,7 @@ package aerys.minko.render.shader
 					
 					Compiler.load(new ShaderGraph(op, oc, _kills), 0xffffffff);
 					// compile the shader program
-					fork = new Shader(
+					fork = _shaderTemplate.clone(
 						Compiler.compileShader(_name),
 						signature
 					);
@@ -149,7 +175,7 @@ package aerys.minko.render.shader
 			return _forks[signature.hash];
 		}
 		
-		protected function initializeFork(fork : Shader) : void
+		private function initializeFork(fork : Shader) : void
 		{
 			fork.addedToRenderingList.add(
 				shaderAddedToRenderingListHandler
@@ -158,8 +184,16 @@ package aerys.minko.render.shader
 				shaderRemovedFromRenderingListHandler
 			);
 			
+			fork.program.drawCallCreated.add(drawCallCreatedHandler);
+			
 			fork.begin.add(shaderBeginHandler);
 			fork.end.add(shaderEndHandler);
+		}
+		
+		protected function drawCallCreatedHandler(program	: Program3DResource,
+												  drawCall	: DrawCall) : void
+		{
+			initializeDrawCall(drawCall);
 		}
 		
 		protected function initializeDrawCall(drawCall : DrawCall) : void
@@ -196,7 +230,7 @@ package aerys.minko.render.shader
 		private function shaderBeginHandler(shader		: Shader,
 											context		: Context3D,
 											backbuffer	: RenderTarget,
-											previous		: Shader) : void
+											previous	: Shader) : void
 		{
 			if (_numActivePasses == 0)
 				_begin.execute(this, context, backbuffer);

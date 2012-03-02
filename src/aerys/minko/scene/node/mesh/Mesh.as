@@ -2,14 +2,16 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.controller.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.bounding.BoundingBox;
+	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -36,18 +38,20 @@ package aerys.minko.scene.node.mesh
 		
 		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 		
-		private var _effect				: Effect		= null;
-		private var _bindings			: DataBindings	= new DataBindings();
+		private var _effect				: Effect			= null;
+		private var _bindings			: DataBindings		= new DataBindings();
 		
-		private var _triangleCulling	: uint			= 0;
-		private var _blending			: uint			= 0;
+		private var _triangleCulling	: uint				= 0;
+		private var _blending			: uint				= 0;
 		
-		private var _indexStream		: IndexStream	= null;
+		private var _indexStream		: IndexStream		= null;
 		
-		private var _visible			: Boolean		= true;
+		private var _boundingSphere		: BoundingSphere	= null;
+		private var _boundingBox		: BoundingBox		= null;
+		private var _visible			: Boolean			= true;
 		
-		private var _effectChanged		: Signal		= new Signal();
-		private var _visibilityChanged	: Signal		= new Signal();
+		private var _effectChanged		: Signal			= new Signal();
+		private var _visibilityChanged	: Signal			= new Signal();
 		
 		public function get bindings() : DataBindings
 		{
@@ -77,6 +81,16 @@ package aerys.minko.scene.node.mesh
 		public function set indexStream(value : IndexStream) : void
 		{
 			_indexStream = value;
+		}
+		
+		public function get boundingSphere() : BoundingSphere
+		{
+			return _boundingSphere;
+		}
+		
+		public function get boundingBox() : BoundingBox
+		{
+			return _boundingBox;
 		}
 
 		/**
@@ -177,7 +191,7 @@ package aerys.minko.scene.node.mesh
 			
 			var ctrl : RenderingController	= new RenderingController();
 			
-			ctrl.drawCallCreated.add(drawCallCreatedHandler);
+//			ctrl.drawCallCreated.add(drawCallCreatedHandler);
 			
 			addController(ctrl);
 		}
@@ -508,11 +522,23 @@ package aerys.minko.scene.node.mesh
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
-		private function drawCallCreatedHandler(controller	: RenderingController,
-												drawCall	: DrawCall) : void
+		private function updateBoundingBox() : void
 		{
-//			drawCall.blending = _blending;
-//			drawCall.
+			var xyzStream	: VertexStream	= _vertexStreams[0].getStreamByComponent(VertexComponent.XYZ);
+			var offset		: uint			= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
+			var min			: Vector4		= new Vector4(
+				xyzStream.getMinimum(offset),
+				xyzStream.getMinimum(offset + 1),
+				xyzStream.getMinimum(offset + 2)
+			);
+			var max			: Vector4		= new Vector4(
+				xyzStream.getMaximum(offset),
+				xyzStream.getMaximum(offset + 1),
+				xyzStream.getMaximum(offset + 2)
+			);
+			
+			_boundingSphere = BoundingSphere.fromMinMax(min, max);
+			_boundingBox = new BoundingBox(min, max);
 		}
 	}
 }

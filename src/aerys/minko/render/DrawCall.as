@@ -197,8 +197,8 @@ package aerys.minko.render
 				return 0;
 			
 			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
-			context.setBlendFactors(_blendingSource, _blendingDest);
-			context.setCulling(_triangleCullingStr);
+			/*context.setBlendFactors(_blendingSource, _blendingDest);
+			context.setCulling(_triangleCullingStr);*/
 			
 			context.setProgramConstantsFromVector(
 				PROGRAM_TYPE_VERTEX,

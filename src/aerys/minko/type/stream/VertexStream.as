@@ -19,13 +19,18 @@ package aerys.minko.type.stream
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
 
-		private var _usage		: uint						= 0;
-		private var _format		: VertexFormat				= null;
-		private var _resource	: VertexBuffer3DResource	= null;
-		private var _length		: uint						= 0;
+		private var _usage			: uint						= 0;
+		private var _format			: VertexFormat				= null;
+		private var _resource		: VertexBuffer3DResource	= null;
+		private var _length			: uint						= 0;
 		
-		private var _changed	: Signal					= new Signal();
+		private var _invalidMinMax	: Boolean					= true;
+		private var _maximum		: Vector.<Number>			= null;
+		private var _minimum		: Vector.<Number>			= null;
 
+		private var _changed		: Signal					= new Signal();
+		private var _minMaxChanged	: Signal					= new Signal();
+		
 		public function get format() : VertexFormat
 		{
 			return _format;
@@ -61,6 +66,11 @@ package aerys.minko.type.stream
 		{
 			return _changed;
 		}
+		
+		public function get minMaxChanged() : Signal
+		{
+			return _minMaxChanged;
+		}
 
 		public function VertexStream(usage		: uint,
 									 format		: VertexFormat,
@@ -86,15 +96,54 @@ package aerys.minko.type.stream
 			
 			_changed.add(changedHandler);
 			changedHandler(this, null);
+			
+			updateMinMax();			
 		}
-
+		
+		private function updateMinMax() : void
+		{
+			if (!_invalidMinMax)
+				return ;
+			
+			var size		: uint	= format.dwordsPerVertex;
+			var dataLength	: uint	= data.length;
+			var i			: uint	= 0;
+			
+			_minimum = new Vector.<Number>(size, true);
+			_maximum = new Vector.<Number>(size, true);
+			
+			for (i = 0; i < size; ++i)
+			{
+				_minimum[i] = Number.MAX_VALUE;
+				_maximum[i] = Number.MIN_VALUE;
+			}
+			
+			i = 0;
+			while (i < dataLength)
+			{
+				for (var j : uint = 0; j < size; ++j)
+				{
+					var value : Number = _data[uint(i + j)];
+					
+					if (value < _minimum[j])
+						_minimum[j] = value;
+					else if (value > _maximum[j])
+						_maximum[j] = value;
+				}
+				
+				i += size;
+			}
+			
+			_minMaxChanged.execute(this);
+		}
+		
 		public function deleteVertexByIndex(index : uint) : Boolean
 		{
 			if (index > length)
 				return false;
 
 			_data.splice(index, _format.dwordsPerVertex);
-
+			_invalidMinMax = true;
 			_changed.execute(this, null);
 
 			return true;
@@ -111,13 +160,39 @@ package aerys.minko.type.stream
 			
 			return _data[i];
 		}
+		
+		public function getMinimum(index : uint) : Number
+		{
+			return _minimum[index];
+		}
+		
+		public function getMaximum(index : uint) : Number
+		{
+			return _maximum[index];
+		}
 
 		public function set(i : int, value : Number) : void
 		{
+			var minMaxChanged	: Boolean	= false;
+			
 			checkWriteUsage(this);
 			
 			_data[i] = value;
+			
+			i %= _format.dwordsPerVertex;
+			if (value < _minimum[i])
+			{
+				_minimum[i] = value;
+				minMaxChanged = true;
+			}
+			else if (value > _maximum[i])
+			{
+				_maximum[i] = value;
+				minMaxChanged = true;
+			}
+			
 			_changed.execute(this, null);
+			_minMaxChanged.execute(this);
 		}
 
 		public function push(data : Vector.<Number>) : void
@@ -132,6 +207,7 @@ package aerys.minko.type.stream
 			for (var i : int = 0; i < dataLength; i++)
 				_data.push(data[i]);
 
+			_invalidMinMax = true;
 			_changed.execute(this, null);
 		}
 
@@ -152,7 +228,7 @@ package aerys.minko.type.stream
 		{
 			_length = _data.length / _format.dwordsPerVertex;
 		}
-
+		
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
 												   uvs		 	: Vector.<Number> 	= null,
 												   usage		: uint				= 0) : VertexStream

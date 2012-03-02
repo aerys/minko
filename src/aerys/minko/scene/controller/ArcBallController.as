@@ -136,6 +136,8 @@ package aerys.minko.scene.controller
 			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, stopDrag);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler); 
 			dispatcher.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
+			
+			stopDrag(null);
 		}
 		
 		override protected function updateOnTime(time : Number) : Boolean

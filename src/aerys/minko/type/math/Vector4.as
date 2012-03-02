@@ -152,7 +152,7 @@ package aerys.minko.type.math
 			_vector.y = y;
 			_vector.z = z;
 			_vector.w = w;
-
+			
 			_update = UPDATE_ALL;
 		}
 
@@ -170,7 +170,7 @@ package aerys.minko.type.math
 										out : Vector4 = null) : Vector4
 		{
 			out = copy(u, out);
-
+			
 			return out.subtract(v);
 		}
 

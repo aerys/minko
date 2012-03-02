@@ -7,7 +7,7 @@ package aerys.minko.render.shader
 
 	public final class ShaderSignature
 	{
-		public static const OPERATION_COUNT		: uint				= 1;
+		public static const OPERATION_EXISTS	: uint				= 1;
 		public static const OPERATION_GET		: uint				= 2;
 		
 		public static const SOURCE_MESH			: uint				= 4;
@@ -15,11 +15,11 @@ package aerys.minko.render.shader
 		
 		private static const TMP_NUMBERS		: Vector.<Number>	= new <Number>[];
 		
-		private var _shader	: ActionScriptShader			= null;
-		private var _hash	: String			= null;
-		private var _keys	: Vector.<String>	= new <String>[];
-		private var _values	: Vector.<Object>	= new <Object>[];
-		private var _flags	: Vector.<uint>		= new <uint>[];
+		private var _shader	: ActionScriptShader	= null;
+		private var _hash	: String				= null;
+		private var _keys	: Vector.<String>		= new <String>[];
+		private var _values	: Vector.<Object>		= new <Object>[];
+		private var _flags	: Vector.<uint>			= new <uint>[];
 		
 		public function get shader() : ActionScriptShader
 		{
@@ -70,12 +70,12 @@ package aerys.minko.render.shader
 				else
 					_hash += "mesh.get('" + key + "')";
 			}
-			else if (flags & OPERATION_COUNT)
+			else if (flags & OPERATION_EXISTS)
 			{
 				if (flags & SOURCE_SCENE)
-					_hash += "scene.count('" + key + "')";
+					_hash += "scene.has('" + key + "')";
 				else
-					_hash += "mesh.count('" + key + "')";
+					_hash += "mesh.has('" + key + "')";
 			}
 			else
 				throw new Error();
@@ -102,7 +102,7 @@ package aerys.minko.render.shader
 					if (!compare(source.getProperty(key), value))
 						return false;
 				}
-				else if (flags & OPERATION_COUNT)
+				else if (flags & OPERATION_EXISTS)
 				{
 					if ((source.getProperty(key) ? 1 : 0) == value)
 						return false;
@@ -130,7 +130,7 @@ package aerys.minko.render.shader
 				
 				if (flags & OPERATION_GET)
 					return !compare(value, _values[propertyId]);
-				else if (flags & OPERATION_COUNT)
+				else if (flags & OPERATION_EXISTS)
 					return value == null && _values[propertyId] == 0;
 			}
 			

@@ -21,7 +21,7 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		private static var _id			: uint					= 0;
+		private static var _id			: uint							= 0;
 		
 		minko_scene var _children		: Vector.<ISceneNode>			= null;
 		minko_scene var _numChildren	: uint							= 0;
@@ -454,7 +454,7 @@ package aerys.minko.scene.node
 		{
 			_controllers.push(controller);
 
-			controller.targetAdded.execute(controller, this);
+			controller.addTarget(this);
 			_controllerAdded.execute(this, controller);
 		}
 		
@@ -465,7 +465,7 @@ package aerys.minko.scene.node
 			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
 			_controllers.length = numControllers;
 			
-			controller.targetRemoved.execute(controller, this);
+			controller.removeTarget(this);
 			_controllerRemoved.execute(this, controller);
 		}
 		

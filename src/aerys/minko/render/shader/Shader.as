@@ -1,8 +1,11 @@
 package aerys.minko.render.shader
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DCompareMode;
@@ -10,11 +13,19 @@ package aerys.minko.render.shader
 
 	public final class Shader
 	{
+		use namespace minko_render;
 		
 		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);
 		private static const TMP_INTS		: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
 		private var _signature					: ShaderSignature	= null;
+		
+		private var _blending					: uint				= 0;
+		private var _blendingSource				: String			= null;
+		private var _blendingDest				: String			= null;
+		
+		private var _triangleCulling			: uint				= 0;
+		private var _triangleCullingStr			: String			= null;
 		
 		private var _priority					: Number			= 0.;
 		
@@ -34,6 +45,27 @@ package aerys.minko.render.shader
 		public function get signature() : ShaderSignature
 		{
 			return _signature;
+		}
+		
+		public function get blending() : uint
+		{
+			return _blending;
+		}
+		public function set blending(value : uint) : void
+		{
+			_blending = value;
+			_blendingSource = Blending.STRINGS[int(value & 0xffff)];
+			_blendingDest	= Blending.STRINGS[int(value >>> 16)]
+		}
+		
+		public function get triangleCulling() : uint
+		{
+			return _triangleCulling;
+		}
+		public function set triangleCulling(value : uint) : void
+		{
+			_triangleCulling = value;
+			_triangleCullingStr = TriangleCulling.STRINGS[value];
 		}
 		
 		public function get priority() : Number
@@ -131,6 +163,23 @@ package aerys.minko.render.shader
 			_rectangle = null;
 		}
 		
+		public function clone(newProgram 	: Program3DResource = null,
+							  newSignature	: ShaderSignature	= null) : Shader
+		{
+			var clone : Shader	= new Shader(newProgram || _program, newSignature);
+			
+			clone.blending = blending;
+			clone.triangleCulling = triangleCulling;
+			clone.priority = priority;
+			clone.renderTarget = renderTarget;
+			clone.compareMode = compareMode;
+			clone.enableDepthWrite = enableDepthWrite;
+			clone.scissorRectangle = scissorRectangle;
+			clone.enabled = enabled;
+			
+			return clone;
+		}
+		
 		public function prepareContext(context 		: Context3D,
 									   backBuffer	: RenderTarget,
 									   previous		: Shader) : void
@@ -165,6 +214,9 @@ package aerys.minko.render.shader
 			context.setProgram(_program.getProgram3D(context));
 			context.setScissorRectangle(_rectangle);
 			context.setDepthTest(_enableDepthWrite, _compareMode);
+			
+			context.setBlendFactors(_blendingSource, _blendingDest);
+			context.setCulling(_triangleCullingStr);
 		}
 		
 		public static function sort(instances : Vector.<Shader>, numStates : int) : void

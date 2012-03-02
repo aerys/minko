@@ -4,6 +4,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSignature;
 	import aerys.minko.scene.node.Scene;
@@ -63,7 +64,6 @@ package aerys.minko.scene.controller
 		{
 			target.addedToScene.add(meshAddedToSceneHandler);
 			target.removedFromScene.add(meshRemovedFromSceneHandler);
-			target.visibilityChanged.add(meshVisibilityChangedHandler);
 			
 			if (target.root is Scene)
 				meshAddedToSceneHandler(target, target.root as Scene);
@@ -74,29 +74,24 @@ package aerys.minko.scene.controller
 		{
 			target.addedToScene.remove(meshAddedToSceneHandler);
 			target.removedFromScene.remove(meshRemovedFromSceneHandler);
-			target.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
 		private function meshAddedToSceneHandler(mesh	: Mesh,
 												 scene	: Scene) : void
 		{
-			var effect		: Effect	= _effect || mesh.effect;
-			var numPasses	: uint		= effect.numPasses;
+			addDrawCalls(mesh, scene);
 			
-			for (var i : uint = 0; i < numPasses; ++i)
-				createShaderInstance(effect, mesh, i);
-			
-			scene.renderingList.addDrawCalls(
-				_meshToPasses[mesh], _meshToDrawCalls[mesh]
-			);
+			mesh.effectChanged.add(meshEffectChangedHandler);
+			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 		}
 		
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
-			scene.renderingList.removeDrawCalls(
-				_meshToPasses[mesh], _meshToDrawCalls[mesh]
-			);
+			removeDrawCalls(mesh, scene);
+			
+			mesh.effectChanged.remove(meshEffectChangedHandler);
+			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
 		private function meshVisibilityChangedHandler(mesh			: Mesh,
@@ -109,26 +104,50 @@ package aerys.minko.scene.controller
 				(drawCalls[callId] as DrawCall).enabled = visibility;
 		}
 		
-		private function effectChangedHandler(mesh		: Mesh,
-											  oldEffect	: Effect,
-											  newEffect	: Effect) : void
+		private function meshEffectChangedHandler(mesh		: Mesh,
+												  oldEffect	: Effect,
+												  newEffect	: Effect) : void
 		{
-			throw new Error();
+			var scene : Scene = mesh.root as Scene;
+			
+			removeDrawCalls(mesh, scene);
+			addDrawCalls(mesh, scene);
 		}
 		
-		private function createShaderInstance(effect 	: Effect,
-											  mesh		: Mesh,
-											  passId 	: uint) : void
+		private function addDrawCalls(mesh : Mesh, scene : Scene) : void
 		{
-			var meshBindings	: DataBindings		= mesh.bindings;
-			var sceneBindings	: DataBindings		= (mesh.root as Scene).bindings;
-			var instance		: Shader 			= effect.getPass(passId).fork(
+			var effect		: Effect	= _effect || mesh.effect;
+			var numPasses	: uint		= effect.numPasses;
+			
+			for (var i : uint = 0; i < numPasses; ++i)
+				createShader(effect, mesh, i);
+			
+			scene.renderingList.addDrawCalls(
+				_meshToPasses[mesh], _meshToDrawCalls[mesh]
+			);
+		}
+		
+		private function removeDrawCalls(mesh : Mesh, scene : Scene) : void
+		{
+			scene.renderingList.removeDrawCalls(
+				_meshToPasses[mesh], _meshToDrawCalls[mesh]
+			);
+		}
+		
+		private function createShader(effect 	: Effect,
+									  mesh		: Mesh,
+									  passId 	: uint) : void
+		{
+			var meshBindings	: DataBindings			= mesh.bindings;
+			var sceneBindings	: DataBindings			= (mesh.root as Scene).bindings;
+			var asShader		: ActionScriptShader	= effect.getPass(passId);
+			var instance		: Shader 				= asShader.fork(
 				meshBindings,
 				sceneBindings
 			);
-			var drawCall		: DrawCall			= instance.program.createDrawCall();
-			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh] as Vector.<DrawCall>;
-			var passes			: Vector.<Shader>	= _meshToPasses[mesh] as Vector.<Shader>;
+			var drawCall		: DrawCall				= instance.program.createDrawCall();
+			var drawCalls		: Vector.<DrawCall>		= _meshToDrawCalls[mesh] as Vector.<DrawCall>;
+			var passes			: Vector.<Shader>		= _meshToPasses[mesh] as Vector.<Shader>;
 			
 			configureDrawCall(mesh, drawCall);
 			
@@ -182,18 +201,39 @@ package aerys.minko.scene.controller
 			{
 				var key 	: String		= signature.getKey(i);
 				var flags	: uint			= signature.getFlags(i);
+				var source	: DataBindings	= flags & ShaderSignature.SOURCE_MESH
+					? meshBindings
+					: sceneBindings;
 				
 				if (flags & ShaderSignature.SOURCE_MESH)
 				{
-					meshBindings.getPropertyChangedSignal(key).add(
-						meshPropertyChangedHandler
-					);
+					if (flags & ShaderSignature.OPERATION_EXISTS)
+					{
+						meshBindings.getPropertyRemovedSignal(key).add(
+							meshPropertyChangedHandler
+						);
+					}
+					else
+					{
+						meshBindings.getPropertyChangedSignal(key).add(
+							meshPropertyRemovedHandler
+						);
+					}
 				}
 				else
 				{
-					sceneBindings.getPropertyChangedSignal(key).add(
-						scenePropertyChangedHandler
-					);
+					if (flags & ShaderSignature.OPERATION_EXISTS)
+					{
+						sceneBindings.getPropertyRemovedSignal(key).add(
+							scenePropertyChangedHandler
+						);
+					}
+					else
+					{
+						sceneBindings.getPropertyChangedSignal(key).add(
+							scenePropertyChangedHandler
+						);
+					}
 				}
 			}
 		}
@@ -206,12 +246,24 @@ package aerys.minko.scene.controller
 			checkSignatures(propertyName, newValue, ShaderSignature.SOURCE_MESH);
 		}
 		
+		private function meshPropertyRemovedHandler(dataBindings	: DataBindings,
+													propertyName	: String) : void
+		{
+			checkSignatures(propertyName, false, ShaderSignature.SOURCE_MESH);
+		}
+		
 		private function scenePropertyChangedHandler(dataBindings	: DataBindings,
 													 propertyName	: String,
 													 oldValue		: Object,
 													 newValue		: Object) : void
 		{
 			checkSignatures(propertyName, newValue, ShaderSignature.SOURCE_SCENE);
+		}
+		
+		private function scenePropertyRemovedHandler(dataBindings	: DataBindings,
+													 propertyName	: String) : void
+		{
+			checkSignatures(propertyName, false, ShaderSignature.SOURCE_SCENE);
 		}
 		
 		private function checkSignatures(propertyName	: String,
@@ -252,7 +304,7 @@ package aerys.minko.scene.controller
 					var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[meshObject];
 					
 					list.removeDrawCall(passes[passId], drawCalls[passId]);
-					createShaderInstance(mesh.effect, mesh, passId);
+					createShader(mesh.effect, mesh, passId);
 					list.addDrawCall(passes[passId], drawCalls[passId]);
 				}
 			}
