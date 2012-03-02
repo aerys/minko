@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.parts
+package aerys.minko.render.shader.parts.animation
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
