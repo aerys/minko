@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="asdoc" default="main">
+
+	<target name="main" depends="clean,asdoc"/>
+	
+	<property file="./build.properties" />
+	
+	<!--
+		Platform detection.
+	-->
+	<condition property="exe" value=".exe">
+		<os family="windows"/>
+	</condition>
+	<condition property="exe" value="">
+		<os family="unix"/>
+	</condition>
+
+	<!--
+		Properties.
+	-->
+	<property name="app.swc" value="${app.output}/${app.name}-v${app.version}.swc"/>
+	<property name="app.swf" value="${app.output}/${app.name}-v${app.version}.swf"/>
+	<property name="flex.mxmlc" value="${flex.home}/bin/asdoc${exe}"/>
+	<property name="flex.compc" value="${flex.home}/bin/compc${exe}"/>
+	<property name="flex.asdoc" value="${flex.home}/bin/asdoc${exe}"/>
+	
+	<target name="clean">
+		<delete file="${app.swc}" failonerror="false"/>
+		<delete file="${app.swf}" failonerror="false"/>
+		<delete dir="${doc.output}" failOnError="false" includeEmptyDirs="true"/>
+		<mkdir dir="${doc.output}"/>
+	</target>
+
+	<!--
+		Build documentation using asdoc.
+	-->
+	<target name="asdoc" depends="clean">
+		<exec executable="${flex.asdoc}" failonerror="true">
+			<arg line='-source-path ${app.src}'/>
+			<arg line='-doc-sources ${app.src}'/>
+			<arg line='-main-title "${doc.title}"'/>
+			<arg line='-window-title "${doc.title}"'/>
+			<arg line='-output ${doc.output}'/>
+			<arg line='-external-library-path ${app.swcs}'/>
+		</exec>
+	</target>
+	
+	<!--
+		Build a SWC library using compc.
+	-->
+	<target name="swc" depends="clean">
+		<exec executable="${flex.compc}">
+			<arg line='-output ${app.output}/${app.name}-v${app.version}.swc'/>
+			<arg line='-include-libraries ${app.swcs}'/>
+			<arg line='-include-sources ${app.src}'/>
+			<arg line='-source-path ${app.src}'/>
+		</exec>
+	</target>
+	
+	<!--
+		Build a SWF application using mxmlc.
+	-->
+	<target name="swf" depends="clean">
+    	<exec executable="${flex.mxmlc}">
+			<arg line="-define=CONFIG::Debug,false"/>
+			<arg line="-define+=CONFIG::Release,true"/>
+			<arg line="-strict"/>
+			<arg line="-optimize"/>
+			<arg line="-debug=false"/>
+			<arg line="-static-link-runtime-shared-libraries"/>
+			<arg line="-o '${app.swf}'"/>
+			<arg line="-el '${flex.home}/frameworks/libs/player/10.0/playerglobal.swc'"/>
+			<arg line="-include-libraries ${app.swcs}"/>
+			<arg line="-sp '${app.src}'"/>
+			<arg line="-- '${app.src}/${flex.app}.as'"/>
+		</exec>
+	</target>
+	
+	<!--
+		Build a SWC livrary using compc and run apparat to optimize it.
+	-->
+	<target name="apparat-swc" depends="clean">
+		<exec executable="${flex.compc}">
+			<arg line='-output ${app.apparat-swc}'/>
+			<arg line='-include-libraries ${app.swcs} "${apparat.home}/apparat.swc"'/>
+			<arg line='-include-sources ${app.src}'/>
+			<arg line='-source-path ${app.src}'/>
+		</exec>
+		<tdsi in="${app.apparat-swc}">
+			<classpath refid="apparat.path"/>
+		</tdsi>
+	</target>
+</project>
