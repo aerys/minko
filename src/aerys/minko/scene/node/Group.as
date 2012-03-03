@@ -10,10 +10,8 @@ package aerys.minko.scene.node
 	import flash.utils.getQualifiedClassName;
 
 	/**
-	 * The Group provides a basic support for scene building.
-	 * A Group can contain any object implementing the IScene interface.
-	 *
-	 * Group objects do not affect their children with any specific behaviour.
+	 * Group objects can contain other scene nodes and applies a 3D
+	 * transformation to its descendants.
 	 *
 	 * @author Jean-Marc Le Roux
 	 */

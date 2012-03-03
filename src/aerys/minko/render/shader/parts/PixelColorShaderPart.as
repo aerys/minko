@@ -13,20 +13,20 @@ package aerys.minko.render.shader.parts
 		
 		public function getPixelColor() : SFloat
 		{
-			if (meshBindings.propertyExists("diffuse map"))
+			if (meshBindings.propertyExists("diffuseMap"))
 			{
-				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuse map");
+				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuseMap");
 				var uv			: SFloat	= interpolate(vertexUV);
 				
 				return sampleTexture(diffuseMap, uv);
 			}
-			else if (meshBindings.propertyExists("diffuse color"))
+			else if (meshBindings.propertyExists("diffuseColor"))
 			{
-				return meshBindings.getParameter("diffuse color", 4);
+				return meshBindings.getParameter("diffuseColor", 4);
 			}
 			
 			throw new Error(
-				"Local parameter 'diffuse color' or 'diffuse map' must be set."
+				"Local parameter 'diffuseColor' or 'diffuseMap' must be set."
 			);
 		}
 	}

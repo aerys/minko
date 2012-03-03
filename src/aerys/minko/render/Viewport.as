@@ -1,6 +1,5 @@
 package aerys.minko.render
 {
-	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
@@ -14,10 +13,14 @@ package aerys.minko.render
 	import flash.events.Event;
 	import flash.utils.getTimer;
 
+	/**
+	 * The Viewport is the display area where a 3D scene can be rendered.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class Viewport
 	{
-		use namespace minko_scene;
-		
 		private var _stage3d			: Stage3D		= null;
 		
 		private var _width				: uint			= 0;
@@ -30,10 +33,15 @@ package aerys.minko.render
 		
 		private var _renderingTime		: int			= 0;
 		
-		private var _changed			: Signal		= new Signal();
+		private var _resized			: Signal		= new Signal();
 		private var _enterFrame			: Signal		= new Signal();
 		private var _exitFrame			: Signal		= new Signal();
 		
+		/**
+		 * Whether the viewport is visible or not. 
+		 * @return 
+		 * 
+		 */
 		public function get visible() : Boolean
 		{
 			return _stage3d.visible;
@@ -43,38 +51,60 @@ package aerys.minko.render
 			_stage3d.visible = v;
 		}
 		
+		/**
+		 * The width of the display area. 
+		 * @return 
+		 * 
+		 */
 		public function get width() : uint
 		{
 			return _width;
 		}
-		public function set width(value : uint) : void
-		{
-			_width = value;
-			_invalidBackBuffer = true;
-			_changed.execute(this, "width");
-		}
 		
+		/**
+		 * The height of the display area. 
+		 * @return 
+		 * 
+		 */
 		public function get height() : uint
 		{
 			return _height;
 		}
-		public function set height(value : uint) : void
+		
+		/**
+		 * The signal executed when the viewport is resized.
+		 * Callback functions for this signal should accept the following
+		 * arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport executing the signal</li>
+		 * <li>width : Number, the new width of the viewport</li>
+		 * <li>height : Number, the new height of the viewport</li>
+		 * </ul> 
+		 * @return 
+		 * 
+		 */
+		public function get resized() : Signal
 		{
-			_height = value;
-			_invalidBackBuffer = true;
-			_changed.execute(this, "height");
+			return _resized;
 		}
 		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
-		
+		/**
+		 * The time spent (in milliseconds) calling methods from the Stage3D
+		 * rendering API. 
+		 * @return 
+		 * 
+		 */
 		public function get renderingTime() : int
 		{
 			return _renderingTime;
 		}
 		
+		/**
+		 * The background color of the display area. This value must use the
+		 * RGB format.
+		 * @return 
+		 * 
+		 */
 		public function get backgroundColor() : uint
 		{
 			return _backgroundColor;
@@ -84,6 +114,13 @@ package aerys.minko.render
 			_backgroundColor = value;
 		}
 		
+		/**
+		 * The anti-aliasing to use (0, 2, 4, 8 or 16). The actual anti-aliasing
+		 * used for rendering depends on the hardware capabilities. If the specified
+		 * anti-aliasing value is not supported, the value 0 will be used.
+		 * @return 
+		 * 
+		 */
 		public function get antiAliasing() : uint
 		{
 			return _antiAliasing;
@@ -94,16 +131,39 @@ package aerys.minko.render
 			_invalidBackBuffer = true;
 		}
 		
+		/**
+		 * The signal executed when the viewport is about to start rendering a frame.
+		 * Callback functions for this signal should accept the following arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport who starts rendering the frame</li>
+		 * </ul>
+		 * @return 
+		 * 
+		 */
 		public function get enterFrame() : Signal
 		{
 			return _enterFrame;
 		}
 		
+		/**
+		 * The signal executed when the viewport is done rendering a frame.
+		 * Callback functions for this signal should accept the following arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport who just finished rendering the frame</li>
+		 * </ul>
+		 * @return 
+		 * 
+		 */
 		public function get exitFrame() : Signal
 		{
 			return _exitFrame;
 		}
 		
+		/**
+		 * The driver informations provided by the Stage3D API. 
+		 * @return 
+		 * 
+		 */
 		public function get driverInfo() : String
 		{
 			return _stage3d && _stage3d.context3D
@@ -145,12 +205,26 @@ package aerys.minko.render
 			_stage3d.requestContext3D();
 		}
 		
+		/**
+		 * Resize the display area. The "resized" signal is executed when the new width and
+		 * height have be set. 
+		 * @param width
+		 * @param height
+		 * 
+		 */
+		public function resize(width : Number, height : Number) : void
+		{
+			_width = width;
+			_height = height;
+			_invalidBackBuffer = true;
+			_resized.execute(this, width, height);
+		}
+		
 		private function stageResizedHandler(event : Event) : void
 		{
 			var stage : Stage = event.target as Stage;
 			
-			width = stage.stageWidth;
-			height = stage.stageHeight;
+			resize(stage.stageWidth, stage.stageHeight);
 		}
 		
 		private function context3dCreatedHandler(event : Event) : void
@@ -176,6 +250,20 @@ package aerys.minko.render
 			);
 		}
 		
+		/**
+		 * Render a 3D scene. If the "destination" argument is set to a valid
+		 * BitmapData object, the frame is dumped into it.
+		 * 
+		 * The following signals will also be executed:
+		 * <ul>
+		 * <li>enterFrame, when the method is called</li>
+		 * <li>exitFrame, when the method returns</li>
+		 * </ul>
+		 *  
+		 * @param scene
+		 * @param destination
+		 * 
+		 */
 		public function render(scene : Scene, destination : BitmapData = null) : void
 		{
 			_enterFrame.execute(this, scene);
