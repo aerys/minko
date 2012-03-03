@@ -4,6 +4,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Extract implements INode
 	{
 		private var _child			: INode;

@@ -1,5 +1,10 @@
 package aerys.minko.render.shader.compiler.register
 {
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public final class RegisterLimit
 	{
 		public static const MAX_VARYING			: uint = 8;

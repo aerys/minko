@@ -5,6 +5,11 @@ package aerys.minko.render.shader.compiler.sequence
 	
 	import flash.utils.ByteArray;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class AgalSourceCommon implements IAgalSource
 	{
 		private var _registerNumber					: uint;

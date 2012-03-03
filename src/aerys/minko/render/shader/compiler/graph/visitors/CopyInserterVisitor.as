@@ -12,6 +12,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class CopyInserterVisitor extends AbstractVisitor
 	{
 		public function CopyInserterVisitor()

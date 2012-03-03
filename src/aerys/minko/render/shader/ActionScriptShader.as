@@ -15,9 +15,15 @@ package aerys.minko.render.shader
 	
 	import flash.display3D.Context3D;
 	import flash.utils.getQualifiedClassName;
+	import aerys.minko.render.shader.part.ShaderPart;
 	
 	use namespace minko_shader;
 	
+	/**
+	 * The base class to extends in order to create ActionScript shaders. 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class ActionScriptShader extends ShaderPart
 	{
 		use namespace minko_shader;
@@ -41,6 +47,12 @@ package aerys.minko.render.shader
 		private var _begin				: Signal					= new Signal();
 		private var _end				: Signal					= new Signal();
 		
+		/**
+		 * The name of the shader. Default value is the qualified name of the
+		 * ActionScript shader class (example: "aerys.minko.render.effect.basic::BasicShader"). 
+		 * @return 
+		 * 
+		 */
 		public function get name() : String
 		{
 			return _name;
@@ -50,6 +62,13 @@ package aerys.minko.render.shader
 			_name = value;
 		}
 		
+		/**
+		 * Whether the shader - and all its forks - are enabled or not.
+		 * Setting this property will also affect all the forks of the ActionScript
+		 * shader. 
+		 * @return 
+		 * 
+		 */
 		public function get enabled() : Boolean
 		{
 			return _enabled;
@@ -61,16 +80,33 @@ package aerys.minko.render.shader
 				(fork as Shader).enabled = value;
 		}
 
-		public function get instanciated() : Signal
+		/**
+		 * The signal executed when a new fork is actually created. 
+		 * @return 
+		 * 
+		 */
+		public function get forked() : Signal
 		{
 			return _forked;
 		}
 		
+		/**
+		 * The signal executed when the very first fork created from
+		 * this shader is being used for rendering. 
+		 * @return 
+		 * 
+		 */
 		public function get begin() : Signal
 		{
 			return _begin;
 		}
 		
+		/**
+		 * The signal executed when all the draw calls associated with any
+		 * fork created from this shader have been executed. 
+		 * @return 
+		 * 
+		 */
 		public function get end() : Signal
 		{
 			return _end;
@@ -170,6 +206,12 @@ package aerys.minko.render.shader
 			return fork;
 		}
 		
+		/**
+		 * Get a fork created from this shader by its signature. 
+		 * @param signature
+		 * @return 
+		 * 
+		 */
 		public function getForkBySignature(signature : ShaderSignature) : Shader
 		{
 			return _forks[signature.hash];
@@ -177,6 +219,8 @@ package aerys.minko.render.shader
 		
 		private function initializeFork(fork : Shader) : void
 		{
+			fork.enabled = _enabled;
+			
 			fork.addedToRenderingList.add(
 				shaderAddedToRenderingListHandler
 			);
@@ -201,6 +245,13 @@ package aerys.minko.render.shader
 			// nothing
 		}
 		
+		/**
+		 * The getVertexPosition() method is called to evaluate the vertex shader
+		 * program that shall be executed on the GPU.
+		 *  
+		 * @return The position of the vertex in clip space (normalized screen space).
+		 * 
+		 */
 		protected function getVertexPosition() : SFloat
 		{
 			throw new Error(
@@ -208,6 +259,13 @@ package aerys.minko.render.shader
 			);
 		}
 
+		/**
+		 * The getPixelColor() method is called to evaluate the fragment shader
+		 * program that shall be executed on the GPU.
+		 *  
+		 * @return The color of the pixel on the screen.
+		 * 
+		 */
 		protected function getPixelColor() : SFloat
 		{
 			throw new Error(

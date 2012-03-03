@@ -2,6 +2,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class AbstractSampler implements INode
 	{
 		private var _hash		: uint;

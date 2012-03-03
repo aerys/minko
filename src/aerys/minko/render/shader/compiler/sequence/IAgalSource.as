@@ -2,6 +2,11 @@ package aerys.minko.render.shader.compiler.sequence
 {
 	import flash.utils.ByteArray;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public interface IAgalSource
 	{
 		function getBytecode(destination : ByteArray) : void;

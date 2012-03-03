@@ -15,6 +15,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class OverwriterCleanerVisitor extends AbstractVisitor
 	{
 		private static const TYPE_PRIORITY : Dictionary = new Dictionary();

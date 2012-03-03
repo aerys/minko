@@ -3,7 +3,8 @@ package aerys.minko.render.shader.compiler.register
 	/**
 	 * Collection of functions to manipulate register components.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @private
+	 * @author Romain Gilliotte
 	 */	
 	public final class Components
 	{

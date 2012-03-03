@@ -3,6 +3,11 @@ package aerys.minko.render.shader.compiler.allocation
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class SimpleAllocation implements IAllocation
 	{
 		private var _type		: uint;

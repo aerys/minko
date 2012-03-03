@@ -1,5 +1,10 @@
 package aerys.minko.render.shader.compiler.register
 {
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class RegisterType
 	{
 		public static const ATTRIBUTE	: uint = 0x0;

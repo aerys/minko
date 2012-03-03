@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="asdoc" default="main">
 
-	<target name="main" depends="clean,asdoc"/>
+	<target name="main" depends="swc,asdoc"/>
 	
 	<property file="./build.properties" />
 	
@@ -41,7 +41,9 @@
 			<arg line='-main-title "${doc.title}"'/>
 			<arg line='-window-title "${doc.title}"'/>
 			<arg line='-output ${doc.output}'/>
-			<arg line='-external-library-path ${app.swcs}'/>
+			<arg line='-templates-path ${doc.templates}'/>
+			<arg line='-package-description-file ${doc.packageDescriptionFile}'/>
+			<!--<arg line='-external-library-path ${app.swcs}'/>-->
 		</exec>
 	</target>
 	
@@ -76,18 +78,4 @@
 		</exec>
 	</target>
 	
-	<!--
-		Build a SWC livrary using compc and run apparat to optimize it.
-	-->
-	<target name="apparat-swc" depends="clean">
-		<exec executable="${flex.compc}">
-			<arg line='-output ${app.apparat-swc}'/>
-			<arg line='-include-libraries ${app.swcs} "${apparat.home}/apparat.swc"'/>
-			<arg line='-include-sources ${app.src}'/>
-			<arg line='-source-path ${app.src}'/>
-		</exec>
-		<tdsi in="${app.apparat-swc}">
-			<classpath refid="apparat.path"/>
-		</tdsi>
-	</target>
 </project>

@@ -3,6 +3,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class BindableConstant implements INode
 	{
 		public static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';

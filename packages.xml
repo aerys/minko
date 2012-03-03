@@ -1,0 +1,175 @@
+<overviews> 
+    <packages> 
+		<package name="aerys.minko"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko package contains the Minko 3D framework.
+                ]]> 
+            </shortDescription> 
+        </package> 
+        <package name="aerys.minko.render"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render package contains the rendering API.
+                ]]> 
+            </shortDescription> 
+        </package> 
+		<package name="aerys.minko.render.effect">
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render package contains the classes to define
+					effects and the effects themselves.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.effect.basic">
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.effect.basic package contains the
+					basic rendering effect.
+                ]]> 
+            </shortDescription> 
+        </package> 
+		<package name="aerys.minko.render.resource"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.resource package contains all the classes
+					related to hardware resources (texture, programs, buffers...).
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.shader"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.shader package contains all the classes
+					to create shaders, including ActionScript shaders and the JIT shaders
+					compiler.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.shader.compiler"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.shader.compiler package contains the ActionScript
+					shader compiler.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.shader.part"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.shader.part package contains the ActionScript
+					shader parts.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.shader.part.animation"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.shader.part.animation package contains the ActionScript
+					shader parts related to animation.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.render.shader.part.projection"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.shader.part.projection package contains the ActionScript
+					shader parts related to projections (cube map, Blinn/Newell, paraboloid...).
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.scene"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.scene package contains the scene graph API.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.scene.controller"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.scene.controller package contains all the controllers than
+					can be set on scene nodes.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.scene.node"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.scene.node package contains the available scene nodes.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.scene.node.mesh"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.scene.node package contains the available types of
+					meshes and primitives (cube, sphere, quad...).
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type"> 
+            <shortDescription> 
+                <![CDATA[
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.animation"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.animation package contains all the classes
+					for the animation API including a set of timelines.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.bounding"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.type.bounding package contains the classes
+					to describe bounding volumes (sphere and box).
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.data"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.type.data package contains the scene-shader
+					data binding API.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.enum"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.type.enum package contains all the enumeration
+					classes used in Minko.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.loader"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.loader package contains the files loading API
+					used to load assets (scenes, meshes, textures...)
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.math"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.math package contains all the classes
+					defining mathematical objects (Plane, Frustum, Matrix4x4...)
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.stream"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.stream package contains the stream API used
+					to contain, create and work with 3D geometry.
+                ]]> 
+            </shortDescription> 
+        </package>
+    </packages> 
+</overviews>

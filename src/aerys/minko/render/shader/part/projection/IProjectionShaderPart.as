@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.parts.projection
+package aerys.minko.render.shader.part.projection
 {
 	import aerys.minko.render.shader.SFloat;
 	

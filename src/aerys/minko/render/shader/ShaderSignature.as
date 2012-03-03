@@ -5,6 +5,11 @@ package aerys.minko.render.shader
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
+	/**
+	 * ShaderSignature objects describe the "signature" of ActionScript shaders.
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class ShaderSignature
 	{
 		public static const OPERATION_EXISTS	: uint				= 1;

@@ -16,7 +16,7 @@ package aerys.minko.scene.node.mesh.primitive
 	 * 
 	 * Note: The tesselation of the bezier patches is (very) far from being optimized.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @author Romain Gilliotte
 	 * @see http://en.wikipedia.org/wiki/Utah_teapot Wikipedia article about Utah Teapot
 	 * @see http://www.gamasutra.com/view/feature/3387/an_indepth_look_at_bicubic_bezier_.php?print=1 How to (properly) tesselate bezier patches.
 	 */	

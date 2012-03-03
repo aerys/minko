@@ -14,6 +14,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class MergeVisitor extends AbstractVisitor
 	{
 		private var _hashsToNodes	: Dictionary;

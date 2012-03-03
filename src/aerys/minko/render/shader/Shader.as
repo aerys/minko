@@ -11,6 +11,11 @@ package aerys.minko.render.shader
 	import flash.display3D.Context3DCompareMode;
 	import flash.geom.Rectangle;
 
+	/**
+	 * The base class for static shaders. 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class Shader
 	{
 		use namespace minko_render;

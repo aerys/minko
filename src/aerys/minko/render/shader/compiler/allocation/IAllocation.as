@@ -1,5 +1,10 @@
 package aerys.minko.render.shader.compiler.allocation
 {
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public interface IAllocation
 	{
 		function get type()				: uint;

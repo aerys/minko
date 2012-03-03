@@ -2,6 +2,11 @@ package aerys.minko.render.shader.compiler.allocation
 {
 	import aerys.minko.render.shader.compiler.register.Components;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class ContiguousAllocation implements IAllocation
 	{
 		private var _subAllocations : Vector.<SimpleAllocation>;

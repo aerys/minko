@@ -10,7 +10,8 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 	 * - memory "lost" because registers (sometimes) need to be aligned.
 	 * - this is optimal for a tree, not so much for a DAG (and we use DAGs)
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @private
+	 * @author Romain Gilliotte
 	 * 
 	 */	
 	public class SethiUllmann

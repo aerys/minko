@@ -3,6 +3,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.CRC32;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Sampler extends AbstractSampler
 	{
 		/**

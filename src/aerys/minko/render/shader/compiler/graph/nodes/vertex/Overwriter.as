@@ -4,6 +4,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Overwriter implements INode
 	{
 		private var _args			: Vector.<INode>;

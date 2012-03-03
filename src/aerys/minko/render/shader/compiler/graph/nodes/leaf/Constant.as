@@ -4,6 +4,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Constant implements INode
 	{
 		private var _hash	: uint;

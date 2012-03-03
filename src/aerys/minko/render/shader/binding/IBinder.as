@@ -4,6 +4,11 @@ package aerys.minko.render.shader.binding
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public interface IBinder
 	{
 		/**

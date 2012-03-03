@@ -36,6 +36,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class AllocationVisitor extends AbstractVisitor
 	{
 		private var _vsAllocations		: Dictionary;

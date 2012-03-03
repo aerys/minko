@@ -13,6 +13,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class RemoveExtractsVisitor extends AbstractVisitor
 	{
 		public function RemoveExtractsVisitor() 

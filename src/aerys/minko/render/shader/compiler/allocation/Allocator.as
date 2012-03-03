@@ -9,7 +9,8 @@ package aerys.minko.render.shader.compiler.allocation
 	/**
 	 * This class meant to allocate shader registries in the AllocationVisitor.
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @private
+	 * @author Romain Gilliotte
 	 */	
 	public class Allocator
 	{

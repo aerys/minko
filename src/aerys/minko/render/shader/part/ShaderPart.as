@@ -1,4 +1,4 @@
-package aerys.minko.render.shader
+package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.TextureResource;
@@ -18,7 +18,15 @@ package aerys.minko.render.shader
 	import aerys.minko.type.enum.SamplerMipmap;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.ShaderDataBindings;
 
+	/**
+	 * The base class to create ActionScript shader parts.
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class ShaderPart
 	{
 		use namespace minko_shader;

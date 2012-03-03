@@ -4,6 +4,11 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.type.data.DataBindings;
 
+	/**
+	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class ShaderDataBindings
 	{
 		private var _dataBindings	: DataBindings		= null;

@@ -1,8 +1,8 @@
-package aerys.minko.render.shader.parts.projection
+package aerys.minko.render.shader.part.projection
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.ShaderPart;
+	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	

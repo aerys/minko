@@ -4,6 +4,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Attribute implements INode
 	{
 		private var _component		: VertexComponent;

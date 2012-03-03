@@ -13,9 +13,15 @@ package aerys.minko
 		{
 			_logger = value;
 		}
-		public static function set debugLevel(value : uint)	: void	{ _debugLevel = value; }
 		
-		public static function get debugLevel() : uint				{ return _debugLevel; }
+		public static function get debugLevel() : uint
+		{
+			return _debugLevel;
+		}
+		public static function set debugLevel(value : uint)	: void
+		{
+			_debugLevel = value;
+		}
 		
 		public static function log(type : uint, message : Object, target : Object = null) : void
 		{

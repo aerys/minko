@@ -1,9 +1,9 @@
-package aerys.minko.render.shader.parts.projection
+package aerys.minko.render.shader.part.projection
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.ShaderPart;
-	import aerys.minko.render.shader.parts.coordinates.SphericalCoordinatesShaderPart;
+	import aerys.minko.render.shader.part.ShaderPart;
+	import aerys.minko.render.shader.part.coordinates.SphericalCoordinatesShaderPart;
 	
 	import flash.geom.Rectangle;
 	

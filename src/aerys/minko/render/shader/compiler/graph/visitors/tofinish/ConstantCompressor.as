@@ -21,7 +21,8 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 	 * 			c1 = cc0.zxxx
 	 * 			c2 = cc0.wzx
 	 * 
-	 * @author Romain Gilliotte <romain.gilliotte@aerys.in>
+	 * @private
+	 * @author Romain Gilliotte
 	 */
 	public class ConstantCompressor
 	{

@@ -6,6 +6,11 @@ package aerys.minko.render.shader.compiler
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Evaluator
 	{
 		private static const VEC_FACTORY : Factory = Factory.getFactory(Class(Vector.<Number>));

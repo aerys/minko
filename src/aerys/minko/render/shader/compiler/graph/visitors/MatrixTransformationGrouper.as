@@ -14,6 +14,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.type.math.Matrix4x4;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class MatrixTransformationGrouper extends AbstractVisitor
 	{
 		private var _computableMatrixId : int;

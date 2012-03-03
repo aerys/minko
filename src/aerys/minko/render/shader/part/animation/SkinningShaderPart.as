@@ -1,8 +1,8 @@
-package aerys.minko.render.shader.parts.animation
+package aerys.minko.render.shader.part.animation
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.ShaderPart;
+	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
 	

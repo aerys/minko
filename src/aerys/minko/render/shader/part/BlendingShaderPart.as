@@ -1,8 +1,7 @@
-package aerys.minko.render.shader.parts
+package aerys.minko.render.shader.part
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.ShaderPart;
 	import aerys.minko.type.enum.BlendingSource;
 	
 	public class BlendingShaderPart extends ShaderPart

@@ -9,6 +9,11 @@ package aerys.minko.render.shader.compiler.sequence
 	
 	import flash.utils.ByteArray;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class AgalSourceSampler implements IAgalSource
 	{
 		private var _index		: uint;

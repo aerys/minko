@@ -3,8 +3,8 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.parts.PixelColorShaderPart;
-	import aerys.minko.render.shader.parts.animation.VertexAnimationShaderPart;
+	import aerys.minko.render.shader.part.PixelColorShaderPart;
+	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.type.enum.Blending;
 	
 	/**
@@ -12,23 +12,78 @@ package aerys.minko.render.effect.basic
 	 * animations (skinning and morphing), a diffuse color or a texture and
 	 * a directional light.
 	 * 
-	 * Scene bindings:
-	 * <table>
-	 * <tr><td>Property Name</td><td>Type</td></tr>
-	 * <tr><td>lightEnabled</td><td>Boolean</td></tr>
-	 * <tr><td>lightDirection</td><td>Vector4</td></tr>
-	 * <tr><td>lightAmbient</td><td>Number</td></tr>
-	 * <tr><td>lightAmbientColor</td>uint or Vector4<td></td></tr>
-	 * <tr><td>lightDiffuse</td><td>Number</td></tr>
-	 * <tr><td>lightDiffuseColor</td><td>uint or Vector4</td></tr>
-	 * </table>
-	 * 
-	 * Mesh bindings:
-	 * <table>
-	 * <tr><td>Property Name</td><td>Type</td></tr>
-	 * <tr><td>lightEnabled</td><td>Boolean</td></tr>
-	 * <tr><td>diffuseMap</td><td>TextureResource</td></tr>
-	 * <tr><td>diffuseColor</td><td>uint or Vector4</td></tr>
+	 * <table class="bindingsSummary">
+	 * <tr>
+	 * 	<th>Property Name</th>
+	 * 	<th>Source</th>
+	 * 	<th>Type</th>
+	 * 	<th>Description</th>
+	 * 	<th>Requires</th>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightEnabled</td>
+	 * 	<td>Scene</td>
+	 * 	<td>Boolean</td>
+	 * 	<td>Whether the light is enabled or not on the scene.</td>
+	 * 	<td>lightDirection, lightAmbient, lightAmbientColor, lightDiffuse, lightDiffuseColor</td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightDirection</td>
+	 * 	<td>Scene</td>
+	 * 	<td>Vector4</td>
+	 * 	<td>The direction of the light.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightAmbient</td>
+	 * 	<td>Scene</td>
+	 * 	<td>Number</td>
+	 * 	<td>The ambient factor of the light.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightAmbientColor</td>
+	 * 	<td>Scene</td>
+	 * 	<td>uint or Vector4</td>
+	 * 	<td>The ambient color of the light.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightDiffuse</td>
+	 * 	<td>Scene</td>
+	 * 	<td>Number</td>
+	 * 	<td>The diffuse factor of the light</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightDiffuseColor</td>
+	 * 	<td>Scene</td>
+	 * 	<td>uint or Vector4</td>
+	 * 	<td>The diffuse color of the light.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>lightEnabled</td>
+	 * 	<td>Mesh</td>
+	 * 	<td>Boolean</td>
+	 * 	<td>Whether the light is enabled or not on the mesh.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>diffuseMap</td>
+	 * 	<td>Mesh</td>
+	 * 	<td>TextureResource</td>
+	 * 	<td>The texture to use for rendering.</td>
+	 * 	<td></td>
+	 * </tr>
+	 * <tr>
+	 * 	<td>diffuseColor</td>
+	 * 	<td>Mesh</td>
+	 * 	<td>uint or Vector4</td>
+	 * 	<td>The color to use for rendering. If the "diffuseMap" binding is set, this
+	 * 	value is not used.</td>
+	 * 	<td></td>
+	 * </tr>
 	 * </table>
 	 * 
 	 * @author Jean-Marc Le Roux
@@ -62,10 +117,8 @@ package aerys.minko.render.effect.basic
 		}
 		
 		/**
-		 * The getVertexPosition() method is called to evaluate the vertex shader
-		 * program that shall be executed on the GPU.
-		 *  
-		 * @return The position of the vertex in clip space (normalized screen space).
+		 * @return The position of the vertex in clip space (normalized
+		 * screen space).
 		 * 
 		 */
 		override protected function getVertexPosition() : SFloat
@@ -76,10 +129,8 @@ package aerys.minko.render.effect.basic
 		}
 		
 		/**
-		 * The getPixelColor() method is called to evaluate the fragment shader
-		 * program that shall be executed on the GPU.
-		 *  
-		 * @return The color of the pixel on the screen.
+		 * @return The pixel color using a diffuse color/map and an optional
+		 * directional light.
 		 * 
 		 */
 		override protected function getPixelColor() : SFloat

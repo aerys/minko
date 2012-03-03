@@ -7,6 +7,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class Instruction implements INode
 	{
 		public static const MOV : uint = 0x00;
