@@ -2,6 +2,11 @@ package aerys.minko.render.shader.compiler
 {
 	import flash.utils.ByteArray;
 
+	/**
+	 * The CRC32 class provides a set of static methods to create CRC32 values. 
+	 * @author promethe
+	 * 
+	 */
 	public class CRC32
 	{
 		private static const POLYNOMIAL 		: uint			= 0x04c11db7;

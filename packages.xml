@@ -173,6 +173,14 @@
                 ]]> 
             </shortDescription> 
         </package>
+		<package name="aerys.minko.type.loader.parser"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.loader.parser package contains the external files
+					parsers and the related API.
+                ]]> 
+            </shortDescription> 
+        </package>
 		<package name="aerys.minko.type.log"> 
             <shortDescription> 
                 <![CDATA[

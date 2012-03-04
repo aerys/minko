@@ -4,6 +4,12 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.type.enum.BlendingSource;
 	
+	/**
+	 * The shader part to perform a blending operation in the fragment shader.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class BlendingShaderPart extends ShaderPart
 	{
 		public function BlendingShaderPart(main:ActionScriptShader)

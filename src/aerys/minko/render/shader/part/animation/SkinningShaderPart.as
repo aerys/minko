@@ -8,6 +8,12 @@ package aerys.minko.render.shader.part.animation
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * The shader part to handle skinning vertex animations.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class SkinningShaderPart extends ShaderPart
 	{
 		public function SkinningShaderPart(main : ActionScriptShader)

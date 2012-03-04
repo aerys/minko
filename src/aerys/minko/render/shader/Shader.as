@@ -52,6 +52,17 @@ package aerys.minko.render.shader
 			return _signature;
 		}
 		
+		/**
+		 * The blending factors to use. This value must be one of the values
+		 * in the Blending enumeration or can be created by associating the values
+		 * provided by the BlendingSource and BlendingDestination enumerations. 
+		 * @return 
+		 * 
+		 * @see aerys.minko.type.enum.Blending
+		 * @see aerys.minko.type.enum.BlendingSource
+		 * @see aerys.minko.type.enum.BlendingDestination
+		 * 
+		 */
 		public function get blending() : uint
 		{
 			return _blending;

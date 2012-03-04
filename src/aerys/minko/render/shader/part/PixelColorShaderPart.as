@@ -5,7 +5,13 @@ package aerys.minko.render.shader.part
 	
 	public class PixelColorShaderPart extends ShaderPart
 	{
-		public function PixelColorShaderPart(main:ActionScriptShader)
+		/**
+		 * The shader part to use a diffuse map or fallback and use a solid color.
+		 *  
+		 * @param main
+		 * 
+		 */
+		public function PixelColorShaderPart(main : ActionScriptShader)
 		{
 			super(main);
 		}

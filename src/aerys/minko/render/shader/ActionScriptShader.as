@@ -20,8 +20,11 @@ package aerys.minko.render.shader
 	use namespace minko_shader;
 	
 	/**
-	 * The base class to extends in order to create ActionScript shaders. 
+	 * The base class to extends in order to create ActionScript shaders.
+	 * 
 	 * @author Jean-Marc Le Roux
+	 * 
+	 * @see aerys.minko.render.shader.Shader
 	 * 
 	 */
 	public class ActionScriptShader extends ShaderPart

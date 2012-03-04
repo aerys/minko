@@ -20,6 +20,12 @@ package aerys.minko.render.shader.compiler
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 
+	/**
+	 * The JIT ActionScript shader compiler.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Compiler
 	{
 		public static const COMPUTE_CONSTANTS_IN_CPU					: uint = 1;

@@ -7,6 +7,13 @@ package aerys.minko.render.shader.compiler
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
 
+	/**
+	 * The Serializer class provides a set of static methods to serialize
+	 * CPU values into Vector.<Number> than can be used as shader constants.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Serializer
 	{
 		public static function serializeKnownLength(data	: Object, 
@@ -94,17 +101,6 @@ package aerys.minko.render.shader.compiler
 				throw new Error('Unsupported type.');
 			}
 		}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		
 		public static function serializeUnknownLength(data		: Object, 
 													  target	: Vector.<Number>, 

@@ -1,5 +1,10 @@
 package aerys.minko.render.shader.compiler
 {
+	/**
+	 * @private
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class InstructionFlag
 	{
 		public static const AVAILABLE_VS	: uint = 1;
