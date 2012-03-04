@@ -1,8 +1,8 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.node.mesh.geometry.primitive
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.loader.parser.GeometrySanitizer;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
+	import aerys.minko.scene.node.mesh.geometry.GeometrySanitizer;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -20,7 +20,7 @@ package aerys.minko.scene.node.mesh.primitive
 	 * @see http://en.wikipedia.org/wiki/Utah_teapot Wikipedia article about Utah Teapot
 	 * @see http://www.gamasutra.com/view/feature/3387/an_indepth_look_at_bicubic_bezier_.php?print=1 How to (properly) tesselate bezier patches.
 	 */	
-	public class TeapotMesh extends Mesh
+	public class TeapotGeometry extends Geometry
 	{
 		public static const PATCHES : Vector.<Vector.<uint>> = new <Vector.<uint>>[
 			new <uint>[  1,  2,    3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16], 
@@ -162,10 +162,8 @@ package aerys.minko.scene.node.mesh.primitive
 			new Vector3D(1.5, -0.84, 0.075), 		new Vector3D(0.798, -1.425, 0.0),		new Vector3D(1.425, -0.798, 0.0)
 		];
 		
-		public function TeapotMesh(effect 		: Effect,
-								   properties	: Object	= null,
-								   divs 		: uint 		= 10,
-								   streamsUsage : uint 		= 0)
+		public function TeapotGeometry(divs 		: uint 	= 10,
+									   streamsUsage : uint 	= 0)
 		{
 			var dirtyIndexData	: Vector.<uint>		= new Vector.<uint>();
 			var dirtyVertexData	: Vector.<Number>	= new Vector.<Number>();
@@ -189,12 +187,10 @@ package aerys.minko.scene.node.mesh.primitive
 			var vertexData : Vector.<Number>	= GeometrySanitizer.sanitizeBuffers(dirtyVertexData, dirtyIndexData, 3);
 			
 			super(
-				effect,
 				new <IVertexStream>[
 					new VertexStream(streamsUsage, VertexFormat.XYZ, vertexData)
 				],
-				new IndexStream(streamsUsage, dirtyIndexData),
-				properties
+				new IndexStream(streamsUsage, dirtyIndexData)
 			);
 			
 			if (divs < 1)

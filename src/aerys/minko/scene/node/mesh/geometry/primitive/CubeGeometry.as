@@ -1,20 +1,28 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.node.mesh.geometry.primitive
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
 
 	/**
-	 * The CubeMesh class represent a cubic mesh.
+	 * The CubeGeometry class represents the 3D geometry of a cube.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 */
-	public class CubeMesh extends Mesh
+	public class CubeGeometry extends Geometry
 	{
+		private static var _instance	: CubeGeometry	= null;
+		
+		public static function get cubeGeometry() : CubeGeometry
+		{
+			return _instance || (_instance = new CubeGeometry());
+		}
+		
 		/**
 		 * Creates a new CubeMesh object.
 		 */
-		public function CubeMesh(effect : Effect, properties : Object = null)
+		public function CubeGeometry()
 		{
 			var xyz 	: Vector.<Number> = new <Number>[
 				// top
@@ -59,10 +67,8 @@ package aerys.minko.scene.node.mesh.primitive
 			];
 
 			super(
-				effect,
 				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)],
-				null,
-				properties
+				null
 			);
 		}
 

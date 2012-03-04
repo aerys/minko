@@ -1,15 +1,11 @@
-package aerys.minko.type.loader.parser
+package aerys.minko.scene.node.mesh.geometry
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.type.stream.IVertexStream;
-	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
 
-	public class GeometrySanitizer
+	public final class GeometrySanitizer
 	{
 		private static const INDEX_LIMIT	: uint = 524270;
 		private static const VERTEX_LIMIT	: uint = 65535;

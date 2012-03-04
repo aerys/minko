@@ -1,7 +1,6 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.node.mesh.geometry.primitive
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
@@ -9,17 +8,22 @@ package aerys.minko.scene.node.mesh.primitive
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public class SphereMesh extends Mesh
+	public class SphereGeometry extends Geometry
 	{
-		private static const DEFAULT_NUM_PARALLELS	: uint 	= 10;
-		private static const DEFAULT_NUM_MERIDIANS	: uint 	= 10;
+		private static var _instance	: SphereGeometry	= null;
+		
+		public static function get sphereGeometry() : SphereGeometry
+		{
+			return _instance || (_instance = new SphereGeometry());
+		}
+		
+		public static const DEFAULT_NUM_PARALLELS	: uint 	= 10;
+		public static const DEFAULT_NUM_MERIDIANS	: uint 	= 10;
 
-		public function SphereMesh(effect		: Effect,
-								   properties	: Object	= null,
-								   numParallels : uint 		= DEFAULT_NUM_PARALLELS,
-								   numMeridians : uint 		= 0,
-								   withNormals	: Boolean	= true,
-								   streamsUsage	: uint		= 0)
+		public function SphereGeometry(numParallels : uint 		= DEFAULT_NUM_PARALLELS,
+									   numMeridians : uint 		= 0,
+									   withNormals	: Boolean	= true,
+									   streamsUsage	: uint		= 0)
 		{
 			numMeridians ||= numParallels;
 
@@ -134,10 +138,8 @@ package aerys.minko.scene.node.mesh.primitive
 			}
 
 			super(
-				effect,
 				new <IVertexStream>[list],
-				new IndexStream(streamsUsage, indices),
-				properties
+				new IndexStream(streamsUsage, indices)
 			);
 		}
 

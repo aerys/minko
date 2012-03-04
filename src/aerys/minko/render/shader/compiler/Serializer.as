@@ -9,7 +9,7 @@ package aerys.minko.render.shader.compiler
 
 	/**
 	 * The Serializer class provides a set of static methods to serialize
-	 * CPU values into Vector.<Number> than can be used as shader constants.
+	 * CPU values into Vector.&lt;Number&gt; than can be used as shader constants.
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 

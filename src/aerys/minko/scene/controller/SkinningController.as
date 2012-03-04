@@ -80,7 +80,7 @@ package aerys.minko.scene.controller
 		private function targetAddedHandler(controller	: SkinningController, 
 											mesh		: Mesh) : void
 		{
-			var format			: VertexFormat	= mesh.getVertexStream().format;
+			var format			: VertexFormat	= mesh.geometry.getVertexStream().format;
 			var maxInfluences	: uint			= 
 				uint(format.hasComponent(VertexComponent.BONE0))
 				+ uint(format.hasComponent(VertexComponent.BONE1))

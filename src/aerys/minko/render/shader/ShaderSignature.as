@@ -6,7 +6,9 @@ package aerys.minko.render.shader
 	import aerys.minko.type.math.Vector4;
 
 	/**
-	 * ShaderSignature objects describe the "signature" of ActionScript shaders.
+	 * ShaderSignature objects describe the "signature" of ActionScript shaders and make
+	 * it posible to know whether a compatible program already exists or if the shader
+	 * must be forked.
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */

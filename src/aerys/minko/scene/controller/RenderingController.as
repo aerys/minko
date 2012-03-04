@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
@@ -171,20 +173,21 @@ package aerys.minko.scene.controller
 										   drawCall : DrawCall) : void
 		{
 			var components 	: Vector.<VertexComponent> 	= drawCall.vertexComponents;
-			var vstream		: IVertexStream				= mesh.getVertexStream(0);
+			var geom		: Geometry					= mesh.geometry;
+			var vstream		: IVertexStream				= geom.getVertexStream(0);
 			
 			if (components.indexOf(VertexComponent.TANGENT) >= 0
 				&& vstream.getStreamByComponent(VertexComponent.TANGENT) == null)
 			{
-				mesh.computeTangentSpace(StreamUsage.STATIC);
+				geom.computeTangentSpace(StreamUsage.STATIC);
 			}
 			else if (components.indexOf(VertexComponent.NORMAL) >= 0
 				&& vstream.getStreamByComponent(VertexComponent.NORMAL) == null)
 			{
-				mesh.computeNormals(StreamUsage.STATIC);
+				geom.computeNormals(StreamUsage.STATIC);
 			}
 			
-			drawCall.setStreams(mesh._vertexStreams, mesh.indexStream);
+			drawCall.setStreams(geom._vertexStreams, geom.indexStream);
 			drawCall.setBindings(mesh.bindings, (mesh.root as Scene).bindings);
 		}
 		

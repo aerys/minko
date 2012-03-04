@@ -1,20 +1,24 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.node.mesh.geometry.primitive
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public class QuadMesh extends Mesh
+	public class QuadGeometry extends Geometry
 	{
-		public function QuadMesh(effect			: Effect,
-								 properties		: Object	= null,
-								 doubleSided	: Boolean 	= false,
-								 width 			: uint 		= 1,
-								 height 		: uint 		= 0,
-								 streamsUsage	: uint		= 0)
+		private static var _instance	: QuadGeometry	= null;
+		
+		public static function get quadGeometry() : QuadGeometry
+		{
+			return _instance || (_instance = new QuadGeometry());
+		}
+		
+		public function QuadGeometry(doubleSided	: Boolean 	= false,
+									 width 			: uint 		= 1,
+									 height 		: uint 		= 0,
+									 streamsUsage	: uint		= 0)
 		{
 			var vertices 	: Vector.<Number> 	= new Vector.<Number>();
 			var indices 	: Vector.<uint> 	= new Vector.<uint>();
@@ -50,10 +54,8 @@ package aerys.minko.scene.node.mesh.primitive
 			);
 			
 			super(
-				effect,
 				new <IVertexStream>[vstream],
-				new IndexStream(streamsUsage, indices),
-				properties
+				new IndexStream(streamsUsage, indices)
 			);
 		}
 

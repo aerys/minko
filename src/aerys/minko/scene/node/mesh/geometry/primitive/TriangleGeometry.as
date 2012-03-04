@@ -1,15 +1,20 @@
-﻿package aerys.minko.scene.node.mesh.primitive
+﻿package aerys.minko.scene.node.mesh.geometry.primitive
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.format.VertexFormat;
 
-	public class TriangleMesh extends Mesh
+	public class TriangleGeometry extends Geometry
 	{
-		public function TriangleMesh(effect			: Effect,
-									 streamsUsage 	: uint = 0)
+		private static var _instance	: TriangleGeometry	= null;
+		
+		public static function get triangleGeometry() : TriangleGeometry
+		{
+			return _instance || (_instance = new TriangleGeometry());
+		}
+		
+		public function TriangleGeometry(streamsUsage 	: uint = 0)
 		{
 			var vertices : Vector.<Number> = new Vector.<Number>();
 
@@ -20,7 +25,6 @@
 			);
 
 			super(
-				effect,
 				new <IVertexStream>[
 					new VertexStream(
 						streamsUsage,

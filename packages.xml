@@ -50,8 +50,7 @@
             <shortDescription> 
                 <![CDATA[ 
 					The aerys.minko.render.shader package contains all the classes
-					to create shaders, including ActionScript shaders and the JIT shaders
-					compiler.
+					to create shaders, including the ActionScript shaders API.
                 ]]> 
             </shortDescription> 
         </package>

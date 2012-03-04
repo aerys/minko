@@ -1,16 +1,23 @@
-package aerys.minko.scene.node.mesh.primitive
+package aerys.minko.scene.node.mesh.geometry.primitive
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
 	import aerys.minko.type.stream.VertexStream;
 
 	/**
-	 * The CylinderMesh class represents a cylinder mesh.
+	 * The CylinderGeometry class represents the 3D geometry of a cylinder.
 	 */
-	public class CylinderMesh extends Mesh
+	public class CylinderGeometry extends Geometry
 	{
+		private static var _instance	: CylinderGeometry	= null;
+		
+		public function get cylinderGeometry() : CylinderGeometry
+		{
+			return _instance || (_instance = new CylinderGeometry());
+		}
+		
 		private static const DEFAULT_NUM_COLS	: uint	= 8;
 		private static const DEFAULT_NUM_ROWS	: uint	= 2;
 
@@ -19,10 +26,9 @@ package aerys.minko.scene.node.mesh.primitive
 		 * @param	myNumCols
 		 * @param	myNumRows
 		 */
-		public function CylinderMesh(effect			: Effect,
-									 numCols		: uint	= DEFAULT_NUM_COLS,
-									 numRows		: uint	= DEFAULT_NUM_ROWS,
-									 streamsUsage	: uint	= 0)
+		public function CylinderGeometry(numCols		: uint	= DEFAULT_NUM_COLS,
+										 numRows		: uint	= DEFAULT_NUM_ROWS,
+										 streamsUsage	: uint	= 0)
 		{
 			var vb	: Vector.<Number>	= new Vector.<Number>();
 			var ib	: Vector.<uint>		= new Vector.<uint>();
@@ -53,7 +59,6 @@ package aerys.minko.scene.node.mesh.primitive
 			}
 
 			super(
-				effect,
 				new <IVertexStream>[
 					VertexStream.fromPositionsAndUVs(vb, uv, streamsUsage)
 				],
