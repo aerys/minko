@@ -5,6 +5,12 @@ package aerys.minko.render.shader.part.animation
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
+	/**
+	 * The shader part to handle all vertex animations (morphing/skinning).
+	 * 
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class VertexAnimationShaderPart extends ShaderPart
 	{
 		private var _morphingShaderPart : MorphingShaderPart;

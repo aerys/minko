@@ -13,6 +13,11 @@ package aerys.minko.scene.controller
 	
 	import flash.geom.Matrix3D;
 
+	/**
+	 * The shader part to handle skinning vertex animations.
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public class SkinningController extends AbstractController
 	{
 		use namespace minko_math;

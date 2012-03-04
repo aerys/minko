@@ -19,6 +19,12 @@ package aerys.minko.render
 	import flash.display3D.Context3DProgramType;
 	import flash.utils.Dictionary;
 	
+	/**
+	 * DrawCall objects contain all the shader constants and buffer settings required
+	 * to perform drawing operations using the Stage3D API.
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class DrawCall
 	{
 		use namespace minko_render;

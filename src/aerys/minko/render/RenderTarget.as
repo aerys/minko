@@ -2,6 +2,15 @@ package aerys.minko.render
 {
 	import aerys.minko.render.resource.texture.TextureResource;
 
+	/**
+	 * RenderTarget objects can be used to render in the backbuffer or
+	 * in textures.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 * @see aerys.minko.render.resource.texture.ITextureResource
+	 * 
+	 */
 	public final class RenderTarget
 	{
 		private var _width				: uint				= 0;

@@ -4,6 +4,12 @@ package aerys.minko.render.effect
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.type.data.DataBindings;
 
+	/**
+	 * The base class to define effects.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Effect
 	{
 		use namespace minko_render;

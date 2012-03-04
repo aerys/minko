@@ -7,17 +7,25 @@ package aerys.minko.render
 	import flash.display3D.Context3D;
 	import flash.utils.Dictionary;
 
+	/**
+	 * RenderginList objects store a list of shaders and their associated draw calls.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * @see aerys.minko.render.DrawCall
+	 * @see aerys.minko.render.shader.Shader
+	 * 
+	 */
 	public final class RenderingList
 	{
-		private var _shaderToDrawCalls	: Dictionary				= new Dictionary();
-		private var _numDrawCalls		: uint						= 0;
+		private var _shaderToDrawCalls	: Dictionary		= new Dictionary();
+		private var _numDrawCalls		: uint				= 0;
 		
 		private var _shaders			: Vector.<Shader>	= new Vector.<Shader>();
-		private var _numShaders			: int						= 0;
+		private var _numShaders			: int				= 0;
 		
-		private var _sorted				: Boolean					= false;
+		private var _sorted				: Boolean			= false;
 		
-		private var _numTriangles		: uint						= 0;
+		private var _numTriangles		: uint				= 0;
 		
 		public function get numDrawCalls() : uint
 		{

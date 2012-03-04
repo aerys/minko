@@ -38,6 +38,14 @@
                 ]]> 
             </shortDescription> 
         </package>
+		<package name="aerys.minko.render.resource.texture"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.render.resource package contains the class to
+					work with texture ressources.
+                ]]> 
+            </shortDescription> 
+        </package>
 		<package name="aerys.minko.render.shader"> 
             <shortDescription> 
                 <![CDATA[ 
@@ -104,14 +112,24 @@
 		<package name="aerys.minko.scene.node.mesh"> 
             <shortDescription> 
                 <![CDATA[ 
-					The aerys.minko.scene.node package contains the available types of
+					The aerys.minko.scene.node.mesh package contains the available types of
 					meshes and primitives (cube, sphere, quad...).
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.scene.node.mesh.primitive"> 
+            <shortDescription> 
+                <![CDATA[ 
+					The aerys.minko.scene.node.mesh.primitive package contains the available
+					mesh primitives (cube, sphere, quad...).
                 ]]> 
             </shortDescription> 
         </package>
 		<package name="aerys.minko.type"> 
             <shortDescription> 
                 <![CDATA[
+					The aerys.minko.type package contains all the general purpose classes
+					used in Minko.
                 ]]> 
             </shortDescription> 
         </package>
@@ -155,6 +173,13 @@
                 ]]> 
             </shortDescription> 
         </package>
+		<package name="aerys.minko.type.log"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.log package contains the logging API.
+                ]]> 
+            </shortDescription> 
+        </package>
 		<package name="aerys.minko.type.math"> 
             <shortDescription> 
                 <![CDATA[
@@ -163,11 +188,27 @@
                 ]]> 
             </shortDescription> 
         </package>
-		<package name="aerys.minko.stream"> 
+		<package name="aerys.minko.type.stream"> 
             <shortDescription> 
                 <![CDATA[
-					The aerys.minko.stream package contains the stream API used
+					The aerys.minko.type.stream package contains the stream API used
 					to contain, create and work with 3D geometry.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.stream.format"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.stream.format package contains the classes
+					to define vertex formats.
+                ]]> 
+            </shortDescription> 
+        </package>
+		<package name="aerys.minko.type.stream.iterator"> 
+            <shortDescription> 
+                <![CDATA[
+					The aerys.minko.type.stream.iterator package contains iterators
+					to easily read and write streams.
                 ]]> 
             </shortDescription> 
         </package>
