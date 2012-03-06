@@ -57,6 +57,26 @@ package aerys.minko.scene.controller
 		{
 			_looping = value;
 		}
+		
+		public function get isPlaying():Boolean
+		{
+			return _isPlaying;
+		}
+		
+		public function set isPlaying(value:Boolean):void
+		{
+			_isPlaying = value;
+		}
+		
+		public function get currentTime():int
+		{
+			return _currentTime;
+		}
+		
+		public function set currentTime(value:int):void
+		{
+			_currentTime = value;
+		}
 
 		public function AnimationController(timelines	: Vector.<ITimeline>)
 		{
