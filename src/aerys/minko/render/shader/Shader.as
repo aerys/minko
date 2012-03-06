@@ -13,6 +13,7 @@ package aerys.minko.render.shader
 
 	/**
 	 * The base class for static shaders. 
+	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
@@ -177,6 +178,8 @@ package aerys.minko.render.shader
 			_compareMode = Context3DCompareMode.LESS;
 			_enableDepthWrite = true;
 			_rectangle = null;
+			
+			triangleCulling = TriangleCulling.BACK;
 		}
 		
 		public function clone(newProgram 	: Program3DResource = null,

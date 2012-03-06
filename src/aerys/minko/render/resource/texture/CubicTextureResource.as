@@ -10,7 +10,12 @@ package aerys.minko.render.resource.texture
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
 
-	public class CubicTextureResource implements ITextureResource
+	/**
+	 * @inheritdoc
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
+	public final class CubicTextureResource implements ITextureResource
 	{
 		private static const SIDE_X : Vector.<Number> = new <Number>[2, 0, 1, 1, 1, 3];
 		private static const SIDE_Y : Vector.<Number> = new <Number>[1, 1, 0, 2, 1, 1];

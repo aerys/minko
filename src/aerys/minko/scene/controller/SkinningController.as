@@ -14,7 +14,9 @@ package aerys.minko.scene.controller
 	import flash.geom.Matrix3D;
 
 	/**
-	 * The shader part to handle skinning vertex animations.
+	 * The SkinningController works on meshes, compute all the data required
+	 * to process vertex skinning and push it in the mesh data bindings.
+	 * 
 	 * @author Romain Gilliotte
 	 * 
 	 */
@@ -29,13 +31,13 @@ package aerys.minko.scene.controller
 		
 		private var _isDirty			: Boolean				= true;
 		
-		private var _skinningMethod	: uint					= uint.MAX_VALUE;
-		private var _bindShape		: Matrix4x4				= null;
-		private var _skeletonRoot	: Group					= null;
-		private var _joints			: Vector.<Group>		= null;
+		private var _skinningMethod		: uint					= uint.MAX_VALUE;
+		private var _bindShape			: Matrix4x4				= null;
+		private var _skeletonRoot		: Group					= null;
+		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix3D>		= null;
 		
-		private var _matrices		: Vector.<Number>		= new Vector.<Number>();
+		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
 		private var _dqn				: Vector.<Number>		= new Vector.<Number>();
 		private var _dqd				: Vector.<Number>		= new Vector.<Number>();
 		

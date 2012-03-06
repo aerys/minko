@@ -9,6 +9,9 @@ package aerys.minko.render.shader.part.projection
 	import flash.geom.Rectangle;
 	
 	/**
+	 * The CubeMapProjectionShaderPart provides the methods to project vectors
+	 * on a cube map.
+	 * 
 	 * @author Romain Gilliotte
 	 */	
 	public class CubeMapProjectionShaderPart extends ShaderPart implements IProjectionShaderPart

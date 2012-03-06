@@ -8,6 +8,12 @@ package aerys.minko.scene.controller
 	
 	import flash.utils.getTimer;
 
+	/**
+	 * The AnimationController uses timelines to animate properties of scene nodes.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class AnimationController extends AbstractController
 	{
 		public static var DEFAULT_TIME_FUNCTION	: Function = getTimer;

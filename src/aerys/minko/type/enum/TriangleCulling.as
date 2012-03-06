@@ -14,8 +14,8 @@ package aerys.minko.type.enum
 		
 		minko_render static const STRINGS : Vector.<String> = new <String>[
 			Context3DTriangleFace.NONE,
-			Context3DTriangleFace.BACK,
 			Context3DTriangleFace.FRONT,
+			Context3DTriangleFace.BACK,
 			Context3DTriangleFace.FRONT_AND_BACK
 		];
 	}

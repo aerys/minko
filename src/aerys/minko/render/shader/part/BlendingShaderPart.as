@@ -12,7 +12,7 @@ package aerys.minko.render.shader.part
 	 */
 	public class BlendingShaderPart extends ShaderPart
 	{
-		public function BlendingShaderPart(main:ActionScriptShader)
+		public function BlendingShaderPart(main : ActionScriptShader)
 		{
 			super(main);
 		}

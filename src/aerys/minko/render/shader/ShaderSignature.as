@@ -68,7 +68,7 @@ package aerys.minko.render.shader
 			_flags.push(flags);
 			
 			// update hash
-			_hash += "_";
+			_hash += ",";
 			
 			if (flags & OPERATION_GET)
 			{

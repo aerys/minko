@@ -9,6 +9,13 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
+	/**
+	 * The BillboardsGeometry stores a list of 2D billboards meant to be used
+	 * in particle effects or 2D sprites rendering.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class BillboardsGeometry extends Geometry
 	{
 		public static const PARTICLE_FORMAT	: VertexFormat	= new VertexFormat(

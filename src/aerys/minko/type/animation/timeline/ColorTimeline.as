@@ -2,6 +2,12 @@ package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
 
+	/**
+	 * The ColorTimeline animates RGBA or ARGB formatted uint color values.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class ColorTimeline extends AbstractTimeline
 	{
 		use namespace minko_animation;

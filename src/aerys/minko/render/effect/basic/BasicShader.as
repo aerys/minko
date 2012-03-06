@@ -97,13 +97,13 @@ package aerys.minko.render.effect.basic
 		/**
 		 * 
 		 * @param blending Default value is Blending.NORMAL.
-		 * @param triangleCulling Default value is TriangleCulling.FRONT.
+		 * @param triangleCulling Default value is TriangleCulling.BACK.
 		 * @param priority Default value is 0.
 		 * @param target Default value is null.
 		 * 
 		 */
 		public function BasicShader(blending		: uint			= 524290,
-									triangleCulling	: uint			= 2,
+									triangleCulling	: uint			= 1,
 									priority		: Number		= 0,
 									target			: RenderTarget	= null)
 		{
@@ -143,8 +143,13 @@ package aerys.minko.render.effect.basic
 				&& meshBindings.getProperty("lightEnabled") === true)
 			{
 				var lightDirection		: SFloat	= sceneBindings.getParameter("lightDirection", 3);
+				var normal				: SFloat	= normalize(
+					interpolate(
+						float4(multiply3x3(vertexNormal, localToWorldMatrix), 1)
+					)
+				);
 				var lambert				: SFloat	= saturate(negate(dotProduct3(
-					normalize(interpolate(vertexNormal)),
+					normal,
 					normalize(lightDirection)
 				)));
 				

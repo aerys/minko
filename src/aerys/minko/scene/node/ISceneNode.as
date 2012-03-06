@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.math.Matrix4x4;
 
 	/**
 	 * The ISceneNode interface describes the properties of every
@@ -34,6 +35,9 @@ package aerys.minko.scene.node
 		 */
 		function get name() : String;
 		function set name(value : String) : void;
+		
+		function get transform() : Matrix4x4;
+		function get localToWorld() : Matrix4x4;
 		
 		/**
 		 * The signal executed when the node is added to a parent scene node. 
