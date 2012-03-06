@@ -304,7 +304,8 @@ package aerys.minko.type.math
 				_vector.z = z;
 				_vector.w = w;
 
-				_changed.execute(this, null);
+				if (!_locked)
+					_changed.execute(this, null);
 				_update = UPDATE_ALL;
 			}
 

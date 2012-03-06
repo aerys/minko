@@ -9,6 +9,13 @@ package aerys.minko.render.resource
 	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
 
+	/**
+	 * VertexBuffer3DResource objects handle vertex buffers allocation
+	 * and disposal using the Stage3D API.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class VertexBuffer3DResource implements IResource
 	{
 		use namespace minko_stream;

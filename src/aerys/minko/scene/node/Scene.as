@@ -6,6 +6,12 @@ package aerys.minko.scene.node
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.IDataProvider;
 
+	/**
+	 * Scene objects are the root of any 3D scene.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class Scene extends Group
 	{
 		private static const TMP_SCENE_VECTOR	: Vector.<ISceneNode>	= new Vector.<ISceneNode>();
@@ -16,6 +22,13 @@ package aerys.minko.scene.node
 		private var _bindings		: DataBindings			= new DataBindings();
 		private var _ctrlTargets	: Vector.<ISceneNode>	= new <ISceneNode>[];
 
+		/**
+		 * The RenderingList containing all the shaders/draw calls corresponding to
+		 * the content of the scene.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get renderingList() : RenderingList
 		{
 			return _list;

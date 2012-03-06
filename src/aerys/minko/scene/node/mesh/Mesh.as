@@ -1,6 +1,5 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.basic.BasicShader;
 	import aerys.minko.scene.controller.RenderingController;
@@ -13,10 +12,20 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
 
+	/**
+	 * Mesh objects are a visible instance of a Geometry rendered using a specific
+	 * Effect with specific rendering properties.
+	 * 
+	 * <p>
+	 * Those rendering properties are stored in a DataBindings object so they can
+	 * be directly used by the shaders in the rendering API.
+	 * </p>
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Mesh extends AbstractSceneNode
 	{
-		use namespace minko_stream;
-		
 		public static const DEFAULT_EFFECT	: Effect	= new Effect(
 			new BasicShader()
 		);
@@ -32,11 +41,23 @@ package aerys.minko.scene.node.mesh
 		private var _effectChanged		: Signal			= new Signal();
 		private var _visibilityChanged	: Signal			= new Signal();
 		
+		/**
+		 * The rendering properties provided to the shaders to customize
+		 * how the mesh will appear on screen.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get bindings() : DataBindings
 		{
 			return _bindings;
 		}
 		
+		/**
+		 * The Effect used for rendering. 
+		 * @return 
+		 * 
+		 */
 		public function get effect() : Effect
 		{
 			return _effect;
@@ -53,6 +74,11 @@ package aerys.minko.scene.node.mesh
 			_effectChanged.execute(this, oldEffect, value);
 		}
 		
+		/**
+		 * The Geometry of the mesh. 
+		 * @return 
+		 * 
+		 */
 		public function get geometry() : Geometry
 		{
 			return _geometry;
@@ -115,11 +141,7 @@ package aerys.minko.scene.node.mesh
 			if (properties)
 				_bindings.setProperties(properties);
 			
-			var ctrl : RenderingController	= new RenderingController();
-			
-//			ctrl.drawCallCreated.add(drawCallCreatedHandler);
-			
-			addController(ctrl);
+			addController(new RenderingController());
 		}
 		
 		public function clone(properties	: Object	= null,
@@ -137,15 +159,15 @@ package aerys.minko.scene.node.mesh
 		{
 			super.addedToSceneHandler(child, scene);
 	
-			if (child == this)
-				_bindings.addProperty("local to world", parent.localToWorld);
+			if (child === this)
+				_bindings.addProperty("local to world", localToWorld);
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			super.removedFromSceneHandler(child, scene);
 			
-			if (child == this)
+			if (child === this)
 				_bindings.removeProperty("local to world");
 		}
 		

@@ -39,16 +39,6 @@ package aerys.minko.type.data
 			return signal;
 		}
 		
-		public function getPropertyRemovedSignal(property : String) : Signal
-		{
-			var signal : Signal = _propertyRemoved[property];
-			
-			if (!signal)
-				_propertyRemoved[property] = signal = new Signal();
-			
-			return signal;
-		}
-		
 		public function clone() : DataBindings
 		{
 			var clone 			: DataBindings 	= new DataBindings();
@@ -221,12 +211,9 @@ package aerys.minko.type.data
 			
 			delete _values[propertyName];
 			
-			getPropertyRemovedSignal(propertyName).execute(
-				this, propertyName
-			);
-			/*getPropertyChangedSignal(propertyName).execute(
+			getPropertyChangedSignal(propertyName).execute(
 				this, propertyName, oldValue, null
-			);*/
+			);
 			
 			return this;
 		}

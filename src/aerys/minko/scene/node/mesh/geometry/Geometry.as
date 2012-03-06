@@ -13,6 +13,28 @@ package aerys.minko.scene.node.mesh.geometry
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
+	/**
+	 * Geometry objects store and provide a secure access to the geometry of 3D objects
+	 * as vertex/index streams and can be used many times to create multiple meshes working
+	 * on the same geometry data.
+	 * 
+	 * <p>
+	 * Geometry objects usually store one IVertexStream (a VertexStream or a VertexStreamList
+	 * object) providing all the per-vertex data (position, uv, normal...) and an IndexStream
+	 * providing the indices of the vertices to draw the triangles of the 3D geometry.
+	 * </p>
+	 * 
+	 * <p>
+	 * Geometry objects can store more than IVertexStream objects when they use morphing
+	 * animation: each IVertexStream object is then considered as a "frame" containing all
+	 * the vertex data (position, uv, normal...) required for that frame. Each frame must
+	 * provide the same data. Thus, each IVertexStream object must have the same vertex
+	 * format and the same length. An error will be thrown otherwise upon construction.
+	 * </p>
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class Geometry
 	{
 		use namespace minko_scene;
@@ -36,11 +58,23 @@ package aerys.minko.scene.node.mesh.geometry
 		private var _boundingSphere		: BoundingSphere	= null;
 		private var _boundingBox		: BoundingBox		= null;
 		
+		/**
+		 * The number of IVertexStreams objects stored in the geometry. 
+		 * @return 
+		 * 
+		 */
 		public function get numVertexStreams() : uint
 		{
 			return _vertexStreams.length;
 		}
 		
+		/**
+		 * The indices - as an IndexStream object - containing the list and
+		 * order of the vertices defining the 3D geometry as a series of triangles.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get indexStream() : IndexStream
 		{
 			return _indexStream;
@@ -50,11 +84,21 @@ package aerys.minko.scene.node.mesh.geometry
 			_indexStream = value;
 		}
 		
+		/**
+		 * The bounding sphere of the 3D geometry. 
+		 * @return 
+		 * 
+		 */
 		public function get boundingSphere() : BoundingSphere
 		{
 			return _boundingSphere;
 		}
 		
+		/**
+		 * The bounding box of the 3D geometry. 
+		 * @return 
+		 * 
+		 */
 		public function get boundingBox() : BoundingBox
 		{
 			return _boundingBox;
@@ -87,8 +131,17 @@ package aerys.minko.scene.node.mesh.geometry
 						"All vertex streams must have the same vertex format"
 					);
 			}
+			
+			updateBoundingVolumes();
 		}
 		
+		/**
+		 * Get the IVertexStream object at the specified index.
+		 *  
+		 * @param index
+		 * @return 
+		 * 
+		 */
 		public function getVertexStream(index : uint = 0) : IVertexStream
 		{
 			return _vertexStreams[index];
@@ -99,7 +152,20 @@ package aerys.minko.scene.node.mesh.geometry
 			_vertexStreams[index] = vertexStream;
 		}
 		
-		public function computeNormals(streamUsage : uint) : void
+		/**
+		 * Compute all the normals, store them in a new separate vertex stream and add this stream
+		 * to the others to make it available in the vertex shader.
+		 * 
+		 * If the streams already have the VertexComponent.NORMAL is their vertex format, an error
+		 * will be thrown because the same vertex component cannot be present twice.
+		 * To override this security and replace the existing normals vertex stream, you have to set
+		 * the "replace" argument to "true".
+		 * 
+		 * @param streamUsage The StreamUsage for the new vertex stream that stores the normals data.
+		 * @param replace Whether the existing normals data should be replaced if it exists.
+		 * 
+		 */
+		public function computeNormals(streamUsage : uint, replace : Boolean = false) : void
 		{
 			var indices			: Vector.<uint>		= _indexStream._data;
 			var numTriangles	: int				= _indexStream.length / 3;
@@ -174,12 +240,34 @@ package aerys.minko.scene.node.mesh.geometry
 				
 				pushVertexStream(
 					streamId,
-					new VertexStream(streamUsage, FORMAT_NORMALS, normals)
+					new VertexStream(streamUsage, FORMAT_NORMALS, normals),
+					replace
 				);
 			}
 		}
 		
-		public function computeTangentSpace(streamUsage : uint) : void
+		/**
+		 * Compute the normals and tangents vertex streams required for tangent space computations
+		 * (such as normal mapping) and store them in a new single vertex stream.
+		 * 
+		 * <p>This method will compute:</p>
+		 * <ul>
+		 * <li>normals data based on the 3D positions of the vertices (VertexComponent.XYZ)</li>
+		 * <li>tangents data based on the UV texture coordinates of the vertices (VertexComponent.UV)</li>
+		 * </ul>
+		 * 
+		 * <p>The bi-tangent vector can then be computed in the vertex shader with a cross-product:</p>
+		 * 
+		 * <code>
+		 * var biTangent : SFloat = crossProduct(vertexNormal, vertexTangent);
+		 * </code>
+		 * 
+		 * @param streamUsage The StreamUsage for the new computed vertex stream holding normals and
+		 * tangents data.
+		 * @param replace Whether to replace existing normals or tangents data.
+		 * 
+		 */
+		public function computeTangentSpace(streamUsage : uint, replace : Boolean = false) : void
 		{
 			var indices			: Vector.<uint>		= _indexStream._data;
 			var numTriangles	: int				= _indexStream.length / 3;
@@ -345,7 +433,8 @@ package aerys.minko.scene.node.mesh.geometry
 				
 				pushVertexStream(
 					streamId,
-					new VertexStream(streamUsage, withNormals ? FORMAT_TN : FORMAT_TANGENTS, data)
+					new VertexStream(streamUsage, withNormals ? FORMAT_TN : FORMAT_TANGENTS, data),
+					replace
 				);
 			}
 		}
@@ -362,7 +451,7 @@ package aerys.minko.scene.node.mesh.geometry
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
-		private function updateBoundingBox() : void
+		private function updateBoundingVolumes() : void
 		{
 			var xyzStream	: VertexStream	= _vertexStreams[0].getStreamByComponent(VertexComponent.XYZ);
 			var offset		: uint			= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);

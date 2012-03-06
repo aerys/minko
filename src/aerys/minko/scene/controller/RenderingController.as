@@ -19,6 +19,13 @@ package aerys.minko.scene.controller
 	
 	import flash.utils.Dictionary;
 
+	/**
+	 * The RenderingController works on meshes to issue all the related
+	 * rendering operations and push them in the rendering list.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class RenderingController extends AbstractController
 	{
 		use namespace minko_scene;
@@ -202,41 +209,20 @@ package aerys.minko.scene.controller
 			
 			for (var i : uint = 0; i < numKeys; ++i)
 			{
-				var key 	: String		= signature.getKey(i);
-				var flags	: uint			= signature.getFlags(i);
-				var source	: DataBindings	= flags & ShaderSignature.SOURCE_MESH
-					? meshBindings
-					: sceneBindings;
+				var key 	: String	= signature.getKey(i);
+				var flags	: uint		= signature.getFlags(i);
 				
 				if (flags & ShaderSignature.SOURCE_MESH)
 				{
-					if (flags & ShaderSignature.OPERATION_EXISTS)
-					{
-						meshBindings.getPropertyRemovedSignal(key).add(
-							meshPropertyChangedHandler
-						);
-					}
-					else
-					{
-						meshBindings.getPropertyChangedSignal(key).add(
-							meshPropertyRemovedHandler
-						);
-					}
+					meshBindings.getPropertyChangedSignal(key).add(
+						meshPropertyChangedHandler
+					);
 				}
 				else
 				{
-					if (flags & ShaderSignature.OPERATION_EXISTS)
-					{
-						sceneBindings.getPropertyRemovedSignal(key).add(
-							scenePropertyChangedHandler
-						);
-					}
-					else
-					{
-						sceneBindings.getPropertyChangedSignal(key).add(
-							scenePropertyChangedHandler
-						);
-					}
+					sceneBindings.getPropertyChangedSignal(key).add(
+						scenePropertyChangedHandler
+					);
 				}
 			}
 		}
@@ -249,24 +235,12 @@ package aerys.minko.scene.controller
 			checkSignatures(propertyName, newValue, ShaderSignature.SOURCE_MESH);
 		}
 		
-		private function meshPropertyRemovedHandler(dataBindings	: DataBindings,
-													propertyName	: String) : void
-		{
-			checkSignatures(propertyName, false, ShaderSignature.SOURCE_MESH);
-		}
-		
 		private function scenePropertyChangedHandler(dataBindings	: DataBindings,
 													 propertyName	: String,
 													 oldValue		: Object,
 													 newValue		: Object) : void
 		{
 			checkSignatures(propertyName, newValue, ShaderSignature.SOURCE_SCENE);
-		}
-		
-		private function scenePropertyRemovedHandler(dataBindings	: DataBindings,
-													 propertyName	: String) : void
-		{
-			checkSignatures(propertyName, false, ShaderSignature.SOURCE_SCENE);
 		}
 		
 		private function checkSignatures(propertyName	: String,

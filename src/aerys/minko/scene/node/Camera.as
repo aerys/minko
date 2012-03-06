@@ -247,11 +247,14 @@ package aerys.minko.scene.node
 		private function initialize() : void
 		{
 			updateProjection();
+			
 			_viewport.resized.add(viewportResizedHandler);
 			
 			_position.changed.add(positionChangedHandler);
 			_lookAt.changed.add(lookAtChangedHandler);
 			_up.changed.add(upChangedHandler);
+			
+			localToWorld.changed.add(transformChangedHandler);
 		}
 		
 		private function positionChangedHandler(value : Object, property : Object) : void
@@ -298,29 +301,8 @@ package aerys.minko.scene.node
 			updateWorldToScreen();
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.addedHandler(child, parent);
-			
-			parentTransformChangedHandler(parent.localToWorld, null);
-			parent.localToWorld.changed.add(parentTransformChangedHandler);
-		}
-		
-		override protected function removedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.removedHandler(child, parent);
-			
-			parent.localToWorld.changed.remove(parentTransformChangedHandler);
-			Matrix4x4.lookAtLH(
-				_position,
-				_lookAt,
-				_up,
-				_worldToView
-			);
-		}
-		
-		private function parentTransformChangedHandler(transform : Matrix4x4,
-													   key		 : String) : void
+		private function transformChangedHandler(transform 	: Matrix4x4,
+												 key		: String) : void
 		{
 			updateWorldToView();
 		}
@@ -331,8 +313,6 @@ package aerys.minko.scene.node
 				return ;
 			
 			lock();
-			
-			var localToWorld : Matrix4x4 = parent.localToWorld;
 			
 			localToWorld.transformVector(_position, _worldPosition);
 			localToWorld.transformVector(_lookAt, _worldLookAt);
@@ -345,14 +325,6 @@ package aerys.minko.scene.node
 				_worldUp,
 				_worldToView
 			);
-			
-			if (!_locked)
-			{
-				_changed.execute(this, "worldPosition");
-				_changed.execute(this, "worldLookAt");
-				_changed.execute(this, "worldUp");
-				_changed.execute(this, "worldToView");
-			}
 			
 			updateWorldToScreen();
 			

@@ -1,5 +1,11 @@
 package aerys.minko.type.animation.timeline
 {
+	/**
+	 * The base class to extend to create new animation timeline types.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class AbstractTimeline implements ITimeline
 	{
 		private var _propertyPath	: String			= null;

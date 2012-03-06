@@ -8,6 +8,13 @@ package aerys.minko.render.resource
 	import flash.display3D.IndexBuffer3D;
 	import flash.events.Event;
 
+	/**
+	 * IndexBuffer3DResource objects handle index buffers allocation
+	 * and disposal using the Stage3D API.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class IndexBuffer3DResource implements IResource
 	{
 		use namespace minko_stream;
