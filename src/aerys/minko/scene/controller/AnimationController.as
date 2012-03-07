@@ -8,6 +8,12 @@ package aerys.minko.scene.controller
 	
 	import flash.utils.getTimer;
 
+	/**
+	 * The AnimationController uses timelines to animate properties of scene nodes.
+	 *  
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class AnimationController extends AbstractController
 	{
 
@@ -67,6 +73,26 @@ package aerys.minko.scene.controller
 		public function set looping(value : Boolean) : void
 		{
 			_looping = value;
+		}
+		
+		public function get isPlaying():Boolean
+		{
+			return _isPlaying;
+		}
+		
+		public function set isPlaying(value:Boolean):void
+		{
+			_isPlaying = value;
+		}
+		
+		public function get currentTime():int
+		{
+			return _currentTime;
+		}
+		
+		public function set currentTime(value:int):void
+		{
+			_currentTime = value;
 		}
 
 		public function AnimationController(timelines	: Vector.<ITimeline>)

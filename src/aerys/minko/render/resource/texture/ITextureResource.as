@@ -7,6 +7,13 @@ package aerys.minko.render.resource.texture
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
 
+	/**
+	 * ITextureResource objects handle texture allocation
+	 * and disposal using the Stage3D API.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public interface ITextureResource extends IResource
 	{
 		function setContentFromBitmapData(bitmapData 	: BitmapData,

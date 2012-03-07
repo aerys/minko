@@ -11,6 +11,13 @@ package aerys.minko.render.resource
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
 
+	/**
+	 * Program3DResource objects handle programs allocation and
+	 * disposal using the Stage3D API.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class Program3DResource implements IResource
 	{
 		private var _name				: String					= null;

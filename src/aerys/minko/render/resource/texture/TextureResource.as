@@ -8,7 +8,12 @@ package aerys.minko.render.resource.texture
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
 
-	public class TextureResource implements ITextureResource
+	/**
+	 * @inheritdoc
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
+	public final class TextureResource implements ITextureResource
 	{
 		private static const MAX_SIZE	: uint		= 2048;
 		private static const TMP_MATRIX	: Matrix	= new Matrix();

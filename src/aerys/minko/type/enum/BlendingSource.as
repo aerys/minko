@@ -1,5 +1,16 @@
 package aerys.minko.type.enum
 {
+	/**
+	 * The BlendingSource class is an enumeration of all the possible values for
+	 * the blending source factor used in the blending equation.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 * @see aerys.minko.type.enum.Blending
+	 * @see aerys.minko.render.shader.Shader
+	 * @see aerys.minko.render.shader.part.BlendingShaderPart
+	 * 
+	 */
 	public final class BlendingSource
 	{
 		public static const DESTINATION_ALPHA			: uint	= 0;

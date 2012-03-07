@@ -126,13 +126,13 @@ package aerys.minko.render.shader
 		/**
 		 *  
 		 * @param blending Default value is Blending.NORMAL.
-		 * @param triangleCulling Default value is TriangleCulling.FRONT.
+		 * @param triangleCulling Default value is TriangleCulling.BACK.
 		 * @param priority Default value is 0.
 		 * @param renderTarget Default value is null.
 		 * 
 		 */
 		public function ActionScriptShader(blending			: uint			= 524290,
-										   triangleCulling	: uint			= 2,
+										   triangleCulling	: uint			= 1,
 										   priority			: Number		= 0.,
 										   renderTarget		: RenderTarget	= null)
 		{

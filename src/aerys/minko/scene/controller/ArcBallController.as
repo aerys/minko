@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
@@ -16,6 +17,13 @@ package aerys.minko.scene.controller
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
 
+	/**
+	 * The ArcBallController provides methods and listen for mouse events to
+	 * deliver 3rd-person like controls on a scene node.
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class ArcBallController extends AbstractController
 	{
 		public static const DEFAULT_MAX_ZOOM		: Number	= 100.0;
@@ -112,7 +120,7 @@ package aerys.minko.scene.controller
 		
 		public function ArcBallController()
 		{
-			super(Group);
+			super(Camera);
 			
 			_sensitivity = DEFAULT_SENSITIVITY;
 			
@@ -165,7 +173,7 @@ package aerys.minko.scene.controller
 		
 		override protected function updateTarget(target : ISceneNode) : void
 		{
-			(target as Group).transform.copyFrom(_transform);
+			target.transform.copyFrom(_transform);
 		}
 		
 		private function startDrag(event : Event) : void
