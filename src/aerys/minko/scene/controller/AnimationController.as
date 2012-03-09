@@ -36,6 +36,11 @@ package aerys.minko.scene.controller
 		private var _started		: Signal				= new Signal();
 		private var _stopped		: Signal				= new Signal();
 
+		public function get numTimelines() : uint
+		{
+			return _timelines.length;
+		}
+		
 		public function get started():Signal
 		{
 			return _started;
