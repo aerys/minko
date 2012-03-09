@@ -6,6 +6,7 @@ package aerys.minko.render.shader
 
 	/**
 	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
@@ -42,7 +43,7 @@ package aerys.minko.render.shader
 		
 		public function propertyExists(propertyName : String) : Boolean
 		{
-			var value 	: Boolean 	= _dataBindings.propertyExists(propertyName);
+			var value 	: Boolean	= _dataBindings.propertyExists(propertyName);
 			
 			_signature.update(
 				propertyName,

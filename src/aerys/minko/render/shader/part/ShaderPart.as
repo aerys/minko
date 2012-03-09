@@ -113,6 +113,11 @@ package aerys.minko.render.shader.part
 			return _main._meshBindings.getParameter("local to world", 16);
 		}
 		
+		protected function get worldToLocalMatrix() : SFloat
+		{
+			return _main._meshBindings.getParameter("world to local", 16);
+		}
+		
 		protected function get worldToViewMatrix() : SFloat
 		{
 			return _main._sceneBindings.getParameter("world to view", 16);
@@ -486,7 +491,7 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.DP4, getNode(u), getNode(v)));
 		}
 
-		protected final function cross(u : Object, v : Object) : SFloat
+		protected final function crossProduct(u : Object, v : Object) : SFloat
 		{
 			return new SFloat(new Instruction(Instruction.CRS, getNode(u), getNode(v)));
 		}

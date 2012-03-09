@@ -8,14 +8,15 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
+	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
-	import aerys.minko.render.shader.part.ShaderPart;
 	
 	use namespace minko_shader;
 	
@@ -39,11 +40,11 @@ package aerys.minko.render.shader
 		minko_shader var _kills			: Vector.<INode>			= new <INode>[];
 		
 		private var _name				: String					= null;
+		private var _forks				: Object					= {};
 		private var _enabled			: Boolean					= true;
 		
 		private var _shaderTemplate		: Shader					= new Shader(null);
 		
-		private var _forks				: Object					= {};
 		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		
 		private var _numPasses			: uint						= 0;
@@ -69,8 +70,8 @@ package aerys.minko.render.shader
 		}
 		
 		/**
-		 * Whether the shader - and all its forks - are enabled or not.
-		 * Setting this property will also affect all the forks of the ActionScript
+		 * Whether the shader - and all its _forks - are enabled or not.
+		 * Setting this property will also affect all the _forks of the ActionScript
 		 * shader. 
 		 * @return 
 		 * 

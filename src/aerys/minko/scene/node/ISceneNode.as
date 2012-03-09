@@ -38,6 +38,7 @@ package aerys.minko.scene.node
 		
 		function get transform() : Matrix4x4;
 		function get localToWorld() : Matrix4x4;
+		function get worldToLocal() : Matrix4x4;
 		
 		/**
 		 * The signal executed when the node is added to a parent scene node. 

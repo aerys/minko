@@ -31,6 +31,7 @@ package aerys.minko.scene.node
 		private var _numDescendants		: uint							= 0;
 		private var _transform			: Matrix4x4						= new Matrix4x4();
 		private var _localToWorld		: Matrix4x4						= new Matrix4x4();
+		private var _worldToLocal		: Matrix4x4						= new Matrix4x4();
 		
 		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
@@ -117,6 +118,11 @@ package aerys.minko.scene.node
 		public function get localToWorld() : Matrix4x4
 		{
 			return _localToWorld;
+		}
+		
+		public function get worldToLocal() : Matrix4x4
+		{
+			return _worldToLocal;
 		}
 		
 		public function get added() : Signal
@@ -219,8 +225,8 @@ package aerys.minko.scene.node
 			if (child == this)
 			{
 				_root = this;
-				transformChangedHandler();
 				parent.localToWorld.changed.remove(transformChangedHandler);
+				transformChangedHandler();
 			}
 			else
 			{
@@ -274,6 +280,8 @@ package aerys.minko.scene.node
 				Matrix4x4.multiply(_parent.localToWorld, _transform, _localToWorld);
 			else
 				Matrix4x4.copy(_transform, _localToWorld);
+			
+			_worldToLocal.copyFrom(_localToWorld).invert();
 		}
 		
 		public function contains(scene : ISceneNode) : Boolean

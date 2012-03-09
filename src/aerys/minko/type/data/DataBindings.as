@@ -3,6 +3,7 @@ package aerys.minko.type.data
 	import aerys.minko.type.Signal;
 	
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 
 	public final class DataBindings
 	{

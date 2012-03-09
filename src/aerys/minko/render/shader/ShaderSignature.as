@@ -9,6 +9,7 @@ package aerys.minko.render.shader
 	 * ShaderSignature objects describe the "signature" of ActionScript shaders and make
 	 * it posible to know whether a compatible program already exists or if the shader
 	 * must be forked.
+	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
@@ -111,7 +112,7 @@ package aerys.minko.render.shader
 				}
 				else if (flags & OPERATION_EXISTS)
 				{
-					if ((source.getProperty(key) ? 1 : 0) == value)
+					if (source.propertyExists(key))
 						return false;
 				}
 			}
@@ -133,12 +134,12 @@ package aerys.minko.render.shader
 				var flags : uint = _flags[propertyId];
 				
 				if ((flags & checkFlags) == 0)
-					return false;
+					return true;
 				
 				if (flags & OPERATION_GET)
 					return !compare(value, _values[propertyId]);
 				else if (flags & OPERATION_EXISTS)
-					return value == null && _values[propertyId] == 0;
+					return !!value == _values[propertyId];
 			}
 			
 			return true;

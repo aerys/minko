@@ -11,6 +11,8 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -141,7 +143,7 @@ package aerys.minko.scene.node.mesh
 			if (properties)
 				_bindings.setProperties(properties);
 			
-			addController(new RenderingController());
+			addController(RenderingController.renderingController);
 		}
 		
 		public function clone(properties	: Object	= null,
@@ -160,7 +162,10 @@ package aerys.minko.scene.node.mesh
 			super.addedToSceneHandler(child, scene);
 	
 			if (child === this)
+			{
 				_bindings.addProperty("local to world", localToWorld);
+				_bindings.addProperty("world to local", worldToLocal);
+			}
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -168,7 +173,10 @@ package aerys.minko.scene.node.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			if (child === this)
+			{
 				_bindings.removeProperty("local to world");
+				_bindings.removeProperty("world to local");
+			}
 		}
 		
 		protected function copyFrom(source 			: Mesh,
@@ -180,9 +188,9 @@ package aerys.minko.scene.node.mesh
 			if (withBindings)
 				_bindings = source._bindings.clone();
 			
+			transform.copyFrom(source.transform);
+			
 			effect = source._effect;
 		}
-		
-		
 	}
 }

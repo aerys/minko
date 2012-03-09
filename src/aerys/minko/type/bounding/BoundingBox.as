@@ -1,6 +1,7 @@
 package aerys.minko.type.bounding
 {
 	import aerys.minko.ns.minko_math;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
@@ -68,17 +69,14 @@ package aerys.minko.type.bounding
 
 		public static function merge(box1 : BoundingBox, box2 : BoundingBox) : BoundingBox
 		{
-			return new BoundingBox(new Vector4(Math.min(box1._min.x, box2._min.x),
-											   Math.min(box1._min.y, box2._min.y),
-											   Math.min(box1._min.z, box2._min.z)),
-								   new Vector4(Math.max(box1._max.x, box2._max.x),
-											   Math.max(box1._max.y, box2._max.y),
-											   Math.max(box1._max.z, box2._max.z)));
-		}
-
-		public function getVertices() : Vector.<Number>
-		{
-			return _vertices.concat();
+			return new BoundingBox(
+				new Vector4(Math.min(box1._min.x, box2._min.x),
+					Math.min(box1._min.y, box2._min.y),
+					Math.min(box1._min.z, box2._min.z)),
+				new Vector4(Math.max(box1._max.x, box2._max.x),
+					Math.max(box1._max.y, box2._max.y),
+					Math.max(box1._max.z, box2._max.z))
+			);
 		}
 
 		public function update(min : Vector4 	= null,
@@ -94,6 +92,11 @@ package aerys.minko.type.bounding
 			vmax.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = max.x;
 			vmax.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = max.y;
 			vmax.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = max.z;
+		}
+		
+		public function applyTransform(transform : Matrix4x4) : void
+		{
+			
 		}
 	}
 }
