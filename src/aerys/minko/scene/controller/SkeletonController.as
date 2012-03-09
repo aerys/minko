@@ -18,6 +18,11 @@ package aerys.minko.scene.controller
 			_animations = animations;
 		}
 		
+		public function get animations():Vector.<AnimationController>
+		{
+			return _animations;
+		}
+
 		public function gotoAndPlay(time : Object) : void
 		{
 			var numAnimations	: uint	= _animations.length;

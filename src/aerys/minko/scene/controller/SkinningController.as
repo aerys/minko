@@ -37,10 +37,38 @@ package aerys.minko.scene.controller
 		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix3D>		= null;
 		
+		// TEMP! Quick fix for mk file
+		private var _invBindMatricesTmp : Vector.<Matrix4x4> 	= null;
+		
 		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
 		private var _dqn				: Vector.<Number>		= new Vector.<Number>();
 		private var _dqd				: Vector.<Number>		= new Vector.<Number>();
 		
+		public function get joints():Vector.<Group>
+		{
+			return _joints;
+		}
+
+		public function get skeletonRoot():Group
+		{
+			return _skeletonRoot;
+		}
+
+		public function get invBindMatricesTmp():Vector.<Matrix4x4>
+		{
+			return _invBindMatricesTmp;
+		}
+
+		public function get bindShape():Matrix4x4
+		{
+			return _bindShape;
+		}
+
+		public function get skinningMethod():uint
+		{
+			return _skinningMethod;
+		}
+
 		public function get skinningData() : DataProvider
 		{
 			return _skinningData;
@@ -58,6 +86,7 @@ package aerys.minko.scene.controller
 			
 			_skinningMethod		= skinningMethod;
 			_skeletonRoot		= skeletonRoot;
+			_invBindMatricesTmp = invBindMatrices;
 			_joints				= joints;
 			_bindShape			= bindShape;
 			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
