@@ -1,11 +1,15 @@
 package aerys.minko.render.effect.basic
 {
+	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.PixelColorShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.DepthTest;
+	import aerys.minko.type.enum.TriangleCulling;
 	
 	/**
 	 * The BasicShader is a simple shader program handling hardware vertex
@@ -96,24 +100,38 @@ package aerys.minko.render.effect.basic
 		
 		/**
 		 * 
-		 * @param blending Default value is Blending.NORMAL.
-		 * @param triangleCulling Default value is TriangleCulling.BACK.
 		 * @param priority Default value is 0.
 		 * @param target Default value is null.
 		 * 
 		 */
-		public function BasicShader(blending		: uint			= 524290,
-									triangleCulling	: uint			= 1,
-									priority		: Number		= 0,
-									target			: RenderTarget	= null)
+		public function BasicShader(priority	: Number		= 0,
+									target		: RenderTarget	= null)
 		{
-			if (blending == Blending.ALPHA)
-				priority -= 0.5;
-			
-			super(blending, triangleCulling, priority, target);
+			super(priority, target);
 			
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
 			_pixelColorPart			= new PixelColorShaderPart(this);
+			
+			defaultMeshProperties = {
+				blending 			: Blending.NORMAL,
+				triangleCulling 	: TriangleCulling.BACK,
+				depthTest			: DepthTest.LESS,
+				enableDepthWrite	: true
+			};
+		}
+		
+		override protected function initializeFork(fork : Shader) : void
+		{
+			super.initializeFork(fork);
+			
+			var blending : uint = meshBindings.getProperty("blending") as uint;
+			
+			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
+				fork.priority -= 0.5;
+			
+			fork.depthTest = meshBindings.getProperty("depthTest") as uint;
+			fork.blending = blending;
+			fork.triangleCulling = meshBindings.getProperty("triangleCulling") as uint;
 		}
 		
 		/**

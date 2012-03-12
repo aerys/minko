@@ -217,6 +217,18 @@ package aerys.minko.render
 				}
 			}
 			
+			if (_numTriangles == 0)
+			{
+				var color : uint = backBuffer.backgroundColor;
+				
+				context.clear(
+					((color >> 16) & 0xff) / 255.,
+					((color >> 8) & 0xff) / 255.,
+					(color & 0xff) / 255.,
+					((color >> 24) & 0xff) / 255.
+				);
+			}
+			
 			return _numTriangles;
 		}
 	}

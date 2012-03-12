@@ -72,10 +72,22 @@ package aerys.minko.type.data
 			
 			for (var propertyName : String in dataDescriptor)
 			{
+				var key 		: String		= dataDescriptor[propertyName] as String;
+				var property 	: IDataProvider = dataProvider[key] as IDataProvider;
+				
+				if (property != null)
+				{
+					addProperty(
+						propertyName,
+						property,
+						null
+					);
+				}
+				
 				addProperty(
 					propertyName,
 					dataProvider,
-					dataDescriptor[propertyName] as String
+					key
 				);
 			}
 			

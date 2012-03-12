@@ -35,24 +35,27 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_shader;
 		
-		minko_shader var _meshBindings	: ShaderDataBindings		= null;
-		minko_shader var _sceneBindings	: ShaderDataBindings		= null;
-		minko_shader var _kills			: Vector.<INode>			= new <INode>[];
+		minko_shader var _meshBindings		: ShaderDataBindings		= null;
+		minko_shader var _sceneBindings		: ShaderDataBindings		= null;
+		minko_shader var _kills				: Vector.<INode>			= new <INode>[];
 		
-		private var _name				: String					= null;
-		private var _forks				: Object					= {};
-		private var _enabled			: Boolean					= true;
+		private var _name					: String					= null;
+		private var _forks					: Object					= {};
+		private var _enabled				: Boolean					= true;
 		
-		private var _shaderTemplate		: Shader					= new Shader(null);
+		private var _shaderTemplate			: Shader					= new Shader(null);
 		
-		private var _signatures			: Vector.<ShaderSignature>	= new <ShaderSignature>[];
+		private var _signatures				: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		
-		private var _numPasses			: uint						= 0;
-		private var _numActivePasses	: uint						= 0;
+		private var _numPasses				: uint						= 0;
+		private var _numActivePasses		: uint						= 0;
 		
-		private var _forked				: Signal					= new Signal();
-		private var _begin				: Signal					= new Signal();
-		private var _end				: Signal					= new Signal();
+		private var _defaultMeshProperties	: Object					= {};
+		private var _defaultSceneProperties	: Object					= {};
+		
+		private var _forked					: Signal					= new Signal();
+		private var _begin					: Signal					= new Signal();
+		private var _end					: Signal					= new Signal();
 		
 		/**
 		 * The name of the shader. Default value is the qualified name of the
@@ -85,6 +88,24 @@ package aerys.minko.render.shader
 			_enabled = value;
 			for each (var fork : Object in _forks)
 				(fork as Shader).enabled = value;
+		}
+		
+		protected function get defaultMeshProperties() : Object
+		{
+			return _defaultMeshProperties;
+		}
+		protected function set defaultMeshProperties(value : Object) : void
+		{
+			_defaultMeshProperties = value;
+		}
+		
+		protected function get defaultSceneProperties() : Object
+		{
+			return _defaultSceneProperties;
+		}
+		protected function set defaultSceneProperties(value : Object) : void
+		{
+			_defaultSceneProperties = value;
 		}
 
 		/**
@@ -126,21 +147,15 @@ package aerys.minko.render.shader
 		
 		/**
 		 *  
-		 * @param blending Default value is Blending.NORMAL.
-		 * @param triangleCulling Default value is TriangleCulling.BACK.
 		 * @param priority Default value is 0.
 		 * @param renderTarget Default value is null.
 		 * 
 		 */
-		public function ActionScriptShader(blending			: uint			= 524290,
-										   triangleCulling	: uint			= 1,
-										   priority			: Number		= 0.,
-										   renderTarget		: RenderTarget	= null)
+		public function ActionScriptShader(priority		: Number		= 0.,
+										   renderTarget	: RenderTarget	= null)
 		{
 			super(this);
 			
-			_shaderTemplate.blending = blending;
-			_shaderTemplate.triangleCulling = triangleCulling;
 			_shaderTemplate.priority = priority;
 			_shaderTemplate.renderTarget = renderTarget;
 			
@@ -173,12 +188,14 @@ package aerys.minko.render.shader
 				_meshBindings = new ShaderDataBindings(
 					meshBindings,
 					signature,
-					ShaderSignature.SOURCE_MESH
+					ShaderSignature.SOURCE_MESH,
+					_defaultMeshProperties
 				);
 				_sceneBindings = new ShaderDataBindings(
 					sceneBindings,
 					signature,
-					ShaderSignature.SOURCE_SCENE
+					ShaderSignature.SOURCE_SCENE,
+					_defaultSceneProperties
 				);
 				
 				// generate the a new signature by evaluating the program
@@ -224,7 +241,7 @@ package aerys.minko.render.shader
 			return _forks[signature.hash];
 		}
 		
-		private function initializeFork(fork : Shader) : void
+		protected function initializeFork(fork : Shader) : void
 		{
 			fork.enabled = _enabled;
 			
