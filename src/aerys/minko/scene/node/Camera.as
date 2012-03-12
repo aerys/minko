@@ -14,7 +14,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Camera extends AbstractSceneNode implements IDataProvider
+	public class Camera extends AbstractSceneNode implements IDataProvider
 	{
 		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR		: Number	= .1;
