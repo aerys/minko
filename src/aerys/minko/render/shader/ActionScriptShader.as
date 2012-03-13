@@ -5,17 +5,15 @@ package aerys.minko.render.shader
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.RenderingList;
 	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.enum.Blending;
-	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
-	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
 	
 	use namespace minko_shader;
@@ -215,6 +213,7 @@ package aerys.minko.render.shader
 						Compiler.compileShader(_name),
 						signature
 					);
+					
 					initializeFork(fork);
 					
 					// store the new instance
@@ -232,6 +231,7 @@ package aerys.minko.render.shader
 		
 		/**
 		 * Get a fork created from this shader by its signature. 
+		 * 
 		 * @param signature
 		 * @return 
 		 * 

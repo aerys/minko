@@ -153,6 +153,12 @@ package aerys.minko.scene.controller.mesh
 		
 		private function removeDrawCalls(mesh : Mesh, scene : Scene) : void
 		{
+			var passes 		: Vector.<Shader> 	= _meshToPasses[mesh];
+			var numShaders	: uint				= passes.length;
+			
+			for (var i : uint = 0; i < numShaders; ++i)
+				unwatchSignature(passes[i].signature, mesh.bindings, scene.bindings);
+			
 			scene.renderingList.removeDrawCalls(
 				_meshToPasses[mesh], _meshToDrawCalls[mesh]
 			);
@@ -217,8 +223,7 @@ package aerys.minko.scene.controller.mesh
 										meshBindings	: DataBindings,
 										sceneBindings	: DataBindings) : void
 		{
-			if (_signatures.indexOf(signature) < 0)
-				_signatures.push(signature);
+			_signatures.push(signature);
 			
 			var numKeys	: uint	= signature.numKeys;
 			
@@ -236,6 +241,37 @@ package aerys.minko.scene.controller.mesh
 				else
 				{
 					sceneBindings.getPropertyChangedSignal(key).add(
+						scenePropertyChangedHandler
+					);
+				}
+			}
+		}
+		
+		private function unwatchSignature(signature		: ShaderSignature,
+										  meshBindings	: DataBindings,
+										  sceneBindings	: DataBindings) : void
+		{
+			var numKeys			: uint	= signature.numKeys;
+			var index 			: int 	= _signatures.indexOf(signature);
+			var numSignatures	: uint	= _signatures.length - 1;
+			
+			_signatures[index] = _signatures[numSignatures];
+			_signatures.length = numSignatures;
+			
+			for (var i : uint = 0; i < numKeys; ++i)
+			{
+				var key 	: String	= signature.getKey(i);
+				var flags	: uint		= signature.getFlags(i);
+				
+				if (flags & ShaderSignature.SOURCE_MESH)
+				{
+					meshBindings.getPropertyChangedSignal(key).remove(
+						meshPropertyChangedHandler
+					);
+				}
+				else
+				{
+					sceneBindings.getPropertyChangedSignal(key).remove(
 						scenePropertyChangedHandler
 					);
 				}
