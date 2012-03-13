@@ -410,7 +410,7 @@ package aerys.minko.scene.node
 
 			return descendants;
 		}
-
+		
 		public function toString() : String
 		{
 			return "[" + getQualifiedClassName(this) + " " + name + "]";
@@ -478,6 +478,23 @@ package aerys.minko.scene.node
 		public function getController(index : uint) : AbstractController
 		{
 			return _controllers[index];
+		}
+		
+		public function clone() : ISceneNode
+		{
+			var cloned : Group = new Group();
+			
+			cloned.name = name;
+			cloned.transform.copyFrom(transform);
+			
+			for (var childId : uint = 0; childId < _numChildren; ++childId)
+				cloned.addChildAt(getChildAt(childId).clone(), childId);
+			
+			var numControllers : uint = _controllers.length;
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				cloned.addController(getController(controllerId));
+			
+			return cloned;
 		}
 	}
 }

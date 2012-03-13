@@ -352,5 +352,20 @@ package aerys.minko.scene.node
 			if (locked)
 				_changed.execute(this, null);
 		}
+		
+		override public function clone() : ISceneNode
+		{
+			var cloned : Camera = new Camera(_viewport, _fov, _zNear, _zFar);
+			
+			cloned.name = name;
+			cloned.transform.copyFrom(transform);
+			
+			var numControllers : uint = this.numControllers;
+			
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				cloned.addController(getController(controllerId));
+			
+			return cloned;
+		}
 	}
 }
