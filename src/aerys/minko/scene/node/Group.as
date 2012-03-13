@@ -3,8 +3,13 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.loader.ILoader;
+	import aerys.minko.type.loader.SceneLoader;
+	import aerys.minko.type.loader.parser.ParserOptions;
 	import aerys.minko.type.math.Matrix4x4;
 	
+	import flash.net.URLRequest;
+	import flash.utils.ByteArray;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
@@ -456,6 +461,9 @@ package aerys.minko.scene.node
 			return _children[int(index - 1)];
 		}
 		
+		/**
+		 * @inheritdoc 
+		 */
 		public function addController(controller : AbstractController) : void
 		{
 			_controllers.push(controller);
@@ -464,6 +472,9 @@ package aerys.minko.scene.node
 			_controllerAdded.execute(this, controller);
 		}
 		
+		/**
+		 * @inheritdoc 
+		 */
 		public function removeController(controller : AbstractController) : void
 		{
 			var numControllers	: uint = _controllers.length - 1;
@@ -475,9 +486,51 @@ package aerys.minko.scene.node
 			_controllerRemoved.execute(this, controller);
 		}
 		
+		/**
+		 * @inheritdoc 
+		 */
 		public function getController(index : uint) : AbstractController
 		{
 			return _controllers[index];
+		}
+		
+		public function load(request	: URLRequest,
+							 options	: ParserOptions) : ILoader
+		{
+			var loader	: SceneLoader	= new SceneLoader(options);
+			
+			loader.complete.add(loaderCompleteHandler);
+			loader.load(request);
+			
+			return loader;
+		}
+		
+		public function loadClass(classObject	: Class,
+								  options		: ParserOptions) : ILoader
+		{
+			var loader	: SceneLoader	= new SceneLoader(options);
+			
+			loader.complete.add(loaderCompleteHandler);
+			loader.loadClass(classObject);
+			
+			return loader;
+		}
+		
+		public function loadBytes(bytes		: ByteArray,
+								  options	: ParserOptions) : ILoader
+		{
+			var loader	: SceneLoader	= new SceneLoader(options);
+			
+			loader.complete.add(loaderCompleteHandler);
+			loader.loadBytes(bytes);
+			
+			return loader;
+		}
+		
+		private function loaderCompleteHandler(loader	: ILoader,
+											   scene	: ISceneNode) : void
+		{
+			addChild(scene);
 		}
 	}
 }
