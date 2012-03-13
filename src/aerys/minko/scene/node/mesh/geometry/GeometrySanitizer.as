@@ -174,7 +174,7 @@ package aerys.minko.scene.node.mesh.geometry
 						var newLimit	: uint = newOffset + dwordsPerVertex;
 						
 						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
-							vertexData[newOffset] = vertexData[newLimit];
+							vertexData[newOffset] = vertexData[oldOffset];
 					}
 				}
 				else
