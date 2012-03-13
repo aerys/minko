@@ -4,6 +4,11 @@ package aerys.minko.render.shader.part.coordinates
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	
+	/**
+	 * Convert orthographic to spherical coordinates and vice versa
+	 * 
+	 * @author Romain Gilliotte
+	 */	
 	public class SphericalCoordinatesShaderPart extends ShaderPart
 	{
 		public function SphericalCoordinatesShaderPart(main : ActionScriptShader)

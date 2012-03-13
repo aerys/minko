@@ -11,14 +11,14 @@ package aerys.minko.scene.node.mesh.geometry
 		private static const VERTEX_LIMIT	: uint = 65535;
 		
 		/**
-		 * Split vertex and index buffers too big the be rendered in flash.
+		 * Split vertex and index buffers too big the be rendered.
 		 * The index stream limit is 524270, the vertex stream limit is 65536.
 		 *  
-		 * @param inVertexData
-		 * @param inIndexData
-		 * @param outVertexDatas
-		 * @param outIndexDatas
-		 * @param dwordsPerVertex
+		 * @param inVertexData 
+		 * @param inIndexData 
+		 * @param outVertexDatas 
+		 * @param outIndexDatas 
+		 * @param dwordsPerVertex 
 		 */		
 		public static function splitBuffers(inVertexData	: Vector.<Number>,
 											inIndexData		: Vector.<uint>,
@@ -46,9 +46,9 @@ package aerys.minko.scene.node.mesh.geometry
 				var newVertexIds		: Vector.<int>		= new Vector.<int>(3, true);
 				var newVertexNeeded		: Vector.<Boolean>	= new Vector.<Boolean>(3, true);
 				
-				var usedVerticesDic		: Dictionary		= new Dictionary();		// this dictionary maps old and new indices
-				var usedVerticesCount	: uint				= 0;					// this counts elements in the dictionary
-				var usedIndicesCount	: uint				= 0;					// how many indices have we used?
+				var usedVerticesDic		: Dictionary		= new Dictionary();	// this dictionary maps old and new indices
+				var usedVerticesCount	: uint				= 0;				// this counts elements in the dictionary
+				var usedIndicesCount	: uint				= 0;				// how many indices have we used?
 				var neededVerticesCount	: uint;
 				
 				// iterators & limits
@@ -110,13 +110,13 @@ package aerys.minko.scene.node.mesh.geometry
 					
 					// some assertions for debug purposes..
 					//	if (usedIndicesCount != partialIndexData.length)
-					//		throw new Error('');
+					//		throw new Error('Asset failed');
 					//					
 					//	if (usedVerticesCount != usedVertices.length)
-					//		throw new Error('');
+					//		throw new Error('Asset failed');
 					//					
 					//	if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
-					//		throw new Error('');
+					//		throw new Error('Asset failed');
 				}
 				
 				outIndexDatas.push(partialIndexData);
@@ -127,69 +127,120 @@ package aerys.minko.scene.node.mesh.geometry
 		}
 		
 		/**
-		 * Remove unused and duplicated entries in the vertexBuffer.
+		 * Removes duplicated entries in a vertex buffer, and rewrite the index buffer according to it.
+		 * The buffers are modified in place.
 		 * 
-		 * The index buffer must also be rewritten, because indexes get
-		 * offseted on each removal.
+		 * This method simplifies implementing parsers for file-formats that store per-vertex 
+		 * and per-triangle information in different buffers, such as collada or OBJ:
+		 * merging them in a naive way and calling this method will do the job.
 		 * 
-		 * @param dirtyIndexData
-		 * @param dirtyVertexData
-		 * @param indexData
-		 * @param vertexData
-		 * @param dwordsPerVertex
+		 * @param vertexData 
+		 * @param indexData 
+		 * @param dwordsPerVertex 
 		 */
-		public static function sanitizeBuffers(inVertexData		: Vector.<Number>,
-											   inIndexData	 	: Vector.<uint>,
-											   dwordsPerVertex	: uint = 3) : Vector.<Number>
+		public static function removeDuplicatedVertices(vertexData		: Vector.<Number>,
+														indexData	 	: Vector.<uint>,
+														dwordsPerVertex	: uint = 3) : void
 		{
-			var numDwords		: uint		= inVertexData.length;
-			var bytesPerVertex	: uint		= dwordsPerVertex * 4;
-			var numVertices		: uint		= numDwords / dwordsPerVertex;
+			var numDwords					: uint			= vertexData.length;
+			var numVertices					: uint			= numDwords / dwordsPerVertex;
+			var numIndices					: int			= indexData.length;
+			var bytesPerVertex				: uint			= dwordsPerVertex * 4;
+			var vertexCopy					: ByteArray		= new ByteArray();
+			var hashToNewVertexId			: Array			= new Array();
+			var oldVertexIdToNewVertexId	: Vector.<uint>	= new Vector.<uint>(numVertices, true);
+			var newVertexCount				: uint			= 0;
 			
-			var vertexCopy		: ByteArray	= new ByteArray();
 			for (var i : uint = 0; i < numDwords; ++i)
-				vertexCopy.writeFloat(inVertexData[i]);
+				vertexCopy.writeFloat(vertexData[i]);
 			
 			vertexCopy.position = 0;
-			var vertexHashes	: Vector.<uint> = new Vector.<uint>(numVertices, true);
-			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
-				vertexHashes[vertexId] = CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
 			
-			var vertexIndex				: int;
-			
-			var tmpVertexComponentId	: int			= 0;
-			
-			var numIndices				: int			= inIndexData.length;
-			var currentNumVertices		: int			= 0;
-			
-			var outVertexData			: Vector.<Number> = new Vector.<Number>(numDwords);
-			var vertexPos				: int = 0;
-			var verticesToIndex			: Array = new Array();
-			
-			for (var indexId : int = 0; indexId < numIndices; ++indexId)
+			for (var oldVertexId : uint = 0; oldVertexId < numVertices; ++oldVertexId)
 			{
-				var index		: int = inIndexData[indexId];
-				var vertexHash	: int = vertexHashes[index]; 
+				var vertexHash	: uint		= CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
+				var index		: Object	= hashToNewVertexId[vertexHash];
+				var newVertexId	: uint;
 				
-				if (verticesToIndex[vertexHash] == undefined)
+				if (index === null)
 				{
-					var positionIndex	: int = dwordsPerVertex * index;
-					var positionLimit	: int = positionIndex + dwordsPerVertex;
+					newVertexId = newVertexCount++
+					hashToNewVertexId[vertexHash] = newVertexId;
 					
-					for (; positionIndex < positionLimit; ++positionIndex)
-						outVertexData[int(vertexPos++)] = inVertexData[positionIndex];
-					
-					verticesToIndex[vertexHash] = vertexIndex = currentNumVertices++;
+					if (newVertexId != oldVertexId)
+					{
+						var oldOffset	: uint = oldVertexId * dwordsPerVertex;
+						var newOffset	: uint = newVertexId * dwordsPerVertex;
+						var newLimit	: uint = newOffset + dwordsPerVertex;
+						
+						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
+							vertexData[newOffset] = vertexData[oldOffset];
+					}
 				}
 				else
-					vertexIndex = verticesToIndex[vertexHash];
+					newVertexId = uint(index);
 				
-				inIndexData[indexId] = vertexIndex;
+				oldVertexIdToNewVertexId[oldVertexId] = newVertexId;
 			}
 			
-			outVertexData.length = vertexPos;
-			return outVertexData;
+			vertexData.length = newLimit;
+			
+			for (var indexId : int = 0; indexId < numIndices; ++indexId)
+				indexData[indexId] = oldVertexIdToNewVertexId[indexData[indexId]];
 		}
 		
+		/**
+		 * Removes unused entries in a vertex buffer, and rewrite the index buffer according to it.
+		 * The buffers are modified in place.
+		 * 
+		 * @param vertexData 
+		 * @param indexData 
+		 * @param dwordsPerVertex 
+		 */		
+		public static function removeUnusedVertices(vertexData		: Vector.<Number>,
+													indexData		: Vector.<uint>,
+													dwordsPerVertex	: uint = 3) : void
+		{
+			var numIndices		: int	= indexData.length;
+			var oldNumVertices	: uint	= vertexData.length / dwordsPerVertex;
+			var newNumVertices	: uint	= 0;
+			
+			// iterators
+			var oldVertexId		: uint;
+			var indexId			: uint;
+			
+			// flag unused vertices by scanning the index buffer
+			var oldVertexIdToUsage : Vector.<Boolean> = new Vector.<Boolean>(oldNumVertices, true);
+			for (indexId = 0; indexId < numIndices; ++indexId)
+				oldVertexIdToUsage[indexData[indexId]] = true;
+			
+			// scan the flags, fix vertex buffer, and store old to new vertex id mapping
+			var oldVertexIdToNewVertexId : Vector.<uint> = new Vector.<uint>(oldNumVertices, true);
+			for (oldVertexId = 0; oldVertexId < oldNumVertices; ++oldVertexId)
+				if (oldVertexIdToUsage[oldVertexId])
+				{
+					var newVertexId	: uint = newNumVertices++;
+					
+					// store new index
+					oldVertexIdToNewVertexId[oldVertexId] = newVertexId;
+					
+					// rewrite vertexbuffer in place
+					if (newVertexId != oldVertexId)
+					{
+						var newOffset	: uint = newVertexId * dwordsPerVertex;
+						var newLimit	: uint = newOffset + dwordsPerVertex;
+						var oldOffset	: uint = oldVertexId * dwordsPerVertex;
+						
+						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
+							vertexData[newOffset] = vertexData[oldOffset];
+					}
+				}
+			
+			vertexData.length = newNumVertices * dwordsPerVertex;
+			
+			// rewrite index buffer in place
+			for (indexId = 0; indexId < numIndices; ++indexId)
+				indexData[indexId] = oldVertexIdToNewVertexId[indexData[indexId]];
+		}
 	}
 }

@@ -14,7 +14,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Camera extends AbstractSceneNode implements IDataProvider
+	public class Camera extends AbstractSceneNode implements IDataProvider
 	{
 		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR		: Number	= .1;
@@ -276,6 +276,21 @@ package aerys.minko.scene.node
 			_locked = false;
 			if (locked)
 				_changed.execute(this, null);
+		}
+		
+		override public function clone() : ISceneNode
+		{
+			var cloned : Camera = new Camera(_viewport, _fov, _zNear, _zFar);
+			
+			cloned.name = name;
+			cloned.transform.copyFrom(transform);
+			
+			var numControllers : uint = this.numControllers;
+			
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				cloned.addController(getController(controllerId));
+			
+			return cloned;
 		}
 	}
 }

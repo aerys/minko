@@ -153,27 +153,28 @@ package aerys.minko.render.effect.basic
 		 */
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuse	: SFloat	= _pixelColorPart.getPixelColor();
+			var diffuse			: SFloat = _pixelColorPart.getPixelColor();
+			var vertexNormal	: SFloat = _vertexAnimationPart.getAnimatedVertexNormal();
 			
 			if (sceneBindings.propertyExists("lightEnabled")
 				&& sceneBindings.getProperty("lightEnabled") === true
 				&& meshBindings.propertyExists("lightEnabled")
 				&& meshBindings.getProperty("lightEnabled") === true)
 			{
-				var lightDirection		: SFloat	= sceneBindings.getParameter("lightDirection", 3);
-				var normal				: SFloat	= normalize(
+				var lightDirection	: SFloat = sceneBindings.getParameter("lightDirection", 3);
+				var normal			: SFloat = normalize(
 					interpolate(
 						float4(multiply3x3(vertexNormal, localToWorldMatrix), 1)
 					)
 				);
-				var lambert				: SFloat	= saturate(negate(dotProduct3(
+				var lambert			: SFloat = saturate(negate(dotProduct3(
 					normal,
 					normalize(lightDirection)
 				)));
 				
 				lambert.scaleBy(sceneBindings.getParameter("lightDiffuse", 1));
 				
-				var lightColor	: SFloat	= add(
+				var lightColor		: SFloat = add(
 					// ambient
 					multiply(
 						sceneBindings.getParameter("lightAmbient", 1),

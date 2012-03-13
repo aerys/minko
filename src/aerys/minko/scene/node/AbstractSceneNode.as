@@ -153,7 +153,7 @@ package aerys.minko.scene.node
 			
 			_transform.changed.add(transformChangedHandler);
 		}
-
+		
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			// update root
@@ -234,6 +234,11 @@ package aerys.minko.scene.node
 
 			return className.substr(className.lastIndexOf(":") + 1)
 				   + "_" + (++_id);
+		}
+		
+		public function clone() : ISceneNode
+		{
+			throw new Error('Must be overriden.');
 		}
 	}
 }

@@ -165,8 +165,8 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 		public function TeapotGeometry(divs 		: uint 	= 10,
 									   streamsUsage : uint 	= 0)
 		{
-			var dirtyIndexData	: Vector.<uint>		= new Vector.<uint>();
-			var dirtyVertexData	: Vector.<Number>	= new Vector.<Number>();
+			var indexData	: Vector.<uint>		= new Vector.<uint>();
+			var vertexData	: Vector.<Number>	= new Vector.<Number>();
 			
 			var patch			: Vector.<Vector3D>	= new Vector.<Vector3D>(16, true);
 			var currentVertexId	: uint				= 0;
@@ -176,21 +176,21 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 				for (var i : uint = 0; i < 16; ++i)
 					patch[i] = POINTS[bezierPatch[i] - 1];
 				
-				genPatchVertexData(patch, divs, dirtyVertexData);
-				genPatchIndexData(currentVertexId, divs, dirtyIndexData);
+				genPatchVertexData(patch, divs, vertexData);
+				genPatchIndexData(currentVertexId, divs, indexData);
 				
 				currentVertexId += (divs + 1) * (divs + 1);
 			}
 			
 			// this is slow and memory consuming and could be avoided by non duplicating all border
 			// vertices on genPatchVertexData and genPatchIndexData...
-			var vertexData : Vector.<Number>	= GeometrySanitizer.sanitizeBuffers(dirtyVertexData, dirtyIndexData, 3);
+			GeometrySanitizer.removeDuplicatedVertices(vertexData, indexData, 3);
 			
 			super(
 				new <IVertexStream>[
 					new VertexStream(streamsUsage, VertexFormat.XYZ, vertexData)
 				],
-				new IndexStream(streamsUsage, dirtyIndexData)
+				new IndexStream(streamsUsage, indexData)
 			);
 			
 			if (divs < 1)

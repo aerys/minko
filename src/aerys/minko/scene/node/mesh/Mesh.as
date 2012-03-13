@@ -155,15 +155,17 @@ package aerys.minko.scene.node.mesh
 			addController(RenderingController.renderingController);
 		}
 		
-		public function clone(properties	: Object	= null,
-							  withBindings 	: Boolean 	= true) : Mesh
+		override public function clone() : ISceneNode
 		{
-			var clone : Mesh = new Mesh();
+			var cloned : Mesh = new Mesh();
 			
-			clone.copyFrom(this, withBindings);
-			clone.bindings.setProperties(properties);
+			cloned.copyFrom(this, true);
 			
-			return clone;
+			var numControllers : uint = this.numControllers;
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				cloned.addController(getController(controllerId));
+			
+			return cloned;
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void

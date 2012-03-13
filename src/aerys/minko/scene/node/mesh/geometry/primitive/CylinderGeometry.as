@@ -13,7 +13,7 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 	{
 		private static var _instance	: CylinderGeometry	= null;
 		
-		public function get cylinderGeometry() : CylinderGeometry
+		public static function get cylinderGeometry() : CylinderGeometry
 		{
 			return _instance || (_instance = new CylinderGeometry());
 		}

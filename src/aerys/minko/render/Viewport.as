@@ -217,6 +217,9 @@ package aerys.minko.render
 		 */
 		public function resize(width : Number, height : Number) : void
 		{
+			if (!width || !height)
+				return;
+			
 			_width = width;
 			_height = height;
 			_invalidBackBuffer = true;
