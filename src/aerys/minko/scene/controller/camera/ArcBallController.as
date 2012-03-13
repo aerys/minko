@@ -1,4 +1,4 @@
-package aerys.minko.scene.controller
+package aerys.minko.scene.controller.camera
 {
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Group;
@@ -16,6 +16,7 @@ package aerys.minko.scene.controller
 	import flash.ui.MouseCursor;
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
+	import aerys.minko.scene.controller.AbstractController;
 
 	/**
 	 * The ArcBallController provides methods and listen for mouse events to

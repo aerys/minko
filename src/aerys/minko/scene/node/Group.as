@@ -191,7 +191,7 @@ package aerys.minko.scene.node
 			_childRemoved.add(childRemovedHandler);
 		}
 		
-		private function initializeChildren(children : Array) : void
+		protected function initializeChildren(children : Array) : void
 		{
 			while (children.length == 1 && children[0] is Array)
 				children = children[0];

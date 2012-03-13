@@ -5,6 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
@@ -26,6 +27,9 @@ package aerys.minko.render.shader
 		
 		private var _signature					: ShaderSignature	= null;
 		
+		private var _depthTest					: uint				= 0;
+		private var _compareMode				: String			= null;
+		
 		private var _blending					: uint				= 0;
 		private var _blendingSource				: String			= null;
 		private var _blendingDest				: String			= null;
@@ -37,7 +41,6 @@ package aerys.minko.render.shader
 		
 		private var _renderTarget				: RenderTarget		= null;
 		private var _program					: Program3DResource	= null;
-		private var _compareMode				: String			= null;
 		private var _enableDepthWrite			: Boolean			= true;
 		private var _rectangle					: Rectangle			= null;
 		
@@ -51,6 +54,22 @@ package aerys.minko.render.shader
 		public function get signature() : ShaderSignature
 		{
 			return _signature;
+		}
+		
+		public function get depthTest() : uint
+		{
+			return _depthTest;
+		}
+		public function set depthTest(value : uint) : void
+		{
+			_depthTest = value;
+			
+			var index : int = DepthTest.FLAGS.indexOf(value);
+			
+			if (index < 0)
+				throw new Error("Invalid depth test value: " + value);
+			
+			_compareMode = DepthTest.STRINGS[index];
 		}
 		
 		/**
@@ -101,15 +120,6 @@ package aerys.minko.render.shader
 		public function set scissorRectangle(value : Rectangle) : void
 		{
 			_rectangle = value;
-		}
-		
-		public function get compareMode() : String
-		{
-			return _compareMode;
-		}
-		public function set compareMode(value : String) : void
-		{
-			_compareMode = value;
 		}
 		
 		public function get enableDepthWrite() : Boolean
@@ -165,7 +175,7 @@ package aerys.minko.render.shader
 		}
 		
 		public final function Shader(program	: Program3DResource,
-											 signature	: ShaderSignature	= null)
+									 signature	: ShaderSignature	= null)
 		{
 			_program = program;
 			_signature = signature;
@@ -175,10 +185,11 @@ package aerys.minko.render.shader
 		
 		private function initialize() : void
 		{
-			_compareMode = Context3DCompareMode.LESS;
 			_enableDepthWrite = true;
 			_rectangle = null;
-			
+
+			depthTest = DepthTest.LESS;
+			blending = Blending.NORMAL;
 			triangleCulling = TriangleCulling.BACK;
 		}
 		
@@ -186,12 +197,12 @@ package aerys.minko.render.shader
 							  newSignature	: ShaderSignature	= null) : Shader
 		{
 			var clone : Shader	= new Shader(newProgram || _program, newSignature);
-			
+
+			clone.depthTest = depthTest;
 			clone.blending = blending;
 			clone.triangleCulling = triangleCulling;
 			clone.priority = priority;
 			clone.renderTarget = renderTarget;
-			clone.compareMode = compareMode;
 			clone.enableDepthWrite = enableDepthWrite;
 			clone.scissorRectangle = scissorRectangle;
 			clone.enabled = enabled;
@@ -240,16 +251,16 @@ package aerys.minko.render.shader
 		
 		public static function sort(instances : Vector.<Shader>, numStates : int) : void
 		{
-			var n 		: int 				= numStates;
-			var i		: int 				= 0;
-			var j		: int 				= 0;
-			var k		: int 				= 0;
-			var t		: int				= 0;
+			var n 		: int 		= numStates;
+			var i		: int 		= 0;
+			var j		: int 		= 0;
+			var k		: int 		= 0;
+			var t		: int		= 0;
 			var state 	: Shader	= instances[0];
-			var anmin	: Number 			= -state._priority;
-			var nmax	: int  				= 0;
-			var p		: Number			= 0.;
-			var sorted	: Boolean			= true;
+			var anmin	: Number 	= -state._priority;
+			var nmax	: int  		= 0;
+			var p		: Number	= 0.;
+			var sorted	: Boolean	= true;
 			
 			for (i = 0; i < n; ++i)
 			{

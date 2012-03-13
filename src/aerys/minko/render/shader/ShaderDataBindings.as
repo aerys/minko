@@ -15,14 +15,17 @@ package aerys.minko.render.shader
 		private var _dataBindings	: DataBindings		= null;
 		private var _signature		: ShaderSignature	= null;
 		private var _signatureFlags	: uint				= 0;
+		private var _defaultValues	: Object			= null;
 		
 		public function ShaderDataBindings(bindings			: DataBindings,
 										   signature		: ShaderSignature,
-										   signatureFlags	: uint)
+										   signatureFlags	: uint,
+										   defaultValues	: Object)
 		{
 			_dataBindings = bindings;
 			_signature = signature;
 			_signatureFlags = signatureFlags;
+			_defaultValues = defaultValues;
 		}
 		
 		public function getParameter(name : String, size : uint) : SFloat
@@ -51,11 +54,16 @@ package aerys.minko.render.shader
 				ShaderSignature.OPERATION_EXISTS | _signatureFlags
 			);
 			
+			value ||= _defaultValues.hasOwnProperty(propertyName);
+			
 			return value;
 		}
 		
 		public function getProperty(propertyName : String) : Object
 		{
+			if (!_dataBindings.propertyExists(propertyName))
+				return _defaultValues[propertyName];
+			
 			var value : Object = _dataBindings.getProperty(propertyName);
 
 			_signature.update(

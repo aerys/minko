@@ -1,5 +1,6 @@
 package aerys.minko.render
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
@@ -21,6 +22,8 @@ package aerys.minko.render
 	 */
 	public final class Viewport
 	{
+		use namespace minko_scene;
+		
 		private var _stage3d			: Stage3D		= null;
 		
 		private var _width				: uint			= 0;
@@ -214,6 +217,9 @@ package aerys.minko.render
 		 */
 		public function resize(width : Number, height : Number) : void
 		{
+			if (!width || !height)
+				return;
+			
 			_width = width;
 			_height = height;
 			_invalidBackBuffer = true;
@@ -282,17 +288,7 @@ package aerys.minko.render
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
-				if (list.render(context, _backBuffer) == 0)
-				{
-					var color : uint = _backBuffer.backgroundColor;
-					
-					context.clear(
-						((color >> 16) & 0xff) / 255.,
-						((color >> 8) & 0xff) / 255.,
-						(color & 0xff) / 255.,
-						((color >> 24) & 0xff) / 255.
-					);
-				}
+				list.render(context, _backBuffer);
 				
 				if (destination)
 					context.drawToBitmapData(destination);

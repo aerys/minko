@@ -1,4 +1,4 @@
-package aerys.minko.scene.controller
+package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.scene.node.Group;
@@ -12,6 +12,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.geom.Matrix3D;
+	import aerys.minko.scene.controller.AbstractController;
 
 	/**
 	 * The SkinningController works on meshes, compute all the data required

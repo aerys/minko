@@ -1,6 +1,7 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Frustum;
@@ -26,6 +27,9 @@ package aerys.minko.scene.node
 			"camera world position"	: "worldPosition",
 			"camera world look at"	: "worldLookAt",
 			"camera world up"		: "worldUp",
+			"camera fov"			: "fieldOfView",
+			"camera z near"			: "zNear",
+			"camera z far"			: "zFar",
 			"world to view"			: "worldToView",
 			"projection"			: "projection",
 			"world to screen"		: "worldToScreen"
@@ -52,6 +56,11 @@ package aerys.minko.scene.node
 		
 		private var _locked			: Boolean	= false;
 		private var _changed		: Signal	= new Signal();
+		
+		public function get viewport() : Viewport
+		{
+			return _viewport;
+		}
 		
 		/**
 		 * The position of the camera in local space. 
@@ -177,7 +186,9 @@ package aerys.minko.scene.node
 		public function set fieldOfView(value : Number) : void
 		{
 			_fov = value;
-			updateProjection();
+			
+			if (!_locked)
+				_changed.execute(this, "fieldOfView");
 		}
 		
 		/**
@@ -194,7 +205,9 @@ package aerys.minko.scene.node
 		public function set zNear(value : Number) : void
 		{
 			_zNear = value;
-			updateProjection();
+			
+			if (!_locked)
+				_changed.execute(this, "zNear");
 		}
 		
 		/**
@@ -211,7 +224,14 @@ package aerys.minko.scene.node
 		public function set zFar(value : Number) : void
 		{
 			_zFar = value;
-			updateProjection();
+			
+			if (!_locked)
+				_changed.execute(this, "zFar");
+		}
+		
+		public function get frustum() : Frustum
+		{
+			return _frustum;
 		}
 		
 		public function get locked() : Boolean
@@ -241,102 +261,7 @@ package aerys.minko.scene.node
 			_zNear = zNear;
 			_zFar = zFar;
 			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
-			updateProjection();
-			
-			_viewport.resized.add(viewportResizedHandler);
-			
-			_position.changed.add(positionChangedHandler);
-			_lookAt.changed.add(lookAtChangedHandler);
-			_up.changed.add(upChangedHandler);
-			
-			localToWorld.changed.add(transformChangedHandler);
-		}
-		
-		private function positionChangedHandler(value : Object, property : Object) : void
-		{
-			if (!_locked)
-				_changed.execute(this, "position");
-			
-			updateWorldToView();
-		}
-		
-		private function lookAtChangedHandler(value : Object, property : Object) : void
-		{
-			if (!_locked)
-				_changed.execute(this, "lookAt");
-			
-			updateWorldToView();
-		}
-		
-		private function upChangedHandler(value : Object, property : Object) : void
-		{
-			if (!_locked)
-				_changed.execute(this, "up");
-			
-			updateWorldToView();
-		}
-		
-		private function viewportResizedHandler(viewport 	: Viewport,
-												width	 	: Number,
-												height		: Number) : void
-		{
-			updateProjection();
-		}
-		
-		private function updateProjection() : void
-		{
-			var aspectRatio : Number = _viewport.width / _viewport.height;
-			
-			Matrix4x4.perspectiveFoVLH(_fov, aspectRatio, _zNear, _zFar, _projection);
-			_frustum.updateFromDescription(_fov, aspectRatio, _zNear, _zFar);
-			
-			if (!_locked)
-				_changed.execute(this, "projection");
-			
-			updateWorldToScreen();
-		}
-		
-		private function transformChangedHandler(transform 	: Matrix4x4,
-												 key		: String) : void
-		{
-			updateWorldToView();
-		}
-		
-		private function updateWorldToView() : void
-		{
-			if (!parent)
-				return ;
-			
-			lock();
-			
-			localToWorld.transformVector(_position, _worldPosition);
-			localToWorld.transformVector(_lookAt, _worldLookAt);
-			localToWorld.deltaTransformVector(_up, _worldUp);
-			_worldUp.normalize();
-			
-			Matrix4x4.lookAtLH(
-				_worldPosition,
-				_worldLookAt,
-				_worldUp,
-				_worldToView
-			);
-			
-			updateWorldToScreen();
-			
-			unlock();
-		}
-		
-		private function updateWorldToScreen() : void
-		{
-			Matrix4x4.multiply(_projection, _worldToView, _worldToScreen);
-			
-			if (!_locked)
-				_changed.execute(this, "worldToScreen");
+			addController(new CameraController(viewport));
 		}
 		
 		public function lock() : void

@@ -2,7 +2,7 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.basic.BasicShader;
-	import aerys.minko.scene.controller.RenderingController;
+	import aerys.minko.scene.controller.mesh.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -11,8 +11,6 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -26,7 +24,7 @@ package aerys.minko.scene.node.mesh
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Mesh extends AbstractSceneNode
+	public final class Mesh extends AbstractSceneNode
 	{
 		public static const DEFAULT_EFFECT	: Effect	= new Effect(
 			new BasicShader()
@@ -39,6 +37,8 @@ package aerys.minko.scene.node.mesh
 		private var _boundingSphere		: BoundingSphere	= null;
 		private var _boundingBox		: BoundingBox		= null;
 		private var _visible			: Boolean			= true;
+		
+		private var _frustumCulling		: uint				= 0;
 		
 		private var _effectChanged		: Signal			= new Signal();
 		private var _visibilityChanged	: Signal			= new Signal();
@@ -116,6 +116,15 @@ package aerys.minko.scene.node.mesh
 				_visibilityChanged.execute(this, value);
 		}
 		
+		public function get frustumCulling() : uint
+		{
+			return _frustumCulling;
+		}
+		public function set frustumCulling(value : uint) : void
+		{
+			_frustumCulling = value;
+		}
+		
 		public function get visibilityChanged() : Signal
 		{
 			return _visibilityChanged;
@@ -126,9 +135,9 @@ package aerys.minko.scene.node.mesh
 			return _effectChanged;
 		}
 		
-		public function Mesh(geometry		: Geometry	= null,
-							 properties		: Object	= null,
-							 effect			: Effect	= null)
+		public function Mesh(geometry	: Geometry	= null,
+							 properties	: Object	= null,
+							 effect		: Effect	= null)
 		{
 			super();
 

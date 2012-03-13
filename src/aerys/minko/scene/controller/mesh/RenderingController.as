@@ -1,7 +1,5 @@
-package aerys.minko.scene.controller
+package aerys.minko.scene.controller.mesh
 {
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderingList;
@@ -9,9 +7,13 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSignature;
+	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.ControllerMode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.StreamUsage;
@@ -121,6 +123,19 @@ package aerys.minko.scene.controller
 			
 			removeDrawCalls(mesh, scene);
 			addDrawCalls(mesh, scene);
+		}
+		
+		private function meshFrustumCullingChanged(mesh				: Mesh,
+												   frustumCulling	: uint) : void
+		{
+			if (frustumCulling == FrustumCulling.DISABLED)
+			{
+				
+			}
+			else
+			{
+				
+			}
 		}
 		
 		private function addDrawCalls(mesh : Mesh, scene : Scene) : void
