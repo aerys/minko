@@ -2,6 +2,7 @@ package aerys.minko.render.shader.part
 {
 	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class PixelColorShaderPart extends ShaderPart
 	{
@@ -21,7 +22,7 @@ package aerys.minko.render.shader.part
 			if (meshBindings.propertyExists("diffuseMap"))
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter("diffuseMap");
-				var uv			: SFloat	= interpolate(vertexUV);
+				var uv			: SFloat	= interpolate(getVertexAttribute(VertexComponent.UV));
 				
 				return sampleTexture(diffuseMap, uv);
 			}
