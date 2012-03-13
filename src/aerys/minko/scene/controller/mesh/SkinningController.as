@@ -28,7 +28,7 @@ package aerys.minko.scene.controller.mesh
 		private static const WORLD_SKELETON_MATRIX	: Matrix3D	= new Matrix3D();
 		private static const TMP_SKINNING_MATRIX	: Matrix3D 	= new Matrix3D();
 		
-		private var _skinningData	: DataProvider			= new DataProvider();
+		private var _skinningData		: DataProvider			= new DataProvider();
 		
 		private var _isDirty			: Boolean				= true;
 		

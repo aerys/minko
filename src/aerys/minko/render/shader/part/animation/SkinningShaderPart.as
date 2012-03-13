@@ -11,8 +11,7 @@ package aerys.minko.render.shader.part.animation
 	/**
 	 * The shader part to handle skinning vertex animations.
 	 * 
-	 * @author Jean-Marc Le Roux
-	 * 
+	 * @author Romain Gilliotte
 	 */
 	public class SkinningShaderPart extends ShaderPart
 	{
@@ -279,7 +278,7 @@ package aerys.minko.render.shader.part.animation
 				var dQn			: SFloat;
 				var dQd			: SFloat;
 				
-				throw new Error('why isn\'t the bind shape used???');
+				inNormal = multiply3x3(inNormal, bindShape); // #
 				
 				if (maxInfluences == 1)
 				{
@@ -318,20 +317,20 @@ package aerys.minko.render.shader.part.animation
 				var dQdX	: SFloat	= dQd.w;
 				var dQdYZW	: SFloat	= dQd.xyz;
 				
-				var tmp0	: SFloat = multiply(dQnX, inNormal);	//	tmp0 = blendDQ[0].x*IN.position.xyz
-				var tmp1	: SFloat = crossProduct(dQnYZW, inNormal);		//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
-				var tmp2	: SFloat = add(tmp1, tmp0);				//	tmp2 = tmp1 + tmp0
-				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);			//	tmp3 = cross(blendDQ[0].yzw, tmp2)
-				var tmp4	: SFloat = multiply(2, tmp3);			//	tmp4 = 2.0*tmp3
-				var tmp5	: SFloat = add(inNormal, tmp4);			//	tmp5 = IN.position.xyz + tmp4
-				var tmp6	: SFloat = multiply(dQnX, dQdYZW);		//	tmp6 = blendDQ[0].x*blendDQ[1].yzw
-				var tmp7	: SFloat = multiply(dQdX, dQnYZW);		//	tmp7 = blendDQ[1].x*blendDQ[0].yzw
-				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);		//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
-				var tmp9	: SFloat = subtract(tmp6, tmp7);		//	tmp9 = tmp6 - tmp7
-				var tmp10	: SFloat = add(tmp9, tmp8);				//	tmp10 = tmp9 + tmp8
-				var tmp11	: SFloat = multiply(2, tmp10);			//	tmp11 = 2.0*(tmp10)
+				var tmp0	: SFloat = multiply(dQnX, inNormal);		//	tmp0 = blendDQ[0].x*IN.position.xyz
+				var tmp1	: SFloat = crossProduct(dQnYZW, inNormal);	//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
+				var tmp2	: SFloat = add(tmp1, tmp0);					//	tmp2 = tmp1 + tmp0
+				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);		//	tmp3 = cross(blendDQ[0].yzw, tmp2)
+				var tmp4	: SFloat = multiply(2, tmp3);				//	tmp4 = 2.0*tmp3
+				var tmp5	: SFloat = add(inNormal, tmp4);				//	tmp5 = IN.position.xyz + tmp4
+				var tmp6	: SFloat = multiply(dQnX, dQdYZW);			//	tmp6 = blendDQ[0].x*blendDQ[1].yzw
+				var tmp7	: SFloat = multiply(dQdX, dQnYZW);			//	tmp7 = blendDQ[1].x*blendDQ[0].yzw
+				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);	//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
+				var tmp9	: SFloat = subtract(tmp6, tmp7);			//	tmp9 = tmp6 - tmp7
+				var tmp10	: SFloat = add(tmp9, tmp8);					//	tmp10 = tmp9 + tmp8
+				var tmp11	: SFloat = multiply(2, tmp10);				//	tmp11 = 2.0*(tmp10)
 				
-				outNormal = add(tmp5, tmp11);						//	position = tmp5 + tmp11
+				outNormal = add(tmp5, tmp11);							//	position = tmp5 + tmp11
 				
 				// outNormal		= new Combine(outNormal, new Constant(1.0));
 			}
