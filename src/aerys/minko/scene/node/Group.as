@@ -533,7 +533,7 @@ package aerys.minko.scene.node
 			addChild(scene);
 		}
 		
-		public function clone() : ISceneNode
+		public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
 			var cloned : Group = new Group();
 			
@@ -543,9 +543,7 @@ package aerys.minko.scene.node
 			for (var childId : uint = 0; childId < _numChildren; ++childId)
 				cloned.addChildAt(getChildAt(childId).clone(), childId);
 			
-			var numControllers : uint = _controllers.length;
-			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
-				cloned.addController(getController(controllerId));
+			AbstractSceneNode.copyControllersFrom(this, cloned, cloneControllers);
 			
 			return cloned;
 		}

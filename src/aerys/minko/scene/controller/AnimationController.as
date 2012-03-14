@@ -99,6 +99,19 @@ package aerys.minko.scene.controller
 			initialize();
 		}
 		
+		override public function clone() : AbstractController
+		{
+			return new AnimationController(_timelines.slice());
+		}
+		
+		public function cloneTimelines() : void
+		{
+			var numTimelines	: uint	= _timelines.length;
+			
+			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
+				_timelines[timelineId] = (_timelines[timelineId] as ITimeline).clone();
+		}
+		
 		public function getTimeline(index : uint = 0) : ITimeline
 		{
 			return _timelines[index];

@@ -236,9 +236,30 @@ package aerys.minko.scene.node
 				   + "_" + (++_id);
 		}
 		
-		public function clone() : ISceneNode
+		public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
-			throw new Error('Must be overriden.');
+			throw new Error('The method AbstractSceneNod.clone() must be overriden.');
+		}
+		
+		public static function copyControllersFrom(source 			: ISceneNode,
+												   target			: ISceneNode,
+											   	   cloneControllers	: Boolean) : void
+		{
+			var numControllers : uint = target.numControllers;
+			
+			while (numControllers)
+				target.removeController(target.getController(--numControllers));
+			
+			numControllers = source.numControllers;
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+			{
+				var controller : AbstractController = source.getController(controllerId);
+				
+				if (cloneControllers)
+					controller = controller.clone();
+				
+				target.addController(controller);
+			}
 		}
 	}
 }

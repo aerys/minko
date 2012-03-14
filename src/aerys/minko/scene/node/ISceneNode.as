@@ -29,11 +29,12 @@ package aerys.minko.scene.node
 		function set parent(value : Group) : void;
 		
 		/**
-		 * Clone the scene node, and its childs if relevant. Geometries and textures are not cloned.
+		 * Clone the scene node, and its children if relevant. Geometries and textures are not cloned.
+		 * 
 		 * @return 
 		 * 
 		 */		
-		function clone() : ISceneNode;
+		function clone(cloneControllers : Boolean = false) : ISceneNode;
 		
 		/**
 		 * The name of the scene node. 

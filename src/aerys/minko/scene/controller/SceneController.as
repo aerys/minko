@@ -27,6 +27,29 @@ package aerys.minko.scene.controller
 			targetRemoved.add(targetRemovedHandler);
 		}
 		
+		override public function clone() : AbstractController
+		{
+			return new SceneController();
+		}
+		
+		public function update() : void
+		{
+			// update controllers
+			var numControllers 	: int 		= _ctrlTargets.length;
+			var time			: Number	= new Date().time - TIME_OFFSET;
+			
+			(getTarget(0) as Scene).bindings.setProperty("time", time);
+			
+			for (var targetId : int = numControllers - 1; targetId >= 0; --targetId)
+			{
+				var target 		: ISceneNode 	= _ctrlTargets[targetId] as ISceneNode;
+				var numCtrls	: uint			= target.numControllers;
+				
+				for (var ctrlId : uint = 0; ctrlId < numCtrls; ++ctrlId)
+					target.getController(ctrlId).tick(target, time);
+			}
+		}
+		
 		private function targetAddedHandler(ctrl	: SceneController,
 											target	: Scene) : void
 		{
@@ -150,24 +173,6 @@ package aerys.minko.scene.controller
 				
 				_ctrlTargets[index] = _ctrlTargets[numTargets];
 				_ctrlTargets.length = numTargets;
-			}
-		}
-		
-		public function update() : void
-		{
-			// update controllers
-			var numControllers 	: int 		= _ctrlTargets.length;
-			var time			: Number	= new Date().time - TIME_OFFSET;
-			
-			(getTarget(0) as Scene).bindings.setProperty("time", time);
-			
-			for (var targetId : int = numControllers - 1; targetId >= 0; --targetId)
-			{
-				var target 		: ISceneNode 	= _ctrlTargets[targetId] as ISceneNode;
-				var numCtrls	: uint			= target.numControllers;
-				
-				for (var ctrlId : uint = 0; ctrlId < numCtrls; ++ctrlId)
-					target.getController(ctrlId).tick(target, time);
 			}
 		}
 	}

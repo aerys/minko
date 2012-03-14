@@ -154,6 +154,11 @@ package aerys.minko.scene.controller
 			return _targets[index];
 		}
 		
+		public function clone() : AbstractController
+		{
+			throw new Error("The method AbstractController.clone() must be overriden.");
+		}
+		
 		public function tick(target : ISceneNode, time : Number) : void
 		{
 			var update : Boolean	= false;

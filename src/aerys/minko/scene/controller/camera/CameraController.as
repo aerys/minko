@@ -11,18 +11,26 @@ package aerys.minko.scene.controller.camera
 	
 	public final class CameraController extends AbstractController
 	{
-		private var _camera	: Camera	= null;
+		private var _camera		: Camera	= null;
+		private var _viewport	: Viewport	= null;
 		
 		public function CameraController(viewport	: Viewport)
 		{
 			super(Camera, ControllerMode.SIGNAL);
 			
-			initialize(viewport);
+			_viewport = viewport;
+			
+			initialize();
 		}
 		
-		private function initialize(viewport : Viewport) : void
+		override public function clone() : AbstractController
 		{
-			viewport.resized.add(viewportResizedHandler);
+			return new CameraController(_viewport);
+		}
+		
+		private function initialize() : void
+		{
+			_viewport.resized.add(viewportResizedHandler);
 			
 			targetAdded.add(targetAddedHandler);
 		}

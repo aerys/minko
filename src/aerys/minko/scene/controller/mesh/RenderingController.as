@@ -64,6 +64,11 @@ package aerys.minko.scene.controller.mesh
 			initialize();
 		}
 		
+		override public function clone() : AbstractController
+		{
+			return this;
+		}
+		
 		private function initialize() : void
 		{
 			targetAdded.add(targetAddedHandler);

@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.ns.minko_math;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.mesh.Mesh;
@@ -12,7 +13,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.geom.Matrix3D;
-	import aerys.minko.scene.controller.AbstractController;
 
 	/**
 	 * The SkinningController works on meshes, compute all the data required
@@ -38,29 +38,21 @@ package aerys.minko.scene.controller.mesh
 		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix3D>		= null;
 		
-		// TEMP! Quick fix for mk file
-		private var _invBindMatricesTmp : Vector.<Matrix4x4> 	= null;
-		
 		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
 		private var _dqn				: Vector.<Number>		= new Vector.<Number>();
 		private var _dqd				: Vector.<Number>		= new Vector.<Number>();
 		
-		public function get joints():Vector.<Group>
+		public function get joints() : Vector.<Group>
 		{
 			return _joints;
 		}
 
-		public function get skeletonRoot():Group
+		public function get skeletonRoot() : Group
 		{
 			return _skeletonRoot;
 		}
 
-		public function get invBindMatricesTmp():Vector.<Matrix4x4>
-		{
-			return _invBindMatricesTmp;
-		}
-
-		public function get bindShape():Matrix4x4
+		public function get bindShape() : Matrix4x4
 		{
 			return _bindShape;
 		}
@@ -87,7 +79,6 @@ package aerys.minko.scene.controller.mesh
 			
 			_skinningMethod		= skinningMethod;
 			_skeletonRoot		= skeletonRoot;
-			_invBindMatricesTmp = invBindMatrices;
 			_joints				= joints;
 			_bindShape			= bindShape;
 			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
@@ -107,6 +98,35 @@ package aerys.minko.scene.controller.mesh
 			skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
 			for each (var joint : Group in _joints)
 				joint.localToWorld.changed.add(jointLocalToWorldChangedHandler)
+		}
+		
+		override public function clone() : AbstractController
+		{
+			return new SkinningController(
+				skinningMethod,
+				skeletonRoot,
+				joints,
+				bindShape,
+				getInvBindMatrices()
+			);
+		}
+		
+		public function getInvBindMatrices() : Vector.<Matrix4x4>
+		{
+			var numMatrices		: uint					= _invBindMatrices.length;
+			var bindMatrices	: Vector.<Matrix4x4>	= new Vector.<Matrix4x4>(
+				numMatrices, true
+			);
+			
+			for (var i : uint = 0; i < numMatrices; ++i)
+			{
+				var matrix : Matrix4x4 = new Matrix4x4();
+				
+				matrix._matrix = _invBindMatrices[i].clone();
+				bindMatrices[i] = matrix;
+			}
+			
+			return bindMatrices;
 		}
 		
 		private function targetAddedHandler(controller	: SkinningController, 

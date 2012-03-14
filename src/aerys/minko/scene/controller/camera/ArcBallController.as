@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller.camera
 {
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
@@ -16,7 +17,6 @@ package aerys.minko.scene.controller.camera
 	import flash.ui.MouseCursor;
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
-	import aerys.minko.scene.controller.AbstractController;
 
 	/**
 	 * The ArcBallController provides methods and listen for mouse events to
@@ -127,6 +127,27 @@ package aerys.minko.scene.controller.camera
 			
 			_minZoom = DEFAULT_MIN_ZOOM;
 			_maxZoom = DEFAULT_MAX_ZOOM;
+		}
+		
+		override public function clone() : AbstractController
+		{
+			var cloned : ArcBallController = new ArcBallController();
+			
+			cloned._invertX = _invertX;
+			cloned._invertY = _invertY;
+			cloned._lockedOnPoles = _lockedOnPoles;
+			cloned._maxZoom = _maxZoom;
+			cloned._minZoom = _minZoom;
+			cloned._rotationX = _rotationX;
+			cloned._rotationY = _rotationY;
+			cloned._sensitivity = _sensitivity;
+			cloned._speed.x = _speed.x;
+			cloned._speed.y = _speed.y;
+			cloned._speedScale = _speedScale;
+			cloned._transform.copyFrom(_transform);
+			cloned._useHandCursor = _useHandCursor;
+			
+			return cloned;
 		}
 		
 		public function bindDefaultControls(dispatcher : IEventDispatcher) : void

@@ -2,6 +2,7 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.basic.BasicShader;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.RenderingController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
@@ -160,11 +161,11 @@ package aerys.minko.scene.node.mesh
 			addController(RenderingController.renderingController);
 		}
 		
-		override public function clone() : ISceneNode
+		override public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
 			var cloned : Mesh = new Mesh();
 			
-			cloned.copyFrom(this, true);
+			cloned.copyFrom(this, true, cloneControllers);
 			
 			return cloned;
 		}
@@ -191,17 +192,13 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		protected function copyFrom(source 			: Mesh,
-									withBindings 	: Boolean) : void
+		protected function copyFrom(source 				: Mesh,
+									withBindings 		: Boolean,
+									cloneControllers 	: Boolean) : void
 		{
 			var numControllers : uint = source.numControllers;
 			
-			// remove all controllers
-			while (this.numControllers)
-				removeController(getController(this.numControllers - 1));
-			
-			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
-				addController(source.getController(controllerId));
+			copyControllersFrom(source, this, cloneControllers);
 			
 			name = source.name;
 			_geometry = source._geometry;
