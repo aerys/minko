@@ -40,7 +40,7 @@ package aerys.minko.type.data
 			return signal;
 		}
 		
-		public function clone() : DataBindings
+		public function clone(exclude : Vector.<String>) : DataBindings
 		{
 			var clone 			: DataBindings 	= new DataBindings();
 			var clonedBindings	: Dictionary	= clone._bindings;
@@ -49,17 +49,29 @@ package aerys.minko.type.data
 			{
 				var bindingTable 	: Object 	= _bindings[source];
 				var clonedTable		: Object	= {};
-				
-				clonedBindings[source] = clonedTable;
+				var excluded		: Boolean	= true;
 				
 				for (var key : String in bindingTable)
-					clonedTable[key] = bindingTable[key];
+				{
+					if (exclude.indexOf(bindingTable[key]) < 0)
+					{
+						clonedTable[key] = bindingTable[key];
+						excluded = false;
+					}
+				}
+				
+				if (!excluded)
+					clonedBindings[source] = clonedTable;
 			}
 			
 			for (var propertyName : String in _values)
-				clone._values[propertyName] = _values[propertyName];
-			
-			clone._properties = clone._properties.slice();
+			{
+				if (exclude.indexOf(propertyName) < 0)
+				{
+					clone._values[propertyName] = _values[propertyName];
+					clone._properties.push(propertyName);
+				}
+			}
 			
 			return clone;
 		}
@@ -117,7 +129,7 @@ package aerys.minko.type.data
 		{
 			var oldValue : Object = _values[propertyName];
 			
-			if (!(_values.hasOwnProperty(propertyName)))
+			if (_properties.indexOf(propertyName) < 0)
 				_properties.push(propertyName);
 			
 			_values[propertyName] = value;

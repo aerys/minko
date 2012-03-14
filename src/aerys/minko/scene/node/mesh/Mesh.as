@@ -26,9 +26,14 @@ package aerys.minko.scene.node.mesh
 	 */
 	public final class Mesh extends AbstractSceneNode
 	{
-		public static const DEFAULT_EFFECT	: Effect	= new Effect(
+		public static const DEFAULT_EFFECT		: Effect			= new Effect(
 			new BasicShader()
 		);
+		
+		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
+			"local to world",
+			"world to local"
+		];
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
@@ -161,10 +166,6 @@ package aerys.minko.scene.node.mesh
 			
 			cloned.copyFrom(this, true);
 			
-			var numControllers : uint = this.numControllers;
-			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
-				cloned.addController(getController(controllerId));
-			
 			return cloned;
 		}
 		
@@ -193,15 +194,25 @@ package aerys.minko.scene.node.mesh
 		protected function copyFrom(source 			: Mesh,
 									withBindings 	: Boolean) : void
 		{
+			var numControllers : uint = source.numControllers;
+			
+			// remove all controllers
+			while (this.numControllers)
+				removeController(getController(this.numControllers - 1));
+			
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				addController(source.getController(controllerId));
+			
 			name = source.name;
 			_geometry = source._geometry;
 			
 			if (withBindings)
-				_bindings = source._bindings.clone();
+				_bindings = source._bindings.clone(EXCLUDED_BINDINGS);
 			
 			transform.copyFrom(source.transform);
 			
 			effect = source._effect;
+			
 		}
 	}
 }
