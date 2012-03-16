@@ -15,8 +15,10 @@ package aerys.minko.render.resource.texture
 	 */
 	public final class TextureResource implements ITextureResource
 	{
-		private static const MAX_SIZE	: uint		= 2048;
-		private static const TMP_MATRIX	: Matrix	= new Matrix();
+		private static const MAX_SIZE			: uint		= 2048;
+		private static const TMP_MATRIX			: Matrix	= new Matrix();
+		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
+		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
 		
 		private var _texture	: Texture	= null;
 		private var _mipmap		: Boolean;
@@ -111,8 +113,8 @@ package aerys.minko.render.resource.texture
 				_texture = context.createTexture(
 					_width,
 					_height,
-					Context3DTextureFormat.BGRA,
-					_bitmapData == null
+					_atf ? FORMAT_COMPRESSED : FORMAT_BGRA,
+					_bitmapData == null && _atf == null
 				);
 
 				_update = true;
