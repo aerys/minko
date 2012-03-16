@@ -198,10 +198,10 @@ package aerys.minko.scene.node.mesh
 		{
 			var numControllers : uint = source.numControllers;
 			
-			copyControllersFrom(source, this, cloneControllers);
-			
 			name = source.name;
 			_geometry = source._geometry;
+			
+			copyControllersFrom(source, this, cloneControllers);
 			
 			if (withBindings)
 				_bindings = source._bindings.clone(EXCLUDED_BINDINGS);

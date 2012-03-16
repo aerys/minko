@@ -201,6 +201,9 @@ package aerys.minko.scene.controller.mesh
 			scene.renderingList.removeDrawCalls(
 				_meshToPasses[mesh], _meshToDrawCalls[mesh]
 			);
+			
+			delete _meshToDrawCalls[mesh];
+			delete _meshToPasses[mesh];
 		}
 		
 		private function createShader(effect 	: Effect,
