@@ -129,9 +129,9 @@ package aerys.minko.render.effect.basic
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
 				fork.priority -= 0.5;
 			
-			fork.depthTest = meshBindings.getProperty("depthTest") as uint;
-			fork.blending = blending;
-			fork.triangleCulling = meshBindings.getProperty("triangleCulling") as uint;
+			fork.depthTest			= meshBindings.getProperty("depthTest") as uint;
+			fork.blending			= blending;
+			fork.triangleCulling	= meshBindings.getProperty("triangleCulling") as uint;
 		}
 		
 		/**

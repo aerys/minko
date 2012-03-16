@@ -107,12 +107,15 @@ package aerys.minko.render.shader
 				
 				if (flags & OPERATION_GET)
 				{
+					if (!source.propertyExists(key))
+						return false;
+					
 					if (!compare(source.getProperty(key), value))
 						return false;
 				}
 				else if (flags & OPERATION_EXISTS)
 				{
-					if (source.propertyExists(key))
+					if (source.propertyExists(key) != value)
 						return false;
 				}
 			}

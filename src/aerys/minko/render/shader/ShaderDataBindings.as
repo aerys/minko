@@ -59,7 +59,7 @@ package aerys.minko.render.shader
 			return value;
 		}
 		
-		public function getProperty(propertyName : String) : Object
+		public function getProperty(propertyName : String) : *
 		{
 			if (!_dataBindings.propertyExists(propertyName))
 				return _defaultValues[propertyName];

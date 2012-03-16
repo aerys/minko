@@ -23,7 +23,7 @@ package aerys.minko.render.shader.compiler
 	/**
 	 * The JIT ActionScript shader compiler.
 	 * 
-	 * @author Jean-Marc Le Roux
+	 * @author Romain Gilliotte
 	 * 
 	 */
 	public class Compiler
@@ -43,7 +43,6 @@ package aerys.minko.render.shader.compiler
 		private static const INTERPOLATE_FINDER		: InterpolateFinder						= new InterpolateFinder();
 		private static const WRITE_DOT				: WriteDot								= new WriteDot();
 		private static const MATRIX_TRANSFORMATION	: MatrixTransformationGrouper			= new MatrixTransformationGrouper();
-		
 		
 		private static var _shaderGraph			: ShaderGraph;
 		

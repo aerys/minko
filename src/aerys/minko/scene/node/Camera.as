@@ -21,18 +21,18 @@ package aerys.minko.scene.node
 		public static const DEFAULT_ZFAR		: Number	= 1000.;
 		
 		private static const DATA_DESCRIPTOR	: Object	= {
-			"camera position"		: "position",
-			"camera look at"		: "lookAt",
-			"camera up"				: "up",
-			"camera world position"	: "worldPosition",
-			"camera world look at"	: "worldLookAt",
-			"camera world up"		: "worldUp",
-			"camera fov"			: "fieldOfView",
-			"camera z near"			: "zNear",
-			"camera z far"			: "zFar",
-			"world to view"			: "worldToView",
+			"cameraPosition"		: "position",
+			"cameraLookAt"			: "lookAt",
+			"cameraUp"				: "up",
+			"cameraWorldPosition"	: "worldPosition",
+			"cameraWorldLookAt"		: "worldLookAt",
+			"cameraWorldUp"			: "worldUp",
+			"cameraFov"				: "fieldOfView",
+			"cameraZNear"			: "zNear",
+			"cameraZFar"			: "zFar",
+			"worldToView"			: "worldToView",
 			"projection"			: "projection",
-			"world to screen"		: "worldToScreen"
+			"worldToScreen"			: "worldToScreen"
 		};
 		
 		private var _viewport		: Viewport	= null;

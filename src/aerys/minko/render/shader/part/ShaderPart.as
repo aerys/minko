@@ -2,6 +2,9 @@ package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.ShaderDataBindings;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -18,14 +21,12 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerMipmap;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.render.shader.ActionScriptShader;
-	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.ShaderDataBindings;
 
 	/**
 	 * The base class to create ActionScript shader parts.
-	 * @author Jean-Marc Le Roux
 	 * 
+	 * @author Jean-Marc Le Roux
+	 * @author Romain Gilliotte
 	 */
 	public class ShaderPart
 	{
@@ -110,22 +111,27 @@ package aerys.minko.render.shader.part
 		
 		protected function get localToWorldMatrix() : SFloat
 		{
-			return _main._meshBindings.getParameter("local to world", 16);
+			return _main._meshBindings.getParameter("localToWorld", 16);
 		}
 		
 		protected function get worldToLocalMatrix() : SFloat
 		{
-			return _main._meshBindings.getParameter("world to local", 16);
+			return _main._meshBindings.getParameter("worldToLocal", 16);
 		}
 		
 		protected function get worldToViewMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("world to view", 16);
+			return _main._sceneBindings.getParameter("worldToView", 16);
+		}
+		
+		protected function get viewToWorldMatrix() : SFloat
+		{
+			return _main._sceneBindings.getParameter('viewToWorld', 16);
 		}
 		
 		protected function get worldToScreenMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("world to screen", 16);
+			return _main._sceneBindings.getParameter("worldToScreen", 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
@@ -135,12 +141,12 @@ package aerys.minko.render.shader.part
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return _main._sceneBindings.getParameter("camera position", 3);
+			return _main._sceneBindings.getParameter("cameraPosition", 3);
 		}
 		
 		protected function get cameraWorldPosition() : SFloat
 		{
-			return _main._sceneBindings.getParameter("camera world position", 3);
+			return _main._sceneBindings.getParameter("cameraWorldPosition", 3);
 		}
 
 		protected function get time() : SFloat
@@ -262,7 +268,7 @@ package aerys.minko.render.shader.part
 		}
 
 		/**
-		 * Create a new SFloat object of size 3 by combining 3 scalar values.
+		 * Create a new SFloat object of size 3 by combining up to 3 values.
 		 *
 		 * <p>This method is an alias of the "combine" method. You should prefer this
 		 * method everytime you want to build an SFloat object of size 3 because this
@@ -289,7 +295,7 @@ package aerys.minko.render.shader.part
 		}
 
 		/**
-		 * Create a new SFloat object of size 4 by combining 4 scalar values.
+		 * Create a new SFloat object of size 4 by combining up to 4 values.
 		 *
 		 * <p>This method is an alias of the "combine" method. You should prefer this
 		 * method everytime you want to build an SFloat object of size 4 because
@@ -356,7 +362,7 @@ package aerys.minko.render.shader.part
 				(color & 0xff) / 255.
 			);
 		}
-
+		
 		/**
 		 * Retrieve the RGBA color of a pixel of a texture.
 		 *
@@ -388,7 +394,7 @@ package aerys.minko.render.shader.part
 			
 			return new SFloat(new Instruction(Instruction.TEX, getNode(uv), getNode(texture)));
 		}
-
+		
 		/**
 		 * Compute term-to-term scalar multiplication.
 		 *
@@ -407,7 +413,7 @@ package aerys.minko.render.shader.part
 			
 			return result;
 		}
-
+		
 		/**
 		 * Compute term-to-term scalar division.
 		 *
@@ -674,12 +680,48 @@ package aerys.minko.render.shader.part
 			main._kills.push(getNode(value));
 		}
 		
+		
+		protected final function localToWorld(vertex : Object) : SFloat
+		{
+			return multiply4x4(vertex, localToWorldMatrix);
+		}
+		
+		protected final function worldToLocal(vertex : Object) : SFloat
+		{
+			return multiply4x4(vertex, worldToLocalMatrix);
+		}
+		
+		protected final function worldToView(vertex : Object) : SFloat
+		{
+			return multiply4x4(vertex, worldToViewMatrix);
+		}
+		
 		protected final function localToScreen(vertex : Object) : SFloat
 		{
 			return multiply4x4(
-				multiply4x4(vertex, localToWorldMatrix),
+				localToWorld(vertex),
 				worldToScreenMatrix
 			);
+		}
+		
+		protected final function deltaLocalToWorld(vertex : Object) : SFloat
+		{
+			return multiply3x3(vertex, localToWorldMatrix);
+		}
+		
+		protected final function deltaWorldToLocal(vertex : Object) : SFloat
+		{
+			return multiply3x3(vertex, worldToLocalMatrix);
+		}
+		
+		protected final function deltaWorldToView(vertex : Object) : SFloat
+		{
+			return multiply3x3(vertex, worldToViewMatrix);
+		}
+		
+		protected final function deltaViewToWorld(vertex : Object) : SFloat
+		{
+			return multiply3x3(vertex, viewToWorldMatrix);
 		}
 		
 		protected final function getTexture(textureResource : TextureResource,
