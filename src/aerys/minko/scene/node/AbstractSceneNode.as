@@ -193,8 +193,8 @@ package aerys.minko.scene.node
 			// nothing
 		}
 		
-		private function transformChangedHandler(transform		: Matrix4x4,
-												 propertyName	: String) : void
+		protected function transformChangedHandler(transform	: Matrix4x4,
+												   propertyName	: String) : void
 		{
 			if (_parent)
 				Matrix4x4.multiply(_parent.localToWorld, _transform, _localToWorld);

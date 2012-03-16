@@ -293,7 +293,7 @@ package aerys.minko.render.shader
 		protected function getPixelColor() : SFloat
 		{
 			throw new Error(
-				"The method 'getVertexPosition' must be implemented."
+				"The method 'getPixelColor' must be implemented."
 			);
 		}
 		

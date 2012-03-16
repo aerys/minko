@@ -176,8 +176,8 @@ package aerys.minko.scene.node.mesh
 	
 			if (child === this)
 			{
-				_bindings.addProperty("local to world", localToWorld);
-				_bindings.addProperty("world to local", worldToLocal);
+				_bindings.addProperty("localToWorld", localToWorld);
+				_bindings.addProperty("worldToLocal", worldToLocal);
 			}
 		}
 		
@@ -187,8 +187,8 @@ package aerys.minko.scene.node.mesh
 			
 			if (child === this)
 			{
-				_bindings.removeProperty("local to world");
-				_bindings.removeProperty("world to local");
+				_bindings.removeProperty("localToWorld");
+				_bindings.removeProperty("worldToLocal");
 			}
 		}
 		

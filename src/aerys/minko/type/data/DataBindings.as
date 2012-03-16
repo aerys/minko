@@ -261,7 +261,14 @@ package aerys.minko.type.data
 			var bindingTable 	: Object = _bindings[source] as Object;
 			var propertyName 	: String = null;
 			
-			if (key)
+			if (key == 'dataDescriptor')
+			{
+				// the dataDescriptor have changed!
+				// we have to map new properties, and unbind the old ones.
+				
+				
+			}
+			else if (key && source.dataDescriptor[key] != undefined)
 			{
 				// a single property has changed
 				propertyName = bindingTable[key] as String;
@@ -274,7 +281,7 @@ package aerys.minko.type.data
 			else
 			{
 				// "some" properties have changed (ie. DataProvider.invalidate() was called)
-				for (var key : Object in bindingTable)
+				for (var key : Object in source.dataDescriptor)
 				{
 					propertyName = bindingTable[key];
 					

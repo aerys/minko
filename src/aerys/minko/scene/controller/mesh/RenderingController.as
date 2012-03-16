@@ -45,6 +45,7 @@ package aerys.minko.scene.controller.mesh
 		private var _invalidSignatures	: Vector.<ShaderSignature>	= new <ShaderSignature>[];
 		private var _hashToInstance		: Object					= new Object();
 		
+		private var _effectToMeshes		: Dictionary				= new Dictionary(true);
 		private var _meshToPasses		: Dictionary				= new Dictionary(true);
 		private var _meshToDrawCalls	: Dictionary				= new Dictionary(true);
 		
@@ -95,18 +96,35 @@ package aerys.minko.scene.controller.mesh
 		private function meshAddedToSceneHandler(mesh	: Mesh,
 												 scene	: Scene) : void
 		{
+			var effect : Effect = mesh.effect;
+			
+			if (_effectToMeshes[effect] == undefined)
+				_effectToMeshes[effect] = new Vector.<Mesh>();
+			_effectToMeshes[effect].push(mesh);
+			
+			effect.changed.add(meshEffectChangedHandler);
+			
 			addDrawCalls(mesh, scene);
 			
-			mesh.effectChanged.add(meshEffectChangedHandler);
+			mesh.effectChanged.add(meshEffectSwitchedHandler);
 			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 		}
 		
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
+			var effect	: Effect		= mesh.effect;
+			var meshes	: Vector.<Mesh>	= _effectToMeshes[effect];
+			
+			meshes.splice(meshes.indexOf(mesh), 1);
+			if (meshes.length == 0)
+				delete _effectToMeshes[effect];
+			
+			effect.changed.remove(meshEffectChangedHandler);
+			
 			removeDrawCalls(mesh, scene);
 			
-			mesh.effectChanged.remove(meshEffectChangedHandler);
+			mesh.effectChanged.remove(meshEffectSwitchedHandler);
 			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
@@ -120,9 +138,25 @@ package aerys.minko.scene.controller.mesh
 				(drawCalls[callId] as DrawCall).enabled = visibility;
 		}
 		
-		private function meshEffectChangedHandler(mesh		: Mesh,
-												  oldEffect	: Effect,
-												  newEffect	: Effect) : void
+		private function meshEffectChangedHandler(effect		: Effect,
+												  propertyName	: String) : void
+		{
+			var meshes		: Vector.<Mesh>	= _effectToMeshes[effect];
+			var numMeshes	: uint			= meshes.length;
+			
+			for (var meshId : uint = 0; meshId < numMeshes; ++meshId)
+			{
+				var mesh	: Mesh	= meshes[meshId];
+				var scene	: Scene	= mesh.root as Scene;
+				
+				removeDrawCalls(mesh, scene);
+				addDrawCalls(mesh, scene);
+			}
+		}
+		
+		private function meshEffectSwitchedHandler(mesh			: Mesh,
+												   oldEffect	: Effect,
+												   newEffect	: Effect) : void
 		{
 			var scene : Scene = mesh.root as Scene;
 			

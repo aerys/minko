@@ -2,6 +2,7 @@ package aerys.minko.render.effect
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 
 	/**
@@ -15,6 +16,13 @@ package aerys.minko.render.effect
 		use namespace minko_render;
 		
 		minko_render var _passes	: Vector.<ActionScriptShader>	= null;
+		
+		private var _changed		: Signal						= new Signal();
+		
+		public function get changed() : Signal
+		{
+			return _changed;
+		}
 		
 		public function get numPasses() : uint
 		{
