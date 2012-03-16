@@ -8,7 +8,7 @@ package aerys.minko.scene.node.mesh.geometry
 	public final class GeometrySanitizer
 	{
 		private static const INDEX_LIMIT	: uint = 524270;
-		private static const VERTEX_LIMIT	: uint = 65536;
+		private static const VERTEX_LIMIT	: uint = 5000;
 		
 		/**
 		 * Split vertex and index buffers too big the be rendered.
@@ -108,15 +108,13 @@ package aerys.minko.scene.node.mesh.geometry
 					// ... increment indices counter
 					usedIndicesCount += 3;
 					
-					// some assertions for debug purposes..
-					//	if (usedIndicesCount != partialIndexData.length)
-					//		throw new Error('Asset failed');
-					//					
-					//	if (usedVerticesCount != usedVertices.length)
-					//		throw new Error('Asset failed');
-					//					
-					//	if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
-					//		throw new Error('Asset failed');
+//					// some assertions for debug purposes..
+//						if (usedIndicesCount != partialIndexData.length)
+//							throw new Error('Assert failed');
+//										
+//										
+//						if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
+//							throw new Error('Assert failed');
 				}
 				
 				outIndexDatas.push(partialIndexData);
