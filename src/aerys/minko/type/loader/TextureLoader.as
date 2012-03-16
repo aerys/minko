@@ -58,15 +58,17 @@ package aerys.minko.type.loader
 		{
 			_mipmap		= enableMipmapping;
 			
-			_isComplete = false;
-			_error		= new Signal();
-			_progress	= new Signal();
-			_complete	= new Signal();
+			_textureResource 	= new TextureResource();
+			_isComplete 		= false;
+			_error				= new Signal();
+			_progress			= new Signal();
+			_complete			= new Signal();
 		}
 		
 		public function load(request : URLRequest) : void
 		{
 			var loader : URLLoader = new URLLoader();
+			
 			loader.dataFormat = URLLoaderDataFormat.BINARY;
 			loader.addEventListener(ProgressEvent.PROGRESS, onLoadProgressHandler);
 			loader.addEventListener(Event.COMPLETE, onLoadCompleteHandler);
@@ -149,7 +151,6 @@ package aerys.minko.type.loader
 			
 			if (displayObject is Bitmap)
 			{
-				_textureResource = new TextureResource();
 				_textureResource.setContentFromBitmapData(Bitmap(displayObject).bitmapData, _mipmap);
 				_complete.execute(this, _textureResource);
 				_isComplete = true;
@@ -157,6 +158,7 @@ package aerys.minko.type.loader
 			else
 			{
 				var className : String = getQualifiedClassName(displayObject);
+				
 				className = className.substr(className.lastIndexOf(':') + 1);
 				_isComplete = true;
 				throw new Error('No texture can be created from an object of type \'' + className + '\'');
@@ -169,6 +171,26 @@ package aerys.minko.type.loader
 			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
 			
 			textureLoader.loadClass(classObject);
+			
+			return textureLoader.textureResource;
+		}
+		
+		public static function load(request				: URLRequest,
+									enableMipMapping 	: Boolean = true) : TextureResource
+		{
+			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
+			
+			textureLoader.load(request);
+			
+			return textureLoader.textureResource;
+		}
+		
+		public static function loadBytes(bytes				: ByteArray,
+										 enableMipMapping 	: Boolean = true) : TextureResource
+		{
+			var textureLoader : TextureLoader = new TextureLoader(enableMipMapping);
+			
+			textureLoader.loadBytes(bytes);
 			
 			return textureLoader.textureResource;
 		}
