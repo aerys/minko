@@ -385,8 +385,8 @@ package aerys.minko.type.stream
 					
 					var reader : Function = null;
 					
-					if (functionReader[componentsOut[componentId].nativeFormatString])
-						reader = functionReader[componentsOut[componentId].nativeFormatString];
+					if (functionReader[componentsOut[componentId]])
+						reader = functionReader[componentsOut[componentId]];
 					else if (functionReader["defaut"])
 						reader = functionReader["defaut"];
 					else
@@ -395,13 +395,13 @@ package aerys.minko.type.stream
 					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
-							data[int(dataLength++)] = reader();
+							data[int(dataLength++)] =reader(componentsOut[componentId]);
 						case VertexComponentType.FLOAT_3 :
-							data[int(dataLength++)] = reader();
+							data[int(dataLength++)] = reader(componentsOut[componentId]);
 						case VertexComponentType.FLOAT_2 :
-							data[int(dataLength++)] = reader();
+							data[int(dataLength++)] = reader(componentsOut[componentId]);
 						case VertexComponentType.FLOAT_1 :
-							data[int(dataLength++)] = reader();
+							data[int(dataLength++)] = reader(componentsOut[componentId]);
 							break ;
 					}
 				}

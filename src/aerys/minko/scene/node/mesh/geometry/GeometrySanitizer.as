@@ -8,7 +8,7 @@ package aerys.minko.scene.node.mesh.geometry
 	public final class GeometrySanitizer
 	{
 		private static const INDEX_LIMIT	: uint = 524270;
-		private static const VERTEX_LIMIT	: uint = 65535;
+		private static const VERTEX_LIMIT	: uint = 65536;
 		
 		/**
 		 * Split vertex and index buffers too big the be rendered.
