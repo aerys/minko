@@ -78,6 +78,7 @@ package aerys.minko.type.loader
 		
 		private function onLoadIoErrorEvent(e : IOErrorEvent) : void
 		{
+			_textureResource = null;
 			_error.execute(this, e.errorID, e.text);
 		}
 		
@@ -101,7 +102,7 @@ package aerys.minko.type.loader
 				if (bitmapData == null)
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
-				_textureResource = new TextureResource();
+//				_textureResource = new TextureResource();
 				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
 				_complete.execute(this, _textureResource);
 				_isComplete = true;
@@ -130,7 +131,7 @@ package aerys.minko.type.loader
 				bytes.readByte() == 'F'.charCodeAt(0))
 			{
 				bytes.position = 0;
-				_textureResource = new TextureResource();
+//				_textureResource = new TextureResource();
 				_textureResource.setContentFromATF(bytes);
 				_complete.execute(this, _textureResource);
 				_isComplete = true;
