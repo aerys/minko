@@ -16,11 +16,12 @@ package aerys.minko.scene.controller
 	 */
 	public class AnimationController extends AbstractController
 	{
-
 		public static var DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
 		private var _timelines		: Vector.<ITimeline>	= new Vector.<ITimeline>();
 		private var _isPlaying		: Boolean				= false;
+		private var _updateOneTime	: Boolean 				= false;
+		
 		private var _loopBeginTime	: int					= 0;
 		private var _loopEndTime	: int					= 0;
 		private var _looping		: Boolean				= true;
@@ -28,13 +29,18 @@ package aerys.minko.scene.controller
 		private var _totalTime		: int					= 0;
 		
 		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
-		private var _labels			: Vector.<TimeLabel>	= null;
+		private var _labels			: Vector.<TimeLabel>	= new Vector.<TimeLabel>();
 		
 		private var _lastTime		: Number				= 0;
 		
 		private var _looped			: Signal 				= new Signal();
 		private var _started		: Signal				= new Signal();
 		private var _stopped		: Signal				= new Signal();
+
+		public function get labels():Vector.<TimeLabel>
+		{
+			return _labels;
+		}
 
 		public function get numTimelines() : uint
 		{
@@ -161,7 +167,8 @@ package aerys.minko.scene.controller
 		
 		public function stop() : void
 		{
-			_isPlaying = false;
+			_updateOneTime 	= true;
+			_isPlaying 		= false;
 			_stopped.execute(this);
 		}
 		
@@ -206,7 +213,7 @@ package aerys.minko.scene.controller
 		
 		override protected function updateOnTime(time : Number) : Boolean
 		{
-			if (_isPlaying)
+			if (_isPlaying || _updateOneTime)
 			{
 				if (_timeFunction != null)
 					time = _timeFunction();
@@ -234,13 +241,15 @@ package aerys.minko.scene.controller
 			
 			_lastTime = time;
 			
-			return _isPlaying;
+			return _isPlaying || _updateOneTime;
 		}
 		
 		override protected function updateTarget(target : ISceneNode) : void
 		{
 			var numTimelines 	: int 	= _timelines.length;
 			var group			: Group	= target as Group;
+			
+			_updateOneTime = false;
 			
 			for (var i : int = 0; i < numTimelines; ++i)
 			{
