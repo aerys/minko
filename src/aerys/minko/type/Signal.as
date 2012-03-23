@@ -2,6 +2,8 @@ package aerys.minko.type
 {
 	public final class Signal
 	{
+		private var _name			: String			= null;
+		
 		private var _callbacks		: Vector.<Function>	= new <Function>[];
 		private var _numCallbacks	: uint				= 0;
 		
@@ -12,6 +14,11 @@ package aerys.minko.type
 		public function get numCallbacks() : uint
 		{
 			return _numCallbacks;
+		}
+		
+		public function Signal(name : String)
+		{
+			_name = name;
 		}
 		
 		public function add(callback : Function) : void

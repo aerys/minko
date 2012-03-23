@@ -31,7 +31,7 @@ package aerys.minko.type.math
 		private var _numPushes	: int					= 0;
 		
 		private var _locked		: Boolean				= false;
-		private var _changed	: Signal				= new Signal();
+		private var _changed	: Signal				= new Signal('Matrix4x4.changed');
 		
 		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		

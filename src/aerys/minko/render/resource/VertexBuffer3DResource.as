@@ -25,7 +25,7 @@ package aerys.minko.render.resource
 		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 		
-		private var _uploaded		: Signal			= new Signal();
+		private var _uploaded		: Signal			= new Signal('VertexBuffer3DRessource.uploaded');
 		
 		public function get uploaded() : Signal
 		{

@@ -44,8 +44,8 @@ package aerys.minko.scene.node.mesh
 		
 		private var _frustumCulling		: uint				= 0;
 		
-		private var _effectChanged		: Signal			= new Signal();
-		private var _visibilityChanged	: Signal			= new Signal();
+		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
+		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
 		
 		/**
 		 * The rendering properties provided to the shaders to customize

@@ -60,9 +60,9 @@ package aerys.minko.type.loader
 			
 			_textureResource 	= new TextureResource();
 			_isComplete 		= false;
-			_error				= new Signal();
-			_progress			= new Signal();
-			_complete			= new Signal();
+			_error				= new Signal('TextureLoader.error');
+			_progress			= new Signal('TextureLoader.progress');
+			_complete			= new Signal('TextureLoader.complete');
 		}
 		
 		public function load(request : URLRequest) : void

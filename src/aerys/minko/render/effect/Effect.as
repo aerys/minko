@@ -17,7 +17,7 @@ package aerys.minko.render.effect
 		
 		minko_render var _passes	: Vector.<PassTemplate>	= null;
 		
-		private var _passesChanged	: Signal					= new Signal();
+		private var _passesChanged	: Signal				= new Signal('Effect.passesChanged');
 		
 		public function get passesChanged() : Signal
 		{

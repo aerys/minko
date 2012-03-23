@@ -121,7 +121,7 @@ package aerys.minko.scene.controller.camera
 		
 		public function ArcBallController()
 		{
-			super(Camera);
+			super();
 			
 			_sensitivity = DEFAULT_SENSITIVITY;
 			

@@ -69,8 +69,8 @@ package aerys.minko.type.loader
 		{
 			_currentState	= STATE_IDLE;
 			
-			_progress		= new Signal();
-			_complete		= new Signal();
+			_progress		= new Signal('SceneLoader.progress');
+			_complete		= new Signal('SceneLoader.complete');
 			_data			= null;
 			_isComplete		= false;
 			

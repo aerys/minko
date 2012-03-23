@@ -33,9 +33,9 @@ package aerys.minko.scene.controller
 		
 		private var _lastTime		: Number				= 0;
 		
-		private var _looped			: Signal 				= new Signal();
-		private var _started		: Signal				= new Signal();
-		private var _stopped		: Signal				= new Signal();
+		private var _looped			: Signal 				= new Signal('AnimationController.looped');
+		private var _started		: Signal				= new Signal('AnimationController.started');
+		private var _stopped		: Signal				= new Signal('AnimationController.stopped');
 
 		public function get labels():Vector.<TimeLabel>
 		{

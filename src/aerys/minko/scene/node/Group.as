@@ -40,14 +40,14 @@ package aerys.minko.scene.node
 		
 		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
-		private var _added				: Signal						= new Signal();
-		private var _removed			: Signal						= new Signal();
-		private var _addedToScene		: Signal						= new Signal();
-		private var _removedFromScene	: Signal						= new Signal();
-		private var _childAdded			: Signal						= new Signal();
-		private var _childRemoved		: Signal						= new Signal();
-		private var _controllerAdded	: Signal						= new Signal();
-		private var _controllerRemoved	: Signal						= new Signal();
+		private var _added				: Signal						= new Signal('Group.added');
+		private var _removed			: Signal						= new Signal('Group.removed');
+		private var _addedToScene		: Signal						= new Signal('Group.addedToScene');
+		private var _removedFromScene	: Signal						= new Signal('Group.removedFromScene');
+		private var _descendantAdded	: Signal						= new Signal('Group.descendantAdded');
+		private var _descendantRemoved	: Signal						= new Signal('Group.descendantRemoved');
+		private var _controllerAdded	: Signal						= new Signal('Group.controllerAdded');
+		private var _controllerRemoved	: Signal						= new Signal('Group.controllerRemoved');
 
 		public function get name() : String
 		{
@@ -79,7 +79,7 @@ package aerys.minko.scene.node
 					1
 				);
 				parent._numChildren--;
-				oldParent._childRemoved.execute(oldParent, this);
+				oldParent._descendantRemoved.execute(oldParent, this);
 				
 				_parent = null;
 				_removed.execute(this, oldParent);
@@ -93,7 +93,7 @@ package aerys.minko.scene.node
 			{
 				_parent._children[parent._numChildren] = this;
 				_parent._numChildren++;
-				_parent._childAdded.execute(_parent, this);
+				_parent._descendantAdded.execute(_parent, this);
 				
 				_added.execute(this, _parent);
 			}
@@ -150,14 +150,14 @@ package aerys.minko.scene.node
 			return _removedFromScene;
 		}
 		
-		public function get childAdded() : Signal
+		public function get descendantAdded() : Signal
 		{
-			return _childAdded;
+			return _descendantAdded;
 		}
 		
-		public function get childRemoved() : Signal
+		public function get descendantRemoved() : Signal
 		{
-			return _childRemoved;
+			return _descendantRemoved;
 		}
 		
 		public function get numControllers() : uint
@@ -192,8 +192,8 @@ package aerys.minko.scene.node
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
 			_transform.changed.add(transformChangedHandler);
-			_childAdded.add(childAddedHandler);
-			_childRemoved.add(childRemovedHandler);
+			_descendantAdded.add(descendantAddedHandler);
+			_descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		protected function initializeChildren(children : Array) : void
@@ -246,7 +246,7 @@ package aerys.minko.scene.node
 				_children[childIndex].removed.execute(child, parent);
 		}
 		
-		private function childAddedHandler(group : Group, child : ISceneNode) : void
+		private function descendantAddedHandler(group : Group, child : ISceneNode) : void
 		{
 			if (group == this)
 			{
@@ -254,15 +254,15 @@ package aerys.minko.scene.node
 				
 				if (childGroup)
 				{
-					childGroup.childAdded.add(_childAdded.execute);
-					childGroup.childRemoved.add(_childRemoved.execute);
+					childGroup.descendantAdded.add(_descendantAdded.execute);
+					childGroup.descendantRemoved.add(_descendantRemoved.execute);
 				}
 			}
 			
 			_numDescendants += (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
-		private function childRemovedHandler(group : Group, child : ISceneNode) : void
+		private function descendantRemovedHandler(group : Group, child : ISceneNode) : void
 		{
 			if (group == this)
 			{
@@ -270,8 +270,8 @@ package aerys.minko.scene.node
 				
 				if (childGroup)
 				{
-					childGroup.childAdded.remove(_childAdded.execute);
-					childGroup.childRemoved.remove(_childRemoved.execute);
+					childGroup.descendantAdded.remove(_descendantAdded.execute);
+					childGroup.descendantRemoved.remove(_descendantRemoved.execute);
 				}
 			}
 			

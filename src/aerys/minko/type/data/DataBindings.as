@@ -77,6 +77,11 @@ package aerys.minko.type.data
 			return _values[propertyName];
 		}
 		
+		public function getPropertyName(index : uint) : String
+		{
+			return _properties[index];
+		}
+		
 		public function setProperty(propertyName	: String,
 									newValue		: Object) : DataBindings
 		{
@@ -222,7 +227,7 @@ package aerys.minko.type.data
 			var signal : Signal = _propertyChanged[property];
 			
 			if (!signal)
-				_propertyChanged[property] = signal = new Signal();
+				_propertyChanged[property] = signal = new Signal('DataBindings[' + property + '].changed');
 			
 			return signal;
 		}

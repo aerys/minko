@@ -55,16 +55,16 @@ package aerys.minko.scene.controller.scene
 											target	: Scene) : void
 		{
 			target.added.add(addedHandler);
-			target.childAdded.add(childAddedHandler);
-			target.childRemoved.add(childRemovedHandler);
+			target.descendantAdded.add(descendantAddedHandler);
+			target.descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		private function targetRemovedHandler(ctrl		: TickController,
 											  target	: Scene) : void
 		{
 			target.added.remove(addedHandler);
-			target.childAdded.remove(childAddedHandler);
-			target.childRemoved.remove(childRemovedHandler);
+			target.descendantAdded.remove(descendantAddedHandler);
+			target.descendantRemoved.remove(descendantRemovedHandler);
 		}
 		
 		private function addedHandler(parent	: Group,
@@ -73,7 +73,7 @@ package aerys.minko.scene.controller.scene
 			throw new Error();
 		}
 		
-		private function childAddedHandler(group : Group, child : ISceneNode) : void
+		private function descendantAddedHandler(group : Group, child : ISceneNode) : void
 		{
 			var scene	: Scene	= group.root as Scene;
 			
@@ -83,7 +83,7 @@ package aerys.minko.scene.controller.scene
 				groupAddedHandler(scene, child as Group);
 		}
 		
-		private function childRemovedHandler(group : Group, child : ISceneNode) : void
+		private function descendantRemovedHandler(group : Group, child : ISceneNode) : void
 		{
 			var scene	: Scene	= group.root as Scene;
 			

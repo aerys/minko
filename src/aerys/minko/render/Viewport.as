@@ -36,9 +36,9 @@ package aerys.minko.render
 		
 		private var _renderingTime		: int			= 0;
 		
-		private var _resized			: Signal		= new Signal();
-		private var _enterFrame			: Signal		= new Signal();
-		private var _exitFrame			: Signal		= new Signal();
+		private var _resized			: Signal		= new Signal('Viewport.resized');
+		private var _enterFrame			: Signal		= new Signal('Viewport.enterFrame');
+		private var _exitFrame			: Signal		= new Signal('Viewport.exitFrame');
 		
 		/**
 		 * Whether the viewport is visible or not. 

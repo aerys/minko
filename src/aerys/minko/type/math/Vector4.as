@@ -39,7 +39,7 @@ package aerys.minko.type.math
 		private var _lengthSq	: Number	= 0.;
 		
 		private var _locked		: Boolean	= false;
-		private var _changed	: Signal	= new Signal();
+		private var _changed	: Signal	= new Signal('Vector4.changed');
 		
 		public function get dataDescriptor() : Object
 		{

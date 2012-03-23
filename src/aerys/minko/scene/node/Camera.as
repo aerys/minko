@@ -55,7 +55,7 @@ package aerys.minko.scene.node
 		private var _worldToScreen	: Matrix4x4	= new Matrix4x4();
 		
 		private var _locked			: Boolean	= false;
-		private var _changed		: Signal	= new Signal();
+		private var _changed		: Signal	= new Signal('Camera.changed');
 		
 		public function get viewport() : Viewport
 		{

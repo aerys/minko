@@ -24,9 +24,9 @@ package aerys.minko.scene.controller
 		private var _targetType		: Class					= null;
 		private var _targets		: Vector.<ISceneNode>	= new <ISceneNode>[];
 		
-		private var _ticked			: Signal				= new Signal();
-		private var _targetAdded	: Signal				= new Signal();
-		private var _targetRemoved	: Signal				= new Signal();
+		private var _ticked			: Signal				= new Signal('AbstractController.ticked');
+		private var _targetAdded	: Signal				= new Signal('AbstractController.targetAdded');
+		private var _targetRemoved	: Signal				= new Signal('AbstractController.targetRemoved');
 		
 		/**
 		 * The mode of the controller: signal (ConttrollerMode.SIGNAL) or tick (ControllerMode.TICK).

@@ -28,8 +28,8 @@ package aerys.minko.type.stream
 		private var _maximum		: Vector.<Number>			= null;
 		private var _minimum		: Vector.<Number>			= null;
 
-		private var _changed		: Signal					= new Signal();
-		private var _minMaxChanged	: Signal					= new Signal();
+		private var _changed		: Signal					= new Signal('VertexStream.changed');
+		private var _minMaxChanged	: Signal					= new Signal('VertexStream.minMaxChanged');
 		
 		public function get format() : VertexFormat
 		{

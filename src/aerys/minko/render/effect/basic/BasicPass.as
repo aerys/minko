@@ -162,8 +162,8 @@ package aerys.minko.render.effect.basic
 			var diffuse			: SFloat = _pixelColorPart.getPixelColor();
 			var vertexNormal	: SFloat = _vertexAnimationPart.getAnimatedVertexNormal();
 			
-			if (sceneBindings.getPropertyOrFallback('lightEnabled', true)
-				&& meshBindings.getPropertyOrFallback('lightEnabled', true))
+			if (sceneBindings.getPropertyOrFallback('lightEnabled', false)
+				&& meshBindings.getPropertyOrFallback('lightEnabled', false))
 			{
 				var lightDirection	: SFloat = sceneBindings.getParameter("lightDirection", 3);
 				var normal			: SFloat = normalize(

@@ -16,7 +16,7 @@ package aerys.minko.type.stream
 		private var _resource	: IndexBuffer3DResource	= null;
 		private var _length		: uint					= 0;
 		
-		private var _changed	: Signal				= new Signal();
+		private var _changed	: Signal				= new Signal('IndexStream.changed');
 
 		public function get usage() : uint
 		{

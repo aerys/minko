@@ -40,10 +40,10 @@ package aerys.minko.scene.controller.scene
 		
 		private var _stashedPropertyChanges				: Dictionary;
 		
-		private var _passInstances					: Vector.<PassInstance>
-		private var _passInstancesIsSorted			: Boolean;
+		private var _passInstances						: Vector.<PassInstance>
+		private var _passInstancesIsSorted				: Boolean;
 		
-		private var _drawCallToPassInstance			: Dictionary;
+		private var _drawCallToPassInstance				: Dictionary;
 		private var _passInstanceToDrawCalls			: Dictionary;
 		
 		private var _meshToDrawCalls					: Dictionary;
@@ -171,8 +171,8 @@ package aerys.minko.scene.controller.scene
 				throw new Error('RenderingController must be instanciated for every Scene');
 			
 			_scene = scene;
-			_scene.childAdded.add(childAddedHandler);
-			_scene.childRemoved.add(childRemovedHandler);
+			_scene.descendantAdded.add(childAddedHandler);
+			_scene.descendantRemoved.add(childRemovedHandler);
 		}
 		
 		/**
@@ -181,8 +181,8 @@ package aerys.minko.scene.controller.scene
 		private function targetRemovedHandler(controller : RenderingController,
 											  scene		 : Scene) : void
 		{
-			_scene.childAdded.remove(childAddedHandler);
-			_scene.childRemoved.remove(childRemovedHandler);
+			_scene.descendantAdded.remove(childAddedHandler);
+			_scene.descendantRemoved.remove(childRemovedHandler);
 			_scene = null;
 		}
 		
@@ -190,7 +190,7 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is added to the scene.
 		 * This will forward its calls to addMesh.
 		 */
-		private function childAddedHandler(scene : Scene,
+		private function childAddedHandler(group : Group,
 										   child : ISceneNode) : void
 		{
 			if (child is Mesh)
@@ -207,7 +207,7 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is removed from the scene.
 		 * This will forward its calls to removeMesh.
 		 */
-		private function childRemovedHandler(scene : Scene,
+		private function childRemovedHandler(group : Group,
 											 child : ISceneNode) : void
 		{
 			if (child is Mesh)
