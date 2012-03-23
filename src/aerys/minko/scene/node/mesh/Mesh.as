@@ -1,9 +1,7 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.basic.BasicShader;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.mesh.RenderingController;
+	import aerys.minko.render.effect.basic.BasicPass;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -28,12 +26,12 @@ package aerys.minko.scene.node.mesh
 	public final class Mesh extends AbstractSceneNode
 	{
 		public static const DEFAULT_EFFECT		: Effect			= new Effect(
-			new BasicShader()
+			new BasicPass()
 		);
 		
 		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
-			"local to world",
-			"world to local"
+			"localToWorld",
+			"worldToLocal"
 		];
 		
 		private var _geometry			: Geometry			= null;
@@ -157,8 +155,6 @@ package aerys.minko.scene.node.mesh
 		{
 			if (properties)
 				_bindings.setProperties(properties);
-			
-			addController(RenderingController.renderingController);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

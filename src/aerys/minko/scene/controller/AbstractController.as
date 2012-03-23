@@ -4,7 +4,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	
-	import avmplus.getQualifiedClassName;
+	import flash.utils.getQualifiedClassName;
 
 	/**
 	 * Controllers work on scene nodes to modify and update them. They offer the best

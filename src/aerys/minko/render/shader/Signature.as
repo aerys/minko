@@ -11,9 +11,8 @@ package aerys.minko.render.shader
 	 * must be forked.
 	 * 
 	 * @author Jean-Marc Le Roux
-	 * 
 	 */
-	public final class ShaderSignature
+	public final class Signature
 	{
 		public static const OPERATION_EXISTS	: uint				= 1;
 		public static const OPERATION_GET		: uint				= 2;
@@ -21,33 +20,17 @@ package aerys.minko.render.shader
 		public static const SOURCE_MESH			: uint				= 4;
 		public static const SOURCE_SCENE		: uint				= 8;
 		
-		private static const TMP_NUMBERS		: Vector.<Number>	= new <Number>[];
-		
-		private var _shader	: ActionScriptShader	= null;
-		private var _hash	: String				= null;
-		private var _keys	: Vector.<String>		= new <String>[];
-		private var _values	: Vector.<Object>		= new <Object>[];
-		private var _flags	: Vector.<uint>			= new <uint>[];
-		
-		public function get shader() : ActionScriptShader
-		{
-			return _shader;
-		}
-		
-		public function get hash() : String
-		{
-			return _hash;
-		}
+		private var _keys			: Vector.<String>	= new <String>[];
+		private var _values			: Vector.<Object>	= new <Object>[];
+		private var _flags			: Vector.<uint>		= new <uint>[];
 		
 		public function get numKeys() : uint
 		{
 			return _keys.length;
 		}
 		
-		public function ShaderSignature(shader : ActionScriptShader)
+		public function Signature(shaderName : String)
 		{
-			_shader = shader;
-			_hash = _shader.name;
 		}
 		
 		public function getKey(index : uint) : String
@@ -64,31 +47,17 @@ package aerys.minko.render.shader
 							   value 	: Object,
 							   flags	: uint) : void
 		{
+			// quit if we already have this entry
+			var numKeys : uint = _keys.length;
+			
+			for (var keyId : uint = 0; keyId < numKeys; ++keyId)
+				if (_keys[keyId] == key && _flags[keyId] == flags)
+					return;
+			
+			// add the test to the list
 			_keys.push(key);
 			_values.push(value);
 			_flags.push(flags);
-			
-			// update hash
-			_hash += ",";
-			
-			if (flags & OPERATION_GET)
-			{
-				if (flags & SOURCE_SCENE)
-					_hash += "scene.get('" + key + "')";
-				else
-					_hash += "mesh.get('" + key + "')";
-			}
-			else if (flags & OPERATION_EXISTS)
-			{
-				if (flags & SOURCE_SCENE)
-					_hash += "scene.has('" + key + "')";
-				else
-					_hash += "mesh.has('" + key + "')";
-			}
-			else
-				throw new Error();
-			
-			_hash += "=" + value;
 		}
 		
 		public function isValid(meshBindings 	: DataBindings,
@@ -101,9 +70,7 @@ package aerys.minko.render.shader
 				var key		: String		= _keys[i];
 				var flags	: uint			= _flags[i];
 				var value	: Object		= _values[i];
-				var source	: DataBindings	= flags & SOURCE_SCENE
-					? sceneBindings
-					: meshBindings;
+				var source	: DataBindings	= flags & SOURCE_SCENE ? sceneBindings : meshBindings;
 				
 				if (flags & OPERATION_GET)
 				{
@@ -123,33 +90,56 @@ package aerys.minko.render.shader
 			return true;
 		}
 		
-		public function checkProperty(propertyName	: String,
-									  value			: Object,
-									  checkFlags	: uint) : Boolean
+		public function mergeWith(otherSignature : Signature) : void
 		{
-			var propertyId	: int	= _keys.length - 1;
+			var otherLength : uint = otherSignature._keys.length;
 			
-			while (propertyId >= 0 && _keys[propertyId] != propertyName)
-				--propertyId;
+			for (var i : uint = 0; i < otherLength; ++i)
+				update(
+					otherSignature._keys[i],
+					otherSignature._values[i],
+					otherSignature._flags[i]
+				);
 			
-			if (propertyId >= 0)
-			{
-				var flags : uint = _flags[propertyId];
-				
-				if ((flags & checkFlags) == 0)
-					return true;
-				
-				if (flags & OPERATION_GET)
-					return !compare(value, _values[propertyId]);
-				else if (flags & OPERATION_EXISTS)
-					return !!value == _values[propertyId];
-			}
 			
-			return true;
+		}
+		
+		public function clone() : Signature
+		{
+			var clone : Signature = new Signature(null);
+			
+			clone._flags	= _flags.slice();
+			clone._keys		= _keys.slice();
+			clone._values	= _values.slice();
+			
+			return clone;
+		}
+		
+		
+		/**
+		 * @fixme This is n^2!!!!!
+		 * @fixme optimize me with a dictionary!!!
+		 */
+		public function useProperties(properties	: Vector.<String>,
+									  fromScene		: Boolean) : Boolean
+		{
+			var numProperties	: uint	= properties.length;
+			var numKeys			: uint	= _keys.length;
+			var flag			: uint	= fromScene ? SOURCE_SCENE : SOURCE_MESH;
+			
+			for (var j : uint = 0; j < numProperties; ++j)
+				for (var i : uint = 0; i < numKeys; ++i)
+					if (_keys[i] == properties[j] && (flag & _flags[i]) != 0)
+						return true;
+			
+			return false;
 		}
 		
 		private function compare(value1 : Object, value2 : Object) : Boolean
 		{
+			if ((value1 == null && value2 != null) || (value1 != null && value2 == null))
+				return false;
+			
 			var constructor	: Object	= value1.constructor;
 			var count		: int		= 0;
 			

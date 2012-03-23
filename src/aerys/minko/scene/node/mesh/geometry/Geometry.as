@@ -104,6 +104,16 @@ package aerys.minko.scene.node.mesh.geometry
 			return _boundingBox;
 		}
 		
+		/**
+		 * The format every vertex. 
+		 * @return 
+		 * 
+		 */
+		public function get format() : VertexFormat
+		{
+			return _vertexStreams[0].format;
+		}
+		
 		public function Geometry(vertexStreams	: Vector.<IVertexStream>	= null,
 								 indexStream	: IndexStream				= null)
 		{
@@ -118,7 +128,7 @@ package aerys.minko.scene.node.mesh.geometry
 			if (!_indexStream && _vertexStreams && _vertexStreams.length)
 			{
 				_indexStream = new IndexStream(
-					StreamUsage.STATIC,
+					StreamUsage.DYNAMIC,
 					null,
 					_vertexStreams[0].length
 				);

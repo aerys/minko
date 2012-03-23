@@ -277,7 +277,6 @@ package aerys.minko.render
 			scene.update();
 			
 			var context : Context3D 	= _stage3d.context3D;
-			var list	: RenderingList	= scene.renderingList;
 			
 			_renderingTime = 0;
 			
@@ -288,7 +287,7 @@ package aerys.minko.render
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
-				list.render(context, _backBuffer);
+				scene.renderingController.render(context, _backBuffer);
 				
 				if (destination)
 					context.drawToBitmapData(destination);

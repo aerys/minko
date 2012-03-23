@@ -691,10 +691,10 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAtLH(eye 	: Vector4,
-										lookAt 	: Vector4,
-										up		: Vector4,
-										out		: Matrix4x4 = null) : Matrix4x4
+		public static function lookAt(eye		: Vector4,
+									  lookAt 	: Vector4,
+									  up		: Vector4,
+									  out		: Matrix4x4 = null) : Matrix4x4
 		{
 			
 			var eye_X		: Number = eye._vector.x;
@@ -755,91 +755,11 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		/**
-		 * Builds a (right-handed) view transform.
-		 * <br /><br />
-		 * Eye : eye position, At : eye direction, Up : up vector
-		 * <br /><br />
-		 * zaxis = normal(Eye - At)<br />
-		 * xaxis = normal(cross(Up, zaxis))<br />
-		 * yaxis = cross(zaxis, xaxis)<br />
-		 * <br />
-		 * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
-		 * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
-		 * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
-		 * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
-		 *
-		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
-		 *
-		 */
-		public static function lookAtRH(eye 	: Vector4,
-										lookAt	: Vector4,
-										up		: Vector4,
-										out		: Matrix4x4 = null) : Matrix4x4
-		{
-			var eye_X		: Number = eye._vector.x;
-			var eye_Y		: Number = eye._vector.y;
-			var eye_Z		: Number = eye._vector.z;
-			
-			var l : Number;
-			
-			var z_axis_X	: Number = eye_X - lookAt._vector.x;
-			var z_axis_Y	: Number = eye_Y - lookAt._vector.y;
-			var z_axis_Z	: Number = eye_Z - lookAt._vector.z;
-			
-			l = 1 / Math.sqrt(z_axis_X * z_axis_X + z_axis_Y * z_axis_Y + z_axis_Z * z_axis_Z);
-			
-			z_axis_X *= l;
-			z_axis_Y *= l;
-			z_axis_Z *= l;
-			
-			var x_axis_X : Number = up._vector.y * z_axis_Z - z_axis_Y * up._vector.z;
-			var x_axis_Y : Number = up._vector.z * z_axis_X - z_axis_Z * up._vector.x;
-			var x_axis_Z : Number = up._vector.x * z_axis_Y - z_axis_X * up._vector.y;
-			
-			l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
-			
-			x_axis_X *= l;
-			x_axis_Y *= l;
-			x_axis_Z *= l;
-			
-			var y_axis_X : Number = z_axis_Y * x_axis_Z - x_axis_Y * z_axis_Z;
-			var y_axis_Y : Number = z_axis_Z * x_axis_X - x_axis_Z * z_axis_X;
-			var y_axis_Z : Number = z_axis_X * x_axis_Y - x_axis_X * z_axis_Y;
-			
-			l = 1 / Math.sqrt(y_axis_X * y_axis_X + y_axis_Y * y_axis_Y + y_axis_Z * y_axis_Z);
-			
-			y_axis_X *= l;
-			y_axis_Y *= l;
-			y_axis_Z *= l;
-			
-			if ((x_axis_X == 0 && x_axis_Y == 0 && x_axis_Z == 0) 
-				|| (y_axis_X == 0 && y_axis_Y == 0 && y_axis_Z == 0))
-			{
-				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
-								+ 'and the up vector appear to be the same.');
-			}
-			
-			var	m41			: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
-			var	m42			: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
-			var	m43			: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
-
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(
-				x_axis_X,	y_axis_X,	z_axis_X,	0.,
-				x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
-				x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
-				m41,		m42,		m43,		1.
-			);
-
-			return out;
-		}
-
-		public static function perspectiveFoVLH(fov		: Number,
-												ratio	: Number,
-												zNear	: Number,
-												zFar 	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
+		public static function perspectiveFoV(fov	: Number,
+											  ratio	: Number,
+											  zNear	: Number,
+											  zFar 	: Number,
+											  out	: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
 			
@@ -855,11 +775,11 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public static function orthoLH(w 		: Number,
-									   h		: Number,
-									   zNear	: Number,
-									   zFar		: Number,
-									   out		: Matrix4x4 = null) : Matrix4x4
+		public static function ortho(w 		: Number,
+									 h		: Number,
+									 zNear	: Number,
+									 zFar	: Number,
+									 out	: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(
@@ -872,30 +792,13 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public static function orthoRH(w 		: Number,
-									   h		: Number,
-									   zNear	: Number,
-									   zFar		: Number,
-									   out		: Matrix4x4 = null) : Matrix4x4
-		{
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(
-				2. / w,	0.,		0.,						0.,
-				0.,		2. / h,	0.,						0.,
-				0.,		0.,		1. / (zNear - zFar),	0.,
-				0.,		0.,		zNear / (zNear - zFar),	1.
-			);
-
-			return out;
-		}
-
-		public static function orthoOffCenterLH(l		: Number,
-												r		: Number,
-												b		: Number,
-												t		: Number,
-												zNear	: Number,
-												zFar	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
+		public static function orthoOffCenter(l		: Number,
+											  r		: Number,
+											  b		: Number,
+											  t		: Number,
+											  zNear	: Number,
+											  zFar	: Number,
+											  out	: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
 			out.initialize(
@@ -907,27 +810,9 @@ package aerys.minko.type.math
 
 			return out;
 		}
-
-		public static function orthoOffCenterRH(l		: Number,
-												r		: Number,
-												b		: Number,
-												t		: Number,
-												zNear	: Number,
-												zFar	: Number,
-												out		: Matrix4x4 = null) : Matrix4x4
-		{
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(
-				2. / (r - l),		0.,					0.,						0.,
-				0.,					2. / (t - b),		0.,						0.,
-				0.,					0.,					1. / (zNear - zFar),	0.,
-				(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.
-			);
-
-			return out;
-		}
 		
-		public static function fromQuaternion(quaternion : Vector4, out : Matrix4x4 = null) : Matrix4x4
+		public static function fromQuaternion(quaternion	: Vector4, 
+											  out			: Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
 			
@@ -956,7 +841,9 @@ package aerys.minko.type.math
 			return out;
 		}
 		
-		public static function fromDualQuaternion(dQn : Vector4, dQd : Vector4, out : Matrix4x4 = null) : Matrix4x4
+		public static function fromDualQuaternion(dQn : Vector4, 
+												  dQd : Vector4, 
+												  out : Matrix4x4 = null) : Matrix4x4
 		{
 			out ||= FACTORY.create() as Matrix4x4;
 			

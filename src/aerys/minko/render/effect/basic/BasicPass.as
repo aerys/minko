@@ -2,9 +2,10 @@ package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.PassConfig;
+	import aerys.minko.render.shader.PassInstance;
+	import aerys.minko.render.shader.PassTemplate;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.PixelColorShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.type.enum.Blending;
@@ -93,45 +94,45 @@ package aerys.minko.render.effect.basic
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class BasicShader extends ActionScriptShader
+	public class BasicPass extends PassTemplate
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _pixelColorPart			: PixelColorShaderPart;
 		
+		private var _priority				: Number;
+		private var _target					: RenderTarget;
+		
 		/**
-		 * 
 		 * @param priority Default value is 0.
 		 * @param target Default value is null.
-		 * 
 		 */
-		public function BasicShader(priority	: Number		= 0,
-									target		: RenderTarget	= null)
+		public function BasicPass(priority	: Number		= 0,
+								  target	: RenderTarget	= null)
 		{
-			super(priority, target);
+			// save priority and target
+			_priority				= priority;
+			_target					= target;
 			
+			// init shader parts
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
 			_pixelColorPart			= new PixelColorShaderPart(this);
-			
-			defaultMeshProperties = {
-				blending 			: Blending.NORMAL,
-				triangleCulling 	: TriangleCulling.BACK,
-				depthTest			: DepthTest.LESS,
-				enableDepthWrite	: true
-			};
 		}
 		
-		override protected function initializeFork(fork : Shader) : void
+		override protected function configurePass(passConfig : PassConfig) : void
 		{
-			super.initializeFork(fork);
-			
-			var blending : uint = meshBindings.getProperty("blending") as uint;
+			var blending : uint = meshBindings.getPropertyOrFallback("blending", Blending.NORMAL);
 			
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
-				fork.priority -= 0.5;
+				passConfig.priority -= 0.5;
 			
-			fork.depthTest			= meshBindings.getProperty("depthTest") as uint;
-			fork.blending			= blending;
-			fork.triangleCulling	= meshBindings.getProperty("triangleCulling") as uint;
+			passConfig.blending			= blending;
+			passConfig.depthTest		= meshBindings.getPropertyOrFallback("depthTest", DepthTest.LESS);
+			passConfig.enabled			= true;
+			passConfig.enableDepthWrite	= true;
+			passConfig.priority			= _priority;
+			passConfig.renderTarget		= _target;
+			passConfig.scissorRectangle	= null;
+			passConfig.triangleCulling	= meshBindings.getPropertyOrFallback("triangleCulling", TriangleCulling.BACK);
 		}
 		
 		/**
@@ -149,17 +150,14 @@ package aerys.minko.render.effect.basic
 		/**
 		 * @return The pixel color using a diffuse color/map and an optional
 		 * directional light.
-		 * 
 		 */
 		override protected function getPixelColor() : SFloat
 		{
 			var diffuse			: SFloat = _pixelColorPart.getPixelColor();
 			var vertexNormal	: SFloat = _vertexAnimationPart.getAnimatedVertexNormal();
 			
-			if (sceneBindings.propertyExists("lightEnabled")
-				&& sceneBindings.getProperty("lightEnabled") === true
-				&& meshBindings.propertyExists("lightEnabled")
-				&& meshBindings.getProperty("lightEnabled") === true)
+			if (sceneBindings.getPropertyOrFallback('lightEnabled', true)
+				&& meshBindings.getPropertyOrFallback('lightEnabled', true))
 			{
 				var lightDirection	: SFloat = sceneBindings.getParameter("lightDirection", 3);
 				var normal			: SFloat = normalize(

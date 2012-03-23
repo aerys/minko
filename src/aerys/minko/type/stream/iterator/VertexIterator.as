@@ -18,12 +18,12 @@ package aerys.minko.type.stream.iterator
 	 * minimizing the memory footprint.
 	 *
 	 * <pre>
-	 * public function tracePositions(mesh : IMesh) : void
+	 * public function printPositions(mesh : IMesh) : void
 	 * {
 	 * 	var vertices : VertexIterator = new VertexIterator(mesh.vertexStream);
 	 *
 	 * 	for each (var vertex : VertexReference in vertices)
-	 * 		trace(vertex.x, vertex.y, vertex.z);
+	 * 		trac e(vertex.x, vertex.y, vertex.z);
 	 * }
 	 * </pre>
 	 *

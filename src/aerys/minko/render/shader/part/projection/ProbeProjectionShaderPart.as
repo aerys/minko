@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.PassTemplate;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	
@@ -11,7 +11,7 @@ package aerys.minko.render.shader.part.projection
 	 */	
 	public class ProbeProjectionShaderPart extends ShaderPart implements IProjectionShaderPart
 	{
-		public function ProbeProjectionShaderPart(main : ActionScriptShader)
+		public function ProbeProjectionShaderPart(main : PassTemplate)
 		{
 			super(main);
 		}

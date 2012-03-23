@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.PassTemplate;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -16,7 +16,7 @@ package aerys.minko.render.shader.part.animation
 		private var _morphingShaderPart : MorphingShaderPart;
 		private var _skinningShaderPart : SkinningShaderPart;
 		
-		public function VertexAnimationShaderPart(main : ActionScriptShader)
+		public function VertexAnimationShaderPart(main : PassTemplate)
 		{
 			super(main);
 			

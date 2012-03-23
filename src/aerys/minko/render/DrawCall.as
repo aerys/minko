@@ -2,15 +2,17 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
+	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.stream.IVertexStream;
-	import aerys.minko.type.stream.IndexStream;
+	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
@@ -18,6 +20,7 @@ package aerys.minko.render
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 	import flash.utils.Dictionary;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * DrawCall objects contain all the shader constants and buffer settings required
@@ -32,24 +35,23 @@ package aerys.minko.render
 		private static const PROGRAM_TYPE_VERTEX	: String		= Context3DProgramType.VERTEX;
 		private static const PROGRAM_TYPE_FRAGMENT	: String		= Context3DProgramType.FRAGMENT;
 		
-		private var _cpuConstants		: Dictionary						= new Dictionary();
 		private var _bindings			: Object							= null;
-		private var _bindingsNames		: Vector.<String>					= new <String>[];
+		
+		private var _vsInputComponents	: Vector.<VertexComponent>			= null;
+		private var _vsInputIndices		: Vector.<uint>						= null;
+		private var _cpuConstants		: Dictionary						= null;
+		private var _vsConstants		: Vector.<Number>					= null;
+		private var _fsConstants		: Vector.<Number>					= null;
+		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
 		private var _firstIndex			: int								= 0;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
-		private var _numVertexBuffers	: int								= 0;
-		private var _vsConstants		: Vector.<Number>					= null;
+		private var _numVertexComponents: int								= 0;
 		private var _offsets			: Vector.<int>						= new Vector.<int>(8, true);
 		private var _formats			: Vector.<String>					= new Vector.<String>(8, true);
-		private var _vsInputComponents	: Vector.<VertexComponent>			= null;
-		private var _vsInputIndices		: Vector.<uint>						= null;
-		
-		private var _fsConstants		: Vector.<Number>					= null;
-		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
 		
 		private var _blending			: uint								= 0;
 		private var _blendingSource		: String							= null;
@@ -114,88 +116,134 @@ package aerys.minko.render
 			_enabled = value;
 		}
 		
-		public function get numParameters() : uint
+		public function DrawCall()
 		{
-			return _bindingsNames.length;
 		}
 		
-		public function DrawCall(vsConstants 			: Vector.<Number>,
-								 fsConstants 			: Vector.<Number>,
-								 fsTextures				: Vector.<ITextureResource>,
-								 vertexInputComponents	: Vector.<VertexComponent>,
-								 vertexInputIndices		: Vector.<uint>,
-								 bindings				: Object)
+		public function configure(program		: Program3DResource,
+								  geometry		: Geometry,
+								  meshBindings	: DataBindings,
+								  sceneBindings	: DataBindings) : void
 		{
-			_vsConstants		= vsConstants.concat();
-			_fsConstants		= fsConstants.concat();
-			_fsTextures			= fsTextures.concat();
-			_vsInputComponents	= vertexInputComponents;
-			_vsInputIndices		= vertexInputIndices;
-			_bindings			= bindings;
+			if (_bindings != null)
+				unsetBindings(meshBindings, sceneBindings);
 			
-			initialize();
+			setProgram(program);
+			updateGeometry(geometry);
+			setGeometry(geometry);
+			setBindings(meshBindings, sceneBindings);
 		}
 		
-		private function initialize() : void
+		private function unsetBindings(meshBindings		: DataBindings,
+									   sceneBindings	: DataBindings) : void
 		{
-			triangleCulling	= TriangleCulling.FRONT;
-			blending		= Blending.NORMAL;
-			colorMask		= ColorMask.RGBA;
-				
-			for (var bindingName : String in _bindings)
-				_bindingsNames.push(bindingName);
-		}
-		
-		public function clone() : DrawCall
-		{
-			var clone : DrawCall	= new DrawCall(
-				_vsConstants,
-				_fsConstants,
-				_fsTextures,
-				_vsInputComponents,
-				_vsInputIndices,
-				_bindings
-			);
-			
-			clone._vertexBuffers = _vertexBuffers.concat();
-			clone._formats = _formats.concat();
-			clone._offsets = _offsets.concat();
-			clone._numVertexBuffers = _numVertexBuffers;
-			clone._indexBuffer = _indexBuffer;
-			
-			clone.triangleCulling = triangleCulling;
-			clone.blending = blending;
-			clone.colorMask = colorMask;
-			
-			return clone;
-		}
-		
-		public function setStreams(vertexStreams 	: Vector.<IVertexStream>,
-								   indexStream		: IndexStream) : void
-		{
-			_numVertexBuffers	= _vsInputComponents.length;
-			_indexBuffer		= indexStream.resource;
-			
-			for (var i : int = 0; i < _numVertexBuffers; ++i)
+			for (var parameter : String in _bindings)
 			{
-				var component	: VertexComponent	= _vsInputComponents[i];
-				var index		: uint				= _vsInputIndices[i];
+				meshBindings.getPropertyChangedSignal(parameter).remove(
+					parameterChangedHandler
+				);
+				
+				sceneBindings.getPropertyChangedSignal(parameter).remove(
+					parameterChangedHandler
+				);
+			}
+		}
+		
+		private function setProgram(program : Program3DResource) : void
+		{
+			_cpuConstants		= new Dictionary();
+			_vsConstants		= program._vsConstants.concat();
+			_fsConstants		= program._fsConstants.concat();
+			_fsTextures			= program._fsTextures.concat();
+			_vsInputComponents	= program._vertexInputComponents;
+			_vsInputIndices		= program._vertexInputIndices;
+			_bindings			= program._bindings;
+			
+			triangleCulling		= TriangleCulling.FRONT;
+			blending			= Blending.NORMAL;
+			colorMask			= ColorMask.RGBA;
+		}
+		
+		 /**
+		  * Ask geometry to compute additional vertex data if needed for this drawcall.
+		  */
+		private function updateGeometry(geometry : Geometry) : void
+		{
+			var vertexFormat : VertexFormat	= geometry.format;
+			
+			if (_vsInputComponents.indexOf(VertexComponent.TANGENT) >= 0
+				&& !vertexFormat.hasComponent(VertexComponent.TANGENT))
+			{
+				geometry.computeTangentSpace(StreamUsage.STATIC);
+			}
+			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
+				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
+			{
+				geometry.computeNormals(StreamUsage.STATIC);
+			}
+		}
+		
+		/**
+		 * Obtain a reference to each buffer and offset that apply() may possibly need.
+		 * 
+		 */		
+		private function setGeometry(geometry : Geometry) : void
+		{
+			
+			_numVertexComponents = _vsInputComponents.length;
+			_indexBuffer		 = geometry.indexStream.resource;
+			
+			for (var i : int = 0; i < _numVertexComponents; ++i)
+			{
+				var component : VertexComponent	= _vsInputComponents[i];
+				var index	  : uint			= _vsInputIndices[i];
 				
 				if (component)
 				{
-					var stream 	: VertexStream	= vertexStreams[index].getStreamByComponent(component);
+					var vertexStream	: IVertexStream = geometry.getVertexStream(index);
+					var stream	 		: VertexStream	= vertexStream.getStreamByComponent(component);
+					var format 			: VertexFormat	= stream.format;
+					
 					if (stream == null)
-						throw new Error('Missing vertex component: ' + component.toString() + '.');
+					{
+						var cleanClassName : String = getQualifiedClassName(geometry);
+						cleanClassName = cleanClassName.substr(cleanClassName.lastIndexOf(':') + 1);
+						throw new Error('Missing vertex component: ' + component.toString() + ' on ' + cleanClassName);
+					}
 					
-					var format 	: VertexFormat 	= stream.format;
-					
-					_vertexBuffers[i] = stream.resource;
-					_formats[i] = component.nativeFormatString;
-					_offsets[i] = format.getOffsetForComponent(component);
+					_vertexBuffers[i]	= stream.resource;
+					_formats[i]			= component.nativeFormatString;
+					_offsets[i]			= format.getOffsetForComponent(component);
 				}
 			}
 		}
 		
+		/**
+		 * @fixme There is a bug here
+		 * @fixme We splitted properties between scene and mesh
+		 * @fixme it should be done on the compiler also to avoid this ugly hack
+		 */		
+		private function setBindings(meshBindings	: DataBindings,
+									 sceneBindings	: DataBindings) : void
+		{
+			for (var parameter : String in _bindings)
+			{
+				meshBindings.getPropertyChangedSignal(parameter).add(
+					parameterChangedHandler
+				);
+				
+				sceneBindings.getPropertyChangedSignal(parameter).add(
+					parameterChangedHandler
+				);
+				
+				var value : Object = meshBindings.getProperty(parameter)
+					|| sceneBindings.getProperty(parameter);
+				
+				if (value)
+					setParameter(parameter, value);
+			}
+		}
+
 		public function apply(context 	: Context3D,
 							  previous	: DrawCall) : uint
 		{
@@ -220,7 +268,7 @@ package aerys.minko.render
 			
 			var numTextures	: int	= _fsTextures.length;
 			var maxTextures	: int	= previous ? previous._fsTextures.length : 8;
-			var maxBuffers	: int	= previous ? previous._numVertexBuffers : 8;
+			var maxBuffers	: int	= previous ? previous._numVertexComponents : 8;
 			var i 			: int 	= 0;
 			
 			for (i = 0; i < numTextures; ++i)
@@ -229,7 +277,7 @@ package aerys.minko.render
 			while (i < maxTextures)
 				context.setTextureAt(i++, null);
 			
-			for (i = 0; i < _numVertexBuffers; ++i)
+			for (i = 0; i < _numVertexComponents; ++i)
 				context.setVertexBufferAt(
 					i,
 					_vertexBuffers[i].getVertexBuffer3D(context),
@@ -253,40 +301,8 @@ package aerys.minko.render
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
 		}
 		
-		public function getParameterName(index : uint) : String
-		{
-			return _bindingsNames[index];
-		}
-		
-		public function hasParameter(name : String) : Boolean
-		{
-			return _bindings[name] != null;
-		}
-		
-		public function setBindings(meshBindings	: DataBindings,
-									sceneBindings	: DataBindings) : void
-		{
-			for (var parameter : String in _bindings)
-			{
-				meshBindings.getPropertyChangedSignal(parameter).add(
-					parameterChangedHandler
-				);
-				
-				sceneBindings.getPropertyChangedSignal(parameter).add(
-					parameterChangedHandler
-				);
-				
-				var value : Object = meshBindings.getProperty(parameter)
-					|| sceneBindings.getProperty(parameter);
-
-				if (value)
-					setParameter(parameter, value);
-			}
-		}
-		
 		private function parameterChangedHandler(dataBindings	: DataBindings,
 												 property		: String,
-												 oldValue		: Object,
 												 newValue		: Object) : void
 		{
 			newValue && setParameter(property, newValue);
