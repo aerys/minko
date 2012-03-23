@@ -1,0 +1,11 @@
+package aerys.minko.render.effect.basic
+{
+	public class BasicProperties
+	{
+		public static const BLENDING			: String = 'blending';
+		public static const DEPTH_TEST			: String = 'depthTest';
+		public static const TRIANGLE_CULLING	: String = 'triangleCulling';
+		public static const DIFFUSE_COLOR		: String = 'diffuseColor';
+		public static const DIFFUSE_MAP			: String = 'diffuseMap';
+	}
+}

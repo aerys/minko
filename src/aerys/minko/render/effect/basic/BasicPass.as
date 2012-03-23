@@ -120,19 +120,25 @@ package aerys.minko.render.effect.basic
 		
 		override protected function configurePass(passConfig : PassConfig) : void
 		{
-			var blending : uint = meshBindings.getPropertyOrFallback("blending", Blending.NORMAL);
+			var blending : uint = 
+				meshBindings.getPropertyOrFallback(BasicProperties.BLENDING, Blending.NORMAL);
 			
+			passConfig.depthTest		= 
+				meshBindings.getPropertyOrFallback(BasicProperties.DEPTH_TEST, DepthTest.LESS);
+			
+			passConfig.triangleCulling	= 
+				meshBindings.getPropertyOrFallback(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
+			
+			passConfig.priority			= _priority;
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
 				passConfig.priority -= 0.5;
 			
 			passConfig.blending			= blending;
-			passConfig.depthTest		= meshBindings.getPropertyOrFallback("depthTest", DepthTest.LESS);
 			passConfig.enabled			= true;
 			passConfig.enableDepthWrite	= true;
-			passConfig.priority			= _priority;
 			passConfig.renderTarget		= _target;
 			passConfig.scissorRectangle	= null;
-			passConfig.triangleCulling	= meshBindings.getPropertyOrFallback("triangleCulling", TriangleCulling.BACK);
+			
 		}
 		
 		/**
