@@ -5,6 +5,16 @@ package aerys.minko.type.animation
 		private var _name : String;
 		private var _time : Number;
 
+		public function set name(value : String) : void
+		{
+			_name = value;
+		}
+		
+		public function set time(value : Number) : void
+		{
+			_time = value;
+		}
+		
 		public function get name() : String
 		{
 			return _name;
