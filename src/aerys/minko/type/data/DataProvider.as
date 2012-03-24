@@ -13,9 +13,9 @@ package aerys.minko.type.data
 		private var _locked				: Boolean	= false;
 		private var _invalid			: Boolean	= false;
 		
-		private var _propertyAdded		: Signal	= new Signal();
-		private var _propertyRemoved	: Signal	= new Signal();
-		private var _changed			: Signal	= new Signal();
+		private var _propertyAdded		: Signal	= new Signal('DataProvider.propertyAdded');
+		private var _propertyRemoved	: Signal	= new Signal('DataProvider.propertyRemoved');
+		private var _changed			: Signal	= new Signal('DataProvider.changed');
 		
 		public function get dataDescriptor() : Object
 		{

@@ -3,6 +3,7 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.stream.IVertexStream;
+	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
 
 	/**
@@ -67,7 +68,7 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 			];
 
 			super(
-				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv)],
+				new <IVertexStream>[VertexStream.fromPositionsAndUVs(xyz, uv, StreamUsage.DYNAMIC)],
 				null
 			);
 		}

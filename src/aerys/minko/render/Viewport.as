@@ -36,9 +36,9 @@ package aerys.minko.render
 		
 		private var _renderingTime		: int			= 0;
 		
-		private var _resized			: Signal		= new Signal();
-		private var _enterFrame			: Signal		= new Signal();
-		private var _exitFrame			: Signal		= new Signal();
+		private var _resized			: Signal		= new Signal('Viewport.resized');
+		private var _enterFrame			: Signal		= new Signal('Viewport.enterFrame');
+		private var _exitFrame			: Signal		= new Signal('Viewport.exitFrame');
 		
 		/**
 		 * Whether the viewport is visible or not. 
@@ -277,7 +277,6 @@ package aerys.minko.render
 			scene.update();
 			
 			var context : Context3D 	= _stage3d.context3D;
-			var list	: RenderingList	= scene.renderingList;
 			
 			_renderingTime = 0;
 			
@@ -288,7 +287,7 @@ package aerys.minko.render
 				if (_invalidBackBuffer)
 					updateBackBuffer();
 				
-				list.render(context, _backBuffer);
+				scene.renderingController.render(context, _backBuffer);
 				
 				if (destination)
 					context.drawToBitmapData(destination);

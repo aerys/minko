@@ -29,12 +29,12 @@ package aerys.minko.scene.node
 		
 		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
-		private var _added				: Signal						= new Signal();
-		private var _removed			: Signal						= new Signal();
-		private var _addedToScene		: Signal						= new Signal();
-		private var _removedFromScene	: Signal						= new Signal();
-		private var _controllerAdded	: Signal						= new Signal();
-		private var _controllerRemoved	: Signal						= new Signal();
+		private var _added				: Signal						= new Signal('AbstractSceneNode.added');
+		private var _removed			: Signal						= new Signal('AbstractSceneNode.removed');
+		private var _addedToScene		: Signal						= new Signal('AbstractSceneNode.addedToScene');
+		private var _removedFromScene	: Signal						= new Signal('AbstractSceneNode.removedFromScene');
+		private var _controllerAdded	: Signal						= new Signal('AbstractSceneNode.controllerAdded');
+		private var _controllerRemoved	: Signal						= new Signal('AbstractSceneNode.controllerRemoved');
 
 		public function get name() : String
 		{
@@ -62,7 +62,7 @@ package aerys.minko.scene.node
 				);
 				
 				parent._numChildren--;
-				oldParent.childRemoved.execute(oldParent, this);
+				oldParent.descendantRemoved.execute(oldParent, this);
 				
 				_parent = null;
 				_removed.execute(this, oldParent);
@@ -76,7 +76,7 @@ package aerys.minko.scene.node
 			{
 				_parent._children[_parent.numChildren] = this;
 				_parent._numChildren++;
-				_parent.childAdded.execute(_parent, this);
+				_parent.descendantAdded.execute(_parent, this);
 				
 				_added.execute(this, _parent);
 			}

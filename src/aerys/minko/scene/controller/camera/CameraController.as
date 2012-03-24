@@ -75,7 +75,7 @@ package aerys.minko.scene.controller.camera
 			var viewport	: Viewport 	= _camera.viewport;
 			var aspectRatio : Number 	= viewport.width / viewport.height;
 			
-			Matrix4x4.perspectiveFoVLH(
+			Matrix4x4.perspectiveFoV(
 				_camera.fieldOfView,
 				aspectRatio,
 				_camera.zNear,
@@ -107,7 +107,7 @@ package aerys.minko.scene.controller.camera
 			localToWorld.deltaTransformVector(_camera.up, worldUp);
 			worldUp.normalize();
 			
-			Matrix4x4.lookAtLH(
+			Matrix4x4.lookAt(
 				worldPosition,
 				worldLookAt,
 				worldUp,

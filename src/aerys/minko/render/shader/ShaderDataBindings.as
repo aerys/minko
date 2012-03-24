@@ -12,20 +12,17 @@ package aerys.minko.render.shader
 	 */
 	public final class ShaderDataBindings
 	{
-		private var _dataBindings	: DataBindings		= null;
-		private var _signature		: ShaderSignature	= null;
-		private var _signatureFlags	: uint				= 0;
-		private var _defaultValues	: Object			= null;
+		private var _dataBindings	: DataBindings	= null;
+		private var _signature		: Signature		= null;
+		private var _signatureFlags	: uint			= 0;
 		
 		public function ShaderDataBindings(bindings			: DataBindings,
-										   signature		: ShaderSignature,
-										   signatureFlags	: uint,
-										   defaultValues	: Object)
+										   signature		: Signature,
+										   signatureFlags	: uint)
 		{
 			_dataBindings = bindings;
 			_signature = signature;
 			_signatureFlags = signatureFlags;
-			_defaultValues = defaultValues;
 		}
 		
 		public function getParameter(name : String, size : uint) : SFloat
@@ -51,10 +48,8 @@ package aerys.minko.render.shader
 			_signature.update(
 				propertyName,
 				value,
-				ShaderSignature.OPERATION_EXISTS | _signatureFlags
+				Signature.OPERATION_EXISTS | _signatureFlags
 			);
-			
-			value ||= _defaultValues.hasOwnProperty(propertyName);
 			
 			return value;
 		}
@@ -62,17 +57,26 @@ package aerys.minko.render.shader
 		public function getProperty(propertyName : String) : *
 		{
 			if (!_dataBindings.propertyExists(propertyName))
-				return _defaultValues[propertyName];
+				throw new Error('This property is not defined.');
 			
 			var value : Object = _dataBindings.getProperty(propertyName);
 
 			_signature.update(
 				propertyName,
 				value,
-				ShaderSignature.OPERATION_GET | _signatureFlags
+				Signature.OPERATION_GET | _signatureFlags
 			);
 			
 			return value;
+		}
+		
+		public function getPropertyOrFallback(propertyName	: String,
+											  fallback		: *) : *
+		{
+			if (propertyExists(propertyName))
+				return getProperty(propertyName);
+			else
+				return fallback;
 		}
 	}
 }

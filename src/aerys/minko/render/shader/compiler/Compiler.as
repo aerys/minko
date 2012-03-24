@@ -2,6 +2,7 @@ package aerys.minko.render.shader.compiler
 {
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
+	import aerys.minko.render.shader.Signature;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;
@@ -59,7 +60,6 @@ package aerys.minko.render.shader.compiler
 		public static function load(shaderGraph	: ShaderGraph,
 									flags		: uint) : void
 		{
-			
 			// execute consecutive visitors to optimize the shader graph.
 			REMOVE_EXTRACT			.process(shaderGraph);
 			MERGER					.process(shaderGraph);
@@ -87,13 +87,16 @@ package aerys.minko.render.shader.compiler
 			_textures			= ALLOCATOR.textures;
 		}
 		
-		public static function compileShader(name : String) : Program3DResource
+		public static function compileShader(name : String, signature : Signature) : Program3DResource
 		{
+//			trace(compileStringShader());
+			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
 			
 			var program : Program3DResource = new Program3DResource(
 				name,
+				signature,
 				vsProgram,
 				fsProgram,
 				_vertexComponents,

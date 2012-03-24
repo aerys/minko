@@ -1,9 +1,10 @@
-package aerys.minko.scene.controller
+package aerys.minko.scene.controller.scene
 {
+	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.ControllerMode;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.data.IDataProvider;
 
 	/**
 	 * The SceneController listen for the childAdded/childRemoved signals of
@@ -12,14 +13,14 @@ package aerys.minko.scene.controller
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class SceneController extends AbstractController
+	public class TickController extends AbstractController
 	{
 		private static const TMP_SCENE_VECTOR	: Vector.<ISceneNode>	= new Vector.<ISceneNode>();
 		private static const TIME_OFFSET		: Number				= new Date().time;
 		
 		private var _ctrlTargets	: Vector.<ISceneNode>	= new <ISceneNode>[];
 		
-		public function SceneController()
+		public function TickController()
 		{
 			super(Scene, ControllerMode.SIGNAL);
 			
@@ -29,7 +30,7 @@ package aerys.minko.scene.controller
 		
 		override public function clone() : AbstractController
 		{
-			return new SceneController();
+			return new TickController();
 		}
 		
 		public function update() : void
@@ -50,20 +51,20 @@ package aerys.minko.scene.controller
 			}
 		}
 		
-		private function targetAddedHandler(ctrl	: SceneController,
+		private function targetAddedHandler(ctrl	: TickController,
 											target	: Scene) : void
 		{
 			target.added.add(addedHandler);
-			target.childAdded.add(childAddedHandler);
-			target.childRemoved.add(childRemovedHandler);
+			target.descendantAdded.add(descendantAddedHandler);
+			target.descendantRemoved.add(descendantRemovedHandler);
 		}
 		
-		private function targetRemovedHandler(ctrl		: SceneController,
+		private function targetRemovedHandler(ctrl		: TickController,
 											  target	: Scene) : void
 		{
 			target.added.remove(addedHandler);
-			target.childAdded.remove(childAddedHandler);
-			target.childRemoved.remove(childRemovedHandler);
+			target.descendantAdded.remove(descendantAddedHandler);
+			target.descendantRemoved.remove(descendantRemovedHandler);
 		}
 		
 		private function addedHandler(parent	: Group,
@@ -72,7 +73,7 @@ package aerys.minko.scene.controller
 			throw new Error();
 		}
 		
-		private function childAddedHandler(group : Group, child : ISceneNode) : void
+		private function descendantAddedHandler(group : Group, child : ISceneNode) : void
 		{
 			var scene	: Scene	= group.root as Scene;
 			
@@ -80,10 +81,9 @@ package aerys.minko.scene.controller
 			
 			if (child is Group)
 				groupAddedHandler(scene, child as Group);
-			
 		}
 		
-		private function childRemovedHandler(group : Group, child : ISceneNode) : void
+		private function descendantRemovedHandler(group : Group, child : ISceneNode) : void
 		{
 			var scene	: Scene	= group.root as Scene;
 			
@@ -95,8 +95,6 @@ package aerys.minko.scene.controller
 		
 		private function groupAddedHandler(scene : Scene, group : Group) : void
 		{
-			TMP_SCENE_VECTOR.length = 0;
-			
 			// add controllers
 			TMP_SCENE_VECTOR.length = 0;
 			var newTargets	: Vector.<ISceneNode>	= group.getDescendantsByType(

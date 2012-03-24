@@ -1,8 +1,8 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.RenderingList;
-	import aerys.minko.scene.controller.SceneController;
+	import aerys.minko.scene.controller.scene.RenderingController;
+	import aerys.minko.scene.controller.scene.TickController;
 	import aerys.minko.type.data.DataBindings;
 
 	/**
@@ -13,46 +13,40 @@ package aerys.minko.scene.node
 	 */
 	public dynamic class Scene extends Group
 	{
-		private var _controller	: SceneController	= new SceneController();
+		private var _tickController			: TickController		= new TickController();
+		private var _renderingController	: RenderingController	= new RenderingController();
 		
-		private var _list		: RenderingList		= new RenderingList();
 		private var _camera		: Camera			= null;
 		private var _bindings	: DataBindings		= new DataBindings();
 
-		/**
-		 * The RenderingList containing all the shaders/draw calls corresponding to
-		 * the content of the scene.
-		 *  
-		 * @return 
-		 * 
-		 */
-		public function get renderingList() : RenderingList
-		{
-			return _list;
-		}
-		
 		public function get bindings() : DataBindings
 		{
 			return _bindings;
 		}
 		
-		public function get sceneController() : SceneController
+		public function get tickController() : TickController
 		{
-			return _controller;
+			return _tickController;
+		}
+		
+		public function get renderingController() : RenderingController
+		{
+			return _renderingController;
 		}
 		
 		public function Scene(...children)
 		{
 			super();
 			
-			addController(_controller);
+			addController(_tickController);
+			addController(_renderingController);
 			
 			initializeChildren(children);
 		}
 		
 		minko_scene function update() : void
 		{
-			_controller.update();
+			_tickController.update();
 		}
 	}
 }

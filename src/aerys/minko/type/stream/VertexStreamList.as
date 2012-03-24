@@ -13,7 +13,7 @@ package aerys.minko.type.stream
 		private var _format		: VertexFormat			= new VertexFormat();
 		private var _usage		: uint					= 0;
 		
-		private var _changed	: Signal				= new Signal();
+		private var _changed	: Signal				= new Signal('VertexStreamList.changed');
 
 		public function get usage()	: uint
 		{

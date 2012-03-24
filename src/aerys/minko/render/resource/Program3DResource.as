@@ -1,9 +1,10 @@
 package aerys.minko.render.resource
 {
-	import aerys.minko.ns.*;
-	import aerys.minko.render.DrawCall;
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.binding.IBinder;
+	import aerys.minko.render.shader.PassConfig;
+	import aerys.minko.render.shader.Signature;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
@@ -20,34 +21,36 @@ package aerys.minko.render.resource
 	 */
 	public final class Program3DResource implements IResource
 	{
-		private var _name				: String					= null;
-		private var _update				: Boolean					= false;
-		private var _nativeProgram		: Program3D					= null;
+		use namespace minko_render;
 		
-		private var _vsProgram			: ByteArray					= null;
-		private var _fsProgram			: ByteArray					= null;
+		private var _name						: String					= null;
+		private var _numUses					: uint						= 0;
+		private var _signature					: Signature					= null;
+		private var _nativeProgram				: Program3D					= null;
 		
-		private var _vertexComponents	: Vector.<VertexComponent> 	= null;
-		private var _vertexIndices		: Vector.<uint>				= null;
-		private var _vsConstants		: Vector.<Number>			= null;
-		private var _fsConstants		: Vector.<Number>			= null;
-		private var _fsTextures			: Vector.<ITextureResource>	= null;
+		private var _vsProgram					: ByteArray					= null;
+		private var _fsProgram					: ByteArray					= null;
 		
-		private var _bindings			: Object					= null;
+		minko_render var _vertexInputComponents	: Vector.<VertexComponent> 	= null;
+		minko_render var _vertexInputIndices	: Vector.<uint>				= null;
+		minko_render var _vsConstants			: Vector.<Number>			= null;
+		minko_render var _fsConstants			: Vector.<Number>			= null;
+		minko_render var _fsTextures			: Vector.<ITextureResource>	= null;
 		
-		private var _drawCallCreated	: Signal					= new Signal();
+		minko_render var _bindings				: Object					= null;
 		
 		public function get name() : String
 		{
 			return _name;
 		}
 		
-		public function get drawCallCreated() : Signal
+		public function get signature() : Signature
 		{
-			return _drawCallCreated;
+			return _signature;
 		}
 		
 		public function Program3DResource(name				: String,
+										  signature			: Signature,
 										  vsProgram			: ByteArray,
 									   	  fsProgram			: ByteArray,
 									   	  vertexComponents	: Vector.<VertexComponent>,
@@ -57,19 +60,30 @@ package aerys.minko.render.resource
 										  fsTextures		: Vector.<ITextureResource>,
 										  bindings			: Object)
 		{
-			_name				= name;
-			
-			_vsProgram			= vsProgram;
-			_fsProgram			= fsProgram;
-			_vertexComponents	= vertexComponents;
-			_vertexIndices		= vertexIndices;
-			_vsConstants		= vsConstants;
-			_fsConstants		= fsConstants;
-			_fsTextures			= fsTextures;
-			_bindings			= bindings;
+			_name					= name;
+			_signature				= signature;
+			_vsProgram				= vsProgram;
+			_fsProgram				= fsProgram;
+			_vertexInputComponents	= vertexComponents;
+			_vertexInputIndices		= vertexIndices;
+			_vsConstants			= vsConstants;
+			_fsConstants			= fsConstants;
+			_fsTextures				= fsTextures;
+			_bindings				= bindings;
 		}
-
-		public function getProgram3D(context : Context3D) : Program3D
+		
+		public function retain() : void
+		{
+			++_numUses;
+		}
+		
+		public function release() : void
+		{
+			--_numUses;
+		}
+		
+		public function prepareContext(context 		: Context3D,
+									   previous		: Program3DResource) : void
 		{
 			if (!_nativeProgram)
 			{
@@ -77,25 +91,10 @@ package aerys.minko.render.resource
 				_nativeProgram.upload(_vsProgram, _fsProgram);
 			}
 			
-			return _nativeProgram;
+			if (previous !== this)
+				context.setProgram(_nativeProgram);
 		}
 		
-		public function createDrawCall() : DrawCall
-		{
-			var drawCall : DrawCall = new DrawCall(
-				_vsConstants,
-				_fsConstants,
-				_fsTextures,
-				_vertexComponents,
-				_vertexIndices,
-				_bindings
-			);
-			
-			_drawCallCreated.execute(this, drawCall);
-			
-			return drawCall;
-		}
-
 		public function dispose() : void
 		{
 			if (_nativeProgram)

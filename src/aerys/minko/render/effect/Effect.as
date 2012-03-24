@@ -1,7 +1,7 @@
 package aerys.minko.render.effect
 {
 	import aerys.minko.ns.minko_render;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.PassTemplate;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 
@@ -15,13 +15,13 @@ package aerys.minko.render.effect
 	{
 		use namespace minko_render;
 		
-		minko_render var _passes	: Vector.<ActionScriptShader>	= null;
+		minko_render var _passes	: Vector.<PassTemplate>	= null;
 		
-		private var _changed		: Signal						= new Signal();
+		private var _passesChanged	: Signal				= new Signal('Effect.passesChanged');
 		
-		public function get changed() : Signal
+		public function get passesChanged() : Signal
 		{
-			return _changed;
+			return _passesChanged;
 		}
 		
 		public function get numPasses() : uint
@@ -39,10 +39,10 @@ package aerys.minko.render.effect
 			while (passes[0] is Array)
 				passes = passes[0];
 			
-			_passes = Vector.<ActionScriptShader>(passes);
+			_passes = Vector.<PassTemplate>(passes);
 		}
 		
-		public function getPass(index : uint = 0) : ActionScriptShader
+		public function getPass(index : uint = 0) : PassTemplate
 		{
 			return _passes[index];
 		}
