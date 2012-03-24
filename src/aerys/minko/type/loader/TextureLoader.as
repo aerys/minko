@@ -18,7 +18,7 @@ package aerys.minko.type.loader
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 
-	public final class TextureLoader implements ILoader
+	public class TextureLoader implements ILoader
 	{
 		private var _progress			: Signal;
 		private var _error				: Signal;
