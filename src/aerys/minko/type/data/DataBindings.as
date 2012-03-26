@@ -34,9 +34,7 @@ package aerys.minko.type.data
 		
 		public function add(dataProvider : IDataProvider) : DataBindings
 		{
-			var dataDescriptor 			: Object = dataProvider.dataDescriptor;
-			
-			dataProvider.changed.add(dataProviderChangedHandler);
+			var dataDescriptor : Object = dataProvider.dataDescriptor;
 			
 			for (var propertyName : String in dataDescriptor)
 			{
@@ -44,19 +42,9 @@ package aerys.minko.type.data
 				var property 	: IDataProvider = dataProvider[key] as IDataProvider;
 				
 				if (property != null)
-				{
-					addProperty(
-						propertyName,
-						property,
-						null
-					);
-				}
+					addProperty(propertyName, property, null);
 				
-				addProperty(
-					propertyName,
-					dataProvider,
-					key
-				);
+				addProperty(propertyName, dataProvider, key);
 			}
 			
 			return this;
@@ -152,9 +140,7 @@ package aerys.minko.type.data
 				{
 					var dataProvider : IDataProvider = source as IDataProvider;
 					
-					dataProvider.changed.remove(
-						propertyChangedHandler
-					);
+					dataProvider.changed.remove(propertyChangedHandler);
 					
 					delete _bindings[source];
 				}
@@ -230,40 +216,6 @@ package aerys.minko.type.data
 				_propertyChanged[property] = signal = new Signal('DataBindings[' + property + '].changed');
 			
 			return signal;
-		}
-		
-		private function dataProviderChangedHandler(source : IDataProvider, key : Object) : void
-		{
-			var bindingTable 	: Object = _bindings[source] as Object;
-			var propertyName 	: String = null;
-			
-			if (key == 'dataDescriptor')
-			{
-				throw new Error('DataDescriptor must be inmutable. Please remove binding and add it again after the change.'); 
-			}
-			else if (key && source.dataDescriptor[key] != undefined)
-			{
-				// a single property has changed
-				propertyName = bindingTable[key] as String;
-				
-				if (!propertyName)
-					addProperty(source.dataDescriptor[key], source, key);
-				else
-					setProperty(propertyName, key !== NO_KEY ? source[key] : source);
-			}
-			else
-			{
-				// "some" properties have changed (ie. DataProvider.invalidate() was called)
-				for (var key : Object in source.dataDescriptor)
-				{
-					propertyName = bindingTable[key];
-					
-					if (!propertyName)
-						addProperty(source.dataDescriptor[key], source, key);
-					else
-						setProperty(propertyName, key !== NO_KEY ? source[key] : source);	
-				}
-			}
 		}
 		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void
