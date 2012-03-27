@@ -545,7 +545,7 @@ package aerys.minko.render.shader.part
 			return divide(sin(angle), cos(angle));
 		}
 		
-		protected final function acos(angle : Object, numIterations : uint = 6) : SFloat
+		protected final function acos(angle : Object, numIterations : uint = 0) : SFloat
 		{
 			var roughtGuess	: SFloat = multiply(Math.PI / 2, subtract(1, angle));
 			
@@ -561,12 +561,12 @@ package aerys.minko.render.shader.part
 			return roughtGuess;
 		}
 		
-		protected final function asin(angle : Object, numIterations : uint = 6) : SFloat
+		protected final function asin(angle : Object, numIterations : uint = 0) : SFloat
 		{
 			return subtract(Math.PI / 2, acos(angle, numIterations));
 		}
 		
-		protected final function atan(angle : Object, numIterations : uint = 6) : SFloat
+		protected final function atan(angle : Object, numIterations : uint = 0) : SFloat
 		{
 			return asin(multiply(angle, rsqrt(add(1, multiply(angle, angle)))), numIterations);
 		}
@@ -679,7 +679,6 @@ package aerys.minko.render.shader.part
 		{
 			main._kills.push(getNode(value));
 		}
-		
 		
 		protected final function localToWorld(vertex : Object) : SFloat
 		{
