@@ -59,6 +59,9 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function get added() : Signal;
+		
+		function get addedToScene() : Signal;
+		
 		/**
 		 * The signal executed when the node is removed from a parent scene node.
 		 * Callbacks functions must accept the following arguments:
@@ -70,6 +73,8 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function get removed() : Signal;
+		
+		function get removedFromScene() : Signal;
 		
 		/**
 		 * Get one of the scene node controllers by its index. 

@@ -1,12 +1,16 @@
 package aerys.minko.scene.controller.camera
 {
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
+	import flash.display.BitmapData;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
@@ -25,7 +29,7 @@ package aerys.minko.scene.controller.camera
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class ArcBallController extends AbstractController
+	public final class ArcBallController extends EnterFrameController
 	{
 		public static const DEFAULT_MAX_ZOOM		: Number	= 100.0;
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
@@ -58,6 +62,8 @@ package aerys.minko.scene.controller.camera
 		private var _invalid		: Boolean	= false;
 		private var _lastTime		: Number	= 0.;
 		private var _lastTarget		: Group		= null;
+		
+		private var _inScene		: uint		= 0;
 
 		public function get mouseSensitivity() : Number
 		{
@@ -170,7 +176,10 @@ package aerys.minko.scene.controller.camera
 			stopDrag(null);
 		}
 		
-		override protected function updateOnTime(time : Number) : Boolean
+		override protected function sceneEnterFrameHandler(scene	: Scene,
+														   viewport	: Viewport,
+														   target	: BitmapData,
+														   time		: Number) : void
 		{
 			if (_speed.x != 0. || _speed.y != 0.)
 			{
@@ -190,12 +199,9 @@ package aerys.minko.scene.controller.camera
 			
 			_invalid = false;
 			
-			return mustUpdate;
-		}
-		
-		override protected function updateTarget(target : ISceneNode) : void
-		{
-			target.transform.copyFrom(_transform);
+			if (mustUpdate)
+				for (var i : uint = 0; i < numTargets; ++i)
+					getTarget(i).transform.copyFrom(_transform);
 		}
 		
 		private function startDrag(event : Event) : void

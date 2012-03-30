@@ -1,11 +1,14 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.TimeLabel;
 	import aerys.minko.type.animation.timeline.ITimeline;
 	
+	import flash.display.BitmapData;
 	import flash.utils.getTimer;
 
 	/**
@@ -14,7 +17,7 @@ package aerys.minko.scene.controller
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class AnimationController extends AbstractController
+	public class AnimationController extends EnterFrameController
 	{
 		public static var DEFAULT_TIME_FUNCTION	: Function = getTimer;
 		
@@ -205,13 +208,44 @@ package aerys.minko.scene.controller
 			}
 			else
 			{
-				throw new Error('Invalid argument type. Must be uint or String');
+				throw new Error('Invalid argument type: time must be Number or String');
 			}
 			
 			return timeValue;
 		}
 		
-		override protected function updateOnTime(time : Number) : Boolean
+		override protected function sceneEnterFrameHandler(scene	: Scene,
+														   viewport	: Viewport,
+														   target	: BitmapData,
+														   time		: Number) : void
+		{
+			if (updateOnTime(time))
+			{
+				for (var j : uint = 0; j < numTargets; ++j)
+				{
+					var ctrlTarget		: ISceneNode	= getTarget(j);
+					var numTimelines 	: int 			= _timelines.length;
+					var group			: Group			= target as Group;
+					
+					if (ctrlTarget.root != scene)
+						continue ;
+					
+					_updateOneTime = false;
+					
+					for (var i : int = 0; i < numTimelines; ++i)
+					{
+						var timeline : ITimeline = _timelines[i] as ITimeline;
+						
+						timeline.updateAt(
+							_currentTime % (timeline.duration + 1),
+							ctrlTarget
+						);
+					}
+				}
+			}
+		}
+		
+		private function updateOnTime(time : Number) : Boolean
 		{
 			if (_isPlaying || _updateOneTime)
 			{
@@ -244,7 +278,7 @@ package aerys.minko.scene.controller
 			return _isPlaying || _updateOneTime;
 		}
 		
-		override protected function updateTarget(target : ISceneNode) : void
+		private function updateTarget(target : ISceneNode) : void
 		{
 			var numTimelines 	: int 	= _timelines.length;
 			var group			: Group	= target as Group;

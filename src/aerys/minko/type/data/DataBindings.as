@@ -11,20 +11,15 @@ package aerys.minko.type.data
 		
 		private static const NO_KEY	: String		= "__no_key__";
 		
-		private var _bindings						: Dictionary		= new Dictionary(true);
-		private var _values							: Object			= new Object();
-		private var _properties						: Vector.<String>	= new <String>[];
+		private var _bindings			: Dictionary		= new Dictionary(true);
+		private var _values				: Object			= new Object();
+		private var _properties			: Vector.<String>	= new <String>[];
 		
-		private var _propertyChanged				: Object			= new Object();
-		private var _propertyRemoved				: Object			= new Object();
+		private var _propertyChanged	: Object			= new Object();
 		
 		public function get numProperties() : uint
 		{
 			return _properties.length;
-		}
-		
-		public function DataBindings()
-		{
 		}
 		
 		public function propertyExists(propertyName : String) : Boolean
@@ -35,6 +30,8 @@ package aerys.minko.type.data
 		public function add(dataProvider : IDataProvider) : DataBindings
 		{
 			var dataDescriptor : Object = dataProvider.dataDescriptor;
+			
+			dataProvider.changed.add(dataProviderChangedHandler);
 			
 			for (var propertyName : String in dataDescriptor)
 			{
@@ -52,10 +49,17 @@ package aerys.minko.type.data
 		
 		public function remove(dataProvider : IDataProvider) : DataBindings
 		{
-			var dataDescriptor 			: Object 	= dataProvider.dataDescriptor;
+			var bindingTable	: Object	= _bindings[dataProvider];
 			
-			for (var parameterName : String in dataDescriptor)
-				removeProperty(parameterName);
+			for (var key : String in bindingTable)
+				deleteProperty(bindingTable[key]);
+			
+			delete _bindings[dataProvider];
+			
+			if (dataProvider.changed.hasCallback(propertyChangedHandler))
+				dataProvider.changed.remove(propertyChangedHandler);
+			
+			dataProvider.changed.remove(dataProviderChangedHandler);
 			
 			return this;
 		}
@@ -146,15 +150,7 @@ package aerys.minko.type.data
 				}
 			}
 			
-			var numProperties	: int	= _properties.length - 1;
-			
-			_properties[_properties.indexOf(propertyName)] = _properties[numProperties];
-			_properties.length = numProperties;
-			
-			var oldValue : Object = _values[propertyName];
-			
-			delete _values[propertyName];
-			signalChange(propertyName, null);
+			deleteProperty(propertyName);
 			
 			return this;
 		}
@@ -218,6 +214,20 @@ package aerys.minko.type.data
 			return signal;
 		}
 		
+		private function deleteProperty(propertyName : String) : void
+		{
+			var numProperties	: uint		= _properties.length - 1;
+			var index			: int		= _properties.indexOf(propertyName);
+			
+			_properties[index] = _properties[numProperties];
+			_properties.length = numProperties;
+			
+			delete _values[propertyName];
+//			delete _propertyChanged[propertyName];
+			
+			signalChange(propertyName, null);
+		}
+		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void
 		{
 			key ||= NO_KEY;
@@ -233,6 +243,16 @@ package aerys.minko.type.data
 									  newValue		: Object) : void
 		{
 			getPropertyChangedSignal(propertyName).execute(this, propertyName, newValue);
+		}
+		
+		private function dataProviderChangedHandler(dataProvider	: IDataProvider,
+													property		: String) : void
+		{
+			if (property == "dataDescriptor")
+			{
+				remove(dataProvider);
+				add(dataProvider);
+			}
 		}
 	}
 }

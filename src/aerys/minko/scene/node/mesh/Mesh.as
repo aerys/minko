@@ -1,7 +1,7 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.basic.BasicPass;
+	import aerys.minko.render.effect.basic.BasicShader;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -10,6 +10,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.data.DataProvider;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -26,7 +27,7 @@ package aerys.minko.scene.node.mesh
 	public final class Mesh extends AbstractSceneNode
 	{
 		public static const DEFAULT_EFFECT		: Effect			= new Effect(
-			new BasicPass()
+			new BasicShader()
 		);
 		
 		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
@@ -36,6 +37,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
+		private var _dataProvider		: DataProvider		= new DataProvider();
 		private var _bindings			: DataBindings		= new DataBindings();
 		
 		private var _boundingSphere		: BoundingSphere	= null;

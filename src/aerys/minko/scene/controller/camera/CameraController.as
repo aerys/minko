@@ -2,7 +2,6 @@ package aerys.minko.scene.controller.camera
 {
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.ControllerMode;
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -16,7 +15,7 @@ package aerys.minko.scene.controller.camera
 		
 		public function CameraController(viewport	: Viewport)
 		{
-			super(Camera, ControllerMode.SIGNAL);
+			super(Camera);
 			
 			_viewport = viewport;
 			
@@ -42,6 +41,7 @@ package aerys.minko.scene.controller.camera
 				throw new Error();
 			
 			_camera = target;
+			_camera.changed.add(cameraChangedHandler);
 			_camera.addedToScene.add(addedToSceneHandler);
 			_camera.removedFromScene.add(removedFromSceneHandler);
 			_camera.position.changed.add(viewPropertyChangedHandler);
@@ -50,6 +50,15 @@ package aerys.minko.scene.controller.camera
 			_camera.localToWorld.changed.add(transformChangedHandler);
 			
 			updateProjection();
+		}
+		
+		private function cameraChangedHandler(camera 	: Camera,
+											  property	: String) : void
+		{
+			if (property == "fieldOfView" || property == "zNear" || property == "zFar")
+				updateProjection();
+			else
+				updateWorldToView();
 		}
 		
 		private function transformChangedHandler(transform	: Matrix4x4,

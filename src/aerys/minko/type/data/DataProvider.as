@@ -5,57 +5,21 @@ package aerys.minko.type.data
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	public dynamic class DataProvider extends Proxy implements IDynamicDataProvider
+	public dynamic class DataProvider extends Proxy implements IDataProvider
 	{
-		private var _descriptor			: Object	= {};
-		private var _data				: Object	= {};
+		private var _descriptor	: Object	= {};
+		private var _data		: Object	= {};
 		
-		private var _locked				: Boolean	= false;
-		private var _invalid			: Boolean	= false;
-		
-		private var _propertyAdded		: Signal	= new Signal('DataProvider.propertyAdded');
-		private var _propertyRemoved	: Signal	= new Signal('DataProvider.propertyRemoved');
-		private var _changed			: Signal	= new Signal('DataProvider.changed');
+		private var _changed	: Signal	= new Signal('DataProvider.changed');
 		
 		public function get dataDescriptor() : Object
 		{
 			return _descriptor;
 		}
 		
-		public function get propertyAdded() : Signal
-		{
-			return _propertyAdded;
-		}
-		
-		public function get propertyRemoved() : Signal
-		{
-			return _propertyRemoved;
-		}
-		
 		public function get changed() : Signal
 		{
 			return _changed;
-		}
-		
-		public function get locked() : Boolean
-		{
-			return _locked;
-		}
-		
-		public function lock() : void
-		{
-			_locked = true;
-		}
-		
-		public function unlock() : void
-		{
-			_locked = false;
-			
-			if (_invalid)
-			{
-				_invalid = false;
-				_changed.execute(this, null);
-			}
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
@@ -88,12 +52,9 @@ package aerys.minko.type.data
 			_data[name] = value;
 			
 			if (!propertyExists)
-				_propertyAdded.execute(this, name);
+				_changed.execute(this, "dataDescriptor");
 			
-			if (_locked)
-				_invalid = true;
-			else
-				_changed.execute(this, name);
+			_changed.execute(this, name);
 			
 			return this;
 		}
@@ -103,7 +64,7 @@ package aerys.minko.type.data
 			delete _descriptor[name];
 			delete _data[name];
 			
-			_propertyRemoved.execute(this, name);
+			_changed.execute(this, "dataDescriptor");
 			
 			return this;
 		}

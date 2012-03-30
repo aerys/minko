@@ -1,9 +1,11 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.scene.RenderingController;
-	import aerys.minko.scene.controller.scene.TickController;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
+	
+	import flash.display.BitmapData;
 
 	/**
 	 * Scene objects are the root of any 3D scene.
@@ -13,40 +15,62 @@ package aerys.minko.scene.node
 	 */
 	public dynamic class Scene extends Group
 	{
-		private var _tickController			: TickController		= new TickController();
+		private static const TIME_OFFSET		: Number				= new Date().time;
+		
 		private var _renderingController	: RenderingController	= new RenderingController();
 		
 		private var _camera		: Camera			= null;
 		private var _bindings	: DataBindings		= new DataBindings();
+		
+		private var _enterFrame	: Signal			= new Signal("Scene.enterFrame");
+		private var _exitFrame	: Signal			= new Signal("Scene.exitFrame");
 
 		public function get bindings() : DataBindings
 		{
 			return _bindings;
 		}
 		
-		public function get tickController() : TickController
+		/**
+		 * The signal executed when the viewport is about to start rendering a frame.
+		 * Callback functions for this signal should accept the following arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport who starts rendering the frame</li>
+		 * </ul>
+		 * @return 
+		 * 
+		 */
+		public function get enterFrame() : Signal
 		{
-			return _tickController;
+			return _enterFrame;
 		}
 		
-		public function get renderingController() : RenderingController
+		/**
+		 * The signal executed when the viewport is done rendering a frame.
+		 * Callback functions for this signal should accept the following arguments:
+		 * <ul>
+		 * <li>viewport : Viewport, the viewport who just finished rendering the frame</li>
+		 * </ul>
+		 * @return 
+		 * 
+		 */
+		public function get exitFrame() : Signal
 		{
-			return _renderingController;
+			return _exitFrame;
 		}
 		
 		public function Scene(...children)
 		{
 			super();
 			
-			addController(_tickController);
 			addController(_renderingController);
 			
 			initializeChildren(children);
 		}
 		
-		minko_scene function update() : void
+		public function render(viewport : Viewport, target : BitmapData = null) : void
 		{
-			_tickController.update();
+			_enterFrame.execute(this, viewport, target, new Date().time);
+			_exitFrame.execute(this, viewport, target, new Date().time);
 		}
 	}
 }

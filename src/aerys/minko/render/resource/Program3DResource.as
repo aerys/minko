@@ -3,7 +3,7 @@ package aerys.minko.render.resource
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.PassConfig;
+	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;

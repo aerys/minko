@@ -51,6 +51,11 @@ package aerys.minko.type
 			_callbacks.length = _numCallbacks;
 		}
 		
+		public function hasCallback(callback : Function) : Boolean
+		{
+			return _callbacks.indexOf(callback) >= 0;
+		}
+		
 		public function execute(...params) : void
 		{
 			_executed = true;

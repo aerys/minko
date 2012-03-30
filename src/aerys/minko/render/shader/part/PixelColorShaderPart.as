@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
@@ -12,7 +12,7 @@ package aerys.minko.render.shader.part
 		 * @param main
 		 * 
 		 */
-		public function PixelColorShaderPart(main : PassTemplate)
+		public function PixelColorShaderPart(main : ActionScriptShader)
 		{
 			super(main);
 		}

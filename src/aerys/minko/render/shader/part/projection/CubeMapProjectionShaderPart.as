@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.math.Matrix4x4;
@@ -27,7 +27,7 @@ package aerys.minko.render.shader.part.projection
 		
 		private var _side : uint;
 		
-		public function CubeMapProjectionShaderPart(main : PassTemplate, side : uint)
+		public function CubeMapProjectionShaderPart(main : ActionScriptShader, side : uint)
 		{
 			super(main);
 			

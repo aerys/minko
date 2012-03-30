@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.render.shader.part.coordinates.SphericalCoordinatesShaderPart;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.part.projection
 	{
 		private var _sphericalPart : SphericalCoordinatesShaderPart;
 		
-		public function BlinnNewellProjectionShaderPart(main : PassTemplate)
+		public function BlinnNewellProjectionShaderPart(main : ActionScriptShader)
 		{
 			super(main);
 			

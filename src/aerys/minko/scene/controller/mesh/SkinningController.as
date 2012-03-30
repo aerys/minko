@@ -1,17 +1,21 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.ns.minko_math;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.EnterFrameController;
+	import aerys.minko.scene.data.SkinningDataProvider;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
+	import flash.display.BitmapData;
 	import flash.geom.Matrix3D;
 
 	/**
@@ -21,14 +25,14 @@ package aerys.minko.scene.controller.mesh
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class SkinningController extends AbstractController
+	public class SkinningController extends EnterFrameController
 	{
 		use namespace minko_math;
 		
 		private static const WORLD_SKELETON_MATRIX	: Matrix3D	= new Matrix3D();
 		private static const TMP_SKINNING_MATRIX	: Matrix3D 	= new Matrix3D();
 		
-		private var _skinningData		: DataProvider			= new DataProvider();
+		private var _skinningData		: SkinningDataProvider			= new SkinningDataProvider();
 		
 		private var _isDirty			: Boolean				= true;
 		
@@ -62,11 +66,6 @@ package aerys.minko.scene.controller.mesh
 			return _skinningMethod;
 		}
 
-		public function get skinningData() : DataProvider
-		{
-			return _skinningData;
-		}
-		
 		public function SkinningController(skinningMethod	: uint,
 										   skeletonRoot		: Group,
 										   joints 			: Vector.<Group>,
@@ -87,12 +86,9 @@ package aerys.minko.scene.controller.mesh
 				_invBindMatrices[jointId] = invBindMatrices[jointId]._matrix;
 			
 			// init data provider.
-			_skinningData.skinningMethod		= _skinningMethod;
-			_skinningData.skinningNumBones		= _joints.length;
-			_skinningData.skinningBindShape		= _bindShape;
-			
-			// subscribe to skinned meshes (in order to register our data provider).
-			targetAdded.add(targetAddedHandler);
+			_skinningData.method	= _skinningMethod;
+			_skinningData.numBones	= _joints.length;
+			_skinningData.bindShape	= _bindShape;
 			
 			// subscribe to root and bone transform changes.
 			skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
@@ -129,9 +125,12 @@ package aerys.minko.scene.controller.mesh
 			return bindMatrices;
 		}
 		
-		private function targetAddedHandler(controller	: SkinningController, 
-											mesh		: Mesh) : void
+		override protected function targetAddedHandler(controller	: EnterFrameController, 
+													   target		: ISceneNode) : void
 		{
+			super.targetAddedHandler(controller, target);
+			
+			var mesh			: Mesh			= target as Mesh;
 			var format			: VertexFormat	= mesh.geometry.getVertexStream().format;
 			var maxInfluences	: uint			= 
 				uint(format.hasComponent(VertexComponent.BONE0))
@@ -143,15 +142,19 @@ package aerys.minko.scene.controller.mesh
 				+ uint(format.hasComponent(VertexComponent.BONE6))
 				+ uint(format.hasComponent(VertexComponent.BONE7));
 			
+			_skinningData.maxInfluences = maxInfluences;
+			
 			mesh.bindings.add(_skinningData);
-			mesh.bindings.setProperty('skinningMaxInfluences', maxInfluences);
 		}
 		
-		private function targetRemovedHandler(controlller	: SkinningController,
-											  mesh			: Mesh) : void
+		override protected function targetRemovedHandler(controller	: EnterFrameController,
+														 target		: ISceneNode) : void
 		{
+			super.targetRemovedHandler(controller, target);
+			
+			var mesh : Mesh = target as Mesh;
+			
 			mesh.bindings.remove(_skinningData);
-			mesh.bindings.removeProperty('skinningMaxInfluences');
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
@@ -160,23 +163,26 @@ package aerys.minko.scene.controller.mesh
 			_isDirty = true;
 		}
 		
-		override protected function updateOnTime(time : Number) : Boolean
+		override protected function sceneEnterFrameHandler(scene	: Scene,
+														   viewport	: Viewport,
+														   target	: BitmapData,
+														   time		: Number) : void
 		{
 			if (!_isDirty)
-				return false;
+				return ;
 			
 			switch (_skinningMethod)
 			{
 				case SkinningMethod.MATRIX:
 					writeMatrices();
-					_skinningData.skinningMatrices = _matrices;
+					_skinningData.matrices = _matrices;
 					break;
 				
 				case SkinningMethod.DUAL_QUATERNION:
 					writeMatrices();
 					writeDualQuaternions();
-					_skinningData.skinningDQn = _dqn;
-					_skinningData.skinningDQd = _dqd;
+					_skinningData.dqN = _dqn;
+					_skinningData.dqD = _dqd;
 					break;
 				
 				case SkinningMethod.DUAL_QUATERNION_SCALE:
@@ -187,8 +193,6 @@ package aerys.minko.scene.controller.mesh
 			}
 			
 			_isDirty = false;
-			
-			return false;
 		}
 		
 		private function writeMatrices() : void

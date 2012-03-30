@@ -3,6 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
@@ -54,7 +55,6 @@ package aerys.minko.scene.node
 		
 		private var _worldToScreen	: Matrix4x4	= new Matrix4x4();
 		
-		private var _locked			: Boolean	= false;
 		private var _changed		: Signal	= new Signal('Camera.changed');
 		
 		public function get viewport() : Viewport
@@ -186,9 +186,7 @@ package aerys.minko.scene.node
 		public function set fieldOfView(value : Number) : void
 		{
 			_fov = value;
-			
-			if (!_locked)
-				_changed.execute(this, "fieldOfView");
+			_changed.execute(this, "fieldOfView");
 		}
 		
 		/**
@@ -205,9 +203,7 @@ package aerys.minko.scene.node
 		public function set zNear(value : Number) : void
 		{
 			_zNear = value;
-			
-			if (!_locked)
-				_changed.execute(this, "zNear");
+			_changed.execute(this, "zNear");
 		}
 		
 		/**
@@ -224,19 +220,12 @@ package aerys.minko.scene.node
 		public function set zFar(value : Number) : void
 		{
 			_zFar = value;
-			
-			if (!_locked)
-				_changed.execute(this, "zFar");
+			_changed.execute(this, "zFar");
 		}
 		
 		public function get frustum() : Frustum
 		{
 			return _frustum;
-		}
-		
-		public function get locked() : Boolean
-		{
-			return _locked;
 		}
 		
 		public function get changed() : Signal
@@ -262,20 +251,6 @@ package aerys.minko.scene.node
 			_zFar = zFar;
 			
 			addController(new CameraController(viewport));
-		}
-		
-		public function lock() : void
-		{
-			_locked = true;
-		}
-		
-		public function unlock() : void
-		{
-			var locked : Boolean = _locked;
-			
-			_locked = false;
-			if (locked)
-				_changed.execute(this, null);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

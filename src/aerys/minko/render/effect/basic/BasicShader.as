@@ -2,9 +2,9 @@ package aerys.minko.render.effect.basic
 {
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.shader.PassConfig;
-	import aerys.minko.render.shader.PassInstance;
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.ShaderSettings;
+	import aerys.minko.render.shader.ShaderInstance;
+	import aerys.minko.render.shader.ActionScriptShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.PixelColorShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
@@ -94,7 +94,7 @@ package aerys.minko.render.effect.basic
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class BasicPass extends PassTemplate
+	public class BasicShader extends ActionScriptShader
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _pixelColorPart			: PixelColorShaderPart;
@@ -106,7 +106,7 @@ package aerys.minko.render.effect.basic
 		 * @param priority Default value is 0.
 		 * @param target Default value is null.
 		 */
-		public function BasicPass(priority	: Number		= 0,
+		public function BasicShader(priority	: Number		= 0,
 								  target	: RenderTarget	= null)
 		{
 			// save priority and target
@@ -118,7 +118,7 @@ package aerys.minko.render.effect.basic
 			_pixelColorPart			= new PixelColorShaderPart(this);
 		}
 		
-		override protected function configurePass(passConfig : PassConfig) : void
+		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
 			var blending : uint = 
 				meshBindings.getPropertyOrFallback(BasicProperties.BLENDING, Blending.NORMAL);
