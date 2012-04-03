@@ -258,7 +258,7 @@ package aerys.minko.scene.controller.scene
 			{
 				// fork pass if needed
 				var asShader		: ActionScriptShader	= meshEffect.getPass(i);
-				var passInstance	: ShaderInstance			= asShader.fork(meshBindings, sceneBindings);
+				var passInstance	: ShaderInstance		= asShader.fork(meshBindings, sceneBindings);
 				
 				// create drawcall
 				var drawCall		: DrawCall		= new DrawCall();
@@ -280,6 +280,9 @@ package aerys.minko.scene.controller.scene
 			}
 			
 			_effectToMeshes[meshEffect].push(mesh);
+			
+			//register to visibility change signal
+			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 		}
 		
 		private function removeMesh(mesh : Mesh) : void
@@ -296,7 +299,7 @@ package aerys.minko.scene.controller.scene
 			for (var drawCallId : uint = 0; drawCallId < numPasses; ++drawCallId)
 			{
 				// retrieve drawcall, and shaderInstance
-				var drawCall		: DrawCall		= drawCalls[drawCallId];
+				var drawCall		: DrawCall			= drawCalls[drawCallId];
 				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
 				
 				unbind(passInstance, drawCall, meshBindings);
@@ -314,6 +317,9 @@ package aerys.minko.scene.controller.scene
 				delete _effectToMeshes[meshEffect];
 				meshEffect.passesChanged.remove(effectPassesChangedHandler);
 			}
+			
+			//remove to visibility change signal
+			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
 		private function meshVisibilityChangedHandler(mesh		 : Mesh,
