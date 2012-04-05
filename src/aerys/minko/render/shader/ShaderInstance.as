@@ -24,13 +24,13 @@ package aerys.minko.render.shader
 		private static const TMP_INTS			: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
 		private var _numUses	: int					= 0;
-		private var _generator	: ActionScriptShader	= null;
+		private var _generator	: Shader	= null;
 		private var _signature	: Signature				= null;
 		
 		private var _config		: ShaderSettings		= null;
 		private var _program	: Program3DResource		= null;
 		
-		public function get generator() : ActionScriptShader
+		public function get generator() : Shader
 		{
 			return _generator;
 		}
@@ -55,7 +55,7 @@ package aerys.minko.render.shader
 			return _numUses == 0
 		}
 		
-		public final function ShaderInstance(generator	: ActionScriptShader,
+		public final function ShaderInstance(generator	: Shader,
 										   config		: ShaderSettings,
 										   program		: Program3DResource,
 										   signature	: Signature)

@@ -2,7 +2,7 @@ package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.ShaderDataBindings;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
@@ -32,9 +32,9 @@ package aerys.minko.render.shader.part
 	{
 		use namespace minko_shader;
 		
-		private var _main	: ActionScriptShader	= null;
+		private var _main	: Shader	= null;
 		
-		protected final function get main() : ActionScriptShader
+		protected final function get main() : Shader
 		{
 			return _main;
 		}
@@ -154,7 +154,7 @@ package aerys.minko.render.shader.part
 			return _main._sceneBindings.getParameter("time", 1);
 		}
 		
-		public function ShaderPart(main : ActionScriptShader) : void
+		public function ShaderPart(main : Shader) : void
 		{
 			_main = main;
 		}

@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.animation.SkinningMethod;
@@ -15,7 +15,7 @@ package aerys.minko.render.shader.part.animation
 	 */
 	public class SkinningShaderPart extends ShaderPart
 	{
-		public function SkinningShaderPart(main : ActionScriptShader)
+		public function SkinningShaderPart(main : Shader)
 		{
 			super(main);
 		}

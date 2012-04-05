@@ -6,7 +6,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderInstance;
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.scene.controller.AbstractController;
@@ -257,7 +257,7 @@ package aerys.minko.scene.controller.scene
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
 				// fork pass if needed
-				var asShader		: ActionScriptShader	= meshEffect.getPass(i);
+				var asShader		: Shader	= meshEffect.getPass(i);
 				var passInstance	: ShaderInstance		= asShader.fork(meshBindings, sceneBindings);
 				
 				// create drawcall

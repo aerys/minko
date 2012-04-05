@@ -4,7 +4,7 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.ShaderInstance;
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.PixelColorShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
@@ -94,7 +94,7 @@ package aerys.minko.render.effect.basic
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class BasicShader extends ActionScriptShader
+	public class BasicShader extends Shader
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _pixelColorPart			: PixelColorShaderPart;

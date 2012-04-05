@@ -27,7 +27,7 @@ package aerys.minko.render.shader
 	 * @see aerys.minko.render.shader.ShaderSignature
 	 * @see aerys.minko.render.shader.ShaderDataBindings
 	 */
-	public class ActionScriptShader extends ShaderPart
+	public class Shader extends ShaderPart
 	{
 		use namespace minko_shader;
 		use namespace minko_render;
@@ -37,10 +37,10 @@ package aerys.minko.render.shader
 		minko_shader var _kills			: Vector.<INode>				= new <INode>[];
 		
 		private var _name				: String						= null;
-		private var _baseConfig			: ShaderSettings					= new ShaderSettings(null);
+		private var _baseConfig			: ShaderSettings				= new ShaderSettings(null);
 		
-		private var _instances			: Vector.<ShaderInstance>			= new <ShaderInstance>[];
-		private var _configs			: Vector.<ShaderSettings>			= new <ShaderSettings>[];
+		private var _instances			: Vector.<ShaderInstance>		= new <ShaderInstance>[];
+		private var _configs			: Vector.<ShaderSettings>		= new <ShaderSettings>[];
 		private var _programs			: Vector.<Program3DResource>	= new <Program3DResource>[];
 		
 		/**
@@ -64,7 +64,7 @@ package aerys.minko.render.shader
 		 * @param renderTarget Default value is null.
 		 * 
 		 */
-		public function ActionScriptShader()
+		public function Shader()
 		{
 			super(this);
 			
