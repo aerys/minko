@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	
@@ -13,7 +13,7 @@ package aerys.minko.render.shader.part.projection
 	{
 		private var _front : Boolean;
 		
-		public function ParaboloidProjectionShaderPart(main 	: ActionScriptShader,
+		public function ParaboloidProjectionShaderPart(main 	: Shader,
 													   front 	: Boolean)
 		{
 			super(main);

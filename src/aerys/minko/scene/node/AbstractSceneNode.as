@@ -145,6 +145,7 @@ package aerys.minko.scene.node
 		private function initialize() : void
 		{
 			_name = getDefaultSceneName(this);
+			_root = this;
 			
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
@@ -241,9 +242,9 @@ package aerys.minko.scene.node
 			throw new Error('The method AbstractSceneNod.clone() must be overriden.');
 		}
 		
-		public static function copyControllersFrom(source 			: ISceneNode,
-												   target			: ISceneNode,
-											   	   cloneControllers	: Boolean) : void
+		protected function copyControllersFrom(source 			: ISceneNode,
+											   target			: ISceneNode,
+											   cloneControllers	: Boolean) : void
 		{
 			var numControllers : uint = target.numControllers;
 			

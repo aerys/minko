@@ -1,6 +1,7 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.loader.ILoader;
@@ -20,7 +21,7 @@ package aerys.minko.scene.node
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class Group extends Proxy implements ISceneNode
+	public dynamic class Group extends AbstractSceneNode
 	{
 		use namespace minko_scene;
 		
@@ -49,25 +50,7 @@ package aerys.minko.scene.node
 		private var _controllerAdded	: Signal						= new Signal('Group.controllerAdded');
 		private var _controllerRemoved	: Signal						= new Signal('Group.controllerRemoved');
 
-		public function get name() : String
-		{
-			return _name;
-		}
-		public function set name(value : String) : void
-		{
-			_name = value;
-		}
-		
-		public function get root() : ISceneNode
-		{
-			return _root;
-		}
-		
-		public function get parent() : Group
-		{
-			return _parent; 
-		}
-		public function set parent(value : Group) : void
+		override public function set parent(value : Group) : void
 		{
 			// remove child
 			if (_parent)
@@ -112,67 +95,14 @@ package aerys.minko.scene.node
 			return _numDescendants;
 		}
 		
-		/**
-		 * The Matrix4x4 object defining the transform of the object into world-space.
-		 */
-		public function get transform() : Matrix4x4
-		{
-			return _transform;
-		}
-		
-		public function get localToWorld() : Matrix4x4
-		{
-			return _localToWorld;
-		}
-		
-		public function get worldToLocal() : Matrix4x4
-		{
-			return _worldToLocal;
-		}
-		
-		public function get added() : Signal
-		{
-			return _added;
-		}
-
-		public function get removed() : Signal
-		{
-			return _removed;
-		}
-		
-		public function get addedToScene() : Signal
-		{
-			return _addedToScene;
-		}
-		
-		public function get removedFromScene() : Signal
-		{
-			return _removedFromScene;
-		}
-		
 		public function get descendantAdded() : Signal
 		{
-			return _descendantAdded;
+			return _descendantAdded
 		}
 		
 		public function get descendantRemoved() : Signal
 		{
 			return _descendantRemoved;
-		}
-		
-		public function get numControllers() : uint
-		{
-			return _controllers.length;
-		}
-		
-		public function get controllerAdded() : Signal
-		{
-			return _controllerAdded;
-		}
-		
-		public function get controllerRemoved() : Signal
-		{
-			return _controllerRemoved;
 		}
 		
 		public function Group(...children)
@@ -189,11 +119,11 @@ package aerys.minko.scene.node
 			_name = AbstractSceneNode.getDefaultSceneName(this);
 			_children = new <ISceneNode>[];
 
-			_added.add(addedHandler);
-			_removed.add(removedHandler);
-			_transform.changed.add(transformChangedHandler);
-			_descendantAdded.add(descendantAddedHandler);
-			_descendantRemoved.add(descendantRemovedHandler);
+			added.add(addedHandler);
+			removed.add(removedHandler);
+			transform.changed.add(transformChangedHandler);
+			descendantAdded.add(descendantAddedHandler);
+			descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		protected function initializeChildren(children : Array) : void
@@ -207,40 +137,17 @@ package aerys.minko.scene.node
 				addChild(ISceneNode(children[childrenIndex]));
 		}
 		
-		private function addedHandler(child : ISceneNode, parent : Group) : void
+		override protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-			var oldRoot : ISceneNode = _root;
-			
-			_root = _parent ? _parent.root : this;
-			if (_root is Scene)
-				_addedToScene.execute(this, _root);
-					
-			if (child == this)
-			{
-				transformChangedHandler();
-				parent.localToWorld.changed.add(transformChangedHandler);
-			}
+			super.addedHandler(child, parent);
 			
 			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
 				_children[childIndex].added.execute(child, parent);
 		}
 		
-		private function removedHandler(child : ISceneNode, parent : Group) : void
+		override protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
-			if (child == this)
-			{
-				_root = this;
-				parent.localToWorld.changed.remove(transformChangedHandler);
-				transformChangedHandler();
-			}
-			else
-			{
-				var oldRoot : ISceneNode = _root;
-				
-				_root = _parent ? _parent.root : this;
-				if (oldRoot is Scene)
-					_removedFromScene.execute(this, oldRoot);
-			}
+			super.removedHandler(child, parent);
 			
 			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
 				_children[childIndex].removed.execute(child, parent);
@@ -276,17 +183,6 @@ package aerys.minko.scene.node
 			}
 			
 			_numDescendants -= (child is Group) ? (child as Group)._numDescendants + 1 : 1;
-		}
-		
-		private function transformChangedHandler(transform 	: Matrix4x4	= null,
-												 key 		: String	= null) : void
-		{
-			if (_parent)
-				Matrix4x4.multiply(_parent.localToWorld, _transform, _localToWorld);
-			else
-				Matrix4x4.copy(_transform, _localToWorld);
-			
-			_worldToLocal.copyFrom(_localToWorld).invert();
 		}
 		
 		public function contains(scene : ISceneNode) : Boolean
@@ -421,79 +317,6 @@ package aerys.minko.scene.node
 			return "[" + getQualifiedClassName(this) + " " + name + "]";
 		}
 
-		override flash_proxy function getProperty(name : *) : *
-		{
-			var index : int = parseInt(name);
-
-			return index == name ? getChildAt(index) : getChildByName(name as String);
-		}
-
-		override flash_proxy function setProperty(name : *, value : *) : void
-		{
-			var index : int = parseInt(name);
-
-			if (index != name || index > numChildren)
-				throw new Error("'" + name + "' is not a valid child index.");
-
-			if (index != numChildren)
-				removeChildAt(index);
-
-			addChildAt(value, index);
-		}
-
-		override flash_proxy function getDescendants(name : *) : *
-		{
-			return getDescendantsByName(name);
-		}
-
-		override flash_proxy function nextNameIndex(index : int) : int
-		{
-			return index < numChildren ? index + 1 : 0;
-		}
-
-		override flash_proxy function nextName(index : int) : String
-		{
-			return String(index - 1);
-		}
-
-		override flash_proxy function nextValue(index : int) : *
-		{
-			return _children[int(index - 1)];
-		}
-		
-		/**
-		 * @inheritdoc 
-		 */
-		public function addController(controller : AbstractController) : void
-		{
-			_controllers.push(controller);
-
-			controller.addTarget(this);
-			_controllerAdded.execute(this, controller);
-		}
-		
-		/**
-		 * @inheritdoc 
-		 */
-		public function removeController(controller : AbstractController) : void
-		{
-			var numControllers	: uint = _controllers.length - 1;
-			
-			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
-			_controllers.length = numControllers;
-			
-			controller.removeTarget(this);
-			_controllerRemoved.execute(this, controller);
-		}
-		
-		/**
-		 * @inheritdoc 
-		 */
-		public function getController(index : uint) : AbstractController
-		{
-			return _controllers[index];
-		}
-		
 		public function load(request	: URLRequest,
 							 options	: ParserOptions) : ILoader
 		{
@@ -527,13 +350,18 @@ package aerys.minko.scene.node
 			return loader;
 		}
 		
+		public function get(path : String) : SceneIterator
+		{
+			return new SceneIterator(path, new <ISceneNode>[this]);
+		}
+		
 		private function loaderCompleteHandler(loader	: ILoader,
 											   scene	: ISceneNode) : void
 		{
 			addChild(scene);
 		}
 		
-		public function clone(cloneControllers : Boolean = false) : ISceneNode
+		override public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
 			var cloned : Group = new Group();
 			
@@ -543,7 +371,7 @@ package aerys.minko.scene.node
 			for (var childId : uint = 0; childId < _numChildren; ++childId)
 				cloned.addChildAt(getChildAt(childId).clone(), childId);
 			
-			AbstractSceneNode.copyControllersFrom(this, cloned, cloneControllers);
+			copyControllersFrom(this, cloned, cloneControllers);
 			
 			return cloned;
 		}

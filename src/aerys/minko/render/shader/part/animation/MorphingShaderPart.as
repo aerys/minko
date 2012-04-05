@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.ActionScriptShader;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -12,7 +12,7 @@ package aerys.minko.render.shader.part.animation
 	 */
 	public class MorphingShaderPart extends ShaderPart
 	{
-		public function MorphingShaderPart(main:ActionScriptShader)
+		public function MorphingShaderPart(main:Shader)
 		{
 			super(main);
 		}
