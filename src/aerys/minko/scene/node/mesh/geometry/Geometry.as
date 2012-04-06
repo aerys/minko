@@ -464,6 +464,10 @@ package aerys.minko.scene.node.mesh.geometry
 		private function updateBoundingVolumes() : void
 		{
 			var xyzStream	: VertexStream	= _vertexStreams[0].getStreamByComponent(VertexComponent.XYZ);
+			
+			if (!xyzStream)
+				return ;
+			
 			var offset		: uint			= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var min			: Vector4		= new Vector4(
 				xyzStream.getMinimum(offset),

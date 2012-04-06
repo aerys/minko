@@ -235,7 +235,7 @@ package aerys.minko.render.shader.part
 				var nodeSize	: uint	= node.size;
 				
 				if (currentOffset + nodeSize > size)
-					throw new Error('Invalid size specified: buffer is too big');
+					throw new Error('Invalid size specified: value is too big');
 				
 				args.push(node);
 				components.push(Components.createContinuous(currentOffset, 0, nodeSize, nodeSize));

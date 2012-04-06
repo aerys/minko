@@ -170,18 +170,31 @@ package aerys.minko.scene.controller.scene
 											scene		: Scene) : void
 		{
 			if (_scene != null)
-				throw new Error('RenderingController must be instanciated for every Scene');
+			{
+				throw new Error(
+					'The SceneRenderingController cannot target more than one Scene.'
+				);
+			}
 			
 			_scene = scene;
+			_scene.enterFrame.add(sceneEnterFrameHandler);
 			_scene.exitFrame.add(sceneExitFrameHandler);
 			_scene.descendantAdded.add(childAddedHandler);
 			_scene.descendantRemoved.add(childRemovedHandler);
 		}
 		
-		private function sceneExitFrameHandler(scene 		: Scene,
+		private function sceneEnterFrameHandler(scene 		: Scene,
 												viewport 	: Viewport,
 												target 		: BitmapData,
 												time		: Number) : void
+		{
+			_scene.bindings.setProperty("time", time);
+		}
+		
+		private function sceneExitFrameHandler(scene 	: Scene,
+											   viewport : Viewport,
+											   target 	: BitmapData,
+											   time		: Number) : void
 		{
 			var context		: Context3D		= viewport.getContext3D();
 			
