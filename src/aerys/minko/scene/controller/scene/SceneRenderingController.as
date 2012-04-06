@@ -123,7 +123,7 @@ package aerys.minko.scene.controller.scene
 			
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var pass 		: ShaderInstance		= _passInstances[i];
+				var pass 		: ShaderInstance	= _passInstances[i];
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
 				var numCalls	: int				= calls.length;
 				
@@ -179,8 +179,8 @@ package aerys.minko.scene.controller.scene
 			_scene = scene;
 			_scene.enterFrame.add(sceneEnterFrameHandler);
 			_scene.exitFrame.add(sceneExitFrameHandler);
-			_scene.descendantAdded.add(childAddedHandler);
-			_scene.descendantRemoved.add(childRemovedHandler);
+			_scene.descendantAdded.add(descendantAddedHandler);
+			_scene.descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		private function sceneEnterFrameHandler(scene 		: Scene,
@@ -217,8 +217,8 @@ package aerys.minko.scene.controller.scene
 		private function targetRemovedHandler(controller : SceneRenderingController,
 											  scene		 : Scene) : void
 		{
-			_scene.descendantAdded.remove(childAddedHandler);
-			_scene.descendantRemoved.remove(childRemovedHandler);
+			_scene.descendantAdded.remove(descendantAddedHandler);
+			_scene.descendantRemoved.remove(descendantRemovedHandler);
 			_scene = null;
 		}
 		
@@ -226,8 +226,8 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is added to the scene.
 		 * This will forward its calls to addMesh.
 		 */
-		private function childAddedHandler(group : Group,
-										   child : ISceneNode) : void
+		private function descendantAddedHandler(group : Group,
+												child : ISceneNode) : void
 		{
 			if (child is Mesh)
 				addMesh(Mesh(child));
@@ -243,8 +243,8 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is removed from the scene.
 		 * This will forward its calls to removeMesh.
 		 */
-		private function childRemovedHandler(group : Group,
-											 child : ISceneNode) : void
+		private function descendantRemovedHandler(group : Group,
+											 	  child : ISceneNode) : void
 		{
 			if (child is Mesh)
 				removeMesh(Mesh(child));

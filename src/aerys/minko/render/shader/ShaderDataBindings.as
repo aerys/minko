@@ -79,7 +79,7 @@ package aerys.minko.render.shader
 			return value;
 		}
 		
-		/*public function getPropertyOrFallback(propertyName	: String,
+		/*public function getProperty(propertyName	: String,
 											  fallback		: *) : *
 		{
 			if (propertyExists(propertyName))

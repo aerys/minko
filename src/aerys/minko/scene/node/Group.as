@@ -50,38 +50,6 @@ package aerys.minko.scene.node
 		private var _controllerAdded	: Signal						= new Signal('Group.controllerAdded');
 		private var _controllerRemoved	: Signal						= new Signal('Group.controllerRemoved');
 
-		override public function set parent(value : Group) : void
-		{
-			// remove child
-			if (_parent)
-			{
-				var oldParent : Group = _parent;
-				
-				oldParent._children.splice(
-					oldParent.getChildIndex(this),
-					1
-				);
-				parent._numChildren--;
-				oldParent._descendantRemoved.execute(oldParent, this);
-				
-				_parent = null;
-				_removed.execute(this, oldParent);
-			}
-			
-			// set parent
-			_parent = value;
-			
-			// add child
-			if (_parent)
-			{
-				_parent._children[parent._numChildren] = this;
-				_parent._numChildren++;
-				_parent._descendantAdded.execute(_parent, this);
-				
-				_added.execute(this, _parent);
-			}
-		}
-
 		/**
 		 * The number of children.
 		 */
@@ -119,8 +87,6 @@ package aerys.minko.scene.node
 			_name = AbstractSceneNode.getDefaultSceneName(this);
 			_children = new <ISceneNode>[];
 
-			added.add(addedHandler);
-			removed.add(removedHandler);
 			transform.changed.add(transformChangedHandler);
 			descendantAdded.add(descendantAddedHandler);
 			descendantRemoved.add(descendantRemovedHandler);
