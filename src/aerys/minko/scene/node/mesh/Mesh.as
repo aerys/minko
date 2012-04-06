@@ -37,7 +37,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
-		private var _dataProvider		: DataProvider		= new DataProvider();
+		private var _dataProvider		: DataProvider		= null;
 		private var _bindings			: DataBindings		= new DataBindings();
 		
 		private var _boundingSphere		: BoundingSphere	= null;
@@ -48,6 +48,39 @@ package aerys.minko.scene.node.mesh
 		
 		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
 		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
+		
+		/**
+		 * A DataProvider object already bound to the Mesh bindings.
+		 * 
+		 * <pre>
+		 * // animate the "diffuseColor" property
+		 * mesh.addController(
+		 *   new AnimationController(
+		 * 	  new <ITimeline>[new ColorTimeline(
+		 * 	    "dataProvider.diffuseColor",
+		 * 	    5000,
+		 * 	    new <uint>[0xffffffff, 0xffffff00, 0xffffffff]
+		 *    )]
+		 *   )
+		 * );
+		 * </pre>
+		 *  
+		 * @return 
+		 * 
+		 */
+		public function get dataProvider() : DataProvider
+		{
+			return _dataProvider;
+		}
+		
+		public function set dataProvider(value : DataProvider) : void
+		{
+			if (_dataProvider)
+				_bindings.remove(_dataProvider);
+			
+			_dataProvider = value,
+			_bindings.add(value);
+		}
 		
 		/**
 		 * The rendering properties provided to the shaders to customize
@@ -147,16 +180,10 @@ package aerys.minko.scene.node.mesh
 		{
 			super();
 
-			initialize(properties);
+			dataProvider = new DataProvider(properties);
 
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
-		}
-		
-		private function initialize(properties : Object) : void
-		{
-			if (properties)
-				_bindings.setProperties(properties);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

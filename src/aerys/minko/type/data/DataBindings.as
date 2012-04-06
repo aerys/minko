@@ -49,6 +49,9 @@ package aerys.minko.type.data
 		
 		public function remove(dataProvider : IDataProvider) : DataBindings
 		{
+			if (!dataProvider)
+				throw new Error("The argument 'dataProvider' cannot be null.");
+			
 			var bindingTable	: Object	= _bindings[dataProvider];
 			
 			for (var key : String in bindingTable)
