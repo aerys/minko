@@ -105,29 +105,25 @@ package aerys.minko.scene
 			}
 			
 			// parse
-			while (token = getToken())
+			while (token)
 			{
 				switch (token)
 				{
-					case "." :
+					case '//' :
 						nextToken(token);
-						break ;
-					case "//" :
 						selectDescendants();
-						nextToken(token);
 						break ;
-					case "/" :
-//						selectChildren();
+					case '/' :
 						nextToken(token);
-						break ;
-					case ".." :
-						selectParents();
-						nextToken(token);
+						selectChildren();
 						break ;
 					default :
-						parseNodeType();
+						nextToken(token);
+						parseNodeType(token);
 						break ;
 				}
+				
+				token = getToken();
 			}
 		}
 		
@@ -162,8 +158,6 @@ package aerys.minko.scene
 			if (doNext)
 				nextToken(token);
 			
-//			trace(token);
-
 			return token;
 		}
 		
@@ -206,9 +200,11 @@ package aerys.minko.scene
 			_path = _path.substring(_path.indexOf(token) + token.length);
 		}
 		
-		private function selectChildren() : void
+		private function selectChildren(typeName : String = null) : void
 		{
 			var selection : Vector.<ISceneNode> = _selection.slice();
+			
+			typeName = typeName.toLowerCase();
 			
 			_selection.length = 0;
 			for each (var node : ISceneNode in selection)
@@ -219,10 +215,16 @@ package aerys.minko.scene
 					var numChildren : int 	= group.numChildren;
 					
 					for (var i : int = 0; i < numChildren; ++i)
-						_selection.push(group.getChildAt(i));
+					{
+						var child 		: ISceneNode 	= group.getChildAt(i);
+						var childType 	: String 		= getQualifiedClassName(child).split('::')[1];
+						
+						if (childType.toLowerCase() == typeName)
+							_selection.push(child);
+					}
 				}
-				else
-					_selection.push(node);
+//				else
+//					_selection.push(node);
 			}
 		}
 		
@@ -255,39 +257,27 @@ package aerys.minko.scene
 			
 			_selection.length = 0;
 			for each (var node : ISceneNode in selection)
-				_selection.push(node.parent);
+			{
+				if (node.parent)
+					_selection.push(node.parent);
+				else
+					_selection.push(node);
+			}
 		}
 		
-		private function parseNodeType() : void
+		private function parseNodeType(nodeType : String) : void
 		{
-			var nodeType 	: String 				= getToken(true).toLowerCase();
-			var numNodes	: int					= _selection.length;
-			var selection	: Vector.<ISceneNode>	= _selection.slice();
-			
-			if (nodeType == "*")
-				selectChildren();
+			if (nodeType == '*' || nodeType == '.')
+			{
+				// nothing
+			}
+			else if (nodeType == '..')
+			{
+				selectParents();
+			}
 			else
 			{
-				_selection.length = 0;
-				for (var i : int = numNodes - 1; i >= 0; --i)
-				{
-					var node : ISceneNode = selection[i];
-					
-					if (node is Group)
-					{
-						var group : Group	= node as Group;
-						var numChildren : int = group.numChildren;
-						
-						for (var j : int = 0; j < numChildren; ++j)
-						{
-							var child 		: ISceneNode 	= group.getChildAt(j);
-							var childType 	: String 		= getQualifiedClassName(child).split('::')[1];
-							
-							if (childType.toLowerCase() == nodeType)
-								_selection.push(child);
-						}
-					}
-				}
+				selectChildren(nodeType);
 			}
 			
 			// apply predicates
@@ -314,8 +304,13 @@ package aerys.minko.scene
 			
 			if (index.toString() == propertyName)
 			{
-				_selection[0] = _selection[index];
-				_selection.length = 1;
+				if (index < _selection.length)
+				{
+					_selection[0] = _selection[index];
+					_selection.length = 1;
+				}
+				else
+					_selection.length = 0;
 			}
 			else
 			{
