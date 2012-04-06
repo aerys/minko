@@ -1,5 +1,6 @@
 package aerys.minko.type.stream
 {
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 
@@ -7,6 +8,9 @@ package aerys.minko.type.stream
 	{
 		function get format() 	: VertexFormat;
 		function get length()	: uint;
+		
+		function get changed()			: Signal;
+		function get boundsChanged()	: Signal;
 
 		function disposeLocalData(waitForUpload : Boolean = true) : void;
 		function deleteVertexByIndex(index : uint) : Boolean;

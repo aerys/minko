@@ -195,11 +195,12 @@ package aerys.minko.scene.node.mesh
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
-			while (!(controllers[0] is AbstractController))
-				controllers = controllers[0];
+			while (controllers && !(controllers[0] is AbstractController))
+					controllers = controllers[0];
 			
-			for each (var ctrl : AbstractController in controllers)
-				addController(ctrl);
+			if (controllers)
+				for each (var ctrl : AbstractController in controllers)
+					addController(ctrl);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

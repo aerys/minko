@@ -123,26 +123,26 @@ package aerys.minko.render.effect.basic
 			_diffuseShaderPart			= new DiffuseShaderPart(this);
 		}
 		
-		override protected function initializeSettings(passConfig : ShaderSettings) : void
+		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			var blending : uint = 
 				meshBindings.getConstant(BasicProperties.BLENDING, Blending.NORMAL);
 			
-			passConfig.depthTest		= 
+			settings.depthTest		= 
 				meshBindings.getConstant(BasicProperties.DEPTH_TEST, DepthTest.LESS);
 			
-			passConfig.triangleCulling	= 
+			settings.triangleCulling	= 
 				meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
 			
-			passConfig.priority			= _priority;
+			settings.priority			= _priority;
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
-				passConfig.priority -= 0.5;
+				settings.priority -= 0.5;
 			
-			passConfig.blending			= blending;
-			passConfig.enabled			= true;
-			passConfig.enableDepthWrite	= true;
-			passConfig.renderTarget		= _target;
-			passConfig.scissorRectangle	= null;
+			settings.blending			= blending;
+			settings.enabled			= true;
+			settings.enableDepthWrite	= true;
+			settings.renderTarget		= _target;
+			settings.scissorRectangle	= null;
 			
 		}
 		

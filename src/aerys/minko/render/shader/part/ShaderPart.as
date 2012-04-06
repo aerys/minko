@@ -2,8 +2,8 @@ package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderDataBindings;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
@@ -148,7 +148,17 @@ package aerys.minko.render.shader.part
 		{
 			return _main._sceneBindings.getParameter("cameraWorldPosition", 3);
 		}
-
+		
+		protected function get cameraZNear() : SFloat
+		{
+			return _main._sceneBindings.getParameter("cameraZNear", 1);
+		}
+		
+		protected function get cameraZFar() : SFloat
+		{
+			return _main._sceneBindings.getParameter("cameraZFar", 1);
+		}
+		
 		protected function get time() : SFloat
 		{
 			return _main._sceneBindings.getParameter("time", 1);
@@ -514,7 +524,12 @@ package aerys.minko.render.shader.part
 
 		protected final function multiply3x4(a : Object, b : Object) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.M34, getNode(a), getNode(b)));
+			var aNode : INode = getNode(a);
+			
+			if (aNode.size < 4)
+				throw new Error("The argument 'a' should have a size of 4.");
+			
+			return new SFloat(new Instruction(Instruction.M34, aNode, getNode(b)));
 		}
 
 		protected final function cos(angle : Object) : SFloat
@@ -680,19 +695,24 @@ package aerys.minko.render.shader.part
 			main._kills.push(getNode(value));
 		}
 		
-		protected final function localToWorld(vertex : Object) : SFloat
+		protected final function localToWorld(value : Object) : SFloat
 		{
-			return multiply4x4(vertex, localToWorldMatrix);
+			return multiply4x4(value, localToWorldMatrix);
 		}
 		
-		protected final function worldToLocal(vertex : Object) : SFloat
+		protected final function localToView(value : Object) : SFloat
 		{
-			return multiply4x4(vertex, worldToLocalMatrix);
+			return multiply4x4(localToWorld(value), worldToViewMatrix);
 		}
 		
-		protected final function worldToView(vertex : Object) : SFloat
+		protected final function worldToLocal(value : Object) : SFloat
 		{
-			return multiply4x4(vertex, worldToViewMatrix);
+			return multiply4x4(value, worldToLocalMatrix);
+		}
+		
+		protected final function worldToView(value : Object) : SFloat
+		{
+			return multiply4x4(value, worldToViewMatrix);
 		}
 		
 		protected final function localToScreen(vertex : Object) : SFloat
