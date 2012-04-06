@@ -21,7 +21,7 @@ package aerys.minko.scene.node
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public dynamic class Group extends AbstractSceneNode
+	public class Group extends AbstractSceneNode
 	{
 		use namespace minko_scene;
 		

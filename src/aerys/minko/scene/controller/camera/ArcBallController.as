@@ -37,6 +37,8 @@ package aerys.minko.scene.controller.camera
 		
 		private static const MIN_SPEED				: Number	= 0.01;
 		
+		private var _enabled		: Boolean	= true;
+		
 		private var _transform		: Matrix4x4	= new Matrix4x4();
 		
 		private var _tracking		: Boolean	= false;
@@ -64,42 +66,47 @@ package aerys.minko.scene.controller.camera
 		private var _lastTarget		: Group		= null;
 		
 		private var _inScene		: uint		= 0;
+		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
+		}
 
 		public function get mouseSensitivity() : Number
 		{
 			return _sensitivity;
+		}
+		public function set mouseSensitivity(value : Number)	: void
+		{
+			_sensitivity = value;
 		}
 		
 		public function get lockedOnPoles() : Boolean
 		{
 			return _lockedOnPoles;
 		}
+		public function set lockedOnPoles(value : Boolean)	: void
+		{
+			_lockedOnPoles = value;
+		}
 		
 		public function get invertX() : Boolean
 		{
 			return _invertX;
+		}
+		public function set invertX(value : Boolean) : void
+		{
+			_invertX = value;
 		}
 		
 		public function get invertY() : Boolean
 		{
 			return _invertY;
 		}
-		
-		public function set mouseSensitivity(value : Number)	: void
-		{
-			_sensitivity = value;
-		}
-		
-		public function set lockedOnPoles(value : Boolean)	: void
-		{
-			_lockedOnPoles = value;
-		}
-		
-		public function set invertX(value : Boolean) : void
-		{
-			_invertX = value;
-		}
-		
 		public function set invertY(value : Boolean) : void
 		{
 			_invertY = value;
@@ -109,7 +116,6 @@ package aerys.minko.scene.controller.camera
 		{
 			return _speedScale;
 		}
-		
 		public function set speedScale(value : Number) : void
 		{
 			_speedScale = value;
@@ -119,7 +125,6 @@ package aerys.minko.scene.controller.camera
 		{
 			return _useHandCursor;
 		}
-		
 		public function set useHandCursor(value : Boolean) : void
 		{
 			_useHandCursor = value;
@@ -181,6 +186,9 @@ package aerys.minko.scene.controller.camera
 														   target	: BitmapData,
 														   time		: Number) : void
 		{
+			if (!_enabled)
+				return ;
+			
 			if (_speed.x != 0. || _speed.y != 0.)
 			{
 				rotateX(_speed.x);
@@ -206,6 +214,9 @@ package aerys.minko.scene.controller.camera
 		
 		private function startDrag(event : Event) : void
 		{
+			if (!_enabled)
+				return ;
+			
 			_tracking = true;
 			_speed.setTo(0, 0);
 			

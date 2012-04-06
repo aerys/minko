@@ -2,6 +2,7 @@ package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.basic.BasicShader;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -176,14 +177,29 @@ package aerys.minko.scene.node.mesh
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 properties	: Object	= null,
-							 effect		: Effect	= null)
+							 effect		: Effect	= null,
+							 ...controllers)
 		{
 			super();
 
+			initialize(geometry, properties, effect, controllers);
+		}
+		
+		private function initialize(geometry	: Geometry,
+									properties	: Object,
+									effect		: Effect,
+									controllers	: Array) : void
+		{
 			dataProvider = new DataProvider(properties);
-
+			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
+			
+			while (!(controllers[0] is AbstractController))
+				controllers = controllers[0];
+			
+			for each (var ctrl : AbstractController in controllers)
+				addController(ctrl);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode
