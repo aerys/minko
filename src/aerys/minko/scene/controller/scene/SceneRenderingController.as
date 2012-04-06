@@ -32,7 +32,7 @@ package aerys.minko.scene.controller.scene
 	 * @author Jean-Marc Le Roux
 	 * @author Romain Gilliotte
 	 */
-	public class RenderingController extends AbstractController
+	public class SceneRenderingController extends AbstractController
 	{
 		private static const MESHES : Vector.<ISceneNode> = new Vector.<ISceneNode>();
 		
@@ -76,7 +76,7 @@ package aerys.minko.scene.controller.scene
 		 */
 		private var _effectToMeshes				: Dictionary;
 		
-		public function RenderingController()
+		public function SceneRenderingController()
 		{
 			super(Scene);
 			
@@ -166,19 +166,19 @@ package aerys.minko.scene.controller.scene
 		 * Keep a pointer to the scene this RenderingController is used on.
 		 * If this controller was already added to a scene, an error is thrown.
 		 */
-		private function targetAddedHandler(controller	: RenderingController,
+		private function targetAddedHandler(controller	: SceneRenderingController,
 											scene		: Scene) : void
 		{
 			if (_scene != null)
 				throw new Error('RenderingController must be instanciated for every Scene');
 			
 			_scene = scene;
-			_scene.enterFrame.add(sceneEnterFrameHandler);
+			_scene.exitFrame.add(sceneExitFrameHandler);
 			_scene.descendantAdded.add(childAddedHandler);
 			_scene.descendantRemoved.add(childRemovedHandler);
 		}
 		
-		private function sceneEnterFrameHandler(scene 		: Scene,
+		private function sceneExitFrameHandler(scene 		: Scene,
 												viewport 	: Viewport,
 												target 		: BitmapData,
 												time		: Number) : void
@@ -201,7 +201,7 @@ package aerys.minko.scene.controller.scene
 		/**
 		 * Remove callbacks and reset the whole controller.
 		 */
-		private function targetRemovedHandler(controller : RenderingController,
+		private function targetRemovedHandler(controller : SceneRenderingController,
 											  scene		 : Scene) : void
 		{
 			_scene.descendantAdded.remove(childAddedHandler);

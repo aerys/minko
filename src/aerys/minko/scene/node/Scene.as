@@ -1,7 +1,7 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.controller.scene.RenderingController;
+	import aerys.minko.scene.controller.scene.SceneRenderingController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	
@@ -17,7 +17,7 @@ package aerys.minko.scene.node
 	{
 		private static const TIME_OFFSET		: Number				= new Date().time;
 		
-		private var _renderingController	: RenderingController	= new RenderingController();
+		private var _renderingController	: SceneRenderingController	= new SceneRenderingController();
 		
 		private var _camera		: Camera			= null;
 		private var _bindings	: DataBindings		= new DataBindings();
