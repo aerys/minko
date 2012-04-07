@@ -34,7 +34,7 @@ package aerys.minko.scene.controller.scene
 	 * @author Jean-Marc Le Roux
 	 * @author Romain Gilliotte
 	 */
-	public final class SceneRenderingController extends AbstractController
+	public final class RenderingController extends AbstractController
 	{
 		use namespace minko_render;
 		
@@ -93,7 +93,7 @@ package aerys.minko.scene.controller.scene
 			initializePostProcessing();
 		}
 		
-		public function SceneRenderingController()
+		public function RenderingController()
 		{
 			super(Scene);
 			
@@ -265,7 +265,7 @@ package aerys.minko.scene.controller.scene
 		 * Keep a pointer to the scene this RenderingController is used on.
 		 * If this controller was already added to a scene, an error is thrown.
 		 */
-		private function targetAddedHandler(controller	: SceneRenderingController,
+		private function targetAddedHandler(controller	: RenderingController,
 											scene		: Scene) : void
 		{
 			if (_scene != null)
@@ -305,7 +305,7 @@ package aerys.minko.scene.controller.scene
 		/**
 		 * Remove callbacks and reset the whole controller.
 		 */
-		private function targetRemovedHandler(controller : SceneRenderingController,
+		private function targetRemovedHandler(controller : RenderingController,
 											  scene		 : Scene) : void
 		{
 			_scene.descendantAdded.remove(descendantAddedHandler);
@@ -361,11 +361,11 @@ package aerys.minko.scene.controller.scene
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
 				// fork pass if needed
-				var asShader		: Shader				= meshEffect.getPass(i);
-				var passInstance	: ShaderInstance		= asShader.fork(meshBindings, sceneBindings);
+				var asShader		: Shader			= meshEffect.getPass(i);
+				var passInstance	: ShaderInstance	= asShader.fork(meshBindings, sceneBindings);
 				
 				// create drawcall
-				var drawCall		: DrawCall		= new DrawCall();
+				var drawCall		: DrawCall			= new DrawCall();
 				
 				drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
 				drawCalls[i] = drawCall;
@@ -388,6 +388,7 @@ package aerys.minko.scene.controller.scene
 			
 			//register to visibility change signal
 			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
+			mesh.frameChanged.add(meshFrameChangedHandler);
 		}
 		
 		private function removeMesh(mesh : Mesh) : void
@@ -415,6 +416,7 @@ package aerys.minko.scene.controller.scene
 			delete _meshBindingToMesh[meshBindings];
 			
 			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[meshEffect];
+			
 			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
 			
 			if (meshesWithSameEffect.length == 0)
@@ -425,6 +427,7 @@ package aerys.minko.scene.controller.scene
 			
 			//remove to visibility change signal
 			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
+			mesh.frameChanged.remove(meshFrameChangedHandler);
 		}
 		
 		private function meshVisibilityChangedHandler(mesh		 : Mesh,
@@ -449,6 +452,22 @@ package aerys.minko.scene.controller.scene
 			
 		}
 		
+		private function meshFrameChangedHandler(mesh	: Mesh,
+												 frame	: uint) : void
+		{
+			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numCalls	: uint				= drawCalls.length;
+			var geom		: Geometry			= mesh.geometry;
+			var frame		: uint				= mesh.frame;
+			
+			for (var callId : uint = 0; callId < numCalls; ++callId)
+			{
+				var drawCall	: DrawCall	= drawCalls[callId];
+				
+				drawCall.setGeometry(geom, frame);
+			}
+		}
+		
 		private function applyBindingChanges() : void
 		{
 			var sceneBindings		: DataBindings		= _scene.bindings;
@@ -457,13 +476,14 @@ package aerys.minko.scene.controller.scene
 			
 			for (var shaderInstanceId : int = numShaderInstances - 1; shaderInstanceId >= 0; --shaderInstanceId)
 			{
-				var passInstance			: ShaderInstance		= _passInstances[shaderInstanceId];
+				var passInstance			: ShaderInstance	= _passInstances[shaderInstanceId];
 				var passInstanceSignature	: Signature			= passInstance.signature;
 				var drawCalls				: Vector.<DrawCall>	= _passInstanceToDrawCalls[passInstance];
 				var numDrawCalls			: int				= drawCalls.length;
 				
-				var needUpdateFromScene		: Boolean = sceneChanges != null ? 
-					passInstanceSignature.useProperties(_stashedPropertyChanges[sceneBindings], true) : false;
+				var needUpdateFromScene		: Boolean = sceneChanges != null
+					? passInstanceSignature.useProperties(_stashedPropertyChanges[sceneBindings], true) 
+					: false;
 				
 				for (var drawCallId : int = numDrawCalls - 1; drawCallId >= 0; --drawCallId)
 				{

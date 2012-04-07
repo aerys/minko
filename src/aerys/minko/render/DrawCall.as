@@ -187,9 +187,8 @@ package aerys.minko.render
 		 * Obtain a reference to each buffer and offset that apply() may possibly need.
 		 * 
 		 */		
-		private function setGeometry(geometry : Geometry) : void
+		public function setGeometry(geometry : Geometry, frame : uint = 0) : void
 		{
-			
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
 			
@@ -200,15 +199,16 @@ package aerys.minko.render
 				
 				if (component)
 				{
-					var vertexStream	: IVertexStream = geometry.getVertexStream(index);
+					var vertexStream	: IVertexStream = geometry.getVertexStream(index + frame);
 					var stream	 		: VertexStream	= vertexStream.getStreamByComponent(component);
 					var format 			: VertexFormat	= stream.format;
 					
 					if (stream == null)
 					{
-						var cleanClassName : String = getQualifiedClassName(geometry);
-						cleanClassName = cleanClassName.substr(cleanClassName.lastIndexOf(':') + 1);
-						throw new Error('Missing vertex component: ' + component.toString() + ' on ' + cleanClassName);
+						throw new Error(
+							'Missing vertex component: ' + component.toString() + ' on '
+							+ getQualifiedClassName(geometry).split('::')[1]
+						);
 					}
 					
 					_vertexBuffers[i]	= stream.resource;

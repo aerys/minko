@@ -3,8 +3,8 @@ package aerys.minko.render.shader.compiler.sequence
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.type.enum.SamplerDimension;
-	import aerys.minko.type.enum.SamplerFilter;
-	import aerys.minko.type.enum.SamplerMipmap;
+	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
 	import flash.utils.ByteArray;
@@ -55,8 +55,8 @@ package aerys.minko.render.shader.compiler.sequence
 		{
 			return 'fs'
 				+ index + ' <'
-				+ SamplerFilter.minko_shader::STRINGS[filter] + ','
-				+ SamplerMipmap.minko_shader::STRINGS[mipmap] + ','
+				+ SamplerFiltering.minko_shader::STRINGS[filter] + ','
+				+ SamplerMipMapping.minko_shader::STRINGS[mipmap] + ','
 				+ SamplerWrapping.minko_shader::STRINGS[wrapping] + ','
 				+ SamplerDimension.minko_shader::STRINGS[dimension]
 				+ '>';

@@ -44,7 +44,8 @@ package aerys.minko.render.resource.texture
 		
 		public function TextureResource(width : int = 0, height : int = 0)
 		{
-			setSize(width, height);
+			if (width != 0 && height != 0)
+				setSize(width, height);
 		}
 
 		public function setSize(width : uint, height : uint) : void
@@ -127,6 +128,10 @@ package aerys.minko.render.resource.texture
 			if ((!_texture || _resize) && _width && _height)
 			{
 				_resize = false;
+				
+				if (_texture)
+					_texture.dispose();
+				
 				_texture = context.createTexture(
 					_width,
 					_height,

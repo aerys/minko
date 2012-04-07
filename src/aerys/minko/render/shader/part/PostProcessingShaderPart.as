@@ -4,8 +4,8 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.enum.SamplerFilter;
-	import aerys.minko.type.enum.SamplerMipmap;
+	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
 	public final class PostProcessingShaderPart extends ShaderPart
@@ -30,8 +30,8 @@ package aerys.minko.render.shader.part
 		{
 			var backBuffer	: SFloat	= sceneBindings.getTextureParameter(
 				"backBuffer",
-				SamplerFilter.LINEAR,
-				SamplerMipmap.DISABLE,
+				SamplerFiltering.LINEAR,
+				SamplerMipMapping.DISABLE,
 				SamplerWrapping.CLAMP
 			);
 			
