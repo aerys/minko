@@ -482,6 +482,7 @@ package aerys.minko.scene.controller.scene
 			{
 				var drawCall	: DrawCall	= drawCalls[callId];
 				
+				drawCall.updateGeometry(newGeometry);
 				drawCall.setGeometry(newGeometry, frame);
 			}
 		}

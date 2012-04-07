@@ -167,7 +167,7 @@ package aerys.minko.render
 		 /**
 		  * Ask geometry to compute additional vertex data if needed for this drawcall.
 		  */
-		private function updateGeometry(geometry : Geometry) : void
+		public function updateGeometry(geometry : Geometry) : void
 		{
 			var vertexFormat : VertexFormat	= geometry.format;
 			
