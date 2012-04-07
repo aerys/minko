@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler
 {
+	import aerys.minko.Minko;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.Signature;
@@ -16,6 +17,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.graph.visitors.ResolveParametrizedComputationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.WriteDot;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
+	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.utils.ByteArray;
@@ -89,7 +91,8 @@ package aerys.minko.render.shader.compiler
 		
 		public static function compileShader(name : String, signature : Signature) : Program3DResource
 		{
-//			trace(compileStringShader());
+			if (Minko.debugLevel & DebugLevel.SHADER_AGAL)
+				Minko.log(DebugLevel.SHADER_AGAL, compileStringShader());
 			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);

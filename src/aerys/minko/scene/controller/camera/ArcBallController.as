@@ -1,12 +1,16 @@
 package aerys.minko.scene.controller.camera
 {
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
+	import flash.display.BitmapData;
 	import flash.events.Event;
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
@@ -25,13 +29,15 @@ package aerys.minko.scene.controller.camera
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class ArcBallController extends AbstractController
+	public final class ArcBallController extends EnterFrameController
 	{
 		public static const DEFAULT_MAX_ZOOM		: Number	= 100.0;
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
 		public static const DEFAULT_SENSITIVITY		: Number	= 0.001;
 		
 		private static const MIN_SPEED				: Number	= 0.01;
+		
+		private var _enabled		: Boolean	= true;
 		
 		private var _transform		: Matrix4x4	= new Matrix4x4();
 		
@@ -58,42 +64,49 @@ package aerys.minko.scene.controller.camera
 		private var _invalid		: Boolean	= false;
 		private var _lastTime		: Number	= 0.;
 		private var _lastTarget		: Group		= null;
+		
+		private var _inScene		: uint		= 0;
+		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
+		}
 
 		public function get mouseSensitivity() : Number
 		{
 			return _sensitivity;
+		}
+		public function set mouseSensitivity(value : Number)	: void
+		{
+			_sensitivity = value;
 		}
 		
 		public function get lockedOnPoles() : Boolean
 		{
 			return _lockedOnPoles;
 		}
+		public function set lockedOnPoles(value : Boolean)	: void
+		{
+			_lockedOnPoles = value;
+		}
 		
 		public function get invertX() : Boolean
 		{
 			return _invertX;
+		}
+		public function set invertX(value : Boolean) : void
+		{
+			_invertX = value;
 		}
 		
 		public function get invertY() : Boolean
 		{
 			return _invertY;
 		}
-		
-		public function set mouseSensitivity(value : Number)	: void
-		{
-			_sensitivity = value;
-		}
-		
-		public function set lockedOnPoles(value : Boolean)	: void
-		{
-			_lockedOnPoles = value;
-		}
-		
-		public function set invertX(value : Boolean) : void
-		{
-			_invertX = value;
-		}
-		
 		public function set invertY(value : Boolean) : void
 		{
 			_invertY = value;
@@ -103,7 +116,6 @@ package aerys.minko.scene.controller.camera
 		{
 			return _speedScale;
 		}
-		
 		public function set speedScale(value : Number) : void
 		{
 			_speedScale = value;
@@ -113,7 +125,6 @@ package aerys.minko.scene.controller.camera
 		{
 			return _useHandCursor;
 		}
-		
 		public function set useHandCursor(value : Boolean) : void
 		{
 			_useHandCursor = value;
@@ -170,8 +181,14 @@ package aerys.minko.scene.controller.camera
 			stopDrag(null);
 		}
 		
-		override protected function updateOnTime(time : Number) : Boolean
+		override protected function sceneEnterFrameHandler(scene	: Scene,
+														   viewport	: Viewport,
+														   target	: BitmapData,
+														   time		: Number) : void
 		{
+			if (!_enabled)
+				return ;
+			
 			if (_speed.x != 0. || _speed.y != 0.)
 			{
 				rotateX(_speed.x);
@@ -190,16 +207,16 @@ package aerys.minko.scene.controller.camera
 			
 			_invalid = false;
 			
-			return mustUpdate;
-		}
-		
-		override protected function updateTarget(target : ISceneNode) : void
-		{
-			target.transform.copyFrom(_transform);
+			if (mustUpdate)
+				for (var i : uint = 0; i < numTargets; ++i)
+					getTarget(i).transform.copyFrom(_transform);
 		}
 		
 		private function startDrag(event : Event) : void
 		{
+			if (!_enabled)
+				return ;
+			
 			_tracking = true;
 			_speed.setTo(0, 0);
 			

@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.type.enum.BlendingSource;
 	
@@ -12,7 +12,7 @@ package aerys.minko.render.shader.part
 	 */
 	public class BlendingShaderPart extends ShaderPart
 	{
-		public function BlendingShaderPart(main : PassTemplate)
+		public function BlendingShaderPart(main : Shader)
 		{
 			super(main);
 		}

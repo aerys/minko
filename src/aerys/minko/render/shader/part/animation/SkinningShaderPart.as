@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.animation.SkinningMethod;
@@ -15,14 +15,14 @@ package aerys.minko.render.shader.part.animation
 	 */
 	public class SkinningShaderPart extends ShaderPart
 	{
-		public function SkinningShaderPart(main : PassTemplate)
+		public function SkinningShaderPart(main : Shader)
 		{
 			super(main);
 		}
 		
 		public function skinPosition(inPosition : SFloat) : SFloat
 		{
-			var skinningMethod : uint = uint(meshBindings.getProperty('skinningMethod'));
+			var skinningMethod : uint = uint(meshBindings.getConstant('skinningMethod'));
 			
 			switch (skinningMethod)
 			{
@@ -42,7 +42,7 @@ package aerys.minko.render.shader.part.animation
 		
 		public function skinNormal(inNormal : SFloat) : SFloat
 		{
-			var skinningMethod : uint = uint(meshBindings.getProperty('skinningMethod'));
+			var skinningMethod : uint = uint(meshBindings.getConstant('skinningMethod'));
 			
 			switch (skinningMethod)
 			{
@@ -62,8 +62,8 @@ package aerys.minko.render.shader.part.animation
 		
 		private function matrixSkinPosition(inVertexPosition : SFloat) : SFloat
 		{
-			var numBones			: uint		= uint(meshBindings.getProperty('skinningNumBones'));
-			var maxInfluences		: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones			: uint		= uint(meshBindings.getConstant('skinningNumBones'));
+			var maxInfluences		: uint		= uint(meshBindings.getConstant('skinningMaxInfluences'));
 			var outVertexPosition	: SFloat	= null;
 			
 			if (maxInfluences == 0)
@@ -117,8 +117,8 @@ package aerys.minko.render.shader.part.animation
 		{
 			inVertexNormal = inVertexNormal.xyz;
 			
-			var numBones		: uint		= uint(meshBindings.getProperty('skinningNumBones'));
-			var maxInfluences	: uint		= uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones		: uint		= uint(meshBindings.getConstant('skinningNumBones'));
+			var maxInfluences	: uint		= uint(meshBindings.getConstant('skinningMaxInfluences'));
 			var outVertexNormal	: SFloat	= null;
 			
 			if (maxInfluences == 0)
@@ -170,8 +170,8 @@ package aerys.minko.render.shader.part.animation
 		
 		private function dualQuaternionSkinPosition(inPosition : SFloat) : SFloat
 		{
-			var numBones		: uint	= uint(meshBindings.getProperty('skinningNumBones'));
-			var maxInfluences	: uint	= uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones		: uint	= uint(meshBindings.getConstant('skinningNumBones'));
+			var maxInfluences	: uint	= uint(meshBindings.getConstant('skinningMaxInfluences'));
 			
 			var outVertexPosition	: SFloat	= null;
 			var result				: SFloat	= null;
@@ -256,8 +256,8 @@ package aerys.minko.render.shader.part.animation
 		
 		private function dualQuaternionSkinNormal(inNormal : SFloat) : SFloat
 		{
-			var numBones		: uint = uint(meshBindings.getProperty('skinningNumBones'));
-			var maxInfluences	: uint = uint(meshBindings.getProperty('skinningMaxInfluences'));
+			var numBones		: uint = uint(meshBindings.getConstant('skinningNumBones'));
+			var maxInfluences	: uint = uint(meshBindings.getConstant('skinningMaxInfluences'));
 			
 			var outNormal	: SFloat = null;
 			

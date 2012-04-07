@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part.coordinates
 {
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.ShaderPart;
 	
@@ -11,7 +11,7 @@ package aerys.minko.render.shader.part.coordinates
 	 */	
 	public class SphericalCoordinatesShaderPart extends ShaderPart
 	{
-		public function SphericalCoordinatesShaderPart(main : PassTemplate)
+		public function SphericalCoordinatesShaderPart(main : Shader)
 		{
 			super(main);
 		}

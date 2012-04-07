@@ -54,10 +54,27 @@ package aerys.minko.render.shader
 			return value;
 		}
 		
-		public function getProperty(propertyName : String) : *
+		public function getConstant(propertyName : String,
+									defaultValue : Object	= null) : *
 		{
 			if (!_dataBindings.propertyExists(propertyName))
-				throw new Error('This property is not defined.');
+			{
+				if (defaultValue === null)
+				{
+					throw new Error(
+						"The property '" + propertyName
+						+ "' does not exist and no default value was provided."
+					);
+				}
+				
+				_signature.update(
+					propertyName,
+					false,
+					Signature.OPERATION_EXISTS | _signatureFlags
+				);
+				
+				return defaultValue;
+			}
 			
 			var value : Object = _dataBindings.getProperty(propertyName);
 
@@ -68,15 +85,6 @@ package aerys.minko.render.shader
 			);
 			
 			return value;
-		}
-		
-		public function getPropertyOrFallback(propertyName	: String,
-											  fallback		: *) : *
-		{
-			if (propertyExists(propertyName))
-				return getProperty(propertyName);
-			else
-				return fallback;
 		}
 	}
 }

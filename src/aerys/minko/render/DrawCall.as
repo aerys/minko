@@ -174,12 +174,12 @@ package aerys.minko.render
 			if (_vsInputComponents.indexOf(VertexComponent.TANGENT) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.TANGENT))
 			{
-				geometry.computeTangentSpace(StreamUsage.STATIC);
+				geometry.computeTangentSpace(StreamUsage.DYNAMIC);
 			}
 			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
 			{
-				geometry.computeNormals(StreamUsage.STATIC);
+				geometry.computeNormals(StreamUsage.DYNAMIC);
 			}
 		}
 		
@@ -251,8 +251,6 @@ package aerys.minko.render
 				return 0;
 			
 			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
-			/*context.setBlendFactors(_blendingSource, _blendingDest);
-			context.setCulling(_triangleCullingStr);*/
 			
 			context.setProgramConstantsFromVector(
 				PROGRAM_TYPE_VERTEX,

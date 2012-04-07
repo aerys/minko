@@ -1,7 +1,8 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.basic.BasicPass;
+	import aerys.minko.render.effect.basic.BasicShader;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -10,6 +11,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.data.DataProvider;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -26,7 +28,7 @@ package aerys.minko.scene.node.mesh
 	public final class Mesh extends AbstractSceneNode
 	{
 		public static const DEFAULT_EFFECT		: Effect			= new Effect(
-			new BasicPass()
+			new BasicShader()
 		);
 		
 		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
@@ -36,6 +38,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
+		private var _dataProvider		: DataProvider		= null;
 		private var _bindings			: DataBindings		= new DataBindings();
 		
 		private var _boundingSphere		: BoundingSphere	= null;
@@ -46,6 +49,39 @@ package aerys.minko.scene.node.mesh
 		
 		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
 		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
+		
+		/**
+		 * A DataProvider object already bound to the Mesh bindings.
+		 * 
+		 * <pre>
+		 * // animate the "diffuseColor" property
+		 * mesh.addController(
+		 *   new AnimationController(
+		 * 	  new <ITimeline>[new ColorTimeline(
+		 * 	    "dataProvider.diffuseColor",
+		 * 	    5000,
+		 * 	    new <uint>[0xffffffff, 0xffffff00, 0xffffffff]
+		 *    )]
+		 *   )
+		 * );
+		 * </pre>
+		 *  
+		 * @return 
+		 * 
+		 */
+		public function get dataProvider() : DataProvider
+		{
+			return _dataProvider;
+		}
+		
+		public function set dataProvider(value : DataProvider) : void
+		{
+			if (_dataProvider)
+				_bindings.remove(_dataProvider);
+			
+			_dataProvider = value,
+			_bindings.add(value);
+		}
 		
 		/**
 		 * The rendering properties provided to the shaders to customize
@@ -141,20 +177,30 @@ package aerys.minko.scene.node.mesh
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 properties	: Object	= null,
-							 effect		: Effect	= null)
+							 effect		: Effect	= null,
+							 ...controllers)
 		{
 			super();
 
-			initialize(properties);
-
-			_geometry = geometry;
-			this.effect = effect || DEFAULT_EFFECT;
+			initialize(geometry, properties, effect, controllers);
 		}
 		
-		private function initialize(properties : Object) : void
+		private function initialize(geometry	: Geometry,
+									properties	: Object,
+									effect		: Effect,
+									controllers	: Array) : void
 		{
-			if (properties)
-				_bindings.setProperties(properties);
+			dataProvider = new DataProvider(properties);
+			
+			_geometry = geometry;
+			this.effect = effect || DEFAULT_EFFECT;
+			
+			while (controllers && !(controllers[0] is AbstractController))
+					controllers = controllers[0];
+			
+			if (controllers)
+				for each (var ctrl : AbstractController in controllers)
+					addController(ctrl);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

@@ -53,10 +53,10 @@ package aerys.minko.scene.node.mesh.geometry
 		
 		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 
-		private var _indexStream		: IndexStream		= null;
+		private var _indexStream	: IndexStream		= null;
 
-		private var _boundingSphere		: BoundingSphere	= null;
-		private var _boundingBox		: BoundingBox		= null;
+		private var _boundingSphere	: BoundingSphere	= null;
+		private var _boundingBox	: BoundingBox		= null;
 		
 		/**
 		 * The number of IVertexStreams objects stored in the geometry. 
@@ -111,20 +111,37 @@ package aerys.minko.scene.node.mesh.geometry
 		 */
 		public function get format() : VertexFormat
 		{
-			return _vertexStreams[0].format;
+			return _vertexStreams.length ? _vertexStreams[0].format : null;
 		}
 		
 		public function Geometry(vertexStreams	: Vector.<IVertexStream>	= null,
 								 indexStream	: IndexStream				= null)
-		{
-			_vertexStreams = vertexStreams || new Vector.<IVertexStream>();
-			_indexStream = indexStream;
-			
-			initialize();
+		{			
+			initialize(vertexStreams, indexStream);
 		}
 		
-		private function initialize() : void
+		private function initialize(vertexStreams	: Vector.<IVertexStream>	= null,
+									indexStream		: IndexStream				= null) : void
 		{
+			var numVertexStreams	: int	= vertexStreams ? vertexStreams.length : 0;
+			
+			_vertexStreams = new Vector.<IVertexStream>();
+			for (var i : int = 0; i < numVertexStreams; ++i)
+			{
+				var vstream : IVertexStream	= vertexStreams[i];
+				
+				if (!vstream.format.equals(vertexStreams[0].format))
+				{
+					throw new Error(
+						'All vertex streams must have the same vertex format.'
+					);
+				}
+				
+				setVertexStream(vstream, i);
+			}
+			
+			_indexStream = indexStream;
+			
 			if (!_indexStream && _vertexStreams && _vertexStreams.length)
 			{
 				_indexStream = new IndexStream(
@@ -132,14 +149,6 @@ package aerys.minko.scene.node.mesh.geometry
 					null,
 					_vertexStreams[0].length
 				);
-			}
-			
-			for each (var vstream : IVertexStream in _vertexStreams)
-			{
-				if (!vstream.format.equals(_vertexStreams[0].format))
-					throw new Error(
-						"All vertex streams must have the same vertex format"
-					);
 			}
 			
 			updateBoundingVolumes();
@@ -159,7 +168,16 @@ package aerys.minko.scene.node.mesh.geometry
 		
 		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
 		{
+			if (index < _vertexStreams.length)
+				_vertexStreams[index].boundsChanged.remove(vertexStreamBoundsChangedHandler);
+			
+			vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
 			_vertexStreams[index] = vertexStream;
+		}
+		
+		private function vertexStreamBoundsChangedHandler(stream	: IVertexStream) : void
+		{
+			updateBoundingVolumes();
 		}
 		
 		/**
@@ -279,9 +297,9 @@ package aerys.minko.scene.node.mesh.geometry
 		 */
 		public function computeTangentSpace(streamUsage : uint, replace : Boolean = false) : void
 		{
-			var indices			: Vector.<uint>		= _indexStream._data;
-			var numTriangles	: int				= _indexStream.length / 3;
-			var numStreams		: int				= _vertexStreams.length;
+			var indices			: Vector.<uint>	= _indexStream._data;
+			var numTriangles	: int			= _indexStream.length / 3;
+			var numStreams		: int			= _vertexStreams.length;
 			
 			for (var streamId : int = 0; streamId < numStreams; ++streamId)
 			{
@@ -456,25 +474,58 @@ package aerys.minko.scene.node.mesh.geometry
 			var stream	: IVertexStream	= _vertexStreams[index];
 			
 			if (!(stream is VertexStreamList))
-				_vertexStreams[index] = stream = new VertexStreamList(stream);
+				setVertexStream(stream = new VertexStreamList(stream), index);
 			
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
 		private function updateBoundingVolumes() : void
 		{
-			var xyzStream	: VertexStream	= _vertexStreams[0].getStreamByComponent(VertexComponent.XYZ);
-			var offset		: uint			= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-			var min			: Vector4		= new Vector4(
-				xyzStream.getMinimum(offset),
-				xyzStream.getMinimum(offset + 1),
-				xyzStream.getMinimum(offset + 2)
-			);
-			var max			: Vector4		= new Vector4(
-				xyzStream.getMaximum(offset),
-				xyzStream.getMaximum(offset + 1),
-				xyzStream.getMaximum(offset + 2)
-			);
+			var numStreams	: int		= _vertexStreams.length;
+			var minX		: Number	= 0.;
+			var minY		: Number	= 0.;
+			var minZ		: Number	= 0.;
+			var maxX		: Number	= 0.;
+			var maxY		: Number	= 0.;
+			var maxZ		: Number	= 0.;
+			
+			for (var i : int = 0; i < numStreams; ++i)
+			{
+				var xyzStream	: VertexStream	= _vertexStreams[i].getStreamByComponent(
+					VertexComponent.XYZ
+				);
+				
+				if (!xyzStream)
+					return ;
+				
+				var offset		: uint		= xyzStream.format.getOffsetForComponent(
+					VertexComponent.XYZ
+				);
+				var streamMinX	: Number	= xyzStream.getMinimum(offset);
+				var streamMinY	: Number	= xyzStream.getMinimum(offset + 1);
+				var streamMinZ	: Number	= xyzStream.getMinimum(offset + 2);
+				var streamMaxX	: Number	= xyzStream.getMaximum(offset);
+				var streamMaxY	: Number	= xyzStream.getMaximum(offset + 1);
+				var streamMaxZ	: Number	= xyzStream.getMaximum(offset + 2);
+				
+				if (streamMinX < minX)
+					minX = streamMinX;
+				if (streamMaxX > maxX)
+					maxX = streamMaxX;
+				
+				if (streamMinY < minY)
+					minY = streamMinY;
+				if (streamMaxY > maxY)
+					maxY = streamMaxY;
+				
+				if (streamMinZ < minZ)
+					minZ = streamMinZ;
+				if (streamMaxZ > maxZ)
+					maxZ = streamMaxZ;
+			}
+			
+			var min : Vector4	= new Vector4(minX, minY, minZ);
+			var max : Vector4	= new Vector4(maxX, maxY, maxZ);
 			
 			_boundingSphere = BoundingSphere.fromMinMax(min, max);
 			_boundingBox = new BoundingBox(min, max);

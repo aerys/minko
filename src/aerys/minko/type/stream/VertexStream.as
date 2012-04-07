@@ -29,7 +29,7 @@ package aerys.minko.type.stream
 		private var _minimum		: Vector.<Number>			= null;
 
 		private var _changed		: Signal					= new Signal('VertexStream.changed');
-		private var _minMaxChanged	: Signal					= new Signal('VertexStream.minMaxChanged');
+		private var _boundsChanged	: Signal					= new Signal('VertexStream.boundsChanged');
 		
 		public function get format() : VertexFormat
 		{
@@ -67,9 +67,9 @@ package aerys.minko.type.stream
 			return _changed;
 		}
 		
-		public function get minMaxChanged() : Signal
+		public function get boundsChanged() : Signal
 		{
-			return _minMaxChanged;
+			return _boundsChanged;
 		}
 
 		public function VertexStream(usage		: uint,
@@ -134,7 +134,7 @@ package aerys.minko.type.stream
 				i += size;
 			}
 			
-			_minMaxChanged.execute(this);
+			_boundsChanged.execute(this);
 		}
 		
 		public function deleteVertexByIndex(index : uint) : Boolean
@@ -192,7 +192,7 @@ package aerys.minko.type.stream
 			}
 			
 			_changed.execute(this, null);
-			_minMaxChanged.execute(this);
+			_boundsChanged.execute(this);
 		}
 
 		public function push(data : Vector.<Number>) : void

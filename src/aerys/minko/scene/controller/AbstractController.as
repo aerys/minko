@@ -1,9 +1,12 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	
+	import flash.display.BitmapData;
 	import flash.utils.getQualifiedClassName;
 
 	/**
@@ -16,8 +19,6 @@ package aerys.minko.scene.controller
 	 */
 	public class AbstractController
 	{
-		private var _mode			: uint					= 0;
-		
 		private var _lastTime		: Number				= 0.0;
 		private var _lastTarget		: ISceneNode			= null;
 		
@@ -27,23 +28,6 @@ package aerys.minko.scene.controller
 		private var _ticked			: Signal				= new Signal('AbstractController.ticked');
 		private var _targetAdded	: Signal				= new Signal('AbstractController.targetAdded');
 		private var _targetRemoved	: Signal				= new Signal('AbstractController.targetRemoved');
-		
-		/**
-		 * The mode of the controller: signal (ConttrollerMode.SIGNAL) or tick (ControllerMode.TICK).
-		 * Controllers can work in two different ways:
-		 * <ul>
-		 * <li>signal: the controller listen for signals dispatched from other objects
-		 * - such as its target scene nodes - and execute its operations acccordingle</li>
-		 * <li>tick: the controller must be updated every frame and the method "tick"
-		 * is called whenever of the its target is in the scene about to be rendered</li>
-		 * </ul>
-		 * @return 
-		 * 
-		 */
-		public function get mode() : uint
-		{
-			return _mode;
-		}
 		
 		/**
 		 * The number of scene nodes targeted by this very controller. 
@@ -96,11 +80,9 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function AbstractController(targetType : Class 	= null,
-										   mode		  : uint	= 1)
+		public function AbstractController(targetType 		: Class 	= null)
 		{
 			_targetType = targetType || ISceneNode;
-			_mode = mode;
 		}
 		
 		/**
@@ -157,37 +139,6 @@ package aerys.minko.scene.controller
 		public function clone() : AbstractController
 		{
 			throw new Error("The method AbstractController.clone() must be overriden.");
-		}
-		
-		public function tick(target : ISceneNode, time : Number) : void
-		{
-			var update : Boolean	= false;
-			
-			if (time != _lastTime)
-			{
-				update = updateOnTime(time);
-				_lastTime = time;
-			}
-			
-			if (target != _lastTarget || update)
-			{
-				updateTarget(target);
-				_lastTarget = target;
-			}
-			
-			_ticked.execute(this, target, time);
-		}
-		
-		protected function updateOnTime(time : Number) : Boolean
-		{
-			// nothing
-			
-			return false;
-		}
-		
-		protected function updateTarget(target : ISceneNode) : void
-		{
-			// nothing
 		}
 	}
 }

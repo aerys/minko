@@ -66,7 +66,7 @@ package aerys.minko.render.shader.compiler
 				var vectorNumberData		: Vector.<Number>	= Vector.<Number>(data);
 				var vectorNumberDatalength	: uint				= vectorNumberData.length;
 				
-				for (var k : int = 0; k < size; ++k)
+				for (var k : int = 0; k < size && k < vectorNumberDatalength; ++k)
 					target[offset + k] = vectorNumberData[k];
 			}
 			else if (data is Vector.<Vector4>)

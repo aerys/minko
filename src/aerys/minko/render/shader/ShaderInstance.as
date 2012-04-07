@@ -18,19 +18,19 @@ package aerys.minko.render.shader
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public final class PassInstance
+	public final class ShaderInstance
 	{
 		private static const TMP_NUMBERS		: Vector.<Number>	= new Vector.<Number>(0xffff, true);
 		private static const TMP_INTS			: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
-		private var _numUses	: int				= 0;
-		private var _generator	: PassTemplate		= null;
-		private var _signature	: Signature	= null;
+		private var _numUses	: int					= 0;
+		private var _generator	: Shader	= null;
+		private var _signature	: Signature				= null;
 		
-		private var _config		: PassConfig		= null;
-		private var _program	: Program3DResource	= null;
+		private var _config		: ShaderSettings		= null;
+		private var _program	: Program3DResource		= null;
 		
-		public function get generator() : PassTemplate
+		public function get generator() : Shader
 		{
 			return _generator;
 		}
@@ -40,7 +40,7 @@ package aerys.minko.render.shader
 			return _signature;
 		}
 		
-		public function get config() : PassConfig
+		public function get config() : ShaderSettings
 		{
 			return _config;
 		}
@@ -55,8 +55,8 @@ package aerys.minko.render.shader
 			return _numUses == 0
 		}
 		
-		public final function PassInstance(generator	: PassTemplate,
-										   config		: PassConfig,
+		public final function ShaderInstance(generator	: Shader,
+										   config		: ShaderSettings,
 										   program		: Program3DResource,
 										   signature	: Signature)
 		{
@@ -68,7 +68,7 @@ package aerys.minko.render.shader
 		
 		public function prepareContext(context 		: Context3D,
 									   backBuffer	: RenderTarget,
-									   previous		: PassInstance) : void
+									   previous		: ShaderInstance) : void
 		{
 			_config.prepareContext(context, backBuffer, previous != null ? previous.config : null);
 			_program.prepareContext(context, previous != null ? previous.program : null);
@@ -88,14 +88,14 @@ package aerys.minko.render.shader
 			_program.release();
 		}
 		
-		public static function sort(instances : Vector.<PassInstance>, numStates : int) : void
+		public static function sort(instances : Vector.<ShaderInstance>, numStates : int) : void
 		{
 			var n 		: int 		= numStates;
 			var i		: int 		= 0;
 			var j		: int 		= 0;
 			var k		: int 		= 0;
 			var t		: int		= 0;
-			var state 	: PassInstance	= instances[0];
+			var state 	: ShaderInstance	= instances[0];
 			var anmin	: Number 	= -state._config.priority;
 			var nmax	: int  		= 0;
 			var p		: Number	= 0.;
@@ -131,7 +131,7 @@ package aerys.minko.render.shader
 				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
 			
 			var hold		: Number 		= Number(TMP_NUMBERS[nmax]);
-			var holdState 	: PassInstance 	= instances[nmax] as PassInstance;
+			var holdState 	: ShaderInstance 	= instances[nmax] as ShaderInstance;
 			
 			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
 			TMP_NUMBERS[0] = hold;
@@ -139,7 +139,7 @@ package aerys.minko.render.shader
 			instances[0] = holdState;
 			
 			var flash		: Number			= 0.;
-			var flashState	: PassInstance	= null;
+			var flashState	: ShaderInstance	= null;
 			
 			j = 0;
 			k = int(m - 1);
@@ -154,7 +154,7 @@ package aerys.minko.render.shader
 				}
 				
 				flash = Number(TMP_NUMBERS[j]);
-				flashState = instances[j] as PassInstance;
+				flashState = instances[j] as ShaderInstance;
 				
 				while (!(j == int(TMP_INTS[k])))
 				{
@@ -162,7 +162,7 @@ package aerys.minko.render.shader
 					
 					t = int(TMP_INTS[k]) - 1;
 					hold = Number(TMP_NUMBERS[t]);
-					holdState = instances[t] as PassInstance;
+					holdState = instances[t] as ShaderInstance;
 					
 					TMP_NUMBERS[t] = flash;
 					instances[t] = flashState;

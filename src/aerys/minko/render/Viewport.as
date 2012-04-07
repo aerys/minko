@@ -6,6 +6,7 @@ package aerys.minko.render
 	import aerys.minko.type.Signal;
 	
 	import flash.display.BitmapData;
+	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
@@ -20,10 +21,8 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Viewport
+	public final class Viewport extends Sprite
 	{
-		use namespace minko_scene;
-		
 		private var _stage3d			: Stage3D		= null;
 		
 		private var _width				: uint			= 0;
@@ -45,13 +44,14 @@ package aerys.minko.render
 		 * @return 
 		 * 
 		 */
-		public function get visible() : Boolean
+		override public function get visible() : Boolean
 		{
 			return _stage3d.visible;
 		}
-		public function set visible(v : Boolean) : void
+		override public function set visible(v : Boolean) : void
 		{
 			_stage3d.visible = v;
+			super.visible = v;
 		}
 		
 		/**
@@ -59,9 +59,14 @@ package aerys.minko.render
 		 * @return 
 		 * 
 		 */
-		public function get width() : uint
+		override public function get width() : Number
 		{
 			return _width;
+		}
+		override public function set width(value : Number) : void
+		{
+			_width = value;
+			_invalidBackBuffer = true;
 		}
 		
 		/**
@@ -69,9 +74,14 @@ package aerys.minko.render
 		 * @return 
 		 * 
 		 */
-		public function get height() : uint
+		override public function get height() : Number
 		{
 			return _height;
+		}
+		override public function set height(value : Number) : void
+		{
+			_height = value;
+			_invalidBackBuffer = true;
 		}
 		
 		/**
@@ -132,34 +142,6 @@ package aerys.minko.render
 		{
 			_antiAliasing = value;
 			_invalidBackBuffer = true;
-		}
-		
-		/**
-		 * The signal executed when the viewport is about to start rendering a frame.
-		 * Callback functions for this signal should accept the following arguments:
-		 * <ul>
-		 * <li>viewport : Viewport, the viewport who starts rendering the frame</li>
-		 * </ul>
-		 * @return 
-		 * 
-		 */
-		public function get enterFrame() : Signal
-		{
-			return _enterFrame;
-		}
-		
-		/**
-		 * The signal executed when the viewport is done rendering a frame.
-		 * Callback functions for this signal should accept the following arguments:
-		 * <ul>
-		 * <li>viewport : Viewport, the viewport who just finished rendering the frame</li>
-		 * </ul>
-		 * @return 
-		 * 
-		 */
-		public function get exitFrame() : Signal
-		{
-			return _exitFrame;
 		}
 		
 		/**
@@ -270,7 +252,7 @@ package aerys.minko.render
 		 * @param destination
 		 * 
 		 */
-		public function render(scene : Scene, destination : BitmapData = null) : void
+		/*public function render(scene : Scene, destination : BitmapData = null) : void
 		{
 			_enterFrame.execute(this, scene);
 			
@@ -300,6 +282,19 @@ package aerys.minko.render
 			Factory.sweep();
 			
 			_exitFrame.execute(this, scene);
+		}*/
+		
+		public function getBackBuffer() : RenderTarget
+		{
+			if (_invalidBackBuffer)
+				updateBackBuffer();
+			
+			return _backBuffer;
+		}
+		
+		public function getContext3D() : Context3D
+		{
+			return _stage3d ? _stage3d.context3D : null;
 		}
 	}
 }

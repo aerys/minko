@@ -4,20 +4,22 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.shader.PassInstance;
-	import aerys.minko.render.shader.PassTemplate;
+	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.ShaderInstance;
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.ControllerMode;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
+	import aerys.minko.type.Factory;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.log.DebugLevel;
 	
+	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.utils.Dictionary;
 	
@@ -30,24 +32,24 @@ package aerys.minko.scene.controller.scene
 	 * @author Jean-Marc Le Roux
 	 * @author Romain Gilliotte
 	 */
-	public class RenderingController extends AbstractController
+	public class SceneRenderingController extends AbstractController
 	{
 		private static const MESHES : Vector.<ISceneNode> = new Vector.<ISceneNode>();
 		
 		use namespace minko_render;
 		
-		private var _scene								: Scene;
+		private var _scene						: Scene						= null;
 		
-		private var _stashedPropertyChanges				: Dictionary;
+		private var _stashedPropertyChanges		: Dictionary				= null;
 		
-		private var _passInstances						: Vector.<PassInstance>
-		private var _passInstancesIsSorted				: Boolean;
+		private var _passInstances				: Vector.<ShaderInstance>	= null;
+		private var _passInstancesIsSorted		: Boolean					= false;
 		
-		private var _drawCallToPassInstance				: Dictionary;
-		private var _passInstanceToDrawCalls			: Dictionary;
+		private var _drawCallToPassInstance		: Dictionary				= null;
+		private var _passInstanceToDrawCalls	: Dictionary				= null;
 		
-		private var _meshToDrawCalls					: Dictionary;
-		private var _drawCallToMeshBindings				: Dictionary;
+		private var _meshToDrawCalls			: Dictionary				= null;
+		private var _drawCallToMeshBindings		: Dictionary				= null;
 		
 		/**
 		 * Index meshes by their own databinding.
@@ -74,11 +76,11 @@ package aerys.minko.scene.controller.scene
 		 */
 		private var _effectToMeshes				: Dictionary;
 		
-		public function RenderingController()
+		public function SceneRenderingController()
 		{
-			super(Scene, ControllerMode.SIGNAL);
+			super(Scene);
 			
-			_passInstances				= new Vector.<PassInstance>();
+			_passInstances				= new Vector.<ShaderInstance>();
 			_passInstancesIsSorted		= true;
 			
 			_drawCallToPassInstance		= new Dictionary();
@@ -109,19 +111,19 @@ package aerys.minko.scene.controller.scene
 			// sort states
 			if (!_passInstancesIsSorted && numPasses != 0)
 			{
-				PassInstance.sort(_passInstances, numPasses);
+				ShaderInstance.sort(_passInstances, numPasses);
 				_passInstancesIsSorted = true;
 			}
 			
 			// apply states
-			var previous 		: PassInstance 	= null;
+			var previous 		: ShaderInstance 	= null;
 			var callTriangles	: uint				= 0;
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			
 			for (var i : int = 0; i < numPasses; ++i)
 			{
-				var pass 		: PassInstance		= _passInstances[i];
+				var pass 		: ShaderInstance	= _passInstances[i];
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
 				var numCalls	: int				= calls.length;
 				
@@ -164,25 +166,59 @@ package aerys.minko.scene.controller.scene
 		 * Keep a pointer to the scene this RenderingController is used on.
 		 * If this controller was already added to a scene, an error is thrown.
 		 */
-		private function targetAddedHandler(controller	: RenderingController,
+		private function targetAddedHandler(controller	: SceneRenderingController,
 											scene		: Scene) : void
 		{
 			if (_scene != null)
-				throw new Error('RenderingController must be instanciated for every Scene');
+			{
+				throw new Error(
+					'The SceneRenderingController cannot target more than one Scene.'
+				);
+			}
 			
 			_scene = scene;
-			_scene.descendantAdded.add(childAddedHandler);
-			_scene.descendantRemoved.add(childRemovedHandler);
+			_scene.enterFrame.add(sceneEnterFrameHandler);
+			_scene.exitFrame.add(sceneExitFrameHandler);
+			_scene.descendantAdded.add(descendantAddedHandler);
+			_scene.descendantRemoved.add(descendantRemovedHandler);
+		}
+		
+		private function sceneEnterFrameHandler(scene 		: Scene,
+												viewport 	: Viewport,
+												target 		: BitmapData,
+												time		: Number) : void
+		{
+			_scene.bindings.setProperty("time", time);
+		}
+		
+		private function sceneExitFrameHandler(scene 	: Scene,
+											   viewport : Viewport,
+											   target 	: BitmapData,
+											   time		: Number) : void
+		{
+			var context		: Context3D		= viewport.getContext3D();
+			
+			if (context)
+			{
+				render(context, viewport.getBackBuffer());
+				
+				if (target)
+					context.drawToBitmapData(target);
+				else
+					context.present();
+				
+				Factory.sweep();
+			}
 		}
 		
 		/**
 		 * Remove callbacks and reset the whole controller.
 		 */
-		private function targetRemovedHandler(controller : RenderingController,
+		private function targetRemovedHandler(controller : SceneRenderingController,
 											  scene		 : Scene) : void
 		{
-			_scene.descendantAdded.remove(childAddedHandler);
-			_scene.descendantRemoved.remove(childRemovedHandler);
+			_scene.descendantAdded.remove(descendantAddedHandler);
+			_scene.descendantRemoved.remove(descendantRemovedHandler);
 			_scene = null;
 		}
 		
@@ -190,8 +226,8 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is added to the scene.
 		 * This will forward its calls to addMesh.
 		 */
-		private function childAddedHandler(group : Group,
-										   child : ISceneNode) : void
+		private function descendantAddedHandler(group : Group,
+												child : ISceneNode) : void
 		{
 			if (child is Mesh)
 				addMesh(Mesh(child));
@@ -207,8 +243,8 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is removed from the scene.
 		 * This will forward its calls to removeMesh.
 		 */
-		private function childRemovedHandler(group : Group,
-											 child : ISceneNode) : void
+		private function descendantRemovedHandler(group : Group,
+											 	  child : ISceneNode) : void
 		{
 			if (child is Mesh)
 				removeMesh(Mesh(child));
@@ -234,8 +270,8 @@ package aerys.minko.scene.controller.scene
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
 				// fork pass if needed
-				var passTemplate	: PassTemplate	= meshEffect.getPass(i);
-				var passInstance	: PassInstance	= passTemplate.fork(meshBindings, sceneBindings);
+				var asShader		: Shader	= meshEffect.getPass(i);
+				var passInstance	: ShaderInstance		= asShader.fork(meshBindings, sceneBindings);
 				
 				// create drawcall
 				var drawCall		: DrawCall		= new DrawCall();
@@ -257,6 +293,9 @@ package aerys.minko.scene.controller.scene
 			}
 			
 			_effectToMeshes[meshEffect].push(mesh);
+			
+			//register to visibility change signal
+			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 		}
 		
 		private function removeMesh(mesh : Mesh) : void
@@ -273,8 +312,8 @@ package aerys.minko.scene.controller.scene
 			for (var drawCallId : uint = 0; drawCallId < numPasses; ++drawCallId)
 			{
 				// retrieve drawcall, and shaderInstance
-				var drawCall		: DrawCall		= drawCalls[drawCallId];
-				var passInstance	: PassInstance	= _drawCallToPassInstance[drawCall];
+				var drawCall		: DrawCall			= drawCalls[drawCallId];
+				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
 				
 				unbind(passInstance, drawCall, meshBindings);
 			}
@@ -291,6 +330,9 @@ package aerys.minko.scene.controller.scene
 				delete _effectToMeshes[meshEffect];
 				meshEffect.passesChanged.remove(effectPassesChangedHandler);
 			}
+			
+			//remove to visibility change signal
+			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 		}
 		
 		private function meshVisibilityChangedHandler(mesh		 : Mesh,
@@ -323,7 +365,7 @@ package aerys.minko.scene.controller.scene
 			
 			for (var shaderInstanceId : int = numShaderInstances - 1; shaderInstanceId >= 0; --shaderInstanceId)
 			{
-				var passInstance			: PassInstance		= _passInstances[shaderInstanceId];
+				var passInstance			: ShaderInstance		= _passInstances[shaderInstanceId];
 				var passInstanceSignature	: Signature			= passInstance.signature;
 				var drawCalls				: Vector.<DrawCall>	= _passInstanceToDrawCalls[passInstance];
 				var numDrawCalls			: int				= drawCalls.length;
@@ -354,7 +396,7 @@ package aerys.minko.scene.controller.scene
 					// our shader is no longer valid, we need to find a new one.
 					unbind(passInstance, drawCall, meshBindings);
 					
-					var replacementInstance : PassInstance = passInstance.generator.fork(meshBindings, sceneBindings);
+					var replacementInstance : ShaderInstance = passInstance.generator.fork(meshBindings, sceneBindings);
 					drawCall.configure(replacementInstance.program, meshGeometry, meshBindings, sceneBindings);
 					bind(replacementInstance, drawCall, meshBindings);
 				}
@@ -365,7 +407,7 @@ package aerys.minko.scene.controller.scene
 				Vector.<String>(changes).length = 0;
 		}
 		
-		private function bind(passInstance	: PassInstance,
+		private function bind(passInstance	: ShaderInstance,
 							  drawCall		: DrawCall,
 							  meshBindings	: DataBindings) : void
 		{
@@ -392,9 +434,9 @@ package aerys.minko.scene.controller.scene
 			// update indexes
 			_drawCallToPassInstance[drawCall] = passInstance;
 			
-			if (_passInstanceToDrawCalls[passInstance] == undefined)
+			if (!_passInstanceToDrawCalls[passInstance])
 			{
-				_passInstanceToDrawCalls[passInstance] = new Vector.<DrawCall>();
+				_passInstanceToDrawCalls[passInstance] = new <DrawCall>[];
 				_passInstances.push(passInstance);
 				_passInstancesIsSorted = false;
 			}
@@ -403,7 +445,7 @@ package aerys.minko.scene.controller.scene
 			_passInstanceToDrawCalls[passInstance].push(drawCall);
 		}
 		
-		private function unbind(passInstance	: PassInstance,
+		private function unbind(passInstance	: ShaderInstance,
 								drawCall		: DrawCall,
 								meshBindings	: DataBindings) : void
 		{
@@ -445,7 +487,7 @@ package aerys.minko.scene.controller.scene
 														propertyName	: String,
 														newValue		: Object) : void
 		{
-			if (_stashedPropertyChanges[meshBindings] == undefined)
+			if (!_stashedPropertyChanges[meshBindings])
 				_stashedPropertyChanges[meshBindings] = new Vector.<String>();
 			
 			_stashedPropertyChanges[meshBindings].push(propertyName);

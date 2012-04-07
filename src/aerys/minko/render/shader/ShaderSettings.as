@@ -9,7 +9,7 @@ package aerys.minko.render.shader
 	import flash.display3D.Context3D;
 	import flash.geom.Rectangle;
 
-	public class PassConfig
+	public class ShaderSettings
 	{
 		use namespace minko_render;
 		
@@ -130,7 +130,7 @@ package aerys.minko.render.shader
 			_triangleCullingStr = TriangleCulling.STRINGS[value];
 		}
 		
-		public function PassConfig(signature : Signature)
+		public function ShaderSettings(signature : Signature)
 		{
 			_numUses			= 0;
 			_signature			= signature;
@@ -153,9 +153,9 @@ package aerys.minko.render.shader
 			--_numUses;
 		}
 		
-		minko_render function clone(signature : Signature) : PassConfig
+		minko_render function clone(signature : Signature) : ShaderSettings
 		{
-			var clone : PassConfig = new PassConfig(signature);
+			var clone : ShaderSettings = new ShaderSettings(signature);
 			
 			clone.depthTest			= depthTest;
 			clone.blending			= blending;
@@ -169,7 +169,7 @@ package aerys.minko.render.shader
 		
 		public function prepareContext(context 		: Context3D,
 									   backBuffer	: RenderTarget,
-									   previous		: PassConfig) : void
+									   previous		: ShaderSettings) : void
 		{
 			if (!previous || previous._renderTarget != _renderTarget)
 			{

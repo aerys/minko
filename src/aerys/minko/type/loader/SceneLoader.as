@@ -51,16 +51,11 @@ package aerys.minko.type.loader
 		
 		public static function registerParser(parserClass : Class) : void
 		{
+			if (REGISTERED_PARSERS.indexOf(parserClass) != -1)
+				return;
+			
 			if (!(new parserClass(new ParserOptions()) is IParser))
 				throw new Error('Parsers must implement the IParser interface.');
-			
-			if (REGISTERED_PARSERS.indexOf(parserClass) != -1)
-			{
-				var className : String = getQualifiedClassName(parserClass);
-				className = className.substr(className.lastIndexOf(':') + 1);
-				throw new Error(className + ' does not implement the IParser ' +
-					'interface: it cannot be registered as a parser');
-			}
 			
 			REGISTERED_PARSERS.push(parserClass);
 		}

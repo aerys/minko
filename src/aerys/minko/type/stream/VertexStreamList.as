@@ -9,11 +9,12 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 
-		private var _streams	: Vector.<VertexStream>	= new Vector.<VertexStream>();
-		private var _format		: VertexFormat			= new VertexFormat();
-		private var _usage		: uint					= 0;
+		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
+		private var _format			: VertexFormat			= new VertexFormat();
+		private var _usage			: uint					= 0;
 		
-		private var _changed	: Signal				= new Signal('VertexStreamList.changed');
+		private var _changed		: Signal				= new Signal('VertexStreamList.changed');
+		private var _boundsChanged	: Signal				= new Signal('VertexStream.boundsChanged');
 
 		public function get usage()	: uint
 		{
@@ -38,6 +39,11 @@ package aerys.minko.type.stream
 		public function get changed() : Signal
 		{
 			return _changed;
+		}
+		
+		public function get boundsChanged() : Signal
+		{
+			return _boundsChanged;
 		}
 		
 		public function VertexStreamList(...streams)
@@ -71,8 +77,9 @@ package aerys.minko.type.stream
 			_streams.push(vertexStream);
 			
 			vertexStream.changed.add(subStreamChangedHandler);
+			vertexStream.boundsChanged.add(subStreamBoundsChangedHandler);
 		}
-
+		
 		public function getSubStreamById(id : int) : VertexStream
 		{
 			return _streams[id];
@@ -120,6 +127,11 @@ package aerys.minko.type.stream
 		private function subStreamChangedHandler(subStream : VertexStream, property : String) : void
 		{
 			_changed.execute(this, null);
+		}
+		
+		private function subStreamBoundsChangedHandler(subStream : VertexStream) : void
+		{
+			_boundsChanged.execute(this);
 		}
 	}
 }

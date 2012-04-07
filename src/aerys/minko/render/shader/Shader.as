@@ -27,7 +27,7 @@ package aerys.minko.render.shader
 	 * @see aerys.minko.render.shader.ShaderSignature
 	 * @see aerys.minko.render.shader.ShaderDataBindings
 	 */
-	public class PassTemplate extends ShaderPart
+	public class Shader extends ShaderPart
 	{
 		use namespace minko_shader;
 		use namespace minko_render;
@@ -37,10 +37,10 @@ package aerys.minko.render.shader
 		minko_shader var _kills			: Vector.<INode>				= new <INode>[];
 		
 		private var _name				: String						= null;
-		private var _baseConfig			: PassConfig					= new PassConfig(null);
+		private var _baseConfig			: ShaderSettings				= new ShaderSettings(null);
 		
-		private var _instances			: Vector.<PassInstance>			= new <PassInstance>[];
-		private var _configs			: Vector.<PassConfig>			= new <PassConfig>[];
+		private var _instances			: Vector.<ShaderInstance>		= new <ShaderInstance>[];
+		private var _configs			: Vector.<ShaderSettings>		= new <ShaderSettings>[];
 		private var _programs			: Vector.<Program3DResource>	= new <Program3DResource>[];
 		
 		/**
@@ -64,7 +64,7 @@ package aerys.minko.render.shader
 		 * @param renderTarget Default value is null.
 		 * 
 		 */
-		public function PassTemplate()
+		public function Shader()
 		{
 			super(this);
 			
@@ -72,20 +72,20 @@ package aerys.minko.render.shader
 		}
 		
 		public function fork(meshBindings	: DataBindings,
-							 sceneBindings	: DataBindings) : PassInstance
+							 sceneBindings	: DataBindings) : ShaderInstance
 		{
-			var pass : PassInstance = findPass(meshBindings, sceneBindings);
+			var pass : ShaderInstance = findPass(meshBindings, sceneBindings);
 			
 			if (pass == null)
 			{
-				var config		: PassConfig		= findOrCreateConfig(meshBindings, sceneBindings);
+				var config		: ShaderSettings		= findOrCreateConfig(meshBindings, sceneBindings);
 				var program		: Program3DResource	= findOrCreateProgram(meshBindings, sceneBindings);
 				var signature	: Signature			= new Signature(_name);
 				
 				signature.mergeWith(config.signature);
 				signature.mergeWith(program.signature);
 				
-				pass = new PassInstance(this, config, program, signature);
+				pass = new ShaderInstance(this, config, program, signature);
 			}
 			
 			return pass;
@@ -98,7 +98,7 @@ package aerys.minko.render.shader
 			
 			for (var instanceId : uint = 0; instanceId < numInstances; ++instanceId)
 			{
-				var passInstance : PassInstance = _instances[instanceId];
+				var passInstance : ShaderInstance = _instances[instanceId];
 				
 				if (!passInstance.isDisposable)
 					_instances[currentId++] = passInstance;
@@ -107,7 +107,7 @@ package aerys.minko.render.shader
 			_instances.length = currentId;
 		}
 		
-		protected function configurePass(passConfig : PassConfig) : void
+		protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			throw new Error("The method 'configurePass' must be implemented.");
 		}
@@ -138,7 +138,7 @@ package aerys.minko.render.shader
 		
 		
 		private function findPass(meshBindings	: DataBindings,
-								  sceneBindings	: DataBindings) : PassInstance
+								  sceneBindings	: DataBindings) : ShaderInstance
 		{
 			var numPasses : int = _instances.length;
 			
@@ -179,10 +179,10 @@ package aerys.minko.render.shader
 		}
 		
 		private function findOrCreateConfig(meshBindings 	: DataBindings,
-								 			sceneBindings	: DataBindings) : PassConfig
+								 			sceneBindings	: DataBindings) : ShaderSettings
 		{
 			var numConfigs	: int = _configs.length;
-			var config		: PassConfig;
+			var config		: ShaderSettings;
 			
 			for (var configId : int = 0; configId < numConfigs; ++configId)
 				if (_configs[configId].signature.isValid(meshBindings, sceneBindings))
@@ -194,7 +194,7 @@ package aerys.minko.render.shader
 			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
 			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
-			configurePass(config);
+			initializeSettings(config);
 			
 			_meshBindings	= null;
 			_sceneBindings	= null;
