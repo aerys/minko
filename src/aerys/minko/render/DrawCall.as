@@ -49,7 +49,7 @@ package aerys.minko.render
 		private var _firstIndex			: int								= 0;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
-		private var _numVertexComponents: int								= 0;
+		private var _numVertexComponents: uint								= 0;
 		private var _offsets			: Vector.<int>						= new Vector.<int>(8, true);
 		private var _formats			: Vector.<String>					= new Vector.<String>(8, true);
 		
@@ -192,7 +192,7 @@ package aerys.minko.render
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
 			
-			for (var i : int = 0; i < _numVertexComponents; ++i)
+			for (var i : uint = 0; i < _numVertexComponents; ++i)
 			{
 				var component : VertexComponent	= _vsInputComponents[i];
 				var index	  : uint			= _vsInputIndices[i];

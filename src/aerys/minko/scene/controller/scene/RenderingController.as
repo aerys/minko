@@ -378,7 +378,7 @@ package aerys.minko.scene.controller.scene
 			_meshToDrawCalls[mesh]				= drawCalls;
 			_meshBindingToMesh[meshBindings]	= mesh;
 			
-			if (_effectToMeshes[meshEffect] == undefined)
+			if (!_effectToMeshes[meshEffect])
 			{
 				_effectToMeshes[meshEffect] = new Vector.<Mesh>();
 				meshEffect.passesChanged.add(effectPassesChangedHandler);
@@ -389,6 +389,7 @@ package aerys.minko.scene.controller.scene
 			//register to visibility change signal
 			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 			mesh.frameChanged.add(meshFrameChangedHandler);
+			mesh.geometryChanged.add(meshGeometryChangedHandler);
 		}
 		
 		private function removeMesh(mesh : Mesh) : void
@@ -428,16 +429,7 @@ package aerys.minko.scene.controller.scene
 			//remove to visibility change signal
 			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
-		}
-		
-		private function meshVisibilityChangedHandler(mesh		 : Mesh,
-													  visibility : Boolean) : void
-		{
-			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
-			var numDrawCalls	: uint				= drawCalls.length;
-			
-			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
-				drawCalls[drawCallId].enabled = visibility;
+			mesh.geometryChanged.remove(meshGeometryChangedHandler);
 		}
 		
 		private function effectPassesChangedHandler(effect : Effect) : void
@@ -452,19 +444,45 @@ package aerys.minko.scene.controller.scene
 			
 		}
 		
-		private function meshFrameChangedHandler(mesh	: Mesh,
-												 frame	: uint) : void
+		private function meshVisibilityChangedHandler(mesh		 : Mesh,
+													  visibility : Boolean) : void
+		{
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numDrawCalls	: uint				= drawCalls.length;
+			
+			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
+				drawCalls[drawCallId].enabled = visibility;
+		}
+		
+		private function meshFrameChangedHandler(mesh		: Mesh,
+												 oldFrame	: uint,
+												 newFrame	: uint) : void
 		{
 			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numCalls	: uint				= drawCalls.length;
 			var geom		: Geometry			= mesh.geometry;
+			
+			for (var callId : uint = 0; callId < numCalls; ++callId)
+			{
+				var drawCall	: DrawCall	= drawCalls[callId];
+				
+				drawCall.setGeometry(geom, newFrame);
+			}
+		}
+		
+		private function meshGeometryChangedHandler(mesh		: Mesh,
+													oldGeometry	: Geometry,
+													newGeometry	: Geometry) : void
+		{
+			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numCalls	: uint				= drawCalls.length;
 			var frame		: uint				= mesh.frame;
 			
 			for (var callId : uint = 0; callId < numCalls; ++callId)
 			{
 				var drawCall	: DrawCall	= drawCalls[callId];
 				
-				drawCall.setGeometry(geom, frame);
+				drawCall.setGeometry(newGeometry, frame);
 			}
 		}
 		
@@ -585,8 +603,12 @@ package aerys.minko.scene.controller.scene
 			delete _drawCallToPassInstance[drawCall];
 			delete _drawCallToMeshBindings[drawCall];
 			
-			var drawCalls : Vector.<DrawCall> = _passInstanceToDrawCalls[passInstance];
-			drawCalls.splice(drawCalls.indexOf(drawCall), 1);
+			var drawCalls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[passInstance];
+			var numDrawCalls	: uint				= drawCalls.length - 1;
+			
+			for (i = drawCalls.indexOf(drawCall); i < numDrawCalls; ++i)
+				drawCalls[i] = drawCalls[uint(i + 1)];
+			drawCalls.length = numDrawCalls;
 			
 			if (drawCalls.length == 0)
 			{
