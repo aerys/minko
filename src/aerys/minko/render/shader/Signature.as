@@ -63,9 +63,9 @@ package aerys.minko.render.shader
 		public function isValid(meshBindings 	: DataBindings,
 								sceneBindings	: DataBindings) : Boolean
 		{
-			var numKeys	: int	= _keys.length;
+			var numKeys	: uint	= _keys.length;
 			
-			for (var i : int = 0; i < numKeys; ++i)
+			for (var i : uint = 0; i < numKeys; ++i)
 			{
 				var key		: String		= _keys[i];
 				var flags	: uint			= _flags[i];

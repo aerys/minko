@@ -41,10 +41,10 @@ package aerys.minko.render.shader.compiler
 				generateCrcTable();
 			
 			var crcTable	: Vector.<uint> = CRC_TABLE;
-			var crcAccum 	: uint = uint(-1);
-			var length1		: uint = (length >> 2) << 2;
+			var crcAccum 	: uint 			= uint(-1);
+			var length1		: uint 			= (length >> 2) << 2;
 			
-			var j : uint = 0
+			var j : uint = 0;
 			var i : uint;
 			
 			for (; j < length1; j += 4)

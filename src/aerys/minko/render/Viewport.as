@@ -1,5 +1,6 @@
 package aerys.minko.render
 {
+	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
@@ -38,6 +39,24 @@ package aerys.minko.render
 		private var _resized			: Signal		= new Signal('Viewport.resized');
 		private var _enterFrame			: Signal		= new Signal('Viewport.enterFrame');
 		private var _exitFrame			: Signal		= new Signal('Viewport.exitFrame');
+		
+		minko_render function get context3D() : Context3D
+		{
+			return _stage3d ? _stage3d.context3D : null;
+		}
+		
+		minko_render function get backBuffer() : RenderTarget
+		{
+			if (_invalidBackBuffer)
+				updateBackBuffer();
+			
+			return _backBuffer;
+		}
+		
+		public function get ready() : Boolean
+		{
+			return _stage3d && _stage3d.context3D;
+		}
 		
 		/**
 		 * Whether the viewport is visible or not. 
@@ -284,17 +303,5 @@ package aerys.minko.render
 			_exitFrame.execute(this, scene);
 		}*/
 		
-		public function getBackBuffer() : RenderTarget
-		{
-			if (_invalidBackBuffer)
-				updateBackBuffer();
-			
-			return _backBuffer;
-		}
-		
-		public function getContext3D() : Context3D
-		{
-			return _stage3d ? _stage3d.context3D : null;
-		}
 	}
 }
