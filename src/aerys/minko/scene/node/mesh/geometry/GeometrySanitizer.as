@@ -5,6 +5,14 @@ package aerys.minko.scene.node.mesh.geometry
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 
+	/**
+	 * The GeometrySanitizer static class provides methods to clean up
+	 * 3D geometry loaded from 3D asset files and make sure it is compliant
+	 * with the limitations of the Stage3D API.
+	 * 
+	 * @author Romain Gilliotte
+	 * 
+	 */
 	public final class GeometrySanitizer
 	{
 		private static const INDEX_LIMIT	: uint = 524270;
@@ -16,7 +24,7 @@ package aerys.minko.scene.node.mesh.geometry
 		 *  
 		 * @param inVertexData 
 		 * @param inIndexData 
-		 * @param outVertexDatas 
+		 * @param outVertexDatas
 		 * @param outIndexDatas 
 		 * @param dwordsPerVertex 
 		 */		
@@ -58,12 +66,13 @@ package aerys.minko.scene.node.mesh.geometry
 				
 				while (usedIndicesCount < indexDataLength)
 				{
-					// check if next triangle can fill into the index buffer
-					var remainingIndexes	: uint		= INDEX_LIMIT - usedIndicesCount;
-					if (remainingIndexes < 3)
-						break;
+					// check if next triangle fits into the index buffer
+					var remainingIndices	: uint		= INDEX_LIMIT - usedIndicesCount;
 					
-					// check if next triangle can fill into the vertex buffer
+					if (remainingIndices < 3)
+						break ;
+					
+					// check if next triangle fits into the vertex buffer
 					var remainingVertices	: uint		= VERTEX_LIMIT - usedVerticesCount;
 					
 					neededVerticesCount = 0;
@@ -81,7 +90,7 @@ package aerys.minko.scene.node.mesh.geometry
 					}
 					
 					if (remainingVertices < neededVerticesCount)
-						break;
+						break ;
 					
 					// it fills, let insert the triangle
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)

@@ -47,8 +47,12 @@ package aerys.minko.scene.node.mesh
 		
 		private var _frustumCulling		: uint				= 0;
 		
+		private var _frame				: uint				= 0;
+		
 		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
 		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
+		private var _frameChanged		: Signal			= new Signal('Mesh.frameChanged');
+		private var _geometryChanged	: Signal			= new Signal('Mesh.geometryChanged');
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -125,6 +129,16 @@ package aerys.minko.scene.node.mesh
 		{
 			return _geometry;
 		}
+		public function set geometry(value : Geometry) : void
+		{
+			if (_geometry != value)
+			{
+				var oldGeometry	: Geometry = _geometry;
+				
+				_geometry = value;
+				_geometryChanged.execute(this, oldGeometry, value);
+			}
+		}
 		
 		public function get boundingSphere() : BoundingSphere
 		{
@@ -173,6 +187,31 @@ package aerys.minko.scene.node.mesh
 		public function get effectChanged() : Signal
 		{
 			return _effectChanged;
+		}
+		
+		public function get frameChanged() : Signal
+		{
+			return _frameChanged;
+		}
+		
+		public function get geometryChanged() : Signal
+		{
+			return _geometryChanged;
+		}
+		
+		public function get frame() : uint
+		{
+			return _frame;
+		}
+		public function set frame(value : uint) : void
+		{
+			if (_frame != value)
+			{
+				var oldFrame : uint = _frame;
+				
+				_frame = value;
+				_frameChanged.execute(this, oldFrame, value);
+			}
 		}
 		
 		public function Mesh(geometry	: Geometry	= null,

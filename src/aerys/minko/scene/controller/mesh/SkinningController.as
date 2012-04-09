@@ -25,7 +25,7 @@ package aerys.minko.scene.controller.mesh
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class SkinningController extends EnterFrameController
+	public final class SkinningController extends EnterFrameController
 	{
 		use namespace minko_math;
 		

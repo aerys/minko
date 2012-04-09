@@ -20,16 +20,17 @@ package aerys.minko.render.resource.texture
 		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
 		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
 		
-		private var _texture	: Texture	= null;
-		private var _mipmap		: Boolean;
+		private var _texture	: Texture		= null;
+		private var _mipmap		: Boolean		= false;
 
-		private var _bitmapData	: BitmapData;
-		private var _atf		: ByteArray;
+		private var _bitmapData	: BitmapData	= null;
+		private var _atf		: ByteArray		= null;
 
-		private var _width		: Number;
-		private var _height		: Number;
+		private var _width		: Number		= 0;
+		private var _height		: Number		= 0;
 
-		private var _update		: Boolean;
+		private var _update		: Boolean		= false;
+		private var _resize		: Boolean		= false;
 
 		public function get width() : Number
 		{
@@ -40,11 +41,27 @@ package aerys.minko.render.resource.texture
 		{
 			return _height;
 		}
+		
+		public function TextureResource(width : int = 0, height : int = 0)
+		{
+			if (width != 0 && height != 0)
+				setSize(width, height);
+		}
 
 		public function setSize(width : uint, height : uint) : void
 		{
+			//http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
+			if (!(width && !(width & (width - 1)))
+				|| !(height && !(height & (height - 1))))
+			{
+				throw new Error(
+					'The size must be a power of 2.'
+				);
+			}
+			
 			_width	= width;
 			_height	= height;
+			_resize = true;
 		}
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
@@ -108,8 +125,13 @@ package aerys.minko.render.resource.texture
 
 		public function getNativeTexture(context : Context3D) : TextureBase
 		{
-			if (!_texture && _width && _height)
+			if ((!_texture || _resize) && _width && _height)
 			{
+				_resize = false;
+				
+				if (_texture)
+					_texture.dispose();
+				
 				_texture = context.createTexture(
 					_width,
 					_height,

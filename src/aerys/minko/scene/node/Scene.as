@@ -1,7 +1,8 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.controller.scene.SceneRenderingController;
+	import aerys.minko.render.effect.Effect;
+	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	
@@ -15,16 +16,26 @@ package aerys.minko.scene.node
 	 */
 	public final class Scene extends Group
 	{
-		private static const TIME_OFFSET		: Number				= new Date().time;
+//		private static const TIME_OFFSET		: Number		= new Date().time;
 		
-		private var _renderingController	: SceneRenderingController	= new SceneRenderingController();
+		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
-		private var _camera		: Camera			= null;
-		private var _bindings	: DataBindings		= new DataBindings();
+		private var _camera			: Camera				= null;
+		private var _bindings		: DataBindings			= new DataBindings();
 		
-		private var _enterFrame	: Signal			= new Signal("Scene.enterFrame");
-		private var _exitFrame	: Signal			= new Signal("Scene.exitFrame");
+		private var _enterFrame		: Signal				= new Signal("Scene.enterFrame");
+		private var _exitFrame		: Signal				= new Signal("Scene.exitFrame");
 
+		public function get postProcessingEffect() : Effect
+		{
+			return _renderingCtrl.postProcessingEffect;
+		}
+		
+		public function set postProcessingEffect(value : Effect) : void
+		{
+			_renderingCtrl.postProcessingEffect = value;
+		}
+		
 		public function get bindings() : DataBindings
 		{
 			return _bindings;
@@ -62,7 +73,7 @@ package aerys.minko.scene.node
 		{
 			super();
 			
-			addController(_renderingController);
+			addController(_renderingCtrl);
 			
 			initializeChildren(children);
 		}

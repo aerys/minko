@@ -17,8 +17,8 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.enum.SamplerDimension;
-	import aerys.minko.type.enum.SamplerFilter;
-	import aerys.minko.type.enum.SamplerMipmap;
+	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.stream.format.VertexComponent;
 
@@ -144,9 +144,19 @@ package aerys.minko.render.shader.part
 			return _main._sceneBindings.getParameter("cameraPosition", 3);
 		}
 		
+		protected function get cameraLookAt() : SFloat
+		{
+			return _main._sceneBindings.getParameter("cameraLookAt", 3);
+		}
+		
 		protected function get cameraWorldPosition() : SFloat
 		{
 			return _main._sceneBindings.getParameter("cameraWorldPosition", 3);
+		}
+		
+		protected function get cameraWorldLookAt() : SFloat
+		{
+			return _main._sceneBindings.getParameter("cameraWorldLookAt", 3);
 		}
 		
 		protected function get cameraZNear() : SFloat
@@ -245,7 +255,7 @@ package aerys.minko.render.shader.part
 				var nodeSize	: uint	= node.size;
 				
 				if (currentOffset + nodeSize > size)
-					throw new Error('Invalid size specified: value is too big');
+					throwInvalidSizeError(size, currentOffset + nodeSize);
 				
 				args.push(node);
 				components.push(Components.createContinuous(currentOffset, 0, nodeSize, nodeSize));
@@ -253,9 +263,18 @@ package aerys.minko.render.shader.part
 			}
 			
 			if (currentOffset != size)
-				throw new Error('Invalid size specified. Expected ' + size + ' got ' + currentOffset + '.');
+				throwInvalidSizeError(size, currentOffset);
 			
 			return new SFloat(new Overwriter(args, components));
+		}
+		
+		private function throwInvalidSizeError(expected	: uint,
+											   received	: uint) : void
+		{
+			throw new Error(
+				'Invalid size specified: expected ' + expected
+				+ ' but got ' + received + '.'
+			);
 		}
 
 		protected final function float(x : Object) : SFloat
@@ -744,8 +763,8 @@ package aerys.minko.render.shader.part
 		}
 		
 		protected final function getTexture(textureResource : TextureResource,
-											filter			: uint = SamplerFilter.LINEAR,
-											mipmap			: uint = SamplerMipmap.DISABLE,
+											filter			: uint = SamplerFiltering.LINEAR,
+											mipmap			: uint = SamplerMipMapping.DISABLE,
 											wrapping		: uint = SamplerWrapping.REPEAT,
 											dimension		: uint = SamplerDimension.FLAT) : SFloat
 		{

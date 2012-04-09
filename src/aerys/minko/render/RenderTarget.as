@@ -89,6 +89,11 @@ package aerys.minko.render
 			_backgroundColor = backgroundColor;
 			_useDepthAndStencil = useDepthAndStencil;
 			_antiAliasing = antiAliasing;
+			
+			if (_resource && (_resource.width != _width || _resource.height != _height))
+				throw new Error(
+					'The texture resource and the render target must have the same size.'
+				);
 		}
 	}
 }

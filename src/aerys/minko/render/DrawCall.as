@@ -49,7 +49,7 @@ package aerys.minko.render
 		private var _firstIndex			: int								= 0;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
-		private var _numVertexComponents: int								= 0;
+		private var _numVertexComponents: uint								= 0;
 		private var _offsets			: Vector.<int>						= new Vector.<int>(8, true);
 		private var _formats			: Vector.<String>					= new Vector.<String>(8, true);
 		
@@ -167,7 +167,7 @@ package aerys.minko.render
 		 /**
 		  * Ask geometry to compute additional vertex data if needed for this drawcall.
 		  */
-		private function updateGeometry(geometry : Geometry) : void
+		public function updateGeometry(geometry : Geometry) : void
 		{
 			var vertexFormat : VertexFormat	= geometry.format;
 			
@@ -187,28 +187,28 @@ package aerys.minko.render
 		 * Obtain a reference to each buffer and offset that apply() may possibly need.
 		 * 
 		 */		
-		private function setGeometry(geometry : Geometry) : void
+		public function setGeometry(geometry : Geometry, frame : uint = 0) : void
 		{
-			
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
 			
-			for (var i : int = 0; i < _numVertexComponents; ++i)
+			for (var i : uint = 0; i < _numVertexComponents; ++i)
 			{
 				var component : VertexComponent	= _vsInputComponents[i];
 				var index	  : uint			= _vsInputIndices[i];
 				
 				if (component)
 				{
-					var vertexStream	: IVertexStream = geometry.getVertexStream(index);
+					var vertexStream	: IVertexStream = geometry.getVertexStream(index + frame);
 					var stream	 		: VertexStream	= vertexStream.getStreamByComponent(component);
 					var format 			: VertexFormat	= stream.format;
 					
 					if (stream == null)
 					{
-						var cleanClassName : String = getQualifiedClassName(geometry);
-						cleanClassName = cleanClassName.substr(cleanClassName.lastIndexOf(':') + 1);
-						throw new Error('Missing vertex component: ' + component.toString() + ' on ' + cleanClassName);
+						throw new Error(
+							'Missing vertex component: ' + component.toString() + ' on '
+							+ getQualifiedClassName(geometry).split('::')[1]
+						);
 					}
 					
 					_vertexBuffers[i]	= stream.resource;

@@ -173,19 +173,19 @@ package aerys.minko.render.shader
 		{
 			if (!previous || previous._renderTarget != _renderTarget)
 			{
-				if (_renderTarget)
+				var rt 	: RenderTarget 	= _renderTarget || backBuffer;
+				
+				if (rt && rt.resource)
 					context.setRenderToTexture(
-						_renderTarget.resource.getNativeTexture(context),
-						_renderTarget.useDepthAndStencil,
-						_renderTarget.antiAliasing,
-						_renderTarget.surfaceSelector
+						rt.resource.getNativeTexture(context),
+						rt.useDepthAndStencil,
+						rt.antiAliasing,
+						rt.surfaceSelector
 					);
-					
 				else
 					context.setRenderToBackBuffer();
 				
-				var rt : RenderTarget = _renderTarget || backBuffer;
-				var color : uint = rt.backgroundColor;
+				var color 	: uint 	= rt.backgroundColor;
 				
 				context.clear(
 					((color >> 16) & 0xff) / 255.,
