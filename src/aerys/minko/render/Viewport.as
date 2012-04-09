@@ -237,6 +237,7 @@ package aerys.minko.render
 		private function context3dCreatedHandler(event : Event) : void
 		{
 			_invalidBackBuffer = true;
+			dispatchEvent(new Event(Event.INIT));
 		}
 		
 		private function updateBackBuffer() : void
