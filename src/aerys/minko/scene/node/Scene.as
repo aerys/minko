@@ -13,7 +13,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public dynamic class Scene extends Group
+	public final class Scene extends Group
 	{
 		private static const TIME_OFFSET		: Number				= new Date().time;
 		

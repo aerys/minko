@@ -1,12 +1,12 @@
 package aerys.minko.render.shader.part
 {
 	import aerys.minko.render.effect.basic.BasicProperties;
-	import aerys.minko.render.shader.PassTemplate;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	
 	public class NormalMappingShaderPart extends ShaderPart
 	{
-		public function NormalMappingShaderPart(main:PassTemplate)
+		public function NormalMappingShaderPart(main : Shader)
 		{
 			super(main);
 		}
