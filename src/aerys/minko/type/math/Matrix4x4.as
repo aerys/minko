@@ -726,9 +726,9 @@ package aerys.minko.type.math
 			z_axis_Y *= l;
 			z_axis_Z *= l;
 			
-			var x_axis_X : Number = up._vector.y * z_axis_Z - z_axis_Y * up._vector.z;
-			var x_axis_Y : Number = up._vector.z * z_axis_X - z_axis_Z * up._vector.x;
-			var x_axis_Z : Number = up._vector.x * z_axis_Y - z_axis_X * up._vector.y;
+			var x_axis_X : Number = up_axis_y * z_axis_Z - z_axis_Y * up_axis_z;
+			var x_axis_Y : Number = up_axis_z * z_axis_X - z_axis_Z * up_axis_x;
+			var x_axis_Z : Number = up_axis_x * z_axis_Y - z_axis_X * up_axis_y;
 			
 			l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
 			
