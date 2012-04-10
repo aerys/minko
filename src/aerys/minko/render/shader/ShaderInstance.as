@@ -78,14 +78,18 @@ package aerys.minko.render.shader
 		{
 			++_numUses;
 			_config.retain();
-			_program.retain();
+			
+			if (_program != null)
+				_program.retain();
 		}
 		
 		public function release() : void
 		{
 			--_numUses;
 			_config.release();
-			_program.release();
+			
+			if (_program != null)
+				_program.release();
 		}
 		
 		public static function sort(instances : Vector.<ShaderInstance>, numStates : int) : void
