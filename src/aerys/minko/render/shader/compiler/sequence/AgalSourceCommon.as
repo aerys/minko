@@ -10,7 +10,7 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AgalSourceCommon implements IAgalSource
+	public class AgalSourceCommon implements IAgalToken
 	{
 		private var _registerNumber					: uint;
 		private var _indirectOffset					: uint;

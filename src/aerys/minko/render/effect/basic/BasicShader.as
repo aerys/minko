@@ -120,7 +120,7 @@ package aerys.minko.render.effect.basic
 			
 			// init shader parts
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
-			_diffuseShaderPart			= new DiffuseShaderPart(this);
+			_diffuseShaderPart		= new DiffuseShaderPart(this);
 		}
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
@@ -128,13 +128,13 @@ package aerys.minko.render.effect.basic
 			var blending : uint = 
 				meshBindings.getConstant(BasicProperties.BLENDING, Blending.NORMAL);
 			
-			settings.depthTest		= 
+			settings.depthTest = 
 				meshBindings.getConstant(BasicProperties.DEPTH_TEST, DepthTest.LESS);
 			
-			settings.triangleCulling	= 
+			settings.triangleCulling = 
 				meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
 			
-			settings.priority			= _priority;
+			settings.priority = _priority;
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
 				settings.priority -= 0.5;
 			
@@ -143,7 +143,6 @@ package aerys.minko.render.effect.basic
 			settings.enableDepthWrite	= true;
 			settings.renderTarget		= _target;
 			settings.scissorRectangle	= null;
-			
 		}
 		
 		/**
@@ -197,6 +196,12 @@ package aerys.minko.render.effect.basic
 				);
 				
 				diffuse = float4(multiply(diffuse.rgb, lightColor), diffuse.a);
+			}
+			
+			if (meshBindings.propertyExists(BasicProperties.TRANSPARENCY_THRESHOLD))
+			{
+				var transparencyThreshold : SFloat = meshBindings.getParameter('transparencyThreshold', 1);
+				kill(subtract(0.5, lessThan(diffuse.w, transparencyThreshold)));
 			}
 			
 			return diffuse;

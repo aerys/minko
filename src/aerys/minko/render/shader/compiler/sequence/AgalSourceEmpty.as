@@ -7,7 +7,7 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AgalSourceEmpty implements IAgalSource
+	public class AgalSourceEmpty implements IAgalToken
 	{
 		public function AgalSourceEmpty()
 		{

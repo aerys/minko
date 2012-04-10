@@ -399,7 +399,6 @@ package aerys.minko.scene.controller.scene
 			// retrieve references to the data we want to use, to save some function calls
 			var meshEffect		: Effect		= mesh.effect;
 			var meshBindings	: DataBindings	= mesh.bindings;
-//			var numPasses		: uint			= meshEffect.numPasses;
 			
 			// retrieve drawcalls
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];

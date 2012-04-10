@@ -138,7 +138,7 @@ package aerys.minko.render.shader.compiler
 			program.writeByte(isVertexShader ? 0 : 1);	// vertex or fragment			
 			
 			for each (var instruction : AgalInstruction in sequence)
-				instruction.getByteCode(program);
+				instruction.getBytecode(program);
 			
 			return program;
 		}

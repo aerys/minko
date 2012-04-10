@@ -31,10 +31,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceCommon;
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceEmpty;
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceSampler;
-	import aerys.minko.render.shader.compiler.sequence.IAgalSource;
+	import aerys.minko.render.shader.compiler.sequence.IAgalToken;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.utils.Dictionary;
+	
+	import mx.core.DesignLayer;
 
 	/**
 	 * @private
@@ -183,7 +185,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(_shaderGraph.color, false);
 			
 			for (i = 0; i < numKills; ++i)
+			{
 				visit(_shaderGraph.kills[i], false);
+				pushInstruction(new Instruction(Instruction.KIL, _fsInstructions[_fsInstructions.length - 1]), false);
+			}
 			
 			finish();
 		}
@@ -323,13 +328,28 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for each (var instruction : Instruction in instructions)
 			{
-				var destAlloc	: SimpleAllocation	= (isVertexShader ? _vsAllocations : _fsAllocations)[instruction];
-				var destination	: AgalDestination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
+				var destAlloc	: SimpleAllocation; 
+				var destination	: AgalDestination;
+				var source1		: IAgalToken;
+				var source2		: IAgalToken;
 				
-				var source1		: IAgalSource		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
-				var source2		: IAgalSource		= instruction.isSingle ? 
-					new AgalSourceEmpty() : 
-					getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
+				if (instruction.id == Instruction.KIL)
+				{
+					// fake a destination at ft0.x, so that we can use common allocator for reads
+					destAlloc = new SimpleAllocation(0, true, 1, RegisterType.TEMPORARY);
+					destAlloc.offset = 0;
+					
+					destination	= new AgalDestination(0, 0, 0); // empty destination
+				}
+				else
+				{
+					destAlloc	= (isVertexShader ? _vsAllocations : _fsAllocations)[instruction];
+					destination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
+				}
+				
+				source1		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
+				source2		= instruction.isSingle ? new AgalSourceEmpty() : 
+							  getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
@@ -337,9 +357,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation, isVertexShader : Boolean) : IAgalSource
+		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation, isVertexShader : Boolean) : IAgalToken
 		{
-			var source : IAgalSource;
+			var source : IAgalToken;
 			
 			if (argument is VariadicExtract)
 			{
@@ -536,8 +556,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if ((isVertexShader ? _vsAllocations : _fsAllocations)[instruction])
 				throw new Error("This instruction was already allocated");
 			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[instruction] = getAllocatorFor(instruction, isVertexShader).
-				allocate(instruction.size, instruction.isComponentWise, instructionCounter);
+			var allocator		: Allocator = getAllocatorFor(instruction, isVertexShader);
+			var allocationTable	: Dictionary = isVertexShader ? _vsAllocations : _fsAllocations;
+			
+			allocationTable[instruction] = allocator.allocate(instruction.size, instruction.isComponentWise, instructionCounter);
 			
 			extendLifeTime(instruction.arg1, isVertexShader);
 			
@@ -556,9 +578,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitInterpolate(interpolate : Interpolate, isVertexShader : Boolean) : void
 		{
-			
-			
-			
 			if (isVertexShader)
 			{
 				visit(interpolate.arg, true);
@@ -637,7 +656,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				return _ocAllocator;
 			
 			if (_shaderGraph.kills.indexOf(node) !== -1)
-				return null;
+			{
+				if (isVertexShader)
+					throw new Error('kills are not allowed in the vertex shader.');
+				else
+					return _fsTempAllocator;
+			}
 			
 			if (_shaderGraph.interpolates.indexOf(node) !== -1)
 				return _varyingAllocator;

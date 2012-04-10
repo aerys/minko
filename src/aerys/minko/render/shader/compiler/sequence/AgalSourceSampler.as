@@ -14,7 +14,7 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AgalSourceSampler implements IAgalSource
+	public class AgalSourceSampler implements IAgalToken
 	{
 		private var _index		: uint;
 		private var _dimension	: uint;

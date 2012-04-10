@@ -40,6 +40,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		public static const M33 : uint = 0x17;
 		public static const M44 : uint = 0x18;
 		public static const M34 : uint = 0x19;
+		public static const KIL	: uint = 0x27;
 		public static const TEX : uint = 0x28;
 		public static const SGE : uint = 0x29;
 		public static const SLT : uint = 0x2a;
@@ -60,8 +61,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			NAME[DP3] = 'dp3';		NAME[DP4] = 'dp4';		NAME[ABS] = 'abs';
 			NAME[NEG] = 'neg';		NAME[SAT] = 'sat';		NAME[M33] = 'm33';
 			NAME[M44] = 'm44';		NAME[M34] = 'm34';		NAME[TEX] = 'tex';
-			NAME[SGE] = 'sge';		NAME[SLT] = 'slt';		NAME[SEQ] = 'seq';
-			NAME[SNE] = 'sne';
+			NAME[KIL] = 'kil';		NAME[SGE] = 'sge';		NAME[SLT] = 'slt';
+			NAME[SEQ] = 'seq';		NAME[SNE] = 'sne';
 			
 			NAME[MUL_MAT33] = 'mulMat33';
 			NAME[MUL_MAT44] = 'mulMat44';
@@ -95,6 +96,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			FLAGS[M33] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
 			FLAGS[M44] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
 			FLAGS[M34] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
+			FLAGS[KIL] = InstructionFlag.AVAILABLE_FS | InstructionFlag.SINGLE;
 			FLAGS[TEX] = InstructionFlag.AVAILABLE_FS;
 			FLAGS[SGE] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
 			FLAGS[SLT] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
