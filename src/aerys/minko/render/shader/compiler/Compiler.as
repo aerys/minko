@@ -66,10 +66,6 @@ package aerys.minko.render.shader.compiler
 			REMOVE_EXTRACT			.process(shaderGraph);
 			MERGER					.process(shaderGraph);
 			REMOVE_USELESS			.process(shaderGraph);
-			
-			WRITE_DOT.process(shaderGraph);
-			trace('==========dirty======');
-			trace(WRITE_DOT.result);
 			OVERWRITER_CLEANER		.process(shaderGraph);
 			
 			RESOLVE_CONSTANT		.process(shaderGraph);
@@ -80,10 +76,6 @@ package aerys.minko.render.shader.compiler
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
-			WRITE_DOT.process(shaderGraph);
-			trace('==========clean======');
-			trace(WRITE_DOT.result);
-			trace('==========end========');
 			ALLOCATOR.process(shaderGraph);
 			
 			// retrieve program

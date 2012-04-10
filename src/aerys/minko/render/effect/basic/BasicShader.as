@@ -112,7 +112,7 @@ package aerys.minko.render.effect.basic
 		 * @param target Default value is null.
 		 */
 		public function BasicShader(priority	: Number		= 0,
-								  target	: RenderTarget	= null)
+									target		: RenderTarget	= null)
 		{
 			// save priority and target
 			_priority				= priority;

@@ -78,14 +78,20 @@ package aerys.minko.render.shader
 			
 			if (pass == null)
 			{
-				var config		: ShaderSettings		= findOrCreateConfig(meshBindings, sceneBindings);
-				var program		: Program3DResource	= findOrCreateProgram(meshBindings, sceneBindings);
 				var signature	: Signature			= new Signature(_name);
-				
+				var config		: ShaderSettings	= findOrCreateConfig(meshBindings, sceneBindings);
 				signature.mergeWith(config.signature);
-				signature.mergeWith(program.signature);
+				
+				var program		: Program3DResource	= null;
+				
+				if (config.enabled)
+				{
+					program = findOrCreateProgram(meshBindings, sceneBindings);
+					signature.mergeWith(program.signature);
+				}
 				
 				pass = new ShaderInstance(this, config, program, signature);
+				_instances.push(pass);
 			}
 			
 			return pass;
