@@ -111,12 +111,12 @@ package aerys.minko.render.effect.basic
 		 * @param priority Default value is 0.
 		 * @param target Default value is null.
 		 */
-		public function BasicShader(priority	: Number		= 0,
-								  target	: RenderTarget	= null)
+		public function BasicShader(target		: RenderTarget	= null,
+									priority	: Number		= 0.)
 		{
 			// save priority and target
-			_priority				= priority;
-			_target					= target;
+			_target	= target;
+			_priority = priority;
 			
 			// init shader parts
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
