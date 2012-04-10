@@ -42,6 +42,8 @@ package aerys.minko.scene.controller.scene
 		
 		private var _scene						: Scene						= null;
 		
+		private var _numTriangles				: uint						= 0;
+		
 		private var _stashedPropertyChanges		: Dictionary				= null;
 		
 		private var _passInstances				: Vector.<ShaderInstance>	= null;
@@ -81,6 +83,12 @@ package aerys.minko.scene.controller.scene
 		 *		- and then: mesh.effect.changed is executed
 		 */
 		private var _effectToMeshes				: Dictionary;
+		private var _numStashedPropertyChanges:int;
+		
+		public function get numTriangles() : uint
+		{
+			return _numTriangles;
+		}
 		
 		public function get postProcessingEffect() : Effect
 		{
@@ -208,20 +216,19 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			
-			for (var i : int = 0; i < numPasses; ++i)
+			for (var i : uint = 0; i < numPasses; ++i)
 			{
 				var pass 		: ShaderInstance	= _passInstances[i];
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
-				var numCalls	: int				= calls.length;
+				var numCalls	: uint				= calls.length;
 				
-				if (!pass.config.enabled)
+				if (!pass.settings.enabled)
 					continue;
 				
 				pass.prepareContext(context, backBuffer, previous);
-				
 				previous = pass;
 				
-				for (var j : int = 0; j < numCalls; ++j)
+				for (var j : uint = 0; j < numCalls; ++j)
 				{
 					call = calls[j];
 					callTriangles = call.apply(context, previousCall);
@@ -297,7 +304,7 @@ package aerys.minko.scene.controller.scene
 		{
 			if (viewport.ready)
 			{
-				render(viewport, target);
+				_numTriangles = render(viewport, target);
 				Factory.sweep();
 			}
 		}
@@ -434,14 +441,14 @@ package aerys.minko.scene.controller.scene
 		
 		private function effectPassesChangedHandler(effect : Effect) : void
 		{
-			
+			// FIXME
 		}
 		
 		private function meshEffectChangedHandler(mesh		: Mesh,
 												  oldEffect	: Effect,
 												  newEffect	: Effect) : void
 		{
-			
+			// FIXME
 		}
 		
 		private function meshVisibilityChangedHandler(mesh		 : Mesh,
@@ -489,9 +496,12 @@ package aerys.minko.scene.controller.scene
 		
 		private function applyBindingChanges() : void
 		{
+			if (_numStashedPropertyChanges == 0)
+				return;
+			
 			var sceneBindings		: DataBindings		= _scene.bindings;
-			var numShaderInstances	: int				= _passInstances.length;
 			var sceneChanges		: Vector.<String>	= _stashedPropertyChanges[sceneBindings];
+			var numShaderInstances	: int				= _passInstances.length;
 			
 			for (var shaderInstanceId : int = numShaderInstances - 1; shaderInstanceId >= 0; --shaderInstanceId)
 			{
@@ -500,7 +510,7 @@ package aerys.minko.scene.controller.scene
 				var drawCalls				: Vector.<DrawCall>	= _passInstanceToDrawCalls[passInstance];
 				var numDrawCalls			: int				= drawCalls.length;
 				
-				var needUpdateFromScene		: Boolean = sceneChanges != null
+				var needUpdateFromScene		: Boolean 			= sceneChanges != null
 					? passInstanceSignature.useProperties(_stashedPropertyChanges[sceneBindings], true) 
 					: false;
 				
@@ -511,7 +521,7 @@ package aerys.minko.scene.controller.scene
 					var meshGeometry		: Geometry			= Mesh(_meshBindingToMesh[meshBindings]).geometry
 					var meshChanges			: Vector.<String>	= _stashedPropertyChanges[meshBindings];
 					
-					var needUpdateFromMesh	: Boolean = meshChanges != null ?
+					var needUpdateFromMesh	: Boolean 			= meshChanges != null ?
 						passInstanceSignature.useProperties(meshChanges, false) :
 						false;
 					
@@ -534,6 +544,7 @@ package aerys.minko.scene.controller.scene
 			}
 			
 			// reset all changes stashes
+			_numStashedPropertyChanges = 0;
 			for each (var changes : Object in _stashedPropertyChanges)
 				Vector.<String>(changes).length = 0;
 		}
@@ -626,6 +637,7 @@ package aerys.minko.scene.controller.scene
 				_stashedPropertyChanges[meshBindings] = new Vector.<String>();
 			
 			_stashedPropertyChanges[meshBindings].push(propertyName);
+			++_numStashedPropertyChanges;
 		}
 		
 	}
