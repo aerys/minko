@@ -5,19 +5,11 @@ package aerys.minko.type.animation.timeline
 
 	public class ScalarTimeline extends AbstractTimeline
 	{
-		protected var _timeTable	: Vector.<uint>
-		protected var _values		: Vector.<Number>;
+		use namespace minko_animation;
+		
+		minko_animation var _timeTable	: Vector.<uint>
+		minko_animation var _values		: Vector.<Number>;
 
-		minko_animation function get timeTable() : Vector.<uint>
-		{
-			return _timeTable;
-		}
-		
-		minko_animation function get values() : Vector.<Number>
-		{
-			return _values;
-		}
-		
 		public function ScalarTimeline(propertyPath	: String,
 									   timeTable 	: Vector.<uint>,
 									   values		: Vector.<Number>)

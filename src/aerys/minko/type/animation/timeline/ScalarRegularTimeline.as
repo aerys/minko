@@ -4,19 +4,11 @@ package aerys.minko.type.animation.timeline
 
 	public class ScalarRegularTimeline extends AbstractTimeline
 	{
-		private var _deltaTime		: uint				= 0;
-		private var _values			: Vector.<Number>	= null;
+		use namespace minko_animation;
+		
+		minko_animation var _deltaTime	: uint				= 0;
+		minko_animation var _values		: Vector.<Number>	= null;
 
-		minko_animation function get deltaTime() : uint
-		{
-			return _deltaTime;
-		}
-		
-		minko_animation function get values() : Vector.<Number>
-		{
-			return _values;
-		}
-		
 		public function ScalarRegularTimeline(propertyPath	: String,
 											  deltaTime 	: uint,
 											  values		: Vector.<Number>)
