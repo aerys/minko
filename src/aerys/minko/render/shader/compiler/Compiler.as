@@ -65,10 +65,14 @@ package aerys.minko.render.shader.compiler
 			// execute consecutive visitors to optimize the shader graph.
 			REMOVE_EXTRACT			.process(shaderGraph);
 			MERGER					.process(shaderGraph);
-			
-			OVERWRITER_CLEANER		.process(shaderGraph);
-			RESOLVE_CONSTANT		.process(shaderGraph);
 			REMOVE_USELESS			.process(shaderGraph);
+			
+			WRITE_DOT.process(shaderGraph);
+			trace('==========dirty======');
+			trace(WRITE_DOT.result);
+			OVERWRITER_CLEANER		.process(shaderGraph);
+			
+			RESOLVE_CONSTANT		.process(shaderGraph);
 			RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
 			
@@ -76,6 +80,10 @@ package aerys.minko.render.shader.compiler
 			
 			// generate final program
 			INTERPOLATE_FINDER.process(shaderGraph);
+			WRITE_DOT.process(shaderGraph);
+			trace('==========clean======');
+			trace(WRITE_DOT.result);
+			trace('==========end========');
 			ALLOCATOR.process(shaderGraph);
 			
 			// retrieve program
