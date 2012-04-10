@@ -8,11 +8,12 @@ package aerys.minko.scene
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
+	import flash.utils.getQualifiedClassName;
 	
 	public dynamic class SceneIterator extends Proxy
 	{
 		private static const OPERATORS	: Vector.<String>	= new <String>[
-			"//", "/", "[", "]", "..", ".", "~=", "=", "@", "*"
+			"//", "/", "[", "]", "..", ".", "~=", "?=", "=", "@", "*"
 		];
 		private static const REGEX_TRIM	: RegExp			= /^\s+|\s+$/;
 
@@ -318,7 +319,9 @@ package aerys.minko.scene
 				var value		: Object	= getValueToken();
 				
 				if (operator == "~=")
-					filterOnRegExp(propertyName, String(value));
+					filterOnRegExp(propertyName, String(value), isBinding);
+				else if (operator == "?=")
+					filterOnController(String(value));
 				else
 					filterOnValue(propertyName, value, isBinding);
 			}
@@ -326,14 +329,20 @@ package aerys.minko.scene
 			checkNextToken("]");
 		}
 		
-		private function filterOnRegExp(propertyName : String, regExpString : String) : void
+		private function filterOnRegExp(propertyName : String, regExpString : String, isBinding : Boolean) : void
 		{
 			var numNodes	: int		= _selection.length;
 			
 			for (var i : int = numNodes - 1; i >= 0; --i)
 			{
 				var node		: ISceneNode	= _selection[i];
-				var nodeValue 	: String		= String(getValueObject(node, propertyName));
+				var nodeValue 	: String		= null;
+				
+				if (isBinding && (node['bindings'] is DataBindings))
+					nodeValue = String((node['bindings'] as DataBindings).getProperty(propertyName));
+				else
+					nodeValue = String(getValueObject(node, propertyName));
+				
 				var matches		: Array			= nodeValue.match(regExpString);
 				
 				if (!matches || matches.length == 0)
@@ -358,6 +367,35 @@ package aerys.minko.scene
 				if (nodeValue != value)
 					removeFromSelection(i);
 			}
+		}
+		
+		private function filterOnController(searchedControllerName : Object) : Object
+		{
+			var numNodes	: int		= _selection.length;
+			
+			for (var i : int = numNodes - 1; i >= 0; --i)
+			{
+				var node			: ISceneNode	= _selection[i];
+				var numControllers	: uint			= node.numControllers;
+				var keepSceneNode	: Boolean		= false;
+				
+				for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				{
+					var controllerType : String = getQualifiedClassName(node.getController(controllerId));
+					controllerType = controllerType.substr(controllerType.lastIndexOf(':') + 1);
+					
+					if (controllerType == searchedControllerName)
+					{
+						keepSceneNode = true;
+						break;
+					}
+				}
+				
+				if (!keepSceneNode)
+					removeFromSelection(i);
+			}
+			
+			return null;
 		}
 		
 		private function getValueObject(source : Object, modifier : String) : Object
