@@ -25,30 +25,13 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		private static var _id			: uint							= 0;
-		
 		minko_scene var _children		: Vector.<ISceneNode>			= null;
 		minko_scene var _numChildren	: uint							= 0;
-
-		private var _name				: String						= null;
-		private var _root				: ISceneNode					= null;
-		private var _parent				: Group							= null;
 		
 		private var _numDescendants		: uint							= 0;
-		private var _transform			: Matrix4x4						= new Matrix4x4();
-		private var _localToWorld		: Matrix4x4						= new Matrix4x4();
-		private var _worldToLocal		: Matrix4x4						= new Matrix4x4();
 		
-		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
-		
-		private var _added				: Signal						= new Signal('Group.added');
-		private var _removed			: Signal						= new Signal('Group.removed');
-		private var _addedToScene		: Signal						= new Signal('Group.addedToScene');
-		private var _removedFromScene	: Signal						= new Signal('Group.removedFromScene');
 		private var _descendantAdded	: Signal						= new Signal('Group.descendantAdded');
 		private var _descendantRemoved	: Signal						= new Signal('Group.descendantRemoved');
-		private var _controllerAdded	: Signal						= new Signal('Group.controllerAdded');
-		private var _controllerRemoved	: Signal						= new Signal('Group.controllerRemoved');
 
 		/**
 		 * The number of children.
@@ -83,11 +66,8 @@ package aerys.minko.scene.node
 
 		protected function initialize() : void
 		{
-			_root = this;
-			_name = AbstractSceneNode.getDefaultSceneName(this);
 			_children = new <ISceneNode>[];
 
-			transform.changed.add(transformChangedHandler);
 			descendantAdded.add(descendantAddedHandler);
 			descendantRemoved.add(descendantRemovedHandler);
 		}
@@ -234,28 +214,6 @@ package aerys.minko.scene.node
 		public function getChildAt(position : uint) : ISceneNode
 		{
 			return position < _numChildren ? _children[position] : null;
-		}
-
-		public function getDescendantsByName(name 			: String,
-											 descendants 	: Vector.<ISceneNode> = null) : Vector.<ISceneNode>
-		{
-			descendants ||= new Vector.<ISceneNode>();
-			
-			var numChildren	: int 	= numChildren;
-			
-			for (var i : int = 0; i < numChildren; ++i)
-			{
-				var child : ISceneNode = _children[i];
-				var group : Group = child as Group;
-				
-				if (child.name == name)
-					descendants.push(child);
-
-				if (group)
-					group.getDescendantsByName(name, descendants);
-			}
-
-			return descendants;
 		}
 
 		public function getDescendantsByType(type 			: Class,

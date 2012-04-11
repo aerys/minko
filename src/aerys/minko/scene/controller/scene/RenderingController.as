@@ -363,7 +363,7 @@ package aerys.minko.scene.controller.scene
 			var sceneBindings	: DataBindings	= _scene.bindings;
 			
 			// iterate on meshEffect passes
-			var drawCalls : Vector.<DrawCall>	= new Vector.<DrawCall>(numPasses, true);
+			var drawCalls : Vector.<DrawCall>	= new Vector.<DrawCall>();
 			
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
@@ -394,6 +394,7 @@ package aerys.minko.scene.controller.scene
 			_effectToMeshes[meshEffect].push(mesh);
 			
 			//register to visibility change signal
+			mesh.effectChanged.add(meshEffectChangedHandler);
 			mesh.visibilityChanged.add(meshVisibilityChangedHandler);
 			mesh.frameChanged.add(meshFrameChangedHandler);
 			mesh.geometryChanged.add(meshGeometryChangedHandler);
@@ -404,13 +405,13 @@ package aerys.minko.scene.controller.scene
 			// retrieve references to the data we want to use, to save some function calls
 			var meshEffect		: Effect		= mesh.effect;
 			var meshBindings	: DataBindings	= mesh.bindings;
-			var numPasses		: uint			= meshEffect.numPasses;
-			var sceneBindings	: DataBindings	= _scene.bindings;
+//			var numPasses		: uint			= meshEffect.numPasses;
 			
 			// retrieve drawcalls
-			var drawCalls : Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numDrawCalls	: uint				= drawCalls.length;
 			
-			for (var drawCallId : uint = 0; drawCallId < numPasses; ++drawCallId)
+			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
 			{
 				// retrieve drawcall, and shaderInstance
 				var drawCall		: DrawCall			= drawCalls[drawCallId];
@@ -434,6 +435,7 @@ package aerys.minko.scene.controller.scene
 			}
 			
 			//remove to visibility change signal
+			mesh.effectChanged.remove(meshEffectChangedHandler);
 			mesh.visibilityChanged.remove(meshVisibilityChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
 			mesh.geometryChanged.remove(meshGeometryChangedHandler);
@@ -441,14 +443,93 @@ package aerys.minko.scene.controller.scene
 		
 		private function effectPassesChangedHandler(effect : Effect) : void
 		{
-			// FIXME
+			for each (var mesh : Mesh in _effectToMeshes[effect])
+			{
+				var meshBindings	: DataBindings		= mesh.bindings;
+				var sceneBindings	: DataBindings		= _scene.bindings;
+				var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+				
+				for each (var oldDrawCall : DrawCall in drawCalls)
+				{
+					var oldPassInstance	: ShaderInstance = _drawCallToPassInstance[oldDrawCall];
+					unbind(oldPassInstance, oldDrawCall, meshBindings);
+				}
+				
+				drawCalls.length = 0;
+				
+				var numPasses		: uint				= effect.numPasses;
+				
+				for (var i : uint = 0; i < numPasses; ++i)
+				{
+					// fork pass if needed
+					var asShader		: Shader			= effect.getPass(i);
+					var passInstance	: ShaderInstance	= asShader.fork(meshBindings, sceneBindings);
+					
+					// create drawcall
+					var newDrawCall		: DrawCall			= new DrawCall();
+					
+					newDrawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+					drawCalls[i] = newDrawCall;
+					
+					// retain the instance, update indexes, watch for invalidation, give to renderingList.
+					bind(passInstance, newDrawCall, meshBindings);
+				}
+			}
 		}
 		
 		private function meshEffectChangedHandler(mesh		: Mesh,
 												  oldEffect	: Effect,
 												  newEffect	: Effect) : void
 		{
-			// FIXME
+			if (oldEffect === newEffect)
+				return;
+			
+			var meshBindings	: DataBindings		= mesh.bindings;
+			var sceneBindings	: DataBindings		= _scene.bindings;
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			
+			// stripped down 'removeMesh' method, that unscribe everything related
+			// to the old effect and the mesh (but keep all that is related only to the mesh
+			// or only to the effect)
+			var oldNumDrawCalls	: uint					= drawCalls.length;
+			for (var oldDrawCallId : uint = 0; oldDrawCallId < oldNumDrawCalls; ++oldDrawCallId)
+			{
+				var oldDrawCall		: DrawCall			= drawCalls[oldDrawCallId];
+				var oldPassInstance	: ShaderInstance	= _drawCallToPassInstance[oldDrawCall];
+				unbind(oldPassInstance, oldDrawCall, meshBindings);
+			}
+			
+			drawCalls.length = 0;
+			
+			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[oldEffect];
+			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
+			if (meshesWithSameEffect.length == 0)
+			{
+				delete _effectToMeshes[oldEffect];
+				oldEffect.passesChanged.remove(effectPassesChangedHandler);
+			}
+			
+			// stripped down 'addMesh' method, to do the same reversed
+			var newNumPasses	: uint			= newEffect.numPasses;
+			
+			for (var i : uint = 0; i < newNumPasses; ++i)
+			{
+				var passTemplate	: Shader			= newEffect.getPass(i);
+				var passInstance	: ShaderInstance	= passTemplate.fork(meshBindings, sceneBindings);
+				var drawCall		: DrawCall			= new DrawCall();
+				
+				drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				drawCalls[i] = drawCall;
+				bind(passInstance, drawCall, meshBindings);
+			}
+			
+			if (!_effectToMeshes[newEffect])
+			{
+				_effectToMeshes[newEffect] = new Vector.<Mesh>();
+				newEffect.passesChanged.add(effectPassesChangedHandler);
+			}
+			
+			_effectToMeshes[newEffect].push(mesh);
 		}
 		
 		private function meshVisibilityChangedHandler(mesh		 : Mesh,

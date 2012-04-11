@@ -115,8 +115,8 @@ package aerys.minko.render.effect.basic
 									priority	: Number		= 0.)
 		{
 			// save priority and target
-			_target	= target;
-			_priority = priority;
+			_target		= target;
+			_priority	= priority;
 			
 			// init shader parts
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);

@@ -675,38 +675,50 @@ package aerys.minko.type.math
 			return output;
 		}
 
-		/**
-		 * Builds a (left-handed) view transform.
-		 * <br /><br />
-		 * Eye : eye position, At : eye direction, Up : up vector
-		 * <br /><br />
-		 * zaxis = normal(At - Eye)<br />
-		 * xaxis = normal(cross(Up, zaxis))<br />
-		 * yaxis = cross(zaxis, xaxis)<br />
-		 * <br />
-		 * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
-		 * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
-		 * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
-		 * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
-		 *
-		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
-		 *
-		 */
-		public static function lookAt(eye		: Vector4,
-									  lookAt 	: Vector4,
-									  up		: Vector4,
-									  out		: Matrix4x4 = null) : Matrix4x4
+		public static function directionAt(eye			: Vector4,
+										   direction	: Vector4,
+										   up			: Vector4   = null,
+										   out			: Matrix4x4 = null) : Matrix4x4
 		{
 			
 			var eye_X		: Number = eye._vector.x;
 			var eye_Y		: Number = eye._vector.y;
 			var eye_Z		: Number = eye._vector.z;
 			
-			var l : Number;
+			var z_axis_X	: Number = direction._vector.x;
+			var z_axis_Y	: Number = direction._vector.y;
+			var z_axis_Z	: Number = direction._vector.z;
 			
-			var z_axis_X	: Number = lookAt._vector.x - eye_X;
-			var z_axis_Y	: Number = lookAt._vector.y - eye_Y;
-			var z_axis_Z	: Number = lookAt._vector.z - eye_Z;
+			var up_axis_x	: Number;
+			var up_axis_y	: Number;
+			var up_axis_z	: Number;
+			
+			if (up != null)
+			{
+				// if up axis was given, take it. An error will be raised later if it is colinear to direction
+				up_axis_x = up._vector.x;
+				up_axis_y = up._vector.y;
+				up_axis_z = up._vector.z;	
+			}
+			else
+			{
+				// if direction is colinear to (0, 1, 0), take (1, 0, 0) as up vector
+				if (z_axis_X == 0 && z_axis_Y != 0 && z_axis_Z == 0)
+				{
+					up_axis_x = 1;
+					up_axis_y = 0;
+					up_axis_z = 0;
+				}
+				// else, take (0, 0, 1)
+				else
+				{
+					up_axis_x = 0;
+					up_axis_y = 1;
+					up_axis_z = 0;
+				}
+			}
+			
+			var l : Number;
 			
 			l = 1 / Math.sqrt(z_axis_X * z_axis_X + z_axis_Y * z_axis_Y + z_axis_Z * z_axis_Z);
 			
@@ -714,9 +726,9 @@ package aerys.minko.type.math
 			z_axis_Y *= l;
 			z_axis_Z *= l;
 			
-			var x_axis_X : Number = up._vector.y * z_axis_Z - z_axis_Y * up._vector.z;
-			var x_axis_Y : Number = up._vector.z * z_axis_X - z_axis_Z * up._vector.x;
-			var x_axis_Z : Number = up._vector.x * z_axis_Y - z_axis_X * up._vector.y;
+			var x_axis_X : Number = up_axis_y * z_axis_Z - z_axis_Y * up_axis_z;
+			var x_axis_Y : Number = up_axis_z * z_axis_X - z_axis_Z * up_axis_x;
+			var x_axis_Z : Number = up_axis_x * z_axis_Y - z_axis_X * up_axis_y;
 			
 			l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
 			
@@ -754,6 +766,32 @@ package aerys.minko.type.math
 			);
 			
 			return out;
+		}
+		
+		/**
+		 * Builds a (left-handed) view transform.
+		 * <br /><br />
+		 * Eye : eye position, At : eye direction, Up : up vector
+		 * <br /><br />
+		 * zaxis = normal(At - Eye)<br />
+		 * xaxis = normal(cross(Up, zaxis))<br />
+		 * yaxis = cross(zaxis, xaxis)<br />
+		 * <br />
+		 * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
+		 * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
+		 * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
+		 * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
+		 *
+		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
+		 *
+		 */
+		public static function lookAt(eye		: Vector4,
+									  lookAt 	: Vector4,
+									  up		: Vector4	= null,
+									  out		: Matrix4x4 = null) : Matrix4x4
+		{
+			Vector4.subtract(lookAt, eye, TMP_VECTOR4);
+			return directionAt(eye, TMP_VECTOR4, up, out);
 		}
 
 		public static function perspectiveFoV(fov	: Number,

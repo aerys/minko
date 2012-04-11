@@ -51,6 +51,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				"\tnode [ style = filled ];\n" + 
 				_nodes + _links + 
 			"}";
+			
+			_stack.length = 0;
+			_visitedInVs.length = 0;	
+			_visitedInFs.length = 0;
+			_nodeIds = null;
+			_shaderGraph = null;	
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction, 
