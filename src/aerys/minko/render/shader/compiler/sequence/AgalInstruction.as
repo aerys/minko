@@ -9,22 +9,22 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AgalInstruction
+	public class AgalInstruction implements IAgalToken
 	{
 		private var _opCode			: uint;
 		private var _destination	: AgalDestination;
-		private var _source0		: IAgalSource;
-		private var _source1		: IAgalSource;
+		private var _source0		: IAgalToken;
+		private var _source1		: IAgalToken;
 		
 		public function get opCode()		: uint				{ return _opCode;		}
 		public function get destination()	: AgalDestination	{ return _destination;	}
-		public function get source0()		: IAgalSource		{ return _source0;		}
-		public function get source1()		: IAgalSource		{ return _source1;		}
+		public function get source0()		: IAgalToken		{ return _source0;		}
+		public function get source1()		: IAgalToken		{ return _source1;		}
 		
 		public function AgalInstruction(opCode		: uint,
 										destination : AgalDestination,
-										source0		: IAgalSource,
-										source1		: IAgalSource)
+										source0		: IAgalToken,
+										source1		: IAgalToken)
 		{
 			_opCode			= opCode;
 			_destination	= destination;
@@ -32,7 +32,7 @@ package aerys.minko.render.shader.compiler.sequence
 			_source1		= source1;
 		}
 		
-		public function getByteCode(bytes : ByteArray) : void
+		public function getBytecode(bytes : ByteArray) : void
 		{
 			bytes.writeUnsignedInt(opCode);
 			_destination.getBytecode(bytes);
@@ -45,8 +45,12 @@ package aerys.minko.render.shader.compiler.sequence
 			var asmCode : String = Instruction.NAME[_opCode];
 			
 			asmCode += " ";
-			asmCode += _destination.getAgal(isVertexShader);
-			asmCode += ', ';
+			
+			if (_opCode != Instruction.KIL)
+			{
+				asmCode += _destination.getAgal(isVertexShader);
+				asmCode += ', ';
+			}
 			asmCode += _source0.getAgal(isVertexShader);
 			
 			if (!(_source1 is AgalSourceEmpty))

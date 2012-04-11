@@ -7,6 +7,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.render.shader.binding.ProxyConstantBinder;
 	import aerys.minko.render.shader.binding.TextureBinder;
+	import aerys.minko.render.shader.compiler.allocation.AllocationStore;
 	import aerys.minko.render.shader.compiler.allocation.Allocator;
 	import aerys.minko.render.shader.compiler.allocation.IAllocation;
 	import aerys.minko.render.shader.compiler.allocation.SimpleAllocation;
@@ -31,10 +32,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceCommon;
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceEmpty;
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceSampler;
-	import aerys.minko.render.shader.compiler.sequence.IAgalSource;
+	import aerys.minko.render.shader.compiler.sequence.IAgalToken;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
-	import flash.utils.Dictionary;
 
 	/**
 	 * @private
@@ -43,8 +42,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	 */
 	public class AllocationVisitor extends AbstractVisitor
 	{
-		private var _vsAllocations		: Dictionary;
-		private var _fsAllocations		: Dictionary;
+		private var _allocStore			: AllocationStore;
 		
 		// allocators
 		private var _opAllocator		: Allocator;
@@ -140,8 +138,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
 			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true);
 			
-			_vsAllocations				= new Dictionary();
-			_fsAllocations				= new Dictionary();
+			_allocStore					= new AllocationStore();
 			
 			// first pass data
 			_vsInstructions				= new Vector.<Instruction>();
@@ -183,7 +180,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(_shaderGraph.color, false);
 			
 			for (i = 0; i < numKills; ++i)
-				visit(_shaderGraph.kills[i], false);
+			{
+				var kill : INode = _shaderGraph.kills[i];
+				if (kill is Constant || kill is BindableConstant)
+					_shaderGraph.kills[i] = kill = new Instruction(Instruction.MOV, kill);
+				
+				visit(kill, false);
+				pushInstruction(new Instruction(Instruction.KIL, kill), false);
+			}
 			
 			finish();
 		}
@@ -216,11 +220,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_vertexComponents	= new Vector.<VertexComponent>(8);
 			_vertexIndices		= new Vector.<uint>(8);
 			
-			for (var node : Object in _vsAllocations)
+			for (var node : Object in _allocStore.getStore(true))
 			{
 				if (node is Attribute)
 				{
-					var registerId	: uint				= SimpleAllocation(_vsAllocations[node]).registerId;
+					var registerId	: uint				= _allocStore.getSimpleAlloc(node, true).registerId;
 					var component	: VertexComponent	= Attribute(node).component;
 					var index		: uint				= Attribute(node).componentId;
 					
@@ -235,13 +239,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_vertexComponents.length = _vertexIndices.length = maxRegisterId + 1;
 		}
 		
-		private function createConstantParameterBindings(bindableConstants : Vector.<BindableConstant>, isVertexShader : Boolean) : void
+		private function createConstantParameterBindings(bindableConstants	: Vector.<BindableConstant>,
+														 isVertexShader		: Boolean) : void
 		{
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
 				var bindingName : String			= bindableConstant.bindingName;
 				var tree		: INode				= _shaderGraph.computableConstants[bindingName];
-				var alloc		: SimpleAllocation	= (isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant];
+				var alloc		: SimpleAllocation	= _allocStore.getSimpleAlloc(bindableConstant, isVertexShader);
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
 				if (!tree)
@@ -276,7 +281,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		private function createConstantTables(constants : Vector.<Constant>, isVertexShader : Boolean) : Vector.<Number>
+		private function createConstantTables(constants			: Vector.<Constant>, 
+											  isVertexShader	: Boolean) : Vector.<Number>
 		{
 			var result		: Vector.<Number> = new Vector.<Number>();
 			var alloc		: SimpleAllocation;
@@ -287,7 +293,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var data		: Vector.<Number>	= constant.value;
 				
-				alloc		= (isVertexShader ? _vsAllocations : _fsAllocations)[constant];
+				alloc		= _allocStore.getSimpleAlloc(constant, isVertexShader);
 				offsetBegin	= alloc.offset;
 				offsetLimit	= offsetBegin + alloc.maxSize;
 				
@@ -304,7 +310,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for each (var parameter : BindableConstant in parameters)
 			{
-				alloc		= (isVertexShader ? _vsAllocations : _fsAllocations)[parameter];
+				alloc		= _allocStore.getSimpleAlloc(parameter, isVertexShader);
 				offsetBegin	= alloc.offset;
 				offsetLimit	= offsetBegin + alloc.maxSize;
 				
@@ -319,17 +325,31 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		private function writeProgram(instructions : Vector.<Instruction>, isVertexShader : Boolean) : Vector.<AgalInstruction>
 		{
-			var result		: Vector.<AgalInstruction> = new Vector.<AgalInstruction>();
+			var result : Vector.<AgalInstruction> = new Vector.<AgalInstruction>();
 			
 			for each (var instruction : Instruction in instructions)
 			{
-				var destAlloc	: SimpleAllocation	= (isVertexShader ? _vsAllocations : _fsAllocations)[instruction];
-				var destination	: AgalDestination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
+				var destAlloc	: SimpleAllocation; 
+				var destination	: AgalDestination;
+				var source1		: IAgalToken;
+				var source2		: IAgalToken;
 				
-				var source1		: IAgalSource		= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
-				var source2		: IAgalSource		= instruction.isSingle ? 
-					new AgalSourceEmpty() : 
-					getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
+				if (instruction.id == Instruction.KIL)
+				{
+					// fake a destination at ft0.x, so that we can use common allocator for reads
+					destAlloc = new SimpleAllocation(0, true, 1, RegisterType.TEMPORARY);
+					destAlloc.offset = 0;
+					
+					destination	= new AgalDestination(0, 0, 0); // empty destination
+				}
+				else
+				{
+					destAlloc	= _allocStore.getSimpleAlloc(instruction, isVertexShader);
+					destination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
+				}
+				
+				source1	= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
+				source2	= instruction.isSingle ? new AgalSourceEmpty() : getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
@@ -337,16 +357,19 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument : INode, readComponents : uint, destAlloc : SimpleAllocation, isVertexShader : Boolean) : IAgalSource
+		private function getSourceFor(argument			: INode, 
+									  readComponents	: uint, 
+									  destAlloc			: SimpleAllocation, 
+									  isVertexShader	: Boolean) : IAgalToken
 		{
-			var source : IAgalSource;
+			var source : IAgalToken;
 			
 			if (argument is VariadicExtract)
 			{
 				var variadicExtract : VariadicExtract = VariadicExtract(argument);
 				
-				var constantAlloc	: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.constant];
-				var indexAlloc		: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.index];
+				var constantAlloc	: IAllocation = _allocStore.getAlloc(variadicExtract.constant, isVertexShader);
+				var indexAlloc		: IAllocation = _allocStore.getAlloc(variadicExtract.index, isVertexShader);
 				
 				source = new AgalSourceCommon(
 					indexAlloc.registerId,
@@ -373,7 +396,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 			else
 			{
-				var sourceAlloc	: IAllocation = (isVertexShader ? _vsAllocations : _fsAllocations)[argument];
+				var sourceAlloc	: IAllocation = _allocStore.getAlloc(argument, isVertexShader);
 				
 				source = new AgalSourceCommon(
 					sourceAlloc.registerId, 
@@ -401,12 +424,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				var variadicExtract : VariadicExtract = VariadicExtract(argument);
 				
-				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.constant]).extendLifeTime(instructionCounter);
-				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[variadicExtract.index]).extendLifeTime(instructionCounter);
+				_allocStore.getAlloc(variadicExtract.constant, isVertexShader).extendLifeTime(instructionCounter);
+				_allocStore.getAlloc(variadicExtract.index, isVertexShader).extendLifeTime(instructionCounter);
 			}
 			else
 			{
-				IAllocation((isVertexShader ? _vsAllocations : _fsAllocations)[argument]).extendLifeTime(instructionCounter);
+				_allocStore.getAlloc(argument, isVertexShader).extendLifeTime(instructionCounter);
 			}
 		}
 		
@@ -417,7 +440,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		 * 
 		 * Also, we need to process all constants nodes in one call.
 		 */
-		override protected function visitOverwriter(overwriter : Overwriter, isVertexShader : Boolean) : void
+		override protected function visitOverwriter(overwriter		: Overwriter,
+													isVertexShader	: Boolean) : void
 		{
 			var overwriterAllocator : Allocator = getAllocatorFor(overwriter, isVertexShader);
 			
@@ -436,6 +460,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				var arg				: INode	= args[argId];
 				var component		: uint	= components[argId];
 				var minWriteOffset	: int	= Components.getMinWriteOffset(component);
+				var newAllocation : SimpleAllocation;
 				
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
@@ -454,9 +479,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					instructionCounter = getInstructionCounter(isVertexShader);
 					
 					// allocate the result of the mov, and report usage of the constant.
-					(isVertexShader ? _vsAllocations : _fsAllocations)[mov] = getAllocatorFor(mov, isVertexShader).allocate(mov.size, true, instructionCounter);
+					newAllocation = getAllocatorFor(mov, isVertexShader).allocate(mov.size, true, instructionCounter);
+					_allocStore.storeAlloc(newAllocation, mov, isVertexShader);
 					
-					subAllocs.push((isVertexShader ? _vsAllocations : _fsAllocations)[mov]);
+					subAllocs.push(newAllocation);
 					subOffsets.push(minWriteOffset);
 					
 					extendLifeTime(arg, isVertexShader);
@@ -486,16 +512,16 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						// push instruction, allocate and report usages.
 						pushInstruction(instructionArgReplacement, isVertexShader);
 						
-						instructionCounter = getInstructionCounter(isVertexShader);
-						
-						(isVertexShader ? _vsAllocations : _fsAllocations)[instructionArgReplacement] = getAllocatorFor(instructionArgReplacement, isVertexShader).
+						instructionCounter	= getInstructionCounter(isVertexShader);
+						newAllocation		= getAllocatorFor(instructionArgReplacement, isVertexShader).
 							allocate(instructionArgReplacement.size, instructionArgReplacement.isComponentWise, instructionCounter);
 						
-						subAllocs.push((isVertexShader ? _vsAllocations : _fsAllocations)[instructionArgReplacement]);
+						_allocStore.storeAlloc(newAllocation, instructionArgReplacement, isVertexShader);
+						
+						subAllocs.push(newAllocation);
 						subOffsets.push(minWriteOffset);
 						
 						extendLifeTime(instructionArgReplacement.arg1, isVertexShader);
-						
 						if (!instructionArgReplacement.isSingle)
 							extendLifeTime(instructionArgReplacement.arg2, isVertexShader);
 					}
@@ -504,43 +530,53 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					else
 					{
 						// in fact, we don't care: we are injecting mov instruction in the OverwriterCleanerVisitor
-						throw new Error('This cannot be happening. Go fix your code.');
+						// so this line should NEVER be reached.
+						throw new Error('This should NEVER happen.');
 					}
 				}
-				else if (arg is Overwriter || arg is Extract || arg is Sampler || arg is BindableSampler)
+				else if (arg is Overwriter || arg is Extract)
 				{
-					throw new Error('This cannot be happening. Go fix your code.');
+					// Nested overwriters are taken care of in OverwriterCleanerVisitor
+					// Extract are removed by ExtractRemover
+					throw new Error('This should NEVER happen.');
+				}
+				else if (arg is Sampler || arg is BindableSampler)
+				{
+					// Putting samplers in an overwriter makes no sense.
+					throw new Error('Samplers cannot be casted to floats. Go fix your code.');
 				}
 				else
 				{
-					throw new Error('Unknown node type.');
+					// just in case.
+					throw new Error('Unknown node type. This shoud never happen.');
 				}
 			}
 			
-			if ((isVertexShader ? _vsAllocations : _fsAllocations)[overwriter])
-				throw new Error("This instruction was already allocated");
-			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[overwriter] = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
+			var overwriterAlloc : IAllocation = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
+			_allocStore.storeAlloc(overwriterAlloc, overwriter, isVertexShader);
 		}
 		
-		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
+		override protected function visitInstruction(instruction	: Instruction, 
+													 isVertexShader	: Boolean) : void
 		{
+			// visit children
 			visit(instruction.arg1, isVertexShader);
 			if (!instruction.isSingle)
 				visit(instruction.arg2, isVertexShader);
 			
+			// push instruction into list
 			pushInstruction(instruction, isVertexShader);
 			
-			var instructionCounter	: uint = getInstructionCounter(isVertexShader);
+			// allocate result of instruction
+			var instructionCounter	: uint				= getInstructionCounter(isVertexShader);
+			var allocator			: Allocator			= getAllocatorFor(instruction, isVertexShader);
+			var allocation			: SimpleAllocation	=
+				allocator.allocate(instruction.size, instruction.isComponentWise, instructionCounter);
 			
-			if ((isVertexShader ? _vsAllocations : _fsAllocations)[instruction])
-				throw new Error("This instruction was already allocated");
-			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[instruction] = getAllocatorFor(instruction, isVertexShader).
-				allocate(instruction.size, instruction.isComponentWise, instructionCounter);
-			
+			_allocStore.storeAlloc(allocation, instruction, isVertexShader);
+
+			// extend life time of arguments, so that they are not released too soon.
 			extendLifeTime(instruction.arg1, isVertexShader);
-			
 			if (!instruction.isSingle)
 				extendLifeTime(instruction.arg2, isVertexShader);
 		}
@@ -554,59 +590,72 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(variadicExtract.index, true);
 		}
 		
-		override protected function visitInterpolate(interpolate : Interpolate, isVertexShader : Boolean) : void
+		override protected function visitInterpolate(interpolate	: Interpolate, 
+													 isVertexShader	: Boolean) : void
 		{
-			
-			
-			
 			if (isVertexShader)
 			{
 				visit(interpolate.arg, true);
 				
-				var movInstruction : Instruction = new Instruction(Instruction.MOV, interpolate.arg);
+				var components		: uint			= interpolate.components;
+				var size			: int			= Components.getMaxWriteOffset(components) + 1;
+				var modifier		: uint			= Components.createContinuous(0, 0, 4, size);
+				var final			: uint			= Components.applyCombination(components, modifier);
 				
-				if ((isVertexShader ? _vsAllocations : _fsAllocations)[movInstruction])
-					throw new Error("This interpolate was already allocated");
+				var movInstruction	: Instruction	= new Instruction(Instruction.MOV, interpolate.arg);
+				movInstruction.arg1Components		= final;
 				
-				_vsAllocations[movInstruction] = _fsAllocations[interpolate] =
+				var allocation : SimpleAllocation	=
 					_varyingAllocator.allocate(movInstruction.size, true, getInstructionCounter(true));
+				
+				_allocStore.storeAlloc(allocation, movInstruction, true);
+				_allocStore.storeAlloc(allocation, interpolate, false);
+				
+				extendLifeTime(interpolate.arg, true);
 				
 				_vsInstructions.push(movInstruction);
 			}
 		}
 		
-		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
+		override protected function visitAttribute(attribute		: Attribute, 
+												   isVertexShader	: Boolean) : void
 		{
-			if ((isVertexShader ? _vsAllocations : _fsAllocations)[attribute])
-				throw new Error("This attribute was already allocated");
+			if (!isVertexShader)
+				throw new Error('Attributes can only be found in the vertex shader.');
+		
+			// allocate
+			var allocator	: Allocator			= getAllocatorFor(attribute, true);
+			var allocation	: SimpleAllocation	= allocator.allocate(attribute.size, true, 0);
 			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[attribute] = getAllocatorFor(attribute, isVertexShader).allocate(attribute.size, true, 0);
+			_allocStore.storeAlloc(allocation, attribute, true);
 		}
 		
-		override protected function visitConstant(constant : Constant, isVertexShader : Boolean) : void
+		override protected function visitConstant(constant			: Constant, 
+												  isVertexShader	: Boolean) : void
 		{
-			if ((isVertexShader ? _vsAllocations : _fsAllocations)[constant])
-				throw new Error("This constant was already allocated");
+			// allocate
+			var allocator		: Allocator			= getAllocatorFor(constant, isVertexShader);
+			var allocation		: SimpleAllocation	= allocator.allocate(constant.size, true, 0);
+
+			_allocStore.storeAlloc(allocation, constant, isVertexShader);
 			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[constant] = getAllocatorFor(constant, isVertexShader).allocate(constant.size, true, 0);
-			
-			if (isVertexShader)
-				_vsConstants.push(constant);
-			else
-				_fsConstants.push(constant);
+			// store into constant table: makes easy to build Program3D later
+			var contantTable	: Vector.<Constant> = isVertexShader ? _vsConstants : _fsConstants;
+			contantTable.push(constant);
 		}
 		
-		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
+		override protected function visitBindableConstant(bindableConstant	: BindableConstant,
+														  isVertexShader	: Boolean) : void
 		{
-			if ((isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant])
-				throw new Error("This bindable constant was already allocated");
+			// allocate
+			var allocator		: Allocator			= getAllocatorFor(bindableConstant, isVertexShader);
+			var allocation		: SimpleAllocation	= allocator.allocate(bindableConstant.size, true, 0);
 			
-			(isVertexShader ? _vsAllocations : _fsAllocations)[bindableConstant] = getAllocatorFor(bindableConstant, isVertexShader).allocate(bindableConstant.size, true, 0);
+			_allocStore.storeAlloc(allocation, bindableConstant, isVertexShader);
 			
-			if (isVertexShader)
-				_vsParams.push(bindableConstant);
-			else
-				_fsParams.push(bindableConstant);
+			// store into parameter table: makes easy to build Program3D later
+			var paramTable	: Vector.<BindableConstant> = isVertexShader ? _vsParams : _fsParams;
+			paramTable.push(bindableConstant);
 		}
 		
 		override protected function visitSampler(sampler : Sampler, isVertexShader : Boolean) : void
@@ -636,11 +685,23 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (node === _shaderGraph.color)
 				return _ocAllocator;
 			
-			if (_shaderGraph.kills.indexOf(node) !== -1)
-				return null;
-			
 			if (_shaderGraph.interpolates.indexOf(node) !== -1)
 				return _varyingAllocator;
+			
+			if (_shaderGraph.kills.indexOf(node) !== -1)
+			{
+				if (isVertexShader)
+					throw new Error('kills are not allowed in the vertex shader.');
+				else if (node is Instruction || node is Overwriter)
+					return _fsTempAllocator;
+				else if (node is Constant || node is BindableConstant)
+					return _fsConstAllocator;
+				else if (node is Interpolate)
+					return _varyingAllocator;
+				else
+					throw new Error('Invalid allocation type.');
+			}
+			
 			
 			if (node is Instruction || node is Overwriter) // yes overwriter's destination is always in temporary space
 				return isVertexShader ? _vsTempAllocator : _fsTempAllocator;

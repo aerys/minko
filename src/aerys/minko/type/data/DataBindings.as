@@ -213,7 +213,7 @@ package aerys.minko.type.data
 			return clone;
 		}
 		
-		minko_render function getPropertyChangedSignal(property : String) : Signal
+		public function getPropertyChangedSignal(property : String) : Signal
 		{
 			var signal : Signal = _propertyChanged[property];
 			

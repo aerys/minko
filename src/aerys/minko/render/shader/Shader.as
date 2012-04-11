@@ -178,6 +178,7 @@ package aerys.minko.render.shader
 			program			= Compiler.compileShader(_name, signature);
 			_meshBindings	= null;
 			_sceneBindings	= null;
+			_kills.length	= 0;
 			
 			_programs.push(program);
 			

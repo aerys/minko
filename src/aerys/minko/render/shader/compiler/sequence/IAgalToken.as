@@ -7,7 +7,7 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public interface IAgalSource
+	public interface IAgalToken
 	{
 		function getBytecode(destination : ByteArray) : void;
 		function getAgal(isVertexShader : Boolean) : String;

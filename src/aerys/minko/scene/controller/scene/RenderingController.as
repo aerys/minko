@@ -374,7 +374,8 @@ package aerys.minko.scene.controller.scene
 				// create drawcall
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				if (passInstance.program != null)
+					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
 				drawCalls[i] = drawCall;
 				
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
@@ -405,7 +406,6 @@ package aerys.minko.scene.controller.scene
 			// retrieve references to the data we want to use, to save some function calls
 			var meshEffect		: Effect		= mesh.effect;
 			var meshBindings	: DataBindings	= mesh.bindings;
-//			var numPasses		: uint			= meshEffect.numPasses;
 			
 			// retrieve drawcalls
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
@@ -518,7 +518,9 @@ package aerys.minko.scene.controller.scene
 				var passInstance	: ShaderInstance	= passTemplate.fork(meshBindings, sceneBindings);
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				if (passInstance.program != null)
+					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				
 				drawCalls[i] = drawCall;
 				bind(passInstance, drawCall, meshBindings);
 			}
@@ -619,7 +621,9 @@ package aerys.minko.scene.controller.scene
 					unbind(passInstance, drawCall, meshBindings);
 					
 					var replacementInstance : ShaderInstance = passInstance.generator.fork(meshBindings, sceneBindings);
-					drawCall.configure(replacementInstance.program, meshGeometry, meshBindings, sceneBindings);
+					
+					if (replacementInstance.program != null)
+						drawCall.configure(replacementInstance.program, meshGeometry, meshBindings, sceneBindings);
 					bind(replacementInstance, drawCall, meshBindings);
 				}
 			}

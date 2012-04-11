@@ -11,7 +11,7 @@ package aerys.minko.render.shader.compiler.sequence
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AgalDestination
+	public class AgalDestination implements IAgalToken
 	{
 		private var _registerNumber	: uint;
 		private var _writeMask		: uint;

@@ -31,9 +31,12 @@ package aerys.minko.render.shader.part
 					meshBindings.getConstant("diffuseWrapping", SamplerWrapping.REPEAT)
 				);
 				
+				var uv : SFloat = getVertexAttribute(VertexComponent.UV);
+				uv = uv.xy;
+				
 				return sampleTexture(
 					diffuseMap,
-					interpolate(getVertexAttribute(VertexComponent.UV))
+					interpolate(uv)
 				);
 			}
 			else if (meshBindings.propertyExists("diffuseColor"))

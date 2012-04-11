@@ -64,6 +64,8 @@ package aerys.minko.render.shader.compiler
 		{
 			// execute consecutive visitors to optimize the shader graph.
 			REMOVE_EXTRACT			.process(shaderGraph);
+			
+			
 			MERGER					.process(shaderGraph);
 			REMOVE_USELESS			.process(shaderGraph);
 			OVERWRITER_CLEANER		.process(shaderGraph);
@@ -72,6 +74,8 @@ package aerys.minko.render.shader.compiler
 			RESOLVE_PARAMETRIZED	.process(shaderGraph);
 			COPY_INSERTER			.process(shaderGraph);
 			
+//			WRITE_DOT.process(shaderGraph);
+//			trace(WRITE_DOT.result);
 //			MATRIX_TRANSFORMATION	.process(shaderGraph);
 			
 			// generate final program
@@ -138,7 +142,7 @@ package aerys.minko.render.shader.compiler
 			program.writeByte(isVertexShader ? 0 : 1);	// vertex or fragment			
 			
 			for each (var instruction : AgalInstruction in sequence)
-				instruction.getByteCode(program);
+				instruction.getBytecode(program);
 			
 			return program;
 		}
