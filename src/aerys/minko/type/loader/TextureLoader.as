@@ -56,7 +56,7 @@ package aerys.minko.type.loader
 		
 		public function TextureLoader(enableMipmapping : Boolean = true)
 		{
-			_mipmap		= enableMipmapping;
+			_mipmap				= enableMipmapping;
 			
 			_textureResource 	= new TextureResource();
 			_isComplete 		= false;
@@ -70,24 +70,24 @@ package aerys.minko.type.loader
 			var loader : URLLoader = new URLLoader();
 			
 			loader.dataFormat = URLLoaderDataFormat.BINARY;
-			loader.addEventListener(ProgressEvent.PROGRESS, onLoadProgressHandler);
-			loader.addEventListener(Event.COMPLETE, onLoadCompleteHandler);
-			loader.addEventListener(IOErrorEvent.IO_ERROR, onLoadIoErrorEvent);
+			loader.addEventListener(ProgressEvent.PROGRESS, loadProgressHandler);
+			loader.addEventListener(Event.COMPLETE, loadCompleteHandler);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, loadIoErrorHandler);
 			loader.load(request);
 		}
 		
-		private function onLoadIoErrorEvent(e : IOErrorEvent) : void
+		private function loadIoErrorHandler(e : IOErrorEvent) : void
 		{
 			_textureResource = null;
 			_error.execute(this, e.errorID, e.text);
 		}
 		
-		private function onLoadProgressHandler(e : ProgressEvent) : void
+		private function loadProgressHandler(e : ProgressEvent) : void
 		{
 			_progress.execute(this, e.bytesLoaded, e.bytesTotal);
 		}
 		
-		private function onLoadCompleteHandler(e : Event) : void
+		private function loadCompleteHandler(e : Event) : void
 		{
 			loadBytes(URLLoader(e.currentTarget).data);
 		}
@@ -141,12 +141,12 @@ package aerys.minko.type.loader
 				bytes.position = 0;
 				
 				var loader : Loader = new Loader();
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoadBytesComplete);
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadBytesCompleteHandler);
 				loader.loadBytes(bytes);
 			}
 		}
 		
-		private function onLoadBytesComplete(e : Event) : void
+		private function loadBytesCompleteHandler(e : Event) : void
 		{
 			var displayObject : DisplayObject = LoaderInfo(e.currentTarget).content;
 			

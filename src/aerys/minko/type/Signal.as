@@ -4,12 +4,14 @@ package aerys.minko.type
 	{
 		private var _name			: String			= null;
 		
-		private var _callbacks		: Vector.<Function>	= new <Function>[];
+		private var _callbacks		: Array				= [];
 		private var _numCallbacks	: uint				= 0;
 		
 		private var _executed		: Boolean			= false;
-		private var _toAdd			: Vector.<Function>	= new <Function>[];
-		private var _toRemove		: Vector.<Function>	= new <Function>[];
+		private var _numAdded		: uint				= 0;
+		private var _toAdd			: Array				= null;
+		private var _numRemoved		: uint				= 0;
+		private var _toRemove		: Array				= null;
 		
 		public function get numCallbacks() : uint
 		{
@@ -25,7 +27,12 @@ package aerys.minko.type
 		{
 			if (_executed)
 			{
-				_toAdd.push(callback);
+				if (_toAdd)
+					_toAdd.push(callback);
+				else
+					_toAdd = [callback];
+				++_numAdded;
+				
 				return ;
 			}
 			
@@ -37,7 +44,12 @@ package aerys.minko.type
 		{
 			if (_executed)
 			{
-				_toRemove.push(callback);
+				if (_toRemove)
+					_toRemove.push(callback);
+				else
+					_toRemove = [callback];
+				++_numRemoved;
+				
 				return ;
 			}
 			
@@ -63,15 +75,15 @@ package aerys.minko.type
 				(_callbacks[i] as Function).apply(null, params);
 			_executed = false;
 			
-			var numAdded : uint = _toAdd.length;
-			for (var k : uint = 0; k < numAdded; ++k)
-				add(_toAdd[k]);
-			_toAdd.length = 0;
+			for (i = 0; i < _numAdded; ++i)
+				add(_toAdd[i]);
+			_numAdded = 0;
+			_toAdd = null;
 			
-			var numRemoved : uint = _toRemove.length;
-			for (var j : uint = 0; j < numRemoved; ++j)
-				remove(_toRemove[j]);
-			_toRemove.length = 0;
+			for (i = 0; i < _numRemoved; ++i)
+				remove(_toRemove[i]);
+			_numRemoved = 0;
+			_toRemove = null;
 		}
 	}
 }

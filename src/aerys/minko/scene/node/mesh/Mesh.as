@@ -25,7 +25,7 @@ package aerys.minko.scene.node.mesh
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Mesh extends AbstractSceneNode
+	public class Mesh extends AbstractSceneNode
 	{
 		public static const DEFAULT_EFFECT		: Effect			= new Effect(
 			new BasicShader()

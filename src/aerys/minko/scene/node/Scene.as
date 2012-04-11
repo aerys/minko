@@ -7,6 +7,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.data.DataBindings;
 	
 	import flash.display.BitmapData;
+	import flash.utils.getTimer;
 
 	/**
 	 * Scene objects are the root of any 3D scene.
@@ -16,8 +17,6 @@ package aerys.minko.scene.node
 	 */
 	public final class Scene extends Group
 	{
-//		private static const TIME_OFFSET		: Number		= new Date().time;
-		
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
 		private var _camera			: Camera				= null;
@@ -26,6 +25,11 @@ package aerys.minko.scene.node
 		private var _enterFrame		: Signal				= new Signal("Scene.enterFrame");
 		private var _exitFrame		: Signal				= new Signal("Scene.exitFrame");
 
+		public function get numTriangles() : uint
+		{
+			return _renderingCtrl.numTriangles;
+		}
+		
 		public function get postProcessingEffect() : Effect
 		{
 			return _renderingCtrl.postProcessingEffect;
@@ -80,8 +84,13 @@ package aerys.minko.scene.node
 		
 		public function render(viewport : Viewport, target : BitmapData = null) : void
 		{
-			_enterFrame.execute(this, viewport, target, new Date().time);
-			_exitFrame.execute(this, viewport, target, new Date().time);
+			_enterFrame.execute(this, viewport, target, getTimer());
+			_exitFrame.execute(this, viewport, target, getTimer());
+		}
+		
+		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+		{
+			throw new Error();
 		}
 	}
 }

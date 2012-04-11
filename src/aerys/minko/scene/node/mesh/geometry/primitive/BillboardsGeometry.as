@@ -23,19 +23,19 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 			VertexComponent.ID
 		);
 		
-		public function BillboardsGeometry(numParticles : uint)
+		public function BillboardsGeometry(numQuads : uint)
 		{
 			super();
 			
-			initialize(numParticles);
+			initialize(numQuads);
 		}
 		
-		private function initialize(numParticles : uint) : void
+		private function initialize(numQuads : uint) : void
 		{
 			var vertices	: Vector.<Number>	= new <Number>[];
 			var indices		: Vector.<uint>		= new <uint>[];
 			
-			for (var particleId : int = 0; particleId < numParticles; ++particleId)
+			for (var particleId : int = 0; particleId < numQuads; ++particleId)
 			{
 				vertices.push(
 					-0.5, 0.5, particleId,

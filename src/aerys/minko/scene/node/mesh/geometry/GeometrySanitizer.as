@@ -167,11 +167,11 @@ package aerys.minko.scene.node.mesh.geometry
 			{
 				var vertexHash	: uint		= CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
 				var index		: Object	= hashToNewVertexId[vertexHash];
-				var newVertexId	: uint;
+				var newVertexId	: uint		= 0;
 				
 				if (index === null)
 				{
-					newVertexId = newVertexCount++
+					newVertexId = newVertexCount++;
 					hashToNewVertexId[vertexHash] = newVertexId;
 					
 					if (newVertexId != oldVertexId)

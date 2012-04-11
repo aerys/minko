@@ -1,6 +1,5 @@
 package aerys.minko.scene.node.mesh.geometry.primitive
 {
-	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.scene.node.mesh.geometry.GeometrySanitizer;
 	import aerys.minko.type.stream.IVertexStream;
@@ -268,5 +267,6 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 			
 			return out;
 		}
+		
 	}
 }

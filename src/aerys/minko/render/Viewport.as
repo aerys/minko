@@ -257,52 +257,5 @@ package aerys.minko.render
 				_backgroundColor
 			);
 		}
-		
-		/**
-		 * Render a 3D scene. If the "destination" argument is set to a valid
-		 * BitmapData object, the frame is dumped into it.
-		 * 
-		 * The following signals will also be executed:
-		 * <ul>
-		 * <li>enterFrame, when the method is called</li>
-		 * <li>exitFrame, when the method returns</li>
-		 * </ul>
-		 *  
-		 * @param scene
-		 * @param destination
-		 * 
-		 */
-		/*public function render(scene : Scene, destination : BitmapData = null) : void
-		{
-			_enterFrame.execute(this, scene);
-			
-			scene.update();
-			
-			var context : Context3D 	= _stage3d.context3D;
-			
-			_renderingTime = 0;
-			
-			if (context)
-			{
-				var time : int = getTimer();
-				
-				if (_invalidBackBuffer)
-					updateBackBuffer();
-				
-				scene.renderingController.render(context, _backBuffer);
-				
-				if (destination)
-					context.drawToBitmapData(destination);
-				else
-					context.present();
-				
-				_renderingTime = getTimer() - time;
-			}
-			
-			Factory.sweep();
-			
-			_exitFrame.execute(this, scene);
-		}*/
-		
 	}
 }
