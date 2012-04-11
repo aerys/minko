@@ -675,10 +675,10 @@ package aerys.minko.type.math
 			return output;
 		}
 
-		public static function directionAt(eye			: Vector4,
-										   direction	: Vector4,
-										   up			: Vector4   = null,
-										   out			: Matrix4x4 = null) : Matrix4x4
+		public static function orient(eye		: Vector4,
+									  direction	: Vector4,
+									  up		: Vector4   = null,
+									  out		: Matrix4x4 = null) : Matrix4x4
 		{
 			
 			var eye_X		: Number = eye._vector.x;
@@ -791,7 +791,8 @@ package aerys.minko.type.math
 									  out		: Matrix4x4 = null) : Matrix4x4
 		{
 			Vector4.subtract(lookAt, eye, TMP_VECTOR4);
-			return directionAt(eye, TMP_VECTOR4, up, out);
+			
+			return orient(eye, TMP_VECTOR4, up, out);
 		}
 
 		public static function perspectiveFoV(fov	: Number,
