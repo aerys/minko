@@ -34,10 +34,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.sequence.AgalSourceSampler;
 	import aerys.minko.render.shader.compiler.sequence.IAgalToken;
 	import aerys.minko.type.stream.format.VertexComponent;
-	
-	import flash.utils.Dictionary;
-	
-	import mx.core.DesignLayer;
 
 	/**
 	 * @private
@@ -614,6 +610,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				
 				_allocStore.storeAlloc(allocation, movInstruction, true);
 				_allocStore.storeAlloc(allocation, interpolate, false);
+				
+				extendLifeTime(interpolate.arg, true);
 				
 				_vsInstructions.push(movInstruction);
 			}

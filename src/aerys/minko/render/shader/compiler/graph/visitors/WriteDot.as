@@ -89,6 +89,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_visitedInVs.length = 0;	
 			_visitedInFs.length = 0;
 			_nodeIds = null;
+			_nodeId = 0;
 			_shaderGraph = null;	
 		}
 		
