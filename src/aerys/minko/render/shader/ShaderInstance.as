@@ -40,7 +40,7 @@ package aerys.minko.render.shader
 			return _signature;
 		}
 		
-		public function get config() : ShaderSettings
+		public function get settings() : ShaderSettings
 		{
 			return _config;
 		}
@@ -70,7 +70,7 @@ package aerys.minko.render.shader
 									   backBuffer	: RenderTarget,
 									   previous		: ShaderInstance) : void
 		{
-			_config.prepareContext(context, backBuffer, previous != null ? previous.config : null);
+			_config.prepareContext(context, backBuffer, previous != null ? previous.settings : null);
 			_program.prepareContext(context, previous != null ? previous.program : null);
 		}
 		
