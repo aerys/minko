@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
+	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -10,6 +11,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
@@ -36,6 +38,37 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		public function WriteDot()
 		{
 			super(true);
+		}
+		
+		override public function process(shaderGraph : ShaderGraph) : void
+		{
+			_shaderGraph = shaderGraph;
+			
+			var outputPosition	: Object = { id: 'outputPosition' };
+			var outputColor		: Object = { id: 'outputColor' };
+			var kills			: Object = { id: 'kills' };
+			
+			start();
+			
+			appendNode(outputPosition, 'orange', 'Output Position');
+			appendNode(outputColor, 'orange', 'Output Color');
+			
+			if (_shaderGraph.kills.length != 0)
+				appendNode(kills, 'orange', 'Kills');
+			
+			visit(_shaderGraph.position, true);
+			appendLink(outputPosition, _shaderGraph.position);
+			
+			visit(_shaderGraph.color, false);
+			appendLink(outputColor, _shaderGraph.color);
+			
+			for each (var kill : INode in _shaderGraph.kills)
+			{
+				visit(kill, false);
+				appendLink(kills, kill);
+			}
+				
+			finish();
 		}
 		
 		override protected function start() : void
@@ -117,13 +150,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitConstant(constant			: Constant, 
 												  isVertexShader	: Boolean) : void
 		{
-			appendNode(constant, 'plum1', 'Constant', constant.value.join(',\\n'));
+			appendNode(constant, 'plum1', 'Constant (' + constant.size + ')', constant.value.join(',\\n'));
 		}
 		
 		override protected function visitBindableConstant(bindableConstant	: BindableConstant, 
 														  isVertexShader	: Boolean) : void
 		{
-			appendNode(bindableConstant, 'palegreen1', 'Parameter', bindableConstant.bindingName);
+			appendNode(bindableConstant, 'palegreen1', 'Parameter (' + bindableConstant.size + ')', bindableConstant.bindingName);
 			
 			var subGraph : INode = _shaderGraph.computableConstants[bindableConstant.bindingName] as INode;
 			
@@ -144,6 +177,18 @@ package aerys.minko.render.shader.compiler.graph.visitors
 														 isVertexShader		: Boolean) : void
 		{
 			appendNode(bindableSampler, 'darkolivegreen3', 'BindableSampler', bindableSampler.bindingName);
+		}
+		
+		override protected function visitVariadicExtract(variadicExtract	: VariadicExtract,
+														 isVertexShader		: Boolean) : void
+		{
+			appendNode(variadicExtract, 'cadetblue1', 'VariadicExtract');
+			
+			visit(variadicExtract.index, isVertexShader);
+			appendLink(variadicExtract, variadicExtract.index);
+			
+			visit(variadicExtract.constant, isVertexShader);
+			appendLink(variadicExtract, variadicExtract.constant);
 		}
 		
 		private function appendNode(node		: Object,
