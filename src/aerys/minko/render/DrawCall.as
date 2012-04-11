@@ -201,19 +201,17 @@ package aerys.minko.render
 				{
 					var vertexStream	: IVertexStream = geometry.getVertexStream(index + frame);
 					var stream	 		: VertexStream	= vertexStream.getStreamByComponent(component);
-					var format 			: VertexFormat	= stream.format;
 					
 					if (stream == null)
 					{
 						throw new Error(
-							'Missing vertex component: ' + component.toString() + ' on '
-							+ getQualifiedClassName(geometry).split('::')[1]
+							'Missing vertex component: \'' + component.toString() + '\'.'
 						);
 					}
 					
 					_vertexBuffers[i]	= stream.resource;
 					_formats[i]			= component.nativeFormatString;
-					_offsets[i]			= format.getOffsetForComponent(component);
+					_offsets[i]			= stream.format.getOffsetForComponent(component);
 				}
 			}
 		}
