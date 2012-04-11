@@ -29,7 +29,10 @@ package aerys.minko.type.data
 		
 		public function add(dataProvider : IDataProvider) : DataBindings
 		{
-			var dataDescriptor : Object = dataProvider.dataDescriptor;
+			if (_bindings[dataProvider])
+				throw new Error('This data provider is already bound.');
+			
+			var dataDescriptor 	: Object 	= dataProvider.dataDescriptor;
 			
 			dataProvider.changed.add(dataProviderChangedHandler);
 			
@@ -245,7 +248,7 @@ package aerys.minko.type.data
 				setProperty(propertyName, key !== NO_KEY ? source[key] : source);
 		}
 		
-		private function signalChange(propertyName : String,
+		private function signalChange(propertyName 	: String,
 									  newValue		: Object) : void
 		{
 			getPropertyChangedSignal(propertyName).execute(this, propertyName, newValue);
