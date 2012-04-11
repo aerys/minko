@@ -205,7 +205,8 @@ package aerys.minko.scene
 		{
 			var selection : Vector.<ISceneNode> = _selection.slice();
 			
-			typeName = typeName.toLowerCase();
+			if (typeName != null)
+				typeName = typeName.toLowerCase();
 			
 			_selection.length = 0;
 			for each (var node : ISceneNode in selection)
@@ -220,7 +221,7 @@ package aerys.minko.scene
 						var child 		: ISceneNode 	= group.getChildAt(i);
 						var childType 	: String 		= getQualifiedClassName(child).split('::')[1];
 						
-						if (childType.toLowerCase() == typeName)
+						if (typeName == null || childType.toLowerCase() == typeName)
 							_selection.push(child);
 					}
 				}
