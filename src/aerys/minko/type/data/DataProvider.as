@@ -71,6 +71,14 @@ package aerys.minko.type.data
 			return this;
 		}
 		
+		public function setProperties(properties : Object) : DataProvider
+		{
+			for (var propertyName : String in properties)
+				setProperty(propertyName, properties[propertyName]);
+				
+			return this;
+		}
+		
 		public function removeProperty(name : String) : DataProvider
 		{
 			delete _descriptor[name];
