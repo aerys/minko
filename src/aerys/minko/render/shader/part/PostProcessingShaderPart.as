@@ -17,7 +17,7 @@ package aerys.minko.render.shader.part
 		
 		public function initializeSettings(settings : ShaderSettings) : void
 		{
-			settings.enableDepthWrite = false;
+			settings.depthWriteEnabled = false;
 			settings.depthTest = DepthTest.ALWAYS;
 		}
 		
