@@ -102,9 +102,14 @@ package aerys.minko.render.effect.basic
 		private var _priority				: Number;
 		private var _target					: RenderTarget;
 		
-		protected function get diffuseShaderPart() : DiffuseShaderPart
+		protected function get diffuse() : DiffuseShaderPart
 		{
 			return _diffuseShaderPart;
+		}
+		
+		protected function get vertexAnimation() : VertexAnimationShaderPart
+		{
+			return _vertexAnimationPart;
 		}
 		
 		/**
@@ -140,7 +145,7 @@ package aerys.minko.render.effect.basic
 			
 			settings.blending			= blending;
 			settings.enabled			= true;
-			settings.enableDepthWrite	= true;
+			settings.depthWriteEnabled	= true;
 			settings.renderTarget		= _target;
 			settings.scissorRectangle	= null;
 		}
