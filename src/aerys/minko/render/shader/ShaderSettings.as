@@ -74,11 +74,11 @@ package aerys.minko.render.shader
 			_rectangle = value;
 		}
 		
-		public function get enableDepthWrite() : Boolean
+		public function get depthWriteEnabled() : Boolean
 		{
 			return _enableDepthWrite;
 		}
-		public function set enableDepthWrite(value : Boolean) : void
+		public function set depthWriteEnabled(value : Boolean) : void
 		{
 			_enableDepthWrite = value;
 		}
@@ -139,7 +139,7 @@ package aerys.minko.render.shader
 			blending			= Blending.NORMAL;
 			triangleCulling		= TriangleCulling.BACK;
 			renderTarget		= null;
-			enableDepthWrite	= true;
+			depthWriteEnabled	= true;
 			scissorRectangle	= null;
 		}
 		
@@ -161,7 +161,7 @@ package aerys.minko.render.shader
 			clone.blending			= blending;
 			clone.triangleCulling	= triangleCulling;
 			clone.renderTarget		= renderTarget;
-			clone.enableDepthWrite	= enableDepthWrite;
+			clone.depthWriteEnabled	= depthWriteEnabled;
 			clone.scissorRectangle	= scissorRectangle;
 			
 			return clone;
@@ -188,10 +188,10 @@ package aerys.minko.render.shader
 				var color 	: uint 	= rt.backgroundColor;
 				
 				context.clear(
+					((color >> 24) & 0xff) / 255.,
 					((color >> 16) & 0xff) / 255.,
 					((color >> 8) & 0xff) / 255.,
-					(color & 0xff) / 255.,
-					((color >> 24) & 0xff) / 255.
+					(color & 0xff) / 255.
 				);
 			}
 			
