@@ -22,10 +22,10 @@ package aerys.minko.render.shader.binding
 			return _bindingName;
 		}
 		
-		public function EvalExpConstantBinder(bindingName		: String,
-											size			: uint,
-											masterBinding	: IBinder,
-											evalExp			: EvalExp)
+		public function EvalExpConstantBinder(bindingName	: String,
+											  size			: uint,
+											  masterBinding	: IBinder,
+											  evalExp		: EvalExp)
 		{
 			_bindingName	= bindingName;
 			_masterBinding	= masterBinding;
