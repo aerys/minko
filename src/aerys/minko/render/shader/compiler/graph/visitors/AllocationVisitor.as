@@ -621,7 +621,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 												   isVertexShader	: Boolean) : void
 		{
 			if (!isVertexShader)
-				throw new Error('Attributes can only be found in the vertex shader.');
+				throw new Error('Vertex attributes can only be found in the vertex shader.');
 		
 			// allocate
 			var allocator	: Allocator			= getAllocatorFor(attribute, true);
