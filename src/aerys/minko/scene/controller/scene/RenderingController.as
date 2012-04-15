@@ -294,7 +294,12 @@ package aerys.minko.scene.controller.scene
 												target 		: BitmapData,
 												time		: Number) : void
 		{
-			_scene.bindings.setProperty("time", time);
+			//_scene.bindings.setProperty("time", time);
+			_scene.bindings.setProperties({
+				time			: time,
+				viewportWidth	: viewport.width,
+				viewportHeight	: viewport.height
+			});
 		}
 		
 		private function sceneExitFrameHandler(scene 	: Scene,
