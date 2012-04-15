@@ -274,9 +274,9 @@ package aerys.minko.scene.node
 			return loader;
 		}
 		
-		public function get(path : String) : SceneIterator
+		public function get(xpath : String) : SceneIterator
 		{
-			return new SceneIterator(path, new <ISceneNode>[this]);
+			return new SceneIterator(xpath, new <ISceneNode>[this]);
 		}
 		
 		private function loaderCompleteHandler(loader	: ILoader,
