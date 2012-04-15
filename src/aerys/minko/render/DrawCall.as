@@ -234,11 +234,10 @@ package aerys.minko.render
 					parameterChangedHandler
 				);
 				
-				var value : Object = meshBindings.getProperty(parameter)
-					|| sceneBindings.getProperty(parameter);
-				
-				if (value)
-					setParameter(parameter, value);
+				if (meshBindings.propertyExists(parameter))
+					setParameter(parameter, meshBindings.getProperty(parameter));
+				else if (sceneBindings.propertyExists(parameter))
+					setParameter(parameter, sceneBindings.getProperty(parameter));
 			}
 		}
 
