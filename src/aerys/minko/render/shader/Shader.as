@@ -9,9 +9,11 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	
 	import flash.display.ShaderInput;
+	import flash.display3D.Context3D;
 	import flash.utils.getQualifiedClassName;
 	
 	use namespace minko_shader;
@@ -32,16 +34,21 @@ package aerys.minko.render.shader
 		use namespace minko_shader;
 		use namespace minko_render;
 		
-		minko_shader var _meshBindings	: ShaderDataBindings			= null;
-		minko_shader var _sceneBindings	: ShaderDataBindings			= null;
-		minko_shader var _kills			: Vector.<INode>				= new <INode>[];
+		minko_shader var _meshBindings		: ShaderDataBindings			= null;
+		minko_shader var _sceneBindings		: ShaderDataBindings			= null;
+		minko_shader var _kills				: Vector.<INode>				= new <INode>[];
 		
-		private var _name				: String						= null;
-		private var _baseConfig			: ShaderSettings				= new ShaderSettings(null);
+		private var _name					: String						= null;
+		private var _baseConfig				: ShaderSettings				= new ShaderSettings(null);
 		
-		private var _instances			: Vector.<ShaderInstance>		= new <ShaderInstance>[];
-		private var _configs			: Vector.<ShaderSettings>		= new <ShaderSettings>[];
-		private var _programs			: Vector.<Program3DResource>	= new <Program3DResource>[];
+		private var _instances				: Vector.<ShaderInstance>		= new <ShaderInstance>[]
+		private var _numActiveInstances		: uint							= 0;
+		private var _numRenderedInstances	: uint							= 0;
+		private var _configs				: Vector.<ShaderSettings>		= new <ShaderSettings>[];
+		private var _programs				: Vector.<Program3DResource>	= new <Program3DResource>[];
+		
+		private var _begin					: Signal						= new Signal('Shader.begin');
+		private var _end					: Signal						= new Signal('Shader.end');
 		
 		/**
 		 * The name of the shader. Default value is the qualified name of the
@@ -56,6 +63,35 @@ package aerys.minko.render.shader
 		public function set name(value : String) : void
 		{
 			_name = value;
+		}
+		
+		public function get begin() : Signal
+		{
+			return _begin;
+		}
+		
+		public function get end() : Signal
+		{
+			return _end;
+		}
+		
+		public function get enabled() : Boolean
+		{
+			var numInstances 	: uint = _instances.length;
+			
+			for (var i : uint = 0; i < numInstances; ++i)
+				if ((_instances[i] as ShaderInstance).settings.enabled)
+					return true;
+			
+			return false;
+		}
+		
+		public function set enabled(value : Boolean) : void
+		{
+			var numInstances 	: uint = _instances.length;
+			
+			for (var i : uint = 0; i < numInstances; ++i)
+				(_instances[i] as ShaderInstance).settings.enabled = value;
 		}
 		
 		/**
@@ -79,7 +115,7 @@ package aerys.minko.render.shader
 			if (pass == null)
 			{
 				var signature	: Signature			= new Signature(_name);
-				var config		: ShaderSettings	= findOrCreateConfig(meshBindings, sceneBindings);
+				var config		: ShaderSettings	= findOrCreateSetting(meshBindings, sceneBindings);
 				signature.mergeWith(config.signature);
 				
 				var program		: Program3DResource	= null;
@@ -91,6 +127,9 @@ package aerys.minko.render.shader
 				}
 				
 				pass = new ShaderInstance(this, config, program, signature);
+				pass.retained.add(shaderInstanceRetainedHandler);
+				pass.released.add(shaderInstanceReleasedHandler);
+				
 				_instances.push(pass);
 			}
 			
@@ -115,7 +154,7 @@ package aerys.minko.render.shader
 		
 		protected function initializeSettings(settings : ShaderSettings) : void
 		{
-			throw new Error("The method 'configurePass' must be implemented.");
+//			throw new Error("The method 'configurePass' must be implemented.");
 		}
 		
 		/**
@@ -185,11 +224,11 @@ package aerys.minko.render.shader
 			return program;
 		}
 		
-		private function findOrCreateConfig(meshBindings 	: DataBindings,
-								 			sceneBindings	: DataBindings) : ShaderSettings
+		private function findOrCreateSetting(meshBindings 	: DataBindings,
+											 sceneBindings	: DataBindings) : ShaderSettings
 		{
-			var numConfigs	: int = _configs.length;
-			var config		: ShaderSettings;
+			var numConfigs	: int 				= _configs.length;
+			var config		: ShaderSettings	= null;
 			
 			for (var configId : int = 0; configId < numConfigs; ++configId)
 				if (_configs[configId].signature.isValid(meshBindings, sceneBindings))
@@ -211,5 +250,49 @@ package aerys.minko.render.shader
 			return config;
 		}
 		
+		private function shaderInstanceRetainedHandler(instance : ShaderInstance,
+													   numUses	: uint) : void
+		{
+			if (numUses == 1)
+			{
+				++_numActiveInstances;
+				
+				instance.begin.add(shaderInstanceBeginHandler);
+				instance.end.add(shaderInstanceEndHandler);
+			}
+		}
+		
+		private function shaderInstanceReleasedHandler(instance : ShaderInstance,
+													   numUses	: uint) : void
+		{
+			if (numUses == 0)
+			{
+				--_numActiveInstances;
+				
+				instance.begin.remove(shaderInstanceBeginHandler);
+				instance.end.remove(shaderInstanceEndHandler);
+			}
+		}
+		
+		private function shaderInstanceBeginHandler(instance 	: ShaderInstance,
+													context		: Context3D,
+													backBuffer	: RenderTarget) : void
+		{
+			if (_numRenderedInstances == 0)
+				_begin.execute(this, context, backBuffer);
+		}
+		
+		private function shaderInstanceEndHandler(instance		: ShaderInstance,
+												  context		: Context3D,
+												  backBuffer	: RenderTarget) : void
+		{
+			_numRenderedInstances++;
+			
+			if (_numRenderedInstances == _numActiveInstances)
+			{
+				_numRenderedInstances = 0;
+				_end.execute(this, context, backBuffer);
+			}
+		}
 	}
 }
