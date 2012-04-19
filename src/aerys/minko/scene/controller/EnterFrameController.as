@@ -41,6 +41,9 @@ package aerys.minko.scene.controller
 		{
 			if (target.addedToScene.hasCallback(targetAddedToSceneHandler))
 				target.addedToScene.remove(targetAddedToSceneHandler);
+			
+			target.removedFromScene.add(targetRemovedFromSceneHandler);
+			
 			++_targetsInScene;
 			
 			if (_targetsInScene == 1)
