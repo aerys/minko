@@ -29,7 +29,7 @@ package aerys.minko.scene.controller.camera
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class ArcBallController extends EnterFrameController
+	public class ArcBallController extends EnterFrameController
 	{
 		public static const DEFAULT_MAX_ZOOM		: Number	= 100.0;
 		public static const DEFAULT_MIN_ZOOM		: Number	= 0.0;
@@ -37,35 +37,35 @@ package aerys.minko.scene.controller.camera
 		
 		private static const MIN_SPEED				: Number	= 0.01;
 		
-		private var _enabled		: Boolean	= true;
+		private		var _enabled		: Boolean	= true;
 		
-		private var _transform		: Matrix4x4	= new Matrix4x4();
+		protected	var _transform	: Matrix4x4	= new Matrix4x4();
 		
-		private var _tracking		: Boolean	= false;
-		private var _x				: Number	= 0.;
-		private var _y				: Number	= 0.;
+		private		var _tracking		: Boolean	= false;
+		private		var _x				: Number	= 0.;
+		private		var _y				: Number	= 0.;
 		
-		private var _sensitivity	: Number	= 0.;
-		private var _lockedOnPoles	: Boolean	= true;
-		private var _invertX		: Boolean	= false;
-		private var _invertY		: Boolean	= false;
+		private		var _sensitivity	: Number	= 0.;
+		private		var _lockedOnPoles	: Boolean	= true;
+		private		var _invertX		: Boolean	= false;
+		private		var _invertY		: Boolean	= false;
 		
-		private var _rotationX		: Number	= 0.0;
-		private var _rotationY		: Number	= 0.0;
+		private		var _rotationX		: Number	= 0.0;
+		private		var _rotationY		: Number	= 0.0;
 		
-		private var _minZoom		: Number	= 0.0;
-		private var _maxZoom		: Number	= 100.;
+		private		var _minZoom		: Number	= 0.0;
+		private		var _maxZoom		: Number	= 100.;
 		
-		private var _speedScale		: Number	= .9;
-		private var _speed			: Point		= new Point();
+		private		var _speedScale		: Number	= .9;
+		private		var _speed			: Point		= new Point();
 		
-		private var _useHandCursor	: Boolean	= true;
+		private		var _useHandCursor	: Boolean	= true;
 		
-		private var _invalid		: Boolean	= false;
-		private var _lastTime		: Number	= 0.;
-		private var _lastTarget		: Group		= null;
+		protected	var _invalid		: Boolean	= false;
+		private		var _lastTime		: Number	= 0.;
+		private		var _lastTarget		: Group		= null;
 		
-		private var _inScene		: uint		= 0;
+		private		var _inScene		: uint		= 0;
 		
 		public function get enabled() : Boolean
 		{
@@ -304,7 +304,7 @@ package aerys.minko.scene.controller.camera
 			drag(event.localX, event.localY);
 		}
 		
-		private function mouseWheelHandler(event : MouseEvent) : void
+		protected function mouseWheelHandler(event : MouseEvent) : void
 		{
 			zoom(event.delta * -0.01);
 		}
