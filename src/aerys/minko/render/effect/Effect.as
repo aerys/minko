@@ -46,5 +46,28 @@ package aerys.minko.render.effect
 		{
 			return _passes[index];
 		}
+		
+		public function addPass(pass : Shader) : uint
+		{
+			var index : uint = _passes.push(pass);
+			
+			_passesChanged.execute(this);
+			
+			return index;
+		}
+		
+		public function removePass(pass : Shader) : void
+		{
+			var numPasses 	: int 	= _passes.length - 1;
+			var index		: int	= _passes.indexOf(pass);
+			
+			if (index < 0)
+				throw new Error('This pass does not exists.');
+			
+			for (; index < numPasses; index++)
+				_passes[index] = _passes[int(index + 1)];
+			
+			_passesChanged.execute(this);
+		}
 	}
 }

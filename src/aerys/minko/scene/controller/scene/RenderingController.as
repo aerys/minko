@@ -225,6 +225,7 @@ package aerys.minko.scene.controller.scene
 				if (!pass.settings.enabled)
 					continue;
 				
+				pass.begin.execute(pass, context, backBuffer);
 				pass.prepareContext(context, backBuffer, previous);
 				previous = pass;
 				
@@ -239,6 +240,8 @@ package aerys.minko.scene.controller.scene
 						previousCall = call;
 					}
 				}
+				
+				pass.end.execute(pass, context, backBuffer);
 			}
 			
 			// force clear is nothing was rendered

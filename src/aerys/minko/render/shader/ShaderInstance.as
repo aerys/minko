@@ -20,15 +20,20 @@ package aerys.minko.render.shader
 	 */
 	public final class ShaderInstance
 	{
-		private static const TMP_NUMBERS		: Vector.<Number>	= new Vector.<Number>(0xffff, true);
-		private static const TMP_INTS			: Vector.<int>		= new Vector.<int>(0xffff, true);
+		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);
+		private static const TMP_INTS		: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
 		private var _numUses	: int					= 0;
-		private var _generator	: Shader	= null;
+		private var _generator	: Shader				= null;
 		private var _signature	: Signature				= null;
 		
 		private var _config		: ShaderSettings		= null;
 		private var _program	: Program3DResource		= null;
+		
+		private var _retained	: Signal				= new Signal('ShaderInstance.retained');
+		private var _released	: Signal				= new Signal('ShaderInstance.released');
+		private var _begin		: Signal				= new Signal('ShaderInstance.begin');
+		private var _end		: Signal				= new Signal('ShaderInstance.end');
 		
 		public function get generator() : Shader
 		{
@@ -53,6 +58,26 @@ package aerys.minko.render.shader
 		public function get isDisposable() : Boolean
 		{
 			return _numUses == 0
+		}
+		
+		public function get retained() : Signal
+		{
+			return _retained;
+		}
+		
+		public function get released() : Signal
+		{
+			return _released;
+		}
+		
+		public function get begin() : Signal
+		{
+			return _begin;
+		}
+		
+		public function get end() : Signal
+		{
+			return _end;
 		}
 		
 		public final function ShaderInstance(generator	: Shader,
@@ -81,6 +106,8 @@ package aerys.minko.render.shader
 			
 			if (_program != null)
 				_program.retain();
+			
+			_retained.execute(this, _numUses);
 		}
 		
 		public function release() : void
@@ -90,6 +117,8 @@ package aerys.minko.render.shader
 			
 			if (_program != null)
 				_program.release();
+			
+			_released.execute(this, _numUses);
 		}
 		
 		public static function sort(instances : Vector.<ShaderInstance>, numStates : int) : void
