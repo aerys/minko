@@ -7,8 +7,6 @@ package aerys.minko.type.loader.parser
 	
 	import flash.net.URLRequest;
 	
-	import spark.layouts.BasicLayout;
-
 	/**
 	 * ParserOptions objects provide properties and function references
 	 * to customize how a LoaderGroup object will load and interpret 
