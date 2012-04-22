@@ -1,7 +1,6 @@
 package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.resource.texture.TextureResource;
 	
 	import flash.utils.Dictionary;
 	
@@ -24,7 +23,7 @@ package aerys.minko.render.shader.binding
 		}
 		
 		public function TextureBinder(name		: String,
-												samplerId	: uint)
+									  samplerId	: uint)
 		{
 			_name		= name;
 			_samplerId	= samplerId;
@@ -39,7 +38,7 @@ package aerys.minko.render.shader.binding
 							fsTextures		: Vector.<ITextureResource>,
 							value			: Object) : void
 		{
-			fsTextures[_samplerId] = TextureResource(value);
+			fsTextures[_samplerId] = ITextureResource(value);
 		}
 	}
 }
