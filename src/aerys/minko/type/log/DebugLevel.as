@@ -18,5 +18,7 @@ package aerys.minko.type.log
 		public static const PLUGIN_WARNING				: uint	= 1 << 8;
 		public static const PLUGIN_ERROR				: uint	= 1 << 9;
 		
+		public static const ALL							: uint 	= 0xffffffff;
+		
 	}
 }
