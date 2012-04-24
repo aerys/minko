@@ -17,7 +17,7 @@ package aerys.minko.render.effect
 		
 		minko_render var _passes	: Vector.<Shader>	= null;
 		
-		private var _passesChanged	: Signal				= new Signal('Effect.passesChanged');
+		private var _passesChanged	: Signal			= new Signal('Effect.passesChanged');
 		
 		public function get passesChanged() : Signal
 		{
@@ -68,6 +68,11 @@ package aerys.minko.render.effect
 				_passes[index] = _passes[int(index + 1)];
 			
 			_passesChanged.execute(this);
+		}
+		
+		public function hasPass(pass : Shader) : Boolean
+		{
+			return _passes.indexOf(pass) >= 0;
 		}
 	}
 }

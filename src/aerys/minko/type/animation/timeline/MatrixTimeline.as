@@ -60,9 +60,6 @@ package aerys.minko.type.animation.timeline
 			var previousMatrix		: Matrix4x4 = _values[int(timeId - 1)];
 			var nextMatrix			: Matrix4x4 = _values[timeId];
 			
-			if (t < 0)
-				interpolationRatio = 1 - interpolationRatio;
-			
 			out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
 		}
 

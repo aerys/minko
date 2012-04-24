@@ -19,8 +19,6 @@ package aerys.minko.scene.controller
 	 */
 	public class AnimationController extends EnterFrameController
 	{
-		public static var DEFAULT_TIME_FUNCTION	: Function = getTimer;
-		
 		private var _timelines		: Vector.<ITimeline>	= new Vector.<ITimeline>();
 		private var _isPlaying		: Boolean				= false;
 		private var _updateOneTime	: Boolean 				= false;
@@ -31,7 +29,7 @@ package aerys.minko.scene.controller
 		private var _currentTime	: int					= 0;
 		private var _totalTime		: int					= 0;
 		
-		private var _timeFunction	: Function				= DEFAULT_TIME_FUNCTION;
+		private var _timeFunction	: Function				= null;
 		private var _labels			: Vector.<TimeLabel>	= new Vector.<TimeLabel>();
 		
 		private var _lastTime		: Number				= 0;
@@ -39,6 +37,16 @@ package aerys.minko.scene.controller
 		private var _looped			: Signal 				= new Signal('AnimationController.looped');
 		private var _started		: Signal				= new Signal('AnimationController.started');
 		private var _stopped		: Signal				= new Signal('AnimationController.stopped');
+
+		public function get timeFunction():Function
+		{
+			return _timeFunction;
+		}
+
+		public function set timeFunction(value:Function):void
+		{
+			_timeFunction = value;
+		}
 
 		public function get labels():Vector.<TimeLabel>
 		{
@@ -146,7 +154,6 @@ package aerys.minko.scene.controller
 				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
 			
 			_currentTime = timeValue;
-			_lastTime = _timeFunction != null ? _timeFunction() : getTimer();
 			play();
 		}
 		
@@ -158,20 +165,21 @@ package aerys.minko.scene.controller
 				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
 			
 			_currentTime = timeValue;
-			_lastTime = _timeFunction != null ? _timeFunction() : getTimer();
 			stop();
 		}
 		
 		public function play() : void
 		{
 			_isPlaying = true;
+			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
 			_started.execute(this);
 		}
 		
 		public function stop() : void
 		{
 			_updateOneTime 	= true;
-			_isPlaying 		= false;
+			_isPlaying = false;
+			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
 			_stopped.execute(this);
 		}
 		
@@ -250,7 +258,7 @@ package aerys.minko.scene.controller
 			if (_isPlaying || _updateOneTime)
 			{
 				if (_timeFunction != null)
-					time = _timeFunction();
+					time = _timeFunction(time);
 				
 				var deltaT 			: Number = time - _lastTime;
 				var lastCurrentTime : Number = _currentTime;
@@ -259,13 +267,14 @@ package aerys.minko.scene.controller
 					+ (_currentTime + deltaT - _loopBeginTime)
 					% (_loopEndTime - _loopBeginTime);
 				
-				if (lastCurrentTime > _currentTime)
+				if ((deltaT > 0 && lastCurrentTime > _currentTime)
+					|| (deltaT < 0 && (lastCurrentTime < _currentTime || _currentTime * lastCurrentTime < 0)))
 				{
 					if (_looping)
 						_looped.execute(this);
 					else
 					{
-						_currentTime = _totalTime;
+						_currentTime = deltaT > 0 ? _totalTime : 0;
 						stop();
 						
 						return true;
@@ -276,24 +285,6 @@ package aerys.minko.scene.controller
 			_lastTime = time;
 			
 			return _isPlaying || _updateOneTime;
-		}
-		
-		private function updateTarget(target : ISceneNode) : void
-		{
-			var numTimelines 	: int 	= _timelines.length;
-			var group			: Group	= target as Group;
-			
-			_updateOneTime = false;
-			
-			for (var i : int = 0; i < numTimelines; ++i)
-			{
-				var timeline : ITimeline = _timelines[i] as ITimeline;
-				
-				timeline.updateAt(
-					_currentTime % (timeline.duration + 1),
-					target
-				);
-			}
 		}
 	}
 }
