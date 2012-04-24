@@ -250,10 +250,10 @@ package aerys.minko.scene.controller.scene
 				var color : uint = backBuffer.backgroundColor;
 				
 				context.clear(
+					(color >>> 24) / 255.,
 					((color >> 16) & 0xff) / 255.,
 					((color >> 8) & 0xff) / 255.,
-					(color & 0xff) / 255.,
-					((color >> 24) & 0xff) / 255.
+					(color & 0xff) / 255.
 				);
 			}
 			
@@ -371,7 +371,7 @@ package aerys.minko.scene.controller.scene
 			var sceneBindings	: DataBindings	= _scene.bindings;
 			
 			// iterate on meshEffect passes
-			var drawCalls : Vector.<DrawCall>	= new Vector.<DrawCall>();
+			var drawCalls : Vector.<DrawCall>	= new <DrawCall>[];
 			
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
@@ -382,6 +382,7 @@ package aerys.minko.scene.controller.scene
 				// create drawcall
 				var drawCall		: DrawCall			= new DrawCall();
 				
+				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
 					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
 				drawCalls[i] = drawCall;
