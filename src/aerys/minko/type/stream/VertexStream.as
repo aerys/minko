@@ -105,6 +105,8 @@ package aerys.minko.type.stream
 			if (!_invalidMinMax)
 				return ;
 			
+			_invalidMinMax = false;
+			
 			var size		: uint	= format.dwordsPerVertex;
 			var dataLength	: uint	= data.length;
 			var i			: uint	= 0;
