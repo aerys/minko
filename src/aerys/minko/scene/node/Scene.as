@@ -5,6 +5,8 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.data.IDataProvider;
 	
 	import flash.display.BitmapData;
 	import flash.utils.getTimer;
@@ -20,6 +22,7 @@ package aerys.minko.scene.node
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
 		private var _camera			: Camera				= null;
+		private var _properties		: IDataProvider			= null;
 		private var _bindings		: DataBindings			= new DataBindings();
 		
 		private var _enterFrame		: Signal				= new Signal("Scene.enterFrame");
@@ -34,10 +37,27 @@ package aerys.minko.scene.node
 		{
 			return _renderingCtrl.postProcessingEffect;
 		}
-		
 		public function set postProcessingEffect(value : Effect) : void
 		{
 			_renderingCtrl.postProcessingEffect = value;
+		}
+		
+		public function get properties() : IDataProvider
+		{
+			return _properties;
+		}
+		public function set properties(value : IDataProvider) : void
+		{
+			if (_properties != value)
+			{
+				if (_properties)
+					_bindings.remove(_properties);
+				
+				_properties = value;
+				
+				if (value)
+					_bindings.add(value);
+			}
 		}
 		
 		public function get bindings() : DataBindings
@@ -76,6 +96,8 @@ package aerys.minko.scene.node
 		public function Scene(...children)
 		{
 			super();
+			
+			this.properties = new DataProvider();
 			
 			addController(_renderingCtrl);
 			

@@ -29,11 +29,24 @@ Features
 
 The detailed list is available on [our website](http://aerys.in/minko/features).
 
-Documentation
--------------
 
-* [Tutorials](http://hub.aerys.in/minko/v1/tutorials)
-* [Technical articles](http://hub.aerys.in/minko/v1/articles)
+New Features Of Minko 2
+-----------------------
+
+* MVC oriented architecture
+* Much faster rendering pipeline (+3000% in the best cases)
+* Simpler scene graph API
+* Unified scene-to-shaders data binding API
+* Much faster dynamic JIT shader compiler
+* Automated GPU vs CPU shader optimization
+* Simpler and automated ActionScript shaders API
+* Simpler multi-pass effects API
+* Support for the "kil" shader instruction
+* Automated computation for common missing vertex attributes
+* XPath selectors to fetch scene nodes
+* Scene iterators to manipulate multiple scene nodes at once
+* MK file format 
+
 
 Contribute
 ----------

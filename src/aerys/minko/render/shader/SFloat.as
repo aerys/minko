@@ -6,6 +6,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -197,6 +198,9 @@ package aerys.minko.render.shader
 			
 			if (value is uint || value is int || value is Number)
 				return new Constant(new <Number>[Number(value)]);
+			
+			if (value is Matrix4x4)
+				return new Constant(Matrix4x4(value).getRawData(null, 0, false));
 			
 			throw new Error('This type cannot be casted to a shader value.');
 		}

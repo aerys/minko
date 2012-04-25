@@ -38,7 +38,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
-		private var _dataProvider		: DataProvider		= null;
+		private var _properties			: DataProvider		= null;
 		private var _bindings			: DataBindings		= new DataBindings();
 		
 		private var _boundingSphere		: BoundingSphere	= null;
@@ -73,18 +73,23 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		public function get dataProvider() : DataProvider
+		public function get properties() : DataProvider
 		{
-			return _dataProvider;
+			return _properties;
 		}
 		
-		public function set dataProvider(value : DataProvider) : void
+		public function set properties(value : DataProvider) : void
 		{
-			if (_dataProvider)
-				_bindings.remove(_dataProvider);
-			
-			_dataProvider = value,
-			_bindings.add(value);
+			if (_properties != value)
+			{
+				if (_properties)
+					_bindings.remove(_properties);
+				
+				_properties = value;
+					
+				if (value)
+					_bindings.add(value);
+			}
 		}
 		
 		/**
@@ -229,7 +234,7 @@ package aerys.minko.scene.node.mesh
 									effect		: Effect,
 									controllers	: Array) : void
 		{
-			dataProvider = new DataProvider(properties);
+			this.properties = new DataProvider(properties);
 			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
