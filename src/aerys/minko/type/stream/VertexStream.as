@@ -27,6 +27,8 @@ package aerys.minko.type.stream
 		private var _invalidMinMax	: Boolean					= true;
 		private var _maximum		: Vector.<Number>			= null;
 		private var _minimum		: Vector.<Number>			= null;
+		
+		private var _dataLocked		: Boolean					= false;
 
 		private var _changed		: Signal					= new Signal('VertexStream.changed');
 		private var _boundsChanged	: Signal					= new Signal('VertexStream.boundsChanged');
@@ -104,7 +106,7 @@ package aerys.minko.type.stream
 		{
 			if (!_invalidMinMax)
 				return ;
-			
+				
 			_invalidMinMax = false;
 			
 			var size		: uint	= format.dwordsPerVertex;
@@ -141,6 +143,8 @@ package aerys.minko.type.stream
 		
 		public function deleteVertexByIndex(index : uint) : Boolean
 		{
+			checkWriteUsage(this);
+			
 			if (index > length)
 				return false;
 
@@ -196,6 +200,24 @@ package aerys.minko.type.stream
 			_changed.execute(this, null);
 			_boundsChanged.execute(this);
 		}
+		
+		public function lockData(): Vector.<Number> {
+			if (_dataLocked) 
+				throw new Error("Data lock is already active");
+			if (_localDispose)
+				throw new Error("Can not lock stream data which is marked for disposal");
+			checkWriteUsage(this);
+			_dataLocked = true;
+			return _data;
+		}
+		
+		public function unlockData(): void {
+			if (!_dataLocked)
+				throw new Error("Data is not locked");
+			_dataLocked = false;
+			_invalidMinMax = true;
+			_changed.execute(this, null);
+		}
 
 		public function push(data : Vector.<Number>) : void
 		{
@@ -215,6 +237,8 @@ package aerys.minko.type.stream
 
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
+			if (_dataLocked)
+				throw new Error("Stream data can not be disposed since it's locked for update");
 			if (waitForUpload)
 				_localDispose = true;
 			else
@@ -336,6 +360,11 @@ package aerys.minko.type.stream
 					+ "is not set to StreamUsage.WRITE."
 				);
 			}
+			if (stream._dataLocked)
+				throw new Error(
+					"Unable to write in vertex stream: stream data "
+					+ "is locked for bulk update"
+				);
 		}
 
 		public static function concat(streams : Vector.<IVertexStream>, usage : uint) : VertexStream
