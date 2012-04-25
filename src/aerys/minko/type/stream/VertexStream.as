@@ -232,10 +232,15 @@ package aerys.minko.type.stream
 		public function unlock() : void
 		{
 			if (!_locked)
-				throw new Error("Data is not locked");
+				throw new Error("Cannot unlock a stream that is not locked.");
+			
+			var invalidMinMax : Boolean = _invalidMinMax;
 			
 			_locked = false;
-			_invalidMinMax = true;
+			_invalidMinMax = false;
+			
+			if (invalidMinMax)
+				_boundsChanged.execute(this);
 			_changed.execute(this, null);
 		}
 
