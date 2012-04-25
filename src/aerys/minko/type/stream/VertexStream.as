@@ -28,7 +28,7 @@ package aerys.minko.type.stream
 		private var _maximum		: Vector.<Number>			= null;
 		private var _minimum		: Vector.<Number>			= null;
 		
-		private var _dataLocked		: Boolean					= false;
+		private var _locked			: Boolean					= false;
 
 		private var _changed		: Signal					= new Signal('VertexStream.changed');
 		private var _boundsChanged	: Signal					= new Signal('VertexStream.boundsChanged');
@@ -62,6 +62,11 @@ package aerys.minko.type.stream
 		{
 			_data = value;
 			_changed.execute(this, null);
+		}
+		
+		public function get locked() : Boolean
+		{
+			return _locked;
 		}
 		
 		public function get changed() : Signal
@@ -197,24 +202,39 @@ package aerys.minko.type.stream
 				minMaxChanged = true;
 			}
 			
-			_changed.execute(this, null);
-			_boundsChanged.execute(this);
+			if (_locked)
+			{
+				_invalidMinMax = minMaxChanged;
+			}
+			else
+			{
+				_changed.execute(this, null);
+				if (minMaxChanged)
+					_boundsChanged.execute(this);
+			}
 		}
 		
-		public function lockData(): Vector.<Number> {
-			if (_dataLocked) 
-				throw new Error("Data lock is already active");
+		public function lock() : Vector.<Number>
+		{
+			if (_locked) 
+				throw new Error("The stream is already locked.");
 			if (_localDispose)
-				throw new Error("Can not lock stream data which is marked for disposal");
+				throw new Error("Cannot lock stream data which is already disposed.");
+			
 			checkWriteUsage(this);
-			_dataLocked = true;
+			
+			_locked = true;
+			_invalidMinMax = false;
+			
 			return _data;
 		}
 		
-		public function unlockData(): void {
-			if (!_dataLocked)
+		public function unlock() : void
+		{
+			if (!_locked)
 				throw new Error("Data is not locked");
-			_dataLocked = false;
+			
+			_locked = false;
 			_invalidMinMax = true;
 			_changed.execute(this, null);
 		}
@@ -223,21 +243,46 @@ package aerys.minko.type.stream
 		{
 			checkWriteUsage(this);
 			
-			var dataLength : int = data.length;
+			var numValues 		: int 		= data.length;
+			var minMaxChanged	: Boolean	= false;
 
-			if (dataLength % _format.dwordsPerVertex)
+			if (numValues % _format.dwordsPerVertex)
 				throw new Error("Invalid data length.");
 
-			for (var i : int = 0; i < dataLength; i++)
-				_data.push(data[i]);
+			for (var i : int = 0; i < numValues; i++)
+			{
+				var value 	: Number	= data[i];
+				var ii		: uint		= i % _format.dwordsPerVertex;
+				
+				if (value < _minimum[ii])
+				{
+					_minimum[i] = value;
+					minMaxChanged = true;
+				}
+				else if (value > _maximum[ii])
+				{
+					_maximum[i] = value;
+					minMaxChanged = true;
+				}
+				
+				_data.push(value);
+			}
 
-			_invalidMinMax = true;
-			_changed.execute(this, null);
+			if (_locked)
+			{
+				_invalidMinMax = minMaxChanged;
+			}
+			else
+			{
+				_changed.execute(this, null);
+				if (minMaxChanged)
+					_boundsChanged.execute(this);
+			}
 		}
 
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
-			if (_dataLocked)
+			if (_locked)
 				throw new Error("Stream data can not be disposed since it's locked for update");
 			if (waitForUpload)
 				_localDispose = true;
@@ -360,7 +405,7 @@ package aerys.minko.type.stream
 					+ "is not set to StreamUsage.WRITE."
 				);
 			}
-			if (stream._dataLocked)
+			if (stream._locked)
 				throw new Error(
 					"Unable to write in vertex stream: stream data "
 					+ "is locked for bulk update"
