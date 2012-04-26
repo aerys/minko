@@ -169,6 +169,16 @@ package aerys.minko.render.shader.part
 			return _main._sceneBindings.getParameter("cameraZFar", 1);
 		}
 		
+		protected function get viewportWidth() : SFloat
+		{
+			return _main._sceneBindings.getParameter("viewportWidth", 1);
+		}
+		
+		protected function get viewportHeight() : SFloat
+		{
+			return _main._sceneBindings.getParameter("viewportHeight", 1);
+		}
+		
 		protected function get time() : SFloat
 		{
 			return _main._sceneBindings.getParameter("time", 1);

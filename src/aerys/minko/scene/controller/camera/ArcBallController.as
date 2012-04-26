@@ -67,6 +67,16 @@ package aerys.minko.scene.controller.camera
 		
 		private		var _inScene		: uint		= 0;
 		
+		protected function get rotationX():Number
+		{
+			return _rotationX;
+		}
+
+		protected function set rotationX(value:Number):void
+		{
+			_rotationX = value;
+		}
+
 		public function get enabled() : Boolean
 		{
 			return _enabled;
