@@ -305,6 +305,8 @@ package aerys.minko.render.shader.compiler.register
 			for (var i : uint = 0; i < 4; ++i)
 			{
 				var currentRead : uint = getReadAtIndex(i, component);
+				
+				// cast to int: workaround iOS int VS uint bug
 				if (currentRead > int(maxRead) && currentRead != _)
 					maxRead = currentRead;
 			}
