@@ -91,7 +91,6 @@ package aerys.minko.scene.controller.camera
 				_camera.zFar,
 				_camera.projection
 			);
-			Matrix4x4.invert(_camera.projection, _camera.screenToView);
 			_camera.frustum.updateFromDescription(
 				_camera.fieldOfView,
 				aspectRatio,
@@ -123,7 +122,6 @@ package aerys.minko.scene.controller.camera
 				worldUp,
 				_camera.worldToView
 			);
-			Matrix4x4.invert(_camera.worldToView, _camera.viewToWorld);
 			
 			updateWorldToScreen();
 		}
@@ -131,7 +129,6 @@ package aerys.minko.scene.controller.camera
 		private function updateWorldToScreen() : void
 		{
 			Matrix4x4.multiply(_camera.projection, _camera.worldToView, _camera.worldToScreen);
-			Matrix4x4.multiply(_camera.viewToWorld, _camera.screenToView, _camera.screenToWorld);
 		}
 		
 		private function addedToSceneHandler(child : ISceneNode, scene : Scene) : void

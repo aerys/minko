@@ -33,10 +33,7 @@ package aerys.minko.scene.node
 			"cameraZFar"			: "zFar",
 			"worldToView"			: "worldToView",
 			"projection"			: "projection",
-			"worldToScreen"			: "worldToScreen",
-			"viewToWorld"			: "viewToWorld",
-			"screenToView"			: "screenToView",
-			"screenToWorld"			: "screenToWorld"
+			"worldToScreen"			: "worldToScreen"
 		};
 		
 		private var _viewport		: Viewport	= null;
@@ -57,9 +54,6 @@ package aerys.minko.scene.node
 		private var _projection		: Matrix4x4	= new Matrix4x4();
 		
 		private var _worldToScreen	: Matrix4x4	= new Matrix4x4();
-		private var _viewToWorld	: Matrix4x4 = new Matrix4x4();
-		private var _screenToView	: Matrix4x4 = new Matrix4x4();
-		private var _screenToWorld	: Matrix4x4 = new Matrix4x4();
 		
 		private var _changed		: Signal	= new Signal('Camera.changed');
 		
@@ -176,39 +170,6 @@ package aerys.minko.scene.node
 		public function get worldToScreen() : Matrix4x4
 		{
 			return _worldToScreen;
-		}
-		
-		/**
-		 * The matrix that transforms view space coordinates
-		 * into world space coordinates.
-		 * @return 
-		 * 
-		 */
-		public function get viewToWorld() : Matrix4x4
-		{
-			return _viewToWorld;
-		}
-		
-		/**
-		 * The matrix that transforms clip space coordinates
-		 * into view space coordinates (inverse projection).
-		 * @return 
-		 * 
-		 */
-		public function get screenToView() : Matrix4x4
-		{
-			return _screenToView;
-		}
-		
-		/**
-		 * The matrix that transforms clip space coordinates
-		 * into world space coordinates. 
-		 * @return 
-		 * 
-		 */
-		public function get screenToWorld() : Matrix4x4
-		{
-			return _screenToWorld;
 		}
 		
 		/**
