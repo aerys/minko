@@ -40,27 +40,6 @@ package aerys.minko.scene.controller
 		}
 		
 		/**
-		 * The signal executed when the "tick" method is called to update the controller.
-		 * If the controller's mode is Controller.SIGNAL, the "tick" method is never called
-		 * and this signal is never dispatched.
-		 * 
-		 * Callback functions for this signal should accept the following arguments:
-		 * <ul>
-		 * <li>controller : AbstractController, the controller from which the signal is
-		 * being executed</li>
-		 * <li>time : Number, the time - in milliseconds - spent until the Scene object
-		 * was created</li>
-		 * <li>target : ISceneNode, the target of the controller</li>
-		 * </ul>
-		 * @return 
-		 * 
-		 */
-		public function get ticked() : Signal
-		{
-			return _ticked;
-		}
-		
-		/**
 		 * The signal executed when a target is added to the controller. 
 		 * @return 
 		 * 
