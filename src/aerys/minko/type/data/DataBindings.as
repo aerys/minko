@@ -86,8 +86,6 @@ package aerys.minko.type.data
 			if (newValue === null)
 				throw new Error("The argument 'newValue' cannot be null.");
 			
-			var oldValue : Object = _values[propertyName];
-			
 			if (_properties.indexOf(propertyName) < 0)
 				_properties.push(propertyName);
 			
