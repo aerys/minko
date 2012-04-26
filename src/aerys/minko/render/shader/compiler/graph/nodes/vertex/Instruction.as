@@ -284,7 +284,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			if (v == Components.____)
 				throw new Error("Component cannot be empty.");
 			
-			if (_arg2.size < Components.getMaxReadOffset(v))
+			if (int(_arg2.size) < Components.getMaxReadOffset(v))
 				throw new Error('Component is reading too far.');
 			
 			if (v != _arg2Components)
