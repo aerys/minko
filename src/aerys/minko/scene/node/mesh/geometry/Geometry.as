@@ -473,10 +473,12 @@ package aerys.minko.scene.node.mesh.geometry
 		{
 			var stream	: IVertexStream	= _vertexStreams[index];
 			
-			if (!(stream is VertexStreamList)) {
+			if (!(stream is VertexStreamList))
+			{
 				stream = new VertexStreamList(stream);
 				setVertexStream(stream, index);
 			}
+			
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
