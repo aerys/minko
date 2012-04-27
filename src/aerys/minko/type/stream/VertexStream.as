@@ -124,7 +124,7 @@ package aerys.minko.type.stream
 			for (i = 0; i < size; ++i)
 			{
 				_minimum[i] = Number.MAX_VALUE;
-				_maximum[i] = Number.MIN_VALUE;
+				_maximum[i] = -Number.MAX_VALUE;
 			}
 			
 			i = 0;
@@ -136,7 +136,7 @@ package aerys.minko.type.stream
 					
 					if (value < _minimum[j])
 						_minimum[j] = value;
-					else if (value > _maximum[j])
+					if (value > _maximum[j])
 						_maximum[j] = value;
 				}
 				
@@ -156,6 +156,7 @@ package aerys.minko.type.stream
 			_data.splice(index, _format.dwordsPerVertex);
 			_invalidMinMax = true;
 			_changed.execute(this, null);
+			updateMinMax();
 
 			return true;
 		}
@@ -234,14 +235,10 @@ package aerys.minko.type.stream
 			if (!_locked)
 				throw new Error("Cannot unlock a stream that is not locked.");
 			
-			var invalidMinMax : Boolean = _invalidMinMax;
-			
 			_locked = false;
-			_invalidMinMax = false;
-			
-			if (invalidMinMax)
-				_boundsChanged.execute(this);
+			_invalidMinMax = true;
 			_changed.execute(this, null);
+			updateMinMax();
 		}
 
 		public function push(data : Vector.<Number>) : void
@@ -261,12 +258,12 @@ package aerys.minko.type.stream
 				
 				if (value < _minimum[ii])
 				{
-					_minimum[i] = value;
+					_minimum[ii] = value;
 					minMaxChanged = true;
 				}
 				else if (value > _maximum[ii])
 				{
-					_maximum[i] = value;
+					_maximum[ii] = value;
 					minMaxChanged = true;
 				}
 				
