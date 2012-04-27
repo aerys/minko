@@ -122,6 +122,11 @@ package aerys.minko.type.math
 			setScale(NaN, NaN, value);
 		}
 		
+		public function get determinant(): Number
+		{
+			return _matrix.determinant;
+		}
+		
 		public function get locked() : Boolean
 		{
 			return _locked;
