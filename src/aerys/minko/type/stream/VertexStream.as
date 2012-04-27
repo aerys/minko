@@ -235,7 +235,7 @@ package aerys.minko.type.stream
 				throw new Error("Cannot unlock a stream that is not locked.");
 			
 			var invalidMinMax : Boolean = _invalidMinMax;
-			
+				
 			_locked = false;
 			_invalidMinMax = true;
 			
