@@ -23,11 +23,18 @@ With Minko, you can build all kinds of applications such as:
 Features
 --------
 
-* Expressive Scene Graph API
+* Free and open source
+* Extensible MVC architecture
+* Expressive scene graph API
 * Extensions system
-* ActionScript 3.0 Shaders
-
-The detailed list is available on [our website](http://aerys.in/minko/features).
+* ActionScript 3 shaders programming
+* Multi-pass rendering
+* Post-processing
+* Extensible data binding API
+* 3D data compression/simplification
+* Support for common file formats (Collada, Obj, 3ds)
+* Hardware accelerated animations (skinning/morphing)
+* Powerful lighting engine
 
 
 New Features Of Minko 2
