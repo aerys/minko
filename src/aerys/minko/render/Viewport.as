@@ -240,17 +240,22 @@ package aerys.minko.render
 		 */
 		public function resize(width : Number, height : Number) : void
 		{
-			if (!width || !height || (width == _width && _height == height))
-				return ;
-			
-			_width = width;
-			_height = height;
-			
 			if (_autoResize)
 			{
 				_autoResize = false;
 				updateStageListeners()
 			}
+			
+			resize(width, height);
+		}
+		
+		private function setSize(width : Number, height : Number) : void
+		{
+			if (width == _width && _height == height)
+				return ;
+			
+			_width = width;
+			_height = height;
 			
 			_invalidBackBuffer = true;
 			_resized.execute(this, width, height);
@@ -258,7 +263,7 @@ package aerys.minko.render
 		
 		private function stageResizedHandler(event : Event) : void
 		{
-			resize(stage.stageWidth, stage.stageHeight);
+			setSize(stage.stageWidth, stage.stageHeight);
 		}
 		
 		private function context3dCreatedHandler(event : Event) : void
