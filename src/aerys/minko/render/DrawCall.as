@@ -8,6 +8,7 @@ package aerys.minko.render
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
@@ -80,8 +81,6 @@ package aerys.minko.render
 		private var _depth				: Number							= 0.;
 		private var _invalidDepth		: Boolean							= false;
 		private var _localToWorld		: Matrix4x4							= null;
-		private var _worldToView		: Matrix4x4							= null;
-		private var _projection			: Matrix4x4							= null;
 		private var _worldToScreen		: Matrix4x4							= null;
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
@@ -138,14 +137,11 @@ package aerys.minko.render
 			{
 				_invalidDepth = false;
 				
-				if (_localToWorld)
+				if (_localToWorld != null && _worldToScreen != null)
+				{
 					_localToWorld.transformVector(Vector4.ZERO, TMP_VECTOR4);
-				
-				if (_worldToScreen == null && _projection != null && _worldToView != null)
-					_worldToScreen = Matrix4x4.multiply(_projection, _worldToView);
-				
-				if (_worldToScreen != null)
 					_depth = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4).z;
+				}
 			}
 			
 			return _depth;
@@ -154,24 +150,16 @@ package aerys.minko.render
 		public function configure(program		: Program3DResource,
 								  geometry		: Geometry,
 								  meshBindings	: DataBindings,
-								  sceneBindings	: DataBindings) : void
+								  sceneBindings	: DataBindings,
+								  computeDepth	: Boolean) : void
 		{
 			if (_bindings != null)
 				unsetBindings(meshBindings, sceneBindings);
 		
-			resetMatrices();
 			setProgram(program);
 			updateGeometry(geometry);
 			setGeometry(geometry);
-			setBindings(meshBindings, sceneBindings);
-		}
-		
-		private function resetMatrices() : void
-		{
-			_localToWorld = null;
-			_worldToView = null;
-			_projection = null;
-			_worldToScreen = null;
+			setBindings(meshBindings, sceneBindings, computeDepth);
 		}
 		
 		private function unsetBindings(meshBindings		: DataBindings,
@@ -187,6 +175,15 @@ package aerys.minko.render
 					parameterChangedHandler
 				);
 			}
+			
+			var worldToScreenSignal	: Signal = sceneBindings.getPropertyChangedSignal('worldToScreen');
+			var localToWorldSignal	: Signal = meshBindings.getPropertyChangedSignal('localToWorld');
+			
+			if (worldToScreenSignal.hasCallback(transformChangedHandler))
+				worldToScreenSignal.remove(transformChangedHandler);
+
+			if (worldToScreenSignal.hasCallback(transformChangedHandler))
+				localToWorldSignal.remove(transformChangedHandler);
 		}
 		
 		private function setProgram(program : Program3DResource) : void
@@ -262,7 +259,8 @@ package aerys.minko.render
 		 * @fixme it should be done on the compiler also to avoid this ugly hack
 		 */		
 		private function setBindings(meshBindings	: DataBindings,
-									 sceneBindings	: DataBindings) : void
+									 sceneBindings	: DataBindings,
+									 computeDepth	: Boolean) : void
 		{
 			for (var parameter : String in _bindings)
 			{
@@ -278,6 +276,17 @@ package aerys.minko.render
 					setParameter(parameter, meshBindings.getProperty(parameter));
 				else if (sceneBindings.propertyExists(parameter))
 					setParameter(parameter, sceneBindings.getProperty(parameter));
+			}
+			
+			if (computeDepth)
+			{
+				sceneBindings.getPropertyChangedSignal('worldToScreen').add(
+					transformChangedHandler
+				);
+				
+				meshBindings.getPropertyChangedSignal('localToWorld').add(
+					transformChangedHandler
+				);
 			}
 		}
 
@@ -335,27 +344,18 @@ package aerys.minko.render
 												 newValue		: Object) : void
 		{
 			newValue && setParameter(property, newValue);
+		}
+		
+		private function transformChangedHandler(bindings 	: DataBindings,
+										  property 	: String,
+										  value 	: Matrix4x4) : void
+		{
+			if (property == "worldToScreen")
+				_worldToScreen = value;
+			else if (property == "localToWorld")
+				_localToWorld = value;
 			
-			if (property == 'localToWorld')
-			{
-				_localToWorld = Matrix4x4.copy(newValue as Matrix4x4, _localToWorld);
-				_invalidDepth = true;
-			}
-			else if (property == 'worldToView')
-			{
-				_worldToView = Matrix4x4.copy(newValue as Matrix4x4, _worldToView);
-				_invalidDepth = true;
-			}
-			else if (property == 'projection')
-			{
-				_projection = Matrix4x4.copy(newValue as Matrix4x4, _projection);
-				_invalidDepth = true;
-			}
-			else if (property == 'worldToScreen')
-			{
-				_worldToScreen = Matrix4x4.copy(newValue as Matrix4x4, _worldToScreen);
-				_invalidDepth = true;
-			}
+			_invalidDepth = true;
 		}
 		
 		public static function sort(drawCalls : Vector.<DrawCall>, numDrawCalls : uint) : void

@@ -388,7 +388,15 @@ package aerys.minko.scene.controller.scene
 				
 				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
-					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				{
+					drawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
+				}
 				drawCalls[i] = drawCall;
 				
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
@@ -481,7 +489,13 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+					newDrawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
 					drawCalls[i] = newDrawCall;
 					
 					// retain the instance, update indexes, watch for invalidation, give to renderingList.
@@ -532,7 +546,15 @@ package aerys.minko.scene.controller.scene
 				var drawCall		: DrawCall			= new DrawCall();
 				
 				if (passInstance.program != null)
-					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				{
+					drawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
+				}
 				
 				drawCalls[i] = drawCall;
 				bind(passInstance, drawCall, meshBindings);
@@ -636,7 +658,13 @@ package aerys.minko.scene.controller.scene
 					var replacementInstance : ShaderInstance = passInstance.generator.fork(meshBindings, sceneBindings);
 					
 					if (replacementInstance.program != null)
-						drawCall.configure(replacementInstance.program, meshGeometry, meshBindings, sceneBindings);
+						drawCall.configure(
+							replacementInstance.program,
+							meshGeometry,
+							meshBindings,
+							sceneBindings,
+							replacementInstance.settings.depthSortDrawCalls
+						);
 					bind(replacementInstance, drawCall, meshBindings);
 				}
 			}
