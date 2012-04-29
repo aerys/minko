@@ -19,19 +19,20 @@ package aerys.minko.type.stream
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
 
-		private var _usage			: uint						= 0;
-		private var _format			: VertexFormat				= null;
-		private var _resource		: VertexBuffer3DResource	= null;
-		private var _length			: uint						= 0;
+		private var _usage				: uint						= 0;
+		private var _format				: VertexFormat				= null;
+		private var _resource			: VertexBuffer3DResource	= null;
+		private var _length				: uint						= 0;
 		
-		private var _invalidMinMax	: Boolean					= true;
-		private var _maximum		: Vector.<Number>			= null;
-		private var _minimum		: Vector.<Number>			= null;
+		private var _invalidMinMax		: Boolean					= true;
+		private var _boundsHaveChanged	: Boolean					= false;
+		private var _maximum			: Vector.<Number>			= null;
+		private var _minimum			: Vector.<Number>			= null;
 		
-		private var _locked			: Boolean					= false;
+		private var _locked				: Boolean					= false;
 
-		private var _changed		: Signal					= new Signal('VertexStream.changed');
-		private var _boundsChanged	: Signal					= new Signal('VertexStream.boundsChanged');
+		private var _changed			: Signal					= new Signal('VertexStream.changed');
+		private var _boundsChanged		: Signal					= new Signal('VertexStream.boundsChanged');
 		
 		public function get format() : VertexFormat
 		{
@@ -104,46 +105,58 @@ package aerys.minko.type.stream
 			_changed.add(changedHandler);
 			changedHandler(this, null);
 			
-			updateMinMax();			
+			updateMinMax(true);			
 		}
 		
-		private function updateMinMax() : void
+		private function updateMinMax(forceReset : Boolean = false) : void
 		{
 			if (!_invalidMinMax)
 				return ;
 				
 			_invalidMinMax = false;
 			
-			var size		: uint	= format.dwordsPerVertex;
 			var dataLength	: uint	= data.length;
 			var i			: uint	= 0;
 			
-			_minimum = new Vector.<Number>(size, true);
-			_maximum = new Vector.<Number>(size, true);
-			
-			for (i = 0; i < size; ++i)
+			if (forceReset)
 			{
-				_minimum[i] = Number.MAX_VALUE;
-				_maximum[i] = Number.MIN_VALUE;
+				var size		: uint	= format.dwordsPerVertex;
+				
+				_minimum = new Vector.<Number>(size, true);
+				_maximum = new Vector.<Number>(size, true);
+				
+				for (i = 0; i < size; ++i)
+				{
+					_minimum[i] = Number.MAX_VALUE;
+					_maximum[i] = -Number.MAX_VALUE;
+				}
 			}
 			
-			i = 0;
-			while (i < dataLength)
+			_boundsHaveChanged = false;
+			for (i = 0; i < dataLength; i += size)
 			{
 				for (var j : uint = 0; j < size; ++j)
 				{
 					var value : Number = _data[uint(i + j)];
 					
 					if (value < _minimum[j])
+					{
 						_minimum[j] = value;
-					else if (value > _maximum[j])
+						_boundsHaveChanged = true;
+					}
+					if (value > _maximum[j])
+					{
 						_maximum[j] = value;
+						_boundsHaveChanged = true;
+					}
 				}
-				
-				i += size;
 			}
 			
-			_boundsChanged.execute(this);
+			if (_boundsHaveChanged)
+			{
+				_boundsHaveChanged = false;
+				_boundsChanged.execute(this);
+			}
 		}
 		
 		public function deleteVertexByIndex(index : uint) : Boolean
@@ -154,8 +167,14 @@ package aerys.minko.type.stream
 				return false;
 
 			_data.splice(index, _format.dwordsPerVertex);
-			_invalidMinMax = true;
-			_changed.execute(this, null);
+			
+			if (_locked)
+				_invalidMinMax = true;
+			else
+			{
+				_changed.execute(this, null);
+				updateMinMax();
+			}
 
 			return true;
 		}
@@ -165,7 +184,7 @@ package aerys.minko.type.stream
 			return _format.hasComponent(vertexComponent) ? this : null;
 		}
 
-		public function get(i : int) : Number
+		public function get(i : uint) : Number
 		{
 			checkReadUsage(this);
 			
@@ -181,39 +200,14 @@ package aerys.minko.type.stream
 		{
 			return _maximum[index];
 		}
-
-		public function set(i : int, value : Number) : void
-		{
-			var minMaxChanged	: Boolean	= false;
-			
-			checkWriteUsage(this);
-			
-			_data[i] = value;
-			
-			i %= _format.dwordsPerVertex;
-			if (value < _minimum[i])
-			{
-				_minimum[i] = value;
-				minMaxChanged = true;
-			}
-			else if (value > _maximum[i])
-			{
-				_maximum[i] = value;
-				minMaxChanged = true;
-			}
-			
-			if (_locked)
-			{
-				_invalidMinMax = minMaxChanged;
-			}
-			else
-			{
-				_changed.execute(this, null);
-				if (minMaxChanged)
-					_boundsChanged.execute(this);
-			}
-		}
 		
+		/**
+		 * Lock the stream in order to perform bulk updates without triggering
+		 * any signal to get better performances.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function lock() : Vector.<Number>
 		{
 			if (_locked) 
@@ -229,6 +223,12 @@ package aerys.minko.type.stream
 			return _data;
 		}
 		
+		/**
+		 * Unlock the stream to reactivate signals. The VertexStream.changed signal
+		 * is always executed when this method is called. The VertexStream.boundsChanged
+		 * signal is called only if the bounds of the stream actually changed.
+		 * 
+		 */
 		public function unlock() : void
 		{
 			if (!_locked)
@@ -237,19 +237,65 @@ package aerys.minko.type.stream
 			var invalidMinMax : Boolean = _invalidMinMax;
 			
 			_locked = false;
-			_invalidMinMax = false;
+			_invalidMinMax = true;
+			
+			_changed.execute(this, null);
 			
 			if (invalidMinMax)
+				updateMinMax();
+			if (_boundsHaveChanged)
 				_boundsChanged.execute(this);
-			_changed.execute(this, null);
 		}
 
+		/**
+		 * The the value at the specified position in the stream.
+		 * 
+		 * @param offset
+		 * @param value
+		 * 
+		 */
+		public function set(offset : uint, value : Number) : void
+		{
+			checkWriteUsage(this);
+			
+			_data[offset] = value;
+			
+			offset %= _format.dwordsPerVertex;
+			if (value < _minimum[offset])
+			{
+				_minimum[offset] = value;
+				_boundsHaveChanged = true;
+			}
+			else if (value > _maximum[offset])
+			{
+				_maximum[offset] = value;
+				_boundsHaveChanged = true;
+			}
+			
+			if (!_locked)
+			{
+				_changed.execute(this, null);
+				
+				if (_boundsHaveChanged)
+				{
+					_boundsHaveChanged = false;
+					_boundsChanged.execute(this);
+				}
+			}
+		}
+		
+		/**
+		 * Push values at the end of stream. The pushed data must have
+		 * a valid length regarding the vertex format of the stream.
+		 *  
+		 * @param data
+		 * 
+		 */
 		public function push(data : Vector.<Number>) : void
 		{
 			checkWriteUsage(this);
 			
-			var numValues 		: int 		= data.length;
-			var minMaxChanged	: Boolean	= false;
+			var numValues 	: int 	= data.length;
 
 			if (numValues % _format.dwordsPerVertex)
 				throw new Error("Invalid data length.");
@@ -261,27 +307,27 @@ package aerys.minko.type.stream
 				
 				if (value < _minimum[ii])
 				{
-					_minimum[i] = value;
-					minMaxChanged = true;
+					_minimum[ii] = value;
+					_boundsHaveChanged = true;
 				}
 				else if (value > _maximum[ii])
 				{
-					_maximum[i] = value;
-					minMaxChanged = true;
+					_maximum[ii] = value;
+					_boundsHaveChanged = true;
 				}
 				
 				_data.push(value);
 			}
 
-			if (_locked)
-			{
-				_invalidMinMax = minMaxChanged;
-			}
-			else
+			if (!_locked)
 			{
 				_changed.execute(this, null);
-				if (minMaxChanged)
+				
+				if (_boundsHaveChanged)
+				{
+					_boundsHaveChanged = false;
 					_boundsChanged.execute(this);
+				}
 			}
 		}
 

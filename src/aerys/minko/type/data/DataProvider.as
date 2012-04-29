@@ -22,16 +22,16 @@ package aerys.minko.type.data
 			return _changed;
 		}
 		
-		public function DataProvider(data : Object = null)
+		public function DataProvider(properties : Object = null)
 		{
-			initialize(data);
+			initialize(properties);
 		}
 		
-		private function initialize(data : Object) : void
+		private function initialize(properties : Object) : void
 		{
-			if (data)
-				for (var propertyName : String in data)
-					setProperty(propertyName, data[propertyName]);
+			if (properties)
+				for (var propertyName : String in properties)
+					setProperty(propertyName, properties[propertyName]);
 		}
 		
 		override flash_proxy function getProperty(name : *) : *

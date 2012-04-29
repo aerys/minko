@@ -141,7 +141,10 @@ package aerys.minko.render.effect.basic
 			
 			settings.priority = _priority;
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
+			{
 				settings.priority -= 0.5;
+				settings.depthSortDrawCalls = true;
+			}
 			
 			settings.blending			= blending;
 			settings.enabled			= true;

@@ -13,25 +13,27 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_render;
 		
-		private var _numUses					: uint			= 0;
-		private var _signature					: Signature		= null;
+		private var _numUses			: uint			= 0;
+		private var _signature			: Signature		= null;
 		
-		private var _enabled					: Boolean		= true;
+		private var _enabled			: Boolean		= true;
 		
-		private var _depthTest					: uint			= 0;
-		private var _compareMode				: String		= null;
-		private var _priority					: Number		= 0.;
+		private var _depthTest			: uint			= 0;
+		private var _compareMode		: String		= null;
+		private var _priority			: Number		= 0.;
 
-		private var _blending					: uint			= 0;
-		private var _blendingSource				: String		= null;
-		private var _blendingDest				: String		= null;
+		private var _blending			: uint			= 0;
+		private var _blendingSource		: String		= null;
+		private var _blendingDest		: String		= null;
 		
-		private var _triangleCulling			: uint			= 0;
-		private var _triangleCullingStr			: String		= null;
+		private var _triangleCulling	: uint			= 0;
+		private var _triangleCullingStr	: String		= null;
 		
-		private var _renderTarget				: RenderTarget	= null;
-		private var _enableDepthWrite			: Boolean		= true;
-		private var _rectangle					: Rectangle		= null;
+		private var _renderTarget		: RenderTarget	= null;
+		private var _enableDepthWrite	: Boolean		= true;
+		private var _rectangle			: Rectangle		= null;
+		
+		private var _depthSortDrawCalls	: Boolean		= false;
 		
 		minko_render function get signature() : Signature
 		{
@@ -128,6 +130,15 @@ package aerys.minko.render.shader
 		{
 			_triangleCulling = value;
 			_triangleCullingStr = TriangleCulling.STRINGS[value];
+		}
+		
+		public function get depthSortDrawCalls() : Boolean
+		{
+			return _depthSortDrawCalls;
+		}
+		public function set depthSortDrawCalls(value : Boolean) : void
+		{
+			_depthSortDrawCalls = value;
 		}
 		
 		public function ShaderSettings(signature : Signature)
