@@ -97,11 +97,7 @@ package aerys.minko.render
 		}
 		override public function set width(value : Number) : void
 		{
-			_width = value;
-			_autoResize = false;
-			_invalidBackBuffer = true;
-			
-			updateStageListeners();
+			resize(value, _height);
 		}
 		
 		/**
@@ -115,11 +111,7 @@ package aerys.minko.render
 		}
 		override public function set height(value : Number) : void
 		{
-			_height = value;
-			_autoResize = false;
-			_invalidBackBuffer = true;
-			
-			updateStageListeners();
+			resize(_width, value);
 		}
 		
 		public function get alwaysOnTop() : Boolean
@@ -248,19 +240,24 @@ package aerys.minko.render
 		 */
 		public function resize(width : Number, height : Number) : void
 		{
-			if (!width || !height)
-				return;
+			if (!width || !height || (width == _width && _height == height))
+				return ;
 			
 			_width = width;
 			_height = height;
+			
+			if (_autoResize)
+			{
+				_autoResize = false;
+				updateStageListeners()
+			}
+			
 			_invalidBackBuffer = true;
 			_resized.execute(this, width, height);
 		}
 		
 		private function stageResizedHandler(event : Event) : void
 		{
-			var stage : Stage = event.target as Stage;
-			
 			resize(stage.stageWidth, stage.stageHeight);
 		}
 		

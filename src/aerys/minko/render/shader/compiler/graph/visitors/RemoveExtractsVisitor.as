@@ -123,7 +123,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitExtract(extract		: Extract, 
 												 isVertexShader	: Boolean) : void
 		{
-			throw new Error('This should never be reached');
+			throw new Error();
 		}
 		
 		override protected function visitAttribute(attribute		: Attribute, 

@@ -5,12 +5,15 @@ package aerys.minko.render
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
+	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.TriangleCulling;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.StreamUsage;
 	import aerys.minko.type.stream.VertexStream;
@@ -32,8 +35,14 @@ package aerys.minko.render
 	{
 		use namespace minko_render;
 		
-		private static const PROGRAM_TYPE_VERTEX	: String		= Context3DProgramType.VERTEX;
-		private static const PROGRAM_TYPE_FRAGMENT	: String		= Context3DProgramType.FRAGMENT;
+		private static const PROGRAM_TYPE_VERTEX	: String			= Context3DProgramType.VERTEX;
+		private static const PROGRAM_TYPE_FRAGMENT	: String			= Context3DProgramType.FRAGMENT;
+		private static const NUM_TEXTURES			: uint				= 8;
+		private static const NUM_VERTEX_BUFFERS		: uint				= 8;
+		
+		private static const TMP_VECTOR4			: Vector4			= new Vector4();
+		private static const TMP_NUMBERS			: Vector.<Number>	= new Vector.<Number>(0xffff, true);
+		private static const TMP_INTS				: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
 		private var _bindings			: Object							= null;
 		
@@ -42,13 +51,13 @@ package aerys.minko.render
 		private var _cpuConstants		: Dictionary						= null;
 		private var _vsConstants		: Vector.<Number>					= null;
 		private var _fsConstants		: Vector.<Number>					= null;
-		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
+		private var _fsTextures			: Vector.<ITextureResource>			= new Vector.<ITextureResource>(NUM_TEXTURES, true);
 		
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
 		private var _firstIndex			: int								= 0;
 		
-		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
+		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(NUM_VERTEX_BUFFERS, true);
 		private var _numVertexComponents: uint								= 0;
 		private var _offsets			: Vector.<int>						= new Vector.<int>(8, true);
 		private var _formats			: Vector.<String>					= new Vector.<String>(8, true);
@@ -67,6 +76,13 @@ package aerys.minko.render
 		private var _colorMaskA			: Boolean							= true;
 		
 		private var _enabled			: Boolean							= true;
+		
+		private var _depth				: Number							= 0.;
+		private var _invalidDepth		: Boolean							= false;
+		private var _localToWorld		: Matrix4x4							= null;
+		private var _worldToView		: Matrix4x4							= null;
+		private var _projection			: Matrix4x4							= null;
+		private var _worldToScreen		: Matrix4x4							= null;
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
@@ -116,8 +132,23 @@ package aerys.minko.render
 			_enabled = value;
 		}
 		
-		public function DrawCall()
+		public function get depth() : Number
 		{
+			if (_invalidDepth)
+			{
+				_invalidDepth = false;
+				
+				if (_localToWorld)
+					_localToWorld.transformVector(Vector4.ZERO, TMP_VECTOR4);
+				
+				if (_worldToScreen == null && _projection != null && _worldToView != null)
+					_worldToScreen = Matrix4x4.multiply(_projection, _worldToView);
+				
+				if (_worldToScreen != null)
+					_depth = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4).z;
+			}
+			
+			return _depth;
 		}
 		
 		public function configure(program		: Program3DResource,
@@ -127,11 +158,20 @@ package aerys.minko.render
 		{
 			if (_bindings != null)
 				unsetBindings(meshBindings, sceneBindings);
-			
+		
+			resetMatrices();
 			setProgram(program);
 			updateGeometry(geometry);
 			setGeometry(geometry);
 			setBindings(meshBindings, sceneBindings);
+		}
+		
+		private function resetMatrices() : void
+		{
+			_localToWorld = null;
+			_worldToView = null;
+			_projection = null;
+			_worldToScreen = null;
 		}
 		
 		private function unsetBindings(meshBindings		: DataBindings,
@@ -241,37 +281,30 @@ package aerys.minko.render
 			}
 		}
 
-		public function apply(context 	: Context3D,
-							  previous	: DrawCall) : uint
+		public function apply(context : Context3D, previous : DrawCall) : uint
 		{
 			if (!_enabled)
 				return 0;
 			
 			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
 			
-			context.setProgramConstantsFromVector(
-				PROGRAM_TYPE_VERTEX,
-				0,
-				_vsConstants
-			);
+			// setup shader constants
+			context.setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants);
+			context.setProgramConstantsFromVector(PROGRAM_TYPE_FRAGMENT, 0, _fsConstants);
 			
-			context.setProgramConstantsFromVector(
-				PROGRAM_TYPE_FRAGMENT,
-				0,
-				_fsConstants
-			);
-			
-			var numTextures	: int	= _fsTextures.length;
-			var maxTextures	: int	= previous ? previous._fsTextures.length : 8;
-			var maxBuffers	: int	= previous ? previous._numVertexComponents : 8;
-			var i 			: int 	= 0;
-			
+			var numTextures	: uint	= _fsTextures.length;
+			var maxTextures	: uint	= previous ? previous._fsTextures.length : NUM_TEXTURES;
+			var maxBuffers	: uint	= previous ? previous._numVertexComponents : NUM_VERTEX_BUFFERS;
+			var i 			: uint 	= 0;
+
+			// setup textures
 			for (i = 0; i < numTextures; ++i)
 				context.setTextureAt(i, _fsTextures[i].getNativeTexture(context));
 			
 			while (i < maxTextures)
 				context.setTextureAt(i++, null);
-			
+
+			// setup buffers
 			for (i = 0; i < _numVertexComponents; ++i)
 				context.setVertexBufferAt(
 					i,
@@ -283,6 +316,7 @@ package aerys.minko.render
 			while (i < maxBuffers)
 				context.setVertexBufferAt(i++, null);
 			
+			// draw triangles
 			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context));
 			
 			return _indexBuffer.numIndices / 3;
@@ -292,7 +326,7 @@ package aerys.minko.render
 		{
 			var binding : IBinder = _bindings[name] as IBinder;
 			
-			if (binding)
+			if (binding != null)
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
 		}
 		
@@ -301,6 +335,134 @@ package aerys.minko.render
 												 newValue		: Object) : void
 		{
 			newValue && setParameter(property, newValue);
+			
+			if (property == 'localToWorld')
+			{
+				_localToWorld = Matrix4x4.copy(newValue as Matrix4x4, _localToWorld);
+				_invalidDepth = true;
+			}
+			else if (property == 'worldToView')
+			{
+				_worldToView = Matrix4x4.copy(newValue as Matrix4x4, _worldToView);
+				_invalidDepth = true;
+			}
+			else if (property == 'projection')
+			{
+				_projection = Matrix4x4.copy(newValue as Matrix4x4, _projection);
+				_invalidDepth = true;
+			}
+			else if (property == 'worldToScreen')
+			{
+				_worldToScreen = Matrix4x4.copy(newValue as Matrix4x4, _worldToScreen);
+				_invalidDepth = true;
+			}
+		}
+		
+		public static function sort(drawCalls : Vector.<DrawCall>, numDrawCalls : uint) : void
+		{
+			var n 		: int 		= numDrawCalls;
+			var i		: int 		= 0;
+			var j		: int 		= 0;
+			var k		: int 		= 0;
+			var t		: int		= 0;
+			var call 	: DrawCall	= drawCalls[0];
+			var anmin	: Number 	= -call.depth;
+			var nmax	: int  		= 0;
+			var p		: Number	= 0.;
+			var sorted	: Boolean	= true;
+			
+			for (i = 0; i < n; ++i)
+			{
+				call = drawCalls[i];
+				p = -call.depth;
+				
+				TMP_INTS[i] = 0;
+				TMP_NUMBERS[i] = p;
+				if (p < anmin)
+					anmin = p;
+				else if (p > Number(TMP_NUMBERS[nmax]))
+					nmax = i;
+			}
+			
+			if (anmin == Number(TMP_NUMBERS[nmax]))
+				return ;
+			
+			var m		: int 	= Math.ceil(n * .125);
+			var nmove	: int 	= 0;
+			var c1		: Number = (m - 1) / (Number(TMP_NUMBERS[nmax]) - anmin);
+			
+			for (i = 0; i < n; ++i)
+			{
+				k = int(c1 * (Number(TMP_NUMBERS[i]) - anmin));
+				TMP_INTS[k] = int(TMP_INTS[k]) + 1;
+			}
+			
+			for (k = 1; k < m; ++k)
+				TMP_INTS[k] = int(TMP_INTS[k]) + int(TMP_INTS[int(k - 1)]);
+			
+			var hold		: Number 		= Number(TMP_NUMBERS[nmax]);
+			var holdState 	: DrawCall 	= drawCalls[nmax] as DrawCall;
+			
+			TMP_NUMBERS[nmax] = Number(TMP_NUMBERS[0]);
+			TMP_NUMBERS[0] = hold;
+			drawCalls[nmax] = drawCalls[0];
+			drawCalls[0] = holdState;
+			
+			var flash		: Number			= 0.;
+			var flashState	: DrawCall	= null;
+			
+			j = 0;
+			k = int(m - 1);
+			i = int(n - 1);
+			
+			while (nmove < i)
+			{
+				while (j > int(TMP_INTS[k]) - 1)
+				{
+					++j;
+					k = int(c1 * (Number(TMP_NUMBERS[j]) - anmin));
+				}
+				
+				flash = Number(TMP_NUMBERS[j]);
+				flashState = drawCalls[j] as DrawCall;
+				
+				while (!(j == int(TMP_INTS[k])))
+				{
+					k = int(c1 * (flash - anmin));
+					
+					t = int(TMP_INTS[k]) - 1;
+					hold = Number(TMP_NUMBERS[t]);
+					holdState = drawCalls[t] as DrawCall;
+					
+					TMP_NUMBERS[t] = flash;
+					drawCalls[t] = flashState;
+					
+					flash = hold;
+					flashState = holdState;
+					
+					TMP_INTS[k] = int(TMP_INTS[k]) - 1;
+					++nmove;
+				}
+			}
+			
+			for (j = 1; j < n; ++j)
+			{
+				hold = Number(TMP_NUMBERS[j]);
+				holdState = drawCalls[j];
+				
+				i = int(j - 1);
+				while (i >= 0 && Number(TMP_NUMBERS[i]) > hold)
+				{
+					// not trivial
+					TMP_NUMBERS[int(i + 1)] = Number(TMP_NUMBERS[i]);
+					drawCalls[int(i + 1)] = drawCalls[i];
+					
+					--i;
+				}
+				
+				TMP_NUMBERS[int(i + 1)] = hold;
+				drawCalls[int(i + 1)] = holdState;
+			}
 		}
 	}
 }
