@@ -81,9 +81,9 @@ package aerys.minko.render.shader
 		}
 		
 		public final function ShaderInstance(generator	: Shader,
-										   config		: ShaderSettings,
-										   program		: Program3DResource,
-										   signature	: Signature)
+											 config		: ShaderSettings,
+											 program	: Program3DResource,
+											 signature	: Signature)
 		{
 			_generator	= generator;
 			_config		= config;
