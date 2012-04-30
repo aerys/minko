@@ -19,7 +19,8 @@ package aerys.minko.render.shader
 	use namespace minko_shader;
 	
 	/**
-	 * The base class to extend in order to create ActionScript shaders.
+	 * The base class to extend in order to create ActionScript shaders
+	 * and program the GPU using AS3.
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * @author Romain Gilliotte
@@ -53,6 +54,7 @@ package aerys.minko.render.shader
 		/**
 		 * The name of the shader. Default value is the qualified name of the
 		 * ActionScript shader class (example: "aerys.minko.render.effect.basic::BasicShader"). 
+		 * 
 		 * @return 
 		 * 
 		 */
@@ -65,16 +67,49 @@ package aerys.minko.render.shader
 			_name = value;
 		}
 		
+		/**
+		 * The signal executed when the shader (one of its forks) is used
+		 * for rendering for the very first time during the current frame.
+		 * Callbacks for this signal must accept the following arguments:
+		 * <ul>
+		 * <li>shader : Shader, the shader executing the signal</li>
+		 * <li>context : Context3D, the context used for rendering</li>
+		 * <li>backBuffer : RenderTarget, the render target used as the back-buffer</li>
+		 * </ul>
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get begin() : Signal
 		{
 			return _begin;
 		}
 		
+		/**
+		 * The signal executed when the shader (one of its forks) is used
+		 * for rendering for the very last time during the current frame.
+		 * Callbacks for this signal must accept the following arguments:
+		 * <ul>
+		 * <li>shader : Shader, the shader executing the signal</li>
+		 * <li>context : Context3D, the context used for rendering</li>
+		 * <li>backBuffer : RenderTarget, the render target used as the back-buffer</li>
+		 * </ul>
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get end() : Signal
 		{
 			return _end;
 		}
 		
+		/**
+		 * Whether the shader (and all its forks) are enabled for rendering
+		 * or not.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function get enabled() : Boolean
 		{
 			var numInstances 	: uint = _instances.length;
@@ -152,6 +187,16 @@ package aerys.minko.render.shader
 			_instances.length = currentId;
 		}
 		
+		/**
+		 * Override this method to initialize the settings
+		 * - such as the blending operands or the triangle culling - of the shader.
+		 * This values can be read from both the mesh and the scene bindings.
+		 *  
+		 * @param settings
+		 * 
+		 * @see aerys.minko.render.shader.ShaderSettings
+		 * 
+		 */
 		protected function initializeSettings(settings : ShaderSettings) : void
 		{
 //			throw new Error("The method 'configurePass' must be implemented.");
