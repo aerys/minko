@@ -156,6 +156,8 @@ package aerys.minko.render
 			if (_bindings != null)
 				unsetBindings(meshBindings, sceneBindings);
 		
+			_invalidDepth = computeDepth;
+			
 			setProgram(program);
 			updateGeometry(geometry);
 			setGeometry(geometry);
