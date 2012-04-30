@@ -7,6 +7,9 @@ package aerys.minko.render
 	import aerys.minko.type.Signal;
 	
 	import flash.display.BitmapData;
+	import flash.display.DisplayObject;
+	import flash.display.Graphics;
+	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.Stage3D;
@@ -14,6 +17,9 @@ package aerys.minko.render
 	import flash.display.StageScaleMode;
 	import flash.display3D.Context3D;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.events.TouchEvent;
+	import flash.geom.Point;
 	import flash.utils.getTimer;
 
 	/**
@@ -24,6 +30,8 @@ package aerys.minko.render
 	 */
 	public final class Viewport extends Sprite
 	{
+		private static const ZERO2		: Point			= new Point();
+		
 		private var _stage3d			: Stage3D		= null;
 		
 		private var _width				: uint			= 0;
@@ -34,11 +42,10 @@ package aerys.minko.render
 		private var _backBuffer			: RenderTarget	= null;
 		private var _invalidBackBuffer	: Boolean		= false;
 		
-		private var _renderingTime		: int			= 0;
+		private var _alwaysOnTop		: Boolean		= false;
+		private var _mask				: Shape			= new Shape();
 		
 		private var _resized			: Signal		= new Signal('Viewport.resized');
-		private var _enterFrame			: Signal		= new Signal('Viewport.enterFrame');
-		private var _exitFrame			: Signal		= new Signal('Viewport.exitFrame');
 		
 		minko_render function get context3D() : Context3D
 		{
@@ -47,8 +54,14 @@ package aerys.minko.render
 		
 		minko_render function get backBuffer() : RenderTarget
 		{
-			if (_invalidBackBuffer)
+			var positionOnStage	: Point	= localToGlobal(ZERO2);
+			
+			if (_invalidBackBuffer
+				|| _stage3d.x != positionOnStage.x
+				|| _stage3d.y != positionOnStage.y)
+			{
 				updateBackBuffer();
+			}
 			
 			return _backBuffer;
 		}
@@ -84,8 +97,7 @@ package aerys.minko.render
 		}
 		override public function set width(value : Number) : void
 		{
-			_width = value;
-			_invalidBackBuffer = true;
+			resize(value, _height);
 		}
 		
 		/**
@@ -99,8 +111,19 @@ package aerys.minko.render
 		}
 		override public function set height(value : Number) : void
 		{
-			_height = value;
-			_invalidBackBuffer = true;
+			resize(_width, value);
+		}
+		
+		public function get alwaysOnTop() : Boolean
+		{
+			return _alwaysOnTop;
+		}
+		public function set alwaysOnTop(value : Boolean) : void
+		{
+			_alwaysOnTop = value;
+			
+			updateMask();
+			updateStageListeners();
 		}
 		
 		/**
@@ -118,17 +141,6 @@ package aerys.minko.render
 		public function get resized() : Signal
 		{
 			return _resized;
-		}
-		
-		/**
-		 * The time spent (in milliseconds) calling methods from the Stage3D
-		 * rendering API. 
-		 * @return 
-		 * 
-		 */
-		public function get renderingTime() : int
-		{
-			return _renderingTime;
 		}
 		
 		/**
@@ -175,36 +187,46 @@ package aerys.minko.render
 				: null;
 		}
 		
-		public function Viewport(stage	 		: Stage,
-								 antiAliasing	: uint	= 0,
+		public function Viewport(antiAliasing	: uint	= 0,
 								 width			: uint 	= 0,
 								 height			: uint	= 0)
 		{
 			_antiAliasing = antiAliasing;
-			
-			initialize(stage, width, height);
-		}
-		
-		private function initialize(stage 	: Stage,
-									width	: uint,
-									height	: uint) : void
-		{
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-			
 			_autoResize = width == 0 && height == 0;
-			if (_autoResize)
-			{
-				stage.addEventListener(Event.RESIZE, stageResizedHandler);
-				
-				width = stage.stageWidth;
-				height = stage.stageHeight;
-			}
 			
 			_width = width;
 			_height = height;
 			
-			_stage3d = stage.stage3Ds[0];
+			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
+			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
+		}
+		
+		private function addedToStageHandler(event : Event) : void
+		{
+			setupOnStage(stage);
+		}
+		
+		private function removedFromStageHandler(event : Event) : void
+		{
+			if (_stage3d != null)
+				_stage3d.visible = false;
+		}
+		
+		private function setupOnStage(stage : Stage, stage3dId : uint = 0) : void
+		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
+
+			if (_autoResize)
+			{
+				_width = stage.stageWidth;
+				_height = stage.stageHeight;
+				_invalidBackBuffer = true;
+			}
+			
+			updateStageListeners();
+			
+			_stage3d = stage.stage3Ds[stage3dId];
 			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
 			_stage3d.requestContext3D();
 		}
@@ -218,20 +240,30 @@ package aerys.minko.render
 		 */
 		public function resize(width : Number, height : Number) : void
 		{
-			if (!width || !height)
-				return;
+			if (_autoResize)
+			{
+				_autoResize = false;
+				updateStageListeners()
+			}
+			
+			resize(width, height);
+		}
+		
+		private function setSize(width : Number, height : Number) : void
+		{
+			if (width == _width && _height == height)
+				return ;
 			
 			_width = width;
 			_height = height;
+			
 			_invalidBackBuffer = true;
 			_resized.execute(this, width, height);
 		}
 		
 		private function stageResizedHandler(event : Event) : void
 		{
-			var stage : Stage = event.target as Stage;
-			
-			resize(stage.stageWidth, stage.stageHeight);
+			setSize(stage.stageWidth, stage.stageHeight);
 		}
 		
 		private function context3dCreatedHandler(event : Event) : void
@@ -256,6 +288,152 @@ package aerys.minko.render
 				0,
 				_backgroundColor
 			);
+		}
+		
+		private function updateStage3D() : void
+		{
+			var upperLeft	: Point	= localToGlobal(ZERO2);
+			
+			if (_width > 2048)
+			{
+				_stage3d.x = (_width - 2048) * 0.5;
+				_width = 2048;
+			}
+			else
+				_stage3d.x = upperLeft.x;
+			
+			if (_height > 2048)
+			{
+				_stage3d.y = (_height - 2048) * 0.5;
+				_height = 2048;
+			}
+			else
+				_stage3d.y = upperLeft.y;
+
+			_invalidBackBuffer = true;
+			updateMask();
+		}
+		
+		private function updateStageListeners() : void
+		{
+			if (!stage)
+				return ;
+			
+			if (_autoResize)
+				stage.addEventListener(Event.RESIZE, stageResizedHandler);
+			else
+				stage.removeEventListener(Event.RESIZE, stageResizedHandler);
+			
+			if (_alwaysOnTop)
+			{
+				stage.addEventListener(Event.RESIZE, stageResizeHandler);
+				stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+				stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
+				stage.addEventListener(MouseEvent.CLICK, stageEventHandler);
+				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+				stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+				stage.addEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+				stage.addEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+				stage.addEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
+			}
+			else
+			{
+				stage.removeEventListener(Event.RESIZE, stageResizeHandler);
+				stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+				stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
+				stage.removeEventListener(MouseEvent.CLICK, stageEventHandler);
+				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+				stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+				stage.removeEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+				stage.removeEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
+			}
+		}
+		
+		private function stageResizeHandler(event : Event) : void
+		{
+			updateStage3D();
+		}
+		
+		private function stageEventHandler(event : Object) : void
+		{
+			if (!_alwaysOnTop || event.target == this)
+				return ;
+			
+			var stageX	: Number	= event.stageX;
+			var stageY	: Number	= event.stageY;
+			
+			if (stageX > _stage3d.x && stageX < _stage3d.x + _width
+				&& stageY > _stage3d.y && stageY < _stage3d.y + _height)
+			{
+				dispatchEvent(event.clone());
+			}
+		}
+		
+		private function updateMask() : void
+		{
+			if (!stage)
+				return ;
+			
+			var numChildren : int = stage.numChildren;
+			var i 			: int = 0;
+			
+			if (_alwaysOnTop)
+			{
+				var gfx			: Graphics	= _mask.graphics;
+				var stageWidth	: int		= stage.stageWidth;
+				var stageHeight	: int		= stage.stageHeight;
+				
+				gfx.clear();
+				gfx.beginFill(0);
+				gfx.moveTo(0, 0);
+				gfx.lineTo(stageWidth, 0);
+				gfx.lineTo(stageWidth, stageHeight);
+				gfx.lineTo(0., stageHeight);
+				gfx.lineTo(0, 0);
+				gfx.moveTo(_stage3d.x, _stage3d.y);
+				gfx.lineTo(_stage3d.x, _stage3d.y + height);
+				gfx.lineTo(_stage3d.x + width, _stage3d.y + height);
+				gfx.lineTo(_stage3d.x + width, _stage3d.y);
+				gfx.lineTo(_stage3d.x, _stage3d.y);
+				gfx.endFill();
+				
+				for (i = 0; i < numChildren; ++i)
+					stage.getChildAt(i).mask = _mask;
+			}
+			else
+			{
+				for (i = 0; i < numChildren; ++i)
+					stage.getChildAt(i).mask = null;
+			}
+		}
+		
+		private function displayObjectAddedToStageHandler(event : Event) : void
+		{
+			var displayObject : DisplayObject	= event.target as DisplayObject;
+			
+			if (displayObject.parent == stage)
+				updateMask();
+		}
+		
+		private function displayObjectRemovedFromStageHandler(event : Event) : void
+		{
+			var displayObject : DisplayObject	= event.target as DisplayObject;
+			
+			if (_autoResize && displayObject.parent == stage)
+				displayObject.mask = null;
 		}
 	}
 }

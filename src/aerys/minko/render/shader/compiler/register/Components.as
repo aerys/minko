@@ -339,27 +339,27 @@ package aerys.minko.render.shader.compiler.register
 				switch (string.charAt(i))
 				{
 					case 'x': case 'X': case 'r': case 'R':
-						result |= X << (8 * i)
+						result |= X << (8 * i);
 						break;
 					
 					case 'y': case 'Y': case 'g': case 'G':
-						result |= Y << (8 * i)
+						result |= Y << (8 * i);
 						break;
 					
 					case 'z': case 'Z': case 'b': case 'B':
-						result |= Z << (8 * i)
+						result |= Z << (8 * i);
 						break;
 					
 					case 'w': case 'W': case 'a': case 'A':
-						result |= W << (8 * i)
+						result |= W << (8 * i);
 						break;
 					
 					case '_': case '':
-						result |= _ << (8 * i)
+						result |= _ << (8 * i);
 						break;
 					
 					default:
-						throw new Error('Invalid string');
+						throw new Error('Invalid string.');
 				}
 			
 			return result;

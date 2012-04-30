@@ -83,8 +83,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		{
 			if (Components.hasHoles(components))
 				throw new Error(
-					'Extract should be used only with continuous components. ' +
-					'Components with holes are reserved to the Overwriter node');
+					'Extract should be used only with continuous components. '
+					+ 'Components with holes are reserved to the Overwriter node.'
+				);
 		}
 		
 		public function toString() : String

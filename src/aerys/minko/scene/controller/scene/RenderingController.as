@@ -20,6 +20,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.log.DebugLevel;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -46,8 +47,8 @@ package aerys.minko.scene.controller.scene
 		
 		private var _stashedPropertyChanges		: Dictionary				= null;
 		
-		private var _passInstances				: Vector.<ShaderInstance>	= null;
-		private var _passInstancesIsSorted		: Boolean					= false;
+		private var _passes						: Vector.<ShaderInstance>	= null;
+		private var _passesAreSorted			: Boolean					= false;
 		
 		private var _drawCallToPassInstance		: Dictionary				= null;
 		private var _passInstanceToDrawCalls	: Dictionary				= null;
@@ -70,7 +71,7 @@ package aerys.minko.scene.controller.scene
 		 * 
 		 * However, we don't want to trust AVM to handle circular references properly.
 		 */
-		private var _meshBindingToMesh			: Dictionary;
+		private var _meshBindingsToMesh			: Dictionary				= null;
 		
 		/**
 		 * Index meshes by their effect.
@@ -82,8 +83,8 @@ package aerys.minko.scene.controller.scene
 		 *		- a dynamic effect removes a pass
 		 *		- and then: mesh.effect.changed is executed
 		 */
-		private var _effectToMeshes				: Dictionary;
-		private var _numStashedPropertyChanges:int;
+		private var _effectToMeshes				: Dictionary				= null;
+		private var _numStashedPropertyChanges	: int						= 0;
 		
 		public function get numTriangles() : uint
 		{
@@ -110,15 +111,15 @@ package aerys.minko.scene.controller.scene
 		
 		private function initialize() : void
 		{
-			_passInstances				= new Vector.<ShaderInstance>();
-			_passInstancesIsSorted		= true;
+			_passes						= new <ShaderInstance>[];
+			_passesAreSorted			= true;
 			
 			_drawCallToPassInstance		= new Dictionary();
 			_drawCallToMeshBindings		= new Dictionary();
 			_passInstanceToDrawCalls	= new Dictionary();
 			_meshToDrawCalls			= new Dictionary();
 			_effectToMeshes				= new Dictionary();
-			_meshBindingToMesh			= new Dictionary();
+			_meshBindingsToMesh			= new Dictionary();
 			_stashedPropertyChanges		= new Dictionary();
 			
 			targetAdded.add(targetAddedHandler);
@@ -198,16 +199,16 @@ package aerys.minko.scene.controller.scene
 
 			var context			: Context3D		= viewport.context3D;
 			var backBuffer 		: RenderTarget	= getRenderingBackBuffer(viewport.backBuffer);
-			var numPasses		: uint 			= _passInstances.length;
+			var numPasses		: uint 			= _passes.length;
 			var numTriangles	: uint 			= 0;
 			
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
 			
 			// sort passes
-			if (!_passInstancesIsSorted && numPasses != 0)
+			if (!_passesAreSorted && numPasses != 0)
 			{
-				ShaderInstance.sort(_passInstances, numPasses);
-				_passInstancesIsSorted = true;
+				ShaderInstance.sort(_passes, numPasses);
+				_passesAreSorted = true;
 			}
 			
 			// apply passes
@@ -218,7 +219,7 @@ package aerys.minko.scene.controller.scene
 			
 			for (var i : uint = 0; i < numPasses; ++i)
 			{
-				var pass 		: ShaderInstance	= _passInstances[i];
+				var pass 		: ShaderInstance	= _passes[i];
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
 				var numCalls	: uint				= calls.length;
 				
@@ -228,6 +229,9 @@ package aerys.minko.scene.controller.scene
 				pass.begin.execute(pass, context, backBuffer);
 				pass.prepareContext(context, backBuffer, previous);
 				previous = pass;
+				
+				if (pass.settings.depthSortDrawCalls)
+					DrawCall.sort(calls, calls.length);
 				
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
@@ -384,7 +388,15 @@ package aerys.minko.scene.controller.scene
 				
 				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
-					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				{
+					drawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
+				}
 				drawCalls[i] = drawCall;
 				
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
@@ -393,7 +405,7 @@ package aerys.minko.scene.controller.scene
 			
 			// update indexes
 			_meshToDrawCalls[mesh]				= drawCalls;
-			_meshBindingToMesh[meshBindings]	= mesh;
+			_meshBindingsToMesh[meshBindings]	= mesh;
 			
 			if (!_effectToMeshes[meshEffect])
 			{
@@ -431,7 +443,7 @@ package aerys.minko.scene.controller.scene
 			
 			// update indexes
 			delete _meshToDrawCalls[mesh];
-			delete _meshBindingToMesh[meshBindings];
+			delete _meshBindingsToMesh[meshBindings];
 			
 			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[meshEffect];
 			
@@ -466,7 +478,7 @@ package aerys.minko.scene.controller.scene
 				
 				drawCalls.length = 0;
 				
-				var numPasses		: uint				= effect.numPasses;
+				var numPasses	: uint	= effect.numPasses;
 				
 				for (var i : uint = 0; i < numPasses; ++i)
 				{
@@ -477,7 +489,13 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+					newDrawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
 					drawCalls[i] = newDrawCall;
 					
 					// retain the instance, update indexes, watch for invalidation, give to renderingList.
@@ -528,7 +546,15 @@ package aerys.minko.scene.controller.scene
 				var drawCall		: DrawCall			= new DrawCall();
 				
 				if (passInstance.program != null)
-					drawCall.configure(passInstance.program, mesh.geometry, meshBindings, sceneBindings);
+				{
+					drawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
+				}
 				
 				drawCalls[i] = drawCall;
 				bind(passInstance, drawCall, meshBindings);
@@ -593,11 +619,11 @@ package aerys.minko.scene.controller.scene
 			
 			var sceneBindings		: DataBindings		= _scene.bindings;
 			var sceneChanges		: Vector.<String>	= _stashedPropertyChanges[sceneBindings];
-			var numShaderInstances	: int				= _passInstances.length;
+			var numShaderInstances	: int				= _passes.length;
 			
 			for (var shaderInstanceId : int = numShaderInstances - 1; shaderInstanceId >= 0; --shaderInstanceId)
 			{
-				var passInstance			: ShaderInstance	= _passInstances[shaderInstanceId];
+				var passInstance			: ShaderInstance	= _passes[shaderInstanceId];
 				var passInstanceSignature	: Signature			= passInstance.signature;
 				var drawCalls				: Vector.<DrawCall>	= _passInstanceToDrawCalls[passInstance];
 				var numDrawCalls			: int				= drawCalls.length;
@@ -610,7 +636,7 @@ package aerys.minko.scene.controller.scene
 				{
 					var drawCall			: DrawCall			= drawCalls[drawCallId];
 					var meshBindings		: DataBindings		= _drawCallToMeshBindings[drawCall];
-					var meshGeometry		: Geometry			= Mesh(_meshBindingToMesh[meshBindings]).geometry
+					var meshGeometry		: Geometry			= Mesh(_meshBindingsToMesh[meshBindings]).geometry
 					var meshChanges			: Vector.<String>	= _stashedPropertyChanges[meshBindings];
 					
 					var needUpdateFromMesh	: Boolean 			= meshChanges != null ?
@@ -632,7 +658,13 @@ package aerys.minko.scene.controller.scene
 					var replacementInstance : ShaderInstance = passInstance.generator.fork(meshBindings, sceneBindings);
 					
 					if (replacementInstance.program != null)
-						drawCall.configure(replacementInstance.program, meshGeometry, meshBindings, sceneBindings);
+						drawCall.configure(
+							replacementInstance.program,
+							meshGeometry,
+							meshBindings,
+							sceneBindings,
+							replacementInstance.settings.depthSortDrawCalls
+						);
 					bind(replacementInstance, drawCall, meshBindings);
 				}
 			}
@@ -673,8 +705,8 @@ package aerys.minko.scene.controller.scene
 			if (!_passInstanceToDrawCalls[passInstance])
 			{
 				_passInstanceToDrawCalls[passInstance] = new <DrawCall>[];
-				_passInstances.push(passInstance);
-				_passInstancesIsSorted = false;
+				_passes.push(passInstance);
+				_passesAreSorted = false;
 			}
 			
 			_drawCallToMeshBindings[drawCall] = meshBindings;
@@ -719,7 +751,7 @@ package aerys.minko.scene.controller.scene
 			if (drawCalls.length == 0)
 			{
 				delete _passInstanceToDrawCalls[passInstance];
-				_passInstances.splice(_passInstances.indexOf(passInstance), 1);
+				_passes.splice(_passes.indexOf(passInstance), 1);
 			}
 		}
 		
@@ -727,12 +759,14 @@ package aerys.minko.scene.controller.scene
 														propertyName	: String,
 														newValue		: Object) : void
 		{
-			if (!_stashedPropertyChanges[meshBindings])
-				_stashedPropertyChanges[meshBindings] = new Vector.<String>();
+			var changes : Vector.<String>	= _stashedPropertyChanges[meshBindings];
 			
-			_stashedPropertyChanges[meshBindings].push(propertyName);
+			if (!changes)
+				_stashedPropertyChanges[meshBindings] = changes = new <String>[propertyName];
+			else
+				changes.push(propertyName);
+			
 			++_numStashedPropertyChanges;
 		}
-		
 	}
 }

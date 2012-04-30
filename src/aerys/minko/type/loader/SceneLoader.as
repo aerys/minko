@@ -18,7 +18,7 @@ package aerys.minko.type.loader
 	
 	public class SceneLoader implements ILoader
 	{
-		private static const REGISTERED_PARSERS : Vector.<Class> = new Vector.<Class>();
+		private static const REGISTERED_PARSERS : Vector.<Class> = new <Class>[];
 		
 		private static const STATE_IDLE		: uint = 0;
 		private static const STATE_LOADING	: uint = 1;
@@ -41,13 +41,30 @@ package aerys.minko.type.loader
 		private var _currentProgressChanged : Boolean;
 		private var _isComplete				: Boolean;
 		
-		public function get error()		: Signal { return _error;	 }
-		public function get progress()	: Signal { return _progress; }
-		public function get complete()	: Signal { return _complete; }
+		public function get error() : Signal
+		{
+			return _error;
+		}
 		
-		public function get isComplete()	: Boolean  { return _isComplete; }
+		public function get progress() : Signal
+		{
+			return _progress;
+		}
 		
-		public function get data() : ISceneNode { return _data; }
+		public function get complete() : Signal
+		{
+			return _complete;
+		}
+		
+		public function get isComplete() : Boolean
+		{
+			return _isComplete;
+		}
+		
+		public function get data() : ISceneNode
+		{
+			return _data;
+		}
 		
 		public static function registerParser(parserClass : Class) : void
 		{
@@ -81,17 +98,17 @@ package aerys.minko.type.loader
 			
 			var urlLoader : URLLoader = new URLLoader();
 			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-			urlLoader.addEventListener(ProgressEvent.PROGRESS, onLoadProgress);
-			urlLoader.addEventListener(Event.COMPLETE, onLoadComplete);
+			urlLoader.addEventListener(ProgressEvent.PROGRESS, loadProgressHandler);
+			urlLoader.addEventListener(Event.COMPLETE, loadCompleteHandler);
 			urlLoader.load(urlRequest);
 		}
 		
-		private function onLoadProgress(e : ProgressEvent) : void
+		private function loadProgressHandler(e : ProgressEvent) : void
 		{
 			_progress.execute(this, 0.5 * e.bytesLoaded / e.bytesTotal);
 		}
 		
-		private function onLoadComplete(e : Event) : void
+		private function loadCompleteHandler(e : Event) : void
 		{
 			_currentState = STATE_IDLE;
 			

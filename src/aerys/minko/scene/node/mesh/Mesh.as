@@ -118,6 +118,9 @@ package aerys.minko.scene.node.mesh
 			if (_effect == value)
 				return ;
 			
+			if (value == null)
+				throw new Error();
+			
 			var oldEffect : Effect = _effect;
 			
 			_effect = value;

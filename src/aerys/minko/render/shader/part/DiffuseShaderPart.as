@@ -32,6 +32,7 @@ package aerys.minko.render.shader.part
 				);
 				
 				var uv : SFloat = getVertexAttribute(VertexComponent.UV);
+				
 				uv = uv.xy;
 				
 				return sampleTexture(
@@ -45,7 +46,7 @@ package aerys.minko.render.shader.part
 			}
 			
 			throw new Error(
-				"Local parameter 'diffuseColor' or 'diffuseMap' must be set."
+				"Property 'diffuseColor' or 'diffuseMap' must be set."
 			);
 		}
 	}
