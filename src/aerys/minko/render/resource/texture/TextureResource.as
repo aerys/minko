@@ -25,6 +25,7 @@ package aerys.minko.render.resource.texture
 
 		private var _bitmapData	: BitmapData	= null;
 		private var _atf		: ByteArray		= null;
+		private var _atfFormat	: uint			= 0;
 
 		private var _width		: Number		= 0;
 		private var _height		: Number		= 0;
@@ -120,7 +121,17 @@ package aerys.minko.render.resource.texture
 
 		public function setContentFromATF(atf : ByteArray) : void
 		{
-			_atf = atf;
+			_atf			= atf;
+			_update 		= true;
+			
+			atf.position 	= 6;
+			
+			_atfFormat 		= atf.readUnsignedByte() & 3;
+			_width 			= 1 << atf.readUnsignedByte();
+			_height 		= 1 << atf.readUnsignedByte();
+			_mipmap 		= atf.readUnsignedByte() > 1;
+			
+			atf.position 	= 0;
 		}
 
 		public function getNativeTexture(context : Context3D) : TextureBase
@@ -135,7 +146,7 @@ package aerys.minko.render.resource.texture
 				_texture = context.createTexture(
 					_width,
 					_height,
-					_atf ? FORMAT_COMPRESSED : FORMAT_BGRA,
+					_atf && _atfFormat == 2 ? FORMAT_COMPRESSED : FORMAT_BGRA,
 					_bitmapData == null && _atf == null
 				);
 
