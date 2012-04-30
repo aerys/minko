@@ -246,7 +246,7 @@ package aerys.minko.render
 				updateStageListeners()
 			}
 			
-			resize(width, height);
+			setSize(width, height);
 		}
 		
 		private function setSize(width : Number, height : Number) : void
