@@ -287,6 +287,10 @@ package aerys.minko.render
 				meshBindings.getPropertyChangedSignal('localToWorld').add(
 					transformChangedHandler
 				);
+				
+				_worldToScreen	= sceneBindings.getProperty('worldToScreen') as Matrix4x4;
+				_localToWorld	= meshBindings.getProperty('localToWorld')	 as Matrix4x4;
+				_invalidDepth	= true;
 			}
 		}
 
@@ -347,8 +351,8 @@ package aerys.minko.render
 		}
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
-										  property 	: String,
-										  value 	: Matrix4x4) : void
+												 property 	: String,
+												 value 		: Matrix4x4) : void
 		{
 			if (property == "worldToScreen")
 				_worldToScreen = value;

@@ -168,12 +168,13 @@ package aerys.minko.render.shader
 		{
 			var clone : ShaderSettings = new ShaderSettings(signature);
 			
-			clone.depthTest			= depthTest;
-			clone.blending			= blending;
-			clone.triangleCulling	= triangleCulling;
-			clone.renderTarget		= renderTarget;
-			clone.depthWriteEnabled	= depthWriteEnabled;
-			clone.scissorRectangle	= scissorRectangle;
+			clone.depthTest				= depthTest;
+			clone.blending				= blending;
+			clone.triangleCulling		= triangleCulling;
+			clone.renderTarget			= renderTarget;
+			clone.depthWriteEnabled		= depthWriteEnabled;
+			clone.scissorRectangle		= scissorRectangle;
+			clone.depthSortDrawCalls	= depthSortDrawCalls;
 			
 			return clone;
 		}
