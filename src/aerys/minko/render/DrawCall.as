@@ -285,14 +285,14 @@ package aerys.minko.render
 				sceneBindings.getPropertyChangedSignal('worldToScreen').add(
 					transformChangedHandler
 				);
-				if (sceneBindings.propertyExists('worldToScreen'))
-					_worldToScreen = sceneBindings.getProperty('worldToScreen') as Matrix4x4;
+				_worldToScreen = sceneBindings.getProperty('worldToScreen') as Matrix4x4;
 				
 				meshBindings.getPropertyChangedSignal('localToWorld').add(
 					transformChangedHandler
 				);
-				if (meshBindings.propertyExists('localToWorld'))
-					_localToWorld = meshBindings.getProperty('localToWorld') as Matrix4x4;
+				_localToWorld = meshBindings.getProperty('localToWorld') as Matrix4x4;
+				
+				_invalidDepth = true;
 			}
 		}
 

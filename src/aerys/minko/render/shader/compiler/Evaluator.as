@@ -68,6 +68,7 @@ package aerys.minko.render.shader.compiler
 			
 			var length	: uint				= Components.getMaxWriteOffset(components) + 1;
 			var newData : Vector.<Number>	= Vector.<Number>(VEC_FACTORY.create(true));
+			
 			newData.length = length;
 			
 			for (var i : uint = 0; i < length; ++i)
