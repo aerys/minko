@@ -27,6 +27,35 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			var extract : Extract;
+			
+			while (_shaderGraph.position is Extract)
+			{
+				extract = Extract(_shaderGraph.position);
+				
+				_shaderGraph.position = extract.child;
+				_shaderGraph.positionComponents = 
+					Components.applyCombination(_shaderGraph.positionComponents, extract.components);
+			}
+			
+			while (_shaderGraph.color is Extract)
+			{
+				extract = Extract(_shaderGraph.color);
+				
+				_shaderGraph.color = extract.child;
+				_shaderGraph.colorComponents = 
+					Components.applyCombination(_shaderGraph.colorComponents, extract.components);
+			}
+			
+			var numKills : uint = _shaderGraph.kills.length;
+			for (var killId : uint = 0; killId < numKills; ++killId)
+			{
+				extract = Extract(_shaderGraph.color);
+				
+				_shaderGraph.kills[killId] = extract.child;
+				_shaderGraph.killComponents[killId] = 
+					Components.applyCombination(_shaderGraph.killComponents[killId], extract.components);
+			}
 		}
 		
 		override protected function finish() : void
