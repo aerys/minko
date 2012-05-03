@@ -2,6 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
@@ -16,6 +17,8 @@ package aerys.minko.type.stream
 
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 
+		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>();
+		
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
 
@@ -348,6 +351,59 @@ package aerys.minko.type.stream
 			}
 		}
 
+		/**
+		 * Apply matrix transformation to all vertices
+		 * 
+		 * @param component Vertex component to transform. Must be a 3-component vector
+		 * @param transform Transformation matrix
+		 * @param normalize Normalize vectors after transform
+		 */
+		public function applyTransform(component	: VertexComponent, 
+									   transform	: Matrix4x4,
+									   normalize	: Boolean) : void
+		{
+			if (component.dwords < 3)
+				throw new Error("Not a vector component");
+				
+			var vertexOffset	: int				= _format.getOffsetForComponent(component);
+			var vertexLength	: int				= _format.dwordsPerVertex;
+			var vertices		: Vector.<Number>	= lock();
+			var numVertices		: int				= vertices.length / vertexLength;
+			var tmpLength		: int				= numVertices * 3;
+				
+			TMP_NUMBERS.length = tmpLength;
+					
+			for (var i : int = 0, k : int = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+			{
+				TMP_NUMBERS[i]		= vertices[k];
+				TMP_NUMBERS[i + 1]	= vertices[k + 1];
+				TMP_NUMBERS[i + 2]	= vertices[k + 2];
+			}
+				
+			transform.transformRawVectors(TMP_NUMBERS, TMP_NUMBERS);
+			
+			if (normalize)
+				for (i = 0, k = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+				{
+					var x	: Number	= TMP_NUMBERS[i];
+					var y	: Number 	= TMP_NUMBERS[i + 1];
+					var z	: Number 	= TMP_NUMBERS[i + 2];
+					var m	: Number 	= 1.0 / Math.sqrt(x * x + y * y + z * z);
+					vertices[k]			= x * m;
+					vertices[k + 1]		= y * m;
+					vertices[k + 2]		= z * m;
+				}
+			else
+				for (i = 0, k = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+				{
+					vertices[k]		= TMP_NUMBERS[i];
+					vertices[k + 1]	= TMP_NUMBERS[i + 1];
+					vertices[k + 2]	= TMP_NUMBERS[i + 2];
+				}
+				
+			unlock();
+		}
+		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
 			if (_locked)
