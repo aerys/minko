@@ -105,7 +105,7 @@ package aerys.minko.type.loader.parser
 									  parser					: Class = null)
 		{
 			_loadDependencies			= loadDependencies;
-			_dependencyLoaderClosure	= _dependencyLoaderClosure || _dependencyLoaderClosure;
+			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
 			_mipmapTextures				= mipmapTextures;
 			_meshEffect					= meshEffect;
 			_vertexStreamUsage			= vertexStreamUsage;
