@@ -72,8 +72,11 @@ package aerys.minko.render.shader.compiler.register
 												writeSize	: uint,
 												readSize	: uint) : uint
 		{
-			if (readOffset + readSize > 4 || writeOffset + writeSize > 4)
-				throw new Error('Are you sure?');
+			if (readOffset + readSize > 4)
+				throw new Error('Invalid components: you are reading too far');
+				
+			if (writeOffset + writeSize > 4)
+				throw new Error('Invalid components: you are writing too far');
 			
 			var component	: uint;
 			var i			: uint;
@@ -94,6 +97,14 @@ package aerys.minko.render.shader.compiler.register
 				component |= _ << (8 * i);
 			
 			return component;
+		}
+		
+		public static function createFromParts(x : uint, 
+											   y : uint = 4, 
+											   z : uint = 4, 
+											   w : uint = 4) : uint
+		{
+			return x | (y << 8) | (z << 16) | (w << 24);
 		}
 		
 		public static function applyCombination(input		: uint,

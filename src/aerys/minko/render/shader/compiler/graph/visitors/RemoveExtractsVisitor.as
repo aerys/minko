@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -22,7 +22,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	{
 		public function RemoveExtractsVisitor() 
 		{
-			super(true);
 		}
 		
 		override protected function start() : void
@@ -33,18 +32,18 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				extract = Extract(_shaderGraph.position);
 				
-				_shaderGraph.position = extract.child;
+				_shaderGraph.position = extract.argument;
 				_shaderGraph.positionComponents = 
-					Components.applyCombination(_shaderGraph.positionComponents, extract.components);
+					Components.applyCombination(_shaderGraph.positionComponents, extract.component);
 			}
 			
 			while (_shaderGraph.color is Extract)
 			{
 				extract = Extract(_shaderGraph.color);
 				
-				_shaderGraph.color = extract.child;
+				_shaderGraph.color = extract.argument;
 				_shaderGraph.colorComponents = 
-					Components.applyCombination(_shaderGraph.colorComponents, extract.components);
+					Components.applyCombination(_shaderGraph.colorComponents, extract.component);
 			}
 			
 			var numKills : uint = _shaderGraph.kills.length;
@@ -52,9 +51,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			{
 				extract = Extract(_shaderGraph.color);
 				
-				_shaderGraph.kills[killId] = extract.child;
+				_shaderGraph.kills[killId] = extract.argument;
 				_shaderGraph.killComponents[killId] = 
-					Components.applyCombination(_shaderGraph.killComponents[killId], extract.components);
+					Components.applyCombination(_shaderGraph.killComponents[killId], extract.component);
 			}
 		}
 		
@@ -62,121 +61,31 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction, 
-													 isVertexShader	: Boolean) : void
+		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
 		{
-			var extract : Extract;
+			var numArguments : uint = node.numArguments;
 			
-			while (instruction.arg1 is Extract)
+			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
 			{
-				extract = Extract(instruction.arg1);
-				
-				instruction.arg1 = extract.child;
-				instruction.arg1Components = Components.applyCombination(extract.components, instruction.arg1Components);
-			}
-			visit(instruction.arg1, isVertexShader);
-			
-			if (!instruction.isSingle)
-			{
-				while (instruction.arg2 is Extract)
+				while (node.getArgumentAt(argumentId) is Extract)
 				{
-					extract = Extract(instruction.arg2);
+					var extract : Extract = Extract(node.getArgumentAt(argumentId));
 					
-					instruction.arg2 = extract.child;
-					instruction.arg2Components = Components.applyCombination(extract.components, instruction.arg2Components);
-				}
-				visit(instruction.arg2, isVertexShader);
-			}
-		}
-		
-		override protected function visitInterpolate(interpolate	: Interpolate, 
-													 isVertexShader	: Boolean) : void
-		{
-			while (interpolate.arg is Extract)
-			{
-				var extract : Extract = Extract(interpolate.arg);
-				
-				interpolate.arg = extract.child;
-				interpolate.components = Components.applyCombination(extract.components, interpolate.components);
-			}
-			
-			visit(interpolate.arg, true);
-		}
-		
-		override protected function visitOverwriter(overwriter		: Overwriter, 
-													isVertexShader	: Boolean) : void
-		{
-			var args		: Vector.<INode>	= overwriter.args;
-			var components	: Vector.<uint>		= overwriter.components;
-			var numArgs		: uint				= args.length;
-			
-			for (var argId : uint = 0; argId < numArgs; ++argId)
-			{
-				while (args[argId] is Extract)
-				{
-					var extract : Extract = Extract(args[argId]);
+					// remove extract
+					node.setArgumentAt(argumentId, extract.argument);
 					
-					args[argId] = extract.child;
-					components[argId] = Components.applyCombination(extract.components, components[argId]);
+					// change components
+					node.setComponentAt(
+						argumentId, 
+						Components.applyCombination(extract.component, node.getComponentAt(argumentId))
+					);
 				}
 				
-				visit(args[argId], isVertexShader);
+				visit(node.getArgumentAt(argumentId), true);
 			}
 		}
 		
-		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, 
-														 isVertexShader	 : Boolean) : void
-		{
-			if (!isVertexShader)
-				throw new Error('VariadicExtract are only allowed in the vertex shader.');
-			
-			while (variadicExtract.index is Extract)
-			{
-				var extract : Extract = Extract(variadicExtract.index);
-				
-				variadicExtract.index = extract.child;
-				variadicExtract.indexComponentSelect = Components.getReadAtIndex(
-					variadicExtract.indexComponentSelect,
-					extract.components
-				);
-			}
-			
-			visit(variadicExtract.index, isVertexShader);
-			
-			if (variadicExtract.constant is Extract)
-				throw new Error("Cannot use indirect adressing on a swizzled constant");
-			
-			visit(variadicExtract.constant, isVertexShader);
-		}
-		
-		override protected function visitExtract(extract		: Extract, 
-												 isVertexShader	: Boolean) : void
-		{
-			throw new Error();
-		}
-		
-		override protected function visitAttribute(attribute		: Attribute, 
-												   isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableConstant(parameter			: BindableConstant,
-														  isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitSampler(sampler		: Sampler,
-												 isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
-														 isVertexShader		: Boolean) : void
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
 		{
 		}
 	}

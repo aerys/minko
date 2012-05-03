@@ -12,7 +12,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.allocation.IAllocation;
 	import aerys.minko.render.shader.compiler.allocation.SimpleAllocation;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.AbstractSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -121,7 +121,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		public function AllocationVisitor()
 		{
-			super(true);
 		}
 		
 		override protected function start() : void
@@ -168,8 +167,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var opMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.position);
 			var ocMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.color);
 			
-			opMove.arg1Components	= _shaderGraph.positionComponents;
-			ocMove.arg1Components	= _shaderGraph.colorComponents;
+			opMove.component1	= _shaderGraph.positionComponents;
+			ocMove.component1	= _shaderGraph.colorComponents;
 			_shaderGraph.position	= opMove;
 			_shaderGraph.color		= ocMove;
 			
@@ -181,7 +180,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (i = 0; i < numKills; ++i)
 			{
-				var kill : INode = _shaderGraph.kills[i];
+				var kill : ANode = _shaderGraph.kills[i];
 				if (kill is Constant || kill is BindableConstant)
 					_shaderGraph.kills[i] = kill = new Instruction(Instruction.MOV, kill);
 				
@@ -245,7 +244,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
 				var bindingName : String			= bindableConstant.bindingName;
-				var tree		: INode				= _shaderGraph.computableConstants[bindingName];
+				var tree		: ANode				= _shaderGraph.computableConstants[bindingName];
 				var alloc		: SimpleAllocation	= _allocStore.getSimpleAlloc(bindableConstant, isVertexShader);
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
@@ -348,8 +347,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					destination	= new AgalDestination(destAlloc.registerId, destAlloc.writeMask, destAlloc.type);
 				}
 				
-				source1	= getSourceFor(instruction.arg1, instruction.arg1Components, destAlloc, isVertexShader);
-				source2	= instruction.isSingle ? new AgalSourceEmpty() : getSourceFor(instruction.arg2, instruction.arg2Components, destAlloc, isVertexShader);
+				source1	= getSourceFor(instruction.argument1, instruction.component1, destAlloc, isVertexShader);
+				source2	= instruction.isSingle ? new AgalSourceEmpty() : getSourceFor(instruction.argument2, instruction.component2, destAlloc, isVertexShader);
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
@@ -357,7 +356,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument			: INode, 
+		private function getSourceFor(argument			: ANode, 
 									  readComponents	: uint, 
 									  destAlloc			: SimpleAllocation, 
 									  isVertexShader	: Boolean) : IAgalToken
@@ -412,7 +411,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return source;
 		}
 		
-		private function extendLifeTime(argument : INode, isVertexShader : Boolean) : void
+		private function extendLifeTime(argument : ANode, isVertexShader : Boolean) : void
 		{
 			var instructionCounter : uint = getInstructionCounter(isVertexShader);
 			
@@ -443,11 +442,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitOverwriter(overwriter		: Overwriter,
 													isVertexShader	: Boolean) : void
 		{
-			var overwriterAllocator : Allocator = getAllocatorFor(overwriter, isVertexShader);
-			
-			var args				: Vector.<INode>			= overwriter.args;
-			var components			: Vector.<uint>				= overwriter.components;
-			var numArgs				: uint						= args.length;
+			var overwriterAllocator : Allocator					= getAllocatorFor(overwriter, isVertexShader);
+			var numArgs				: uint						= overwriter.numArguments;
 			
 			var subAllocs 			: Vector.<SimpleAllocation>	= new Vector.<SimpleAllocation>();
 			var subOffsets			: Vector.<uint>				= new Vector.<uint>();
@@ -457,8 +453,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				var arg				: INode	= args[argId];
-				var component		: uint	= components[argId];
+				var arg				: ANode	= overwriter.getArgumentAt(argId);
+				var component		: uint	= overwriter.getComponentAt(argId);
 				var minWriteOffset	: int	= Components.getMinWriteOffset(component);
 				var newAllocation : SimpleAllocation;
 				
@@ -472,7 +468,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					
 					// execute a mov intruction to copy it to temporaries and swizzle it properly.
 					mov = new Instruction(Instruction.MOV, arg);
-					mov.arg1Components = component;
+					mov.component1 = component;
 					pushInstruction(mov, isVertexShader);
 					
 					// get the current instruction counter, to report allocations.
@@ -497,17 +493,19 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					if (instructionArg.isComponentWise)
 					{
 						// visit the arguments
-						visit(instructionArg.arg1, isVertexShader);
+						visit(instructionArg.argument1, isVertexShader);
 						if (!instructionArg.isSingle)
-							visit(instructionArg.arg2, isVertexShader);
+							visit(instructionArg.argument2, isVertexShader);
 						
 						// create a new operation that combines the swizzles of the overwriter and
 						// the instruction under it (this works only because it's all component wise).
-						var instructionArgReplacement : Instruction = new Instruction(instructionArg.id, instructionArg.arg1, instructionArg.arg2);
+						var instructionArgReplacement : Instruction = instructionArg.isSingle ? 
+							new Instruction(instructionArg.id, instructionArg.argument1) : 
+							new Instruction(instructionArg.id, instructionArg.argument1, instructionArg.argument2);
 						
-						instructionArgReplacement.arg1Components = Components.applyCombination(instructionArg.arg1Components, component);
+						instructionArgReplacement.component1 = Components.applyCombination(instructionArg.component1, component);
 						if (!instructionArgReplacement.isSingle)
-							instructionArgReplacement.arg2Components = Components.applyCombination(instructionArg.arg2Components, component);
+							instructionArgReplacement.component2 = Components.applyCombination(instructionArg.component2, component);
 						
 						// push instruction, allocate and report usages.
 						pushInstruction(instructionArgReplacement, isVertexShader);
@@ -521,9 +519,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						subAllocs.push(newAllocation);
 						subOffsets.push(minWriteOffset);
 						
-						extendLifeTime(instructionArgReplacement.arg1, isVertexShader);
+						extendLifeTime(instructionArgReplacement.argument1, isVertexShader);
 						if (!instructionArgReplacement.isSingle)
-							extendLifeTime(instructionArgReplacement.arg2, isVertexShader);
+							extendLifeTime(instructionArgReplacement.argument2, isVertexShader);
 					}
 					// if this is the first instruction of the overwriter, and the swizzle we need is x[y[z[w]?]?]?, we should
 					// ignore the mov instruction.
@@ -560,9 +558,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 													 isVertexShader	: Boolean) : void
 		{
 			// visit children
-			visit(instruction.arg1, isVertexShader);
+			visit(instruction.argument1, isVertexShader);
 			if (!instruction.isSingle)
-				visit(instruction.arg2, isVertexShader);
+				visit(instruction.argument2, isVertexShader);
 			
 			// push instruction into list
 			pushInstruction(instruction, isVertexShader);
@@ -576,9 +574,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_allocStore.storeAlloc(allocation, instruction, isVertexShader);
 
 			// extend life time of arguments, so that they are not released too soon.
-			extendLifeTime(instruction.arg1, isVertexShader);
+			extendLifeTime(instruction.argument1, isVertexShader);
 			if (!instruction.isSingle)
-				extendLifeTime(instruction.arg2, isVertexShader);
+				extendLifeTime(instruction.argument2, isVertexShader);
 		}
 		
 		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void
@@ -595,15 +593,15 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			if (isVertexShader)
 			{
-				visit(interpolate.arg, true);
+				visit(interpolate.argument, true);
 				
-				var components		: uint			= interpolate.components;
+				var components		: uint			= interpolate.component;
 				var size			: int			= Components.getMaxWriteOffset(components) + 1;
 				var modifier		: uint			= Components.createContinuous(0, 0, 4, size);
 				var final			: uint			= Components.applyCombination(components, modifier);
 				
-				var movInstruction	: Instruction	= new Instruction(Instruction.MOV, interpolate.arg);
-				movInstruction.arg1Components		= final;
+				var movInstruction	: Instruction	= new Instruction(Instruction.MOV, interpolate.argument);
+				movInstruction.component1		= final;
 				
 				var allocation : SimpleAllocation	=
 					_varyingAllocator.allocate(movInstruction.size, true, getInstructionCounter(true));
@@ -611,7 +609,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				_allocStore.storeAlloc(allocation, movInstruction, true);
 				_allocStore.storeAlloc(allocation, interpolate, false);
 				
-				extendLifeTime(interpolate.arg, true);
+				extendLifeTime(interpolate.argument, true);
 				
 				_vsInstructions.push(movInstruction);
 			}
@@ -676,7 +674,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('There cannot be any extract left at this point of shader compilation. Go fix your code.');
 		}
 		
-		private function getAllocatorFor(node : INode, isVertexShader : Boolean) : Allocator
+		private function getAllocatorFor(node : ANode, isVertexShader : Boolean) : Allocator
 		{
 			// if this is the root node, it has a different allocator.
 			if (node === _shaderGraph.position)

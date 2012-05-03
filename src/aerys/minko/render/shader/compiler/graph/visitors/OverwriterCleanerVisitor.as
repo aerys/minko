@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -18,7 +18,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	/**
 	 * @private
 	 * @author Romain Gilliotte
-	 * 
 	 */
 	public class OverwriterCleanerVisitor extends AbstractVisitor
 	{
@@ -33,7 +32,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		public function OverwriterCleanerVisitor()
 		{
-			super(true);
 		}
 		
 		override protected function start() : void
@@ -44,74 +42,56 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction, 
-													 isVertexShader	: Boolean) : void
+		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
 		{
-			visit(instruction.arg1, isVertexShader);
+			visitArguments(node, true);
 			
-			if (!instruction.isSingle)
-				visit(instruction.arg2, isVertexShader);
+			if (node is Overwriter)
+				visitOverwriter(Overwriter(node), true);
 		}
 		
-		override protected function visitInterpolate(interpolate	: Interpolate, 
-													 isVertexShader	: Boolean) : void
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
 		{
-			visit(interpolate.arg, true);
-		}
-		
-		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, 
-														 isVertexShader	 : Boolean) : void
-		{
-			if (!isVertexShader)
-				throw new Error('VariadicExtract can only be found on vertex shader.');
-			
-			visit(variadicExtract.index, true);
-			visit(variadicExtract.constant, true);
 		}
 		
 		override protected function visitOverwriter(overwriter		: Overwriter, 
 													isVertexShader	: Boolean) : void
 		{
-			var args		: Vector.<INode>	= overwriter.args;
-			var components	: Vector.<uint>		= overwriter.components;
-			var numArgs		: uint				= args.length;
-			
+			var numArgs		: uint = overwriter.numArguments;
 			var argId		: int; // we use int instead of uint to be able to loop backwards
-			var arg			: INode;
+			var arg			: ANode;
 			var component	: uint;
 			
 			// visit sons
 			for (argId = 0; argId < numArgs; ++argId)
-				visit(args[argId], isVertexShader);
+				visit(overwriter.getArgumentAt(argId), isVertexShader);
 			
 			// expand other overwriters inside this one
 			// also, replace non component wise operation by moves.
 			for (argId = 0; argId < numArgs; ++argId)
 			{
-				arg = args[argId];
-				component = components[argId];
+				arg			= overwriter.getArgumentAt(argId);
+				component	= overwriter.getComponentAt(argId);
 				
 				if (arg is Overwriter)
 				{
 					// remove the argument
-					args.splice(argId, 1);
-					components.splice(argId, 1);
+					overwriter.removeArgumentAt(argId);
 					--numArgs;
 					
 					// inject modified arguments into the current overwriter
-					var innerArgs	 	: Vector.<INode>	= Overwriter(arg).args;
-					var innerNumArgs 	: uint				= innerArgs.length;
-					var innerComponents	: Vector.<uint>		= Overwriter(arg).components;
+					var innerNumArgs 	: uint = Overwriter(arg).numArguments;
 					
 					for (var innerArgId : uint = 0; innerArgId < innerNumArgs; ++innerArgId)
 					{
 						// modify argument
-						var innerArg		: INode	= innerArgs[innerArgId];
-						var innerComponent	: uint	= Components.applyCombination(innerComponents[innerArgId], component);
+						var innerArg		: ANode	= Overwriter(arg).getArgumentAt(innerArgId);
+						var innerComponent	: uint	= Overwriter(arg).getComponentAt(innerArgId);
+						
+						innerComponent = Components.applyCombination(innerComponent, component);
 						
 						// inject it
-						components.splice(argId, 0, innerComponent);
-						args.splice(argId, 0, innerArg);
+						overwriter.addArgumentAt(argId, innerArg, innerComponent);
 						
 						// we already know that the arguments we are injecting are not Overwriters 
 						// and are component wise (becase we visited each argument first)
@@ -125,7 +105,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				else if (arg is Instruction && !Instruction(arg).isComponentWise)
 				{
 					// wrap the argument into a mov instruction to make it component wise.
-					args[argId] = new Instruction(Instruction.MOV, args[argId]);
+					overwriter.setArgumentAt(argId, new Instruction(Instruction.MOV, overwriter.getArgumentAt(argId)));
 				}
 			}
 			
@@ -134,15 +114,20 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				// mask components in reverse order so that no overwriting occurs 
 				// (which would be OK btw, but this is going to help us detect useless nodes).
 				for (argId = numArgs - 2; argId >= 0; --argId)
-					components[argId] = Components.applyMask(components[argId], components[argId + 1]);
+					overwriter.setComponentAt(
+						argId, 
+						Components.applyMask(
+							overwriter.getComponentAt(argId),
+							overwriter.getComponentAt(argId + 1)
+						)
+					);
 				
 				// remove any node if its component value is empty: 
 				// there is no need to compute it if we are going to overwrite it
 				for (argId = numArgs - 1; argId >= 0; --argId)
-					if (Components.isEmpty(components[argId]))
+					if (Components.isEmpty(overwriter.getComponentAt(argId)))
 					{
-						components.splice(argId, 1);
-						args.splice(argId, 1);
+						overwriter.removeArgumentAt(argId);
 						--numArgs;
 					}
 			}
@@ -151,50 +136,28 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			// and ResolveParametrizedComputation can work easily.
 			// (The argument order does not matter anymore because we masked each component with the following one). 
 			for (argId = 0; argId < numArgs - 1; ++argId)
-				if (TYPE_PRIORITY[Object(args[argId]).constructor] > TYPE_PRIORITY[Object(args[argId + 1]).constructor])
+			{
+				var argument1	: ANode = overwriter.getArgumentAt(argId);
+				var argument2	: ANode = overwriter.getArgumentAt(argId + 1);
+				var component1	: uint	= overwriter.getComponentAt(argId);
+				var component2	: uint	= overwriter.getComponentAt(argId + 1);
+				
+				if (TYPE_PRIORITY[Object(argument1).constructor] > TYPE_PRIORITY[Object(argument2).constructor])
 				{
-					arg						= args[argId];
-					args[argId]				= args[argId + 1];
-					args[argId + 1]			= arg;
+					overwriter.setArgumentAt(argId, argument2);
+					overwriter.setArgumentAt(argId + 1, argument1);
 					
-					component				= components[argId];
-					components[argId]		= components[argId + 1];
-					components[argId + 1]	= component;
+					overwriter.setComponentAt(argId, component2);
+					overwriter.setComponentAt(argId + 1, component1);
 					
 					if (argId != 0)
 						argId -= 2;
 				}
+			}
 			
 			// remove the whole node if we reduced numArgs to 1
 			if (numArgs == 1)
-				replaceInParentAndSwizzle(overwriter, args[0], components[0]);
-			
-			// tell the overwriter it has been updated
-			overwriter.invalidateHashAndSize();
-		}
-		
-		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitExtract(extract : Extract, isVertexShader : Boolean):void
-		{
-		}
-		
-		override protected function visitConstant(constant : Constant, isVertexShader : Boolean):void
-		{
-		}
-		
-		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitSampler(sampler : Sampler, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
-		{
+				replaceInParentsAndSwizzle(overwriter, overwriter.getArgumentAt(0), overwriter.getComponentAt(0));
 		}
 	}
 }

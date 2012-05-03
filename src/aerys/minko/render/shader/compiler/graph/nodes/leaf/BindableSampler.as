@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	
 	/**
 	 * @private
@@ -23,11 +23,14 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 										wrapping	: uint = 1, // SamplerWrapping.REPEAT
 										dimension	: uint = 0) // SamplerDimension.FLAT
 		{
-			var hash : uint = CRC32.computeForString('ParametrizedSampler' + bindingName);
-			
-			super(hash, filter, mipmap, wrapping, dimension);
+			super(filter, mipmap, wrapping, dimension);
 			
 			_bindingName = bindingName;
+		}
+		
+		override protected function computeHash() : uint
+		{
+			return CRC32.computeForString('ParametrizedSampler' + _bindingName);
 		}
 		
 		override public function toString() : String

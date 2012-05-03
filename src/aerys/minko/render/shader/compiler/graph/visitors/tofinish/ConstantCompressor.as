@@ -27,8 +27,8 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 	public class ConstantCompressor
 	{
 		/*
-		private var _visited			: Vector.<INode>
-		private var _stack				: Vector.<INode>;
+		private var _visited			: Vector.<ANode>
+		private var _stack				: Vector.<ANode>;
 		
 		private var _floatGain			: uint;
 		private var _constants			: Vector.<Constant>;
@@ -39,15 +39,15 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 			_floatGain = 0;
 		}
 		
-		public function work(outputPosition : INode,
-							 interpolates	: Vector.<INode>,
-							 outputColor	: INode,
-							 kills			: Vector.<INode>) : void
+		public function work(outputPosition : ANode,
+							 interpolates	: Vector.<ANode>,
+							 outputColor	: ANode,
+							 kills			: Vector.<ANode>) : void
 		{
 			
 			reset();
 			explore(outputPosition);
-			for each (var interpolate : INode in interpolates)
+			for each (var interpolate : ANode in interpolates)
 				explore(Interpolate(interpolate).arg1);
 			
 			pack();
@@ -56,7 +56,7 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 			
 			reset();
 			explore(outputColor);
-			for each (var kill : INode in kills)
+			for each (var kill : ANode in kills)
 				explore(kill);
 			pack();
 			groupConstants();
@@ -65,13 +65,13 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 		
 		private function reset() : void
 		{
-			_visited			= new Vector.<INode>();
-			_stack				= new Vector.<INode>();
+			_visited			= new Vector.<ANode>();
+			_stack				= new Vector.<ANode>();
 			_constants			= new Vector.<Constant>();
 			_constantToParents	= new Dictionary();
 		}
 		
-		private function explore(node : INode) : void
+		private function explore(node : ANode) : void
 		{
 			if (_visited.indexOf(node) != -1)
 			{
@@ -87,7 +87,7 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 			{
 				if (_constantToParents[node] == undefined)
 				{
-					_constantToParents[node] = new Vector.<INode>();
+					_constantToParents[node] = new Vector.<ANode>();
 					_constants.push(node);
 				}
 				
@@ -185,7 +185,7 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 					
 					delete _constantToParents[constNode];
 					
-					_constantToParents[newConstant] = Vector.<INode>([extractChild]);
+					_constantToParents[newConstant] = Vector.<ANode>([extractChild]);
 					_constants[constantId] = newConstant;
 				}
 			}
@@ -285,7 +285,7 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 					delete _constantToParents[constant1];
 					delete _constantToParents[constant2];
 					
-					_constantToParents[newConstant] = Vector.<INode>([extractChild1, extractChild2]);
+					_constantToParents[newConstant] = Vector.<ANode>([extractChild1, extractChild2]);
 					
 					_constants.splice(constantId1, 1); // (we know constant2 < constant1)
 					_constants.splice(constantId2, 1);

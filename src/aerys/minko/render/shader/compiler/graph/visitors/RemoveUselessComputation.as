@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -21,7 +21,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	{
 		public function RemoveUselessComputation()
 		{
-			super(false);
 		}
 		
 		override protected function start() : void
@@ -32,142 +31,84 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitInterpolate(interpolate:Interpolate, isVertexShader:Boolean):void
+		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
 		{
-			visit(interpolate.arg, true);
+			visitArguments(node, true);
+			
+			if (node is Instruction)
+				visitInstruction(Instruction(node), true);
+		}
+		
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		{
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction, 
 													 isVertexShader	: Boolean) : void
 		{
-			visit(instruction.arg1, isVertexShader);
-			if (!instruction.isSingle)
-				visit(instruction.arg2, isVertexShader);
+			var instructionId : uint = instruction.id;
 			
-			var i : uint;
-			var vec : Vector.<Number>;
+			if (instructionId != Instruction.ADD 
+				&& instructionId != Instruction.SUB 
+				&& instructionId != Instruction.MUL 
+				&& instructionId != Instruction.DIV)
+				return;
 			
-			var arg1Value : Number = NaN;
-			var arg2Value : Number = NaN;
-			
-			if (instruction.arg1 is Constant)
-			{
-				vec = Constant(instruction.arg1).value;
-				arg1Value = vec[0];
-				
-				 for (i = 1; i < vec.length; ++i)
-					 if (vec[i] != arg1Value)
-						 break;
-				 
-				 if (i != vec.length)
-					 arg1Value = NaN;
-			}
-			
-			if (instruction.arg2 is Constant)
-			{
-				vec = Constant(instruction.arg2).value;
-				arg2Value = vec[0];
-				
-				for (i = 1; i < vec.length; ++i)
-					if (vec[i] != arg2Value)
-						break;
-				
-				if (i != vec.length)
-					arg2Value = NaN;
-			}
+			var arg1Value : Number = computeArgumentValue(instruction.argument1);
+			var arg2Value : Number = computeArgumentValue(instruction.argument2);
 			
 			switch (instruction.id)
 			{
 				case Instruction.ADD:
 					if (arg1Value == 0)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg2, instruction.arg2Components);
-						return;
-					}
-					if (arg2Value == 0)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
-						return;
-					}
+						replaceInParentsAndSwizzle(instruction, instruction.argument2, instruction.component2);
+					else if (arg2Value == 0)
+						replaceInParentsAndSwizzle(instruction, instruction.argument1, instruction.component1);
+					
 					break;
 				
 				case Instruction.MUL:
 					if (arg1Value == 1)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg2, instruction.arg2Components);
-						return;
-					}
-					if (arg2Value == 1)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
-						return;
-					}
+						replaceInParentsAndSwizzle(instruction, instruction.argument2, instruction.component2);
+					else if (arg2Value == 1)
+						replaceInParentsAndSwizzle(instruction, instruction.argument1, instruction.component1);
+					
 					break;
 				
 				case Instruction.DIV:
 					if (arg2Value == 1)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
-						return;
-					}
+						replaceInParentsAndSwizzle(instruction, instruction.argument1, instruction.component1);
+					
 					break;
 				
 				case Instruction.SUB:
 					if (arg1Value == 0)
 					{
-						var negate : Instruction = new Instruction(Instruction.NEG, instruction.arg1);
-						negate.arg1Components = instruction.arg1Components;
-						replaceInParent(instruction, negate);
-						return;
+						var negate : Instruction = new Instruction(Instruction.NEG, instruction.argument1);
+						negate.component1 = instruction.component1;
+						replaceInParents(instruction, negate);
 					}
+					else if (arg2Value == 0)
+						replaceInParentsAndSwizzle(instruction, instruction.argument1, instruction.component1);
 					
-					if (arg2Value == 0)
-					{
-						replaceInParentAndSwizzle(instruction, instruction.arg1, instruction.arg1Components);
-						return;
-					}
 					break;
 			}
 		}
 		
-		override protected function visitOverwriter(overwriter:Overwriter, isVertexShader:Boolean):void
+		private function computeArgumentValue(node : ANode) : Number
 		{
-			for each (var arg : INode in overwriter.args)
-				visit(arg, isVertexShader);
-		}
-		
-		override protected function visitVariadicExtract(variadicExtract:VariadicExtract, isVertexShader:Boolean):void
-		{
-			if (!isVertexShader)
-				throw new Error('No indirect addressing should be done in the fragment shader.');
+			if (!(node is Constant))
+				return NaN;
 			
-			visit(variadicExtract.index, true);
-			visit(variadicExtract.constant, true);
-		}
-		
-		override protected function visitAttribute(attribute:Attribute, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitConstant(constant:Constant, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitBindableConstant(bindableConstant:BindableConstant, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitSampler(sampler:Sampler, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler:BindableSampler, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitExtract(extract:Extract, isVertexShader:Boolean):void
-		{
-			throw new Error('Found invalid node: ' + extract.toString());
+			var vec			: Vector.<Number>	= Constant(node).value;
+			var argValue	: Number			= vec[0];
+			var length		: uint				= vec.length;
+			
+			for (var i : uint = 1; i < length; ++i)
+				if (vec[i] != argValue)
+					return NaN;
+			
+			return argValue;
 		}
 		
 	}

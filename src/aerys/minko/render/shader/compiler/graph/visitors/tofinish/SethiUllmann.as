@@ -17,25 +17,25 @@ package aerys.minko.render.shader.compiler.graph.visitors.tofinish
 	public class SethiUllmann
 	{
 		/*
-		public function work(outputPosition : INode,
-							 interpolates	: Vector.<INode>,
-							 ouputColor		: INode,
-							 kills			: Vector.<INode>) : Dictionary
+		public function work(outputPosition : ANode,
+							 interpolates	: Vector.<ANode>,
+							 ouputColor		: ANode,
+							 kills			: Vector.<ANode>) : Dictionary
 		{
 			var tmpSpaceToCompute : Dictionary = new Dictionary();
 			
 			visit(outputPosition, tmpSpaceToCompute);
-			for each (var interpolate : INode in interpolates)
+			for each (var interpolate : ANode in interpolates)
 				visit(Interpolate(interpolate).arg1, tmpSpaceToCompute);
 			
 			visit(ouputColor, tmpSpaceToCompute);
-			for each (var kill : INode in kills)
+			for each (var kill : ANode in kills)
 				visit(kill, tmpSpaceToCompute);
 				
 			return tmpSpaceToCompute;
 		}
 		
-		public function visit(node				: INode,
+		public function visit(node				: ANode,
 							  neededTmpSpace	: Dictionary) : uint
 		{
 			if (neededTmpSpace[node] != undefined)

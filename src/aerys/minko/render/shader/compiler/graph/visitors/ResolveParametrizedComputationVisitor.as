@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -13,6 +13,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
+	import flash.utils.Dictionary;
+	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
@@ -20,91 +22,77 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	 */
 	public class ResolveParametrizedComputationVisitor extends AbstractVisitor
 	{
-		private var _isComputable			: Boolean;
+		private var _isComputable			: Dictionary;
 		private var _computableConstantId	: uint;
 		
 		public function ResolveParametrizedComputationVisitor()
 		{
-			super(false);
 		}
 		
 		override protected function start() : void
 		{
-			_computableConstantId = 0;	
+			_computableConstantId	= 0;
+			_isComputable			= new Dictionary();
 		}
 		
 		override protected function finish() : void
 		{
+			if (_isComputable[_shaderGraph.position])
+				_shaderGraph.position = createComputableConstant(_shaderGraph.position);
+			
+			if (_isComputable[_shaderGraph.color])
+				_shaderGraph.color = createComputableConstant(_shaderGraph.color);
+			
+			var kills		: Vector.<ANode>	= _shaderGraph.kills;
+			var numKills	: uint				= kills.length;
+			
+			for (var killId : uint = 0; killId < numKills; ++killId)
+				if (_isComputable[kills[killId]])
+					kills[killId] = createComputableConstant(kills[killId]);
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 
 													 isVertexShader	: Boolean) : void
 		{
-			visit(interpolate.arg, true);
+			visitArguments(interpolate, true);
+			
+			_isComputable[interpolate] = _isComputable[interpolate.argument];
 		}
 		
-		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void
+		override protected function visitVariadicExtract(variadicExtract	: VariadicExtract, 
+														 isVertexShader		: Boolean) : void
 		{
-			if (!isVertexShader)
-				throw new Error('VariadicExtract are only available in the vertex shader.');
-			
 			visit(variadicExtract.index, true);
 			
-			if (_isComputable && _stack.length < 2)
-				replaceInParent(variadicExtract, createComputableConstant(variadicExtract));
+			_isComputable[variadicExtract] = _isComputable[variadicExtract.index];
 		}
 		
 		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
 		{
-			var isComputable1 : Boolean;
-			var isComputable2 : Boolean;
+			visitArguments(instruction, isVertexShader);
 			
-			visit(instruction.arg1, isVertexShader);
-			isComputable1 = _isComputable;
-			
-			if (!instruction.isSingle)
-			{
-				visit(instruction.arg2, isVertexShader);
-				isComputable2 = _isComputable;
-			}
+			var isComputable1 : Boolean = _isComputable[instruction.argument1];
+			var isComputable2 : Boolean = !instruction.isSingle ? _isComputable[instruction.argument2] : null;
 			
 			if (instruction.isSingle)
 			{
-				_isComputable = isComputable1;
+				_isComputable[instruction] = isComputable1;
 				
-				if (_isComputable)
-				{
-					// do nothing. this will be wrapped when going up
-					// if stack.length is 1, we should replace here
-					if (_stack.length < 2)
-					{
-						replaceInParent(instruction, createComputableConstant(instruction));
-					}
-				}
-				else
-				{
-					// this is not computable, nothing to do!
-				}
+				if (_isComputable[instruction])
+					replaceInParents(instruction, createComputableConstant(instruction));
 			}
 			else
 			{
-				_isComputable = isComputable1 && isComputable2;
+				_isComputable[instruction] = isComputable1 && isComputable2;
 				
-				if (_isComputable)
-				{
-					// do nothing, go up, and hope for the best
-					// if we cannot go up, replace tree root by an evalexp parameter
-					if (_stack.length < 2)
-						replaceInParent(instruction, createComputableConstant(instruction));
-				}
-				else
+				if (!_isComputable[instruction])
 				{
 					// check if either arg1 or 2 is computable, and useful to compute
-					if (isComputable1 && !(instruction.arg1 is Constant || instruction.arg1 is BindableConstant))
-						instruction.arg1 = createComputableConstant(instruction.arg1);
+					if (isComputable1 && !isConstant(instruction.argument1))
+						instruction.argument1 = createComputableConstant(instruction.argument1);
 					
-					if (isComputable2 && !(instruction.arg2 is Constant || instruction.arg2 is BindableConstant))
-						instruction.arg2 = createComputableConstant(instruction.arg2);
+					if (isComputable2 && !isConstant(instruction.argument2))
+						instruction.argument2 = createComputableConstant(instruction.argument2);
 				}
 			}
 		}
@@ -112,176 +100,103 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitOverwriter(overwriter	   : Overwriter, 
 													isVertexShader : Boolean) : void
 		{
-			var argId			: uint;
-			var args			: Vector.<INode>	= overwriter.args;
-			var comps			: Vector.<uint>		= overwriter.components;
-			var numArgs			: uint				= args.length;
+			visitArguments(overwriter, isVertexShader);
 			
-			var isComputable	: Vector.<Boolean>	= new Vector.<Boolean>(numArgs, true);
+			var argumentId		: int;
+			var numArguments	: uint				= overwriter.numArguments;
 			
-			var computableArgs	: Vector.<INode>	= new Vector.<INode>();
+			var computableArgs	: Vector.<ANode>	= new Vector.<ANode>();
 			var computableComps	: Vector.<uint>		= new Vector.<uint>();
 			
 			// which arguments are computable?
 			// remove them from the overwriter
-			for (argId = 0; argId < numArgs; ++argId)
+			for (argumentId = numArguments - 1; argumentId >= 0; --argumentId)
 			{
-				visit(args[argId], isVertexShader);
-				
-				if (_isComputable)
+				var argument : ANode = overwriter.getArgumentAt(argumentId)
+				if (_isComputable[argument])
 				{
-					computableComps.push(comps[argId]);
-					computableArgs.push(args[argId]);
+					computableArgs.push(argument);
+					computableComps.push(overwriter.getComponentAt(argumentId));
 					
-					args.splice(argId, 1);
-					comps.splice(argId, 1);
-					
-					--argId;
-					--numArgs;
+					overwriter.removeArgumentAt(argumentId);
+					--numArguments;
 				}
 			}
 			
 			var computableArgsCount : uint = computableArgs.length;
 			
 			// all arguments are computable!
-			if (numArgs == 0)
+			if (numArguments == 0)
 			{
 				// put the arguments and components back
-				numArgs = computableArgs.length;
-				for (argId = 0; argId < numArgs; ++argId)
-				{
-					overwriter.args.push(computableArgs[argId]);
-					overwriter.components.push(computableComps[argId]);
-				}
-				overwriter.invalidateHashAndSize(); // that's useless, just in case
-				
-				// if this is the tree root, we replace the overwriter by a parameter:
-				// this shader is going to be a simple "mov op, fc0"
-				if (_stack.length < 2)
-					replaceInParent(overwriter, createComputableConstant(overwriter));
+				numArguments = computableArgs.length;
+				for (argumentId = 0; argumentId < numArguments; ++argumentId)
+					overwriter.addArgumentAt(argumentId, 
+						computableArgs[argumentId], computableComps[argumentId]);
 				
 				// tell the parent we are computable
-				_isComputable = true;
-				return;
+				_isComputable[overwriter] = true;
 			}
 			// no arguments are computable
 			else if (computableArgsCount == 0)
 			{
-				_isComputable = false;
-				return;
+				_isComputable[overwriter] = false;
 			}
 			// only one argument is computable. 
 			else if (computableArgsCount == 1)
 			{
 				// there is no need to replace it if it's already a parameter or a contant.
-				if (computableArgs[0] is Constant || computableArgs[0] is BindableConstant)
+				if (isConstant(computableArgs[0]))
 				{
-					overwriter.args.unshift(computableArgs[0]);
-					overwriter.components.unshift(computableComps[0]);
+					overwriter.addArgumentAt(0, computableArgs[0], computableComps[0]);
 				}
 				// we must replace it otherwise
 				else
 				{
-					overwriter.args.unshift(createComputableConstant(computableArgs[0]));
-					overwriter.components.unshift(computableComps[0]);
+					overwriter.addArgumentAt(0,
+						createComputableConstant(computableArgs[0]),
+						computableComps[0]
+					);
 				}
-				
-				overwriter.invalidateHashAndSize();
 			}
-			// more than one argument is computable in CPU, we have to merge them, and shift them back into the overwriter.
+			// more than one argument is computable in CPU, 
+			// we have to merge them, and shift them back into the overwriter.
 			else
 			{
-				// we are going to decompose this overwriter into 2 overwriters...
+				// we are going to decompose this overwriter into 2 overwriters. One on CPU, one on GPU
 				
-				// first we find holes
-				numArgs = computableArgs.length;
-				var currentWrite		: uint = 0;
-				var resultingComponents : uint = computableComps[0];
-				  
-				for (argId = 1; argId < numArgs; ++argId) // the order doesn't really matters...
-					resultingComponents = Components.applyOverwriting(computableComps[argId], resultingComponents);
-				
-				var xIsHole : Boolean = ((resultingComponents >>> (8 * 0)) & 0xff) == 4;
-				var yIsHole : Boolean = ((resultingComponents >>> (8 * 1)) & 0xff) == 4;
-				var zIsHole : Boolean = ((resultingComponents >>> (8 * 2)) & 0xff) == 4;
-				var wIsHole : Boolean = ((resultingComponents >>> (8 * 3)) & 0xff) == 4;
-				
-				// now we can generate our final resulting component (the one going to the GPU executed overwriter).
-				// there are only 16 possible components, if this is not working, precompute all values.
-				var finalComponent		: uint = 0;
-				var currentReadOffset	: uint = 0;
-				finalComponent |= (xIsHole ? 4 : currentReadOffset++) << (8 * 0);
-				finalComponent |= (yIsHole ? 4 : currentReadOffset++) << (8 * 1);
-				finalComponent |= (zIsHole ? 4 : currentReadOffset++) << (8 * 2);
-				finalComponent |= (wIsHole ? 4 : currentReadOffset++) << (8 * 3);
-				
-				// now we need to partially write offset existing components, because
-				// the cpu executed overwriter cannot have holes in the result. If is
-				// does the allocator is going to freak out (and will be right to do so:
-				// it would make no sense).
-				for (argId = 0; argId < numArgs; ++argId)
-				{
-					var cpuComponent : uint = computableComps[argId];
-					
-					throw new Error('This is bugged. Fix it before using.');
-					
-					if (xIsHole)
-						// this one is easy, we just make the first byte fall into the bit bucket
-						cpuComponent = cpuComponent >>> 8 | (4 << (3 * 8));
-					
-					if (yIsHole)
-						// remove bits 8 to 15
-						cpuComponent = (cpuComponent & 0xff) | ((cpuComponent >>> 8) & (~0xff)) | (4 << (3 * 8));
-					
-					if (zIsHole)
-						cpuComponent = (cpuComponent & 0xffff) | ((cpuComponent >>> 8) & (~0xffff)) | (4 << (3 * 8));
-					
-					if (wIsHole)
-						// useless
-						cpuComponent = (cpuComponent & 0xffffff) | (4 << (3 * 8));
-					
-					computableComps[argId] = cpuComponent;
-				}
-				
-				var cpuOverwriter : Overwriter = new Overwriter(computableArgs, computableComps);
-				
-				overwriter.args.unshift(createComputableConstant(cpuOverwriter));
-				overwriter.components.unshift(finalComponent);
-				overwriter.invalidateHashAndSize();
-				
-				_isComputable = false;
-				return;
+				throw new Error('Implement me again, i was broken');
 			}
 		}
 		
 		override protected function visitAttribute(attribute	  : Attribute, 
 												   isVertexShader : Boolean) : void
 		{
-			_isComputable = false;
+			_isComputable[attribute] = false;
 		}
 		
 		override protected function visitConstant(constant		 : Constant, 
 												  isVertexShader : Boolean) : void
 		{
-			_isComputable = true;
+			_isComputable[constant] = true;
 		}
 		
 		override protected function visitBindableConstant(bindableConstant	: BindableConstant,
 														  isVertexShader	: Boolean):void
 		{
-			_isComputable = true;
+			_isComputable[bindableConstant] = true;
 		}
 		
 		override protected function visitSampler(sampler		: Sampler, 
 												 isVertexShader	: Boolean) : void
 		{
-			_isComputable = false;
+			_isComputable[sampler] = false;
 		}
 		
 		override protected function visitBindableSampler(bindableSampler	: BindableSampler, 
 														 isVertexShader		: Boolean) : void
 		{
-			_isComputable = false;
+			_isComputable[bindableSampler] = false;
 		}
 		
 		override protected function visitExtract(extract		: Extract, 
@@ -290,7 +205,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('Found invalid node: ' + extract.toString());
 		}
 		
-		private function createComputableConstant(computableNode : INode) : BindableConstant
+		private function isConstant(node : ANode) : Boolean
+		{
+			return node is BindableConstant || node is Constant;
+		}
+		
+		private function createComputableConstant(computableNode : ANode) : BindableConstant
 		{
 			var constantName : String = BindableConstant.COMPUTABLE_CONSTANT_PREFIX + (_computableConstantId++);
 			_shaderGraph.computableConstants[constantName] = computableNode;

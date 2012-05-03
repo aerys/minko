@@ -30,16 +30,20 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			_textureResource = textureResource;
 			
-			var textureResourceId : int = RESOURCES.indexOf(textureResource);
+			super(filter, mipmap, wrapping, dimension);
+		}
+		
+		override protected function computeHash() : uint
+		{
+			var textureResourceId : int = RESOURCES.indexOf(_textureResource);
+			
 			if (textureResourceId === -1)
 			{
 				RESOURCES.push(textureResource);
 				textureResourceId = RESOURCES.length - 1;
 			}
 			
-			var hash : uint = CRC32.computeForString('Sampler' + textureResourceId);
-			
-			super(hash, filter, mipmap, wrapping, dimension);
+			return CRC32.computeForString('Sampler' + textureResourceId)
 		}
 		
 		override public function toString() : String

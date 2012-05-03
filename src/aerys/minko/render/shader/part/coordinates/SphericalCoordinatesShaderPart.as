@@ -59,7 +59,7 @@ package aerys.minko.render.shader.part.coordinates
 			
 			// group phi and theta to compute acos, as it is an expensive operation
 			var tmpFloat2 : SFloat = float2(phi, theta);
-			tmpFloat2 = acos(tmpFloat2);
+			tmpFloat2 = acos(tmpFloat2, 0);
 			
 			phi = tmpFloat2.x;
 			theta = tmpFloat2.y;

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -37,7 +37,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		public function WriteDot()
 		{
-			super(true);
 		}
 		
 		override public function process(shaderGraph : ShaderGraph) : void
@@ -62,7 +61,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(_shaderGraph.color, false);
 			appendLink(outputColor, _shaderGraph.color);
 			
-			for each (var kill : INode in _shaderGraph.kills)
+			for each (var kill : ANode in _shaderGraph.kills)
 			{
 				visit(kill, false);
 				appendLink(kills, kill);
@@ -85,12 +84,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				_nodes + _links + 
 			"}";
 			
-			_stack.length = 0;
-			_visitedInVs.length = 0;	
-			_visitedInFs.length = 0;
-			_nodeIds = null;
-			_nodeId = 0;
-			_shaderGraph = null;	
+			_stack.length		= 0;
+			_visitedInVs.length	= 0;	
+			_visitedInFs.length	= 0;
+			_nodeIds			= null;
+			_nodeId				= 0;
+			_shaderGraph		= null;	
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction, 
@@ -98,48 +97,49 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			appendNode(instruction, 'cadetblue1', instruction.name);
 			
-			visit(instruction.arg1, isVertexShader);
-			appendLink(instruction, instruction.arg1, instruction.arg1Components);
+			visit(instruction.argument1, isVertexShader);
+			appendLink(instruction, instruction.argument1, instruction.component1);
 			
 			if (!instruction.isSingle)
 			{
-				visit(instruction.arg2, isVertexShader);
-				appendLink(instruction, instruction.arg2, instruction.arg2Components);
+				visit(instruction.argument2, isVertexShader);
+				appendLink(instruction, instruction.argument2, instruction.component2);
 			}
 		}
 		
 		override protected function visitOverwriter(overwriter		: Overwriter, 
 													isVertexShader	: Boolean) : void
 		{
-			var childs			: Vector.<INode>	= overwriter.args;
-			var components		: Vector.<uint>		= overwriter.components;
-			var numChilds		: uint				= childs.length;
+			var numArguments	: uint = overwriter.numArguments;
 			
 			appendNode(overwriter, 'darkslategray1', 'Overwriter');
 			
-			for (var childId : uint = 0; childId < numChilds; ++childId)
+			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
 			{
-				visit(childs[childId], isVertexShader);
-				appendLink(overwriter, childs[childId], components[childId]);
+				var argument 	: ANode = overwriter.getArgumentAt(argumentId);
+				var component	: uint	= overwriter.getComponentAt(argumentId);
+				
+				visit(argument, isVertexShader);
+				appendLink(overwriter, argument, component);
 			}
 		}
 		
 		override protected function visitExtract(extract		: Extract, 
 												 isVertexShader	: Boolean) : void
 		{
-			visit(extract.child, true);
+			visit(extract.argument, true);
 			
 			appendNode(extract, 'moccasin', 'Extract');
-			appendLink(extract, extract.child, extract.components);
+			appendLink(extract, extract.argument, extract.component);
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 
 													 isVertexShader	: Boolean) : void
 		{
-			visit(interpolate.arg, true);
+			visit(interpolate.argument, true);
 			
 			appendNode(interpolate, 'lemonchiffon', 'Interpolate');
-			appendLink(interpolate, interpolate.arg, interpolate.components);
+			appendLink(interpolate, interpolate.argument, interpolate.component);
 		}
 		
 		override protected function visitAttribute(attribute		: Attribute, 
@@ -159,7 +159,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			appendNode(bindableConstant, 'palegreen1', 'Parameter (' + bindableConstant.size + ')', bindableConstant.bindingName);
 			
-			var subGraph : INode = _shaderGraph.computableConstants[bindableConstant.bindingName] as INode;
+			var subGraph : ANode = _shaderGraph.computableConstants[bindableConstant.bindingName] as ANode;
 			
 			if (subGraph != null)
 			{

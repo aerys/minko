@@ -2,7 +2,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.InstructionFlag;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
@@ -10,9 +10,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	/**
 	 * @private
 	 * @author Romain Gilliotte
-	 * 
 	 */
-	public class Instruction implements INode
+	public class Instruction extends ANode
 	{
 		public static const MOV : uint = 0x00;
 		public static const ADD : uint = 0x01;
@@ -107,49 +106,20 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			FLAGS[MUL_MAT44] = InstructionFlag.AVAILABLE_CPU | InstructionFlag.ASSOCIATIVE;
 		}
 		
-		private var _id				: uint;
+		private var _id : uint;
 		
-		private var _arg1			: INode;
-		private var _arg2			: INode;
+		public function get id()			: uint		{ return _id;		}
+		public function get name()			: String	{ return NAME[_id];	}
 		
-		private var _arg1Components	: uint;
-		private var _arg2Components	: uint;
+		public function get argument1()		: ANode		{ return getArgumentAt(0);	}
+		public function get argument2() 	: ANode 	{ return getArgumentAt(1);	}
+		public function get component1()	: uint		{ return getComponentAt(0);	}
+		public function get component2()	: uint		{ return getComponentAt(1);	}
 		
-		private var _size			: uint;
-		private var _sizeIsValid	: Boolean;
-		
-		private var _hash			: uint;
-		private var _hashIsValid	: Boolean;
-		
-		public function get id() : uint
-		{
-			return _id;
-		}
-		
-		public function get name() : String
-		{
-			return NAME[_id];
-		}
-		
-		public function get arg1() : INode
-		{
-			return _arg1;
-		}
-		
-		public function get arg2() : INode
-		{
-			return _arg2; 
-		}
-		
-		public function get arg1Components() : uint
-		{
-			return _arg1Components;
-		}
-		
-		public function get arg2Components() : uint
-		{
-			return _arg2Components;
-		}
+		public function set argument1(v : ANode) : void { setArgumentAt(0, v);	}
+		public function set argument2(v : ANode) : void { setArgumentAt(1, v);	}
+		public function set component1(v : uint) : void { setComponentAt(0, v);	}
+		public function set component2(v : uint) : void { setComponentAt(1, v);	}
 		
 		public function get isAssociative() : Boolean
 		{
@@ -176,151 +146,91 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return (FLAGS[_id] & InstructionFlag.COMMUTATIVE) != 0;
 		}
 
-		public function get size() : uint
+		public function Instruction(id			: uint,
+									argument1	: ANode,
+									argument2	: ANode = null)
 		{
-			if (!_sizeIsValid)
-			{
-				switch (_id)
-				{
-					case DP3: case DP4:
-						_size = 1;
-						break;
-					
-					case M33: case M34: case NRM: case CRS:
-						_size = 3;
-						break;
-					
-					case TEX: case M44:
-						_size = 4;
-						break;
-						
-					default:
-						// size of _XX_ is 2
-						// size of X_X_ is 3
-						// size of _XYZ is 3
-						
-						_size = Components.getMaxWriteOffset(_arg1Components) - Components.getMinWriteOffset(_arg1Components) + 1;
-						if (!isSingle)
-							_size = Math.max(_size, Components.getMaxWriteOffset(_arg2Components) - Components.getMinWriteOffset(_arg2Components) + 1);
-						
-						break;
-				}
-				
-				_sizeIsValid = true;
-			}
+			_id = id;
 			
-			if (_size > 4)
-				throw new Error();
-			
-			return _size; 
-		}
-		
-		public function get hash() : uint
-		{
-			if (!_hashIsValid)
-			{
-				// commutative operations invert the arguments when computing the hash if arg1.crc > arg2.crc
-				// that way, mul(a, b).hash == mul(b, a).hash
-				var hashLeft  : String = _arg1.hash.toString(16) + '_' + _arg1Components.toString(16);
-				if ((FLAGS[_id] & InstructionFlag.SINGLE) != 0)
-					_hash = CRC32.computeForString(hashLeft);
-					
-				else
-				{
-					var hashRight : String = _arg2.hash.toString(16) + '_' + _arg2Components.toString(16);
-					
-					if ((FLAGS[_id] & InstructionFlag.COMMUTATIVE) != 0 && _arg1.hash > _arg2.hash)
-						_hash = CRC32.computeForString(hashRight + hashLeft);
-					else
-						_hash = CRC32.computeForString(hashLeft + hashRight);
-				}
-				
-				_hashIsValid = true;
-			}
-			
-			return _hash; 
-		}
-		
-		public function set arg1(v : INode) : void
-		{
-			if (v.hash != _arg1.hash)
-				_hashIsValid = false;
-			
-			_arg1 = v;
-		}
-		
-		public function set arg2(v : INode) : void
-		{
-			if (isSingle)
-				throw new Error('arg2 cannot be set, this is a single operation');
-			
-			if (v.hash != _arg2.hash)
-				_hashIsValid = false;
-			
-			_arg2 = v;
-		}
-		
-		public function set arg1Components(v : uint) : void
-		{
-			if (v == Components.____)
-				throw new Error("Component cannot be empty.");
-			
-			/*if (_arg1.size < Components.getMaxReadOffset(v))
-				throw new Error('Component is reading too far.');*/
-			
-			if (v != _arg1Components)
-			{
-				_arg1Components	= v;
-				_hashIsValid	= false;
-				_sizeIsValid	= false;
-			}
-		}
-		
-		public function set arg2Components(v : uint) : void
-		{
-			if (isSingle || _id === TEX)
-				throw new Error('arg2Components cannot be set, this is a single operation');
-			
-			if (v == Components.____)
-				throw new Error("Component cannot be empty.");
-			
-			// cast to int: workaround iOS int VS uint bug 
-			if (int(_arg2.size) < Components.getMaxReadOffset(v))
-				throw new Error('Component is reading too far.');
-			
-			if (v != _arg2Components)
-			{
-				_arg2Components	= v;
-				_hashIsValid	= false;
-				_sizeIsValid	= false;
-			}
-		}
-		
-		public function Instruction(id				: uint,
-									arg1			: INode,
-									arg2			: INode = null)
-		{
-			_sizeIsValid	= false;
-			_hashIsValid	= false;
-			_id				= id;
-			_arg1			= arg1;
-			
-			_arg1Components	= id == MUL_MAT33 || id == MUL_MAT44 ? 
+			var component1 : uint = id == MUL_MAT33 || id == MUL_MAT44 ? 
 				Components.createContinuous(0, 0, 4, 4) :
-				Components.createContinuous(0, 0, _arg1.size, _arg1.size)
+				Components.createContinuous(0, 0, argument1.size, argument1.size)
+			
+			var arguments	: Vector.<ANode>	= new <ANode>[argument1];
+			var components	: Vector.<uint>		= new <uint>[component1];
 			
 			if (!isSingle)
 			{
-				_arg2 = arg2;
+				var component2 : uint;
 				
 				if ((FLAGS[id] & InstructionFlag.SPECIAL_MATRIX) != 0)
-					_arg2Components	= Components.createContinuous(0, 0, 4, 4);
+					component2	= Components.createContinuous(0, 0, 4, 4);
 				else if (id != TEX && id != MUL_MAT33 && id != MUL_MAT44)
-					_arg2Components	= Components.createContinuous(0, 0, _arg2.size, _arg2.size);
+					component2	= Components.createContinuous(0, 0, argument2.size, argument2.size);
+				
+				arguments.push(argument2);
+				components.push(component2);
+			}
+			
+			arguments.fixed = components.fixed = true;
+			
+			super(arguments, components);
+		}
+		
+		override protected function computeHash() : uint
+		{
+			// commutative operations invert the arguments when computing the hash if arg1.crc > arg2.crc
+			// that way, mul(a, b).hash == mul(b, a).hash
+			
+			var hashLeft  : String = argument1.hash.toString(16) + '_' + component1.toString(16);
+			
+			if ((FLAGS[_id] & InstructionFlag.SINGLE) != 0)
+				return CRC32.computeForString(hashLeft);
+			
+			else
+			{
+				var hashRight : String = argument2.hash.toString(16) + '_' + component2.toString(16);
+				
+				if ((FLAGS[_id] & InstructionFlag.COMMUTATIVE) != 0 && argument1.hash > argument2.hash)
+					return CRC32.computeForString(hashRight + hashLeft);
+				else
+					return CRC32.computeForString(hashLeft + hashRight);
 			}
 		}
 		
-		public function toString() : String
+		override protected function computeSize() : uint
+		{
+			switch (_id)
+			{
+				case DP3: case DP4:	return 1;
+				case M33: case M34: case NRM: case CRS: return 3;
+				case TEX: case M44: return 4;
+				
+				default:
+					var nodeSize : uint;
+					nodeSize = Components.getMaxWriteOffset(component1) 
+								- Components.getMinWriteOffset(component1) + 1;
+					
+					if (nodeSize > 4)
+						throw new Error();
+								
+					if (!isSingle)
+						nodeSize = Math.max(nodeSize, 
+							Components.getMaxWriteOffset(component2) 
+							- Components.getMinWriteOffset(component2) + 1
+						);
+					
+					if (nodeSize < 1)
+						throw new Error();
+					
+					if (nodeSize > 4)
+						throw new Error();
+					
+					return nodeSize;
+			}
+		}
+		
+		override public function toString() : String
 		{
 			return name;
 		}
