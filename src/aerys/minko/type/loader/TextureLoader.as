@@ -27,7 +27,8 @@ package aerys.minko.type.loader
 		private var _isComplete			: Boolean;
 		
 		private var _mipmap				: Boolean;
-		private var _textureResource	: TextureResource;
+		
+		protected var _textureResource	: TextureResource;
 		
 		public function get progress() : Signal
 		{

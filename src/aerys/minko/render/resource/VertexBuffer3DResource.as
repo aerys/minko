@@ -49,8 +49,7 @@ package aerys.minko.render.resource
 			_stream.changed.add(vertexStreamChangedHandler);
 		}
 		
-		private function vertexStreamChangedHandler(vertexStream 	: VertexStream,
-													property 		: String) : void
+		private function vertexStreamChangedHandler(vertexStream : VertexStream) : void
 		{
 			_update = true;
 		}

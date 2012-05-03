@@ -2,6 +2,7 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
@@ -16,6 +17,8 @@ package aerys.minko.type.stream
 
 		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
 
+		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>();
+		
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
 
@@ -25,12 +28,14 @@ package aerys.minko.type.stream
 		private var _length				: uint						= 0;
 		
 		private var _invalidMinMax		: Boolean					= true;
-		private var _boundsHaveChanged	: Boolean					= false;
 		private var _maximum			: Vector.<Number>			= null;
 		private var _minimum			: Vector.<Number>			= null;
 		
 		private var _locked				: Boolean					= false;
 
+		private var _boundsHaveChanged	: Boolean					= false;
+		private var _dataHasChanged		: Boolean					= false;
+		
 		private var _changed			: Signal					= new Signal('VertexStream.changed');
 		private var _boundsChanged		: Signal					= new Signal('VertexStream.boundsChanged');
 		
@@ -62,7 +67,7 @@ package aerys.minko.type.stream
 		protected function set data(value : Vector.<Number>) : void
 		{
 			_data = value;
-			_changed.execute(this, null);
+			_changed.execute(this);
 		}
 		
 		public function get locked() : Boolean
@@ -99,13 +104,13 @@ package aerys.minko.type.stream
 			if (data && data.length && data.length % _format.dwordsPerVertex)
 				throw new Error("Incompatible vertex format: the data length does not match.");
 			
-			_data = data ? data.concat() : new Vector.<Number>();
+			_data = data ? data.concat() : new <Number>[];
 			_usage = usage;
 			
 			_changed.add(changedHandler);
-			changedHandler(this, null);
+			changedHandler(this);
 			
-			updateMinMax(true);			
+			updateMinMax(true);
 		}
 		
 		private function updateMinMax(forceReset : Boolean = false) : void
@@ -120,7 +125,7 @@ package aerys.minko.type.stream
 			
 			if (forceReset)
 			{
-				var size		: uint	= format.dwordsPerVertex;
+				var size	: uint	= format.dwordsPerVertex;
 				
 				_minimum = new Vector.<Number>(size, true);
 				_maximum = new Vector.<Number>(size, true);
@@ -169,10 +174,13 @@ package aerys.minko.type.stream
 			_data.splice(index, _format.dwordsPerVertex);
 			
 			if (_locked)
+			{
 				_invalidMinMax = true;
+				_dataHasChanged = true;
+			}
 			else
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				updateMinMax();
 			}
 
@@ -239,7 +247,11 @@ package aerys.minko.type.stream
 			_locked = false;
 			_invalidMinMax = true;
 			
-			_changed.execute(this, null);
+			if (_dataHasChanged)
+			{
+				_dataHasChanged = false;
+				_changed.execute(this);
+			}
 			
 			if (invalidMinMax)
 				updateMinMax();
@@ -274,13 +286,17 @@ package aerys.minko.type.stream
 			
 			if (!_locked)
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				
 				if (_boundsHaveChanged)
 				{
 					_boundsHaveChanged = false;
 					_boundsChanged.execute(this);
 				}
+			}
+			else
+			{
+				_dataHasChanged = true;
 			}
 		}
 		
@@ -321,7 +337,7 @@ package aerys.minko.type.stream
 
 			if (!_locked)
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				
 				if (_boundsHaveChanged)
 				{
@@ -329,8 +345,65 @@ package aerys.minko.type.stream
 					_boundsChanged.execute(this);
 				}
 			}
+			else
+			{
+				_dataHasChanged = true;
+			}
 		}
 
+		/**
+		 * Apply matrix transformation to all vertices
+		 * 
+		 * @param component Vertex component to transform. Must be a 3-component vector
+		 * @param transform Transformation matrix
+		 * @param normalize Normalize vectors after transform
+		 */
+		public function applyTransform(component	: VertexComponent, 
+									   transform	: Matrix4x4,
+									   normalize	: Boolean) : void
+		{
+			if (component.dwords < 3)
+				throw new Error("Not a vector component");
+				
+			var vertexOffset	: int				= _format.getOffsetForComponent(component);
+			var vertexLength	: int				= _format.dwordsPerVertex;
+			var vertices		: Vector.<Number>	= lock();
+			var numVertices		: int				= vertices.length / vertexLength;
+			var tmpLength		: int				= numVertices * 3;
+				
+			TMP_NUMBERS.length = tmpLength;
+					
+			for (var i : int = 0, k : int = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+			{
+				TMP_NUMBERS[i]		= vertices[k];
+				TMP_NUMBERS[i + 1]	= vertices[k + 1];
+				TMP_NUMBERS[i + 2]	= vertices[k + 2];
+			}
+				
+			transform.transformRawVectors(TMP_NUMBERS, TMP_NUMBERS);
+			
+			if (normalize)
+				for (i = 0, k = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+				{
+					var x	: Number	= TMP_NUMBERS[i];
+					var y	: Number 	= TMP_NUMBERS[i + 1];
+					var z	: Number 	= TMP_NUMBERS[i + 2];
+					var m	: Number 	= 1.0 / Math.sqrt(x * x + y * y + z * z);
+					vertices[k]			= x * m;
+					vertices[k + 1]		= y * m;
+					vertices[k + 2]		= z * m;
+				}
+			else
+				for (i = 0, k = vertexOffset; i < tmpLength; i += 3, k += vertexLength)
+				{
+					vertices[k]		= TMP_NUMBERS[i];
+					vertices[k + 1]	= TMP_NUMBERS[i + 1];
+					vertices[k + 2]	= TMP_NUMBERS[i + 2];
+				}
+				
+			unlock();
+		}
+		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
 			if (_locked)
@@ -346,7 +419,7 @@ package aerys.minko.type.stream
 			resource.dispose();
 		}
 
-		private function changedHandler(stream : VertexStream, property : String) : void
+		private function changedHandler(stream : VertexStream) : void
 		{
 			_length = _data.length / _format.dwordsPerVertex;
 		}
@@ -456,11 +529,6 @@ package aerys.minko.type.stream
 					+ "is not set to StreamUsage.WRITE."
 				);
 			}
-			if (stream._locked)
-				throw new Error(
-					"Unable to write in vertex stream: stream data "
-					+ "is locked for bulk update"
-				);
 		}
 
 		public static function concat(streams : Vector.<IVertexStream>, usage : uint) : VertexStream

@@ -96,6 +96,18 @@ package aerys.minko.render.shader.compiler.register
 			return component;
 		}
 		
+		public static function createFromParts(part0 : uint,
+											   part1 : uint = _,
+											   part2 : uint = _,
+											   part3 : uint = _) : uint
+		{
+			if (part0 > _ || part1 > _ || part2 > _ || part3 > _)
+				throw new ArgumentError('Invalid arguments');
+			
+			return part0 | (part1 << 8) | (part2 << 16) | (part3 << 24);
+		}
+										
+		
 		public static function applyCombination(input		: uint,
 												modifier	: uint) : uint
 		{
