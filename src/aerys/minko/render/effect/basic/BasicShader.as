@@ -206,10 +206,11 @@ package aerys.minko.render.effect.basic
 				diffuse = float4(multiply(diffuse.rgb, lightColor), diffuse.a);
 			}
 			
-			if (meshBindings.propertyExists(BasicProperties.TRANSPARENCY_THRESHOLD))
+			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
-				var transparencyThreshold : SFloat = meshBindings.getParameter('transparencyThreshold', 1);
-				kill(subtract(0.5, lessThan(diffuse.w, transparencyThreshold)));
+				var alphaThreshold : SFloat = meshBindings.getParameter('alphaThreshold', 1);
+				
+				kill(subtract(0.5, lessThan(diffuse.w, alphaThreshold)));
 			}
 			
 			return diffuse;
