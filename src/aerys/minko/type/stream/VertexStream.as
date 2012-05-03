@@ -25,12 +25,14 @@ package aerys.minko.type.stream
 		private var _length				: uint						= 0;
 		
 		private var _invalidMinMax		: Boolean					= true;
-		private var _boundsHaveChanged	: Boolean					= false;
 		private var _maximum			: Vector.<Number>			= null;
 		private var _minimum			: Vector.<Number>			= null;
 		
 		private var _locked				: Boolean					= false;
 
+		private var _boundsHaveChanged	: Boolean					= false;
+		private var _dataHasChanged		: Boolean					= false;
+		
 		private var _changed			: Signal					= new Signal('VertexStream.changed');
 		private var _boundsChanged		: Signal					= new Signal('VertexStream.boundsChanged');
 		
@@ -62,7 +64,7 @@ package aerys.minko.type.stream
 		protected function set data(value : Vector.<Number>) : void
 		{
 			_data = value;
-			_changed.execute(this, null);
+			_changed.execute(this);
 		}
 		
 		public function get locked() : Boolean
@@ -99,13 +101,13 @@ package aerys.minko.type.stream
 			if (data && data.length && data.length % _format.dwordsPerVertex)
 				throw new Error("Incompatible vertex format: the data length does not match.");
 			
-			_data = data ? data.concat() : new Vector.<Number>();
+			_data = data ? data.concat() : new <Number>[];
 			_usage = usage;
 			
 			_changed.add(changedHandler);
-			changedHandler(this, null);
+			changedHandler(this);
 			
-			updateMinMax(true);			
+			updateMinMax(true);
 		}
 		
 		private function updateMinMax(forceReset : Boolean = false) : void
@@ -120,7 +122,7 @@ package aerys.minko.type.stream
 			
 			if (forceReset)
 			{
-				var size		: uint	= format.dwordsPerVertex;
+				var size	: uint	= format.dwordsPerVertex;
 				
 				_minimum = new Vector.<Number>(size, true);
 				_maximum = new Vector.<Number>(size, true);
@@ -169,10 +171,13 @@ package aerys.minko.type.stream
 			_data.splice(index, _format.dwordsPerVertex);
 			
 			if (_locked)
+			{
 				_invalidMinMax = true;
+				_dataHasChanged = true;
+			}
 			else
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				updateMinMax();
 			}
 
@@ -239,7 +244,11 @@ package aerys.minko.type.stream
 			_locked = false;
 			_invalidMinMax = true;
 			
-			_changed.execute(this, null);
+			if (_dataHasChanged)
+			{
+				_dataHasChanged = false;
+				_changed.execute(this);
+			}
 			
 			if (invalidMinMax)
 				updateMinMax();
@@ -274,13 +283,17 @@ package aerys.minko.type.stream
 			
 			if (!_locked)
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				
 				if (_boundsHaveChanged)
 				{
 					_boundsHaveChanged = false;
 					_boundsChanged.execute(this);
 				}
+			}
+			else
+			{
+				_dataHasChanged = true;
 			}
 		}
 		
@@ -321,13 +334,17 @@ package aerys.minko.type.stream
 
 			if (!_locked)
 			{
-				_changed.execute(this, null);
+				_changed.execute(this);
 				
 				if (_boundsHaveChanged)
 				{
 					_boundsHaveChanged = false;
 					_boundsChanged.execute(this);
 				}
+			}
+			else
+			{
+				_dataHasChanged = true;
 			}
 		}
 
@@ -346,7 +363,7 @@ package aerys.minko.type.stream
 			resource.dispose();
 		}
 
-		private function changedHandler(stream : VertexStream, property : String) : void
+		private function changedHandler(stream : VertexStream) : void
 		{
 			_length = _data.length / _format.dwordsPerVertex;
 		}
@@ -456,11 +473,6 @@ package aerys.minko.type.stream
 					+ "is not set to StreamUsage.WRITE."
 				);
 			}
-			if (stream._locked)
-				throw new Error(
-					"Unable to write in vertex stream: stream data "
-					+ "is locked for bulk update"
-				);
 		}
 
 		public static function concat(streams : Vector.<IVertexStream>, usage : uint) : VertexStream
