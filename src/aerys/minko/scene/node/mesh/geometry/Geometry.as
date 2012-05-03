@@ -234,9 +234,7 @@ package aerys.minko.scene.node.mesh.geometry
 				{
 					tmpMatrix = TMP_MATRIX;
 					tmpMatrix.copyFrom(transform);
-					tmpMatrix.translationX = 0;
-					tmpMatrix.translationY = 0;
-					tmpMatrix.translationZ = 0;
+					tmpMatrix.setTranslation(0, 0, 0);
 				}
 				
 				if (normalStream)
