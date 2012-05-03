@@ -18,6 +18,21 @@ package aerys.minko.scene.node.mesh.geometry
 		private static const INDEX_LIMIT	: uint = 524270;
 		private static const VERTEX_LIMIT	: uint = 65535;
 		
+		public static function isValid(indexData		: Vector.<uint>,
+									   vertexData		: Vector.<Number>,
+									   dwordsPerVertex	: uint = 3) : Boolean
+		{
+			var numIndices	: uint = indexData.length;
+			var numVertices	: uint = vertexData.length;
+			
+			for (var indexId : uint = 0; indexId < numIndices; ++indexId)
+				if (indexData[indexId] >= numVertices)
+					return false;
+			
+			return true;
+		}
+		
+		
 		/**
 		 * Split vertex and index buffers too big the be rendered.
 		 * The index stream limit is 524270, the vertex stream limit is 65536.
@@ -163,6 +178,9 @@ package aerys.minko.scene.node.mesh.geometry
 			
 			vertexCopy.position = 0;
 			
+			
+			var newLimit : uint = 0;
+			
 			for (var oldVertexId : uint = 0; oldVertexId < numVertices; ++oldVertexId)
 			{
 				var vertexHash	: uint		= CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
@@ -174,11 +192,12 @@ package aerys.minko.scene.node.mesh.geometry
 					newVertexId = newVertexCount++;
 					hashToNewVertexId[vertexHash] = newVertexId;
 					
+					newLimit = (1 + newVertexId) * dwordsPerVertex;
+					
 					if (newVertexId != oldVertexId)
 					{
 						var oldOffset	: uint = oldVertexId * dwordsPerVertex;
 						var newOffset	: uint = newVertexId * dwordsPerVertex;
-						var newLimit	: uint = newOffset + dwordsPerVertex;
 						
 						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
 							vertexData[newOffset] = vertexData[oldOffset];
