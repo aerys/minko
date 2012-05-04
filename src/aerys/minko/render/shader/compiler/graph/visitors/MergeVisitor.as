@@ -29,6 +29,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			super.start();
+			
 			_hashsToNodes = new Dictionary();
 		}
 		

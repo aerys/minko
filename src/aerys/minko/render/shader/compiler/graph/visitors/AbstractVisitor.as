@@ -168,6 +168,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 													  newNode	: ANode,
 													  modifier	: uint) : void
 		{
+			
 			swizzleParents(oldNode, modifier);
 			replaceInParents(oldNode, newNode);
 		}

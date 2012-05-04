@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
+	import aerys.minko.Minko;
 	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -12,6 +13,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.register.Components;
+	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.utils.Dictionary;
 	
@@ -31,6 +33,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			super.start();
+			
 			_computableConstantId	= 0;
 			_isComputable			= new Dictionary();
 		}
@@ -77,9 +81,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (instruction.isSingle)
 			{
 				_isComputable[instruction] = isComputable1;
-				
-				if (_isComputable[instruction])
-					replaceInParents(instruction, createComputableConstant(instruction));
 			}
 			else
 			{
@@ -160,12 +161,18 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				}
 			}
 			// more than one argument is computable in CPU, 
-			// we have to merge them, and shift them back into the overwriter.
+			// we are going to decompose this overwriter into 2 overwriters. One on CPU, one on GPU
 			else
 			{
-				// we are going to decompose this overwriter into 2 overwriters. One on CPU, one on GPU
 				
-				throw new Error('Implement me again, i was broken');
+				Minko.log(DebugLevel.SHADER_WARNING, 'Could not split overwriter. Shader code was not fully optimized');
+				
+				// put everything back to normal
+				numArguments = computableArgs.length;
+				for (argumentId = 0; argumentId < numArguments; ++argumentId)
+					overwriter.addArgumentAt(argumentId, 
+						computableArgs[argumentId], computableComps[argumentId]);
+				
 			}
 		}
 		

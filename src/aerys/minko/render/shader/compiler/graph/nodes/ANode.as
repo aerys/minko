@@ -56,6 +56,12 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			_hashIsValid	= false;
 			_sizeIsValid	= false;
 			_parents		= new Vector.<ANode>();
+			
+			if (arguments.length != components.length)
+				throw new ArgumentError('Invalid arguments, both vector must have the same size.');
+			
+			for each (var argument : ANode in arguments)
+				argument.addParent(this);
 		}
 		
 		public function addParent(node : ANode) : void

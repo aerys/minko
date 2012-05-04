@@ -27,6 +27,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			super.start();
 		}
 
 		override protected function finish() : void
@@ -96,13 +97,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			var numArgs		: uint = overwriter.numArguments;
 			var argumentId	: uint;
-			
-			// remove the whole node if we reduced numArgs to 1
-			if (numArgs == 1)
-			{
-				replaceInParentsAndSwizzle(overwriter, overwriter.getArgumentAt(0), overwriter.getComponentAt(0));
-				return;
-			}
 			
 			// start by visiting sons
 			visitArguments(overwriter, isVertexShader);
@@ -179,6 +173,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					currentWriteIndex++
 				}
 			}
+			
+			value.length = currentWriteIndex;
 			
 			return packedComponents;
 		}

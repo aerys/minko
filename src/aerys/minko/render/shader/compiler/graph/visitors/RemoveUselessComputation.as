@@ -25,6 +25,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function start() : void
 		{
+			super.start();
 		}
 		
 		override protected function finish() : void
@@ -57,7 +58,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var arg1Value : Number = computeArgumentValue(instruction.argument1);
 			var arg2Value : Number = computeArgumentValue(instruction.argument2);
 			
-			switch (instruction.id)
+			trace(arg1Value, arg2Value);
+			
+			switch (instructionId)
 			{
 				case Instruction.ADD:
 					if (arg1Value == 0)
