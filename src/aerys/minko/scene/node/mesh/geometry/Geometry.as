@@ -4,6 +4,7 @@ package aerys.minko.scene.node.mesh.geometry
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IVertexStream;
 	import aerys.minko.type.stream.IndexStream;
@@ -40,16 +41,17 @@ package aerys.minko.scene.node.mesh.geometry
 		use namespace minko_scene;
 		use namespace minko_stream;
 		
-		private static const FORMAT_NORMALS		: VertexFormat	= new VertexFormat(
+		private static const FORMAT_NORMALS		: VertexFormat		= new VertexFormat(
 			VertexComponent.NORMAL
 		);
-		private static const FORMAT_TANGENTS	: VertexFormat	= new VertexFormat(
+		private static const FORMAT_TANGENTS	: VertexFormat		= new VertexFormat(
 			VertexComponent.TANGENT
 		);
-		private static const FORMAT_TN			: VertexFormat	= new VertexFormat(
+		private static const FORMAT_TN			: VertexFormat		= new VertexFormat(
 			VertexComponent.TANGENT,
 			VertexComponent.NORMAL
 		);
+		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
 		
 		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 
@@ -57,6 +59,8 @@ package aerys.minko.scene.node.mesh.geometry
 
 		private var _boundingSphere	: BoundingSphere	= null;
 		private var _boundingBox	: BoundingBox		= null;
+		
+		private var _bulkUpdate		: Boolean			= false;
 		
 		/**
 		 * The number of IVertexStreams objects stored in the geometry. 
@@ -178,6 +182,71 @@ package aerys.minko.scene.node.mesh.geometry
 		private function vertexStreamBoundsChangedHandler(stream	: IVertexStream) : void
 		{
 			updateBoundingVolumes();
+		}
+		
+		/**
+		 * Apply matrix transformation to all vertices
+		 * 
+		 * <p>This method will transform:</p>
+		 * <ul>
+		 * <li>vertex 3D positions (VertexComponent.XYZ)</li>
+		 * <li>vertex normals, if any (VertexComponent.NORMAL)</li>
+		 * <li>vertex tangents, if any (VertexComponent.TANGENT)</li>
+		 * </ul>
+		 * 
+		 * <p>Vertex normals and tangents will be transformed without translation
+		 */
+		public function applyTransform(transform 		: Matrix4x4,
+									   updatePositions	: Boolean	= true,
+									   updateNormals 	: Boolean	= true, 
+									   updateTangents 	: Boolean	= true) : void
+		{
+			_bulkUpdate = true;
+			
+			var numStreams	: int 		= _vertexStreams.length;
+			var updateBV	: Boolean	= false;
+			var tmpMatrix	: Matrix4x4 = null;
+			
+			for (var streamId : int = 0; streamId < numStreams; streamId++)
+			{
+				var stream : IVertexStream = _vertexStreams[streamId];
+				
+				if (updatePositions)
+				{
+					var xyzStream : VertexStream = stream.getStreamByComponent(VertexComponent.XYZ);
+					
+					if (xyzStream)
+					{
+						xyzStream.applyTransform(VertexComponent.XYZ, transform, false);
+						updateBV = true;
+					}
+				}
+				
+				var normalStream  : VertexStream = null;
+				var tangentStream : VertexStream = null;
+				
+				if (updateNormals)
+					normalStream 	= stream.getStreamByComponent(VertexComponent.NORMAL);
+				if (updateTangents)
+					tangentStream 	= stream.getStreamByComponent(VertexComponent.TANGENT);
+					
+				if (!tmpMatrix && (normalStream || tangentStream))
+				{
+					tmpMatrix = TMP_MATRIX;
+					tmpMatrix.copyFrom(transform);
+					tmpMatrix.setTranslation(0, 0, 0);
+				}
+				
+				if (normalStream)
+					normalStream.applyTransform(VertexComponent.NORMAL, tmpMatrix, true);
+				if (tangentStream)
+					tangentStream.applyTransform(VertexComponent.TANGENT, tmpMatrix, true);
+			}
+
+			_bulkUpdate = false;
+			
+			if (updateBV)
+				updateBoundingVolumes();
 		}
 		
 		/**
@@ -484,6 +553,9 @@ package aerys.minko.scene.node.mesh.geometry
 		
 		private function updateBoundingVolumes() : void
 		{
+			if (_bulkUpdate)
+				return;
+				
 			var numStreams	: int		= _vertexStreams.length;
 			var minX		: Number	= 0.;
 			var minY		: Number	= 0.;

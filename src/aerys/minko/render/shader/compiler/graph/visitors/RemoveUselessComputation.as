@@ -58,8 +58,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var arg1Value : Number = computeArgumentValue(instruction.argument1);
 			var arg2Value : Number = computeArgumentValue(instruction.argument2);
 			
-			trace(arg1Value, arg2Value);
-			
 			switch (instructionId)
 			{
 				case Instruction.ADD:
