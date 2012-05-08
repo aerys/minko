@@ -1,9 +1,9 @@
 package aerys.minko.render.resource.texture
 {
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.IResource;
 	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3D;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
 
@@ -22,6 +22,6 @@ package aerys.minko.render.resource.texture
 		
 		function setContentFromATF(atf : ByteArray) : void;
 		
-		function getNativeTexture(context : Context3D) : TextureBase;
+		function getNativeTexture(context : Context3DResource) : TextureBase;
 	}
 }

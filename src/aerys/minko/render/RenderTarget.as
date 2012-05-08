@@ -45,7 +45,7 @@ package aerys.minko.render
 				_resource.setSize(_width, value);
 		}
 		
-		public function get resource() : TextureResource
+		public function get textureResource() : TextureResource
 		{
 			return _resource;
 		}

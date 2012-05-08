@@ -28,6 +28,11 @@ package aerys.minko.render.shader.part
 		
 		public function get backBufferPixel() : SFloat
 		{
+			return sampleBackBuffer(interpolate(vertexUV));
+		}
+		
+		public function sampleBackBuffer(uv : SFloat) : SFloat
+		{
 			var backBuffer	: SFloat	= sceneBindings.getTextureParameter(
 				"backBuffer",
 				SamplerFiltering.LINEAR,
