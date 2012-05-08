@@ -6,12 +6,15 @@ package aerys.minko.scene
 	
 	import avmplus.getQualifiedClassName;
 	
+	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
+	import flash.utils.describeType;
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 	
 	public dynamic class SceneIterator extends Proxy
 	{
+		private static const TYPE_CACHE	: Dictionary		= new Dictionary(true);
 		private static const OPERATORS	: Vector.<String>	= new <String>[
 			"//", "/", "[", "]", "..", ".", "~=", "?=", "=", "@", "*"
 		];
@@ -350,7 +353,7 @@ package aerys.minko.scene
 		
 		private function filterOnValue(propertyName : String, value : Object, isBinding : Boolean) : void
 		{
-			var numNodes	: int		= _selection.length;
+			var numNodes	: int	= _selection.length;
 			
 			for (var i : int = numNodes - 1; i >= 0; --i)
 			{
@@ -367,7 +370,7 @@ package aerys.minko.scene
 			}
 		}
 		
-		private function filterOnController(searchedControllerName : Object) : Object
+		private function filterOnController(controllerName : Object) : Object
 		{
 			var numNodes	: int		= _selection.length;
 			
@@ -382,7 +385,7 @@ package aerys.minko.scene
 					var controllerType : String = getQualifiedClassName(node.getController(controllerId));
 					controllerType = controllerType.substr(controllerType.lastIndexOf(':') + 1);
 					
-					if (controllerType == searchedControllerName)
+					if (controllerType == controllerName)
 					{
 						keepSceneNode = true;
 						break;

@@ -75,7 +75,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			_stack.push(node);
 			
-			if (node is Extract || node is Instruction || node is Interpolate || node is Overwriter)
+			if (node is Extract || node is Instruction || node is Interpolate || node is Overwriter
+				|| node is VariadicExtract)
 				visitTraversable(node, isVertexShader);
 			else
 				visitNonTraversable(node, isVertexShader);

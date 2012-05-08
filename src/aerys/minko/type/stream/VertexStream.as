@@ -15,9 +15,9 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 
-		public static const DEFAULT_FORMAT	: VertexFormat	= VertexFormat.XYZ_UV;
+		public static const DEFAULT_FORMAT	: VertexFormat		= VertexFormat.XYZ_UV;
 
-		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>();
+		private static const TMP_NUMBERS	: Vector.<Number>	= new <Number>[];
 		
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
@@ -411,7 +411,7 @@ package aerys.minko.type.stream
 			if (waitForUpload)
 				_localDispose = true;
 			else
-				_data.length = 0;
+				_data = null;
 		}
 		
 		public function dispose() : void
@@ -505,7 +505,9 @@ package aerys.minko.type.stream
 			
 			// avoid copying data vectors
 			var newVertexStream	 : VertexStream	= new VertexStream(usage, vertexFormat);
+			
 			newVertexStream.data = newVertexStreamData;
+			
 			return newVertexStream;
 		}
 		
@@ -554,7 +556,7 @@ package aerys.minko.type.stream
 											 formatIn		: VertexFormat,
 											 formatOut		: VertexFormat	= null,
 											 usage			: uint			= 0,
-											 functionReader : Dictionary	= null,
+											 readFunctions 	: Dictionary	= null,
 											 dwordSize		: uint			= 4) : VertexStream
 		{
 			formatOut ||= formatIn;
@@ -580,23 +582,23 @@ package aerys.minko.type.stream
 					
 					var reader : Function = null;
 					
-					if (functionReader[componentsOut[componentId]])
-						reader = functionReader[componentsOut[componentId]];
-					else if (functionReader["defaut"])
-						reader = functionReader["defaut"];
+					if (readFunctions[componentsOut[componentId]])
+						reader = readFunctions[componentsOut[componentId]];
+					else if (readFunctions["defaut"])
+						reader = readFunctions["defaut"];
 					else
 						reader = bytes.readFloat;
 					
 					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
-							data[int(dataLength++)] =reader(componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
 						case VertexComponentType.FLOAT_3 :
-							data[int(dataLength++)] = reader(componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
 						case VertexComponentType.FLOAT_2 :
-							data[int(dataLength++)] = reader(componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
 						case VertexComponentType.FLOAT_1 :
-							data[int(dataLength++)] = reader(componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
 							break ;
 					}
 				}

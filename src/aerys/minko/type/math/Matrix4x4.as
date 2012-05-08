@@ -603,15 +603,19 @@ package aerys.minko.type.math
 			d.set(dx, dy, dz, dw);
 		}
 
-		public function lock() : void
+		public function lock() : Matrix4x4
 		{
 			_locked = true;
+			
+			return this;
 		}
 		
-		public function unlock() : void
+		public function unlock() : Matrix4x4
 		{
 			_locked = false;
 			_changed.execute(this, null);
+			
+			return this;
 		}
 		
 		public function compareTo(matrix : Matrix4x4) : Boolean
@@ -626,64 +630,9 @@ package aerys.minko.type.math
 			return true;
 		}
 		
-		public static function multiply(m1 	: Matrix4x4,
-										m2 	: Matrix4x4,
-										out	: Matrix4x4	= null) : Matrix4x4
-		{
-			out ||= FACTORY.create() as Matrix4x4;
-			
-			m1._matrix.copyToMatrix3D(out._matrix);
-			out._matrix.prepend(m2._matrix);
-			
-			// inlined unlock
-			if (!out._locked)
-				out._changed.execute(out, null);
-
-			return out;
-		}
-		
-		public static function copy(source	: Matrix4x4,
-									target 	: Matrix4x4 = null) : Matrix4x4
-		{
-			target ||= FACTORY.create() as Matrix4x4;
-			source._matrix.copyToMatrix3D(target._matrix);
-			
-			if (!target._locked)
-				target._changed.execute(target, null);
-
-			return target;
-		}
-		
-		public static function interpolate(m1 		: Matrix4x4,
-										   m2		: Matrix4x4,
-										   ratio	: Number,
-										   out		: Matrix4x4	= null) : void
-		{
-			out ||= FACTORY.create() as Matrix4x4;
-			
-			m1._matrix.copyToMatrix3D(out._matrix);
-			out._matrix.interpolateTo(m2._matrix, ratio);
-			
-			if (!out._locked)
-				out._changed.execute(out, null);
-		}
-		
-		public static function invert(input		: Matrix4x4,
-							   		  output	: Matrix4x4	= null) : Matrix4x4
-		{
-			output = copy(input, output);
-			output.invert();
-			
-			if (!output._locked)
-				output._changed.execute(output, null);
-			
-			return output;
-		}
-
-		public static function orient(eye		: Vector4,
-									  direction	: Vector4,
-									  up		: Vector4   = null,
-									  out		: Matrix4x4 = null) : Matrix4x4
+		public function orient(eye			: Vector4,
+							   direction	: Vector4,
+							   up			: Vector4   = null) : Matrix4x4
 		{
 			
 			var eye_X		: Number = eye._vector.x;
@@ -762,15 +711,14 @@ package aerys.minko.type.math
 			var	m42			: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
 			var	m43			: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
 			
-			out ||= Matrix4x4(FACTORY.create());
-			out.initialize(
+			initialize(
 				x_axis_X,	y_axis_X,	z_axis_X,	0.,
 				x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
 				x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
 				m41,		m42,		m43,		1.
 			);
 			
-			return out;
+			return this;
 		}
 		
 		/**
@@ -790,77 +738,66 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public static function lookAt(eye		: Vector4,
-									  lookAt 	: Vector4,
-									  up		: Vector4	= null,
-									  out		: Matrix4x4 = null) : Matrix4x4
+		public function lookAt(eye		: Vector4,
+							   lookAt 	: Vector4,
+							   up		: Vector4	= null) : Matrix4x4
 		{
 			Vector4.subtract(lookAt, eye, TMP_VECTOR4);
 			
-			return orient(eye, TMP_VECTOR4, up, out);
+			return orient(eye, TMP_VECTOR4, up);
 		}
 
-		public static function perspectiveFoV(fov	: Number,
-											  ratio	: Number,
-											  zNear	: Number,
-											  zFar 	: Number,
-											  out	: Matrix4x4 = null) : Matrix4x4
+		public function perspectiveFoV(fov		: Number,
+									   ratio	: Number,
+									   zNear	: Number,
+									   zFar 	: Number) : Matrix4x4
 		{
-			out ||= FACTORY.create() as Matrix4x4;
-			
 			var fd : Number = 1. / Math.tan(fov * 0.5);
 			
-			out.initialize(
+			initialize(
 				fd / ratio,	0.,								0.,		0.,
 				0.,			fd,								0.,		0.,
 				0.,			0.,			 zFar / (zFar - zNear),		1.,
 				0.,			0.,	-zNear * zFar / (zFar - zNear),		0.
 			);
 			
-			return out;
+			return this;
 		}
 
-		public static function ortho(w 		: Number,
-									 h		: Number,
-									 zNear	: Number,
-									 zFar	: Number,
-									 out	: Matrix4x4 = null) : Matrix4x4
+		public function ortho(w 	: Number,
+							  h		: Number,
+							  zNear	: Number,
+							  zFar	: Number) : Matrix4x4
 		{
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(
+			initialize(
 				2. / w,	0.,		0.,						0.,
 				0.,		2. / h,	0.,						0.,
 				0.,		0.,		1. / (zFar - zNear),	0.,
 				0.,		0.,		zNear / (zNear - zFar),	1.
 			);
 
-			return out;
+			return this;
 		}
 
-		public static function orthoOffCenter(l		: Number,
-											  r		: Number,
-											  b		: Number,
-											  t		: Number,
-											  zNear	: Number,
-											  zFar	: Number,
-											  out	: Matrix4x4 = null) : Matrix4x4
+		public function orthoOffCenter(l		: Number,
+									   r		: Number,
+									   b		: Number,
+									   t		: Number,
+									   zNear	: Number,
+									   zFar		: Number) : Matrix4x4
 		{
-			out ||= FACTORY.create() as Matrix4x4;
-			out.initialize(
+			initialize(
 				2. / (r - l),		0.,					0.,						0.,
 				0.,					2. / (t - b),		0.,						0.,
 				0.,					0.,					1. / (zFar - zNear),	0.,
 				(l + r) / (l - r),	(t + b) / (b - t),	zNear / (zNear - zFar),	1.
 			);
 
-			return out;
+			return this;
 		}
 		
-		public static function fromQuaternion(quaternion	: Vector4, 
-											  out			: Matrix4x4 = null) : Matrix4x4
+		public function fromQuaternion(quaternion : Vector4) : Matrix4x4
 		{
-			out ||= FACTORY.create() as Matrix4x4;
-			
 			var x : Number = quaternion.x;
 			var y : Number = quaternion.y;
 			var z : Number = quaternion.z;
@@ -876,22 +813,19 @@ package aerys.minko.type.math
 			var zz : Number = z * z;
 			var ww : Number = w * w;
 
-			out.initialize(
+			initialize(
 				xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
 				xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
 				xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
 				0.,					0.,					0.,					1.
 			);
 
-			return out;
+			return this;
 		}
 		
-		public static function fromDualQuaternion(dQn : Vector4, 
-												  dQd : Vector4, 
-												  out : Matrix4x4 = null) : Matrix4x4
+		public function fromDualQuaternion(dQn : Vector4, 
+										   dQd : Vector4) : Matrix4x4
 		{
-			out ||= FACTORY.create() as Matrix4x4;
-			
 			var len2Inv	: Number = 1 / (dQn.w * dQn.w + dQn.x * dQn.x + dQn.y * dQn.y + dQn.z * dQn.z);
 
 			var w		: Number = dQn.w;
@@ -904,7 +838,7 @@ package aerys.minko.type.math
 			var t2		: Number = dQd.y;
 			var t3		: Number = dQd.z;
 
-			out.initialize(
+			initialize(
 				len2Inv * (w * w + x * x - y * y - z * z),
 				len2Inv * (2 * x * y + 2 * w * z),
 				len2Inv * (2 * x * z - 2 * w * y),
@@ -926,14 +860,7 @@ package aerys.minko.type.math
 				1
 			);
 
-			return out;
-		}
-
-		public static function fromRawData(data			: Vector.<Number>,
-										   offset		: int		= 0,
-										   transposed	: Boolean	= false) : Matrix4x4
-		{
-			return (FACTORY.create() as Matrix4x4).setRawData(data, offset, transposed);
+			return this;
 		}
 	}
 }
