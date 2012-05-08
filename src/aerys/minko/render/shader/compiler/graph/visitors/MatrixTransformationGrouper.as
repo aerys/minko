@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.binding.EvalExp;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -25,7 +25,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		public function MatrixTransformationGrouper()
 		{
-			super(true);
 		}
 		
 		override protected function start() : void
@@ -39,10 +38,20 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
+		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		{
+			if (node is Instruction)
+				visitInstruction(Instruction(node), isVertexShader);
+			else if (node is Interpolate)
+				visitArguments(node, true);
+			else
+				visitArguments(node, isVertexShader);
+		}
+		
 		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
 		{
-			var currentArg	: INode = instruction;
-			var matrices	: INode = null;
+			var currentArg	: ANode = instruction;
+			var matrices	: ANode = null;
 			var numMerged	: uint	= 0;
 			
 			if (instruction.id == Instruction.M44)
@@ -50,8 +59,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				{
 					var curM44 : Instruction = Instruction(currentArg);
 					
-					matrices	= matrices == null ? curM44.arg2 : new Instruction(Instruction.MUL_MAT44, matrices, curM44.arg2);
-					currentArg	= Instruction(currentArg).arg1;
+					matrices	= matrices == null ? curM44.argument2 : new Instruction(Instruction.MUL_MAT44, matrices, curM44.argument2);
+					currentArg	= Instruction(currentArg).argument1;
 					++numMerged;
 				}
 			
@@ -60,8 +69,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				{
 					var curM33 : Instruction = Instruction(currentArg);
 					
-					matrices	= matrices == null ? curM33.arg2 : new Instruction(Instruction.MUL_MAT33, matrices, curM33.arg2);
-					currentArg	= Instruction(currentArg).arg1;
+					matrices	= matrices == null ? curM33.argument2 : new Instruction(Instruction.MUL_MAT33, matrices, curM33.argument2);
+					currentArg	= Instruction(currentArg).argument1;
 					++numMerged;
 				}
 			
@@ -72,53 +81,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				
 				var evalExp			: EvalExp			= new EvalExp(matrices);
 				var bindedConstant	: BindableConstant	= new BindableConstant(constantName, 16);
-				instruction.arg1 = currentArg;
-				instruction.arg2 = bindedConstant;
+				instruction.argument1 = currentArg;
+				instruction.argument2 = bindedConstant;
 			}
 		}
 		
-		override protected function visitOverwriter(overwriter : Overwriter, isVertexShader : Boolean) : void
-		{
-			for each (var arg : INode in overwriter.args)
-				visit(arg, isVertexShader);
-		}
-		
-		override protected function visitInterpolate(interpolate : Interpolate, isVertexShader : Boolean) : void
-		{
-			visit(interpolate.arg, isVertexShader);
-		}
-		
-		override protected function visitVariadicExtract(variadicExtract : VariadicExtract, isVertexShader : Boolean) : void
-		{
-			if (!isVertexShader)
-				throw new Error('Indirect adressing is only available on the vertex shader.');
-			
-			visit(variadicExtract.constant, true);
-			visit(variadicExtract.index, true);
-		}
-		
-		override protected function visitAttribute(attribute : Attribute, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableConstant(bindableConstant : BindableConstant, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler : BindableSampler, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitConstant(constant : Constant, isVertexShader : Boolean) : void
-		{
-		}
-		
-		override protected function visitExtract(extract : Extract, isVertexShader : Boolean) : void
-		{
-			throw new Error('No extract nodes should be reachable at this point of compilation');
-		}
-		
-		override protected function visitSampler(sampler : Sampler, isVertexShader : Boolean) : void
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
 		{
 		}
 	}

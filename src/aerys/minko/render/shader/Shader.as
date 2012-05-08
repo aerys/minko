@@ -6,7 +6,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
@@ -37,7 +37,7 @@ package aerys.minko.render.shader
 		
 		minko_shader var _meshBindings		: ShaderDataBindings			= null;
 		minko_shader var _sceneBindings		: ShaderDataBindings			= null;
-		minko_shader var _kills				: Vector.<INode>				= new <INode>[];
+		minko_shader var _kills				: Vector.<ANode>				= new <ANode>[];
 		
 		private var _name					: String						= null;
 		private var _baseConfig				: ShaderSettings				= new ShaderSettings(null);
@@ -254,8 +254,8 @@ package aerys.minko.render.shader
 			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
 			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
-			var vertexPosition	: INode			= getVertexPosition()._node;
-			var pixelColor		: INode			= getPixelColor()._node;
+			var vertexPosition	: ANode			= getVertexPosition()._node;
+			var pixelColor		: ANode			= getPixelColor()._node;
 			
 			Compiler.load(new ShaderGraph(vertexPosition, pixelColor, _kills), 0xffffff);
 			

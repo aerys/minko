@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.Evaluator;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -23,11 +23,11 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	{
 		public function ResolveConstantComputationVisitor()
 		{
-			super(false);
 		}
 		
 		override protected function start() : void
 		{
+			super.start();
 		}
 
 		override protected function finish() : void
@@ -36,10 +36,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitInterpolate(interpolate:Interpolate, isVertexShader:Boolean):void
 		{
-			visit(interpolate.arg, true);
+			visit(interpolate.argument, true);
 			
-			if (interpolate.arg is Constant)
-				replaceInParentAndSwizzle(interpolate, interpolate.arg, interpolate.components);
+			if (interpolate.argument is Constant)
+				replaceInParentsAndSwizzle(interpolate, interpolate.argument, interpolate.component);
 		}
 		
 		override protected function visitVariadicExtract(variadicExtract:VariadicExtract, isVertexShader:Boolean):void
@@ -47,8 +47,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (!isVertexShader)
 				throw new Error('Indirect addressing can only be done in the vertex shader.');
 			
-			visit(variadicExtract.constant, true); // useless
-			visit(variadicExtract.index, true);
+			visitArguments(variadicExtract, true);
 			
 			if (variadicExtract.index is Constant && variadicExtract.constant is Constant)
 			{
@@ -60,20 +59,17 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					variadicExtract.isMatrix
 				);
 				
-				replaceInParent(variadicExtract, new Constant(result));
+				replaceInParents(variadicExtract, new Constant(result));
 			}
 		}
 		
 		override protected function visitInstruction(instruction:Instruction, isVertexShader:Boolean):void
 		{
-			var isSingle : Boolean = instruction.isSingle;
+			visitArguments(instruction, isVertexShader);
 			
-			visit(instruction.arg1, isVertexShader);
-			if (!isSingle)
-				visit(instruction.arg2, isVertexShader);
-			
-			var arg1AsConstant		: Constant = instruction.arg1 as Constant;
-			var arg2AsConstant		: Constant = instruction.arg2 as Constant;
+			var isSingle			: Boolean	= instruction.isSingle;
+			var arg1AsConstant		: Constant	= instruction.argument1 as Constant;
+			var arg2AsConstant		: Constant	= !instruction.isSingle ? instruction.argument2 as Constant : null;
 			
 			var result				: Vector.<Number> = null;
 			var orderedConstant1	: Vector.<Number>;
@@ -81,47 +77,34 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			if (isSingle && arg1AsConstant != null)
 			{
-				orderedConstant1	= Evaluator.evaluateComponents(instruction.arg1Components, arg1AsConstant.value);
+				orderedConstant1	= Evaluator.evaluateComponents(instruction.component1, arg1AsConstant.value);
 				result				= Evaluator.EVALUATION_FUNCTIONS[instruction.id](orderedConstant1);
 				
-				replaceInParent(instruction, new Constant(result));
-//				forgetVisiting(instruction, isVertexShader);
+				replaceInParents(instruction, new Constant(result));
 			}
 			else if (!isSingle && arg1AsConstant != null && arg2AsConstant != null)
 			{
-				orderedConstant1	= Evaluator.evaluateComponents(instruction.arg1Components, arg1AsConstant.value);
-				orderedConstant2	= Evaluator.evaluateComponents(instruction.arg2Components, arg2AsConstant.value);
+				orderedConstant1	= Evaluator.evaluateComponents(instruction.component1, arg1AsConstant.value);
+				orderedConstant2	= Evaluator.evaluateComponents(instruction.component2, arg2AsConstant.value);
 				result				= Evaluator.EVALUATION_FUNCTIONS[instruction.id](orderedConstant1, orderedConstant2);
 				
-				replaceInParent(instruction, new Constant(result));
-//				forgetVisiting(instruction, isVertexShader);
+				replaceInParents(instruction, new Constant(result));
 			}
 		}
 		
 		override protected function visitOverwriter(overwriter:Overwriter, isVertexShader:Boolean):void
 		{
 			
-			var args		: Vector.<INode> = overwriter.args;
-			var numArgs		: uint			 = args.length;
-			var components	: Vector.<uint>	 = overwriter.components;
-			var argId		: uint;
-			
-			// remove the whole node if we reduced numArgs to 1
-			if (numArgs == 1)
-			{
-				replaceInParentAndSwizzle(overwriter, args[0], components[0]);
-				//				forgetVisiting(overwriter, isVertexShader);
-				return;
-			}
+			var numArgs		: uint = overwriter.numArguments;
+			var argumentId	: uint;
 			
 			// start by visiting sons
-			for (argId = 0; argId < numArgs; ++argId)
-				visit(args[argId], isVertexShader);
+			visitArguments(overwriter, isVertexShader);
 			
 			// find how many constants there are at the beginning of this overwriter.
 			var argLimit : uint = 0;
 			
-			while (argLimit < numArgs && args[argLimit] is Constant)
+			while (argLimit < numArgs && overwriter.getArgumentAt(argLimit) is Constant)
 				++argLimit;
 			
 			// if there are not at least 2 constants, we are done.
@@ -129,84 +112,74 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				return;
 			
 			// pack constant arguments into one of size 4
-			var packableArgs		: Vector.<INode>	= args.splice(0, argLimit);
-			var packableComponents	: Vector.<uint>		= components.splice(0, argLimit);
 			numArgs -= argLimit;
 			
-			var finalConstantData : Vector.<Number> = new Vector.<Number>();
-			finalConstantData[0] = NaN;
-			finalConstantData[1] = NaN;
-			finalConstantData[2] = NaN;
-			finalConstantData[3] = NaN;
+			var constantData : Vector.<Number> = new <Number>[NaN, NaN, NaN, NaN];
 			
-			for (argId = 0; argId < argLimit; ++argId)
+			for (argumentId = 0; argumentId < argLimit; ++argumentId)
 			{
-				var constant	: Constant	= Constant(packableArgs[argId]);
-				var component	: uint		= packableComponents[argId];
+				var constValue	: Vector.<Number>	= Constant(overwriter.getArgumentAt(argumentId)).value;
+				var component	: uint				= overwriter.getComponentAt(argumentId);
 				
 				for (var writeIndex : uint = 0; writeIndex < 4; ++writeIndex)
 				{
 					var readIndex : uint = Components.getReadAtIndex(writeIndex, component);
 					if (readIndex != 4)
-						finalConstantData[writeIndex] = constant.value[readIndex];
+						constantData[writeIndex] = constValue[readIndex];
 				}
 			}
 			
-			// pack the size 4 constant argument into the smallest possible value
-			// (don't manage duplicates: the constant compressor will do it).
-			var finalComponents			: uint = 0;
-			var currentWriteIndex		: uint = 0;
-			var realFinalConstantData	: Vector.<Number> = new Vector.<Number>();
-			for (writeIndex = 0; writeIndex < 4; ++writeIndex)
-			{
-				if (isNaN(finalConstantData[writeIndex]))
-				{
-					finalComponents |= 4 << (8 * writeIndex);
-				}
-				else
-				{
-					finalComponents |= (currentWriteIndex++) << (8 * writeIndex);
-					realFinalConstantData.push(finalConstantData[writeIndex]);
-				}
-			}
+			// pack it
+			var packedComponents : uint = packConstantWithHoles(constantData);
 			
-			// unshift the constant argument and component in the overwriter
-			args.unshift(new Constant(realFinalConstantData));
-			components.unshift(finalComponents);
+			// replace all constants arguments, by the new one we juste created
+			for (argumentId = 0; argumentId < argLimit; ++argumentId)
+				overwriter.removeArgumentAt(0);
+			overwriter.addArgumentAt(0, new Constant(constantData), packedComponents);
+			
 			++numArgs;
 			
 			// remove the whole node if we reduced numArgs to 1
 			if (numArgs == 1)
+				replaceInParentsAndSwizzle(overwriter, overwriter.getArgumentAt(0), overwriter.getComponentAt(0));
+		}
+		
+		/**
+		 * Pack a contant with some holes, and generate a valid swizzle to read from it.
+		 * The modification is done in place.
+		 * 
+		 * For example:
+		 * 		[0, NaN, 4, 3] => ([0, 4, 3], X_YZ)
+		 * 		[0, NaN, 4, NaN] => ([0, 4, 3], X_Y_)
+		 * 
+		 * @param value The constant to pack
+		 * @return 
+		 */		
+		private function packConstantWithHoles(value : Vector.<Number>) : uint
+		{
+			var packedComponents	: uint = 0;
+			var currentWriteIndex	: uint = 0;
+			
+			for (var writeIndex : uint = 0; writeIndex < 4; ++writeIndex)
 			{
-				replaceInParentAndSwizzle(overwriter, args[0], components[0]);
-//				forgetVisiting(overwriter, isVertexShader);
+				if (isNaN(value[writeIndex]))
+				{
+					packedComponents |= 4 << (8 * writeIndex);
+				}
+				else
+				{
+					packedComponents |= currentWriteIndex << (8 * writeIndex);
+					value[currentWriteIndex] = value[writeIndex];
+					currentWriteIndex++
+				}
 			}
 			
-			// tell the overwriter it has been updated
-			overwriter.invalidateHashAndSize();
+			value.length = currentWriteIndex;
+			
+			return packedComponents;
 		}
 		
-		override protected function visitAttribute(attribute:Attribute, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitConstant(constant:Constant, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitBindableConstant(bindableConstant:BindableConstant, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitExtract(extract:Extract, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitSampler(sampler:Sampler, isVertexShader:Boolean):void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler:BindableSampler, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
 		{
 		}
 		

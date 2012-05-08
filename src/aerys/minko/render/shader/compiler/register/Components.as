@@ -72,8 +72,11 @@ package aerys.minko.render.shader.compiler.register
 												writeSize	: uint,
 												readSize	: uint) : uint
 		{
-			if (readOffset + readSize > 4 || writeOffset + writeSize > 4)
-				throw new Error('Are you sure?');
+			if (readOffset + readSize > 4)
+				throw new Error('Invalid components: you are reading too far');
+				
+			if (writeOffset + writeSize > 4)
+				throw new Error('Invalid components: you are writing too far');
 			
 			var component	: uint;
 			var i			: uint;
@@ -107,7 +110,6 @@ package aerys.minko.render.shader.compiler.register
 			return part0 | (part1 << 8) | (part2 << 16) | (part3 << 24);
 		}
 										
-		
 		public static function applyCombination(input		: uint,
 												modifier	: uint) : uint
 		{

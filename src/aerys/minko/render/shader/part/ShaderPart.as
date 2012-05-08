@@ -5,7 +5,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderDataBindings;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
@@ -266,12 +266,12 @@ package aerys.minko.render.shader.part
 		{
 			var currentOffset	: uint = 0;
 			
-			var args			: Vector.<INode>	= new Vector.<INode>();
+			var args			: Vector.<ANode>	= new Vector.<ANode>();
 			var components		: Vector.<uint>		= new Vector.<uint>();
 			
 			for each (var value : Object in values)
 			{
-				var node		: INode	= getNode(value);
+				var node		: ANode	= getNode(value);
 				var nodeSize	: uint	= node.size;
 				
 				if (currentOffset + nodeSize > size)
@@ -299,7 +299,7 @@ package aerys.minko.render.shader.part
 
 		protected final function float(x : Object) : SFloat
 		{
-			var node : INode = getNode(x);
+			var node : ANode = getNode(x);
 			if (node.size == 1)
 				return new SFloat(node);
 			else
@@ -563,7 +563,7 @@ package aerys.minko.render.shader.part
 
 		protected final function multiply3x4(a : Object, b : Object) : SFloat
 		{
-			var aNode : INode = getNode(a);
+			var aNode : ANode = getNode(a);
 			
 			if (aNode.size < 4)
 				throw new Error("The argument 'a' should have a size of 4.");
@@ -599,7 +599,7 @@ package aerys.minko.render.shader.part
 			return divide(sin(angle), cos(angle));
 		}
 		
-		protected final function acos(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function acos(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			var roughtGuess	: SFloat = multiply(Math.PI / 2, subtract(1, angle));
 			
@@ -615,12 +615,12 @@ package aerys.minko.render.shader.part
 			return roughtGuess;
 		}
 		
-		protected final function asin(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function asin(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			return subtract(Math.PI / 2, acos(angle, numIterations));
 		}
 		
-		protected final function atan(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function atan(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			return asin(multiply(angle, rsqrt(add(1, multiply(angle, angle)))), numIterations);
 		}
@@ -695,7 +695,7 @@ package aerys.minko.render.shader.part
 
 		protected final function length(vector : Object) : SFloat
 		{
-			var v : INode = getNode(vector);
+			var v : ANode = getNode(vector);
 
 			if (v.size == 2)
 			{
@@ -795,8 +795,8 @@ package aerys.minko.render.shader.part
 												   constant : Object,
 												   isMatrix	: Boolean	= false) : SFloat
 		{
-			var c	: INode	= getNode(constant);
-			var i	: INode	= getNode(index);
+			var c	: ANode	= getNode(constant);
+			var i	: ANode	= getNode(index);
 			
 			if (!(c is BindableConstant || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
@@ -804,10 +804,10 @@ package aerys.minko.render.shader.part
 			return new SFloat(new VariadicExtract(i, c, isMatrix));
 		}
 		
-		private function getNode(value : Object) : INode
+		private function getNode(value : Object) : ANode
 		{
-			if (value is INode)
-				return value as INode;
+			if (value is ANode)
+				return value as ANode;
 			
 			if (value is SFloat)
 				return (value as SFloat)._node;

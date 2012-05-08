@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -21,86 +21,37 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	{
 		public function CopyInserterVisitor()
 		{
-			super(true);
 		}
 		
 		override protected function start() : void
 		{
+			super.start();
 		}
 		
 		override protected function finish() : void
 		{
 		}
 		
-		override protected function visitInstruction(instruction	: Instruction,
-													 isVertexShader	: Boolean) : void
+		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
 		{
-			visit(instruction.arg1, isVertexShader);
-			if (!instruction.isSingle)
-				visit(instruction.arg2, isVertexShader);
+			visitArguments(node, true);
 			
-			if (isConstant(instruction.arg1) && (instruction.isSingle || isConstant(instruction.arg2)))
-				instruction.arg1 = new Instruction(Instruction.MOV, instruction.arg1);
+			if (node is Instruction)
+			{
+				var instruction : Instruction = Instruction(node);
+				
+				if (isConstant(instruction.argument1) 
+					&& (instruction.isSingle || isConstant(instruction.argument2)))
+					instruction.argument1 = new Instruction(Instruction.MOV, instruction.argument1);
+			}
 		}
 		
-		override protected function visitInterpolate(interpolate	: Interpolate,
-													 isVertexShader	: Boolean) : void
-		{
-			visit(interpolate.arg, true);
-		}
-		
-		override protected function visitOverwriter(overwriter		: Overwriter,
-													isVertexShader	: Boolean) : void
-		{
-			var args	: Vector.<INode>	= overwriter.args;
-			var numArgs : uint				= args.length;
-			
-			for (var argId : uint = 0; argId < numArgs; ++argId)
-				visit(args[argId], isVertexShader);
-		}
-		
-		override protected function visitVariadicExtract(variadicExtract	: VariadicExtract, 
-														 isVertexShader		: Boolean) : void
-		{
-			if (!isVertexShader)
-				throw new Error('Variadic extract are not supported in the fragment shader.');
-			
-			visit(variadicExtract.index, isVertexShader);
-			visit(variadicExtract.constant, isVertexShader);
-		}
-		
-		override protected function visitAttribute(attribute		: Attribute,
-												   isVertexShader	: Boolean) : void
+		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
 		{
 		}
 		
-		override protected function visitConstant(constant			: Constant,
-												  isVertexShader	: Boolean) : void
-		{
-		}
 		
-		override protected function visitBindableConstant(parameter		: BindableConstant,
-												   isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitSampler(sampler		: Sampler,
-												 isVertexShader	: Boolean) : void
-		{
-		}
-		
-		override protected function visitBindableSampler(bindableSampler	: BindableSampler,
-														 isVertexShader		: Boolean) : void
-		{
-		}
-		
-		override protected function visitExtract(extract		: Extract,
-												 isVertexShader	: Boolean) : void
-		{
-			throw new Error('Extracts cannot be found at this stage of compilation.');
-		}
-		
-		private function isConstant(node : INode) : Boolean
+		private function isConstant(node : ANode) : Boolean
 		{
 			return node is Constant || node is BindableConstant || node is VariadicExtract;
 		}

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -62,7 +62,7 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_shader;
 		
-		minko_shader var _node	: INode	= null;
+		minko_shader var _node	: ANode	= null;
 		
 		public function SFloat(value : Object)
 		{
@@ -88,7 +88,7 @@ package aerys.minko.render.shader
 
 		public final function modulo(base : Object) : SFloat
 		{
-			var baseNode : INode = getNode(base);
+			var baseNode : ANode = getNode(base);
 			
 			return new SFloat(
 				new Instruction(Instruction.MUL, 
@@ -188,10 +188,10 @@ package aerys.minko.render.shader
 			throw new Error('implement me, it should be easy with an overwriter');
 		}
 
-		private function getNode(value : Object) : INode
+		private function getNode(value : Object) : ANode
 		{
-			if (value is INode)
-				return value as INode;
+			if (value is ANode)
+				return value as ANode;
 
 			if (value is SFloat)
 				return (value as SFloat)._node;

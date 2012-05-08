@@ -54,17 +54,22 @@ package aerys.minko.render.shader.part.coordinates
 			var phi		: SFloat;
 			var theta	: SFloat;
 			
-			phi = divide(z, r);
-			theta = divide(x, sqrt(dotProduct2(xy, xy)));
+			phi		= divide(z, r);
+			theta	= divide(x, sqrt(dotProduct2(xy, xy)));
 			
 			// group phi and theta to compute acos, as it is an expensive operation
-			var tmpFloat2 : SFloat = float2(phi, theta);
-			tmpFloat2 = acos(tmpFloat2);
+			var tmpFloat2 : SFloat = acos(float2(phi, theta), 0);
 			
-			phi = tmpFloat2.x;
-			theta = tmpFloat2.y;
+			phi			= tmpFloat2.x;
+			theta		= tmpFloat2.y;
 			
-			theta = add(multiply(ySup0, theta), multiply(subtract(1, ySup0), subtract(2 * Math.PI, theta)));
+			theta = add(
+				multiply(ySup0, theta), 
+				multiply(
+					subtract(1, ySup0), 
+					subtract(2 * Math.PI, theta)
+				)
+			);
 			
 			return float3(r, phi, theta);
 		}

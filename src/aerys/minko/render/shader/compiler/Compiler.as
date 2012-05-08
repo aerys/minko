@@ -63,23 +63,27 @@ package aerys.minko.render.shader.compiler
 									flags		: uint) : void
 		{
 			// execute consecutive visitors to optimize the shader graph.
-			REMOVE_EXTRACT			.process(shaderGraph);
 			
-			MERGER					.process(shaderGraph);
-			REMOVE_USELESS			.process(shaderGraph);
-			OVERWRITER_CLEANER		.process(shaderGraph);
+			REMOVE_EXTRACT			.process(shaderGraph);	// remove all extract nodes
+			MERGER					.process(shaderGraph);	// merge duplicate nodes
+			OVERWRITER_CLEANER		.process(shaderGraph);	// remove nested overwriters
 			
-			RESOLVE_CONSTANT		.process(shaderGraph);
-			RESOLVE_PARAMETRIZED	.process(shaderGraph);
-			COPY_INSERTER			.process(shaderGraph);
+			RESOLVE_CONSTANT		.process(shaderGraph);	// resolve constant computation
+			REMOVE_USELESS			.process(shaderGraph);	// remove some useless operations (add 0, mul 0, mul 1...)
+			RESOLVE_PARAMETRIZED	.process(shaderGraph);	// replace computations that depend on parameters by evalexp parameters
+//			MATRIX_TRANSFORMATION	.process(shaderGraph);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
+			COPY_INSERTER			.process(shaderGraph);	// ensure there are no operations between constants
 			
-//			WRITE_DOT.process(shaderGraph);
-//			trace(WRITE_DOT.result);
-//			MATRIX_TRANSFORMATION	.process(shaderGraph);
+			// log shader in dotty format
+			if (Minko.debugLevel & DebugLevel.SHADER_DOTTY)
+			{
+				WRITE_DOT.process(shaderGraph);
+				Minko.log(DebugLevel.SHADER_DOTTY, WRITE_DOT.result);
+			}
 			
 			// generate final program
-			INTERPOLATE_FINDER.process(shaderGraph);
-			ALLOCATOR.process(shaderGraph);
+			INTERPOLATE_FINDER.process(shaderGraph);		// find interpolate nodes. We may skip that in the future.
+			ALLOCATOR.process(shaderGraph);					// allocate memory and generate final code.
 			
 			// retrieve program
 			_vertexSequence		= ALLOCATOR.vertexSequence;
