@@ -17,23 +17,39 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		public function SplitterVisitor()
 		{
+		}
+		
+		override protected function start():void
+		{
+			super.start();
+			
 			_vertexNode	  = new Dictionary();
 			_fragmentNode = new Dictionary();
 		}
 		
 		override protected function finish() : void
 		{
+			super.finish();
+			
 			// all nodes in the fragment shader that are present in the vertex shader are to be replaced.
+			var vertexDuplicates : Dictionary = cloneDuplicatedNodes();
+			generateClonedSubGraphFromUnlikedClones(vertexDuplicates);
+			connectClonedSubGraphsInFragmentShader(vertexDuplicates);
+			
+			_vertexNode	  = null;
+			_fragmentNode = null;
+		}
+		
+		private function cloneDuplicatedNodes() : Dictionary
+		{
 			var vertexDuplicates : Dictionary = new Dictionary();
-			var node			 : Object;
 			
 			// first we clone every node present in both shaders
-			for (node in _vertexNode)
+			for (var node : Object in _vertexNode)
 				if (_fragmentNode[node])
 					vertexDuplicates[node] = node.clone();
 			
-			generateClonedSubGraphFromUnlikedClones(vertexDuplicates);
-			connectClonedSubGraphsInFragmentShader(vertexDuplicates);
+			return vertexDuplicates;
 		}
 		
 		private function generateClonedSubGraphFromUnlikedClones(vertexDuplicates : Dictionary) : void
@@ -80,6 +96,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visit(node : ANode, isVertexShader : Boolean) : void
 		{
+			if ((isVertexShader && _vertexNode[node]) || (!isVertexShader && _fragmentNode[node]))
+				return;
+			
 			if (isVertexShader)
 				_vertexNode[node] = true;
 			else

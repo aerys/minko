@@ -34,10 +34,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_computableMatrixId = 0;
 		}
 		
-		override protected function finish() : void
-		{
-		}
-		
 		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
 		{
 			if (node is Instruction)
