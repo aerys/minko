@@ -3,7 +3,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+
 
 	/**
 	 * @private
@@ -12,11 +12,16 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 */
 	public class Constant extends ANode
 	{
-		private var _value	: Vector.<Number>
+		private var _value : Vector.<Number>
 		
 		public function get value() : Vector.<Number>
 		{
 			return _value;
+		}
+		
+		public function set value(v : Vector.<Number>) : void
+		{
+			_value = v;
 		}
 		
 		public function Constant(value : Vector.<Number>)
@@ -40,5 +45,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			return 'Constant';
 		}
+		
+		override public function clone() : ANode
+		{
+			return new Constant(_value.slice());
+		}
+
 	}
 }

@@ -37,5 +37,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			return 'BindedSampler';
 		}
+		
+		override public function clone() : ANode
+		{
+			return new BindableSampler(_bindingName, filter, mipmap, wrapping, dimension);
+		}
 	}
 }

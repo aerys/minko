@@ -48,5 +48,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			return 'Attribute ' + _component.fields + '(' + _componentId + ')';
 		}
+		
+		override public function clone() : ANode
+		{
+			return new Attribute(_component, _componentId);
+		}
+		
 	}
 }

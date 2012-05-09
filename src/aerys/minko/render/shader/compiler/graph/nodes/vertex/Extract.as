@@ -57,5 +57,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			
 			return Components.getMaxWriteOffset(component) + 1;
 		}
+		
+		override public function clone() : ANode
+		{
+			return new Extract(argument, component);
+		}
+
 	}
 }

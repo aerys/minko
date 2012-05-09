@@ -22,18 +22,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	 */
 	public class AbstractVisitor
 	{
-		protected var _stack			: Vector.<ANode>;
-		
-		protected var _visitedInVs		: Vector.<ANode>;
-		protected var _visitedInFs		: Vector.<ANode>;
-		
-		protected var _shaderGraph		: ShaderGraph;
+		private var _visited		: Vector.<ANode>;
+		protected var _shaderGraph	: ShaderGraph;
 		
 		public function AbstractVisitor()
 		{
-			_stack			= new Vector.<ANode>();
-			_visitedInVs	= new Vector.<ANode>();
-			_visitedInFs	= new Vector.<ANode>();
+			_visited	= new Vector.<ANode>();
 		}
 		
 		public function process(shaderGraph : ShaderGraph) : void
@@ -52,35 +46,24 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		protected function start() : void
 		{
-			_stack.length		= 0;
-			_visitedInVs.length	= 0;
-			_visitedInFs.length	= 0;
 		}
 		
 		protected function finish() : void
 		{
-			throw new Error('Must be overriden');
+			_visited.length	= 0;
 		}
 		
 		protected function visit(node : ANode, isVertexShader : Boolean) : void
 		{
-			var visitationTable : Vector.<ANode> = isVertexShader ? _visitedInVs : _visitedInFs;
-			if (visitationTable != null)
+			if (_visited.indexOf(node) == -1)
 			{
-				if (visitationTable.indexOf(node) != -1)
-					return;
+				_visited.push(node);
 				
-				visitationTable.push(node);
+				if (node is Extract || node is Instruction || node is Interpolate || node is Overwriter || node is VariadicExtract)
+					visitTraversable(node, isVertexShader);
+				else
+					visitNonTraversable(node, isVertexShader);
 			}
-			
-			_stack.push(node);
-			
-			if (node is Extract || node is Instruction || node is Interpolate || node is Overwriter)
-				visitTraversable(node, isVertexShader);
-			else
-				visitNonTraversable(node, isVertexShader);
-			
-			_stack.pop();
 		}
 		
 		protected function visitArguments(node : ANode, isVertexShader : Boolean) : void
@@ -93,32 +76,32 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		protected function replaceInParents(oldNode : ANode, newNode : ANode) : void
 		{
-			var numParents : uint = oldNode.numParents;
+			var numParents	: uint			 = oldNode.numParents;
+			var parents		: Vector.<ANode> = new Vector.<ANode>(numParents, true);
+			var parentId	: uint;
 			
-			for (var parentId : uint = 0; parentId < numParents; ++parentId)
+			for (parentId = 0; parentId < numParents; ++parentId)
+				parents[parentId] = oldNode.getParentAt(parentId);
+			
+			for (parentId = 0; parentId < numParents; ++parentId)
 			{
-				var parent		: ANode = oldNode.getParentAt(parentId);
+				var parent		: ANode = parents[parentId];
 				var numArgument	: uint	= parent.numArguments;
 				
 				// loop backward, because we are removing elements from the parents array
 				for (var argumentId : int = numArgument - 1; argumentId >= 0; --argumentId)
 					if (parent.getArgumentAt(argumentId) === oldNode)
-					{
-						// replace only the first occurence.
-						// if more are present, they will be removed by another instance of the parent.
 						parent.setArgumentAt(argumentId, newNode);
-						break;
-					}
 			}
 			
-			if (_shaderGraph.position == oldNode)
+			if (_shaderGraph.position === oldNode)
 				_shaderGraph.position = newNode;
 			
-			if (_shaderGraph.color == oldNode)
+			if (_shaderGraph.color === oldNode)
 				_shaderGraph.color = newNode;
 			
 			var kills		: Vector.<ANode> = _shaderGraph.kills;
-			var numKills	: uint = kills.length;
+			var numKills	: uint			 = kills.length;
 			
 			for (var killId : uint = 0; killId < numKills; ++killId)
 				if (kills[killId] === oldNode)
@@ -128,12 +111,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		protected function swizzleParents(node		: ANode,
 										  modifier	: uint) : void
 		{
-			var numParents		: uint = node.numParents;
-			var visitedParents	: Dictionary = new Dictionary();
+			var numParents		: uint			= node.numParents;
+			var visitedParents	: Dictionary	= new Dictionary();
 			
 			for (var parentId : uint = 0; parentId < numParents; ++parentId)
 			{
-				var parent		: ANode = node.getParentAt(parentId);
+				var parent : ANode = node.getParentAt(parentId);
 				
 				if (visitedParents[parent])
 					continue;
@@ -204,61 +187,51 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		protected function visitAttribute(attribute			: Attribute,
 										  isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitConstant(constant		: Constant,
 										 isVertexShader : Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitBindableConstant(bindableConstant	: BindableConstant,
 												 isVertexShader		: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitSampler(sampler			: Sampler, 
 										isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitBindableSampler(bindableSampler	: BindableSampler,
 												isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitExtract(extract			: Extract,
 										isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitInstruction(instruction		: Instruction,
 										    isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');	
 		}
 		
 		protected function visitInterpolate(interpolate		: Interpolate,
 											isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 		
 		protected function visitOverwriter(overwriter		: Overwriter,
 										   isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');	
 		}
 		
 		protected function visitVariadicExtract(variadicExtract : VariadicExtract,
 												isVertexShader	: Boolean) : void
 		{
-			throw new Error('Must be overriden');
 		}
 	}
 }

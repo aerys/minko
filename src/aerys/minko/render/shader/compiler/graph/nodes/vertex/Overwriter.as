@@ -66,5 +66,21 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		{
 			return 'Overwriter';
 		}
+		
+		override public function clone() : ANode
+		{
+			var numArgs 	: uint				= this.numArguments;
+			var arguments	: Vector.<ANode>	= new Vector.<ANode>(numArgs);
+			var components	: Vector.<uint> 	= new Vector.<uint>(numArgs);
+			
+			
+			for (var argId : uint = 0; argId < numArgs; ++argId)
+			{
+				arguments[argId]	= getArgumentAt(argId);
+				components[argId]	= getComponentAt(argId);
+			}
+			
+			return new Overwriter(arguments, components);
+		}
 	}
 }

@@ -558,9 +558,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 													 isVertexShader	: Boolean) : void
 		{
 			// visit children
-			visit(instruction.argument1, isVertexShader);
-			if (!instruction.isSingle)
-				visit(instruction.argument2, isVertexShader);
+			visitArguments(instruction, isVertexShader);
 			
 			// push instruction into list
 			pushInstruction(instruction, isVertexShader);
@@ -584,8 +582,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (!isVertexShader)
 				throw new Error('VariadicExtracts can only be found in the vertex shader.');
 			
-			visit(variadicExtract.constant, true);
-			visit(variadicExtract.index, true);
+			visitArguments(variadicExtract, true);
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 

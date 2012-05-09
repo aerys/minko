@@ -6,6 +6,8 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.visitors.AllocationVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.ConstantGrouperVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.ConstantPackerVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.CopyInserterVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.InterpolateFinder;
 	import aerys.minko.render.shader.compiler.graph.visitors.MatrixTransformationGrouper;
@@ -15,6 +17,7 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.render.shader.compiler.graph.visitors.RemoveUselessComputation;
 	import aerys.minko.render.shader.compiler.graph.visitors.ResolveConstantComputationVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.ResolveParametrizedComputationVisitor;
+	import aerys.minko.render.shader.compiler.graph.visitors.SplitterVisitor;
 	import aerys.minko.render.shader.compiler.graph.visitors.WriteDot;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
 	import aerys.minko.type.log.DebugLevel;
@@ -35,10 +38,13 @@ package aerys.minko.render.shader.compiler
 		public static const BUBBLE_UP_INTERPOLATES						: uint = 2;
 		public static const RAISE_FS_CONSTANTS_LIMIT_BY_INTERPOLATING	: uint = 4;
 		
+		private static const SPLITTER				: SplitterVisitor						= new SplitterVisitor();
 		private static const REMOVE_EXTRACT			: RemoveExtractsVisitor					= new RemoveExtractsVisitor();
 		private static const MERGER					: MergeVisitor							= new MergeVisitor();
 		private static const OVERWRITER_CLEANER		: OverwriterCleanerVisitor				= new OverwriterCleanerVisitor();
 		private static const RESOLVE_CONSTANT		: ResolveConstantComputationVisitor		= new ResolveConstantComputationVisitor();
+		private static const CONSTANT_PACKER		: ConstantPackerVisitor					= new ConstantPackerVisitor();
+		private static const CONSTANT_GROUPER		: ConstantGrouperVisitor				= new ConstantGrouperVisitor();
 		private static const RESOLVE_PARAMETRIZED	: ResolveParametrizedComputationVisitor	= new ResolveParametrizedComputationVisitor();
 		private static const REMOVE_USELESS			: RemoveUselessComputation				= new RemoveUselessComputation();
 		private static const COPY_INSERTER			: CopyInserterVisitor					= new CopyInserterVisitor();
@@ -63,16 +69,18 @@ package aerys.minko.render.shader.compiler
 									flags		: uint) : void
 		{
 			// execute consecutive visitors to optimize the shader graph.
-			
-			REMOVE_EXTRACT			.process(shaderGraph);	// remove all extract nodes
+			// Warning: the order matters, do not swap lines.
 			MERGER					.process(shaderGraph);	// merge duplicate nodes
+			REMOVE_EXTRACT			.process(shaderGraph);	// remove all extract nodes
 			OVERWRITER_CLEANER		.process(shaderGraph);	// remove nested overwriters
-			
 			RESOLVE_CONSTANT		.process(shaderGraph);	// resolve constant computation
+			CONSTANT_PACKER			.process(shaderGraph);	// pack constants [0,0,0,1] => [0,1].xxxy
 			REMOVE_USELESS			.process(shaderGraph);	// remove some useless operations (add 0, mul 0, mul 1...)
 			RESOLVE_PARAMETRIZED	.process(shaderGraph);	// replace computations that depend on parameters by evalexp parameters
 //			MATRIX_TRANSFORMATION	.process(shaderGraph);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
 			COPY_INSERTER			.process(shaderGraph);	// ensure there are no operations between constants
+			SPLITTER				.process(shaderGraph);	// clone nodes that are shared between vertex and fragment shader
+			CONSTANT_GROUPER		.process(shaderGraph);	// group constants [0,1] & [0,2] => [0, 1, 2]
 			
 			// log shader in dotty format
 			if (Minko.debugLevel & DebugLevel.SHADER_DOTTY)

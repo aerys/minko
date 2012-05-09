@@ -27,67 +27,22 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function start() : void
 		{
 			super.start();
-			
-			var extract : Extract;
-			
-			while (_shaderGraph.position is Extract)
-			{
-				extract = Extract(_shaderGraph.position);
-				
-				_shaderGraph.position = extract.argument;
-				_shaderGraph.positionComponents = 
-					Components.applyCombination(_shaderGraph.positionComponents, extract.component);
-			}
-			
-			while (_shaderGraph.color is Extract)
-			{
-				extract = Extract(_shaderGraph.color);
-				
-				_shaderGraph.color = extract.argument;
-				_shaderGraph.colorComponents = 
-					Components.applyCombination(_shaderGraph.colorComponents, extract.component);
-			}
-			
-			var numKills : uint = _shaderGraph.kills.length;
-			for (var killId : uint = 0; killId < numKills; ++killId)
-			{
-				extract = Extract(_shaderGraph.color);
-				
-				_shaderGraph.kills[killId] = extract.argument;
-				_shaderGraph.killComponents[killId] = 
-					Components.applyCombination(_shaderGraph.killComponents[killId], extract.component);
-			}
 		}
 		
 		override protected function finish() : void
 		{
+			super.finish();
 		}
 		
-		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitTraversable(node : ANode, isVertexShader : Boolean):void
 		{
-			var numArguments : uint = node.numArguments;
+			visitArguments(node, isVertexShader);
 			
-			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
-			{
-				while (node.getArgumentAt(argumentId) is Extract)
-				{
-					var extract : Extract = Extract(node.getArgumentAt(argumentId));
-					
-					// remove extract
-					node.setArgumentAt(argumentId, extract.argument);
-					
-					// change components
-					node.setComponentAt(
-						argumentId, 
-						Components.applyCombination(extract.component, node.getComponentAt(argumentId))
-					);
-				}
-				
-				visit(node.getArgumentAt(argumentId), true);
-			}
+			if (node is Extract)
+				replaceInParentsAndSwizzle(node, Extract(node).argument, Extract(node).component);
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node : ANode, isVertexShader : Boolean):void
 		{
 		}
 	}

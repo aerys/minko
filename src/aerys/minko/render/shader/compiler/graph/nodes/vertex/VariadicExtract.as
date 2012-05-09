@@ -11,20 +11,16 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 */
 	public class VariadicExtract extends ANode
 	{
-		private static const INDEX		: uint = 0;
-		private static const CONSTANT	: uint = 1;
-		
-		
 		private var _isMatrix : Boolean;
 		
 		public function get index() : ANode
 		{
-			return getArgumentAt(INDEX);
+			return getArgumentAt(0);
 		}
 		
 		public function get constant() : ANode
 		{
-			return getArgumentAt(CONSTANT);
+			return getArgumentAt(1);
 		}
 		
 		public function get isMatrix() : Boolean
@@ -34,29 +30,29 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		
 		public function get indexComponentSelect() : uint
 		{
-			return getComponentAt(INDEX) & 0xff;
+			return getComponentAt(0) & 0xff;
 		}
 		
 		public function set indexComponentSelect(v : uint) : void
 		{
-			setComponentAt(INDEX, Components.createFromParts(v));
+			setComponentAt(0, Components.createFromParts(v));
 		}
 		
 		public function set index(v : ANode) : void
 		{
-			setArgumentAt(INDEX, v);
+			setArgumentAt(0, v);
 		}
 		
 		public function set constant(v : ANode) : void
 		{
-			setArgumentAt(CONSTANT, v);
+			setArgumentAt(1, v);
 		}
 		
 		public function VariadicExtract(index		: ANode, 
 										constant	: ANode,
 										isMatrix	: Boolean)
 		{
-			_isMatrix				= isMatrix;
+			_isMatrix = isMatrix;
 			
 			var arguments : Vector.<ANode>	= new <ANode>[index, constant];
 			var components: Vector.<uint>	= new <uint>[
@@ -87,6 +83,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		override public function toString() : String
 		{
 			return 'VariadicExtract';
+		}
+		
+		override public function clone() : ANode
+		{
+			return new VariadicExtract(index, constant, _isMatrix);
 		}
 	}
 }

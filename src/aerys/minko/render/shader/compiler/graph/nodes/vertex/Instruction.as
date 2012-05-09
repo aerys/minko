@@ -234,5 +234,24 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		{
 			return name;
 		}
+		
+		override public function clone() : ANode
+		{
+			var clone : Instruction;
+			if (isSingle)
+			{
+				clone = new Instruction(_id, argument1);
+				clone.component1 = component1;
+			}
+			else
+			{
+				clone = new Instruction(_id, argument1, argument2);
+				clone.component1 = component1;
+				clone.component2 = component2;
+			}
+			
+			return clone;
+		}
+
 	}
 }

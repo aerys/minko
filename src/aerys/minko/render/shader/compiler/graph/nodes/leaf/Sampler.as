@@ -2,6 +2,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.CRC32;
+	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	
 	/**
 	 * @private
@@ -50,5 +51,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			return 'Sampler';
 		}
+		
+		override public function clone() : ANode
+		{
+			return new Sampler(_textureResource, filter, mipmap, wrapping, dimension);
+		}
+
 	}
 }

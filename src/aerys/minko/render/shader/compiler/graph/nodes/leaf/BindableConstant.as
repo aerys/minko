@@ -49,5 +49,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		{
 			return 'BindableConstant_' + bindingName + '_' + size;
 		}
+		
+		override public function clone() : ANode
+		{
+			return new BindableConstant(_bindingName, _size);
+		}
+
 	}
 }

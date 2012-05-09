@@ -15,9 +15,19 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return getArgumentAt(0);
 		}
 		
+		public function set argument(v : ANode) : void
+		{
+			setArgumentAt(0, v);
+		}
+		
 		public function get component() : uint
 		{
 			return getComponentAt(0);
+		}
+		
+		public function set component(v : uint) : void
+		{
+			setComponentAt(0, v);
 		}
 		
 		public function Interpolate(arg : ANode)
@@ -52,6 +62,13 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		override public function toString() : String
 		{
 			return 'Interpolate';
+		}
+		
+		override public function clone() : ANode
+		{
+			var clone : Interpolate = new Interpolate(argument);
+			clone.component = component;
+			return clone;
 		}
 	}
 }

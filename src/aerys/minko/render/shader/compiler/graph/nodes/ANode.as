@@ -1,6 +1,8 @@
 package aerys.minko.render.shader.compiler.graph.nodes
 {
 	import aerys.minko.render.shader.compiler.register.Components;
+	
+	import flash.utils.Dictionary;
 
 	public class ANode
 	{
@@ -123,6 +125,28 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			
 			_arguments.splice(index, 1);
 			_components.splice(index, 1);
+		}
+		
+		public function clone() : ANode
+		{
+			throw new Error('Must be overriden');
+		}
+		
+		public function deepClone() : ANode
+		{
+			var nodeToClone : Dictionary	= new Dictionary();
+			var clone		: ANode			= this.clone();
+			var numArgs		: uint			= this.numArguments;
+			var argumentId	: uint; 
+			
+			for (argumentId = 0; argumentId < numArgs; ++argumentId)
+				if (!nodeToClone[clone.getArgumentAt(argumentId)])
+					nodeToClone[clone.getArgumentAt(argumentId)] = clone.getArgumentAt(argumentId).deepClone();
+			
+			for (argumentId = 0; argumentId < numArgs; ++argumentId)
+				clone.setArgumentAt(argumentId, nodeToClone[clone.getArgumentAt(argumentId)]);
+			
+			return clone;
 		}
 		
 		private function invalidate() : void
