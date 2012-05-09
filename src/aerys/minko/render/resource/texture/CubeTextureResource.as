@@ -1,5 +1,6 @@
 package aerys.minko.render.resource.texture
 {
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.IResource;
 	
 	import flash.display.BitmapData;
@@ -15,7 +16,7 @@ package aerys.minko.render.resource.texture
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class CubicTextureResource implements ITextureResource
+	public final class CubeTextureResource implements ITextureResource
 	{
 		private static const SIDE_X : Vector.<Number> = new <Number>[2, 0, 1, 1, 1, 3];
 		private static const SIDE_Y : Vector.<Number> = new <Number>[1, 1, 0, 2, 1, 1];
@@ -24,7 +25,7 @@ package aerys.minko.render.resource.texture
 		private var _resource		: CubeTexture;
 		private var _size			: uint;
 		
-		public function CubicTextureResource(size : uint)
+		public function CubeTextureResource(size : uint)
 		{
 			_size = size;
 		}
@@ -71,7 +72,7 @@ package aerys.minko.render.resource.texture
 			throw new Error('Not yet implemented');
 		}
 		
-		public function getNativeTexture(context : Context3D) : TextureBase
+		public function getNativeTexture(context : Context3DResource) : TextureBase
 		{
 			if (!_resource)
 				_resource = context.createCubeTexture(_size, Context3DTextureFormat.BGRA, true);

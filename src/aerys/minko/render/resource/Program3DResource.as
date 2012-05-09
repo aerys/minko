@@ -82,7 +82,7 @@ package aerys.minko.render.resource
 			--_numUses;
 		}
 		
-		public function prepareContext(context 		: Context3D,
+		public function prepareContext(context 		: Context3DResource,
 									   previous		: Program3DResource) : void
 		{
 			if (!_nativeProgram)

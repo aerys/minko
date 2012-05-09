@@ -3,17 +3,15 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
 	import aerys.minko.render.shader.part.ShaderPart;
-	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	
-	import flash.display.ShaderInput;
-	import flash.display3D.Context3D;
 	import flash.utils.getQualifiedClassName;
 	
 	use namespace minko_shader;
@@ -320,7 +318,7 @@ package aerys.minko.render.shader
 		}
 		
 		private function shaderInstanceBeginHandler(instance 	: ShaderInstance,
-													context		: Context3D,
+													context		: Context3DResource,
 													backBuffer	: RenderTarget) : void
 		{
 			if (_numRenderedInstances == 0)
@@ -328,7 +326,7 @@ package aerys.minko.render.shader
 		}
 		
 		private function shaderInstanceEndHandler(instance		: ShaderInstance,
-												  context		: Context3D,
+												  context		: Context3DResource,
 												  backBuffer	: RenderTarget) : void
 		{
 			_numRenderedInstances++;

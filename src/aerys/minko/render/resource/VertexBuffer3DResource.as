@@ -22,6 +22,7 @@ package aerys.minko.render.resource
 
 		private var _stream			: VertexStream		= null;
 		private var _update			: Boolean			= true;
+		private var _lengthChanged	: Boolean			= true;
 		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 		
@@ -40,39 +41,36 @@ package aerys.minko.render.resource
 		public function VertexBuffer3DResource(source : VertexStream)
 		{
 			_stream = source;
-			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
 			_stream.changed.add(vertexStreamChangedHandler);
 		}
 		
 		private function vertexStreamChangedHandler(vertexStream : VertexStream) : void
 		{
 			_update = true;
+			_lengthChanged = vertexStream.length != _numVertices;
 		}
 
-		public function getVertexBuffer3D(context : Context3D) : VertexBuffer3D
+		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D
 		{
-			var update		: Boolean	= _update;
-			var numVertices	: uint		= _stream.length;
+			var update	: Boolean	= _update;
 
-			if (numVertices && (!_vertexBuffer || numVertices != _numVertices))
+			if (_lengthChanged)
 			{
+				_lengthChanged = false;
+				_numVertices = _stream.length
+				
 				if (_vertexBuffer)
 					_vertexBuffer.dispose();
 
 				_vertexBuffer = context.createVertexBuffer(
-					numVertices,
+					_numVertices,
 					_stream.format.dwordsPerVertex
 				);
 				
 				update = true;
 			}
 
-			if (_vertexBuffer && update)
+			if (_vertexBuffer != null && update)
 			{
 				_vertexBuffer.uploadFromVector(_stream._data, 0, numVertices);
 				_uploaded.execute(this);

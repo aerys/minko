@@ -89,6 +89,12 @@ package aerys.minko.type.data
 			return this;
 		}
 		
+		public function removeAllProperties() : void
+		{
+			for (var propertyName : String in _data)
+				removeProperty(propertyName);
+		}
+		
 		public function invalidate() : void
 		{
 			_changed.execute(this, null);

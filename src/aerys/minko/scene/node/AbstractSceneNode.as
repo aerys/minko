@@ -198,11 +198,19 @@ package aerys.minko.scene.node
 												   propertyName	: String) : void
 		{
 			if (_parent)
-				Matrix4x4.multiply(_parent.localToWorld, _transform, _localToWorld);
+			{
+				_localToWorld.lock()
+							 .copyFrom(_transform)
+							 .append(_parent.localToWorld)
+							 .unlock();
+			}
 			else
-				Matrix4x4.copy(_transform, _localToWorld);
+				_localToWorld.copyFrom(_transform);
 			
-			_worldToLocal.copyFrom(_localToWorld).invert();
+			_worldToLocal.lock()
+						 .copyFrom(_localToWorld)
+						 .invert()
+						 .unlock();
 		}
 		
 		public function addController(controller : AbstractController) : void

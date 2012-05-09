@@ -84,14 +84,17 @@ package aerys.minko.scene.controller.camera
 			var viewport	: Viewport 	= _camera.viewport;
 			var aspectRatio : Number 	= viewport.width / viewport.height;
 			
-			Matrix4x4.perspectiveFoV(
+			_camera.projection.perspectiveFoV(
 				_camera.fieldOfView,
 				aspectRatio,
 				_camera.zNear,
-				_camera.zFar,
-				_camera.projection
+				_camera.zFar
 			);
-			Matrix4x4.invert(_camera.projection, _camera.screenToView);
+			
+			_camera.screenToView.lock()
+								.copyFrom(_camera.projection)
+								.invert()
+								.unlock();
 			_camera.frustum.updateFromDescription(
 				_camera.fieldOfView,
 				aspectRatio,
@@ -117,21 +120,31 @@ package aerys.minko.scene.controller.camera
 			localToWorld.deltaTransformVector(_camera.up, worldUp);
 			worldUp.normalize();
 			
-			Matrix4x4.lookAt(
-				worldPosition,
-				worldLookAt,
-				worldUp,
-				_camera.worldToView
-			);
-			Matrix4x4.invert(_camera.worldToView, _camera.viewToWorld);
+			_camera.worldToView
+				.lock()
+				.lookAt(worldPosition, worldLookAt, worldUp)
+				.unlock();
 			
+			_camera.viewToWorld
+				.lock()
+				.copyFrom(_camera.worldToView)
+				.invert()
+				.unlock();
+						
 			updateWorldToScreen();
 		}
 		
 		private function updateWorldToScreen() : void
 		{
-			Matrix4x4.multiply(_camera.projection, _camera.worldToView, _camera.worldToScreen);
-			Matrix4x4.multiply(_camera.viewToWorld, _camera.screenToView, _camera.screenToWorld);
+			_camera.worldToScreen.lock()
+								 .copyFrom(_camera.worldToView)
+								 .append(_camera.projection)
+								 .unlock();
+			
+			_camera.screenToWorld.lock()
+								 .copyFrom(_camera.screenToView)
+								 .append(_camera.viewToWorld)
+								 .unlock();
 		}
 		
 		private function addedToSceneHandler(child : ISceneNode, scene : Scene) : void

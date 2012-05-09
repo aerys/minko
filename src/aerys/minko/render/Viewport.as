@@ -2,6 +2,7 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
@@ -30,26 +31,27 @@ package aerys.minko.render
 	 */
 	public final class Viewport extends Sprite
 	{
-		private static const ZERO2		: Point			= new Point();
+		private static const ZERO2		: Point				= new Point();
 		
-		private var _stage3d			: Stage3D		= null;
+		private var _stage3d			: Stage3D			= null;
+		private var _context3d			: Context3DResource	= null;
 		
-		private var _width				: uint			= 0;
-		private var _height				: uint			= 0;
-		private var _autoResize			: Boolean		= false;
-		private var _antiAliasing		: uint			= 0;
-		private var _backgroundColor	: uint			= 0;
-		private var _backBuffer			: RenderTarget	= null;
-		private var _invalidBackBuffer	: Boolean		= false;
+		private var _width				: uint				= 0;
+		private var _height				: uint				= 0;
+		private var _autoResize			: Boolean			= false;
+		private var _antiAliasing		: uint				= 0;
+		private var _backgroundColor	: uint				= 0;
+		private var _backBuffer			: RenderTarget		= null;
+		private var _invalidBackBuffer	: Boolean			= false;
 		
-		private var _alwaysOnTop		: Boolean		= false;
-		private var _mask				: Shape			= new Shape();
+		private var _alwaysOnTop		: Boolean			= false;
+		private var _mask				: Shape				= new Shape();
 		
-		private var _resized			: Signal		= new Signal('Viewport.resized');
+		private var _resized			: Signal			= new Signal('Viewport.resized');
 		
-		minko_render function get context3D() : Context3D
+		minko_render function get context3D() : Context3DResource
 		{
-			return _stage3d ? _stage3d.context3D : null;
+			return _context3d;
 		}
 		
 		minko_render function get backBuffer() : RenderTarget
@@ -269,6 +271,7 @@ package aerys.minko.render
 		private function context3dCreatedHandler(event : Event) : void
 		{
 			_invalidBackBuffer = true;
+			_context3d = new Context3DResource(_stage3d.context3D);
 			dispatchEvent(new Event(Event.INIT));
 		}
 		

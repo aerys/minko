@@ -375,7 +375,8 @@ package aerys.minko.render.shader.part
 		}
 		
 		/**
-		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value. 
+		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value.
+		 * 
 		 * @param scalar
 		 * @return 
 		 * 
@@ -390,7 +391,8 @@ package aerys.minko.render.shader.part
 		}
 		
 		/**
-		 * Unack a [0 .. 1] scalar value from a float4 RGBA color value. 
+		 * Unpack a [0 .. 1] scalar value from a float4 RGBA color value.
+		 * 
 		 * @param packedScalar
 		 * @return 
 		 * 
@@ -514,9 +516,9 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.POW, getNode(base), getNode(exp)));
 		}
 
-		protected final function add(value1 : Object, value2 : Object, ...args) : SFloat
+		protected final function add(a : Object, b : Object, ...args) : SFloat
 		{
-			var result : SFloat = new SFloat(new Instruction(Instruction.ADD, getNode(value1), getNode(value2)));
+			var result : SFloat = new SFloat(new Instruction(Instruction.ADD, getNode(a), getNode(b)));
 			
 			for each (var arg : Object in args)
 				result = add(result, arg);
