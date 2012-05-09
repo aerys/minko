@@ -675,7 +675,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					throw new Error('Invalid allocation type.');
 			}
 			
-			
 			if (node is Instruction || node is Overwriter) // yes overwriter's destination is always in temporary space
 				return isVertexShader ? _vsTempAllocator : _fsTempAllocator;
 			

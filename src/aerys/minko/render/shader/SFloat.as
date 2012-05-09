@@ -5,6 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
+	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -185,7 +186,14 @@ package aerys.minko.render.shader
 
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			throw new Error('implement me, it should be easy with an overwriter');
+			var nodeComponent		: uint = Components.createContinuous(0, 0, _node.size, _node.size);
+			var propertyComponent	: uint	= Components.stringToComponent(name);
+			var propertyNode		: ANode	= getNode(value);
+			
+			_node = new Overwriter(
+				new <ANode>[_node, propertyNode], 
+				new <uint>[nodeComponent, propertyComponent]
+			);
 		}
 
 		private function getNode(value : Object) : ANode
