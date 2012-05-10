@@ -60,9 +60,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					break;
 				
 				case Instruction.MUL:
-					if (arg1Value == 1)
+					if (arg1Value == 1 || arg2Value == 0)
 						replaceInParentsAndSwizzle(instruction, instruction.argument2, instruction.component2);
-					else if (arg2Value == 1)
+					else if (arg1Value == 0 || arg2Value == 1)
 						replaceInParentsAndSwizzle(instruction, instruction.argument1, instruction.component1);
 					
 					break;
