@@ -50,11 +50,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var numKills : uint = _shaderGraph.kills.length;
 			for (var killId : uint = 0; killId < numKills; ++killId)
 			{
-				extract = Extract(_shaderGraph.color);
-				
-				_shaderGraph.kills[killId] = extract.child;
-				_shaderGraph.killComponents[killId] = 
-					Components.applyCombination(_shaderGraph.killComponents[killId], extract.components);
+                if(_shaderGraph.color is Extract) {
+                    extract = Extract(_shaderGraph.color);
+
+                    _shaderGraph.kills[killId] = extract.child;
+                    _shaderGraph.killComponents[killId] =
+                        Components.applyCombination(_shaderGraph.killComponents[killId], extract.components);
+                }
 			}
 		}
 		
