@@ -55,6 +55,7 @@ package aerys.minko.render
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
 		private var _firstIndex			: int								= 0;
+		private var _numTriangles		: int								= -1;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(NUM_VERTEX_BUFFERS, true);
 		private var _numVertexComponents: uint								= 0;
@@ -228,6 +229,8 @@ package aerys.minko.render
 		{
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
+			_firstIndex			 = geometry.firstIndex;
+			_numTriangles		 = geometry.numTriangles;
 			
 			for (var i : uint = 0; i < _numVertexComponents; ++i)
 			{
@@ -328,9 +331,9 @@ package aerys.minko.render
 				context.setVertexBufferAt(i++, null);
 			
 			// draw triangles
-			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context));
+			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context), _firstIndex, _numTriangles);
 			
-			return _indexBuffer.numIndices / 3;
+			return _numTriangles == -1 ? _indexBuffer.numIndices / 3 : _numTriangles;
 		}
 		
 		public function setParameter(name : String, value : Object) : void
