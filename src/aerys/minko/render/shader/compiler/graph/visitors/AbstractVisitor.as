@@ -51,6 +51,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		protected function finish() : void
 		{
 			_visited.length	= 0;
+			_shaderGraph	= null;
 		}
 		
 		protected function visit(node : AbstractNode, isVertexShader : Boolean) : void

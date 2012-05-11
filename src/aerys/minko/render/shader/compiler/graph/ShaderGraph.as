@@ -157,7 +157,7 @@ package aerys.minko.render.shader.compiler.graph
 			CONSTANT_PACKER			.process(this);	// pack constants [0,0,0,1] => [0,1].xxxy
 			REMOVE_USELESS			.process(this);	// remove some useless operations (add 0, mul 0, mul 1...)
 			RESOLVE_PARAMETRIZED	.process(this);	// replace computations that depend on parameters by evalexp parameters
-			//			MATRIX_TRANSFORMATION	.process(this);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
+//			MATRIX_TRANSFORMATION	.process(this);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
 			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
 			SPLITTER				.process(this);	// clone nodes that are shared between vertex and fragment shader
 			CONSTANT_GROUPER		.process(this);	// group constants [0,1] & [0,2] => [0, 1, 2]
@@ -167,6 +167,7 @@ package aerys.minko.render.shader.compiler.graph
 			{
 				WRITE_DOT.process(this);
 				Minko.log(DebugLevel.SHADER_DOTTY, WRITE_DOT.result);
+				WRITE_DOT.clear();
 			}
 			
 			// generate final program
@@ -182,6 +183,8 @@ package aerys.minko.render.shader.compiler.graph
 			_vsConstants		= ALLOCATOR.vertexConstants;
 			_fsConstants		= ALLOCATOR.fragmentConstants;
 			_textures			= ALLOCATOR.textures;
+			
+			ALLOCATOR.clear();
 		}
 		
 		private function computeBinaryProgram(sequence			: Vector.<AgalInstruction>,

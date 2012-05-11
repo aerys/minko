@@ -81,16 +81,20 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			_result = "digraph shader {\n" +
 				"\tnode [ style = filled ];\n" + 
 				_nodes + _links + 
 			"}";
 			
-			_nodeIds			= null;
-			_nodeId				= 0;
-			_shaderGraph		= null;	
+			_nodeIds	= null;
+			_nodeId		= 0;
+			
+			super.finish();
+		}
+		
+		public function clear() : void
+		{
+			_result = null;
 		}
 		
 		override protected function visitInstruction(instruction	: Instruction, 

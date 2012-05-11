@@ -169,8 +169,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			for each (var allocator : Allocator in [ _attributeAllocator,
 				_vsConstAllocator, _fsConstAllocator, _vsTempAllocator, 
 				_fsTempAllocator, _varyingAllocator, _opAllocator, _ocAllocator])
@@ -188,6 +186,38 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsProgram				= writeProgram(_fsInstructions, false);
 			
 			processAttributes();
+			
+			super.finish();
+		}
+		
+		public function clear() : void
+		{
+			// allocators
+			_opAllocator				= null;
+			_ocAllocator				= null;
+			_attributeAllocator			= null;
+			_vsConstAllocator			= null;
+			_fsConstAllocator			= null;
+			_vsTempAllocator			= null;
+			_fsTempAllocator			= null;
+			_varyingAllocator			= null;
+			
+			_allocStore					= null;
+			
+			// first pass data
+			_vsInstructions				= null;
+			_fsInstructions				= null;
+			_vsConstants				= null;
+			_fsConstants				= null;
+			_vsParams					= null;
+			_fsParams					= null;
+			_samplers					= null;
+			
+			// final compiled data
+			_paramBindings				= null;
+			_vertexComponents			= null;
+			_vertexIndices				= null;
+			_textures					= null;
 		}
 		
 		private function processAttributes() : void

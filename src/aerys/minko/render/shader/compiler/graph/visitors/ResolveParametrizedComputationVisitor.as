@@ -41,8 +41,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			if (_isComputable[_shaderGraph.position] && !isConstant(_shaderGraph.position))
 				_shaderGraph.position = createComputableConstant(_shaderGraph.position);
 			
@@ -58,6 +56,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				if (_isComputable[kill] && !isConstant(kill))
 					kills[killId] = createComputableConstant(kill);
 			}
+			
+			super.finish();
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 

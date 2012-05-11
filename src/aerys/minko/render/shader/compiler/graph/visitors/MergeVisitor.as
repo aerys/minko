@@ -36,9 +36,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			_hashsToNodes = null;
+			
+			super.finish();
 		}
 		
 		override protected function visitTraversable(node:AbstractNode, isVertexShader:Boolean):void
