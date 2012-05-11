@@ -271,7 +271,10 @@ package aerys.minko.render.resource
 			if (_textures[sampler] != texture)
 			{
 				_textures[sampler] = texture;
-				_context.setTextureAt(sampler, texture.getNativeTexture(this));
+				_context.setTextureAt(
+					sampler,
+					texture ? texture.getNativeTexture(this) : null
+				);
 			}
 			
 			return this;
@@ -292,7 +295,7 @@ package aerys.minko.render.resource
 				
 				_context.setVertexBufferAt(
 					index,
-					vertexBuffer.getVertexBuffer3D(this),
+					vertexBuffer ? vertexBuffer.getVertexBuffer3D(this) : null,
 					bufferOffset,
 					format
 				);

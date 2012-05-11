@@ -478,10 +478,7 @@ package aerys.minko.scene.controller.scene
 				var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 				
 				for each (var oldDrawCall : DrawCall in drawCalls)
-				{
-					var oldPassInstance	: ShaderInstance = _drawCallToPassInstance[oldDrawCall];
-					unbind(oldPassInstance, oldDrawCall, meshBindings);
-				}
+					unbind(_drawCallToPassInstance[oldDrawCall], oldDrawCall, meshBindings);
 				
 				drawCalls.length = 0;
 				
@@ -495,6 +492,9 @@ package aerys.minko.scene.controller.scene
 					
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
+					
+					if (passInstance.program == null)
+						continue ;
 					
 					newDrawCall.configure(
 						passInstance.program,
