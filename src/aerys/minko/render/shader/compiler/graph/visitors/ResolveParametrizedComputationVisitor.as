@@ -43,18 +43,21 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			super.finish();
 			
-			if (_isComputable[_shaderGraph.position])
+			if (_isComputable[_shaderGraph.position] && !isConstant(_shaderGraph.position))
 				_shaderGraph.position = createComputableConstant(_shaderGraph.position);
 			
-			if (_isComputable[_shaderGraph.color])
+			if (_isComputable[_shaderGraph.color] && !isConstant(_shaderGraph.color))
 				_shaderGraph.color = createComputableConstant(_shaderGraph.color);
 			
 			var kills		: Vector.<AbstractNode>	= _shaderGraph.kills;
 			var numKills	: uint					= kills.length;
 			
 			for (var killId : uint = 0; killId < numKills; ++killId)
-				if (_isComputable[kills[killId]])
-					kills[killId] = createComputableConstant(kills[killId]);
+			{
+				var kill : AbstractNode = kills[killId];
+				if (_isComputable[kill] && !isConstant(kill))
+					kills[killId] = createComputableConstant(kill);
+			}
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 
