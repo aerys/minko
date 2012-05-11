@@ -10,11 +10,11 @@ package aerys.minko.render.shader.part.projection
 	public interface IProjectionShaderPart
 	{
 		function projectVector(vector	: SFloat,
-							   target	: Rectangle		= null,
+							   target	: Rectangle,
 							   zNear	: Number		= 0,
 							   zFar		: Number		= 1000) : SFloat;
 		
 		function unprojectVector(projectedVector	: SFloat,
-								 source				: Rectangle	= null) : SFloat;
+								 source				: Rectangle) : SFloat;
 	}
 }

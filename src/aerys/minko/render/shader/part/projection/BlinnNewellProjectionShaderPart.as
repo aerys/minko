@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.render.shader.part.coordinates.SphericalCoordinatesShaderPart;
 	
@@ -15,6 +15,8 @@ package aerys.minko.render.shader.part.projection
 	 */	
 	public class BlinnNewellProjectionShaderPart extends ShaderPart implements IProjectionShaderPart
 	{
+		private static const SPHERICAL_COORDINATES_RECTANGLE : Rectangle = new Rectangle(0, 0, 2 * Math.PI, Math.PI);
+		
 		private var _sphericalPart : SphericalCoordinatesShaderPart;
 		
 		public function BlinnNewellProjectionShaderPart(main : Shader)
@@ -32,19 +34,14 @@ package aerys.minko.render.shader.part.projection
 		 * @return The projected vector (is a 3d vector, with depth).
 		 */		
 		public function projectVector(vector	: SFloat, 
-									  target	: Rectangle = null,
+									  target	: Rectangle,
 									  zNear		: Number	= 0,
 									  zFar		: Number	= 1000) : SFloat
 		{
-			target ||= new Rectangle(0, 0, 1, 1);
-			
 			var sphericalCoordinates	: SFloat = _sphericalPart.fromOrtho(vector);
-			var projectedVector			: SFloat = sphericalCoordinates 
-				.zy
-				.scaleBy(float2(target.width / 2 / Math.PI, target.height / Math.PI))
-				.incrementBy(float2(target.x, target.y));
+			var projectedVector			: SFloat = sphericalCoordinates.zy;
 			
-			return projectedVector;
+			return transform2DCoordinates(projectedVector, SPHERICAL_COORDINATES_RECTANGLE, target);
 		}
 		
 		/**
@@ -55,19 +52,10 @@ package aerys.minko.render.shader.part.projection
 		 * @return The unprojected vector (which is normalized).
 		 */
 		public function unprojectVector(projectedVector	: SFloat,
-										source			: Rectangle = null) : SFloat
+										source			: Rectangle) : SFloat
 		{
-			source ||= new Rectangle(0, 0, 1, 1);
-			
-			var sphericalCoordinates : SFloat = float3(
-				1,
-				projectedVector
-					.decrementBy(float2(source.x, source.y))
-					.scaleBy(float2(2 * Math.PI / source.width, Math.PI / source.height))
-					.yx
-			);
-			
-			var unprojectedVector : SFloat = _sphericalPart.toOrtho(sphericalCoordinates);
+			var coordinates				: SFloat = transform2DCoordinates(projectedVector, source, SPHERICAL_COORDINATES_RECTANGLE);
+			var unprojectedVector		: SFloat = _sphericalPart.toOrtho(float3(1, coordinates.yx));
 			
 			return unprojectedVector;
 		}

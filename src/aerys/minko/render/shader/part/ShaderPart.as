@@ -20,7 +20,10 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.format.VertexComponent;
+	
+	import flash.geom.Rectangle;
 
 	/**
 	 * The base class to create ActionScript shader parts.
@@ -694,7 +697,19 @@ package aerys.minko.render.shader.part
 		{
 			return add(a, multiply(factor, subtract(b, a)));
 		}
-
+		
+		protected final function transform2DCoordinates(value	: Object,
+												 		source	: Rectangle, 
+														target	: Rectangle) : SFloat
+		{
+			// could be done with a multiply2x2, but useless here
+			var sourceOrigin	: SFloat = float2(-source.x, -source.y);
+			var targetOrigin	: SFloat = float2(target.x, target.y);
+			var scale			: SFloat = float2(target.width / source.width, target.height / source.height);
+			
+			return add(targetOrigin, multiply(scale, add(value, sourceOrigin)));
+		}
+		
 		protected final function length(vector : Object) : SFloat
 		{
 			var v : ANode = getNode(vector);
@@ -816,6 +831,9 @@ package aerys.minko.render.shader.part
 			
 			if (value is uint || value is int || value is Number)
 				return new Constant(new <Number>[Number(value)]);
+			
+			if (value is Matrix4x4)
+				return new Constant(Matrix4x4(value).getRawData(null, 0, false));
 			
 			throw new Error('This type cannot be casted to a shader value.');
 		}
