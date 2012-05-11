@@ -56,6 +56,8 @@ package aerys.minko.scene.node.mesh.geometry
 		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 
 		private var _indexStream	: IndexStream		= null;
+		private var _firstIndex		: uint				= 0;
+		private var _numTriangles	: int				= -1;
 
 		private var _boundingSphere	: BoundingSphere	= null;
 		private var _boundingBox	: BoundingBox		= null;
@@ -89,6 +91,23 @@ package aerys.minko.scene.node.mesh.geometry
 		}
 		
 		/**
+		 * First index in an IndexStream used by the geometry.
+		 */
+		public function get firstIndex(): uint
+		{
+			return _firstIndex;
+		}
+		
+		/**
+		 * Number of triangles in the geometry. Together with firstIndex specifies a
+		 * subset of IndexStream used by the geometry.
+		 */
+		public function get numTriangles(): int
+		{
+			return _numTriangles;
+		}
+		
+		/**
 		 * The bounding sphere of the 3D geometry. 
 		 * @return 
 		 * 
@@ -119,14 +138,21 @@ package aerys.minko.scene.node.mesh.geometry
 		}
 		
 		public function Geometry(vertexStreams	: Vector.<IVertexStream>	= null,
-								 indexStream	: IndexStream				= null)
+								 indexStream	: IndexStream				= null,
+								 firstIndex		: uint						= 0,
+								 numTriangles	: int						= -1)
 		{			
-			initialize(vertexStreams, indexStream);
+			initialize(vertexStreams, indexStream, firstIndex, numTriangles);
 		}
 		
 		private function initialize(vertexStreams	: Vector.<IVertexStream>	= null,
-									indexStream		: IndexStream				= null) : void
+									indexStream		: IndexStream				= null,
+									firstIndex		: uint						= 0,
+									numTriangles	: int						= -1) : void
 		{
+			_firstIndex 	= firstIndex;
+			_numTriangles	= numTriangles;
+			
 			var numVertexStreams	: int	= vertexStreams ? vertexStreams.length : 0;
 			
 			_vertexStreams = new Vector.<IVertexStream>();
