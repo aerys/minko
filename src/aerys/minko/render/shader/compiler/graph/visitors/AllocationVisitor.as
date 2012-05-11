@@ -471,9 +471,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					if (instructionArg.isComponentWise)
 					{
 						// visit the arguments
-						visit(instructionArg.argument1, isVertexShader);
-						if (!instructionArg.isSingle)
-							visit(instructionArg.argument2, isVertexShader);
+						visitArguments(instructionArg, isVertexShader);
 						
 						// create a new operation that combines the swizzles of the overwriter and
 						// the instruction under it (this works only because it's all component wise).

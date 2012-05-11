@@ -137,7 +137,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitTraversable(node : ANode, isVertexShader : Boolean) : void
 		{
 			if (node is Interpolate)
-				isVertexShader = false;
+				isVertexShader = true;
 			
 			visitArguments(node, isVertexShader);
 		}
