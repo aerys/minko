@@ -105,7 +105,7 @@ package aerys.minko.render.shader.compiler.graph
 				compile();
 			
 			if (Minko.debugLevel & DebugLevel.SHADER_AGAL)
-				Minko.log(DebugLevel.SHADER_AGAL, generateAGAL());
+				Minko.log(DebugLevel.SHADER_AGAL, generateAGAL(name));
 			
 			var vsProgram	: ByteArray = computeBinaryProgram(_vertexSequence, true);
 			var fsProgram	: ByteArray = computeBinaryProgram(_fragmentSequence, false);
@@ -126,10 +126,10 @@ package aerys.minko.render.shader.compiler.graph
 			return program;
 		}
 		
-		public function generateAGAL() : String
+		public function generateAGAL(name : String) : String
 		{
 			var instruction	: AgalInstruction;
-			var shader		: String = '';
+			var shader		: String = name + "\n\n";
 			
 			if (!_isCompiled)
 				compile();
