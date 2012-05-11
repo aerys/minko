@@ -14,7 +14,6 @@ package aerys.minko.type.loader
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
-	import flash.system.LoaderContext;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 
@@ -103,10 +102,9 @@ package aerys.minko.type.loader
 				if (bitmapData == null)
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
-//				_textureResource = new TextureResource();
 				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
-				_complete.execute(this, _textureResource);
 				_isComplete = true;
+				_complete.execute(this, _textureResource);
 			}
 			else if (assetObject is ByteArray)
 			{
@@ -132,10 +130,9 @@ package aerys.minko.type.loader
 				bytes.readByte() == 'F'.charCodeAt(0))
 			{
 				bytes.position = 0;
-//				_textureResource = new TextureResource();
 				_textureResource.setContentFromATF(bytes);
-				_complete.execute(this, _textureResource);
 				_isComplete = true;
+				_complete.execute(this, _textureResource);
 			}
 			else
 			{
@@ -154,8 +151,8 @@ package aerys.minko.type.loader
 			if (displayObject is Bitmap)
 			{
 				_textureResource.setContentFromBitmapData(Bitmap(displayObject).bitmapData, _mipmap);
-				_complete.execute(this, _textureResource);
 				_isComplete = true;
+				_complete.execute(this, _textureResource);
 			}
 			else
 			{

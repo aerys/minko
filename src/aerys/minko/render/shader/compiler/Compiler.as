@@ -90,8 +90,8 @@ package aerys.minko.render.shader.compiler
 			}
 			
 			// generate final program
-			INTERPOLATE_FINDER.process(shaderGraph);		// find interpolate nodes. We may skip that in the future.
-			ALLOCATOR.process(shaderGraph);					// allocate memory and generate final code.
+			INTERPOLATE_FINDER		.process(shaderGraph);	// find interpolate nodes. We may skip that in the future.
+			ALLOCATOR				.process(shaderGraph);	// allocate memory and generate final code.
 			
 			// retrieve program
 			_vertexSequence		= ALLOCATOR.vertexSequence;

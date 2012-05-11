@@ -7,8 +7,7 @@ package aerys.minko.render.shader.part
 	/**
 	 * The shader part to perform a blending operation in the fragment shader.
 	 * 
-	 * @author Jean-Marc Le Roux
-	 * 
+	 * @author Romain Gilliotte
 	 */
 	public class BlendingShaderPart extends ShaderPart
 	{
