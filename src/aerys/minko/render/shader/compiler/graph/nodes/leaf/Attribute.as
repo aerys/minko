@@ -1,8 +1,8 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	/**
@@ -10,7 +10,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Attribute extends ANode
+	public class Attribute extends AbstractNode
 	{
 		private var _component		: VertexComponent;
 		private var _componentId	: uint;
@@ -28,7 +28,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		public function Attribute(component		: VertexComponent,
 								  componentId	: uint = 0)
 		{
-			super(new <ANode>[], new <uint>[]);
+			super(new <AbstractNode>[], new <uint>[]);
 			
 			_component		= component;
 			_componentId	= componentId;
@@ -49,7 +49,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return 'Attribute ' + _component.fields + '(' + _componentId + ')';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new Attribute(_component, _componentId);
 		}

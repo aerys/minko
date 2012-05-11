@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -41,14 +41,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_hashsToNodes = null;
 		}
 		
-		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 			var numArgs	: uint = node.numArguments;
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				var argument	 : ANode	= node.getArgumentAt(argId);
-				var argumentHash : uint		= argument.hash;
+				var argument	 : AbstractNode	= node.getArgumentAt(argId);
+				var argumentHash : uint			= argument.hash;
 				
 				if (_hashsToNodes[argumentHash] != undefined)
 					node.setArgumentAt(argId, _hashsToNodes[argumentHash]);
@@ -60,7 +60,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 		}
 	}

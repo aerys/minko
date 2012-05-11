@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
@@ -19,19 +19,19 @@ package aerys.minko.render.shader.compiler.graph
 	{
 		private var _nodeToParents			: Dictionary;
 		
-		private var _position				: ANode;
+		private var _position				: AbstractNode;
 		private var _positionComponents		: uint;
-		private var _interpolates			: Vector.<ANode>;
-		private var _color					: ANode;
+		private var _interpolates			: Vector.<AbstractNode>;
+		private var _color					: AbstractNode;
 		private var _colorComponents		: uint;
-		private var _kills					: Vector.<ANode>;
+		private var _kills					: Vector.<AbstractNode>;
 		private var _killComponents			: Vector.<uint>;
 		private var _computableConstants	: Object;
 		
-		public function get position()		: ANode				{ return _position;		}
-		public function get interpolates()	: Vector.<ANode>	{ return _interpolates;	}
-		public function get color()			: ANode				{ return _color;		}
-		public function get kills()			: Vector.<ANode>	{ return _kills;		}
+		public function get position()		: AbstractNode			{ return _position;		}
+		public function get interpolates()	: Vector.<AbstractNode>	{ return _interpolates;	}
+		public function get color()			: AbstractNode			{ return _color;		}
+		public function get kills()			: Vector.<AbstractNode>	{ return _kills;		}
 		
 		public function get positionComponents()	: uint			{ return _positionComponents;	}
 		public function get colorComponents()		: uint			{ return _colorComponents;		}
@@ -39,20 +39,20 @@ package aerys.minko.render.shader.compiler.graph
 		
 		public function get computableConstants()	: Object		{ return _computableConstants;	}
 		
-		public function set position			(v : ANode)	: void	{ _position = v;			}
-		public function set color				(v : ANode)	: void	{ _color = v;				}
-		public function set positionComponents	(v : uint)	: void	{ _positionComponents = v;	}
-		public function set colorComponents		(v : uint)	: void	{ _colorComponents = v;		}
+		public function set position			(v : AbstractNode)	: void	{ _position = v;			}
+		public function set color				(v : AbstractNode)	: void	{ _color = v;				}
+		public function set positionComponents	(v : uint)			: void	{ _positionComponents = v;	}
+		public function set colorComponents		(v : uint)			: void	{ _colorComponents = v;		}
 		
-		public function ShaderGraph(position	: ANode,
-									color		: ANode,
-									kills		: Vector.<ANode>)
+		public function ShaderGraph(position	: AbstractNode,
+									color		: AbstractNode,
+									kills		: Vector.<AbstractNode>)
 		{
 			_nodeToParents			= new Dictionary();
 			
 			_position				= position;
 			_positionComponents		= Components.createContinuous(0, 0, 4, position.size);
-			_interpolates			= new Vector.<ANode>();
+			_interpolates			= new Vector.<AbstractNode>();
 			_color					= color;
 			_colorComponents		= Components.createContinuous(0, 0, 4, color.size);
 			_kills					= kills;

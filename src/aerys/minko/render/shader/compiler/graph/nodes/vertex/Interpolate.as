@@ -1,21 +1,21 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
 	 */
-	public class Interpolate extends ANode
+	public class Interpolate extends AbstractNode
 	{
-		public function get argument() : ANode
+		public function get argument() : AbstractNode
 		{
 			return getArgumentAt(0);
 		}
 		
-		public function set argument(v : ANode) : void
+		public function set argument(v : AbstractNode) : void
 		{
 			setArgumentAt(0, v);
 		}
@@ -30,10 +30,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			setComponentAt(0, v);
 		}
 		
-		public function Interpolate(arg : ANode)
+		public function Interpolate(arg : AbstractNode)
 		{
-			var arguments	: Vector.<ANode> = new <ANode>[arg];
-			var components	: Vector.<uint>  = new <uint>[
+			var arguments	: Vector.<AbstractNode>	= new <AbstractNode>[arg];
+			var components	: Vector.<uint>			= new <uint>[
 				Components.createContinuous(0, 0, arg.size, arg.size)
 			];
 			
@@ -44,9 +44,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		
 		override protected function computeHash() : uint
 		{
-			var argument	: ANode		= getArgumentAt(0);
-			var components	: uint		= getComponentAt(0);
-			var hashString	: String	=
+			var argument	: AbstractNode	= getArgumentAt(0);
+			var components	: uint			= getComponentAt(0);
+			var hashString	: String		=
 				'Interpolate' + components.toString() + argument.hash.toString();
 			
 			return CRC32.computeForString(hashString);
@@ -64,7 +64,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return 'Interpolate';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			var clone : Interpolate = new Interpolate(argument);
 			clone.component = component;

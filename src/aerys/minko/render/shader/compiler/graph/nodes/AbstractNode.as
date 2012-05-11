@@ -4,9 +4,9 @@ package aerys.minko.render.shader.compiler.graph.nodes
 	
 	import flash.utils.Dictionary;
 
-	public class ANode
+	public class AbstractNode
 	{
-		private var _parents		: Vector.<ANode>;
+		private var _parents		: Vector.<AbstractNode>;
 		
 		private var _hashIsValid	: Boolean;
 		private var _sizeIsValid	: Boolean;
@@ -14,7 +14,7 @@ package aerys.minko.render.shader.compiler.graph.nodes
 		private var _hash			: uint;
 		private var _size			: uint;
 		
-		private var _arguments		: Vector.<ANode>;
+		private var _arguments		: Vector.<AbstractNode>;
 		private var _components		: Vector.<uint>;
 		
 		public final function get hash() : uint
@@ -49,7 +49,7 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			return _arguments.length;
 		}
 		
-		public function ANode(arguments  : Vector.<ANode>,
+		public function AbstractNode(arguments  : Vector.<AbstractNode>,
 							  components : Vector.<uint>)
 		{
 			_arguments		= arguments;
@@ -57,37 +57,37 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			
 			_hashIsValid	= false;
 			_sizeIsValid	= false;
-			_parents		= new Vector.<ANode>();
+			_parents		= new Vector.<AbstractNode>();
 			
 			if (arguments.length != components.length)
 				throw new ArgumentError('Invalid arguments, both vector must have the same size.');
 			
-			for each (var argument : ANode in arguments)
+			for each (var argument : AbstractNode in arguments)
 				argument.addParent(this);
 		}
 		
-		public function addParent(node : ANode) : void
+		public function addParent(node : AbstractNode) : void
 		{
 			_parents.push(node);
 		}
 		
-		public function removeParent(node : ANode) : void
+		public function removeParent(node : AbstractNode) : void
 		{
 			_parents.splice(_parents.indexOf(node), 1);
 		}
 
-		public function getParentAt(index : uint) : ANode
+		public function getParentAt(index : uint) : AbstractNode
 		{
 			return _parents[index];
 		}
 		
-		public function getArgumentAt(index : uint) : ANode
+		public function getArgumentAt(index : uint) : AbstractNode
 		{
 			return _arguments[index];
 		}
 		
 		public function setArgumentAt(index		: uint,
-									  argument	: ANode) : void
+									  argument	: AbstractNode) : void
 		{
 			_arguments[index].removeParent(this);
 			_arguments[index] = argument;
@@ -110,7 +110,7 @@ package aerys.minko.render.shader.compiler.graph.nodes
 		}
 		
 		public function addArgumentAt(index		: uint, 
-									  argument	: ANode,
+									  argument	: AbstractNode,
 									  component	: uint) : void
 		{
 			argument.addParent(this);
@@ -127,15 +127,15 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			_components.splice(index, 1);
 		}
 		
-		public function clone() : ANode
+		public function clone() : AbstractNode
 		{
 			throw new Error('Must be overriden');
 		}
 		
-		public function deepClone() : ANode
+		public function deepClone() : AbstractNode
 		{
 			var nodeToClone : Dictionary	= new Dictionary();
-			var clone		: ANode			= this.clone();
+			var clone		: AbstractNode			= this.clone();
 			var numArgs		: uint			= this.numArguments;
 			var argumentId	: uint; 
 			

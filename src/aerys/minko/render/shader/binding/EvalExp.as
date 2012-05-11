@@ -2,7 +2,7 @@ package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.shader.compiler.Evaluator;
 	import aerys.minko.render.shader.compiler.Serializer;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.binding
 	 */
 	public class EvalExp
 	{
-		private var _tree				: ANode;
+		private var _tree				: AbstractNode;
 		
 		private var _bindableConstants	: Vector.<BindableConstant>;
 		private var _binderNames		: Vector.<String>;
@@ -28,7 +28,7 @@ package aerys.minko.render.shader.binding
 			return _bindableConstants;
 		}
 		
-		public function EvalExp(tree : ANode)
+		public function EvalExp(tree : AbstractNode)
 		{
 			_tree				= tree;
 			_bindableConstants	= getBindableConstants(tree);
@@ -42,7 +42,7 @@ package aerys.minko.render.shader.binding
 			}
 		}
 		
-		private function getBindableConstants(tree : ANode) : Vector.<BindableConstant>
+		private function getBindableConstants(tree : AbstractNode) : Vector.<BindableConstant>
 		{
 			var constants : Vector.<BindableConstant> = new Vector.<BindableConstant>();
 			
@@ -51,7 +51,8 @@ package aerys.minko.render.shader.binding
 			return constants;
 		}
 		
-		private function getBindableConstantsRec(tree : ANode, bindableConstants : Vector.<BindableConstant>) : void
+		private function getBindableConstantsRec(tree				: AbstractNode,
+												 bindableConstants	: Vector.<BindableConstant>) : void
 		{
 			if (tree is BindableConstant)
 			{
@@ -81,7 +82,7 @@ package aerys.minko.render.shader.binding
 			return allSet ? visit(_tree, dataStore) : null;
 		}
 		
-		private function visit(node	: ANode, dataStore : Dictionary) : Vector.<Number>
+		private function visit(node	: AbstractNode, dataStore : Dictionary) : Vector.<Number>
 		{
 			if (node is Constant)
 				return Constant(node).value;
@@ -123,8 +124,8 @@ package aerys.minko.render.shader.binding
 				var result					: Vector.<Number>	= new Vector.<Number>(overwriterSize, true);
 				for (var argId : uint = 0; argId < overwriterNumArgs; ++argId)
 				{
-					var argument	: ANode	= overwriter.getArgumentAt(argId);
-					var component	: uint	= overwriter.getComponentAt(argId);
+					var argument	: AbstractNode	= overwriter.getArgumentAt(argId);
+					var component	: uint			= overwriter.getComponentAt(argId);
 					
 					tmpVec = visit(argument, dataStore);
 					tmpVec = Evaluator.evaluateComponentWithHoles(component, tmpVec);

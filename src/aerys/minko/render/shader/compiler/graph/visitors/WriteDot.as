@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -61,7 +61,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			visit(_shaderGraph.color, false);
 			appendLink(outputColor, _shaderGraph.color);
 			
-			for each (var kill : ANode in _shaderGraph.kills)
+			for each (var kill : AbstractNode in _shaderGraph.kills)
 			{
 				visit(kill, false);
 				appendLink(kills, kill);
@@ -117,8 +117,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
 			{
-				var argument 	: ANode = overwriter.getArgumentAt(argumentId);
-				var component	: uint	= overwriter.getComponentAt(argumentId);
+				var argument 	: AbstractNode	= overwriter.getArgumentAt(argumentId);
+				var component	: uint			= overwriter.getComponentAt(argumentId);
 				
 				visit(argument, isVertexShader);
 				appendLink(overwriter, argument, component);
@@ -160,7 +160,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			appendNode(bindableConstant, 'palegreen1', 'Parameter (' + bindableConstant.size + ')', bindableConstant.bindingName);
 			
-			var subGraph : ANode = _shaderGraph.computableConstants[bindableConstant.bindingName] as ANode;
+			var subGraph : AbstractNode = _shaderGraph.computableConstants[bindableConstant.bindingName] as AbstractNode;
 			
 			if (subGraph != null)
 			{

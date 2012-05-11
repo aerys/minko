@@ -4,7 +4,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.binding.*;
 	import aerys.minko.render.shader.compiler.allocation.*;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.*;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.*;
 	import aerys.minko.render.shader.compiler.register.*;
@@ -156,7 +156,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (i = 0; i < numKills; ++i)
 			{
-				var kill : ANode = _shaderGraph.kills[i];
+				var kill : AbstractNode = _shaderGraph.kills[i];
 				if (kill is Constant || kill is BindableConstant)
 					_shaderGraph.kills[i] = kill = new Instruction(Instruction.MOV, kill);
 				
@@ -222,7 +222,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
 				var bindingName : String			= bindableConstant.bindingName;
-				var tree		: ANode				= _shaderGraph.computableConstants[bindingName];
+				var tree		: AbstractNode		= _shaderGraph.computableConstants[bindingName];
 				var alloc		: SimpleAllocation	= _allocStore.getSimpleAlloc(bindableConstant, isVertexShader);
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
@@ -334,7 +334,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument			: ANode, 
+		private function getSourceFor(argument			: AbstractNode, 
 									  readComponents	: uint, 
 									  destAlloc			: SimpleAllocation, 
 									  isVertexShader	: Boolean) : IAgalToken
@@ -389,7 +389,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return source;
 		}
 		
-		private function extendLifeTime(argument : ANode, isVertexShader : Boolean) : void
+		private function extendLifeTime(argument : AbstractNode, isVertexShader : Boolean) : void
 		{
 			var instructionCounter : uint = getInstructionCounter(isVertexShader);
 			
@@ -431,10 +431,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				var arg				: ANode	= overwriter.getArgumentAt(argId);
-				var component		: uint	= overwriter.getComponentAt(argId);
-				var minWriteOffset	: int	= Components.getMinWriteOffset(component);
-				var newAllocation : SimpleAllocation;
+				var arg				: AbstractNode	= overwriter.getArgumentAt(argId);
+				var component		: uint			= overwriter.getComponentAt(argId);
+				var minWriteOffset	: int			= Components.getMinWriteOffset(component);
+				var newAllocation	: SimpleAllocation;
 				
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
@@ -647,7 +647,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('There cannot be any extract left at this point of shader compilation. Go fix your code.');
 		}
 		
-		private function getAllocatorFor(node : ANode, isVertexShader : Boolean) : Allocator
+		private function getAllocatorFor(node : AbstractNode, isVertexShader : Boolean) : Allocator
 		{
 			// if this is the root node, it has a different allocator.
 			if (node === _shaderGraph.position)

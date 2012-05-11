@@ -2,7 +2,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.Serializer;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 
 
 	/**
@@ -10,7 +10,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Constant extends ANode
+	public class Constant extends AbstractNode
 	{
 		private var _value : Vector.<Number>
 		
@@ -26,7 +26,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		public function Constant(value : Vector.<Number>)
 		{
-			super(new <ANode>[], new <uint>[]);
+			super(new <AbstractNode>[], new <uint>[]);
 			
 			_value = value;
 		}
@@ -46,7 +46,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return 'Constant';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new Constant(_value.slice());
 		}

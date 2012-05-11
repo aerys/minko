@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 
 	
 	/**
@@ -9,7 +9,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class BindableConstant extends ANode
+	public class BindableConstant extends AbstractNode
 	{
 		public static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';
 		
@@ -23,7 +23,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		public function BindableConstant(bindingName : String, size : uint)
 		{
-			super(new <ANode>[], new <uint>[]);
+			super(new <AbstractNode>[], new <uint>[]);
 			
 			if (size == 0)
 				throw new Error('Cannot create a zero-sized parameter');
@@ -50,7 +50,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return 'BindableConstant_' + bindingName + '_' + size;
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new BindableConstant(_bindingName, _size);
 		}

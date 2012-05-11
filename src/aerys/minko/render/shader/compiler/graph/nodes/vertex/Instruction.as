@@ -2,7 +2,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.InstructionFlag;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	import flash.utils.Dictionary;
@@ -11,7 +11,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 * @private
 	 * @author Romain Gilliotte
 	 */
-	public class Instruction extends ANode
+	public class Instruction extends AbstractNode
 	{
 		public static const MOV : uint = 0x00;
 		public static const ADD : uint = 0x01;
@@ -111,15 +111,15 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		public function get id()			: uint		{ return _id;		}
 		public function get name()			: String	{ return NAME[_id];	}
 		
-		public function get argument1()		: ANode		{ return getArgumentAt(0);	}
-		public function get argument2() 	: ANode 	{ return getArgumentAt(1);	}
-		public function get component1()	: uint		{ return getComponentAt(0);	}
-		public function get component2()	: uint		{ return getComponentAt(1);	}
+		public function get argument1()		: AbstractNode	{ return getArgumentAt(0);	}
+		public function get argument2() 	: AbstractNode 	{ return getArgumentAt(1);	}
+		public function get component1()	: uint			{ return getComponentAt(0);	}
+		public function get component2()	: uint			{ return getComponentAt(1);	}
 		
-		public function set argument1(v : ANode) : void { setArgumentAt(0, v);	}
-		public function set argument2(v : ANode) : void { setArgumentAt(1, v);	}
-		public function set component1(v : uint) : void { setComponentAt(0, v);	}
-		public function set component2(v : uint) : void { setComponentAt(1, v);	}
+		public function set argument1(v : AbstractNode) : void { setArgumentAt(0, v);	}
+		public function set argument2(v : AbstractNode) : void { setArgumentAt(1, v);	}
+		public function set component1(v : uint) 		: void { setComponentAt(0, v);	}
+		public function set component2(v : uint) 		: void { setComponentAt(1, v);	}
 		
 		public function get isAssociative() : Boolean
 		{
@@ -147,8 +147,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		}
 
 		public function Instruction(id			: uint,
-									argument1	: ANode,
-									argument2	: ANode = null)
+									argument1	: AbstractNode,
+									argument2	: AbstractNode = null)
 		{
 			_id = id;
 			
@@ -156,8 +156,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 				Components.createContinuous(0, 0, 4, 4) :
 				Components.createContinuous(0, 0, argument1.size, argument1.size)
 			
-			var arguments	: Vector.<ANode>	= new <ANode>[argument1];
-			var components	: Vector.<uint>		= new <uint>[component1];
+			var arguments	: Vector.<AbstractNode>	= new <AbstractNode>[argument1];
+			var components	: Vector.<uint>			= new <uint>[component1];
 			
 			if (!isSingle)
 			{
@@ -235,7 +235,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return name;
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			var clone : Instruction;
 			if (isSingle)
