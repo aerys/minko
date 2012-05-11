@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 	
 	import flash.utils.Dictionary;
@@ -29,8 +29,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			// all nodes in the fragment shader that are present in the vertex shader are to be replaced.
 			var vertexDuplicates : Dictionary = cloneDuplicatedNodes();
 			generateClonedSubGraphFromUnlikedClones(vertexDuplicates);
@@ -38,6 +36,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			_vertexNode	  = null;
 			_fragmentNode = null;
+			
+			super.finish();
 		}
 		
 		private function cloneDuplicatedNodes() : Dictionary
@@ -58,13 +58,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			// This will build valid subgraphs
 			for (var node : Object in vertexDuplicates)
 			{
-				var duplicate		: ANode = ANode(vertexDuplicates[node]);
-				var numArguments	: uint	= duplicate.numArguments;
+				var duplicate		: AbstractNode	= AbstractNode(vertexDuplicates[node]);
+				var numArguments	: uint			= duplicate.numArguments;
 				
 				for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
 				{
-					var oldArgument : ANode = duplicate.getArgumentAt(argumentId);
-					var newArgument : ANode = vertexDuplicates[oldArgument];
+					var oldArgument : AbstractNode	= duplicate.getArgumentAt(argumentId);
+					var newArgument : AbstractNode	= vertexDuplicates[oldArgument];
 					duplicate.setArgumentAt(argumentId, newArgument);
 				}
 			}
@@ -75,14 +75,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			// we now need to connect the valid cloned subgraphs we created into the fragment shader.
 			for (var node : Object in vertexDuplicates)
 			{
-				var original	: ANode = ANode(node);
-				var duplicate	: ANode = ANode(vertexDuplicates[original]);
-				var numParents	: uint	= original.numParents;
+				var original	: AbstractNode	= AbstractNode(node);
+				var duplicate	: AbstractNode	= AbstractNode(vertexDuplicates[original]);
+				var numParents	: uint			= original.numParents;
 				
 				// if original has parents in vertex shader and fragment shader, we split it.
 				for (var parentId : int = numParents - 1; parentId >= 0; --parentId)
 				{
-					var parent : ANode = original.getParentAt(parentId);
+					var parent : AbstractNode = original.getParentAt(parentId);
 					if (_fragmentNode[parent])
 					{
 						var numArguments : uint = parent.numArguments;
@@ -94,7 +94,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		override protected function visit(node : ANode, isVertexShader : Boolean) : void
+		override protected function visit(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			if ((isVertexShader && _vertexNode[node]) || (!isVertexShader && _fragmentNode[node]))
 				return;

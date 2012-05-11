@@ -4,7 +4,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.binding.*;
 	import aerys.minko.render.shader.compiler.allocation.*;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.*;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.*;
 	import aerys.minko.render.shader.compiler.register.*;
@@ -156,7 +156,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (i = 0; i < numKills; ++i)
 			{
-				var kill : ANode = _shaderGraph.kills[i];
+				var kill : AbstractNode = _shaderGraph.kills[i];
 				if (kill is Constant || kill is BindableConstant)
 					_shaderGraph.kills[i] = kill = new Instruction(Instruction.MOV, kill);
 				
@@ -169,8 +169,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
 			for each (var allocator : Allocator in [ _attributeAllocator,
 				_vsConstAllocator, _fsConstAllocator, _vsTempAllocator, 
 				_fsTempAllocator, _varyingAllocator, _opAllocator, _ocAllocator])
@@ -188,6 +186,38 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_fsProgram				= writeProgram(_fsInstructions, false);
 			
 			processAttributes();
+			
+			super.finish();
+		}
+		
+		public function clear() : void
+		{
+			// allocators
+			_opAllocator				= null;
+			_ocAllocator				= null;
+			_attributeAllocator			= null;
+			_vsConstAllocator			= null;
+			_fsConstAllocator			= null;
+			_vsTempAllocator			= null;
+			_fsTempAllocator			= null;
+			_varyingAllocator			= null;
+			
+			_allocStore					= null;
+			
+			// first pass data
+			_vsInstructions				= null;
+			_fsInstructions				= null;
+			_vsConstants				= null;
+			_fsConstants				= null;
+			_vsParams					= null;
+			_fsParams					= null;
+			_samplers					= null;
+			
+			// final compiled data
+			_paramBindings				= null;
+			_vertexComponents			= null;
+			_vertexIndices				= null;
+			_textures					= null;
 		}
 		
 		private function processAttributes() : void
@@ -222,7 +252,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			for each (var bindableConstant : BindableConstant in bindableConstants)
 			{
 				var bindingName : String			= bindableConstant.bindingName;
-				var tree		: ANode				= _shaderGraph.computableConstants[bindingName];
+				var tree		: AbstractNode		= _shaderGraph.computableConstants[bindingName];
 				var alloc		: SimpleAllocation	= _allocStore.getSimpleAlloc(bindableConstant, isVertexShader);
 				var binder		: IBinder			= new ConstantBinder(bindingName, alloc.offset, alloc.maxSize, isVertexShader);
 				
@@ -334,7 +364,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return result;
 		}
 		
-		private function getSourceFor(argument			: ANode, 
+		private function getSourceFor(argument			: AbstractNode, 
 									  readComponents	: uint, 
 									  destAlloc			: SimpleAllocation, 
 									  isVertexShader	: Boolean) : IAgalToken
@@ -389,7 +419,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return source;
 		}
 		
-		private function extendLifeTime(argument : ANode, isVertexShader : Boolean) : void
+		private function extendLifeTime(argument : AbstractNode, isVertexShader : Boolean) : void
 		{
 			var instructionCounter : uint = getInstructionCounter(isVertexShader);
 			
@@ -431,10 +461,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				var arg				: ANode	= overwriter.getArgumentAt(argId);
-				var component		: uint	= overwriter.getComponentAt(argId);
-				var minWriteOffset	: int	= Components.getMinWriteOffset(component);
-				var newAllocation : SimpleAllocation;
+				var arg				: AbstractNode	= overwriter.getArgumentAt(argId);
+				var component		: uint			= overwriter.getComponentAt(argId);
+				var minWriteOffset	: int			= Components.getMinWriteOffset(component);
+				var newAllocation	: SimpleAllocation;
 				
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
@@ -471,9 +501,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					if (instructionArg.isComponentWise)
 					{
 						// visit the arguments
-						visit(instructionArg.argument1, isVertexShader);
-						if (!instructionArg.isSingle)
-							visit(instructionArg.argument2, isVertexShader);
+						visitArguments(instructionArg, isVertexShader);
 						
 						// create a new operation that combines the swizzles of the overwriter and
 						// the instruction under it (this works only because it's all component wise).
@@ -649,7 +677,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('There cannot be any extract left at this point of shader compilation. Go fix your code.');
 		}
 		
-		private function getAllocatorFor(node : ANode, isVertexShader : Boolean) : Allocator
+		private function getAllocatorFor(node : AbstractNode, isVertexShader : Boolean) : Allocator
 		{
 			// if this is the root node, it has a different allocator.
 			if (node === _shaderGraph.position)

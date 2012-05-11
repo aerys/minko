@@ -1,7 +1,7 @@
 package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -63,7 +63,7 @@ package aerys.minko.render.shader
 	{
 		use namespace minko_shader;
 		
-		minko_shader var _node	: ANode	= null;
+		minko_shader var _node	: AbstractNode	= null;
 		
 		public final function get size() : uint
 		{
@@ -119,18 +119,18 @@ package aerys.minko.render.shader
 		{
 			var nodeComponent		: uint = Components.createContinuous(0, 0, _node.size, _node.size);
 			var propertyComponent	: uint	= Components.stringToComponent(name);
-			var propertyNode		: ANode	= getNode(value);
+			var propertyNode		: AbstractNode	= getNode(value);
 			
 			_node = new Overwriter(
-				new <ANode>[_node, propertyNode], 
+				new <AbstractNode>[_node, propertyNode], 
 				new <uint>[nodeComponent, propertyComponent]
 			);
 		}
 
-		private function getNode(value : Object) : ANode
+		private function getNode(value : Object) : AbstractNode
 		{
-			if (value is ANode)
-				return value as ANode;
+			if (value is AbstractNode)
+				return value as AbstractNode;
 
 			if (value is SFloat)
 				return (value as SFloat)._node;

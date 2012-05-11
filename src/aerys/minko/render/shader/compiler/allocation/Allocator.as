@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.allocation
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
 	import aerys.minko.render.shader.compiler.register.RegisterType;

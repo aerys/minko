@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
 
@@ -134,10 +134,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return numMatches;
 		}
 		
-		override protected function visitTraversable(node : ANode, isVertexShader : Boolean) : void
+		override protected function visitTraversable(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			if (node is Interpolate)
-				isVertexShader = false;
+				isVertexShader = true;
 			
 			visitArguments(node, isVertexShader);
 		}

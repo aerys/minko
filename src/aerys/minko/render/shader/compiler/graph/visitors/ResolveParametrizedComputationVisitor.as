@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.Minko;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -41,20 +41,23 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			super.finish();
-			
-			if (_isComputable[_shaderGraph.position])
+			if (_isComputable[_shaderGraph.position] && !isConstant(_shaderGraph.position))
 				_shaderGraph.position = createComputableConstant(_shaderGraph.position);
 			
-			if (_isComputable[_shaderGraph.color])
+			if (_isComputable[_shaderGraph.color] && !isConstant(_shaderGraph.color))
 				_shaderGraph.color = createComputableConstant(_shaderGraph.color);
 			
-			var kills		: Vector.<ANode>	= _shaderGraph.kills;
-			var numKills	: uint				= kills.length;
+			var kills		: Vector.<AbstractNode>	= _shaderGraph.kills;
+			var numKills	: uint					= kills.length;
 			
 			for (var killId : uint = 0; killId < numKills; ++killId)
-				if (_isComputable[kills[killId]])
-					kills[killId] = createComputableConstant(kills[killId]);
+			{
+				var kill : AbstractNode = kills[killId];
+				if (_isComputable[kill] && !isConstant(kill))
+					kills[killId] = createComputableConstant(kill);
+			}
+			
+			super.finish();
 		}
 		
 		override protected function visitInterpolate(interpolate	: Interpolate, 
@@ -108,14 +111,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var argumentId		: int;
 			var numArguments	: uint				= overwriter.numArguments;
 			
-			var computableArgs	: Vector.<ANode>	= new Vector.<ANode>();
-			var computableComps	: Vector.<uint>		= new Vector.<uint>();
+			var computableArgs	: Vector.<AbstractNode>	= new Vector.<AbstractNode>();
+			var computableComps	: Vector.<uint>			= new Vector.<uint>();
 			
 			// which arguments are computable?
 			// remove them from the overwriter
 			for (argumentId = numArguments - 1; argumentId >= 0; --argumentId)
 			{
-				var argument : ANode = overwriter.getArgumentAt(argumentId)
+				var argument : AbstractNode = overwriter.getArgumentAt(argumentId)
 				if (_isComputable[argument])
 				{
 					computableArgs.push(argument);
@@ -214,12 +217,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			throw new Error('Found invalid node: ' + extract.toString());
 		}
 		
-		private function isConstant(node : ANode) : Boolean
+		private function isConstant(node : AbstractNode) : Boolean
 		{
 			return node is BindableConstant || node is Constant;
 		}
 		
-		private function createComputableConstant(computableNode : ANode) : BindableConstant
+		private function createComputableConstant(computableNode : AbstractNode) : BindableConstant
 		{
 			var constantName : String = BindableConstant.COMPUTABLE_CONSTANT_PREFIX + (_computableConstantId++);
 			_shaderGraph.computableConstants[constantName] = computableNode;

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.Evaluator;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -170,7 +170,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return packedComponents;
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 		}
 		

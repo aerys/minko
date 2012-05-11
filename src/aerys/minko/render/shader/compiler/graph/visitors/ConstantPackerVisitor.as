@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 
 	public class ConstantPackerVisitor extends AbstractVisitor
@@ -10,7 +10,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			super();
 		}
 		
-		override protected function visitTraversable(node : ANode, isVertexShader : Boolean) : void
+		override protected function visitTraversable(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			visitArguments(node, true);
 		}

@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.allocation
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	
 	import flash.utils.Dictionary;
 

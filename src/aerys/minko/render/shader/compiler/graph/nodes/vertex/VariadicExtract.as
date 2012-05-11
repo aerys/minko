@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
@@ -9,16 +9,16 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class VariadicExtract extends ANode
+	public class VariadicExtract extends AbstractNode
 	{
 		private var _isMatrix : Boolean;
 		
-		public function get index() : ANode
+		public function get index() : AbstractNode
 		{
 			return getArgumentAt(0);
 		}
 		
-		public function get constant() : ANode
+		public function get constant() : AbstractNode
 		{
 			return getArgumentAt(1);
 		}
@@ -38,24 +38,24 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			setComponentAt(0, Components.createFromParts(v));
 		}
 		
-		public function set index(v : ANode) : void
+		public function set index(v : AbstractNode) : void
 		{
 			setArgumentAt(0, v);
 		}
 		
-		public function set constant(v : ANode) : void
+		public function set constant(v : AbstractNode) : void
 		{
 			setArgumentAt(1, v);
 		}
 		
-		public function VariadicExtract(index		: ANode, 
-										constant	: ANode,
+		public function VariadicExtract(index		: AbstractNode, 
+										constant	: AbstractNode,
 										isMatrix	: Boolean)
 		{
 			_isMatrix = isMatrix;
 			
-			var arguments : Vector.<ANode>	= new <ANode>[index, constant];
-			var components: Vector.<uint>	= new <uint>[
+			var arguments : Vector.<AbstractNode>	= new <AbstractNode>[index, constant];
+			var components: Vector.<uint>			= new <uint>[
 				Components.createFromParts(0), 
 				Components.createFromParts(0, 1, 2, 3)
 			];
@@ -85,7 +85,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return 'VariadicExtract';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new VariadicExtract(index, constant, _isMatrix);
 		}

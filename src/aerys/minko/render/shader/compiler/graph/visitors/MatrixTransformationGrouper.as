@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.binding.EvalExp;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -34,7 +34,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			_computableMatrixId = 0;
 		}
 		
-		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 			if (node is Instruction)
 				visitInstruction(Instruction(node), isVertexShader);
@@ -46,9 +46,9 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function visitInstruction(instruction : Instruction, isVertexShader : Boolean) : void
 		{
-			var currentArg	: ANode = instruction;
-			var matrices	: ANode = null;
-			var numMerged	: uint	= 0;
+			var currentArg	: AbstractNode	= instruction;
+			var matrices	: AbstractNode	= null;
+			var numMerged	: uint			= 0;
 			
 			if (instruction.id == Instruction.M44)
 				while (currentArg is Instruction && Instruction(currentArg).id == Instruction.M44)
@@ -82,7 +82,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node : AbstractNode, isVertexShader : Boolean):void
 		{
 		}
 	}

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	
 	/**
 	 * @private
@@ -38,7 +38,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return 'BindedSampler';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new BindableSampler(_bindingName, filter, mipmap, wrapping, dimension);
 		}

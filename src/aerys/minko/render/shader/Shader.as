@@ -5,9 +5,8 @@ package aerys.minko.render.shader
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
-	import aerys.minko.render.shader.compiler.Compiler;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
@@ -35,7 +34,7 @@ package aerys.minko.render.shader
 		
 		minko_shader var _meshBindings		: ShaderDataBindings			= null;
 		minko_shader var _sceneBindings		: ShaderDataBindings			= null;
-		minko_shader var _kills				: Vector.<ANode>				= new <ANode>[];
+		minko_shader var _kills				: Vector.<AbstractNode>			= new <AbstractNode>[];
 		
 		private var _name					: String						= null;
 		private var _baseConfig				: ShaderSettings				= new ShaderSettings(null);
@@ -197,7 +196,7 @@ package aerys.minko.render.shader
 		 */
 		protected function initializeSettings(settings : ShaderSettings) : void
 		{
-//			throw new Error("The method 'configurePass' must be implemented.");
+//			throw new Error("The method 'initializeSettings' must be implemented.");
 		}
 		
 		/**
@@ -252,12 +251,11 @@ package aerys.minko.render.shader
 			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
 			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
-			var vertexPosition	: ANode			= getVertexPosition()._node;
-			var pixelColor		: ANode			= getPixelColor()._node;
+			var vertexPosition	: AbstractNode	= getVertexPosition()._node;
+			var pixelColor		: AbstractNode	= getPixelColor()._node;
+			var shaderGraph		: ShaderGraph	= new ShaderGraph(vertexPosition, pixelColor, _kills);
 			
-			Compiler.load(new ShaderGraph(vertexPosition, pixelColor, _kills), 0xffffff);
-			
-			program			= Compiler.compileShader(_name, signature);
+			program			= shaderGraph.generateProgram(_name, signature);
 			_meshBindings	= null;
 			_sceneBindings	= null;
 			_kills.length	= 0;
