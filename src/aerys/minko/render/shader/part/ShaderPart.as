@@ -386,6 +386,9 @@ package aerys.minko.render.shader.part
 		 */
 		protected final function pack(scalar : Object) : SFloat
 		{
+			if (scalar.size != 1)
+				throw new ArgumentError('Argument of size 1 expected. ' + scalar + ' received');
+			
 			var bitSh	: SFloat = float4(256. * 256. * 256., 256. * 256, 256., 1.);
 			var bitMsk	: SFloat = float4(0., 1. / 256., 1. / 256., 1. / 256.);
 			var comp	: SFloat = fractional(multiply(getNode(scalar), bitSh));

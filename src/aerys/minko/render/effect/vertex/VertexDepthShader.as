@@ -23,7 +23,7 @@ package aerys.minko.render.effect.vertex
 		
 		override protected function getPixelColor() : SFloat
 		{
-			return pack(interpolate(_vertexPosition));
+			return pack(interpolate(divide(_vertexPosition.z, _vertexPosition.w)));
 		}
 	}
 }
