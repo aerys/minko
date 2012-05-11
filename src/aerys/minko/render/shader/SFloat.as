@@ -122,7 +122,7 @@ package aerys.minko.render.shader
 			var propertyNode		: AbstractNode	= getNode(value);
 			
 			_node = new Overwriter(
-				new <AbstractNode>[node, propertyNode], 
+				new <AbstractNode>[_node, propertyNode], 
 				new <uint>[nodeComponent, propertyComponent]
 			);
 		}
