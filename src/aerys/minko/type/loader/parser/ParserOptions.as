@@ -95,6 +95,18 @@ package aerys.minko.type.loader.parser
 			_loadDependencies = value;
 		}
 
+		public function clone(): ParserOptions
+		{
+			return new ParserOptions(
+				_loadDependencies,
+				_dependencyLoaderClosure,
+				_mipmapTextures,
+				_meshEffect,
+				_vertexStreamUsage,
+				_indexStreamUsage,
+				_parser
+			);
+		}
 		
 		public function ParserOptions(loadDependencies			: Boolean = false,
 									  dependencyLoaderClosure	: Function = null,
