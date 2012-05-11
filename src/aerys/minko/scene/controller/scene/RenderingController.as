@@ -493,16 +493,17 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					if (passInstance.program == null)
-						continue ;
+					if (passInstance.program != null)
+					{
+						newDrawCall.configure(
+							passInstance.program,
+							mesh.geometry,
+							meshBindings,
+							sceneBindings,
+							passInstance.settings.depthSortDrawCalls
+						);
+					}
 					
-					newDrawCall.configure(
-						passInstance.program,
-						mesh.geometry,
-						meshBindings,
-						sceneBindings,
-						passInstance.settings.depthSortDrawCalls
-					);
 					drawCalls[i] = newDrawCall;
 					
 					// retain the instance, update indexes, watch for invalidation, give to renderingList.
