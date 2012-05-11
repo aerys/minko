@@ -143,8 +143,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			var opMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.position);
 			var ocMove : Instruction = new Instruction(Instruction.MOV, _shaderGraph.color);
 			
-			opMove.component1	= _shaderGraph.positionComponents;
-			ocMove.component1	= _shaderGraph.colorComponents;
+			opMove.component1		= _shaderGraph.positionComponents;
+			ocMove.component1		= _shaderGraph.colorComponents;
 			_shaderGraph.position	= opMove;
 			_shaderGraph.color		= ocMove;
 			

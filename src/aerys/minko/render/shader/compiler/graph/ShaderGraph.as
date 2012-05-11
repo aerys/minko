@@ -150,6 +150,7 @@ package aerys.minko.render.shader.compiler.graph
 		{
 			// execute consecutive visitors to optimize the shader graph.
 			// Warning: the order matters, do not swap lines.
+			// log shader in dotty format
 			MERGER					.process(this);	// merge duplicate nodes
 			REMOVE_EXTRACT			.process(this);	// remove all extract nodes
 			OVERWRITER_CLEANER		.process(this);	// remove nested overwriters
@@ -158,11 +159,10 @@ package aerys.minko.render.shader.compiler.graph
 			REMOVE_USELESS			.process(this);	// remove some useless operations (add 0, mul 0, mul 1...)
 			RESOLVE_PARAMETRIZED	.process(this);	// replace computations that depend on parameters by evalexp parameters
 //			MATRIX_TRANSFORMATION	.process(this);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
-			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
+//			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
 			SPLITTER				.process(this);	// clone nodes that are shared between vertex and fragment shader
 			CONSTANT_GROUPER		.process(this);	// group constants [0,1] & [0,2] => [0, 1, 2]
 			
-			// log shader in dotty format
 			if (Minko.debugLevel & DebugLevel.SHADER_DOTTY)
 			{
 				WRITE_DOT.process(this);
@@ -185,6 +185,8 @@ package aerys.minko.render.shader.compiler.graph
 			_textures			= ALLOCATOR.textures;
 			
 			ALLOCATOR.clear();
+			
+			_isCompiled = true;
 		}
 		
 		private function computeBinaryProgram(sequence			: Vector.<AgalInstruction>,
