@@ -65,14 +65,14 @@ package aerys.minko.render.shader
 		
 		minko_shader var _node	: ANode	= null;
 		
+		public final function get size() : uint
+		{
+			return _node.size;
+		}
+		
 		public function SFloat(value : Object)
 		{
 			_node = getNode(value);
-		}
-
-		public final function multiply(arg : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.MUL, _node, getNode(arg)));
 		}
 
 		public final function scaleBy(arg : Object) : SFloat
@@ -82,35 +82,6 @@ package aerys.minko.render.shader
 			return this;
 		}
 
-		public final function divide(arg : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.DIV, _node, getNode(arg)));
-		}
-
-		public final function modulo(base : Object) : SFloat
-		{
-			var baseNode : ANode = getNode(base);
-			
-			return new SFloat(
-				new Instruction(Instruction.MUL, 
-					baseNode,
-					new Instruction(Instruction.FRC, 
-						new Instruction(Instruction.DIV, _node, baseNode)
-					)
-				)
-			);
-		}
-
-		public final function pow(arg : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.POW, _node, getNode(arg)));
-		}
-
-		public final function add(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.ADD, _node, getNode(value)));
-		}
-
 		public final function incrementBy(value : Object) : SFloat
 		{
 			_node = new Instruction(Instruction.ADD, _node, getNode(value));
@@ -118,31 +89,11 @@ package aerys.minko.render.shader
 			return this;
 		}
 
-		public final function subtract(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.SUB, _node, getNode(value)));
-		}
-
 		public final function decrementBy(value : Object) : SFloat
 		{
 			_node = new Instruction(Instruction.SUB, _node, getNode(value));
 
 			return this;
-		}
-
-		public final function dotProduct3(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.DP3, _node, getNode(value)));
-		}
-
-		public final function dotProduct4(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.DP4, _node, getNode(value)));
-		}
-
-		public final function multiply4x4(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.M44, _node, getNode(value)));
 		}
 
 		public final function normalize() : SFloat
@@ -157,26 +108,6 @@ package aerys.minko.render.shader
 			_node = new Instruction(Instruction.NEG, _node);
 
 			return this;
-		}
-
-		public final function greaterEqual(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.SGE, _node, getNode(value)));
-		}
-		
-		public final function lessThan(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.SLT, _node, getNode(value)));
-		}
-		
-		public final function equal(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.SEQ, _node, getNode(value)));
-		}
-		
-		public final function notEqual(value : Object) : SFloat
-		{
-			return new SFloat(new Instruction(Instruction.SNE, _node, getNode(value)));
 		}
 
 		override flash_proxy function getProperty(name : *) : *

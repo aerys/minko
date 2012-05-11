@@ -35,20 +35,19 @@ package aerys.minko.render.shader.part.projection
 		}
 		
 		public function projectVector(vector	: SFloat, 
-									  target	: Rectangle	= null, 
+									  target	: Rectangle, 
 									  zNear		: Number	= 5, 
 									  zFar		: Number	= 1000) : SFloat
 		{
-			var projectionMatrix	: Matrix4x4 = new Matrix4x4().perspectiveFoV(Math.PI / 4, 1, zNear, zFar);
-			var worldToScreenMatrix	: Matrix4x4 = new Matrix4x4().copyFrom(VIEW_MATRICES[_side])
-																 .append(projectionMatrix);
-			var worldToScreen		: SFloat	= new SFloat(worldToScreenMatrix);
+			var projection		: Matrix4x4 = new Matrix4x4().perspectiveFoV(Math.PI / 4, 1, zNear, zFar);
+			var worldToScreen	: Matrix4x4 = new Matrix4x4().copyFrom(VIEW_MATRICES[_side])
+															 .append(projection);
 			
 			return multiply4x4(vector, worldToScreen);
 		}
 		
 		public function unprojectVector(projectedVector	: SFloat, 
-										source			: Rectangle = null) : SFloat
+										source			: Rectangle) : SFloat
 		{
 			throw new Error('Not yet implemented');
 		}

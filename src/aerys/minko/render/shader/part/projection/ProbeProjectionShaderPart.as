@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.part.projection
 {
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
 	
 	import flash.geom.Rectangle;
@@ -11,13 +11,15 @@ package aerys.minko.render.shader.part.projection
 	 */	
 	public class ProbeProjectionShaderPart extends ShaderPart implements IProjectionShaderPart
 	{
+		private static const CLIPSPACE_RECTANGLE : Rectangle = new Rectangle(-1, -1, 2, 2);
+		
 		public function ProbeProjectionShaderPart(main : Shader)
 		{
 			super(main);
 		}
 
 		public function projectVector(vector	: SFloat,
-									  target	: Rectangle = null,
+									  target	: Rectangle,
 									  zNear		: Number	= 0,
 									  zFar		: Number	= 1000) : SFloat
 		{
@@ -26,38 +28,28 @@ package aerys.minko.render.shader.part.projection
 			vector = normalize(vector);
 			
 			var m				: SFloat = rsqrt(multiply(2, add(vector.z, 1)));
-			var projectedVector : SFloat = SFloat(vector.xy).scaleBy(m);
+			var projectedVector : SFloat = multiply(vector.xy, m);
 			
-			// on se ramene au rectangle desire (le resultat de la premiere operation nous donne un truc entre -1 et 1)
-			projectedVector
-				.incrementBy(1)
-				.scaleBy(0.5)
-				.scaleBy(float2(target.width, target.height))
-				.incrementBy(float2(target.x, target.y));
+			// transform to target coordinate system
+			projectedVector = transform2DCoordinates(projectedVector, CLIPSPACE_RECTANGLE, target);
 			
 			return projectedVector;
 		}
 		
 		public function unprojectVector(projectedVector : SFloat,
-										source			: Rectangle = null) : SFloat
+										source			: Rectangle) : SFloat
 		{
 			source ||= new Rectangle(0, 0, 1, 1);
 			
-			// on se ramene au rectangle entre -1 et 1
-			projectedVector = projectedVector
-				.decrementBy(float2(source.x, source.y))
-				.scaleBy(float2(1 / source.width, 1 / source.height))
-				.scaleBy(2)
-				.decrementBy(1);
+			// transform to target coordinate system
+			projectedVector = transform2DCoordinates(projectedVector, source, CLIPSPACE_RECTANGLE);
 			
-			// on retrouve les coordonnes du vecteur initial en resolvant l'equation
-			//
-			// xt = x / sqrt(2*(z+1))
-			// yt = y / sqrt(2*(z+1))
-			// x^2 + y^2 + z^2 - 1 = 0
+			// Resolve equation to unproject coordinates
+			// 		xt = x / sqrt(2*(z+1))
+			// 		yt = y / sqrt(2*(z+1))
+			// 		x^2 + y^2 + z^2 - 1 = 0
 			// 
-			// => z^2 + z(2*xt^2 + 2*yt^2) + 2*xt^2 + 2*yt^2 - 1 = 0 (quand z != -1)
-			
+			// => z^2 + z(2*xt^2 + 2*yt^2) + 2*xt^2 + 2*yt^2 - 1 = 0 (for z != -1)
 			var xt2PlusYt2	: SFloat = dotProduct2(projectedVector, projectedVector);
 			var delta		: SFloat = multiply(4, add(1, multiply(xt2PlusYt2, subtract(xt2PlusYt2, 2))));
 			
