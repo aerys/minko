@@ -71,7 +71,7 @@ package aerys.minko.render.shader.compiler
 			for (; j < length; ++j)
 			{
 				i = ((crcAccum >> 24) ^ source.readUnsignedByte()) & 0xFF;
-				crcAccum = (crcAccum << 8) ^ CRC_TABLE[i];
+				crcAccum = (crcAccum << 8) ^ crcTable[i];
 			}
 			
 			crcAccum = ~crcAccum;
