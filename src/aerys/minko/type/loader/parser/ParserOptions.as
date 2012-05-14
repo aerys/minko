@@ -18,6 +18,7 @@ package aerys.minko.type.loader.parser
 	public final class ParserOptions
 	{
 		private var _loadDependencies			: Boolean	= false;
+        private var _loadSkin                   : Boolean   = false;
 		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
 		private var _mipmapTextures				: Boolean	= true;
 		private var _meshEffect					: Effect	= null;
@@ -95,9 +96,19 @@ package aerys.minko.type.loader.parser
 			_loadDependencies = value;
 		}
 
+        public function get loadSkin():Boolean
+        {
+            return _loadSkin;
+        }
+
+        public function set loadSkin(value:Boolean):void
+        {
+            _loadSkin = value;
+        }
+
 		public function clone(): ParserOptions
 		{
-			return new ParserOptions(
+			var parserOptions : ParserOptions = new ParserOptions(
 				_loadDependencies,
 				_dependencyLoaderClosure,
 				_mipmapTextures,
@@ -106,6 +117,8 @@ package aerys.minko.type.loader.parser
 				_indexStreamUsage,
 				_parser
 			);
+            parserOptions.loadSkin = _loadSkin;
+            return parserOptions;
 		}
 		
 		public function ParserOptions(loadDependencies			: Boolean = false,
@@ -144,5 +157,6 @@ package aerys.minko.type.loader.parser
 			
 			return loader;
 		}
-	}
+
+    }
 }
