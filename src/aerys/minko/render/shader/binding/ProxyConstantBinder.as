@@ -42,7 +42,7 @@ package aerys.minko.render.shader.binding
 							value			: Object) : void
 		{
 			for (var binderId : uint = 0; binderId < _numBinders; ++binderId)
-				IBinder(_binders[binderId]).set(cpuConstants, vsConstants, fsConstants, fsTextures, value);
+				_binders[binderId].set(cpuConstants, vsConstants, fsConstants, fsTextures, value);
 		}
 	}
 }

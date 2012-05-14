@@ -10,15 +10,14 @@ package aerys.minko.render.shader.part
 	
 	public final class PostProcessingShaderPart extends ShaderPart
 	{
-		public function PostProcessingShaderPart(main : Shader)
+		public function get backBufferTexture() : SFloat
 		{
-			super(main);
-		}
-		
-		public function initializeSettings(settings : ShaderSettings) : void
-		{
-			settings.depthWriteEnabled = false;
-			settings.depthTest = DepthTest.ALWAYS;
+			return sceneBindings.getTextureParameter(
+				"backBuffer",
+				SamplerFiltering.LINEAR,
+				SamplerMipMapping.DISABLE,
+				SamplerWrapping.CLAMP
+			);
 		}
 		
 		public function get vertexPosition() : SFloat
@@ -31,16 +30,20 @@ package aerys.minko.render.shader.part
 			return sampleBackBuffer(interpolate(vertexUV));
 		}
 		
+		public function PostProcessingShaderPart(main : Shader)
+		{
+			super(main);
+		}
+		
+		public function initializeSettings(settings : ShaderSettings) : void
+		{
+			settings.depthWriteEnabled = false;
+			settings.depthTest = DepthTest.ALWAYS;
+		}
+		
 		public function sampleBackBuffer(uv : SFloat) : SFloat
 		{
-			var backBuffer	: SFloat	= sceneBindings.getTextureParameter(
-				"backBuffer",
-				SamplerFiltering.LINEAR,
-				SamplerMipMapping.DISABLE,
-				SamplerWrapping.CLAMP
-			);
-			
-			return sampleTexture(backBuffer, interpolate(vertexUV));
+			return sampleTexture(backBufferTexture, interpolate(vertexUV));
 		}
 	}
 }
