@@ -31,7 +31,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			// all nodes in the fragment shader that are present in the vertex shader are to be replaced.
 			var vertexDuplicates : Dictionary = cloneDuplicatedNodes();
-			generateClonedSubGraphFromUnlikedClones(vertexDuplicates);
+			generateClonedSubGraphFromUnlinkedClones(vertexDuplicates);
 			connectClonedSubGraphsInFragmentShader(vertexDuplicates);
 			
 			_vertexNode	  = null;
@@ -52,7 +52,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return vertexDuplicates;
 		}
 		
-		private function generateClonedSubGraphFromUnlikedClones(vertexDuplicates : Dictionary) : void
+		private function generateClonedSubGraphFromUnlinkedClones(vertexDuplicates : Dictionary) : void
 		{
 			// Then for duplicate, we replace it's children by an unique duplicate
 			// This will build valid subgraphs
