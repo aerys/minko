@@ -99,9 +99,6 @@ package aerys.minko.render.effect.basic
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffuseShaderPart		: DiffuseShaderPart;
 		
-		private var _priority				: Number;
-		private var _target					: RenderTarget;
-		
 		protected function get diffuse() : DiffuseShaderPart
 		{
 			return _diffuseShaderPart;
@@ -119,9 +116,7 @@ package aerys.minko.render.effect.basic
 		public function BasicShader(target		: RenderTarget	= null,
 									priority	: Number		= 0.)
 		{
-			// save priority and target
-			_target		= target;
-			_priority	= priority;
+			super(target, priority);
 			
 			// init shader parts
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
@@ -130,6 +125,8 @@ package aerys.minko.render.effect.basic
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
+			super.initializeSettings(settings);
+			
 			var blending : uint = 
 				meshBindings.getConstant(BasicProperties.BLENDING, Blending.NORMAL);
 			
@@ -139,7 +136,6 @@ package aerys.minko.render.effect.basic
 			settings.triangleCulling = 
 				meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
 			
-			settings.priority = _priority;
 			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
 			{
 				settings.priority -= 0.5;
@@ -149,7 +145,6 @@ package aerys.minko.render.effect.basic
 			settings.blending			= blending;
 			settings.enabled			= true;
 			settings.depthWriteEnabled	= true;
-			settings.renderTarget		= _target;
 			settings.scissorRectangle	= null;
 		}
 		

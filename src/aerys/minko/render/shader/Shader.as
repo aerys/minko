@@ -123,9 +123,13 @@ package aerys.minko.render.shader
 		 * @param renderTarget Default value is null.
 		 * 
 		 */
-		public function Shader()
+		public function Shader(renderTarget	: RenderTarget	= null,
+							   priority		: Number		= 0.0)
 		{
 			super(this);
+			
+			_defaultSettings.renderTarget = renderTarget;
+			_defaultSettings.priority = priority;
 			
 			_name = getQualifiedClassName(this);
 		}
