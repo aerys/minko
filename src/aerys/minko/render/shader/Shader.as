@@ -37,12 +37,13 @@ package aerys.minko.render.shader
 		minko_shader var _kills				: Vector.<AbstractNode>			= new <AbstractNode>[];
 		
 		private var _name					: String						= null;
-		private var _baseConfig				: ShaderSettings				= new ShaderSettings(null);
+		private var _enabled				: Boolean						= true;
+		private var _defaultSettings		: ShaderSettings				= new ShaderSettings(null);
 		
 		private var _instances				: Vector.<ShaderInstance>		= new <ShaderInstance>[]
 		private var _numActiveInstances		: uint							= 0;
 		private var _numRenderedInstances	: uint							= 0;
-		private var _configs				: Vector.<ShaderSettings>		= new <ShaderSettings>[];
+		private var _settings				: Vector.<ShaderSettings>		= new <ShaderSettings>[];
 		private var _programs				: Vector.<Program3DResource>	= new <Program3DResource>[];
 		
 		private var _begin					: Signal						= new Signal('Shader.begin');
@@ -109,21 +110,11 @@ package aerys.minko.render.shader
 		 */
 		public function get enabled() : Boolean
 		{
-			var numInstances 	: uint = _instances.length;
-			
-			for (var i : uint = 0; i < numInstances; ++i)
-				if ((_instances[i] as ShaderInstance).settings.enabled)
-					return true;
-			
-			return false;
+			return _enabled;
 		}
-		
 		public function set enabled(value : Boolean) : void
 		{
-			var numInstances 	: uint = _instances.length;
-			
-			for (var i : uint = 0; i < numInstances; ++i)
-				(_instances[i] as ShaderInstance).settings.enabled = value;
+			_enabled = value;
 		}
 		
 		/**
@@ -147,12 +138,13 @@ package aerys.minko.render.shader
 			if (pass == null)
 			{
 				var signature	: Signature			= new Signature(_name);
-				var config		: ShaderSettings	= findOrCreateSetting(meshBindings, sceneBindings);
+				var config		: ShaderSettings	= findOrCreateSettings(meshBindings, sceneBindings);
+
 				signature.mergeWith(config.signature);
 				
 				var program		: Program3DResource	= null;
 				
-				if (config.enabled)
+				//if (config.enabled)
 				{
 					program = findOrCreateProgram(meshBindings, sceneBindings);
 					signature.mergeWith(program.signature);
@@ -265,19 +257,19 @@ package aerys.minko.render.shader
 			return program;
 		}
 		
-		private function findOrCreateSetting(meshBindings 	: DataBindings,
+		private function findOrCreateSettings(meshBindings 	: DataBindings,
 											 sceneBindings	: DataBindings) : ShaderSettings
 		{
-			var numConfigs	: int 				= _configs.length;
+			var numConfigs	: int 				= _settings.length;
 			var config		: ShaderSettings	= null;
 			
 			for (var configId : int = 0; configId < numConfigs; ++configId)
-				if (_configs[configId].signature.isValid(meshBindings, sceneBindings))
-					return _configs[configId];
+				if (_settings[configId].signature.isValid(meshBindings, sceneBindings))
+					return _settings[configId];
 			
 			var signature : Signature = new Signature(_name);
 			
-			config			= _baseConfig.clone(signature);
+			config			= _defaultSettings.clone(signature);
 			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
 			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
@@ -286,7 +278,7 @@ package aerys.minko.render.shader
 			_meshBindings	= null;
 			_sceneBindings	= null;
 			
-			_configs.push(config);
+			_settings.push(config);
 			
 			return config;
 		}

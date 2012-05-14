@@ -252,11 +252,11 @@ package aerys.minko.scene.node.mesh
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
-			var cloned : Mesh = new Mesh();
+			var clone : Mesh = new Mesh();
 			
-			cloned.copyFrom(this, true, cloneControllers);
+			clone.copyFrom(this, true, cloneControllers);
 			
-			return cloned;
+			return clone;
 		}
 		
 		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
