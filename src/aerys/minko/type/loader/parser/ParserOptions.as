@@ -17,8 +17,6 @@ package aerys.minko.type.loader.parser
 	 */
 	public final class ParserOptions
 	{
-        private var _loadSkin            : Boolean   = true;
-
 		private var _loadDependencies			: Boolean	= false;
 		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
 		private var _mipmapTextures				: Boolean	= true;
@@ -26,6 +24,7 @@ package aerys.minko.type.loader.parser
 		private var _vertexStreamUsage			: uint		= 0;
 		private var _indexStreamUsage			: uint		= 0;
 		private var _parser						: Class		= null;
+        private var _loadSkin                   : Boolean   = true;
 		
 		public function get parser():Class
 		{
