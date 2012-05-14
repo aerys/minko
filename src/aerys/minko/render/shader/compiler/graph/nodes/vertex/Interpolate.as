@@ -1,79 +1,74 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
-	 * 
 	 */
-	public class Interpolate implements INode
+	public class Interpolate extends AbstractNode
 	{
-		private var _arg			: INode;
-		private var _components		: uint;
-		
-		private var _hash			: uint;
-		private var _hashIsValid	: Boolean;
-		
-		private var _size			: uint;
-		private var _sizeIsValid	: Boolean;
-		
-		public function get arg() : INode
+		public function get argument() : AbstractNode
 		{
-			return _arg;
+			return getArgumentAt(0);
 		}
 		
-		public function get components() : uint
+		public function set argument(v : AbstractNode) : void
 		{
-			return _components;
+			setArgumentAt(0, v);
 		}
 		
-		public function get hash() : uint
+		public function get component() : uint
 		{
-			if (!_hashIsValid)
-			{
-				_hash			= CRC32.computeForString('Interpolate' + _components.toString() + arg.hash.toString());
-				_hashIsValid	= true;
-			}
+			return getComponentAt(0);
+		}
+		
+		public function set component(v : uint) : void
+		{
+			setComponentAt(0, v);
+		}
+		
+		public function Interpolate(arg : AbstractNode)
+		{
+			var arguments	: Vector.<AbstractNode>	= new <AbstractNode>[arg];
+			var components	: Vector.<uint>			= new <uint>[
+				Components.createContinuous(0, 0, arg.size, arg.size)
+			];
 			
-			return _hash;
-		}
-		
-		public function get size() : uint
-		{
-			if (!_sizeIsValid)
-			{
-				_size			= Components.getMaxWriteOffset(_components) + 1;
-				_sizeIsValid	= true;
-			}
+			arguments.fixed = components.fixed = true;
 			
-			return _size;
+			super(arguments, components);
 		}
 		
-		public function set arg(v : INode) : void
+		override protected function computeHash() : uint
 		{
-			_arg			= v;
-			_hashIsValid	= false;
+			var argument	: AbstractNode	= getArgumentAt(0);
+			var components	: uint			= getComponentAt(0);
+			var hashString	: String		=
+				'Interpolate' + components.toString() + argument.hash.toString();
+			
+			return CRC32.computeForString(hashString);
 		}
 		
-		public function set components(v : uint) : void
+		override protected function computeSize() : uint
 		{
-			_components		= v;
-			_hashIsValid	= false;
-			_sizeIsValid	= false;
+			var components : uint = getComponentAt(0);
+			
+			return Components.getMaxWriteOffset(components) + 1;
 		}
 		
-		public function Interpolate(arg : INode)
-		{
-			_arg		= arg;
-			_components	= Components.createContinuous(0, 0, arg.size, arg.size);
-		}
-		
-		public function toString() : String
+		override public function toString() : String
 		{
 			return 'Interpolate';
+		}
+		
+		override public function clone() : AbstractNode
+		{
+			var clone : Interpolate = new Interpolate(argument);
+			clone.component = component;
+			return clone;
 		}
 	}
 }

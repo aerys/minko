@@ -21,7 +21,7 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 	 */	
 	public class TeapotGeometry extends Geometry
 	{
-		public static const PATCHES : Vector.<Vector.<uint>> = new <Vector.<uint>>[
+		private static const PATCHES : Vector.<Vector.<uint>> = new <Vector.<uint>>[
 			new <uint>[  1,  2,    3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16], 
 			new <uint>[  4,  17,  18,  19,   8,  20,  21,  22,  12,  23,  24,  25,  16,  26,  27,  28], 
 			new <uint>[ 19,  29,  30,  31,  22,  32,  33,  34,  25,  35,  36,  37,  28,  38,  39,  40], 
@@ -56,7 +56,7 @@ package aerys.minko.scene.node.mesh.geometry.primitive
 			new <uint>[270, 270, 270, 270, 300, 305, 306, 279, 297, 303, 304, 275, 294, 301, 302, 271]
 		];
 		
-		public static const POINTS : Vector.<Vector3D> = new <Vector3D>[
+		private static const POINTS : Vector.<Vector3D> = new <Vector3D>[
 			new Vector3D(1.4, 0.0, 2.4),			new Vector3D(1.4, -0.784, 2.4),			new Vector3D(0.784, -1.4, 2.4), 
 			new Vector3D(0.0, -1.4, 2.4),			new Vector3D(1.3375, 0.0, 2.53125),		new Vector3D(1.3375, -0.749, 2.53125), 
 			new Vector3D(0.749, -1.3375, 2.53125),	new Vector3D(0.0, -1.3375, 2.53125),	new Vector3D(1.4375, 0.0, 2.53125), 

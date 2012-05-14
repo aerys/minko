@@ -22,7 +22,7 @@ package aerys.minko.scene.node
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
 		private var _camera			: Camera				= null;
-		private var _properties		: IDataProvider			= null;
+		private var _properties		: DataProvider			= null;
 		private var _bindings		: DataBindings			= new DataBindings();
 		
 		private var _enterFrame		: Signal				= new Signal("Scene.enterFrame");
@@ -42,11 +42,16 @@ package aerys.minko.scene.node
 			_renderingCtrl.postProcessingEffect = value;
 		}
 		
-		public function get properties() : IDataProvider
+		public function get postProcessingProperties() : DataProvider
+		{
+			return _renderingCtrl.postProcessingProperties;
+		}
+		
+		public function get properties() : DataProvider
 		{
 			return _properties;
 		}
-		public function set properties(value : IDataProvider) : void
+		public function set properties(value : DataProvider) : void
 		{
 			if (_properties != value)
 			{

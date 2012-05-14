@@ -6,6 +6,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderInstance;
@@ -19,6 +20,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.node.mesh.geometry.primitive.QuadGeometry;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -102,6 +104,11 @@ package aerys.minko.scene.controller.scene
 			initializePostProcessing();
 		}
 		
+		public function get postProcessingProperties() : DataProvider
+		{
+			return _postProcessingScene.properties;
+		}
+		
 		public function RenderingController()
 		{
 			super(Scene);
@@ -169,14 +176,14 @@ package aerys.minko.scene.controller.scene
 					
 					_postProcessingScene.bindings.setProperty(
 						"backBuffer",
-						_postProcessingBackBuffer.resource
+						_postProcessingBackBuffer.textureResource
 					);
 				}
 				else if (_postProcessingBackBuffer.width != w
 						 || _postProcessingBackBuffer.height != h
 						 || _postProcessingBackBuffer.backgroundColor != bgcolor)
 				{
-					_postProcessingBackBuffer.resource.setSize(
+					_postProcessingBackBuffer.textureResource.setSize(
 						w,
 						h
 					);
@@ -193,14 +200,14 @@ package aerys.minko.scene.controller.scene
 		 * Render current Scene
 		 */
 		private function render(viewport	: Viewport,
-								target		: BitmapData) : uint
+								destination	: BitmapData) : uint
 		{
 			applyBindingChanges();
 
-			var context			: Context3D		= viewport.context3D;
-			var backBuffer 		: RenderTarget	= getRenderingBackBuffer(viewport.backBuffer);
-			var numPasses		: uint 			= _passes.length;
-			var numTriangles	: uint 			= 0;
+			var context			: Context3DResource	= viewport.context3D;
+			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
+			var numPasses		: uint 				= _passes.length;
+			var numTriangles	: uint 				= 0;
 			
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
 			
@@ -223,7 +230,7 @@ package aerys.minko.scene.controller.scene
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
 				var numCalls	: uint				= calls.length;
 				
-				if (!pass.settings.enabled)
+				if (!pass.settings.enabled || !pass.generator.enabled)
 					continue;
 				
 				pass.begin.execute(pass, context, backBuffer);
@@ -263,11 +270,11 @@ package aerys.minko.scene.controller.scene
 			
 			// present
 			if (_postProcessingEffect)
-				_postProcessingScene.render(viewport, target);
+				_postProcessingScene.render(viewport, destination);
 			else
 			{
-				if (target)
-					context.drawToBitmapData(target);
+				if (destination)
+					context.drawToBitmapData(destination);
 				else
 					context.present();
 			}
@@ -409,7 +416,7 @@ package aerys.minko.scene.controller.scene
 			
 			if (!_effectToMeshes[meshEffect])
 			{
-				_effectToMeshes[meshEffect] = new Vector.<Mesh>();
+				_effectToMeshes[meshEffect] = new <Mesh>[];
 				meshEffect.passesChanged.add(effectPassesChangedHandler);
 			}
 			
@@ -471,10 +478,7 @@ package aerys.minko.scene.controller.scene
 				var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 				
 				for each (var oldDrawCall : DrawCall in drawCalls)
-				{
-					var oldPassInstance	: ShaderInstance = _drawCallToPassInstance[oldDrawCall];
-					unbind(oldPassInstance, oldDrawCall, meshBindings);
-				}
+					unbind(_drawCallToPassInstance[oldDrawCall], oldDrawCall, meshBindings);
 				
 				drawCalls.length = 0;
 				
@@ -489,13 +493,17 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.configure(
-						passInstance.program,
-						mesh.geometry,
-						meshBindings,
-						sceneBindings,
-						passInstance.settings.depthSortDrawCalls
-					);
+					if (passInstance.program != null)
+					{
+						newDrawCall.configure(
+							passInstance.program,
+							mesh.geometry,
+							meshBindings,
+							sceneBindings,
+							passInstance.settings.depthSortDrawCalls
+						);
+					}
+					
 					drawCalls[i] = newDrawCall;
 					
 					// retain the instance, update indexes, watch for invalidation, give to renderingList.

@@ -1,8 +1,9 @@
 package aerys.minko.render.shader.compiler.allocation
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
+	import aerys.minko.render.shader.compiler.register.RegisterType;
 	
 	import flash.utils.Dictionary;
 
@@ -118,7 +119,7 @@ package aerys.minko.render.shader.compiler.allocation
 		public function computeRegisterState() : void
 		{
 			sortAllocations();
-			naiveAllocate();
+			greedyColorAllocationGraph();
 		}
 		
 		/**
@@ -155,7 +156,7 @@ package aerys.minko.render.shader.compiler.allocation
 		 * or if we get short on registers and must use a more efficient
 		 * algoritm.
 		 */
-		private function naiveAllocate() : void
+		private function greedyColorAllocationGraph() : void
 		{
 			var allocLength : uint = _allocations.length;
 			

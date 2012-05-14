@@ -2,7 +2,7 @@ package aerys.minko.render.shader.binding
 {
 	import aerys.minko.render.shader.compiler.Evaluator;
 	import aerys.minko.render.shader.compiler.Serializer;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.binding
 	 */
 	public class EvalExp
 	{
-		private var _tree				: INode;
+		private var _tree				: AbstractNode;
 		
 		private var _bindableConstants	: Vector.<BindableConstant>;
 		private var _binderNames		: Vector.<String>;
@@ -28,7 +28,7 @@ package aerys.minko.render.shader.binding
 			return _bindableConstants;
 		}
 		
-		public function EvalExp(tree : INode)
+		public function EvalExp(tree : AbstractNode)
 		{
 			_tree				= tree;
 			_bindableConstants	= getBindableConstants(tree);
@@ -42,7 +42,7 @@ package aerys.minko.render.shader.binding
 			}
 		}
 		
-		private function getBindableConstants(tree : INode) : Vector.<BindableConstant>
+		private function getBindableConstants(tree : AbstractNode) : Vector.<BindableConstant>
 		{
 			var constants : Vector.<BindableConstant> = new Vector.<BindableConstant>();
 			
@@ -51,26 +51,19 @@ package aerys.minko.render.shader.binding
 			return constants;
 		}
 		
-		private function getBindableConstantsRec(tree : INode, bindableConstants : Vector.<BindableConstant>) : void
+		private function getBindableConstantsRec(tree				: AbstractNode,
+												 bindableConstants	: Vector.<BindableConstant>) : void
 		{
-			if (tree is Instruction)
-			{
-				var instruction : Instruction = Instruction(tree);
-				
-				getBindableConstantsRec(instruction.arg1, bindableConstants);
-				if (!instruction.isSingle)
-					getBindableConstantsRec(instruction.arg2, bindableConstants);
-			}
-			else if (tree is Overwriter)
-			{
-				var overwriter : Overwriter = Overwriter(tree);
-				
-				for each (var arg : INode in overwriter.args)
-					getBindableConstantsRec(arg, bindableConstants);
-			}
-			else if (tree is BindableConstant)
+			if (tree is BindableConstant)
 			{
 				bindableConstants.push(BindableConstant(tree));
+			}
+			else
+			{
+				var numArguments : uint = tree.numArguments;
+				
+				for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
+					getBindableConstantsRec(tree.getArgumentAt(argumentId), bindableConstants);
 			}
 		}
 		
@@ -89,7 +82,7 @@ package aerys.minko.render.shader.binding
 			return allSet ? visit(_tree, dataStore) : null;
 		}
 		
-		private function visit(node	: INode, dataStore : Dictionary) : Vector.<Number>
+		private function visit(node	: AbstractNode, dataStore : Dictionary) : Vector.<Number>
 		{
 			if (node is Constant)
 				return Constant(node).value;
@@ -105,15 +98,15 @@ package aerys.minko.render.shader.binding
 				var arg1 : Vector.<Number>;
 				var arg2 : Vector.<Number>;
 				
-				arg1 = visit(instruction.arg1, dataStore);
+				arg1 = visit(instruction.argument1, dataStore);
 				if (arg1.length <= 4)
-					arg1 = Evaluator.evaluateComponents(instruction.arg1Components, arg1);
+					arg1 = Evaluator.evaluateComponents(instruction.component1, arg1);
 				
 				if (!instruction.isSingle)
 				{
-					arg2 = visit(instruction.arg2, dataStore);
+					arg2 = visit(instruction.argument2, dataStore);
 					if (arg2.length <= 4)
-						arg2 = Evaluator.evaluateComponents(instruction.arg2Components, arg2);
+						arg2 = Evaluator.evaluateComponents(instruction.component2, arg2);
 					
 					return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1, arg2);
 				}
@@ -125,16 +118,17 @@ package aerys.minko.render.shader.binding
 			{
 				var tmpVec					: Vector.<Number>	= new Vector.<Number>();
 				var overwriter				: Overwriter		= Overwriter(node);
-				var overwriterArgs			: Vector.<INode>	= overwriter.args;
-				var overwriterComponents	: Vector.<uint>		= overwriter.components;
-				var overwriterNumArgs		: uint				= overwriterArgs.length;
+				var overwriterNumArgs		: uint				= overwriter.numArguments;
 				var overwriterSize			: uint				= overwriter.size;
 				
 				var result					: Vector.<Number>	= new Vector.<Number>(overwriterSize, true);
 				for (var argId : uint = 0; argId < overwriterNumArgs; ++argId)
 				{
-					tmpVec = visit(overwriterArgs[argId], dataStore);
-					tmpVec = Evaluator.evaluateComponentWithHoles(overwriterComponents[argId], tmpVec);
+					var argument	: AbstractNode	= overwriter.getArgumentAt(argId);
+					var component	: uint			= overwriter.getComponentAt(argId);
+					
+					tmpVec = visit(argument, dataStore);
+					tmpVec = Evaluator.evaluateComponentWithHoles(component, tmpVec);
 					for (var i : uint = 0; i < overwriterSize; ++i)
 						if (!isNaN(tmpVec[i]))
 							result[i] = tmpVec[i];

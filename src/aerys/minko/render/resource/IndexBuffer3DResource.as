@@ -21,37 +21,37 @@ package aerys.minko.render.resource
 
 		private var _stream			: IndexStream	= null;
 		private var _update			: Boolean		= true;
+		private var _lengthChanged	: Boolean		= true;
 		private var _indexBuffer	: IndexBuffer3D	= null;
 		private var _numIndices		: uint			= 0;
 
-		public function get numIndices()	: uint	{ return _numIndices; }
+		public function get numIndices() : uint
+		{
+			return _numIndices;
+		}
 
 		public function IndexBuffer3DResource(source : IndexStream)
 		{
 			_stream = source;
-			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
 			_stream.changed.add(indexStreamChangedHandler);
 		}
 		
-		private function indexStreamChangedHandler(stream : IndexStream, property : String) : void
+		private function indexStreamChangedHandler(stream : IndexStream) : void
 		{
 			_update = true;
+			_lengthChanged = stream.length != _numIndices;
 		}
 
-		public function getIndexBuffer3D(context : Context3D) : IndexBuffer3D
+		public function getIndexBuffer3D(context : Context3DResource) : IndexBuffer3D
 		{
 			var update : Boolean	= _update;
 
 			if (_stream.length == 0)
 				return null;
 
-			if (!_indexBuffer || _stream.length != _numIndices)
+			if (_indexBuffer == null || _lengthChanged)
 			{
+				_lengthChanged = false;
 				if (_indexBuffer)
 					_indexBuffer.dispose();
 				update = true;

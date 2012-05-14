@@ -2,38 +2,47 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.TriangleCulling;
 	
-	import flash.display3D.Context3D;
 	import flash.geom.Rectangle;
 
 	public class ShaderSettings
 	{
 		use namespace minko_render;
 		
-		private var _numUses			: uint			= 0;
-		private var _signature			: Signature		= null;
+		private var _numUses								: uint			= 0;
+		private var _signature								: Signature		= null;
 		
-		private var _enabled			: Boolean		= true;
+		private var _enabled								: Boolean		= true;
 		
-		private var _depthTest			: uint			= 0;
-		private var _compareMode		: String		= null;
-		private var _priority			: Number		= 0.;
+		private var _depthTest								: uint			= 0;
+		private var _compareMode							: String		= null;
+		private var _priority								: Number		= 0.;
 
-		private var _blending			: uint			= 0;
-		private var _blendingSource		: String		= null;
-		private var _blendingDest		: String		= null;
+		private var _blending								: uint			= 0;
+		private var _blendingSource							: String		= null;
+		private var _blendingDest							: String		= null;
 		
-		private var _triangleCulling	: uint			= 0;
-		private var _triangleCullingStr	: String		= null;
+		private var _triangleCulling						: uint			= 0;
+		private var _triangleCullingStr						: String		= null;
 		
-		private var _renderTarget		: RenderTarget	= null;
-		private var _enableDepthWrite	: Boolean		= true;
-		private var _rectangle			: Rectangle		= null;
+		private var _renderTarget							: RenderTarget	= null;
+		private var _enableDepthWrite						: Boolean		= true;
+		private var _rectangle								: Rectangle		= null;
 		
-		private var _depthSortDrawCalls	: Boolean		= false;
+		private var _depthSortDrawCalls						: Boolean		= false;
+		
+		private var _stencilTriangleFace					: String		= null;
+		private var _stencilCompareMode						: String		= null;
+		private var _stencilActionOnBothPass				: String		= null;
+		private var _stencilActionOnDepthFail				: String		= null;
+		private var _stencilActionOnDepthPassStencilFail	: String		= null;
+		private var _stencilReferenceValue					: uint			= 0;
+		private var _stencilReadMask						: uint			= 255;
+		private var _sentcilWriteMask						: uint			= 255;
 		
 		minko_render function get signature() : Signature
 		{
@@ -179,7 +188,7 @@ package aerys.minko.render.shader
 			return clone;
 		}
 		
-		public function prepareContext(context 		: Context3D,
+		public function prepareContext(context 		: Context3DResource,
 									   backBuffer	: RenderTarget,
 									   previous		: ShaderSettings) : void
 		{
@@ -187,9 +196,9 @@ package aerys.minko.render.shader
 			{
 				var rt 	: RenderTarget 	= _renderTarget || backBuffer;
 				
-				if (rt && rt.resource)
+				if (rt && rt.textureResource)
 					context.setRenderToTexture(
-						rt.resource.getNativeTexture(context),
+						rt.textureResource.getNativeTexture(context),
 						rt.useDepthAndStencil,
 						rt.antiAliasing,
 						rt.surfaceSelector

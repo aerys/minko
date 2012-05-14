@@ -39,7 +39,7 @@ package aerys.minko.scene.controller.camera
 		
 		private		var _enabled		: Boolean	= true;
 		
-		protected	var _transform	: Matrix4x4	= new Matrix4x4();
+		protected	var _transform		: Matrix4x4	= new Matrix4x4();
 		
 		private		var _tracking		: Boolean	= false;
 		private		var _x				: Number	= 0.;
@@ -193,7 +193,7 @@ package aerys.minko.scene.controller.camera
 		
 		override protected function sceneEnterFrameHandler(scene	: Scene,
 														   viewport	: Viewport,
-														   target	: BitmapData,
+														   destination	: BitmapData,
 														   time		: Number) : void
 		{
 			if (!_enabled)

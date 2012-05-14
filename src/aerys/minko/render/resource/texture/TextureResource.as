@@ -1,7 +1,8 @@
 package aerys.minko.render.resource.texture
 {
+	import aerys.minko.render.resource.Context3DResource;
+	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
@@ -134,7 +135,7 @@ package aerys.minko.render.resource.texture
 			atf.position 	= 0;
 		}
 
-		public function getNativeTexture(context : Context3D) : TextureBase
+		public function getNativeTexture(context : Context3DResource) : TextureBase
 		{
 			if ((!_texture || _resize) && _width && _height)
 			{

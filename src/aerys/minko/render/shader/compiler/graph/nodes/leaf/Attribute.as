@@ -1,7 +1,8 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	/**
@@ -9,11 +10,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Attribute implements INode
+	public class Attribute extends AbstractNode
 	{
 		private var _component		: VertexComponent;
 		private var _componentId	: uint;
-		private var _hash			: uint;
 		
 		public function get component() : VertexComponent
 		{
@@ -25,27 +25,33 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return _componentId;
 		}
 		
-		public function get hash() : uint
+		public function Attribute(component		: VertexComponent,
+								  componentId	: uint = 0)
 		{
-			return _hash;
+			super(new <AbstractNode>[], new <uint>[]);
+			
+			_component		= component;
+			_componentId	= componentId;
 		}
 		
-		public function get size() : uint
+		override protected function computeHash() : uint
+		{
+			return CRC32.computeForString('Attribute' + _component.fields.join());
+		}
+		
+		override protected function computeSize() : uint
 		{
 			return 4;
 		}
 		
-		public function Attribute(component		: VertexComponent,
-								  componentId	: uint = 0)
+		override public function toString() : String
 		{
-			_component		= component;
-			_componentId	= componentId;
-			_hash			= CRC32.computeForString('Attribute' + component.fields.join());
+			return 'Attribute ' + _component.fields + '(' + _componentId + ')';
 		}
 		
-		public function toString() : String
+		override public function clone() : AbstractNode
 		{
-			return 'Attribute';
+			return new Attribute(_component, _componentId);
 		}
 		
 	}

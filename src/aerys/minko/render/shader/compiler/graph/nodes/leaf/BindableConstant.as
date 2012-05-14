@@ -1,52 +1,59 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
+
 	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class BindableConstant implements INode
+	public class BindableConstant extends AbstractNode
 	{
 		public static const COMPUTABLE_CONSTANT_PREFIX : String = 'computableConstant';
 		
-		private var _hash			: uint;
 		private var _bindingName	: String;
 		private var _size			: uint;
-		
-		public function get hash() : uint
-		{
-			return _hash;
-		}
 		
 		public function get bindingName() : String
 		{
 			return _bindingName;
 		}
 		
-		public function get size() : uint
-		{
-			return _size;
-		}
-		
 		public function BindableConstant(bindingName : String, size : uint)
 		{
+			super(new <AbstractNode>[], new <uint>[]);
+			
 			if (size == 0)
 				throw new Error('Cannot create a zero-sized parameter');
 			
 			if (size > 4 && size % 4 != 0)
 				throw new Error('Size of a parameter must be either less or equal than 4, or a multiple of 4');
 			
-			_bindingName	= bindingName;
 			_size			= size;
-			_hash			= CRC32.computeForString('BindableConstant_' + bindingName + '_' + size);
+			_bindingName	= bindingName;
 		}
 		
-		public function toString() : String
+		override protected function computeHash() : uint
+		{
+			return CRC32.computeForString('BindableConstant_' + _bindingName + '_' + _size);	
+		}
+		
+		override protected function computeSize() : uint
+		{
+			return _size;
+		}
+		
+		override public function toString() : String
 		{
 			return 'BindableConstant_' + bindingName + '_' + size;
 		}
+		
+		override public function clone() : AbstractNode
+		{
+			return new BindableConstant(_bindingName, _size);
+		}
+
 	}
 }

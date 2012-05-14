@@ -56,7 +56,7 @@ package aerys.minko.type.stream
 		minko_stream function invalidate() : void
 		{
 			_length = _data.length;
-			_changed.execute(this, null);
+			_changed.execute(this);
 		}
 
 		private function initialize(indices : Vector.<uint>,

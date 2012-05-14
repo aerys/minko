@@ -2,6 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.enum.Blending;
@@ -91,7 +92,7 @@ package aerys.minko.render.shader
 			_signature	= signature;
 		}
 		
-		public function prepareContext(context 		: Context3D,
+		public function prepareContext(context 		: Context3DResource,
 									   backBuffer	: RenderTarget,
 									   previous		: ShaderInstance) : void
 		{

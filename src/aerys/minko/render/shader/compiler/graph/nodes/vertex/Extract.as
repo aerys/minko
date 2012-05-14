@@ -1,96 +1,67 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
 	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Extract implements INode
+	public class Extract extends AbstractNode
 	{
-		private var _child			: INode;
-		private var _components		: uint;
-		
-		private var _size			: uint;
-		private var _sizeIsValid	: Boolean;
-		
-		private var _hash			: uint;
-		private var _hashIsValid	: Boolean;
-		
-		public function get child() : INode
+		public function get argument() : AbstractNode
 		{
-			return _child;
+			return getArgumentAt(0);
 		}
 		
-		public function get components() : uint
+		public function get component() : uint
 		{
-			return _components;
+			return getComponentAt(0);
 		}
 		
-		public function get size() : uint
+		public function Extract(child		: AbstractNode,
+								component	: uint)
 		{
-			if (!_sizeIsValid)
-			{
-				_size			= Components.getMaxWriteOffset(_components) + 1;
-				_sizeIsValid	= true;
-			}
+			var arguments	: Vector.<AbstractNode>	= new <AbstractNode>[child];
+			var components	: Vector.<uint>			= new <uint>[component];
 			
-			return _size;
-		}
-		
-		public function get hash() : uint
-		{
-			if (!_hashIsValid)
-			{
-				_hash = CRC32.computeForString('Extract' + _child.hash.toString(16) + _components.toString(16));
-				_hashIsValid = true;
-			}
+			arguments.fixed = components.fixed = true;
 			
-			return _hash;
-		}
-		
-		public function set child(v : INode) : void
-		{
-			_child			= v;
-			_sizeIsValid	= false;
-			_hashIsValid	= false;
-		}
-		
-		public function set components(v : uint) : void
-		{
-			_components 	= v;
-			_sizeIsValid	= false;
-			_hashIsValid	= false;
+			super(arguments, components);
 			
-			checkComponents();
-		}
-		
-		public function Extract(child		: INode,
-								components	: uint)
-		{
-			_child			= child;
-			_components		= components;
-			_sizeIsValid	= false;
-			_hashIsValid	= false;
-			
-			checkComponents();
-		}
-		
-		private function checkComponents() : void
-		{
-			if (Components.hasHoles(components))
+			if (Components.hasHoles(component))
 				throw new Error(
 					'Extract should be used only with continuous components. '
 					+ 'Components with holes are reserved to the Overwriter node.'
 				);
 		}
 		
-		public function toString() : String
+		override public function toString() : String
 		{
 			return 'Extract';
 		}
+		
+		override protected function computeHash() : uint
+		{
+			var child		: AbstractNode	= getArgumentAt(0);
+			var component	: uint			= getComponentAt(0);
+			
+			return CRC32.computeForString('Extract' + child.hash.toString(16) + component.toString(16));
+		}
+		
+		override protected function computeSize() : uint
+		{
+			var component : uint = getComponentAt(0);
+			
+			return Components.getMaxWriteOffset(component) + 1;
+		}
+		
+		override public function clone() : AbstractNode
+		{
+			return new Extract(argument, component);
+		}
+
 	}
 }

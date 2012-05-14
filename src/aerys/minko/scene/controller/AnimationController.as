@@ -107,11 +107,13 @@ package aerys.minko.scene.controller
 			_currentTime = value;
 		}
 
-		public function AnimationController(timelines	: Vector.<ITimeline>)
+		public function AnimationController(timelines 	: Vector.<ITimeline>,
+											loop		: Boolean	= true)
 		{
 			super();
 			
 			_timelines = timelines;
+			_looping = loop;
 			
 			initialize();
 		}

@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
@@ -9,50 +9,18 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class VariadicExtract implements INode
+	public class VariadicExtract extends AbstractNode
 	{
-		private var _hash					: uint;
-		private var _hashIsValid			: Boolean;
+		private var _isMatrix : Boolean;
 		
-		private var _index					: INode;
-		private var _constant				: INode;
-		private var _isMatrix				: Boolean;
-		private var _indexComponentSelect	: uint;
-		
-		public function get indexComponentSelect() : uint
+		public function get index() : AbstractNode
 		{
-			return _indexComponentSelect;
+			return getArgumentAt(0);
 		}
 		
-		public function get hash() : uint
+		public function get constant() : AbstractNode
 		{
-			if (!_hashIsValid)
-			{
-				_hashIsValid = true;
-				_hash = CRC32.computeForString(
-					'VariadicExtract'
-					+ index.hash.toString(16)
-					+ constant.hash.toString(16)
-					+ _indexComponentSelect.toString()
-					+ isMatrix.toString());
-			}
-			
-			return _hash;
-		}
-		
-		public function get size() : uint
-		{
-			return _isMatrix ? 16 : 4;
-		}
-		
-		public function get index() : INode
-		{
-			return _index;
-		}
-		
-		public function get constant() : INode
-		{
-			return _constant;
+			return getArgumentAt(1);
 		}
 		
 		public function get isMatrix() : Boolean
@@ -60,38 +28,66 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return _isMatrix;
 		}
 		
+		public function get indexComponentSelect() : uint
+		{
+			return getComponentAt(0) & 0xff;
+		}
+		
 		public function set indexComponentSelect(v : uint) : void
 		{
-			_hashIsValid = false;
-			_indexComponentSelect = v;
+			setComponentAt(0, Components.createFromParts(v));
 		}
 		
-		public function set index(v : INode) : void
+		public function set index(v : AbstractNode) : void
 		{
-			_hashIsValid = false;
-			_index = v;
+			setArgumentAt(0, v);
 		}
 		
-		public function set constant(v : INode) : void
+		public function set constant(v : AbstractNode) : void
 		{
-			_hashIsValid = false;
-			_constant = v;
+			setArgumentAt(1, v);
 		}
 		
-		public function VariadicExtract(index		: INode, 
-										constant	: INode,
+		public function VariadicExtract(index		: AbstractNode, 
+										constant	: AbstractNode,
 										isMatrix	: Boolean)
 		{
-			_index					= index;
-			_constant				= constant;
-			_isMatrix				= isMatrix;
-			_indexComponentSelect	= 0; // x
-			_hashIsValid			= false;
+			_isMatrix = isMatrix;
+			
+			var arguments : Vector.<AbstractNode>	= new <AbstractNode>[index, constant];
+			var components: Vector.<uint>			= new <uint>[
+				Components.createFromParts(0), 
+				Components.createFromParts(0, 1, 2, 3)
+			];
+			
+			arguments.fixed = components.fixed = true;
+			
+			super(arguments, components);
 		}
 		
-		public function toString() : String
+		override protected function computeSize() : uint
+		{
+			return _isMatrix ? 16 : 4;
+		}
+		
+		override protected function computeHash() : uint
+		{
+			return CRC32.computeForString(
+				'VariadicExtract'
+				+ index.hash.toString(16)
+				+ constant.hash.toString(16)
+				+ indexComponentSelect.toString()
+				+ isMatrix.toString())
+		}
+		
+		override public function toString() : String
 		{
 			return 'VariadicExtract';
+		}
+		
+		override public function clone() : AbstractNode
+		{
+			return new VariadicExtract(index, constant, _isMatrix);
 		}
 	}
 }

@@ -1,11 +1,11 @@
 package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.Signal;
@@ -21,10 +21,8 @@ package aerys.minko.render
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexFormat;
 	
-	import flash.display3D.Context3D;
 	import flash.display3D.Context3DProgramType;
 	import flash.utils.Dictionary;
-	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * DrawCall objects contain all the shader constants and buffer settings required
@@ -57,6 +55,7 @@ package aerys.minko.render
 		// states
 		private var _indexBuffer		: IndexBuffer3DResource				= null;
 		private var _firstIndex			: int								= 0;
+		private var _numTriangles		: int								= -1;
 		
 		private var _vertexBuffers		: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(NUM_VERTEX_BUFFERS, true);
 		private var _numVertexComponents: uint								= 0;
@@ -230,6 +229,8 @@ package aerys.minko.render
 		{
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
+			_firstIndex			 = geometry.firstIndex;
+			_numTriangles		 = geometry.numTriangles;
 			
 			for (var i : uint = 0; i < _numVertexComponents; ++i)
 			{
@@ -296,16 +297,14 @@ package aerys.minko.render
 			}
 		}
 
-		public function apply(context : Context3D, previous : DrawCall) : uint
+		public function apply(context : Context3DResource, previous : DrawCall) : uint
 		{
 			if (!_enabled)
 				return 0;
 			
-			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA);
-			
-			// setup shader constants
-			context.setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants);
-			context.setProgramConstantsFromVector(PROGRAM_TYPE_FRAGMENT, 0, _fsConstants);
+			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA)
+				   .setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants)
+				   .setProgramConstantsFromVector(PROGRAM_TYPE_FRAGMENT, 0, _fsConstants);
 			
 			var numTextures	: uint	= _fsTextures.length;
 			var maxTextures	: uint	= previous ? previous._fsTextures.length : NUM_TEXTURES;
@@ -314,7 +313,7 @@ package aerys.minko.render
 
 			// setup textures
 			for (i = 0; i < numTextures; ++i)
-				context.setTextureAt(i, _fsTextures[i].getNativeTexture(context));
+				context.setTextureAt(i, _fsTextures[i]);
 			
 			while (i < maxTextures)
 				context.setTextureAt(i++, null);
@@ -323,7 +322,7 @@ package aerys.minko.render
 			for (i = 0; i < _numVertexComponents; ++i)
 				context.setVertexBufferAt(
 					i,
-					_vertexBuffers[i].getVertexBuffer3D(context),
+					_vertexBuffers[i],
 					_offsets[i],
 					_formats[i]
 				);
@@ -332,9 +331,9 @@ package aerys.minko.render
 				context.setVertexBufferAt(i++, null);
 			
 			// draw triangles
-			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context));
+			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context), _firstIndex, _numTriangles);
 			
-			return _indexBuffer.numIndices / 3;
+			return _numTriangles == -1 ? _indexBuffer.numIndices / 3 : _numTriangles;
 		}
 		
 		public function setParameter(name : String, value : Object) : void

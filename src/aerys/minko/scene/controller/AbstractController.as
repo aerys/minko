@@ -19,9 +19,6 @@ package aerys.minko.scene.controller
 	 */
 	public class AbstractController
 	{
-		private var _lastTime		: Number				= 0.0;
-		private var _lastTarget		: ISceneNode			= null;
-		
 		private var _targetType		: Class					= null;
 		private var _targets		: Vector.<ISceneNode>	= new <ISceneNode>[];
 		

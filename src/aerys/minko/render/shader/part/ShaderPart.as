@@ -5,7 +5,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderDataBindings;
-	import aerys.minko.render.shader.compiler.graph.nodes.INode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
@@ -20,7 +20,10 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.format.VertexComponent;
+	
+	import flash.geom.Rectangle;
 
 	/**
 	 * The base class to create ActionScript shader parts.
@@ -266,13 +269,13 @@ package aerys.minko.render.shader.part
 		{
 			var currentOffset	: uint = 0;
 			
-			var args			: Vector.<INode>	= new Vector.<INode>();
-			var components		: Vector.<uint>		= new Vector.<uint>();
+			var args			: Vector.<AbstractNode>	= new Vector.<AbstractNode>();
+			var components		: Vector.<uint>			= new Vector.<uint>();
 			
 			for each (var value : Object in values)
 			{
-				var node		: INode	= getNode(value);
-				var nodeSize	: uint	= node.size;
+				var node		: AbstractNode	= getNode(value);
+				var nodeSize	: uint			= node.size;
 				
 				if (currentOffset + nodeSize > size)
 					throwInvalidSizeError(size, currentOffset + nodeSize);
@@ -299,7 +302,7 @@ package aerys.minko.render.shader.part
 
 		protected final function float(x : Object) : SFloat
 		{
-			var node : INode = getNode(x);
+			var node : AbstractNode = getNode(x);
 			if (node.size == 1)
 				return new SFloat(node);
 			else
@@ -375,13 +378,17 @@ package aerys.minko.render.shader.part
 		}
 		
 		/**
-		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value. 
+		 * Pack a [0 .. 1] scalar value into a float4 RGBA color value.
+		 * 
 		 * @param scalar
 		 * @return 
 		 * 
 		 */
 		protected final function pack(scalar : Object) : SFloat
 		{
+			if (scalar.size != 1)
+				throw new ArgumentError('Argument of size 1 expected. ' + scalar + ' received');
+			
 			var bitSh	: SFloat = float4(256. * 256. * 256., 256. * 256, 256., 1.);
 			var bitMsk	: SFloat = float4(0., 1. / 256., 1. / 256., 1. / 256.);
 			var comp	: SFloat = fractional(multiply(getNode(scalar), bitSh));
@@ -390,7 +397,8 @@ package aerys.minko.render.shader.part
 		}
 		
 		/**
-		 * Unack a [0 .. 1] scalar value from a float4 RGBA color value. 
+		 * Unpack a [0 .. 1] scalar value from a float4 RGBA color value.
+		 * 
 		 * @param packedScalar
 		 * @return 
 		 * 
@@ -514,9 +522,9 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.POW, getNode(base), getNode(exp)));
 		}
 
-		protected final function add(value1 : Object, value2 : Object, ...args) : SFloat
+		protected final function add(a : Object, b : Object, ...args) : SFloat
 		{
-			var result : SFloat = new SFloat(new Instruction(Instruction.ADD, getNode(value1), getNode(value2)));
+			var result : SFloat = new SFloat(new Instruction(Instruction.ADD, getNode(a), getNode(b)));
 			
 			for each (var arg : Object in args)
 				result = add(result, arg);
@@ -563,7 +571,7 @@ package aerys.minko.render.shader.part
 
 		protected final function multiply3x4(a : Object, b : Object) : SFloat
 		{
-			var aNode : INode = getNode(a);
+			var aNode : AbstractNode = getNode(a);
 			
 			if (aNode.size < 4)
 				throw new Error("The argument 'a' should have a size of 4.");
@@ -599,7 +607,7 @@ package aerys.minko.render.shader.part
 			return divide(sin(angle), cos(angle));
 		}
 		
-		protected final function acos(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function acos(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			var roughtGuess	: SFloat = multiply(Math.PI / 2, subtract(1, angle));
 			
@@ -615,12 +623,12 @@ package aerys.minko.render.shader.part
 			return roughtGuess;
 		}
 		
-		protected final function asin(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function asin(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			return subtract(Math.PI / 2, acos(angle, numIterations));
 		}
 		
-		protected final function atan(angle : Object, numIterations : uint = 0) : SFloat
+		protected final function atan(angle : Object, numIterations : uint = 6) : SFloat
 		{
 			return asin(multiply(angle, rsqrt(add(1, multiply(angle, angle)))), numIterations);
 		}
@@ -692,10 +700,22 @@ package aerys.minko.render.shader.part
 		{
 			return add(a, multiply(factor, subtract(b, a)));
 		}
-
+		
+		protected final function transform2DCoordinates(value	: Object,
+												 		source	: Rectangle, 
+														target	: Rectangle) : SFloat
+		{
+			// could be done with a multiply2x2, but useless here
+			var sourceOrigin	: SFloat = float2(-source.x, -source.y);
+			var targetOrigin	: SFloat = float2(target.x, target.y);
+			var scale			: SFloat = float2(target.width / source.width, target.height / source.height);
+			
+			return add(targetOrigin, multiply(scale, add(value, sourceOrigin)));
+		}
+		
 		protected final function length(vector : Object) : SFloat
 		{
-			var v : INode = getNode(vector);
+			var v : AbstractNode = getNode(vector);
 
 			if (v.size == 2)
 			{
@@ -795,8 +815,8 @@ package aerys.minko.render.shader.part
 												   constant : Object,
 												   isMatrix	: Boolean	= false) : SFloat
 		{
-			var c	: INode	= getNode(constant);
-			var i	: INode	= getNode(index);
+			var c	: AbstractNode	= getNode(constant);
+			var i	: AbstractNode	= getNode(index);
 			
 			if (!(c is BindableConstant || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
@@ -804,16 +824,19 @@ package aerys.minko.render.shader.part
 			return new SFloat(new VariadicExtract(i, c, isMatrix));
 		}
 		
-		private function getNode(value : Object) : INode
+		private function getNode(value : Object) : AbstractNode
 		{
-			if (value is INode)
-				return value as INode;
+			if (value is AbstractNode)
+				return value as AbstractNode;
 			
 			if (value is SFloat)
 				return (value as SFloat)._node;
 			
 			if (value is uint || value is int || value is Number)
 				return new Constant(new <Number>[Number(value)]);
+			
+			if (value is Matrix4x4)
+				return new Constant(Matrix4x4(value).getRawData(null, 0, false));
 			
 			throw new Error('This type cannot be casted to a shader value.');
 		}
