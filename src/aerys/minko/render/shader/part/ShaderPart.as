@@ -559,24 +559,24 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.CRS, getNode(u), getNode(v)));
 		}
 
-		protected final function multiply4x4(a : Object, b : Object) : SFloat
+		protected final function multiply4x4(vector : Object, matrix : Object) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.M44, getNode(a), getNode(b)));
+			return new SFloat(new Instruction(Instruction.M44, getNode(vector), getNode(matrix)));
 		}
 
-		protected final function multiply3x3(a : Object, b : Object) : SFloat
+		protected final function multiply3x3(vector : Object, matrix : Object) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.M33, getNode(a), getNode(b)));
+			return new SFloat(new Instruction(Instruction.M33, getNode(vector), getNode(matrix)));
 		}
 
-		protected final function multiply3x4(a : Object, b : Object) : SFloat
+		protected final function multiply3x4(vector : Object, matrix : Object) : SFloat
 		{
-			var aNode : AbstractNode = getNode(a);
+			var vectorNode : AbstractNode = getNode(vector);
 			
-			if (aNode.size < 4)
-				throw new Error("The argument 'a' should have a size of 4.");
+			if (vectorNode.size < 4)
+				throw new Error("The argument 'vector' should have a size of 4.");
 			
-			return new SFloat(new Instruction(Instruction.M34, aNode, getNode(b)));
+			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
 
 		protected final function cos(angle : Object) : SFloat
