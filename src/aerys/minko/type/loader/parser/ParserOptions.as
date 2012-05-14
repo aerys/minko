@@ -24,6 +24,7 @@ package aerys.minko.type.loader.parser
 		private var _vertexStreamUsage			: uint		= 0;
 		private var _indexStreamUsage			: uint		= 0;
 		private var _parser						: Class		= null;
+        private var _loadSkin                   : Boolean   = true;
 		
 		public function get parser():Class
 		{
@@ -95,6 +96,16 @@ package aerys.minko.type.loader.parser
 			_loadDependencies = value;
 		}
 
+        public function get loadSkin():Boolean
+        {
+            return _loadSkin;
+        }
+
+        public function set loadSkin(value:Boolean):void
+        {
+            _loadSkin = value;
+        }
+
 		public function clone(): ParserOptions
 		{
 			return new ParserOptions(
@@ -144,5 +155,5 @@ package aerys.minko.type.loader.parser
 			
 			return loader;
 		}
-	}
+    }
 }
