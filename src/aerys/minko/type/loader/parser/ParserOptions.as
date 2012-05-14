@@ -18,8 +18,8 @@ package aerys.minko.type.loader.parser
 	public final class ParserOptions
 	{
 		private var _loadDependencies			: Boolean	= false;
-        private var _loadSkin                   : Boolean   = false;
 		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
+        private var _loadSkin                   : Boolean   = false;
 		private var _mipmapTextures				: Boolean	= true;
 		private var _meshEffect					: Effect	= null;
 		private var _vertexStreamUsage			: uint		= 0;
@@ -108,21 +108,21 @@ package aerys.minko.type.loader.parser
 
 		public function clone(): ParserOptions
 		{
-			var parserOptions : ParserOptions = new ParserOptions(
+			return new ParserOptions(
 				_loadDependencies,
 				_dependencyLoaderClosure,
+                _loadSkin,
 				_mipmapTextures,
 				_meshEffect,
 				_vertexStreamUsage,
 				_indexStreamUsage,
 				_parser
 			);
-            parserOptions.loadSkin = _loadSkin;
-            return parserOptions;
 		}
 		
 		public function ParserOptions(loadDependencies			: Boolean = false,
 									  dependencyLoaderClosure	: Function = null,
+                                      loadSkin                  : Boolean = true,
 									  mipmapTextures			: Boolean = true,
 									  meshEffect				: Effect = null,
 									  vertexStreamUsage			: uint = 0,
@@ -131,6 +131,7 @@ package aerys.minko.type.loader.parser
 		{
 			_loadDependencies			= loadDependencies;
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
+            _loadSkin                   = loadSkin;
 			_mipmapTextures				= mipmapTextures;
 			_meshEffect					= meshEffect;
 			_vertexStreamUsage			= vertexStreamUsage;
