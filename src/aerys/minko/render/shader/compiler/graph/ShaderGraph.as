@@ -129,17 +129,16 @@ package aerys.minko.render.shader.compiler.graph
 		public function generateAGAL(name : String) : String
 		{
 			var instruction	: AgalInstruction;
-			var shader		: String = name + "\n\n";
+			var shader		: String = name + "\n";
 			
 			if (!_isCompiled)
 				compile();
 			
-			shader += "---------------- vertex shader ----------------\n";
+			shader += "- vertex shader\n";
 			for each (instruction in _vertexSequence)
 				shader += instruction.getAgal(true);
 			
-			shader += "\n";
-			shader += "--------------- fragment shader ---------------\n";
+			shader += "- fragment shader\n";
 			for each (instruction in _fragmentSequence)
 				shader += instruction.getAgal(false);
 			
