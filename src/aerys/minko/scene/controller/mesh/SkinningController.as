@@ -2,6 +2,7 @@ package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.data.SkinningDataProvider;
@@ -32,7 +33,7 @@ package aerys.minko.scene.controller.mesh
 		private static const WORLD_SKELETON_MATRIX	: Matrix3D	= new Matrix3D();
 		private static const TMP_SKINNING_MATRIX	: Matrix3D 	= new Matrix3D();
 		
-		private var _skinningData		: SkinningDataProvider			= new SkinningDataProvider();
+		private var _skinningData		: SkinningDataProvider	= new SkinningDataProvider();
 		
 		private var _isDirty			: Boolean				= true;
 		
@@ -42,69 +43,132 @@ package aerys.minko.scene.controller.mesh
 		private var _joints				: Vector.<Group>		= null;
 		private var _invBindMatrices	: Vector.<Matrix3D>		= null;
 		
-		private var _matrices			: Vector.<Number>		= new Vector.<Number>();
-		private var _dqn				: Vector.<Number>		= new Vector.<Number>();
-		private var _dqd				: Vector.<Number>		= new Vector.<Number>();
+		private var _matrices			: Vector.<Number>		= new <Number>[];
+		private var _dqn				: Vector.<Number>		= new <Number>[];
+		private var _dqd				: Vector.<Number>		= new <Number>[];
 		
-		public function get joints() : Vector.<Group>
-		{
-			return _joints;
-		}
-
 		public function get skeletonRoot() : Group
 		{
 			return _skeletonRoot;
 		}
-
-		public function get bindShape() : Matrix4x4
+		public function set skeletonRoot(value : Group) : void
 		{
-			return _bindShape;
+			if (value != _skeletonRoot)
+			{
+				_skeletonRoot.localToWorld.changed.remove(
+					jointLocalToWorldChangedHandler
+				);
+				
+				_skeletonRoot = value;
+				initializeJoints(getJointNames());
+			}
 		}
 
-		public function get skinningMethod():uint
+		public function get skinningMethod() : uint
 		{
 			return _skinningMethod;
 		}
 
 		public function SkinningController(skinningMethod	: uint,
 										   skeletonRoot		: Group,
-										   joints 			: Vector.<Group>,
+										   jointNames		: Vector.<String>,
 										   bindShape		: Matrix4x4,
 										   invBindMatrices	: Vector.<Matrix4x4>)
 		{
 			super();
-			
-			var numJoints : uint = joints.length;
+		
+			initialize(skinningMethod, skeletonRoot, jointNames, bindShape, invBindMatrices);
+		}
+		
+		private function initialize(skinningMethod	: uint,
+									skeletonRoot	: Group,
+									jointNames		: Vector.<String>,
+									bindShape		: Matrix4x4,
+									invBindMatrices	: Vector.<Matrix4x4>) : void
+		{
+			var numJoints 	: uint 	= jointNames.length;
 			
 			_skinningMethod		= skinningMethod;
 			_skeletonRoot		= skeletonRoot;
-			_joints				= joints;
 			_bindShape			= bindShape;
 			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
-			
-			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-				_invBindMatrices[jointId] = invBindMatrices[jointId]._matrix;
+			for (var i : uint = 0; i < numJoints; ++i)
+				_invBindMatrices[i] = invBindMatrices[i]._matrix;
 			
 			// init data provider.
 			_skinningData.method	= _skinningMethod;
-			_skinningData.numBones	= _joints.length;
+			_skinningData.numBones	= numJoints;
 			_skinningData.bindShape	= _bindShape;
 			
-			// subscribe to root and bone transform changes.
-			skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
-			for each (var joint : Group in _joints)
-				joint.localToWorld.changed.add(jointLocalToWorldChangedHandler)
+			initializeJoints(jointNames);
+		}
+		
+		private function initializeJoints(jointNames : Vector.<String>) : void
+		{
+			var numJoints 	: uint	= jointNames.length;
+
+			_joints ||= new Vector.<Group>(numJoints, true);
+			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
+			{
+				var jointSearch : SceneIterator = skeletonRoot.get(
+					'//group[name=\'' + jointNames[jointId] + '\']'
+				);
+				
+				if (jointSearch.length == 0)
+				{
+					throw new Error(
+						'The joint named \'' + jointNames[jointId]
+						+ '\' is not a descendant of the skeleton root named \''
+						+ skeletonRoot.name + '\'.'
+					);
+				}
+				else if (jointSearch.length > 1)
+				{
+					throw new Error(
+						'Ambiguous reference to \'' + jointNames[jointId] + '\'.'
+					);
+				}
+				
+				if (_joints[jointId] != null)
+				{
+					(_joints[jointId] as Group).localToWorld.changed.remove(
+						jointLocalToWorldChangedHandler
+					);
+				}
+				
+				var joint : Group = jointSearch[0];
+				
+				joint.localToWorld.changed.add(jointLocalToWorldChangedHandler);
+				_joints[jointId] = joint;
+			}
+			
+			_isDirty = true;
+			
+			_skeletonRoot.localToWorld.changed.add(
+				jointLocalToWorldChangedHandler
+			);
 		}
 		
 		override public function clone() : AbstractController
 		{
 			return new SkinningController(
-				skinningMethod,
-				skeletonRoot,
-				joints,
-				bindShape,
+				_skinningMethod,
+				_skeletonRoot,
+				getJointNames(),
+				_bindShape,
 				getInvBindMatrices()
 			);
+		}
+		
+		public function getJointNames() : Vector.<String>
+		{
+			var numJoints	: uint				= _joints.length;
+			var jointNames 	: Vector.<String> 	= new Vector.<String>(numJoints, true);
+			
+			for (var i : uint = 0; i < numJoints; ++i)
+				jointNames[i] = (_joints[i] as Group).name;
+			
+			return jointNames;
 		}
 		
 		public function getInvBindMatrices() : Vector.<Matrix4x4>
@@ -130,9 +194,10 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetAddedHandler(controller, target);
 			
-			var mesh			: Mesh			= target as Mesh;
-			var format			: VertexFormat	= mesh.geometry.getVertexStream().format;
-			var maxInfluences	: uint			= 
+			var mesh	: Mesh			= target as Mesh;
+			var format	: VertexFormat	= mesh.geometry.getVertexStream().format;
+			
+			_skinningData.maxInfluences = 
 				uint(format.hasComponent(VertexComponent.BONE0))
 				+ uint(format.hasComponent(VertexComponent.BONE1))
 				+ uint(format.hasComponent(VertexComponent.BONE2))
@@ -142,8 +207,6 @@ package aerys.minko.scene.controller.mesh
 				+ uint(format.hasComponent(VertexComponent.BONE6))
 				+ uint(format.hasComponent(VertexComponent.BONE7));
 			
-			_skinningData.maxInfluences = maxInfluences;
-			
 			mesh.bindings.add(_skinningData);
 		}
 		
@@ -152,9 +215,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(controller, target);
 			
-			var mesh : Mesh = target as Mesh;
-			
-			mesh.bindings.remove(_skinningData);
+			(target as Mesh).bindings.remove(_skinningData);
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
@@ -222,22 +283,22 @@ package aerys.minko.scene.controller.mesh
 			
 			for (var quaternionId : int = 0; quaternionId < numQuaternions; ++quaternionId)
 			{
-				var matrixOffset 		: int = quaternionId * 16;
-				var quaternionOffset	: int = quaternionId * 4;
+				var matrixOffset 		: int 		= quaternionId * 16;
+				var quaternionOffset	: int 		= quaternionId * 4;
 				
-				var m00		: Number = _matrices[matrixOffset];
-				var m03 	: Number = _matrices[int(matrixOffset + 3)];
-				var m05		: Number = _matrices[int(matrixOffset + 5)];
-				var m07		: Number = _matrices[int(matrixOffset + 7)];
-				var m10		: Number = _matrices[int(matrixOffset + 10)];
-				var m11		: Number = _matrices[int(matrixOffset + 11)];
+				var m00					: Number 	= _matrices[matrixOffset];
+				var m03 				: Number 	= _matrices[int(matrixOffset + 3)];
+				var m05					: Number 	= _matrices[int(matrixOffset + 5)];
+				var m07					: Number 	= _matrices[int(matrixOffset + 7)];
+				var m10					: Number 	= _matrices[int(matrixOffset + 10)];
+				var m11					: Number 	= _matrices[int(matrixOffset + 11)];
 				
-				var mTrace	: Number = m00 + m05 + _matrices[int(matrixOffset + 10)];
-				var s		: Number;
-				var nw		: Number;
-				var nx		: Number;
-				var ny		: Number;
-				var nz		: Number;
+				var mTrace				: Number 	= m00 + m05 + _matrices[int(matrixOffset + 10)];
+				var s					: Number	= 0.;
+				var nw					: Number	= 0.;
+				var nx					: Number	= 0.;
+				var ny					: Number	= 0.;
+				var nz					: Number	= 0.;
 				
 				if (mTrace > 0)
 				{

@@ -1,13 +1,13 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class AbstractSampler extends ANode
+	public class AbstractSampler extends AbstractNode
 	{
 		private var _filter		: uint;
 		private var _mipmap		: uint;
@@ -39,7 +39,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 										wrapping		: uint = 1, // SamplerWrapping.REPEAT
 										dimension		: uint = 0)
 		{
-			super(new <ANode>[], new <uint>[]);
+			super(new <AbstractNode>[], new <uint>[]);
 			
 			_filter		= filter;
 			_mipmap		= mipmap;

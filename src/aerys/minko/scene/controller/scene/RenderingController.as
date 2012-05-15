@@ -200,7 +200,7 @@ package aerys.minko.scene.controller.scene
 		 * Render current Scene
 		 */
 		private function render(viewport	: Viewport,
-								target		: BitmapData) : uint
+								destination	: BitmapData) : uint
 		{
 			applyBindingChanges();
 
@@ -230,7 +230,7 @@ package aerys.minko.scene.controller.scene
 				var calls 		: Vector.<DrawCall> = _passInstanceToDrawCalls[pass];
 				var numCalls	: uint				= calls.length;
 				
-				if (!pass.settings.enabled)
+				if (!pass.settings.enabled || !pass.generator.enabled)
 					continue;
 				
 				pass.begin.execute(pass, context, backBuffer);
@@ -270,11 +270,11 @@ package aerys.minko.scene.controller.scene
 			
 			// present
 			if (_postProcessingEffect)
-				_postProcessingScene.render(viewport, target);
+				_postProcessingScene.render(viewport, destination);
 			else
 			{
-				if (target)
-					context.drawToBitmapData(target);
+				if (destination)
+					context.drawToBitmapData(destination);
 				else
 					context.present();
 			}
@@ -416,7 +416,7 @@ package aerys.minko.scene.controller.scene
 			
 			if (!_effectToMeshes[meshEffect])
 			{
-				_effectToMeshes[meshEffect] = new Vector.<Mesh>();
+				_effectToMeshes[meshEffect] = new <Mesh>[];
 				meshEffect.passesChanged.add(effectPassesChangedHandler);
 			}
 			
@@ -478,10 +478,7 @@ package aerys.minko.scene.controller.scene
 				var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 				
 				for each (var oldDrawCall : DrawCall in drawCalls)
-				{
-					var oldPassInstance	: ShaderInstance = _drawCallToPassInstance[oldDrawCall];
-					unbind(oldPassInstance, oldDrawCall, meshBindings);
-				}
+					unbind(_drawCallToPassInstance[oldDrawCall], oldDrawCall, meshBindings);
 				
 				drawCalls.length = 0;
 				
@@ -496,13 +493,17 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.configure(
-						passInstance.program,
-						mesh.geometry,
-						meshBindings,
-						sceneBindings,
-						passInstance.settings.depthSortDrawCalls
-					);
+					if (passInstance.program != null)
+					{
+						newDrawCall.configure(
+							passInstance.program,
+							mesh.geometry,
+							meshBindings,
+							sceneBindings,
+							passInstance.settings.depthSortDrawCalls
+						);
+					}
+					
 					drawCalls[i] = newDrawCall;
 					
 					// retain the instance, update indexes, watch for invalidation, give to renderingList.

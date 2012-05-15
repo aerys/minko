@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
@@ -9,9 +9,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Overwriter extends ANode
+	public class Overwriter extends AbstractNode
 	{
-		public function Overwriter(args			: Vector.<ANode>,
+		public function Overwriter(args			: Vector.<AbstractNode>,
 								   components	: Vector.<uint>)
 		{
 			super(args, components);
@@ -24,8 +24,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
-				var argument	: ANode	= getArgumentAt(argId);
-				var component	: uint	= getComponentAt(argId);
+				var argument	: AbstractNode	= getArgumentAt(argId);
+				var component	: uint			= getComponentAt(argId);
 				
 				hash += argument.hash.toString() + component.toString();
 			}
@@ -67,11 +67,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return 'Overwriter';
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
-			var numArgs 	: uint				= this.numArguments;
-			var arguments	: Vector.<ANode>	= new Vector.<ANode>(numArgs);
-			var components	: Vector.<uint> 	= new Vector.<uint>(numArgs);
+			var numArgs 	: uint					= this.numArguments;
+			var arguments	: Vector.<AbstractNode>	= new Vector.<AbstractNode>(numArgs);
+			var components	: Vector.<uint> 		= new Vector.<uint>(numArgs);
 			
 			
 			for (var argId : uint = 0; argId < numArgs; ++argId)

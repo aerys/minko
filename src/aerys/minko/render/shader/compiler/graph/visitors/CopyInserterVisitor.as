@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -23,7 +23,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 			visitArguments(node, true);
 			
@@ -37,12 +37,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 		}
 		
 		
-		private function isConstant(node : ANode) : Boolean
+		private function isConstant(node : AbstractNode) : Boolean
 		{
 			return node is Constant || node is BindableConstant || node is VariadicExtract;
 		}

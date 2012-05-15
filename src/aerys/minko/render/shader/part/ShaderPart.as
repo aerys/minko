@@ -5,7 +5,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderDataBindings;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
@@ -269,13 +269,13 @@ package aerys.minko.render.shader.part
 		{
 			var currentOffset	: uint = 0;
 			
-			var args			: Vector.<ANode>	= new Vector.<ANode>();
-			var components		: Vector.<uint>		= new Vector.<uint>();
+			var args			: Vector.<AbstractNode>	= new Vector.<AbstractNode>();
+			var components		: Vector.<uint>			= new Vector.<uint>();
 			
 			for each (var value : Object in values)
 			{
-				var node		: ANode	= getNode(value);
-				var nodeSize	: uint	= node.size;
+				var node		: AbstractNode	= getNode(value);
+				var nodeSize	: uint			= node.size;
 				
 				if (currentOffset + nodeSize > size)
 					throwInvalidSizeError(size, currentOffset + nodeSize);
@@ -302,7 +302,7 @@ package aerys.minko.render.shader.part
 
 		protected final function float(x : Object) : SFloat
 		{
-			var node : ANode = getNode(x);
+			var node : AbstractNode = getNode(x);
 			if (node.size == 1)
 				return new SFloat(node);
 			else
@@ -386,6 +386,9 @@ package aerys.minko.render.shader.part
 		 */
 		protected final function pack(scalar : Object) : SFloat
 		{
+			if (scalar.size != 1)
+				throw new ArgumentError('Argument of size 1 expected. ' + scalar + ' received');
+			
 			var bitSh	: SFloat = float4(256. * 256. * 256., 256. * 256, 256., 1.);
 			var bitMsk	: SFloat = float4(0., 1. / 256., 1. / 256., 1. / 256.);
 			var comp	: SFloat = fractional(multiply(getNode(scalar), bitSh));
@@ -556,24 +559,24 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.CRS, getNode(u), getNode(v)));
 		}
 
-		protected final function multiply4x4(a : Object, b : Object) : SFloat
+		protected final function multiply4x4(vector : Object, matrix : Object) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.M44, getNode(a), getNode(b)));
+			return new SFloat(new Instruction(Instruction.M44, getNode(vector), getNode(matrix)));
 		}
 
-		protected final function multiply3x3(a : Object, b : Object) : SFloat
+		protected final function multiply3x3(vector : Object, matrix : Object) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.M33, getNode(a), getNode(b)));
+			return new SFloat(new Instruction(Instruction.M33, getNode(vector), getNode(matrix)));
 		}
 
-		protected final function multiply3x4(a : Object, b : Object) : SFloat
+		protected final function multiply3x4(vector : Object, matrix : Object) : SFloat
 		{
-			var aNode : ANode = getNode(a);
+			var vectorNode : AbstractNode = getNode(vector);
 			
-			if (aNode.size < 4)
-				throw new Error("The argument 'a' should have a size of 4.");
+			if (vectorNode.size < 4)
+				throw new Error("The argument 'vector' should have a size of 4.");
 			
-			return new SFloat(new Instruction(Instruction.M34, aNode, getNode(b)));
+			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
 
 		protected final function cos(angle : Object) : SFloat
@@ -712,7 +715,7 @@ package aerys.minko.render.shader.part
 		
 		protected final function length(vector : Object) : SFloat
 		{
-			var v : ANode = getNode(vector);
+			var v : AbstractNode = getNode(vector);
 
 			if (v.size == 2)
 			{
@@ -812,8 +815,8 @@ package aerys.minko.render.shader.part
 												   constant : Object,
 												   isMatrix	: Boolean	= false) : SFloat
 		{
-			var c	: ANode	= getNode(constant);
-			var i	: ANode	= getNode(index);
+			var c	: AbstractNode	= getNode(constant);
+			var i	: AbstractNode	= getNode(index);
 			
 			if (!(c is BindableConstant || c is Constant))
 				throw new Error("Unable to use index on non-constant values.");
@@ -821,10 +824,10 @@ package aerys.minko.render.shader.part
 			return new SFloat(new VariadicExtract(i, c, isMatrix));
 		}
 		
-		private function getNode(value : Object) : ANode
+		private function getNode(value : Object) : AbstractNode
 		{
-			if (value is ANode)
-				return value as ANode;
+			if (value is AbstractNode)
+				return value as AbstractNode;
 			
 			if (value is SFloat)
 				return (value as SFloat)._node;

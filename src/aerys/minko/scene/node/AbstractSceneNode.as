@@ -237,12 +237,30 @@ package aerys.minko.scene.node
 			return _controllers[index];
 		}
 		
+		public function getControllersByType(type			: Class,
+											 controllers	: Vector.<AbstractController> = null) : Vector.<AbstractController>
+		{
+			controllers ||= new Vector.<AbstractController>();
+			
+			var nbControllers : uint = numControllers;
+			
+			for (var i : int = 0; i < nbControllers; ++i)
+			{
+				var ctrl 	: AbstractController	= getController(i);
+				
+				if (ctrl is type)
+					controllers.push(ctrl);
+			}
+			
+			return controllers;
+		}
+		
 		public static function getDefaultSceneName(scene : ISceneNode) : String
 		{
 			var className : String = getQualifiedClassName(scene);
 
-			return className.substr(className.lastIndexOf(":") + 1)
-				   + "_" + (++_id);
+			return className.substr(className.lastIndexOf(':') + 1)
+				   + '_' + (++_id);
 		}
 		
 		public function clone(cloneControllers : Boolean = false) : ISceneNode

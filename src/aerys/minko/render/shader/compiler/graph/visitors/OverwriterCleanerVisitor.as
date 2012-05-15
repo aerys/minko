@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -34,7 +34,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 		}
 		
-		override protected function visitTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 			visitArguments(node, true);
 			
@@ -42,7 +42,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visitOverwriter(Overwriter(node), true);
 		}
 		
-		override protected function visitNonTraversable(node:ANode, isVertexShader:Boolean):void
+		override protected function visitNonTraversable(node:AbstractNode, isVertexShader:Boolean):void
 		{
 		}
 		
@@ -51,7 +51,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			var numArgs		: uint = overwriter.numArguments;
 			var argId		: int; // we use int instead of uint to be able to loop backwards
-			var arg			: ANode;
+			var arg			: AbstractNode;
 			var component	: uint;
 			
 			// visit sons
@@ -77,7 +77,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					for (var innerArgId : uint = 0; innerArgId < innerNumArgs; ++innerArgId)
 					{
 						// modify argument
-						var innerArg		: ANode	= Overwriter(arg).getArgumentAt(innerArgId);
+						var innerArg		: AbstractNode	= Overwriter(arg).getArgumentAt(innerArgId);
 						var innerComponent	: uint	= Overwriter(arg).getComponentAt(innerArgId);
 						
 						innerComponent = Components.applyCombination(innerComponent, component);
@@ -129,10 +129,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			// (The argument order does not matter anymore because we masked each component with the following one). 
 			for (argId = 0; argId < numArgs - 1; ++argId)
 			{
-				var argument1	: ANode = overwriter.getArgumentAt(argId);
-				var argument2	: ANode = overwriter.getArgumentAt(argId + 1);
-				var component1	: uint	= overwriter.getComponentAt(argId);
-				var component2	: uint	= overwriter.getComponentAt(argId + 1);
+				var argument1	: AbstractNode	= overwriter.getArgumentAt(argId);
+				var argument2	: AbstractNode	= overwriter.getArgumentAt(argId + 1);
+				var component1	: uint			= overwriter.getComponentAt(argId);
+				var component2	: uint			= overwriter.getComponentAt(argId + 1);
 				
 				if (TYPE_PRIORITY[Object(argument1).constructor] > TYPE_PRIORITY[Object(argument2).constructor])
 				{

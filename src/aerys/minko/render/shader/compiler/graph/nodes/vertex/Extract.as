@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.nodes.vertex
 {
 	import aerys.minko.render.shader.compiler.CRC32;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.register.Components;
 	
 	/**
@@ -9,9 +9,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public class Extract extends ANode
+	public class Extract extends AbstractNode
 	{
-		public function get argument() : ANode
+		public function get argument() : AbstractNode
 		{
 			return getArgumentAt(0);
 		}
@@ -21,11 +21,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return getComponentAt(0);
 		}
 		
-		public function Extract(child		: ANode,
+		public function Extract(child		: AbstractNode,
 								component	: uint)
 		{
-			var arguments	: Vector.<ANode> = new <ANode>[child];
-			var components	: Vector.<uint>	 = new <uint>[component];
+			var arguments	: Vector.<AbstractNode>	= new <AbstractNode>[child];
+			var components	: Vector.<uint>			= new <uint>[component];
 			
 			arguments.fixed = components.fixed = true;
 			
@@ -45,8 +45,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		
 		override protected function computeHash() : uint
 		{
-			var child		: ANode	= getArgumentAt(0);
-			var component	: uint	= getComponentAt(0);
+			var child		: AbstractNode	= getArgumentAt(0);
+			var component	: uint			= getComponentAt(0);
 			
 			return CRC32.computeForString('Extract' + child.hash.toString(16) + component.toString(16));
 		}
@@ -58,7 +58,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			return Components.getMaxWriteOffset(component) + 1;
 		}
 		
-		override public function clone() : ANode
+		override public function clone() : AbstractNode
 		{
 			return new Extract(argument, component);
 		}

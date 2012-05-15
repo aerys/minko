@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
-	import aerys.minko.render.shader.compiler.graph.nodes.ANode;
+	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -22,12 +22,12 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	 */
 	public class AbstractVisitor
 	{
-		private var _visited		: Vector.<ANode>;
+		private var _visited		: Vector.<AbstractNode>;
 		protected var _shaderGraph	: ShaderGraph;
 		
 		public function AbstractVisitor()
 		{
-			_visited	= new Vector.<ANode>();
+			_visited	= new Vector.<AbstractNode>();
 		}
 		
 		public function process(shaderGraph : ShaderGraph) : void
@@ -38,7 +38,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			visit(_shaderGraph.position, true);
 			visit(_shaderGraph.color, false);
-			for each (var kill : ANode in _shaderGraph.kills)
+			for each (var kill : AbstractNode in _shaderGraph.kills)
 				visit(kill, false);
 			
 			finish();
@@ -51,9 +51,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		protected function finish() : void
 		{
 			_visited.length	= 0;
+			_shaderGraph	= null;
 		}
 		
-		protected function visit(node : ANode, isVertexShader : Boolean) : void
+		protected function visit(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			if (_visited.indexOf(node) == -1)
 			{
@@ -66,7 +67,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			}
 		}
 		
-		protected function visitArguments(node : ANode, isVertexShader : Boolean) : void
+		protected function visitArguments(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			var numArguments : uint = node.numArguments;
 			
@@ -74,10 +75,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visit(node.getArgumentAt(argumentId), isVertexShader);
 		}
 		
-		protected function replaceInParents(oldNode : ANode, newNode : ANode) : void
+		protected function replaceInParents(oldNode : AbstractNode, newNode : AbstractNode) : void
 		{
-			var numParents	: uint			 = oldNode.numParents;
-			var parents		: Vector.<ANode> = new Vector.<ANode>(numParents, true);
+			var numParents	: uint					= oldNode.numParents;
+			var parents		: Vector.<AbstractNode> = new Vector.<AbstractNode>(numParents, true);
 			var parentId	: uint;
 			
 			for (parentId = 0; parentId < numParents; ++parentId)
@@ -85,8 +86,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (parentId = 0; parentId < numParents; ++parentId)
 			{
-				var parent		: ANode = parents[parentId];
-				var numArgument	: uint	= parent.numArguments;
+				var parent		: AbstractNode	= parents[parentId];
+				var numArgument	: uint			= parent.numArguments;
 				
 				// loop backward, because we are removing elements from the parents array
 				for (var argumentId : int = numArgument - 1; argumentId >= 0; --argumentId)
@@ -100,15 +101,15 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (_shaderGraph.color === oldNode)
 				_shaderGraph.color = newNode;
 			
-			var kills		: Vector.<ANode> = _shaderGraph.kills;
-			var numKills	: uint			 = kills.length;
+			var kills		: Vector.<AbstractNode>	= _shaderGraph.kills;
+			var numKills	: uint					= kills.length;
 			
 			for (var killId : uint = 0; killId < numKills; ++killId)
 				if (kills[killId] === oldNode)
 					kills[killId] = newNode;
 		}
 		
-		protected function swizzleParents(node		: ANode,
+		protected function swizzleParents(node		: AbstractNode,
 										  modifier	: uint) : void
 		{
 			var numParents		: uint			= node.numParents;
@@ -116,7 +117,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			
 			for (var parentId : uint = 0; parentId < numParents; ++parentId)
 			{
-				var parent : ANode = node.getParentAt(parentId);
+				var parent : AbstractNode = node.getParentAt(parentId);
 				
 				if (visitedParents[parent])
 					continue;
@@ -138,8 +139,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			if (_shaderGraph.color == node)
 				_shaderGraph.colorComponents = Components.applyCombination(modifier, _shaderGraph.colorComponents);
 			
-			var kills			: Vector.<ANode> = _shaderGraph.kills;
-			var killComponents	: Vector.<uint>  = _shaderGraph.killComponents;
+			var kills			: Vector.<AbstractNode>	= _shaderGraph.kills;
+			var killComponents	: Vector.<uint>			= _shaderGraph.killComponents;
 			var numKills		: uint = kills.length;
 			
 			for (var killId : uint = 0; killId < numKills; ++killId)
@@ -147,8 +148,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					killComponents[killId] = Components.applyCombination(modifier, killComponents[killId]);
 		}
 		
-		protected function replaceInParentsAndSwizzle(oldNode	: ANode,
-													  newNode	: ANode,
+		protected function replaceInParentsAndSwizzle(oldNode	: AbstractNode,
+													  newNode	: AbstractNode,
 													  modifier	: uint) : void
 		{
 			
@@ -156,7 +157,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			replaceInParents(oldNode, newNode);
 		}
 		
-		protected function visitTraversable(node : ANode, isVertexShader : Boolean) : void
+		protected function visitTraversable(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			if (node is Extract)
 				visitExtract(Extract(node), isVertexShader);
@@ -170,7 +171,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				visitVariadicExtract(VariadicExtract(node), isVertexShader);
 		}
 		
-		protected function visitNonTraversable(node : ANode, isVertexShader : Boolean) : void
+		protected function visitNonTraversable(node : AbstractNode, isVertexShader : Boolean) : void
 		{
 			if (node is Attribute)
 				visitAttribute(Attribute(node), isVertexShader);
