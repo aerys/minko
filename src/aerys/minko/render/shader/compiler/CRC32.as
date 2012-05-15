@@ -92,6 +92,18 @@ package aerys.minko.render.shader.compiler
 			return computeForByteArray(TMP_BYTEARRAY); 
 		}
 		
+		public static function computeForUintVector(v : Vector.<uint>) : uint
+		{
+			var length		: uint		= v.length;
+			
+			TMP_BYTEARRAY.length = TMP_BYTEARRAY.position = 0;
+			
+			for (var i : uint = 0; i < length; ++i)
+				TMP_BYTEARRAY.writeUnsignedInt(v[i]);
+			
+			return computeForByteArray(TMP_BYTEARRAY);
+		}
+		
 		public static function computeForNumberVector(v : Vector.<Number>) : uint
 		{
 			var length		: uint		= v.length;
