@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller.mesh
 {
+	import aerys.minko.ns.minko_animation;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.SceneIterator;
@@ -46,6 +47,26 @@ package aerys.minko.scene.controller.mesh
 		private var _matrices			: Vector.<Number>		= new <Number>[];
 		private var _dqn				: Vector.<Number>		= new <Number>[];
 		private var _dqd				: Vector.<Number>		= new <Number>[];
+		
+		/**
+		 * 
+		 * @private
+		 * 
+		 */ 
+		public function get bindShape() : Matrix4x4
+		{
+			return _bindShape;
+		}
+		
+		/**
+		 * 
+		 * @private
+		 * 
+		 */
+		public function get joints() : Vector.<Group>
+		{
+			return _joints;
+		}
 		
 		public function get skeletonRoot() : Group
 		{
