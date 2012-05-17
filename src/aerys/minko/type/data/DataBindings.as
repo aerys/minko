@@ -80,8 +80,8 @@ package aerys.minko.type.data
 			return _properties[index];
 		}
 		
-		public function setProperty(propertyName	: String,
-									newValue		: Object) : DataBindings
+		private function setProperty(propertyName	: String,
+									 newValue		: Object) : DataBindings
 		{
 			if (newValue === null)
 				throw new Error("The argument 'newValue' cannot be null.");
@@ -175,37 +175,19 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function clone(exclude : Vector.<String>) : DataBindings
+		public function clone(exclude : Vector.<String> = null) : DataBindings
 		{
 			var clone 			: DataBindings 	= new DataBindings();
 			var clonedBindings	: Dictionary	= clone._bindings;
 			
 			for (var source : Object in _bindings)
 			{
-				var bindingTable 	: Object 	= _bindings[source];
-				var clonedTable		: Object	= {};
-				var excluded		: Boolean	= true;
+				var dataProvider	: IDataProvider	= source as IDataProvider;
+				var bindingTable 	: Object 		= _bindings[source];
 				
 				for (var key : String in bindingTable)
-				{
-					if (exclude.indexOf(bindingTable[key]) < 0)
-					{
-						clonedTable[key] = bindingTable[key];
-						excluded = false;
-					}
-				}
-				
-				if (!excluded)
-					clonedBindings[source] = clonedTable;
-			}
-			
-			for (var propertyName : String in _values)
-			{
-				if (exclude.indexOf(propertyName) < 0)
-				{
-					clone._values[propertyName] = _values[propertyName];
-					clone._properties.push(propertyName);
-				}
+					if (exclude != null && exclude.indexOf(bindingTable[key]) < 0)
+						clone.addProperty(bindingTable[key], dataProvider, key);
 			}
 			
 			return clone;
