@@ -28,12 +28,12 @@ package aerys.minko.render.shader.part.animation
 		{
 			var vertexPosition : SFloat;
 			
-			if (meshBindings.propertyExists("morphingEnabled"))
+			if (meshBindings.propertyExists('morphingEnabled'))
 				vertexPosition = _morphing.getMorphedPosition();
 			else
 				vertexPosition = getVertexAttribute(VertexComponent.XYZ);
 			
-			if (meshBindings.propertyExists("skinningMethod"))
+			if (meshBindings.propertyExists('skinningMethod'))
 				vertexPosition = _skinning.skinPosition(vertexPosition);
 			
 			return vertexPosition;
@@ -43,12 +43,12 @@ package aerys.minko.render.shader.part.animation
 		{
 			var vertexNormal : SFloat;
 			
-			if (meshBindings.propertyExists("morphingEnabled"))
+			if (meshBindings.propertyExists('morphingEnabled'))
 				vertexNormal = _morphing.getMorphedNormal();
 			else
 				vertexNormal = getVertexAttribute(VertexComponent.NORMAL)
 			
-			if (meshBindings.propertyExists("skinningMethod"))
+			if (meshBindings.propertyExists('skinningMethod'))
 				vertexNormal = _skinning.skinNormal(vertexNormal);
 			
 			return vertexNormal;

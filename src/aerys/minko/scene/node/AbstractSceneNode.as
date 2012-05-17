@@ -213,15 +213,17 @@ package aerys.minko.scene.node
 						 .unlock();
 		}
 		
-		public function addController(controller : AbstractController) : void
+		public function addController(controller : AbstractController) : ISceneNode
 		{
 			_controllers.push(controller);
 			
 			controller.addTarget(this);
 			_controllerAdded.execute(this, controller);
+			
+			return this;
 		}
 		
-		public function removeController(controller : AbstractController) : void
+		public function removeController(controller : AbstractController) : ISceneNode
 		{
 			var numControllers	: uint = _controllers.length - 1;
 			
@@ -230,6 +232,16 @@ package aerys.minko.scene.node
 			
 			controller.removeTarget(this);
 			_controllerRemoved.execute(this, controller);
+			
+			return this;
+		}
+		
+		public function removeAllControllers() : ISceneNode
+		{
+			while (numControllers)
+				removeController(getController(0));
+			
+			return this;
 		}
 		
 		public function getController(index : uint) : AbstractController

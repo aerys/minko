@@ -63,21 +63,61 @@ package aerys.minko.render.shader.compiler.graph
 		private var _fsConstants			: Vector.<Number>;
 		private var _textures				: Vector.<ITextureResource>;
 		
-		public function get position()		: AbstractNode			{ return _position;		}
-		public function get interpolates()	: Vector.<AbstractNode>	{ return _interpolates;	}
-		public function get color()			: AbstractNode			{ return _color;		}
-		public function get kills()			: Vector.<AbstractNode>	{ return _kills;		}
+		public function get position() : AbstractNode
+		{
+			return _position;
+		}
+		public function set position(v : AbstractNode)	: void
+		{
+			_position = v;
+		}
 		
-		public function get positionComponents()	: uint			{ return _positionComponents;	}
-		public function get colorComponents()		: uint			{ return _colorComponents;		}
-		public function get killComponents()		: Vector.<uint>	{ return _killComponents;		}
+		public function get interpolates() : Vector.<AbstractNode>
+		{
+			return _interpolates;
+		}
 		
-		public function get computableConstants()	: Object		{ return _computableConstants;	}
+		public function get color() : AbstractNode
+		{
+			return _color;
+		}
+		public function set color(v : AbstractNode)	: void
+		{
+			_color = v;
+		}
 		
-		public function set position			(v : AbstractNode)	: void	{ _position = v;			}
-		public function set color				(v : AbstractNode)	: void	{ _color = v;				}
-		public function set positionComponents	(v : uint)			: void	{ _positionComponents = v;	}
-		public function set colorComponents		(v : uint)			: void	{ _colorComponents = v;		}
+		public function get kills() : Vector.<AbstractNode>
+		{
+			return _kills;
+		}
+		
+		public function get positionComponents() : uint
+		{
+			return _positionComponents;
+		}
+		public function set positionComponents(v : uint) : void
+		{
+			_positionComponents = v;
+		}
+		
+		public function get colorComponents() : uint
+		{
+			return _colorComponents;
+		}
+		public function set colorComponents(v : uint) : void
+		{
+			_colorComponents = v;
+		}
+		
+		public function get killComponents() : Vector.<uint>
+		{
+			return _killComponents;
+		}
+		
+		public function get computableConstants() : Object
+		{
+			return _computableConstants;
+		}
 		
 		public function ShaderGraph(position	: AbstractNode,
 									color		: AbstractNode,
@@ -158,7 +198,7 @@ package aerys.minko.render.shader.compiler.graph
 			REMOVE_USELESS			.process(this);	// remove some useless operations (add 0, mul 0, mul 1...)
 			RESOLVE_PARAMETRIZED	.process(this);	// replace computations that depend on parameters by evalexp parameters
 //			MATRIX_TRANSFORMATION	.process(this);	// replace ((vector * matrix1) * matrix2) by vector * (matrix1 * matrix2) to save registers on GPU
-//			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
+			COPY_INSERTER			.process(this);	// ensure there are no operations between constants
 			SPLITTER				.process(this);	// clone nodes that are shared between vertex and fragment shader
 			CONSTANT_GROUPER		.process(this);	// group constants [0,1] & [0,2] => [0, 1, 2]
 			

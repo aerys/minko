@@ -179,10 +179,13 @@ package aerys.minko.scene.controller
 		
 		public function stop() : void
 		{
-			_updateOneTime 	= true;
-			_isPlaying = false;
-			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
-			_stopped.execute(this);
+			if (_isPlaying)
+			{
+				_isPlaying = false;
+				_updateOneTime 	= true;
+				_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
+				_stopped.execute(this);
+			}
 		}
 		
 		public function setPlaybackWindow(beginTime	: Object = null,

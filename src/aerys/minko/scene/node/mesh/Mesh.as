@@ -32,8 +32,8 @@ package aerys.minko.scene.node.mesh
 		);
 		
 		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
-			"localToWorld",
-			"worldToLocal"
+			'localToWorld',
+			'worldToLocal'
 		];
 		
 		private var _geometry			: Geometry			= null;
@@ -41,8 +41,6 @@ package aerys.minko.scene.node.mesh
 		private var _properties			: DataProvider		= null;
 		private var _bindings			: DataBindings		= new DataBindings();
 		
-		private var _boundingSphere		: BoundingSphere	= null;
-		private var _boundingBox		: BoundingBox		= null;
 		private var _visible			: Boolean			= true;
 		
 		private var _frustumCulling		: uint				= 0;
@@ -148,16 +146,6 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		public function get boundingSphere() : BoundingSphere
-		{
-			return _boundingSphere;
-		}
-		
-		public function get boundingBox() : BoundingBox
-		{
-			return _boundingBox;
-		}
-
 		/**
 		 * Whether the mesh is visible or not.
 		 *  
@@ -265,8 +253,8 @@ package aerys.minko.scene.node.mesh
 	
 			if (child === this)
 			{
-				_bindings.addProperty("localToWorld", localToWorld);
-				_bindings.addProperty("worldToLocal", worldToLocal);
+				_bindings.addProperty('localToWorld', localToWorld);
+				_bindings.addProperty('worldToLocal', worldToLocal);
 			}
 		}
 		
@@ -276,8 +264,8 @@ package aerys.minko.scene.node.mesh
 			
 			if (child === this)
 			{
-				_bindings.removeProperty("localToWorld");
-				_bindings.removeProperty("worldToLocal");
+				_bindings.removeProperty('localToWorld');
+				_bindings.removeProperty('worldToLocal');
 			}
 		}
 		
@@ -289,16 +277,13 @@ package aerys.minko.scene.node.mesh
 			
 			name = source.name;
 			_geometry = source._geometry;
+			properties = source._properties.clone();
 			
 			copyControllersFrom(source, this, cloneControllers);
-			
-			if (withBindings)
-				_bindings = source._bindings.clone(EXCLUDED_BINDINGS);
 			
 			transform.copyFrom(source.transform);
 			
 			effect = source._effect;
-			
 		}
 	}
 }

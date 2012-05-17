@@ -28,7 +28,7 @@ package aerys.minko.render.shader
 		private var _generator	: Shader				= null;
 		private var _signature	: Signature				= null;
 		
-		private var _config		: ShaderSettings		= null;
+		private var _settings		: ShaderSettings		= null;
 		private var _program	: Program3DResource		= null;
 		
 		private var _retained	: Signal				= new Signal('ShaderInstance.retained');
@@ -48,7 +48,7 @@ package aerys.minko.render.shader
 		
 		public function get settings() : ShaderSettings
 		{
-			return _config;
+			return _settings;
 		}
 		
 		public function get program() : Program3DResource
@@ -82,12 +82,12 @@ package aerys.minko.render.shader
 		}
 		
 		public final function ShaderInstance(generator	: Shader,
-											 config		: ShaderSettings,
+											 settings	: ShaderSettings,
 											 program	: Program3DResource,
 											 signature	: Signature)
 		{
 			_generator	= generator;
-			_config		= config;
+			_settings	= settings;
 			_program	= program;
 			_signature	= signature;
 		}
@@ -96,14 +96,14 @@ package aerys.minko.render.shader
 									   backBuffer	: RenderTarget,
 									   previous		: ShaderInstance) : void
 		{
-			_config.prepareContext(context, backBuffer, previous != null ? previous.settings : null);
+			_settings.prepareContext(context, backBuffer, previous != null ? previous.settings : null);
 			_program.prepareContext(context, previous != null ? previous.program : null);
 		}
 		
 		public function retain() : void
 		{
 			++_numUses;
-			_config.retain();
+			_settings.retain();
 			
 			if (_program != null)
 				_program.retain();
@@ -114,7 +114,7 @@ package aerys.minko.render.shader
 		public function release() : void
 		{
 			--_numUses;
-			_config.release();
+			_settings.release();
 			
 			if (_program != null)
 				_program.release();
@@ -130,7 +130,7 @@ package aerys.minko.render.shader
 			var k		: int 		= 0;
 			var t		: int		= 0;
 			var state 	: ShaderInstance	= instances[0];
-			var anmin	: Number 	= -state._config.priority;
+			var anmin	: Number 	= -state._settings.priority;
 			var nmax	: int  		= 0;
 			var p		: Number	= 0.;
 			var sorted	: Boolean	= true;
@@ -138,7 +138,7 @@ package aerys.minko.render.shader
 			for (i = 0; i < n; ++i)
 			{
 				state = instances[i];
-				p = -state._config.priority;
+				p = -state._settings.priority;
 				
 				TMP_INTS[i] = 0;
 				TMP_NUMBERS[i] = p;

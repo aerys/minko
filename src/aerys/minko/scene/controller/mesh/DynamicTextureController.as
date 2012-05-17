@@ -44,7 +44,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetAddedHandler(ctrl, target);
 			
-			(target as Mesh).bindings.setProperty(_propertyName, _texture);
+			(target as Mesh).properties.setProperty(_propertyName, _texture);
 		}
 		
 		override protected function targetRemovedHandler(ctrl	: EnterFrameController,

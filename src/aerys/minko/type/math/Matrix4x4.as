@@ -183,7 +183,7 @@ package aerys.minko.type.math
 		{
 			_matrix.copyRawDataTo(_data, _numPushes * 16);
 			_numPushes++;
-
+			
 			return this;
 		}
 		

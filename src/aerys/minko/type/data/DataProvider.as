@@ -64,9 +64,9 @@ package aerys.minko.type.data
 			_data[name] = value;
 			
 			if (!propertyExists)
-				_changed.execute(this, "dataDescriptor");
-			
-			_changed.execute(this, name);
+				_changed.execute(this, 'dataDescriptor');
+			else
+				_changed.execute(this, name);
 			
 			return this;
 		}
@@ -84,7 +84,7 @@ package aerys.minko.type.data
 			delete _descriptor[name];
 			delete _data[name];
 			
-			_changed.execute(this, "dataDescriptor");
+			_changed.execute(this, 'dataDescriptor');
 			
 			return this;
 		}
@@ -98,6 +98,11 @@ package aerys.minko.type.data
 		public function invalidate() : void
 		{
 			_changed.execute(this, null);
+		}
+		
+		public function clone() : DataProvider
+		{
+			return new DataProvider(_data);
 		}
 	}
 }

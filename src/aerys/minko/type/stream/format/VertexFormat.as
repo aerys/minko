@@ -18,13 +18,13 @@ package aerys.minko.type.stream.format
 		private var _componentOffsets	: Dictionary;
 		private var _fieldOffsets		: Object;
 
-		public function get components() 		: Vector.<VertexComponent> 	{ return _components; }
-		public function get dwordsPerVertex()	: int						{ return _dwordsPerVertex; }
-
-		private function sortComponentsByOffsets(component1 : VertexComponent,
-												 component2 : VertexComponent) : int
+		public function get components() : Vector.<VertexComponent>
 		{
-			return getOffsetForComponent(component1) - getOffsetForComponent(component2);
+			return _components;
+		}
+		public function get dwordsPerVertex() : int
+		{
+			return _dwordsPerVertex;
 		}
 
 		public function VertexFormat(...components)

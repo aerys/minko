@@ -25,13 +25,13 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		minko_scene var _children		: Vector.<ISceneNode>			= null;
-		minko_scene var _numChildren	: uint							= 0;
+		minko_scene var _children		: Vector.<ISceneNode>	= null;
+		minko_scene var _numChildren	: uint					= 0;
 		
-		private var _numDescendants		: uint							= 0;
+		private var _numDescendants		: uint					= 0;
 		
-		private var _descendantAdded	: Signal						= new Signal('Group.descendantAdded');
-		private var _descendantRemoved	: Signal						= new Signal('Group.descendantRemoved');
+		private var _descendantAdded	: Signal				= new Signal('Group.descendantAdded');
+		private var _descendantRemoved	: Signal				= new Signal('Group.descendantRemoved');
 
 		/**
 		 * The number of children.

@@ -109,10 +109,10 @@ package aerys.minko.scene.node
 			initializeChildren(children);
 		}
 		
-		public function render(viewport : Viewport, target : BitmapData = null) : void
+		public function render(viewport : Viewport, destination : BitmapData = null) : void
 		{
-			_enterFrame.execute(this, viewport, target, getTimer());
-			_exitFrame.execute(this, viewport, target, getTimer());
+			_enterFrame.execute(this, viewport, destination, getTimer());
+			_exitFrame.execute(this, viewport, destination, getTimer());
 		}
 		
 		override protected function addedHandler(child : ISceneNode, parent : Group) : void

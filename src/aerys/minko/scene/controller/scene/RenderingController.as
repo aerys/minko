@@ -61,6 +61,7 @@ package aerys.minko.scene.controller.scene
 		private var _postProcessingBackBuffer	: RenderTarget				= null;
 		private var _postProcessingEffect		: Effect					= null;
 		private var _postProcessingScene		: Scene						= null;
+		private var _postProcessingProperties	: DataProvider				= new DataProvider();
 		
 		/**
 		 * Index meshes by their own databinding.
@@ -106,7 +107,7 @@ package aerys.minko.scene.controller.scene
 		
 		public function get postProcessingProperties() : DataProvider
 		{
-			return _postProcessingScene.properties;
+			return _postProcessingProperties;
 		}
 		
 		public function RenderingController()
@@ -146,6 +147,10 @@ package aerys.minko.scene.controller.scene
 							_postProcessingEffect
 						)
 					);
+					
+					_postProcessingScene.bindings.add(
+						_postProcessingProperties
+					);
 				}
 				else
 				{
@@ -174,8 +179,8 @@ package aerys.minko.scene.controller.scene
 						bgcolor
 					);
 					
-					_postProcessingScene.bindings.setProperty(
-						"backBuffer",
+					_postProcessingProperties.setProperty(
+						'backBuffer',
 						_postProcessingBackBuffer.textureResource
 					);
 				}

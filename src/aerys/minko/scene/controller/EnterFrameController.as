@@ -62,10 +62,10 @@ package aerys.minko.scene.controller
 				scene.enterFrame.remove(sceneEnterFrameHandler);
 		}
 		
-		protected function sceneEnterFrameHandler(scene		: Scene,
-												  viewport	: Viewport,
-												  target	: BitmapData,
-												  time		: Number) : void
+		protected function sceneEnterFrameHandler(scene			: Scene,
+												  viewport		: Viewport,
+												  destination	: BitmapData,
+												  time			: Number) : void
 		{
 			throw new Error(
 				"The method EnterFrameController.sceneEnterFrameHandler must be overriden."

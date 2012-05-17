@@ -17,7 +17,7 @@ package aerys.minko.scene.node
 		}
 		public function set x(value : Number) : void
 		{
-			bindings.setProperty('x', value);
+			properties.setProperty('x', value);
 		}
 		
 		public function get y() : Number
@@ -26,7 +26,7 @@ package aerys.minko.scene.node
 		}
 		public function set y(value : Number) : void
 		{
-			bindings.setProperty('y', value);
+			properties.setProperty('y', value);
 		}
 		
 		public function get width() : Number
@@ -35,7 +35,7 @@ package aerys.minko.scene.node
 		}
 		public function set width(value : Number) : void
 		{
-			bindings.setProperty('width', value);
+			properties.setProperty('width', value);
 		}
 		
 		public function get height() : Number
@@ -44,7 +44,7 @@ package aerys.minko.scene.node
 		}
 		public function set height(value : Number) : void
 		{
-			bindings.setProperty('height', value);
+			properties.setProperty('height', value);
 		}
 		
 		public function Sprite(x 			: Number	= 0.,
