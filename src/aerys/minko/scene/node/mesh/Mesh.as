@@ -135,6 +135,7 @@ package aerys.minko.scene.node.mesh
 		{
 			return _geometry;
 		}
+		
 		public function set geometry(value : Geometry) : void
 		{
 			if (_geometry != value)

@@ -98,6 +98,8 @@ package aerys.minko.type.stream
 									format		: VertexFormat,
 									usage		: uint) : void
 		{
+			_changed.add(changedHandler);
+			
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
 			
@@ -107,7 +109,6 @@ package aerys.minko.type.stream
 			_data = data ? data.concat() : new <Number>[];
 			_usage = usage;
 			
-			_changed.add(changedHandler);
 			changedHandler(this);
 			
 			updateMinMax(true);
