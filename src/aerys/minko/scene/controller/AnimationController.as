@@ -161,13 +161,11 @@ package aerys.minko.scene.controller
 		
 		public function gotoAndStop(time : Object) : void
 		{
-			var timeValue : uint = getAnimationTime(time);
-			
-			if (timeValue < _loopBeginTime || timeValue > _loopEndTime)
-				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
-			
-			_currentTime = timeValue;
+			gotoAndPlay(time);
 			stop();
+			
+			// force refresh for next frame
+			_updateOneTime = true;
 		}
 		
 		public function play() : void
