@@ -19,6 +19,7 @@ package aerys.minko.type.loader.parser
 	{
 		private var _loadDependencies			: Boolean	= false;
 		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
+        private var _loadSkin                   : Boolean   = false;
 		private var _mipmapTextures				: Boolean	= true;
 		private var _meshEffect					: Effect	= null;
 		private var _vertexStreamUsage			: uint		= 0;
@@ -95,11 +96,22 @@ package aerys.minko.type.loader.parser
 			_loadDependencies = value;
 		}
 
+        public function get loadSkin():Boolean
+        {
+            return _loadSkin;
+        }
+
+        public function set loadSkin(value:Boolean):void
+        {
+            _loadSkin = value;
+        }
+
 		public function clone(): ParserOptions
 		{
 			return new ParserOptions(
 				_loadDependencies,
 				_dependencyLoaderClosure,
+                _loadSkin,
 				_mipmapTextures,
 				_meshEffect,
 				_vertexStreamUsage,
@@ -110,6 +122,7 @@ package aerys.minko.type.loader.parser
 		
 		public function ParserOptions(loadDependencies			: Boolean = false,
 									  dependencyLoaderClosure	: Function = null,
+                                      loadSkin                  : Boolean = true,
 									  mipmapTextures			: Boolean = true,
 									  meshEffect				: Effect = null,
 									  vertexStreamUsage			: uint = 0,
@@ -118,6 +131,7 @@ package aerys.minko.type.loader.parser
 		{
 			_loadDependencies			= loadDependencies;
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
+            _loadSkin                   = loadSkin;
 			_mipmapTextures				= mipmapTextures;
 			_meshEffect					= meshEffect;
 			_vertexStreamUsage			= vertexStreamUsage;
@@ -144,5 +158,6 @@ package aerys.minko.type.loader.parser
 			
 			return loader;
 		}
-	}
+
+    }
 }
