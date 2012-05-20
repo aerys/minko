@@ -242,7 +242,7 @@ package aerys.minko.scene.node
 		}
 
 		public function load(request	: URLRequest,
-							 options	: ParserOptions) : ILoader
+							 options	: ParserOptions	= null) : ILoader
 		{
 			var loader	: SceneLoader	= new SceneLoader(options);
 			
@@ -253,7 +253,7 @@ package aerys.minko.scene.node
 		}
 		
 		public function loadClass(classObject	: Class,
-								  options		: ParserOptions) : ILoader
+								  options		: ParserOptions	= null) : ILoader
 		{
 			var loader	: SceneLoader	= new SceneLoader(options);
 			
@@ -264,7 +264,7 @@ package aerys.minko.scene.node
 		}
 		
 		public function loadBytes(bytes		: ByteArray,
-								  options	: ParserOptions) : ILoader
+								  options	: ParserOptions	= null) : ILoader
 		{
 			var loader	: SceneLoader	= new SceneLoader(options);
 			
