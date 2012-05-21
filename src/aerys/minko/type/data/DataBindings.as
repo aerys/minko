@@ -14,6 +14,7 @@ package aerys.minko.type.data
 		private var _bindings			: Dictionary		= new Dictionary(true);
 		private var _values				: Object			= new Object();
 		private var _properties			: Vector.<String>	= new <String>[];
+		private var _propertyToProvider	: Object			= {};
 		
 		private var _propertyChanged	: Object			= new Object();
 		
@@ -70,6 +71,16 @@ package aerys.minko.type.data
 			return this;
 		}
 		
+		public function getDataProvider(propertyName : String) : IDataProvider
+		{
+			var provider : IDataProvider = _propertyToProvider[propertyName] as IDataProvider;
+			
+			if (!provider)
+				throw new Error('The property \'' + propertyName + '\' has no data provider.');
+			
+			return provider;
+		}
+		
 		public function getProperty(propertyName : String) : Object
 		{
 			return _values[propertyName];
@@ -108,6 +119,9 @@ package aerys.minko.type.data
 									source			: IDataProvider,
 									key				: Object	= null) : DataBindings
 		{
+			if (_propertyToProvider[propertyName])
+				removeProperty(propertyName);
+			
 			var bindingTable : Object = _bindings[source] as Object;
 			
 			if (!bindingTable)
@@ -212,6 +226,7 @@ package aerys.minko.type.data
 			_properties.length = numProperties;
 			
 			delete _values[propertyName];
+			delete _propertyToProvider[propertyName];
 //			delete _propertyChanged[propertyName];
 			
 			signalChange(propertyName, null);
