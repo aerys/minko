@@ -16,7 +16,7 @@ package aerys.minko.type.data
 		private var _properties			: Vector.<String>	= new <String>[];
 		private var _propertyToProvider	: Object			= {};
 		
-		private var _propertyChanged	: Object			= new Object();
+		private var _propertyChanged	: Object			= {};
 		
 		public function get numProperties() : uint
 		{
