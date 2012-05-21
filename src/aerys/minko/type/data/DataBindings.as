@@ -11,15 +11,22 @@ package aerys.minko.type.data
 		
 		private static const NO_KEY	: String		= "__no_key__";
 		
-		private var _bindings			: Dictionary		= new Dictionary(true);
-		private var _values				: Object			= new Object();
-		private var _properties			: Vector.<String>	= new <String>[];
+		private var _bindings			: Dictionary				= new Dictionary(true);
+		private var _values				: Object					= new Object();
+		private var _properties			: Vector.<String>			= new <String>[];
+		private var _propertyToProvider	: Object					= {};
+		private var _providers			: Vector.<IDataProvider> 	= new <IDataProvider>[];
 		
-		private var _propertyChanged	: Object			= new Object();
+		private var _propertyChanged	: Object			= {};
 		
 		public function get numProperties() : uint
 		{
 			return _properties.length;
+		}
+		
+		public function get numProviders() : uint
+		{
+			return _providers.length;
 		}
 		
 		public function propertyExists(propertyName : String) : Boolean
@@ -47,6 +54,8 @@ package aerys.minko.type.data
 				addProperty(propertyName, dataProvider, key);
 			}
 			
+			_providers.push(dataProvider);
+			
 			return this;
 		}
 		
@@ -54,6 +63,11 @@ package aerys.minko.type.data
 		{
 			if (!dataProvider)
 				throw new Error("The argument 'dataProvider' cannot be null.");
+
+			var dataProviderIndex : int = _providers.indexOf(dataProvider);
+			
+			if (dataProviderIndex == -1)
+				throw new ArgumentError("No such dataProvider was added.");
 			
 			var bindingTable	: Object	= _bindings[dataProvider];
 			
@@ -67,7 +81,27 @@ package aerys.minko.type.data
 			
 			dataProvider.changed.remove(dataProviderChangedHandler);
 			
+			_providers.splice(dataProviderIndex, 1);
+			
 			return this;
+		}
+		
+		public function getDataProvider(propertyName : String) : IDataProvider
+		{
+			var provider : IDataProvider = _propertyToProvider[propertyName] as IDataProvider;
+			
+			if (!provider)
+				throw new Error('The property \'' + propertyName + '\' has no data provider.');
+			
+			return provider;
+		}
+		
+		public function getDataProviderAt(index : uint) : IDataProvider
+		{
+			if (index >= _providers.length)
+				throw new ArgumentError('Index out of bounds');
+			
+			return _providers[index];
 		}
 		
 		public function getProperty(propertyName : String) : Object
@@ -96,7 +130,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function setProperties(properties : Object) : DataBindings
+		private function setProperties(properties : Object) : DataBindings
 		{
 			for (var propertyName : String in properties)
 				setProperty(propertyName, properties[propertyName]);
@@ -104,10 +138,13 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function addProperty(propertyName 	: String,
+		private function addProperty(propertyName 	: String,
 									source			: IDataProvider,
 									key				: Object	= null) : DataBindings
 		{
+			if (_propertyToProvider[propertyName])
+				removeProperty(propertyName);
+			
 			var bindingTable : Object = _bindings[source] as Object;
 			
 			if (!bindingTable)
@@ -126,7 +163,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function removeProperty(propertyName : String) : DataBindings
+		private function removeProperty(propertyName : String) : DataBindings
 		{
 			var numSources	: int	= 0;
 			
@@ -212,6 +249,7 @@ package aerys.minko.type.data
 			_properties.length = numProperties;
 			
 			delete _values[propertyName];
+			delete _propertyToProvider[propertyName];
 //			delete _propertyChanged[propertyName];
 			
 			signalChange(propertyName, null);
@@ -219,6 +257,9 @@ package aerys.minko.type.data
 		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void
 		{
+			if (key == 'dataDescriptor')
+				return;
+
 			key ||= NO_KEY;
 			
 			var bindingTable 	: Object = _bindings[source] as Object;
