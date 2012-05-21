@@ -96,7 +96,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function setProperties(properties : Object) : DataBindings
+		private function setProperties(properties : Object) : DataBindings
 		{
 			for (var propertyName : String in properties)
 				setProperty(propertyName, properties[propertyName]);
@@ -104,7 +104,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function addProperty(propertyName 	: String,
+		private function addProperty(propertyName 	: String,
 									source			: IDataProvider,
 									key				: Object	= null) : DataBindings
 		{
@@ -126,7 +126,7 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function removeProperty(propertyName : String) : DataBindings
+		private function removeProperty(propertyName : String) : DataBindings
 		{
 			var numSources	: int	= 0;
 			
@@ -219,6 +219,9 @@ package aerys.minko.type.data
 		
 		private function propertyChangedHandler(source : IDataProvider, key : Object) : void
 		{
+			if (key == 'dataDescriptor')
+				return;
+
 			key ||= NO_KEY;
 			
 			var bindingTable 	: Object = _bindings[source] as Object;

@@ -314,7 +314,7 @@ package aerys.minko.scene.controller.scene
 												time		: Number) : void
 		{
 			//_scene.bindings.setProperty("time", time);
-			_scene.bindings.setProperties({
+			_scene.properties.setProperties({
 				time			: time,
 				viewportWidth	: viewport.width,
 				viewportHeight	: viewport.height

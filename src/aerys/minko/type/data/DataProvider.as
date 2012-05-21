@@ -95,6 +95,11 @@ package aerys.minko.type.data
 				removeProperty(propertyName);
 		}
 		
+		public function propertyExists(name : String) : Boolean
+		{
+			return _descriptor.hasOwnProperty(name);
+		}
+		
 		public function invalidate() : void
 		{
 			_changed.execute(this, null);

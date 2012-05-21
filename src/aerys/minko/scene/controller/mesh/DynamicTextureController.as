@@ -52,7 +52,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(ctrl, target);
 			
-			(target as Mesh).bindings.removeProperty(_propertyName);
+			(target as Mesh).properties.removeProperty(_propertyName);
 		}
 		
 		override protected function sceneEnterFrameHandler(scene	: Scene,
