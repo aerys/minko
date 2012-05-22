@@ -30,6 +30,16 @@ package aerys.minko.render.resource.texture
 			_size = size;
 		}
 		
+		public function get width() : uint
+		{
+			return size;
+		}
+		
+		public function get height() : uint
+		{
+			return size;
+		}
+		
 		public function get size() : uint
 		{
 			return _size;
@@ -54,6 +64,13 @@ package aerys.minko.render.resource.texture
 				sideBitmapData.draw(bitmapData, tmpMatrix);
 				_bitmapDatas.push(sideBitmapData);
 			}
+		}
+		
+		public function setSize(w : uint, h : uint) : void
+		{
+			_size = w;
+			
+			
 		}
 		
 		public function setContentFromBitmapDatas(right 	: BitmapData,

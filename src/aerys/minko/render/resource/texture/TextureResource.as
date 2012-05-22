@@ -34,12 +34,12 @@ package aerys.minko.render.resource.texture
 		private var _update		: Boolean		= false;
 		private var _resize		: Boolean		= false;
 
-		public function get width() : Number
+		public function get width() : uint
 		{
 			return _width;
 		}
 
-		public function get height() : Number
+		public function get height() : uint
 		{
 			return _height;
 		}

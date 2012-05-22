@@ -16,6 +16,9 @@ package aerys.minko.render.resource.texture
 	 */
 	public interface ITextureResource extends IResource
 	{
+		function get width() : uint;
+		function get height() : uint;
+		
 		function setContentFromBitmapData(bitmapData 	: BitmapData,
 										  mipmap 		: Boolean,
 										  downSample	: Boolean	= false) : void;
@@ -23,5 +26,7 @@ package aerys.minko.render.resource.texture
 		function setContentFromATF(atf : ByteArray) : void;
 		
 		function getNativeTexture(context : Context3DResource) : TextureBase;
+		
+		function setSize(w : uint, h : uint) : void;
 	}
 }

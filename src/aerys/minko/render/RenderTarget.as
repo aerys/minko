@@ -1,5 +1,6 @@
 package aerys.minko.render
 {
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 
 	/**
@@ -15,7 +16,7 @@ package aerys.minko.render
 	{
 		private var _width				: uint				= 0;
 		private var _height				: uint				= 0;
-		private var _resource			: TextureResource	= null;
+		private var _resource			: ITextureResource	= null;
 		private var _surfaceSelector	: uint				= 0;
 		private var _useDepthAndStencil	: Boolean			= false;
 		private var _antiAliasing		: int				= 0;
@@ -45,7 +46,7 @@ package aerys.minko.render
 				_resource.setSize(_width, value);
 		}
 		
-		public function get textureResource() : TextureResource
+		public function get textureResource() : ITextureResource
 		{
 			return _resource;
 		}
@@ -76,7 +77,7 @@ package aerys.minko.render
 		
 		public function RenderTarget(width				: uint,
 									 height				: uint,
-									 resource			: TextureResource	= null,
+									 resource			: ITextureResource	= null,
 									 surfaceSelector	: uint				= 0,
 									 backgroundColor	: uint				= 0,
 									 useDepthAndStencil	: Boolean			= true,
