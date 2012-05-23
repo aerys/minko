@@ -157,9 +157,6 @@ package aerys.minko.scene.node
 		
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-			// update root
-			var oldRoot : ISceneNode = _root;
-			
 			_root = _parent ? _parent.root : this;
 			if (_root is Scene)
 				_addedToScene.execute(this, _root);
