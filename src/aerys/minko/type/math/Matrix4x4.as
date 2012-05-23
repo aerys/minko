@@ -457,40 +457,12 @@ package aerys.minko.type.math
 			Utils3D.projectVectors(_matrix, input, output, uvt);
 		}
 		
-		public function getRotation(output : Vector4 = null) : Vector4
-		{
-			var components 	: Vector.<Vector3D>	= _matrix.decompose();
-
-			output ||= new Vector4();
-			output._vector = components[1];
-			
-			return output;
-		}
-		
-		public function setRotation(x : Number, y : Number, z : Number) : Matrix4x4
-		{
-			var components 	: Vector.<Vector3D>	= _matrix.decompose();
-			var rotation	: Vector3D			= components[1];
-
-			if (!isNaN(x))
-				rotation.x = x;
-			if (!isNaN(y))
-				rotation.y = y;
-			if (!isNaN(z))
-				rotation.z = z;
-			
-			_matrix.recompose(components);
-			
-			if (!_locked)
-				_changed.execute(this, null);
-
-			return this;
-		}
-
 		public function getTranslation(output : Vector4 = null) : Vector4
 		{
 			output ||= new Vector4();
 			_matrix.copyColumnTo(3, output._vector);
+			
+			output.changed.execute(output, null);
 			
 			return output;
 		}
@@ -514,12 +486,46 @@ package aerys.minko.type.math
 			return this;
 		}
 		
+		public function getRotation(output : Vector4 = null) : Vector4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			
+			output ||= new Vector4();
+			output._vector = components[1];
+			
+			output.changed.execute(output, null);
+			
+			return output;
+		}
+		
+		public function setRotation(x : Number, y : Number, z : Number) : Matrix4x4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose();
+			var rotation	: Vector3D			= components[1];
+			
+			if (!isNaN(x))
+				rotation.x = x;
+			if (!isNaN(y))
+				rotation.y = y;
+			if (!isNaN(z))
+				rotation.z = z;
+			
+			_matrix.recompose(components);
+			
+			if (!_locked)
+				_changed.execute(this, null);
+			
+			return this;
+		}
+		
 		public function getScale(output : Vector4 = null) : Vector4
 		{
 			var components 	: Vector.<Vector3D>	= _matrix.decompose();
 			
 			output ||= new Vector4();
 			output._vector = components[2];
+			
+			output.changed.execute(output, null);
 			
 			return output;
 		}
