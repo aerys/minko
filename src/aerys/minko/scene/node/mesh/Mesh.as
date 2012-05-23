@@ -111,6 +111,7 @@ package aerys.minko.scene.node.mesh
 		{
 			return _effect;
 		}
+		
 		public function set effect(value : Effect) : void
 		{
 			if (_effect == value)
@@ -254,8 +255,8 @@ package aerys.minko.scene.node.mesh
 	
 			if (child === this)
 			{
-				_bindings.addProperty('localToWorld', localToWorld);
-				_bindings.addProperty('worldToLocal', worldToLocal);
+				_properties.setProperty('localToWorld', localToWorld);
+				_properties.setProperty('worldToLocal', worldToLocal);
 			}
 		}
 		
@@ -265,8 +266,8 @@ package aerys.minko.scene.node.mesh
 			
 			if (child === this)
 			{
-				_bindings.removeProperty('localToWorld');
-				_bindings.removeProperty('worldToLocal');
+				_properties.removeProperty('localToWorld');
+				_properties.removeProperty('worldToLocal');
 			}
 		}
 		
