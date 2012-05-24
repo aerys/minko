@@ -104,14 +104,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			super.start();
 			
 			// allocators
-			_opAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true);
-			_ocAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true);
-			_attributeAllocator			= new Allocator(RegisterLimit.VS_MAX_ATTRIBUTE, RegisterType.ATTRIBUTE, true, true);
-			_vsConstAllocator			= new Allocator(RegisterLimit.VS_MAX_CONSTANT, RegisterType.CONSTANT, true, false);
-			_fsConstAllocator			= new Allocator(RegisterLimit.FS_MAX_CONSTANT, RegisterType.CONSTANT, true, false);
-			_vsTempAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
-			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
-			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true);
+			_opAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, true);
+			_ocAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, false);
+			_attributeAllocator			= new Allocator(RegisterLimit.VS_MAX_ATTRIBUTE, RegisterType.ATTRIBUTE, true, true, true);
+			_vsConstAllocator			= new Allocator(RegisterLimit.VS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, true);
+			_fsConstAllocator			= new Allocator(RegisterLimit.FS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, false);
+			_vsTempAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, true);
+			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, false);
+			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true, true);
 			
 			_allocStore					= new AllocationStore();
 			
