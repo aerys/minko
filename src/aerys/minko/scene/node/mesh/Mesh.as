@@ -47,6 +47,7 @@ package aerys.minko.scene.node.mesh
 		
 		private var _frame				: uint				= 0;
 		
+		private var _cloned				: Signal 			= new Signal('Mesh.clones');
 		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
 		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
 		private var _frameChanged		: Signal			= new Signal('Mesh.frameChanged');
@@ -177,6 +178,11 @@ package aerys.minko.scene.node.mesh
 			_frustumCulling = value;
 		}
 		
+		public function get cloned() : Signal
+		{
+			return _cloned;
+		}
+		
 		public function get visibilityChanged() : Signal
 		{
 			return _visibilityChanged;
@@ -282,10 +288,11 @@ package aerys.minko.scene.node.mesh
 			properties = source._properties.clone();
 			
 			copyControllersFrom(source, this, cloneControllers);
-			
 			transform.copyFrom(source.transform);
 			
 			effect = source._effect;
+			
+			source.cloned.execute(this, source);
 		}
 	}
 }

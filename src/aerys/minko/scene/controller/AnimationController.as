@@ -232,6 +232,8 @@ package aerys.minko.scene.controller
 		{
 			if (updateOnTime(time))
 			{
+				_updateOneTime = false;
+				
 				for (var j : uint = 0; j < numTargets; ++j)
 				{
 					var ctrlTarget		: ISceneNode	= getTarget(j);
@@ -240,8 +242,6 @@ package aerys.minko.scene.controller
 					
 					if (ctrlTarget.root != scene)
 						continue ;
-					
-					_updateOneTime = false;
 					
 					for (var i : int = 0; i < numTimelines; ++i)
 					{
@@ -266,9 +266,12 @@ package aerys.minko.scene.controller
 				var deltaT 			: Number = time - _lastTime;
 				var lastCurrentTime : Number = _currentTime;
 				
-				_currentTime = _loopBeginTime
-					+ (_currentTime + deltaT - _loopBeginTime)
-					% (_loopEndTime - _loopBeginTime);
+				if (_isPlaying)
+				{
+					_currentTime = _loopBeginTime
+						+ (_currentTime + deltaT - _loopBeginTime)
+						% (_loopEndTime - _loopBeginTime);
+				}
 				
 				if ((deltaT > 0 && lastCurrentTime > _currentTime)
 					|| (deltaT < 0 && (lastCurrentTime < _currentTime || _currentTime * lastCurrentTime < 0)))

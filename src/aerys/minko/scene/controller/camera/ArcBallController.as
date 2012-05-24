@@ -177,6 +177,7 @@ package aerys.minko.scene.controller.camera
 			
 			dispatcher.addEventListener(MouseEvent.MOUSE_DOWN, startDrag);
 			dispatcher.addEventListener(MouseEvent.MOUSE_UP, stopDrag);
+			dispatcher.addEventListener(MouseEvent.MOUSE_OUT, stopDrag);
 			dispatcher.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler); 
 			dispatcher.addEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 		}

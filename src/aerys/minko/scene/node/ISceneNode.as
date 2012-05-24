@@ -83,6 +83,9 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function getController(index : uint) : AbstractController;
+		
+		function getControllersByType(type			: Class,
+									  controllers	: Vector.<AbstractController> = null) : Vector.<AbstractController>;
 		/**
 		 * Add a controller to the scene node. 
 		 * @param controller

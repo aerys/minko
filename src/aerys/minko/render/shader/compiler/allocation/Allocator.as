@@ -21,7 +21,8 @@ package aerys.minko.render.shader.compiler.allocation
 		private var _offsetLimit			: uint;
 		private var _readOnly				: Boolean;
 		private var _alignEverything		: Boolean;
-
+		private var _isVertexShader			: Boolean;
+		
 		/**
 		 * List of allocations done with the allocate method.
 		 * computeRegisterState must be called first for this to make any sense.
@@ -74,16 +75,18 @@ package aerys.minko.render.shader.compiler.allocation
 			return _offsetLimit;
 		}
 		
-		public function Allocator(registerCount	: uint,
-								  type			: uint,
-								  readOnly		: Boolean,
-								  aligned		: Boolean)
+		public function Allocator(registerCount		: uint,
+								  type				: uint,
+								  readOnly			: Boolean,
+								  aligned			: Boolean,
+								  isVertexShader	: Boolean)
 		{
 			_allocations		= new Vector.<IAllocation>();
 			_type				= type;
 			_offsetLimit		= 4 * registerCount;
 			_readOnly			= readOnly;
 			_alignEverything	= aligned;
+			_isVertexShader		= isVertexShader;
 		}
 		
 		public function allocate(size			: uint,
@@ -185,10 +188,16 @@ package aerys.minko.render.shader.compiler.allocation
 				// if the previous loop are not broken, we are out of registers!
 				if (regOffset == _offsetLimit && localOffset == maxLocalOffset + 1)
 				{
-					throw new Error('Unable to allocate: all ' + _offsetLimit / 4
-						+ ' registers are full, or too fragmented to allocate '
-						+ alloc.maxSize + ' contiguous ' + (!alloc.aligned ? 'non-' : '')
-						+ 'aligned floats');
+					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
+					var numRegisters	: String = (_offsetLimit / 4).toString();
+					var allocSize		: String = (alloc.maxSize).toString();
+					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
+					
+					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
+						numRegisters + ' registers are full, or too fragmented to allocate ' +
+						allocSize + ' contiguous ' + alignement + ' floats';
+					
+					throw new Error(errorMessage);
 				}
 			}
 		}

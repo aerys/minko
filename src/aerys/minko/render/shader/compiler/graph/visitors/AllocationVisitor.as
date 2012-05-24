@@ -104,14 +104,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			super.start();
 			
 			// allocators
-			_opAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true);
-			_ocAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true);
-			_attributeAllocator			= new Allocator(RegisterLimit.VS_MAX_ATTRIBUTE, RegisterType.ATTRIBUTE, true, true);
-			_vsConstAllocator			= new Allocator(RegisterLimit.VS_MAX_CONSTANT, RegisterType.CONSTANT, true, false);
-			_fsConstAllocator			= new Allocator(RegisterLimit.FS_MAX_CONSTANT, RegisterType.CONSTANT, true, false);
-			_vsTempAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
-			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false);
-			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true);
+			_opAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, true);
+			_ocAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, false);
+			_attributeAllocator			= new Allocator(RegisterLimit.VS_MAX_ATTRIBUTE, RegisterType.ATTRIBUTE, true, true, true);
+			_vsConstAllocator			= new Allocator(RegisterLimit.VS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, true);
+			_fsConstAllocator			= new Allocator(RegisterLimit.FS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, false);
+			_vsTempAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, true);
+			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, false);
+			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true, true);
 			
 			_allocStore					= new AllocationStore();
 			
@@ -462,14 +462,47 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			for (var argId : uint = 0; argId < numArgs; ++argId)
 			{
 				var arg				: AbstractNode	= overwriter.getArgumentAt(argId);
+				var instructionArg	: Instruction	= arg as Instruction;
 				var component		: uint			= overwriter.getComponentAt(argId);
 				var minWriteOffset	: int			= Components.getMinWriteOffset(component);
 				var newAllocation	: SimpleAllocation;
 				
 				component = Components.applyWriteOffset(component, -minWriteOffset);
 				
-				// The overwriter argument is not allocated on temporaries, we have to use a mov instruction no matter what.
-				if (arg is Attribute || arg is Constant || arg is BindableConstant || arg is Interpolate || arg is VariadicExtract)
+				if (instructionArg != null)
+					visitArguments(arg, isVertexShader);
+				
+				if (instructionArg != null && instructionArg.isComponentWise)
+				{
+					// create a new operation that combines the swizzles of the overwriter and
+					// the instruction under it (this works only because it's all component wise).
+					var instructionArgReplacement : Instruction = instructionArg.isSingle ? 
+						new Instruction(instructionArg.id, instructionArg.argument1) : 
+						new Instruction(instructionArg.id, instructionArg.argument1, instructionArg.argument2);
+					
+					instructionArgReplacement.component1 = Components.applyCombination(instructionArg.component1, component);
+					if (!instructionArgReplacement.isSingle)
+						instructionArgReplacement.component2 = Components.applyCombination(instructionArg.component2, component);
+					
+					// push instruction, allocate and report usages.
+					pushInstruction(instructionArgReplacement, isVertexShader);
+					
+					instructionCounter	= getInstructionCounter(isVertexShader);
+					newAllocation		= getAllocatorFor(instructionArgReplacement, isVertexShader).
+						allocate(instructionArgReplacement.size, instructionArgReplacement.isComponentWise, instructionCounter);
+					
+					_allocStore.storeAlloc(newAllocation, instructionArgReplacement, isVertexShader);
+					
+					subAllocs.push(newAllocation);
+					subOffsets.push(minWriteOffset);
+					
+					extendLifeTime(instructionArgReplacement.argument1, isVertexShader);
+					if (!instructionArgReplacement.isSingle)
+						extendLifeTime(instructionArgReplacement.argument2, isVertexShader);
+				}
+				else if (arg is Attribute || arg is Constant || arg is BindableConstant ||
+					     arg is Interpolate || arg is VariadicExtract ||
+						 (instructionArg != null && !instructionArg.isComponentWise))
 				{
 					// visit the constant/attribute/etc to allocate it.
 					visit(arg, isVertexShader);
@@ -491,69 +524,14 @@ package aerys.minko.render.shader.compiler.graph.visitors
 					
 					extendLifeTime(arg, isVertexShader);
 				}
-				// The overwriter argument is already allocated on temporaries, let's try to avoid wasting a mov instruction.
-				else if (arg is Instruction)
-				{
-					var instructionArg : Instruction = Instruction(arg);
-					
-					// nice! we can avoid using a mov instruction by tweaking 
-					// the swizzles of the operation.
-					if (instructionArg.isComponentWise)
-					{
-						// visit the arguments
-						visitArguments(instructionArg, isVertexShader);
-						
-						// create a new operation that combines the swizzles of the overwriter and
-						// the instruction under it (this works only because it's all component wise).
-						var instructionArgReplacement : Instruction = instructionArg.isSingle ? 
-							new Instruction(instructionArg.id, instructionArg.argument1) : 
-							new Instruction(instructionArg.id, instructionArg.argument1, instructionArg.argument2);
-						
-						instructionArgReplacement.component1 = Components.applyCombination(instructionArg.component1, component);
-						if (!instructionArgReplacement.isSingle)
-							instructionArgReplacement.component2 = Components.applyCombination(instructionArg.component2, component);
-						
-						// push instruction, allocate and report usages.
-						pushInstruction(instructionArgReplacement, isVertexShader);
-						
-						instructionCounter	= getInstructionCounter(isVertexShader);
-						newAllocation		= getAllocatorFor(instructionArgReplacement, isVertexShader).
-							allocate(instructionArgReplacement.size, instructionArgReplacement.isComponentWise, instructionCounter);
-						
-						_allocStore.storeAlloc(newAllocation, instructionArgReplacement, isVertexShader);
-						
-						subAllocs.push(newAllocation);
-						subOffsets.push(minWriteOffset);
-						
-						extendLifeTime(instructionArgReplacement.argument1, isVertexShader);
-						if (!instructionArgReplacement.isSingle)
-							extendLifeTime(instructionArgReplacement.argument2, isVertexShader);
-					}
-					// if this is the first instruction of the overwriter, and the swizzle we need is x[y[z[w]?]?]?, we should
-					// ignore the mov instruction.
-					else
-					{
-						// in fact, we don't care: we are injecting mov instruction in the OverwriterCleanerVisitor
-						// so this line should NEVER be reached.
-						throw new Error('This should NEVER happen.');
-					}
-				}
 				else if (arg is Overwriter || arg is Extract)
-				{
-					// Nested overwriters are taken care of in OverwriterCleanerVisitor
-					// Extract are removed by ExtractRemover
 					throw new Error('This should NEVER happen.');
-				}
+				
 				else if (arg is Sampler || arg is BindableSampler)
-				{
-					// Putting samplers in an overwriter makes no sense.
-					throw new Error('Samplers cannot be casted to floats. Go fix your code.');
-				}
+					throw new Error('Samplers cannot be casted to floats. Go fix your shader code.');
+				
 				else
-				{
-					// just in case.
 					throw new Error('Unknown node type. This shoud never happen.');
-				}
 			}
 			
 			var overwriterAlloc : IAllocation = overwriterAllocator.combineAllocations(subAllocs, subOffsets);
