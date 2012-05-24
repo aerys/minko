@@ -94,11 +94,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 						++numArgs;
 					}
 				}
-				else if (arg is Instruction && !Instruction(arg).isComponentWise)
-				{
-					// wrap the argument into a mov instruction to make it component wise.
-					overwriter.setArgumentAt(argId, new Instruction(Instruction.MOV, overwriter.getArgumentAt(argId)));
-				}
 			}
 			
 			if (numArgs > 1)
