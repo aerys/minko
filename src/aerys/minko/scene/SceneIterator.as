@@ -58,7 +58,7 @@ package aerys.minko.scene
 			var index : int = parseInt(name);
 			
 			if (index == name)
-				return _selection[index];
+				return index < _selection.length ? _selection[index] : null;
 			else
 			{
 				return new SceneIterator(
