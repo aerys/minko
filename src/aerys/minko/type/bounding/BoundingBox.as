@@ -17,8 +17,10 @@ package aerys.minko.type.bounding
 	{
 		use namespace minko_math;
 
-		minko_math var _min			: Vector4		= new Vector4();
-		minko_math var _max			: Vector4		= new Vector4();
+		private static const TMP_VECTOR4	: Vector4	= new Vector4();
+		
+		minko_math var _min			: Vector4			= new Vector4();
+		minko_math var _max			: Vector4			= new Vector4();
 
 		minko_math var _vertices	: Vector.<Number>	= new Vector.<Number>(24, true);
 
@@ -57,6 +59,7 @@ package aerys.minko.type.bounding
 		
 		/**
 		 * http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+		 * http://gitorious.org/dimension/dimension/blobs/master/libdimension/prtree.c#line490
 		 *  
 		 * @param ray
 		 * @param transform
@@ -64,20 +67,26 @@ package aerys.minko.type.bounding
 		 * 
 		 */
 		public function testRay(ray 		: Ray,
-								transform	: Matrix4x4	= null) : Boolean
+								transform	: Matrix4x4	= null,
+								maxDistance	: Number	= Number.POSITIVE_INFINITY) : Boolean
 		{
 			var localOrigin 	: Vector4	= transform
-				? transform.transformVector(ray.origin)
+				? transform.transformVector(ray.origin, TMP_VECTOR4)
 				: ray.origin;
+			var ox				: Number	= localOrigin.x;
+			var oy				: Number	= localOrigin.y;
+			var oz				: Number	= localOrigin.z;
+			
 			var localDirection	: Vector4	= transform
-				? transform.deltaTransformVector(ray.direction)
+				? transform.deltaTransformVector(ray.direction, TMP_VECTOR4)
 				: ray.direction;
 			
 			localDirection.normalize();
 			
-			var ox		: Number	= localOrigin.x;
-			var oy		: Number	= localOrigin.y;
-			var oz		: Number	= localOrigin.z;
+			var dx		: Number	= 1.0 / localDirection.x;
+			var dy		: Number	= 1.0 / localDirection.y;
+			var dz		: Number	= 1.0 / localDirection.z;
+			
 			var minX	: Number	= _min.x;
 			var minY	: Number	= _min.y;
 			var minZ	: Number	= _min.z;
@@ -85,7 +94,25 @@ package aerys.minko.type.bounding
 			var maxY	: Number	= _max.y;
 			var maxZ	: Number	= _max.z;
 			
-			return false;
+			var tx1		: Number	= (minX - ox) * dx;
+			var tx2		: Number	= (maxX - ox) * dx;
+			
+			var tmin	: Number	= Math.min(tx1, tx2);
+			var tmax	: Number	= Math.max(tx1, tx2);
+			
+			var ty1		: Number	= (minY - oy) * dy;
+			var ty2		: Number	= (maxY - oy) * dy;
+			
+			tmin = Math.max(tmin, Math.min(ty1, ty2));
+			tmax = Math.min(tmax, Math.max(ty1, ty2));
+			
+			var tz1		: Number	= (minZ - oz) * dz;
+			var tz2		: Number	= (maxZ - oz) * dz;
+			
+			tmin = Math.max(tmin, Math.min(tz1, tz2));
+			tmax = Math.min(tmax, Math.max(tz1, tz2));
+			
+			return tmax >= Math.max(0, tmin) && tmin < maxDistance;
 		}
 
 		public function clone() : BoundingBox
