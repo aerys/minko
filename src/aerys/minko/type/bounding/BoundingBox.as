@@ -2,6 +2,7 @@ package aerys.minko.type.bounding
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
@@ -24,12 +25,18 @@ package aerys.minko.type.bounding
 		/**
 		 * The bottom-left corner of the bounding box.
 		 */
-		public function get min()	: Vector4	{ return _min; }
+		public function get min() : Vector4
+		{
+			return _min;
+		}
 
 		/**
 		 * The top-right corner of the bounding box.
 		 */
-		public function get max()	: Vector4	{ return _max; }
+		public function get max() : Vector4
+		{
+			return _max;
+		}
 
 		/**
 		 * Creates a new BoundingBox object.
@@ -46,6 +53,39 @@ package aerys.minko.type.bounding
 			return point.x >= _min.x && point.x <= _max.x
 				   && point.y >= _min.y && point.y <= _max.y
 				   && point.z >= _min.z && point.z <= _max.z;
+		}
+		
+		/**
+		 * http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+		 *  
+		 * @param ray
+		 * @param transform
+		 * @return 
+		 * 
+		 */
+		public function testRay(ray 		: Ray,
+								transform	: Matrix4x4	= null) : Boolean
+		{
+			var localOrigin 	: Vector4	= transform
+				? transform.transformVector(ray.origin)
+				: ray.origin;
+			var localDirection	: Vector4	= transform
+				? transform.deltaTransformVector(ray.direction)
+				: ray.direction;
+			
+			localDirection.normalize();
+			
+			var ox		: Number	= localOrigin.x;
+			var oy		: Number	= localOrigin.y;
+			var oz		: Number	= localOrigin.z;
+			var minX	: Number	= _min.x;
+			var minY	: Number	= _min.y;
+			var minZ	: Number	= _min.z;
+			var maxX	: Number	= _max.x;
+			var maxY	: Number	= _max.y;
+			var maxZ	: Number	= _max.z;
+			
+			return false;
 		}
 
 		public function clone() : BoundingBox
@@ -92,11 +132,6 @@ package aerys.minko.type.bounding
 			vmax.x = _vertices[3] = _vertices[6] = _vertices[12] = _vertices[21] = max.x;
 			vmax.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = max.y;
 			vmax.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = max.z;
-		}
-		
-		public function applyTransform(transform : Matrix4x4) : void
-		{
-			
 		}
 	}
 }
