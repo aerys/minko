@@ -317,14 +317,11 @@ package aerys.minko.scene.node
 			
 			var fovDiv2		: Number	= _fov * 0.5;
 			
-			var dx			: Number 	= Math.tan(fovDiv2 * 0.5) * xPercent * (width / height);
-			var dy			: Number 	= -Math.tan(fovDiv2 * 0.5) * yPercent;
+			var dx			: Number 	= Math.tan(fovDiv2) * xPercent * (width / height);
+			var dy			: Number 	= -Math.tan(fovDiv2) * yPercent;
 			
 			out.origin.set(dx * _zNear, dy * _zNear, _zNear);
-//			out.direction.set(dx * _zNear, dy * _zNear, _zNear).normalize();
-			out.direction.set(dx * _zFar, dy * _zFar, _zFar)
-				.subtract(out.origin)
-				.normalize();
+			out.direction.set(dx * _zNear, dy * _zNear, _zNear).normalize();
 			
 			_viewToWorld.transformVector(out.origin, out.origin);
 			_viewToWorld.deltaTransformVector(out.direction, out.direction);
