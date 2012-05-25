@@ -17,7 +17,8 @@ package aerys.minko.type.bounding
 	{
 		use namespace minko_math;
 
-		private static const TMP_VECTOR4	: Vector4	= new Vector4();
+		private static const TMP_VECTOR4_1	: Vector4	= new Vector4();
+		private static const TMP_VECTOR4_2	: Vector4	= new Vector4();
 		
 		minko_math var _min			: Vector4			= new Vector4();
 		minko_math var _max			: Vector4			= new Vector4();
@@ -70,18 +71,20 @@ package aerys.minko.type.bounding
 								transform	: Matrix4x4	= null,
 								maxDistance	: Number	= Number.POSITIVE_INFINITY) : Number
 		{
-			var localOrigin 	: Vector4	= transform
-				? transform.transformVector(ray.origin, TMP_VECTOR4)
-				: ray.origin;
-			var ox				: Number	= localOrigin.x;
-			var oy				: Number	= localOrigin.y;
-			var oz				: Number	= localOrigin.z;
+			var localOrigin 	: Vector4	= ray.origin;
+			var localDirection	: Vector4	= ray.direction;
 			
-			var localDirection	: Vector4	= transform
-				? transform.deltaTransformVector(ray.direction, TMP_VECTOR4)
-				: ray.direction;
-			
-			localDirection.normalize();
+			if (transform)
+			{
+				localOrigin = transform.transformVector(ray.origin, TMP_VECTOR4_1);
+				
+				localDirection = transform.deltaTransformVector(ray.direction, TMP_VECTOR4_2);
+				localDirection.normalize();
+			}
+
+			var ox		: Number	= localOrigin.x;
+			var oy		: Number	= localOrigin.y;
+			var oz		: Number	= localOrigin.z;
 			
 			var dx		: Number	= 1.0 / localDirection.x;
 			var dy		: Number	= 1.0 / localDirection.y;
