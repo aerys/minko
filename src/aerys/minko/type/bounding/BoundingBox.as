@@ -63,12 +63,12 @@ package aerys.minko.type.bounding
 		 *  
 		 * @param ray
 		 * @param transform
-		 * @return 
+		 * @return The distance to the collision point on the box if the ray hits it, -1 otherwise.
 		 * 
 		 */
 		public function testRay(ray 		: Ray,
 								transform	: Matrix4x4	= null,
-								maxDistance	: Number	= Number.POSITIVE_INFINITY) : Boolean
+								maxDistance	: Number	= Number.POSITIVE_INFINITY) : Number
 		{
 			var localOrigin 	: Vector4	= transform
 				? transform.transformVector(ray.origin, TMP_VECTOR4)
@@ -118,7 +118,9 @@ package aerys.minko.type.bounding
 			tmin = tmin > min ? tmin : min;
 			tmax = tmax < max ? tmax : max;
 			
-			return tmax >= Math.max(0, tmin) && tmin < maxDistance;
+			return tmax >= Math.max(0, tmin) && tmin < maxDistance
+				? tmin
+				: -1.0;
 		}
 
 		public function clone() : BoundingBox
