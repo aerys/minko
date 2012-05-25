@@ -5,6 +5,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
@@ -291,17 +292,30 @@ package aerys.minko.scene.node
 		{
 			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
 			var numMeshes	: uint					= meshes.length;
-			var hit			: Vector.<ISceneNode>	= new <ISceneNode>[];
+			var hit			: Array					= [];
+			var depth		: Vector.<Number>		= new <Number>[];
+			var numItems	: uint					= 0;
 			
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
-				var mesh : Mesh	= meshes[i] as Mesh;
+				var mesh 		: Mesh		= meshes[i] as Mesh;
+				var hitDepth	: Number	= mesh.geometry.boundingBox.testRay(
+					ray,
+					mesh.worldToLocal
+				);
 				
-				if (mesh.geometry.boundingBox.testRay(ray, mesh.worldToLocal))
-					hit.push(mesh);
+				if (hitDepth >= 0.0)
+				{
+					hit[numItems] = mesh;
+					depth[numItems] = hitDepth;
+					++numItems;
+				}
 			}
 			
-			return new SceneIterator(null, hit);
+			if (numItems > 1)
+				Sort.flashSort(depth, hit, numItems);
+			
+			return new SceneIterator(null, Vector.<ISceneNode>(hit));
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode
