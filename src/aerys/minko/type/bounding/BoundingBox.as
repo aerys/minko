@@ -97,20 +97,26 @@ package aerys.minko.type.bounding
 			var tx1		: Number	= (minX - ox) * dx;
 			var tx2		: Number	= (maxX - ox) * dx;
 			
-			var tmin	: Number	= Math.min(tx1, tx2);
-			var tmax	: Number	= Math.max(tx1, tx2);
+			var min		: Number	= tx1 < tx2 ? tx1 : tx2;
+			var max		: Number	= tx1 > tx2 ? tx1 : tx2;
+			var tmin	: Number	= min;
+			var tmax	: Number	= max;
 			
 			var ty1		: Number	= (minY - oy) * dy;
 			var ty2		: Number	= (maxY - oy) * dy;
 			
-			tmin = Math.max(tmin, Math.min(ty1, ty2));
-			tmax = Math.min(tmax, Math.max(ty1, ty2));
+			min = ty1 < ty2 ? ty1 : ty2;
+			max = ty1 > ty2 ? ty1 : ty2;
+			tmin = tmin > min ? tmin : min;
+			tmax = tmax < max ? tmax : max;
 			
 			var tz1		: Number	= (minZ - oz) * dz;
 			var tz2		: Number	= (maxZ - oz) * dz;
 			
-			tmin = Math.max(tmin, Math.min(tz1, tz2));
-			tmax = Math.min(tmax, Math.max(tz1, tz2));
+			min = tz1 < tz2 ? tz1 : tz2;
+			max = tz1 > tz2 ? tz1 : tz2;
+			tmin = tmin > min ? tmin : min;
+			tmax = tmax < max ? tmax : max;
 			
 			return tmax >= Math.max(0, tmin) && tmin < maxDistance;
 		}
