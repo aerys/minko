@@ -137,6 +137,21 @@ package aerys.minko.scene.node.mesh.geometry
 			return _vertexStreams.length ? _vertexStreams[0].format : null;
 		}
 		
+		/**
+		 * Create a new Geometry object.
+		 * 
+		 * @param vertexStreams A vector of IVertexStream object where each stream is a keyframe used
+		 * for hardware vertex-morphing animations. If the object does not use vertex-morphing, you should
+		 * provide a vector with only one element.
+		 * 
+		 * @param indexStream The IndexStream objects containing the triangles to render.
+		 * 
+		 * @param firstIndex The index of the first vertex index in the IndexStream. Default is 0.
+		 * 
+		 * @param numTriangles The number of triangles to render, starting from 'firstIndex'. Use -1 to
+		 * draw all the triangles. Default is -1.
+		 * 
+		 */
 		public function Geometry(vertexStreams	: Vector.<IVertexStream>	= null,
 								 indexStream	: IndexStream				= null,
 								 firstIndex		: uint						= 0,
