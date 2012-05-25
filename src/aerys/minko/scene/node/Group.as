@@ -300,7 +300,7 @@ package aerys.minko.scene.node
 				if (mesh.geometry.boundingBox.testRay(ray, mesh.worldToLocal))
 					hit.push(mesh);
 			}
-			trace(hit);
+			
 			return new SceneIterator(null, hit);
 		}
 		
