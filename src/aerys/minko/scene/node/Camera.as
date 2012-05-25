@@ -7,6 +7,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 	
 	/**
@@ -302,6 +303,33 @@ package aerys.minko.scene.node
 			copyControllersFrom(this, cloned, cloneControllers);
 			
 			return cloned;
+		}
+		
+		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
+		{
+			out ||= new Ray();
+			
+			var width		: Number	= _viewport.width;
+			var height		: Number	= _viewport.height;
+			
+			var xPercent	: Number	= 2.0 * (x / width - 0.5);
+			var yPercent 	: Number	= 2.0 * (y / height - 0.5);
+			
+			var fovDiv2		: Number	= _fov * 0.5;
+			
+			var dx			: Number 	= Math.tan(fovDiv2 * 0.5) * xPercent * (width / height);
+			var dy			: Number 	= -Math.tan(fovDiv2 * 0.5) * yPercent;
+			
+			out.origin.set(dx * _zNear, dy * _zNear, _zNear);
+//			out.direction.set(dx * _zNear, dy * _zNear, _zNear).normalize();
+			out.direction.set(dx * _zFar, dy * _zFar, _zFar)
+				.subtract(out.origin)
+				.normalize();
+			
+			_viewToWorld.transformVector(out.origin, out.origin);
+			_viewToWorld.deltaTransformVector(out.direction, out.direction);
+			
+			return out;
 		}
 	}
 }

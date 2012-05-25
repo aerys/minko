@@ -86,7 +86,7 @@ package aerys.minko.type.loader
 			_data			= null;
 			_isComplete		= false;
 			
-			_parserOptions	= parserOptions;
+			_parserOptions	= parserOptions || new ParserOptions();
 		}
 		
 		public function load(urlRequest : URLRequest) : void
@@ -122,14 +122,15 @@ package aerys.minko.type.loader
 		
 		public function loadBytes(byteArray : ByteArray) : void
 		{
+			var startPosition : uint = byteArray.position;
+			
 			if (_currentState != STATE_IDLE)
 				throw new Error('This controller is already loading an asset.');
 			
 			_currentState = STATE_PARSING;
-			
 			_progress.execute(this, 0.5);
 			
-			if (_parserOptions.parser != null)
+			if (_parserOptions != null && _parserOptions.parser != null)
 			{
 				_parser = new (_parserOptions.parser)(_parserOptions);
 			}
@@ -140,6 +141,7 @@ package aerys.minko.type.loader
 				for (var parserId : uint = 0; parserId < numRegisteredParser; ++parserId)
 				{
 					_parser = new REGISTERED_PARSERS[parserId](_parserOptions);
+					byteArray.position = startPosition;
 					if (_parser.isParsable(byteArray))
 						break;
 				}
@@ -147,6 +149,8 @@ package aerys.minko.type.loader
 				if (parserId == numRegisteredParser)
 					throw new Error('No parser could be found for this datatype');
 			}
+
+			byteArray.position = startPosition;
 			
 			_dependencies	 = _parser.getDependencies(byteArray);
 			_numDependencies = 0;

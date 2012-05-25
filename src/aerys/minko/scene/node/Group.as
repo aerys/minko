@@ -3,11 +3,13 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
@@ -283,6 +285,23 @@ package aerys.minko.scene.node
 											   scene	: ISceneNode) : void
 		{
 			addChild(scene);
+		}
+		
+		public function cast(ray : Ray) : SceneIterator
+		{
+			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
+			var numMeshes	: uint					= meshes.length;
+			var hit			: Vector.<ISceneNode>	= new <ISceneNode>[];
+			
+			for (var i : uint = 0; i < numMeshes; ++i)
+			{
+				var mesh : Mesh	= meshes[i] as Mesh;
+				
+				if (mesh.geometry.boundingBox.testRay(ray, mesh.worldToLocal))
+					hit.push(mesh);
+			}
+			trace(hit);
+			return new SceneIterator(null, hit);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

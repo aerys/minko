@@ -26,87 +26,87 @@ package aerys.minko.type.loader.parser
 		private var _indexStreamUsage			: uint		= 0;
 		private var _parser						: Class		= null;
 		
-		public function get parser():Class
+		public function get parser() : Class
 		{
 			return _parser;
 		}
 		
-		public function set parser(value:Class):void
+		public function set parser(value : Class) : void
 		{
 			_parser = value;
 		}
 		
-		public function get indexStreamUsage():uint
+		public function get indexStreamUsage() : uint
 		{
 			return _indexStreamUsage;
 		}
 		
-		public function set indexStreamUsage(value:uint):void
+		public function set indexStreamUsage(value : uint) : void
 		{
 			_indexStreamUsage = value;
 		}
 		
-		public function get vertexStreamUsage():uint
+		public function get vertexStreamUsage() : uint
 		{
 			return _vertexStreamUsage;
 		}
 		
-		public function set vertexStreamUsage(value:uint):void
+		public function set vertexStreamUsage(value : uint) : void
 		{
 			_vertexStreamUsage = value;
 		}
 		
-		public function get effect():Effect
+		public function get effect() : Effect
 		{
 			return _meshEffect;
 		}
 		
-		public function set effect(value:Effect):void
+		public function set effect(value : Effect) : void
 		{
 			_meshEffect = value;
 		}
 		
-		public function get mipmapTextures():Boolean
+		public function get mipmapTextures() : Boolean
 		{
 			return _mipmapTextures;
 		}
 		
-		public function set mipmapTextures(value:Boolean):void
+		public function set mipmapTextures(value : Boolean) : void
 		{
 			_mipmapTextures = value;
 		}
 		
-		public function get dependencyLoaderClosure():Function
+		public function get dependencyLoaderClosure() : Function
 		{
 			return _dependencyLoaderClosure;
 		}
 		
-		public function set dependencyLoaderClosure(value:Function):void
+		public function set dependencyLoaderClosure(value : Function) : void
 		{
 			_dependencyLoaderClosure = value;
 		}
 		
-		public function get loadDependencies():Boolean
+		public function get loadDependencies() : Boolean
 		{
 			return _loadDependencies;
 		}
 		
-		public function set loadDependencies(value:Boolean):void
+		public function set loadDependencies(value : Boolean) : void
 		{
 			_loadDependencies = value;
 		}
 
-        public function get loadSkin():Boolean
+        public function get loadSkin() : Boolean
         {
             return _loadSkin;
         }
 
-        public function set loadSkin(value:Boolean):void
+        public function set loadSkin(value : Boolean) : void
         {
             _loadSkin = value;
         }
 
-		public function clone(): ParserOptions
+		public function clone() : ParserOptions
 		{
 			return new ParserOptions(
 				_loadDependencies,
@@ -120,14 +120,14 @@ package aerys.minko.type.loader.parser
 			);
 		}
 		
-		public function ParserOptions(loadDependencies			: Boolean = false,
-									  dependencyLoaderClosure	: Function = null,
-                                      loadSkin                  : Boolean = true,
-									  mipmapTextures			: Boolean = true,
-									  meshEffect				: Effect = null,
-									  vertexStreamUsage			: uint = 0,
-									  indexStreamUsage			: uint = 0,
-									  parser					: Class = null)
+		public function ParserOptions(loadDependencies			: Boolean 	= false,
+									  dependencyLoaderClosure	: Function 	= null,
+                                      loadSkin                  : Boolean 	= true,
+									  mipmapTextures			: Boolean 	= true,
+									  meshEffect				: Effect 	= null,
+									  vertexStreamUsage			: uint 		= 0,
+									  indexStreamUsage			: uint 		= 0,
+									  parser					: Class 	= null)
 		{
 			_loadDependencies			= loadDependencies;
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
