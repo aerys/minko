@@ -179,6 +179,11 @@ package aerys.minko.type.math
 			return this;
 		}
 		
+		public function clone() : Matrix4x4
+		{
+			return new Matrix4x4().copyFrom(this);
+		}
+		
 		public function push() : Matrix4x4
 		{
 			_matrix.copyRawDataTo(_data, _numPushes * 16);
