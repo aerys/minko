@@ -45,6 +45,7 @@ package aerys.minko.render
 		private var _invalidBackBuffer	: Boolean			= false;
 		
 		private var _alwaysOnTop		: Boolean			= false;
+		private var _alwaysOnTopSet		: Boolean			= false;
 		private var _mask				: Shape				= new Shape();
 		
 		private var _resized			: Signal			= new Signal('Viewport.resized');
@@ -122,10 +123,14 @@ package aerys.minko.render
 		}
 		public function set alwaysOnTop(value : Boolean) : void
 		{
-			_alwaysOnTop = value;
-			
-			updateMask();
-			updateStageListeners();
+			if (value != _alwaysOnTop)
+			{
+				_alwaysOnTop = value;
+				_alwaysOnTopSet = true;
+
+				updateMask();
+				updateStageListeners();
+			}
 		}
 		
 		/**
@@ -387,7 +392,7 @@ package aerys.minko.render
 		
 		private function updateMask() : void
 		{
-			if (!stage)
+			if (!stage || !_alwaysOnTopSet)
 				return ;
 			
 			var numChildren : int = stage.numChildren;
@@ -418,6 +423,7 @@ package aerys.minko.render
 			}
 			else
 			{
+				_alwaysOnTopSet = false; // remove masks once
 				for (i = 0; i < numChildren; ++i)
 					stage.getChildAt(i).mask = null;
 			}
@@ -435,7 +441,7 @@ package aerys.minko.render
 		{
 			var displayObject : DisplayObject	= event.target as DisplayObject;
 			
-			if (_autoResize && displayObject.parent == stage)
+			if (_alwaysOnTop && displayObject.parent == stage)
 				displayObject.mask = null;
 		}
 	}
