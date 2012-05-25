@@ -44,7 +44,7 @@ package aerys.minko.render.shader.part
 
 		protected function get vertexId() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.ID));
+			return getVertexAttribute(VertexComponent.ID);
 		}
 		
 		/**
@@ -54,12 +54,12 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexXYZ() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.XYZ));
+			return getVertexAttribute(VertexComponent.XYZ);
 		}
 		
 		protected function get vertexXY() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.XY));
+			return getVertexAttribute(VertexComponent.XY);
 		}
 
 		/**
@@ -69,7 +69,7 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexRGBColor() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.RGB));
+			return getVertexAttribute(VertexComponent.RGB);
 		}
 
 		/**
@@ -79,7 +79,7 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexRGBAColor() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.RGBA));
+			return getVertexAttribute(VertexComponent.RGBA);
 		}
 
 		/**
@@ -89,7 +89,7 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexUV() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.UV));
+			return getVertexAttribute(VertexComponent.UV);
 		}
 
 		/**
@@ -99,7 +99,7 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexNormal() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.NORMAL));
+			return getVertexAttribute(VertexComponent.NORMAL);
 		}
 
 		/**
@@ -109,7 +109,7 @@ package aerys.minko.render.shader.part
 		 */
 		protected function get vertexTangent() : SFloat
 		{
-			return new SFloat(new Attribute(VertexComponent.TANGENT));
+			return getVertexAttribute(VertexComponent.TANGENT);
 		}
 		
 		protected function get localToWorldMatrix() : SFloat
