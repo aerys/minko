@@ -390,6 +390,14 @@ package aerys.minko.type.math
 
 			return output;
 		}
+		
+		public function projectRawVectors(input 	: Vector.<Number>,
+										  output	: Vector.<Number>,
+										  uvt		: Vector.<Number>) : void
+		{
+			Utils3D.projectVectors(_matrix, input, output, uvt);
+		}
+
 
 		public function getRawData(out 			: Vector.<Number> = null,
 								   offset		: int			  = 0,
@@ -448,13 +456,6 @@ package aerys.minko.type.math
 				_changed.execute(this, null);
 			
 			return this;
-		}
-		
-		public function projectVectors(input 	: Vector.<Number>,
-									   output	: Vector.<Number>,
-									   uvt		: Vector.<Number>) : void
-		{
-			Utils3D.projectVectors(_matrix, input, output, uvt);
 		}
 		
 		public function getTranslation(output : Vector4 = null) : Vector4
