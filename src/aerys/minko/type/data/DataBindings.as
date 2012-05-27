@@ -36,14 +36,13 @@ package aerys.minko.type.data
 			
 			for (var attrName : String in dataDescriptor)
 			{
-				var bindingName	: String		= dataDescriptor[attrName];
-				
-				if (_bindingNames.indexOf(bindingName) != -1)
-					throw new Error('A Dataprovider is already defining this binding. Cannot overwrite.');
-				
 				// if this provider attribute is also a dataprovider, let's also bind it
+				var bindingName	: String		= dataDescriptor[attrName];
 				var attribute	: Object		= provider[attrName]
 				var dpAttribute	: IDataProvider	= attribute as IDataProvider;
+				
+				if (_bindingNames.indexOf(bindingName) != -1)
+					throw new Error('Another Dataprovider is already declaring "' + bindingName + '". Cannot overwrite.');
 				
 				if (dpAttribute != null)
 				{
@@ -63,29 +62,30 @@ package aerys.minko.type.data
 				
 				providerBindingNames.push(bindingName);
 				_bindingNames.push(bindingName);
+				
+				getPropertyChangedSignal(bindingName).execute(this, bindingName, attribute);
 			}
 			
 			_providerToBindingNames[provider] = providerBindingNames;
 		}
 		
-		public function remove(dataProvider : IDataProvider) : void
+		public function remove(provider : IDataProvider) : void
 		{
-			var bindingNames : Vector.<String> = _providerToBindingNames[dataProvider];
+			var bindingNames : Vector.<String> = _providerToBindingNames[provider];
 			
 			if (bindingNames == null)
 				throw new ArgumentError('No such provider was binded');
 			
-			dataProvider.changed.remove(onProviderChange);
-			
-			for (var bindingName : String in bindingNames)
+			for each (var bindingName : String in bindingNames)
 			{
-				_bindingNames.splice(_bindingNames.indexOf(bindingName), 1);
+				var indexOf : int = _bindingNames.indexOf(bindingName);
+				
+				_bindingNames.splice(indexOf, 1);
 				
 				if (_bindingNameToValue[bindingName] is IDataProvider)
 					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(onProviderAttributeChange);
 				
 				delete _bindingNameToValue[bindingName];
-				
 			}
 			
 			var attributesToDelete : Vector.<Object> = new Vector.<Object>();
@@ -94,7 +94,7 @@ package aerys.minko.type.data
 			{
 				var providers		: Vector.<IDataProvider>	= _attributeToProviders[attribute];
 				var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[attribute];
-				var indexOfProvider	: int						= providers.indexOf(dataProvider);
+				var indexOfProvider	: int						= providers.indexOf(provider);
 				
 				if (indexOfProvider != -1)
 				{
@@ -110,6 +110,16 @@ package aerys.minko.type.data
 			{
 				delete _attributeToProviders[attributeToDelete];
 				delete _attributeToProvidersAttrNames[attributeToDelete];
+			}
+			
+			provider.changed.remove(onProviderChange);
+			
+			delete _providerToBindingNames[provider];
+			
+			for each (bindingName in bindingNames)
+			{
+				trace(bindingName);
+				getPropertyChangedSignal(bindingName).execute(this, bindingName, null);
 			}
 		}
 		
@@ -142,31 +152,64 @@ package aerys.minko.type.data
 		/**
 		 * A provider attribute has changed, and the provider tells us.
 		 * For example, camera.fov has changed, the camera dispatches a 'changed' signal with 'fov' as attributeName.
-		 */		
+		 * 
+		 * It could also be that camera.localToWorld has been replaced by another matrix instance.
+		 */
 		private function onProviderChange(source : IDataProvider, attributeName : String) : void
 		{
-			if (attributeName == 'dataDescriptor')
+			if (attributeName == null)
 			{
-				throw new Error('implement');
+				throw new Error('DataProviders must change one property at a time.');
 			}
-			else if (attributeName == null)
+			else if (attributeName == 'dataDescriptor')
 			{
-				throw new Error('implement');
+				remove(source);
+				add(source);
 			}
 			else
 			{
 				var bindingName : String		= source.dataDescriptor[attributeName];
-				var oldDPValue	: Object		= _bindingNameToValue[bindingName];
-				var newDPValue	: IDataProvider	= source[attributeName] as IDataProvider;
+				var oldDpValue	: IDataProvider	= _bindingNameToValue[bindingName] as IDataProvider;
+				var newValue	: Object		= source[attributeName];
+				var newDpValue	: IDataProvider	= newValue as IDataProvider;
 				
-				if ()
+				// we are replacing a data provider. We must remove listeners and related mapping keys
+				if (oldDpValue != null)
 				{
+					oldDpValue.changed.remove(onProviderAttributeChange);
 					
+					var providers	: Vector.<IDataProvider>	= _attributeToProviders[oldDpValue];
+					var attrNames	: Vector.<String>			= _attributeToProvidersAttrNames[oldDpValue];
 					
-					_bindingNameToValue[bindingName] = newValue;
-					
+					if (providers.length == 1)
+					{
+						delete _attributeToProviders[oldDpValue];
+						delete _attributeToProvidersAttrNames[oldDpValue];
+					}
+					else
+					{
+						var index : uint = providers.indexOf(source);
+						providers.splice(index, 1);
+						attrNames.splice(index, 1);
+					}
 				}
 				
+				// the new value for this key is a dataprovider, we must listen changes.
+				if (newDpValue != null)
+				{
+					newDpValue.changed.add(onProviderAttributeChange);
+					
+					if (!_attributeToProviders[newDpValue])
+						_attributeToProviders[newDpValue] = new <IDataProvider>[];
+					
+					if (!_attributeToProvidersAttrNames[newDpValue])
+						_attributeToProvidersAttrNames[newDpValue] = new <String>[];
+					
+					_attributeToProviders[newDpValue].push(source);
+					_attributeToProvidersAttrNames[newDpValue].push(attributeName);
+				}
+				
+				_bindingNameToValue[bindingName] = newValue;
 				
 				getPropertyChangedSignal(bindingName).execute(this, bindingName, newValue);
 			}
@@ -182,9 +225,14 @@ package aerys.minko.type.data
 			var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[source];
 			var numProviders	: uint						= providers.length;
 			
-			// can do faster than that :p
 			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
-				onProviderChange(providers[providerId], attrNames[providerId]);
+			{
+				var provider	: IDataProvider	= providers[providerId];
+				var attrName	: String		= attrNames[providerId];
+				var bindingName : String		= provider.dataDescriptor[attrName];
+				
+				getPropertyChangedSignal(bindingName).execute(this, bindingName, source);
+			}
 		}
 	}
 }
