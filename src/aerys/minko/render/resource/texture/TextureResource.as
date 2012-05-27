@@ -164,6 +164,9 @@ package aerys.minko.render.resource.texture
 			_atf = null;
 			_bitmapData = null;
 
+			if (_texture == null)
+				throw new Error();
+			
 			return _texture;
 		}
 		

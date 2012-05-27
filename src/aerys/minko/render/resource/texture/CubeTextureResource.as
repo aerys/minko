@@ -121,12 +121,16 @@ package aerys.minko.render.resource.texture
 				_bitmapDatas = null;
 			}
 			
+			if (!_resource)
+				throw new Error();
+			
 			return _resource;
 		}
 		
 		public function dispose() : void
 		{
-			_resource.dispose();
+			if (_resource)
+				_resource.dispose();
 		}
 	}
 }
