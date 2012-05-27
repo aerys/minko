@@ -7,15 +7,15 @@ package aerys.minko.scene.data
 	
 	public final class SkinningDataProvider implements IDataProvider
 	{
-		private static const DATA_DESCRIPTOR	: Object	= {
-			"skinningMethod"		: "method",
-			"skinningNumBones"		: "numBones",
-			"skinningBindShape"		: "bindShape",
-			"skinningMaxInfluences"	: "maxInfluences",
-			"skinningMatrices"		: "matrices",
-			"skinningDQn"			: "dqN",
-			"skinningDQd"			: "dqD"
-		}
+		private static const DATA_DESCRIPTOR : Object = {
+			"method"		: "skinningMethod",
+			"numBones"		: "skinningNumBones",
+			"bindShape"		: "skinningBindShape",
+			"maxInfluences"	: "skinningMaxInfluences",
+			"matrices"		: "skinningMatrices",
+			"dqN"			: "skinningDQn",
+			"dqD"			: "skinningDQd" 
+		};
 		
 		private var _method			: uint				= 0;
 		private var _numBones		: uint				= 0;
