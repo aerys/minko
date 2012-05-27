@@ -7,6 +7,7 @@ package aerys.minko.type.data
 	
 	public dynamic class DataProvider extends Proxy implements IDataProvider
 	{
+		private var _name		: String	= null;
 		private var _descriptor	: Object	= {};
 		private var _data		: Object	= {};
 		
@@ -22,8 +23,11 @@ package aerys.minko.type.data
 			return _changed;
 		}
 		
-		public function DataProvider(properties : Object = null)
+		public function DataProvider(properties	: Object = null, 
+									 name		: String = null)
 		{
+			_name = name;
+			
 			initialize(properties);
 		}
 		

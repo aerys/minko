@@ -13,10 +13,7 @@ package aerys.minko.render.effect
 	 */
 	public class Effect
 	{
-		use namespace minko_render;
-		
-		minko_render var _passes	: Vector.<Shader>	= null;
-		
+		private var _passes			: Vector.<Shader>	= null;
 		private var _passesChanged	: Signal			= new Signal('Effect.passesChanged');
 		
 		public function get passesChanged() : Signal
@@ -47,6 +44,12 @@ package aerys.minko.render.effect
 			return _passes[index];
 		}
 		
+		public function changePasses(newPasses : Vector.<Shader>) : void
+		{
+			_passes = newPasses.slice();
+			_passesChanged.execute(this);
+		}
+		
 		public function addPass(pass : Shader) : uint
 		{
 			var index : uint = _passes.push(pass);
@@ -66,6 +69,8 @@ package aerys.minko.render.effect
 			
 			for (; index < numPasses; index++)
 				_passes[index] = _passes[int(index + 1)];
+			
+			_passes.length = numPasses;
 			
 			_passesChanged.execute(this);
 		}

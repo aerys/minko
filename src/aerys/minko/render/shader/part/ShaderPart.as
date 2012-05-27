@@ -836,7 +836,7 @@ package aerys.minko.render.shader.part
 				return new Constant(new <Number>[Number(value)]);
 			
 			if (value is Matrix4x4)
-				return new Constant(Matrix4x4(value).getRawData(null, 0, false));
+				return new Constant(Matrix4x4(value).getRawData(null, 0, true));
 			
 			throw new Error('This type cannot be casted to a shader value.');
 		}

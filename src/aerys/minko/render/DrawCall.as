@@ -348,7 +348,7 @@ package aerys.minko.render
 												 property		: String,
 												 newValue		: Object) : void
 		{
-			newValue && setParameter(property, newValue);
+			newValue !== null && setParameter(property, newValue);
 		}
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
