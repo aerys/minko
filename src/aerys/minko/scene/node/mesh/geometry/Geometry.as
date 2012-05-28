@@ -199,6 +199,18 @@ package aerys.minko.scene.node.mesh.geometry
 			updateBoundingVolumes();
 		}
 		
+		public function dispose() : void
+		{
+			var numStreams : uint = numStreams;
+			
+			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
+				_vertexStreams[streamId].dispose();
+			_vertexStreams.length = 0;
+			
+			_indexStream.dispose();
+			_indexStream = null;
+		}
+		
 		/**
 		 * Get the IVertexStream object at the specified index.
 		 *  
