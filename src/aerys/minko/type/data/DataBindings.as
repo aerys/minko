@@ -117,10 +117,7 @@ package aerys.minko.type.data
 			delete _providerToBindingNames[provider];
 			
 			for each (bindingName in bindingNames)
-			{
-				trace(bindingName);
 				getPropertyChangedSignal(bindingName).execute(this, bindingName, null);
-			}
 		}
 		
 		public function getPropertyChangedSignal(bindingName : String) : Signal
