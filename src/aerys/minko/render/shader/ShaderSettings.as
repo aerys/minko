@@ -5,7 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.enum.StencilActions;
+	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.geom.Rectangle;
@@ -36,11 +36,11 @@ package aerys.minko.render.shader
 		
 		private var _depthSortDrawCalls						: Boolean		= false;
 		
-		private var _stencilTriangleFace					: uint			= TriangleCulling.BOTH;
-		private var _stencilCompareMode						: uint			= DepthTest.ALWAYS;
-		private var _stencilActionOnBothPass				: uint			= StencilActions.KEEP;
-		private var _stencilActionOnDepthFail				: uint			= StencilActions.KEEP;
-		private var _stencilActionOnDepthPassStencilFail	: uint			= StencilActions.KEEP;
+		private var _stencilTriangleFace					: uint			= 0;
+		private var _stencilCompareMode						: uint			= 0;
+		private var _stencilActionOnBothPass				: uint			= 0;
+		private var _stencilActionOnDepthFail				: uint			= 0;
+		private var _stencilActionOnDepthPassStencilFail	: uint			= 0;
 		private var _stencilReferenceValue					: uint			= 0;
 		private var _stencilReadMask						: uint			= 255;
 		private var _stencilWriteMask						: uint			= 255;
@@ -249,9 +249,9 @@ package aerys.minko.render.shader
 			
 			stencilTriangleFace 					= TriangleCulling.BOTH;
 			stencilCompareMode						= DepthTest.ALWAYS;
-			stencilActionOnBothPass					= StencilActions.KEEP;
-			stencilActionOnDepthFail				= StencilActions.KEEP;
-			stencilActionOnDepthPassStencilFail		= StencilActions.KEEP;
+			stencilActionOnBothPass					= StencilAction.KEEP;
+			stencilActionOnDepthFail				= StencilAction.KEEP;
+			stencilActionOnDepthPassStencilFail		= StencilAction.KEEP;
 			stencilReferenceValue					= 0;
 			stencilReadMask							= 255;
 			stencilWriteMask						= 255;
@@ -320,25 +320,23 @@ package aerys.minko.render.shader
 				);
 			}
 			
-			context.setScissorRectangle(_rectangle);
-			context.setDepthTest(_enableDepthWrite, _compareMode);
-			
-			context.setBlendFactors(_blendingSource, _blendingDest);
-			context.setCulling(_triangleCullingStr);
-			
-			context.setStencilReferenceValue(
-				_stencilReferenceValue,
-				_stencilReadMask,
-				_stencilWriteMask
-			);			
-			
-			context.setStencilActions(
-				TriangleCulling.STRINGS[stencilTriangleFace],
-				DepthTest.STRINGS[DepthTest.FLAGS.indexOf(stencilCompareMode)],
-				StencilActions.STRINGS[stencilActionOnBothPass],
-				StencilActions.STRINGS[stencilActionOnDepthFail],
-				StencilActions.STRINGS[stencilActionOnDepthPassStencilFail]
-			);
+			context
+				.setScissorRectangle(_rectangle)
+				.setDepthTest(_enableDepthWrite, _compareMode)
+				.setBlendFactors(_blendingSource, _blendingDest)
+				.setCulling(_triangleCullingStr)
+				.setStencilReferenceValue(
+					_stencilReferenceValue,
+					_stencilReadMask,
+					_stencilWriteMask
+				)		
+				.setStencilActions(
+					TriangleCulling.STRINGS[stencilTriangleFace],
+					DepthTest.STRINGS[DepthTest.FLAGS.indexOf(stencilCompareMode)],
+					StencilAction.STRINGS[stencilActionOnBothPass],
+					StencilAction.STRINGS[stencilActionOnDepthFail],
+					StencilAction.STRINGS[stencilActionOnDepthPassStencilFail]
+				);
 		}		
 	}
 }

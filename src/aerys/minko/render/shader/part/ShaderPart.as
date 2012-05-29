@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
-	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderDataBindings;
@@ -802,7 +802,7 @@ package aerys.minko.render.shader.part
 			return multiply3x3(vertex, viewToWorldMatrix);
 		}
 		
-		protected final function getTexture(textureResource : TextureResource,
+		protected final function getTexture(textureResource : ITextureResource,
 											filter			: uint = SamplerFiltering.LINEAR,
 											mipmap			: uint = SamplerMipMapping.DISABLE,
 											wrapping		: uint = SamplerWrapping.REPEAT,
