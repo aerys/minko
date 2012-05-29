@@ -3,7 +3,7 @@ package aerys.minko.type.enum
 	import aerys.minko.ns.minko_render;
 	import flash.display3D.Context3DStencilAction;
 
-	public class StencilAction 
+	public final class StencilAction 
 	{
 		public static const DECREMENT_SATURATE		: uint = 0;
 		public static const DECREMENT_WRAP			: uint = 1;
