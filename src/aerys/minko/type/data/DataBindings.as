@@ -15,8 +15,8 @@ package aerys.minko.type.data
 		private var _attributeToProviders			: Dictionary		= new Dictionary(); // dic[Vector.<IDataProvider>[]]
 		private var _attributeToProvidersAttrNames	: Dictionary		= new Dictionary(); // dic[Vector.<String>[]]
 		
-		private var _numProviders					: uint 					= 0;
-		private var _providers						: Vector.<DataProvider> = new <DataProvider>[];
+		private var _numProviders					: uint 						= 0;
+		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
 		
 		public function get numProviders() : uint
 		{
@@ -133,7 +133,7 @@ package aerys.minko.type.data
 				getPropertyChangedSignal(bindingName).execute(this, bindingName, null);
 		}
 		
-		public function getDataProviderAt(index : uint) : DataProvider
+		public function getDataProviderAt(index : uint) : IDataProvider
 		{
 			if (index >= _numProviders)
 				throw new ArgumentError('Index out of bounds.');
