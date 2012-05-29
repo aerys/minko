@@ -303,5 +303,31 @@ package aerys.minko.render.resource
 			
 			return this;
 		}
+		
+		public function setStencilReferenceValue( 	refNum		: uint 	= 0,
+													readMask	: uint 	= 255,
+													writeMask	: uint 	= 255 ) : Context3DResource			
+		{			
+			_context.setStencilReferenceValue( refNum, readMask, writeMask );
+			return this;
+		}
+		
+		public function setStencilActions( 	triangleFace					: String = 'frontAndBack', 
+											compareMode						: String = 'always', 
+											actionOnBothPass				: String = 'keep', 
+											actionOnDepthFail				: String = 'keep', 
+											actionOnDepthPassStencilFail	: String = 'keep' ) : Context3DResource
+		{			
+			_context.setStencilActions( 
+				triangleFace,
+				compareMode,
+				actionOnBothPass,
+				actionOnDepthFail,
+				actionOnDepthPassStencilFail
+			);			
+
+			return this;
+		}
+		
 	}
 }
