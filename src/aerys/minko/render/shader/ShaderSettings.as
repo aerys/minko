@@ -5,6 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
+	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.geom.Rectangle;
@@ -35,14 +36,14 @@ package aerys.minko.render.shader
 		
 		private var _depthSortDrawCalls						: Boolean		= false;
 		
-		private var _stencilTriangleFace					: String		= null;
-		private var _stencilCompareMode						: String		= null;
-		private var _stencilActionOnBothPass				: String		= null;
-		private var _stencilActionOnDepthFail				: String		= null;
-		private var _stencilActionOnDepthPassStencilFail	: String		= null;
+		private var _stencilTriangleFace					: uint			= 0;
+		private var _stencilCompareMode						: uint			= 0;
+		private var _stencilActionOnBothPass				: uint			= 0;
+		private var _stencilActionOnDepthFail				: uint			= 0;
+		private var _stencilActionOnDepthPassStencilFail	: uint			= 0;
 		private var _stencilReferenceValue					: uint			= 0;
 		private var _stencilReadMask						: uint			= 255;
-		private var _sentcilWriteMask						: uint			= 255;
+		private var _stencilWriteMask						: uint			= 255;
 		
 		minko_render function get signature() : Signature
 		{
@@ -102,8 +103,7 @@ package aerys.minko.render.shader
 		{
 			_depthTest = value;
 			
-			var index : int = DepthTest.FLAGS.indexOf(value);
-			
+			var index : int = DepthTest.FLAGS.indexOf(value);			
 			if (index < 0)
 				throw new Error("Invalid depth test value: " + value);
 			
@@ -150,17 +150,111 @@ package aerys.minko.render.shader
 			_depthSortDrawCalls = value;
 		}
 		
+		public function get stencilTriangleFace():uint
+		{
+			return _stencilTriangleFace;
+		}
+		
+		public function set stencilTriangleFace( value : uint ):void 
+		{
+			_stencilTriangleFace = value;
+		}
+		
+		public function get stencilCompareMode():uint 
+		{
+			return _stencilCompareMode;
+		}
+		
+		public function set stencilCompareMode( value : uint ):void 
+		{
+			var index : int = DepthTest.FLAGS.indexOf(value);
+			
+			if (index < 0)
+				throw new Error("Invalid stencil compare mode value: " + value);
+			
+			_stencilCompareMode 	= value;
+		}
+		
+		public function get stencilActionOnBothPass():uint 
+		{
+			return _stencilActionOnBothPass;
+		}
+		
+		public function set stencilActionOnBothPass( value : uint ):void 
+		{
+			_stencilActionOnBothPass = value;
+		}
+		
+		public function get stencilActionOnDepthFail():uint 
+		{
+			return _stencilActionOnDepthFail;
+		}
+		
+		public function set stencilActionOnDepthFail( value : uint ):void 
+		{			
+			_stencilActionOnDepthFail = value;
+		}
+		
+		public function get stencilActionOnDepthPassStencilFail():uint 
+		{
+			return _stencilActionOnDepthPassStencilFail;
+		}
+		
+		public function set stencilActionOnDepthPassStencilFail( value : uint ):void 
+		{		
+			_stencilActionOnDepthPassStencilFail = value;
+		}
+		
+		public function get stencilReferenceValue():uint 
+		{
+			return _stencilReferenceValue;
+		}
+		
+		public function set stencilReferenceValue( value : uint ):void 
+		{
+			_stencilReferenceValue = value;
+		}		
+		
+		public function get stencilReadMask():uint 
+		{
+			return _stencilReadMask;
+		}
+		
+		public function set stencilReadMask( value : uint ):void 
+		{
+			_stencilReadMask = value;
+		}
+		
+		public function get stencilWriteMask():uint 
+		{
+			return _stencilWriteMask;
+		}
+		
+		public function set stencilWriteMask( value : uint ):void 
+		{
+			_stencilWriteMask = value;
+		}
+		
 		public function ShaderSettings(signature : Signature)
 		{
-			_numUses			= 0;
-			_signature			= signature;
+			_numUses								= 0;
+			_signature								= signature;
 			
-			depthTest			= DepthTest.LESS;
-			blending			= Blending.NORMAL;
-			triangleCulling		= TriangleCulling.BACK;
-			renderTarget		= null;
-			depthWriteEnabled	= true;
-			scissorRectangle	= null;
+			depthTest								= DepthTest.LESS;
+			blending								= Blending.NORMAL;
+			triangleCulling							= TriangleCulling.BACK;
+			renderTarget							= null;
+			depthWriteEnabled						= true;
+			scissorRectangle						= null;
+			
+			stencilTriangleFace 					= TriangleCulling.BOTH;
+			stencilCompareMode						= DepthTest.ALWAYS;
+			stencilActionOnBothPass					= StencilAction.KEEP;
+			stencilActionOnDepthFail				= StencilAction.KEEP;
+			stencilActionOnDepthPassStencilFail		= StencilAction.KEEP;
+			stencilReferenceValue					= 0;
+			stencilReadMask							= 255;
+			stencilWriteMask						= 255;
 		}
 		
 		public function retain() : void
@@ -177,13 +271,23 @@ package aerys.minko.render.shader
 		{
 			var clone : ShaderSettings = new ShaderSettings(signature);
 			
-			clone.depthTest = depthTest;
-			clone.blending = blending;
-			clone.triangleCulling = triangleCulling;
-			clone.renderTarget = renderTarget;
-			clone.depthWriteEnabled	= depthWriteEnabled;
-			clone.scissorRectangle = scissorRectangle;
-			clone.depthSortDrawCalls = depthSortDrawCalls;
+			clone.priority 								= priority;
+			clone.depthTest 							= depthTest;
+			clone.blending 								= blending;
+			clone.triangleCulling 						= triangleCulling;
+			clone.renderTarget 							= renderTarget;
+			clone.depthWriteEnabled						= depthWriteEnabled;
+			clone.scissorRectangle 						= scissorRectangle;
+			clone.depthSortDrawCalls 					= depthSortDrawCalls;
+			
+			clone.stencilTriangleFace 					= stencilTriangleFace;
+			clone.stencilCompareMode 					= stencilCompareMode;
+			clone.stencilActionOnBothPass 				= stencilActionOnBothPass;
+			clone.stencilActionOnDepthFail 				= stencilActionOnDepthFail;
+			clone.stencilActionOnDepthPassStencilFail 	= stencilActionOnDepthPassStencilFail;
+			clone.stencilReferenceValue 				= stencilReferenceValue;
+			clone.stencilReadMask		 				= stencilReadMask;
+			clone.stencilWriteMask						= stencilWriteMask;
 			
 			return clone;
 		}
@@ -216,12 +320,23 @@ package aerys.minko.render.shader
 				);
 			}
 			
-			context.setScissorRectangle(_rectangle);
-			context.setDepthTest(_enableDepthWrite, _compareMode);
-			
-			context.setBlendFactors(_blendingSource, _blendingDest);
-			context.setCulling(_triangleCullingStr);
-		}
-		
+			context
+				.setScissorRectangle(_rectangle)
+				.setDepthTest(_enableDepthWrite, _compareMode)
+				.setBlendFactors(_blendingSource, _blendingDest)
+				.setCulling(_triangleCullingStr)
+				.setStencilReferenceValue(
+					_stencilReferenceValue,
+					_stencilReadMask,
+					_stencilWriteMask
+				)		
+				.setStencilActions(
+					TriangleCulling.STRINGS[stencilTriangleFace],
+					DepthTest.STRINGS[DepthTest.FLAGS.indexOf(stencilCompareMode)],
+					StencilAction.STRINGS[stencilActionOnBothPass],
+					StencilAction.STRINGS[stencilActionOnDepthFail],
+					StencilAction.STRINGS[stencilActionOnDepthPassStencilFail]
+				);
+		}		
 	}
 }

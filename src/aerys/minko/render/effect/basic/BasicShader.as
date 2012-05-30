@@ -9,7 +9,9 @@ package aerys.minko.render.effect.basic
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.BlendingSource;
 	import aerys.minko.type.enum.DepthTest;
+	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	/**
@@ -127,16 +129,50 @@ package aerys.minko.render.effect.basic
 		{
 			super.initializeSettings(settings);
 			
-			var blending : uint = 
-				meshBindings.getConstant(BasicProperties.BLENDING, Blending.NORMAL);
+			// depth test
+			settings.depthWriteEnabled = meshBindings.getConstant(
+				BasicProperties.DEPTH_WRITE_ENABLED, true
+			);
+			settings.depthTest = meshBindings.getConstant(
+				BasicProperties.DEPTH_TEST, DepthTest.LESS
+			);
 			
-			settings.depthTest = 
-				meshBindings.getConstant(BasicProperties.DEPTH_TEST, DepthTest.LESS);
+			settings.triangleCulling = meshBindings.getConstant(
+				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
+			);
+
+			// stencil operations
+			settings.stencilTriangleFace = meshBindings.getConstant(
+				BasicProperties.STENCIL_TRIANGLE_FACE, TriangleCulling.BOTH
+			);
+			settings.stencilCompareMode = meshBindings.getConstant(
+				BasicProperties.STENCIL_COMPARE_MODE, DepthTest.EQUAL
+			);
+			settings.stencilActionOnBothPass = meshBindings.getConstant(
+				BasicProperties.STENCIL_ACTION_BOTH_PASS, StencilAction.KEEP
+			);
+			settings.stencilActionOnDepthFail = meshBindings.getConstant(
+				BasicProperties.STENCIL_ACTION_DEPTH_FAIL, StencilAction.KEEP
+			);
+			settings.stencilActionOnDepthPassStencilFail = meshBindings.getConstant(
+				BasicProperties.STENCIL_ACTION_DEPTH_PASS_STENCIL_FAIL, StencilAction.KEEP
+			);
+			settings.stencilReferenceValue = meshBindings.getConstant(
+				BasicProperties.STENCIL_REFERENCE_VALUE, 0
+			);
+			settings.stencilReadMask = meshBindings.getConstant(
+				BasicProperties.STENCIL_READ_MASK, 255
+			);
+			settings.stencilWriteMask = meshBindings.getConstant(
+				BasicProperties.STENCIL_WRITE_MASK, 255
+			);
 			
-			settings.triangleCulling = 
-				meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
-			
-			if (blending == Blending.ALPHA || blending == Blending.ADDITIVE)
+			// blending and priority
+			var blending : uint = meshBindings.getConstant(
+				BasicProperties.BLENDING, Blending.NORMAL
+			);
+
+			if ((blending & 0xff) == BlendingSource.SOURCE_ALPHA)
 			{
 				settings.priority -= 0.5;
 				settings.depthSortDrawCalls = true;
@@ -144,7 +180,6 @@ package aerys.minko.render.effect.basic
 			
 			settings.blending			= blending;
 			settings.enabled			= true;
-			settings.depthWriteEnabled	= true;
 			settings.scissorRectangle	= null;
 		}
 		
@@ -169,6 +204,7 @@ package aerys.minko.render.effect.basic
 			var diffuse			: SFloat = _diffuseShaderPart.getDiffuse();
 			var vertexNormal	: SFloat = _vertexAnimationPart.getAnimatedVertexNormal();
 			
+			// directional lighting
 			if (sceneBindings.getConstant('lightEnabled', false)
 				&& meshBindings.getConstant('lightEnabled', false))
 			{

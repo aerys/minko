@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler.graph.nodes.leaf
 {
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
@@ -14,16 +15,16 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		/**
 		 * This vector is only used to compute the hash of the Sampler. 
 		 */		
-		private static const RESOURCES : Vector.<TextureResource> = new Vector.<TextureResource>();
+		private static const RESOURCES : Vector.<ITextureResource> = new Vector.<ITextureResource>();
 		
-		private var _textureResource : TextureResource;
+		private var _textureResource : ITextureResource;
 		
-		public function get textureResource() : TextureResource
+		public function get textureResource() : ITextureResource
 		{
 			return _textureResource;
 		}
 		
-		public function Sampler(textureResource	: TextureResource,
+		public function Sampler(textureResource	: ITextureResource,
 								filter			: uint = 1, // SamplerFilter.LINEAR
 								mipmap			: uint = 0, // SamplerMipmap.DISABLE
 								wrapping		: uint = 1, // SamplerWrapping.REPEAT

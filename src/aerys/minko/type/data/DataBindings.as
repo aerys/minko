@@ -6,14 +6,21 @@ package aerys.minko.type.data
 
 	public class DataBindings
 	{
-		private var _bindingNames					: Vector.<String>	= new Vector.<String>();
+		private var _numProviders					: uint 						= 0;
+		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
+		private var _bindingNames					: Vector.<String>			= new Vector.<String>();
 		
-		private var _bindingNameToValue				: Object			= {};
-		private var _bindingNameToChangedSignal		: Object			= {};
+		private var _bindingNameToValue				: Object					= {};
+		private var _bindingNameToChangedSignal		: Object					= {};
 		
-		private var _providerToBindingNames			: Dictionary		= new Dictionary(); // dic[Vector.<String>[]]
-		private var _attributeToProviders			: Dictionary		= new Dictionary(); // dic[Vector.<IDataProvider>[]]
-		private var _attributeToProvidersAttrNames	: Dictionary		= new Dictionary(); // dic[Vector.<String>[]]
+		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
+		private var _attributeToProviders			: Dictionary				= new Dictionary(); // dic[Vector.<IDataProvider>[]]
+		private var _attributeToProvidersAttrNames	: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
+		
+		public function get numProviders() : uint
+		{
+			return _numProviders;
+		}
 		
 		public function get numProperties() : uint
 		{
@@ -65,6 +72,8 @@ package aerys.minko.type.data
 			}
 			
 			_providerToBindingNames[provider] = providerBindingNames;
+			_providers.push(provider);
+			++_numProviders;
 		}
 		
 		public function removeProvider(provider : IDataProvider) : void
@@ -112,6 +121,9 @@ package aerys.minko.type.data
 			
 			provider.changed.remove(onProviderChange);
 			
+			--_numProviders;
+			_providers.splice(_providers.indexOf(provider), 1);
+			
 			delete _providerToBindingNames[provider];
 			
 			for each (bindingName in bindingNames)
@@ -149,10 +161,19 @@ package aerys.minko.type.data
 				delete _bindingNameToChangedSignal[bindingName];
 		}
 		
+		public function getDataProviderAt(index : uint) : IDataProvider
+		{
+			if (index >= _numProviders)
+				throw new ArgumentError('Index out of bounds.');
+			
+			return _providers[index];
+		}
+		
 		public function propertyExists(bindingName : String) : Boolean
 		{
 			return _bindingNameToValue.hasOwnProperty(bindingName);
 		}
+
 		
 		public function getProperty(bindingName : String) : *
 		{

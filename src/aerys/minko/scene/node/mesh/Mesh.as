@@ -159,6 +159,7 @@ package aerys.minko.scene.node.mesh
 		{
 			return _visible;
 		}
+		
 		public function set visible(value : Boolean) : void
 		{
 			var oldVisible : Boolean = _visible;

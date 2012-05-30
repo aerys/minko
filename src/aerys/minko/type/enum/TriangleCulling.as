@@ -5,7 +5,7 @@ package aerys.minko.type.enum
 	import flash.display.TriangleCulling;
 	import flash.display3D.Context3DTriangleFace;
 
-	public class TriangleCulling
+	public final class TriangleCulling
 	{
 		public static const NONE	: int = 0;
 		public static const BACK	: int = 1;

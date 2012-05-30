@@ -58,10 +58,22 @@ package aerys.minko.type.math
 		minko_math var _d		: Number	= 0.;
 		minko_math var _normal	: Vector4	= new Vector4();
 
-		public function get a() : Number	{ return _a; }
-		public function get b() : Number	{ return _b; }
-		public function get c() : Number	{ return _c; }
-		public function get d() : Number	{ return _d; }
+		public function get a() : Number
+		{
+			return _a;
+		}
+		public function get b() : Number
+		{
+			return _b;
+		}
+		public function get c() : Number
+		{
+			return _c;
+		}
+		public function get d() : Number
+		{
+			return _d;
+		}
 		
 		public function get normal() : Vector4
 		{
@@ -177,9 +189,11 @@ package aerys.minko.type.math
 			var scale : Number = _a * v.x + _b * v.y + _c * v.z;
 			
 			out ||= new Vector4();
-			out.set(v._vector.x - scale * _a,
-					v._vector.y - scale * _b,
-					v._vector.z - scale * _c);
+			out.set(
+				v._vector.x - scale * _a,
+				v._vector.y - scale * _b,
+				v._vector.z - scale * _c
+			);
 			
 			return out;
 		}
@@ -248,13 +262,13 @@ package aerys.minko.type.math
 		 * @param	myTarget
 		 * @return
 		 */
-		public final function testRay(origin 	: Vector4,
-									  target	: Vector4) : uint
+		public final function testRay(ray : Ray) : uint
 		{
-			var distOrigin : Number = _a * origin._vector.x + _b * origin._vector.y + _c * origin._vector.z - _d;
-			var distTarget : Number = _a * target._vector.x + _b * target._vector.y + _c * target._vector.z - _d;
-
-			var r : uint = 0;
+			var origin		: Vector4 	= ray.origin;
+			var target		: Vector4	= ray.direction;
+			var distOrigin 	: Number 	= _a * origin._vector.x + _b * origin._vector.y + _c * origin._vector.z - _d;
+			var distTarget 	: Number 	= _a * target._vector.x + _b * target._vector.y + _c * target._vector.z - _d;
+			var r 			: uint 		= 0;
 
 			if (distOrigin > 0.)
 				r &= A_INFRONT;
