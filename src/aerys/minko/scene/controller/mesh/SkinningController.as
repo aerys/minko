@@ -228,7 +228,7 @@ package aerys.minko.scene.controller.mesh
 				+ uint(format.hasComponent(VertexComponent.BONE6))
 				+ uint(format.hasComponent(VertexComponent.BONE7));
 			
-			mesh.bindings.add(_skinningData);
+			mesh.bindings.addProvider(_skinningData);
 		}
 		
 		override protected function targetRemovedHandler(controller	: EnterFrameController,
@@ -236,7 +236,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(controller, target);
 			
-			(target as Mesh).bindings.remove(_skinningData);
+			(target as Mesh).bindings.removeProvider(_skinningData);
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 

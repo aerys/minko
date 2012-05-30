@@ -168,23 +168,15 @@ package aerys.minko.render
 		{
 			for (var parameter : String in _bindings)
 			{
-				meshBindings.getPropertyChangedSignal(parameter).remove(
-					parameterChangedHandler
-				);
-				
-				sceneBindings.getPropertyChangedSignal(parameter).remove(
-					parameterChangedHandler
-				);
+				meshBindings.removeCallback(parameter, parameterChangedHandler);
+				sceneBindings.removeCallback(parameter, parameterChangedHandler);
 			}
 			
-			var worldToScreenSignal	: Signal = sceneBindings.getPropertyChangedSignal('worldToScreen');
-			var localToWorldSignal	: Signal = meshBindings.getPropertyChangedSignal('localToWorld');
+			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
+				sceneBindings.removeCallback('worldToScreen', transformChangedHandler);
 			
-			if (worldToScreenSignal.hasCallback(transformChangedHandler))
-				worldToScreenSignal.remove(transformChangedHandler);
-
-			if (worldToScreenSignal.hasCallback(transformChangedHandler))
-				localToWorldSignal.remove(transformChangedHandler);
+			if (meshBindings.hasCallback('localToWorld', transformChangedHandler))
+				meshBindings.removeCallback('localToWorld', transformChangedHandler);
 		}
 		
 		private function setProgram(program : Program3DResource) : void
@@ -267,13 +259,8 @@ package aerys.minko.render
 		{
 			for (var parameter : String in _bindings)
 			{
-				meshBindings.getPropertyChangedSignal(parameter).add(
-					parameterChangedHandler
-				);
-				
-				sceneBindings.getPropertyChangedSignal(parameter).add(
-					parameterChangedHandler
-				);
+				meshBindings.addCallback(parameter, parameterChangedHandler);
+				sceneBindings.addCallback(parameter, parameterChangedHandler);
 				
 				if (meshBindings.propertyExists(parameter))
 					setParameter(parameter, meshBindings.getProperty(parameter));
@@ -283,15 +270,11 @@ package aerys.minko.render
 			
 			if (computeDepth)
 			{
-				sceneBindings.getPropertyChangedSignal('worldToScreen').add(
-					transformChangedHandler
-				);
 				_worldToScreen = sceneBindings.getProperty('worldToScreen') as Matrix4x4;
-				
-				meshBindings.getPropertyChangedSignal('localToWorld').add(
-					transformChangedHandler
-				);
 				_localToWorld = meshBindings.getProperty('localToWorld') as Matrix4x4;
+				
+				sceneBindings.addCallback('worldToScreen', transformChangedHandler);
+				meshBindings.addCallback('localToWorld', transformChangedHandler);
 				
 				_invalidDepth = true;
 			}

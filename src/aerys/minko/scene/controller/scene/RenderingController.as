@@ -150,7 +150,7 @@ package aerys.minko.scene.controller.scene
 						)
 					);
 					
-					_postProcessingScene.bindings.add(
+					_postProcessingScene.bindings.addProvider(
 						_postProcessingProperties
 					);
 				}
@@ -718,9 +718,9 @@ package aerys.minko.scene.controller.scene
 				var flags	: uint		= signature.getFlags(i);
 				
 				if (flags & Signature.SOURCE_MESH)
-					meshBindings.getPropertyChangedSignal(key).add(bindingsPropertyChangedHandler);
+					meshBindings.addCallback(key, bindingsPropertyChangedHandler);
 				else
-					sceneBindings.getPropertyChangedSignal(key).add(bindingsPropertyChangedHandler);
+					sceneBindings.addCallback(key, bindingsPropertyChangedHandler);
 			}
 			
 			// retain the shader
@@ -756,9 +756,9 @@ package aerys.minko.scene.controller.scene
 				var flags	: uint		= signature.getFlags(i);
 				
 				if (flags & Signature.SOURCE_MESH)
-					meshBindings.getPropertyChangedSignal(key).remove(bindingsPropertyChangedHandler);
+					meshBindings.removeCallback(key, bindingsPropertyChangedHandler);
 				else
-					sceneBindings.getPropertyChangedSignal(key).remove(bindingsPropertyChangedHandler);
+					sceneBindings.removeCallback(key, bindingsPropertyChangedHandler);
 			}
 			
 			// release the shader

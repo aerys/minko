@@ -24,7 +24,7 @@ package aerys.minko.type.data
 		{
 		}
 		
-		public function add(provider : IDataProvider) : void
+		public function addProvider(provider : IDataProvider) : void
 		{
 			if (_providerToBindingNames[provider])
 				throw new Error('This provider is already binded');
@@ -48,11 +48,8 @@ package aerys.minko.type.data
 				{
 					dpAttribute.changed.add(onProviderAttributeChange);
 					
-					if (!_attributeToProviders[dpAttribute])
-						_attributeToProviders[dpAttribute] = new <IDataProvider>[];
-					
-					if (!_attributeToProvidersAttrNames[dpAttribute])
-						_attributeToProvidersAttrNames[dpAttribute] = new <String>[];
+					_attributeToProviders[dpAttribute]			||= new <IDataProvider>[];
+					_attributeToProvidersAttrNames[dpAttribute]	||= new <String>[];
 					
 					_attributeToProviders[dpAttribute].push(provider);
 					_attributeToProvidersAttrNames[dpAttribute].push(attrName);
@@ -63,13 +60,14 @@ package aerys.minko.type.data
 				providerBindingNames.push(bindingName);
 				_bindingNames.push(bindingName);
 				
-				getPropertyChangedSignal(bindingName).execute(this, bindingName, attribute);
+				if (_bindingNameToChangedSignal[bindingName])
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, attribute);
 			}
 			
 			_providerToBindingNames[provider] = providerBindingNames;
 		}
 		
-		public function remove(provider : IDataProvider) : void
+		public function removeProvider(provider : IDataProvider) : void
 		{
 			var bindingNames : Vector.<String> = _providerToBindingNames[provider];
 			
@@ -117,18 +115,38 @@ package aerys.minko.type.data
 			delete _providerToBindingNames[provider];
 			
 			for each (bindingName in bindingNames)
-			{
-				trace(bindingName);
-				getPropertyChangedSignal(bindingName).execute(this, bindingName, null);
-			}
+				if (_bindingNameToChangedSignal[bindingName])
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null);
 		}
 		
-		public function getPropertyChangedSignal(bindingName : String) : Signal
+		public function hasCallback(bindingName	: String,
+									callback	: Function) : Boolean
 		{
-			if (!_bindingNameToChangedSignal[bindingName])
-				_bindingNameToChangedSignal[bindingName] = new Signal('DataBindings.changed[' + bindingName + ']');
+			var signal : Signal = _bindingNameToChangedSignal[bindingName];
 			
-			return _bindingNameToChangedSignal[bindingName];
+			return signal != null && signal.hasCallback(callback);
+		}
+		
+		public function addCallback(bindingName : String,
+									callback	: Function) : void
+		{
+			_bindingNameToChangedSignal[bindingName] ||=
+				new Signal('DataBindings.changed[' + bindingName + ']');
+			
+			Signal(_bindingNameToChangedSignal[bindingName]).add(callback);
+		}
+		
+		public function removeCallback(bindingName	: String,
+									   callback		: Function) : void
+		{
+			var signal : Signal = _bindingNameToChangedSignal[bindingName];
+			if (!signal)
+				throw new Error('No such signal was added');
+			
+			signal.remove(callback);
+			
+			if (signal.numCallbacks == 0)
+				delete _bindingNameToChangedSignal[bindingName];
 		}
 		
 		public function propertyExists(bindingName : String) : Boolean
@@ -163,8 +181,8 @@ package aerys.minko.type.data
 			}
 			else if (attributeName == 'dataDescriptor')
 			{
-				remove(source);
-				add(source);
+				removeProvider(source);
+				addProvider(source);
 			}
 			else
 			{
@@ -199,11 +217,8 @@ package aerys.minko.type.data
 				{
 					newDpValue.changed.add(onProviderAttributeChange);
 					
-					if (!_attributeToProviders[newDpValue])
-						_attributeToProviders[newDpValue] = new <IDataProvider>[];
-					
-					if (!_attributeToProvidersAttrNames[newDpValue])
-						_attributeToProvidersAttrNames[newDpValue] = new <String>[];
+					_attributeToProviders[newDpValue]			||= new <IDataProvider>[];
+					_attributeToProvidersAttrNames[newDpValue]	||= new <String>[];
 					
 					_attributeToProviders[newDpValue].push(source);
 					_attributeToProvidersAttrNames[newDpValue].push(attributeName);
@@ -211,7 +226,8 @@ package aerys.minko.type.data
 				
 				_bindingNameToValue[bindingName] = newValue;
 				
-				getPropertyChangedSignal(bindingName).execute(this, bindingName, newValue);
+				if (_bindingNameToChangedSignal[bindingName])
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, newValue);
 			}
 		}
 		
@@ -231,7 +247,8 @@ package aerys.minko.type.data
 				var attrName	: String		= attrNames[providerId];
 				var bindingName : String		= provider.dataDescriptor[attrName];
 				
-				getPropertyChangedSignal(bindingName).execute(this, bindingName, source);
+				if (_bindingNameToChangedSignal[bindingName])
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, source);
 			}
 		}
 	}

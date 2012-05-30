@@ -120,17 +120,14 @@ package aerys.minko.scene.controller.camera
 			localToWorld.deltaTransformVector(_camera.up, worldUp);
 			worldUp.normalize();
 			
-			_camera.worldToView
-				.lock()
-				.lookAt(worldPosition, worldLookAt, worldUp)
-				.unlock();
+			_camera.worldToView.lookAt(worldPosition, worldLookAt, worldUp);
 			
 			_camera.viewToWorld
 				.lock()
 				.copyFrom(_camera.worldToView)
 				.invert()
 				.unlock();
-						
+			
 			updateWorldToScreen();
 		}
 		
@@ -149,12 +146,12 @@ package aerys.minko.scene.controller.camera
 		
 		private function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
-			scene.bindings.add(getTarget(0) as Camera);
+			scene.bindings.addProvider(getTarget(0) as Camera);
 		}
 		
 		private function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
-			scene.bindings.remove(getTarget(0) as Camera);
+			scene.bindings.removeProvider(getTarget(0) as Camera);
 		}
 	}
 }

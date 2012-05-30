@@ -56,12 +56,12 @@ package aerys.minko.scene.node
 			if (_properties != value)
 			{
 				if (_properties)
-					_bindings.remove(_properties);
+					_bindings.removeProvider(_properties);
 				
 				_properties = value;
 				
 				if (value)
-					_bindings.add(value);
+					_bindings.addProvider(value);
 			}
 		}
 		
