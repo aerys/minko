@@ -21,7 +21,7 @@ package aerys.minko.render.resource.texture
 		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
 		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
 		
-		private var _texture	: Texture		= null;
+		private var _resource	: Texture		= null;
 		private var _mipmap		: Boolean		= false;
 
 		private var _bitmapData	: BitmapData	= null;
@@ -104,13 +104,13 @@ package aerys.minko.render.resource.texture
 				_bitmapData.draw(bitmapData);
 			}
 			
-			if (_texture
+			if (_resource
 				&& (mipmap != _mipmap
 					|| bitmapData.width != _width
 					|| bitmapData.height != _height))
 			{
-				_texture.dispose();
-				_texture = null;
+				_resource.dispose();
+				_resource = null;
 			}
 
 			_width = _bitmapData.width;
@@ -137,14 +137,14 @@ package aerys.minko.render.resource.texture
 
 		public function getNativeTexture(context : Context3DResource) : TextureBase
 		{
-			if ((!_texture || _resize) && _width && _height)
+			if ((!_resource || _resize) && _width && _height)
 			{
 				_resize = false;
 				
-				if (_texture)
-					_texture.dispose();
+				if (_resource)
+					_resource.dispose();
 				
-				_texture = context.createTexture(
+				_resource = context.createTexture(
 					_width,
 					_height,
 					_atf && _atfFormat == 2 ? FORMAT_COMPRESSED : FORMAT_BGRA,
@@ -164,10 +164,10 @@ package aerys.minko.render.resource.texture
 			_atf = null;
 			_bitmapData = null;
 
-			if (_texture == null)
+			if (_resource == null)
 				throw new Error();
 			
-			return _texture;
+			return _resource;
 		}
 		
 		private function uploadTextureWithMipMaps() : void
@@ -190,7 +190,7 @@ package aerys.minko.render.resource.texture
 					while (size >= 1)
 					{
 						tmp.draw(_bitmapData, transform, null, null, null, true);
-						_texture.uploadFromBitmapData(tmp, level);
+						_resource.uploadFromBitmapData(tmp, level);
 						
 						transform.scale(.5, .5);
 						level++;
@@ -203,21 +203,24 @@ package aerys.minko.render.resource.texture
 				}
 				else
 				{
-					_texture.uploadFromBitmapData(_bitmapData, 0);
+					_resource.uploadFromBitmapData(_bitmapData, 0);
 				}
 				
 				_bitmapData.dispose();
 			}
 			else if (_atf)
 			{
-				_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
+				_resource.uploadCompressedTextureFromByteArray(_atf, 0, false);
 			}
 		}
 		
 		public function dispose() : void
 		{
-			_texture.dispose();
-			_texture = null;
+			if (_resource)
+			{
+				_resource.dispose();
+				_resource = null;
+			}
 		}
 	}
 }
