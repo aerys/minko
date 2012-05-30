@@ -172,7 +172,7 @@ package aerys.minko.render.effect.basic
 				BasicProperties.BLENDING, Blending.NORMAL
 			);
 
-			if (blending & BlendingSource.SOURCE_ALPHA != 0)
+			if ((blending & 0xff) == BlendingSource.SOURCE_ALPHA)
 			{
 				settings.priority -= 0.5;
 				settings.depthSortDrawCalls = true;
