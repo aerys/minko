@@ -125,7 +125,7 @@ package aerys.minko.type.loader
 			var startPosition : uint = byteArray.position;
 			
 			if (_currentState != STATE_IDLE)
-				throw new Error('This controller is already loading an asset.');
+				throw new Error('This loader is already loading an asset.');
 			
 			_currentState = STATE_PARSING;
 			_progress.execute(this, 0.5);
