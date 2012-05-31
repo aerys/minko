@@ -41,7 +41,7 @@
 			<arg line='-main-title "${doc.title}"'/>
 			<arg line='-window-title "${doc.title}"'/>
 			<arg line='-output ${doc.output}'/>
-			<arg line='-templates-path ${doc.templates}'/>
+			<!--<arg line='-templates-path ${doc.templates}'/>-->
 			<arg line='-package-description-file ${doc.packageDescriptionFile}'/>
 			<!--<arg line='-external-library-path ${app.swcs}'/>-->
 		</exec>

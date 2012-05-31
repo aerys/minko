@@ -251,6 +251,16 @@ package aerys.minko.render
 			setSize(width, height);
 		}
 		
+		/**
+		 * Force the stage3D viewport to resync with parent container's stage coordinates
+		 * Typically you will use this if you have an application with complex viewport management and rearrangement, after moving the container
+		 * @author Tortenazor
+		 */
+		public function syncPosition() : void
+		{
+			if(_stage3d) updateStage3D();
+		}
+
 		private function setSize(width : Number, height : Number) : void
 		{
 			if (width == _width && _height == height)
