@@ -16,24 +16,23 @@ package aerys.minko.scene.controller.camera
 	{
 		private static const TMP_MATRIX : Matrix4x4 = new Matrix4x4();
 		
-		private var _mouseDown		: Boolean	= false;
-		private var _mousePosition	: Point		= new Point();
+		protected var _mousePosition	: Point		= new Point();
 		
-		private var _distance		: Number	= 0;
-		private var _theta			: Number	= 0;
-		private var _phi			: Number	= 0;
-		private var _update			: Boolean	= true;
+		private var _distance			: Number	= 0;
+		private var _theta				: Number	= 0;
+		private var _phi				: Number	= 0;
+		private var _update				: Boolean	= true;
 		
-		private var _position		: Vector4	= new Vector4(0, 0, 0, 1);
-		private var _lookAt			: Vector4	= new Vector4(0, 0, 0, 1);
-		private var _up				: Vector4	= new Vector4(0, 1, 0, 1);
+		private var _position			: Vector4	= new Vector4(0, 0, 0, 1);
+		private var _lookAt				: Vector4	= new Vector4(0, 0, 0, 1);
+		private var _up					: Vector4	= new Vector4(0, 1, 0, 1);
 		
-		private var _minDistance	: Number	= 0.1;
-		private var _maxDistance	: Number	= 1000;
+		private var _minDistance		: Number	= 0.1;
+		private var _maxDistance		: Number	= 1000;
 		
-		private var _distanceStep	: Number	= 1;
-		private var _thetaStep		: Number	= 0.01;
-		private var _phiStep		: Number	= 0.01;
+		private var _distanceStep		: Number	= 1;
+		private var _thetaStep			: Number	= 0.01;
+		private var _phiStep			: Number	= 0.01;
 		
 		public function get distance()		: Number	{ return _distance;		}
 		public function get theta()			: Number	{ return _theta;		}
@@ -67,16 +66,12 @@ package aerys.minko.scene.controller.camera
 		
 		public function bindDefaultControls(dispatcher : IEventDispatcher) : void
 		{
-			dispatcher.addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
-			dispatcher.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 		}
 		
 		public function unbindDefaultControls(dispatcher : IEventDispatcher) : void
 		{
-			dispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
-			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 		}
@@ -93,7 +88,8 @@ package aerys.minko.scene.controller.camera
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			if (_update)
+			//FIXME : find why updates are shifted
+			if (1)//_update)
 			{
 				_distance	< _minDistance	&& (_distance = _minDistance);
 				_distance	> _maxDistance	&& (_distance = _maxDistance);
@@ -116,26 +112,16 @@ package aerys.minko.scene.controller.camera
 			}
 		}
 		
-		private function mouseDownHandler(e : MouseEvent) : void
-		{
-			_mouseDown = true;
-		}
-		
-		private function mouseUpHandler(e : MouseEvent) : void
-		{
-			_mouseDown = false;
-		}
-		
-		private function mouseWheelHandler(e : MouseEvent) : void
+		protected function mouseWheelHandler(e : MouseEvent) : void
 		{
 			_distance	-=	e.delta;
 			_update		=	true;
 		}
 		
-		private function mouseMoveHandler(e : MouseEvent) : void
+		protected function mouseMoveHandler(e : MouseEvent) : void
 		{
 			// compute position
-			if (_mouseDown)
+			if (e.buttonDown)
 			{
 				_theta	+= (_mousePosition.x - e.stageX) / 100;
 				_phi	+= (_mousePosition.y - e.stageY) / 100;
