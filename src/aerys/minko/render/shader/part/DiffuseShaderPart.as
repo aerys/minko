@@ -22,7 +22,7 @@ package aerys.minko.render.shader.part
 		
 		public function getDiffuse() : SFloat
 		{
-			var baseColor:SFloat
+			var baseColor:SFloat;
 			if (meshBindings.propertyExists("diffuseMap"))
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
