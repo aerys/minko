@@ -231,13 +231,13 @@ package aerys.minko.scene.controller.mesh
 		protected function targetAddedHandler(ctrl		: HLSAController,
 											  target	: Mesh) : void
 		{
-			target.bindings.add(_dataProvider);
+			target.bindings.addProvider(_dataProvider);
 		}
 
 		protected function targetRemovedHandler(ctrl	: HLSAController,
 												target	: Mesh) : void
 		{
-			target.bindings.remove(_dataProvider);
+			target.bindings.removeProvider(_dataProvider);
 		}
 
 	}
