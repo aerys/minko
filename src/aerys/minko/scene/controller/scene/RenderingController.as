@@ -23,10 +23,8 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.log.DebugLevel;
-	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3D;
 	import flash.utils.Dictionary;
 	
 	/**

@@ -1,332 +1,174 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
-	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
-	
-	/**
-	 * Camera objects describe the position and the look-at point of a 3D camera.
-	 * 
-	 * @author Jean-Marc Le Roux
-	 * 
-	 */
-	public class Camera extends AbstractSceneNode implements IDataProvider
+
+	public class Camera extends AbstractSceneNode
 	{
-		public static const DEFAULT_FOV			: Number	= Math.PI * .25;
-		public static const DEFAULT_ZNEAR		: Number	= .1;
-		public static const DEFAULT_ZFAR		: Number	= 1000.;
+		public static const DEFAULT_FOV			: Number		= Math.PI * .25;
+		public static const DEFAULT_ZNEAR		: Number		= .1;
+		public static const DEFAULT_ZFAR		: Number		= 500.;
 		
-		private static const DATA_DESCRIPTOR	: Object	= {
-			"position"				: "cameraPosition",
-			"lookAt"				: "cameraLookAt",
-			"up"					: "cameraUp",
-			"worldPosition"			: "cameraWorldPosition",
-			"worldLookAt"			: "cameraWorldLookAt",
-			"worldUp"				: "cameraWorldUp",
-			"fieldOfView"			: "cameraFov",
-			"zNear"					: "cameraZNear",
-			"zFar"					: "cameraZFar",
-			"worldToView"			: "worldToView",
-			"projection"			: "projection",
-			"worldToScreen"			: "worldToScreen",
-			"viewToWorld"			: "viewToWorld",
-			"screenToView"			: "screenToView",
-			"screenToWorld"			: "screenToWorld"
-		};
+		private var _fieldOfView				: Number		= 0;
+		private var _zNear						: Number		= 0;
+		private var _zFar						: Number		= 0;
+		private var _worldToScreen				: Matrix4x4		= new Matrix4x4();
+		private var _screenToWorld				: Matrix4x4		= new Matrix4x4();
+		private var _projection					: Matrix4x4		= new Matrix4x4();
+		private var _screenToView				: Matrix4x4		= new Matrix4x4();
+		private var _cameraPosition				: Vector4		= new Vector4();
+		private var _cameraWorldUp				: Vector4		= new Vector4();
+		private var _cameraWorldLookAt			: Vector4		= new Vector4();
+		private var _cameraWorldPosition		: Vector4		= new Vector4();
+		private var _cameraLookAt				: Vector4		= new Vector4();
+		private var _cameraUp					: Vector4		= new Vector4();
 		
-		private var _viewport		: Viewport	= null;
+		private var _dataProvider : DataProvider = new DataProvider().setProperties({
+			"cameraPosition"		: _cameraPosition,
+			"cameraLookAt"			: _cameraLookAt,
+			"cameraUp"				: _cameraUp,
+			"cameraWorldPosition"	: _cameraWorldPosition,
+			"cameraWorldLookAt"		: _cameraWorldLookAt,
+			"cameraWorldUp"			: _cameraWorldUp,
+			"cameraFov"				: 0,
+			"cameraZNear"			: 0,
+			"cameraZFar"			: 0,
+			"worldToView"			: worldToLocal,
+			"projection"			: _projection,
+			"worldToScreen"			: _worldToScreen,
+			"viewToWorld"			: localToWorld,
+			"screenToView"			: _screenToView,
+			"screenToWorld"			: _screenToWorld
+		});
 		
-		private var _position		: Vector4	= new Vector4(0, 0, 0);
-		private var _lookAt			: Vector4	= new Vector4(0, 0, 1);
-		private var _up				: Vector4	= new Vector4(0, 1, 0);
+		public function get fieldOfView()	: Number { return _fieldOfView;	}
+		public function get zNear()			: Number { return _zNear;		}
+		public function get zFar()			: Number { return _zFar;		}
 		
-		private var _worldToView	: Matrix4x4	= new Matrix4x4();
-		private var _worldPosition	: Vector4	= new Vector4();
-		private var _worldLookAt	: Vector4	= new Vector4();
-		private var _worldUp		: Vector4	= new Vector4();
-		
-		private var _fov			: Number	= 0;
-		private var _zNear			: Number	= 0;
-		private var _zFar			: Number	= 0;
-		private var _frustum		: Frustum	= new Frustum();
-		private var _projection		: Matrix4x4	= new Matrix4x4();
-		
-		private var _worldToScreen	: Matrix4x4	= new Matrix4x4();
-		private var _viewToWorld	: Matrix4x4 = new Matrix4x4();
-		private var _screenToView	: Matrix4x4 = new Matrix4x4();
-		private var _screenToWorld	: Matrix4x4 = new Matrix4x4();
-		
-		private var _changed		: Signal	= new Signal('Camera.changed');
-		
-		public function get viewport() : Viewport
+		public function set fieldOfView(v : Number) : void
 		{
-			return _viewport;
+			_fieldOfView = v;
+			updateProjection();
 		}
 		
-		/**
-		 * The position of the camera in local space. 
-		 * @return 
-		 * 
-		 */
-		public function get position() : Vector4
+		public function set zNear(v : Number) : void
 		{
-			return _position;
+			_zNear = v;
+			updateProjection();
 		}
 		
-		/**
-		 * The look-at point of the camera in local space. 
-		 * @return 
-		 * 
-		 */
-		public function get lookAt() : Vector4
+		public function set zFar(v : Number) : void
 		{
-			return _lookAt;
+			_zFar = v;
+			updateProjection();
 		}
 		
-		/**
-		 * The up axis of the camera in local space. Default value
-		 * is the +Y axis. 
-		 * @return 
-		 * 
-		 */
-		public function get up() : Vector4
-		{
-			return _up;
-		}
-		
-		/**
-		 * The position of the camera in world space. This value is
-		 * updated everytime:
-		 * <ul>
-		 * <li>The parent 3D transformation changes.</li>
-		 * <li>The "position" property changes.</li>
-		 * </ul> 
-		 * @return 
-		 * 
-		 */
-		public function get worldPosition() : Vector4
-		{
-			return _worldPosition;
-		}
-		
-		/**
-		 * The look-at point of the camera in world space. This value is
-		 * updated everytime:
-		 * <ul>
-		 * <li>The parent 3D transformation changes.</li>
-		 * <li>The "lookAt" property changes.</li>
-		 * </ul> 
-		 * @return 
-		 * 
-		 */
-		public function get worldLookAt() : Vector4
-		{			
-			return _worldLookAt;
-		}
-		
-		/**
-		 * The up axis of the camera in world space. This value is
-		 * updated everytime:
-		 * <ul>
-		 * <li>The parent 3D transformation changes.</li>
-		 * <li>The "up" property changes.</li>
-		 * </ul> 
- 
-		 * @return 
-		 * 
-		 */
-		public function get worldUp() : Vector4
-		{
-			return _worldUp;
-		}
-		
-		/**
-		 * The matrix that transforms world space coordinates
-		 * into view (or camera) space coordinates.
-		 * @return 
-		 * 
-		 */
-		public function get worldToView() : Matrix4x4
-		{
-			return _worldToView;
-		}
-		
-		/**
-		 * The matrix that transforms view space coordinates
-		 * into clip space (or normalized screen space) coordinates.
-		 * @return 
-		 * 
-		 */
-		public function get projection() : Matrix4x4
-		{
-			return _projection;
-		}
-		
-		/**
-		 * The matrix that transforms world space coordinates
-		 * into clip space (or normalized space) coordinates. 
-		 * @return 
-		 * 
-		 */
-		public function get worldToScreen() : Matrix4x4
-		{
-			return _worldToScreen;
-		}
-		
-		/**
-		 * The matrix that transforms view space coordinates
-		 * into world space coordinates.
-		 * @return 
-		 * 
-		 */
-		public function get viewToWorld() : Matrix4x4
-		{
-			return _viewToWorld;
-		}
-		
-		/**
-		 * The matrix that transforms clip space coordinates
-		 * into view space coordinates (inverse projection).
-		 * @return 
-		 * 
-		 */
-		public function get screenToView() : Matrix4x4
-		{
-			return _screenToView;
-		}
-		
-		/**
-		 * The matrix that transforms clip space coordinates
-		 * into world space coordinates. 
-		 * @return 
-		 * 
-		 */
-		public function get screenToWorld() : Matrix4x4
-		{
-			return _screenToWorld;
-		}
-		
-		/**
-		 * The field of view of the camera. Setting this property
-		 * will update the projection matrix and trigger the "changed"
-		 * signal.
-		 * @return 
-		 * 
-		 */
-		public function get fieldOfView() : Number
-		{
-			return _fov;
-		}
-		public function set fieldOfView(value : Number) : void
-		{
-			_fov = value;
-			_changed.execute(this, "fieldOfView");
-		}
-		
-		/**
-		 * The z-near clipping plane of the camera. Setting this
-		 * property will update the projection matrix and trigger the "changed"
-		 * signal. 
-		 * @return 
-		 * 
-		 */
-		public function get zNear() : Number
-		{
-			return _zNear;
-		}
-		public function set zNear(value : Number) : void
-		{
-			_zNear = value;
-			_changed.execute(this, "zNear");
-		}
-		
-		/**
-		 * The z-far clipping plane of the camera. Setting this property
-		 * will update the projection matrix and trigger the "changed"
-		 * signal. 
-		 * @return 
-		 * 
-		 */
-		public function get zFar() : Number
-		{
-			return _zFar;
-		}
-		public function set zFar(value : Number) : void
-		{
-			_zFar = value;
-			_changed.execute(this, "zFar");
-		}
-		
-		public function get frustum() : Frustum
-		{
-			return _frustum;
-		}
-		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
-		
-		public function get dataDescriptor() : Object
-		{
-			return DATA_DESCRIPTOR;
-		}
-		
-		public function Camera(viewport		: Viewport,
-							   fieldOfView	: Number	= DEFAULT_FOV,
-							   zNear		: Number	= DEFAULT_ZNEAR,
-							   zFar			: Number	= DEFAULT_ZFAR)
+		public function Camera(fieldOfView	: Number = DEFAULT_FOV,
+							   zNear		: Number = DEFAULT_ZNEAR,
+							   zFar			: Number = DEFAULT_ZFAR)
 		{
 			super();
 			
-			_viewport = viewport;
-			_fov = fieldOfView;
-			_zNear = zNear;
-			_zFar = zFar;
+			_fieldOfView	= fieldOfView;
+			_zNear			= zNear;
+			_zFar			= zFar;
 			
-			addController(new CameraController(viewport));
-		}
-		
-		override public function clone(cloneControllers : Boolean = false) : ISceneNode
-		{
-			var cloned : Camera = new Camera(_viewport, _fov, _zNear, _zFar);
-			
-			cloned.name = name;
-			cloned.transform.copyFrom(transform);
-			
-			copyControllersFrom(this, cloned, cloneControllers);
-			
-			return cloned;
+			localToWorld.changed.add(localToWorldChangedHandler);
 		}
 		
 		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
 		{
 			out ||= new Ray();
 			
-			var width		: Number	= _viewport.width;
-			var height		: Number	= _viewport.height;
+			if (!(root is Scene))
+				throw new Error('Camera must be addchilded to unproject vectors');
 			
-			var xPercent	: Number	= 2.0 * (x / width - 0.5);
-			var yPercent 	: Number	= 2.0 * (y / height - 0.5);
-			
-			var fovDiv2		: Number	= _fov * 0.5;
-			
-			var dx			: Number 	= Math.tan(fovDiv2) * xPercent * (width / height);
-			var dy			: Number 	= -Math.tan(fovDiv2) * yPercent;
+			var sceneBindings	: DataBindings	= Scene(root).bindings;
+			var width			: Number		= sceneBindings.getProperty('viewportWidth');
+			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			var xPercent		: Number		= 2.0 * (x / width - 0.5);
+			var yPercent 		: Number		= 2.0 * (y / height - 0.5);
+			var fovDiv2			: Number		= _fieldOfView * 0.5;
+			var dx				: Number 		= Math.tan(fovDiv2) * xPercent * (width / height);
+			var dy				: Number 		= -Math.tan(fovDiv2) * yPercent;
 			
 			out.origin.set(dx * _zNear, dy * _zNear, _zNear);
 			out.direction.set(dx * _zNear, dy * _zNear, _zNear).normalize();
 			
-			_viewToWorld.transformVector(out.origin, out.origin);
-			_viewToWorld.deltaTransformVector(out.direction, out.direction);
+			localToWorld.transformVector(out.origin, out.origin);
+			localToWorld.deltaTransformVector(out.direction, out.direction);
 			
 			return out;
+		}
+		
+		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
+		{
+			super.addedToSceneHandler(child, scene);
+			
+			var sceneBindings : DataBindings = scene.bindings;
+			
+			sceneBindings.addProvider(_dataProvider);
+			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
+			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
+			
+			updateProjection();
+			transformChangedHandler(transform, null);
+			localToWorldChangedHandler(localToWorld, null);
+		}
+		
+		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
+		{
+			super.removedFromSceneHandler(child, scene);
+
+			var sceneBindings : DataBindings = scene.bindings;
+			
+			sceneBindings.removeProvider(_dataProvider);
+			sceneBindings.removeCallback('viewportWidth', viewportSizeChanged);
+			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
+		}
+		
+		override protected function transformChangedHandler(transform : Matrix4x4, propertyName : String) : void
+		{
+			super.transformChangedHandler(transform, propertyName);
+			
+			transform.transformVector(Vector4.ZERO,		_cameraPosition);
+			transform.transformVector(Vector4.Z_AXIS,	_cameraLookAt);
+			transform.transformVector(Vector4.Y_AXIS,	_cameraUp);
+		}
+		
+		private function localToWorldChangedHandler(localToWorld : Matrix4x4, propertyName : String) : void
+		{
+			localToWorld.transformVector(Vector4.ZERO,		_cameraWorldPosition);
+			localToWorld.transformVector(Vector4.Z_AXIS,	_cameraWorldLookAt);
+			localToWorld.transformVector(Vector4.Y_AXIS,	_cameraWorldUp);
+			
+			_screenToWorld.lock().copyFrom(_screenToView).append(localToWorld).unlock();
+			_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
+		}
+		
+		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
+		{
+			updateProjection();
+		}
+		
+		private function updateProjection() : void
+		{
+			if (root is Scene)
+			{
+				var sceneBindings	: DataBindings	= Scene(root).bindings;
+				var ratio			: Number		= sceneBindings.getProperty('viewportWidth') / sceneBindings.getProperty('viewportHeight');
+				
+				_projection.perspectiveFoV(_fieldOfView, ratio, _zNear, _zFar);
+				_screenToView.lock().copyFrom(_projection).invert().unlock();
+				
+				_screenToWorld.lock().copyFrom(_screenToView).append(localToWorld).unlock();
+				_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
+			}
 		}
 	}
 }
