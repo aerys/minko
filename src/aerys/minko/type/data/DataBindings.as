@@ -161,7 +161,7 @@ package aerys.minko.type.data
 				delete _bindingNameToChangedSignal[bindingName];
 		}
 		
-		public function getDataProviderAt(index : uint) : IDataProvider
+		public function getProviderAt(index : uint) : IDataProvider
 		{
 			if (index >= _numProviders)
 				throw new ArgumentError('Index out of bounds.');
