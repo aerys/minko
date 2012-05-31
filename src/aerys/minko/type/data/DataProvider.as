@@ -55,7 +55,7 @@ package aerys.minko.type.data
 			return true;
 		}
 		
-		public function getProperty(name : String) : Object
+		public function getProperty(name : String) : *
 		{
 			return _data[name];
 		}
