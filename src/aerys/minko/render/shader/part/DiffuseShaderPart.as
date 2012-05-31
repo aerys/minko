@@ -21,25 +21,43 @@ package aerys.minko.render.shader.part
 		
 		public function getDiffuse() : SFloat
 		{
-			if (meshBindings.propertyExists('diffuseMap'))
+			var baseColor:SFloat;
+			if (meshBindings.propertyExists("diffuseMap"))
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
-					'diffuseMap',
-					meshBindings.getConstant('diffuseFiltering', SamplerFiltering.LINEAR),
-					meshBindings.getConstant('diffuseMipMapping', SamplerMipMapping.LINEAR),
-					meshBindings.getConstant('diffuseWrapping', SamplerWrapping.REPEAT)
+					"diffuseMap",
+					meshBindings.getConstant("diffuseFiltering", SamplerFiltering.LINEAR),
+					meshBindings.getConstant("diffuseMipMapping", SamplerMipMapping.LINEAR),
+					meshBindings.getConstant("diffuseWrapping", SamplerWrapping.REPEAT)
 				);
 				
-				return sampleTexture(diffuseMap, interpolate(vertexUV.xy));
+				var uv : SFloat = getVertexAttribute(VertexComponent.UV);
+				
+				uv = uv.xy;
+				
+				baseColor =  sampleTexture(
+					diffuseMap,
+					interpolate(uv)
+				);
 			}
-			else if (meshBindings.propertyExists('diffuseColor'))
+			else if (meshBindings.propertyExists("diffuseColor"))
 			{
-				return meshBindings.getParameter('diffuseColor', 4);
+				baseColor = meshBindings.getParameter("diffuseColor", 4);
+			}
+			else
+			{
+				throw new Error(
+					"Property 'diffuseColor' or 'diffuseMap' must be set."
+				);
 			}
 			
-			throw new Error(
-				'Property \'diffuseColor\' or \'diffuseMap\' must be set.'
-			);
+			// Apply HLSA modifiers
+			if (meshBindings.propertyExists('diffuseColorMatrix'))
+			{
+				baseColor = multiply4x4(baseColor, meshBindings.getParameter('diffuseColorMatrix', 16));
+			}
+			
+			return baseColor;
 		}
 	}
 }
