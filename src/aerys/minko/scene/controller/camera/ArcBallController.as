@@ -2,6 +2,7 @@ package aerys.minko.scene.controller.camera
 {
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.EnterFrameController;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
@@ -63,6 +64,13 @@ package aerys.minko.scene.controller.camera
 			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+		}
+		
+		override protected function targetAddedHandler(ctrl:EnterFrameController, target:ISceneNode):void
+		{
+			super.targetAddedHandler(ctrl, target);
+			
+			_update = true;
 		}
 		
 		override protected function sceneEnterFrameHandler(scene		: Scene,
