@@ -214,8 +214,8 @@ package aerys.minko.type.math
 		{
 			_vector.incrementBy(vector._vector);
 
-			_changed.execute(this, null);
 			_update = UPDATE_ALL;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -224,8 +224,8 @@ package aerys.minko.type.math
 		{
 			_vector.decrementBy(vector._vector);
 
-			_changed.execute(this, null);
 			_update = UPDATE_ALL;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -234,8 +234,8 @@ package aerys.minko.type.math
 		{
 			_vector.scaleBy(scale);
 
-			_changed.execute(this, null);
 			_update = UPDATE_ALL;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -246,8 +246,8 @@ package aerys.minko.type.math
 			_vector.y /= _vector.w;
 			_vector.z /= _vector.w;
 
-			_changed.execute(this, null);
 			_update = UPDATE_ALL;
+			_changed.execute(this, null);
 
 			return this;
 		}
@@ -265,8 +265,8 @@ package aerys.minko.type.math
 				_length = 1.;
 				_lengthSq = 1.;
 
-				_changed.execute(this, null);
 				_update = UPDATE_NONE;
+				_changed.execute(this, null);
 			}
 
 			return this;
@@ -305,9 +305,9 @@ package aerys.minko.type.math
 				_vector.z = z;
 				_vector.w = w;
 
+				_update = UPDATE_ALL;
 				if (!_locked)
 					_changed.execute(this, null);
-				_update = UPDATE_ALL;
 			}
 
 			return this;
