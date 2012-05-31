@@ -65,6 +65,9 @@ package aerys.minko.scene.controller.scene
 		private var _postProcessingScene		: Scene			= null;
 		private var _postProcessingProperties	: DataProvider	= new DataProvider();
 		
+		private var _lastViewportWidth			: Number		= 0;
+		private var _lastViewportHeight			: Number		= 0;
+		
 		/**
 		 * Index meshes by their own databinding.
 		 *   * this is required to handle meshBindings.properyChange without
@@ -222,7 +225,7 @@ package aerys.minko.scene.controller.scene
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
 			
 			// sort passes
-			if (!_passesAreSorted && numPasses != 0)
+			if (!_passesAreSorted && numPasses > 1)
 			{
 				for (i = 0; i < numPasses; ++i)
 					sortValues[i] = -(_passes[i] as ShaderInstance).settings.priority;
@@ -327,12 +330,19 @@ package aerys.minko.scene.controller.scene
 												target 		: BitmapData,
 												time		: Number) : void
 		{
-			//_scene.bindings.setProperty("time", time);
-			_scene.properties.setProperties({
-				time			: time,
-				viewportWidth	: viewport.width,
-				viewportHeight	: viewport.height
-			});
+			var viewportWidth	: Number = viewport.width;
+			var viewportHeight	: Number = viewport.height;
+			
+			_scene.properties.setProperty("time", time);
+			
+			if (viewportWidth != _lastViewportWidth)
+				_scene.properties.setProperty('viewportWidth', viewport.width);
+			
+			if (viewportHeight != _lastViewportHeight)
+				_scene.properties.setProperty('viewportHeight', viewport.height);
+			
+			_lastViewportWidth	= viewportWidth;
+			_lastViewportHeight	= viewportHeight
 		}
 		
 		private function sceneExitFrameHandler(scene 	: Scene,
