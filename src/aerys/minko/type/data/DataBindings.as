@@ -34,7 +34,7 @@ package aerys.minko.type.data
 		public function addProvider(provider : IDataProvider) : void
 		{
 			if (_providerToBindingNames[provider])
-				throw new Error('This provider is already binded');
+				throw new Error('This provider is already bound.');
 			
 			var providerBindingNames	: Vector.<String>	= new Vector.<String>();
 			var dataDescriptor			: Object			= provider.dataDescriptor;
@@ -49,7 +49,7 @@ package aerys.minko.type.data
 				var dpAttribute	: IDataProvider	= attribute as IDataProvider;
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
-					throw new Error('Another Dataprovider is already declaring "' + bindingName + '". Cannot overwrite.');
+					throw new Error('Another Dataprovider is already declaring "' + bindingName + '".');
 				
 				if (dpAttribute != null)
 				{
@@ -81,7 +81,7 @@ package aerys.minko.type.data
 			var bindingNames : Vector.<String> = _providerToBindingNames[provider];
 			
 			if (bindingNames == null)
-				throw new ArgumentError('No such provider was binded');
+				throw new ArgumentError('Unkown provider.');
 			
 			for each (var bindingName : String in bindingNames)
 			{
@@ -153,7 +153,7 @@ package aerys.minko.type.data
 		{
 			var signal : Signal = _bindingNameToChangedSignal[bindingName];
 			if (!signal)
-				throw new Error('No such signal was added');
+				throw new Error('Unkown property \'' + bindingName + '\'.');
 			
 			signal.remove(callback);
 			
@@ -163,9 +163,6 @@ package aerys.minko.type.data
 		
 		public function getProviderAt(index : uint) : IDataProvider
 		{
-			if (index >= _numProviders)
-				throw new ArgumentError('Index out of bounds.');
-			
 			return _providers[index];
 		}
 		

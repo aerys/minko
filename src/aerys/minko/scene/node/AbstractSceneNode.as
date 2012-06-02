@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -23,9 +24,8 @@ package aerys.minko.scene.node
 		private var _root				: ISceneNode					= null;
 		private var _parent				: Group							= null;
 		
+		private var _transformData		: TransformDataProvider			= new TransformDataProvider();
 		private var _transform			: Matrix4x4						= new Matrix4x4();
-		private var _localToWorld		: Matrix4x4						= new Matrix4x4();
-		private var _worldToLocal		: Matrix4x4						= new Matrix4x4();
 		
 		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
@@ -94,12 +94,12 @@ package aerys.minko.scene.node
 		
 		public function get localToWorld() : Matrix4x4
 		{
-			return _localToWorld;
+			return _transformData.localToWorld;
 		}
 		
 		public function get worldToLocal() : Matrix4x4
 		{
-			return _worldToLocal;
+			return _transformData.worldToLocal;
 		}
 		
 		public function get added() : Signal
@@ -135,6 +135,11 @@ package aerys.minko.scene.node
 		public function get controllerRemoved() : Signal
 		{
 			return _controllerRemoved;
+		}
+		
+		protected function get transformData() : TransformDataProvider
+		{
+			return _transformData;
 		}
 		
 		public function AbstractSceneNode()
@@ -196,18 +201,18 @@ package aerys.minko.scene.node
 		{
 			if (_parent)
 			{
-				_localToWorld.lock()
-							 .copyFrom(_transform)
-							 .append(_parent.localToWorld)
-							 .unlock();
+				localToWorld.lock()
+					.copyFrom(_transform)
+					.append(_parent.localToWorld)
+					.unlock();
 			}
 			else
-				_localToWorld.copyFrom(_transform);
+				localToWorld.copyFrom(_transform);
 			
-			_worldToLocal.lock()
-						 .copyFrom(_localToWorld)
-						 .invert()
-						 .unlock();
+			worldToLocal.lock()
+				.copyFrom(localToWorld)
+				.invert()
+				.unlock();
 		}
 		
 		public function addController(controller : AbstractController) : ISceneNode

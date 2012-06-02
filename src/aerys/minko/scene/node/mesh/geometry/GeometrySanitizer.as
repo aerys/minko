@@ -32,6 +32,28 @@ package aerys.minko.scene.node.mesh.geometry
 			return true;
 		}
 		
+		/*public static function splitBuffers(inVertexData	: Vector.<Number>,
+											inIndexData		: Vector.<uint>,
+											outVertexData	: Vector.<Vector.<Number>>,
+											outIndexData	: Vector.<Vector.<uint>>,
+											dwordsPerVertex	: uint = 3) : void
+		{
+			if (inIndexData.length < INDEX_LIMIT && inVertexData.length / dwordsPerVertex < VERTEX_LIMIT)
+			{
+				outVertexData.push(inVertexData);
+				outIndexData.push(inIndexData);
+				
+				return ;
+			}
+			
+			var numIndices 	: uint 	= inIndexData.length;
+			var indexId		: uint	= 0;
+			
+			while (indexId < numIndices)
+			{
+				
+			}
+		}*/
 		
 		/**
 		 * Split vertex and index buffers too big the be rendered.
@@ -53,6 +75,7 @@ package aerys.minko.scene.node.mesh.geometry
 			{
 				outVertexDatas.push(inVertexData);
 				outIndexDatas.push(inIndexData);
+				
 				return;
 			}
 			
@@ -61,8 +84,8 @@ package aerys.minko.scene.node.mesh.geometry
 				var indexDataLength		: uint				= inIndexData.length;
 				
 				// new buffers
-				var partialVertexData	: Vector.<Number>	= new Vector.<Number>();
-				var partialIndexData	: Vector.<uint>		= new Vector.<uint>();
+				var partialVertexData	: Vector.<Number>	= new <Number>[];
+				var partialIndexData	: Vector.<uint>		= new <uint>[];
 				
 				// local variables
 				var oldVertexIds		: Vector.<int>		= new Vector.<int>(3, true);
@@ -116,6 +139,7 @@ package aerys.minko.scene.node.mesh.geometry
 							// copy current vertex into the new array
 							dwordId			= oldVertexIds[localVertexId] * dwordsPerVertex;
 							dwordIdLimit	= dwordId + dwordsPerVertex;
+							
 							for (; dwordId < dwordIdLimit; ++dwordId)
 								partialVertexData.push(inVertexData[dwordId]);
 							
@@ -133,12 +157,12 @@ package aerys.minko.scene.node.mesh.geometry
 					usedIndicesCount += 3;
 					
 //					// some assertions for debug purposes..
-//						if (usedIndicesCount != partialIndexData.length)
-//							throw new Error('Assert failed');
-//										
-//										
-//						if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
-//							throw new Error('Assert failed');
+//					if (usedIndicesCount != partialIndexData.length)
+//						throw new Error('Assert failed');
+//					
+//					
+//					if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
+//						throw new Error('Assert failed');
 				}
 				
 				outIndexDatas.push(partialIndexData);
@@ -146,6 +170,9 @@ package aerys.minko.scene.node.mesh.geometry
 				
 				inIndexData.splice(0, usedIndicesCount);
 			}
+			
+/*			outIndexDatas.pop();
+			outVertexDatas.pop();*/
 		}
 		
 		/**
@@ -169,7 +196,7 @@ package aerys.minko.scene.node.mesh.geometry
 			var numIndices					: int			= indexData.length;
 			var bytesPerVertex				: uint			= dwordsPerVertex * 4;
 			var vertexCopy					: ByteArray		= new ByteArray();
-			var hashToNewVertexId			: Array			= new Array();
+			var hashToNewVertexId			: Array			= [];
 			var oldVertexIdToNewVertexId	: Vector.<uint>	= new Vector.<uint>(numVertices, true);
 			var newVertexCount				: uint			= 0;
 			

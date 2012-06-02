@@ -233,14 +233,14 @@ package aerys.minko.render.shader.part.animation
 				var dQdYZW	: SFloat = dQd.xyz;
 				
 				var tmp0	: SFloat = multiply(dQnX, inPosition);			//	tmp0 = blendDQ[0].x*IN.position.xyz
-				var tmp1	: SFloat = crossProduct(dQnYZW, inPosition);			//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
+				var tmp1	: SFloat = crossProduct(dQnYZW, inPosition);	//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
 				var tmp2	: SFloat = add(tmp1, tmp0);						//	tmp2 = tmp1 + tmp0
-				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);					//	tmp3 = cross(blendDQ[0].yzw, tmp2)
+				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);			//	tmp3 = cross(blendDQ[0].yzw, tmp2)
 				var tmp4	: SFloat = multiply(2, tmp3);					//	tmp4 = 2.0*tmp3
 				var tmp5	: SFloat = add(inPosition, tmp4);				//	tmp5 = IN.position.xyz + tmp4
 				var tmp6	: SFloat = multiply(dQnX, dQdYZW);				//	tmp6 = blendDQ[0].x*blendDQ[1].yzw
 				var tmp7	: SFloat = multiply(dQdX, dQnYZW);				//	tmp7 = blendDQ[1].x*blendDQ[0].yzw
-				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);				//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
+				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);		//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
 				var tmp9	: SFloat = subtract(tmp6, tmp7);				//	tmp9 = tmp6 - tmp7
 				var tmp10	: SFloat = add(tmp9, tmp8);						//	tmp10 = tmp9 + tmp8
 				var tmp11	: SFloat = multiply(2, tmp10);					//	tmp11 = 2.0*(tmp10)
