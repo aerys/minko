@@ -27,14 +27,9 @@ package aerys.minko.scene.node.mesh
 	 */
 	public class Mesh extends AbstractSceneNode
 	{
-		public static const DEFAULT_EFFECT		: Effect			= new Effect(
+		public static const DEFAULT_EFFECT	: Effect	= new Effect(
 			new BasicShader()
 		);
-		
-		private static const EXCLUDED_BINDINGS	: Vector.<String>	= new <String>[
-			'localToWorld',
-			'worldToLocal'
-		];
 		
 		private var _geometry			: Geometry			= null;
 		private var _effect				: Effect			= null;
@@ -261,10 +256,7 @@ package aerys.minko.scene.node.mesh
 			super.addedToSceneHandler(child, scene);
 	
 			if (child === this)
-			{
-				_properties.setProperty('localToWorld', localToWorld);
-				_properties.setProperty('worldToLocal', worldToLocal);
-			}
+				_bindings.addProvider(transformData);
 		}
 		
 		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -272,10 +264,7 @@ package aerys.minko.scene.node.mesh
 			super.removedFromSceneHandler(child, scene);
 			
 			if (child === this)
-			{
-				_properties.removeProperty('localToWorld');
-				_properties.removeProperty('worldToLocal');
-			}
+				_bindings.removeProvider(transformData);
 		}
 		
 		protected function copyFrom(source 				: Mesh,
