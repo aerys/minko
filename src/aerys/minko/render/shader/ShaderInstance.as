@@ -24,17 +24,17 @@ package aerys.minko.render.shader
 		private static const TMP_NUMBERS	: Vector.<Number>	= new Vector.<Number>(0xffff, true);
 		private static const TMP_INTS		: Vector.<int>		= new Vector.<int>(0xffff, true);
 		
-		private var _numUses	: int					= 0;
-		private var _generator	: Shader				= null;
-		private var _signature	: Signature				= null;
+		private var _numUses	: int				= 0;
+		private var _generator	: Shader			= null;
+		private var _signature	: Signature			= null;
 		
-		private var _settings		: ShaderSettings		= null;
-		private var _program	: Program3DResource		= null;
+		private var _settings	: ShaderSettings	= null;
+		private var _program	: Program3DResource	= null;
 		
-		private var _retained	: Signal				= new Signal('ShaderInstance.retained');
-		private var _released	: Signal				= new Signal('ShaderInstance.released');
-		private var _begin		: Signal				= new Signal('ShaderInstance.begin');
-		private var _end		: Signal				= new Signal('ShaderInstance.end');
+		private var _retained	: Signal			= new Signal('ShaderInstance.retained');
+		private var _released	: Signal			= new Signal('ShaderInstance.released');
+		private var _begin		: Signal			= new Signal('ShaderInstance.begin');
+		private var _end		: Signal			= new Signal('ShaderInstance.end');
 		
 		public function get generator() : Shader
 		{
@@ -58,7 +58,7 @@ package aerys.minko.render.shader
 		
 		public function get isDisposable() : Boolean
 		{
-			return _numUses == 0
+			return _numUses == 0;
 		}
 		
 		public function get retained() : Signal
