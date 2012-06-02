@@ -11,10 +11,13 @@ package aerys.minko.scene.controller.camera
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
+	import flash.ui.Mouse;
+	import flash.ui.MouseCursor;
 	
 	public class ArcBallController extends EnterFrameController
 	{
 		private static const TMP_MATRIX : Matrix4x4 = new Matrix4x4();
+		private static const EPSILON	: Number	= 0.001;
 		
 		protected var _mousePosition	: Point		= new Point();
 		
@@ -34,31 +37,92 @@ package aerys.minko.scene.controller.camera
 		private var _thetaStep			: Number	= 0.01;
 		private var _phiStep			: Number	= 0.01;
 		
-		public function get distance()		: Number	{ return _distance;		}
-		public function get theta()			: Number	{ return _theta;		}
-		public function get phi()			: Number	{ return _phi;			}
-		public function get lookAt()		: Vector4	{ return _lookAt;		}
-		public function get up()			: Vector4	{ return _up;			}
+		public function get distance() : Number
+		{
+			return _distance;
+		}
+		public function set distance(v : Number) : void
+		{
+			_distance = v;
+		}
 		
-		public function get minDistance()	: Number	{ return _minDistance;	}
-		public function get maxDistance()	: Number	{ return _maxDistance;	}
-		public function get distanceStep()	: Number	{ return _distanceStep;	}
-		public function get thetaStep()		: Number	{ return _thetaStep;	}
-		public function get phiStep()		: Number	{ return _phiStep;		}
+		public function get theta() : Number
+		{
+			return _theta;
+		}
+		public function set theta(v : Number) : void
+		{
+			_theta = v;
+		}
 		
-		public function set distance	(v : Number)	: void { _distance		= v; }
-		public function set theta		(v : Number)	: void { _theta			= v; }
-		public function set phi			(v : Number)	: void { _phi			= v; }
+		public function get phi() : Number
+		{
+			return _phi;
+		}
+		public function set phi(v : Number)	: void
+		{
+			_phi = v;
+		}
 		
-		public function set minDistance	(v : Number)	: void { _minDistance	= v; }
-		public function set maxDistance	(v : Number)	: void { _maxDistance	= v; }
-		public function set distanceStep(v : Number)	: void { _distanceStep	= v; }
-		public function set thetaStep	(v : Number)	: void { _thetaStep		= v; }
-		public function set phiStep		(v : Number)	: void { _phiStep		= v; }
-		 
+		public function get lookAt() : Vector4
+		{
+			return _lookAt;
+		}
+		
+		public function get up() : Vector4
+		{
+			return _up;
+		}
+		
+		public function get minDistance() : Number
+		{
+			return _minDistance;
+		}
+		public function set minDistance(v : Number)	: void
+		{
+			_minDistance = v;
+		}
+		
+		public function get maxDistance() : Number
+		{
+			return _maxDistance;
+		}
+		public function set maxDistance(v : Number)	: void
+		{
+			_maxDistance = v;
+		}
+		
+		public function get distanceStep() : Number
+		{
+			return _distanceStep;
+		}
+		public function set distanceStep(v : Number) : void
+		{
+			_distanceStep = v;
+		}
+		
+		public function get thetaStep() : Number
+		{
+			return _thetaStep;
+		}
+		public function set thetaStep(v : Number) : void
+		{
+			_thetaStep = v;
+		}
+		
+		public function get phiStep() : Number
+		{
+			return _phiStep;
+		}
+		
+		public function set phiStep(v : Number)	: void
+		{
+			_phiStep = v;
+		}
+		
 		public function ArcBallController()
 		{
-			super(null);
+			super();
 			
 			_lookAt.changed.add(updateNextFrameHandler);
 			_up.changed.add(updateNextFrameHandler);
@@ -76,7 +140,8 @@ package aerys.minko.scene.controller.camera
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 		}
 		
-		override protected function targetAddedHandler(ctrl : EnterFrameController, target : ISceneNode) : void
+		override protected function targetAddedHandler(ctrl 	: EnterFrameController,
+													   target 	: ISceneNode) : void
 		{
 			super.targetAddedHandler(ctrl, target);
 			
@@ -88,13 +153,16 @@ package aerys.minko.scene.controller.camera
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			//FIXME : find why updates are shifted
-			if (1)//_update)
+			if (_update)
 			{
-				_distance	< _minDistance	&& (_distance = _minDistance);
-				_distance	> _maxDistance	&& (_distance = _maxDistance);
-				_phi	 	<= 0.1			&& (_phi = 0.1);
-				_phi		> Math.PI - 0.1	&& (_phi = Math.PI - 0.1);
+				if (_distance < _minDistance)
+					_distance = _minDistance;
+				if (_distance > _maxDistance)
+					_distance = _maxDistance;
+				if (_phi <= EPSILON)
+					_phi = EPSILON;
+				if (_phi > Math.PI - EPSILON)
+					_phi = Math.PI - EPSILON;
 				
 				_position.set(
 					_distance * Math.cos(_theta) * Math.sin(_phi) + _lookAt.x,
@@ -123,8 +191,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown)
 			{
-				_theta	+= (_mousePosition.x - e.stageX) / 100;
-				_phi	+= (_mousePosition.y - e.stageY) / 100;
+				_theta	+= (_mousePosition.x - e.stageX) / 100.0;
+				_phi	+= (_mousePosition.y - e.stageY) / 100.0;
 				
 				_update = true;
 			}
