@@ -55,16 +55,6 @@ package aerys.minko.scene.node
 			return _cameraData.projection;
 		}
 		
-		public function get viewToWorld() : Matrix4x4
-		{
-			return transform;
-		}
-		
-		public function get worldToView() : Matrix4x4
-		{
-			return worldToLocal;
-		}
-		
 		public function Camera(fieldOfView	: Number = DEFAULT_FOV,
 							   zNear		: Number = DEFAULT_ZNEAR,
 							   zFar			: Number = DEFAULT_ZFAR)
