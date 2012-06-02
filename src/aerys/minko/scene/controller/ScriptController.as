@@ -26,7 +26,7 @@ package aerys.minko.scene.controller
 		
 		private function initialize() : void
 		{
-			var numTargets : uint = numTargets;
+			var numTargets : uint = this.numTargets;
 			
 			for (var i : uint = 0; i < numTargets; ++i)
 				start(getTarget(i));
@@ -40,7 +40,7 @@ package aerys.minko.scene.controller
 			_deltaTime = _lastTime - time;
 			_lastTime = time;
 			
-			var numTargets : uint = numTargets;
+			var numTargets : uint = this.numTargets;
 			
 			for (var i : uint = 0; i < numTargets; ++i)
 				update(getTarget(i));
