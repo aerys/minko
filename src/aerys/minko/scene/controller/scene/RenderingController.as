@@ -690,7 +690,10 @@ package aerys.minko.scene.controller.scene
 					// our shader is no longer valid, we need to find a new one.
 					unbind(passInstance, drawCall, meshBindings);
 					
-					var replacementInstance : ShaderInstance = passInstance.generator.fork(meshBindings, sceneBindings);
+					var replacementInstance : ShaderInstance = passInstance.generator.fork(
+						meshBindings,
+						sceneBindings
+					);
 					
 					if (replacementInstance.program != null)
 						drawCall.configure(
