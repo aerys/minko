@@ -29,7 +29,7 @@ package aerys.minko.scene.controller.camera
 			_camera = target;
 			_camera.addedToScene.add(addedToSceneHandler);
 			_camera.removedFromScene.add(removedFromSceneHandler);
-			_camera.localToWorld.changed.add(localToWorldChangedHandler);
+			_camera.worldToLocal.changed.add(worldToLocalChangedHandler);
 		}
 		
 		private function targetRemovedHandler(controller	: CameraController,
@@ -37,7 +37,7 @@ package aerys.minko.scene.controller.camera
 		{
 			_camera.addedToScene.remove(addedToSceneHandler);
 			_camera.removedFromScene.remove(removedFromSceneHandler);
-			_camera.localToWorld.changed.remove(localToWorldChangedHandler);
+			_camera.worldToLocal.changed.remove(worldToLocalChangedHandler);
 			_camera = null;
 		}
 		
@@ -50,7 +50,6 @@ package aerys.minko.scene.controller.camera
 			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
 			
 			updateProjection();
-			localToWorldChangedHandler(_camera.localToWorld, null);
 		}
 		
 		private function removedFromSceneHandler(camera : Camera, scene : Scene) : void
@@ -62,27 +61,18 @@ package aerys.minko.scene.controller.camera
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
 		}
 		
-		private function localToWorldChangedHandler(localToWorld : Matrix4x4, propertyName : String) : void
+		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4, propertyName : String) : void
 		{
-			var transform 	: Matrix4x4 			= _camera.transform;
 			var cameraData	: CameraDataProvider	= _camera.cameraData;
-			
-			transform.transformVector(Vector4.ZERO,		cameraData.position);
-			transform.transformVector(Vector4.Z_AXIS,	cameraData.lookAt);
-			transform.transformVector(Vector4.Y_AXIS,	cameraData.up);
-			
-			localToWorld.transformVector(Vector4.ZERO,		cameraData.worldPosition);
-			localToWorld.transformVector(Vector4.Z_AXIS,	cameraData.worldLookAt);
-			localToWorld.transformVector(Vector4.Y_AXIS,	cameraData.worldUp);
-			
-			cameraData.screenToWorld.lock()
-				.copyFrom(cameraData.screenToView)
-				.append(localToWorld)
-				.unlock();
 			
 			cameraData.worldToScreen.lock()
 				.copyFrom(_camera.worldToLocal)
 				.append(cameraData.projection)
+				.unlock();
+			
+			cameraData.screenToWorld.lock()
+				.copyFrom(cameraData.screenToView)
+				.append(_camera.localToWorld)
 				.unlock();
 		}
 		
@@ -93,21 +83,29 @@ package aerys.minko.scene.controller.camera
 		
 		private function updateProjection() : void
 		{
-			if (_camera.root is Scene)
-			{
-				var cameraData		: CameraDataProvider	= _camera.cameraData;
-				var sceneBindings	: DataBindings			= Scene(_camera.root).bindings;
-				var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
-				var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
-				var ratio			: Number				= viewportWidth / viewportHeight;
-				var screenToView	: Matrix4x4				= cameraData.screenToView;
-				
-				cameraData.projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
-				screenToView.lock().copyFrom(cameraData.projection).invert().unlock();
-				
-				cameraData.screenToWorld.lock().copyFrom(screenToView).append(_camera.localToWorld).unlock();
-				cameraData.worldToScreen.lock().copyFrom(_camera.worldToLocal).append(cameraData.projection).unlock();
-			}
+			var cameraData		: CameraDataProvider	= _camera.cameraData;
+			var screenToView	: Matrix4x4				= cameraData.screenToView;
+			var sceneBindings	: DataBindings			= Scene(_camera.root).bindings;
+			var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
+			var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
+			var ratio			: Number				= viewportWidth / viewportHeight;
+			
+			cameraData.projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
+			
+			screenToView.lock()
+				.copyFrom(cameraData.projection)
+				.invert()
+				.unlock();
+			
+			cameraData.screenToWorld.lock()
+				.copyFrom(cameraData.screenToView)
+				.append(_camera.localToWorld)
+				.unlock();
+			
+			cameraData.worldToScreen.lock()
+				.copyFrom(_camera.worldToLocal)
+				.append(cameraData.projection)
+				.unlock();
 		}
 	}
 }
