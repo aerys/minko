@@ -1,6 +1,7 @@
 package aerys.minko.type.loader.parser
 {
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
@@ -133,7 +134,7 @@ package aerys.minko.type.loader.parser
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
             _loadSkin                   = loadSkin;
 			_mipmapTextures				= mipmapTextures;
-			_meshEffect					= meshEffect;
+			_meshEffect					= meshEffect || Mesh.DEFAULT_EFFECT;
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;
