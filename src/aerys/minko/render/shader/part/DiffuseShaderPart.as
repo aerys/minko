@@ -41,9 +41,7 @@ package aerys.minko.render.shader.part
 			}
 			else
 			{
-				throw new Error(
-					'Property \'diffuseColor\' or \'diffuseMap\' must be set.'
-				);
+				diffuseColor = float4(0., 0., 0., 1.);
 			}
 			
 			// Apply HLSA modifiers
