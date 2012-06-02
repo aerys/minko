@@ -314,7 +314,11 @@ package aerys.minko.render
 				context.setVertexBufferAt(i++, null);
 			
 			// draw triangles
-			context.drawTriangles(_indexBuffer.getIndexBuffer3D(context), _firstIndex, _numTriangles);
+			context.drawTriangles(
+				_indexBuffer.getIndexBuffer3D(context),
+				_firstIndex,
+				_numTriangles
+			);
 			
 			return _numTriangles == -1 ? _indexBuffer.numIndices / 3 : _numTriangles;
 		}
@@ -338,9 +342,9 @@ package aerys.minko.render
 												 property 	: String,
 												 value 		: Matrix4x4) : void
 		{
-			if (property == "worldToScreen")
+			if (property == 'worldToScreen')
 				_worldToScreen = value;
-			else if (property == "localToWorld")
+			else if (property == 'localToWorld')
 				_localToWorld = value;
 			
 			_invalidDepth = true;
