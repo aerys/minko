@@ -1,7 +1,5 @@
 package aerys.minko.render.resource
 {
-	import aerys.minko.render.resource.texture.ITextureResource;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
@@ -14,35 +12,35 @@ package aerys.minko.render.resource
 
 	public final class Context3DResource
 	{
-		private var _context				: Context3D							= null;
+		private var _context				: Context3D					= null;
 		
-		private var _enableErrorChecking	: Boolean							= false;
+		private var _enableErrorChecking	: Boolean					= false;
 		
-		private var _rttTarget				: TextureBase						= null;
-		private var _rttDepthAndStencil		: Boolean							= false;
-		private var _rttAntiAliasing		: int								= 0;
-		private var _rttSurfaceSelector		: int								= 0;
-		private var _rectangle				: Rectangle							= null;
+		private var _rttTarget				: TextureBase				= null;
+		private var _rttDepthAndStencil		: Boolean					= false;
+		private var _rttAntiAliasing		: int						= 0;
+		private var _rttSurfaceSelector		: int						= 0;
+		private var _rectangle				: Rectangle					= null;
 		
-		private var _depthMask				: Boolean							= false;
-		private var _passCompareMode		: String							= null;
+		private var _depthMask				: Boolean					= false;
+		private var _passCompareMode		: String					= null;
 		
-		private var _program				: Program3D							= null;
+		private var _program				: Program3D					= null;
 		
-		private var _blendingSource			: String							= null;
-		private var _blendingDestination	: String							= null;
+		private var _blendingSource			: String					= null;
+		private var _blendingDestination	: String					= null;
 		
-		private var _triangleCulling		: String							= null;
+		private var _triangleCulling		: String					= null;
 		
-		private var _vertexBuffers			: Vector.<VertexBuffer3DResource>	= new Vector.<VertexBuffer3DResource>(8, true);
-		private var _vertexBuffersOffsets	: Vector.<int>						= new Vector.<int>(8, true);
-		private var _vertexBuffersFormats	: Vector.<String>					= new Vector.<String>(8, true);
-		private var _textures				: Vector.<ITextureResource>			= new Vector.<ITextureResource>(8, true);
+		private var _vertexBuffers			: Vector.<VertexBuffer3D>	= new Vector.<VertexBuffer3D>(8, true);
+		private var _vertexBuffersOffsets	: Vector.<int>				= new Vector.<int>(8, true);
+		private var _vertexBuffersFormats	: Vector.<String>			= new Vector.<String>(8, true);
+		private var _textures				: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
 		
-		private var _colorMaskRed			: Boolean							= false;
-		private var _colorMaskGreen			: Boolean							= false;
-		private var _colorMaskBlue			: Boolean							= false;
-		private var _colorMaskAlpha			: Boolean							= false;
+		private var _colorMaskRed			: Boolean					= false;
+		private var _colorMaskGreen			: Boolean					= false;
+		private var _colorMaskBlue			: Boolean					= false;
+		private var _colorMaskAlpha			: Boolean					= false;
 		
 		public function get enabledErrorChecking() : Boolean
 		{
@@ -266,22 +264,19 @@ package aerys.minko.render.resource
 		}
 		
 		public function setTextureAt(sampler	: uint,
-									 texture	: ITextureResource) : Context3DResource
+									 texture	: TextureBase) : Context3DResource
 		{
 			if (_textures[sampler] != texture)
 			{
 				_textures[sampler] = texture;
-				_context.setTextureAt(
-					sampler,
-					texture ? texture.getNativeTexture(this) : null
-				);
+				_context.setTextureAt(sampler, texture);
 			}
 			
 			return this;
 		}
 		
 		public function setVertexBufferAt(index			: int,
-										  vertexBuffer	: VertexBuffer3DResource,
+										  vertexBuffer	: VertexBuffer3D,
 										  bufferOffset	: int		= 0,
 										  format		: String	= 'float4') : Context3DResource
 		{
@@ -295,7 +290,7 @@ package aerys.minko.render.resource
 				
 				_context.setVertexBufferAt(
 					index,
-					vertexBuffer ? vertexBuffer.getVertexBuffer3D(this) : null,
+					vertexBuffer,
 					bufferOffset,
 					format
 				);

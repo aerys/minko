@@ -21,7 +21,7 @@ package aerys.minko.render.resource.texture
 		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
 		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
 		
-		private var _resource	: Texture		= null;
+		private var _texture	: Texture		= null;
 		private var _mipmap		: Boolean		= false;
 
 		private var _bitmapData	: BitmapData	= null;
@@ -56,9 +56,7 @@ package aerys.minko.render.resource.texture
 			if (!(width && !(width & (width - 1)))
 				|| !(height && !(height & (height - 1))))
 			{
-				throw new Error(
-					'The size must be a power of 2.'
-				);
+				throw new Error('The size must be a power of 2.');
 			}
 			
 			_width	= width;
@@ -104,13 +102,13 @@ package aerys.minko.render.resource.texture
 				_bitmapData.draw(bitmapData);
 			}
 			
-			if (_resource
+			if (_texture
 				&& (mipmap != _mipmap
 					|| bitmapData.width != _width
 					|| bitmapData.height != _height))
 			{
-				_resource.dispose();
-				_resource = null;
+				_texture.dispose();
+				_texture = null;
 			}
 
 			_width = _bitmapData.width;
@@ -137,14 +135,14 @@ package aerys.minko.render.resource.texture
 
 		public function getNativeTexture(context : Context3DResource) : TextureBase
 		{
-			if ((!_resource || _resize) && _width && _height)
+			if ((!_texture || _resize) && _width && _height)
 			{
 				_resize = false;
 				
-				if (_resource)
-					_resource.dispose();
+				if (_texture)
+					_texture.dispose();
 				
-				_resource = context.createTexture(
+				_texture = context.createTexture(
 					_width,
 					_height,
 					_atf && _atfFormat == 2 ? FORMAT_COMPRESSED : FORMAT_BGRA,
@@ -164,10 +162,10 @@ package aerys.minko.render.resource.texture
 			_atf = null;
 			_bitmapData = null;
 
-			if (_resource == null)
+			if (_texture == null)
 				throw new Error();
 			
-			return _resource;
+			return _texture;
 		}
 		
 		private function uploadTextureWithMipMaps() : void
@@ -190,7 +188,7 @@ package aerys.minko.render.resource.texture
 					while (size >= 1)
 					{
 						tmp.draw(_bitmapData, transform, null, null, null, true);
-						_resource.uploadFromBitmapData(tmp, level);
+						_texture.uploadFromBitmapData(tmp, level);
 						
 						transform.scale(.5, .5);
 						level++;
@@ -203,23 +201,23 @@ package aerys.minko.render.resource.texture
 				}
 				else
 				{
-					_resource.uploadFromBitmapData(_bitmapData, 0);
+					_texture.uploadFromBitmapData(_bitmapData, 0);
 				}
 				
 				_bitmapData.dispose();
 			}
 			else if (_atf)
 			{
-				_resource.uploadCompressedTextureFromByteArray(_atf, 0, false);
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
 			}
 		}
 		
 		public function dispose() : void
 		{
-			if (_resource)
+			if (_texture)
 			{
-				_resource.dispose();
-				_resource = null;
+				_texture.dispose();
+				_texture = null;
 			}
 		}
 	}
