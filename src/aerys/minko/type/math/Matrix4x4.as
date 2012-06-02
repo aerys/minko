@@ -719,9 +719,9 @@ package aerys.minko.type.math
 					+ 'and the up vector appear to be the same.');
 			}
 			
-			var	m41			: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
-			var	m42			: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
-			var	m43			: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
+			var	m41	: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
+			var	m42	: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
+			var	m43	: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
 			
 			initialize(
 				x_axis_X,	y_axis_X,	z_axis_X,	0.,
@@ -731,6 +731,13 @@ package aerys.minko.type.math
 			);
 			
 			return this;
+		}
+		
+		public function lookAt(target	: Vector4,
+							   position	: Vector4	= null,
+							   up		: Vector4 	= null) : Matrix4x4
+		{
+			return view(position || getTranslation(TMP_VECTOR4), target, up).invert();
 		}
 		
 		/**
@@ -750,9 +757,9 @@ package aerys.minko.type.math
 		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 		 *
 		 */
-		public function lookAt(eye		: Vector4,
-							   lookAt 	: Vector4,
-							   up		: Vector4	= null) : Matrix4x4
+		public function view(eye	: Vector4,
+							 lookAt : Vector4,
+							 up		: Vector4	= null) : Matrix4x4
 		{
 			Vector4.subtract(lookAt, eye, TMP_VECTOR4);
 			
