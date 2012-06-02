@@ -124,9 +124,9 @@ package aerys.minko.type.stream
 				_streams[i].dispose();
 		}
 		
-		private function subStreamChangedHandler(subStream : VertexStream, property : String) : void
+		private function subStreamChangedHandler(subStream : VertexStream) : void
 		{
-			_changed.execute(this, null);
+			_changed.execute(this);
 		}
 		
 		private function subStreamBoundsChangedHandler(subStream : VertexStream) : void
