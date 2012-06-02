@@ -39,7 +39,7 @@ package aerys.minko.type.data
 			var providerBindingNames	: Vector.<String>	= new Vector.<String>();
 			var dataDescriptor			: Object			= provider.dataDescriptor;
 			
-			provider.changed.add(onProviderChange);
+			provider.changed.add(providerChangedHandler);
 			
 			for (var attrName : String in dataDescriptor)
 			{
@@ -53,7 +53,7 @@ package aerys.minko.type.data
 				
 				if (dpAttribute != null)
 				{
-					dpAttribute.changed.add(onProviderAttributeChange);
+					dpAttribute.changed.add(providerPropertyChangedHandler);
 					
 					_attributeToProviders[dpAttribute]			||= new <IDataProvider>[];
 					_attributeToProvidersAttrNames[dpAttribute]	||= new <String>[];
@@ -90,7 +90,7 @@ package aerys.minko.type.data
 				_bindingNames.splice(indexOf, 1);
 				
 				if (_bindingNameToValue[bindingName] is IDataProvider)
-					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(onProviderAttributeChange);
+					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
 				
 				delete _bindingNameToValue[bindingName];
 			}
@@ -119,7 +119,7 @@ package aerys.minko.type.data
 				delete _attributeToProvidersAttrNames[attributeToDelete];
 			}
 			
-			provider.changed.remove(onProviderChange);
+			provider.changed.remove(providerChangedHandler);
 			
 			--_numProviders;
 			_providers.splice(_providers.indexOf(provider), 1);
@@ -171,7 +171,6 @@ package aerys.minko.type.data
 			return _bindingNameToValue.hasOwnProperty(bindingName);
 		}
 
-		
 		public function getProperty(bindingName : String) : *
 		{
 			return _bindingNameToValue[bindingName];
@@ -185,13 +184,7 @@ package aerys.minko.type.data
 			return _bindingNames[bindingIndex];
 		}
 		
-		/**
-		 * A provider attribute has changed, and the provider tells us.
-		 * For example, camera.fov has changed, the camera dispatches a 'changed' signal with 'fov' as attributeName.
-		 * 
-		 * It could also be that camera.localToWorld has been replaced by another matrix instance.
-		 */
-		private function onProviderChange(source : IDataProvider, attributeName : String) : void
+		private function providerChangedHandler(source : IDataProvider, attributeName : String) : void
 		{
 			if (attributeName == null)
 			{
@@ -212,7 +205,7 @@ package aerys.minko.type.data
 				// we are replacing a data provider. We must remove listeners and related mapping keys
 				if (oldDpValue != null)
 				{
-					oldDpValue.changed.remove(onProviderAttributeChange);
+					oldDpValue.changed.remove(providerPropertyChangedHandler);
 					
 					var providers	: Vector.<IDataProvider>	= _attributeToProviders[oldDpValue];
 					var attrNames	: Vector.<String>			= _attributeToProvidersAttrNames[oldDpValue];
@@ -233,7 +226,7 @@ package aerys.minko.type.data
 				// the new value for this key is a dataprovider, we must listen changes.
 				if (newDpValue != null)
 				{
-					newDpValue.changed.add(onProviderAttributeChange);
+					newDpValue.changed.add(providerPropertyChangedHandler);
 					
 					_attributeToProviders[newDpValue]			||= new <IDataProvider>[];
 					_attributeToProvidersAttrNames[newDpValue]	||= new <String>[];
@@ -249,11 +242,7 @@ package aerys.minko.type.data
 			}
 		}
 		
-		/**
-		 * A provider attribute has changed, and the attribute tells us.
-		 * For example, camera.localToWorld has been updated.
-		 */
-		private function onProviderAttributeChange(source : IDataProvider, key : String) : void
+		private function providerPropertyChangedHandler(source : IDataProvider, key : String) : void
 		{
 			var providers		: Vector.<IDataProvider>	= _attributeToProviders[source];
 			var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[source];
