@@ -8,12 +8,6 @@ package aerys.minko.scene.data
 	public final class CameraDataProvider implements IDataProvider
 	{
 		private static const DATA_DESCRIPTOR	: Object = {
-			'position'				: 'cameraPosition',
-			'lookAt'				: 'cameraLookAt',
-			'up'					: 'cameraUp',
-			'worldPosition'			: 'cameraWorldPosition',
-			'worldLookAt'			: 'cameraWorldLookAt',
-			'worldUp'				: 'cameraWorldUp',
 			'fieldOfView'			: 'cameraFov',
 			'zNear'					: 'cameraZNear',
 			'zFar'					: 'cameraZFar',
@@ -36,12 +30,6 @@ package aerys.minko.scene.data
 		private var _screenToWorld		: Matrix4x4		= new Matrix4x4();
 		private var _projection			: Matrix4x4		= new Matrix4x4();
 		private var _screenToView		: Matrix4x4		= new Matrix4x4();
-		private var _position			: Vector4		= new Vector4();
-		private var _lookAt				: Vector4		= new Vector4();
-		private var _up					: Vector4		= new Vector4();
-		private var _worldPosition		: Vector4		= new Vector4();
-		private var _worldLookAt		: Vector4		= new Vector4();
-		private var _worldUp			: Vector4		= new Vector4();
 		
 		public function get changed() : Signal
 		{
@@ -111,36 +99,6 @@ package aerys.minko.scene.data
 		public function get screenToView() : Matrix4x4
 		{
 			return _screenToView;
-		}
-		
-		public function get position() : Vector4
-		{
-			return _position;
-		}
-		
-		public function get lookAt() : Vector4
-		{
-			return _lookAt;
-		}
-		
-		public function get up() : Vector4
-		{
-			return _up;
-		}
-		
-		public function get worldPosition() : Vector4
-		{
-			return _worldPosition;
-		}
-		
-		public function get worldLookAt() : Vector4
-		{
-			return _worldLookAt;
-		}
-		
-		public function get worldUp() : Vector4
-		{
-			return _worldUp;
 		}
 		
 		public function CameraDataProvider(worldToView	: Matrix4x4,
