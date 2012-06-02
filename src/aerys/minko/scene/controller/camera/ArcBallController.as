@@ -41,27 +41,27 @@ package aerys.minko.scene.controller.camera
 		{
 			return _distance;
 		}
-		public function set distance(v : Number) : void
+		public function set distance(value : Number) : void
 		{
-			_distance = v;
+			_distance = value;
 		}
 		
 		public function get theta() : Number
 		{
 			return _theta;
 		}
-		public function set theta(v : Number) : void
+		public function set theta(value : Number) : void
 		{
-			_theta = v;
+			_theta = value;
 		}
 		
 		public function get phi() : Number
 		{
 			return _phi;
 		}
-		public function set phi(v : Number)	: void
+		public function set phi(value : Number)	: void
 		{
-			_phi = v;
+			_phi = value;
 		}
 		
 		public function get lookAt() : Vector4
@@ -78,36 +78,36 @@ package aerys.minko.scene.controller.camera
 		{
 			return _minDistance;
 		}
-		public function set minDistance(v : Number)	: void
+		public function set minDistance(value : Number)	: void
 		{
-			_minDistance = v;
+			_minDistance = value;
 		}
 		
 		public function get maxDistance() : Number
 		{
 			return _maxDistance;
 		}
-		public function set maxDistance(v : Number)	: void
+		public function set maxDistance(value : Number)	: void
 		{
-			_maxDistance = v;
+			_maxDistance = value;
 		}
 		
 		public function get distanceStep() : Number
 		{
 			return _distanceStep;
 		}
-		public function set distanceStep(v : Number) : void
+		public function set distanceStep(value : Number) : void
 		{
-			_distanceStep = v;
+			_distanceStep = value;
 		}
 		
 		public function get thetaStep() : Number
 		{
 			return _thetaStep;
 		}
-		public function set thetaStep(v : Number) : void
+		public function set thetaStep(value : Number) : void
 		{
-			_thetaStep = v;
+			_thetaStep = value;
 		}
 		
 		public function get phiStep() : Number
@@ -115,9 +115,9 @@ package aerys.minko.scene.controller.camera
 			return _phiStep;
 		}
 		
-		public function set phiStep(v : Number)	: void
+		public function set phiStep(value : Number)	: void
 		{
-			_phiStep = v;
+			_phiStep = value;
 		}
 		
 		public function ArcBallController()
@@ -170,7 +170,7 @@ package aerys.minko.scene.controller.camera
 					_distance * Math.sin(_theta) * Math.sin(_phi) + _lookAt.z
 				);
 				
-				TMP_MATRIX.lookAt(_position, _lookAt, _up).invert();
+				TMP_MATRIX.lookAt(_lookAt, _position, _up);
 				
 				var numTargets : uint = this.numTargets;
 				for (var targetId : uint = 0; targetId < numTargets; ++targetId)
