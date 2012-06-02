@@ -8,7 +8,6 @@ package aerys.minko.render
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
@@ -296,19 +295,26 @@ package aerys.minko.render
 
 			// setup textures
 			for (i = 0; i < numTextures; ++i)
-				context.setTextureAt(i, _fsTextures[i]);
+			{
+				context.setTextureAt(
+					i,
+					(_fsTextures[i] as ITextureResource).getNativeTexture(context)
+				);
+			}
 			
 			while (i < maxTextures)
 				context.setTextureAt(i++, null);
 
 			// setup buffers
 			for (i = 0; i < _numVertexComponents; ++i)
+			{
 				context.setVertexBufferAt(
 					i,
-					_vertexBuffers[i],
+					(_vertexBuffers[i] as VertexBuffer3DResource).getVertexBuffer3D(context),
 					_offsets[i],
 					_formats[i]
 				);
+			}
 			
 			while (i < maxBuffers)
 				context.setVertexBufferAt(i++, null);
