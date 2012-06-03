@@ -201,7 +201,7 @@ package aerys.minko.scene.node.mesh.geometry
 		
 		public function dispose() : void
 		{
-			var numStreams : uint = numStreams;
+			var numStreams : uint = numVertexStreams;
 			
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				_vertexStreams[streamId].dispose();
