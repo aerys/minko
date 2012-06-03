@@ -26,10 +26,10 @@ package aerys.minko.type.math
 		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 		
 		private static const DATA_DESCRIPTOR	: Object	= {
-			"x"	: "x",
-			"y"	: "y",
-			"z"	: "z",
-			"w"	: "w"
+			'x'	: 'x',
+			'y'	: 'y',
+			'z'	: 'z',
+			'w'	: 'w'
 		}
 
 		minko_math var _vector	: Vector3D	= new Vector3D();
