@@ -49,7 +49,25 @@ package aerys.minko.scene.node
 		{
 			_cameraData.zFar = value;
 		}
-		
+
+		public function get zoom() : Number
+		{
+			return _cameraData.zoom;
+		}
+		public function set zoom(value : Number) : void
+		{
+			_cameraData.zoom = value;
+		}		
+
+		public function get orthogonal() : Boolean
+		{
+			return _cameraData.orthogonal;
+		}
+		public function set orthogonal(value : Boolean) : void
+		{
+			_cameraData.orthogonal = value;
+		}
+				
 		public function get projection() : Matrix4x4
 		{
 			return _cameraData.projection;

@@ -11,6 +11,8 @@ package aerys.minko.scene.data
 			'fieldOfView'			: 'cameraFov',
 			'zNear'					: 'cameraZNear',
 			'zFar'					: 'cameraZFar',
+			'zoom'					: 'cameraZoom',
+			'orthogonal'			: 'cameraOrthogonal',
 			'worldToView'			: 'worldToView',
 			'viewToWorld'			: 'viewToWorld',
 			'projection'			: 'projection',
@@ -24,6 +26,8 @@ package aerys.minko.scene.data
 		private var _fieldOfView		: Number		= 0.0;
 		private var _zNear				: Number		= 0.0;
 		private var _zFar				: Number		= 0.0;
+		private var _zoom				: Number		= 1;
+		private var _orthogonal			: Boolean		= false;
 		private var _worldToView		: Matrix4x4		= null;
 		private var _viewToWorld		: Matrix4x4		= null;
 		private var _worldToScreen		: Matrix4x4		= new Matrix4x4();
@@ -69,6 +73,26 @@ package aerys.minko.scene.data
 		{
 			_zFar = value;
 			_changed.execute(this, 'zFar');
+		}
+
+		public function get zoom() : Number
+		{
+			return _zoom;
+		}
+		public function set zoom(value : Number) : void
+		{
+			_zoom = value;
+			_changed.execute(this, 'zoom');
+		}
+
+		public function get orthogonal() : Boolean
+		{
+			return _orthogonal;
+		}
+		public function set orthogonal(value : Boolean) : void
+		{
+			_orthogonal = value;
+			_changed.execute(this, 'orthogonal');
 		}
 		
 		public function get worldToView() : Matrix4x4
