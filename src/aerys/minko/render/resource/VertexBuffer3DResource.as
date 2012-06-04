@@ -26,6 +26,8 @@ package aerys.minko.render.resource
 		private var _vertexBuffer	: VertexBuffer3D	= null;
 		private var _numVertices	: uint				= 0;
 		
+		private var _disposed		: Boolean			= false;
+		
 		private var _uploaded		: Signal			= new Signal('VertexBuffer3DRessource.uploaded');
 		
 		public function get uploaded() : Signal
@@ -53,6 +55,9 @@ package aerys.minko.render.resource
 		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D
 		{
 			var update	: Boolean	= _update;
+			
+			if (_disposed)
+				throw new Error('Unable to render a disposed buffer.');
 
 			if (_lengthChanged)
 			{
@@ -92,6 +97,11 @@ package aerys.minko.render.resource
 				_vertexBuffer.dispose();
 				_vertexBuffer = null;
 			}
+				
+			_disposed = true;
+			_stream = null;
+			_update = false;
+			_numVertices = 0;
 		}
 	}
 }

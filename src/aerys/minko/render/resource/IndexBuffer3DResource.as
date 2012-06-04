@@ -24,6 +24,8 @@ package aerys.minko.render.resource
 		private var _lengthChanged	: Boolean		= true;
 		private var _indexBuffer	: IndexBuffer3D	= null;
 		private var _numIndices		: uint			= 0;
+		
+		private var _disposed		: Boolean		= false;
 
 		public function get numIndices() : uint
 		{
@@ -45,9 +47,9 @@ package aerys.minko.render.resource
 		public function getIndexBuffer3D(context : Context3DResource) : IndexBuffer3D
 		{
 			var update : Boolean	= _update;
-
-			if (_stream.length == 0)
-				return null;
+			
+			if (_disposed)
+				throw new Error('Unable to render a disposed buffer.');
 
 			if (_indexBuffer == null || _lengthChanged)
 			{
@@ -79,6 +81,10 @@ package aerys.minko.render.resource
 				_indexBuffer.dispose();
 				_indexBuffer = null;
 			}
+				
+			_disposed = true;
+			_stream = null;
+			_numIndices = 0;
 		}
 	}
 }
