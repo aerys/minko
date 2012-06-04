@@ -4,24 +4,28 @@ package aerys.minko.render.effect.vertex
 	import aerys.minko.render.effect.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
 	
-	public final class VertexNormalShader extends BasicShader
+	public class VertexNormalShader extends BasicShader
 	{
+		private var _normal	: SFloat	= null;
+		
 		public function VertexNormalShader(target	: RenderTarget	= null,
-									  priority	: Number		= 0.)
+										   priority	: Number		= 0.)
 		{
 			super(target, priority);
 		}
 		
+		override protected function getVertexPosition() : SFloat
+		{
+			_normal = deltaLocalToWorld(vertexAnimation.getAnimatedVertexNormal());
+			_normal = normalize(_normal);
+			_normal = divide(add(_normal, 1), 2);
+			
+			return super.getVertexPosition();
+		}
+		
 		override protected function getPixelColor() : SFloat
 		{
-			var normal : SFloat = interpolate(
-				vertexAnimation.getAnimatedVertexNormal()
-			);
-			
-			normal = normalize(normal);
-			normal = divide(add(normal, 1), 2);
-			
-			return float4(normal.xyz, 1);
+			return float4(normalize(interpolate(_normal.xyz)), 1);
 		}
 	}
 }
