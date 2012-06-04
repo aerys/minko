@@ -715,8 +715,10 @@ package aerys.minko.type.math
 			if ((x_axis_X == 0 && x_axis_Y == 0 && x_axis_Z == 0) 
 				|| (y_axis_X == 0 && y_axis_Y == 0 && y_axis_Z == 0))
 			{
-				throw new Error('Invalid argument(s): the eye direction (look at - eye position) '
-					+ 'and the up vector appear to be the same.');
+				throw new Error(
+					'Invalid argument(s): the eye direction (look at - eye position) '
+					+ 'and the up vector appear to be the same.'
+				);
 			}
 			
 			var	m41	: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
@@ -737,7 +739,7 @@ package aerys.minko.type.math
 							   position	: Vector4	= null,
 							   up		: Vector4 	= null) : Matrix4x4
 		{
-			return view(position || getTranslation(TMP_VECTOR4), target, up).invert();
+			return view(position || getTranslation(), target, up).invert();
 		}
 		
 		/**
@@ -761,9 +763,9 @@ package aerys.minko.type.math
 							 lookAt : Vector4,
 							 up		: Vector4	= null) : Matrix4x4
 		{
-			Vector4.subtract(lookAt, eye, TMP_VECTOR4);
+			var direction : Vector4 = Vector4.subtract(lookAt, eye, TMP_VECTOR4);
 			
-			return orient(eye, TMP_VECTOR4, up);
+			return orient(eye, direction, up);
 		}
 
 		public function perspectiveFoV(fov		: Number,
