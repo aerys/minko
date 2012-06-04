@@ -16,18 +16,17 @@ package aerys.minko.render.effect.vertex
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			_vertexPosition = super.getVertexPosition();
+			var screenPosition : SFloat = super.getVertexPosition();
 			
-			return _vertexPosition;
+			_vertexPosition = screenPosition;
+			_vertexPosition = divide(add(_vertexPosition, 1), 2);
+			
+			return screenPosition;
 		}
 		
 		override protected function getPixelColor() : SFloat
 		{
-			var pos : SFloat = interpolate(_vertexPosition);
-			
-			pos = divide(add(pos, 1), 2);
-			
-			return float4(pos.xyz, 1);
+			return float4(interpolate(_vertexPosition.xyz), 1);
 		}
 	}
 }
