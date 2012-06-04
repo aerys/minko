@@ -228,9 +228,16 @@ package aerys.minko.render
 			
 			updateStageListeners();
 			
-			_stage3d = stage.stage3Ds[stage3dId];
-			_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
-			_stage3d.requestContext3D();
+			if (!_stage3d)
+			{
+				_stage3d = stage.stage3Ds[stage3dId];
+				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
+				_stage3d.requestContext3D();
+			}
+			else
+			{
+				_stage3d.visible = true;
+			}
 		}
 		
 		/**
