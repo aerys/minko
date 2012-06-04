@@ -97,7 +97,10 @@ package aerys.minko.scene.controller.camera
 			var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
 			var ratio			: Number				= viewportWidth / viewportHeight;
 			
-			cameraData.projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
+			if(!cameraData.orthogonal)
+				cameraData.projection.perspectiveFoV(cameraData.fieldOfView/cameraData.zoom, ratio, cameraData.zNear, cameraData.zFar);
+			else
+				cameraData.projection.ortho(viewportWidth/cameraData.zoom, viewportHeight/cameraData.zoom, cameraData.zNear, cameraData.zFar);
 			
 			screenToView.lock()
 				.copyFrom(cameraData.projection)
