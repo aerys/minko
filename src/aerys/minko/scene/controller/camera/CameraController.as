@@ -65,17 +65,16 @@ package aerys.minko.scene.controller.camera
 		
 		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4, propertyName : String) : void
 		{
-			var cameraData	: CameraDataProvider	= _camera.cameraData;
+			var cameraData			: CameraDataProvider	= _camera.cameraData;
+			var cameraWorldToScreen	: Matrix4x4				= cameraData.worldToScreen;
+			var cameraScreenToWorld	: Matrix4x4				= cameraData.screenToWorld;
 			
-			cameraData.worldToScreen.lock()
-				.copyFrom(_camera.worldToLocal)
-				.append(cameraData.projection)
-				.unlock();
-			
-			cameraData.screenToWorld.lock()
-				.copyFrom(cameraData.screenToView)
-				.append(_camera.localToWorld)
-				.unlock();
+			cameraWorldToScreen.lock();
+			cameraScreenToWorld.lock();
+			cameraWorldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
+			cameraScreenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
+			cameraWorldToScreen.unlock();
+			cameraScreenToWorld.unlock();
 		}
 		
 		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
@@ -91,28 +90,30 @@ package aerys.minko.scene.controller.camera
 		private function updateProjection() : void
 		{
 			var cameraData		: CameraDataProvider	= _camera.cameraData;
-			var screenToView	: Matrix4x4				= cameraData.screenToView;
 			var sceneBindings	: DataBindings			= Scene(_camera.root).bindings;
 			var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
 			var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
 			var ratio			: Number				= viewportWidth / viewportHeight;
 			
-			cameraData.projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
+			var projection		: Matrix4x4				= cameraData.projection;
+			var screenToView	: Matrix4x4				= cameraData.screenToView;
+			var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
+			var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
 			
-			screenToView.lock()
-				.copyFrom(cameraData.projection)
-				.invert()
-				.unlock();
+			projection.lock();
+			screenToView.lock();
+			screenToWorld.lock();
+			worldToScreen.lock();
 			
-			cameraData.screenToWorld.lock()
-				.copyFrom(cameraData.screenToView)
-				.append(_camera.localToWorld)
-				.unlock();
+			projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
+			screenToView.copyFrom(cameraData.projection).invert();
+			screenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
+			worldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
 			
-			cameraData.worldToScreen.lock()
-				.copyFrom(_camera.worldToLocal)
-				.append(cameraData.projection)
-				.unlock();
+			projection.unlock();
+			screenToView.unlock();
+			screenToWorld.unlock();
+			worldToScreen.unlock();
 		}
 	}
 }
