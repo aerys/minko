@@ -37,6 +37,9 @@ package aerys.minko.scene.controller.camera
 		private var _thetaStep			: Number	= 0.01;
 		private var _phiStep			: Number	= 0.01;
 		
+		/**
+		 * Distance between look at point and target
+		 */		
 		public function get distance() : Number
 		{
 			return _distance;
@@ -46,6 +49,9 @@ package aerys.minko.scene.controller.camera
 			_distance = value;
 		}
 		
+		/**
+		 * Horizontal rotation angle (in radians)
+		 */		
 		public function get theta() : Number
 		{
 			return _theta;
@@ -55,6 +61,9 @@ package aerys.minko.scene.controller.camera
 			_theta = value;
 		}
 		
+		/**
+		 * Vertical rotation angle (in radians)
+		 */		
 		public function get phi() : Number
 		{
 			return _phi;
@@ -64,16 +73,25 @@ package aerys.minko.scene.controller.camera
 			_phi = value;
 		}
 		
+		/**
+		 * Position the targets will look at
+		 */
 		public function get lookAt() : Vector4
 		{
 			return _lookAt;
 		}
 		
+		/**
+		 * Up vector the targets will rotate around
+		 */
 		public function get up() : Vector4
 		{
 			return _up;
 		}
 		
+		/**
+		 * Minimum distance constrain between look at point and target.
+		 */		
 		public function get minDistance() : Number
 		{
 			return _minDistance;
@@ -83,6 +101,9 @@ package aerys.minko.scene.controller.camera
 			_minDistance = value;
 		}
 		
+		/**
+		 * Maximum distance constrain between look at point and target.
+		 */		
 		public function get maxDistance() : Number
 		{
 			return _maxDistance;
@@ -92,6 +113,9 @@ package aerys.minko.scene.controller.camera
 			_maxDistance = value;
 		}
 		
+		/**
+		 * Distance step applied to the camera when the mouse wheel is used in meters/wheel rotation unit
+		 */		
 		public function get distanceStep() : Number
 		{
 			return _distanceStep;
@@ -101,6 +125,9 @@ package aerys.minko.scene.controller.camera
 			_distanceStep = value;
 		}
 		
+		/**
+		 * Horizontal angular step applied to the camera when the mouse is moved in radian/pixel
+		 */		
 		public function get thetaStep() : Number
 		{
 			return _thetaStep;
@@ -110,6 +137,9 @@ package aerys.minko.scene.controller.camera
 			_thetaStep = value;
 		}
 		
+		/**
+		 * Vertical angular step applied to the camera when the mouse is moved in radian/pixel
+		 */		
 		public function get phiStep() : Number
 		{
 			return _phiStep;
@@ -165,9 +195,9 @@ package aerys.minko.scene.controller.camera
 					_phi = Math.PI - EPSILON;
 				
 				_position.set(
-					_distance * Math.cos(_theta) * Math.sin(_phi) + _lookAt.x,
-					_distance * Math.cos(_phi) + _lookAt.y,
-					_distance * Math.sin(_theta) * Math.sin(_phi) + _lookAt.z
+					_lookAt.x + _distance * Math.cos(_theta) * Math.sin(_phi),
+					_lookAt.y + _distance * Math.cos(_phi),
+					_lookAt.z + _distance * Math.sin(_theta) * Math.sin(_phi)
 				);
 				
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
@@ -191,8 +221,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown)
 			{
-				_theta	+= (_mousePosition.x - e.stageX) / 100.0;
-				_phi	+= (_mousePosition.y - e.stageY) / 100.0;
+				_theta	+= (_mousePosition.x - e.stageX) * _thetaStep;
+				_phi	+= (_mousePosition.y - e.stageY) * _phiStep;
 				
 				_update = true;
 			}
