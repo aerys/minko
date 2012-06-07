@@ -78,12 +78,12 @@ package aerys.minko.scene.node
 		
 		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
 		{
-			out ||= new Ray();
-			
 			if (!(root is Scene))
 				throw new Error('Camera must be in the scene to unproject vectors.');
 			
-			var sceneBindings	: DataBindings	= Scene(root).bindings;
+			out ||= new Ray();
+			
+			var sceneBindings	: DataBindings	= (root as Scene).bindings;
 			var zNear			: Number		= _cameraData.zNear;
 			var zFar			: Number		= _cameraData.zFar;
 			var fovDiv2			: Number		= _cameraData.fieldOfView * 0.5;

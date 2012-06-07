@@ -21,9 +21,9 @@ package aerys.minko.scene.controller.camera
 		
 		protected var _mousePosition	: Point		= new Point();
 		
-		private var _distance			: Number	= 0;
-		private var _theta				: Number	= 0;
-		private var _phi				: Number	= 0;
+		private var _distance			: Number	= 1.;
+		private var _yaw				: Number	= 0;
+		private var _pitch				: Number	= 0;
 		private var _update				: Boolean	= true;
 		
 		private var _position			: Vector4	= new Vector4(0, 0, 0, 1);
@@ -46,22 +46,22 @@ package aerys.minko.scene.controller.camera
 			_distance = value;
 		}
 		
-		public function get theta() : Number
+		public function get yaw() : Number
 		{
-			return _theta;
+			return _yaw;
 		}
-		public function set theta(value : Number) : void
+		public function set yaw(value : Number) : void
 		{
-			_theta = value;
+			_yaw = value;
 		}
 		
-		public function get phi() : Number
+		public function get pitch() : Number
 		{
-			return _phi;
+			return _pitch;
 		}
-		public function set phi(value : Number)	: void
+		public function set pitch(value : Number)	: void
 		{
-			_phi = value;
+			_pitch = value;
 		}
 		
 		public function get lookAt() : Vector4
@@ -159,15 +159,15 @@ package aerys.minko.scene.controller.camera
 					_distance = _minDistance;
 				if (_distance > _maxDistance)
 					_distance = _maxDistance;
-				if (_phi <= EPSILON)
-					_phi = EPSILON;
-				if (_phi > Math.PI - EPSILON)
-					_phi = Math.PI - EPSILON;
+				if (_pitch <= EPSILON)
+					_pitch = EPSILON;
+				if (_pitch > Math.PI - EPSILON)
+					_pitch = Math.PI - EPSILON;
 				
 				_position.set(
-					_distance * Math.cos(_theta) * Math.sin(_phi) + _lookAt.x,
-					_distance * Math.cos(_phi) + _lookAt.y,
-					_distance * Math.sin(_theta) * Math.sin(_phi) + _lookAt.z
+					_distance * Math.cos(_yaw) * Math.sin(_pitch) + _lookAt.x,
+					_distance * Math.cos(_pitch) + _lookAt.y,
+					_distance * Math.sin(_yaw) * Math.sin(_pitch) + _lookAt.z
 				);
 				
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
@@ -191,8 +191,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown)
 			{
-				_theta	+= (_mousePosition.x - e.stageX) / 100.0;
-				_phi	+= (_mousePosition.y - e.stageY) / 100.0;
+				_yaw	+= (_mousePosition.x - e.stageX) / 100.0;
+				_pitch	+= (_mousePosition.y - e.stageY) / 100.0;
 				
 				_update = true;
 			}
