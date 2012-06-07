@@ -159,7 +159,7 @@ package aerys.minko.render.shader.part
 		
 		protected function get cameraDirection() : SFloat
 		{
-			return multiply4x4(float4(0, 0, 1, 1), viewToWorldMatrix);
+			return multiply3x3(float4(0, 0, 1, 1), viewToWorldMatrix);
 		}
 		
 		protected function get cameraZNear() : SFloat
