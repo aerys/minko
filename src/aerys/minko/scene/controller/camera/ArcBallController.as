@@ -212,7 +212,7 @@ package aerys.minko.scene.controller.camera
 		
 		protected function mouseWheelHandler(e : MouseEvent) : void
 		{
-			_distance	-=	e.delta;
+			_distance	-=	e.delta * _distanceStep;
 			_update		=	true;
 		}
 		
