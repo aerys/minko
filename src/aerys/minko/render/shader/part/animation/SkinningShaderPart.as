@@ -1,7 +1,7 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -54,6 +54,26 @@ package aerys.minko.render.shader.part.animation
 
 				case SkinningMethod.DUAL_QUATERNION_SCALE:
 					return dualQuaternionScaleSkinNormal(inNormal);
+					
+				default :
+					throw new Error('Unknown animation method.');
+			}
+		}
+		
+		public function skinTangent(inTangent : SFloat) : SFloat
+		{
+			var skinningMethod : uint = uint(meshBindings.getConstant('skinningMethod'));
+			
+			switch (skinningMethod)
+			{
+				case SkinningMethod.MATRIX:
+					return matrixSkinTangent(inTangent);
+					
+				case SkinningMethod.DUAL_QUATERNION:
+					return dualQuaternionSkinTangent(inTangent);
+					
+				case SkinningMethod.DUAL_QUATERNION_SCALE:
+					return dualQuaternionScaleSkinTangent(inTangent);
 					
 				default :
 					throw new Error('Unknown animation method.');
@@ -167,6 +187,10 @@ package aerys.minko.render.shader.part.animation
 			return outVertexNormal;
 		}
 		
+		private function matrixSkinTangent(inTangent:SFloat):SFloat
+		{
+			return inTangent;
+		}
 		
 		private function dualQuaternionSkinPosition(inPosition : SFloat) : SFloat
 		{
@@ -338,6 +362,10 @@ package aerys.minko.render.shader.part.animation
 			return normalize(outNormal);
 		}
 		
+		private function dualQuaternionSkinTangent(inTangent:SFloat):SFloat
+		{
+			return inTangent;
+		}
 		
 		private function dualQuaternionScaleSkinPosition(inPosition : SFloat) : SFloat
 		{
@@ -348,6 +376,13 @@ package aerys.minko.render.shader.part.animation
 		{
 			throw new Error("This feature is still to be implemented. Use DualQuaternion of Matrix instead.");
 		}
+		
+		private function dualQuaternionScaleSkinTangent(inTangent:SFloat):SFloat
+		{
+			throw new Error("This feature is still to be implemented. Use DualQuaternion of Matrix instead.");
+		}
+		
+
 
 	}
 }

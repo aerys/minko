@@ -53,5 +53,20 @@ package aerys.minko.render.shader.part.animation
 			
 			return vertexNormal;
 		}
+		
+		public function getAnimatedVertexTangent() : SFloat
+		{
+			var vertexTangent : SFloat;
+			
+			if (meshBindings.propertyExists('morphingEnabled'))
+				vertexTangent = _morphing.getMorphedTangent();
+			else
+				vertexTangent = getVertexAttribute(VertexComponent.TANGENT);
+			
+			if (meshBindings.propertyExists('skinningMethod'))
+				vertexTangent = _skinning.skinTangent(vertexTangent);
+			
+			return vertexTangent;
+		}
 	}
 }
