@@ -22,7 +22,7 @@ package aerys.minko.render.effect.sprite
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			settings.blending = Blending.ALPHA;
-			settings.depthTest = DepthTest.ALWAYS;
+			settings.depthTest = DepthTest.LESS;
 		}
 		
 		override protected function getVertexPosition() : SFloat
@@ -30,6 +30,8 @@ package aerys.minko.render.effect.sprite
 			var vertexXY	: SFloat	= vertexXY.xy;
 		
 			_uv = multiply(add(vertexXY, 0.5), float2(1, -1));
+			
+			var depth	: SFloat 	= meshBindings.getParameter('depth', 1);
 			
 			var xy		: SFloat	= float2(
 				meshBindings.getParameter('x', 1),
@@ -50,7 +52,7 @@ package aerys.minko.render.effect.sprite
 			vertexXY.scaleBy(divide(size, divide(vpSize, 2)));
 			vertexXY.incrementBy(xy);
 			
-			return float4(vertexXY, 0, 1);
+			return float4(vertexXY, depth, 1);
 		}
 		
 		override protected function getPixelColor() : SFloat
