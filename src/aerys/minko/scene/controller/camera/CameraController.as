@@ -79,7 +79,7 @@ package aerys.minko.scene.controller.camera
 				.unlock();
 			
 			cameraData.viewToWorld.transformVector(Vector4.ZERO, cameraData.position);
-			cameraData.viewToWorld.transformVector(Vector4.Z_AXIS, cameraData.direction).normalize();
+			cameraData.viewToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraData.direction).normalize();
 		}
 		
 		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
