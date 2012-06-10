@@ -7,6 +7,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	public final class CameraController extends AbstractController
 	{
@@ -76,6 +77,9 @@ package aerys.minko.scene.controller.camera
 				.copyFrom(cameraData.screenToView)
 				.append(_camera.localToWorld)
 				.unlock();
+			
+			cameraData.viewToWorld.transformVector(Vector4.ZERO, cameraData.position);
+			cameraData.viewToWorld.transformVector(Vector4.Z_AXIS, cameraData.direction).normalize();
 		}
 		
 		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void

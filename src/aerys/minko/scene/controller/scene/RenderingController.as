@@ -92,6 +92,11 @@ package aerys.minko.scene.controller.scene
 		private var _effectToMeshes				: Dictionary				= null;
 		private var _numStashedPropertyChanges	: int						= 0;
 		
+		public function get numPasses() : uint
+		{
+			return _passes.length;
+		}
+		
 		public function get numTriangles() : uint
 		{
 			return _numTriangles;
