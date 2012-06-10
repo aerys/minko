@@ -49,7 +49,9 @@ package aerys.minko.type.data
 				var dpAttribute	: IDataProvider	= attribute as IDataProvider;
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
-					throw new Error('Another Dataprovider is already declaring "' + bindingName + '".');
+					throw new Error(
+						'Another Dataprovider is already declaring the \'' + bindingName + '\' property.'
+					);
 				
 				if (dpAttribute != null)
 				{
@@ -129,6 +131,14 @@ package aerys.minko.type.data
 			for each (bindingName in bindingNames)
 				if (_bindingNameToChangedSignal[bindingName])
 					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null);
+		}
+		
+		public function removeAllProviders() : void
+		{
+			var numProviders : uint = this.numProviders;
+			
+			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
+				removeProvider(getProviderAt(providerId));
 		}
 		
 		public function hasCallback(bindingName	: String,
