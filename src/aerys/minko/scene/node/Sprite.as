@@ -47,18 +47,29 @@ package aerys.minko.scene.node
 			properties.setProperty('height', value);
 		}
 		
+		public function get depth() : Number
+		{
+			return bindings.getProperty('depth') as Number;
+		}
+		public function set depth(value : Number) : void
+		{
+			properties.setProperty('depth', value);
+		}
+		
 		public function Sprite(x 			: Number	= 0.,
 							   y 			: Number	= 0.,
 							   width		: Number	= 128.,
 							   height		: Number	= 128.,
-							   properties 	: Object 	= null)
+							   properties 	: Object 	= null,
+							   depth 		: Number 	= 0)
 		{
 			super(GEOM, properties, EFFECT);
 			
 			this.x = x;
 			this.y = y;
-			this.width = width;
+			this.width 	= width;
 			this.height = height;
+			this.depth 	= depth;
 		}
 	}
 }
