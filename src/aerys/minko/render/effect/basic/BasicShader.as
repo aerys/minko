@@ -98,8 +98,10 @@ package aerys.minko.render.effect.basic
 	 */
 	public class BasicShader extends Shader
 	{
-		private var _vertexAnimationPart	: VertexAnimationShaderPart;
-		private var _diffuseShaderPart		: DiffuseShaderPart;
+		private var _vertexAnimationPart	: VertexAnimationShaderPart	= null;
+		private var _diffuseShaderPart		: DiffuseShaderPart			= null;
+		
+		private var _vertexNormal			: SFloat					= null;
 		
 		protected function get diffuse() : DiffuseShaderPart
 		{
@@ -190,6 +192,16 @@ package aerys.minko.render.effect.basic
 		 */
 		override protected function getVertexPosition() : SFloat
 		{
+			var triangleCulling	: uint	= meshBindings.getConstant(
+				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
+			);
+			
+			_vertexNormal = _vertexAnimationPart.getAnimatedVertexNormal();
+			// flip the normal when the triangle culling is flipped
+			if (triangleCulling == TriangleCulling.FRONT)
+				_vertexNormal = multiply(vertexNormal, float4(-1, -1, -1, 1));
+			_vertexNormal = deltaLocalToWorld(_vertexNormal);
+			
 			return localToScreen(
 				_vertexAnimationPart.getAnimatedVertexPosition()
 			);
@@ -201,36 +213,32 @@ package aerys.minko.render.effect.basic
 		 */
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuse			: SFloat = _diffuseShaderPart.getDiffuse();
-			var vertexNormal	: SFloat = _vertexAnimationPart.getAnimatedVertexNormal();
+			var diffuse	: SFloat = _diffuseShaderPart.getDiffuse();
 			
 			// directional lighting
 			if (sceneBindings.getConstant('lightEnabled', false)
 				&& meshBindings.getConstant('lightEnabled', false))
 			{
-				var lightDirection	: SFloat = sceneBindings.getParameter("lightDirection", 3);
-				var normal			: SFloat = normalize(
-					interpolate(
-						float4(multiply3x3(vertexNormal, localToWorldMatrix), 1)
-					)
-				);
+				var lightDirection	: SFloat = sceneBindings.getParameter('lightDirection', 3);
+				var normal			: SFloat = normalize(interpolate(_vertexNormal));
+					
 				var lambert			: SFloat = saturate(negate(dotProduct3(
 					normal,
 					normalize(lightDirection)
 				)));
 				
-				lambert.scaleBy(sceneBindings.getParameter("lightDiffuse", 1));
+				lambert.scaleBy(sceneBindings.getParameter('lightDiffuse', 1));
 				
 				var lightColor		: SFloat = add(
 					// ambient
 					multiply(
-						sceneBindings.getParameter("lightAmbient", 1),
-						sceneBindings.getParameter("lightAmbientColor", 3)
+						sceneBindings.getParameter('lightAmbient', 1),
+						sceneBindings.getParameter('lightAmbientColor', 3)
 					),
 					// diffuse
 					multiply(
 						lambert,
-						sceneBindings.getParameter("lightDiffuseColor", 3)
+						sceneBindings.getParameter('lightDiffuseColor', 3)
 					)
 				);
 				
