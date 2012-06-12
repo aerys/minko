@@ -25,9 +25,14 @@ package aerys.minko.scene.node
 		private var _properties		: DataProvider			= null;
 		private var _bindings		: DataBindings			= new DataBindings();
 		
-		private var _enterFrame		: Signal				= new Signal("Scene.enterFrame");
-		private var _exitFrame		: Signal				= new Signal("Scene.exitFrame");
+		private var _enterFrame		: Signal				= new Signal('Scene.enterFrame');
+		private var _exitFrame		: Signal				= new Signal('Scene.exitFrame');
 
+		public function get numPasses() : uint
+		{
+			return _renderingCtrl.numPasses;
+		}
+		
 		public function get numTriangles() : uint
 		{
 			return _renderingCtrl.numTriangles;

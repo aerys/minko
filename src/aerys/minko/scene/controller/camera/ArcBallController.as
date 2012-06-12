@@ -21,9 +21,9 @@ package aerys.minko.scene.controller.camera
 		
 		protected var _mousePosition	: Point		= new Point();
 		
-		private var _distance			: Number	= 0;
-		private var _theta				: Number	= 0;
-		private var _phi				: Number	= 0;
+		private var _distance			: Number	= 1.;
+		private var _yaw				: Number	= 0;
+		private var _pitch				: Number	= 0;
 		private var _update				: Boolean	= true;
 		
 		private var _position			: Vector4	= new Vector4(0, 0, 0, 1);
@@ -34,8 +34,8 @@ package aerys.minko.scene.controller.camera
 		private var _maxDistance		: Number	= 1000;
 		
 		private var _distanceStep		: Number	= 1;
-		private var _thetaStep			: Number	= 0.01;
-		private var _phiStep			: Number	= 0.01;
+		private var _yawStep			: Number	= 0.01;
+		private var _pitchStep			: Number	= 0.01;
 		
 		/**
 		 * Distance between look at point and target
@@ -52,25 +52,25 @@ package aerys.minko.scene.controller.camera
 		/**
 		 * Horizontal rotation angle (in radians)
 		 */		
-		public function get theta() : Number
+		public function get yaw() : Number
 		{
-			return _theta;
+			return _yaw;
 		}
-		public function set theta(value : Number) : void
+		public function set yaw(value : Number) : void
 		{
-			_theta = value;
+			_yaw = value;
 		}
 		
 		/**
 		 * Vertical rotation angle (in radians)
 		 */		
-		public function get phi() : Number
+		public function get pitch() : Number
 		{
-			return _phi;
+			return _pitch;
 		}
-		public function set phi(value : Number)	: void
+		public function set pitch(value : Number)	: void
 		{
-			_phi = value;
+			_pitch = value;
 		}
 		
 		/**
@@ -128,26 +128,26 @@ package aerys.minko.scene.controller.camera
 		/**
 		 * Horizontal angular step applied to the camera when the mouse is moved in radian/pixel
 		 */		
-		public function get thetaStep() : Number
+		public function get yawStep() : Number
 		{
-			return _thetaStep;
+			return _yawStep;
 		}
-		public function set thetaStep(value : Number) : void
+		public function set yawStep(value : Number) : void
 		{
-			_thetaStep = value;
+			_yawStep = value;
 		}
 		
 		/**
 		 * Vertical angular step applied to the camera when the mouse is moved in radian/pixel
 		 */		
-		public function get phiStep() : Number
+		public function get pitchStep() : Number
 		{
-			return _phiStep;
+			return _pitchStep;
 		}
 		
-		public function set phiStep(value : Number)	: void
+		public function set pitchStep(value : Number)	: void
 		{
-			_phiStep = value;
+			_pitchStep = value;
 		}
 		
 		public function ArcBallController()
@@ -189,15 +189,15 @@ package aerys.minko.scene.controller.camera
 					_distance = _minDistance;
 				if (_distance > _maxDistance)
 					_distance = _maxDistance;
-				if (_phi <= EPSILON)
-					_phi = EPSILON;
-				if (_phi > Math.PI - EPSILON)
-					_phi = Math.PI - EPSILON;
+				if (_pitch <= EPSILON)
+					_pitch = EPSILON;
+				if (_pitch > Math.PI - EPSILON)
+					_pitch = Math.PI - EPSILON;
 				
 				_position.set(
-					_lookAt.x + _distance * Math.cos(_theta) * Math.sin(_phi),
-					_lookAt.y + _distance * Math.cos(_phi),
-					_lookAt.z + _distance * Math.sin(_theta) * Math.sin(_phi)
+					_lookAt.x + _distance * Math.cos(_yaw) * Math.sin(_pitch),
+					_lookAt.y + _distance * Math.cos(_pitch),
+					_lookAt.z + _distance * Math.sin(_yaw) * Math.sin(_pitch)
 				);
 				
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
@@ -221,8 +221,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown)
 			{
-				_theta	+= (_mousePosition.x - e.stageX) * _thetaStep;
-				_phi	+= (_mousePosition.y - e.stageY) * _phiStep;
+				_yaw	+= (_mousePosition.x - e.stageX) * _yawStep;
+				_pitch	+= (_mousePosition.y - e.stageY) * _pitchStep;
 				
 				_update = true;
 			}

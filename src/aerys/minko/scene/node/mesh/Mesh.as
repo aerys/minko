@@ -12,6 +12,9 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.data.IDataProvider;
+	
+	import flash.utils.flash_proxy;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -276,6 +279,20 @@ package aerys.minko.scene.node.mesh
 			name = source.name;
 			_geometry = source._geometry;
 			properties = source._properties.clone();
+			
+			var numProviders : uint = source._bindings.numProviders;
+			
+			bindings.removeAllProviders();
+			for (var providerIndex : uint = 0; providerIndex < numProviders; ++providerIndex)
+			{
+				var provider : IDataProvider = source._bindings.getProviderAt(providerIndex);
+				
+				if (provider != source.transformData && provider != source.properties)
+					bindings.addProvider(provider);
+			}
+			
+			_properties = source.properties.clone();
+			bindings.addProvider(_properties);
 			
 			copyControllersFrom(source, this, cloneControllers);
 			transform.copyFrom(source.transform);

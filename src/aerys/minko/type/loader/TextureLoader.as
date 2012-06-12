@@ -101,10 +101,13 @@ package aerys.minko.type.loader
 			if (assetObject is Bitmap || assetObject is BitmapData)
 			{
 				var bitmapData : BitmapData = assetObject as BitmapData;
+				
 				if (bitmapData == null)
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
 				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
+				bitmapData.dispose();
+				
 				_isComplete = true;
 				_complete.execute(this, _textureResource);
 			}
@@ -141,6 +144,7 @@ package aerys.minko.type.loader
 				bytes.position = 0;
 				
 				var loader : Loader = new Loader();
+				
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadBytesCompleteHandler);
 				loader.loadBytes(bytes);
 			}
@@ -152,7 +156,11 @@ package aerys.minko.type.loader
 			
 			if (displayObject is Bitmap)
 			{
-				_textureResource.setContentFromBitmapData(Bitmap(displayObject).bitmapData, _mipmap);
+				var bitmapData : BitmapData = Bitmap(displayObject).bitmapData;
+				
+				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
+				bitmapData.dispose();
+				
 				_isComplete = true;
 				_complete.execute(this, _textureResource);
 			}
@@ -162,7 +170,10 @@ package aerys.minko.type.loader
 				
 				className = className.substr(className.lastIndexOf(':') + 1);
 				_isComplete = true;
-				throw new Error('No texture can be created from an object of type \'' + className + '\'');
+				
+				throw new Error(
+					'No texture can be created from an object of type \'' + className + '\''
+				);
 			}
 		}
 		

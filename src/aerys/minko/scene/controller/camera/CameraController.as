@@ -7,6 +7,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	public final class CameraController extends AbstractController
 	{
@@ -68,13 +69,24 @@ package aerys.minko.scene.controller.camera
 			var cameraData			: CameraDataProvider	= _camera.cameraData;
 			var cameraWorldToScreen	: Matrix4x4				= cameraData.worldToScreen;
 			var cameraScreenToWorld	: Matrix4x4				= cameraData.screenToWorld;
+			var cameraViewToWorld	: Matrix4x4				= cameraData.viewToWorld;
+			var cameraPosition		: Vector4				= cameraData.position;
+			var cameraDirection		: Vector4				= cameraData.direction;
 			
-			cameraWorldToScreen.lock();
-			cameraScreenToWorld.lock();
+			cameraWorldToScreen.lock()
+			cameraScreenToWorld.lock()
+			cameraPosition.lock();
+			cameraDirection.lock();
+			
 			cameraWorldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
 			cameraScreenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
+			cameraViewToWorld.transformVector(Vector4.ZERO, cameraPosition);
+			cameraViewToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraDirection).normalize();
+			
 			cameraWorldToScreen.unlock();
 			cameraScreenToWorld.unlock();
+			cameraPosition.unlock();
+			cameraDirection.unlock();
 		}
 		
 		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
@@ -106,9 +118,9 @@ package aerys.minko.scene.controller.camera
 			worldToScreen.lock();
 			
 			projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
-			screenToView.copyFrom(cameraData.projection).invert();
-			screenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
-			worldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
+			screenToView.copyFrom(projection).invert();
+			screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
+			worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
 			
 			projection.unlock();
 			screenToView.unlock();

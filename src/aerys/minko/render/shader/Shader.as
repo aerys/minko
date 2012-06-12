@@ -148,7 +148,7 @@ package aerys.minko.render.shader
 				
 				var program		: Program3DResource	= null;
 				
-				//if (config.enabled)
+				if (config.enabled)
 				{
 					program = findOrCreateProgram(meshBindings, sceneBindings);
 					signature.mergeWith(program.signature);

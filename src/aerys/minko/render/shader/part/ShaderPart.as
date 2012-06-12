@@ -114,17 +114,17 @@ package aerys.minko.render.shader.part
 		
 		protected function get localToWorldMatrix() : SFloat
 		{
-			return _main._meshBindings.getParameter("localToWorld", 16);
+			return _main._meshBindings.getParameter('localToWorld', 16);
 		}
 		
 		protected function get worldToLocalMatrix() : SFloat
 		{
-			return _main._meshBindings.getParameter("worldToLocal", 16);
+			return _main._meshBindings.getParameter('worldToLocal', 16);
 		}
 		
 		protected function get worldToViewMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("worldToView", 16);
+			return _main._sceneBindings.getParameter('worldToView', 16);
 		}
 		
 		protected function get viewToWorldMatrix() : SFloat
@@ -134,57 +134,57 @@ package aerys.minko.render.shader.part
 		
 		protected function get worldToScreenMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("worldToScreen", 16);
+			return _main._sceneBindings.getParameter('worldToScreen', 16);
 		}
 		
 		protected function get screenToWorldMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("screenToWorld", 16);
+			return _main._sceneBindings.getParameter('screenToWorld', 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("projection", 16);
+			return _main._sceneBindings.getParameter('projection', 16);
 		}
 		
 		protected function get screenToViewMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter("screenToView", 16);
+			return _main._sceneBindings.getParameter('screenToView', 16);
 		}
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return multiply4x4(float4(0, 0, 0, 1), viewToWorldMatrix);
+			return _main._sceneBindings.getParameter('cameraPosition', 3);
 		}
 		
 		protected function get cameraDirection() : SFloat
 		{
-			return multiply3x3(float4(0, 0, 1, 1), viewToWorldMatrix);
+			return _main._sceneBindings.getParameter('cameraDirection', 3);
 		}
 		
 		protected function get cameraZNear() : SFloat
 		{
-			return _main._sceneBindings.getParameter("cameraZNear", 1);
+			return _main._sceneBindings.getParameter('cameraZNear', 1);
 		}
 		
 		protected function get cameraZFar() : SFloat
 		{
-			return _main._sceneBindings.getParameter("cameraZFar", 1);
+			return _main._sceneBindings.getParameter('cameraZFar', 1);
 		}
 		
 		protected function get viewportWidth() : SFloat
 		{
-			return _main._sceneBindings.getParameter("viewportWidth", 1);
+			return _main._sceneBindings.getParameter('viewportWidth', 1);
 		}
 		
 		protected function get viewportHeight() : SFloat
 		{
-			return _main._sceneBindings.getParameter("viewportHeight", 1);
+			return _main._sceneBindings.getParameter('viewportHeight', 1);
 		}
 		
 		protected function get time() : SFloat
 		{
-			return _main._sceneBindings.getParameter("time", 1);
+			return _main._sceneBindings.getParameter('time', 1);
 		}
 		
 		public function ShaderPart(main : Shader) : void
@@ -208,7 +208,7 @@ package aerys.minko.render.shader.part
 		 *
 		 * <p>Any SFloat object comming from the vertex shader but used inside
 		 * the fragment shader should be interpolated first. This is what the
-		 * "interpolate" method does.</p>
+		 * 'interpolate' method does.</p>
 		 *
 		 * <p>The interpolate method will make it possible for the shader
 		 * compiler to resolve varying registers allocations.</p>
@@ -312,9 +312,9 @@ package aerys.minko.render.shader.part
 		/**
 		 * Create a new SFloat object of size 3 by combining up to 3 values.
 		 *
-		 * <p>This method is an alias of the "combine" method. You should prefer this
+		 * <p>This method is an alias of the 'combine' method. You should prefer this
 		 * method everytime you want to build an SFloat object of size 3 because this
-		 * method will actually enforce it and "combine" will not.</p>
+		 * method will actually enforce it and 'combine' will not.</p>
 		 *
 		 * @param x
 		 * @param y
@@ -339,9 +339,9 @@ package aerys.minko.render.shader.part
 		/**
 		 * Create a new SFloat object of size 4 by combining up to 4 values.
 		 *
-		 * <p>This method is an alias of the "combine" method. You should prefer this
+		 * <p>This method is an alias of the 'combine' method. You should prefer this
 		 * method everytime you want to build an SFloat object of size 4 because
-		 * this method will actually enforce it and "combine" will not.</p>
+		 * this method will actually enforce it and 'combine' will not.</p>
 		 *
 		 * @param x
 		 * @param y
@@ -500,7 +500,7 @@ package aerys.minko.render.shader.part
 		}
 
 		/**
-		 * Elevate the "base" value to the "exp" power.
+		 * Elevate the 'base' value to the 'exp' power.
 		 *
 		 * @param base
 		 * @param exp
@@ -564,7 +564,7 @@ package aerys.minko.render.shader.part
 			var vectorNode : AbstractNode = getNode(vector);
 			
 			if (vectorNode.size < 4)
-				throw new Error("The argument 'vector' should have a size of 4.");
+				throw new Error('The argument \'vector\' should have a size of 4.');
 			
 			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
@@ -720,7 +720,7 @@ package aerys.minko.render.shader.part
 				return new SFloat(sqrt(dotProduct4(vector, vector)));
 			}
 
-			throw new Error("Unable to get the length of a value with size > 4.");
+			throw new Error('Unable to get the length of a value with size > 4.');
 		}
 
 		protected final function sqrt(scalar : Object) : SFloat
@@ -809,7 +809,7 @@ package aerys.minko.render.shader.part
 			var i	: AbstractNode	= getNode(index);
 			
 			if (!(c is BindableConstant || c is Constant))
-				throw new Error("Unable to use index on non-constant values.");
+				throw new Error('Unable to use index on non-constant values.');
 			
 			return new SFloat(new VariadicExtract(i, c, isMatrix));
 		}

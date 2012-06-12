@@ -89,7 +89,8 @@ package aerys.minko.render.resource.texture
 			if (h > MAX_SIZE)
 				h = MAX_SIZE;
 			
-			_bitmapData	= new BitmapData(w, h, bitmapData.transparent, 0);
+			if (_bitmapData == null || _bitmapData.width != w || _bitmapData.height != h)
+				_bitmapData	= new BitmapData(w, h, bitmapData.transparent, 0);
 			
 			if (w != bitmapWidth || h != bitmapHeight)
 			{

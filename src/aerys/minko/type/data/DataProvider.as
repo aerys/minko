@@ -93,10 +93,12 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function removeAllProperties() : void
+		public function removeAllProperties() : DataProvider
 		{
 			for (var propertyName : String in _data)
 				removeProperty(propertyName);
+			
+			return this;
 		}
 		
 		public function propertyExists(name : String) : Boolean
@@ -104,9 +106,11 @@ package aerys.minko.type.data
 			return _descriptor.hasOwnProperty(name);
 		}
 		
-		public function invalidate() : void
+		public function invalidate() : DataProvider
 		{
 			_changed.execute(this, null);
+			
+			return this;
 		}
 		
 		public function clone() : DataProvider

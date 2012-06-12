@@ -8,6 +8,8 @@ package aerys.minko.scene.data
 	public final class CameraDataProvider implements IDataProvider
 	{
 		private static const DATA_DESCRIPTOR	: Object = {
+			'position'				: 'cameraPosition',
+			'direction'				: 'cameraDirection',
 			'fieldOfView'			: 'cameraFov',
 			'zNear'					: 'cameraZNear',
 			'zFar'					: 'cameraZFar',
@@ -21,6 +23,8 @@ package aerys.minko.scene.data
 		
 		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
 		
+		private var _position			: Vector4		= new Vector4();
+		private var _direction			: Vector4		= new Vector4();
 		private var _fieldOfView		: Number		= 0.0;
 		private var _zNear				: Number		= 0.0;
 		private var _zFar				: Number		= 0.0;
@@ -39,6 +43,16 @@ package aerys.minko.scene.data
 		public function get dataDescriptor() : Object
 		{
 			return DATA_DESCRIPTOR;
+		}
+		
+		public function get position() : Vector4
+		{
+			return _position;
+		}
+		
+		public function get direction() : Vector4
+		{
+			return _direction;
 		}
 		
 		public function get fieldOfView() : Number

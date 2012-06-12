@@ -117,8 +117,8 @@ package aerys.minko.render.shader
 
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var nodeComponent		: uint = Components.createContinuous(0, 0, _node.size, _node.size);
-			var propertyComponent	: uint	= Components.stringToComponent(name);
+			var nodeComponent		: uint 			= Components.createContinuous(0, 0, _node.size, _node.size);
+			var propertyComponent	: uint			= Components.stringToComponent(name);
 			var propertyNode		: AbstractNode	= getNode(value);
 			
 			_node = new Overwriter(
