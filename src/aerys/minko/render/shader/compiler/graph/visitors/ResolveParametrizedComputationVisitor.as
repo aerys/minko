@@ -41,21 +41,52 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		
 		override protected function finish() : void
 		{
-			if (_isComputable[_shaderGraph.position] && !isConstant(_shaderGraph.position))
-				_shaderGraph.position = createComputableConstant(_shaderGraph.position);
-			
-			if (_isComputable[_shaderGraph.color] && !isConstant(_shaderGraph.color))
-				_shaderGraph.color = createComputableConstant(_shaderGraph.color);
-			
-			var kills		: Vector.<AbstractNode>	= _shaderGraph.kills;
-			var numKills	: uint					= kills.length;
-			
-			for (var killId : uint = 0; killId < numKills; ++killId)
+			for (var objNode : Object in _isComputable)
 			{
-				var kill : AbstractNode = kills[killId];
-				if (_isComputable[kill] && !isConstant(kill))
-					kills[killId] = createComputableConstant(kill);
+				var node : AbstractNode = AbstractNode(objNode);
+				
+				if (_isComputable[node] && !isConstant(node))
+				{
+					var numParents	: uint = node.numParents;
+					var parentId	: int;
+					
+					for (parentId = 0; parentId < numParents; ++parentId)
+						if (!_isComputable[node.getParentAt(parentId)])
+							break;
+					
+					// if at least one parent is not computable, we have to replace.
+					if (parentId != numParents)
+					{
+						// copy parents.
+						var parents : Vector.<AbstractNode> = new Vector.<AbstractNode>(numParents, true);
+						for (parentId = 0; parentId < numParents; ++parentId)
+							parents[parentId] = node.getParentAt(parentId);
+						
+						// for nodes inside the graph, replace only if parent is not computable.
+						var computableConstant : BindableConstant = createComputableConstant(node);
+						for (parentId = 0; parentId < numParents; ++parentId)
+							if (!_isComputable[parents[parentId]])
+								parents[parentId].replaceArgument(node, computableConstant);
+						
+						// for root nodes, replace all the time.
+						if (_shaderGraph.position === node)
+							_shaderGraph.position = computableConstant;
+						
+						if (_shaderGraph.color === node)
+							_shaderGraph.color = computableConstant;
+						
+						var kills		: Vector.<AbstractNode>	= _shaderGraph.kills;
+						var numKills	: uint					= kills.length;
+						
+						for (var killId : uint = 0; killId < numKills; ++killId)
+							if (kills[killId] === node)
+								kills[killId] = computableConstant;
+					}
+				}
 			}
+			
+			_isComputable			= null;
+			_computableConstantId	= 0;
 			
 			super.finish();
 		}
@@ -80,27 +111,10 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			visitArguments(instruction, isVertexShader);
 			
-			var isComputable1 : Boolean = _isComputable[instruction.argument1];
-			var isComputable2 : Boolean = !instruction.isSingle ? _isComputable[instruction.argument2] : null;
-			
 			if (instruction.isSingle)
-			{
-				_isComputable[instruction] = isComputable1;
-			}
+				_isComputable[instruction] = _isComputable[instruction.argument1];
 			else
-			{
-				_isComputable[instruction] = isComputable1 && isComputable2;
-				
-				if (!_isComputable[instruction])
-				{
-					// check if either arg1 or 2 is computable, and useful to compute
-					if (isComputable1 && !isConstant(instruction.argument1))
-						instruction.argument1 = createComputableConstant(instruction.argument1);
-					
-					if (isComputable2 && !isConstant(instruction.argument2))
-						instruction.argument2 = createComputableConstant(instruction.argument2);
-				}
-			}
+				_isComputable[instruction] = _isComputable[instruction.argument1] && _isComputable[instruction.argument2];
 		}
 		
 		override protected function visitOverwriter(overwriter	   : Overwriter, 
@@ -108,77 +122,13 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		{
 			visitArguments(overwriter, isVertexShader);
 			
-			var argumentId		: int;
-			var numArguments	: uint				= overwriter.numArguments;
+			var numArguments : uint = overwriter.numArguments;
 			
-			var computableArgs	: Vector.<AbstractNode>	= new Vector.<AbstractNode>();
-			var computableComps	: Vector.<uint>			= new Vector.<uint>();
+			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
+				if (!_isComputable[overwriter.getArgumentAt(argumentId)])
+					break;
 			
-			// which arguments are computable?
-			// remove them from the overwriter
-			for (argumentId = numArguments - 1; argumentId >= 0; --argumentId)
-			{
-				var argument : AbstractNode = overwriter.getArgumentAt(argumentId)
-				if (_isComputable[argument])
-				{
-					computableArgs.push(argument);
-					computableComps.push(overwriter.getComponentAt(argumentId));
-					
-					overwriter.removeArgumentAt(argumentId);
-					--numArguments;
-				}
-			}
-			
-			var computableArgsCount : uint = computableArgs.length;
-			
-			// all arguments are computable!
-			if (numArguments == 0)
-			{
-				// put the arguments and components back
-				numArguments = computableArgs.length;
-				for (argumentId = 0; argumentId < numArguments; ++argumentId)
-					overwriter.addArgumentAt(argumentId, 
-						computableArgs[argumentId], computableComps[argumentId]);
-				
-				// tell the parent we are computable
-				_isComputable[overwriter] = true;
-			}
-			// no arguments are computable
-			else if (computableArgsCount == 0)
-			{
-				_isComputable[overwriter] = false;
-			}
-			// only one argument is computable. 
-			else if (computableArgsCount == 1)
-			{
-				// there is no need to replace it if it's already a parameter or a contant.
-				if (isConstant(computableArgs[0]))
-				{
-					overwriter.addArgumentAt(0, computableArgs[0], computableComps[0]);
-				}
-				// we must replace it otherwise
-				else
-				{
-					overwriter.addArgumentAt(0,
-						createComputableConstant(computableArgs[0]),
-						computableComps[0]
-					);
-				}
-			}
-			// more than one argument is computable in CPU, 
-			// we are going to decompose this overwriter into 2 overwriters. One on CPU, one on GPU
-			else
-			{
-				
-				Minko.log(DebugLevel.SHADER_WARNING, 'Could not split overwriter. Shader code was not fully optimized');
-				
-				// put everything back to normal
-				numArguments = computableArgs.length;
-				for (argumentId = 0; argumentId < numArguments; ++argumentId)
-					overwriter.addArgumentAt(argumentId, 
-						computableArgs[argumentId], computableComps[argumentId]);
-				
-			}
+			_isComputable[overwriter] = argumentId == numArguments;
 		}
 		
 		override protected function visitAttribute(attribute	  : Attribute, 

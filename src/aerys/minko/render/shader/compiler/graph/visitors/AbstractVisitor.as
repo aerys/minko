@@ -85,15 +85,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				parents[parentId] = oldNode.getParentAt(parentId);
 			
 			for (parentId = 0; parentId < numParents; ++parentId)
-			{
-				var parent		: AbstractNode	= parents[parentId];
-				var numArgument	: uint			= parent.numArguments;
-				
-				// loop backward, because we are removing elements from the parents array
-				for (var argumentId : int = numArgument - 1; argumentId >= 0; --argumentId)
-					if (parent.getArgumentAt(argumentId) === oldNode)
-						parent.setArgumentAt(argumentId, newNode);
-			}
+				parents[parentId].replaceArgument(oldNode, newNode);
 			
 			if (_shaderGraph.position === oldNode)
 				_shaderGraph.position = newNode;
