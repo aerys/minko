@@ -162,6 +162,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				
 				visit(kill, false);
 				pushInstruction(new Instruction(Instruction.KIL, kill), false);
+				extendLifeTime(kill, false);
 			}
 			
 			finish();
