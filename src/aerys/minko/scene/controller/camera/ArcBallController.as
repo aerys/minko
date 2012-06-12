@@ -36,8 +36,8 @@ package aerys.minko.scene.controller.camera
 		private var _maxDistance		: Number	= 1000;
 		
 		private var _distanceStep		: Number	= 1;
-		private var _thetaStep			: Number	= 0.01;
-		private var _phiStep			: Number	= 0.01;
+		private var _yawStep			: Number	= 0.01;
+		private var _pitchStep			: Number	= 0.01;
 		
 		public function get enabled() : Boolean
 		{
@@ -48,6 +48,9 @@ package aerys.minko.scene.controller.camera
 			_enabled = value;
 		}
 		
+		/**
+		 * Distance between look at point and target
+		 */		
 		public function get distance() : Number
 		{
 			return _distance;
@@ -58,6 +61,9 @@ package aerys.minko.scene.controller.camera
 			_update = true;
 		}
 		
+		/**
+		 * Horizontal rotation angle (in radians)
+		 */		
 		public function get yaw() : Number
 		{
 			return _yaw;
@@ -68,6 +74,9 @@ package aerys.minko.scene.controller.camera
 			_update = true;
 		}
 		
+		/**
+		 * Vertical rotation angle (in radians)
+		 */		
 		public function get pitch() : Number
 		{
 			return _pitch;
@@ -78,16 +87,25 @@ package aerys.minko.scene.controller.camera
 			_update = true;
 		}
 		
+		/**
+		 * Position the targets will look at
+		 */
 		public function get lookAt() : Vector4
 		{
 			return _lookAt;
 		}
 		
+		/**
+		 * Up vector the targets will rotate around
+		 */
 		public function get up() : Vector4
 		{
 			return _up;
 		}
 		
+		/**
+		 * Minimum distance constrain between look at point and target.
+		 */		
 		public function get minDistance() : Number
 		{
 			return _minDistance;
@@ -98,6 +116,9 @@ package aerys.minko.scene.controller.camera
 			_update = true;
 		}
 		
+		/**
+		 * Maximum distance constrain between look at point and target.
+		 */		
 		public function get maxDistance() : Number
 		{
 			return _maxDistance;
@@ -108,6 +129,9 @@ package aerys.minko.scene.controller.camera
 			_update = true;
 		}
 		
+		/**
+		 * Distance step applied to the camera when the mouse wheel is used in meters/wheel rotation unit
+		 */		
 		public function get distanceStep() : Number
 		{
 			return _distanceStep;
@@ -117,23 +141,29 @@ package aerys.minko.scene.controller.camera
 			_distanceStep = value;
 		}
 		
-		public function get thetaStep() : Number
+		/**
+		 * Horizontal angular step applied to the camera when the mouse is moved in radian/pixel
+		 */		
+		public function get yawStep() : Number
 		{
-			return _thetaStep;
+			return _yawStep;
 		}
-		public function set thetaStep(value : Number) : void
+		public function set yawStep(value : Number) : void
 		{
-			_thetaStep = value;
-		}
-		
-		public function get phiStep() : Number
-		{
-			return _phiStep;
+			_yawStep = value;
 		}
 		
-		public function set phiStep(value : Number)	: void
+		/**
+		 * Vertical angular step applied to the camera when the mouse is moved in radian/pixel
+		 */		
+		public function get pitchStep() : Number
 		{
-			_phiStep = value;
+			return _pitchStep;
+		}
+		
+		public function set pitchStep(value : Number)	: void
+		{
+			_pitchStep = value;
 		}
 		
 		public function ArcBallController()
@@ -181,9 +211,9 @@ package aerys.minko.scene.controller.camera
 					_pitch = Math.PI - EPSILON;
 				
 				_position.set(
-					_distance * Math.cos(_yaw) * Math.sin(_pitch) + _lookAt.x,
-					_distance * Math.cos(_pitch) + _lookAt.y,
-					_distance * Math.sin(_yaw) * Math.sin(_pitch) + _lookAt.z
+					_lookAt.x + _distance * Math.cos(_yaw) * Math.sin(_pitch),
+					_lookAt.y + _distance * Math.cos(_pitch),
+					_lookAt.z + _distance * Math.sin(_yaw) * Math.sin(_pitch)
 				);
 				
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
@@ -198,7 +228,7 @@ package aerys.minko.scene.controller.camera
 		
 		protected function mouseWheelHandler(e : MouseEvent) : void
 		{
-			_distance	-=	e.delta;
+			_distance	-=	e.delta * _distanceStep;
 			_update		=	true;
 		}
 		
@@ -207,8 +237,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown && _enabled)
 			{
-				_yaw	+= (_mousePosition.x - e.stageX) / 100.0;
-				_pitch	+= (_mousePosition.y - e.stageY) / 100.0;
+				_yaw	+= (_mousePosition.x - e.stageX) * _yawStep;
+				_pitch	+= (_mousePosition.y - e.stageY) * _pitchStep;
 				
 				_update = true;
 			}

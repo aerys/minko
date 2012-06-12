@@ -88,9 +88,7 @@ package aerys.minko.render.shader.binding
 				return Constant(node).value;
 			
 			else if (node is BindableConstant)
-			{
 				return dataStore[BindableConstant(node).bindingName];
-			}
 			
 			else if (node is Instruction)
 			{
@@ -102,7 +100,9 @@ package aerys.minko.render.shader.binding
 				if (arg1.length <= 4)
 					arg1 = Evaluator.evaluateComponents(instruction.component1, arg1);
 				
-				if (!instruction.isSingle)
+				if (instruction.isSingle)
+					return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1);
+				else
 				{
 					arg2 = visit(instruction.argument2, dataStore);
 					if (arg2.length <= 4)
@@ -110,8 +110,6 @@ package aerys.minko.render.shader.binding
 					
 					return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1, arg2);
 				}
-				
-				return Evaluator.EVALUATION_FUNCTIONS[instruction.id](arg1);
 			}
 			
 			else if (node is Overwriter)

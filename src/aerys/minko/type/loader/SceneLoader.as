@@ -77,7 +77,7 @@ package aerys.minko.type.loader
 			REGISTERED_PARSERS.push(parserClass);
 		}
 		
-		public function SceneLoader(parserOptions : ParserOptions)
+		public function SceneLoader(parserOptions : ParserOptions = null)
 		{
 			_currentState	= STATE_IDLE;
 			

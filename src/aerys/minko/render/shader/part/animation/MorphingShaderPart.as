@@ -1,14 +1,13 @@
 package aerys.minko.render.shader.part.animation
 {
-	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.stream.format.VertexComponent;
 	
 	/**
 	 * The shader part to handle morphing vertex animations.
 	 * @author Romain Gilliotte
-	 * 
 	 */
 	public class MorphingShaderPart extends ShaderPart
 	{
@@ -27,5 +26,9 @@ package aerys.minko.render.shader.part.animation
 			return getVertexAttribute(VertexComponent.NORMAL);
 		}
 		
+		public function getMorphedTangent() : SFloat
+		{
+			return getVertexAttribute(VertexComponent.TANGENT);
+		}
 	}
 }

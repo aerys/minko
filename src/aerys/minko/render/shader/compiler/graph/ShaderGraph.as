@@ -189,7 +189,6 @@ package aerys.minko.render.shader.compiler.graph
 		{
 			// execute consecutive visitors to optimize the shader graph.
 			// Warning: the order matters, do not swap lines.
-			// log shader in dotty format
 			MERGER					.process(this);	// merge duplicate nodes
 			REMOVE_EXTRACT			.process(this);	// remove all extract nodes
 			OVERWRITER_CLEANER		.process(this);	// remove nested overwriters

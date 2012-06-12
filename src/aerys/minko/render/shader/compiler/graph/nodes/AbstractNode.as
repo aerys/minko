@@ -96,6 +96,15 @@ package aerys.minko.render.shader.compiler.graph.nodes
 			invalidate();
 		}
 		
+		public function replaceArgument(oldArgument : AbstractNode,
+										newArgument	: AbstractNode) : void
+		{
+			var numArguments : uint = this.numArguments;
+			for (var argumentId : uint = 0; argumentId < numArguments; ++argumentId)
+				if (_arguments[argumentId] === oldArgument)
+					setArgumentAt(argumentId, newArgument);
+		}
+		
 		public function getComponentAt(index : uint) : uint
 		{
 			return _components[index];

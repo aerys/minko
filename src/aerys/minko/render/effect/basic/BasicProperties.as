@@ -9,9 +9,6 @@ package aerys.minko.render.effect.basic
 		public static const DIFFUSE_MAP								: String = 'diffuseMap';
 		public static const ALPHA_THRESHOLD							: String = 'alphaThreshold';
 		
-		public static const OBJ_SPACE_NORMAL_MAP					: String = 'objSpaceNormalMap';
-		public static const TGT_SPACE_NORMAL_MAP					: String = 'tgtSpaceNormalMap';
-		
 		public static const DEPTH_WRITE_ENABLED						: String = 'depthWriteEnabled';		
 		
 		public static const STENCIL_TRIANGLE_FACE					: String = 'stencilTriangleFace';

@@ -59,6 +59,8 @@ package aerys.minko.type.loader
 			_mipmap				= enableMipmapping;
 			
 			_textureResource 	= new TextureResource();
+			_textureResource.setContentFromBitmapData(new BitmapData(1, 1), enableMipmapping);
+			
 			_isComplete 		= false;
 			_error				= new Signal('TextureLoader.error');
 			_progress			= new Signal('TextureLoader.progress');
