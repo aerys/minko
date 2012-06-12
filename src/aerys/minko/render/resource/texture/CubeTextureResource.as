@@ -69,8 +69,6 @@ package aerys.minko.render.resource.texture
 		public function setSize(w : uint, h : uint) : void
 		{
 			_size = w;
-			
-			
 		}
 		
 		public function setContentFromBitmapDatas(right 	: BitmapData,
