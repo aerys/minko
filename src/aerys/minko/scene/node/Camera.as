@@ -4,11 +4,8 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
-	import aerys.minko.type.math.Vector4;
 
 	public class Camera extends AbstractSceneNode
 	{
@@ -16,7 +13,12 @@ package aerys.minko.scene.node
 		public static const DEFAULT_ZNEAR	: Number	= .1;
 		public static const DEFAULT_ZFAR	: Number	= 500.;
 
-		private var _cameraData	: CameraDataProvider	= null;
+		private var _cameraData		: CameraDataProvider	= null;
+		
+		private var _enabled		: Boolean				= true;
+		
+		private var _activated		: Signal				= new Signal('Camera.activated');
+		private var _deactivated	: Signal				= new Signal('Camera.deactivated');
 
 		public function get cameraData() : CameraDataProvider
 		{
@@ -53,6 +55,32 @@ package aerys.minko.scene.node
 		public function get projection() : Matrix4x4
 		{
 			return _cameraData.projection;
+		}
+		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			if (value != _enabled)
+			{
+				_enabled = value;
+				
+				if (_enabled)
+					_activated.execute(this);
+				else
+					_deactivated.execute(this);
+			}
+		}
+		
+		public function get activated() : Signal
+		{
+			return _activated;
+		}
+		public function get deactivated() : Signal
+		{
+			return _deactivated;
 		}
 		
 		public function Camera(fieldOfView	: Number = DEFAULT_FOV,

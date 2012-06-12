@@ -1,8 +1,10 @@
 package aerys.minko.scene.controller.camera
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.scene.node.Camera;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.IDataProvider;
@@ -11,6 +13,8 @@ package aerys.minko.scene.controller.camera
 	
 	public final class CameraController extends AbstractController
 	{
+		use namespace minko_scene;
+		
 		private var _camera		: Camera	= null;
 		
 		public function CameraController()
@@ -25,7 +29,7 @@ package aerys.minko.scene.controller.camera
 											target		: Camera) : void
 		{
 			if (_camera != null)
-				throw new Error();
+				throw new Error('The CameraController can target only one Camera object.');
 			
 			_camera = target;
 			_camera.addedToScene.add(addedToSceneHandler);
@@ -46,22 +50,36 @@ package aerys.minko.scene.controller.camera
 		{
 			var sceneBindings : DataBindings = scene.bindings;
 			
-			sceneBindings.addProvider(camera.cameraData);
-			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
-			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
+			resetSceneCamera(scene);
+
+			if (camera.enabled)
+				sceneBindings.addProvider(camera.cameraData);
+
+			camera.activated.add(cameraActivatedHandler);
+			camera.deactivated.add(cameraDeactivatedHandler);
+			
 			camera.cameraData.changed.add(cameraPropertyChangedHandler);
 			
-			updateProjection();
+			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
+			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
 		}
 		
 		private function removedFromSceneHandler(camera : Camera, scene : Scene) : void
 		{
 			var sceneBindings : DataBindings = scene.bindings;
 			
-			sceneBindings.removeProvider(camera.cameraData);
+			resetSceneCamera(scene);
+			
+			if (camera.enabled)
+				sceneBindings.removeProvider(camera.cameraData);
+			
+			camera.activated.remove(cameraActivatedHandler);
+			camera.deactivated.remove(cameraDeactivatedHandler);
+			
+			camera.cameraData.changed.remove(cameraPropertyChangedHandler);
+			
 			sceneBindings.removeCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
-			camera.cameraData.changed.remove(cameraPropertyChangedHandler);
 		}
 		
 		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4, propertyName : String) : void
@@ -117,6 +135,50 @@ package aerys.minko.scene.controller.camera
 				.copyFrom(_camera.worldToLocal)
 				.append(cameraData.projection)
 				.unlock();
+		}
+		
+		private function cameraActivatedHandler(camera : Camera) : void
+		{
+			var scene : Scene = camera.root as Scene;
+			
+			scene.bindings.addProvider(camera.cameraData);
+			resetSceneCamera(scene);
+		}
+		
+		private function cameraDeactivatedHandler(camera : Camera) : void
+		{
+			var scene 	: Scene	= camera.root as Scene;
+			
+			scene.bindings.removeProvider(camera.cameraData);
+			resetSceneCamera(scene);
+		}
+		
+		private function resetSceneCamera(scene : Scene) : void
+		{
+			var cameras 	: Vector.<ISceneNode> 	= scene.getDescendantsByType(Camera);
+			var numCameras 	: uint 					= cameras.length;
+			var cameraId 	: uint 					= 0;
+			var camera 		: Camera 				= null;
+			
+			if (_camera.enabled)
+			{
+				scene._camera = _camera;
+				for (cameraId; cameraId < numCameras; ++cameraId)
+				{
+					camera = cameras[cameraId] as Camera;
+					camera.enabled = camera == _camera;
+				}
+			}
+			else
+			{
+				scene._camera = null;
+				for (cameraId; cameraId < numCameras; ++cameraId)
+				{
+					camera = cameras[cameraId] as Camera;
+					if (camera.enabled)
+						scene._camera = camera;
+				}
+			}
 		}
 	}
 }

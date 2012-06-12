@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.scene.controller.scene.RenderingController;
@@ -19,15 +20,23 @@ package aerys.minko.scene.node
 	 */
 	public final class Scene extends Group
 	{
+		use namespace minko_scene;
+		
+		minko_scene var _camera		: Camera				= null;
+		
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
-		private var _camera			: Camera				= null;
 		private var _properties		: DataProvider			= null;
 		private var _bindings		: DataBindings			= new DataBindings();
 		
 		private var _enterFrame		: Signal				= new Signal('Scene.enterFrame');
 		private var _exitFrame		: Signal				= new Signal('Scene.exitFrame');
 
+		public function get activeCamera() : Camera
+		{
+			return _camera;
+		}
+		
 		public function get numPasses() : uint
 		{
 			return _renderingCtrl.numPasses;

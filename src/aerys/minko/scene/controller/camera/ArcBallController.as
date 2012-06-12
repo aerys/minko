@@ -21,6 +21,8 @@ package aerys.minko.scene.controller.camera
 		
 		protected var _mousePosition	: Point		= new Point();
 		
+		private var _enabled			: Boolean	= true;
+		
 		private var _distance			: Number	= 1.;
 		private var _yaw				: Number	= 0;
 		private var _pitch				: Number	= 0;
@@ -37,6 +39,15 @@ package aerys.minko.scene.controller.camera
 		private var _thetaStep			: Number	= 0.01;
 		private var _phiStep			: Number	= 0.01;
 		
+		public function get enabled() : Boolean
+		{
+			return _enabled;
+		}
+		public function set enabled(value : Boolean) : void
+		{
+			_enabled = value;
+		}
+		
 		public function get distance() : Number
 		{
 			return _distance;
@@ -44,6 +55,7 @@ package aerys.minko.scene.controller.camera
 		public function set distance(value : Number) : void
 		{
 			_distance = value;
+			_update = true;
 		}
 		
 		public function get yaw() : Number
@@ -53,6 +65,7 @@ package aerys.minko.scene.controller.camera
 		public function set yaw(value : Number) : void
 		{
 			_yaw = value;
+			_update = true;
 		}
 		
 		public function get pitch() : Number
@@ -62,6 +75,7 @@ package aerys.minko.scene.controller.camera
 		public function set pitch(value : Number)	: void
 		{
 			_pitch = value;
+			_update = true;
 		}
 		
 		public function get lookAt() : Vector4
@@ -81,6 +95,7 @@ package aerys.minko.scene.controller.camera
 		public function set minDistance(value : Number)	: void
 		{
 			_minDistance = value;
+			_update = true;
 		}
 		
 		public function get maxDistance() : Number
@@ -90,6 +105,7 @@ package aerys.minko.scene.controller.camera
 		public function set maxDistance(value : Number)	: void
 		{
 			_maxDistance = value;
+			_update = true;
 		}
 		
 		public function get distanceStep() : Number
@@ -153,7 +169,7 @@ package aerys.minko.scene.controller.camera
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			if (_update)
+			if (_update && _enabled)
 			{
 				if (_distance < _minDistance)
 					_distance = _minDistance;
@@ -189,7 +205,7 @@ package aerys.minko.scene.controller.camera
 		protected function mouseMoveHandler(e : MouseEvent) : void
 		{
 			// compute position
-			if (e.buttonDown)
+			if (e.buttonDown && _enabled)
 			{
 				_yaw	+= (_mousePosition.x - e.stageX) / 100.0;
 				_pitch	+= (_mousePosition.y - e.stageY) / 100.0;
