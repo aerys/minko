@@ -278,7 +278,6 @@ package aerys.minko.scene.node.mesh
 			
 			name = source.name;
 			_geometry = source._geometry;
-			properties = source._properties.clone();
 			
 			var numProviders : uint = source._bindings.numProviders;
 			
