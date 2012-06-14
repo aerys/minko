@@ -19,6 +19,8 @@ package aerys.minko.type.loader
 
 	public class TextureLoader implements ILoader
 	{
+		private static const EMPTY_BITMAPDATA	: BitmapData	= new BitmapData(1, 1, false, 0);
+		
 		private var _progress			: Signal;
 		private var _error				: Signal;
 		private var _complete			: Signal;
@@ -59,7 +61,7 @@ package aerys.minko.type.loader
 			_mipmap				= enableMipmapping;
 			
 			_textureResource 	= new TextureResource();
-			_textureResource.setContentFromBitmapData(new BitmapData(1, 1), enableMipmapping);
+			_textureResource.setContentFromBitmapData(EMPTY_BITMAPDATA, enableMipmapping);
 			
 			_isComplete 		= false;
 			_error				= new Signal('TextureLoader.error');
