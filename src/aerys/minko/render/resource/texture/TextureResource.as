@@ -122,6 +122,7 @@ package aerys.minko.render.resource.texture
 		public function setContentFromATF(atf : ByteArray) : void
 		{
 			_atf			= atf;
+			_bitmapData		= null;
 			_update 		= true;
 			
 			atf.position 	= 6;
