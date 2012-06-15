@@ -22,6 +22,7 @@ package aerys.minko.type.stream
 		minko_stream var _data			: Vector.<Number>	= null;
 		minko_stream var _localDispose	: Boolean			= false;
 
+		private var _name				: String					= null;
 		private var _usage				: uint						= 0;
 		private var _format				: VertexFormat				= null;
 		private var _resource			: VertexBuffer3DResource	= null;
@@ -38,6 +39,16 @@ package aerys.minko.type.stream
 		
 		private var _changed			: Signal					= new Signal('VertexStream.changed');
 		private var _boundsChanged		: Signal					= new Signal('VertexStream.boundsChanged');
+		
+		public function get name() : String
+		{
+			return _name;
+		}
+		
+		public function set name(val : String) : void
+		{
+			_name = val;
+		}
 		
 		public function get format() : VertexFormat
 		{
@@ -191,6 +202,11 @@ package aerys.minko.type.stream
 		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
 		{
 			return _format.hasComponent(vertexComponent) ? this : null;
+		}
+		
+		public function getStreamByName(name : String) : IVertexStream
+		{
+			return _name == name ? this : null;
 		}
 
 		public function get(i : uint) : Number
