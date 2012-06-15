@@ -13,6 +13,7 @@ package aerys.minko.type.data
 		private var _bindingNameToValue				: Object					= {};
 		private var _bindingNameToChangedSignal		: Object					= {};
 		
+		private var _bindingNameToProvider			: Dictionary				= new Dictionary();
 		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
 		private var _attributeToProviders			: Dictionary				= new Dictionary(); // dic[Vector.<IDataProvider>[]]
 		private var _attributeToProvidersAttrNames	: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
@@ -29,6 +30,11 @@ package aerys.minko.type.data
 		
 		public function DataBindings()
 		{
+		}
+		
+		public function contains(dataProvider : IDataProvider) : Boolean
+		{
+			return _providers.indexOf(dataProvider) != -1;
 		}
 		
 		public function addProvider(provider : IDataProvider) : void
@@ -52,6 +58,8 @@ package aerys.minko.type.data
 					throw new Error(
 						'Another Dataprovider is already declaring the \'' + bindingName + '\' property.'
 					);
+				
+				_bindingNameToProvider[bindingName] = provider;
 				
 				if (dpAttribute != null)
 				{
@@ -95,6 +103,7 @@ package aerys.minko.type.data
 					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
 				
 				delete _bindingNameToValue[bindingName];
+				delete _bindingNameToProvider[bindingName];
 			}
 			
 			var attributesToDelete : Vector.<Object> = new Vector.<Object>();
@@ -163,7 +172,7 @@ package aerys.minko.type.data
 		{
 			var signal : Signal = _bindingNameToChangedSignal[bindingName];
 			if (!signal)
-				throw new Error('Unkown property \'' + bindingName + '\'.');
+				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
 			
 			signal.remove(callback);
 			
@@ -174,6 +183,14 @@ package aerys.minko.type.data
 		public function getProviderAt(index : uint) : IDataProvider
 		{
 			return _providers[index];
+		}
+		
+		public function getProviderByBindingName(bindingName : String) : IDataProvider
+		{
+			if (_bindingNameToProvider[bindingName] == null)
+				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
+			
+			return _bindingNameToProvider[bindingName];
 		}
 		
 		public function propertyExists(bindingName : String) : Boolean
