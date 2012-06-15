@@ -232,6 +232,40 @@ package aerys.minko.scene.node.mesh.geometry
 			_vertexStreams[index] = vertexStream;
 		}
 		
+		/**
+		 * Get the IVertexStream objects by name. If there is no such stream, returns null.
+		 * 
+		 * @param	name
+		 * @return
+		 */
+		public function getVertexStreamByName(name : String) : IVertexStream
+		{
+			for (var i : int = 0, n : int = _vertexStreams.length; i < n; i++)
+			{
+				var stream : IVertexStream = _vertexStreams[i].getStreamByName(name);
+				
+				if (stream != null)
+					return stream;
+			}
+				
+			return null;
+		}
+		
+		/**
+		 * Get the index of a named IVertexStream object. If there is no such stream, returns -1.
+		 * 
+		 * @param	name
+		 * @return
+		 */
+		public function getVertexStreamIndex(name : String) : int
+		{
+			for (var i : int = 0, n : int = _vertexStreams.length; i < n; i++)
+				if (_vertexStreams[i].getStreamByName(name))
+					return i;
+					
+			return -1;
+		}
+		
 		private function vertexStreamBoundsChangedHandler(stream	: IVertexStream) : void
 		{
 			updateBoundingVolumes();

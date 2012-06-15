@@ -9,6 +9,7 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 
+		private var _name			: String				= null;
 		private var _streams		: Vector.<VertexStream>	= new Vector.<VertexStream>();
 		private var _format			: VertexFormat			= new VertexFormat();
 		private var _usage			: uint					= 0;
@@ -16,6 +17,16 @@ package aerys.minko.type.stream
 		private var _changed		: Signal				= new Signal('VertexStreamList.changed');
 		private var _boundsChanged	: Signal				= new Signal('VertexStream.boundsChanged');
 
+		public function get name() : String
+		{
+			return _name;
+		}
+		
+		public function set name(val : String) : void
+		{
+			_name = val;
+		}
+		
 		public function get usage()	: uint
 		{
 			return _usage;
@@ -93,6 +104,26 @@ package aerys.minko.type.stream
 				if (_streams[i].format.hasComponent(vertexComponent))
 					return _streams[i];
 
+			return null;
+		}
+		
+		public function getStreamByName(name : String) : IVertexStream
+		{
+			if (_name == name)
+			{
+				return this;
+			}
+			else
+			{
+				for (var i : int = 0, n : int = _streams.length; i < n; i++)
+				{
+					var stream : IVertexStream = _streams[i].getStreamByName(name);
+					
+					if (stream != null)
+						return stream;
+				}
+			}
+			
 			return null;
 		}
 

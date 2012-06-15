@@ -6,6 +6,7 @@ package aerys.minko.type.stream
 
 	public interface IVertexStream
 	{
+		function get name()		: String;
 		function get format() 	: VertexFormat;
 		function get length()	: uint;
 		
@@ -15,6 +16,7 @@ package aerys.minko.type.stream
 		function disposeLocalData(waitForUpload : Boolean = true) : void;
 		function deleteVertexByIndex(index : uint) : Boolean;
 		function getStreamByComponent(component : VertexComponent) : VertexStream;
+		function getStreamByName(name : String) : IVertexStream;
 		function dispose() : void;
 	}
 }
