@@ -100,8 +100,8 @@ package aerys.minko.type.data
 				
 				_bindingNames.splice(indexOf, 1);
 				
-				if (_bindingNameToValue[bindingName] is IDataProvider)
-					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
+				if (_bindingNameToValue[bindingName] is IMonitoredData)
+					IMonitoredData(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
 				
 				delete _bindingNameToValue[bindingName];
 				delete _bindingNameToProvider[bindingName];
