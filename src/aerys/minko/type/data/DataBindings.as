@@ -1,6 +1,7 @@
 package aerys.minko.type.data
 {
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.utils.Dictionary;
 
@@ -50,9 +51,9 @@ package aerys.minko.type.data
 			for (var attrName : String in dataDescriptor)
 			{
 				// if this provider attribute is also a dataprovider, let's also bind it
-				var bindingName	: String		= dataDescriptor[attrName];
-				var attribute	: Object		= provider[attrName]
-				var dpAttribute	: IDataProvider	= attribute as IDataProvider;
+				var bindingName	: String			= dataDescriptor[attrName];
+				var attribute	: Object			= provider[attrName]
+				var dpAttribute	: IMonitoredData	= attribute as IMonitoredData;
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
@@ -211,6 +212,19 @@ package aerys.minko.type.data
 			return _bindingNames[bindingIndex];
 		}
 		
+		public function copySharedProvidersFrom(source : DataBindings) : void
+		{
+			var numProviders : uint = source._providers.length;
+			
+			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
+			{
+				var provider : IDataProvider = source._providers[providerId];
+				
+				if (provider.usage == DataProviderUsage.SHARED)
+					addProvider(provider);
+			}
+		}
+		
 		private function providerChangedHandler(source : IDataProvider, attributeName : String) : void
 		{
 			if (attributeName == null)
@@ -269,7 +283,7 @@ package aerys.minko.type.data
 			}
 		}
 		
-		private function providerPropertyChangedHandler(source : IDataProvider, key : String) : void
+		private function providerPropertyChangedHandler(source : IMonitoredData, key : String) : void
 		{
 			var providers		: Vector.<IDataProvider>	= _attributeToProviders[source];
 			var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[source];

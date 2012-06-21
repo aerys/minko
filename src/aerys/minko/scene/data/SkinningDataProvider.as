@@ -3,6 +3,7 @@ package aerys.minko.scene.data
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public final class SkinningDataProvider implements IDataProvider
@@ -26,6 +27,11 @@ package aerys.minko.scene.data
 		private var _dqD			: Vector.<Number>	= new <Number>[];
 		
 		private var _changed		: Signal			= new Signal("SkinningDataProvider._changed");
+		
+		public function get usage() : uint
+		{
+			return DataProviderUsage.MANAGED;
+		}
 		
 		public function get dataDescriptor():Object
 		{
@@ -110,6 +116,11 @@ package aerys.minko.scene.data
 		public function SkinningDataProvider()
 		{
 			super();
+		}
+		
+		public function clone() : IDataProvider
+		{
+			throw new Error('This provider is managed, and must not be cloned');
 		}
 	}
 }

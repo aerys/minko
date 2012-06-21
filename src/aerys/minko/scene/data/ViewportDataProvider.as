@@ -1,10 +1,11 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	public final class ViewportDataProvider extends DataProvider
 	{
-		private static const DATA_DESCRIPTOR	: Object	=
+		private static const DATA_DESCRIPTOR : Object =
 		{
 			viewportWidth	: 'width',
 			viewportHeight	: 'height'
@@ -46,7 +47,7 @@ package aerys.minko.scene.data
 		
 		public function ViewportDataProvider(data : Object = null)
 		{
-			super(data);
+			super(data, 'viewportProvider', DataProviderUsage.SHARED);
 		}
 	}
 }

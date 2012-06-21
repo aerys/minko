@@ -1,17 +1,24 @@
 package aerys.minko.type.data
 {
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
 	public dynamic class DataProvider extends Proxy implements IDataProvider
 	{
-		private var _name		: String	= null;
-		private var _descriptor	: Object	= {};
-		private var _data		: Object	= {};
+		private var _usage			: uint		= 1;
+		private var _name			: String	= null;
+		private var _descriptor		: Object	= {};
+		private var _data			: Object	= {};
 		
-		private var _changed	: Signal	= new Signal('DataProvider.changed');
+		private var _changed		: Signal	= new Signal('DataProvider.changed');
+		
+		public function get usage() : uint
+		{
+			return _usage;
+		}
 		
 		public function get dataDescriptor() : Object
 		{
@@ -23,10 +30,12 @@ package aerys.minko.type.data
 			return _changed;
 		}
 		
-		public function DataProvider(properties	: Object = null, 
-									 name		: String = null)
+		public function DataProvider(properties	: Object	= null, 
+									 name		: String	= null,
+									 usage		: uint		= 1)
 		{
-			_name = name;
+			_name	= name;
+			_usage	= usage;
 			
 			initialize(properties);
 		}
@@ -113,9 +122,20 @@ package aerys.minko.type.data
 			return this;
 		}
 		
-		public function clone() : DataProvider
+		public function clone() : IDataProvider
 		{
-			return new DataProvider(_data);
+			switch (_usage)
+			{
+				case DataProviderUsage.EXCLUSIVE:
+				case DataProviderUsage.SHARED:
+					return new DataProvider(_data, _name + '_cloned', _usage);
+				
+				case DataProviderUsage.MANAGED:
+					throw new Error('This dataprovider is managed, and must not be cloned');
+					
+				default:
+					throw new Error('Unkown usage value');
+			}
 		}
 	}
 }
