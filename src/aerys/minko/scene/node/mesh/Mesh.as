@@ -278,9 +278,9 @@ package aerys.minko.scene.node.mesh
 			var numControllers : uint = source.numControllers;
 			
 			name 		= source.name;
-			_geometry 	= source._geometry;
-			_visible 	= source._visible;
-			_properties	= DataProvider(source._properties.clone());
+			geometry 	= source._geometry;
+			visible 	= source._visible;
+			properties	= DataProvider(source._properties.clone());
 			
 			_bindings.copySharedProvidersFrom(source._bindings);
 			
