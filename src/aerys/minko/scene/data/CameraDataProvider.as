@@ -23,6 +23,7 @@ package aerys.minko.scene.data
 		};
 		
 		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
+		private var _propertyChanged	: Signal		= new Signal('CameraDataProvider.propertyChanged');
 		
 		private var _position			: Vector4		= new Vector4();
 		private var _direction			: Vector4		= new Vector4();
@@ -44,6 +45,11 @@ package aerys.minko.scene.data
 		public function get changed() : Signal
 		{
 			return _changed;
+		}
+		
+		public function get propertyChanged() : Signal
+		{
+			return _propertyChanged;
 		}
 		
 		public function get dataDescriptor() : Object
@@ -126,6 +132,55 @@ package aerys.minko.scene.data
 		{
 			_worldToView = worldToView;
 			_viewToWorld = viewToWorld;
+			
+			_position.changed.add(positionChangedHandler);
+			_direction.changed.add(directionChangedHandler);
+			_projection.changed.add(projectionChangedHandler);
+			_screenToView.changed.add(screenToViewChangedHandler);
+			_screenToWorld.changed.add(screenToWorldChangedHandler);
+			_viewToWorld.changed.add(viewToWorldChangedHandler);
+			_worldToScreen.changed.add(worldToScreenChangedHandler);
+			_worldToView.changed.add(worldToViewChangedHandler);
+		}
+		
+		private function worldToViewChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'worldToView');
+		}
+		
+		private function worldToScreenChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'worldToScreen');
+		}
+		
+		private function screenToWorldChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'screenToWorld');
+		}
+		
+		private function viewToWorldChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'viewToWorld');
+		}
+		
+		private function screenToViewChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'screenToView');
+		}
+		
+		private function projectionChangedHandler(source : Matrix4x4, key : String):void
+		{
+			_propertyChanged.execute(this, 'projection');
+		}
+		
+		private function directionChangedHandler(source : Vector4, key : String):void
+		{
+			_propertyChanged.execute(this, 'direction');
+		}
+		
+		private function positionChangedHandler(source : Vector4, key : String):void
+		{
+			_propertyChanged.execute(this, 'position');
 		}
 		
 		public function clone() : IDataProvider

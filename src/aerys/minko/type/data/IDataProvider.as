@@ -6,6 +6,7 @@ package aerys.minko.type.data
 	{
 		function get dataDescriptor() 	: Object;
 		function get usage()			: uint;
+		function get propertyChanged()	: Signal
 		
 		function clone()				: IDataProvider;
 	}
