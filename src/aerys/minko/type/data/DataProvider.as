@@ -177,7 +177,7 @@ package aerys.minko.type.data
 			{
 				case DataProviderUsage.EXCLUSIVE:
 				case DataProviderUsage.SHARED:
-					return new DataProvider(_propertyToNames, _name + '_cloned', _usage);
+					return new DataProvider(_nameToProperty, _name + '_cloned', _usage);
 				
 				case DataProviderUsage.MANAGED:
 					throw new Error('This dataprovider is managed, and must not be cloned');
