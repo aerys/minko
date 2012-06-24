@@ -39,6 +39,16 @@ package aerys.minko.type.data
 			return _propertyChanged;
 		}
 		
+		public function get name() : String
+		{
+			return _name;
+		}
+		
+		public function set name(v : String) : void
+		{
+			_name = v;
+		}
+		
 		public function DataProvider(properties	: Object	= null, 
 									 name		: String	= null,
 									 usage		: uint		= 1)
