@@ -23,12 +23,6 @@ package aerys.minko.type
 			_name = name;
 		}
 		
-		public function removeAllCallback() : void
-		{
-			for (var callbackIndex : int = _numCallbacks - 1; callbackIndex >= 0; --callbackIndex)
-				remove(_callbacks[callbackIndex]);
-		}
-		
 		public function add(callback : Function) : void
 		{
 			if (_executed)
