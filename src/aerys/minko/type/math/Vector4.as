@@ -147,7 +147,7 @@ package aerys.minko.type.math
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
-								w 	: Number	= NaN)
+								w 	: Number	= 1)
 		{
 			_vector.x = x;
 			_vector.y = y;
@@ -194,7 +194,7 @@ package aerys.minko.type.math
 			return _vector.x == v._vector.x
 				   && _vector.y == v._vector.y
 				   && _vector.z == v._vector.z
-				   && (!allFour || (_vector.w == v._vector.w) || (isNaN(_vector.w) && isNaN(v._vector.w)));
+				   && (!allFour || (_vector.w == v._vector.w));
 		}
 
 		public static function distance(u : Vector4, v : Vector4) : Number
