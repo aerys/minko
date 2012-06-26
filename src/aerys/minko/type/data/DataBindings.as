@@ -109,7 +109,7 @@ package aerys.minko.type.data
 		{
 			var numProviders : uint = this.numProviders;
 			
-			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
+			for (var providerId : int = numProviders - 1; providerId >= 0; --providerId)
 				removeProvider(getProviderAt(providerId));
 		}
 		
