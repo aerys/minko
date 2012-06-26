@@ -769,6 +769,11 @@ package aerys.minko.render.shader.part
 			return viewToScreen(worldToView(worldSpaceVector));
 		}
 		
+		protected final function viewToWorld(value : Object) : SFloat
+		{
+			return multiply4x4(value, viewToWorldMatrix);
+		}
+		
 		protected final function localToScreen(localSpaceVector : Object) : SFloat
 		{
 			return multiply4x4(

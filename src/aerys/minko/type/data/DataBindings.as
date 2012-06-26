@@ -1,6 +1,7 @@
 package aerys.minko.type.data
 {
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.utils.Dictionary;
 
@@ -13,6 +14,7 @@ package aerys.minko.type.data
 		private var _bindingNameToValue				: Object					= {};
 		private var _bindingNameToChangedSignal		: Object					= {};
 		
+		private var _bindingNameToProvider			: Dictionary				= new Dictionary();
 		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
 		private var _attributeToProviders			: Dictionary				= new Dictionary(); // dic[Vector.<IDataProvider>[]]
 		private var _attributeToProvidersAttrNames	: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
@@ -31,6 +33,11 @@ package aerys.minko.type.data
 		{
 		}
 		
+		public function contains(dataProvider : IDataProvider) : Boolean
+		{
+			return _providers.indexOf(dataProvider) != -1;
+		}
+		
 		public function addProvider(provider : IDataProvider) : void
 		{
 			if (_providerToBindingNames[provider])
@@ -44,14 +51,16 @@ package aerys.minko.type.data
 			for (var attrName : String in dataDescriptor)
 			{
 				// if this provider attribute is also a dataprovider, let's also bind it
-				var bindingName	: String		= dataDescriptor[attrName];
-				var attribute	: Object		= provider[attrName]
-				var dpAttribute	: IDataProvider	= attribute as IDataProvider;
+				var bindingName	: String			= dataDescriptor[attrName];
+				var attribute	: Object			= provider[attrName]
+				var dpAttribute	: IMonitoredData	= attribute as IMonitoredData;
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
 						'Another Dataprovider is already declaring the \'' + bindingName + '\' property.'
 					);
+				
+				_bindingNameToProvider[bindingName] = provider;
 				
 				if (dpAttribute != null)
 				{
@@ -91,10 +100,11 @@ package aerys.minko.type.data
 				
 				_bindingNames.splice(indexOf, 1);
 				
-				if (_bindingNameToValue[bindingName] is IDataProvider)
-					IDataProvider(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
+				if (_bindingNameToValue[bindingName] is IMonitoredData)
+					IMonitoredData(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
 				
 				delete _bindingNameToValue[bindingName];
+				delete _bindingNameToProvider[bindingName];
 			}
 			
 			var attributesToDelete : Vector.<Object> = new Vector.<Object>();
@@ -163,7 +173,7 @@ package aerys.minko.type.data
 		{
 			var signal : Signal = _bindingNameToChangedSignal[bindingName];
 			if (!signal)
-				throw new Error('Unkown property \'' + bindingName + '\'.');
+				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
 			
 			signal.remove(callback);
 			
@@ -174,6 +184,14 @@ package aerys.minko.type.data
 		public function getProviderAt(index : uint) : IDataProvider
 		{
 			return _providers[index];
+		}
+		
+		public function getProviderByBindingName(bindingName : String) : IDataProvider
+		{
+			if (_bindingNameToProvider[bindingName] == null)
+				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
+			
+			return _bindingNameToProvider[bindingName];
 		}
 		
 		public function propertyExists(bindingName : String) : Boolean
@@ -192,6 +210,19 @@ package aerys.minko.type.data
 				throw new ArgumentError('No such binding');
 			
 			return _bindingNames[bindingIndex];
+		}
+		
+		public function copySharedProvidersFrom(source : DataBindings) : void
+		{
+			var numProviders : uint = source._providers.length;
+			
+			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
+			{
+				var provider : IDataProvider = source._providers[providerId];
+				
+				if (provider.usage == DataProviderUsage.SHARED)
+					addProvider(provider);
+			}
 		}
 		
 		private function providerChangedHandler(source : IDataProvider, attributeName : String) : void
@@ -252,7 +283,7 @@ package aerys.minko.type.data
 			}
 		}
 		
-		private function providerPropertyChangedHandler(source : IDataProvider, key : String) : void
+		private function providerPropertyChangedHandler(source : IMonitoredData, key : String) : void
 		{
 			var providers		: Vector.<IDataProvider>	= _attributeToProviders[source];
 			var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[source];

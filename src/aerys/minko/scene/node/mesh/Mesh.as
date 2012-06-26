@@ -13,6 +13,7 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.utils.flash_proxy;
 
@@ -232,7 +233,7 @@ package aerys.minko.scene.node.mesh
 									effect		: Effect,
 									controllers	: Array) : void
 		{
-			this.properties = new DataProvider(properties);
+			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
@@ -276,27 +277,15 @@ package aerys.minko.scene.node.mesh
 		{
 			var numControllers : uint = source.numControllers;
 			
-			name = source.name;
-			_geometry = source._geometry;
-			properties = source._properties.clone();
+			name 		= source.name;
+			geometry 	= source._geometry;
+			visible 	= source._visible;
+			properties	= DataProvider(source._properties.clone());
 			
-			var numProviders : uint = source._bindings.numProviders;
-			
-			bindings.removeAllProviders();
-			for (var providerIndex : uint = 0; providerIndex < numProviders; ++providerIndex)
-			{
-				var provider : IDataProvider = source._bindings.getProviderAt(providerIndex);
-				
-				if (provider != source.transformData && provider != source.properties)
-					bindings.addProvider(provider);
-			}
-			
-			_properties = source.properties.clone();
-			bindings.addProvider(_properties);
+			_bindings.copySharedProvidersFrom(source._bindings);
 			
 			copyControllersFrom(source, this, cloneControllers);
 			transform.copyFrom(source.transform);
-			
 			effect = source._effect;
 			
 			source.cloned.execute(this, source);

@@ -98,33 +98,42 @@ package aerys.minko.render.shader.part.animation
 				inVertexPosition = multiply4x4(inVertexPosition, bindShape);
 				
 				var jointAttr			: SFloat;
-				var jointId				: SFloat;
-				var jointWeight			: SFloat;
 				var jointSkinningMatrix	: SFloat;
 				
 				if (maxInfluences == 1)
 				{
-					jointAttr			= getVertexAttribute(VertexComponent.BONES[0]);
-					jointId				= multiply(4, jointAttr.x);
-					jointSkinningMatrix	= getFieldFromArray(jointId, skinningMatrices, true);
-					
-					outVertexPosition = multiply4x4(inVertexPosition, jointSkinningMatrix);
+					jointAttr			= getVertexAttribute(VertexComponent.BONE_S);
+					jointSkinningMatrix	= getFieldFromArray(multiply(4, jointAttr.x), skinningMatrices, true);
+					outVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
 				}
 				else
 				{
 					outVertexPosition = float4(0, 0, 0, 0);
 					
-					for (var i : uint = 0; i < maxInfluences; ++i)
+					var jointOutVertexPosition : SFloat;
+					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
 					{
-						jointAttr			= getVertexAttribute(VertexComponent.BONES[i]);
-						jointId				= multiply(4, jointAttr.x);
-						jointWeight			= jointAttr.y;
-						jointSkinningMatrix	= getFieldFromArray(jointId, skinningMatrices, true);
+						jointAttr				= getVertexAttribute(VertexComponent.BONES[i]);
+						var jointId : SFloat = multiply(4, jointAttr.xz);
 						
-						var jointOutVertexPosition	: SFloat;
-						jointOutVertexPosition = multiply4x4(inVertexPosition, jointSkinningMatrix);
-						jointOutVertexPosition = multiply(jointWeight, jointOutVertexPosition);
+						jointSkinningMatrix		= getFieldFromArray(jointId.x, skinningMatrices, true);
+						jointOutVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
+						jointOutVertexPosition	= multiply(jointAttr.y, jointOutVertexPosition);
+						outVertexPosition.incrementBy(jointOutVertexPosition);
 						
+						jointSkinningMatrix		= getFieldFromArray(jointId.y, skinningMatrices, true);
+						jointOutVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
+						jointOutVertexPosition	= multiply(jointAttr.w, jointOutVertexPosition);
+						outVertexPosition.incrementBy(jointOutVertexPosition);
+					}
+					
+					if (maxInfluences % 2 == 1)
+					{
+						jointAttr				= getVertexAttribute(VertexComponent.BONE_S);
+						
+						jointSkinningMatrix		= getFieldFromArray(multiply(4, jointAttr.x), skinningMatrices, true);
+						jointOutVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
+						jointOutVertexPosition	= multiply(jointAttr.y, jointOutVertexPosition);
 						outVertexPosition.incrementBy(jointOutVertexPosition);
 					}
 				}
@@ -153,32 +162,42 @@ package aerys.minko.render.shader.part.animation
 				inVertexNormal = multiply3x3(inVertexNormal, bindShape);
 				
 				var jointAttr			: SFloat;
-				var jointId				: SFloat;
-				var jointWeight			: SFloat;
 				var jointSkinningMatrix	: SFloat;
 				
 				if (maxInfluences == 1)
 				{
-					jointAttr = getVertexAttribute(VertexComponent.BONES[0]);
-					jointId = jointAttr.x;
-					jointSkinningMatrix = getFieldFromArray(jointId, skinningMatrices, true);
-					
-					outVertexNormal = multiply3x3(inVertexNormal, jointSkinningMatrix);
+					jointAttr			= getVertexAttribute(VertexComponent.BONE_S);
+					jointSkinningMatrix	= getFieldFromArray(jointAttr.x, skinningMatrices, true);
+					outVertexNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
 				}
 				else
 				{
+					var jointOutNormal	: SFloat;
+
 					outVertexNormal = float4(0, 0, 0, 0);
-					for (var i : uint = 0; i < maxInfluences; ++i)
+					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
 					{
 						jointAttr			= getVertexAttribute(VertexComponent.BONES[i]);
-						jointId				= jointAttr.x;
-						jointWeight			= jointAttr.y;
-						jointSkinningMatrix	= getFieldFromArray(jointId, skinningMatrices, true);
+						var jointId : SFloat = multiply(4, jointAttr.xz);
 						
-						var jointOutNormal	: SFloat;
-						jointOutNormal = multiply3x3(inVertexNormal, jointSkinningMatrix);
-						jointOutNormal = multiply(jointWeight, jointOutNormal);
+						jointSkinningMatrix	= getFieldFromArray(jointId.x, skinningMatrices, true);
+						jointOutNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
+						jointOutNormal		= multiply(jointAttr.y, jointOutNormal);
+						outVertexNormal.incrementBy(jointOutNormal);
 						
+						jointSkinningMatrix	= getFieldFromArray(jointId.y, skinningMatrices, true);
+						jointOutNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
+						jointOutNormal		= multiply(jointAttr.w, jointOutNormal);
+						outVertexNormal.incrementBy(jointOutNormal);
+					}
+					
+					if (maxInfluences % 2 == 1)
+					{
+						jointAttr			= getVertexAttribute(VertexComponent.BONE_S);
+						
+						jointSkinningMatrix	= getFieldFromArray(multiply(4, jointAttr.x), skinningMatrices, true);
+						jointOutNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
+						jointOutNormal		= multiply(jointAttr.y, jointOutNormal);
 						outVertexNormal.incrementBy(jointOutNormal);
 					}
 				}
@@ -214,35 +233,46 @@ package aerys.minko.render.shader.part.animation
 				inPosition = inPosition.xyz;
 				
 				var jointAttr	: SFloat;
-				var jointId		: SFloat;
-				var jointWeight	: SFloat;
 				var dQn			: SFloat;
 				var dQd			: SFloat;
 				
 				if (maxInfluences == 1)
 				{
-					jointAttr	= getVertexAttribute(VertexComponent.BONES[0]);
-					jointId		= jointAttr.x;
+					jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
 					
-					dQn = getFieldFromArray(jointId, dQnList, false);
-					dQd = getFieldFromArray(jointId, dQdList, false);
+					dQn = getFieldFromArray(jointAttr.x, dQnList, false);
+					dQd = getFieldFromArray(jointAttr.x, dQdList, false);
 				}
 				else
 				{
 					dQn = float4(0, 0, 0, 0);
 					dQd	= float4(0, 0, 0, 0);
 					
-					for (var i : uint = 0; i < maxInfluences; ++i)
+					var jointDQn	: SFloat;
+					var jointDQd	: SFloat;
+					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
 					{
 						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
-						jointId		= jointAttr.x;
-						jointWeight	= jointAttr.y;
 						
-						var jointDQn	: SFloat = getFieldFromArray(jointId, dQnList, false);
-						var jointDQd	: SFloat = getFieldFromArray(jointId, dQdList, false);
+						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
 						
-						dQn.incrementBy(multiply(jointWeight, jointDQn));
-						dQd.incrementBy(multiply(jointWeight, jointDQd));
+						jointDQn	= getFieldFromArray(jointAttr.z, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.z, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.w, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.w, jointDQd));
+					}
+					
+					if (maxInfluences % 2 == 1)
+					{
+						jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
+						
+						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
 					}
 				}
 				
@@ -296,9 +326,6 @@ package aerys.minko.render.shader.part.animation
 				var dQdList		: SFloat = meshBindings.getParameter('skinningDQd', 4 * numBones);
 				
 				var jointAttr	: SFloat;
-				var jointId		: SFloat;
-				var jointWeight	: SFloat;
-				
 				var dQn			: SFloat;
 				var dQd			: SFloat;
 				
@@ -306,28 +333,41 @@ package aerys.minko.render.shader.part.animation
 				
 				if (maxInfluences == 1)
 				{
-					jointAttr	= getVertexAttribute(VertexComponent.BONES[0]);
-					jointId		= jointAttr.x;
-					
-					dQn = getFieldFromArray(jointId, dQnList, false);
-					dQd = getFieldFromArray(jointId, dQdList, false);
+					jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
+					dQn			= getFieldFromArray(jointAttr.x, dQnList, false);
+					dQd			= getFieldFromArray(jointAttr.x, dQdList, false);
 				}
 				else
 				{
 					dQn = float4(0, 0, 0, 0);
 					dQd	= float4(0, 0, 0, 0);
 					
-					for (var i : uint = 0; i < maxInfluences; ++i)
+					var jointDQn : SFloat;
+					var jointDQd : SFloat;
+					
+					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
 					{
 						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
-						jointId		= jointAttr.x;
-						jointWeight	= jointAttr.y;
 						
-						var jointDQn	: SFloat = getFieldFromArray(jointId, dQnList, false);
-						var jointDQd	: SFloat = getFieldFromArray(jointId, dQdList, false);
+						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
 						
-						dQn.incrementBy(multiply(jointWeight, jointDQn));
-						dQd.incrementBy(multiply(jointWeight, jointDQd));
+						jointDQn	= getFieldFromArray(jointAttr.z, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.z, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.w, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.w, jointDQd));
+					}
+					
+					if (maxInfluences % 2 == 1)
+					{
+						jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
+						
+						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
 					}
 				}
 				
@@ -362,7 +402,7 @@ package aerys.minko.render.shader.part.animation
 			return normalize(outNormal);
 		}
 		
-		private function dualQuaternionSkinTangent(inTangent:SFloat):SFloat
+		private function dualQuaternionSkinTangent(inTangent : SFloat) : SFloat
 		{
 			return inTangent;
 		}
@@ -381,8 +421,5 @@ package aerys.minko.render.shader.part.animation
 		{
 			throw new Error("This feature is still to be implemented. Use DualQuaternion of Matrix instead.");
 		}
-		
-
-
 	}
 }

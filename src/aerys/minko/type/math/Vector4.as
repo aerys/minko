@@ -3,12 +3,11 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.data.IMonitoredData;
 	
 	import flash.geom.Vector3D;
 
-	public class Vector4 implements IDataProvider
+	public class Vector4 implements IMonitoredData
 	{
 		use namespace minko_math;
 		
@@ -41,11 +40,6 @@ package aerys.minko.type.math
 		
 		private var _locked		: Boolean	= false;
 		private var _changed	: Signal	= new Signal('Vector4.changed');
-		
-		public function get dataDescriptor() : Object
-		{
-			return DATA_DESCRIPTOR;
-		}
 		
 		public function get x()	: Number
 		{

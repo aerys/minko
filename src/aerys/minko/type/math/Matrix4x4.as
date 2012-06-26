@@ -3,8 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.data.IMonitoredData;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Utils3D;
@@ -12,7 +11,7 @@ package aerys.minko.type.math
 
 	use namespace minko_math;
 		
-	public final class Matrix4x4 implements IDataProvider
+	public final class Matrix4x4 implements IMonitoredData
 	{
 		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
 		private static const RAD2DEG			: Number			= 180. / Math.PI;

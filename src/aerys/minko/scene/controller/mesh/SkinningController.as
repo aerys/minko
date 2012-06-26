@@ -219,14 +219,13 @@ package aerys.minko.scene.controller.mesh
 			var format	: VertexFormat	= mesh.geometry.getVertexStream().format;
 			
 			_skinningData.maxInfluences = 
-				uint(format.hasComponent(VertexComponent.BONE0))
-				+ uint(format.hasComponent(VertexComponent.BONE1))
-				+ uint(format.hasComponent(VertexComponent.BONE2))
-				+ uint(format.hasComponent(VertexComponent.BONE3))
-				+ uint(format.hasComponent(VertexComponent.BONE4))
-				+ uint(format.hasComponent(VertexComponent.BONE5))
-				+ uint(format.hasComponent(VertexComponent.BONE6))
-				+ uint(format.hasComponent(VertexComponent.BONE7));
+				format.hasComponent(VertexComponent.BONE_S) 
+				+ 2 * (
+					uint(format.hasComponent(VertexComponent.BONE_0_1))
+					+ uint(format.hasComponent(VertexComponent.BONE_2_3))
+					+ uint(format.hasComponent(VertexComponent.BONE_4_5))
+					+ uint(format.hasComponent(VertexComponent.BONE_6_7))
+				);
 			
 			mesh.bindings.addProvider(_skinningData);
 		}

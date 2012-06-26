@@ -22,6 +22,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.display.BitmapData;
@@ -61,7 +62,7 @@ package aerys.minko.scene.controller.scene
 		private var _postProcessingBackBuffer	: RenderTarget	= null;
 		private var _postProcessingEffect		: Effect		= null;
 		private var _postProcessingScene		: Scene			= null;
-		private var _postProcessingProperties	: DataProvider	= new DataProvider();
+		private var _postProcessingProperties	: DataProvider	= new DataProvider(DataProviderUsage.MANAGED);
 		
 		private var _lastViewportWidth			: Number		= 0;
 		private var _lastViewportHeight			: Number		= 0;
@@ -525,6 +526,8 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
+					newDrawCall.enabled = mesh.visible;
+					
 					if (passInstance.program != null)
 					{
 						newDrawCall.configure(
@@ -585,6 +588,7 @@ package aerys.minko.scene.controller.scene
 				var passInstance	: ShaderInstance	= passTemplate.fork(meshBindings, sceneBindings);
 				var drawCall		: DrawCall			= new DrawCall();
 				
+				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
 				{
 					drawCall.configure(

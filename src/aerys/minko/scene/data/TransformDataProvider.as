@@ -2,6 +2,7 @@ package aerys.minko.scene.data
 {
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public final class TransformDataProvider implements IDataProvider
@@ -15,6 +16,11 @@ package aerys.minko.scene.data
 		
 		private var _localToWorld	: Matrix4x4	= new Matrix4x4();
 		private var _worldToLocal	: Matrix4x4	= new Matrix4x4();
+		
+		public function get usage() : uint
+		{
+			return DataProviderUsage.EXCLUSIVE;
+		}
 		
 		public function get changed() : Signal
 		{
@@ -35,5 +41,11 @@ package aerys.minko.scene.data
 		{
 			return _worldToLocal;
 		}
+		
+		public function clone() : IDataProvider
+		{
+			throw new Error('TransformDataProviders must not be cloned.');
+		}
+		
 	}
 }

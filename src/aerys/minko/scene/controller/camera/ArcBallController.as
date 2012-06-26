@@ -48,6 +48,11 @@ package aerys.minko.scene.controller.camera
 			_enabled = value;
 		}
 		
+		protected function set update(value : Boolean) : void
+		{
+			_update = value;
+		}
+		
 		/**
 		 * Distance between look at point and target
 		 */		
