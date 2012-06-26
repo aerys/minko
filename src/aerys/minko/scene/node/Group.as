@@ -298,9 +298,8 @@ package aerys.minko.scene.node
 			
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
-				var mesh 			: Mesh		= meshes[i] as Mesh;
-				var worldToLocal	: Matrix4x4	= mesh.worldToLocal;
-				var hitDepth		: Number	= mesh.geometry.boundingBox.testRay(
+				var mesh 		: Mesh		= meshes[i] as Mesh;
+				var hitDepth	: Number	= mesh.geometry.boundingBox.testRay(
 					ray,
 					mesh.worldToLocal,
 					maxDistance
