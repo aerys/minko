@@ -38,17 +38,17 @@ package aerys.minko.scene.controller
 		private var _started		: Signal				= new Signal('AnimationController.started');
 		private var _stopped		: Signal				= new Signal('AnimationController.stopped');
 
-		public function get timeFunction():Function
+		public function get timeFunction() : Function
 		{
 			return _timeFunction;
 		}
 
-		public function set timeFunction(value:Function):void
+		public function set timeFunction(value : Function) : void
 		{
 			_timeFunction = value;
 		}
 
-		public function get labels():Vector.<TimeLabel>
+		public function get labels() : Vector.<TimeLabel>
 		{
 			return _labels;
 		}
@@ -58,7 +58,7 @@ package aerys.minko.scene.controller
 			return _timelines.length;
 		}
 		
-		public function get started():Signal
+		public function get started() : Signal
 		{
 			return _started;
 		}
@@ -68,7 +68,7 @@ package aerys.minko.scene.controller
 			return _stopped;
 		}
 
-		public function get looped():Signal
+		public function get looped() : Signal
 		{
 			return _looped;
 		}
