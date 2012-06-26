@@ -34,7 +34,7 @@ package aerys.minko.type.stream.format
 		private var _offsets			: Object;
 		private var _vertexComponentId	: String;	// used to avoid array comparison
 
-		public function get dwords()				: int 				{ return VertexComponentType.NB_DWORDS[_nativeFormat]; }
+		public function get size()				: int 				{ return VertexComponentType.NB_DWORDS[_nativeFormat]; }
 		public function get offsets()				: Object 			{ return _offsets; }
 		public function get fields()				: Vector.<String> 	{ return _fields; }
 		public function get nativeFormat()			: int				{ return _nativeFormat; }
