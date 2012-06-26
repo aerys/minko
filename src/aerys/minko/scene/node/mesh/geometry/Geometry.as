@@ -326,7 +326,7 @@ package aerys.minko.scene.node.mesh.geometry
 				var stream			: IVertexStream		= _vertexStreams[streamId];
 				var xyzStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.XYZ);
 				var vertexOffset	: int 				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-				var vertexLength	: int 				= xyzStream.format.dwordsPerVertex;
+				var vertexLength	: int 				= xyzStream.format.size;
 				var vertices		: Vector.<Number>	= xyzStream._data;
 				var numVertices		: int				= vertices.length / vertexLength;
 				var normals			: Vector.<Number>	= new Vector.<Number>(3 * numVertices);
@@ -433,7 +433,7 @@ package aerys.minko.scene.node.mesh.geometry
 				// (x, y, z) positions
 				var xyzStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.XYZ);
 				var xyzOffset		: int 				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-				var xyzSize			: int 				= xyzStream.format.dwordsPerVertex;
+				var xyzSize			: int 				= xyzStream.format.size;
 				var xyz				: Vector.<Number>	= xyzStream._data;
 				
 				// (u, v) texture coordinates
@@ -443,7 +443,7 @@ package aerys.minko.scene.node.mesh.geometry
 					throw new Error("Missing vertex components u, v.");
 				
 				var uvOffset		: int 				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
-				var uvSize			: int 				= uvStream.format.dwordsPerVertex;
+				var uvSize			: int 				= uvStream.format.size;
 				var uv				: Vector.<Number>	= uvStream._data;
 				
 				var numVertices		: int				= xyz.length / xyzSize;
@@ -607,7 +607,7 @@ package aerys.minko.scene.node.mesh.geometry
 		private function updateBoundingVolumes() : void
 		{
 			if (_bulkUpdate)
-				return;
+				return ;
 				
 			var numStreams	: int		= _vertexStreams.length;
 			var minX		: Number	= 0.;
