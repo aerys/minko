@@ -158,6 +158,7 @@ package aerys.minko.render
 		public function set backgroundColor(value : uint) : void
 		{
 			_backgroundColor = value;
+			_invalidBackBuffer = true;
 		}
 		
 		/**
@@ -252,7 +253,7 @@ package aerys.minko.render
 			if (_autoResize)
 			{
 				_autoResize = false;
-				updateStageListeners()
+				updateStageListeners();
 			}
 			
 			setSize(width, height);

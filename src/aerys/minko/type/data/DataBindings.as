@@ -7,21 +7,18 @@ package aerys.minko.type.data
 
 	public class DataBindings
 	{
-		private var _numProviders					: uint 						= 0;
 		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
 		private var _bindingNames					: Vector.<String>			= new Vector.<String>();
 		
 		private var _bindingNameToValue				: Object					= {};
 		private var _bindingNameToChangedSignal		: Object					= {};
 		
-		private var _bindingNameToProvider			: Dictionary				= new Dictionary();
+		private var _bindingNameToProvider			: Object					= {};
 		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
-		private var _attributeToProviders			: Dictionary				= new Dictionary(); // dic[Vector.<IDataProvider>[]]
-		private var _attributeToProvidersAttrNames	: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
 		
 		public function get numProviders() : uint
 		{
-			return _numProviders;
+			return _providers.length;
 		}
 		
 		public function get numProperties() : uint
@@ -47,13 +44,13 @@ package aerys.minko.type.data
 			var dataDescriptor			: Object			= provider.dataDescriptor;
 			
 			provider.changed.add(providerChangedHandler);
+			provider.propertyChanged.add(providerChangedHandler);
 			
 			for (var attrName : String in dataDescriptor)
 			{
 				// if this provider attribute is also a dataprovider, let's also bind it
 				var bindingName	: String			= dataDescriptor[attrName];
 				var attribute	: Object			= provider[attrName]
-				var dpAttribute	: IMonitoredData	= attribute as IMonitoredData;
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
@@ -61,18 +58,6 @@ package aerys.minko.type.data
 					);
 				
 				_bindingNameToProvider[bindingName] = provider;
-				
-				if (dpAttribute != null)
-				{
-					dpAttribute.changed.add(providerPropertyChangedHandler);
-					
-					_attributeToProviders[dpAttribute]			||= new <IDataProvider>[];
-					_attributeToProvidersAttrNames[dpAttribute]	||= new <String>[];
-					
-					_attributeToProviders[dpAttribute].push(provider);
-					_attributeToProvidersAttrNames[dpAttribute].push(attrName);
-				}
-				
 				_bindingNameToValue[bindingName] = attribute;
 				
 				providerBindingNames.push(bindingName);
@@ -84,61 +69,38 @@ package aerys.minko.type.data
 			
 			_providerToBindingNames[provider] = providerBindingNames;
 			_providers.push(provider);
-			++_numProviders;
 		}
 		
 		public function removeProvider(provider : IDataProvider) : void
 		{
-			var bindingNames : Vector.<String> = _providerToBindingNames[provider];
+			var providerBindingsNames : Vector.<String> = _providerToBindingNames[provider];
 			
-			if (bindingNames == null)
+			if (providerBindingsNames == null)
 				throw new ArgumentError('Unkown provider.');
 			
-			for each (var bindingName : String in bindingNames)
+			var numBindings : uint = _bindingNames.length;
+			for (var indexRead : uint = 0, indexWrite : uint = 0; indexRead < numBindings; ++indexRead)
 			{
-				var indexOf : int = _bindingNames.indexOf(bindingName);
+				var bindingName : String = _bindingNames[indexRead];
 				
-				_bindingNames.splice(indexOf, 1);
-				
-				if (_bindingNameToValue[bindingName] is IMonitoredData)
-					IMonitoredData(_bindingNameToValue[bindingName]).changed.remove(providerPropertyChangedHandler);
-				
-				delete _bindingNameToValue[bindingName];
-				delete _bindingNameToProvider[bindingName];
-			}
-			
-			var attributesToDelete : Vector.<Object> = new Vector.<Object>();
-			
-			for (var attribute : Object in _attributeToProviders)
-			{
-				var providers		: Vector.<IDataProvider>	= _attributeToProviders[attribute];
-				var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[attribute];
-				var indexOfProvider	: int						= providers.indexOf(provider);
-				
-				if (indexOfProvider != -1)
+				if (providerBindingsNames.indexOf(bindingName) != -1)
 				{
-					providers.splice(indexOfProvider, 1);
-					attrNames.splice(indexOfProvider, 1);
+					delete _bindingNameToValue[bindingName];
+					delete _bindingNameToProvider[bindingName];
 				}
-				
-				if (providers.length == 0)
-					attributesToDelete.push(attribute);
+				else
+					_bindingNames[indexWrite++] = _bindingNames[indexRead];
 			}
-			
-			for (var attributeToDelete : Object in attributesToDelete)
-			{
-				delete _attributeToProviders[attributeToDelete];
-				delete _attributeToProvidersAttrNames[attributeToDelete];
-			}
+			_bindingNames.length = indexWrite;
 			
 			provider.changed.remove(providerChangedHandler);
+			provider.propertyChanged.remove(providerChangedHandler);
 			
-			--_numProviders;
 			_providers.splice(_providers.indexOf(provider), 1);
 			
 			delete _providerToBindingNames[provider];
 			
-			for each (bindingName in bindingNames)
+			for each (bindingName in providerBindingsNames)
 				if (_bindingNameToChangedSignal[bindingName])
 					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null);
 		}
@@ -147,7 +109,7 @@ package aerys.minko.type.data
 		{
 			var numProviders : uint = this.numProviders;
 			
-			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
+			for (var providerId : int = numProviders - 1; providerId >= 0; --providerId)
 				removeProvider(getProviderAt(providerId));
 		}
 		
@@ -239,64 +201,12 @@ package aerys.minko.type.data
 			else
 			{
 				var bindingName : String		= source.dataDescriptor[attributeName];
-				var oldDpValue	: IDataProvider	= _bindingNameToValue[bindingName] as IDataProvider;
 				var newValue	: Object		= source[attributeName];
-				var newDpValue	: IDataProvider	= newValue as IDataProvider;
-				
-				// we are replacing a data provider. We must remove listeners and related mapping keys
-				if (oldDpValue != null)
-				{
-					oldDpValue.changed.remove(providerPropertyChangedHandler);
-					
-					var providers	: Vector.<IDataProvider>	= _attributeToProviders[oldDpValue];
-					var attrNames	: Vector.<String>			= _attributeToProvidersAttrNames[oldDpValue];
-					
-					if (providers.length == 1)
-					{
-						delete _attributeToProviders[oldDpValue];
-						delete _attributeToProvidersAttrNames[oldDpValue];
-					}
-					else
-					{
-						var index : uint = providers.indexOf(source);
-						providers.splice(index, 1);
-						attrNames.splice(index, 1);
-					}
-				}
-				
-				// the new value for this key is a dataprovider, we must listen changes.
-				if (newDpValue != null)
-				{
-					newDpValue.changed.add(providerPropertyChangedHandler);
-					
-					_attributeToProviders[newDpValue]			||= new <IDataProvider>[];
-					_attributeToProvidersAttrNames[newDpValue]	||= new <String>[];
-					
-					_attributeToProviders[newDpValue].push(source);
-					_attributeToProvidersAttrNames[newDpValue].push(attributeName);
-				}
 				
 				_bindingNameToValue[bindingName] = newValue;
 				
 				if (_bindingNameToChangedSignal[bindingName])
 					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, newValue);
-			}
-		}
-		
-		private function providerPropertyChangedHandler(source : IMonitoredData, key : String) : void
-		{
-			var providers		: Vector.<IDataProvider>	= _attributeToProviders[source];
-			var attrNames		: Vector.<String>			= _attributeToProvidersAttrNames[source];
-			var numProviders	: uint						= providers.length;
-			
-			for (var providerId : uint = 0; providerId < numProviders; ++providerId)
-			{
-				var provider	: IDataProvider	= providers[providerId];
-				var attrName	: String		= attrNames[providerId];
-				var bindingName : String		= provider.dataDescriptor[attrName];
-				
-				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, source);
 			}
 		}
 	}
