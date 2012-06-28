@@ -1,0 +1,72 @@
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  ADOBE SYSTEMS INCORPORATED
+//  Copyright 2008 Adobe Systems Incorporated
+//  All Rights Reserved.
+//
+//  NOTICE: Adobe permits you to use, modify, and distribute this file
+//  in accordance with the terms of the license agreement accompanying it.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+a:hover,
+table.titleTable a:hover
+{
+  color: #00a8ff;
+  text-decoration: none;
+}
+
+table.titleTable a,
+table.titleTable a:link,
+table.titleTable a:visited
+{
+  text-decoration: none;
+  color: #ffffff;
+}
+
+table.bindingsSummary
+{
+	border-collapse: collapse;
+	margin: 10px 0;
+}
+
+table.bindingsSummary td, table.bindingsSummary th
+{
+	vertical-align: top;
+	border: 1px solid black;
+	border-collapse: collapse;
+	margin: 0;
+	padding: 3px 10px;
+}
+
+table.titleTable
+{
+	background-color: black;
+	color: white;
+}
+
+table.titleTable td.titleTableTitle,
+table.titleTable td.titleTableSearch,
+table.titleTable td.titleTableTopNav,
+table.titleTable td.titleTableSubTitle,
+table.titleTable td.titleTableSubNav,
+table.titleTable td.titleTableLogo
+{
+	background-color: black;
+	background-image: none;
+	color: white
+}
+
+table.titleTable td.titleTableLogo
+{
+	width: 128px;
+	padding: 0 20px 0 10px;
+	vertical-align: middle;
+}
+
+table.titleTable td.titleTableTopNav
+{
+	padding-right: 20px;
+}
