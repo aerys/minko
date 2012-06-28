@@ -20,19 +20,22 @@ package aerys.minko.scene.controller.mesh
 		private var _matrix			: Matrix			= null;
 		
 		private var _bitmapData	: BitmapData			= null;
-		private var _texture	: TextureResource		= new TextureResource();
+		private var _texture	: TextureResource		= null;
 		
 		private var _lastDraw	: Number				= 0.;
 		
 		public function DynamicTextureController(source			: DisplayObject,
+												 width			: Number,
+												 height			: Number,
+												 mipMapping		: Boolean	= true,
 												 framerate		: Number	= 30.,
-												 mipMapping		: Boolean	= false,
-												 propertyName	: String	= "diffuseMap",
+												 propertyName	: String	= 'diffuseMap',
 												 matrix			: Matrix	= null)
 		{
 			super(Mesh);
 			
 			_source = source;
+			_texture = new TextureResource(width, height);
 			_framerate = framerate;
 			_mipMapping = mipMapping;
 			_propertyName = propertyName;
@@ -60,8 +63,6 @@ package aerys.minko.scene.controller.mesh
 														   target	: BitmapData,
 														   time		: Number) : void
 		{
-			super.sceneEnterFrameHandler(scene, viewport, target, time);
-			
 			if (time - _lastDraw > 1000. / _framerate)
 			{
 				_lastDraw = time;
