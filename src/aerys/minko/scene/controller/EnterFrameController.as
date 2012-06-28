@@ -6,6 +6,15 @@ package aerys.minko.scene.controller
 	
 	import flash.display.BitmapData;
 
+	/**
+	 * EnterFrameController are controllers triggered whenever the Scene.enterFrame
+	 * signal is executed.
+	 * 
+	 * The best way to 
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public class EnterFrameController extends AbstractController
 	{
 		private var _targetsInScene	: uint	= 0;
@@ -68,7 +77,7 @@ package aerys.minko.scene.controller
 												  time			: Number) : void
 		{
 			throw new Error(
-				"The method EnterFrameController.sceneEnterFrameHandler must be overriden."
+				'The method EnterFrameController.sceneEnterFrameHandler must be overriden.'
 			);
 		}
 	}
