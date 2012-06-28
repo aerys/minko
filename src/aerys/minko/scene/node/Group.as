@@ -184,7 +184,7 @@ package aerys.minko.scene.node
 		public function getChildIndex(child : ISceneNode) : int
 		{
 			if (child == null)
-				throw new Error("The 'child' parameter cannot be null.");
+				throw new Error('The 'child' parameter cannot be null.');
 			
 			for (var i : int = 0; i < _numChildren; i++)
 				if (_children[i] === child)
@@ -223,7 +223,7 @@ package aerys.minko.scene.node
 		public function addChildAt(node : ISceneNode, position : uint) : Group
 		{
 			if (!node)
-				throw new Error("Parameter 'scene' must not be null.");
+				throw new Error('Parameter \'scene\' must not be null.');
 
 			node.parent = this;
 
@@ -312,7 +312,7 @@ package aerys.minko.scene.node
 		
 		public function toString() : String
 		{
-			return "[" + getQualifiedClassName(this) + " " + name + "]";
+			return '[' + getQualifiedClassName(this) + ' ' + name + ']';
 		}
 
 		/**
