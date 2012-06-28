@@ -68,7 +68,7 @@ package aerys.minko.scene.controller
 												  time			: Number) : void
 		{
 			throw new Error(
-				"The method EnterFrameController.sceneEnterFrameHandler must be overriden."
+				'The method EnterFrameController.sceneEnterFrameHandler must be overriden.'
 			);
 		}
 	}
