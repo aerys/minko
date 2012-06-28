@@ -19,16 +19,11 @@ package aerys.minko.type.math
 		private static const DEG2RAD			: Number			= Math.PI / 180.;
 		private static const EPSILON			: Number			= 1e-100;
 
-		private static const TMP_VECTOR			: Vector.<Number>	= new Vector.<Number>();
+		private static const TMP_VECTOR			: Vector.<Number>	= new <Number>[];
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
 		
-		private static const UPDATE_NONE		: uint				= 0;
-		private static const UPDATE_DATA		: uint				= 1;
-		private static const UPDATE_MATRIX		: uint				= 2;
-		private static const UPDATE_ALL			: uint				= UPDATE_DATA | UPDATE_MATRIX;
-
-		private var _data		: Vector.<Number>		= new Vector.<Number>();
+		private var _data		: Vector.<Number>		= new <Number>[];
 		private var _numPushes	: int					= 0;
 		
 		private var _locked		: Boolean				= false;
@@ -83,6 +78,7 @@ package aerys.minko.type.math
 		}
 		public function set rotationY(value : Number) : void
 		{
+			trace('set', value);
 			setRotation(NaN, value, NaN);
 		}
 		
@@ -497,8 +493,7 @@ package aerys.minko.type.math
 			var components 	: Vector.<Vector3D>	= _matrix.decompose();
 			
 			output ||= new Vector4();
-			output._vector = components[1];
-			
+			output._vector = components[1];			
 			output.changed.execute(output, null);
 			
 			return output;

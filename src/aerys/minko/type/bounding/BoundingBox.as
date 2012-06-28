@@ -148,12 +148,16 @@ package aerys.minko.type.bounding
 		public static function merge(box1 : BoundingBox, box2 : BoundingBox) : BoundingBox
 		{
 			return new BoundingBox(
-				new Vector4(Math.min(box1._min.x, box2._min.x),
+				new Vector4(
+					Math.min(box1._min.x, box2._min.x),
 					Math.min(box1._min.y, box2._min.y),
-					Math.min(box1._min.z, box2._min.z)),
-				new Vector4(Math.max(box1._max.x, box2._max.x),
+					Math.min(box1._min.z, box2._min.z)
+				),
+				new Vector4(
+					Math.max(box1._max.x, box2._max.x),
 					Math.max(box1._max.y, box2._max.y),
-					Math.max(box1._max.z, box2._max.z))
+					Math.max(box1._max.z, box2._max.z)
+				)
 			);
 		}
 
