@@ -158,6 +158,7 @@ package aerys.minko.render
 		public function set backgroundColor(value : uint) : void
 		{
 			_backgroundColor = value;
+			_invalidBackBuffer = true;
 		}
 		
 		/**
@@ -252,7 +253,7 @@ package aerys.minko.render
 			if (_autoResize)
 			{
 				_autoResize = false;
-				updateStageListeners()
+				updateStageListeners();
 			}
 			
 			setSize(width, height);
@@ -284,6 +285,9 @@ package aerys.minko.render
 		
 		private function updateBackBuffer() : void
 		{
+			if (!_width || !_height)
+				return;
+			
 			_invalidBackBuffer = false;
 			_stage3d.context3D.configureBackBuffer(
 				_width,
@@ -298,6 +302,10 @@ package aerys.minko.render
 				0,
 				_backgroundColor
 			);
+			
+			graphics.clear();
+			graphics.beginFill(0, 0);
+			graphics.drawRect(0, 0, _width, _height);
 		}
 		
 		private function updateStage3D() : void

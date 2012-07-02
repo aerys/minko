@@ -53,11 +53,8 @@ package aerys.minko.render.resource.texture
 		public function setSize(width : uint, height : uint) : void
 		{
 			//http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
-			if (!(width && !(width & (width - 1)))
-				|| !(height && !(height & (height - 1))))
-			{
+			if (!(width && !(width & (width - 1))) || !(height && !(height & (height - 1))))
 				throw new Error('The size must be a power of 2.');
-			}
 			
 			_width	= width;
 			_height	= height;

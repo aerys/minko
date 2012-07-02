@@ -154,12 +154,12 @@ package aerys.minko.render.shader.part
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return _main._sceneBindings.getParameter('cameraPosition', 3);
+			return _main._sceneBindings.getParameter('cameraPosition', 4);
 		}
 		
 		protected function get cameraDirection() : SFloat
 		{
-			return _main._sceneBindings.getParameter('cameraDirection', 3);
+			return _main._sceneBindings.getParameter('cameraDirection', 4);
 		}
 		
 		protected function get cameraZNear() : SFloat
@@ -744,24 +744,29 @@ package aerys.minko.render.shader.part
 			main._kills.push(getNode(value));
 		}
 		
-		protected final function localToWorld(value : Object) : SFloat
+		protected final function localToWorld(localSpaceVector : Object) : SFloat
 		{
-			return multiply4x4(value, localToWorldMatrix);
+			return multiply4x4(localSpaceVector, localToWorldMatrix);
 		}
 		
-		protected final function localToView(value : Object) : SFloat
+		protected final function localToView(localSpaceVector : Object) : SFloat
 		{
-			return multiply4x4(localToWorld(value), worldToViewMatrix);
+			return worldToView(localToWorld(localSpaceVector));
 		}
 		
-		protected final function worldToLocal(value : Object) : SFloat
+		protected final function worldToLocal(worldSpaceVector : Object) : SFloat
 		{
-			return multiply4x4(value, worldToLocalMatrix);
+			return multiply4x4(worldSpaceVector, worldToLocalMatrix);
 		}
 		
-		protected final function worldToView(value : Object) : SFloat
+		protected final function worldToView(worldSpaceVector : Object) : SFloat
 		{
-			return multiply4x4(value, worldToViewMatrix);
+			return multiply4x4(worldSpaceVector, worldToViewMatrix);
+		}
+		
+		protected final function worldToScreen(worldSpaceVector : Object) : SFloat
+		{
+			return viewToScreen(worldToView(worldSpaceVector));
 		}
 		
 		protected final function viewToWorld(value : Object) : SFloat
@@ -769,12 +774,17 @@ package aerys.minko.render.shader.part
 			return multiply4x4(value, viewToWorldMatrix);
 		}
 		
-		protected final function localToScreen(vertex : Object) : SFloat
+		protected final function localToScreen(localSpaceVector : Object) : SFloat
 		{
 			return multiply4x4(
-				localToWorld(vertex),
+				localToWorld(localSpaceVector),
 				worldToScreenMatrix
 			);
+		}
+		
+		protected final function viewToScreen(viewSpaceVector : Object) : SFloat
+		{
+			return multiply4x4(viewSpaceVector, projectionMatrix);
 		}
 		
 		protected final function deltaLocalToWorld(vertex : Object) : SFloat

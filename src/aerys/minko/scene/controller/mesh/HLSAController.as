@@ -6,6 +6,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.*;
 
 	/**
@@ -27,7 +28,7 @@ package aerys.minko.scene.controller.mesh
 		private static const SQRT3			: Number			= Math.sqrt(3.0);
 		private static const INV_SQRT2		: Number			= 1.0 / SQRT2;
 		
-		private var _dataProvider		: DataProvider	= new DataProvider();
+		private var _dataProvider		: DataProvider	= new DataProvider(DataProviderUsage.MANAGED);
 		private var _hue				: Number		= 0;
 		private var _saturation			: Number		= 1;
 		private var _luminance			: Number		= 1;

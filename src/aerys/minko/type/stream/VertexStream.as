@@ -2,8 +2,8 @@ package aerys.minko.type.stream
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.stream.format.VertexComponent;
 	import aerys.minko.type.stream.format.VertexComponentType;
 	import aerys.minko.type.stream.format.VertexFormat;
@@ -66,8 +66,14 @@ package aerys.minko.type.stream
 
 		protected function set data(value : Vector.<Number>) : void
 		{
+			if (value && value.length != 0 && value.length % _format.size)
+				throw new Error(
+					'Invalid data: length does not match with the size of a vertex.'
+				);
+			
 			_data = value;
 			_changed.execute(this);
+			updateMinMax(true);
 		}
 		
 		public function get locked() : Boolean
@@ -94,29 +100,22 @@ package aerys.minko.type.stream
 			initialize(data, format, usage);
 		}
 
-		private function initialize(data 		: Vector.<Number>,
-									format		: VertexFormat,
-									usage		: uint) : void
+		private function initialize(data 	: Vector.<Number>,
+									format	: VertexFormat,
+									usage	: uint) : void
 		{
 			_changed.add(changedHandler);
 			
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
 			
-			if (data && data.length && data.length % _format.dwordsPerVertex)
-				throw new Error("Incompatible vertex format: the data length does not match.");
-			
-			_data = data ? data.concat() : new <Number>[];
 			_usage = usage;
-			
-			changedHandler(this);
-			
-			updateMinMax(true);
+			this.data = data ? data.concat() : new Vector.<Number>();
 		}
 		
 		private function updateMinMax(forceReset : Boolean = false) : void
 		{
-			if (!_invalidMinMax)
+			if (!_invalidMinMax && !forceReset)
 				return ;
 				
 			_invalidMinMax = false;
@@ -126,7 +125,7 @@ package aerys.minko.type.stream
 			
 			if (forceReset)
 			{
-				var size	: uint	= format.dwordsPerVertex;
+				var size	: uint	= format.size;
 				
 				_minimum = new Vector.<Number>(size, true);
 				_maximum = new Vector.<Number>(size, true);
@@ -172,7 +171,7 @@ package aerys.minko.type.stream
 			if (index > length)
 				return false;
 
-			_data.splice(index, _format.dwordsPerVertex);
+			_data.splice(index, _format.size);
 			
 			if (_locked)
 			{
@@ -220,9 +219,9 @@ package aerys.minko.type.stream
 		public function lock() : Vector.<Number>
 		{
 			if (_locked) 
-				throw new Error("The stream is already locked.");
+				throw new Error('The stream is already locked.');
 			if (_localDispose)
-				throw new Error("Cannot lock stream data which is already disposed.");
+				throw new Error('Cannot lock stream data which is already disposed.');
 			
 			checkWriteUsage(this);
 			
@@ -241,7 +240,7 @@ package aerys.minko.type.stream
 		public function unlock() : void
 		{
 			if (!_locked)
-				throw new Error("Cannot unlock a stream that is not locked.");
+				throw new Error('Cannot unlock a stream that is not locked.');
 			
 			var invalidMinMax : Boolean = _invalidMinMax;
 			
@@ -273,7 +272,7 @@ package aerys.minko.type.stream
 			
 			_data[offset] = value;
 			
-			offset %= _format.dwordsPerVertex;
+			offset %= _format.size;
 			if (value < _minimum[offset])
 			{
 				_minimum[offset] = value;
@@ -314,13 +313,13 @@ package aerys.minko.type.stream
 			
 			var numValues 	: int 	= data.length;
 
-			if (numValues % _format.dwordsPerVertex)
-				throw new Error("Invalid data length.");
+			if (numValues % _format.size)
+				throw new Error('Invalid data length.');
 
 			for (var i : int = 0; i < numValues; i++)
 			{
 				var value 	: Number	= data[i];
-				var ii		: uint		= i % _format.dwordsPerVertex;
+				var ii		: uint		= i % _format.size;
 				
 				if (value < _minimum[ii])
 				{
@@ -363,11 +362,11 @@ package aerys.minko.type.stream
 									   transform	: Matrix4x4,
 									   normalize	: Boolean) : void
 		{
-			if (component.dwords < 3)
-				throw new Error("Not a vector component");
+			if (component.size < 3)
+				throw new Error('Vertex component \'' + component.toString() + '\' does not have a size of 3.');
 				
 			var vertexOffset	: int				= _format.getOffsetForComponent(component);
-			var vertexLength	: int				= _format.dwordsPerVertex;
+			var vertexLength	: int				= _format.size;
 			var vertices		: Vector.<Number>	= lock();
 			var numVertices		: int				= vertices.length / vertexLength;
 			var tmpLength		: int				= numVertices * 3;
@@ -408,7 +407,7 @@ package aerys.minko.type.stream
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
 			if (_locked)
-				throw new Error("Stream data can not be disposed since it's locked for update");
+				throw new Error('Stream data can not be disposed since it\'s locked for update.');
 			if (waitForUpload)
 				_localDispose = true;
 			else
@@ -422,7 +421,7 @@ package aerys.minko.type.stream
 
 		private function changedHandler(stream : VertexStream) : void
 		{
-			_length = _data.length / _format.dwordsPerVertex;
+			_length = _data.length / _format.size;
 		}
 		
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
@@ -480,14 +479,14 @@ package aerys.minko.type.stream
 				checkReadUsage(subVertexStream);
 				
 				componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
-				componentDwordsPerVertex[k]	= subvertexFormat.dwordsPerVertex;
-				componentSizes[k]			= vertexComponent.dwords;
+				componentDwordsPerVertex[k]	= subvertexFormat.size;
+				componentSizes[k]			= vertexComponent.size;
 				componentDatas[k]			= subVertexStream._data;
 			}
 			
 			// push vertex data into the new buffer.
 			var numVertices			: uint 				= source.length;
-			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>(numVertices * vertexFormat.dwordsPerVertex);
+			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>(numVertices * vertexFormat.size);
 			
 			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
 			{
@@ -505,7 +504,7 @@ package aerys.minko.type.stream
 			}
 			
 			// avoid copying data vectors
-			var newVertexStream	 : VertexStream	= new VertexStream(usage, vertexFormat);
+			var newVertexStream	 	: VertexStream	= new VertexStream(usage, vertexFormat);
 			
 			newVertexStream.data = newVertexStreamData;
 			
@@ -517,8 +516,8 @@ package aerys.minko.type.stream
 			if (!(stream._usage & StreamUsage.READ))
 			{
 				throw new Error(
-					"Unable to read from vertex stream: stream usage "
-					+ "is not set to StreamUsage.READ."
+					'Unable to read from vertex stream: stream usage '
+					+ 'is not set to StreamUsage.READ.'
 				);
 			}
 		}
@@ -528,20 +527,21 @@ package aerys.minko.type.stream
 			if (!(stream._usage & StreamUsage.WRITE))
 			{
 				throw new Error(
-					"Unable to write in vertex stream: stream usage "
-					+ "is not set to StreamUsage.WRITE."
+					'Unable to write in vertex stream: stream usage '
+					+ 'is not set to StreamUsage.WRITE.'
 				);
 			}
 		}
 
-		public static function concat(streams : Vector.<IVertexStream>, usage : uint) : VertexStream
+		public static function concat(streams 	: Vector.<IVertexStream>,
+									  usage 	: uint	= StreamUsage.STATIC) : VertexStream
 		{
 			var format		: VertexFormat	= streams[0].format;
 			var numStreams 	: int			= streams.length;
 
 			for (var i : int = 0; i < numStreams; ++i)
 				if (!streams[i].format.equals(format))
-					throw new Error("All vertex streams must have the same format.");
+					throw new Error('All vertex streams must have the same format.');
 
 			// a bit expensive... but hey, it works :)
 			var stream	: VertexStream	= extractSubStream(streams[0], usage, format);
@@ -573,20 +573,18 @@ package aerys.minko.type.stream
 			for (var k : int = 0; k < numComponents; k++)
 				nativeFormats[k] = componentsOut[k].nativeFormat;
 			
-			data = new Vector.<Number>(formatOut.dwordsPerVertex * count, true);
+			data = new Vector.<Number>(formatOut.size * count, true);
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
-					bytes.position = start + formatIn.dwordsPerVertex * vertexId * dwordSize
+					bytes.position = start + formatIn.size * vertexId * dwordSize
 						+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
 					
 					var reader : Function = null;
 					
 					if (readFunctions[componentsOut[componentId]])
 						reader = readFunctions[componentsOut[componentId]];
-					else if (readFunctions["defaut"])
-						reader = readFunctions["defaut"];
 					else
 						reader = bytes.readFloat;
 					
@@ -605,7 +603,7 @@ package aerys.minko.type.stream
 				}
 			}
 			// make sure the ByteArray position is at the end of the buffer
-			bytes.position = start + formatIn.dwordsPerVertex * count * dwordSize;
+			bytes.position = start + formatIn.size * count * dwordSize;
 			
 			stream.data = data;
 			

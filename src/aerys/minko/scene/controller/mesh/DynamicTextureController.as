@@ -11,6 +11,19 @@ package aerys.minko.scene.controller.mesh
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
 	
+	/**
+	 * The DynamicTextureController makes it possible to use Flash DisplayObjects
+	 * as dynamic textures.
+	 * 
+	 * <p>
+	 * The DynamicTextureController listen for the Scene.enterFrame signal and
+	 * update the specified texture property of the targeted Meshes by rasterizing
+	 * the source Flash DisplayObject.
+	 * </p>
+	 *   
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class DynamicTextureController extends EnterFrameController
 	{
 		private var _source			: DisplayObject		= null;
@@ -20,19 +33,36 @@ package aerys.minko.scene.controller.mesh
 		private var _matrix			: Matrix			= null;
 		
 		private var _bitmapData	: BitmapData			= null;
-		private var _texture	: TextureResource		= new TextureResource();
+		private var _texture	: TextureResource		= null;
 		
 		private var _lastDraw	: Number				= 0.;
 		
+		/**
+		 * Create a new DynamicTextureController.
+		 * 
+		 * @param source The source DisplayObject to use as a dynamic texture.
+		 * @param width The width of the dynamic texture.
+		 * @param height The height of the dynamic texture.
+		 * @param mipMapping Whether mip-mapping should be enabled or not. Default value is 'true'.
+		 * @param framerate The frame rate of the dynamic texture. Default value is '30'.
+		 * @param propertyName The name of the bindings property that should be set with the
+		 * dynamic texture. Default value if 'diffuseMap'.
+		 * @param matrix The Matrix object that shall be used when rasterizing the DisplayObject
+		 * into the dynamic texture. Default value is 'null'.
+		 * 
+		 */
 		public function DynamicTextureController(source			: DisplayObject,
+												 width			: Number,
+												 height			: Number,
+												 mipMapping		: Boolean	= true,
 												 framerate		: Number	= 30.,
-												 mipMapping		: Boolean	= false,
-												 propertyName	: String	= "diffuseMap",
+												 propertyName	: String	= 'diffuseMap',
 												 matrix			: Matrix	= null)
 		{
 			super(Mesh);
 			
 			_source = source;
+			_texture = new TextureResource(width, height);
 			_framerate = framerate;
 			_mipMapping = mipMapping;
 			_propertyName = propertyName;
@@ -60,8 +90,6 @@ package aerys.minko.scene.controller.mesh
 														   target	: BitmapData,
 														   time		: Number) : void
 		{
-			super.sceneEnterFrameHandler(scene, viewport, target, time);
-			
 			if (time - _lastDraw > 1000. / _framerate)
 			{
 				_lastDraw = time;

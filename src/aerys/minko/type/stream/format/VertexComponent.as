@@ -17,24 +17,24 @@ package aerys.minko.type.stream.format
 
 		public static const TANGENT		: VertexComponent	= create(["tx", "ty", "tz"], VertexComponentType.FLOAT_3);
 
-		public static const BONE0		: VertexComponent	= create(["boneId0", "boneWeight0"], VertexComponentType.FLOAT_2);
-		public static const BONE1		: VertexComponent	= create(["boneId1", "boneWeight1"], VertexComponentType.FLOAT_2);
-		public static const BONE2		: VertexComponent	= create(["boneId2", "boneWeight2"], VertexComponentType.FLOAT_2);
-		public static const BONE3		: VertexComponent	= create(["boneId3", "boneWeight3"], VertexComponentType.FLOAT_2);
-		public static const BONE4		: VertexComponent	= create(["boneId4", "boneWeight4"], VertexComponentType.FLOAT_2);
-		public static const BONE5		: VertexComponent	= create(["boneId5", "boneWeight5"], VertexComponentType.FLOAT_2);
-		public static const BONE6		: VertexComponent	= create(["boneId6", "boneWeight6"], VertexComponentType.FLOAT_2);
-		public static const BONE7		: VertexComponent	= create(["boneId7", "boneWeight7"], VertexComponentType.FLOAT_2);
-
-		public static const BONES		: Vector.<VertexComponent> = Vector.<VertexComponent>([BONE0, BONE1, BONE2, BONE3,
-																							   BONE4, BONE5, BONE6, BONE7]);
-
+		public static const BONE_0_1	: VertexComponent	= create(["boneId0", "boneWeight0", "boneId1", "boneWeight1"], VertexComponentType.FLOAT_4);
+		public static const BONE_2_3	: VertexComponent	= create(["boneId2", "boneWeight2", "boneId3", "boneWeight3"], VertexComponentType.FLOAT_4);
+		public static const BONE_4_5	: VertexComponent	= create(["boneId4", "boneWeight4", "boneId5", "boneWeight5"], VertexComponentType.FLOAT_4);
+		public static const BONE_6_7	: VertexComponent	= create(["boneId6", "boneWeight6", "boneId7", "boneWeight7"], VertexComponentType.FLOAT_4);
+		public static const BONE_8_9	: VertexComponent	= create(["boneId8", "boneWeight8", "boneId9", "boneWeight9"], VertexComponentType.FLOAT_4);
+		public static const BONE_10_11	: VertexComponent	= create(["boneId10", "boneWeight10", "boneId11", "boneWeight11"], VertexComponentType.FLOAT_4);
+		public static const BONE_S		: VertexComponent	= create(["boneIdS", "boneWeightS"], VertexComponentType.FLOAT_2);
+		
+		public static const BONES		: Vector.<VertexComponent> = new <VertexComponent>[
+			BONE_0_1, BONE_2_3, BONE_4_5, BONE_6_7, BONE_8_9, BONE_10_11
+		];
+		
 		private var _nativeFormat		: int;
 		private var _fields				: Vector.<String>;
 		private var _offsets			: Object;
 		private var _vertexComponentId	: String;	// used to avoid array comparison
 
-		public function get dwords()				: int 				{ return VertexComponentType.NB_DWORDS[_nativeFormat]; }
+		public function get size()				: int 				{ return VertexComponentType.NB_DWORDS[_nativeFormat]; }
 		public function get offsets()				: Object 			{ return _offsets; }
 		public function get fields()				: Vector.<String> 	{ return _fields; }
 		public function get nativeFormat()			: int				{ return _nativeFormat; }

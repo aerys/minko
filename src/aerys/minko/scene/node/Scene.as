@@ -8,6 +8,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.display.BitmapData;
 	import flash.utils.getTimer;
@@ -116,7 +117,7 @@ package aerys.minko.scene.node
 		{
 			super();
 			
-			this.properties = new DataProvider();
+			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
 			
 			addController(_renderingCtrl);
 			

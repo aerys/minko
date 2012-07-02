@@ -13,7 +13,7 @@ package aerys.minko.render.shader.part
 		public function get backBufferTexture() : SFloat
 		{
 			return sceneBindings.getTextureParameter(
-				"backBuffer",
+				'backBuffer',
 				SamplerFiltering.LINEAR,
 				SamplerMipMapping.DISABLE,
 				SamplerWrapping.CLAMP

@@ -3,12 +3,11 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.data.IMonitoredData;
 	
 	import flash.geom.Vector3D;
 
-	public class Vector4 implements IDataProvider
+	public class Vector4 implements IMonitoredData
 	{
 		use namespace minko_math;
 		
@@ -41,11 +40,6 @@ package aerys.minko.type.math
 		
 		private var _locked		: Boolean	= false;
 		private var _changed	: Signal	= new Signal('Vector4.changed');
-		
-		public function get dataDescriptor() : Object
-		{
-			return DATA_DESCRIPTOR;
-		}
 		
 		public function get x()	: Number
 		{
@@ -147,7 +141,7 @@ package aerys.minko.type.math
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
-								w 	: Number	= NaN)
+								w 	: Number	= 1)
 		{
 			_vector.x = x;
 			_vector.y = y;
@@ -194,7 +188,7 @@ package aerys.minko.type.math
 			return _vector.x == v._vector.x
 				   && _vector.y == v._vector.y
 				   && _vector.z == v._vector.z
-				   && (!allFour || (_vector.w == v._vector.w) || (isNaN(_vector.w) && isNaN(v._vector.w)));
+				   && (!allFour || (_vector.w == v._vector.w));
 		}
 
 		public static function distance(u : Vector4, v : Vector4) : Number

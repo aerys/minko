@@ -22,7 +22,7 @@ package aerys.minko.type.stream.format
 		{
 			return _components;
 		}
-		public function get dwordsPerVertex() : int
+		public function get size() : int
 		{
 			return _dwordsPerVertex;
 		}
@@ -60,7 +60,7 @@ package aerys.minko.type.stream.format
 			for (var fieldName : String in component.offsets)
 				_fieldOffsets[fieldName] = _dwordsPerVertex + component.offsets[fieldName];
 
-			_dwordsPerVertex += component.dwords;
+			_dwordsPerVertex += component.size;
 		}
 
 		public function removeComponent(component : VertexComponent) : void
@@ -69,7 +69,7 @@ package aerys.minko.type.stream.format
 				throw new Error('No such component');
 
 			var offset	: uint = _componentOffsets[component];
-			var dwords	: uint = component.dwords;
+			var dwords	: uint = component.size;
 
 			_components.splice(_components.indexOf(component), 1);
 			delete _componentOffsets[component]

@@ -1,8 +1,8 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public final class SkinningDataProvider implements IDataProvider
@@ -17,15 +17,31 @@ package aerys.minko.scene.data
 			"dqD"			: "skinningDQd" 
 		};
 		
-		private var _method			: uint				= 0;
-		private var _numBones		: uint				= 0;
-		private var _bindShape		: Matrix4x4			= null;
-		private var _maxInfluences	: uint				= 0;
-		private var _matrices		: Vector.<Number>	= new <Number>[];
-		private var _dqN			: Vector.<Number>	= new <Number>[];
-		private var _dqD			: Vector.<Number>	= new <Number>[];
+		private var _method				: uint				= 0;
+		private var _numBones			: uint				= 0;
+		private var _bindShape			: Matrix4x4			= null;
+		private var _maxInfluences		: uint				= 0;
+		private var _matrices			: Vector.<Number>	= new <Number>[];
+		private var _dqN				: Vector.<Number>	= new <Number>[];
+		private var _dqD				: Vector.<Number>	= new <Number>[];
 		
-		private var _changed		: Signal			= new Signal("SkinningDataProvider._changed");
+		private var _changed			: Signal			= new Signal('SkinningDataProvider.changed');
+		private var _propertyChanged	: Signal			= new Signal('SkinningDataProvider.propertyChanged');
+		
+		public function get changed() : Signal
+		{
+			return _changed;
+		}
+		
+		public function get propertyChanged() : Signal
+		{
+			return _propertyChanged;
+		}
+		
+		public function get usage() : uint
+		{
+			return DataProviderUsage.MANAGED;
+		}
 		
 		public function get dataDescriptor():Object
 		{
@@ -58,7 +74,12 @@ package aerys.minko.scene.data
 		}
 		public function set bindShape(value : Matrix4x4) : void
 		{
+			if (_bindShape)
+				_bindShape.changed.remove(bindShapeChangedHandler);
+			
 			_bindShape = value;
+			_bindShape.changed.add(bindShapeChangedHandler);
+			
 			_changed.execute(this, "bindShape");
 		}
 		
@@ -102,14 +123,19 @@ package aerys.minko.scene.data
 			_changed.execute(this, "dqD");
 		}
 		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
-		
 		public function SkinningDataProvider()
 		{
 			super();
+		}
+		
+		private function bindShapeChangedHandler(source : Matrix4x4, key : String) : void
+		{
+			_propertyChanged.execute(this, 'bindShape');
+		}
+		
+		public function clone() : IDataProvider
+		{
+			throw new Error('This provider is managed, and must not be cloned');
 		}
 	}
 }

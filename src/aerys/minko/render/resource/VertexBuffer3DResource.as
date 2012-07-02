@@ -69,7 +69,7 @@ package aerys.minko.render.resource
 
 				_vertexBuffer = context.createVertexBuffer(
 					_numVertices,
-					_stream.format.dwordsPerVertex
+					_stream.format.size
 				);
 				
 				update = true;

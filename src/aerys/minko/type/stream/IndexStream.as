@@ -188,19 +188,25 @@ package aerys.minko.type.stream
 			return _data.toString();
 		}
 		
-		public function concat(indexStream : IndexStream) : void
+		public function concat(indexStream : IndexStream,
+							   firstIndex	: uint	= 0,
+							   count		: uint	= 0,
+							   offset		: uint 	= 0) : IndexStream
 		{
 			checkReadUsage(indexStream);
 			checkWriteUsage(this);
 			
+			
 			var numIndices 	: int 			= _data.length;
 			var toConcat 	: Vector.<uint> = indexStream._data;
-			var numIndices2 : int 			= toConcat.length;
 
-			for (var i : int = 0; i < numIndices2; ++i, ++numIndices)
-				_data[numIndices] = toConcat[i];
+			count ||= toConcat.length;
+			for (var i : int = 0; i < count; ++i, ++numIndices)
+				_data[numIndices] = toConcat[int(firstIndex + i)] + offset;
 
 			invalidate();
+			
+			return this;
 		}
 
 		public function push(indices 	: Vector.<uint>,
@@ -239,50 +245,22 @@ package aerys.minko.type.stream
 			_resource.dispose();
 		}
 		
-		/*
-		public static function concat(usage 	: uint,
-									  streams 	: Vector.<IndexStream>) : IndexStream
-		{
-			var numStreams		: int			= streams.length;
-			var data			: Vector.<uint>	= new Vector.<uint>();
-			var totalIndices	: int			= 0;
-			var offset			: int			= 0;
-			var stream			: IndexStream	= null;
-			
-			for (var i : int = 0; i < numStreams; ++i)
-			{
-				stream = streams[i];
-				
-				checkReadUsage(stream);
-				
-				var streamData 	: Vector.<uint>	= streams[i]._data;
-				var numIndices	: int			= streamData.length;
-
-				for (var j : int = 0; j < numIndices; ++j, ++totalIndices)
-					data[totalIndices] = offset + streamData[j];
-
-				offset = totalIndices;
-			}
-
-			stream = new IndexStream(usage);
-
-			stream._data = data;
-			stream._usage = usage;
-			stream.invalidate();
-
-			return stream;
-		}*/
-		
 		private static function checkReadUsage(stream : IndexStream) : void
 		{
 			if (!(stream._usage & StreamUsage.READ))
-				throw new Error();
+				throw new Error(
+					'Unable to read from vertex stream: stream usage '
+					+ 'is not set to StreamUsage.READ.'
+				);
 		}
 		
 		private static function checkWriteUsage(stream : IndexStream) : void
 		{
 			if (!(stream._usage & StreamUsage.WRITE))
-				throw new Error();
+				throw new Error(
+					'Unable to write in vertex stream: stream usage '
+					+ 'is not set to StreamUsage.WRITE.'
+				);
 		}
 		
 		public static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>

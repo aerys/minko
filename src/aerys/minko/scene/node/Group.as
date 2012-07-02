@@ -37,23 +37,51 @@ package aerys.minko.scene.node
 		private var _descendantRemoved	: Signal				= new Signal('Group.descendantRemoved');
 
 		/**
-		 * The number of children.
+		 * The number of children of the Group.
 		 */
 		public function get numChildren() : uint
 		{
 			return _numChildren;
 		}
 		
+		/**
+		 * The number of descendants of the Group.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get numDescendants() : uint
 		{
 			return _numDescendants;
 		}
 		
+		/**
+		 * The signal executed when a descendant is added to the Group.
+		 * Callbacks for this signal must accept the following arguments:
+		 * <ul>
+		 * <li>newParent : Group, the Group the descendant was actually added to</li>
+		 * <li>descendant : ISceneNode, the descendant that was just added</li>
+		 * </ul>
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get descendantAdded() : Signal
 		{
 			return _descendantAdded
 		}
 		
+		/**
+		 * The signal executed when a descendant is removed from the Group.
+		 * Callbacks for this signal must accept the following arguments:
+		 * <ul>
+		 * <li>oldParent : Group, the Group the descendant was actually removed from</li>
+		 * <li>descendant : ISceneNode, the descendant that was just removed</li>
+		 * </ul>
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function get descendantRemoved() : Signal
 		{
 			return _descendantRemoved;
@@ -134,15 +162,29 @@ package aerys.minko.scene.node
 			_numDescendants -= (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
+		/**
+		 * Return true if the specified scene node is a child of the Group, false otherwise.
+		 *  
+		 * @param scene
+		 * @return 
+		 * 
+		 */
 		public function contains(scene : ISceneNode) : Boolean
 		{
 			return getChildIndex(scene) >= 0;
 		}
 
+		/**
+		 * Return the index of the speficied scene node or -1 if it is not in the Group.
+		 *  
+		 * @param child
+		 * @return 
+		 * 
+		 */
 		public function getChildIndex(child : ISceneNode) : int
 		{
 			if (child == null)
-				throw new Error("The 'child' parameter cannot be null.");
+				throw new Error('The \'child\' parameter cannot be null.');
 			
 			for (var i : int = 0; i < _numChildren; i++)
 				if (_children[i] === child)
@@ -161,7 +203,7 @@ package aerys.minko.scene.node
 		}
 
 		/**
-		 * Add a child to the container.
+		 * Add a child to the group.
 		 *
 		 * @param	scene The child to add.
 		 */
@@ -170,10 +212,18 @@ package aerys.minko.scene.node
 			return addChildAt(node, _numChildren);
 		}
 
+		/**
+		 * Add a child to the group at the specified position.
+		 *  
+		 * @param node
+		 * @param position
+		 * @return 
+		 * 
+		 */
 		public function addChildAt(node : ISceneNode, position : uint) : Group
 		{
 			if (!node)
-				throw new Error("Parameter 'scene' must not be null.");
+				throw new Error('Parameter \'scene\' must not be null.');
 
 			node.parent = this;
 
@@ -206,6 +256,12 @@ package aerys.minko.scene.node
 			return this;
 		}
 
+		/**
+		 * Remove all the children.
+		 *  
+		 * @return 
+		 * 
+		 */
 		public function removeAllChildren() : Group
 		{
 			while (_numChildren)
@@ -214,11 +270,26 @@ package aerys.minko.scene.node
 			return this;
 		}
 
+		/**
+		 * Return the child at the specified position.
+		 *  
+		 * @param position
+		 * @return 
+		 * 
+		 */
 		public function getChildAt(position : uint) : ISceneNode
 		{
 			return position < _numChildren ? _children[position] : null;
 		}
 
+		/**
+		 * Returns the list of descendant scene nodes that have the specified type. 
+		 *  
+		 * @param type
+		 * @param descendants
+		 * @return 
+		 * 
+		 */
 		public function getDescendantsByType(type 			: Class,
 											 descendants 	: Vector.<ISceneNode> = null) : Vector.<ISceneNode>
 		{
@@ -241,9 +312,18 @@ package aerys.minko.scene.node
 		
 		public function toString() : String
 		{
-			return "[" + getQualifiedClassName(this) + " " + name + "]";
+			return '[' + getQualifiedClassName(this) + ' ' + name + ']';
 		}
 
+		/**
+		 * Load the 3D scene corresponding to the specified URLRequest object
+		 * and add it directly to the group.
+		 *  
+		 * @param request
+		 * @param options
+		 * @return 
+		 * 
+		 */
 		public function load(request	: URLRequest,
 							 options	: ParserOptions	= null) : ILoader
 		{
@@ -255,6 +335,15 @@ package aerys.minko.scene.node
 			return loader;
 		}
 		
+		/**
+		 * Load the 3D scene corresponding to the specified Class object
+		 * and add it directly to the group.
+		 *  
+		 * @param classObject
+		 * @param options
+		 * @return 
+		 * 
+		 */
 		public function loadClass(classObject	: Class,
 								  options		: ParserOptions	= null) : ILoader
 		{
@@ -266,6 +355,15 @@ package aerys.minko.scene.node
 			return loader;
 		}
 		
+		/**
+		 * Load the 3D scene corresponding to the specified ByteArray object
+		 * and add it directly to the group.
+		 *  
+		 * @param bytes
+		 * @param options
+		 * @return 
+		 * 
+		 */
 		public function loadBytes(bytes		: ByteArray,
 								  options	: ParserOptions	= null) : ILoader
 		{
@@ -277,6 +375,13 @@ package aerys.minko.scene.node
 			return loader;
 		}
 		
+		/**
+		 * Return the set of nodes matching the specified XPath query.
+		 *  
+		 * @param xpath
+		 * @return 
+		 * 
+		 */
 		public function get(xpath : String) : SceneIterator
 		{
 			return new SceneIterator(xpath, new <ISceneNode>[this]);
@@ -288,6 +393,14 @@ package aerys.minko.scene.node
 			addChild(scene);
 		}
 		
+		/**
+		 * Return all the Mesh objects hit by the specified ray.
+		 *  
+		 * @param ray
+		 * @param maxDistance
+		 * @return 
+		 * 
+		 */
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : SceneIterator
 		{
 			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
@@ -298,9 +411,8 @@ package aerys.minko.scene.node
 			
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
-				var mesh 			: Mesh		= meshes[i] as Mesh;
-				var worldToLocal	: Matrix4x4	= mesh.worldToLocal;
-				var hitDepth		: Number	= mesh.geometry.boundingBox.testRay(
+				var mesh 		: Mesh		= meshes[i] as Mesh;
+				var hitDepth	: Number	= mesh.geometry.boundingBox.testRay(
 					ray,
 					mesh.worldToLocal,
 					maxDistance
