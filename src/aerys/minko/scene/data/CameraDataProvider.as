@@ -3,23 +3,24 @@ package aerys.minko.scene.data
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	public final class CameraDataProvider implements IDataProvider
 	{
 		private static const DATA_DESCRIPTOR	: Object = {
-			'position'				: 'cameraPosition',
-			'direction'				: 'cameraDirection',
-			'fieldOfView'			: 'cameraFov',
-			'zNear'					: 'cameraZNear',
-			'zFar'					: 'cameraZFar',
-			'worldToView'			: 'worldToView',
-			'viewToWorld'			: 'viewToWorld',
-			'projection'			: 'projection',
-			'screenToView'			: 'screenToView',
-			'worldToScreen'			: 'worldToScreen',
-			'screenToWorld'			: 'screenToWorld'
+			'position'		: 'cameraPosition',
+			'direction'		: 'cameraDirection',
+			'fieldOfView'	: 'cameraFov',
+			'zNear'			: 'cameraZNear',
+			'zFar'			: 'cameraZFar',
+			'worldToView'	: 'worldToView',
+			'viewToWorld'	: 'viewToWorld',
+			'projection'	: 'projection',
+			'screenToView'	: 'screenToView',
+			'worldToScreen'	: 'worldToScreen',
+			'screenToWorld'	: 'screenToWorld'
 		};
 		
 		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
@@ -36,6 +37,7 @@ package aerys.minko.scene.data
 		private var _screenToWorld		: Matrix4x4		= new Matrix4x4();
 		private var _projection			: Matrix4x4		= new Matrix4x4();
 		private var _screenToView		: Matrix4x4		= new Matrix4x4();
+		private var _frustum			: Frustum		= new Frustum();
 		
 		public function get usage() : uint
 		{
@@ -125,6 +127,11 @@ package aerys.minko.scene.data
 		public function get screenToView() : Matrix4x4
 		{
 			return _screenToView;
+		}
+		
+		public function get frustum() : Frustum
+		{
+			return _frustum;
 		}
 		
 		public function CameraDataProvider(worldToView	: Matrix4x4,

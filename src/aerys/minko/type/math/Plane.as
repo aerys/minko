@@ -133,12 +133,14 @@ package aerys.minko.type.math
 			normalize();
 		}
 		
-		public function set(a : Number, b : Number, c : Number, d : Number) : void
+		public function set(a : Number, b : Number, c : Number, d : Number) : Plane
 		{
 			_a = a;
 			_b = b;
 			_c = c;
 			_d = d;
+			
+			return this;
 		}
 			
 		public function intersectWith(plane1 : Plane, 

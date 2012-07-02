@@ -3,19 +3,16 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.render.effect.Effect;
 	import aerys.minko.render.effect.basic.BasicShader;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
-	
-	import flash.utils.flash_proxy;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -35,22 +32,20 @@ package aerys.minko.scene.node.mesh
 			new BasicShader()
 		);
 		
-		private var _geometry			: Geometry			= null;
-		private var _effect				: Effect			= null;
-		private var _properties			: DataProvider		= null;
-		private var _bindings			: DataBindings		= new DataBindings();
+		private var _geometry			: Geometry					= null;
+		private var _effect				: Effect					= null;
+		private var _properties			: DataProvider				= null;
+		private var _material			: DataProvider				= null;
+		private var _bindings			: DataBindings				= null;
 		
-		private var _visible			: Boolean			= true;
+		private var _visibility			: MeshVisibilityController	= new MeshVisibilityController();
 		
-		private var _frustumCulling		: uint				= 0;
+		private var _frame				: uint						= 0;
 		
-		private var _frame				: uint				= 0;
-		
-		private var _cloned				: Signal 			= new Signal('Mesh.clones');
-		private var _effectChanged		: Signal			= new Signal('Mesh.effectChanged');
-		private var _visibilityChanged	: Signal			= new Signal('Mesh.visibilityChanged');
-		private var _frameChanged		: Signal			= new Signal('Mesh.frameChanged');
-		private var _geometryChanged	: Signal			= new Signal('Mesh.geometryChanged');
+		private var _cloned				: Signal 					= new Signal('Mesh.clones');
+		private var _effectChanged		: Signal					= new Signal('Mesh.effectChanged');
+		private var _frameChanged		: Signal					= new Signal('Mesh.frameChanged');
+		private var _geometryChanged	: Signal					= new Signal('Mesh.geometryChanged');
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -88,6 +83,24 @@ package aerys.minko.scene.node.mesh
 				
 				_properties = value;
 					
+				if (value)
+					_bindings.addProvider(value);
+			}
+		}
+		
+		public function get material() : DataProvider
+		{
+			return _material;
+		}
+		public function set material(value : DataProvider) : void
+		{
+			if (_material != value)
+			{
+				if (_material)
+					_bindings.removeProvider(_material);
+				
+				_material = value;
+				
 				if (value)
 					_bindings.addProvider(value);
 			}
@@ -157,38 +170,14 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		public function get visible() : Boolean
+		public function get visibility() : MeshVisibilityController
 		{
-			return _visible;
-		}
-		
-		public function set visible(value : Boolean) : void
-		{
-			var oldVisible : Boolean = _visible;
-			
-			_visible = value;
-			
-			if (oldVisible != value)
-				_visibilityChanged.execute(this, value);
-		}
-		
-		public function get frustumCulling() : uint
-		{
-			return _frustumCulling;
-		}
-		public function set frustumCulling(value : uint) : void
-		{
-			_frustumCulling = value;
+			return _visibility;
 		}
 		
 		public function get cloned() : Signal
 		{
 			return _cloned;
-		}
-		
-		public function get visibilityChanged() : Signal
-		{
-			return _visibilityChanged;
 		}
 		
 		public function get effectChanged() : Signal
@@ -238,11 +227,16 @@ package aerys.minko.scene.node.mesh
 		{
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
+			_bindings = new DataBindings(this);
+			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
+			_visibility.frustumCulling = FrustumCulling.ENABLED;
+			addController(_visibility);
+			
 			while (controllers && !(controllers[0] is AbstractController))
-					controllers = controllers[0];
+				controllers = controllers[0];
 			
 			if (controllers)
 				for each (var ctrl : AbstractController in controllers)
@@ -281,9 +275,11 @@ package aerys.minko.scene.node.mesh
 			var numControllers : uint = source.numControllers;
 			
 			name 		= source.name;
+			
 			geometry 	= source._geometry;
-			visible 	= source._visible;
 			properties	= DataProvider(source._properties.clone());
+			
+			_visibility = source._visibility.clone() as MeshVisibilityController;
 			
 			_bindings.copySharedProvidersFrom(source._bindings);
 			

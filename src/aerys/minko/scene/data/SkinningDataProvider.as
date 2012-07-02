@@ -8,13 +8,13 @@ package aerys.minko.scene.data
 	public final class SkinningDataProvider implements IDataProvider
 	{
 		private static const DATA_DESCRIPTOR : Object = {
-			"method"		: "skinningMethod",
-			"numBones"		: "skinningNumBones",
-			"bindShape"		: "skinningBindShape",
-			"maxInfluences"	: "skinningMaxInfluences",
-			"matrices"		: "skinningMatrices",
-			"dqN"			: "skinningDQn",
-			"dqD"			: "skinningDQd" 
+			'method'		: 'skinningMethod',
+			'numBones'		: 'skinningNumBones',
+			'bindShape'		: 'skinningBindShape',
+			'maxInfluences'	: 'skinningMaxInfluences',
+			'matrices'		: 'skinningMatrices',
+			'dqN'			: 'skinningDQn',
+			'dqD'			: 'skinningDQd' 
 		};
 		
 		private var _method				: uint				= 0;
@@ -55,7 +55,7 @@ package aerys.minko.scene.data
 		public function set method(value : uint) : void
 		{
 			_method = value;
-			_changed.execute(this, "method");
+			_changed.execute(this, 'method');
 		}
 		
 		public function get numBones() : uint
@@ -65,7 +65,7 @@ package aerys.minko.scene.data
 		public function set numBones(value : uint) : void
 		{
 			_numBones = value;
-			_changed.execute(this, "numBones");
+			_changed.execute(this, 'numBones');
 		}
 		
 		public function get bindShape() : Matrix4x4
@@ -80,7 +80,7 @@ package aerys.minko.scene.data
 			_bindShape = value;
 			_bindShape.changed.add(bindShapeChangedHandler);
 			
-			_changed.execute(this, "bindShape");
+			_changed.execute(this, 'bindShape');
 		}
 		
 		public function get maxInfluences() : uint
@@ -90,7 +90,7 @@ package aerys.minko.scene.data
 		public function set maxInfluences(value : uint) : void
 		{
 			_maxInfluences = value;
-			_changed.execute(this, "maxInfluences");
+			_changed.execute(this, 'maxInfluences');
 		}
 		
 		public function get matrices() : Vector.<Number>
@@ -100,7 +100,7 @@ package aerys.minko.scene.data
 		public function set matrices(value : Vector.<Number>) : void
 		{
 			_matrices = value;
-			_changed.execute(this, "matrices");
+			_changed.execute(this, 'matrices');
 		}
 		
 		public function get dqN() : Vector.<Number>
@@ -110,7 +110,7 @@ package aerys.minko.scene.data
 		public function set dqN(value : Vector.<Number>) : void
 		{
 			_dqN = value;
-			_changed.execute(this, "dqN");
+			_changed.execute(this, 'dqN');
 		}
 		
 		public function get dqD() : Vector.<Number>
@@ -120,7 +120,7 @@ package aerys.minko.scene.data
 		public function set dqD(value : Vector.<Number>) : void
 		{
 			_dqD = value;
-			_changed.execute(this, "dqD");
+			_changed.execute(this, 'dqD');
 		}
 		
 		public function SkinningDataProvider()

@@ -1,12 +1,16 @@
 package aerys.minko.type.data
 {
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.utils.Dictionary;
 
-	public class DataBindings
+	public final class DataBindings
 	{
+		private var _owner							: ISceneNode				= null;
+		
+		private var _numProviders					: uint 						= 0;
 		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
 		private var _bindingNames					: Vector.<String>			= new Vector.<String>();
 		
@@ -15,6 +19,11 @@ package aerys.minko.type.data
 		
 		private var _bindingNameToProvider			: Object					= {};
 		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
+		
+		public function get owner() : ISceneNode
+		{
+			return _owner;
+		}
 		
 		public function get numProviders() : uint
 		{
@@ -26,8 +35,9 @@ package aerys.minko.type.data
 			return _bindingNames.length;
 		}
 		
-		public function DataBindings()
+		public function DataBindings(owner : ISceneNode)
 		{
+			_owner = owner;
 		}
 		
 		public function contains(dataProvider : IDataProvider) : Boolean
@@ -49,12 +59,12 @@ package aerys.minko.type.data
 			for (var attrName : String in dataDescriptor)
 			{
 				// if this provider attribute is also a dataprovider, let's also bind it
-				var bindingName	: String			= dataDescriptor[attrName];
-				var attribute	: Object			= provider[attrName]
+				var bindingName	: String	= dataDescriptor[attrName];
+				var attribute	: Object	= provider[attrName]
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
-						'Another Dataprovider is already declaring the \'' + bindingName + '\' property.'
+						'Another data provider is already declaring the \'' + bindingName + '\' property.'
 					);
 				
 				_bindingNameToProvider[bindingName] = provider;

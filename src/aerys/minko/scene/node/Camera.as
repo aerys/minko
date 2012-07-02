@@ -130,7 +130,5 @@ package aerys.minko.scene.node
 			
 			return out;
 		}
-		
-		
 	}
 }

@@ -7,7 +7,6 @@ package aerys.minko.scene.node
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.display.BitmapData;
@@ -28,7 +27,7 @@ package aerys.minko.scene.node
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
 		private var _properties		: DataProvider			= null;
-		private var _bindings		: DataBindings			= new DataBindings();
+		private var _bindings		: DataBindings			= null;
 		
 		private var _enterFrame		: Signal				= new Signal('Scene.enterFrame');
 		private var _exitFrame		: Signal				= new Signal('Scene.exitFrame');
@@ -117,6 +116,12 @@ package aerys.minko.scene.node
 		{
 			super();
 			
+			initialize(children);
+		}
+		
+		private function initialize(children : Array) : void
+		{
+			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
 			
 			addController(_renderingCtrl);
