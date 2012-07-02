@@ -56,13 +56,16 @@ package aerys.minko.scene.node.mesh
 		 * A DataProvider object already bound to the Mesh bindings.
 		 * 
 		 * <pre>
+		 * // set the "diffuseColor" property to 0x0000ffff
+		 * mesh.properties.diffuseColor = 0x0000ffff;
+		 * 
 		 * // animate the "diffuseColor" property
 		 * mesh.addController(
 		 *   new AnimationController(
-		 * 	  new <ITimeline>[new ColorTimeline(
+		 * 	  new &lt;ITimeline&gt;[new ColorTimeline(
 		 * 	    "dataProvider.diffuseColor",
 		 * 	    5000,
-		 * 	    new <uint>[0xffffffff, 0xffffff00, 0xffffffff]
+		 * 	    new &lt;uint&gt;[0xffffffff, 0xffffff00, 0xffffffff]
 		 *    )]
 		 *   )
 		 * );
