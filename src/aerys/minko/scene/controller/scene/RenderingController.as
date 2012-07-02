@@ -95,7 +95,12 @@ package aerys.minko.scene.controller.scene
 		
 		public function get numPasses() : uint
 		{
-			return _passes.length;
+			var numPasses : uint = _passes.length;
+			
+			if (_postProcessingEffect)
+				numPasses += _postProcessingEffect.numPasses;
+			
+			return numPasses;
 		}
 		
 		public function get numTriangles() : uint
@@ -197,10 +202,7 @@ package aerys.minko.scene.controller.scene
 						 || _postProcessingBackBuffer.height != h
 						 || _postProcessingBackBuffer.backgroundColor != bgcolor)
 				{
-					_postProcessingBackBuffer.textureResource.setSize(
-						w,
-						h
-					);
+					_postProcessingBackBuffer.resize(w, h);
 					_postProcessingBackBuffer.backgroundColor = bgcolor;
 				}
 				
