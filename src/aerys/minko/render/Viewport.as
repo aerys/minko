@@ -285,6 +285,9 @@ package aerys.minko.render
 		
 		private function updateBackBuffer() : void
 		{
+			if (!_width || !_height)
+				return;
+			
 			_invalidBackBuffer = false;
 			_stage3d.context3D.configureBackBuffer(
 				_width,
