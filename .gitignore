@@ -10,3 +10,4 @@ bin-debug/
 bin-release/
 build/
 html-template/
+/doc/
