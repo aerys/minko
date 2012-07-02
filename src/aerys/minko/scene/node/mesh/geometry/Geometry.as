@@ -247,7 +247,7 @@ package aerys.minko.scene.node.mesh.geometry
 		 * <li>vertex tangents, if any (VertexComponent.TANGENT)</li>
 		 * </ul>
 		 * 
-		 * <p>Vertex normals and tangents will be transformed without translation
+		 * <p>Vertex normals and tangents will be transformed without translation</p>
 		 */
 		public function applyTransform(transform 		: Matrix4x4,
 									   updatePositions	: Boolean	= true,
