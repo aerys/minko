@@ -4,6 +4,7 @@ package aerys.minko.scene.node.mesh.geometry
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	import aerys.minko.type.stream.IVertexStream;
@@ -36,7 +37,7 @@ package aerys.minko.scene.node.mesh.geometry
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Geometry
+	public class Geometry implements IBoundingVolume
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
@@ -247,7 +248,7 @@ package aerys.minko.scene.node.mesh.geometry
 		 * <li>vertex tangents, if any (VertexComponent.TANGENT)</li>
 		 * </ul>
 		 * 
-		 * <p>Vertex normals and tangents will be transformed without translation
+		 * <p>Vertex normals and tangents will be transformed without translation</p>
 		 */
 		public function applyTransform(transform 		: Matrix4x4,
 									   updatePositions	: Boolean	= true,

@@ -568,6 +568,44 @@ package aerys.minko.render.shader.part
 			
 			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
+		
+		/*protected final function rotationX(vector : Object, angle : Object) : SFloat
+		{
+			var vectorNode 	: SFloat = getNode(vector);
+			var angleNode 	: SFloat = getNode(angle);
+			
+			return float4(
+				vector.x,
+				dotProduct3(vector.y, float3(0, cos(angle), negate(sin(angle)))),
+				dotProduct3(vector.z, float3(0 sin(angle), cos(angle))),
+				vector.w
+			);
+		}
+		
+		protected final function rotationY(vector : Object, angle : Object) : SFloat
+		{
+			var vectorNode 	: SFloat = getNode(vector);
+			var angleNode 	: SFloat = getNode(angle);
+			
+			return float4(
+				dotProduct3(vector.x, float3(cos(angleNode), 0, sin(angleNode))),
+				vector.y,
+				dotProduct3(vector.z, float3(negate(sin(angleNode)), 0, cos(angleNode))),
+				vector.w
+			);
+		}
+		
+		protected final function rotationZ(vector : Object, angle : Object) : SFloat
+		{
+			var vectorNode 	: SFloat = getNode(vector);
+			var angleNode 	: SFloat = getNode(angle);
+			
+			return float4(
+				dotProduct3(vector.x, float3(cos(angleNode), 0, negate(sin(angleNode)))),
+				dotProduct3(vector.y, float3(sin(angleNode), cos(angleNode)), 0),
+				vector.zw
+			);
+		}*/
 
 		protected final function cos(angle : Object) : SFloat
 		{

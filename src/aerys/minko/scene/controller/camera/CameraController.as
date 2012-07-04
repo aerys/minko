@@ -105,6 +105,8 @@ package aerys.minko.scene.controller.camera
 			cameraScreenToWorld.unlock();
 			cameraPosition.unlock();
 			cameraDirection.unlock();
+			
+			cameraData.frustum.updateFromMatrix(cameraWorldToScreen);
 		}
 		
 		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
@@ -144,6 +146,8 @@ package aerys.minko.scene.controller.camera
 			screenToView.unlock();
 			screenToWorld.unlock();
 			worldToScreen.unlock();
+			
+			cameraData.frustum.updateFromMatrix(worldToScreen);
 		}
 		
 		private function cameraActivatedHandler(camera : Camera) : void

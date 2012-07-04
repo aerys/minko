@@ -56,7 +56,7 @@ package aerys.minko.type
 			var index : int = _callbacks.indexOf(callback);
 			
 			if (index < 0)
-				throw new Error("This callback does not exist.");
+				throw new Error('This callback does not exist.');
 			
 			--_numCallbacks;
 			_callbacks[index] = _callbacks[_numCallbacks];

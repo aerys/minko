@@ -182,6 +182,12 @@ package aerys.minko.type.math
 		
 		public static const OUTSIDE				: uint				= 0x00000000;
 		public static const INSIDE				: uint				= 0xf0000000;
+		public static const SPANNING_LEFT		: uint				= SPANNING << (LEFT << 2);
+		public static const SPANNING_TOP		: uint				= SPANNING << (TOP << 2);
+		public static const SPANNING_RIGHT		: uint				= SPANNING << (RIGHT << 2);
+		public static const SPANNING_BOTTOM		: uint				= SPANNING << (BOTTOM << 2);
+		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
+		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
 
 		private static const LEFT				: int				= 0;
 		private static const TOP				: int				= 1;
@@ -199,21 +205,16 @@ package aerys.minko.type.math
 
 		private static const SPANNING			: uint				= 0x0000000f;
 
-		public static const SPANNING_LEFT		: uint				= SPANNING << (LEFT << 2);
-		public static const SPANNING_TOP		: uint				= SPANNING << (TOP << 2);
-		public static const SPANNING_RIGHT		: uint				= SPANNING << (RIGHT << 2);
-		public static const SPANNING_BOTTOM		: uint				= SPANNING << (BOTTOM << 2);
-		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
-		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
+		private static const TMP_NUMBERS_1		: Vector.<Number>	= new <Number>[];
+		private static const TMP_NUMBERS_2		: Vector.<Number>	= new <Number>[];
+		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 
-		private static const TMP_DATA			: Vector.<Number>	= new Vector.<Number>();
+		private static const THICKNESS			: Number			= 0.0001;
 
-		private static const THICKNESS			: Number			= 0.01;
-
-		private var _planes			: Vector.<Plane>	= new Vector.<Plane>(6, true);
-		private var _points			: Vector.<Vector4>;
-		
-		private var _boxVertices	: Vector.<Number>	= new Vector.<Number>();
+		private var _points			: Vector.<Vector4>				= null;
+		private var _planes			: Vector.<Plane>				= new <Plane>[
+			new Plane(), new Plane(), new Plane(), new Plane(), new Plane(), new Plane()
+		];
 
 		public function get points() : Vector.<Vector4>
 		{
@@ -238,17 +239,18 @@ package aerys.minko.type.math
 											  zNear	: Number,
 											  zFar 	: Number) : void
 		{
-			var	y_scale		: Number	= 1. / Math.tan(fov * .5);
-			var	x_scale		: Number	= y_scale / ratio;
-			var	m33			: Number	= zFar / (zFar - zNear);
-			var	m43			: Number	= -zNear * zFar / (zFar - zNear);
+			var	y_scale	: Number	= 1. / Math.tan(fov * .5);
+			var	x_scale	: Number	= y_scale / ratio;
+			var	m33		: Number	= zFar / (zFar - zNear);
+			var	m43		: Number	= -zNear * zFar / (zFar - zNear);
 
-			_planes[RIGHT]	= new Plane(-x_scale,	0,			1,			0);
-			_planes[LEFT]	= new Plane(x_scale,	0,			1,			0);
-			_planes[TOP]	= new Plane(0,			-y_scale,	1,			0);
-			_planes[BOTTOM] = new Plane(0,			y_scale,	1,			0);
-			_planes[NEAR]	= new Plane(0,			0,			m33,		-m43);
-			_planes[FAR]	= new Plane(0,			0,			1 - m33,	m43);
+			_planes[RIGHT].set(	-x_scale,	0,			1,			0).normalize();
+			_planes[LEFT].set(	x_scale,	0,			1,			0).normalize();
+			_planes[TOP].set(	0,			-y_scale,	1,			0).normalize();
+			_planes[BOTTOM].set(0,			y_scale,	1,			0).normalize();
+			_planes[NEAR].set(	0,			0,			m33,		-m43).normalize();
+			_planes[FAR].set(	0,			0,			1 - m33,	m43).normalize();
+			
 			_points			= null;
 		}
 
@@ -260,39 +262,51 @@ package aerys.minko.type.math
 		 */
 		public function updateFromMatrix(matrix : Matrix4x4) : void
 		{
-			var data	: Vector.<Number>	= matrix.getRawData(TMP_DATA);
+			var data	: Vector.<Number>	= matrix.getRawData(TMP_NUMBERS_1);
 
-			_planes[RIGHT] = new Plane(data[3] - data[0],
-									   data[7] - data[4],
-									   data[11] - data[8],
-									   data[12] - data[15]);
+			(_planes[RIGHT] as Plane).set(
+				data[3] - data[0],
+				data[7] - data[4],
+				data[11] - data[8],
+				data[12] - data[15]
+			).normalize();
 
-			_planes[LEFT] = new Plane(data[3] + data[0],
-									  data[7] + data[4],
-									  data[11] + data[8],
-									  -data[15] - data[12]);
+			(_planes[LEFT] as Plane).set(
+				data[3] + data[0],
+				data[7] + data[4],
+				data[11] + data[8],
+				-data[15] - data[12]
+			).normalize();
 
-			_planes[TOP] = new Plane(data[3] - data[1],
-									 data[7] - data[5],
-									 data[11] - data[9],
-									 data[13] + data[15]);
+			(_planes[TOP] as Plane).set(
+				data[3] - data[1],
+				data[7] - data[5],
+				data[11] - data[9],
+				data[13] + data[15]
+			).normalize();
 
-			_planes[BOTTOM] = new Plane(data[3] + data[1],
-									    data[7] + data[5],
-									    data[11] + data[9],
-									    -data[15] - data[13]);
+			(_planes[BOTTOM] as Plane).set(
+				data[3] + data[1],
+				data[7] + data[5],
+				data[11] + data[9],
+				-data[15] - data[13]
+			).normalize();
 
-			_planes[NEAR] = new Plane(data[2],
-									  data[6],
-									  data[10],
-									  -data[14]);
+			(_planes[NEAR] as Plane).set(
+				data[2],
+				data[6],
+				data[10],
+				-data[14]
+			).normalize();
 
-			_planes[FAR] = new Plane(data[3] - data[2],
-									 data[7] - data[6],
-									 data[11] - data[10],
-									 data[14] - data[15]);
+			(_planes[FAR] as Plane).set(
+				data[3] - data[2],
+				data[7] - data[6],
+				data[11] - data[10],
+				data[14] - data[15]
+			).normalize();
 			
-			_points			= null;
+			_points	= null;
 		}
 
 		/**
@@ -305,8 +319,8 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testVector(vector 		: Vector4,
-								   transform	: Matrix4x4 	= null,
-								   mask			: int 			= 0xffffff) : uint
+								   transform	: Matrix4x4 = null,
+								   mask			: int 		= 0xffffff) : uint
 		{
 			var result	: uint 		= 0;
 			var p 		: Plane	= null;
@@ -345,18 +359,33 @@ package aerys.minko.type.math
 			var center	: Vector4	= sphere.center;
 			var radius	: Number	= sphere.radius;
 			var result	: int		= 0;
-			var p 		: Plane	= null;
+			var p 		: Plane		= null;
 			var d 		: Number	= 0.;
 
 			if (!culling)
 				return INSIDE;
+			
+			var cx : Number = center.x;
+			var cy : Number = center.y;
+			var cz : Number = center.z;
 
 			if (transform != null)
 			{
-				var scale	: Vector4	= transform.deltaTransformVector(Vector4.ONE);
-
-				center = transform.transformVector(sphere.center);
-				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
+				TMP_NUMBERS_1[0] = cx;
+				TMP_NUMBERS_1[1] = cy;
+				TMP_NUMBERS_1[2] = cz;
+				TMP_NUMBERS_1[3] = 1;
+				TMP_NUMBERS_1[4] = 1;
+				TMP_NUMBERS_1[5] = 1;
+				TMP_NUMBERS_2.length = 0;
+				
+				transform.transformRawVectors(TMP_NUMBERS_1, TMP_NUMBERS_2);
+				
+				cx = TMP_NUMBERS_2[0];
+				cy = TMP_NUMBERS_2[1];
+				cz = TMP_NUMBERS_2[2];
+				
+				radius *= Math.max(TMP_NUMBERS_2[3] - cx, TMP_NUMBERS_2[4] - cy, TMP_NUMBERS_2[5] - cz);
 			}
 
 			for (var i : int = 0; i < 6; ++i)
@@ -365,7 +394,7 @@ package aerys.minko.type.math
 					continue ;
 
 				p = _planes[i];
-				d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
+				d = p._a * cx + p._b * cy + p._c * cz - p._d;
 
 				if (d + radius < 0.0)
 					return OUTSIDE;
@@ -386,8 +415,8 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundingBox(box			: BoundingBox,
-										transform	: Matrix4x4 	= null,
-										culling		: int			= 0xffffffff) : uint
+										transform	: Matrix4x4 = null,
+										culling		: int		= 0xffffffff) : uint
 		{
 			var result		: uint				= 0;
 			var count		: int				= 0;
@@ -400,9 +429,9 @@ package aerys.minko.type.math
 			// transform vertices
 			if (transform != null)
 			{
-				_boxVertices.length = 0;
-				transform.transformRawVectors(vertices, _boxVertices);
-				vertices = _boxVertices;
+				TMP_NUMBERS_1.length = 0;
+				transform.transformRawVectors(vertices, TMP_NUMBERS_1);
+				vertices = TMP_NUMBERS_1;
 			}
 
 			var x1	: Number	= vertices[0];
@@ -491,21 +520,24 @@ package aerys.minko.type.math
 		 * the spanning planes.
 		 *
 		 */
-		public function testBoundedVolume(volume		: IBoundingVolume,
-								 	      transform		: Matrix4x4	= null,
-								 		  cullingMask	: int 		= 0xffffffff) : uint
+		public function testBoundingVolume(volume		: IBoundingVolume,
+										   transform	: Matrix4x4	= null,
+										   cullingMask	: int 		= 0xffffffff) : uint
 		{
-			cullingMask = cullingMask & volume.frustumCulling;
+			//cullingMask = cullingMask & volume.frustumCulling;
 
 			var box		: BoundingBox		= volume.boundingBox;
+			var sphere	: BoundingSphere	= volume.boundingSphere;
 
 			if (!cullingMask)
 				return INSIDE;
 
 			if ((cullingMask & FrustumCulling.SPHERE) == 0)
 				return testBoundingBox(box, transform, cullingMask);
+			
+			if ((cullingMask & FrustumCulling.BOX) == 0)
+				return testBoundingSphere(sphere, transform, cullingMask);
 
-			var sphere		: BoundingSphere	= volume.boundingSphere;
 			var center		: Vector4			= sphere.center;
 			var radius		: Number			= sphere.radius;
 			var result		: int				= 0;
@@ -514,7 +546,7 @@ package aerys.minko.type.math
 
 			if ((cullingMask & FrustumCulling.BOX) != 0 && transform != null)
 			{
-				vertices = _boxVertices;
+				vertices = TMP_NUMBERS_1;
 				vertices.length = 0;
 				transform.transformRawVectors(box._vertices, vertices);
 			}
@@ -543,13 +575,27 @@ package aerys.minko.type.math
 			var x8	: Number	= vertices[21];
 			var y8	: Number	= vertices[22];
 			var z8	: Number	= vertices[23];
+			var cx	: Number	= center.x;
+			var cy	: Number	= center.y;
+			var cz	: Number	= center.z;
 
 			if (transform)
 			{
-				var scale	: Vector4	= transform.deltaTransformVector(Vector4.ONE);
-
-				radius *= Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
-				center = transform.transformVector(center);
+				TMP_NUMBERS_1[0] = cx;
+				TMP_NUMBERS_1[1] = cy;
+				TMP_NUMBERS_1[2] = cz;
+				TMP_NUMBERS_1[3] = 1;
+				TMP_NUMBERS_1[4] = 1;
+				TMP_NUMBERS_1[5] = 1;
+				TMP_NUMBERS_2.length = 0;
+				
+				transform.transformRawVectors(TMP_NUMBERS_1, TMP_NUMBERS_2);
+				
+				cx = TMP_NUMBERS_2[0];
+				cy = TMP_NUMBERS_2[1];
+				cz = TMP_NUMBERS_2[2];
+				
+				radius *= Math.max(TMP_NUMBERS_2[3] - cx, TMP_NUMBERS_2[4] - cy, TMP_NUMBERS_2[5] - cz);
 			}
 
 			for (var i : int = 0; i < 6; i++)
@@ -560,8 +606,8 @@ package aerys.minko.type.math
 				// bounding sphere
 				if (((CULLING_SPHERE << (i << 2)) & cullingMask))
 				{
-					d = p._a * center.x + p._b * center.y + p._c * center.z - p._d;
-
+					d = p._a * cx + p._b * cy + p._c * cz - p._d;
+					
 					if (d + radius < .0)
 						return OUTSIDE;
 					else if (d - radius > .0)
@@ -627,12 +673,12 @@ package aerys.minko.type.math
 			var d15	: Number = -(l.d - r.d) / 2;
 			
 			out ||= new Matrix4x4();
-			out.setRawData(Vector.<Number>([ 
+			out.initialize(
 				d0,		d1, 	d2, 	d3,
 				d4, 	d5, 	d6, 	d7,
 				d8, 	d9, 	d10, 	d11,
 				d12,	d13,	d14,	d15
-			]));
+			);
 
 			return out;
 		}

@@ -96,5 +96,14 @@ package aerys.minko.render
 					'The texture resource and the render target must have the same size.'
 				);
 		}
+		
+		public function resize(width : uint, height	: uint) : void
+		{
+			_width = width;
+			_height = height;
+			
+			if (_resource)
+				_resource.setSize(width, height);
+		}
 	}
 }

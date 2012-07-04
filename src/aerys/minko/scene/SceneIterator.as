@@ -61,8 +61,9 @@ package aerys.minko.scene
 				return index < _selection.length ? _selection[index] : null;
 			else
 			{
-				return new SceneIterator(
-					null, _selection, _modifier ? _modifier + "." + name : name
+				throw new Error(
+					'Unable to get a property on a set of objects. '
+					+ 'You must use the [] operator to fetch one of the objects.'
 				);
 			}
 		}

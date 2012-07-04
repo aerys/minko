@@ -302,6 +302,10 @@ package aerys.minko.render
 				0,
 				_backgroundColor
 			);
+			
+			graphics.clear();
+			graphics.beginFill(0, 0);
+			graphics.drawRect(0, 0, _width, _height);
 		}
 		
 		private function updateStage3D() : void
