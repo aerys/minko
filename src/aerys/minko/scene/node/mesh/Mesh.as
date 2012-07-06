@@ -225,9 +225,9 @@ package aerys.minko.scene.node.mesh
 									effect		: Effect,
 									controllers	: Array) : void
 		{
-			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
-			
 			_bindings = new DataBindings(this);
+			
+			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
