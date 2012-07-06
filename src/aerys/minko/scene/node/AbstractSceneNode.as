@@ -279,7 +279,7 @@ package aerys.minko.scene.node
 		
 		public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
-			throw new Error('The method AbstractSceneNod.clone() must be overriden.');
+			throw new Error('The method AbstractSceneNode.clone() must be overriden.');
 		}
 		
 		protected function copyControllersFrom(source 			: ISceneNode,
