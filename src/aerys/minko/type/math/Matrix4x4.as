@@ -437,23 +437,42 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function interpolateTo(target : Matrix4x4, percent : Number) : Matrix4x4
+		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
 		{
-			_matrix.interpolateTo(target._matrix, percent);
-
+			if (withScale)
+			{
+				var scale	: Vector4	= target.getScale(TMP_VECTOR4);
+				var tx		: Number	= scale.x;
+				var ty		: Number	= scale.y;
+				var tz		: Number	= scale.z;
+				
+				scale = getScale(TMP_VECTOR4);
+				
+				_matrix.interpolateTo(target._matrix, ratio);
+				_matrix.appendScale(
+					tx + (scale.x - tx) * ratio,
+					ty + (scale.y - ty) * ratio,
+					tz + (scale.z - tz) * ratio
+				);
+			}
+			else
+			{
+				_matrix.interpolateTo(target._matrix, ratio);
+			}
+						
 			if (!_locked)
 				_changed.execute(this, null);
 
 			return this;
 		}
 		
-		public function interpolateBetween(m1 : Matrix4x4, m2 : Matrix4x4, ratio : Number) : Matrix4x4
+		public function interpolateBetween(m1 			: Matrix4x4,
+										   m2 			: Matrix4x4,
+										   ratio 		: Number,
+										   withScale 	: Boolean = true) : Matrix4x4
 		{
 			_matrix.copyFrom(m1._matrix);
-			_matrix.interpolateTo(m2._matrix, ratio);
-			
-			if (!_locked)
-				_changed.execute(this, null);
+			interpolateTo(m2, ratio, withScale);
 			
 			return this;
 		}
