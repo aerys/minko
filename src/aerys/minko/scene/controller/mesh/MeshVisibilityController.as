@@ -14,7 +14,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.math.Matrix4x4;
 	
 	/**
-	 * The CullingController watches the Mesh and the active Camera of a Scene
+	 * The MeshVisibilityController watches the Mesh and the active Camera of a Scene
 	 * to determine whether the object is actually inside the view frustum or not.
 	 * 
 	 * @author Jean-Marc Le Roux

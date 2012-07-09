@@ -310,96 +310,101 @@ package aerys.minko.render.shader.part.animation
 		
 		private function dualQuaternionSkinNormal(inNormal : SFloat) : SFloat
 		{
-			var numBones		: uint = uint(meshBindings.getConstant('skinningNumBones'));
-			var maxInfluences	: uint = uint(meshBindings.getConstant('skinningMaxInfluences'));
+			return inNormal;
 			
-			var outNormal	: SFloat = null;
+			// @fixme This is plain wrong. The computation does not take into account that we need to drop translation when morphing a normal/tangent vector
 			
-			if (maxInfluences == 0)
-			{
-				outNormal = inNormal; // new Combine(inNormal, new Constant(1.0));
-			}
-			else
-			{
-				var bindShape	: SFloat = meshBindings.getParameter('skinningBindShape', 16);
-				var dQnList		: SFloat = meshBindings.getParameter('skinningDQn', 4 * numBones);
-				var dQdList		: SFloat = meshBindings.getParameter('skinningDQd', 4 * numBones);
-				
-				var jointAttr	: SFloat;
-				var dQn			: SFloat;
-				var dQd			: SFloat;
-				
-				inNormal = multiply3x3(inNormal, bindShape); // #
-				
-				if (maxInfluences == 1)
-				{
-					jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
-					dQn			= getFieldFromArray(jointAttr.x, dQnList, false);
-					dQd			= getFieldFromArray(jointAttr.x, dQdList, false);
-				}
-				else
-				{
-					dQn = float4(0, 0, 0, 0);
-					dQd	= float4(0, 0, 0, 0);
-					
-					var jointDQn : SFloat;
-					var jointDQd : SFloat;
-					
-					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
-					{
-						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
-						
-						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
-						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
-						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
-						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
-						
-						jointDQn	= getFieldFromArray(jointAttr.z, dQnList, false);
-						jointDQd	= getFieldFromArray(jointAttr.z, dQdList, false);
-						dQn.incrementBy(multiply(jointAttr.w, jointDQn));
-						dQd.incrementBy(multiply(jointAttr.w, jointDQd));
-					}
-					
-					if (maxInfluences % 2 == 1)
-					{
-						jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
-						
-						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
-						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
-						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
-						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
-					}
-				}
-				
-				var dQnInvLength : SFloat = rsqrt(dotProduct4(dQn, dQn));
-				
-				dQn = multiply(dQn, dQnInvLength);
-				dQd = multiply(dQd, dQnInvLength);
-				
-				var dQnX	: SFloat	= dQn.w;
-				var dQnYZW	: SFloat	= dQn.xyz;
-				var dQdX	: SFloat	= dQd.w;
-				var dQdYZW	: SFloat	= dQd.xyz;
-				
-				var tmp0	: SFloat = multiply(dQnX, inNormal);		//	tmp0 = blendDQ[0].x*IN.position.xyz
-				var tmp1	: SFloat = crossProduct(dQnYZW, inNormal);	//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
-				var tmp2	: SFloat = add(tmp1, tmp0);					//	tmp2 = tmp1 + tmp0
-				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);		//	tmp3 = cross(blendDQ[0].yzw, tmp2)
-				var tmp4	: SFloat = multiply(2, tmp3);				//	tmp4 = 2.0*tmp3
-				var tmp5	: SFloat = add(inNormal, tmp4);				//	tmp5 = IN.position.xyz + tmp4
-				var tmp6	: SFloat = multiply(dQnX, dQdYZW);			//	tmp6 = blendDQ[0].x*blendDQ[1].yzw
-				var tmp7	: SFloat = multiply(dQdX, dQnYZW);			//	tmp7 = blendDQ[1].x*blendDQ[0].yzw
-				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);	//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
-				var tmp9	: SFloat = subtract(tmp6, tmp7);			//	tmp9 = tmp6 - tmp7
-				var tmp10	: SFloat = add(tmp9, tmp8);					//	tmp10 = tmp9 + tmp8
-				var tmp11	: SFloat = multiply(2, tmp10);				//	tmp11 = 2.0*(tmp10)
-				
-				outNormal = add(tmp5, tmp11);							//	position = tmp5 + tmp11
-				
-				// outNormal		= new Combine(outNormal, new Constant(1.0));
-			}
-			
-			return normalize(outNormal);
+//			var numBones		: uint = uint(meshBindings.getConstant('skinningNumBones'));
+//			var maxInfluences	: uint = uint(meshBindings.getConstant('skinningMaxInfluences'));
+//			
+//			var outNormal	: SFloat = null;
+//			
+//			if (maxInfluences == 0)
+//			{
+//				outNormal = inNormal; // new Combine(inNormal, new Constant(1.0));
+//			}
+//			else
+//			{
+//				var bindShape	: SFloat = meshBindings.getParameter('skinningBindShape', 16);
+//				var dQnList		: SFloat = meshBindings.getParameter('skinningDQn', 4 * numBones);
+//				var dQdList		: SFloat = meshBindings.getParameter('skinningDQd', 4 * numBones);
+//				
+//				var jointAttr	: SFloat;
+//				var dQn			: SFloat;
+//				var dQd			: SFloat;
+//				
+//				inNormal = multiply3x3(inNormal, bindShape); // #
+//				inNormal.normalize();
+//				
+//				if (maxInfluences == 1)
+//				{
+//					jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
+//					dQn			= getFieldFromArray(jointAttr.x, dQnList, false);
+//					dQd			= getFieldFromArray(jointAttr.x, dQdList, false);
+//				}
+//				else
+//				{
+//					dQn = float4(0, 0, 0, 0);
+//					dQd	= float4(0, 0, 0, 0);
+//					
+//					var jointDQn : SFloat;
+//					var jointDQd : SFloat;
+//					
+//					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
+//					{
+//						jointAttr	= getVertexAttribute(VertexComponent.BONES[i]);
+//						
+//						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+//						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+//						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+//						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
+//						
+//						jointDQn	= getFieldFromArray(jointAttr.z, dQnList, false);
+//						jointDQd	= getFieldFromArray(jointAttr.z, dQdList, false);
+//						dQn.incrementBy(multiply(jointAttr.w, jointDQn));
+//						dQd.incrementBy(multiply(jointAttr.w, jointDQd));
+//					}
+//					
+//					if (maxInfluences % 2 == 1)
+//					{
+//						jointAttr	= getVertexAttribute(VertexComponent.BONE_S);
+//						
+//						jointDQn	= getFieldFromArray(jointAttr.x, dQnList, false);
+//						jointDQd	= getFieldFromArray(jointAttr.x, dQdList, false);
+//						dQn.incrementBy(multiply(jointAttr.y, jointDQn));
+//						dQd.incrementBy(multiply(jointAttr.y, jointDQd));
+//					}
+//				}
+//				
+//				var dQnInvLength : SFloat = rsqrt(dotProduct4(dQn, dQn));
+//				
+//				dQn = multiply(dQn, dQnInvLength);
+//				dQd = multiply(dQd, dQnInvLength);
+//				
+//				var dQnX	: SFloat	= dQn.w;
+//				var dQnYZW	: SFloat	= dQn.xyz;
+//				var dQdX	: SFloat	= dQd.w;
+//				var dQdYZW	: SFloat	= dQd.xyz;
+//				
+//				var tmp0	: SFloat = multiply(dQnX, inNormal);		//	tmp0 = blendDQ[0].x*IN.position.xyz
+//				var tmp1	: SFloat = crossProduct(dQnYZW, inNormal);	//	tmp1 = cross(blendDQ[0].yzw, IN.position.xyz)
+//				var tmp2	: SFloat = add(tmp1, tmp0);					//	tmp2 = tmp1 + tmp0
+//				var tmp3	: SFloat = crossProduct(dQnYZW, tmp2);		//	tmp3 = cross(blendDQ[0].yzw, tmp2)
+//				var tmp4	: SFloat = multiply(2, tmp3);				//	tmp4 = 2.0*tmp3
+//				var tmp5	: SFloat = add(inNormal, tmp4);				//	tmp5 = IN.position.xyz + tmp4
+//				var tmp6	: SFloat = multiply(dQnX, dQdYZW);			//	tmp6 = blendDQ[0].x*blendDQ[1].yzw
+//				var tmp7	: SFloat = multiply(dQdX, dQnYZW);			//	tmp7 = blendDQ[1].x*blendDQ[0].yzw
+//				var tmp8	: SFloat = crossProduct(dQnYZW, dQdYZW);	//	tmp8 = cross(blendDQ[0].yzw, blendDQ[1].yzw)
+//				var tmp9	: SFloat = subtract(tmp6, tmp7);			//	tmp9 = tmp6 - tmp7
+//				var tmp10	: SFloat = add(tmp9, tmp8);					//	tmp10 = tmp9 + tmp8
+//				var tmp11	: SFloat = multiply(2, tmp10);				//	tmp11 = 2.0*(tmp10)
+//				
+//				outNormal = add(tmp5, tmp11);							//	position = tmp5 + tmp11
+//				
+//				// outNormal		= new Combine(outNormal, new Constant(1.0));
+//			}
+//			
+//			return normalize(outNormal);
 		}
 		
 		private function dualQuaternionSkinTangent(inTangent : SFloat) : SFloat
