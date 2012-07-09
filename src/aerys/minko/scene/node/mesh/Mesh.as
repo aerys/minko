@@ -241,8 +241,6 @@ package aerys.minko.scene.node.mesh
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
-			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
-			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
