@@ -88,7 +88,7 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		public function get material() : DataProvider
+		/*public function get material() : DataProvider
 		{
 			return _material;
 		}
@@ -104,7 +104,7 @@ package aerys.minko.scene.node.mesh
 				if (value)
 					_bindings.addProvider(value);
 			}
-		}
+		}*/
 		
 		/**
 		 * The rendering properties provided to the shaders to customize
@@ -170,9 +170,22 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		public function get visibility() : MeshVisibilityController
+		public function get visible() : Boolean
 		{
-			return _visibility;
+			return _visibility.visible;
+		}
+		public function set visible(value : Boolean) : void
+		{
+			_visibility.visible = value;
+		}
+		
+		public function get frustumCulling() : uint
+		{
+			return _visibility.frustumCulling;
+		}
+		public function set frustumCulling(value : uint) : void
+		{
+			_visibility.frustumCulling = value;
 		}
 		
 		public function get cloned() : Signal
@@ -225,15 +238,14 @@ package aerys.minko.scene.node.mesh
 									effect		: Effect,
 									controllers	: Array) : void
 		{
-			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
-			
 			_bindings = new DataBindings(this);
+			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
-			_visibility.frustumCulling = FrustumCulling.ENABLED;
-			addController(_visibility);
+//			_visibility.frustumCulling = FrustumCulling.ENABLED;
+//			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))
 				controllers = controllers[0];
