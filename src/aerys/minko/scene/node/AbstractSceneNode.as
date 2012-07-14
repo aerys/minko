@@ -51,6 +51,9 @@ package aerys.minko.scene.node
 		}
 		public function set parent(value : Group) : void
 		{
+			if (value == _parent)
+				return ;
+			
 			// remove child
 			if (_parent)
 			{
