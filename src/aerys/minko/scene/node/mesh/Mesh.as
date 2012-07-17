@@ -291,11 +291,15 @@ package aerys.minko.scene.node.mesh
 			geometry 	= source._geometry;
 			properties	= DataProvider(source._properties.clone());
 			
-			_visibility = source._visibility.clone() as MeshVisibilityController;
-			
 			_bindings.copySharedProvidersFrom(source._bindings);
 			
-			copyControllersFrom(source, this, cloneControllers);
+			copyControllersFrom(
+				source, this, cloneControllers, new <AbstractController>[source._visibility]
+			);
+			
+			_visibility = source._visibility.clone() as MeshVisibilityController;
+			addController(_visibility);
+			
 			transform.copyFrom(source.transform);
 			effect = source._effect;
 			

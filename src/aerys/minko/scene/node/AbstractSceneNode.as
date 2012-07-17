@@ -287,7 +287,8 @@ package aerys.minko.scene.node
 		
 		protected function copyControllersFrom(source 			: ISceneNode,
 											   target			: ISceneNode,
-											   cloneControllers	: Boolean) : void
+											   cloneControllers	: Boolean,
+											   exclude			: Vector.<AbstractController> = null) : void
 		{
 			var numControllers : uint = target.numControllers;
 			
@@ -299,6 +300,9 @@ package aerys.minko.scene.node
 			{
 				var controller : AbstractController = source.getController(controllerId);
 				
+				if (exclude != null && exclude.indexOf(controller) >= 0)
+					continue ;
+					
 				if (cloneControllers)
 					controller = controller.clone();
 				
