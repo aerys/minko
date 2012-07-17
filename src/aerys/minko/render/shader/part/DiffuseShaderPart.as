@@ -5,7 +5,6 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
-	import aerys.minko.type.stream.format.VertexComponent;
 	
 	public class DiffuseShaderPart extends ShaderPart
 	{
@@ -26,6 +25,7 @@ package aerys.minko.render.shader.part
 			
 			if (meshBindings.propertyExists('diffuseMap'))
 			{
+				var uv			: SFloat	= vertexUV.xy;
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					'diffuseMap',
 					meshBindings.getConstant('diffuseFiltering', SamplerFiltering.LINEAR),
@@ -33,7 +33,13 @@ package aerys.minko.render.shader.part
 					meshBindings.getConstant('diffuseWrapping', SamplerWrapping.REPEAT)
 				);
 				
-				diffuseColor = sampleTexture(diffuseMap,interpolate(vertexUV.xy));
+				if (meshBindings.propertyExists('diffuseUVScale'))
+					uv.scaleBy(meshBindings.getParameter('diffuseUVScale', 2));
+				
+				if (meshBindings.propertyExists('diffuseUVOffset'))
+					uv.incrementBy(meshBindings.getParameter('diffuseUVOffset', 2));
+				
+				diffuseColor = sampleTexture(diffuseMap,interpolate(uv));
 			}
 			else if (meshBindings.propertyExists('diffuseColor'))
 			{
