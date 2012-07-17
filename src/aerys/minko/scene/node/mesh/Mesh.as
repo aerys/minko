@@ -245,7 +245,7 @@ package aerys.minko.scene.node.mesh
 			this.effect = effect || DEFAULT_EFFECT;
 			
 //			_visibility.frustumCulling = FrustumCulling.ENABLED;
-//			addController(_visibility);
+			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))
 				controllers = controllers[0];
