@@ -44,10 +44,12 @@ package aerys.minko.render.effect
 			return _passes[index];
 		}
 		
-		public function setPasses(newPasses : Vector.<Shader>) : void
+		public function setPasses(newPasses : Vector.<Shader>) : Effect
 		{
 			_passes = newPasses.slice();
 			_passesChanged.execute(this);
+			
+			return this;
 		}
 		
 		public function addPass(pass : Shader) : uint
