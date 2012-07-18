@@ -33,7 +33,7 @@ package aerys.minko.scene.data
 			if (_visible != value)
 			{
 				_visible = value;
-				_changed.execute('visible', value);
+				_changed.execute(this, 'visible');
 			}
 		}
 		

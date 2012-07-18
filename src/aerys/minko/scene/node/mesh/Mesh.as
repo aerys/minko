@@ -88,7 +88,7 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		public function get material() : DataProvider
+		/*public function get material() : DataProvider
 		{
 			return _material;
 		}
@@ -104,7 +104,7 @@ package aerys.minko.scene.node.mesh
 				if (value)
 					_bindings.addProvider(value);
 			}
-		}
+		}*/
 		
 		/**
 		 * The rendering properties provided to the shaders to customize
@@ -170,9 +170,22 @@ package aerys.minko.scene.node.mesh
 		 * @return 
 		 * 
 		 */
-		public function get visibility() : MeshVisibilityController
+		public function get visible() : Boolean
 		{
-			return _visibility;
+			return _visibility.visible;
+		}
+		public function set visible(value : Boolean) : void
+		{
+			_visibility.visible = value;
+		}
+		
+		public function get frustumCulling() : uint
+		{
+			return _visibility.frustumCulling;
+		}
+		public function set frustumCulling(value : uint) : void
+		{
+			_visibility.frustumCulling = value;
 		}
 		
 		public function get cloned() : Signal
@@ -225,14 +238,13 @@ package aerys.minko.scene.node.mesh
 									effect		: Effect,
 									controllers	: Array) : void
 		{
-			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
-			
 			_bindings = new DataBindings(this);
+			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
-			_visibility.frustumCulling = FrustumCulling.ENABLED;
+//			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))
@@ -279,11 +291,15 @@ package aerys.minko.scene.node.mesh
 			geometry 	= source._geometry;
 			properties	= DataProvider(source._properties.clone());
 			
-			_visibility = source._visibility.clone() as MeshVisibilityController;
-			
 			_bindings.copySharedProvidersFrom(source._bindings);
 			
-			copyControllersFrom(source, this, cloneControllers);
+			copyControllersFrom(
+				source, this, cloneControllers, new <AbstractController>[source._visibility]
+			);
+			
+			_visibility = source._visibility.clone() as MeshVisibilityController;
+			addController(_visibility);
+			
 			transform.copyFrom(source.transform);
 			effect = source._effect;
 			

@@ -6,8 +6,15 @@ package aerys.minko.render.effect.basic
 		public static const DEPTH_TEST								: String = 'depthTest';
 		public static const TRIANGLE_CULLING						: String = 'triangleCulling';
 		public static const DIFFUSE_COLOR							: String = 'diffuseColor';
+		public static const DIFFUSE_COLOR_MATRIX					: String = 'diffuseColorMatrix';
 		public static const DIFFUSE_MAP								: String = 'diffuseMap';
 		public static const ALPHA_THRESHOLD							: String = 'alphaThreshold';
+		
+		public static const DIFFUSE_FILTERING						: String = 'diffuseFiltering';
+		public static const DIFFUSE_MIPMAPPING						: String = 'diffuseMipMapping';
+		public static const DIFFUSE_WRAPPING						: String = 'diffuseWrapping';
+		public static const DIFFUSE_UV_SCALE						: String = 'diffuseUVScale';
+		public static const DIFFUSE_UV_OFFSET						: String = 'diffuseUVOffset';
 		
 		public static const DEPTH_WRITE_ENABLED						: String = 'depthWriteEnabled';		
 		

@@ -13,8 +13,10 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	
+	import avmplus.USE_ITRAITS;
+	
 	/**
-	 * The CullingController watches the Mesh and the active Camera of a Scene
+	 * The MeshVisibilityController watches the Mesh and the active Camera of a Scene
 	 * to determine whether the object is actually inside the view frustum or not.
 	 * 
 	 * @author Jean-Marc Le Roux
@@ -64,6 +66,7 @@ package aerys.minko.scene.controller.mesh
 		private function initialize() : void
 		{
 			targetAdded.add(targetAddedHandler);
+			targetRemoved.add(targetRemovedHandler);
 		}
 		
 		private function targetAddedHandler(ctrl	: MeshVisibilityController,

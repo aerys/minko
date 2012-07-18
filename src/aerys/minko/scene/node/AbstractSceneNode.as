@@ -51,6 +51,9 @@ package aerys.minko.scene.node
 		}
 		public function set parent(value : Group) : void
 		{
+			if (value == _parent)
+				return ;
+			
 			// remove child
 			if (_parent)
 			{
@@ -279,12 +282,13 @@ package aerys.minko.scene.node
 		
 		public function clone(cloneControllers : Boolean = false) : ISceneNode
 		{
-			throw new Error('The method AbstractSceneNod.clone() must be overriden.');
+			throw new Error('The method AbstractSceneNode.clone() must be overriden.');
 		}
 		
 		protected function copyControllersFrom(source 			: ISceneNode,
 											   target			: ISceneNode,
-											   cloneControllers	: Boolean) : void
+											   cloneControllers	: Boolean,
+											   exclude			: Vector.<AbstractController> = null) : void
 		{
 			var numControllers : uint = target.numControllers;
 			
@@ -296,6 +300,9 @@ package aerys.minko.scene.node
 			{
 				var controller : AbstractController = source.getController(controllerId);
 				
+				if (exclude != null && exclude.indexOf(controller) >= 0)
+					continue ;
+					
 				if (cloneControllers)
 					controller = controller.clone();
 				

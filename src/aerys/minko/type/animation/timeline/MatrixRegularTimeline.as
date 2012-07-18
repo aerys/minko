@@ -4,8 +4,9 @@ package aerys.minko.type.animation.timeline
 	
 	public final class MatrixRegularTimeline extends AbstractTimeline
 	{
-		private var _deltaTime	: uint;
-		private var _values		: Vector.<Matrix4x4>;
+		private var _deltaTime			: uint;
+		private var _values				: Vector.<Matrix4x4>;
+		private var _interpolateScale	: Boolean;
 
 		public function get deltaTime() : uint
 		{
@@ -17,17 +18,19 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function MatrixRegularTimeline(propertyPath	: String,
-											  deltaTime		: uint,
-											  matrices		: Vector.<Matrix4x4>)
+		public function MatrixRegularTimeline(propertyPath		: String,
+											  deltaTime			: uint,
+											  matrices			: Vector.<Matrix4x4>,
+											  interpolateScale	: Boolean	= false)
 		{
 			super(propertyPath, deltaTime * (matrices.length - 1));
 			
 			_deltaTime = deltaTime;
 			_values	= matrices;
+			_interpolateScale = interpolateScale;
 		}
 
-		override public function updateAt(t:int, target:Object):void
+		override public function updateAt(t : int, target : Object):void
 		{
 			super.updateAt(t, target);
 			
@@ -62,7 +65,7 @@ package aerys.minko.type.animation.timeline
 			else if (interpolationRatio == 1.)
 				out.copyFrom(nextMatrix);
 			else
-				out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
+				out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio, _interpolateScale);
 		}
 
 		override public function clone() : ITimeline

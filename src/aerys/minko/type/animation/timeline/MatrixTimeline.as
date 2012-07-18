@@ -8,8 +8,9 @@ package aerys.minko.type.animation.timeline
 	{
 		use namespace minko_animation;
 		
-		private var _timeTable		: Vector.<uint>
-		private var _values			: Vector.<Matrix4x4>;
+		private var _timeTable			: Vector.<uint>
+		private var _values				: Vector.<Matrix4x4>;
+		private var _interpolateScale	: Boolean;
 
 		minko_animation function get timeTable() : Vector.<uint>
 		{
@@ -21,14 +22,16 @@ package aerys.minko.type.animation.timeline
 			return _values;
 		}
 		
-		public function MatrixTimeline(propertyPath	: String,
-									   timeTable	: Vector.<uint>,
-									   matrices		: Vector.<Matrix4x4>)
+		public function MatrixTimeline(propertyPath		: String,
+									   timeTable		: Vector.<uint>,
+									   matrices			: Vector.<Matrix4x4>,
+									   interpolateScale	: Boolean	= false)
 		{
 			super(propertyPath, timeTable[int(timeTable.length - 1)]);
 			
 			_timeTable = timeTable;
 			_values = matrices;
+			_interpolateScale = interpolateScale;
 		}
 
 		override public function updateAt(t : int, target : Object) : void
@@ -56,11 +59,13 @@ package aerys.minko.type.animation.timeline
 
 			var previousTime		: Number	= _timeTable[int(timeId - 1)];
 			var nextTime			: Number	= _timeTable[timeId];
-			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
-			var previousMatrix		: Matrix4x4 = _values[int(timeId - 1)];
-			var nextMatrix			: Matrix4x4 = _values[timeId];
 			
-			out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio);
+			out.interpolateBetween(
+				_values[int(timeId - 1)],
+				_values[timeId],
+				(time - previousTime) / (nextTime - previousTime),
+				_interpolateScale
+			);
 		}
 
 		private function getIndexForTime(t : uint) : uint
