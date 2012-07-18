@@ -698,10 +698,20 @@ package aerys.minko.render.shader.part
 		{
 			return new SFloat(new Instruction(Instruction.SGE, getNode(a), getNode(b)));
 		}
+		
+		protected final function greaterThan(a : Object, b : Object) : SFloat
+		{
+			return subtract(greaterEqual(a, b), equal(a, b));
+		}
 
 		protected final function lessThan(a : Object, b : Object) : SFloat
 		{
 			return new SFloat(new Instruction(Instruction.SLT, getNode(a), getNode(b)));
+		}
+		
+		protected final function lessEqual(a : Object, b : Object) : SFloat
+		{
+			return saturate(add(lessThan(a, b), equal(a, b)));
 		}
 
 		protected final function equal(a : Object, b : Object) : SFloat
@@ -712,6 +722,11 @@ package aerys.minko.render.shader.part
 		protected final function notEqual(a : Object, b : Object) : SFloat
 		{
 			return new SFloat(new Instruction(Instruction.SNE, getNode(a), getNode(b)));
+		}
+		
+		protected final function not(bool : Object) : SFloat
+		{
+			return absolute(subtract(getNode(bool), 1));
 		}
 		
 		protected final function reflect(vector : Object, normal : Object) : SFloat
