@@ -5,15 +5,10 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import avmplus.USE_ITRAITS;
 	
 	/**
 	 * The MeshVisibilityController watches the Mesh and the active Camera of a Scene
