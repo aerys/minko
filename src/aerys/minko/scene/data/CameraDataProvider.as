@@ -1,13 +1,14 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.data.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public final class CameraDataProvider implements IDataProvider
+	public final class CameraDataProvider extends DataProvider
 	{
 		private static const DATA_DESCRIPTOR	: Object = {
 			'position'		: 'cameraPosition',
@@ -23,8 +24,8 @@ package aerys.minko.scene.data
 			'screenToWorld'	: 'screenToWorld'
 		};
 		
-		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
-		private var _propertyChanged	: Signal		= new Signal('CameraDataProvider.propertyChanged');
+//		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
+//		private var _propertyChanged	: Signal		= new Signal('CameraDataProvider.propertyChanged');
 		
 		private var _position			: Vector4		= new Vector4();
 		private var _direction			: Vector4		= new Vector4();
@@ -39,22 +40,12 @@ package aerys.minko.scene.data
 		private var _screenToView		: Matrix4x4		= new Matrix4x4();
 		private var _frustum			: Frustum		= new Frustum();
 		
-		public function get usage() : uint
+		override public function get usage() : uint
 		{
 			return DataProviderUsage.MANAGED;
 		}
 		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
-		
-		public function get propertyChanged() : Signal
-		{
-			return _propertyChanged;
-		}
-		
-		public function get dataDescriptor() : Object
+		override public function get dataDescriptor() : Object
 		{
 			return DATA_DESCRIPTOR;
 		}
@@ -76,7 +67,7 @@ package aerys.minko.scene.data
 		public function set fieldOfView(value : Number) : void
 		{
 			_fieldOfView = value;
-			_changed.execute(this, 'fieldOfView');
+			changed.execute(this, 'fieldOfView');
 		}
 		
 		public function get zNear() : Number
@@ -86,7 +77,7 @@ package aerys.minko.scene.data
 		public function set zNear(value : Number) : void
 		{
 			_zNear = value;
-			_changed.execute(this, 'zNear');
+			changed.execute(this, 'zNear');
 		}
 		
 		public function get zFar() : Number
@@ -96,7 +87,7 @@ package aerys.minko.scene.data
 		public function set zFar(value : Number) : void
 		{
 			_zFar = value;
-			_changed.execute(this, 'zFar');
+			changed.execute(this, 'zFar');
 		}
 		
 		public function get worldToView() : Matrix4x4
@@ -140,59 +131,19 @@ package aerys.minko.scene.data
 			_worldToView = worldToView;
 			_viewToWorld = viewToWorld;
 			
-			_position.changed.add(positionChangedHandler);
-			_direction.changed.add(directionChangedHandler);
-			_projection.changed.add(projectionChangedHandler);
-			_screenToView.changed.add(screenToViewChangedHandler);
-			_screenToWorld.changed.add(screenToWorldChangedHandler);
-			_viewToWorld.changed.add(viewToWorldChangedHandler);
-			_worldToScreen.changed.add(worldToScreenChangedHandler);
-			_worldToView.changed.add(worldToViewChangedHandler);
+			watchProperty('position', _position);
+			watchProperty('direction', _direction);
+			watchProperty('projection', _projection);
+			watchProperty('screenToView', _screenToView);
+			watchProperty('screenToWorld', _screenToWorld);
+			watchProperty('viewToWorld', _viewToWorld);
+			watchProperty('worldToScreen', _worldToScreen);
+			watchProperty('worldToView', _worldToView);
 		}
 		
-		private function worldToViewChangedHandler(source : Matrix4x4, key : String):void
+		override public function clone() : IDataProvider
 		{
-			_propertyChanged.execute(this, 'worldToView');
-		}
-		
-		private function worldToScreenChangedHandler(source : Matrix4x4, key : String):void
-		{
-			_propertyChanged.execute(this, 'worldToScreen');
-		}
-		
-		private function screenToWorldChangedHandler(source : Matrix4x4, key : String):void
-		{
-			_propertyChanged.execute(this, 'screenToWorld');
-		}
-		
-		private function viewToWorldChangedHandler(source : Matrix4x4, key : String):void
-		{
-			_propertyChanged.execute(this, 'viewToWorld');
-		}
-		
-		private function screenToViewChangedHandler(source : Matrix4x4, key : String):void
-		{
-			_propertyChanged.execute(this, 'screenToView');
-		}
-		
-		private function projectionChangedHandler(source : Matrix4x4, key : String):void
-		{
-			_propertyChanged.execute(this, 'projection');
-		}
-		
-		private function directionChangedHandler(source : Vector4, key : String):void
-		{
-			_propertyChanged.execute(this, 'direction');
-		}
-		
-		private function positionChangedHandler(source : Vector4, key : String):void
-		{
-			_propertyChanged.execute(this, 'position');
-		}
-		
-		public function clone() : IDataProvider
-		{
-			throw new Error('This provider is managed, and must not be cloned');
+			throw new Error('This provider is managed, and must not be cloned.');
 		}
 	}
 }

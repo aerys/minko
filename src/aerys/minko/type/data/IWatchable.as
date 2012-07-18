@@ -2,8 +2,8 @@ package aerys.minko.type.data
 {
 	import aerys.minko.type.Signal;
 
-	public interface IMonitoredData
+	public interface IWatchable
 	{
-		function get changed()	: Signal;
+		function get changed() : Signal;
 	}
 }

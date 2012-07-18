@@ -8,16 +8,16 @@ package aerys.minko.type.data
 	import flash.utils.flash_proxy;
 	
 	public dynamic class DataProvider extends Proxy implements IDataProvider
-	{
-		private var _usage				: uint			= 1;
-		private var _name				: String		= null;
-		private var _descriptor			: Object		= {};
+	{	
+		private var _usage					: uint			= 1;
+		private var _name					: String		= null;
+		private var _descriptor				: Object		= {};
 		
-		private var _changed			: Signal		= new Signal('DataProvider.changed');
-		private var _propertyChanged	: Signal		= new Signal('DataProvider.propertyChanged');
-		
-		private var _nameToProperty		: Object		= {};
-		private var _propertyToNames	: Dictionary	= new Dictionary();  // dic[Vector.<String>[]]
+		private var _changed				: Signal		= new Signal('DataProvider.changed');
+		private var _propertyChanged		: Signal		= new Signal('DataProvider.propertyChanged');
+			
+		private var _nameToProperty			: Object		= {};
+		private var _propertyToNames		: Dictionary	= new Dictionary();  // dic[Vector.<String>[]]
 		
 		public function get usage() : uint
 		{
@@ -90,9 +90,9 @@ package aerys.minko.type.data
 		
 		public function setProperty(name : String, newValue : Object) : DataProvider
 		{
-			var oldValue : Object	= _nameToProperty[name];
-			var oldMonitoredValue	: IMonitoredData	= oldValue as IMonitoredData;
-			var newMonitoredValue	: IMonitoredData	= newValue as IMonitoredData;
+			var oldValue 			: Object			= _nameToProperty[name];
+			var oldMonitoredValue	: IWatchable		= oldValue as IWatchable;
+			var newMonitoredValue	: IWatchable		= newValue as IWatchable;
 			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
 			var newPropertyNames	: Vector.<String>	= _propertyToNames[newMonitoredValue];
 			
@@ -107,16 +107,18 @@ package aerys.minko.type.data
 					oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
 			}
 			
+//			if (newMonitoredValue != null)
+//			{
+//				if (newPropertyNames == null)
+//				{
+//					newPropertyNames = _propertyToNames[newMonitoredValue] = new <String>[name];
+//					newMonitoredValue.changed.add(propertyChangedHandler);
+//				}
+//				else
+//					newPropertyNames.push(name);
+//			}
 			if (newMonitoredValue != null)
-			{
-				if (newPropertyNames == null)
-				{
-					newPropertyNames = _propertyToNames[newMonitoredValue] = new <String>[name];
-					newMonitoredValue.changed.add(propertyChangedHandler);
-				}
-				else
-					newPropertyNames.push(name);
-			}
+				watchProperty(name, newMonitoredValue);
 			
 			_descriptor[name]		= name;
 			_nameToProperty[name]	= newValue;
@@ -137,9 +139,25 @@ package aerys.minko.type.data
 			return this;
 		}
 		
+		protected function watchProperty(name : String, property : IWatchable) : void
+		{
+			if (property != null)
+			{
+				var newPropertyNames : Vector.<String> = _propertyToNames[property] as Vector.<String>;
+				
+				if (newPropertyNames == null)
+				{
+					newPropertyNames = _propertyToNames[property] = new <String>[name];
+					property.changed.add(propertyChangedHandler);
+				}
+				else
+					newPropertyNames.push(name);
+			}
+		}
+		
 		public function removeProperty(name : String) : DataProvider
 		{
-			var oldMonitoredValue	: IMonitoredData	= _nameToProperty[name] as IMonitoredData;
+			var oldMonitoredValue	: IWatchable	= _nameToProperty[name] as IWatchable;
 			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
 			
 			delete _descriptor[name];
@@ -197,7 +215,7 @@ package aerys.minko.type.data
 			}
 		}
 		
-		private function propertyChangedHandler(source : IMonitoredData, key : String) : void
+		private function propertyChangedHandler(source : IWatchable, key : String) : void
 		{
 			var names		: Vector.<String>	= _propertyToNames[source];
 			var numNames	: uint				= names.length;
@@ -205,5 +223,16 @@ package aerys.minko.type.data
 			for (var nameId : uint = 0; nameId < numNames; ++nameId)
 				_propertyChanged.execute(this, names[nameId]);
 		}
+		
+		/*protected function watchProperty(property : IWatchable, fieldName : String) : void
+		{
+			_propertyToNames[property] = fieldName;
+			_propertyChanged.execute(this, fieldName);
+		}
+		
+		private function propertyChangedHandler(property : IWatchable) : void
+		{
+			_propertyChanged.execute(this, _propertyToFieldName[property]);
+		}*/
 	}
 }
