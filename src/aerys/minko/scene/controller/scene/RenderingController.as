@@ -248,12 +248,13 @@ package aerys.minko.scene.controller.scene
 			
 			for (i = 0; i < numPasses; ++i)
 			{
-				var pass 		: ShaderInstance	= _passes[i];
-				var calls 		: Array				= _passInstanceToDrawCalls[pass];
-				var numCalls	: uint				= calls.length;
+				var pass	: ShaderInstance	= _passes[i];
 				
-				if (!pass.settings.enabled || !pass.generator.enabled)
+				if (!(pass.settings.enabled && pass.shader.enabled))
 					continue;
+				
+				var calls 		: Array	= _passInstanceToDrawCalls[pass];
+				var numCalls	: uint	= calls.length;
 				
 				pass.begin.execute(pass, context, backBuffer);
 				pass.prepareContext(context, backBuffer, previous);
@@ -706,7 +707,7 @@ package aerys.minko.scene.controller.scene
 					// our shader is no longer valid, we need to find a new one.
 					unbind(passInstance, drawCall, meshBindings);
 					
-					var replacementInstance : ShaderInstance = passInstance.generator.fork(
+					var replacementInstance : ShaderInstance = passInstance.shader.fork(
 						meshBindings,
 						sceneBindings
 					);
