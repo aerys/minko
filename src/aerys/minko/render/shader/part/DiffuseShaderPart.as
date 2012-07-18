@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.part
 {
+	import aerys.minko.render.effect.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.enum.SamplerFiltering;
@@ -23,27 +24,27 @@ package aerys.minko.render.shader.part
 		{
 			var diffuseColor : SFloat	= null;
 			
-			if (meshBindings.propertyExists('diffuseMap'))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP))
 			{
 				var uv			: SFloat	= vertexUV.xy;
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
-					'diffuseMap',
-					meshBindings.getConstant('diffuseFiltering', SamplerFiltering.LINEAR),
-					meshBindings.getConstant('diffuseMipMapping', SamplerMipMapping.LINEAR),
-					meshBindings.getConstant('diffuseWrapping', SamplerWrapping.REPEAT)
+					BasicProperties.DIFFUSE_MAP,
+					meshBindings.getConstant(BasicProperties.DIFFUSE_FILTERING, SamplerFiltering.LINEAR),
+					meshBindings.getConstant(BasicProperties.DIFFUSE_MIPMAPPING, SamplerMipMapping.LINEAR),
+					meshBindings.getConstant(BasicProperties.DIFFUSE_WRAPPING, SamplerWrapping.REPEAT)
 				);
 				
-				if (meshBindings.propertyExists('diffuseUVScale'))
-					uv.scaleBy(meshBindings.getParameter('diffuseUVScale', 2));
+				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_SCALE))
+					uv.scaleBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_SCALE, 2));
 				
-				if (meshBindings.propertyExists('diffuseUVOffset'))
-					uv.incrementBy(meshBindings.getParameter('diffuseUVOffset', 2));
+				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_OFFSET))
+					uv.incrementBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_OFFSET, 2));
 				
 				diffuseColor = sampleTexture(diffuseMap,interpolate(uv));
 			}
-			else if (meshBindings.propertyExists('diffuseColor'))
+			else if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR))
 			{
-				diffuseColor = meshBindings.getParameter('diffuseColor', 4);
+				diffuseColor = meshBindings.getParameter(BasicProperties.DIFFUSE_COLOR, 4);
 			}
 			else
 			{
@@ -51,11 +52,11 @@ package aerys.minko.render.shader.part
 			}
 			
 			// Apply HLSA modifiers
-			if (meshBindings.propertyExists('diffuseColorMatrix'))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR_MATRIX))
 			{
 				diffuseColor = multiply4x4(
 					diffuseColor,
-					meshBindings.getParameter('diffuseColorMatrix', 16)
+					meshBindings.getParameter(BasicProperties.DIFFUSE_COLOR_MATRIX, 16)
 				);
 			}
 			
