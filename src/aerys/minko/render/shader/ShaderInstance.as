@@ -36,7 +36,7 @@ package aerys.minko.render.shader
 		private var _begin		: Signal			= new Signal('ShaderInstance.begin');
 		private var _end		: Signal			= new Signal('ShaderInstance.end');
 		
-		public function get generator() : Shader
+		public function get shader() : Shader
 		{
 			return _generator;
 		}
