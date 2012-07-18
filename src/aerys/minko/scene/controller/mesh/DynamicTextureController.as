@@ -6,6 +6,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.type.data.DataProvider;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
@@ -26,6 +27,8 @@ package aerys.minko.scene.controller.mesh
 	 */
 	public final class DynamicTextureController extends EnterFrameController
 	{
+		private var _data			: DataProvider		= null;
+		
 		private var _source			: DisplayObject		= null;
 		private var _framerate		: Number			= 0.;
 		private var _mipMapping		: Boolean			= false;
@@ -59,7 +62,7 @@ package aerys.minko.scene.controller.mesh
 												 propertyName	: String	= 'diffuseMap',
 												 matrix			: Matrix	= null)
 		{
-			super(Mesh);
+			super();
 			
 			_source = source;
 			_texture = new TextureResource(width, height);
@@ -67,6 +70,9 @@ package aerys.minko.scene.controller.mesh
 			_mipMapping = mipMapping;
 			_propertyName = propertyName;
 			_matrix = matrix;
+			
+			_data = new DataProvider();
+			_data.setProperty(propertyName, _texture);
 		}
 		
 		override protected function targetAddedHandler(ctrl		: EnterFrameController,
@@ -74,7 +80,13 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetAddedHandler(ctrl, target);
 			
-			(target as Mesh).properties.setProperty(_propertyName, _texture);
+//			(target as Mesh).properties.setProperty(_propertyName, _texture);
+			if (target is Scene)
+				(target as Scene).bindings.addProvider(_data);
+			else if (target is Mesh)
+				(target as Mesh).bindings.addProvider(_data);
+			else
+				throw new Error();
 		}
 		
 		override protected function targetRemovedHandler(ctrl	: EnterFrameController,
@@ -82,7 +94,12 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(ctrl, target);
 			
-			(target as Mesh).properties.removeProperty(_propertyName);
+//			(target as Mesh).properties.removeProperty(_propertyName);
+			
+			if (target is Scene)
+				(target as Scene).bindings.removeProvider(_data);
+			else if (target is Mesh)
+				(target as Mesh).bindings.removeProvider(_data);
 		}
 		
 		override protected function sceneEnterFrameHandler(scene	: Scene,
