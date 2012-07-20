@@ -1,6 +1,7 @@
 package aerys.minko.render.effect.vertex
 {
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.effect.basic.BasicProperties;
 	import aerys.minko.render.effect.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.type.stream.format.VertexComponent;
@@ -17,8 +18,14 @@ package aerys.minko.render.effect.vertex
 		override protected function getPixelColor() : SFloat
 		{
 			var uv 				: SFloat = getVertexAttribute(VertexComponent.UV);
-			var interpolatedUv 	: SFloat = normalize(interpolate(uv));
 			
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_SCALE))
+				uv.scaleBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_SCALE, 2));
+			
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_OFFSET))
+				uv.incrementBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_OFFSET, 2));
+
+			var interpolatedUv 	: SFloat = fractional(interpolate(uv));
 			
 			return float4(interpolatedUv.x, interpolatedUv.y, 0, 1);
 		}
