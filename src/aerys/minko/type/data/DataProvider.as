@@ -107,16 +107,6 @@ package aerys.minko.type.data
 					oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
 			}
 			
-//			if (newMonitoredValue != null)
-//			{
-//				if (newPropertyNames == null)
-//				{
-//					newPropertyNames = _propertyToNames[newMonitoredValue] = new <String>[name];
-//					newMonitoredValue.changed.add(propertyChangedHandler);
-//				}
-//				else
-//					newPropertyNames.push(name);
-//			}
 			if (newMonitoredValue != null)
 				watchProperty(name, newMonitoredValue);
 			

@@ -134,7 +134,7 @@ package aerys.minko.type.loader.parser
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
             _loadSkin                   = loadSkin;
 			_mipmapTextures				= mipmapTextures;
-			_meshEffect					= meshEffect || Mesh.DEFAULT_EFFECT;
+			_meshEffect					= meshEffect || Mesh.DEFAULT_MATERIAL;
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;

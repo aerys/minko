@@ -1,7 +1,9 @@
 package aerys.minko.scene.node.mesh
 {
 	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.effect.basic.BasicMaterial;
 	import aerys.minko.render.effect.basic.BasicShader;
+	import aerys.minko.render.material.basic.Material;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -28,14 +30,13 @@ package aerys.minko.scene.node.mesh
 	 */
 	public class Mesh extends AbstractSceneNode
 	{
-		public static const DEFAULT_EFFECT	: Effect	= new Effect(
+		public static const DEFAULT_MATERIAL	: Effect	= new Effect(
 			new BasicShader()
 		);
 		
 		private var _geometry			: Geometry					= null;
-		private var _effect				: Effect					= null;
 		private var _properties			: DataProvider				= null;
-		private var _material			: DataProvider				= null;
+		private var _material			: Material					= null;
 		private var _bindings			: DataBindings				= null;
 		
 		private var _visibility			: MeshVisibilityController	= new MeshVisibilityController();
@@ -43,7 +44,7 @@ package aerys.minko.scene.node.mesh
 		private var _frame				: uint						= 0;
 		
 		private var _cloned				: Signal 					= new Signal('Mesh.clones');
-		private var _effectChanged		: Signal					= new Signal('Mesh.effectChanged');
+		private var _materialChanged	: Signal					= new Signal('Mesh.materialChanged');
 		private var _frameChanged		: Signal					= new Signal('Mesh.frameChanged');
 		private var _geometryChanged	: Signal					= new Signal('Mesh.geometryChanged');
 		
@@ -88,11 +89,11 @@ package aerys.minko.scene.node.mesh
 			}
 		}
 		
-		/*public function get material() : DataProvider
+		public function get material() : Material
 		{
 			return _material;
 		}
-		public function set material(value : DataProvider) : void
+		public function set material(value : Material) : void
 		{
 			if (_material != value)
 			{
@@ -104,7 +105,7 @@ package aerys.minko.scene.node.mesh
 				if (value)
 					_bindings.addProvider(value);
 			}
-		}*/
+		}
 		
 		/**
 		 * The rendering properties provided to the shaders to customize
@@ -116,31 +117,6 @@ package aerys.minko.scene.node.mesh
 		public function get bindings() : DataBindings
 		{
 			return _bindings;
-		}
-		
-		/**
-		 * The Effect used for rendering. 
-		 * @return 
-		 * 
-		 */
-		public function get effect() : Effect
-		{
-			return _effect;
-		}
-		
-		public function set effect(value : Effect) : void
-		{
-			if (_effect == value)
-				return ;
-			
-			if (value == null)
-				throw new Error();
-			
-			var oldEffect : Effect = _effect;
-			
-			_effect = value;
-			
-			_effectChanged.execute(this, oldEffect, value);
 		}
 		
 		/**
@@ -193,9 +169,9 @@ package aerys.minko.scene.node.mesh
 			return _cloned;
 		}
 		
-		public function get effectChanged() : Signal
+		public function get materialChanged() : Signal
 		{
-			return _effectChanged;
+			return _materialChanged;
 		}
 		
 		public function get frameChanged() : Signal
@@ -224,17 +200,17 @@ package aerys.minko.scene.node.mesh
 		}
 		
 		public function Mesh(geometry	: Geometry	= null,
-							 properties	: Object	= null,
+							 material	: Material	= null,
 							 effect		: Effect	= null,
 							 ...controllers)
 		{
 			super();
 
-			initialize(geometry, properties, effect, controllers);
+			initialize(geometry, material, effect, controllers);
 		}
 		
 		private function initialize(geometry	: Geometry,
-									properties	: Object,
+									material	: Material,
 									effect		: Effect,
 									controllers	: Array) : void
 		{
@@ -242,9 +218,9 @@ package aerys.minko.scene.node.mesh
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
-			this.effect = effect || DEFAULT_EFFECT;
+			this.material = material || new BasicMaterial();
 			
-//			_visibility.frustumCulling = FrustumCulling.ENABLED;
+			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))
@@ -301,7 +277,7 @@ package aerys.minko.scene.node.mesh
 			addController(_visibility);
 			
 			transform.copyFrom(source.transform);
-			effect = source._effect;
+			material = source._material;
 			
 			source.cloned.execute(this, source);
 		}
