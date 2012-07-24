@@ -13,6 +13,9 @@ package aerys.minko.type
 		private var _middleButtonDown	: Boolean			= false;
 		private var _rightButtonDown	: Boolean			= false;
 		
+		private var _mouseDown			: Signal			= new Signal("mouseDown");
+		private var _mouseUp			: Signal			= new Signal("mouseUp");
+		
 		private var _cursors			: Vector.<String>	= new <String>[];
 		
 		public function get x() : Number
@@ -43,6 +46,16 @@ package aerys.minko.type
 		public function get cursor() : String
 		{
 			return Mouse.cursor;
+		}
+		
+		public function get mouseDown() : Signal
+		{
+			return _mouseDown;
+		}
+		
+		public function get mouseUp() : Signal
+		{
+			return _mouseUp;
 		}
 		
 		public function MouseManager()
@@ -80,11 +93,13 @@ package aerys.minko.type
 		private function mouseLeftDownHandler(event : MouseEvent) : void
 		{
 			_leftButtonDown = true;
+			_mouseDown.execute();
 		}
 		
 		private function mouseLeftUpHandler(event : MouseEvent) : void
 		{
 			_leftButtonDown = false;
+			_mouseUp.execute();
 		}
 		
 		private function mouseMiddleDownHandler(event : MouseEvent) : void
