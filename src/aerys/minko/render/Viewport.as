@@ -31,7 +31,7 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Viewport extends Sprite
+	public class Viewport extends Sprite
 	{
 		private static const ZERO2		: Point				= new Point();
 		
@@ -283,6 +283,13 @@ package aerys.minko.render
 			}
 			
 			setSize(width, height);
+		}
+		
+		public function dispose():void
+		{
+			_context3d.dispose();
+			
+			return ;
 		}
 		
 		private function setSize(width : Number, height : Number) : void
