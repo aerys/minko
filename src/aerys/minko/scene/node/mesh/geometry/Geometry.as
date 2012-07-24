@@ -171,7 +171,7 @@ package aerys.minko.scene.node.mesh.geometry
 			
 			var numVertexStreams	: int	= vertexStreams ? vertexStreams.length : 0;
 			
-			_vertexStreams = new Vector.<IVertexStream>();
+			_vertexStreams = new <IVertexStream>[];
 			for (var i : int = 0; i < numVertexStreams; ++i)
 			{
 				var vstream : IVertexStream	= vertexStreams[i];
