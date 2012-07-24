@@ -1,7 +1,7 @@
-package aerys.minko.render.effect.vertex
+package aerys.minko.render.material.vertex
 {
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.effect.basic.BasicShader;
+	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
 	
 	public class VertexNormalShader extends BasicShader

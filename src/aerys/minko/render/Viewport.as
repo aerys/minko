@@ -29,7 +29,7 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Viewport extends Sprite
+	public class Viewport extends Sprite
 	{
 		private static const ZERO2		: Point				= new Point();
 		

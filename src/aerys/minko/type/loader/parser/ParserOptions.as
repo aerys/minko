@@ -1,6 +1,6 @@
 package aerys.minko.type.loader.parser
 {
-	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.Effect;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;

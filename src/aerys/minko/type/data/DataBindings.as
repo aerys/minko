@@ -10,7 +10,6 @@ package aerys.minko.type.data
 	{
 		private var _owner							: ISceneNode				= null;
 		
-		private var _numProviders					: uint 						= 0;
 		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
 		private var _bindingNames					: Vector.<String>			= new Vector.<String>();
 		
@@ -50,17 +49,20 @@ package aerys.minko.type.data
 			if (_providerToBindingNames[provider])
 				throw new Error('This provider is already bound.');
 			
-			var providerBindingNames	: Vector.<String>	= new Vector.<String>();
+			var providerBindingNames	: Vector.<String>	= new <String>[];
 			var dataDescriptor			: Object			= provider.dataDescriptor;
 			
 			provider.changed.add(providerChangedHandler);
 			provider.propertyChanged.add(providerChangedHandler);
 			
+			_providerToBindingNames[provider] = providerBindingNames;
+			_providers.push(provider);
+			
 			for (var attrName : String in dataDescriptor)
 			{
 				// if this provider attribute is also a dataprovider, let's also bind it
 				var bindingName	: String	= dataDescriptor[attrName];
-				var attribute	: Object	= provider[attrName]
+				var attribute	: Object	= provider[attrName];
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
@@ -74,16 +76,14 @@ package aerys.minko.type.data
 				_bindingNames.push(bindingName);
 				
 				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, attribute);
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null, attribute);
 			}
-			
-			_providerToBindingNames[provider] = providerBindingNames;
-			_providers.push(provider);
 		}
 		
 		public function removeProvider(provider : IDataProvider) : void
 		{
-			var providerBindingsNames : Vector.<String> = _providerToBindingNames[provider];
+			var providerBindingsNames 	: Vector.<String> 	= _providerToBindingNames[provider];
+			var tmpValues				: Object			= {};
 			
 			if (providerBindingsNames == null)
 				throw new ArgumentError('Unkown provider.');
@@ -95,6 +95,8 @@ package aerys.minko.type.data
 				
 				if (providerBindingsNames.indexOf(bindingName) != -1)
 				{
+					tmpValues[bindingName] = _bindingNameToValue[bindingName];
+					
 					delete _bindingNameToValue[bindingName];
 					delete _bindingNameToProvider[bindingName];
 				}
@@ -111,8 +113,16 @@ package aerys.minko.type.data
 			delete _providerToBindingNames[provider];
 			
 			for each (bindingName in providerBindingsNames)
-				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null);
+			{
+				var changedSignal : Signal = _bindingNameToChangedSignal[bindingName] as Signal;
+				
+				if (changedSignal != null)
+				{
+					changedSignal.execute(
+						this, bindingName, tmpValues[bindingName], null
+					);
+				}
+			}
 		}
 		
 		public function removeAllProviders() : void
@@ -134,8 +144,9 @@ package aerys.minko.type.data
 		public function addCallback(bindingName : String,
 									callback	: Function) : void
 		{
-			_bindingNameToChangedSignal[bindingName] ||=
-				new Signal('DataBindings.changed[' + bindingName + ']');
+			_bindingNameToChangedSignal[bindingName] ||= new Signal(
+				'DataBindings.changed[' + bindingName + ']'
+			);
 			
 			Signal(_bindingNameToChangedSignal[bindingName]).add(callback);
 		}
@@ -211,12 +222,13 @@ package aerys.minko.type.data
 			else
 			{
 				var bindingName : String		= source.dataDescriptor[attributeName];
+				var oldValue	: Object		= _bindingNameToValue[bindingName];
 				var newValue	: Object		= source[attributeName];
 				
 				_bindingNameToValue[bindingName] = newValue;
 				
 				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, newValue);
+					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, oldValue, newValue);
 			}
 		}
 	}

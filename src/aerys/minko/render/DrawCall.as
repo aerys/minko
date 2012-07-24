@@ -339,6 +339,7 @@ package aerys.minko.render
 		
 		private function parameterChangedHandler(dataBindings	: DataBindings,
 												 property		: String,
+												 oldValue		: Object,
 												 newValue		: Object) : void
 		{
 			newValue !== null && setParameter(property, newValue);
@@ -346,12 +347,13 @@ package aerys.minko.render
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
 												 property 	: String,
-												 value 		: Matrix4x4) : void
+												 oldValue	: Matrix4x4,
+												 newValue 		: Matrix4x4) : void
 		{
 			if (property == 'worldToScreen')
-				_worldToScreen = value;
+				_worldToScreen = newValue;
 			else if (property == 'localToWorld')
-				_localToWorld = value;
+				_localToWorld = newValue;
 			
 			_invalidDepth = true;
 		}

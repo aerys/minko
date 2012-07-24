@@ -77,7 +77,6 @@ package aerys.minko.type.math
 		}
 		public function set rotationY(value : Number) : void
 		{
-			trace('set', value);
 			setRotation(NaN, value, NaN);
 		}
 		
@@ -187,13 +186,14 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function pop() : Matrix4x4
+		public function pop(restore : Boolean = true) : Matrix4x4
 		{
 			if (_numPushes == 0)
 				return this;
 			
 			_numPushes--;
-			_matrix.copyRawDataFrom(_data, _numPushes * 16);
+			if (restore)
+				_matrix.copyRawDataFrom(_data, _numPushes * 16);
 			
 			if (!_locked)
 				_changed.execute(this, null);

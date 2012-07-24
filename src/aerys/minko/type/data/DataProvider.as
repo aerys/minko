@@ -61,9 +61,21 @@ package aerys.minko.type.data
 		
 		private function initialize(properties : Object) : void
 		{
-			if (properties)
-				for (var propertyName : String in properties)
+			var propertyName : String = null;
+			
+			
+			if (properties is DataProvider)
+			{
+				var provider : DataProvider = properties as DataProvider;
+				
+				for each (propertyName in provider.dataDescriptor)
+					setProperty(propertyName, provider[propertyName]);
+			}
+			else if (properties is Object)
+			{
+				for (propertyName in properties)
 					setProperty(propertyName, properties[propertyName]);
+			}
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
@@ -213,16 +225,5 @@ package aerys.minko.type.data
 			for (var nameId : uint = 0; nameId < numNames; ++nameId)
 				_propertyChanged.execute(this, names[nameId]);
 		}
-		
-		/*protected function watchProperty(property : IWatchable, fieldName : String) : void
-		{
-			_propertyToNames[property] = fieldName;
-			_propertyChanged.execute(this, fieldName);
-		}
-		
-		private function propertyChangedHandler(property : IWatchable) : void
-		{
-			_propertyChanged.execute(this, _propertyToFieldName[property]);
-		}*/
 	}
 }

@@ -1,7 +1,8 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.sprite.SpriteShader;
+	import aerys.minko.render.Effect;
+	import aerys.minko.render.material.sprite.SpriteShader;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.scene.node.mesh.geometry.primitive.BillboardsGeometry;
@@ -63,7 +64,7 @@ package aerys.minko.scene.node
 							   properties 	: Object 	= null,
 							   depth 		: Number 	= 0)
 		{
-			super(GEOM, properties, EFFECT);
+			super(GEOM, new Material(EFFECT, properties));
 			
 			this.x = x;
 			this.y = y;

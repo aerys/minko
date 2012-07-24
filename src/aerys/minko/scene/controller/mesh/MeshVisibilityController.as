@@ -113,6 +113,7 @@ package aerys.minko.scene.controller.mesh
 		
 		private function worldToViewChangedHandler(bindings		: DataBindings,
 												   propertyName	: String,
+												   oldValue		: Matrix4x4,
 												   newValue		: Matrix4x4) : void
 		{
 			testCulling();

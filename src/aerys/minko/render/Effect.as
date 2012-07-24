@@ -1,4 +1,4 @@
-package aerys.minko.render.effect
+package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.Shader;

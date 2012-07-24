@@ -2,7 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.Effect;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.data.DataBindings;

@@ -109,7 +109,10 @@ package aerys.minko.scene.controller.camera
 			cameraData.frustum.updateFromMatrix(cameraWorldToScreen);
 		}
 		
-		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
+		private function viewportSizeChanged(bindings 	: DataBindings,
+											 key 		: String,
+											 oldValue 	: Object,
+											 newValue 	: Object) : void
 		{
 			updateProjection();
 		}

@@ -1,9 +1,9 @@
 package aerys.minko.scene.node.mesh
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.basic.BasicMaterial;
-	import aerys.minko.render.effect.basic.BasicShader;
-	import aerys.minko.render.material.basic.Material;
+	import aerys.minko.render.Effect;
+	import aerys.minko.render.material.basic.BasicMaterial;
+	import aerys.minko.render.material.basic.BasicShader;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -220,7 +220,7 @@ package aerys.minko.scene.node.mesh
 			_geometry = geometry;
 			this.material = material || new BasicMaterial();
 			
-			_visibility.frustumCulling = FrustumCulling.ENABLED;
+//			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))

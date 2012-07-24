@@ -1,13 +1,13 @@
-package aerys.minko.render.effect.basic
+package aerys.minko.render.material.basic
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.material.basic.Material;
+	import aerys.minko.render.Effect;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.texture.TextureResource;
 	
 	public class BasicMaterial extends Material
 	{
 		public static const DEFAULT_BASIC_SHADER	: BasicShader	= new BasicShader();
-		public static const DEFAULT_EFFECT			: Effect		= new Effect();
+		public static const DEFAULT_EFFECT			: Effect		= new Effect(DEFAULT_BASIC_SHADER);
 		
 		public function get blending() : uint
 		{

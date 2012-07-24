@@ -1,4 +1,4 @@
-package aerys.minko.render.effect.basic
+package aerys.minko.render.material.basic
 {
 	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
