@@ -103,6 +103,7 @@ package aerys.minko.scene.controller.mesh
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
+			scene.bindings.removeCallback('worldToView', worldToViewChangedHandler);
 			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
 		}
 		
