@@ -52,11 +52,6 @@ package aerys.minko.scene.node
 			_cameraData.zFar = value;
 		}
 		
-		public function get projection() : Matrix4x4
-		{
-			return _cameraData.projection;
-		}
-		
 		public function get enabled() : Boolean
 		{
 			return _enabled;
@@ -81,6 +76,16 @@ package aerys.minko.scene.node
 		public function get deactivated() : Signal
 		{
 			return _deactivated;
+		}
+		
+		public function get worldToView() : Matrix4x4
+		{
+			return localToWorld;
+		}
+		
+		public function get viewToWorld() : Matrix4x4
+		{
+			return worldToLocal;
 		}
 		
 		public function Camera(fieldOfView	: Number = DEFAULT_FOV,
@@ -129,6 +134,27 @@ package aerys.minko.scene.node
 			localToWorld.deltaTransformVector(out.direction, out.direction);
 			
 			return out;
+		}
+		
+		public function getWorldToScreen(output : Matrix4x4) : Matrix4x4
+		{
+			return output != null
+				? output.copyFrom(_cameraData.worldToScreen)
+				: _cameraData.worldToScreen.clone();
+		}
+		
+		public function getScreenToWorld(output : Matrix4x4) : Matrix4x4
+		{
+			return output != null
+				? output.copyFrom(_cameraData.screenToWorld)
+				: _cameraData.screenToWorld.clone();
+		}
+		
+		public function getProjection(output : Matrix4x4) : Matrix4x4
+		{
+			return output != null
+				? output.copyFrom(_cameraData.projection)
+				: _cameraData.projection.clone();
 		}
 	}
 }

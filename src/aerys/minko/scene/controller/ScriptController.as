@@ -3,6 +3,8 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.KeyboardManager;
+	import aerys.minko.type.MouseManager;
 	
 	import flash.display.BitmapData;
 
@@ -11,15 +13,31 @@ package aerys.minko.scene.controller
 		private var _lastTime		: Number		= 0.0;
 		private var _deltaTime		: Number		= 0.0;
 		private var _currentTarget	: ISceneNode	= null;
+		private var _viewport		: Viewport		= null;
 		
 		protected function get deltaTime() : Number
 		{
 			return _deltaTime;
 		}
 		
-		public function ScriptController()
+		protected function get keyboard() : KeyboardManager
 		{
-			super();
+			return _viewport.keyboardManager;
+		}
+		
+		protected function get mouse() : MouseManager
+		{
+			return _viewport.mouseManager;
+		}
+		
+		protected function get viewport() : Viewport
+		{
+			return _viewport;
+		}
+		
+		public function ScriptController(targetType	: Class = null)
+		{
+			super(targetType);
 			
 			initialize();
 		}
@@ -37,6 +55,7 @@ package aerys.minko.scene.controller
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
+			_viewport = viewport;
 			_deltaTime = _lastTime - time;
 			_lastTime = time;
 			

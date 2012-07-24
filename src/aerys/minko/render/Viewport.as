@@ -5,6 +5,8 @@ package aerys.minko.render
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
+	import aerys.minko.type.KeyboardManager;
+	import aerys.minko.type.MouseManager;
 	import aerys.minko.type.Signal;
 	
 	import flash.display.BitmapData;
@@ -29,7 +31,7 @@ package aerys.minko.render
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class Viewport extends Sprite
+	public class Viewport extends Sprite
 	{
 		private static const ZERO2		: Point				= new Point();
 		
@@ -46,6 +48,9 @@ package aerys.minko.render
 		
 		private var _alwaysOnTop		: Boolean			= false;
 		private var _mask				: Shape				= new Shape();
+		
+		private var _mouseManager		: MouseManager		= new MouseManager();
+		private var _keyboardManager	: KeyboardManager	= new KeyboardManager();
 		
 		private var _resized			: Signal			= new Signal('Viewport.resized');
 		
@@ -128,6 +133,16 @@ package aerys.minko.render
 			updateStageListeners();
 		}
 		
+		public function get keyboardManager() : KeyboardManager
+		{
+			return _keyboardManager;
+		}
+		
+		public function get mouseManager() : MouseManager
+		{
+			return _mouseManager;
+		}
+		
 		/**
 		 * The signal executed when the viewport is resized.
 		 * Callback functions for this signal should accept the following
@@ -200,17 +215,28 @@ package aerys.minko.render
 			_width = width;
 			_height = height;
 			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_mouseManager.bind(this);
+			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
 		{
+			_keyboardManager.bind(stage);
+			
 			setupOnStage(stage);
 		}
 		
 		private function removedFromStageHandler(event : Event) : void
 		{
+			_keyboardManager.unbind(stage);
+			
 			if (_stage3d != null)
 				_stage3d.visible = false;
 		}
@@ -257,6 +283,13 @@ package aerys.minko.render
 			}
 			
 			setSize(width, height);
+		}
+		
+		public function dispose():void
+		{
+			_context3d.dispose();
+			
+			return ;
 		}
 		
 		private function setSize(width : Number, height : Number) : void

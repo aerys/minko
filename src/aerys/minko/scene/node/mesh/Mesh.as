@@ -244,7 +244,7 @@ package aerys.minko.scene.node.mesh
 			_geometry = geometry;
 			this.effect = effect || DEFAULT_EFFECT;
 			
-//			_visibility.frustumCulling = FrustumCulling.ENABLED;
+//			_visibility.frustumCulling = FrustumCulling.BOX ^ FrustumCulling.TOP_BOX;
 			addController(_visibility);
 			
 			while (controllers && !(controllers[0] is AbstractController))
