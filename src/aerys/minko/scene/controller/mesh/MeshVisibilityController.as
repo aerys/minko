@@ -123,7 +123,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _visibilityData.frustumCulling;
 			
-			if (culling != FrustumCulling.DISABLED)
+			if (culling != FrustumCulling.DISABLED && _mesh.geometry.boundingBox)
 			{
 				var camera : Camera = (_mesh.root as Scene).activeCamera;
 				
