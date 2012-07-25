@@ -16,7 +16,7 @@ package aerys.minko.render.material
 			setProperty('effect', value);
 		}
 		
-		public function Material(effect : Effect, properties : Object = null, name : String = null)
+		public function Material(effect : Effect = null, properties : Object = null, name : String = null)
 		{
 			super(properties, name, DataProviderUsage.MANAGED);
 			
