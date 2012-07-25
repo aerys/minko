@@ -6,6 +6,7 @@ package aerys.minko.render.material.basic
 	
 	public class BasicMaterial extends Material
 	{
+		public static const DEFAULT_NAME			: String		= 'BasicMaterial';
 		public static const DEFAULT_BASIC_SHADER	: BasicShader	= new BasicShader();
 		public static const DEFAULT_EFFECT			: Effect		= new Effect(DEFAULT_BASIC_SHADER);
 		
@@ -144,9 +145,9 @@ package aerys.minko.render.material.basic
 			setProperty(BasicProperties.STENCIL_WRITE_MASK, value);
 		}
 		
-		public function BasicMaterial(properties : Object = null)
+		public function BasicMaterial(properties : Object = null, name : String = DEFAULT_NAME)
 		{
-			super(DEFAULT_EFFECT, properties);
+			super(DEFAULT_EFFECT, properties, name);
 		}
 	}
 }

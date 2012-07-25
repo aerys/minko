@@ -2,7 +2,7 @@ package aerys.minko.render.shader
 {
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 
 	/**
 	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.

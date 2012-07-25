@@ -10,12 +10,12 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.type.stream.format.VertexFormat;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Matrix3D;

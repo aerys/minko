@@ -6,8 +6,8 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	

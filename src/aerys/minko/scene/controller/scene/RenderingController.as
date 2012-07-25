@@ -16,13 +16,13 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.scene.node.mesh.geometry.primitive.QuadGeometry;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.QuadGeometry;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Sort;
-	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.log.DebugLevel;
 	

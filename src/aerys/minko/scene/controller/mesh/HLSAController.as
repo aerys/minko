@@ -4,8 +4,8 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.*;
 

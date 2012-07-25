@@ -3,7 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 

@@ -2,9 +2,9 @@ package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.stream.IVertexStream;
-	import aerys.minko.type.stream.StreamUsage;
-	import aerys.minko.type.stream.VertexStream;
+	import aerys.minko.render.geometry.stream.IVertexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
+	import aerys.minko.render.geometry.stream.VertexStream;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;

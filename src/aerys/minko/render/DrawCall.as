@@ -7,18 +7,18 @@ package aerys.minko.render
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.stream.IVertexStream;
-	import aerys.minko.type.stream.StreamUsage;
-	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.type.stream.format.VertexFormat;
+	import aerys.minko.render.geometry.stream.IVertexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
+	import aerys.minko.render.geometry.stream.VertexStream;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.display3D.Context3DProgramType;
 	import flash.utils.Dictionary;

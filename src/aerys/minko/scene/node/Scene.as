@@ -5,8 +5,8 @@ package aerys.minko.scene.node
 	import aerys.minko.render.Effect;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.display.BitmapData;

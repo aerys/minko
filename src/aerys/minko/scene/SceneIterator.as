@@ -2,7 +2,7 @@ package aerys.minko.scene
 {
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 	
 	import avmplus.getQualifiedClassName;
 	

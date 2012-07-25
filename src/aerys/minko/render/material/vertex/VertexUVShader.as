@@ -5,7 +5,7 @@ package aerys.minko.render.material.vertex
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	public class VertexUVShader extends BasicShader
 	{

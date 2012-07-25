@@ -4,7 +4,7 @@ package aerys.minko.render.shader.part.animation
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.animation.SkinningMethod;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	import flash.utils.Dictionary;
 

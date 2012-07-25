@@ -1,8 +1,8 @@
 package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko_math;
-	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.VertexStream;
+	import aerys.minko.render.geometry.stream.IndexStream;
+	import aerys.minko.render.geometry.stream.VertexStream;
 	
 	import flash.geom.Vector3D;
 

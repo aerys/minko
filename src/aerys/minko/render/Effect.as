@@ -3,7 +3,7 @@ package aerys.minko.render
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 
 	/**
 	 * The base class to define effects.

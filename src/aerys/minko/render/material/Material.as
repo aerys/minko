@@ -1,8 +1,8 @@
 package aerys.minko.render.material
 {
 	import aerys.minko.render.Effect;
-	import aerys.minko.type.data.DataProvider;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.binding.DataProvider;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 
 	public dynamic class Material extends DataProvider

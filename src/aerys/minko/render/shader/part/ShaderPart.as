@@ -21,7 +21,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	import flash.geom.Rectangle;
 

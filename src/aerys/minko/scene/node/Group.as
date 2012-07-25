@@ -3,7 +3,6 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;

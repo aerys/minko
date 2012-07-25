@@ -3,9 +3,8 @@ package aerys.minko.scene.node
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.sprite.SpriteShader;
 	import aerys.minko.render.material.Material;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.scene.node.mesh.geometry.primitive.BillboardsGeometry;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.BillboardsGeometry;
 	
 	public final class Sprite extends Mesh
 	{

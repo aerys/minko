@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IWatchable;
+	import aerys.minko.type.binding.IWatchable;
 	
 	import flash.geom.Vector3D;
 
