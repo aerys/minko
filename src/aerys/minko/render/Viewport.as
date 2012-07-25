@@ -285,6 +285,13 @@ package aerys.minko.render
 			setSize(width, height);
 		}
 		
+		public function dispose():void
+		{
+			_context3d.dispose();
+			
+			return ;
+		}
+		
 		private function setSize(width : Number, height : Number) : void
 		{
 			if (width == _width && _height == height)
