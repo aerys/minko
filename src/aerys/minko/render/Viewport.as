@@ -87,10 +87,22 @@ package aerys.minko.render
 		{
 			return _stage3d.visible;
 		}
-		override public function set visible(v : Boolean) : void
+		override public function set visible(value : Boolean) : void
 		{
-			_stage3d.visible = v;
-			super.visible = v;
+			_stage3d.visible = value;
+			super.visible = value;
+		}
+		
+		override public function set x(value : Number) : void
+		{
+			super.x = value;
+			updateStage3D();
+		}
+		
+		override public function set y(value : Number) : void
+		{
+			super.y = value;
+			updateStage3D();
 		}
 		
 		/**
@@ -300,7 +312,8 @@ package aerys.minko.render
 			_width = width;
 			_height = height;
 			
-			_invalidBackBuffer = true;
+//			_invalidBackBuffer = true;
+			updateStage3D();
 			_resized.execute(this, width, height);
 		}
 		
@@ -313,6 +326,7 @@ package aerys.minko.render
 		{
 			_invalidBackBuffer = true;
 			_context3d = new Context3DResource(_stage3d.context3D);
+			updateStage3D();
 			dispatchEvent(new Event(Event.INIT));
 		}
 		
@@ -343,7 +357,13 @@ package aerys.minko.render
 		
 		private function updateStage3D() : void
 		{
+			if (_stage3d == null)
+				return ;
+			
 			var upperLeft	: Point	= localToGlobal(ZERO2);
+			
+			_stage3d.x = upperLeft.x;
+			_stage3d.y = upperLeft.y;
 			
 			if (_width > 2048)
 			{
@@ -377,7 +397,6 @@ package aerys.minko.render
 			
 			if (_alwaysOnTop)
 			{
-				stage.addEventListener(Event.RESIZE, stageResizeHandler);
 				stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 				stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
 				stage.addEventListener(MouseEvent.CLICK, stageEventHandler);
@@ -395,7 +414,6 @@ package aerys.minko.render
 			}
 			else
 			{
-				stage.removeEventListener(Event.RESIZE, stageResizeHandler);
 				stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 				stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
 				stage.removeEventListener(MouseEvent.CLICK, stageEventHandler);
@@ -411,11 +429,6 @@ package aerys.minko.render
 				stage.removeEventListener(TouchEvent.TOUCH_END, stageEventHandler);
 				stage.removeEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
 			}
-		}
-		
-		private function stageResizeHandler(event : Event) : void
-		{
-			updateStage3D();
 		}
 		
 		private function stageEventHandler(event : Object) : void
