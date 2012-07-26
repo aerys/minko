@@ -299,7 +299,17 @@ package aerys.minko.render
 		
 		public function dispose():void
 		{
-			_context3d.dispose();
+			if (_stage3d != null)
+			{
+				_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
+				_stage3d = null;
+			}
+			
+			if (_context3d != null)
+			{
+				_context3d.dispose();
+				_context3d = null;
+			}
 			
 			return ;
 		}
