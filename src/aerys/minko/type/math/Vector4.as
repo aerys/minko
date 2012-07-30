@@ -354,5 +354,10 @@ package aerys.minko.type.math
 			_locked = false;
 			_changed.execute(this, null);
 		}
+		
+		public function clone() : Vector4
+		{
+			return new Vector4(_vector.x, _vector.y, _vector.z, _vector.w);
+		}
 	}
 }

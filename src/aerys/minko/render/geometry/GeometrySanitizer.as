@@ -32,29 +32,6 @@ package aerys.minko.render.geometry
 			return true;
 		}
 		
-		/*public static function splitBuffers(inVertexData	: Vector.<Number>,
-											inIndexData		: Vector.<uint>,
-											outVertexData	: Vector.<Vector.<Number>>,
-											outIndexData	: Vector.<Vector.<uint>>,
-											dwordsPerVertex	: uint = 3) : void
-		{
-			if (inIndexData.length < INDEX_LIMIT && inVertexData.length / dwordsPerVertex < VERTEX_LIMIT)
-			{
-				outVertexData.push(inVertexData);
-				outIndexData.push(inIndexData);
-				
-				return ;
-			}
-			
-			var numIndices 	: uint 	= inIndexData.length;
-			var indexId		: uint	= 0;
-			
-			while (indexId < numIndices)
-			{
-				
-			}
-		}*/
-		
 		/**
 		 * Split vertex and index buffers too big the be rendered.
 		 * The index stream limit is 524270, the vertex stream limit is 65536.
@@ -155,14 +132,6 @@ package aerys.minko.render.geometry
 					
 					// ... increment indices counter
 					usedIndicesCount += 3;
-					
-//					// some assertions for debug purposes..
-//					if (usedIndicesCount != partialIndexData.length)
-//						throw new Error('Assert failed');
-//					
-//					
-//					if (usedVerticesCount != partialVertexData.length / dwordsPerVertex)
-//						throw new Error('Assert failed');
 				}
 				
 				outIndexDatas.push(partialIndexData);
@@ -170,9 +139,6 @@ package aerys.minko.render.geometry
 				
 				inIndexData.splice(0, usedIndicesCount);
 			}
-			
-/*			outIndexDatas.pop();
-			outVertexDatas.pop();*/
 		}
 		
 		/**
@@ -188,29 +154,25 @@ package aerys.minko.render.geometry
 		 * @param dwordsPerVertex 
 		 */
 		public static function removeDuplicatedVertices(vertexData		: Vector.<Number>,
-														indexData	 	: Vector.<uint>,
+														indexData		: Vector.<uint>,
 														dwordsPerVertex	: uint = 3) : void
 		{
-			var numDwords					: uint			= vertexData.length;
-			var numVertices					: uint			= numDwords / dwordsPerVertex;
+			var numVertices					: uint			= vertexData.length / dwordsPerVertex;
 			var numIndices					: int			= indexData.length;
-			var bytesPerVertex				: uint			= dwordsPerVertex * 4;
-			var vertexCopy					: ByteArray		= new ByteArray();
-			var hashToNewVertexId			: Array			= [];
+			var hashToNewVertexId			: Object		= {};
 			var oldVertexIdToNewVertexId	: Vector.<uint>	= new Vector.<uint>(numVertices, true);
 			var newVertexCount				: uint			= 0;
-			
-			for (var i : uint = 0; i < numDwords; ++i)
-				vertexCopy.writeFloat(vertexData[i]);
-			
-			vertexCopy.position = 0;
-			
-			
-			var newLimit : uint = 0;
+			var newLimit					: uint			= 0;
 			
 			for (var oldVertexId : uint = 0; oldVertexId < numVertices; ++oldVertexId)
 			{
-				var vertexHash	: uint		= CRC32.computeForByteArrayChunk(vertexCopy, bytesPerVertex);
+				var begin		: uint		= oldVertexId * dwordsPerVertex;
+				var limit		: uint		= begin + dwordsPerVertex;
+				var vertexHash	: String	= vertexData[begin].toString();
+				++begin;
+				for (; begin < limit; ++begin)
+					vertexHash += '|' + vertexData[begin].toString();
+					
 				var index		: Object	= hashToNewVertexId[vertexHash];
 				var newVertexId	: uint		= 0;
 				
