@@ -732,13 +732,15 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function lookAt(x : Number, y : Number, z : Number) : Matrix4x4
+		public function lookAt(target	: Vector4,
+							   position	: Vector4	= null,
+							   up		: Vector4	= null) : Matrix4x4
 		{
 			view(
-				transformVector(Vector4.ZERO),
-				new Vector4(x, y, z),
-				deltaTransformVector(Vector4.Y_AXIS)
-			)
+				position || transformVector(Vector4.ZERO),
+				target,
+				up || deltaTransformVector(Vector4.Y_AXIS)
+			);
 			
 			return invert();
 		}
