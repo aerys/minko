@@ -13,6 +13,9 @@ package aerys.minko.type
 		private var _middleButtonDown	: Boolean			= false;
 		private var _rightButtonDown	: Boolean			= false;
 		
+		private var _ctrlEnabled		: Boolean			= false;
+		private var _shiftEnabled		: Boolean			= false;
+		
 		private var _mouseDown			: Signal			= new Signal("mouseDown");
 		private var _mouseUp			: Signal			= new Signal("mouseUp");
 		
@@ -58,6 +61,16 @@ package aerys.minko.type
 			return _mouseUp;
 		}
 		
+		public function get ctrlEnabled() : Boolean
+		{
+			return _ctrlEnabled;
+		}
+		
+		public function get shiftEnabled() : Boolean
+		{
+			return _shiftEnabled;
+		}
+		
 		public function MouseManager()
 		{
 		}
@@ -88,38 +101,52 @@ package aerys.minko.type
 		{
 			_x = event.localX;
 			_y = event.localY;
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseLeftDownHandler(event : MouseEvent) : void
 		{
 			_leftButtonDown = true;
 			_mouseDown.execute();
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseLeftUpHandler(event : MouseEvent) : void
 		{
 			_leftButtonDown = false;
 			_mouseUp.execute();
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseMiddleDownHandler(event : MouseEvent) : void
 		{
 			_rightButtonDown = true;
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseMiddleUpHandler(event : MouseEvent) : void
 		{
 			_rightButtonDown = false;
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseRightDownHandler(event : MouseEvent) : void
 		{
 			_rightButtonDown = true;
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		private function mouseRightUpHandler(event : MouseEvent) : void
 		{
 			_rightButtonDown = false;
+			_ctrlEnabled = event.ctrlKey;
+			_shiftEnabled = event.shiftKey;
 		}
 		
 		public function pushCursor(cursor : String) : MouseManager
