@@ -65,12 +65,28 @@ package aerys.minko.scene.controller
 				update(getTarget(i));
 		}
 		
+		override protected function targetRemovedFromSceneHandler(target	: ISceneNode,
+																  scene		: Scene) : void
+		{
+			super.targetRemovedFromSceneHandler(target, scene);
+			
+			var numTargets : uint = this.numTargets;
+			
+			for (var i : uint = 0; i < numTargets; ++i)
+				stop(getTarget(i));
+		}
+		
 		protected function start(target : ISceneNode) : void
 		{
 			// nothing
 		}
 		
 		protected function update(target : ISceneNode) : void
+		{
+			// nothing
+		}
+		
+		protected function stop(target : ISceneNode) : void
 		{
 			// nothing
 		}

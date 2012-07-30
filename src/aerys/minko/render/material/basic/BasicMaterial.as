@@ -145,9 +145,9 @@ package aerys.minko.render.material.basic
 			setProperty(BasicProperties.STENCIL_WRITE_MASK, value);
 		}
 		
-		public function BasicMaterial(properties : Object = null, name : String = DEFAULT_NAME)
+		public function BasicMaterial(properties : Object = null, effect : Effect = null, name : String = DEFAULT_NAME)
 		{
-			super(DEFAULT_EFFECT, properties, name);
+			super(effect || DEFAULT_EFFECT, properties, name);
 		}
 	}
 }

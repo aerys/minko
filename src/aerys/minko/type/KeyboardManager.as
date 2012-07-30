@@ -5,7 +5,14 @@ package aerys.minko.type
 
 	public final class KeyboardManager
 	{
-		private var _keys	: Array	= [];
+		public static const NO_KEY	: uint		= uint(-1);
+		
+		private var _keys			: Array		= [];
+		
+		private var _downSignals	: Array		= [];
+		private var _upSignals		: Array		= [];
+		private var _keyDown		: Signal	= new Signal('KeyboardManager.keyDown');
+		private var _keyUp			: Signal	= new Signal('KeyboardManager.keyDown');
 		
 		public function KeyboardManager()
 		{
@@ -23,14 +30,42 @@ package aerys.minko.type
 			dispatcher.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 		
+		public function keyDown(keyCode : uint = 0xffffffff) : Signal
+		{
+			if (keyCode == NO_KEY)
+				return _keyDown;
+			else
+				return _downSignals[keyCode] || (_downSignals[keyCode] = new Signal('KeyDown[' + keyCode + ']'));
+		}
+		
+		public function keyUp(keyCode : uint = 0xffffffff) : Signal
+		{
+			if (keyCode == NO_KEY)
+				return _keyUp;
+			else
+				return _upSignals[keyCode] || (_upSignals[keyCode] = new Signal('KeyUp[' + keyCode + ']'));
+		}
+		
 		private function keyDownHandler(event : KeyboardEvent) : void
 		{
-			_keys[event.keyCode] = true;
+			var keyCode : uint		= event.keyCode;
+			var signal 	: Signal 	= _downSignals[keyCode] as Signal;
+			
+			_keys[keyCode] = true;
+			
+			if (signal != null)
+				signal.execute(this, keyCode);
 		}
 		
 		private function keyUpHandler(event : KeyboardEvent) : void
 		{
-			_keys[event.keyCode] = false;
+			var keyCode : uint		= event.keyCode;
+			var signal 	: Signal 	= _upSignals[keyCode] as Signal;
+			
+			_keys[keyCode] = false;
+			
+			if (signal != null)
+				signal.execute(this, keyCode);
 		}
 		
 		public function keyIsDown(keyCode : uint) : Boolean
