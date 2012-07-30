@@ -199,17 +199,15 @@ package aerys.minko.scene.node
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 material	: Material	= null,
-							 effect		: Effect	= null,
 							 ...controllers)
 		{
 			super();
 
-			initialize(geometry, material, effect, controllers);
+			initialize(geometry, material, controllers);
 		}
 		
 		private function initialize(geometry	: Geometry,
 									material	: Material,
-									effect		: Effect,
 									controllers	: Array) : void
 		{
 			_bindings = new DataBindings(this);
