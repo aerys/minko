@@ -421,22 +421,6 @@ package aerys.minko.type.math
 			return this;
 		}
 
-		public function pointAt(pos	: Vector4,
-								at	: Vector4	= null,
-								up	: Vector4	= null) : Matrix4x4
-		{
-			_matrix.pointAt(
-				pos._vector,
-				at ? at._vector : null,
-				up ? up._vector : null
-			);
-			
-			if (!_locked)
-				_changed.execute(this, null);
-
-			return this;
-		}
-		
 		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
 		{
 			if (withScale)
@@ -748,11 +732,15 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function lookAt(target	: Vector4,
-							   position	: Vector4	= null,
-							   up		: Vector4 	= null) : Matrix4x4
+		public function lookAt(x : Number, y : Number, z : Number) : Matrix4x4
 		{
-			return view(position || getTranslation(), target, up).invert();
+			view(
+				transformVector(Vector4.ZERO),
+				new Vector4(x, y, z),
+				deltaTransformVector(Vector4.Y_AXIS)
+			)
+			
+			return invert();
 		}
 		
 		/**
