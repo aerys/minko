@@ -6,6 +6,8 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.QuadGeometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.texture.TextureResource;
@@ -15,10 +17,8 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.render.geometry.Geometry;
-	import aerys.minko.render.geometry.primitive.QuadGeometry;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.binding.DataBindings;
@@ -156,11 +156,7 @@ package aerys.minko.scene.controller.scene
 				if (!_postProcessingScene)
 				{
 					_postProcessingScene = new Scene(
-						new Mesh(
-							new QuadGeometry(),
-							null,
-							_postProcessingEffect
-						)
+						new Mesh(new QuadGeometry(), new Material(_postProcessingEffect))
 					);
 					
 					_postProcessingScene.bindings.addProvider(
@@ -171,8 +167,7 @@ package aerys.minko.scene.controller.scene
 				{
 					var screen : Mesh = Mesh(_postProcessingScene.getChildAt(0));
 					
-					// FIXME: post-processing material ?
-//					screen.effect = _postProcessingEffect;
+					screen.material.effect = _postProcessingEffect;
 				}
 			}
 		}
