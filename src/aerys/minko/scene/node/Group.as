@@ -411,11 +411,7 @@ package aerys.minko.scene.node
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
 				var mesh 		: Mesh		= meshes[i] as Mesh;
-				var hitDepth	: Number	= mesh.geometry.boundingBox.testRay(
-					ray,
-					mesh.worldToLocal,
-					maxDistance
-				);
+				var hitDepth	: Number	= mesh.cast(ray, maxDistance);
 				
 				if (hitDepth >= 0.0)
 				{
