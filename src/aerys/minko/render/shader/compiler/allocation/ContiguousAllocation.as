@@ -27,11 +27,6 @@ package aerys.minko.render.shader.compiler.allocation
 			return offset % 4;
 		}
 		
-//		public function get writeMask() : uint
-//		{
-//			
-//		}
-		
 		public function get aligned() : Boolean
 		{
 			return false;
