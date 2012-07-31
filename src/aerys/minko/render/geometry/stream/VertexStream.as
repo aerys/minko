@@ -1,12 +1,12 @@
 package aerys.minko.render.geometry.stream
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.resource.VertexBuffer3DResource;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexComponentType;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	import aerys.minko.render.resource.VertexBuffer3DResource;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
@@ -460,8 +460,7 @@ package aerys.minko.render.geometry.stream
 		{
 			vertexFormat ||= source.format;
 			
-			var components					: Vector.<VertexComponent>	= vertexFormat.components;
-			var numComponents				: uint						= components.length;
+			var numComponents				: uint						= vertexFormat.numComponents;
 			var componentOffsets			: Vector.<uint>				= new Vector.<uint>(numComponents, true);
 			var componentSizes				: Vector.<uint>				= new Vector.<uint>(numComponents, true);
 			var componentDwordsPerVertex	: Vector.<uint>				= new Vector.<uint>(numComponents, true);
@@ -472,7 +471,7 @@ package aerys.minko.render.geometry.stream
 			// cache get offsets, sizes, and buffers for each components
 			for (var k : int = 0; k < numComponents; ++k)
 			{
-				var vertexComponent	: VertexComponent	= components[k];
+				var vertexComponent	: VertexComponent	= vertexFormat.getComponent(k);
 				var subVertexStream	: VertexStream		= source.getStreamByComponent(vertexComponent);
 				var subvertexFormat	: VertexFormat		= subVertexStream.format;
 				
@@ -566,38 +565,39 @@ package aerys.minko.render.geometry.stream
 			var data			: Vector.<Number>			= null;
 			var stream			: VertexStream				= new VertexStream(usage, formatOut, null);
 			var start			: int						= bytes.position;
-			var componentsOut	: Vector.<VertexComponent>	= formatOut.components;
-			var numComponents	: int						= componentsOut.length;
+			var numComponents	: int						= formatOut.numComponents;
 			var nativeFormats	: Vector.<int>				= new Vector.<int>(numComponents, true);
 			
 			for (var k : int = 0; k < numComponents; k++)
-				nativeFormats[k] = componentsOut[k].nativeFormat;
+				nativeFormats[k] = formatOut.getComponent(k).nativeFormat;
 			
 			data = new Vector.<Number>(formatOut.size * count, true);
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
+					var componentOut : VertexComponent = formatOut.getComponent(componentId);
+					
 					bytes.position = start + formatIn.size * vertexId * dwordSize
-						+ formatIn.getOffsetForComponent(componentsOut[componentId]) * dwordSize;
+						+ formatIn.getOffsetForComponent(componentOut) * dwordSize;
 					
 					var reader : Function = null;
 					
-					if (readFunctions[componentsOut[componentId]])
-						reader = readFunctions[componentsOut[componentId]];
+					if (readFunctions[formatOut.getComponent(componentId)])
+						reader = readFunctions[componentOut];
 					else
 						reader = bytes.readFloat;
 					
 					switch (nativeFormats[componentId])
 					{
 						case VertexComponentType.FLOAT_4 :
-							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentOut);
 						case VertexComponentType.FLOAT_3 :
-							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentOut);
 						case VertexComponentType.FLOAT_2 :
-							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentOut);
 						case VertexComponentType.FLOAT_1 :
-							data[int(dataLength++)] = reader(bytes, componentsOut[componentId]);
+							data[int(dataLength++)] = reader(bytes, componentOut);
 							break ;
 					}
 				}

@@ -4,27 +4,36 @@ package aerys.minko.render.geometry.stream.format
 
 	public final class VertexFormat
 	{
-		public static const XYZ			: VertexFormat 	= new VertexFormat(VertexComponent.XYZ);
-		public static const XYZ_RGB		: VertexFormat 	= new VertexFormat(VertexComponent.XYZ,
-																		   VertexComponent.RGB);
-		public static const XYZ_UV		: VertexFormat 	= new VertexFormat(VertexComponent.XYZ,
-																		   VertexComponent.UV);
-		public static const XYZ_UV_ST	: VertexFormat	= new VertexFormat(VertexComponent.XYZ,
-																		   VertexComponent.UV,
-																		   VertexComponent.ST);
+		public static const XYZ			: VertexFormat 	= new VertexFormat(
+			VertexComponent.XYZ
+		);
+		public static const XYZ_RGB		: VertexFormat 	= new VertexFormat(
+			VertexComponent.XYZ,
+			VertexComponent.RGB
+		);
+		public static const XYZ_UV		: VertexFormat 	= new VertexFormat(
+			VertexComponent.XYZ,
+			VertexComponent.UV
+		);
+		public static const XYZ_UV_ST	: VertexFormat	= new VertexFormat(
+			VertexComponent.XYZ,
+			VertexComponent.UV,
+			VertexComponent.ST
+		);
 
 		private var _dwordsPerVertex	: int;
 		private var _components			: Vector.<VertexComponent>;
 		private var _componentOffsets	: Dictionary;
 		private var _fieldOffsets		: Object;
 
-		public function get components() : Vector.<VertexComponent>
-		{
-			return _components;
-		}
 		public function get size() : int
 		{
 			return _dwordsPerVertex;
+		}
+		
+		public function get numComponents() : uint
+		{
+			return _components.length;
 		}
 
 		public function VertexFormat(...components)
@@ -167,7 +176,7 @@ package aerys.minko.render.geometry.stream.format
 			var numComponents2	: int	= vertexFormat._components.length;
 
 			for (var i : int = 0; i < numComponents1 && i < numComponents2; ++i)
-				if (_components[i] != vertexFormat.components[i])
+				if (_components[i] != vertexFormat._components[i])
 					return false;
 
 			return i == numComponents1 && i == numComponents2;
@@ -176,6 +185,11 @@ package aerys.minko.render.geometry.stream.format
 		public function toString() : String
 		{
 			return _components.join('|');
+		}
+		
+		public function getComponent(index : uint) : VertexComponent
+		{
+			return _components[index];
 		}
 	}
 }

@@ -81,13 +81,18 @@
 
 		private function initialize() : void
 		{
-			var components : Object = _stream.format.components;
-
+			var format			: VertexFormat	= _stream.format;
+			var numComponents	: uint			= format.numComponents;
+			
 			_propertyToStream = new Object();
+			
+			for (var componentIndex : uint = 0; componentIndex < numComponents; ++componentIndex)
+			{
+				var component : VertexComponent = format.getComponent(componentIndex);
 
-			for each (var component : VertexComponent in components)
 				for each (var field : String in component.fields)
 					_propertyToStream[field] = _stream.getStreamByComponent(component);
+			}
 		}
 
 		public function toString() : String

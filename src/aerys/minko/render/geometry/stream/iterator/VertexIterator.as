@@ -5,6 +5,7 @@ package aerys.minko.render.geometry.stream.iterator
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
@@ -94,11 +95,16 @@ package aerys.minko.render.geometry.stream.iterator
 
 		private function initialize() : void
 		{
-			var components : Object = _vstream.format.components;
+			var format			: VertexFormat	= _vstream.format;
+			var numComponents	: uint			= format.numComponents;
 
-			for each (var component : VertexComponent in components)
+			for (var componentIndex : uint = 0; componentIndex < numComponents; ++componentIndex)
+			{
+				var component : VertexComponent = format.getComponent(componentIndex);
+				
 				for each (var field : String in component.fields)
 					_propertyToStream[field] = _vstream.getStreamByComponent(component);
+			}
 		}
 
 		override flash_proxy function getProperty(name : *) : *
@@ -135,13 +141,18 @@ package aerys.minko.render.geometry.stream.iterator
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var ref			: VertexReference			= flash_proxy::getProperty(int(name));
-			var obj 		: Object 					= Object(value);
-			var components	: Vector.<VertexComponent>	= _vstream.format.components;
+			var ref				: VertexReference	= flash_proxy::getProperty(int(name));
+			var obj 			: Object 			= Object(value);
+			var format			: VertexFormat		= _vstream.format;
+			var numComponents	: uint				= format.numComponents;
 			
-			for each (var component : VertexComponent in components)
-			for each (var field : String in component.fields)
-			ref[field] = Number(obj[field]);
+			for (var componentIndex : uint = 0; componentIndex < numComponents; ++componentIndex)
+			{
+				var component : VertexComponent = format.getComponent(componentIndex);
+
+				for each (var field : String in component.fields)
+					ref[field] = Number(obj[field]);
+			}
 		}
 
 		override flash_proxy function deleteProperty(name : *) : Boolean
