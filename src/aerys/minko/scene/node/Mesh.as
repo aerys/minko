@@ -28,8 +28,8 @@ package aerys.minko.scene.node
 	 */
 	public class Mesh extends AbstractSceneNode
 	{
-		public static const DEFAULT_MATERIAL	: Effect	= new Effect(
-			new BasicShader()
+		public static const DEFAULT_MATERIAL	: Material	= new Material(
+			new Effect(new BasicShader())
 		);
 		
 		private var _geometry			: Geometry					= null;
@@ -214,7 +214,7 @@ package aerys.minko.scene.node
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
-			this.material = material || new BasicMaterial();
+			this.material = material || DEFAULT_MATERIAL;
 			
 //			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
