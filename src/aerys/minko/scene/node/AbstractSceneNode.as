@@ -172,7 +172,7 @@ package aerys.minko.scene.node
 			if (child === this)
 			{
 				_parent.localToWorld.changed.add(transformChangedHandler);
-				transformChangedHandler(_parent.transform, null);
+				transformChangedHandler(_parent.transform);
 			}
 		}
 		
@@ -199,8 +199,7 @@ package aerys.minko.scene.node
 			// nothing
 		}
 		
-		protected function transformChangedHandler(transform	: Matrix4x4,
-												   propertyName	: String) : void
+		protected function transformChangedHandler(transform	: Matrix4x4) : void
 		{
 			if (_parent)
 			{

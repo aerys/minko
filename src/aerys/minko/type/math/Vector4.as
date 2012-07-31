@@ -53,7 +53,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "x");
+					_changed.execute(this);
 			}
 		}
 		
@@ -69,7 +69,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "y");
+					_changed.execute(this);
 			}
 		}
 		
@@ -85,7 +85,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "z");
+					_changed.execute(this);
 			}
 		}
 		
@@ -101,7 +101,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "w");
+					_changed.execute(this);
 			}
 		}
 
@@ -117,7 +117,7 @@ package aerys.minko.type.math
 			return _lengthSq;
 		}
 
-		public function get length()	: Number
+		public function get length() : Number
 		{
 			if (_update & UPDATE_LENGTH)
 			{
@@ -209,7 +209,7 @@ package aerys.minko.type.math
 			_vector.incrementBy(vector._vector);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -219,7 +219,7 @@ package aerys.minko.type.math
 			_vector.decrementBy(vector._vector);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -229,7 +229,7 @@ package aerys.minko.type.math
 			_vector.scaleBy(scale);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -241,7 +241,7 @@ package aerys.minko.type.math
 			_vector.z /= _vector.w;
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -260,7 +260,7 @@ package aerys.minko.type.math
 				_lengthSq = 1.;
 
 				_update = UPDATE_NONE;
-				_changed.execute(this, null);
+				_changed.execute(this);
 			}
 
 			return this;
@@ -277,7 +277,7 @@ package aerys.minko.type.math
 			_vector.z = x * vector._vector.y - vector._vector.x * y;
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -301,7 +301,7 @@ package aerys.minko.type.math
 
 				_update = UPDATE_ALL;
 				if (!_locked)
-					_changed.execute(this, null);
+					_changed.execute(this);
 			}
 
 			return this;
@@ -352,7 +352,7 @@ package aerys.minko.type.math
 		public function unlock() : void
 		{
 			_locked = false;
-			_changed.execute(this, null);
+			_changed.execute(this);
 		}
 		
 		public function clone() : Vector4

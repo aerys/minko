@@ -238,8 +238,7 @@ package aerys.minko.scene.controller.mesh
 			(target as Mesh).bindings.removeProvider(_skinningData);
 		}
 		
-		private function jointLocalToWorldChangedHandler(emitter		: Matrix4x4, 
-														 propertyName	: String) : void
+		private function jointLocalToWorldChangedHandler(emitter : Matrix4x4) : void
 		{
 			_isDirty = true;
 		}

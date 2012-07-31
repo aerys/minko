@@ -160,7 +160,7 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(TMP_VECTOR);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 		}
 		
 		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
@@ -168,7 +168,7 @@ package aerys.minko.type.math
 			_matrix.copyFrom(matrix._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -196,7 +196,7 @@ package aerys.minko.type.math
 				_matrix.copyRawDataFrom(_data, _numPushes * 16);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -206,7 +206,7 @@ package aerys.minko.type.math
 			_matrix.prepend(m._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -216,7 +216,7 @@ package aerys.minko.type.math
 			_matrix.append(m._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -232,7 +232,7 @@ package aerys.minko.type.math
 			);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -244,7 +244,7 @@ package aerys.minko.type.math
 			_matrix.appendScale(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -254,7 +254,7 @@ package aerys.minko.type.math
 			_matrix.appendScale(scale, scale, scale);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -266,7 +266,7 @@ package aerys.minko.type.math
 			_matrix.appendTranslation(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -280,7 +280,7 @@ package aerys.minko.type.math
 									pivotPoint ? pivotPoint._vector : null);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -292,7 +292,7 @@ package aerys.minko.type.math
 			_matrix.prependScale(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -302,7 +302,7 @@ package aerys.minko.type.math
 			_matrix.prependScale(scale, scale, scale);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -314,7 +314,7 @@ package aerys.minko.type.math
 			_matrix.prependTranslation(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -355,7 +355,7 @@ package aerys.minko.type.math
 			_matrix.identity();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -365,7 +365,7 @@ package aerys.minko.type.math
 			_matrix.invert();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -375,7 +375,7 @@ package aerys.minko.type.math
 			_matrix.transpose();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -416,7 +416,7 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(input, offset, transposed);
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -445,7 +445,7 @@ package aerys.minko.type.math
 			}
 						
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -466,7 +466,7 @@ package aerys.minko.type.math
 			output ||= new Vector4();
 			_matrix.copyColumnTo(3, output._vector);
 			
-			output.changed.execute(output, null);
+			output.changed.execute(output);
 			
 			return output;
 		}
@@ -485,7 +485,7 @@ package aerys.minko.type.math
 			_matrix.copyColumnFrom(3, position._vector);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -516,7 +516,7 @@ package aerys.minko.type.math
 			_matrix.recompose(components);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -548,7 +548,7 @@ package aerys.minko.type.math
 			_matrix.recompose(components);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -622,7 +622,7 @@ package aerys.minko.type.math
 		public function unlock() : Matrix4x4
 		{
 			_locked = false;
-			_changed.execute(this, null);
+			_changed.execute(this);
 			
 			return this;
 		}

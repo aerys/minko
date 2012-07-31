@@ -217,7 +217,7 @@ package aerys.minko.type.binding
 			}
 		}
 		
-		private function propertyChangedHandler(source : IWatchable, key : String) : void
+		private function propertyChangedHandler(source : IWatchable) : void
 		{
 			var names		: Vector.<String>	= _propertyToNames[source];
 			var numNames	: uint				= names.length;

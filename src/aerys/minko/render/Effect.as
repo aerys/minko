@@ -52,16 +52,16 @@ package aerys.minko.render
 			return this;
 		}
 		
-		public function addPass(pass : Shader) : uint
+		public function addPass(pass : Shader) : Effect
 		{
 			var index : uint = _passes.push(pass);
 			
 			_passesChanged.execute(this);
 			
-			return index;
+			return this;
 		}
 		
-		public function removePass(pass : Shader) : void
+		public function removePass(pass : Shader) : Effect
 		{
 			var numPasses 	: int 	= _passes.length - 1;
 			var index		: int	= _passes.indexOf(pass);
@@ -75,11 +75,18 @@ package aerys.minko.render
 			_passes.length = numPasses;
 			
 			_passesChanged.execute(this);
+			
+			return this;
 		}
 		
 		public function hasPass(pass : Shader) : Boolean
 		{
 			return _passes.indexOf(pass) >= 0;
+		}
+		
+		public function clone() : Effect
+		{
+			return new Effect().setPasses(_passes);
 		}
 	}
 }

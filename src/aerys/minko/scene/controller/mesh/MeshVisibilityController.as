@@ -119,8 +119,7 @@ package aerys.minko.scene.controller.mesh
 			testCulling();
 		}
 		
-		private function meshLocalToWorldChangedHandler(transform	: Matrix4x4,
-														property	: String) : void
+		private function meshLocalToWorldChangedHandler(transform	: Matrix4x4) : void
 		{
 			testCulling();
 		}

@@ -82,7 +82,7 @@ package aerys.minko.scene.controller.camera
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
 		}
 		
-		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4, propertyName : String) : void
+		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4) : void
 		{
 			var cameraData			: CameraDataProvider	= _camera.cameraData;
 			var cameraWorldToScreen	: Matrix4x4				= cameraData.worldToScreen;

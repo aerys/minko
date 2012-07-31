@@ -55,13 +55,13 @@ package aerys.minko.scene.data
 			_worldToLocal.changed.add(onWorldToLocalChangedHandler);
 		}
 		
-		private function onLocalToWorldChangedHandler(source : Matrix4x4, key : String) : void
+		private function onLocalToWorldChangedHandler(source : Matrix4x4) : void
 		{
 			if (_propertyChanged)
 				_propertyChanged.execute(this, 'localToWorld');
 		}
 		
-		private function onWorldToLocalChangedHandler(source : Matrix4x4, key : String) : void
+		private function onWorldToLocalChangedHandler(source : Matrix4x4) : void
 		{
 			if (_propertyChanged)
 				_propertyChanged.execute(this, 'worldToLocal');
