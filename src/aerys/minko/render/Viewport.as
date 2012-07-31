@@ -207,8 +207,6 @@ package aerys.minko.render
 		
 		/**
 		 * The driver informations provided by the Stage3D API. 
-		 * @return 
-		 * 
 		 */
 		public function get driverInfo() : String
 		{
@@ -297,9 +295,23 @@ package aerys.minko.render
 			setSize(width, height);
 		}
 		
+		/**
+		 * Dispose the Viewport and all the Stage3D related objects. After this operation,
+		 * the Viewport cannot be used anymore and is ready for garbage collection.
+		 */
 		public function dispose():void
 		{
-			_context3d.dispose();
+			if (_stage3d != null)
+			{
+				_stage3d.removeEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
+				_stage3d = null;
+			}
+			
+			if (_context3d != null)
+			{
+				_context3d.dispose();
+				_context3d = null;
+			}
 			
 			return ;
 		}
