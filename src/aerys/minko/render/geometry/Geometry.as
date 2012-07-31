@@ -2,11 +2,6 @@ package aerys.minko.render.geometry
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.bounding.IBoundingVolume;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Vector4;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
@@ -14,6 +9,11 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.VertexStreamList;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	import aerys.minko.type.bounding.BoundingBox;
+	import aerys.minko.type.bounding.BoundingSphere;
+	import aerys.minko.type.bounding.IBoundingVolume;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	/**
 	 * Geometry objects store and provide a secure access to the geometry of 3D objects
@@ -659,5 +659,40 @@ package aerys.minko.render.geometry
 			_boundingSphere = BoundingSphere.fromMinMax(min, max);
 			_boundingBox = new BoundingBox(min, max);
 		}
+		
+		public function split() : Vector.<Geometry>
+		{
+			var geometries		: Vector.<Geometry> = new Vector.<Geometry>;
+			var numGeometries	: uint				= 0;
+			var geometryId 		: uint				= 0;
+			var numStreams		: uint				= _vertexStreams.length; 
+			var indexData		: Vector.<uint>		= _indexStream.minko_stream::_data;
+			
+			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
+			{
+				var stream	: VertexStream	= _vertexStreams[streamId] as VertexStream;
+				if (stream == null)
+					stream = VertexStream.extractSubStream(_vertexStreams[streamId], StreamUsage.DYNAMIC);
+				
+				var vertexData	: Vector.<Number>			= stream.minko_stream::_data;
+				var vertexDatas	: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>();
+				var indexDatas	: Vector.<Vector.<uint>>	= new Vector.<Vector.<uint>>();
+				
+				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.size);
+				
+				if (streamId == 0)
+				{
+					numGeometries = geometries.length = vertexDatas.length;
+					for (geometryId = 0; geometryId < numGeometries; ++geometryId)
+						geometries[geometryId] = new Geometry(new <IVertexStream>[], new IndexStream(StreamUsage.DYNAMIC, indexDatas[geometryId]));
+				}
+				
+				for (geometryId = 0; geometryId < numGeometries; ++geometryId)
+					geometries[geometryId].setVertexStream(new VertexStream(StreamUsage.DYNAMIC, stream.format, vertexDatas[geometryId]), streamId);
+			}
+			
+			return geometries;
+		}
+		
 	}
 }

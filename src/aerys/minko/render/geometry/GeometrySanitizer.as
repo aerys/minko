@@ -15,8 +15,8 @@ package aerys.minko.render.geometry
 	 */
 	public final class GeometrySanitizer
 	{
-		private static const INDEX_LIMIT	: uint = 524270;
-		private static const VERTEX_LIMIT	: uint = 65535;
+		public static const INDEX_LIMIT		: uint = 524270;
+		public static const VERTEX_LIMIT	: uint = 65535;
 		
 		public static function isValid(indexData		: Vector.<uint>,
 									   vertexData		: Vector.<Number>,
