@@ -104,13 +104,17 @@ package aerys.minko.render.shader.compiler
 			return computeForByteArray(TMP_BYTEARRAY);
 		}
 		
-		public static function computeForNumberVector(v : Vector.<Number>) : uint
+		public static function computeForNumberVector(v			: Vector.<Number>, 
+													  begin		: uint = 0, 
+													  length	: uint = 0) : uint
 		{
-			var length		: uint		= v.length;
+			if (length == 0)
+				length = v.length;
+			
+			var limit : uint = length + begin;
 			
 			TMP_BYTEARRAY.length = TMP_BYTEARRAY.position = 0;
-			
-			for (var i : uint = 0; i < length; ++i)
+			for (var i : uint = begin; i < limit; ++i)
 				TMP_BYTEARRAY.writeDouble(v[i]);
 			
 			return computeForByteArray(TMP_BYTEARRAY);

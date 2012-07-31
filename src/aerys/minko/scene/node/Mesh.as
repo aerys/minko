@@ -1,17 +1,18 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.render.Effect;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.material.basic.BasicShader;
-	import aerys.minko.render.material.Material;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
-	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.math.Ray;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -198,17 +199,15 @@ package aerys.minko.scene.node
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 material	: Material	= null,
-							 effect		: Effect	= null,
 							 ...controllers)
 		{
 			super();
 
-			initialize(geometry, material, effect, controllers);
+			initialize(geometry, material, controllers);
 		}
 		
 		private function initialize(geometry	: Geometry,
 									material	: Material,
-									effect		: Effect,
 									controllers	: Array) : void
 		{
 			_bindings = new DataBindings(this);
@@ -226,6 +225,15 @@ package aerys.minko.scene.node
 			if (controllers)
 				for each (var ctrl : AbstractController in controllers)
 					addController(ctrl);
+		}
+		
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
+		{
+			return _geometry.boundingBox.testRay(
+				ray,
+				worldToLocal,
+				maxDistance
+			);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode

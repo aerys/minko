@@ -1,8 +1,6 @@
 package aerys.minko.render.geometry.primitive
 {
-	import aerys.minko.render.Effect;
 	import aerys.minko.render.geometry.Geometry;
-	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
@@ -18,7 +16,7 @@ package aerys.minko.render.geometry.primitive
 	 */
 	public class BillboardsGeometry extends Geometry
 	{
-		public static const PARTICLE_FORMAT	: VertexFormat	= new VertexFormat(
+		public static const BILLBOARD_FORMAT	: VertexFormat	= new VertexFormat(
 			VertexComponent.XY,
 			VertexComponent.ID
 		);
@@ -30,35 +28,27 @@ package aerys.minko.render.geometry.primitive
 			initialize(numQuads);
 		}
 		
-		private function initialize(numQuads : uint) : void
+		private function initialize(numBillboards : uint) : void
 		{
 			var vertices	: Vector.<Number>	= new <Number>[];
 			var indices		: Vector.<uint>		= new <uint>[];
 			
-			for (var particleId : int = 0; particleId < numQuads; ++particleId)
+			for (var billboardId : int = 0; billboardId < numBillboards; ++billboardId)
 			{
 				vertices.push(
-					-0.5, 0.5, particleId,
-					0.5, 0.5, particleId,
-					0.5, -0.5, particleId,
-					-0.5, -0.5, particleId
+					-0.5, 0.5, billboardId,
+					0.5, 0.5, billboardId,
+					0.5, -0.5, billboardId,
+					-0.5, -0.5, billboardId
 				);
 				
 				indices.push(
-					particleId * 4, particleId * 4 + 2, particleId * 4 + 1,
-					particleId * 4, particleId * 4 + 3, particleId * 4 + 2
+					billboardId * 4, billboardId * 4 + 2, billboardId * 4 + 1,
+					billboardId * 4, billboardId * 4 + 3, billboardId * 4 + 2
 				);
 			}
 			
-			setVertexStream(
-				new VertexStream(
-					StreamUsage.STATIC,
-					PARTICLE_FORMAT,
-					vertices
-				),
-				0
-			);
-			
+			setVertexStream(new VertexStream(StreamUsage.STATIC, BILLBOARD_FORMAT, vertices), 0);
 			indexStream = new IndexStream(StreamUsage.STATIC, indices);
 		}
 	}

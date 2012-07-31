@@ -31,7 +31,10 @@
 		 * @return
 		 *
 		 */
-		public function get index() : int	{ return _index; }
+		public function get index() : uint
+		{
+			return _index;
+		}
 
 		public function VertexReference(stream 	: IVertexStream,
 								 		index	: int	= -1)
@@ -49,7 +52,7 @@
 			var stream 			: VertexStream	= _propertyToStream[propertyName];
 			
 			if (!(stream.usage & StreamUsage.READ))
-				throw new Error("Unable to read data from vertex stream.");
+				throw new Error('Unable to read data from vertex stream.');
 			
 			var format 			: VertexFormat 	= stream.format;
 			var index			: int			= _index * format.size
@@ -67,7 +70,7 @@
 			var stream 			: VertexStream 	= _propertyToStream[propertyName];
 			
 			if (!(stream.usage & StreamUsage.WRITE))
-				throw new Error("Unable to write data into vertex stream.");
+				throw new Error('Unable to write data into vertex stream.');
 			
 			var format 			: VertexFormat 	= stream.format;
 			var index			: int			= _index * format.size
@@ -89,12 +92,12 @@
 
 		public function toString() : String
 		{
-			var str : String	= "Vertex(index=" + _index;
+			var str : String	= 'Vertex(index=' + _index;
 
 			for (var field : String in _propertyToStream)
-				str += ", " + field + "=" + getProperty(field);
+				str += ', ' + field + '=' + getProperty(field);
 
-			str += ")";
+			str += ')';
 
 			return str;
 		}

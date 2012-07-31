@@ -215,39 +215,11 @@ package aerys.minko.render.material.basic
 		{
 			var diffuse	: SFloat = _diffuseShaderPart.getDiffuse();
 			
-			// directional lighting
-			if (sceneBindings.getConstant('lightEnabled', false)
-				&& meshBindings.getConstant('lightEnabled', false))
-			{
-				var lightDirection	: SFloat = sceneBindings.getParameter('lightDirection', 3);
-				var normal			: SFloat = normalize(interpolate(_vertexNormal));
-					
-				var lambert			: SFloat = saturate(negate(dotProduct3(
-					normal,
-					normalize(lightDirection)
-				)));
-				
-				lambert.scaleBy(sceneBindings.getParameter('lightDiffuse', 1));
-				
-				var lightColor		: SFloat = add(
-					// ambient
-					multiply(
-						sceneBindings.getParameter('lightAmbient', 1),
-						sceneBindings.getParameter('lightAmbientColor', 3)
-					),
-					// diffuse
-					multiply(
-						lambert,
-						sceneBindings.getParameter('lightDiffuseColor', 3)
-					)
-				);
-				
-				diffuse = float4(multiply(diffuse.rgb, lightColor), diffuse.a);
-			}
-			
 			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
-				var alphaThreshold : SFloat = meshBindings.getParameter('alphaThreshold', 1);
+				var alphaThreshold : SFloat = meshBindings.getParameter(
+					BasicProperties.ALPHA_THRESHOLD, 1
+				);
 				
 				kill(subtract(0.5, lessThan(diffuse.w, alphaThreshold)));
 			}
