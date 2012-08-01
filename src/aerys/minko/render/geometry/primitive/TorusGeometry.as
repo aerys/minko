@@ -20,10 +20,10 @@ package aerys.minko.render.geometry.primitive
 		private var _segmentsT	: uint;
 		private var _arc		: Number;
 		
-		public function TorusGeometry(radius				: Number	= 100.,
-									  tube					: Number	= 40.,
-									  segmentsR				: uint		= 8,
-									  segmentsT				: uint		= 6,
+		public function TorusGeometry(radius				: Number	= .375,
+									  tube					: Number	= .125,
+									  segmentsR				: uint		= 10,
+									  segmentsT				: uint		= 8,
 									  arc					: Number	= Math.PI * 2.,
 									  withUVs				: Boolean	= true,
 									  withNormals			: Boolean	= true,
