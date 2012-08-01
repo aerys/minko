@@ -8,11 +8,17 @@ package aerys.minko.render.geometry.primitive
 
 	public class QuadGeometry extends Geometry
 	{
-		private static var _instance	: QuadGeometry	= null;
+		private static var _instance			: QuadGeometry	= null;
+		private static var _instanceDoubleSided	: QuadGeometry	= null;
 		
 		public static function get quadGeometry() : QuadGeometry
 		{
 			return _instance || (_instance = new QuadGeometry());
+		}
+		
+		public static function get doubleSidedQuadGeometry() : QuadGeometry
+		{
+			return _instanceDoubleSided || (_instanceDoubleSided = new QuadGeometry(true));
 		}
 		
 		public function QuadGeometry(doubleSided	: Boolean 	= false,
