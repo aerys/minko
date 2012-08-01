@@ -7,7 +7,6 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
-	import aerys.minko.type.math.Vector4;
 	
 	public class TorusGeometry extends Geometry
 	{
