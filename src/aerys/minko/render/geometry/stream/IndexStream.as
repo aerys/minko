@@ -69,8 +69,8 @@ package aerys.minko.render.geometry.stream
 			if (indices)
 			{
 				var numIndices : int = indices && length == 0
-									   ? indices.length
-									   : Math.min(indices.length, length);
+					? indices.length
+					: Math.min(indices.length, length);
 
 				_data = new Vector.<uint>(numIndices);
 				for (var i : int = 0; i < numIndices; ++i)
@@ -80,51 +80,9 @@ package aerys.minko.render.geometry.stream
 			{
 				_data = dummyData(length);
 			}
-
+			
 			invalidate();
 		}
-
-		/*override flash_proxy function getProperty(name : *) : *
-		{
-			return _data[int(name)];
-		}
-
-		override flash_proxy function setProperty(name : *, value : *) : void
-		{
-			var index : int = int(name);
-
-			_data[index] = int(value);
-
-			invalidate();
-		}
-
-		override flash_proxy function nextNameIndex(index : int) : int
-		{
-			return index >= _data.length ? 0 : index + 1;
-		}
-
-		override flash_proxy function nextValue(index : int) : *
-		{
-			return _data[int(index - 1)];
-		}
-
-		override flash_proxy function deleteProperty(name : *) : Boolean
-		{
-		var index 	: int = int(name);
-		var length 	: int = length;
-
-		if (index > length)
-		return false;
-
-		for (var i : int = index; i < length - 1; ++i)
-		_data[i] = _data[int(i + 1)];
-
-		_data.length = length - 1;
-
-		invalidate();
-
-		return true;
-		}*/
 
 		public function get(index : int) : uint
 		{
