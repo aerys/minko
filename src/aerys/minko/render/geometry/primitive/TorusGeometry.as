@@ -22,8 +22,8 @@ package aerys.minko.render.geometry.primitive
 		
 		public function TorusGeometry(radius				: Number	= .375,
 									  tube					: Number	= .125,
-									  segmentsR				: uint		= 10,
-									  segmentsT				: uint		= 8,
+									  segmentsR				: uint		= 14,
+									  segmentsT				: uint		= 13,
 									  arc					: Number	= Math.PI * 2.,
 									  withUVs				: Boolean	= true,
 									  withNormals			: Boolean	= true,
