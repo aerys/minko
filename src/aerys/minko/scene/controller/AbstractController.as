@@ -70,9 +70,9 @@ package aerys.minko.scene.controller
 			if (_targetType && !(target is _targetType))
 			{
 				throw new Error(
-					"Controller '" + getQualifiedClassName(this)
-					+ " cannot target objects from class '"
-					+ getQualifiedClassName(target) + "'."
+					'Controller \'' + getQualifiedClassName(this)
+					+ ' cannot target objects from class \''
+					+ getQualifiedClassName(target) + '\'.'
 				);
 			}
 			
@@ -113,7 +113,7 @@ package aerys.minko.scene.controller
 		
 		public function clone() : AbstractController
 		{
-			throw new Error("The method AbstractController.clone() must be overriden.");
+			throw new Error('The method AbstractController.clone() must be overriden.');
 		}
 	}
 }
