@@ -829,6 +829,8 @@ package aerys.minko.scene.controller.scene
 		{
 			var sceneBindings	: DataBindings	= _scene.bindings;
 			
+			drawCall.unsetBindings(meshBindings, sceneBindings);
+			
 			// remove callback on binding changes
 			var signature		: Signature		= passInstance.signature;
 			var numKeys			: uint			= signature.numKeys;
