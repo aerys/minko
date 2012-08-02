@@ -3,6 +3,7 @@ package aerys.minko.render.material.basic
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	public class BasicMaterial extends Material
 	{
@@ -143,6 +144,15 @@ package aerys.minko.render.material.basic
 		public function set stencilWriteMask(value : uint) : void
 		{
 			setProperty(BasicProperties.STENCIL_WRITE_MASK, value);
+		}
+		
+		public function get diffuseColorMatrix() : Matrix4x4
+		{
+			return getProperty(BasicProperties.DIFFUSE_COLOR_MATRIX);
+		}
+		public function set diffuseColorMatrix(value : Matrix4x4) : void
+		{
+			setProperty(BasicProperties.DIFFUSE_COLOR_MATRIX, value);
 		}
 		
 		public function BasicMaterial(properties : Object = null, effect : Effect = null, name : String = DEFAULT_NAME)

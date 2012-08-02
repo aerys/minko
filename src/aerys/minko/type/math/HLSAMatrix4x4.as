@@ -1,22 +1,6 @@
-package aerys.minko.scene.controller.mesh
+package aerys.minko.type.math
 {
-	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.enum.DataProviderUsage;
-	import aerys.minko.type.math.*;
-
-	/**
-	 * This controller is used to apply hue, saturation, luminance and alpha transformations to the sampled diffuse
-	 * color of any Mesh.
-	 *
-	 * @see http://www.graficaobscura.com/matrix/index.html
-	 * @author Tortenazor
-	 */
-	public final class HLSAController extends AbstractController
+	public class HLSAMatrix4x4 extends Matrix4x4
 	{
 		private static const TMP_NUMBERS	: Vector.<Number> 	= new Vector.<Number>(16, true);
 		private static const TMP_MATRIX		: Matrix4x4			= new Matrix4x4();
@@ -28,7 +12,6 @@ package aerys.minko.scene.controller.mesh
 		private static const SQRT3			: Number			= Math.sqrt(3.0);
 		private static const INV_SQRT2		: Number			= 1.0 / SQRT2;
 		
-		private var _dataProvider		: DataProvider	= new DataProvider(DataProviderUsage.MANAGED);
 		private var _hue				: Number		= 0;
 		private var _saturation			: Number		= 1;
 		private var _luminance			: Number		= 1;
@@ -36,9 +19,8 @@ package aerys.minko.scene.controller.mesh
 		private var _hueMatrix			: Matrix4x4		= new Matrix4x4();
 		private var _saturationMatrix	: Matrix4x4		= new Matrix4x4();
 		private var _luminanceMatrix	: Matrix4x4		= new Matrix4x4();
-		private var _finalMatrix		: Matrix4x4		= new Matrix4x4();
 		private var _luminancePlane 	: Vector4		= new Vector4(RWGT, GWGT, BWGT, 0);
-
+		
 		/**
 		 * Alpha multiplier, from 0 to 1, default is 1.
 		 */
@@ -183,7 +165,8 @@ package aerys.minko.scene.controller.mesh
 		public function set luminance(l : Number) : void
 		{
 			_luminance = l;
-			_luminanceMatrix.lock()
+			_luminanceMatrix
+				.lock()
 				.identity()
 				.appendUniformScale(l)
 				.unlock();
@@ -191,55 +174,27 @@ package aerys.minko.scene.controller.mesh
 			updateDiffuseColorMatrix();
 		}
 		
-		/**
-		 * This controller is used to apply hue, saturation, luminance and alpha transformations to the sampled diffuse
-		 * color of any Mesh.
-	 	 *
-		 * @see http://www.graficaobscura.com/matrix/index.html
-		 * @author Tortenazor
-		 */
-		public function HLSAController()
+		public function HLSAMatrix4x4(hue : Number, luminance : Number, saturation : Number, alpha : Number)
 		{
-			super(Mesh);
-
-			initialize();
-		}
-
-		private function initialize() : void
-		{
-			updateDiffuseColorMatrix();
-			_dataProvider.setProperty('diffuseColorMatrix', _finalMatrix);
+			super();
 			
-			targetAdded.add(targetAddedHandler);
-			targetRemoved.add(targetRemovedHandler);
+			this.hue = hue;
+			this.luminance = luminance;
+			this.saturation = saturation;
+			this.alpha = alpha;
+			
+			updateDiffuseColorMatrix();
 		}
 		
 		private function updateDiffuseColorMatrix() : void
 		{
-			_finalMatrix.lock()
-				.identity()
-				.append(_hueMatrix)
-				.append(_saturationMatrix)
-				.append(_luminanceMatrix)
-				.unlock();
-			
-			_finalMatrix.getRawData(TMP_NUMBERS);
-			TMP_NUMBERS[15] = _alpha;
-			
-			_finalMatrix.setRawData(HLSAController.TMP_NUMBERS);
+			lock();
+			identity();
+			append(_hueMatrix);
+			append(_saturationMatrix);
+			append(_luminanceMatrix);
+			appendTranslation(0, 0, _alpha);
+			unlock();
 		}
-
-		protected function targetAddedHandler(ctrl		: HLSAController,
-											  target	: Mesh) : void
-		{
-			target.bindings.addProvider(_dataProvider);
-		}
-
-		protected function targetRemovedHandler(ctrl	: HLSAController,
-												target	: Mesh) : void
-		{
-			target.bindings.removeProvider(_dataProvider);
-		}
-
 	}
 }
