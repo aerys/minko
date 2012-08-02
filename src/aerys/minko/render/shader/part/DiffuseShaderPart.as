@@ -20,7 +20,7 @@ package aerys.minko.render.shader.part
 			super(main);
 		}
 		
-		public function getDiffuse() : SFloat
+		public function getDiffuseColor() : SFloat
 		{
 			var diffuseColor : SFloat	= null;
 			
