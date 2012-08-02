@@ -1,6 +1,8 @@
 Minko
 =====
 
+![Minko Logo](http://blogs.aerys.in/jeanmarc-leroux/wp-content/uploads/2012/05/256.png)
+
 Support
 -------
 
