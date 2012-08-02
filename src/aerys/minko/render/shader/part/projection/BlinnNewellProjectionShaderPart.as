@@ -35,8 +35,8 @@ package aerys.minko.render.shader.part.projection
 		 */		
 		public function projectVector(vector	: SFloat, 
 									  target	: Rectangle,
-									  zNear		: Number	= 0,
-									  zFar		: Number	= 1000) : SFloat
+									  zNear		: Number	= 0.,
+									  zFar		: Number	= 1000.) : SFloat
 		{
 			var sphericalCoordinates	: SFloat = _sphericalPart.fromOrtho(vector);
 			var projectedVector			: SFloat = sphericalCoordinates.zy;
@@ -54,10 +54,9 @@ package aerys.minko.render.shader.part.projection
 		public function unprojectVector(projectedVector	: SFloat,
 										source			: Rectangle) : SFloat
 		{
-			var coordinates				: SFloat = transform2DCoordinates(projectedVector, source, SPHERICAL_COORDINATES_RECTANGLE);
-			var unprojectedVector		: SFloat = _sphericalPart.toOrtho(float3(1, coordinates.yx));
+			var coordinates	: SFloat = transform2DCoordinates(projectedVector, source, SPHERICAL_COORDINATES_RECTANGLE);
 			
-			return unprojectedVector;
+			return _sphericalPart.toOrtho(float3(1, coordinates.yx));
 		}
 	}
 }
