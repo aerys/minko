@@ -16,6 +16,12 @@ package aerys.minko.type.math
 		public static const Z_AXIS				: Vector4	= new Vector4(0., 0., 1.);
 		public static const ZERO				: Vector4	= new Vector4(0., 0., 0., 0.);
 		public static const ONE					: Vector4	= new Vector4(1., 1., 1., 1.);
+		public static const FORWARD				: Vector4	= Z_AXIS;
+		public static const BACKWARD			: Vector4	= new Vector4(0., 0., -1.);
+		public static const LEFT				: Vector4	= new Vector4(-1, 0., 0.);
+		public static const RIGHT				: Vector4	= new Vector4(1, 0., 0.);
+		public static const UP					: Vector4	= Y_AXIS;
+		public static const DOWN				: Vector4	= new Vector4(0, -1., 0.);
 
 		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
 
@@ -157,7 +163,7 @@ package aerys.minko.type.math
 		{
 			out = copy(u, out);
 
-			return out.add(v);
+			return out.incrementBy(v);
 		}
 
 		public static function subtract(u 	: Vector4,
@@ -166,7 +172,7 @@ package aerys.minko.type.math
 		{
 			out = copy(u, out);
 			
-			return out.subtract(v);
+			return out.decrementBy(v);
 		}
 
 		public static function dotProduct(u : Vector4, v : Vector4) : Number
@@ -204,7 +210,7 @@ package aerys.minko.type.math
 			return target;
 		}
 
-		public function add(vector : Vector4) : Vector4
+		public function incrementBy(vector : Vector4) : Vector4
 		{
 			_vector.incrementBy(vector._vector);
 
@@ -214,7 +220,7 @@ package aerys.minko.type.math
 			return this;
 		}
 
-		public function subtract(vector : Vector4) : Vector4
+		public function decrementBy(vector : Vector4) : Vector4
 		{
 			_vector.decrementBy(vector._vector);
 
