@@ -213,7 +213,7 @@ package aerys.minko.render.material.basic
 		 */
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuse	: SFloat = _diffuseShaderPart.getDiffuse();
+			var diffuse	: SFloat = _diffuseShaderPart.getDiffuseColor();
 			
 			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
