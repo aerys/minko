@@ -9,10 +9,10 @@ package aerys.minko.scene.node.mesh
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.mesh.geometry.Geometry;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.data.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.math.Ray;
 
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
@@ -253,6 +253,15 @@ package aerys.minko.scene.node.mesh
 			if (controllers)
 				for each (var ctrl : AbstractController in controllers)
 					addController(ctrl);
+		}
+		
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
+		{
+			return _geometry.boundingBox.testRay(
+				ray,
+				worldToLocal,
+				maxDistance
+			);
 		}
 		
 		override public function clone(cloneControllers : Boolean = false) : ISceneNode
