@@ -694,5 +694,25 @@ package aerys.minko.render.geometry
 			return geometries;
 		}
 		
+		public function merge(geometry : Geometry, usage : uint = StreamUsage.STATIC) : Geometry
+		{
+			_vertexStreams = new <IVertexStream>[VertexStream.concat(
+				new <IVertexStream>[
+						geometry.getVertexStream(), 
+						this.getVertexStream()
+				],
+				usage
+			)];
+			_indexStream = geometry.indexStream.clone().concat(
+					this.indexStream, 
+					0, 
+					0, 
+					geometry.getVertexStream().length
+				);
+		
+			updateBoundingVolumes();
+
+			return this;				
+		}
 	}
 }
