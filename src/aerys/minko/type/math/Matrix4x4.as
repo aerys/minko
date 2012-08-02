@@ -11,7 +11,7 @@ package aerys.minko.type.math
 
 	use namespace minko_math;
 		
-	public final class Matrix4x4 implements IWatchable
+	public class Matrix4x4 implements IWatchable
 	{
 		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
 		private static const RAD2DEG			: Number			= 180. / Math.PI;
@@ -418,6 +418,50 @@ package aerys.minko.type.math
 			if (!_locked)
 				_changed.execute(this);
 
+			return this;
+		}
+		
+		public function getColumn(column : uint, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			_matrix.copyColumnTo(column, out._vector);
+			
+			if (!out.locked)
+				out.changed.execute(out);
+			
+			return out;
+		}
+		
+		public function setColumn(column : uint, value : Vector4) : Matrix4x4
+		{
+			_matrix.copyColumnFrom(column, value._vector);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
+		public function getRow(row : uint, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			_matrix.copyColumnTo(row, out._vector);
+			
+			if (!out.locked)
+				out.changed.execute(out);
+			
+			return out;
+		}		
+		
+		public function setRow(row : uint, value : Vector4) : Matrix4x4
+		{
+			_matrix.copyRowFrom(row, value._vector);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
 			return this;
 		}
 
