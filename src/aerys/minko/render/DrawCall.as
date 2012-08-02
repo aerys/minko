@@ -151,8 +151,8 @@ package aerys.minko.render
 								  sceneBindings	: DataBindings,
 								  computeDepth	: Boolean) : void
 		{
-			if (_bindings != null)
-				unsetBindings(meshBindings, sceneBindings);
+//			if (_bindings != null)
+//				unsetBindings(meshBindings, sceneBindings);
 		
 			_invalidDepth = computeDepth;
 			
@@ -165,8 +165,6 @@ package aerys.minko.render
 		public function unsetBindings(meshBindings	: DataBindings,
 									  sceneBindings	: DataBindings) : void
 		{
-			trace('unset bindings');
-			
 			for (var parameter : String in _bindings)
 			{
 				meshBindings.removeCallback(parameter, parameterChangedHandler);
@@ -258,8 +256,6 @@ package aerys.minko.render
 									 sceneBindings	: DataBindings,
 									 computeDepth	: Boolean) : void
 		{
-			trace('set bindings');
-			
 			for (var parameter : String in _bindings)
 			{
 				meshBindings.addCallback(parameter, parameterChangedHandler);
@@ -336,7 +332,7 @@ package aerys.minko.render
 		public function setParameter(name : String, value : Object) : void
 		{
 			var binding : IBinder = _bindings[name] as IBinder;
-			trace(name);
+			
 			if (binding != null)
 				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
 		}
