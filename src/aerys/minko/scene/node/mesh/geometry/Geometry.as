@@ -659,5 +659,60 @@ package aerys.minko.scene.node.mesh.geometry
 			_boundingSphere = BoundingSphere.fromMinMax(min, max);
 			_boundingBox = new BoundingBox(min, max);
 		}
+		
+		public function split() : Vector.<Geometry>
+		{
+			var geometries		: Vector.<Geometry> = new Vector.<Geometry>;
+			var numGeometries	: uint				= 0;
+			var geometryId 		: uint				= 0;
+			var numStreams		: uint				= _vertexStreams.length; 
+			var indexData		: Vector.<uint>		= _indexStream.minko_stream::_data;
+			
+			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
+			{
+				var stream	: VertexStream	= _vertexStreams[streamId] as VertexStream;
+				if (stream == null)
+					stream = VertexStream.extractSubStream(_vertexStreams[streamId], StreamUsage.DYNAMIC);
+				
+				var vertexData	: Vector.<Number>			= stream.minko_stream::_data;
+				var vertexDatas	: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>();
+				var indexDatas	: Vector.<Vector.<uint>>	= new Vector.<Vector.<uint>>();
+				
+				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.size);
+				
+				if (streamId == 0)
+				{
+					numGeometries = geometries.length = vertexDatas.length;
+					for (geometryId = 0; geometryId < numGeometries; ++geometryId)
+						geometries[geometryId] = new Geometry(new <IVertexStream>[], new IndexStream(StreamUsage.DYNAMIC, indexDatas[geometryId]));
+				}
+				
+				for (geometryId = 0; geometryId < numGeometries; ++geometryId)
+					geometries[geometryId].setVertexStream(new VertexStream(StreamUsage.DYNAMIC, stream.format, vertexDatas[geometryId]), streamId);
+			}
+			
+			return geometries;
+		}
+		
+		public function merge(geometry : Geometry, usage : uint = StreamUsage.STATIC) : Geometry
+		{
+			_vertexStreams = new <IVertexStream>[VertexStream.concat(
+				new <IVertexStream>[
+						geometry.getVertexStream(), 
+						this.getVertexStream()
+				],
+				usage
+			)];
+			_indexStream = geometry.indexStream.clone().concat(
+					this.indexStream, 
+					0, 
+					0, 
+					geometry.getVertexStream().length
+				);
+		
+			updateBoundingVolumes();
+
+			return this;				
+		}
 	}
 }
