@@ -212,6 +212,18 @@ package aerys.minko.scene.node.mesh.geometry
 			_indexStream = null;
 		}
 		
+		public function disposeLocalData(waitForUpload : Boolean = true) : Geometry
+		{
+			var numStreams : uint = numVertexStreams;
+			
+			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
+				_vertexStreams[streamId].disposeLocalData(waitForUpload);
+			
+			_indexStream.disposeLocalData(waitForUpload);
+			
+			return this;
+		}
+		
 		/**
 		 * Get the IVertexStream object at the specified index.
 		 *  
@@ -253,15 +265,15 @@ package aerys.minko.scene.node.mesh.geometry
 		public function applyTransform(transform 		: Matrix4x4,
 									   updatePositions	: Boolean	= true,
 									   updateNormals 	: Boolean	= true, 
-									   updateTangents 	: Boolean	= true) : void
+									   updateTangents 	: Boolean	= true) : Geometry
 		{
 			_bulkUpdate = true;
 			
-			var numStreams	: int 		= _vertexStreams.length;
+			var numStreams	: uint 		= _vertexStreams.length;
 			var updateBV	: Boolean	= false;
 			var tmpMatrix	: Matrix4x4 = null;
 			
-			for (var streamId : int = 0; streamId < numStreams; streamId++)
+			for (var streamId : uint = 0; streamId < numStreams; streamId++)
 			{
 				var stream : IVertexStream = _vertexStreams[streamId];
 				
@@ -301,6 +313,8 @@ package aerys.minko.scene.node.mesh.geometry
 			
 			if (updateBV)
 				updateBoundingVolumes();
+			
+			return this;
 		}
 		
 		/**
@@ -694,22 +708,42 @@ package aerys.minko.scene.node.mesh.geometry
 			return geometries;
 		}
 		
-		public function merge(geometry : Geometry, usage : uint = StreamUsage.STATIC) : Geometry
+		public function merge(geometry			: Geometry,
+							  vertexStreamUsage : uint = 3,
+							  indexStreamUsage 	: uint = 3) : Geometry
 		{
-			_vertexStreams = new <IVertexStream>[VertexStream.concat(
-				new <IVertexStream>[
-						geometry.getVertexStream(), 
-						this.getVertexStream()
-				],
-				usage
-			)];
-			_indexStream = geometry.indexStream.clone().concat(
-					this.indexStream, 
-					0, 
-					0, 
-					geometry.getVertexStream().length
-				);
-		
+			var vertexStreamsToConcat 	: Vector.<IVertexStream> = new <IVertexStream>[];
+			
+			if (numVertexStreams != 0 && geometry.numVertexStreams != 0
+				&& numVertexStreams != geometry.numVertexStreams)
+			{
+				throw new Error('Both geometry must have the same number of vertex streams.');
+			}
+
+			if (numVertexStreams != 0)
+				vertexStreamsToConcat.push(_vertexStreams[0]);
+			
+			if (geometry.numVertexStreams != 0)
+				vertexStreamsToConcat.push(geometry._vertexStreams[0]);
+
+			var indexOffset : uint = vertexStreamsToConcat.length != 1
+				? vertexStreamsToConcat[0].length
+				: 0;
+			
+			if (vertexStreamsToConcat.length != 0)
+			{
+				_vertexStreams = new <IVertexStream>[
+					VertexStream.concat(vertexStreamsToConcat, vertexStreamUsage)
+				];
+			}
+			
+			_indexStream = _indexStream != null
+				? _indexStream.clone(indexStreamUsage)
+				: new IndexStream(indexStreamUsage);
+			
+			if (geometry._indexStream != null)
+				_indexStream = _indexStream.concat(geometry._indexStream, 0, 0, indexOffset);
+			
 			updateBoundingVolumes();
 
 			return this;				

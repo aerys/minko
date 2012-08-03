@@ -67,8 +67,8 @@ package aerys.minko.render.resource
 				_update = false;
 				_numIndices = _stream.length;
 
-				if (!(_stream.usage & StreamUsage.READ))
-					_stream.disposeLocalData();
+				if (!(_stream.usage & StreamUsage.READ) || _stream._localDispose)
+					_stream.disposeLocalData(false);
 			}
 
 			return _indexBuffer;

@@ -10,7 +10,8 @@ package aerys.minko.type.stream
 	{
 		use namespace minko_stream;
 
-		minko_stream var _data	: Vector.<uint>			= null;
+		minko_stream var _data			: Vector.<uint>		= null;
+		minko_stream var _localDispose	: Boolean			= false;
 
 		private var _usage		: uint					= 0;
 		private var _resource	: IndexBuffer3DResource	= null;
@@ -178,9 +179,9 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 
-		public function clone() : IndexStream
+		public function clone(usage : uint = 0) : IndexStream
 		{
-			return new IndexStream(_usage, _data, length);
+			return new IndexStream(usage || _usage, _data, length);
 		}
 
 		public function toString() : String
@@ -226,18 +227,15 @@ package aerys.minko.type.stream
 			invalidate();
 		}
 
-		public function disposeLocalData() : void
+		public function disposeLocalData(waitForUpload : Boolean = true) : void
 		{
-			if (length != resource.numIndices)
+			if (waitForUpload && _length != resource.numIndices)
+				_localDispose = true;
+			else
 			{
-				throw new Error(
-					"Unable to dispose local data: "
-					+ "some indices have not been uploaded."
-				);
+				_data = null;
+				_usage = StreamUsage.STATIC;
 			}
-
-			_data = null;
-			_usage = StreamUsage.STATIC;
 		}
 		
 		public function dispose() : void
