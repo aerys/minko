@@ -408,10 +408,13 @@ package aerys.minko.render.geometry.stream
 		{
 			if (_locked)
 				throw new Error('Stream data can not be disposed since it\'s locked for update.');
-			if (waitForUpload)
+			if (waitForUpload && _length != resource.numVertices)
 				_localDispose = true;
 			else
+			{
 				_data = null;
+				_usage = StreamUsage.STATIC;
+			}
 		}
 		
 		public function dispose() : void
