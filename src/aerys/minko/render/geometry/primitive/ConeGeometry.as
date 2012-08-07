@@ -28,11 +28,7 @@ package aerys.minko.render.geometry.primitive
 			{
 				var angle : Number = (Math.PI * 2.) * (segmentId / numSegments);
 				
-				xyz.push(
-					Math.cos(angle),
-					-.5,
-					Math.sin(angle)
-				);
+				xyz.push(Math.cos(angle) * .5, -.5, Math.sin(angle) * .5);
 			}
 			
 			xyz.push(0., -.5, 0.);
