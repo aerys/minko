@@ -625,12 +625,12 @@ package aerys.minko.render.geometry
 				return ;
 				
 			var numStreams	: int		= _vertexStreams.length;
-			var minX		: Number	= 0.;
-			var minY		: Number	= 0.;
-			var minZ		: Number	= 0.;
-			var maxX		: Number	= 0.;
-			var maxY		: Number	= 0.;
-			var maxZ		: Number	= 0.;
+			var minX		: Number	= Number.MAX_VALUE;
+			var minY		: Number	= Number.MAX_VALUE;
+			var minZ		: Number	= Number.MAX_VALUE;
+			var maxX		: Number	= -Number.MAX_VALUE;
+			var maxY		: Number	= -Number.MAX_VALUE;
+			var maxZ		: Number	= -Number.MAX_VALUE;
 			
 			for (var i : int = 0; i < numStreams; ++i)
 			{
