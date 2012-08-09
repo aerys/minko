@@ -354,7 +354,7 @@ package aerys.minko.scene.controller.scene
 											   target 	: BitmapData,
 											   time		: Number) : void
 		{
-			if (viewport.ready)
+			if (viewport.ready && viewport.visible)
 			{
 				_numTriangles = render(viewport, target);
 				Factory.sweep();

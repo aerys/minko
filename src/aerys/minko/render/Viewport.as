@@ -63,11 +63,10 @@ package aerys.minko.render
 		{
 			var positionOnStage	: Point	= localToGlobal(ZERO2);
 			
-			if (_invalidBackBuffer
-				|| _stage3d.x != positionOnStage.x
-				|| _stage3d.y != positionOnStage.y)
+			if (_stage3d.x != positionOnStage.x || _stage3d.y != positionOnStage.y)
 			{
-				updateBackBuffer();
+				updateStage3D()
+//				updateBackBuffer();
 			}
 			
 			return _backBuffer;
@@ -75,7 +74,7 @@ package aerys.minko.render
 		
 		public function get ready() : Boolean
 		{
-			return _stage3d && _stage3d.context3D;
+			return _stage3d != null && _stage3d.context3D != null && _backBuffer != null;
 		}
 		
 		/**
@@ -140,9 +139,6 @@ package aerys.minko.render
 		public function set alwaysOnTop(value : Boolean) : void
 		{
 			_alwaysOnTop = value;
-			
-			updateMask();
-			updateStageListeners();
 		}
 		
 		public function get keyboardManager() : KeyboardManager
@@ -185,7 +181,7 @@ package aerys.minko.render
 		public function set backgroundColor(value : uint) : void
 		{
 			_backgroundColor = value;
-			_invalidBackBuffer = true;
+			updateStage3D();
 		}
 		
 		/**
@@ -202,7 +198,7 @@ package aerys.minko.render
 		public function set antiAliasing(value : uint) : void
 		{
 			_antiAliasing = value;
-			_invalidBackBuffer = true;
+			updateStage3D();
 		}
 		
 		/**
@@ -220,7 +216,9 @@ package aerys.minko.render
 								 height			: uint	= 0)
 		{
 			_antiAliasing = antiAliasing;
-			_autoResize = width == 0 && height == 0;
+			
+			if (width == 0 && height == 0)
+				_autoResize = true;
 			
 			_width = width;
 			_height = height;
@@ -239,6 +237,23 @@ package aerys.minko.render
 		private function addedToStageHandler(event : Event) : void
 		{
 			_keyboardManager.bind(stage);
+
+			parent.addEventListener(Event.RESIZE, parentResizedHandler);
+			
+			stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+			stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
+			stage.addEventListener(MouseEvent.CLICK, stageEventHandler);
+			stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+			stage.addEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+			stage.addEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+			stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+			stage.addEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+			stage.addEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+			stage.addEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+			stage.addEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+			stage.addEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
 			
 			setupOnStage(stage);
 		}
@@ -247,23 +262,34 @@ package aerys.minko.render
 		{
 			_keyboardManager.unbind(stage);
 			
+			parent.removeEventListener(Event.RESIZE, parentResizedHandler);
+			
+			stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
+			stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
+			stage.removeEventListener(MouseEvent.CLICK, stageEventHandler);
+			stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
+			stage.removeEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
+			stage.removeEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
+			stage.removeEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
+			stage.removeEventListener(TouchEvent.TOUCH_END, stageEventHandler);
+			stage.removeEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
+			
 			if (_stage3d != null)
 				_stage3d.visible = false;
 		}
 		
 		private function setupOnStage(stage : Stage, stage3dId : uint = 0) : void
 		{
-			stage.scaleMode = StageScaleMode.NO_SCALE;
-			stage.align = StageAlign.TOP_LEFT;
-
 			if (_autoResize)
 			{
 				_width = stage.stageWidth;
 				_height = stage.stageHeight;
-				_invalidBackBuffer = true;
 			}
-			
-			updateStageListeners();
 			
 			if (!_stage3d)
 			{
@@ -275,24 +301,9 @@ package aerys.minko.render
 			{
 				_stage3d.visible = true;
 			}
-		}
-		
-		/**
-		 * Resize the display area. The "resized" signal is executed when the new width and
-		 * height have be set. 
-		 * @param width
-		 * @param height
-		 * 
-		 */
-		public function resize(width : Number, height : Number) : void
-		{
-			if (_autoResize)
-			{
-				_autoResize = false;
-				updateStageListeners();
-			}
 			
-			setSize(width, height);
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			stage.align = StageAlign.TOP_LEFT;
 		}
 		
 		/**
@@ -316,6 +327,20 @@ package aerys.minko.render
 			return ;
 		}
 		
+		/**
+		 * Resize the display area. The "resized" signal is executed when the new width and
+		 * height have be set. 
+		 * @param width
+		 * @param height
+		 * 
+		 */
+		public function resize(width : Number, height : Number) : void
+		{
+			_autoResize = false;
+			
+			setSize(width, height);
+		}
+		
 		private function setSize(width : Number, height : Number) : void
 		{
 			if (width == _width && _height == height)
@@ -324,43 +349,45 @@ package aerys.minko.render
 			_width = width;
 			_height = height;
 			
-//			_invalidBackBuffer = true;
 			updateStage3D();
+			updateBackBuffer();
 			_resized.execute(this, width, height);
 		}
 		
 		private function stageResizedHandler(event : Event) : void
 		{
-			setSize(stage.stageWidth, stage.stageHeight);
+			updateMask();
+		}
+		
+		private function parentResizedHandler(event : Event) : void
+		{
+			if (_autoResize)
+			{
+				if (parent == stage)
+					setSize(stage.stageWidth, stage.stageHeight);
+				else
+					setSize(parent.width, parent.height);
+			}
 		}
 		
 		private function context3dCreatedHandler(event : Event) : void
 		{
-			_invalidBackBuffer = true;
 			_context3d = new Context3DResource(_stage3d.context3D);
+			
 			updateStage3D();
+			updateBackBuffer();
+			
 			dispatchEvent(new Event(Event.INIT));
 		}
 		
 		private function updateBackBuffer() : void
 		{
-			if (!_width || !_height)
-				return;
+			if (_width == 0 || _height == 0 || _stage3d == null || _stage3d.context3D == null)
+				return ;
 			
 			_invalidBackBuffer = false;
-			_stage3d.context3D.configureBackBuffer(
-				_width,
-				_height,
-				_antiAliasing,
-				true
-			);
-			_backBuffer = new RenderTarget(
-				_width,
-				_height,
-				null,
-				0,
-				_backgroundColor
-			);
+			_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
+			_backBuffer = new RenderTarget(_width, _height, null, 0, _backgroundColor);
 			
 			graphics.clear();
 			graphics.beginFill(0, 0);
@@ -393,54 +420,7 @@ package aerys.minko.render
 			else
 				_stage3d.y = upperLeft.y;
 
-			_invalidBackBuffer = true;
 			updateMask();
-		}
-		
-		private function updateStageListeners() : void
-		{
-			if (!stage)
-				return ;
-			
-			if (_autoResize)
-				stage.addEventListener(Event.RESIZE, stageResizedHandler);
-			else
-				stage.removeEventListener(Event.RESIZE, stageResizedHandler);
-			
-			if (_alwaysOnTop)
-			{
-				stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
-				stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-				stage.addEventListener(MouseEvent.CLICK, stageEventHandler);
-				stage.addEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
-				stage.addEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
-				stage.addEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
-				stage.addEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
-				stage.addEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
-				stage.addEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
-				stage.addEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
-				stage.addEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
-				stage.addEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
-				stage.addEventListener(TouchEvent.TOUCH_END, stageEventHandler);
-				stage.addEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
-			}
-			else
-			{
-				stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
-				stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-				stage.removeEventListener(MouseEvent.CLICK, stageEventHandler);
-				stage.removeEventListener(MouseEvent.DOUBLE_CLICK, stageEventHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageEventHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_MOVE, stageEventHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_OUT, stageEventHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_OVER, stageEventHandler);
-				stage.removeEventListener(MouseEvent.MOUSE_WHEEL, stageEventHandler);
-				stage.removeEventListener(MouseEvent.ROLL_OUT, stageEventHandler);
-				stage.removeEventListener(MouseEvent.ROLL_OVER, stageEventHandler);
-				stage.removeEventListener(TouchEvent.TOUCH_BEGIN, stageEventHandler);
-				stage.removeEventListener(TouchEvent.TOUCH_END, stageEventHandler);
-				stage.removeEventListener(TouchEvent.TOUCH_MOVE, stageEventHandler);
-			}
 		}
 		
 		private function stageEventHandler(event : Object) : void
@@ -463,8 +443,8 @@ package aerys.minko.render
 			if (!stage)
 				return ;
 			
-			var numChildren : int = stage.numChildren;
-			var i 			: int = 0;
+			var numChildren : uint = stage.numChildren;
+			var i 			: uint = 0;
 			
 			if (_alwaysOnTop)
 			{
@@ -492,7 +472,12 @@ package aerys.minko.render
 			else
 			{
 				for (i = 0; i < numChildren; ++i)
-					stage.getChildAt(i).mask = null;
+				{
+					var child : DisplayObject = stage.getChildAt(i);
+					
+					if (child.mask == _mask)
+						child.mask = null;
+				}
 			}
 		}
 		
