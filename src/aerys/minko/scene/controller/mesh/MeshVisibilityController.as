@@ -1,19 +1,17 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.data.MeshVisibilityDataProvider;
 	import aerys.minko.scene.node.Camera;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.FrustumCulling;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.binding.IDataProvider;
+	import aerys.minko.type.bounding.FrustumCulling;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	
-	import avmplus.USE_ITRAITS;
+	import flash.utils.Dictionary;
 	
 	/**
 	 * The MeshVisibilityController watches the Mesh and the active Camera of a Scene
@@ -108,6 +106,7 @@ package aerys.minko.scene.controller.mesh
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
+			scene.bindings.removeCallback('worldToView', worldToViewChangedHandler);
 			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
 		}
 		
@@ -164,5 +163,6 @@ package aerys.minko.scene.controller.mesh
 			
 			return clone;
 		}
+		
 	}
 }
