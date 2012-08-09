@@ -28,8 +28,8 @@ package aerys.minko.render.geometry.stream
 		private var _length				: uint						= 0;
 		
 		private var _invalidMinMax		: Boolean					= true;
-		private var _maximum			: Vector.<Number>			= null;
 		private var _minimum			: Vector.<Number>			= null;
+		private var _maximum			: Vector.<Number>			= null;
 		
 		private var _locked				: Boolean					= false;
 
@@ -260,7 +260,7 @@ package aerys.minko.render.geometry.stream
 		}
 
 		/**
-		 * The the value at the specified position in the stream.
+		 * Set the value at the specified position in the stream.
 		 * 
 		 * @param offset
 		 * @param value
