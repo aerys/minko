@@ -236,11 +236,20 @@ package aerys.minko.scene.node
 			);
 		}
 		
-		override public function clone(cloneControllers : Boolean = false) : ISceneNode
+		override public function clone() : ISceneNode
 		{
 			var clone : Mesh = new Mesh();
 			
-			clone.copyFrom(this, true, cloneControllers);
+			clone.name 		= name;
+			clone.geometry 	= _geometry;
+			
+			clone.properties = DataProvider(_properties.clone());
+			clone._bindings.copySharedProvidersFrom(_bindings);
+			
+			clone.transform.copyFrom(transform);
+			clone.material = _material;
+			
+			cloned.execute(this, clone);
 			
 			return clone;
 		}
@@ -261,30 +270,5 @@ package aerys.minko.scene.node
 				_bindings.removeProvider(transformData);
 		}
 		
-		protected function copyFrom(source 				: Mesh,
-									withBindings 		: Boolean,
-									cloneControllers 	: Boolean) : void
-		{
-			var numControllers : uint = source.numControllers;
-			
-			name 		= source.name;
-			
-			geometry 	= source._geometry;
-			properties	= DataProvider(source._properties.clone());
-			
-			_bindings.copySharedProvidersFrom(source._bindings);
-			
-			copyControllersFrom(
-				source, this, cloneControllers, new <AbstractController>[source._visibility]
-			);
-			
-			_visibility = source._visibility.clone() as MeshVisibilityController;
-			addController(_visibility);
-			
-			transform.copyFrom(source.transform);
-			material = source._material;
-			
-			source.cloned.execute(this, source);
-		}
 	}
 }

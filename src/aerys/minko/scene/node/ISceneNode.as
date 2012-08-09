@@ -2,6 +2,7 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.math.Matrix4x4;
 
 	/**
@@ -29,12 +30,19 @@ package aerys.minko.scene.node
 		function set parent(value : Group) : void;
 		
 		/**
-		 * Clone the scene node, and its children if relevant. Geometries and textures are not cloned.
+		 * Clone the scene node.
 		 * 
 		 * @return 
-		 * 
 		 */		
-		function clone(cloneControllers : Boolean = false) : ISceneNode;
+		function clone() : ISceneNode;
+		
+		/**
+		 * Recursively clone the scene node.
+		 * 
+		 * @param cloneOptions
+		 * @return 
+		 */		
+		function recursiveClone(cloneOptions : CloneOptions) : ISceneNode;
 		
 		/**
 		 * The name of the scene node. 

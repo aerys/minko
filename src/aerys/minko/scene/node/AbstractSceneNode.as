@@ -2,11 +2,17 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.clone.CloneOptions;
+	import aerys.minko.type.clone.ControllerCloneAction;
 	import aerys.minko.type.math.Matrix4x4;
 	
+	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
+	
+	import mx.messaging.AbstractConsumer;
 
 	/**
 	 * The base class to extend in order to create new scene node types.
@@ -27,7 +33,8 @@ package aerys.minko.scene.node
 		private var _transformData		: TransformDataProvider			= new TransformDataProvider();
 		private var _transform			: Matrix4x4						= new Matrix4x4();
 		
-		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
+		private var _privateControllers	: Vector.<AbstractController>	= new <AbstractController>[];
+		private var _publicControllers	: Vector.<AbstractController>	= new <AbstractController>[];
 		
 		private var _added				: Signal						= new Signal('AbstractSceneNode.added');
 		private var _removed			: Signal						= new Signal('AbstractSceneNode.removed');
@@ -127,7 +134,7 @@ package aerys.minko.scene.node
 		
 		public function get numControllers() : uint
 		{
-			return _controllers.length;
+			return _publicControllers.length;
 		}
 		
 		public function get controllerAdded() : Signal
@@ -219,7 +226,7 @@ package aerys.minko.scene.node
 		
 		public function addController(controller : AbstractController) : ISceneNode
 		{
-			_controllers.push(controller);
+			_publicControllers.push(controller);
 			
 			controller.addTarget(this);
 			_controllerAdded.execute(this, controller);
@@ -229,10 +236,10 @@ package aerys.minko.scene.node
 		
 		public function removeController(controller : AbstractController) : ISceneNode
 		{
-			var numControllers	: uint = _controllers.length - 1;
+			var numControllers	: uint = _publicControllers.length - 1;
 			
-			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
-			_controllers.length = numControllers;
+			_publicControllers[_publicControllers.indexOf(controller)] = _publicControllers[numControllers];
+			_publicControllers.length = numControllers;
 			
 			controller.removeTarget(this);
 			_controllerRemoved.execute(this, controller);
@@ -250,7 +257,7 @@ package aerys.minko.scene.node
 		
 		public function getController(index : uint) : AbstractController
 		{
-			return _controllers[index];
+			return _publicControllers[index];
 		}
 		
 		public function getControllersByType(type			: Class,
@@ -279,33 +286,106 @@ package aerys.minko.scene.node
 				   + '_' + (++_id);
 		}
 		
-		public function clone(cloneControllers : Boolean = false) : ISceneNode
+		public function clone() : ISceneNode
 		{
-			throw new Error('The method AbstractSceneNode.clone() must be overriden.');
+			throw new Error('Must be overriden');
 		}
 		
-		protected function copyControllersFrom(source 			: ISceneNode,
-											   target			: ISceneNode,
-											   cloneControllers	: Boolean,
-											   exclude			: Vector.<AbstractController> = null) : void
+		public function recursiveClone(cloneOptions : CloneOptions) : ISceneNode
 		{
-			var numControllers : uint = target.numControllers;
+			var objController	: Object;
+			var controller		: AbstractController;
+			var objNode			: Object;
 			
-			while (numControllers)
-				target.removeController(target.getController(--numControllers));
+			// fill up 2 dics with all nodes and controllers
+			var nodeMap			: Dictionary = new Dictionary();
+			var controllerMap	: Dictionary = new Dictionary();
+			listItems(root, nodeMap, controllerMap);
 			
-			numControllers = source.numControllers;
-			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
-			{
-				var controller : AbstractController = source.getController(controllerId);
-				
-				if (exclude != null && exclude.indexOf(controller) >= 0)
-					continue ;
+			// clone controllers with respect with instructions
+			cloneControllers(controllerMap, cloneOptions);
+			
+			// clone nodes.
+			for (objNode in nodeMap)
+				nodeMap[objNode] = ISceneNode(objNode).clone();
+			
+			// rebind all controller dependencies.
+			rebindControllerDependencies(controllerMap, nodeMap, cloneOptions);
+			
+			// rebuild tree
+			for (objNode in nodeMap)
+				if (objNode is Group)
+				{
+					var clone		: Group	= nodeMap[objNode];
+					var numChildren	: uint	= objNode.numChildren;
 					
-				if (cloneControllers)
-					controller = controller.clone();
+					for (var childId : uint = 0; childId < numChildren; ++childId)
+						clone.addChild(nodeMap[objNode.getChildAt(childId)]);
+				}
+			
+			// add cloned/rebinded/original controllers to clones
+			for (objNode in nodeMap)
+			{
+				var numControllers : uint = objNode.numControllers;
 				
-				target.addController(controller);
+				for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				{
+					controller = controllerMap[objNode.getController(controllerId)];
+					if (controller != null)
+						nodeMap[objNode].addController(controller);
+				}
+			}
+			
+			return nodeMap[root]; 
+		}
+		
+		private function listItems(node			: ISceneNode,
+								   nodes		: Dictionary,
+								   controllers	: Dictionary) : void
+		{
+			var numControllers	: uint = node.numControllers;
+			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
+				controllers[node.getController(controllerId)] = true;
+			
+			nodes[node] = true;
+			
+			if (node is Group)
+			{
+				var group		: Group = Group(node);
+				var numChildren	: uint	= group.numChildren;
+				
+				for (var childId : uint = 0; childId < numChildren; ++childId)
+					listItems(group.getChildAt(childId), nodes, controllers);
+			}
+		}
+		
+		private function cloneControllers(controllerMap : Dictionary, cloneOptions : CloneOptions) : void
+		{
+			for (var objController : Object in controllerMap)
+			{
+				var controller	: AbstractController = AbstractController(objController);
+				var action		: uint				 = cloneOptions.getActionForController(controller);
+				
+				if (action == ControllerCloneAction.CLONE)
+					controllerMap[controller] = controller.clone();
+				else if (action == ControllerCloneAction.REASSIGN)
+					controllerMap[controller] = controller;
+				else if (action == ControllerCloneAction.IGNORE)
+					controllerMap[controller] = null;
+			}
+		}
+		
+		private function rebindControllerDependencies(controllerMap	: Dictionary,
+													  nodeMap		: Dictionary,
+													  cloneOptions	: CloneOptions) : void
+		{
+			for (var objController : Object in controllerMap)
+			{
+				var controller	: AbstractController	= AbstractController(objController);
+				var action		: uint					= cloneOptions.getActionForController(controller);
+				
+				if (controller is IRebindableController && action == ControllerCloneAction.CLONE)
+					IRebindableController(controllerMap[controller]).rebindDependencies(nodeMap, controllerMap);
 			}
 		}
 	}

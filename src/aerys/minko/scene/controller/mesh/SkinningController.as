@@ -3,22 +3,24 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
+	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.data.SkinningDataProvider;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.render.geometry.stream.format.VertexComponent;
-	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Matrix3D;
+	import flash.utils.Dictionary;
 
 	/**
 	 * The SkinningController works on meshes, compute all the data required
@@ -27,7 +29,7 @@ package aerys.minko.scene.controller.mesh
 	 * @author Romain Gilliotte
 	 * 
 	 */
-	public final class SkinningController extends EnterFrameController
+	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{
 		use namespace minko_math;
 		
@@ -49,9 +51,7 @@ package aerys.minko.scene.controller.mesh
 		private var _dqd				: Vector.<Number>		= new <Number>[];
 		
 		/**
-		 * 
 		 * @private
-		 * 
 		 */ 
 		public function get bindShape() : Matrix4x4
 		{
@@ -59,9 +59,7 @@ package aerys.minko.scene.controller.mesh
 		}
 		
 		/**
-		 * 
 		 * @private
-		 * 
 		 */
 		public function get joints() : Vector.<Group>
 		{
@@ -72,18 +70,6 @@ package aerys.minko.scene.controller.mesh
 		{
 			return _skeletonRoot;
 		}
-		public function set skeletonRoot(value : Group) : void
-		{
-			if (value != _skeletonRoot)
-			{
-				_skeletonRoot.localToWorld.changed.remove(
-					jointLocalToWorldChangedHandler
-				);
-				
-				_skeletonRoot = value;
-				initializeJoints(getJointNames());
-			}
-		}
 
 		public function get skinningMethod() : uint
 		{
@@ -92,82 +78,44 @@ package aerys.minko.scene.controller.mesh
 
 		public function SkinningController(skinningMethod	: uint,
 										   skeletonRoot		: Group,
-										   jointNames		: Vector.<String>,
+										   joints			: Vector.<Group>,
 										   bindShape		: Matrix4x4,
 										   invBindMatrices	: Vector.<Matrix4x4>)
 		{
 			super();
 		
-			initialize(skinningMethod, skeletonRoot, jointNames, bindShape, invBindMatrices);
+			initialize(skinningMethod, skeletonRoot, joints, bindShape, invBindMatrices);
 		}
 		
 		private function initialize(skinningMethod	: uint,
 									skeletonRoot	: Group,
-									jointNames		: Vector.<String>,
+									joints			: Vector.<Group>,
 									bindShape		: Matrix4x4,
 									invBindMatrices	: Vector.<Matrix4x4>) : void
 		{
-			var numJoints 	: uint 	= jointNames.length;
+			var numJoints : uint = joints.length;
 			
 			_skinningMethod		= skinningMethod;
 			_skeletonRoot		= skeletonRoot;
 			_bindShape			= bindShape;
 			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
-			for (var i : uint = 0; i < numJoints; ++i)
-				_invBindMatrices[i] = invBindMatrices[i]._matrix;
+			_joints				= joints.slice();
+			
+			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
+			{
+				_invBindMatrices[jointId] = invBindMatrices[jointId]._matrix;
+				_joints[jointId].localToWorld.changed.add(jointLocalToWorldChangedHandler);
+			}
+			
+			if (_joints.indexOf(skeletonRoot) == -1)
+				_skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
+			
+			_isDirty = true;
 			
 			// init data provider.
 			_skinningData.method	= _skinningMethod;
 			_skinningData.numBones	= numJoints;
 			_skinningData.bindShape	= _bindShape;
-			
-			initializeJoints(jointNames);
-		}
-		
-		private function initializeJoints(jointNames : Vector.<String>) : void
-		{
-			var numJoints 	: uint	= jointNames.length;
-
-			_joints ||= new Vector.<Group>(numJoints, true);
-			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-			{
-				var jointSearch : SceneIterator = skeletonRoot.get(
-					'//group[name=\'' + jointNames[jointId] + '\']'
-				);
-				
-				if (jointSearch.length == 0)
-				{
-					throw new Error(
-						'The joint named \'' + jointNames[jointId]
-						+ '\' is not a descendant of the skeleton root named \''
-						+ skeletonRoot.name + '\'.'
-					);
-				}
-				else if (jointSearch.length > 1)
-				{
-					throw new Error(
-						'Ambiguous reference to \'' + jointNames[jointId] + '\'.'
-					);
-				}
-				
-				if (_joints[jointId] != null)
-				{
-					(_joints[jointId] as Group).localToWorld.changed.remove(
-						jointLocalToWorldChangedHandler
-					);
-				}
-				
-				var joint : Group = jointSearch[0];
-				
-				joint.localToWorld.changed.add(jointLocalToWorldChangedHandler);
-				_joints[jointId] = joint;
-			}
-			
-			_isDirty = true;
-			
-			_skeletonRoot.localToWorld.changed.add(
-				jointLocalToWorldChangedHandler
-			);
 		}
 		
 		override public function clone() : AbstractController
@@ -175,21 +123,32 @@ package aerys.minko.scene.controller.mesh
 			return new SkinningController(
 				_skinningMethod,
 				_skeletonRoot,
-				getJointNames(),
+				_joints,
 				_bindShape,
 				getInvBindMatrices()
 			);
 		}
 		
-		public function getJointNames() : Vector.<String>
+		public function rebindDependencies(nodeMap			: Dictionary, 
+										   controllerMap	: Dictionary) : void
 		{
-			var numJoints	: uint				= _joints.length;
-			var jointNames 	: Vector.<String> 	= new Vector.<String>(numJoints, true);
+			var numJoints : uint = _joints.length;
 			
-			for (var i : uint = 0; i < numJoints; ++i)
-				jointNames[i] = (_joints[i] as Group).name;
+			if (_joints.indexOf(_skeletonRoot) == -1)
+			{
+				_skeletonRoot.localToWorld.changed.remove(jointLocalToWorldChangedHandler);
+				_skeletonRoot = nodeMap[_skeletonRoot];
+				_skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
+			}
 			
-			return jointNames;
+			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
+			{
+				_joints[jointId].localToWorld.changed.remove(jointLocalToWorldChangedHandler);
+				_joints[jointId] = nodeMap[_joints[jointId]];
+				_joints[jointId].localToWorld.changed.add(jointLocalToWorldChangedHandler);
+			}
+			
+			_isDirty = true;
 		}
 		
 		public function getInvBindMatrices() : Vector.<Matrix4x4>
@@ -354,7 +313,6 @@ package aerys.minko.scene.controller.mesh
 					ny = (_matrices[int(matrixOffset + 6)] + _matrices[int(matrixOffset + 9)]) / s;
 					nz = 0.25 * s;
 				}
-				
 				
 				_dqd[quaternionOffset]			=  0.5 * ( m03 * nw + m07 * nz - m11 * ny);
 				_dqd[int(quaternionOffset + 1)]	=  0.5 * (-m03 * nz + m07 * nw + m11 * nx);

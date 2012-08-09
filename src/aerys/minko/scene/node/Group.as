@@ -341,12 +341,11 @@ package aerys.minko.scene.node
 		 * @param classObject
 		 * @param options
 		 * @return 
-		 * 
 		 */
 		public function loadClass(classObject	: Class,
-								  options		: ParserOptions	= null) : ILoader
+								  options		: ParserOptions	= null) : SceneLoader
 		{
-			var loader	: SceneLoader	= new SceneLoader(options);
+			var loader : SceneLoader = new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
 			loader.loadClass(classObject);
@@ -427,17 +426,12 @@ package aerys.minko.scene.node
 			return new SceneIterator(null, Vector.<ISceneNode>(hit));
 		}
 		
-		override public function clone(cloneControllers : Boolean = false) : ISceneNode
+		override public function clone() : ISceneNode
 		{
 			var cloned : Group = new Group();
 			
 			cloned.name = name;
 			cloned.transform.copyFrom(transform);
-			
-			for (var childId : uint = 0; childId < _numChildren; ++childId)
-				cloned.addChildAt(getChildAt(childId).clone(), childId);
-			
-			copyControllersFrom(this, cloned, cloneControllers);
 			
 			return cloned;
 		}
