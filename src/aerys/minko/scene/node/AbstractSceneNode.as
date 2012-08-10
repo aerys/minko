@@ -285,7 +285,7 @@ package aerys.minko.scene.node
 				   + '_' + (++_id);
 		}
 		
-		minko_scene function cloneNode() : ISceneNode
+		minko_scene function cloneNode() : AbstractSceneNode
 		{
 			throw new Error('Must be overriden');
 		}

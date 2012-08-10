@@ -75,7 +75,7 @@ package aerys.minko.scene.node
 			this.depth 	= depth;
 		}
 		
-		override minko_scene function cloneNode() : ISceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var s : Sprite = new Sprite(x, y, width, height, {}, depth);
 			s.material = material;

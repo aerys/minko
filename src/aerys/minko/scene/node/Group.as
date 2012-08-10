@@ -426,7 +426,7 @@ package aerys.minko.scene.node
 			return new SceneIterator(null, Vector.<ISceneNode>(hit));
 		}
 		
-		override minko_scene function cloneNode() : ISceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Group = new Group();
 			

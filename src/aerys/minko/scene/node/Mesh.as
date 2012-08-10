@@ -239,7 +239,7 @@ package aerys.minko.scene.node
 			);
 		}
 		
-		override minko_scene function cloneNode() : ISceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Mesh = new Mesh();
 			
