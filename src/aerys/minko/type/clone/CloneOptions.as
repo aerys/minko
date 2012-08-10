@@ -52,7 +52,7 @@ package aerys.minko.type.clone
 			var cloneOptions : CloneOptions = new CloneOptions();
 			
 			cloneOptions._ignoredControllerTypes.push(MeshVisibilityController, CameraController);
-			cloneOptions._defaultControllerAction = ControllerCloneAction.REASSIGN;
+			cloneOptions._defaultControllerAction = ControllerCloneAction.CLONE;
 			
 			return cloneOptions;
 		}
