@@ -30,19 +30,12 @@ package aerys.minko.scene.node
 		function set parent(value : Group) : void;
 		
 		/**
-		 * Clone the scene node.
-		 * 
-		 * @return 
-		 */		
-		function clone() : ISceneNode;
-		
-		/**
 		 * Recursively clone the scene node.
 		 * 
 		 * @param cloneOptions
 		 * @return 
 		 */		
-		function recursiveClone(cloneOptions : CloneOptions) : ISceneNode;
+		function clone(cloneOptions : CloneOptions = null) : ISceneNode;
 		
 		/**
 		 * The name of the scene node. 

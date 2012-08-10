@@ -11,9 +11,9 @@ package aerys.minko.scene.node
 	
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
-	
-	import mx.messaging.AbstractConsumer;
 
+	use namespace minko_scene;
+	
 	/**
 	 * The base class to extend in order to create new scene node types.
 	 *  
@@ -22,7 +22,6 @@ package aerys.minko.scene.node
 	 */
 	public class AbstractSceneNode implements ISceneNode
 	{
-		use namespace minko_scene;
 		
 		private static var _id			: uint							= 0;
 
@@ -286,76 +285,65 @@ package aerys.minko.scene.node
 				   + '_' + (++_id);
 		}
 		
-		public function clone() : ISceneNode
+		minko_scene function cloneNode() : ISceneNode
 		{
 			throw new Error('Must be overriden');
 		}
 		
-		public function recursiveClone(cloneOptions : CloneOptions) : ISceneNode
+		public final function clone(cloneOptions : CloneOptions = null) : ISceneNode
 		{
-			var objController	: Object;
-			var controller		: AbstractController;
-			var objNode			: Object;
+			cloneOptions ||= CloneOptions.defaultCloneOptions;
 			
 			// fill up 2 dics with all nodes and controllers
 			var nodeMap			: Dictionary = new Dictionary();
 			var controllerMap	: Dictionary = new Dictionary();
-			listItems(root, nodeMap, controllerMap);
+			listItems(cloneNode(), nodeMap, controllerMap);
 			
 			// clone controllers with respect with instructions
 			cloneControllers(controllerMap, cloneOptions);
 			
-			// clone nodes.
-			for (objNode in nodeMap)
-				nodeMap[objNode] = ISceneNode(objNode).clone();
-			
 			// rebind all controller dependencies.
 			rebindControllerDependencies(controllerMap, nodeMap, cloneOptions);
 			
-			// rebuild tree
-			for (objNode in nodeMap)
-				if (objNode is Group)
-				{
-					var clone		: Group	= nodeMap[objNode];
-					var numChildren	: uint	= objNode.numChildren;
-					
-					for (var childId : uint = 0; childId < numChildren; ++childId)
-						clone.addChild(nodeMap[objNode.getChildAt(childId)]);
-				}
-			
 			// add cloned/rebinded/original controllers to clones
-			for (objNode in nodeMap)
+			for (var objNode : Object in nodeMap)
 			{
 				var numControllers : uint = objNode.numControllers;
 				
 				for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
 				{
-					controller = controllerMap[objNode.getController(controllerId)];
+					var controller : AbstractController = controllerMap[objNode.getController(controllerId)];
 					if (controller != null)
 						nodeMap[objNode].addController(controller);
 				}
 			}
 			
-			return nodeMap[root]; 
+			return nodeMap[this];
 		}
 		
-		private function listItems(node			: ISceneNode,
+		private function listItems(clonedRoot	: ISceneNode,
 								   nodes		: Dictionary,
 								   controllers	: Dictionary) : void
 		{
-			var numControllers	: uint = node.numControllers;
+			var numControllers : uint = this.numControllers;
 			for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
-				controllers[node.getController(controllerId)] = true;
+				controllers[getController(controllerId)] = true;
 			
-			nodes[node] = true;
+			nodes[this] = clonedRoot;
 			
-			if (node is Group)
+			if (this is Group)
 			{
-				var group		: Group = Group(node);
+				var group		: Group = Group(this);
+				var clonedGroup	: Group = Group(clonedRoot);
 				var numChildren	: uint	= group.numChildren;
 				
 				for (var childId : uint = 0; childId < numChildren; ++childId)
-					listItems(group.getChildAt(childId), nodes, controllers);
+				{
+					var child		: AbstractSceneNode = AbstractSceneNode(group.getChildAt(childId));
+					var clonedChild	: AbstractSceneNode = AbstractSceneNode(clonedGroup.getChildAt(childId));
+					
+					child.listItems(clonedChild, nodes, controllers);
+				}
 			}
 		}
 		

@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
@@ -14,6 +15,8 @@ package aerys.minko.scene.node
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Ray;
 
+	use namespace minko_scene;
+	
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
 	 * Effect with specific rendering properties.
@@ -236,7 +239,7 @@ package aerys.minko.scene.node
 			);
 		}
 		
-		override public function clone() : ISceneNode
+		override minko_scene function cloneNode() : ISceneNode
 		{
 			var clone : Mesh = new Mesh();
 			
@@ -248,8 +251,6 @@ package aerys.minko.scene.node
 			
 			clone.transform.copyFrom(transform);
 			clone.material = _material;
-			
-			cloned.execute(this, clone);
 			
 			return clone;
 		}

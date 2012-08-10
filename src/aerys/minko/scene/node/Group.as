@@ -17,6 +17,8 @@ package aerys.minko.scene.node
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 
+	use namespace minko_scene;
+	
 	/**
 	 * Group objects can contain other scene nodes and applies a 3D
 	 * transformation to its descendants.
@@ -25,8 +27,6 @@ package aerys.minko.scene.node
 	 */
 	public class Group extends AbstractSceneNode
 	{
-		use namespace minko_scene;
-		
 		minko_scene var _children		: Vector.<ISceneNode>	= null;
 		minko_scene var _numChildren	: uint					= 0;
 		
@@ -426,14 +426,22 @@ package aerys.minko.scene.node
 			return new SceneIterator(null, Vector.<ISceneNode>(hit));
 		}
 		
-		override public function clone() : ISceneNode
+		override minko_scene function cloneNode() : ISceneNode
 		{
-			var cloned : Group = new Group();
+			var clone : Group = new Group();
 			
-			cloned.name = name;
-			cloned.transform.copyFrom(transform);
+			clone.name = name;
+			clone.transform.copyFrom(transform);
 			
-			return cloned;
+			for (var childId : uint = 0; childId < _numChildren; ++childId)
+			{
+				var child		: AbstractSceneNode = AbstractSceneNode(_children[childId]);
+				var clonedChild	: AbstractSceneNode = AbstractSceneNode(child.cloneNode());
+				
+				clone.addChild(clonedChild);
+			}
+			
+			return clone;
 		}
 	}
 }
