@@ -1,11 +1,13 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
+	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
@@ -33,6 +35,11 @@ package aerys.minko.scene.controller.mesh.skinning
 			_method				= method;
 			_bindShape			= bindShape;
 			_invBindMatrices	= invBindMatrices;
+			
+			Minko.log(DebugLevel.SKINNING, 
+				'Creating SkinningController with method ' + method + ' and ' 
+				+ invBindMatrices.length + ' bones.'
+			);
 		}
 		
 		public function addMesh(mesh : Mesh) : void
