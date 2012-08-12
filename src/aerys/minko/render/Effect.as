@@ -54,8 +54,10 @@ package aerys.minko.render
 		
 		public function addPass(pass : Shader) : Effect
 		{
-			var index : uint = _passes.push(pass);
+			if (hasPass(pass))
+				throw new Error('This pass is already in the effect.');
 			
+			_passes.push(pass);
 			_passesChanged.execute(this);
 			
 			return this;
