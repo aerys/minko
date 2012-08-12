@@ -4,12 +4,7 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.AnimationController;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
-	import aerys.minko.scene.controller.mesh.SkinningController;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.binding.IDataProvider;
-	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
 
 	public class CloneOptions
 	{
@@ -36,7 +31,7 @@ package aerys.minko.type.clone
 		{
 		}
 		
-		public static function get defaultCloneOptions() : CloneOptions
+		public static function get defaultOptions() : CloneOptions
 		{
 			var cloneOptions : CloneOptions = new CloneOptions();
 			

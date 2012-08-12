@@ -292,7 +292,7 @@ package aerys.minko.scene.node
 		
 		public final function clone(cloneOptions : CloneOptions = null) : ISceneNode
 		{
-			cloneOptions ||= CloneOptions.defaultCloneOptions;
+			cloneOptions ||= CloneOptions.defaultOptions;
 			
 			// fill up 2 dics with all nodes and controllers
 			var nodeMap			: Dictionary = new Dictionary();
