@@ -2,6 +2,7 @@ package aerys.minko.scene.controller.mesh.skinning
 {
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.node.Group;
@@ -127,7 +128,8 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			var numJoints	: uint = _joints.length;
 			
-			unsubscribeFromJoints();
+			if (numTargets != 0)
+				unsubscribeFromJoints();
 			
 			if (_joints.indexOf(_skeletonRoot) == -1 && nodeMap[_skeletonRoot])
 				_skeletonRoot = nodeMap[_skeletonRoot];
@@ -136,7 +138,8 @@ package aerys.minko.scene.controller.mesh.skinning
 				if (nodeMap[_joints[jointId]])
 					_joints[jointId] = nodeMap[_joints[jointId]];
 			
-			subscribeToJoints();
+			if (numTargets != 0)
+				subscribeToJoints();
 			
 			_isDirty = true;
 		}
@@ -173,6 +176,11 @@ package aerys.minko.scene.controller.mesh.skinning
 				_skinningHelper.update(_skeletonRoot, _joints);
 				_isDirty = false;
 			}
+		}
+		
+		override public function clone() : AbstractController
+		{
+			return new SkinningController(_method, _skeletonRoot, _joints, bindShape, invBindMatrices);
 		}
 	}
 }

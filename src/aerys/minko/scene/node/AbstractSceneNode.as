@@ -308,13 +308,14 @@ package aerys.minko.scene.node
 			// add cloned/rebinded/original controllers to clones
 			for (var objNode : Object in nodeMap)
 			{
-				var numControllers : uint = objNode.numControllers;
+				var node			: AbstractSceneNode = AbstractSceneNode(objNode);
+				var numControllers	: uint = node.numControllers;
 				
 				for (var controllerId : uint = 0; controllerId < numControllers; ++controllerId)
 				{
-					var controller : AbstractController = controllerMap[objNode.getController(controllerId)];
+					var controller : AbstractController = controllerMap[node.getController(controllerId)];
 					if (controller != null)
-						nodeMap[objNode].addController(controller);
+						nodeMap[node].addController(controller);
 				}
 			}
 			
