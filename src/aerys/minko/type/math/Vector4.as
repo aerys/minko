@@ -28,7 +28,7 @@ package aerys.minko.type.math
 		private static const UPDATE_NONE		: uint		= 0;
 		private static const UPDATE_LENGTH		: uint		= 1;
 		private static const UPDATE_LENGTH_SQ	: uint		= 2;
-		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
+		private static const UPDATE_ALL			: uint		= 3; // UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 		
 		private static const DATA_DESCRIPTOR	: Object	= {
 			'x'	: 'x',
@@ -147,7 +147,7 @@ package aerys.minko.type.math
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
-								w 	: Number	= 1)
+								w 	: Number	= 1.)
 		{
 			_vector.x = x;
 			_vector.y = y;
