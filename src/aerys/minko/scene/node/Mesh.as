@@ -1,5 +1,6 @@
 package aerys.minko.scene.node
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
@@ -14,6 +15,8 @@ package aerys.minko.scene.node
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Ray;
 
+	use namespace minko_scene;
+	
 	/**
 	 * Mesh objects are a visible instance of a Geometry rendered using a specific
 	 * Effect with specific rendering properties.
@@ -236,11 +239,20 @@ package aerys.minko.scene.node
 			);
 		}
 		
-		override public function clone(cloneControllers : Boolean = false) : ISceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Mesh = new Mesh();
 			
-			clone.copyFrom(this, true, cloneControllers);
+			clone.name 		= name;
+			clone.geometry 	= _geometry;
+			
+			clone.properties = DataProvider(_properties.clone());
+			clone._bindings.copySharedProvidersFrom(_bindings);
+			
+			clone.transform.copyFrom(transform);
+			clone.material = _material;
+			
+			this.cloned.execute(this, clone);
 			
 			return clone;
 		}
@@ -259,32 +271,6 @@ package aerys.minko.scene.node
 			
 			if (child === this)
 				_bindings.removeProvider(transformData);
-		}
-		
-		protected function copyFrom(source 				: Mesh,
-									withBindings 		: Boolean,
-									cloneControllers 	: Boolean) : void
-		{
-			var numControllers : uint = source.numControllers;
-			
-			name 		= source.name;
-			
-			geometry 	= source._geometry;
-			properties	= DataProvider(source._properties.clone());
-			
-			_bindings.copySharedProvidersFrom(source._bindings);
-			
-			copyControllersFrom(
-				source, this, cloneControllers, new <AbstractController>[source._visibility]
-			);
-			
-			_visibility = source._visibility.clone() as MeshVisibilityController;
-			addController(_visibility);
-			
-			transform.copyFrom(source.transform);
-			material = source._material;
-			
-			source.cloned.execute(source, this);
 		}
 	}
 }

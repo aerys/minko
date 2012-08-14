@@ -330,7 +330,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether the existing normals data should be replaced if it exists.
 		 * 
 		 */
-		public function computeNormals(streamUsage : uint, replace : Boolean = false) : void
+		public function computeNormals(streamUsage : uint, replace : Boolean = false) : Geometry
 		{
 			var indices			: Vector.<uint>		= _indexStream._data;
 			var numTriangles	: int				= _indexStream.length / 3;
@@ -397,9 +397,9 @@ package aerys.minko.render.geometry
 					
 					if (mag != 0.)
 					{
-						normals[int(i * 3)] /= mag;
-						normals[int(i * 3 + 1)] /= mag;
-						normals[int(i * 3 + 2)] /= mag;
+						normals[uint(i * 3)] /= mag;
+						normals[uint(i * 3 + 1)] /= mag;
+						normals[uint(i * 3 + 2)] /= mag;
 					}
 				}
 				
@@ -409,6 +409,8 @@ package aerys.minko.render.geometry
 					replace
 				);
 			}
+			
+			return this;
 		}
 		
 		/**
@@ -432,7 +434,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether to replace existing normals or tangents data.
 		 * 
 		 */
-		public function computeTangentSpace(streamUsage : uint, replace : Boolean = false) : void
+		public function computeTangentSpace(streamUsage : uint, replace : Boolean = false) : Geometry
 		{
 			var indices			: Vector.<uint>	= _indexStream._data;
 			var numTriangles	: int			= _indexStream.length / 3;
@@ -602,6 +604,8 @@ package aerys.minko.render.geometry
 					replace
 				);
 			}
+			
+			return this;
 		}
 		
 		private function pushVertexStream(index 		: int,
@@ -625,12 +629,12 @@ package aerys.minko.render.geometry
 				return ;
 				
 			var numStreams	: int		= _vertexStreams.length;
-			var minX		: Number	= 0.;
-			var minY		: Number	= 0.;
-			var minZ		: Number	= 0.;
-			var maxX		: Number	= 0.;
-			var maxY		: Number	= 0.;
-			var maxZ		: Number	= 0.;
+			var minX		: Number	= Number.MAX_VALUE;
+			var minY		: Number	= Number.MAX_VALUE;
+			var minZ		: Number	= Number.MAX_VALUE;
+			var maxX		: Number	= -Number.MAX_VALUE;
+			var maxY		: Number	= -Number.MAX_VALUE;
+			var maxZ		: Number	= -Number.MAX_VALUE;
 			
 			for (var i : int = 0; i < numStreams; ++i)
 			{
@@ -747,6 +751,45 @@ package aerys.minko.render.geometry
 			updateBoundingVolumes();
 
 			return this;				
+		}
+		
+		public function flipNormals(flipTangents : Boolean = true) : Geometry
+		{
+			var numStreams : uint = this.numVertexStreams;
+			
+			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
+			{
+				var vertexStream	: IVertexStream		= getVertexStream(streamId);
+				var normalsStream 	: VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.NORMAL);
+				var tangentsStream 	: VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.NORMAL);
+				
+				if (normalsStream != null)
+					invertVertexStreamComponent(normalsStream, VertexComponent.NORMAL);
+				
+				if (tangentsStream != null)
+					invertVertexStreamComponent(tangentsStream, VertexComponent.TANGENT);
+			}
+			
+			return this;
+		}
+		
+		private function invertVertexStreamComponent(vertexStream : VertexStream, component : VertexComponent) : void
+		{
+			var componentOffset	: uint				= vertexStream.format.getOffsetForComponent(component);
+			var vertexSize		: uint				= vertexStream.format.size;
+			var numVertices		: uint				= vertexStream.length;
+			var data			: Vector.<Number>	= vertexStream.lock();
+			
+			for (var i : uint = 0; i < numVertices; ++i)
+			{
+				var offset 	: uint		= i * vertexSize + componentOffset;
+				
+				data[offset] = -data[offset];
+				data[uint(offset + 1)] = -data[uint(offset + 1)];
+				data[uint(offset + 2)] = -data[uint(offset + 2)];
+			}
+			
+			vertexStream.unlock();
 		}
 	}
 }

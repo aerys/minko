@@ -175,5 +175,11 @@ package aerys.minko.type.bounding
 			vmax.y = _vertices[13] = _vertices[16] = _vertices[19] = _vertices[22] = max.y;
 			vmax.z = _vertices[8] = _vertices[11] = _vertices[14] = _vertices[17] = max.z;
 		}
+		
+		public function toString() : String
+		{
+			return '[BoundingBox=(' + _min.toString() + '), (' + _max.toString() + ')]';
+		}
+		
 	}
 }

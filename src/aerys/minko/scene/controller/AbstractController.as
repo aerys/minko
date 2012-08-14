@@ -1,12 +1,9 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	
-	import flash.display.BitmapData;
 	import flash.utils.getQualifiedClassName;
 
 	/**
@@ -55,7 +52,7 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function AbstractController(targetType 		: Class 	= null)
+		public function AbstractController(targetType : Class = null)
 		{
 			_targetType = targetType || ISceneNode;
 		}

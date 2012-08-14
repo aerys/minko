@@ -138,7 +138,10 @@ package aerys.minko.render
 				if (_localToWorld != null && _worldToScreen != null)
 				{
 					_localToWorld.transformVector(Vector4.ZERO, TMP_VECTOR4);
-					_depth = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4).z;
+					
+					var screenSpacePosition : Vector4 = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4);
+					
+					_depth = screenSpacePosition.z / screenSpacePosition.w;
 				}
 			}
 			

@@ -19,8 +19,8 @@ package aerys.minko.render.geometry.stream
 
 		private static const TMP_NUMBERS	: Vector.<Number>	= new <Number>[];
 		
-		minko_stream var _data			: Vector.<Number>	= null;
-		minko_stream var _localDispose	: Boolean			= false;
+		minko_stream var _data			: Vector.<Number>			= null;
+		minko_stream var _localDispose	: Boolean					= false;
 
 		private var _usage				: uint						= 0;
 		private var _format				: VertexFormat				= null;
@@ -28,8 +28,8 @@ package aerys.minko.render.geometry.stream
 		private var _length				: uint						= 0;
 		
 		private var _invalidMinMax		: Boolean					= true;
-		private var _maximum			: Vector.<Number>			= null;
 		private var _minimum			: Vector.<Number>			= null;
+		private var _maximum			: Vector.<Number>			= null;
 		
 		private var _locked				: Boolean					= false;
 
@@ -260,7 +260,7 @@ package aerys.minko.render.geometry.stream
 		}
 
 		/**
-		 * The the value at the specified position in the stream.
+		 * Set the value at the specified position in the stream.
 		 * 
 		 * @param offset
 		 * @param value
@@ -389,6 +389,7 @@ package aerys.minko.render.geometry.stream
 					var y	: Number 	= TMP_NUMBERS[i + 1];
 					var z	: Number 	= TMP_NUMBERS[i + 2];
 					var m	: Number 	= 1.0 / Math.sqrt(x * x + y * y + z * z);
+					
 					vertices[k]			= x * m;
 					vertices[k + 1]		= y * m;
 					vertices[k + 2]		= z * m;
