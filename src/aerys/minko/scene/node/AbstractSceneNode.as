@@ -361,6 +361,8 @@ package aerys.minko.scene.node
 					controllerMap[controller] = controller;
 				else if (action == ControllerCloneAction.IGNORE)
 					controllerMap[controller] = null;
+				else
+					throw new Error();
 			}
 		}
 		
