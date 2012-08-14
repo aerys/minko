@@ -284,7 +284,7 @@ package aerys.minko.scene.node
 			transform.copyFrom(source.transform);
 			material = source._material;
 			
-			source.cloned.execute(this, source);
+			source.cloned.execute(source, this);
 		}
 	}
 }
