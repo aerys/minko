@@ -172,7 +172,7 @@ package aerys.minko.render
 		public function set backgroundColor(value : uint) : void
 		{
 			_backgroundColor = value;
-			updateStage3D();
+			updateBackBuffer();
 		}
 		
 		/**

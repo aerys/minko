@@ -252,6 +252,8 @@ package aerys.minko.scene.node
 			clone.transform.copyFrom(transform);
 			clone.material = _material;
 			
+			this.cloned.execute(this, clone);
+			
 			return clone;
 		}
 		
@@ -270,6 +272,5 @@ package aerys.minko.scene.node
 			if (child === this)
 				_bindings.removeProvider(transformData);
 		}
-		
 	}
 }
