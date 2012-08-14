@@ -32,8 +32,7 @@ package aerys.minko.scene.node
 		private var _transformData		: TransformDataProvider			= new TransformDataProvider();
 		private var _transform			: Matrix4x4						= new Matrix4x4();
 		
-		private var _privateControllers	: Vector.<AbstractController>	= new <AbstractController>[];
-		private var _publicControllers	: Vector.<AbstractController>	= new <AbstractController>[];
+		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
 		
 		private var _added				: Signal						= new Signal('AbstractSceneNode.added');
 		private var _removed			: Signal						= new Signal('AbstractSceneNode.removed');
@@ -133,7 +132,7 @@ package aerys.minko.scene.node
 		
 		public function get numControllers() : uint
 		{
-			return _publicControllers.length;
+			return _controllers.length;
 		}
 		
 		public function get controllerAdded() : Signal
@@ -225,7 +224,7 @@ package aerys.minko.scene.node
 		
 		public function addController(controller : AbstractController) : ISceneNode
 		{
-			_publicControllers.push(controller);
+			_controllers.push(controller);
 			
 			controller.addTarget(this);
 			_controllerAdded.execute(this, controller);
@@ -235,10 +234,10 @@ package aerys.minko.scene.node
 		
 		public function removeController(controller : AbstractController) : ISceneNode
 		{
-			var numControllers	: uint = _publicControllers.length - 1;
+			var numControllers	: uint = _controllers.length - 1;
 			
-			_publicControllers[_publicControllers.indexOf(controller)] = _publicControllers[numControllers];
-			_publicControllers.length = numControllers;
+			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
+			_controllers.length = numControllers;
 			
 			controller.removeTarget(this);
 			_controllerRemoved.execute(this, controller);
@@ -256,7 +255,7 @@ package aerys.minko.scene.node
 		
 		public function getController(index : uint) : AbstractController
 		{
-			return _publicControllers[index];
+			return _controllers[index];
 		}
 		
 		public function getControllersByType(type			: Class,
