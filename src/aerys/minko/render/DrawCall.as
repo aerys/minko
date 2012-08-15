@@ -206,12 +206,12 @@ package aerys.minko.render
 			if (_vsInputComponents.indexOf(VertexComponent.TANGENT) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.TANGENT))
 			{
-				geometry.computeTangentSpace(StreamUsage.DYNAMIC);
+				geometry.computeTangentSpace();
 			}
 			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
 			{
-				geometry.computeNormals(StreamUsage.DYNAMIC);
+				geometry.computeNormals();
 			}
 		}
 		
