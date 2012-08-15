@@ -333,7 +333,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether the existing normals data should be replaced if it exists.
 		 * 
 		 */
-		public function computeNormals(streamUsage : uint = 0) : Geometry
+		public function computeNormals(streamUsage : int = -1) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
 			var indices			: Vector.<uint>	= indexStream.lock();
@@ -347,7 +347,8 @@ package aerys.minko.render.geometry
 				if (!stream.format.hasComponent(VertexComponent.XYZ))
 					throw new Error('Unable to compute normals without VertexComponent.XYZ');
 				
-				streamUsage ||= stream.getStreamByComponent(VertexComponent.XYZ).usage;
+				if (streamUsage < 0)
+					streamUsage = stream.getStreamByComponent(VertexComponent.XYZ).usage;
 					
 				for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				{
@@ -392,7 +393,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether to replace existing normals or tangents data.
 		 * 
 		 */
-		public function computeTangentSpace(streamUsage : uint = 0) : Geometry
+		public function computeTangentSpace(streamUsage : int = -1) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
 			var indices			: Vector.<uint>	= indexStream.lock();
@@ -410,7 +411,8 @@ package aerys.minko.render.geometry
 				if (!stream.format.hasComponent(VertexComponent.UV))
 					throw new Error('Unable to compute tangents without VertexComponent.UV');
 				
-				streamUsage ||= stream.getStreamByComponent(VertexComponent.XYZ).usage;
+				if (streamUsage < 0)
+					streamUsage = stream.getStreamByComponent(VertexComponent.XYZ).usage;
 				
 				for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				{
@@ -950,8 +952,8 @@ package aerys.minko.render.geometry
 		}
 		
 		public function merge(geometry			: Geometry,
-							  vertexStreamUsage : uint = 3,
-							  indexStreamUsage 	: uint = 3) : Geometry
+							  vertexStreamUsage : uint = 6,
+							  indexStreamUsage 	: uint = 6) : Geometry
 		{
 			var vertexStreamsToConcat 	: Vector.<IVertexStream> = new <IVertexStream>[];
 			

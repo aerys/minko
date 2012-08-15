@@ -25,8 +25,8 @@ package aerys.minko.render.geometry.primitive
 		public function QuadGeometry(doubleSided		: Boolean 	= false,
 									 numColumns 		: uint 		= 1,
 									 numRows 			: uint 		= 0,
-									 vertexStreamUsage	: uint		= 6,
-									 indexStreamUsage	: uint		= 6)
+									 vertexStreamUsage	: uint		= 3,
+									 indexStreamUsage	: uint		= 3)
 		{
 			numRows ||= numColumns;
 			

@@ -65,8 +65,8 @@ package aerys.minko.render.geometry.primitive
 		/**
 		 * Creates a new CubeMesh object.
 		 */
-		public function CubeGeometry(vertexStreamUsage 	: uint 	= 6,
-									 indexStreamUsage	: uint	= 6)
+		public function CubeGeometry(vertexStreamUsage 	: uint 	= 3,
+									 indexStreamUsage	: uint	= 3)
 		{
 			var vertexStream : VertexStream = VertexStream.fromPositionsAndUVs(XYZ, UV, vertexStreamUsage);
 			

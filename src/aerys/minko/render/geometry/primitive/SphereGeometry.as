@@ -24,8 +24,8 @@ package aerys.minko.render.geometry.primitive
 		public function SphereGeometry(numParallels 		: uint 		= DEFAULT_NUM_PARALLELS,
 									   numMeridians 		: uint 		= 0,
 									   withNormals			: Boolean	= true,
-									   vertexStreamUsage	: uint		= 6,
-									   indexStreamsUsage	: uint		= 6)
+									   vertexStreamUsage	: uint		= 3,
+									   indexStreamsUsage	: uint		= 3)
 		{
 			numMeridians ||= numParallels;
 

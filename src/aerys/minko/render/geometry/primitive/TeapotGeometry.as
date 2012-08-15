@@ -163,8 +163,8 @@ package aerys.minko.render.geometry.primitive
 		];
 		
 		public function TeapotGeometry(divs 				: uint 	= 10,
-									   vertexStreamUsage 	: uint 	= 6,
-									   indexStreamUsage		: uint	= 6)
+									   vertexStreamUsage 	: uint 	= 3,
+									   indexStreamUsage		: uint	= 3)
 		{
 			var indexData	: Vector.<uint>		= new Vector.<uint>();
 			var vertexData	: Vector.<Number>	= new Vector.<Number>();

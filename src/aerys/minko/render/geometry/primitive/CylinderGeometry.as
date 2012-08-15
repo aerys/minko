@@ -29,8 +29,8 @@ package aerys.minko.render.geometry.primitive
 		public function CylinderGeometry(numColumns			: uint		= DEFAULT_NUM_COLS,
 										 numRows			: uint		= DEFAULT_NUM_ROWS,
 										 generateUVs		: Boolean	= true,
-										 vertexStreamUsage	: uint		= 6,
-										 indexStreamUsage	: uint		= 6)
+										 vertexStreamUsage	: uint		= 3,
+										 indexStreamUsage	: uint		= 3)
 		{
 			
 

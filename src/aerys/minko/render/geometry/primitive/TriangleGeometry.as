@@ -15,8 +15,8 @@
 			return _instance || (_instance = new TriangleGeometry());
 		}
 		
-		public function TriangleGeometry(vertexStreamUsage 	: uint 	= 6,
-										 indexStreamUsage	: uint	= 6)
+		public function TriangleGeometry(vertexStreamUsage 	: uint 	= 3,
+										 indexStreamUsage	: uint	= 3)
 		{
 			var vertices : Vector.<Number> = new <Number>[
 				-0.5, 	0.0,	-0.5, 	0.,	0.,

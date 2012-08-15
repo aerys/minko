@@ -26,8 +26,8 @@ package aerys.minko.render.geometry.primitive
 									  arc					: Number	= Math.PI * 2.,
 									  withUVs				: Boolean	= true,
 									  withNormals			: Boolean	= true,
-									  vertexStreamUsage		: uint		= 6,
-									  indexStreamUsage		: uint		= 6)
+									  vertexStreamUsage		: uint		= 3,
+									  indexStreamUsage		: uint		= 3)
 		{
 			_radius = radius;
 			_tube = tube;
