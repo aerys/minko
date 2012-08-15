@@ -4,6 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
@@ -29,9 +30,7 @@ package aerys.minko.scene.node
 	 */
 	public class Mesh extends AbstractSceneNode
 	{
-		public static const DEFAULT_MATERIAL	: Material	= new Material(
-			new Effect(new BasicShader())
-		);
+		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		
 		private var _geometry			: Geometry					= null;
 		private var _properties			: DataProvider				= null;
