@@ -26,7 +26,7 @@ package aerys.minko.render.geometry.stream.format
 		private var _componentOffsets	: Dictionary;
 		private var _fieldOffsets		: Object;
 
-		public function get size() : uint
+		public function get vertexSize() : uint
 		{
 			return _vertexSize;
 		}

@@ -473,10 +473,10 @@ package aerys.minko.render.geometry
 			var nz					: Number 			= 0.;
 			var mag					: Number			= 0.;
 			var xyzOffset			: uint				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-			var xyzVertexSize		: uint				= xyzStream.format.size;
+			var xyzVertexSize		: uint				= xyzStream.format.vertexSize;
 			var xyzData				: Vector.<Number>	= xyzStream.lock();
 			var normalsOffset		: uint				= normalsStream.format.getOffsetForComponent(VertexComponent.NORMAL);
-			var normalsVertexSize	: uint				= normalsStream.format.size;
+			var normalsVertexSize	: uint				= normalsStream.format.vertexSize;
 			var normalsData			: Vector.<Number>	= null;
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
@@ -564,13 +564,13 @@ package aerys.minko.render.geometry
 		{
 			var numTriangles		: uint				= indices.length / 3;
 			var xyzOffset			: uint				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-			var xyzVertexSize		: uint				= xyzStream.format.size;
+			var xyzVertexSize		: uint				= xyzStream.format.vertexSize;
 			var xyzData				: Vector.<Number>	= xyzStream.lock();
 			var uvOffset			: uint				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
-			var uvVertexSize		: uint				= uvStream.format.size;
+			var uvVertexSize		: uint				= uvStream.format.vertexSize;
 			var uvData				: Vector.<Number>	= null;
 			var tangentsOffset		: uint				= tangentsStream.format.getOffsetForComponent(VertexComponent.TANGENT);
-			var tangentsVertexSize	: uint				= tangentsStream.format.size;
+			var tangentsVertexSize	: uint				= tangentsStream.format.vertexSize;
 			var tangentsData		: Vector.<Number>	= null;
 			
 			uvData = uvStream == xyzStream ? xyzData : uvStream.lock();
@@ -933,7 +933,7 @@ package aerys.minko.render.geometry
 				var vertexDatas	: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>();
 				var indexDatas	: Vector.<Vector.<uint>>	= new Vector.<Vector.<uint>>();
 				
-				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.size);
+				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.vertexSize);
 				
 				if (streamId == 0)
 				{
@@ -1013,7 +1013,7 @@ package aerys.minko.render.geometry
 		private function invertVertexStreamComponent(vertexStream : VertexStream, component : VertexComponent) : void
 		{
 			var componentOffset	: uint				= vertexStream.format.getOffsetForComponent(component);
-			var vertexSize		: uint				= vertexStream.format.size;
+			var vertexSize		: uint				= vertexStream.format.vertexSize;
 			var numVertices		: uint				= vertexStream.length;
 			var data			: Vector.<Number>	= vertexStream.lock();
 			

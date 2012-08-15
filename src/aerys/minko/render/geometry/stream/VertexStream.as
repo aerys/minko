@@ -66,7 +66,7 @@ package aerys.minko.render.geometry.stream
 
 		protected function set data(value : Vector.<Number>) : void
 		{
-			if (value && value.length != 0 && value.length % _format.size)
+			if (value && value.length != 0 && value.length % _format.vertexSize)
 				throw new Error(
 					'Invalid data: length does not match with the size of a vertex.'
 				);
@@ -125,7 +125,7 @@ package aerys.minko.render.geometry.stream
 			
 			if (forceReset)
 			{
-				var size	: uint	= format.size;
+				var size	: uint	= format.vertexSize;
 				
 				_minimum = new Vector.<Number>(size, true);
 				_maximum = new Vector.<Number>(size, true);
@@ -171,7 +171,7 @@ package aerys.minko.render.geometry.stream
 			if (index > length)
 				return false;
 
-			_data.splice(index, _format.size);
+			_data.splice(index, _format.vertexSize);
 			
 			if (_locked)
 			{
@@ -273,7 +273,7 @@ package aerys.minko.render.geometry.stream
 			
 			_data[offset] = value;
 			
-			offset %= _format.size;
+			offset %= _format.vertexSize;
 			if (value < _minimum[offset])
 			{
 				_minimum[offset] = value;
@@ -314,13 +314,13 @@ package aerys.minko.render.geometry.stream
 			
 			var numValues 	: int 	= data.length;
 
-			if (numValues % _format.size)
+			if (numValues % _format.vertexSize)
 				throw new Error('Invalid data length.');
 
 			for (var i : int = 0; i < numValues; i++)
 			{
 				var value 	: Number	= data[i];
-				var ii		: uint		= i % _format.size;
+				var ii		: uint		= i % _format.vertexSize;
 				
 				if (value < _minimum[ii])
 				{
@@ -367,7 +367,7 @@ package aerys.minko.render.geometry.stream
 				throw new Error('Vertex component \'' + component.toString() + '\' does not have a size of 3.');
 				
 			var vertexOffset	: int				= _format.getOffsetForComponent(component);
-			var vertexLength	: int				= _format.size;
+			var vertexLength	: int				= _format.vertexSize;
 			var vertices		: Vector.<Number>	= lock();
 			var numVertices		: int				= vertices.length / vertexLength;
 			var tmpLength		: int				= numVertices * 3;
@@ -426,7 +426,7 @@ package aerys.minko.render.geometry.stream
 
 		private function changedHandler(stream : VertexStream) : void
 		{
-			_length = _data.length / _format.size;
+			_length = _data.length / _format.vertexSize;
 		}
 		
 		public static function fromPositionsAndUVs(positions 	: Vector.<Number>,
@@ -483,14 +483,14 @@ package aerys.minko.render.geometry.stream
 				checkReadUsage(subVertexStream);
 				
 				componentOffsets[k]			= subvertexFormat.getOffsetForComponent(vertexComponent);
-				componentDwordsPerVertex[k]	= subvertexFormat.size;
+				componentDwordsPerVertex[k]	= subvertexFormat.vertexSize;
 				componentSizes[k]			= vertexComponent.size;
 				componentDatas[k]			= subVertexStream._data;
 			}
 			
 			// push vertex data into the new buffer.
 			var numVertices			: uint 				= source.length;
-			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>(numVertices * vertexFormat.size);
+			var newVertexStreamData	: Vector.<Number>	= new Vector.<Number>(numVertices * vertexFormat.vertexSize);
 			
 			for (var vertexId : uint = 0; vertexId < numVertices; ++vertexId)
 			{
@@ -576,14 +576,14 @@ package aerys.minko.render.geometry.stream
 			for (var k : int = 0; k < numComponents; k++)
 				nativeFormats[k] = formatOut.getComponent(k).nativeFormat;
 			
-			data = new Vector.<Number>(formatOut.size * count, true);
+			data = new Vector.<Number>(formatOut.vertexSize * count, true);
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
 					var componentOut : VertexComponent = formatOut.getComponent(componentId);
 					
-					bytes.position = start + formatIn.size * vertexId * dwordSize
+					bytes.position = start + formatIn.vertexSize * vertexId * dwordSize
 						+ formatIn.getOffsetForComponent(componentOut) * dwordSize;
 					
 					var reader : Function = null;
@@ -608,7 +608,7 @@ package aerys.minko.render.geometry.stream
 				}
 			}
 			// make sure the ByteArray position is at the end of the buffer
-			bytes.position = start + formatIn.size * count * dwordSize;
+			bytes.position = start + formatIn.vertexSize * count * dwordSize;
 			
 			stream.data = data;
 			

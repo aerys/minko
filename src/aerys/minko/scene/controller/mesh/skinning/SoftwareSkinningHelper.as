@@ -99,7 +99,7 @@ package aerys.minko.scene.controller.mesh.skinning
 				{
 					format				= realStream.format;
 					dataLength			= realData.length;
-					dwordsPerVertex		= format.size;
+					dwordsPerVertex		= format.vertexSize;
 					positionStride		= format.getOffsetForComponent(VertexComponent.XYZ);
 					normalStride		= format.getOffsetForComponent(VertexComponent.NORMAL);
 					getInfluenceStrides(format, TMP_VECTOR);

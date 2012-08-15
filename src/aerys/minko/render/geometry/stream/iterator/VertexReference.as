@@ -55,7 +55,7 @@
 				throw new Error('Unable to read data from vertex stream.');
 			
 			var format 			: VertexFormat 	= stream.format;
-			var index			: int			= _index * format.size
+			var index			: int			= _index * format.vertexSize
 												  + format.getOffsetForField(name);
 
 			return stream.get(index);
@@ -73,7 +73,7 @@
 				throw new Error('Unable to write data into vertex stream.');
 			
 			var format 			: VertexFormat 	= stream.format;
-			var index			: int			= _index * format.size
+			var index			: int			= _index * format.vertexSize
 												  + format.getOffsetForField(name);
 
 			stream.set(index, value as Number);
