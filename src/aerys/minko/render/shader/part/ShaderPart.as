@@ -1,6 +1,7 @@
 package aerys.minko.render.shader.part
 {
 	import aerys.minko.ns.minko_shader;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -21,7 +22,6 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.stream.format.VertexComponent;
 	
 	import flash.geom.Rectangle;
 
@@ -726,7 +726,27 @@ package aerys.minko.render.shader.part
 		
 		protected final function not(bool : Object) : SFloat
 		{
-			return absolute(subtract(getNode(bool), 1));
+			return equal(bool, 0);
+		}
+		
+		protected final function and(bool1 : Object, bool2 : Object, ...bools) : SFloat
+		{
+			var result : SFloat = multiply(bool1, bool2);
+			
+			for each (var bool : Object in bools)
+				result = multiply(result, bool);
+			
+			return notEqual(0, result);
+		}
+		
+		protected final function or(bool1 : Object, bool2 : Object, ...bools) : SFloat
+		{
+			var result : SFloat = add(notEqual(bool1, 0), notEqual(bool2, 0));
+			
+			for each (var bool : Object in bools)
+				result = add(result, notEqual(bool, 0));
+			
+			return notEqual(0, result);
 		}
 		
 		protected final function reflect(vector : Object, normal : Object) : SFloat

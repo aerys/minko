@@ -5,8 +5,8 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.type.binding.DataProvider;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;

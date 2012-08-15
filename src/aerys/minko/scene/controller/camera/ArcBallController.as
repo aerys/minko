@@ -251,7 +251,7 @@ package aerys.minko.scene.controller.camera
 			_mousePosition.setTo(e.stageX, e.stageY);
 		}
 		
-		private function updateNextFrameHandler(vector : Vector4, propertyName : String) : void
+		private function updateNextFrameHandler(vector : Vector4) : void
 		{
 			_update = true;
 		}

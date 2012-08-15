@@ -9,7 +9,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.*;
 	import aerys.minko.render.shader.compiler.register.*;
 	import aerys.minko.render.shader.compiler.sequence.*;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 
 	/**
 	 * @private

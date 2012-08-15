@@ -347,7 +347,7 @@ package aerys.minko.type.math
 		/**
 		 * Test wether a bounding sphere is inside, outside or spanning the planes of the frustum.
 		 *
-		 * @param mySphere The bouding sphere to test.
+		 * @param mySphere The bounding sphere to test.
 		 * @param myTransform The world transform matrix of the corresponding IObject3D.
 		 * @param myCulling The bitmask that describes the planes to test.
 		 * @return A bitmask where each plane test is store in a 4-bits value.
@@ -408,7 +408,7 @@ package aerys.minko.type.math
 		/**
 		 * Test wether a bounding sphere is inside, outside or spanning the planes of the frustum.
 		 *
-		 * @param myBox The bouding box to test.
+		 * @param myBox The bounding box to test.
 		 * @param myTransform The world transform matrix of the corresponding IObject3D.
 		 * @param myCulling The bitmask that describes the planes to test.
 		 * @return A bitmask where each plane test is store in a 4-bits value.
@@ -491,7 +491,7 @@ package aerys.minko.type.math
 		}
 
 		/**
-		 * Test both the bounding sphere and the bouding box of a IBoundedVolume object with the
+		 * Test both the bounding sphere and the bounding box of a IBoundedVolume object with the
 		 * specified 3D transform against the specified sides.
 		 *
 		 * The bounding sphere is tested first. If spanning, the bounding box is tested against

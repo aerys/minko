@@ -1,6 +1,6 @@
 package aerys.minko.scene.data
 {
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	public final class ViewportDataProvider extends DataProvider

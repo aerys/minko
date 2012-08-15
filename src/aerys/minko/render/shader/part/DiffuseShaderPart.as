@@ -1,6 +1,6 @@
 package aerys.minko.render.shader.part
 {
-	import aerys.minko.render.effect.basic.BasicProperties;
+	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.enum.SamplerFiltering;
@@ -20,7 +20,7 @@ package aerys.minko.render.shader.part
 			super(main);
 		}
 		
-		public function getDiffuse() : SFloat
+		public function getDiffuseColor() : SFloat
 		{
 			var diffuseColor : SFloat	= null;
 			

@@ -58,19 +58,24 @@ package aerys.minko.type
 			return _mouseUp;
 		}
 		
-		public function MouseManager()
-		{
-		}
 		
 		public function bind(dispatcher : IEventDispatcher) : void
 		{
 			dispatcher.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_DOWN, mouseLeftDownHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_UP, mouseLeftUpHandler);
-			dispatcher.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN, mouseRightDownHandler);
-			dispatcher.addEventListener(MouseEvent.RIGHT_MOUSE_UP, mouseRightUpHandler);
-			dispatcher.addEventListener(MouseEvent.MIDDLE_MOUSE_DOWN, mouseMiddleDownHandler);
-			dispatcher.addEventListener(MouseEvent.MIDDLE_MOUSE_UP, mouseMiddleUpHandler);
+			
+			if (MouseEvent.RIGHT_CLICK != null)
+			{
+				dispatcher.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN, mouseRightDownHandler);
+				dispatcher.addEventListener(MouseEvent.RIGHT_MOUSE_UP, mouseRightUpHandler);
+			}
+			
+			if (MouseEvent.MIDDLE_CLICK != null)
+			{
+				dispatcher.addEventListener(MouseEvent.MIDDLE_MOUSE_DOWN, mouseMiddleDownHandler);
+				dispatcher.addEventListener(MouseEvent.MIDDLE_MOUSE_UP, mouseMiddleUpHandler);
+			}
 		}
 		
 		public function unbind(dispatcher : IEventDispatcher) : void
@@ -78,10 +83,18 @@ package aerys.minko.type
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, mouseLeftDownHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, mouseLeftUpHandler);
-			dispatcher.removeEventListener(MouseEvent.RIGHT_MOUSE_DOWN, mouseRightDownHandler);
-			dispatcher.removeEventListener(MouseEvent.RIGHT_MOUSE_UP, mouseRightUpHandler);
-			dispatcher.removeEventListener(MouseEvent.MIDDLE_MOUSE_DOWN, mouseMiddleDownHandler);
-			dispatcher.removeEventListener(MouseEvent.MIDDLE_MOUSE_UP, mouseMiddleUpHandler);
+			
+			if (MouseEvent.RIGHT_CLICK != null)
+			{
+				dispatcher.removeEventListener(MouseEvent.RIGHT_MOUSE_DOWN, mouseRightDownHandler);
+				dispatcher.removeEventListener(MouseEvent.RIGHT_MOUSE_UP, mouseRightUpHandler);
+			}
+			
+			if (MouseEvent.MIDDLE_CLICK != null)
+			{
+				dispatcher.removeEventListener(MouseEvent.MIDDLE_MOUSE_DOWN, mouseMiddleDownHandler);
+				dispatcher.removeEventListener(MouseEvent.MIDDLE_MOUSE_UP, mouseMiddleUpHandler);
+			}
 		}
 		
 		private function mouseMoveHandler(event : MouseEvent) : void

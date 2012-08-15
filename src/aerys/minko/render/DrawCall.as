@@ -1,24 +1,24 @@
 package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.stream.IVertexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
+	import aerys.minko.render.geometry.stream.VertexStream;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.IBinder;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	import aerys.minko.type.stream.IVertexStream;
-	import aerys.minko.type.stream.StreamUsage;
-	import aerys.minko.type.stream.VertexStream;
-	import aerys.minko.type.stream.format.VertexComponent;
-	import aerys.minko.type.stream.format.VertexFormat;
 	
 	import flash.display3D.Context3DProgramType;
 	import flash.utils.Dictionary;
@@ -138,7 +138,10 @@ package aerys.minko.render
 				if (_localToWorld != null && _worldToScreen != null)
 				{
 					_localToWorld.transformVector(Vector4.ZERO, TMP_VECTOR4);
-					_depth = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4).z;
+					
+					var screenSpacePosition : Vector4 = _worldToScreen.transformVector(TMP_VECTOR4, TMP_VECTOR4);
+					
+					_depth = screenSpacePosition.z / screenSpacePosition.w;
 				}
 			}
 			
@@ -151,8 +154,8 @@ package aerys.minko.render
 								  sceneBindings	: DataBindings,
 								  computeDepth	: Boolean) : void
 		{
-			if (_bindings != null)
-				unsetBindings(meshBindings, sceneBindings);
+//			if (_bindings != null)
+//				unsetBindings(meshBindings, sceneBindings);
 		
 			_invalidDepth = computeDepth;
 			
@@ -162,8 +165,8 @@ package aerys.minko.render
 			setBindings(meshBindings, sceneBindings, computeDepth);
 		}
 		
-		private function unsetBindings(meshBindings		: DataBindings,
-									   sceneBindings	: DataBindings) : void
+		public function unsetBindings(meshBindings	: DataBindings,
+									  sceneBindings	: DataBindings) : void
 		{
 			for (var parameter : String in _bindings)
 			{
@@ -203,12 +206,12 @@ package aerys.minko.render
 			if (_vsInputComponents.indexOf(VertexComponent.TANGENT) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.TANGENT))
 			{
-				geometry.computeTangentSpace(StreamUsage.DYNAMIC);
+				geometry.computeTangentSpace();
 			}
 			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
 			{
-				geometry.computeNormals(StreamUsage.DYNAMIC);
+				geometry.computeNormals();
 			}
 		}
 		
@@ -339,6 +342,7 @@ package aerys.minko.render
 		
 		private function parameterChangedHandler(dataBindings	: DataBindings,
 												 property		: String,
+												 oldValue		: Object,
 												 newValue		: Object) : void
 		{
 			newValue !== null && setParameter(property, newValue);
@@ -346,12 +350,13 @@ package aerys.minko.render
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
 												 property 	: String,
-												 value 		: Matrix4x4) : void
+												 oldValue	: Matrix4x4,
+												 newValue 	: Matrix4x4) : void
 		{
 			if (property == 'worldToScreen')
-				_worldToScreen = value;
+				_worldToScreen = newValue;
 			else if (property == 'localToWorld')
-				_localToWorld = value;
+				_localToWorld = newValue;
 			
 			_invalidDepth = true;
 		}

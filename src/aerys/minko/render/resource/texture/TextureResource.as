@@ -173,16 +173,11 @@ package aerys.minko.render.resource.texture
 			{
 				if (_mipmap)
 				{
-					var level 		: int 			= 0;
-					var size		: int 			= _width > _height ? _width : _height;
+					var level 		: uint 			= 0;
+					var size		: uint 			= _width > _height ? _width : _height;
 					var transparent	: Boolean		= _bitmapData.transparent;
-					var transform 	: Matrix 		= new Matrix();
-					var tmp 		: BitmapData 	= new BitmapData(
-						size,
-						size,
-						transparent,
-						0
-					);
+					var tmp 		: BitmapData 	= new BitmapData(size, size, transparent, 0);
+					var transform 	: Matrix		= new Matrix();
 					
 					while (size >= 1)
 					{
@@ -192,6 +187,7 @@ package aerys.minko.render.resource.texture
 						transform.scale(.5, .5);
 						level++;
 						size >>= 1;
+						
 						if (tmp.transparent)
 							tmp.fillRect(tmp.rect, 0);
 					}

@@ -3,7 +3,6 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.node.mesh.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;
@@ -18,6 +17,8 @@ package aerys.minko.scene.node
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 
+	use namespace minko_scene;
+	
 	/**
 	 * Group objects can contain other scene nodes and applies a 3D
 	 * transformation to its descendants.
@@ -26,8 +27,6 @@ package aerys.minko.scene.node
 	 */
 	public class Group extends AbstractSceneNode
 	{
-		use namespace minko_scene;
-		
 		minko_scene var _children		: Vector.<ISceneNode>	= null;
 		minko_scene var _numChildren	: uint					= 0;
 		
@@ -342,12 +341,11 @@ package aerys.minko.scene.node
 		 * @param classObject
 		 * @param options
 		 * @return 
-		 * 
 		 */
 		public function loadClass(classObject	: Class,
-								  options		: ParserOptions	= null) : ILoader
+								  options		: ParserOptions	= null) : SceneLoader
 		{
-			var loader	: SceneLoader	= new SceneLoader(options);
+			var loader : SceneLoader = new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
 			loader.loadClass(classObject);
@@ -428,19 +426,22 @@ package aerys.minko.scene.node
 			return new SceneIterator(null, Vector.<ISceneNode>(hit));
 		}
 		
-		override public function clone(cloneControllers : Boolean = false) : ISceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
-			var cloned : Group = new Group();
+			var clone : Group = new Group();
 			
-			cloned.name = name;
-			cloned.transform.copyFrom(transform);
+			clone.name = name;
+			clone.transform.copyFrom(transform);
 			
 			for (var childId : uint = 0; childId < _numChildren; ++childId)
-				cloned.addChildAt(getChildAt(childId).clone(), childId);
+			{
+				var child		: AbstractSceneNode = AbstractSceneNode(_children[childId]);
+				var clonedChild	: AbstractSceneNode = AbstractSceneNode(child.cloneNode());
+				
+				clone.addChild(clonedChild);
+			}
 			
-			copyControllersFrom(this, cloned, cloneControllers);
-			
-			return cloned;
+			return clone;
 		}
 	}
 }

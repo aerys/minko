@@ -1,7 +1,7 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	public final class MeshVisibilityDataProvider implements IDataProvider

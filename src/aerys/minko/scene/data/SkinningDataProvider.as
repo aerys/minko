@@ -1,7 +1,7 @@
 package aerys.minko.scene.data
 {
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
@@ -10,7 +10,6 @@ package aerys.minko.scene.data
 		private static const DATA_DESCRIPTOR : Object = {
 			'method'		: 'skinningMethod',
 			'numBones'		: 'skinningNumBones',
-			'bindShape'		: 'skinningBindShape',
 			'maxInfluences'	: 'skinningMaxInfluences',
 			'matrices'		: 'skinningMatrices',
 			'dqN'			: 'skinningDQn',
@@ -19,11 +18,10 @@ package aerys.minko.scene.data
 		
 		private var _method				: uint				= 0;
 		private var _numBones			: uint				= 0;
-		private var _bindShape			: Matrix4x4			= null;
 		private var _maxInfluences		: uint				= 0;
-		private var _matrices			: Vector.<Number>	= new <Number>[];
-		private var _dqN				: Vector.<Number>	= new <Number>[];
-		private var _dqD				: Vector.<Number>	= new <Number>[];
+		private var _matrices			: Vector.<Number>	= null;
+		private var _dqN				: Vector.<Number>	= null;
+		private var _dqD				: Vector.<Number>	= null;
 		
 		private var _changed			: Signal			= new Signal('SkinningDataProvider.changed');
 		private var _propertyChanged	: Signal			= new Signal('SkinningDataProvider.propertyChanged');
@@ -66,21 +64,6 @@ package aerys.minko.scene.data
 		{
 			_numBones = value;
 			_changed.execute(this, 'numBones');
-		}
-		
-		public function get bindShape() : Matrix4x4
-		{
-			return _bindShape;
-		}
-		public function set bindShape(value : Matrix4x4) : void
-		{
-			if (_bindShape)
-				_bindShape.changed.remove(bindShapeChangedHandler);
-			
-			_bindShape = value;
-			_bindShape.changed.add(bindShapeChangedHandler);
-			
-			_changed.execute(this, 'bindShape');
 		}
 		
 		public function get maxInfluences() : uint
@@ -126,11 +109,6 @@ package aerys.minko.scene.data
 		public function SkinningDataProvider()
 		{
 			super();
-		}
-		
-		private function bindShapeChangedHandler(source : Matrix4x4, key : String) : void
-		{
-			_propertyChanged.execute(this, 'bindShape');
 		}
 		
 		public function clone() : IDataProvider

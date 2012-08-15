@@ -1,8 +1,8 @@
 package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.type.stream.IndexStream;
-	import aerys.minko.type.stream.StreamUsage;
+	import aerys.minko.render.geometry.stream.IndexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;

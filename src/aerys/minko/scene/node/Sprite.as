@@ -1,10 +1,13 @@
 package aerys.minko.scene.node
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.render.effect.sprite.SpriteShader;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.scene.node.mesh.geometry.primitive.BillboardsGeometry;
+	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.Effect;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.BillboardsGeometry;
+	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.sprite.SpriteShader;
+	
+	use namespace minko_scene;
 	
 	public final class Sprite extends Mesh
 	{
@@ -63,13 +66,20 @@ package aerys.minko.scene.node
 							   properties 	: Object 	= null,
 							   depth 		: Number 	= 0)
 		{
-			super(GEOM, properties, EFFECT);
+			super(GEOM, new Material(EFFECT, properties));
 			
 			this.x = x;
 			this.y = y;
 			this.width 	= width;
 			this.height = height;
 			this.depth 	= depth;
+		}
+		
+		override minko_scene function cloneNode() : AbstractSceneNode
+		{
+			var s : Sprite = new Sprite(x, y, width, height, {}, depth);
+			s.material = material;
+			return s;
 		}
 	}
 }

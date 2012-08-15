@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IWatchable;
+	import aerys.minko.type.binding.IWatchable;
 	
 	import flash.geom.Vector3D;
 
@@ -16,13 +16,19 @@ package aerys.minko.type.math
 		public static const Z_AXIS				: Vector4	= new Vector4(0., 0., 1.);
 		public static const ZERO				: Vector4	= new Vector4(0., 0., 0., 0.);
 		public static const ONE					: Vector4	= new Vector4(1., 1., 1., 1.);
+		public static const FORWARD				: Vector4	= Z_AXIS;
+		public static const BACKWARD			: Vector4	= new Vector4(0., 0., -1.);
+		public static const LEFT				: Vector4	= new Vector4(-1, 0., 0.);
+		public static const RIGHT				: Vector4	= new Vector4(1, 0., 0.);
+		public static const UP					: Vector4	= Y_AXIS;
+		public static const DOWN				: Vector4	= new Vector4(0, -1., 0.);
 
 		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
 
 		private static const UPDATE_NONE		: uint		= 0;
 		private static const UPDATE_LENGTH		: uint		= 1;
 		private static const UPDATE_LENGTH_SQ	: uint		= 2;
-		private static const UPDATE_ALL			: uint		= UPDATE_LENGTH | UPDATE_LENGTH_SQ;
+		private static const UPDATE_ALL			: uint		= 3; // UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 		
 		private static const DATA_DESCRIPTOR	: Object	= {
 			'x'	: 'x',
@@ -53,7 +59,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "x");
+					_changed.execute(this);
 			}
 		}
 		
@@ -69,7 +75,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "y");
+					_changed.execute(this);
 			}
 		}
 		
@@ -85,7 +91,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "z");
+					_changed.execute(this);
 			}
 		}
 		
@@ -101,7 +107,7 @@ package aerys.minko.type.math
 				_update = UPDATE_ALL;
 				
 				if (!_locked)
-					_changed.execute(this, "w");
+					_changed.execute(this);
 			}
 		}
 
@@ -117,7 +123,7 @@ package aerys.minko.type.math
 			return _lengthSq;
 		}
 
-		public function get length()	: Number
+		public function get length() : Number
 		{
 			if (_update & UPDATE_LENGTH)
 			{
@@ -141,7 +147,7 @@ package aerys.minko.type.math
 		public function Vector4(x 	: Number	= 0.,
 								y	: Number	= 0.,
 								z	: Number	= 0.,
-								w 	: Number	= 1)
+								w 	: Number	= 1.)
 		{
 			_vector.x = x;
 			_vector.y = y;
@@ -157,7 +163,7 @@ package aerys.minko.type.math
 		{
 			out = copy(u, out);
 
-			return out.add(v);
+			return out.incrementBy(v);
 		}
 
 		public static function subtract(u 	: Vector4,
@@ -166,7 +172,7 @@ package aerys.minko.type.math
 		{
 			out = copy(u, out);
 			
-			return out.subtract(v);
+			return out.decrementBy(v);
 		}
 
 		public static function dotProduct(u : Vector4, v : Vector4) : Number
@@ -204,22 +210,22 @@ package aerys.minko.type.math
 			return target;
 		}
 
-		public function add(vector : Vector4) : Vector4
+		public function incrementBy(vector : Vector4) : Vector4
 		{
 			_vector.incrementBy(vector._vector);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
 
-		public function subtract(vector : Vector4) : Vector4
+		public function decrementBy(vector : Vector4) : Vector4
 		{
 			_vector.decrementBy(vector._vector);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -229,7 +235,7 @@ package aerys.minko.type.math
 			_vector.scaleBy(scale);
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -241,7 +247,7 @@ package aerys.minko.type.math
 			_vector.z /= _vector.w;
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -260,7 +266,7 @@ package aerys.minko.type.math
 				_lengthSq = 1.;
 
 				_update = UPDATE_NONE;
-				_changed.execute(this, null);
+				_changed.execute(this);
 			}
 
 			return this;
@@ -277,7 +283,7 @@ package aerys.minko.type.math
 			_vector.z = x * vector._vector.y - vector._vector.x * y;
 
 			_update = UPDATE_ALL;
-			_changed.execute(this, null);
+			_changed.execute(this);
 
 			return this;
 		}
@@ -301,7 +307,7 @@ package aerys.minko.type.math
 
 				_update = UPDATE_ALL;
 				if (!_locked)
-					_changed.execute(this, null);
+					_changed.execute(this);
 			}
 
 			return this;
@@ -352,7 +358,12 @@ package aerys.minko.type.math
 		public function unlock() : void
 		{
 			_locked = false;
-			_changed.execute(this, null);
+			_changed.execute(this);
+		}
+		
+		public function clone() : Vector4
+		{
+			return new Vector4(_vector.x, _vector.y, _vector.z, _vector.w);
 		}
 	}
 }

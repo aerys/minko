@@ -6,8 +6,8 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.IDataProvider;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -82,7 +82,7 @@ package aerys.minko.scene.controller.camera
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
 		}
 		
-		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4, propertyName : String) : void
+		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4) : void
 		{
 			var cameraData			: CameraDataProvider	= _camera.cameraData;
 			var cameraWorldToScreen	: Matrix4x4				= cameraData.worldToScreen;
@@ -109,7 +109,10 @@ package aerys.minko.scene.controller.camera
 			cameraData.frustum.updateFromMatrix(cameraWorldToScreen);
 		}
 		
-		private function viewportSizeChanged(bindings : DataBindings, key : String, newValue : Object) : void
+		private function viewportSizeChanged(bindings 	: DataBindings,
+											 key 		: String,
+											 oldValue 	: Object,
+											 newValue 	: Object) : void
 		{
 			updateProjection();
 		}

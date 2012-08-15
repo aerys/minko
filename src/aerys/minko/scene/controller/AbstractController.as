@@ -1,12 +1,9 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	
-	import flash.display.BitmapData;
 	import flash.utils.getQualifiedClassName;
 
 	/**
@@ -22,7 +19,6 @@ package aerys.minko.scene.controller
 		private var _targetType		: Class					= null;
 		private var _targets		: Vector.<ISceneNode>	= new <ISceneNode>[];
 		
-		private var _ticked			: Signal				= new Signal('AbstractController.ticked');
 		private var _targetAdded	: Signal				= new Signal('AbstractController.targetAdded');
 		private var _targetRemoved	: Signal				= new Signal('AbstractController.targetRemoved');
 		
@@ -56,7 +52,7 @@ package aerys.minko.scene.controller
 			return _targetRemoved;
 		}
 		
-		public function AbstractController(targetType 		: Class 	= null)
+		public function AbstractController(targetType : Class = null)
 		{
 			_targetType = targetType || ISceneNode;
 		}
@@ -71,9 +67,9 @@ package aerys.minko.scene.controller
 			if (_targetType && !(target is _targetType))
 			{
 				throw new Error(
-					"Controller '" + getQualifiedClassName(this)
-					+ " cannot target objects from class '"
-					+ getQualifiedClassName(target) + "'."
+					'Controller \'' + getQualifiedClassName(this)
+					+ ' cannot target objects from class \''
+					+ getQualifiedClassName(target) + '\'.'
 				);
 			}
 			
@@ -114,7 +110,7 @@ package aerys.minko.scene.controller
 		
 		public function clone() : AbstractController
 		{
-			throw new Error("The method AbstractController.clone() must be overriden.");
+			throw new Error('The method AbstractController.clone() must be overriden.');
 		}
 	}
 }

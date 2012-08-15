@@ -1,7 +1,8 @@
 package aerys.minko.type.loader.parser
 {
-	import aerys.minko.render.effect.Effect;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.render.Effect;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
@@ -21,11 +22,22 @@ package aerys.minko.type.loader.parser
 		private var _loadDependencies			: Boolean	= false;
 		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
         private var _loadSkin                   : Boolean   = false;
+		private var _skinningMethod				: uint		= SkinningMethod.SHADER_DUAL_QUATERNION;
 		private var _mipmapTextures				: Boolean	= true;
 		private var _meshEffect					: Effect	= null;
 		private var _vertexStreamUsage			: uint		= 0;
 		private var _indexStreamUsage			: uint		= 0;
 		private var _parser						: Class		= null;
+		
+		public function get skinningMethod() : uint
+		{
+			return _skinningMethod;
+		}
+
+		public function set skinningMethod(value : uint) : void
+		{
+			_skinningMethod = value;
+		}
 		
 		public function get parser() : Class
 		{
@@ -113,6 +125,7 @@ package aerys.minko.type.loader.parser
 				_loadDependencies,
 				_dependencyLoaderClosure,
                 _loadSkin,
+				_skinningMethod,
 				_mipmapTextures,
 				_meshEffect,
 				_vertexStreamUsage,
@@ -124,6 +137,7 @@ package aerys.minko.type.loader.parser
 		public function ParserOptions(loadDependencies			: Boolean 	= false,
 									  dependencyLoaderClosure	: Function 	= null,
                                       loadSkin                  : Boolean 	= true,
+									  skinningMethod			: uint		= 2,
 									  mipmapTextures			: Boolean 	= true,
 									  meshEffect				: Effect 	= null,
 									  vertexStreamUsage			: uint 		= 0,
@@ -133,8 +147,9 @@ package aerys.minko.type.loader.parser
 			_loadDependencies			= loadDependencies;
 			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
             _loadSkin                   = loadSkin;
+			_skinningMethod				= skinningMethod;
 			_mipmapTextures				= mipmapTextures;
-			_meshEffect					= meshEffect || Mesh.DEFAULT_EFFECT;
+			_meshEffect					= meshEffect || Mesh.DEFAULT_MATERIAL.effect;
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;

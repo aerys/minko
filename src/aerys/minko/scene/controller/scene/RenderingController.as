@@ -3,9 +3,12 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.DrawCall;
+	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.effect.Effect;
+	import aerys.minko.render.geometry.Geometry;
+	import aerys.minko.render.geometry.primitive.QuadGeometry;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
@@ -14,14 +17,12 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
-	import aerys.minko.scene.node.mesh.geometry.Geometry;
-	import aerys.minko.scene.node.mesh.geometry.primitive.QuadGeometry;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Sort;
-	import aerys.minko.type.data.DataBindings;
-	import aerys.minko.type.data.DataProvider;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.log.DebugLevel;
 	
@@ -155,11 +156,7 @@ package aerys.minko.scene.controller.scene
 				if (!_postProcessingScene)
 				{
 					_postProcessingScene = new Scene(
-						new Mesh(
-							new QuadGeometry(),
-							null,
-							_postProcessingEffect
-						)
+						new Mesh(new QuadGeometry(), new Material(_postProcessingEffect))
 					);
 					
 					_postProcessingScene.bindings.addProvider(
@@ -170,7 +167,7 @@ package aerys.minko.scene.controller.scene
 				{
 					var screen : Mesh = Mesh(_postProcessingScene.getChildAt(0));
 					
-					screen.effect = _postProcessingEffect;
+					screen.material.effect = _postProcessingEffect;
 				}
 			}
 		}
@@ -357,7 +354,7 @@ package aerys.minko.scene.controller.scene
 											   target 	: BitmapData,
 											   time		: Number) : void
 		{
-			if (viewport.ready)
+			if (viewport.ready && viewport.visible)
 			{
 				_numTriangles = render(viewport, target);
 				Factory.sweep();
@@ -411,100 +408,41 @@ package aerys.minko.scene.controller.scene
 		
 		private function addMesh(mesh : Mesh) : void
 		{
-			// retrieve references to the data we want to use, to save some function calls
-			var meshEffect		: Effect		= mesh.effect;
-			var meshBindings	: DataBindings	= mesh.bindings;
-			var numPasses		: uint			= meshEffect.numPasses;
-			var sceneBindings	: DataBindings	= _scene.bindings;
-			
-			// iterate on meshEffect passes
-			var drawCalls : Vector.<DrawCall>	= new <DrawCall>[];
-			
-			for (var i : uint = 0; i < numPasses; ++i)
-			{
-				// fork pass if needed
-				var asShader		: Shader			= meshEffect.getPass(i);
-				var passInstance	: ShaderInstance	= asShader.fork(meshBindings, sceneBindings);
-				
-				// create drawcall
-				var drawCall		: DrawCall			= new DrawCall();
-				
-				drawCall.enabled = mesh.visible;
-				if (passInstance.program != null)
-				{
-					drawCall.configure(
-						passInstance.program,
-						mesh.geometry,
-						meshBindings,
-						sceneBindings,
-						passInstance.settings.depthSortDrawCalls
-					);
-				}
-				drawCalls[i] = drawCall;
-				
-				// retain the instance, update indexes, watch for invalidation, give to renderingList.
-				bind(passInstance, drawCall, meshBindings);
-			}
-			
-			// update indexes
-			_meshToDrawCalls[mesh]				= drawCalls;
-			_meshBindingsToMesh[meshBindings]	= mesh;
-			
-			if (!_effectToMeshes[meshEffect])
-			{
-				_effectToMeshes[meshEffect] = new <Mesh>[];
-				meshEffect.passesChanged.add(effectPassesChangedHandler);
-			}
-			
-			_effectToMeshes[meshEffect].push(mesh);
-			
-			//register to visibility change signal
 			mesh.bindings.addCallback('visible', meshVisibilityChangedHandler);
 			mesh.bindings.addCallback('insideFrustum', meshVisibilityChangedHandler);
-			mesh.effectChanged.add(meshEffectChangedHandler);
+			mesh.bindings.addCallback('effect', meshEffectChangedHandler);
+			mesh.materialChanged.add(meshMaterialChangedHandler);
 			mesh.frameChanged.add(meshFrameChangedHandler);
 			mesh.geometryChanged.add(meshGeometryChangedHandler);
+			
+			// retrieve references to the data we want to use, to save some function calls
+			var material	: Material	= mesh.material;
+			
+			if (material == null)
+				return ;
+			
+			var effect	: Effect	= material.effect;
+			
+			if (effect == null)
+				return ;
+			
+			createDrawCalls(mesh, effect);
 		}
+		
 		
 		private function removeMesh(mesh : Mesh) : void
 		{
-			// retrieve references to the data we want to use, to save some function calls
-			var meshEffect		: Effect		= mesh.effect;
-			var meshBindings	: DataBindings	= mesh.bindings;
-			
-			// retrieve drawcalls
-			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
-			var numDrawCalls	: uint				= drawCalls.length;
-			
-			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
-			{
-				// retrieve drawcall, and shaderInstance
-				var drawCall		: DrawCall			= drawCalls[drawCallId];
-				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
-				
-				unbind(passInstance, drawCall, meshBindings);
-			}
-			
-			// update indexes
-			delete _meshToDrawCalls[mesh];
-			delete _meshBindingsToMesh[meshBindings];
-			
-			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[meshEffect];
-			
-			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
-			
-			if (meshesWithSameEffect.length == 0)
-			{
-				delete _effectToMeshes[meshEffect];
-				meshEffect.passesChanged.remove(effectPassesChangedHandler);
-			}
-			
-			//remove to visibility change signal
 			mesh.bindings.removeCallback('visible', meshVisibilityChangedHandler);
 			mesh.bindings.removeCallback('insideFrustum', meshVisibilityChangedHandler);
-			mesh.effectChanged.remove(meshEffectChangedHandler);
+			mesh.bindings.removeCallback('effect', meshEffectChangedHandler);
+			mesh.materialChanged.remove(meshMaterialChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
 			mesh.geometryChanged.remove(meshGeometryChangedHandler);
+			
+			var material : Material = mesh.material;
+			
+			if (material && material.effect)
+				removeDrawCalls(mesh, material.effect);
 		}
 		
 		private function effectPassesChangedHandler(effect : Effect) : void
@@ -552,12 +490,45 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function meshEffectChangedHandler(mesh		: Mesh,
-												  oldEffect	: Effect,
-												  newEffect	: Effect) : void
+		private function meshMaterialChangedHandler(mesh		: Mesh,
+													oldMaterial	: Material,
+													newMaterial	: Material) : void
 		{
-			if (oldEffect === newEffect)
-				return;
+			updateDrawCalls(
+				mesh,
+				oldMaterial ? oldMaterial.effect : null,
+				newMaterial ? newMaterial.effect : null
+			);
+		}
+		
+		private function meshEffectChangedHandler(bindings		: DataBindings,
+												  propertyName	: String,
+												  oldEffect		: Effect,
+												  newEffect		: Effect) : void
+		{
+			updateDrawCalls(bindings.owner as Mesh, oldEffect, newEffect);
+		}
+		
+		private function updateDrawCalls(mesh 		: Mesh,
+										 oldEffect	: Effect,
+										 newEffect	: Effect) : void
+		{
+			if (newEffect == oldEffect)
+				return ;
+			
+			if (oldEffect == null)
+			{
+				createDrawCalls(mesh, newEffect);
+				
+				return ;
+			}
+			
+			if (newEffect == null)
+			{
+				removeDrawCalls(mesh, oldEffect);
+				
+				return ;
+			}
 			
 			var meshBindings	: DataBindings		= mesh.bindings;
 			var sceneBindings	: DataBindings		= _scene.bindings;
@@ -566,17 +537,19 @@ package aerys.minko.scene.controller.scene
 			// stripped down 'removeMesh' method, that unscribe everything related
 			// to the old effect and the mesh (but keep all that is related only to the mesh
 			// or only to the effect)
-			var oldNumDrawCalls	: uint					= drawCalls.length;
+			var oldNumDrawCalls	: uint	= drawCalls.length;
 			for (var oldDrawCallId : uint = 0; oldDrawCallId < oldNumDrawCalls; ++oldDrawCallId)
 			{
 				var oldDrawCall		: DrawCall			= drawCalls[oldDrawCallId];
 				var oldPassInstance	: ShaderInstance	= _drawCallToPassInstance[oldDrawCall];
+				
 				unbind(oldPassInstance, oldDrawCall, meshBindings);
 			}
 			
 			drawCalls.length = 0;
 			
 			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[oldEffect];
+			
 			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
 			if (meshesWithSameEffect.length == 0)
 			{
@@ -618,8 +591,90 @@ package aerys.minko.scene.controller.scene
 			_effectToMeshes[newEffect].push(mesh);
 		}
 		
+		private function createDrawCalls(mesh : Mesh, effect : Effect) : void
+		{
+			var meshBindings	: DataBindings	= mesh.bindings;
+			var numPasses		: uint			= effect.numPasses;
+			var sceneBindings	: DataBindings	= _scene.bindings;
+			
+			// iterate on meshEffect passes
+			var drawCalls : Vector.<DrawCall>	= new <DrawCall>[];
+			
+			for (var i : uint = 0; i < numPasses; ++i)
+			{
+				// fork pass if needed
+				var asShader		: Shader			= effect.getPass(i);
+				var passInstance	: ShaderInstance	= asShader.fork(meshBindings, sceneBindings);
+				
+				// create drawcall
+				var drawCall		: DrawCall			= new DrawCall();
+				
+				drawCall.enabled = mesh.visible;
+				if (passInstance.program != null)
+				{
+					drawCall.configure(
+						passInstance.program,
+						mesh.geometry,
+						meshBindings,
+						sceneBindings,
+						passInstance.settings.depthSortDrawCalls
+					);
+				}
+				drawCalls[i] = drawCall;
+				
+				// retain the instance, update indexes, watch for invalidation, give to renderingList.
+				bind(passInstance, drawCall, meshBindings);
+			}
+			
+			// update indexes
+			_meshToDrawCalls[mesh]				= drawCalls;
+			_meshBindingsToMesh[meshBindings]	= mesh;
+			
+			if (!_effectToMeshes[effect])
+			{
+				_effectToMeshes[effect] = new <Mesh>[];
+				effect.passesChanged.add(effectPassesChangedHandler);
+			}
+			
+			_effectToMeshes[effect].push(mesh);
+		}
+		
+		private function removeDrawCalls(mesh : Mesh, effect : Effect) : void
+		{
+			var meshEffect		: Effect		= mesh.material.effect;
+			var meshBindings	: DataBindings	= mesh.bindings;
+			
+			// retrieve drawcalls
+			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			var numDrawCalls	: uint				= drawCalls.length;
+			
+			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
+			{
+				// retrieve drawcall, and shaderInstance
+				var drawCall		: DrawCall			= drawCalls[drawCallId];
+				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
+				
+				unbind(passInstance, drawCall, meshBindings);
+			}
+			
+			// update indexes
+			delete _meshToDrawCalls[mesh];
+			delete _meshBindingsToMesh[meshBindings];
+			
+			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[meshEffect];
+			
+			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
+			
+			if (meshesWithSameEffect.length == 0)
+			{
+				delete _effectToMeshes[meshEffect];
+				meshEffect.passesChanged.remove(effectPassesChangedHandler);
+			}
+		}
+		
 		private function meshVisibilityChangedHandler(bindings		: DataBindings,
 													  propertyName	: String,
+													  oldValue		: Object,
 													  newValue		: Object) : void
 		{
 			var mesh			: Mesh 				= bindings.owner as Mesh;
@@ -774,6 +829,8 @@ package aerys.minko.scene.controller.scene
 		{
 			var sceneBindings	: DataBindings	= _scene.bindings;
 			
+			drawCall.unsetBindings(meshBindings, sceneBindings);
+			
 			// remove callback on binding changes
 			var signature		: Signature		= passInstance.signature;
 			var numKeys			: uint			= signature.numKeys;
@@ -812,6 +869,7 @@ package aerys.minko.scene.controller.scene
 		
 		private function bindingsPropertyChangedHandler(meshBindings 	: DataBindings,
 														propertyName	: String,
+														oldValue		: Object,
 														newValue		: Object) : void
 		{
 			var changes : Vector.<String>	= _stashedPropertyChanges[meshBindings];

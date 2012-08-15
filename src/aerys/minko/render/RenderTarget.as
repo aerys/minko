@@ -29,9 +29,7 @@ package aerys.minko.render
 		public function set width(value : uint) : void
 		{
 			_width = value;
-			
-			if (_resource)
-				_resource.setSize(value, _height);
+			_resource.setSize(value, _height);
 		}
 		
 		public function get height() : uint
@@ -41,9 +39,7 @@ package aerys.minko.render
 		public function set height(value : uint) : void
 		{
 			_height = value;
-			
-			if (_resource)
-				_resource.setSize(_width, value);
+			_resource.setSize(_width, value);
 		}
 		
 		public function get textureResource() : ITextureResource

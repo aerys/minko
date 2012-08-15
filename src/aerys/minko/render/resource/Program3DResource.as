@@ -6,7 +6,7 @@ package aerys.minko.render.resource
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;

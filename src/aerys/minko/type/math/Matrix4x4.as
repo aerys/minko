@@ -3,7 +3,7 @@ package aerys.minko.type.math
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.type.Factory;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.IWatchable;
+	import aerys.minko.type.binding.IWatchable;
 	
 	import flash.geom.Matrix3D;
 	import flash.geom.Utils3D;
@@ -11,7 +11,7 @@ package aerys.minko.type.math
 
 	use namespace minko_math;
 		
-	public final class Matrix4x4 implements IWatchable
+	public class Matrix4x4 implements IWatchable
 	{
 		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
 		private static const RAD2DEG			: Number			= 180. / Math.PI;
@@ -77,7 +77,6 @@ package aerys.minko.type.math
 		}
 		public function set rotationY(value : Number) : void
 		{
-			trace('set', value);
 			setRotation(NaN, value, NaN);
 		}
 		
@@ -161,7 +160,7 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(TMP_VECTOR);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 		}
 		
 		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
@@ -169,7 +168,7 @@ package aerys.minko.type.math
 			_matrix.copyFrom(matrix._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -187,16 +186,17 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function pop() : Matrix4x4
+		public function pop(restore : Boolean = true) : Matrix4x4
 		{
 			if (_numPushes == 0)
 				return this;
 			
 			_numPushes--;
-			_matrix.copyRawDataFrom(_data, _numPushes * 16);
+			if (restore)
+				_matrix.copyRawDataFrom(_data, _numPushes * 16);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -206,7 +206,7 @@ package aerys.minko.type.math
 			_matrix.prepend(m._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -216,7 +216,7 @@ package aerys.minko.type.math
 			_matrix.append(m._matrix);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -232,7 +232,7 @@ package aerys.minko.type.math
 			);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -244,7 +244,7 @@ package aerys.minko.type.math
 			_matrix.appendScale(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -254,7 +254,7 @@ package aerys.minko.type.math
 			_matrix.appendScale(scale, scale, scale);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -266,7 +266,7 @@ package aerys.minko.type.math
 			_matrix.appendTranslation(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -280,7 +280,7 @@ package aerys.minko.type.math
 									pivotPoint ? pivotPoint._vector : null);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -292,7 +292,7 @@ package aerys.minko.type.math
 			_matrix.prependScale(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -302,7 +302,7 @@ package aerys.minko.type.math
 			_matrix.prependScale(scale, scale, scale);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -314,7 +314,7 @@ package aerys.minko.type.math
 			_matrix.prependTranslation(x, y, z);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -355,7 +355,7 @@ package aerys.minko.type.math
 			_matrix.identity();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -365,7 +365,7 @@ package aerys.minko.type.math
 			_matrix.invert();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -375,7 +375,7 @@ package aerys.minko.type.math
 			_matrix.transpose();
 
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -416,27 +416,55 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(input, offset, transposed);
 
 			if (!_locked)
-				_changed.execute(this, null);
-
-			return this;
-		}
-
-		public function pointAt(pos	: Vector4,
-								at	: Vector4	= null,
-								up	: Vector4	= null) : Matrix4x4
-		{
-			_matrix.pointAt(
-				pos._vector,
-				at ? at._vector : null,
-				up ? up._vector : null
-			);
-			
-			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
 		
+		public function getColumn(column : uint, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			_matrix.copyColumnTo(column, out._vector);
+			
+			if (!out.locked)
+				out.changed.execute(out);
+			
+			return out;
+		}
+		
+		public function setColumn(column : uint, value : Vector4) : Matrix4x4
+		{
+			_matrix.copyColumnFrom(column, value._vector);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
+		public function getRow(row : uint, out : Vector4 = null) : Vector4
+		{
+			out ||= new Vector4();
+			
+			_matrix.copyColumnTo(row, out._vector);
+			
+			if (!out.locked)
+				out.changed.execute(out);
+			
+			return out;
+		}		
+		
+		public function setRow(row : uint, value : Vector4) : Matrix4x4
+		{
+			_matrix.copyRowFrom(row, value._vector);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+
 		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
 		{
 			if (withScale)
@@ -461,7 +489,7 @@ package aerys.minko.type.math
 			}
 						
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 
 			return this;
 		}
@@ -482,7 +510,7 @@ package aerys.minko.type.math
 			output ||= new Vector4();
 			_matrix.copyColumnTo(3, output._vector);
 			
-			output.changed.execute(output, null);
+			output.changed.execute(output);
 			
 			return output;
 		}
@@ -501,7 +529,7 @@ package aerys.minko.type.math
 			_matrix.copyColumnFrom(3, position._vector);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -532,7 +560,7 @@ package aerys.minko.type.math
 			_matrix.recompose(components);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -564,7 +592,7 @@ package aerys.minko.type.math
 			_matrix.recompose(components);
 			
 			if (!_locked)
-				_changed.execute(this, null);
+				_changed.execute(this);
 			
 			return this;
 		}
@@ -638,7 +666,7 @@ package aerys.minko.type.math
 		public function unlock() : Matrix4x4
 		{
 			_locked = false;
-			_changed.execute(this, null);
+			_changed.execute(this);
 			
 			return this;
 		}
@@ -750,9 +778,15 @@ package aerys.minko.type.math
 		
 		public function lookAt(target	: Vector4,
 							   position	: Vector4	= null,
-							   up		: Vector4 	= null) : Matrix4x4
+							   up		: Vector4	= null) : Matrix4x4
 		{
-			return view(position || getTranslation(), target, up).invert();
+			view(
+				position || transformVector(Vector4.ZERO),
+				target,
+				up || deltaTransformVector(Vector4.Y_AXIS)
+			);
+			
+			return invert();
 		}
 		
 		/**

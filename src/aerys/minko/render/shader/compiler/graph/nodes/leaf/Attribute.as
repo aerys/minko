@@ -3,7 +3,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	/**
 	 * @private

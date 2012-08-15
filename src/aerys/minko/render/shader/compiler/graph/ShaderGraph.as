@@ -14,7 +14,7 @@ package aerys.minko.render.shader.compiler.graph
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
 	import aerys.minko.type.log.DebugLevel;
-	import aerys.minko.type.stream.format.VertexComponent;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;

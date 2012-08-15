@@ -3,12 +3,13 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.MeshVisibilityDataProvider;
 	import aerys.minko.scene.node.Camera;
+	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.mesh.Mesh;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.bounding.FrustumCulling;
-	import aerys.minko.type.data.DataBindings;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
+
 	
 	/**
 	 * The MeshVisibilityController watches the Mesh and the active Camera of a Scene
@@ -109,13 +110,13 @@ package aerys.minko.scene.controller.mesh
 		
 		private function worldToViewChangedHandler(bindings		: DataBindings,
 												   propertyName	: String,
+												   oldValue		: Matrix4x4,
 												   newValue		: Matrix4x4) : void
 		{
 			testCulling();
 		}
 		
-		private function meshLocalToWorldChangedHandler(transform	: Matrix4x4,
-														property	: String) : void
+		private function meshLocalToWorldChangedHandler(transform	: Matrix4x4) : void
 		{
 			testCulling();
 		}
@@ -160,5 +161,6 @@ package aerys.minko.scene.controller.mesh
 			
 			return clone;
 		}
+		
 	}
 }

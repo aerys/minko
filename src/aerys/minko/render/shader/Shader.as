@@ -9,7 +9,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.type.binding.DataBindings;
 	
 	import flash.utils.getQualifiedClassName;
 	
@@ -192,7 +192,7 @@ package aerys.minko.render.shader
 		 */
 		protected function initializeSettings(settings : ShaderSettings) : void
 		{
-//			throw new Error("The method 'initializeSettings' must be implemented.");
+			// nothing
 		}
 		
 		/**

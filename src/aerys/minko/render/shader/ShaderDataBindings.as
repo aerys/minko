@@ -1,8 +1,12 @@
 package aerys.minko.render.shader
 {
+	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
-	import aerys.minko.type.data.DataBindings;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
+	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
+	import aerys.minko.type.binding.DataBindings;
 
 	/**
 	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.
@@ -25,17 +29,30 @@ package aerys.minko.render.shader
 			_signatureFlags = signatureFlags;
 		}
 		
-		public function getParameter(name : String, size : uint) : SFloat
+		public function getParameter(name			: String,
+									 size			: uint,
+									 defaultValue	: Object = null) : SFloat
 		{
+			if (defaultValue != null && !propertyExists(name))
+			{
+				var constantValue : Vector.<Number> = new Vector.<Number>();
+				Serializer.serializeKnownLength(defaultValue, constantValue, 0, size);
+				return new SFloat(new Constant(constantValue));
+			}
+			
 			return new SFloat(new BindableConstant(name, size));
 		}
 		
-		public function getTextureParameter(bindingName	: String,
-											filter		: uint = 1,
-											mipmap		: uint = 0,
-											wrapping	: uint = 1,
-											dimension	: uint = 0) : SFloat
+		public function getTextureParameter(bindingName		: String,
+											filter			: uint				= 1,
+											mipmap			: uint				= 0,
+											wrapping		: uint				= 1,
+											dimension		: uint				= 0,
+											defaultValue	: TextureResource	= null) : SFloat
 		{
+			if (defaultValue != null && !propertyExists(bindingName))
+				return new SFloat(new Sampler(defaultValue, filter, mipmap, wrapping, dimension));
+			
 			return new SFloat(
 				new BindableSampler(bindingName, filter, mipmap, wrapping, dimension)
 			);
