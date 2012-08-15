@@ -4,6 +4,7 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.GeometrySanitizer;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
@@ -161,8 +162,9 @@ package aerys.minko.render.geometry.primitive
 			new Vector3D(1.5, -0.84, 0.075), 		new Vector3D(0.798, -1.425, 0.0),		new Vector3D(1.425, -0.798, 0.0)
 		];
 		
-		public function TeapotGeometry(divs 		: uint 	= 10,
-									   streamsUsage : uint 	= 0)
+		public function TeapotGeometry(divs 				: uint 	= 10,
+									   vertexStreamUsage 	: uint 	= 6,
+									   indexStreamUsage		: uint	= 6)
 		{
 			var indexData	: Vector.<uint>		= new Vector.<uint>();
 			var vertexData	: Vector.<Number>	= new Vector.<Number>();
@@ -187,9 +189,9 @@ package aerys.minko.render.geometry.primitive
 			
 			super(
 				new <IVertexStream>[
-					new VertexStream(streamsUsage, VertexFormat.XYZ, vertexData)
+					new VertexStream(vertexStreamUsage, VertexFormat.XYZ, vertexData)
 				],
-				new IndexStream(streamsUsage, indexData)
+				new IndexStream(indexStreamUsage, indexData)
 			);
 			
 			if (divs < 1)

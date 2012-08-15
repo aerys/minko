@@ -10,8 +10,8 @@ package aerys.minko.render.geometry.primitive
 	public class ConeGeometry extends Geometry
 	{
 		public function ConeGeometry(numSegments		: uint	= 10,
-									 vertexStreamUsage	: uint	= StreamUsage.STATIC,
-									 indexStreamUsage	: uint	= StreamUsage.STATIC)
+									 vertexStreamUsage	: uint	= 6,
+									 indexStreamUsage	: uint	= 6)
 		{
 			super(
 				getVertexStreams(numSegments, vertexStreamUsage),

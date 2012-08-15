@@ -2,6 +2,7 @@ package aerys.minko.render.geometry.primitive
 {
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
+	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 
@@ -64,17 +65,15 @@ package aerys.minko.render.geometry.primitive
 		/**
 		 * Creates a new CubeMesh object.
 		 */
-		public function CubeGeometry(vertexStreamUsage : uint = StreamUsage.STATIC)
+		public function CubeGeometry(vertexStreamUsage 	: uint 	= 6,
+									 indexStreamUsage	: uint	= 6)
 		{
-			super(getVertexStreams(vertexStreamUsage));
+			var vertexStream : VertexStream = VertexStream.fromPositionsAndUVs(XYZ, UV, vertexStreamUsage);
+			
+			super(
+				new <IVertexStream>[vertexStream],
+				new IndexStream(indexStreamUsage, IndexStream.dummyData(vertexStream.length, 0))
+			);
 		}
-		
-		private function getVertexStreams(vertexStreamUsage : uint) : Vector.<IVertexStream>
-		{
-			return new <IVertexStream>[
-				VertexStream.fromPositionsAndUVs(XYZ, UV, vertexStreamUsage)
-			];	
-		}
-
 	}
 }

@@ -3,6 +3,7 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
+	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 
@@ -21,16 +22,26 @@ package aerys.minko.render.geometry.primitive
 			return _instanceDoubleSided || (_instanceDoubleSided = new QuadGeometry(true));
 		}
 		
-		public function QuadGeometry(doubleSided	: Boolean 	= false,
-									 numColumns 	: uint 		= 1,
-									 numRows 		: uint 		= 0,
-									 streamsUsage	: uint		= 0)
+		public function QuadGeometry(doubleSided		: Boolean 	= false,
+									 numColumns 		: uint 		= 1,
+									 numRows 			: uint 		= 0,
+									 vertexStreamUsage	: uint		= 6,
+									 indexStreamUsage	: uint		= 6)
 		{
-			var vertices 	: Vector.<Number> 	= new Vector.<Number>();
-			var indices 	: Vector.<uint> 	= new Vector.<uint>();
-
 			numRows ||= numColumns;
-
+			
+			super(
+				new <IVertexStream>[buildVertexStream(numColumns, numRows, vertexStreamUsage)],
+				buildIndexStream(doubleSided, numColumns, numRows, indexStreamUsage)
+			);
+		}
+		
+		private function buildVertexStream(numColumns			: uint,
+										   numRows				: uint,
+										   vertexStreamUsage	: uint) : VertexStream
+		{
+			var vertices 	: Vector.<Number> 	= new <Number>[];
+			
 			for (var y : int = 0; y <= numRows; y++)
 			{
 				for (var x : int = 0; x <= numColumns; x++)
@@ -41,10 +52,20 @@ package aerys.minko.render.geometry.primitive
 					);
 				}
 			}
+			
+			return new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
+		}
 
-			for (y = 0; y < numRows; y++)
+		private function buildIndexStream(doubleSided		: Boolean,
+										  numColumns		: uint,
+										  numRows			: uint,
+										  indexStreamUsage	: uint) : IndexStream
+		{
+			var indices	: Vector.<uint>	= new <uint>[];
+			
+			for (var y : uint = 0; y < numRows; y++)
 			{
-				for (x = 0; x < numColumns; x++)
+				for (var x : uint = 0; x < numColumns; x++)
 				{
 					indices.push(
 						x + (numColumns + 1) * y,
@@ -56,21 +77,11 @@ package aerys.minko.render.geometry.primitive
 					);
 				}
 			}
-
+			
 			if (doubleSided)
 				indices = indices.concat(indices.concat().reverse());
 			
-			var vstream : VertexStream = new VertexStream(
-				streamsUsage,
-				VertexFormat.XYZ_UV,
-				vertices
-			);
-			
-			super(
-				new <IVertexStream>[vstream],
-				new IndexStream(streamsUsage, indices)
-			);
+			return new IndexStream(indexStreamUsage, indices);
 		}
-
 	}
 }
