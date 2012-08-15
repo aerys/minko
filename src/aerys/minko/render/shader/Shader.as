@@ -192,7 +192,7 @@ package aerys.minko.render.shader
 		 */
 		protected function initializeSettings(settings : ShaderSettings) : void
 		{
-//			throw new Error("The method 'initializeSettings' must be implemented.");
+			// nothing
 		}
 		
 		/**
