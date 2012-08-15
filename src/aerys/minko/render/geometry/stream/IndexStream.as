@@ -17,6 +17,9 @@ package aerys.minko.render.geometry.stream
 		private var _resource	: IndexBuffer3DResource	= null;
 		private var _length		: uint					= 0;
 		
+		private var _hasChanged	: Boolean				= false;
+		private var _locked		: Boolean				= false;
+		
 		private var _changed	: Signal				= new Signal('IndexStream.changed');
 
 		public function get usage() : uint
@@ -57,7 +60,11 @@ package aerys.minko.render.geometry.stream
 		minko_stream function invalidate() : void
 		{
 			_length = _data.length;
-			_changed.execute(this);
+			
+			if (_locked)
+				_hasChanged = true;
+			else
+				_changed.execute(this);
 		}
 
 		private function initialize(indices : Vector.<uint>,
@@ -201,12 +208,30 @@ package aerys.minko.render.geometry.stream
 			_resource.dispose();
 		}
 		
+		public function lock() : Vector.<uint>
+		{
+			checkReadUsage(this);
+			checkWriteUsage(this);
+			
+			_hasChanged = false;
+			_locked = true;
+			
+			return _data;
+		}
+		
+		public function unlock(hasChanged : Boolean = true) : void
+		{
+			if (_hasChanged && hasChanged)
+				_changed.execute(this);
+			
+			_hasChanged = false;
+		}
+		
 		private static function checkReadUsage(stream : IndexStream) : void
 		{
 			if (!(stream._usage & StreamUsage.READ))
 				throw new Error(
-					'Unable to read from vertex stream: stream usage '
-					+ 'is not set to StreamUsage.READ.'
+					'Unable to read from vertex stream: stream usage is not set to StreamUsage.READ.'
 				);
 		}
 		
@@ -214,12 +239,12 @@ package aerys.minko.render.geometry.stream
 		{
 			if (!(stream._usage & StreamUsage.WRITE))
 				throw new Error(
-					'Unable to write in vertex stream: stream usage '
-					+ 'is not set to StreamUsage.WRITE.'
+					'Unable to write in vertex stream: stream usage is not set to StreamUsage.WRITE.'
 				);
 		}
 		
-		public static function dummyData(size : uint, offset : uint = 0) : Vector.<uint>
+		public static function dummyData(size 	: uint,
+										 offset : uint = 0) : Vector.<uint>
 		{
 			var indices : Vector.<uint> = new Vector.<uint>(size);
 			
