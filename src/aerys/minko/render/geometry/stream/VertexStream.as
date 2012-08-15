@@ -223,6 +223,7 @@ package aerys.minko.render.geometry.stream
 			if (_localDispose)
 				throw new Error('Cannot lock stream data which is already disposed.');
 			
+			checkReadUsage(this);
 			checkWriteUsage(this);
 			
 			_locked = true;
@@ -237,7 +238,7 @@ package aerys.minko.render.geometry.stream
 		 * signal is called only if the bounds of the stream actually changed.
 		 * 
 		 */
-		public function unlock() : void
+		public function unlock(hasChanged : Boolean = true) : void
 		{
 			if (!_locked)
 				throw new Error('Cannot unlock a stream that is not locked.');
@@ -247,7 +248,7 @@ package aerys.minko.render.geometry.stream
 			_locked = false;
 			_invalidMinMax = true;
 			
-			if (_dataHasChanged)
+			if (_dataHasChanged && hasChanged)
 			{
 				_dataHasChanged = false;
 				_changed.execute(this);
@@ -255,7 +256,7 @@ package aerys.minko.render.geometry.stream
 			
 			if (invalidMinMax)
 				updateMinMax();
-			if (_boundsHaveChanged)
+			if (_boundsHaveChanged && hasChanged)
 				_boundsChanged.execute(this);
 		}
 
