@@ -393,7 +393,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether to replace existing normals or tangents data.
 		 * 
 		 */
-		public function computeTangentSpace(streamUsage : int = -1) : Geometry
+		public function computeTangentSpace(computeNormals : Boolean = true, streamUsage : int = -1) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
 			var indices			: Vector.<uint>	= indexStream.lock();
@@ -434,7 +434,7 @@ package aerys.minko.render.geometry
 							new Vector.<Number>(numVertices * 6)
 						);
 					}
-					else if (!hasNormals)
+					else if (!hasNormals && computeNormals)
 					{
 						normalsStream = new VertexStream(
 							streamUsage,
@@ -451,7 +451,9 @@ package aerys.minko.render.geometry
 						);
 					}
 					
-					fillNormalsData(indices, normalsStream, xyzStream, numVertices);
+					if (computeNormals)
+						fillNormalsData(indices, normalsStream, xyzStream, numVertices);
+					
 					fillTangentsData(indices, tangentsStream, xyzStream, uvStream, numVertices);
 					
 					if (!hasNormals)
