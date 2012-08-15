@@ -21,14 +21,14 @@ package aerys.minko.render.geometry.stream.format
 			VertexComponent.ST
 		);
 
-		private var _dwordsPerVertex	: int;
+		private var _vertexSize			: uint;
 		private var _components			: Vector.<VertexComponent>;
 		private var _componentOffsets	: Dictionary;
 		private var _fieldOffsets		: Object;
 
-		public function get size() : int
+		public function get size() : uint
 		{
-			return _dwordsPerVertex;
+			return _vertexSize;
 		}
 		
 		public function get numComponents() : uint
@@ -38,10 +38,10 @@ package aerys.minko.render.geometry.stream.format
 
 		public function VertexFormat(...components)
 		{
-			_dwordsPerVertex	= 0
-			_components			= new Vector.<VertexComponent>();
+			_vertexSize			= 0
+			_components			= new <VertexComponent>[];
 			_componentOffsets	= new Dictionary();
-			_fieldOffsets		= new Object()
+			_fieldOffsets		= {};
 
 			if (components)
 				initialize(components);
@@ -64,12 +64,12 @@ package aerys.minko.render.geometry.stream.format
 			}
 
 			_components.push(component);
-			_componentOffsets[component] = _dwordsPerVertex;
+			_componentOffsets[component] = _vertexSize;
 
 			for (var fieldName : String in component.offsets)
-				_fieldOffsets[fieldName] = _dwordsPerVertex + component.offsets[fieldName];
+				_fieldOffsets[fieldName] = _vertexSize + component.offsets[fieldName];
 
-			_dwordsPerVertex += component.size;
+			_vertexSize += component.size;
 		}
 
 		public function removeComponent(component : VertexComponent) : void
@@ -102,7 +102,7 @@ package aerys.minko.render.geometry.stream.format
 					_fieldOffsets[otherFieldName] -= dwords;
 			}
 
-			_dwordsPerVertex -= dwords;
+			_vertexSize -= dwords;
 		}
 
 		/**
@@ -156,7 +156,7 @@ package aerys.minko.render.geometry.stream.format
 			var clone	: VertexFormat 	= new VertexFormat();
 			var key 	: Object		= null;
 
-			clone._dwordsPerVertex	= _dwordsPerVertex;
+			clone._vertexSize	= _vertexSize;
 			clone._components		= _components.slice()
 			clone._componentOffsets	= new Dictionary();
 			clone._fieldOffsets		= new Object();
