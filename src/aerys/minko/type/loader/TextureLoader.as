@@ -21,13 +21,13 @@ package aerys.minko.type.loader
 	{
 		private static const EMPTY_BITMAPDATA	: BitmapData	= new BitmapData(1, 1, false, 0);
 		
-		private var _progress			: Signal;
-		private var _error				: Signal;
-		private var _complete			: Signal;
+		private var _mipMapping	: Boolean;
 		
-		private var _isComplete			: Boolean;
+		private var _progress	: Signal;
+		private var _error		: Signal;
+		private var _complete	: Signal;
 		
-		private var _mipmap				: Boolean;
+		private var _isComplete	: Boolean;
 		
 		protected var _textureResource	: TextureResource;
 		
@@ -58,10 +58,15 @@ package aerys.minko.type.loader
 		
 		public function TextureLoader(enableMipmapping : Boolean = true)
 		{
-			_mipmap				= enableMipmapping;
+			_mipMapping				= enableMipmapping;
 			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			_textureResource 	= new TextureResource();
-			_textureResource.setContentFromBitmapData(EMPTY_BITMAPDATA, enableMipmapping);
+			_textureResource.setContentFromBitmapData(EMPTY_BITMAPDATA, _mipMapping);
 			
 			_isComplete 		= false;
 			_error				= new Signal('TextureLoader.error');
@@ -107,7 +112,7 @@ package aerys.minko.type.loader
 				if (bitmapData == null)
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
-				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
+				_textureResource.setContentFromBitmapData(bitmapData, _mipMapping);
 				bitmapData.dispose();
 				
 				_isComplete = true;
@@ -160,7 +165,7 @@ package aerys.minko.type.loader
 			{
 				var bitmapData : BitmapData = Bitmap(displayObject).bitmapData;
 				
-				_textureResource.setContentFromBitmapData(bitmapData, _mipmap);
+				_textureResource.setContentFromBitmapData(bitmapData, _mipMapping);
 				bitmapData.dispose();
 				
 				_isComplete = true;
