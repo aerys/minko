@@ -21,6 +21,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Globe](http://static.aerys.in:8080/minko/images/vignette_minko_globe.jpg)](http://aerys.in/portfolio/google-globe)
 [![Quake 3](http://static.aerys.in:8080/minko/images/vignette_minko_q3.jpg)](http://aerys.in/portfolio/quake-3)
 [![Procedural Terrain](http://static.aerys.in:8080/minko/images/vignette_minko_terrain.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/06/04/procedural-terrain-with-minko-2/)
+[![Submarine](http://static.aerys.in:8080/minko/images/vignette_minko_submarine.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/08/13/minko-weekly-roundup-1/#submarine)
 [![Wireframe](http://static.aerys.in:8080/minko/images/vignette_minko_wireframe.jpg)](http://static.aerys.in:8080/minko/examples/WireframeExample.html)
 [![Astroboy](http://static.aerys.in:8080/minko/images/vignette_minko_astroboy.jpg)](http://static.aerys.in:8080/minko/examples/AstroboyExample.html)
 [![Cel-Shading](http://static.aerys.in:8080/minko/images/vignette_minko_celshading.jpg)](http://static.aerys.in:8080/minko/examples/CelShadingExample.html)
