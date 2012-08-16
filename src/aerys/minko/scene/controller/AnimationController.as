@@ -19,24 +19,24 @@ package aerys.minko.scene.controller
 	 */
 	public class AnimationController extends EnterFrameController
 	{
-		private var _timelines		: Vector.<ITimeline>	= new Vector.<ITimeline>();
-		private var _isPlaying		: Boolean				= false;
-		private var _updateOneTime	: Boolean 				= false;
+		private var _timelines		: Vector.<ITimeline>;
+		private var _isPlaying		: Boolean;
+		private var _updateOneTime	: Boolean;
 		
-		private var _loopBeginTime	: int					= 0;
-		private var _loopEndTime	: int					= 0;
-		private var _looping		: Boolean				= true;
-		private var _currentTime	: int					= 0;
-		private var _totalTime		: int					= 0;
+		private var _loopBeginTime	: int;
+		private var _loopEndTime	: int;
+		private var _looping		: Boolean;
+		private var _currentTime	: int;
+		private var _totalTime		: int;
 		
-		private var _timeFunction	: Function				= null;
-		private var _labels			: Vector.<TimeLabel>	= new Vector.<TimeLabel>();
+		private var _timeFunction	: Function;
+		private var _labels			: Vector.<TimeLabel>;
 		
-		private var _lastTime		: Number				= 0;
+		private var _lastTime		: Number;
 		
-		private var _looped			: Signal 				= new Signal('AnimationController.looped');
-		private var _started		: Signal				= new Signal('AnimationController.started');
-		private var _stopped		: Signal				= new Signal('AnimationController.stopped');
+		private var _looped			: Signal;
+		private var _started		: Signal;
+		private var _stopped		: Signal;
 
 		public function get timeFunction() : Function
 		{
@@ -87,24 +87,18 @@ package aerys.minko.scene.controller
 			_looping = value;
 		}
 		
-		public function get isPlaying():Boolean
+		public function get isPlaying() : Boolean
 		{
 			return _isPlaying;
 		}
-		
-		public function set isPlaying(value:Boolean):void
+		public function set isPlaying(value : Boolean) : void
 		{
 			_isPlaying = value;
 		}
 		
-		public function get currentTime():int
+		public function get currentTime() : int
 		{
 			return _currentTime;
-		}
-		
-		public function set currentTime(value:int):void
-		{
-			_currentTime = value;
 		}
 
 		public function AnimationController(timelines 	: Vector.<ITimeline>,
@@ -112,10 +106,27 @@ package aerys.minko.scene.controller
 		{
 			super();
 			
-			_timelines = timelines;
+			initialize(timelines, loop);
+		}
+		
+		private function initialize(timelines 	: Vector.<ITimeline>,
+									loop		: Boolean) : void
+		{
+			_timelines = timelines.slice();
 			_looping = loop;
+			_labels = new <TimeLabel>[];
+			_looped	= new Signal('AnimationController.looped');
+			_started = new Signal('AnimationController.started');
+			_stopped = new Signal('AnimationController.stopped');
 			
-			initialize();
+			var numTimelines : uint = _timelines.length;
+			
+			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
+				if (_totalTime < _timelines[timelineId].duration)
+					_totalTime = _timelines[timelineId].duration;
+			
+			setPlaybackWindow(0, _totalTime);
+			goto(0).play();
 		}
 		
 		override public function clone() : AbstractController
@@ -136,19 +147,7 @@ package aerys.minko.scene.controller
 			return _timelines[index];
 		}
 		
-		private function initialize() : void
-		{
-			var numTimelines : uint = _timelines.length;
-			
-			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
-				if (_totalTime < _timelines[timelineId].duration)
-					_totalTime = _timelines[timelineId].duration;
-			
-			setPlaybackWindow(0, _totalTime);
-			gotoAndPlay(0);
-		}
-		
-		public function gotoAndPlay(time : Object) : void
+		public function goto(time : Object) : AnimationController
 		{
 			var timeValue : uint = getAnimationTime(time);
 			
@@ -156,49 +155,46 @@ package aerys.minko.scene.controller
 				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
 			
 			_currentTime = timeValue;
-			play();
-		}
-		
-		public function gotoAndStop(time : Object) : void
-		{
-			gotoAndPlay(time);
-			stop();
 			
-			// force refresh for next frame
-			_updateOneTime = true;
+			return this;
 		}
 		
-		public function play() : void
+		public function play() : AnimationController
 		{
 			_isPlaying = true;
 			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
 			_started.execute(this);
+			
+			return this;
 		}
 		
-		public function stop() : void
+		public function stop() : AnimationController
 		{
-			if (_isPlaying)
-			{
-				_isPlaying = false;
-				_updateOneTime 	= true;
-				_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
-				_stopped.execute(this);
-			}
+			_isPlaying = false;
+			_updateOneTime 	= true;
+			_lastTime = _timeFunction != null ? _timeFunction(getTimer()) : getTimer();
+			_stopped.execute(this);
+			
+			return this;
 		}
 		
 		public function setPlaybackWindow(beginTime	: Object = null,
-										  endTime	: Object = null) : void
+										  endTime	: Object = null) : AnimationController
 		{
 			_loopBeginTime	= beginTime != null ? getAnimationTime(beginTime) : 0;
 			_loopEndTime	= endTime != null ? getAnimationTime(endTime) : _totalTime;
 			
 			if (_currentTime < _loopBeginTime || _currentTime > _loopEndTime)
 				_currentTime = _loopBeginTime;
+			
+			return this;
 		}
 		
-		public function resetPlaybackWindow() : void
+		public function resetPlaybackWindow() : AnimationController
 		{
 			setPlaybackWindow();
+			
+			return this;
 		}
 		
 		private function getAnimationTime(time : Object) : uint

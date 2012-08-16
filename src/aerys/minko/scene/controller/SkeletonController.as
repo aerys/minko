@@ -11,65 +11,67 @@ package aerys.minko.scene.controller
 	 */
 	public final class SkeletonController
 	{
-		private var _animations		: Vector.<AnimationController>	= null;
+		private var _animations	: Vector.<AnimationController>	= null;
 		
-		public function SkeletonController(animations	: Vector.<AnimationController>)
+		public function SkeletonController(animations : Vector.<AnimationController>)
 		{
-			_animations = animations;
+			_animations = animations.slice();
 		}
 		
-		public function get animations():Vector.<AnimationController>
+		public function get animations() : Vector.<AnimationController>
 		{
 			return _animations;
 		}
 
-		public function gotoAndPlay(time : Object) : void
+		public function goto(time : Object) : SkeletonController
 		{
 			var numAnimations	: uint	= _animations.length;
 			
 			for (var animId : uint = 0; animId < numAnimations; ++animId)
-				(_animations[animId] as AnimationController).gotoAndPlay(time);
-		}
-		
-		public function gotoAndStop(time : Object) : void
-		{
-			var numAnimations	: uint	= _animations.length;
+				(_animations[animId] as AnimationController).goto(time);
 			
-			for (var animId : uint = 0; animId < numAnimations; ++animId)
-				(_animations[animId] as AnimationController).gotoAndStop(time);
+			return this;
 		}
 		
-		public function play() : void
-		{
-			var numAnimations	: uint	= _animations.length;
-			
-			for (var animId : uint = 0; animId < numAnimations; ++animId)
-				(_animations[animId] as AnimationController).play();
-		}
-		
-		public function stop() : void
+		public function stop() : SkeletonController
 		{
 			var numAnimations	: uint	= _animations.length;
 			
 			for (var animId : uint = 0; animId < numAnimations; ++animId)
 				(_animations[animId] as AnimationController).stop();
+			
+			return this;
+		}
+		
+		public function play() : SkeletonController
+		{
+			var numAnimations	: uint	= _animations.length;
+			
+			for (var animId : uint = 0; animId < numAnimations; ++animId)
+				(_animations[animId] as AnimationController).play();
+			
+			return this;
 		}
 		
 		public function setPlaybackWindow(beginTime	: Object = null,
-										  endTime	: Object = null) : void
+										  endTime	: Object = null) : SkeletonController
 		{
 			var numAnimations	: uint	= _animations.length;
 			
 			for (var animId : uint = 0; animId < numAnimations; ++animId)
 				(_animations[animId] as AnimationController).setPlaybackWindow(beginTime, endTime);
+			
+			return this;
 		}
 		
-		public function resetPlaybackWindow() : void
+		public function resetPlaybackWindow() : SkeletonController
 		{
 			var numAnimations	: uint	= _animations.length;
 			
 			for (var animId : uint = 0; animId < numAnimations; ++animId)
 				(_animations[animId] as AnimationController).resetPlaybackWindow();
+			
+			return this;
 		}
 	}
 }
