@@ -4,8 +4,6 @@ package aerys.minko.scene.node
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.VisibilityController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
