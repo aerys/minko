@@ -11,12 +11,13 @@ Minko is a 3D framework for the web, desktop and mobile devices.
 Features
 --------
 
-* Super fast and simple
+* Super fast, simple and extensible
+* Lightweight MVC architecture
 * AS3 GPU programming
+* JIT shaders compiler
 * Multi-pass rendering
 * Post-processing
-* Lightweight MVC architecture
-* Extensible
+* Hardware accelerated skinning/morphing animations
 
 Documentation
 -------------
