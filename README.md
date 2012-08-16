@@ -26,6 +26,7 @@ Documentation
 Tutorials
 ---------
 
+* [Getting started with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/05/28/getting-started-with-minko-2/)
 * [Your first Minko application](http://blogs.aerys.in/jeanmarc-leroux/2012/08/03/tutorial-your-first-minko-application/)
 * [Display your first 3D object with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/09/tutorial-display-your-first-3d-object-with-minko/)
 
