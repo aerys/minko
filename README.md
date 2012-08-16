@@ -36,6 +36,8 @@ Examples
 
 Code samples are available in a separate github repository: [minko-examples](https://github.com/aerys/minko-examples).
 
+[![BlackSun](http://blacksun.aerys.in/)](http://blacksun.aerys.in)
+
 Plugins
 -------
 
