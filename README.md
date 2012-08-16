@@ -38,6 +38,13 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Skybox](http://static.aerys.in:8080/minko/images/vignette_minko_skybox.jpg)](http://static.aerys.in:8080/minko/examples/SkyboxExample.html)
 [![Spritesheet](http://static.aerys.in:8080/minko/images/vignette_minko_spritesheet.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/04/20/spritesheets-with-minko/)
 
+Tools
+-----
+
+[ShaderLab](http://blogs.aerys.in/jeanmarc-leroux/2012/07/17/minko-shaderlab-beta/) is a tool to create hardware accelerated rendering effectcs without a single line of code.
+
+[![ShaderLab Beta](http://static.aerys.in:8080/minko/images/banner_minko_shaderlab.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/07/17/minko-shaderlab-beta/)
+
 Features
 --------
 
@@ -68,6 +75,11 @@ Plugins
 * [minko-collada](https://github.com/aerys/minko-collada), a Collada (*.dae) files loader
 * [minko-effects](https://github.com/aerys/minko-effects), a set of rendering/post-processing effects
 * [minko-picking](https://github.com/aerys/minko-picking), a plugin to add pixel-perfect mouse interactivity
+
+Support
+-------
+
+You can get free support on our official forum: [Aerys Answers](http://answers.aerys.in/). If you need professional services, please [contact us](http://aerys.in/contact)!
 
 Contribute
 ----------
