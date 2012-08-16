@@ -1,13 +1,12 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.Effect;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
-	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
+	import aerys.minko.scene.controller.mesh.VisibilityController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -32,19 +31,19 @@ package aerys.minko.scene.node
 	{
 		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		
-		private var _geometry			: Geometry					= null;
-		private var _properties			: DataProvider				= null;
-		private var _material			: Material					= null;
-		private var _bindings			: DataBindings				= null;
+		private var _geometry			: Geometry;
+		private var _properties			: DataProvider;
+		private var _material			: Material;
+		private var _bindings			: DataBindings;
 		
-		private var _visibility			: MeshVisibilityController	= new MeshVisibilityController();
+		private var _visibility			: VisibilityController;
 		
-		private var _frame				: uint						= 0;
+		private var _frame				: uint;
 		
-		private var _cloned				: Signal 					= new Signal('Mesh.clones');
-		private var _materialChanged	: Signal					= new Signal('Mesh.materialChanged');
-		private var _frameChanged		: Signal					= new Signal('Mesh.frameChanged');
-		private var _geometryChanged	: Signal					= new Signal('Mesh.geometryChanged');
+		private var _cloned				: Signal;
+		private var _materialChanged	: Signal;
+		private var _frameChanged		: Signal;
+		private var _geometryChanged	: Signal;
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -199,32 +198,34 @@ package aerys.minko.scene.node
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 material	: Material	= null,
-							 ...controllers)
+							 name		: String	= null)
 		{
 			super();
 
-			initialize(geometry, material, controllers);
+			initialize(geometry, material, name);
 		}
 		
 		private function initialize(geometry	: Geometry,
 									material	: Material,
-									controllers	: Array) : void
+									name		: String) : void
 		{
+			if (name)
+				this.name = name;
+			
+			_cloned = new Signal('Mesh.clones');
+			_materialChanged = new Signal('Mesh.materialChanged');
+			_frameChanged = new Signal('Mesh.frameChanged');
+			_geometryChanged = new Signal('Mesh.geometryChanged');
+			
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
 			_geometry = geometry;
 			this.material = material || DEFAULT_MATERIAL;
 			
+			_visibility = new VisibilityController();
 //			_visibility.frustumCulling = FrustumCulling.BOX ^ FrustumCulling.TOP_BOX;
 			addController(_visibility);
-			
-			while (controllers && !(controllers[0] is AbstractController))
-				controllers = controllers[0];
-			
-			if (controllers)
-				for each (var ctrl : AbstractController in controllers)
-					addController(ctrl);
 		}
 		
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
