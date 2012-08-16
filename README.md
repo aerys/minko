@@ -37,6 +37,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Render To Texture](http://static.aerys.in:8080/minko/images/vignette_minko_rtt.jpg)](http://static.aerys.in:8080/minko/examples/RenderToTextureExample.html)
 [![Skybox](http://static.aerys.in:8080/minko/images/vignette_minko_skybox.jpg)](http://static.aerys.in:8080/minko/examples/SkyboxExample.html)
 [![Spritesheet](http://static.aerys.in:8080/minko/images/vignette_minko_spritesheet.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/04/20/spritesheets-with-minko/)
+[![HDR Bloom](http://static.aerys.in:8080/minko/images/vignette_minko_hdr.jpg)](http://static.aerys.in:8080/minko/examples/HDRExample.html)
 
 Tools
 -----
