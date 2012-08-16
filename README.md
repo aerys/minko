@@ -1,59 +1,22 @@
 Minko
 =====
 
+http://blogs.aerys.in/jeanmarc-leroux/wp-content/uploads/2012/05/256.png
 
 Description
 -----------
 
-**3D for the Adobe Flash Platform.**
-
-Minko is a tool that enables the creation of rich and interactive 3D web applications. Relying on the Adobe Flash Platform, Minko delivers high quality and interactive 3D graphics in any website.
-
-With Minko, you can build all kinds of applications such as:
-
-* Social and connected browser games
-* Data visualization applications
-* Virtual tours
-* Interactive and rich 3D interfaces
-* 3D models viewers
-* Augmented reality applications
-* Visit the showcase to see examples of real-life applications.
-
-
 Features
 --------
 
-* Free and open source
-* Extensible MVC architecture
-* Expressive scene graph API
-* Extensions system
-* ActionScript 3 shaders programming
-* Multi-pass rendering
-* Post-processing
-* Extensible data binding API
-* 3D data compression/simplification
-* Support for common file formats (Collada, Obj, 3ds)
-* Hardware accelerated animations (skinning/morphing)
-* Powerful lighting engine
+Examples
+--------
 
+![](http://static.aerys.in:8080/minko/images/vignette_minko_animationcontroller.jpg)
+![]()
 
-New Features Of Minko 2
------------------------
-
-* MVC oriented architecture
-* Much faster rendering pipeline (+3000% in the best cases)
-* Simpler scene graph API
-* Unified scene-to-shaders data binding API
-* Much faster dynamic JIT shader compiler
-* Automated GPU vs CPU shader optimization
-* Simpler and automated ActionScript shaders API
-* Simpler multi-pass effects API
-* Support for the "kil" shader instruction
-* Automated computation for common missing vertex attributes
-* XPath selectors to fetch scene nodes
-* Scene iterators to manipulate multiple scene nodes at once
-* MK file format 
-
+Documentation
+-------------
 
 Contribute
 ----------
