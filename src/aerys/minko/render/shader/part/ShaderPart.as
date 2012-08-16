@@ -285,8 +285,7 @@ package aerys.minko.render.shader.part
 											   received	: uint) : void
 		{
 			throw new Error(
-				'Invalid size specified: expected ' + expected
-				+ ' but got ' + received + '.'
+				'Invalid size specified: expected ' + expected + ' but got ' + received + '.'
 			);
 		}
 
