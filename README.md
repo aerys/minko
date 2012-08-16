@@ -1,7 +1,7 @@
 Minko
 =====
 
-http://blogs.aerys.in/jeanmarc-leroux/wp-content/uploads/2012/05/256.png
+(http://blogs.aerys.in/jeanmarc-leroux/wp-content/uploads/2012/05/256.png)
 
 Description
 -----------
