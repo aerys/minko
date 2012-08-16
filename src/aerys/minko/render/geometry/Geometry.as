@@ -954,8 +954,8 @@ package aerys.minko.render.geometry
 		}
 		
 		public function merge(geometry			: Geometry,
-							  vertexStreamUsage : uint = 6,
-							  indexStreamUsage 	: uint = 6) : Geometry
+							  vertexStreamUsage : uint = 3,
+							  indexStreamUsage 	: uint = 3) : Geometry
 		{
 			var vertexStreamsToConcat 	: Vector.<IVertexStream> = new <IVertexStream>[];
 			
