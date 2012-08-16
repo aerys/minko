@@ -28,6 +28,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Procedural Waves](http://static.aerys.in:8080/minko/images/vignette_minko_waves.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/09/minko-shaderlab-waves-simulation-on-the-gpu-with-flash/)
 [![Cubes Benchmark](http://static.aerys.in:8080/minko/images/vignette_minko_cubes.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/16/minko-flash-11_2-870-million-triangles-per-second/)
 [![Teapots Benchmark](http://static.aerys.in:8080/minko/images/vignette_minko_teapots.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/16/minko-flash-11_2-870-million-triangles-per-second/)
+[![Dynamic Textures](http://static.aerys.in:8080/minko/images/vignette_minko_dynamictexturecontroller.jpg)](http://static.aerys.in:8080/minko/examples/DynamicTextureExample.html)
 [![Texture Filtering](http://static.aerys.in:8080/minko/images/vignette_minko_filtering.jpg)](http://static.aerys.in:8080/minko/examples/TextureExample.html)
 [![Gravity](http://static.aerys.in:8080/minko/images/vignette_minko_gravity.jpg)](http://aerys.in/portfolio/gravity)
 [![Parallax And Normal Mapping](http://static.aerys.in:8080/minko/images/vignette_minko_parallaxmapping.jpg)](http://static.aerys.in:8080/minko/examples/NormalMappingExample.html)
