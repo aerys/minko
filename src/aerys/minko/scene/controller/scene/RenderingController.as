@@ -707,15 +707,19 @@ package aerys.minko.scene.controller.scene
 													newGeometry	: Geometry) : void
 		{
 			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
-			var numCalls	: uint				= drawCalls.length;
-			var frame		: uint				= mesh.frame;
 			
-			for (var callId : uint = 0; callId < numCalls; ++callId)
+			if (drawCalls != null)
 			{
-				var drawCall	: DrawCall	= drawCalls[callId];
+				var numCalls	: uint				= drawCalls.length;
+				var frame		: uint				= mesh.frame;
 				
-				drawCall.updateGeometry(newGeometry);
-				drawCall.setGeometry(newGeometry, frame);
+				for (var callId : uint = 0; callId < numCalls; ++callId)
+				{
+					var drawCall	: DrawCall	= drawCalls[callId];
+					
+					drawCall.updateGeometry(newGeometry);
+					drawCall.setGeometry(newGeometry, frame);
+				}
 			}
 		}
 		
