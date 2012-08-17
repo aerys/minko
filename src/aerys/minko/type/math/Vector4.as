@@ -322,10 +322,7 @@ package aerys.minko.type.math
 		public static function scale(v : Vector4, s : Number, out : Vector4 = null) : Vector4
 		{
 			out ||= FACTORY.create() as Vector4;
-			out._vector.x = v._vector.x;
-			out._vector.y = v._vector.y;
-			out._vector.z = v._vector.z;
-			out._vector.w = v._vector.w;
+			out.set(v._vector.x * s, v._vector.y * s, v._vector.z * s, v._vector.w * s);
 
 			return out;
 		}
