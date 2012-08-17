@@ -130,7 +130,14 @@ package aerys.minko.scene.node
 			{
 				var oldGeometry	: Geometry = _geometry;
 				
+				if (oldGeometry)
+					oldGeometry.changed.remove(geometryChangedHandler);
+				
 				_geometry = value;
+				
+				if (value)
+					_geometry.changed.add(geometryChangedHandler);
+				
 				_geometryChanged.execute(this, oldGeometry, value);
 			}
 		}
@@ -218,7 +225,7 @@ package aerys.minko.scene.node
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
 			
-			_geometry = geometry;
+			this.geometry = geometry;
 			this.material = material || DEFAULT_MATERIAL;
 			
 			_visibility = new VisibilityController();
@@ -267,6 +274,11 @@ package aerys.minko.scene.node
 			
 			if (child === this)
 				_bindings.removeProvider(transformData);
+		}
+		
+		private function geometryChangedHandler(geometry : Geometry) : void
+		{
+			_geometryChanged.execute(this, _geometry, _geometry);
 		}
 	}
 }
