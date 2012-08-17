@@ -9,6 +9,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.VertexStreamList;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.bounding.BoundingBox;
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.bounding.IBoundingVolume;
@@ -65,6 +66,8 @@ package aerys.minko.render.geometry
 		
 		private var _bulkUpdate		: Boolean			= false;
 		
+		private var _changed		: Signal;
+		
 		/**
 		 * The number of IVertexStreams objects stored in the geometry. 
 		 * @return 
@@ -88,7 +91,15 @@ package aerys.minko.render.geometry
 		}
 		public function set indexStream(value : IndexStream) : void
 		{
+			if (_indexStream != null)
+				_indexStream.changed.remove(indexStreamChangedHandler);
+			
 			_indexStream = value;
+			
+			if (_indexStream != null)
+				_indexStream.changed.add(indexStreamChangedHandler);
+			
+			_changed.execute(this);
 		}
 		
 		/**
@@ -138,6 +149,11 @@ package aerys.minko.render.geometry
 			return _vertexStreams.length ? _vertexStreams[0].format : null;
 		}
 		
+		public function get changed() : Signal
+		{
+			return _changed;
+		}
+		
 		/**
 		 * Create a new Geometry object.
 		 * 
@@ -166,6 +182,8 @@ package aerys.minko.render.geometry
 									firstIndex		: uint						= 0,
 									numTriangles	: int						= -1) : void
 		{
+			_changed = new Signal('Geometry.changed');
+			
 			_firstIndex 	= firstIndex;
 			_numTriangles	= numTriangles;
 			
@@ -177,11 +195,7 @@ package aerys.minko.render.geometry
 				var vstream : IVertexStream	= vertexStreams[i];
 				
 				if (!vstream.format.equals(vertexStreams[0].format))
-				{
-					throw new Error(
-						'All vertex streams must have the same vertex format.'
-					);
-				}
+					throw new Error('All vertex streams must have the same vertex format.');
 				
 				setVertexStream(vstream, i);
 			}
@@ -239,15 +253,18 @@ package aerys.minko.render.geometry
 		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
 		{
 			if (index < _vertexStreams.length)
-				_vertexStreams[index].boundsChanged.remove(vertexStreamBoundsChangedHandler);
+			{
+				var oldStream : IVertexStream = _vertexStreams[index] as IVertexStream;
+				
+				oldStream.changed.remove(vertexStreamChangedHandler);
+				oldStream.boundsChanged.remove(vertexStreamBoundsChangedHandler);
+			}
 			
 			vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
+			vertexStream.changed.add(vertexStreamChangedHandler);
 			_vertexStreams[index] = vertexStream;
-		}
-		
-		private function vertexStreamBoundsChangedHandler(stream	: IVertexStream) : void
-		{
-			updateBoundingVolumes();
+			
+			_changed.execute(this);
 		}
 		
 		/**
@@ -1031,6 +1048,21 @@ package aerys.minko.render.geometry
 			}
 			
 			vertexStream.unlock();
+		}
+		
+		private function vertexStreamChangedHandler(stream : IVertexStream) : void
+		{
+			_changed.execute(this);
+		}
+		
+		private function vertexStreamBoundsChangedHandler(stream : IVertexStream) : void
+		{
+			updateBoundingVolumes();
+		}
+		
+		private function indexStreamChangedHandler(stream : IndexStream) : void
+		{
+			_changed.execute(this);
 		}
 	}
 }
