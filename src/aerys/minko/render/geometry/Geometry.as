@@ -350,7 +350,7 @@ package aerys.minko.render.geometry
 		 * @param replace Whether the existing normals data should be replaced if it exists.
 		 * 
 		 */
-		public function computeNormals(streamUsage : int = -1) : Geometry
+		public function computeNormals(streamUsage : int = -1, triangles : Vector.<uint> = null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
 			var indices			: Vector.<uint>	= indexStream.lock();
@@ -379,7 +379,7 @@ package aerys.minko.render.geometry
 					if (!hasNormals)
 						normalsStream = new VertexStream(streamUsage, FORMAT_NORMALS, new Vector.<Number>(numVertices * 3));
 					
-					fillNormalsData(indices, normalsStream, xyzStream, numVertices);
+					fillNormalsData(indices, normalsStream, xyzStream, triangles);
 					
 					if (!hasNormals)
 						pushVertexStreamInList(streamId, normalsStream);
@@ -410,7 +410,9 @@ package aerys.minko.render.geometry
 		 * @param replace Whether to replace existing normals or tangents data.
 		 * 
 		 */
-		public function computeTangentSpace(computeNormals : Boolean = true, streamUsage : int = -1) : Geometry
+		public function computeTangentSpace(computeNormals 	: Boolean 		= true,
+											streamUsage 	: int 			= -1,
+											triangles 		: Vector.<uint>	= null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
 			var indices			: Vector.<uint>	= indexStream.lock();
@@ -469,9 +471,9 @@ package aerys.minko.render.geometry
 					}
 					
 					if (computeNormals)
-						fillNormalsData(indices, normalsStream, xyzStream, numVertices);
+						fillNormalsData(indices, normalsStream, xyzStream, triangles);
 					
-					fillTangentsData(indices, tangentsStream, xyzStream, uvStream, numVertices);
+					fillTangentsData(indices, tangentsStream, xyzStream, uvStream, triangles);
 					
 					if (!hasNormals)
 						pushVertexStreamInList(streamId, normalsStream);
@@ -486,9 +488,9 @@ package aerys.minko.render.geometry
 		private function fillNormalsData(indices		: Vector.<uint>,
 										 normalsStream	: VertexStream,
 										 xyzStream		: VertexStream,
-										 numVertices	: uint) : void
+										 triangles		: Vector.<uint>) : void
 		{
-			var numTriangles		: uint				= indices.length / 3;
+			var numTriangles		: uint				= triangles ? triangles.length : indices.length / 3;
 			var nx					: Number 			= 0.;
 			var ny					: Number 			= 0.;
 			var nz					: Number 			= 0.;
@@ -499,14 +501,17 @@ package aerys.minko.render.geometry
 			var normalsOffset		: uint				= normalsStream.format.getOffsetForComponent(VertexComponent.NORMAL);
 			var normalsVertexSize	: uint				= normalsStream.format.vertexSize;
 			var normalsData			: Vector.<Number>	= null;
+			var numVertices			: uint				= xyzStream.length / xyzVertexSize;
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
 			
 			for (var i : uint = 0; i < numTriangles; ++i)
 			{
-				var i0	: uint 		= indices[uint(3 * i)];
-				var i1	: uint 		= indices[uint(3 * i + 1)];
-				var i2	: uint 		= indices[uint(3 * i + 2)];
+				var ii	: uint		= triangles ? triangles[i] * 3 : i * 3;
+				
+				var i0	: uint 		= indices[ii];
+				var i1	: uint 		= indices[uint(ii + 1)];
+				var i2	: uint 		= indices[uint(ii + 2)];
 				
 				var ii0	: uint 		= xyzOffset + xyzVertexSize * i0;
 				var ii1	: uint		= xyzOffset + xyzVertexSize * i1;
@@ -581,9 +586,9 @@ package aerys.minko.render.geometry
 										  tangentsStream	: VertexStream,
 										  xyzStream			: VertexStream,
 										  uvStream			: VertexStream,
-										  numVertices		: uint) : void
+										  triangles			: Vector.<uint>) : void
 		{
-			var numTriangles		: uint				= indices.length / 3;
+			var numTriangles		: uint				= triangles ? triangles.length : indices.length / 3;
 			var xyzOffset			: uint				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
 			var xyzVertexSize		: uint				= xyzStream.format.vertexSize;
 			var xyzData				: Vector.<Number>	= xyzStream.lock();
@@ -593,13 +598,14 @@ package aerys.minko.render.geometry
 			var tangentsOffset		: uint				= tangentsStream.format.getOffsetForComponent(VertexComponent.TANGENT);
 			var tangentsVertexSize	: uint				= tangentsStream.format.vertexSize;
 			var tangentsData		: Vector.<Number>	= null;
+			var numVertices			: uint				= xyzStream.length / xyzVertexSize;
 			
 			uvData = uvStream == xyzStream ? xyzData : uvStream.lock();
 			tangentsData = tangentsStream == xyzStream ? xyzData : tangentsStream.lock();
 			
 			for (var i : uint = 0; i < numTriangles; ++i)
 			{
-				var ii 		: uint		= i * 3;
+				var ii 		: uint		= triangles ? triangles[i] * 3 : i * 3;
 				
 				var i0		: uint 		= indices[ii];
 				var i1		: uint 		= indices[uint(ii + 1)];
