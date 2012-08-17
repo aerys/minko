@@ -710,8 +710,8 @@ package aerys.minko.scene.controller.scene
 			
 			if (drawCalls != null)
 			{
-				var numCalls	: uint				= drawCalls.length;
-				var frame		: uint				= mesh.frame;
+				var numCalls	: uint	= drawCalls.length;
+				var frame		: uint	= mesh.frame;
 				
 				for (var callId : uint = 0; callId < numCalls; ++callId)
 				{
