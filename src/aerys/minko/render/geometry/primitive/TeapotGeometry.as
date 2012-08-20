@@ -4,11 +4,11 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.GeometrySanitizer;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.geom.Vector3D;
+	import flash.utils.ByteArray;
 	
 	/**
 	 * Utah Teapot
@@ -166,8 +166,8 @@ package aerys.minko.render.geometry.primitive
 									   vertexStreamUsage 	: uint 	= 3,
 									   indexStreamUsage		: uint	= 3)
 		{
-			var indexData	: Vector.<uint>		= new Vector.<uint>();
-			var vertexData	: Vector.<Number>	= new Vector.<Number>();
+			var indexData	: Vector.<uint>	= new Vector.<uint>();
+			var vertexData	: ByteArray		= new ByteArray();
 			
 			var patch			: Vector.<Vector3D>	= new Vector.<Vector3D>(16, true);
 			var currentVertexId	: uint				= 0;
@@ -200,7 +200,7 @@ package aerys.minko.render.geometry.primitive
 		
 		private function genPatchVertexData(patch		: Vector.<Vector3D>, 
 								   			divs		: uint,
-											vertexData	: Vector.<Number>) : void
+											vertexData	: ByteArray) : void
 		{
 			// create 2 temporary vertex vectors and initialize them
 			var last : Vector.<Vector3D> = new Vector.<Vector3D>(divs + 1, true);
@@ -223,7 +223,9 @@ package aerys.minko.render.geometry.primitive
 					var px : Number = v / divs;
 					
 					bernstein(px, temp[0], temp[1], temp[2], temp[3], last[v]);
-					vertexData.push(last[v].x, last[v].z, last[v].y); // y up in minko, z up in the model
+					vertexData.writeFloat(last[v].x);
+					vertexData.writeFloat(last[v].z); // y up in minko, z up in the model
+					vertexData.writeFloat(last[v].y);
 				}
 			}
 		}

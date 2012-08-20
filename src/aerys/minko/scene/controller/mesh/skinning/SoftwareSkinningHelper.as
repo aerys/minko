@@ -1,6 +1,5 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
-	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
@@ -12,6 +11,7 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.type.animation.SkinningMethod;
 	
 	import flash.geom.Matrix3D;
+	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
 	internal final class SoftwareSkinningHelper extends AbstractSkinningHelper
@@ -35,7 +35,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super.addMesh(mesh);
 			
-			_meshToOriginalGeometry[mesh]		= mesh.geometry;
+			_meshToOriginalGeometry[mesh]	= mesh.geometry;
 			_meshToFlattenedGeometry[mesh]	= flattenGeometry(mesh.geometry);
 			mesh.geometry = flattenGeometry(_meshToFlattenedGeometry[mesh]);
 		}
@@ -83,40 +83,42 @@ package aerys.minko.scene.controller.mesh.skinning
 			var influenceStrides	: Vector.<uint>	= TMP_VECTOR;
 			var format				: VertexFormat;
 			var dataLength			: uint;
-			var dwordsPerVertex		: uint;
+			var bytesPerVertex		: uint;
 			var positionStride		: uint;
 			var normalStride		: uint;
 			var numInfluences		: uint;
 			
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 			{
-				var realStream			: VertexStream		= VertexStream(realGeometry.getVertexStream(streamId));
-				var fakeStream			: VertexStream		= VertexStream(fakeGeometry.getVertexStream(streamId));
-				var realData			: Vector.<Number>	= realStream.minko_stream::_data
-				var fakeData			: Vector.<Number>	= fakeStream.minko_stream::_data
+				var realStream			: VertexStream	= VertexStream(realGeometry.getVertexStream(streamId));
+				var fakeStream			: VertexStream	= VertexStream(fakeGeometry.getVertexStream(streamId));
+				var realData			: ByteArray		= realStream.lock();
+				var fakeData			: ByteArray		= fakeStream.lock();
 				
 				if (streamId == 0)
 				{
 					format				= realStream.format;
 					dataLength			= realData.length;
-					dwordsPerVertex		= format.vertexSize;
-					positionStride		= format.getOffsetForComponent(VertexComponent.XYZ);
-					normalStride		= format.getOffsetForComponent(VertexComponent.NORMAL);
+					bytesPerVertex		= format.numBytesPerVertex;
+					positionStride		= format.getBytesOffsetForComponent(VertexComponent.XYZ);
+					normalStride		= format.getBytesOffsetForComponent(VertexComponent.NORMAL);
 					getInfluenceStrides(format, TMP_VECTOR);
 					numInfluences		= influenceStrides.length;
 				}
 				
-				for (var offset : uint = 0; offset < dataLength; offset += dwordsPerVertex)
+				for (var offset : uint = 0; offset < dataLength; offset += bytesPerVertex)
 				{
 					var positionOffset	: uint		= offset + positionStride;
-					var inX				: Number	= realData[positionOffset];
-					var inY				: Number	= realData[positionOffset + 1];
-					var inZ				: Number	= realData[positionOffset + 2];
+					realData.position = positionOffset;
+					var inX				: Number	= realData.readFloat();
+					var inY				: Number	= realData.readFloat();
+					var inZ				: Number	= realData.readFloat();
 					
 					var normalOffset	: uint		= offset + normalStride;
-					var inNx			: Number	= realData[normalOffset];
-					var inNy			: Number	= realData[normalOffset + 1];
-					var inNz			: Number	= realData[normalOffset + 2];
+					realData.position = normalOffset;
+					var inNx			: Number	= realData.readFloat();
+					var inNy			: Number	= realData.readFloat();
+					var inNz			: Number	= realData.readFloat();
 					
 					var outX			: Number	= 0;
 					var outY			: Number	= 0;
@@ -127,34 +129,58 @@ package aerys.minko.scene.controller.mesh.skinning
 					
 					for (var influenceId : uint = 0; influenceId < numInfluences; ++influenceId)
 					{
-						var influenceOffset : uint		= offset + influenceStrides[influenceId];
-						var jointId			: uint		= realData[influenceOffset];
-						var jointWeight		: Number	= realData[influenceOffset + 1];
+						realData.position = offset + influenceStrides[influenceId];
+						
+						var jointId			: Number	= realData.readFloat();
+						var jointWeight		: Number	= realData.readFloat();
 						var matrixOffset	: uint		= 16 * jointId;
 						
 						if (jointWeight != 0)
 						{
-							outX += jointWeight * (inX * _matrices[matrixOffset + 0] + inY * _matrices[matrixOffset + 1] + inZ * _matrices[matrixOffset + 2] + _matrices[matrixOffset + 3]);
-							outY += jointWeight * (inX * _matrices[matrixOffset + 4] + inY * _matrices[matrixOffset + 5] + inZ * _matrices[matrixOffset + 6] + _matrices[matrixOffset + 7]);
-							outZ += jointWeight * (inX * _matrices[matrixOffset + 8] + inY * _matrices[matrixOffset + 9] + inZ * _matrices[matrixOffset + 10] + _matrices[matrixOffset + 11]);
+							outX += jointWeight * (inX * _matrices[uint(matrixOffset + 0)]
+								+ inY * _matrices[uint(matrixOffset + 1)]
+								+ inZ * _matrices[uint(matrixOffset + 2)]
+								+ _matrices[uint(matrixOffset + 3)]);
 							
-							outNx += jointWeight * (inNx * _matrices[matrixOffset + 0] + inNy * _matrices[matrixOffset + 1] + inNz * _matrices[matrixOffset + 2]);
-							outNy += jointWeight * (inNx * _matrices[matrixOffset + 4] + inNy * _matrices[matrixOffset + 5] + inNz * _matrices[matrixOffset + 6]);
-							outNz += jointWeight * (inNx * _matrices[matrixOffset + 8] + inNy * _matrices[matrixOffset + 9] + inNz * _matrices[matrixOffset + 10]);
+							outY += jointWeight * (inX * _matrices[uint(matrixOffset + 4)]
+								+ inY * _matrices[uint(matrixOffset + 5)]
+								+ inZ * _matrices[uint(matrixOffset + 6)]
+								+ _matrices[uint(matrixOffset + 7)]);
+							
+							outZ += jointWeight * (inX * _matrices[uint(matrixOffset + 8)]
+								+ inY * _matrices[uint(matrixOffset + 9)]
+								+ inZ * _matrices[uint(matrixOffset + 10)]
+								+ _matrices[uint(matrixOffset + 11)]);
+							
+							outNx += jointWeight * (inNx * _matrices[uint(matrixOffset + 0)]
+								+ inNy * _matrices[uint(matrixOffset + 1)]
+								+ inNz * _matrices[uint(matrixOffset + 2)]);
+							
+							outNy += jointWeight * (inNx * _matrices[uint(matrixOffset + 4)]
+								+ inNy * _matrices[uint(matrixOffset + 5)]
+								+ inNz * _matrices[uint(matrixOffset + 6)]);
+							
+							outNz += jointWeight * (inNx * _matrices[uint(matrixOffset + 8)]
+								+ inNy * _matrices[uint(matrixOffset + 9)]
+								+ inNz * _matrices[uint(matrixOffset + 10)]);
 						}
 					}
 					
 					var invNormalLength : Number = 1 / Math.sqrt(outNx * outNx + outNy * outNy + outNz * outNz);
 					
-					fakeData[positionOffset]		= outX;
-					fakeData[positionOffset + 1]	= outY;
-					fakeData[positionOffset + 2]	= outZ;
-					fakeData[normalOffset]			= outNx * invNormalLength;
-					fakeData[normalOffset + 1]		= outNy * invNormalLength;
-					fakeData[normalOffset + 2]		= outNz * invNormalLength;
+					fakeData.position = positionOffset;
+					fakeData.writeFloat(outX);
+					fakeData.writeFloat(outY);
+					fakeData.writeFloat(outZ);
+					
+					fakeData.position = normalOffset;
+					fakeData.writeFloat(outNx * invNormalLength);
+					fakeData.writeFloat(outNy * invNormalLength);
+					fakeData.writeFloat(outNz * invNormalLength);
 				}
 				
-				fakeStream.changed.execute(fakeStream);
+				realStream.unlock(false);
+				fakeStream.unlock();
 			}
 		}
 	}

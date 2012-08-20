@@ -6,8 +6,8 @@ package aerys.minko.render.geometry.stream
 
 	public interface IVertexStream
 	{
-		function get format() 	: VertexFormat;
-		function get length()	: uint;
+		function get format() 			: VertexFormat;
+		function get numVertices()		: uint;
 		
 		function get changed()			: Signal;
 		function get boundsChanged()	: Signal;

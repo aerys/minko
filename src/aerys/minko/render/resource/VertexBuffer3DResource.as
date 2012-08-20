@@ -49,7 +49,7 @@ package aerys.minko.render.resource
 		private function vertexStreamChangedHandler(vertexStream : VertexStream) : void
 		{
 			_update = true;
-			_lengthChanged = vertexStream.length != _numVertices;
+			_lengthChanged = vertexStream.numVertices != _numVertices;
 		}
 
 		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D
@@ -62,14 +62,14 @@ package aerys.minko.render.resource
 			if (_lengthChanged)
 			{
 				_lengthChanged = false;
-				_numVertices = _stream.length
+				_numVertices = _stream.numVertices;
 				
 				if (_vertexBuffer)
 					_vertexBuffer.dispose();
 
 				_vertexBuffer = context.createVertexBuffer(
 					_numVertices,
-					_stream.format.vertexSize
+					_stream.format.numBytesPerVertex >>> 2
 				);
 				
 				update = true;
@@ -77,11 +77,10 @@ package aerys.minko.render.resource
 
 			if (_vertexBuffer != null && update)
 			{
-				_vertexBuffer.uploadFromVector(_stream._data, 0, numVertices);
+				_vertexBuffer.uploadFromByteArray(_stream._data, 0, 0, _numVertices);
 				_uploaded.execute(this);
 
 				_update = false;
-				_numVertices = numVertices;
 
 				if (!(_stream.usage & StreamUsage.READ) || _stream._localDispose)
 					_stream.disposeLocalData(false);

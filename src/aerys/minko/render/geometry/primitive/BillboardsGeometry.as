@@ -48,7 +48,7 @@ package aerys.minko.render.geometry.primitive
 				);
 			}
 			
-			setVertexStream(new VertexStream(StreamUsage.STATIC, BILLBOARD_FORMAT, vertices), 0);
+			setVertexStream(VertexStream.fromVector(StreamUsage.STATIC, BILLBOARD_FORMAT, vertices), 0);
 			indexStream = new IndexStream(StreamUsage.STATIC, indices);
 		}
 	}

@@ -13,8 +13,8 @@ package aerys.minko.render.geometry.primitive
 	 */
 	public class CylinderGeometry extends Geometry
 	{
-		private static const DEFAULT_NUM_COLS		: uint	= 8;
-		private static const DEFAULT_NUM_ROWS		: uint	= 2;
+		private static const DEFAULT_NUM_COLS	: uint	= 8;
+		private static const DEFAULT_NUM_ROWS	: uint	= 2;
 		
 		private static var _instance	: CylinderGeometry	= null;
 		
@@ -62,7 +62,7 @@ package aerys.minko.render.geometry.primitive
 				}
 			}
 			
-			return new VertexStream(
+			return VertexStream.fromVector(
 				vertexStreamUsage,
 				generateUVs ? VertexFormat.XYZ_UV : VertexFormat.XYZ,
 				xyzUv

@@ -33,7 +33,9 @@ package aerys.minko.render.geometry.primitive
 			
 			xyz.push(0., -.5, 0.);
 			
-			return new <IVertexStream>[new VertexStream(vertexStreamUsage, VertexFormat.XYZ, xyz)];
+			return new <IVertexStream>[
+				VertexStream.fromVector(vertexStreamUsage, VertexFormat.XYZ, xyz)
+			];
 		}
 		
 		private function getIndexStream(numSegments 		: uint,

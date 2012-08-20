@@ -29,7 +29,7 @@ package aerys.minko.render.geometry.stream.iterator
 
 		public function get length() : int
 		{
-			return _ib ? _ib.length / 3 : _vb.length / 3;
+			return _ib ? _ib.length / 3 : _vb.numVertices / 3;
 		}
 
 		public function TriangleIterator(vertexStream 		: IVertexStream,

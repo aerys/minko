@@ -31,9 +31,9 @@ package aerys.minko.render.geometry.stream
 			return _streams.length;
 		}
 
-		public function get length() : uint
+		public function get numVertices() : uint
 		{
-			return _streams.length ? _streams[0].length : 0;
+			return _streams.length ? _streams[0].numVertices : 0;
 		}
 		
 		public function get changed() : Signal
@@ -69,7 +69,7 @@ package aerys.minko.render.geometry.stream
 
 		public function pushVertexStream(vertexStream : VertexStream, force : Boolean = false) : void
 		{
-			if (length && vertexStream.length != length)
+			if (numVertices && vertexStream.numVertices != numVertices)
 				throw new Error('All streams must have the same total number of vertices.');
 
 			_usage |= vertexStream.usage;
@@ -103,7 +103,7 @@ package aerys.minko.render.geometry.stream
 
 		public function deleteVertexByIndex(index : uint) : Boolean
 		{
-			if (index > length)
+			if (index > numVertices)
 				return false;
 
 			for each (var stream : VertexStream in _streams)

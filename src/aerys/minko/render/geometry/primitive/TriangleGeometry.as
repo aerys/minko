@@ -26,7 +26,7 @@
 
 			super(
 				new <IVertexStream>[
-					new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices)
+					VertexStream.fromVector(vertexStreamUsage, VertexFormat.XYZ_UV, vertices)
 				],
 				new IndexStream(indexStreamUsage, IndexStream.dummyData(3))
 			);

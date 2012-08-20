@@ -53,7 +53,7 @@ package aerys.minko.render.geometry.primitive
 				}
 			}
 			
-			return new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
+			return VertexStream.fromVector(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
 		}
 
 		private function buildIndexStream(doubleSided		: Boolean,

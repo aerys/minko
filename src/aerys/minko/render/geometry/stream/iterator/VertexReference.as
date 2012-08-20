@@ -20,9 +20,9 @@
 		use namespace minko_stream;
 		use namespace flash_proxy;
 
-		minko_stream var _index				: int		= 0;
 		minko_stream var _propertyToStream	: Object	= null;
 
+		private var _index	: uint			= 0;
 		private var _stream	: IVertexStream	= null;
 
 		/**
@@ -35,12 +35,16 @@
 		{
 			return _index;
 		}
+		public function set index(value : uint) : void
+		{
+			_index = value;
+		}
 
 		public function VertexReference(stream 	: IVertexStream,
 								 		index	: int	= -1)
 		{
 			_stream = stream;
-			_index = index == -1 ? stream.length : index;
+			_index = index == -1 ? stream.numVertices : index;
 		}
 
 		override flash_proxy function getProperty(name : *) : *
@@ -51,14 +55,7 @@
 			var propertyName 	: String 		= name;
 			var stream 			: VertexStream	= _propertyToStream[propertyName];
 			
-			if (!(stream.usage & StreamUsage.READ))
-				throw new Error('Unable to read data from vertex stream.');
-			
-			var format 			: VertexFormat 	= stream.format;
-			var index			: int			= _index * format.vertexSize
-												  + format.getOffsetForField(name);
-
-			return stream.get(index);
+			return stream.get(stream.format.getOffsetForProperty(propertyName, _index));
 		}
 
 		override flash_proxy function setProperty(name : *, value : *) : void
@@ -69,14 +66,7 @@
 			var propertyName 	: String 		= name;
 			var stream 			: VertexStream 	= _propertyToStream[propertyName];
 			
-			if (!(stream.usage & StreamUsage.WRITE))
-				throw new Error('Unable to write data into vertex stream.');
-			
-			var format 			: VertexFormat 	= stream.format;
-			var index			: int			= _index * format.vertexSize
-												  + format.getOffsetForField(name);
-
-			stream.set(index, value as Number);
+			stream.set(stream.format.getOffsetForProperty(name, _index), value as Number);
 		}
 
 		private function initialize() : void
@@ -90,8 +80,13 @@
 			{
 				var component : VertexComponent = format.getComponent(componentIndex);
 
-				for each (var field : String in component.fields)
-					_propertyToStream[field] = _stream.getStreamByComponent(component);
+				var numProperties : uint = component.numProperties;
+				for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+				{
+					_propertyToStream[component.getProperty(propertyId)] = _stream.getStreamByComponent(
+						component
+					);
+				}
 			}
 		}
 

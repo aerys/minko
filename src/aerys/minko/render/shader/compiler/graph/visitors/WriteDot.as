@@ -150,7 +150,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 		override protected function visitAttribute(attribute		: Attribute, 
 												   isVertexShader	: Boolean) : void
 		{
-			appendNode(attribute, 'yellowgreen', 'Attribute', attribute.component.fields.join());
+			appendNode(attribute, 'yellowgreen', 'Attribute', attribute.component.toString());
 		}
 		
 		override protected function visitConstant(constant			: Constant, 

@@ -88,7 +88,7 @@ package aerys.minko.render.geometry.primitive
 			if (withNormals)
 				format.addComponent(VertexComponent.NORMAL);
 			
-			return new VertexStream(usage, format, vertexData);
+			return VertexStream.fromVector(usage, format, vertexData);
 		}
 		
 		private function buildIndexStream(usage : uint) : IndexStream
