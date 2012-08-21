@@ -31,12 +31,15 @@ package aerys.minko.render.geometry.primitive
 			numRows ||= numColumns;
 			
 			super(
-				new <IVertexStream>[buildVertexStream(numColumns, numRows, vertexStreamUsage)],
+				new <IVertexStream>[buildVertexStream(
+					doubleSided, numColumns, numRows, vertexStreamUsage
+				)],
 				buildIndexStream(doubleSided, numColumns, numRows, indexStreamUsage)
 			);
 		}
 		
-		private function buildVertexStream(numColumns			: uint,
+		private function buildVertexStream(doubleSided			: Boolean,
+										   numColumns			: uint,
 										   numRows				: uint,
 										   vertexStreamUsage	: uint) : VertexStream
 		{
@@ -52,6 +55,9 @@ package aerys.minko.render.geometry.primitive
 					);
 				}
 			}
+			
+			if (doubleSided)
+				vertices = vertices.concat(vertices);
 			
 			return new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
 		}
@@ -77,9 +83,13 @@ package aerys.minko.render.geometry.primitive
 					);
 				}
 			}
-			
+
 			if (doubleSided)
-				indices = indices.concat(indices.concat().reverse());
+			{
+				var numIndices : int = indices.length - 1;
+				while (numIndices >= 0)
+					indices.push((numRows + 1) * (numColumns + 1) + indices[uint(numIndices--)]);
+			}
 			
 			return new IndexStream(indexStreamUsage, indices);
 		}
