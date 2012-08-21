@@ -156,7 +156,7 @@ package aerys.minko.render.geometry.primitive
 				indices[uint(c++)] = (_numParallels - 3) * _numMeridians + i + 1;
 			}
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
 	}
 }

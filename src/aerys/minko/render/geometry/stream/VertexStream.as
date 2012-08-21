@@ -18,23 +18,23 @@ package aerys.minko.render.geometry.stream
 		use namespace minko_stream;
 
 		public static const DEFAULT_FORMAT	: VertexFormat		= VertexFormat.XYZ_UV;
-
+		
 		private static const TMP_NUMBERS	: Vector.<Number>	= new <Number>[];
 		
-		minko_stream var _data			: ByteArray					= new ByteArray();
-		minko_stream var _localDispose	: Boolean					= false;
-
-		private var _usage				: uint						= 0;
-		private var _format				: VertexFormat				= null;
-		private var _resource			: VertexBuffer3DResource	= null;
+		minko_stream var _data			: ByteArray;
+		minko_stream var _localDispose	: Boolean;
 		
-		private var _minimum			: Vector.<Number>			= null;
-		private var _maximum			: Vector.<Number>			= null;
+		private var _usage				: uint;
+		private var _format				: VertexFormat;
+		private var _resource			: VertexBuffer3DResource;
 		
-		private var _locked				: Boolean					= false;
+		private var _minimum			: Vector.<Number>;
+		private var _maximum			: Vector.<Number>;
+		
+		private var _locked				: Boolean;
 
-		private var _changed			: Signal					= new Signal('VertexStream.changed');
-		private var _boundsChanged		: Signal					= new Signal('VertexStream.boundsChanged');
+		private var _changed			: Signal;
+		private var _boundsChanged		: Signal;
 		
 		public function get format() : VertexFormat
 		{
@@ -118,10 +118,15 @@ package aerys.minko.render.geometry.stream
 									offset	: uint,
 									length	: uint) : void
 		{
+			_changed = new Signal('VertexStream.changed');
+			_boundsChanged = new Signal('VertexStream.boundsChanged');
+			
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
 			_usage = usage;
+			_localDispose = false;
 			
+			_data = new ByteArray();
 			_data.endian = Endian.LITTLE_ENDIAN;
 			if (data)
 			{

@@ -8,6 +8,9 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
 	public class TorusGeometry extends Geometry
 	{
 		private static const EPSILON	: Number	= 0.00001;
@@ -93,8 +96,9 @@ package aerys.minko.render.geometry.primitive
 		
 		private function buildIndexStream(usage : uint) : IndexStream
 		{
-			var indices : Vector.<uint> = new <uint>[];
+			var indices : ByteArray = new ByteArray();
 			
+			indices.endian = Endian.LITTLE_ENDIAN;
 			for (var j : uint = 1; j <= _segmentsR; ++j)
 			{
 				for (var i : uint = 1; i <= _segmentsT; ++i)
@@ -104,9 +108,15 @@ package aerys.minko.render.geometry.primitive
 					var c : uint = (_segmentsT + 1) * (j - 1) + i;
 					var d : uint = (_segmentsT + 1) * j + i;
 					
-					indices.push(a, c, b, a, d, c);
+					indices.writeShort(a);
+					indices.writeShort(c);
+					indices.writeShort(b);
+					indices.writeShort(a);
+					indices.writeShort(d);
+					indices.writeShort(c);
 				}
 			}
+			indices.position = 0;
 			
 			return new IndexStream(usage, indices);
 		}

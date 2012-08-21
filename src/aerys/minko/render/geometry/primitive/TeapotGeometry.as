@@ -166,8 +166,8 @@ package aerys.minko.render.geometry.primitive
 									   vertexStreamUsage 	: uint 	= 3,
 									   indexStreamUsage		: uint	= 3)
 		{
-			var indexData	: Vector.<uint>	= new Vector.<uint>();
-			var vertexData	: ByteArray		= new ByteArray();
+			var indexData	: ByteArray	= new ByteArray();
+			var vertexData	: ByteArray	= new ByteArray();
 			
 			var patch			: Vector.<Vector3D>	= new Vector.<Vector3D>(16, true);
 			var currentVertexId	: uint				= 0;
@@ -232,19 +232,18 @@ package aerys.minko.render.geometry.primitive
 		
 		private function genPatchIndexData(indexOffset	: uint,
 										   divs			: uint,
-										   indexData	: Vector.<uint>) : void
+										   indexData	: ByteArray) : void
 		{
 			for (var u : uint = 0; u < divs; ++u)
 				for (var v : uint = 0; v < divs; ++v)
-					indexData.push(
-						indexOffset + u * (divs + 1) + v,
-						indexOffset + (u + 1) * (divs + 1) + v,
-						indexOffset + u * (divs + 1) + v + 1,
-						
-						indexOffset + u * (divs + 1) + v + 1,
-						indexOffset + (u + 1) * (divs + 1) + v,
-						indexOffset + (u + 1) * (divs + 1) + v + 1
-					);
+				{
+					indexData.writeShort(indexOffset + u * (divs + 1) + v);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v);
+					indexData.writeShort(indexOffset + u * (divs + 1) + v + 1);
+					indexData.writeShort(indexOffset + u * (divs + 1) + v + 1);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v + 1);
+				}
 		}
 		
 		private function bernstein(u	: Number,

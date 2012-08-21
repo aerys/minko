@@ -355,7 +355,7 @@ package aerys.minko.render.geometry
 		public function computeNormals(streamUsage : int = -1, triangles : Vector.<uint> = null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
-			var indices			: Vector.<uint>	= indexStream.lock();
+			var indices			: ByteArray		= indexStream.lock();
 			var numTriangles	: int			= indexStream.length / 3;
 			var stream			: IVertexStream	= null;
 			
@@ -417,7 +417,7 @@ package aerys.minko.render.geometry
 											triangles 		: Vector.<uint>	= null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
-			var indices			: Vector.<uint>	= indexStream.lock();
+			var indices			: ByteArray		= indexStream.lock();
 			var numTriangles	: int			= indexStream.length / 3;
 			var stream			: IVertexStream	= null;
 			
@@ -487,7 +487,7 @@ package aerys.minko.render.geometry
 			return this;
 		}
 		
-		private function fillNormalsData(indices		: Vector.<uint>,
+		private function fillNormalsData(indices		: ByteArray,
 										 normalsStream	: VertexStream,
 										 xyzStream		: VertexStream,
 										 triangles		: Vector.<uint>) : void
@@ -511,9 +511,10 @@ package aerys.minko.render.geometry
 			{
 				var ii	: uint		= triangles ? triangles[i] * 3 : i * 3;
 				
-				var i0	: uint 		= indices[ii];
-				var i1	: uint 		= indices[uint(ii + 1)];
-				var i2	: uint 		= indices[uint(ii + 2)];
+				indices.position = ii << 2;
+				var i0	: uint 		= indices.readUnsignedInt();
+				var i1	: uint 		= indices.readUnsignedInt();
+				var i2	: uint 		= indices.readUnsignedInt();
 				
 				var ii0	: uint 		= xyzOffset + xyzVertexSize * i0;
 				var ii1	: uint		= xyzOffset + xyzVertexSize * i1;
@@ -586,12 +587,13 @@ package aerys.minko.render.geometry
 				}
 			}
 			
+			indices.position = 0;
 			normalsStream.unlock();
 			if (xyzStream.locked)
 				xyzStream.unlock(false);
 		}
 		
-		private function fillTangentsData(indices			: Vector.<uint>,
+		private function fillTangentsData(indices			: ByteArray,
 										  tangentsStream	: VertexStream,
 										  xyzStream			: VertexStream,
 										  uvStream			: VertexStream,
@@ -615,10 +617,11 @@ package aerys.minko.render.geometry
 			for (var i : uint = 0; i < numTriangles; ++i)
 			{
 				var ii 		: uint		= triangles ? triangles[i] * 3 : i * 3;
-				
-				var i0		: uint 		= indices[ii];
-				var i1		: uint 		= indices[uint(ii + 1)];
-				var i2		: uint 		= indices[uint(ii + 2)];
+			
+				indices.position = ii << 2;
+				var i0		: uint 		= indices.readUnsignedInt();
+				var i1		: uint 		= indices.readUnsignedInt();
+				var i2		: uint 		= indices.readUnsignedInt();
 				
 				var ii1		: uint		= xyzOffset + xyzVertexSize * i1;
 				var ii2		: uint 		= xyzOffset + xyzVertexSize * i2;
@@ -709,6 +712,7 @@ package aerys.minko.render.geometry
 				tangentsData.writeFloat(tz);
 			}
 			
+			indices.position = 0;
 			xyzStream.unlock(tangentsStream == xyzStream);
 			if (uvStream.locked)
 				uvStream.unlock(false);
@@ -793,7 +797,7 @@ package aerys.minko.render.geometry
 			var numGeometries	: uint				= 0;
 			var geometryId 		: uint				= 0;
 			var numStreams		: uint				= _vertexStreams.length; 
-			var indexData		: Vector.<uint>		= _indexStream.minko_stream::_data;
+			var indexData		: ByteArray			= _indexStream.minko_stream::_data;
 			
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 			{
@@ -801,9 +805,9 @@ package aerys.minko.render.geometry
 				if (stream == null)
 					stream = VertexStream.extractSubStream(_vertexStreams[streamId], StreamUsage.DYNAMIC);
 				
-				var vertexData	: ByteArray					= stream.minko_stream::_data;
-				var vertexDatas	: Vector.<ByteArray>		= new <ByteArray>[];
-				var indexDatas	: Vector.<Vector.<uint>>	= new Vector.<Vector.<uint>>();
+				var vertexData	: ByteArray				= stream.minko_stream::_data;
+				var vertexDatas	: Vector.<ByteArray>	= new <ByteArray>[];
+				var indexDatas	: Vector.<ByteArray>	= new <ByteArray>[];
 				
 				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.numBytesPerVertex);
 				

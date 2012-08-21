@@ -81,7 +81,7 @@ package aerys.minko.render.geometry.primitive
 			if (doubleSided)
 				indices = indices.concat(indices.concat().reverse());
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
 	}
 }

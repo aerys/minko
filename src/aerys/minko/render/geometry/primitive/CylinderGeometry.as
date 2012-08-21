@@ -88,7 +88,7 @@ package aerys.minko.render.geometry.primitive
 				++ii;
 			}
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
 		
 	}

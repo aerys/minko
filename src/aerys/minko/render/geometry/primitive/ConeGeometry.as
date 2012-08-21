@@ -56,7 +56,7 @@ package aerys.minko.render.geometry.primitive
 				numSegments + 1, 1, segmentId + 1
 			);
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
 	}
 }
