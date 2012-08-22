@@ -3,7 +3,7 @@
 Description
 -----------
 
-Minko is a 3D framework for the web, desktop and mobile devices. It is currently compatible with the following devices:
+Minko is a free and open source real-time 3D framework for the web, desktop and mobile devices. It is currently compatible with the following devices:
 * Mac and PC computers
 * Any web browser with Flash 11+
 * Android 2.2+ smartphones and tablets
