@@ -475,7 +475,7 @@ package aerys.minko.render.geometry
 					
 					if (!hasNormals)
 						pushVertexStreamInList(streamId, normalsStream);
-					if (!hasTangents && hasNormals)
+					if (!hasTangents && tangentsStream != normalsStream)
 						pushVertexStreamInList(streamId, tangentsStream);
 				}
 			}
