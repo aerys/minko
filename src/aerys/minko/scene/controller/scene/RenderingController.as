@@ -281,7 +281,7 @@ package aerys.minko.scene.controller.scene
 				pass.end.execute(pass, context, backBuffer);
 			}
 			
-			// force clear is nothing was rendered
+			// force clear if nothing was rendered
 			if (numTriangles == 0)
 			{
 				var color : uint = backBuffer.backgroundColor;
