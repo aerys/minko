@@ -215,15 +215,6 @@ package aerys.minko.render.material.basic
 		{
 			var diffuse	: SFloat = _diffuseShaderPart.getDiffuseColor();
 			
-			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
-			{
-				var alphaThreshold : SFloat = meshBindings.getParameter(
-					BasicProperties.ALPHA_THRESHOLD, 1
-				);
-				
-				kill(subtract(0.5, lessThan(diffuse.w, alphaThreshold)));
-			}
-			
 			return diffuse;
 		}
 	}
