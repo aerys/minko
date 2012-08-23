@@ -14,6 +14,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 
 	/**
@@ -1063,6 +1064,124 @@ package aerys.minko.render.geometry
 		private function indexStreamChangedHandler(stream : IndexStream) : void
 		{
 			_changed.execute(this);
+		}
+		
+		public function testRay(ray : Ray, transform : Matrix4x4 = null) : int
+		{
+			var indexStreamDataSize : uint 				= indexStream._data.length;
+			//var vertexIterator 		: VertexIterator 	= new VertexIterator(getVertexStream(0), null, false);
+			
+			var v0 		: Vector4 	= new Vector4();
+			var v1 		: Vector4 	= new Vector4();
+			var v2 		: Vector4 	= new Vector4();
+			var edge1 	: Vector4 	= new Vector4();
+			var edge2 	: Vector4 	= new Vector4();
+			var u 		: Number 	= 0;
+			var v 		: Number 	= 0;
+			var t		: Number 	= 0;
+			var pvec 	: Vector4 	= new Vector4();
+			var qvec	: Vector4 	= new Vector4();
+			var tvec	: Vector4 	= new Vector4();
+			var det 	: Number 	= 0;
+			var invDet	: Number 	= 0;
+			var EPSILON : Number 	= 0.00001;
+			
+			var localOrigin 	: Vector4	= ray.origin;
+			var localDirection 	: Vector4 	= ray.direction;
+			
+			if (transform)
+			{
+				localOrigin = transform.transformVector(ray.origin);
+				
+				localDirection = transform.deltaTransformVector(ray.direction);
+				localDirection.normalize();
+			}
+			
+			var vertexStream 	: IVertexStream 	= getVertexStream(0);
+			
+			var xyzVertexStream : VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.XYZ);
+			var format 			: VertexFormat 		= xyzVertexStream.format;
+			var size 			: int 				= format.vertexSize;
+			var offset			: uint 				= format.getOffsetForComponent(VertexComponent.XYZ);
+			
+			var localOriginX 	: Number 			= localOrigin.x;
+			var localOriginY	: Number 			= localOrigin.y;
+			var localOriginZ	: Number 			= localOrigin.z;
+			
+			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
+			{
+				var indexv0 : uint = _indexStream._data[triangleIndex];
+				var indexv1 : uint = _indexStream._data[int(triangleIndex + 1)];
+				var indexv2 : uint = _indexStream._data[int(triangleIndex + 2)];
+				
+				v0.set(
+					xyzVertexStream._data[int(indexv0 * size + offset)], 
+					xyzVertexStream._data[int(indexv0 * size + offset + 1)], 
+					xyzVertexStream._data[int(indexv0 * size + offset + 2)]
+				);
+				v1.set(					
+					xyzVertexStream._data[int(indexv1 * size + offset)], 
+					xyzVertexStream._data[int(indexv1* size + offset + 1)], 
+					xyzVertexStream._data[int(indexv1 * size + offset + 2)]
+				);
+				v2.set(					
+					xyzVertexStream._data[int(indexv2 * size + offset)], 
+					xyzVertexStream._data[int(indexv2 * size + offset + 1)], 
+					xyzVertexStream._data[int(indexv2 * size + offset + 2)]
+				);
+				
+				var v0X : Number = v0.x;
+				var v1X : Number = v1.x;
+				var v2X : Number = v2.x;
+				
+				var v0Y : Number = v0.y;
+				var v1Y : Number = v1.y;
+				var v2Y : Number = v2.y;
+				
+				var v0Z : Number = v0.z;
+				var v1Z : Number = v1.z;
+				var v2Z : Number = v2.z;
+				
+				edge1.set(
+					v1X - v0X,
+					v1Y - v0Y,
+					v1Z - v0Z);
+				edge2.set(
+					v2X - v0X,
+					v2Y - v0Y,
+					v2Z - v0Z);
+				
+				Vector4.crossProduct(localDirection, edge2, pvec);
+				det		= Vector4.dotProduct(edge1, pvec);
+				
+				if (det > - EPSILON && det < EPSILON)
+					continue;
+				
+				invDet = 1.0 / det;
+				
+				tvec.set(
+					localOriginX - v0X,
+					localOriginY - v0Y,
+					localOriginZ - v0Z);
+				
+				u = Vector4.dotProduct(tvec, pvec) * invDet;
+				
+				if (u < 0 || u > 1)
+					continue;
+				
+				Vector4.crossProduct(tvec, edge1, qvec);
+				
+				v = Vector4.dotProduct(localDirection, qvec) * invDet;
+				
+				if (v < 0 || u + v > 1)
+					continue;
+				
+				//t = Vector4.dotProduct(edge2, qvec) * invDet;
+				
+				return triangleIndex / 3;				
+			}
+			
+			return -1;
 		}
 	}
 }
