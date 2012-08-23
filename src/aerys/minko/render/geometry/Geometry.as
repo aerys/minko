@@ -609,7 +609,15 @@ package aerys.minko.render.geometry
 			uvData = uvStream == xyzStream ? xyzData : uvStream.lock();
 			tangentsData = tangentsStream == xyzStream ? xyzData : tangentsStream.lock();
 			
-			for (var i : uint = 0; i < numTriangles; ++i)
+			for (var i : uint = 0; i < numVertices; ++i)
+			{
+				ii 							= i * tangentsVertexSize + tangentsOffset;
+				tangentsData[ii] 			= 0;
+				tangentsData[uint(ii + 1)] 	= 0;
+				tangentsData[uint(ii + 2)] 	= 0;
+			}
+			
+			for (i = 0; i < numTriangles; ++i)
 			{
 				var ii 		: uint		= i * 3;
 				
@@ -1080,7 +1088,6 @@ package aerys.minko.render.geometry
 		public function castRay(ray : Ray, transform : Matrix4x4 = null) : int
 		{
 			var indexStreamDataSize : uint 	= indexStream._data.length;
-			//var vertexIterator 		: VertexIterator 	= new VertexIterator(getVertexStream(0), null, false);
 			
 			var u 		: Number 	= 0;
 			var v 		: Number 	= 0;
