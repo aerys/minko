@@ -248,7 +248,7 @@ package aerys.minko.render.geometry.stream
 			_locked = false;
 			_invalidMinMax = true;
 			
-			if (_dataHasChanged && hasChanged)
+			if (_dataHasChanged || hasChanged)
 			{
 				_dataHasChanged = false;
 				_changed.execute(this);

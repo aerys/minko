@@ -4,14 +4,14 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Ray;
-
-	public class OrthoCamera extends AbstractCamera
+	
+	public class OrthographicCamera extends AbstractCamera
 	{
 		public static const ZOOM_DEFAULT : Number = 1;
 		
-		public function OrthoCamera(zoom 	: Number = ZOOM_DEFAULT,
-									zNear 	: Number = AbstractCamera.DEFAULT_ZNEAR,
-									zFar 	: Number = AbstractCamera.DEFAULT_ZFAR)
+		public function OrthographicCamera(zoom 	: Number = ZOOM_DEFAULT,
+										   zNear 	: Number = AbstractCamera.DEFAULT_ZNEAR,
+										   zFar 	: Number = AbstractCamera.DEFAULT_ZFAR)
 		{
 			super(zNear, zFar);
 			_cameraData.zoom = zoom;

@@ -503,7 +503,18 @@ package aerys.minko.render.geometry
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
 			
-			for (var i : uint = 0; i < numTriangles; ++i)
+			for (var i : uint = 0; i < numVertices; ++i)
+			{
+				i0 = i * normalsVertexSize + normalsOffset;
+				i1 = i * normalsVertexSize + normalsOffset + 1;
+				i2 = i * normalsVertexSize + normalsOffset + 2;
+				
+				normalsData[i0] = 0.;
+				normalsData[i1] = 0.;
+				normalsData[i2] = 0.;
+			}
+			
+			for (i = 0; i < numTriangles; ++i)
 			{
 				var i0	: uint 		= indices[uint(3 * i)];
 				var i1	: uint 		= indices[uint(3 * i + 1)];
@@ -1066,22 +1077,14 @@ package aerys.minko.render.geometry
 			_changed.execute(this);
 		}
 		
-		public function testRay(ray : Ray, transform : Matrix4x4 = null) : int
+		public function castRay(ray : Ray, transform : Matrix4x4 = null) : int
 		{
-			var indexStreamDataSize : uint 				= indexStream._data.length;
+			var indexStreamDataSize : uint 	= indexStream._data.length;
 			//var vertexIterator 		: VertexIterator 	= new VertexIterator(getVertexStream(0), null, false);
 			
-			var v0 		: Vector4 	= new Vector4();
-			var v1 		: Vector4 	= new Vector4();
-			var v2 		: Vector4 	= new Vector4();
-			var edge1 	: Vector4 	= new Vector4();
-			var edge2 	: Vector4 	= new Vector4();
 			var u 		: Number 	= 0;
 			var v 		: Number 	= 0;
 			var t		: Number 	= 0;
-			var pvec 	: Vector4 	= new Vector4();
-			var qvec	: Vector4 	= new Vector4();
-			var tvec	: Vector4 	= new Vector4();
 			var det 	: Number 	= 0;
 			var invDet	: Number 	= 0;
 			var EPSILON : Number 	= 0.00001;
@@ -1092,7 +1095,7 @@ package aerys.minko.render.geometry
 			if (transform)
 			{
 				localOrigin = transform.transformVector(ray.origin);
-				
+
 				localDirection = transform.deltaTransformVector(ray.direction);
 				localDirection.normalize();
 			}
@@ -1104,74 +1107,71 @@ package aerys.minko.render.geometry
 			var size 			: int 				= format.vertexSize;
 			var offset			: uint 				= format.getOffsetForComponent(VertexComponent.XYZ);
 			
+			var localDirectionX : Number 			= localDirection.x;
+			var localDirectionY	: Number 			= localDirection.y;
+			var localDirectionZ	: Number 			= localDirection.z;
+			
 			var localOriginX 	: Number 			= localOrigin.x;
 			var localOriginY	: Number 			= localOrigin.y;
 			var localOriginZ	: Number 			= localOrigin.z;
 			
+			var dataIndexStreamData : Vector.<uint> 	= _indexStream._data;
+			var xyzVertexStreamData	: Vector.<Number>	= xyzVertexStream._data;
+			
 			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
 			{
-				var indexv0 : uint = _indexStream._data[triangleIndex];
-				var indexv1 : uint = _indexStream._data[int(triangleIndex + 1)];
-				var indexv2 : uint = _indexStream._data[int(triangleIndex + 2)];
+				var indexv0 : uint = dataIndexStreamData[triangleIndex] * size + offset;
+				var indexv1 : uint = dataIndexStreamData[int(triangleIndex + 1)] * size + offset;
+				var indexv2 : uint = dataIndexStreamData[int(triangleIndex + 2)] * size + offset;
 				
-				v0.set(
-					xyzVertexStream._data[int(indexv0 * size + offset)], 
-					xyzVertexStream._data[int(indexv0 * size + offset + 1)], 
-					xyzVertexStream._data[int(indexv0 * size + offset + 2)]
-				);
-				v1.set(					
-					xyzVertexStream._data[int(indexv1 * size + offset)], 
-					xyzVertexStream._data[int(indexv1* size + offset + 1)], 
-					xyzVertexStream._data[int(indexv1 * size + offset + 2)]
-				);
-				v2.set(					
-					xyzVertexStream._data[int(indexv2 * size + offset)], 
-					xyzVertexStream._data[int(indexv2 * size + offset + 1)], 
-					xyzVertexStream._data[int(indexv2 * size + offset + 2)]
-				);
+				var v0X : Number = xyzVertexStreamData[int(indexv0)];
+				var v0Y : Number = xyzVertexStreamData[int(indexv0 + 1)];
+				var v0Z : Number = xyzVertexStreamData[int(indexv0 + 2)];
+
+				var v1X : Number = xyzVertexStreamData[int(indexv1)];
+				var v1Y : Number = xyzVertexStreamData[int(indexv1 + 1)];
+				var v1Z : Number = xyzVertexStreamData[int(indexv1 + 2)];
 				
-				var v0X : Number = v0.x;
-				var v1X : Number = v1.x;
-				var v2X : Number = v2.x;
+				var v2X : Number = xyzVertexStreamData[int(indexv2)];
+				var v2Y : Number = xyzVertexStreamData[int(indexv2 + 1)];
+				var v2Z : Number = xyzVertexStreamData[int(indexv2 + 2)];
 				
-				var v0Y : Number = v0.y;
-				var v1Y : Number = v1.y;
-				var v2Y : Number = v2.y;
+				var edge1X : Number = v1X - v0X;
+				var edge1Y : Number = v1Y - v0Y;
+				var edge1Z : Number = v1Z - v0Z;
 				
-				var v0Z : Number = v0.z;
-				var v1Z : Number = v1.z;
-				var v2Z : Number = v2.z;
+				var edge2X : Number = v2X - v0X;
+				var edge2Y : Number = v2Y - v0Y;
+				var edge2Z : Number = v2Z - v0Z;				
 				
-				edge1.set(
-					v1X - v0X,
-					v1Y - v0Y,
-					v1Z - v0Z);
-				edge2.set(
-					v2X - v0X,
-					v2Y - v0Y,
-					v2Z - v0Z);
+				// cross product
+				var pvecX : Number = localDirectionY * edge2Z - edge2Y * localDirectionZ;
+				var pvecY : Number = localDirectionZ * edge2X - edge2Z * localDirectionX;
+				var pvecZ : Number = localDirectionX * edge2Y - edge2X * localDirectionY;
 				
-				Vector4.crossProduct(localDirection, edge2, pvec);
-				det		= Vector4.dotProduct(edge1, pvec);
+				// dot product
+				det = (edge1X * pvecX + edge1Y * pvecY + edge1Z * pvecZ);
 				
 				if (det > - EPSILON && det < EPSILON)
 					continue;
 				
 				invDet = 1.0 / det;
 				
-				tvec.set(
-					localOriginX - v0X,
-					localOriginY - v0Y,
-					localOriginZ - v0Z);
+				var tvecX : Number = localOriginX - v0X;
+				var tvecY : Number = localOriginY - v0Y;
+				var tvecZ : Number = localOriginZ - v0Z;
 				
-				u = Vector4.dotProduct(tvec, pvec) * invDet;
+				u = (tvecX * pvecX + tvecY * pvecY + tvecZ * pvecZ) * invDet;
 				
 				if (u < 0 || u > 1)
 					continue;
 				
-				Vector4.crossProduct(tvec, edge1, qvec);
+				var qvecX : Number = tvecY * edge1Z - edge1Y * tvecZ;
+				var qvecY : Number = tvecZ * edge1X - edge1Z * tvecX;
+				var qvecZ : Number = tvecX * edge1Y - edge1X * tvecY;
 				
-				v = Vector4.dotProduct(localDirection, qvec) * invDet;
+				
+				v = (localDirectionX * qvecX + localDirectionY * qvecY + localDirectionZ * qvecZ) * invDet;
 				
 				if (v < 0 || u + v > 1)
 					continue;
