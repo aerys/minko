@@ -2,16 +2,16 @@ package aerys.minko.type
 {
 	public final class Signal
 	{
-		private var _name			: String			= null;
+		private var _name			: String	= null;
 		
-		private var _callbacks		: Array				= [];
-		private var _numCallbacks	: uint				= 0;
+		private var _callbacks		: Array		= [];
+		private var _numCallbacks	: uint		= 0;
 		
-		private var _executed		: Boolean			= false;
-		private var _numAdded		: uint				= 0;
-		private var _toAdd			: Array				= null;
-		private var _numRemoved		: uint				= 0;
-		private var _toRemove		: Array				= null;
+		private var _executed		: Boolean	= false;
+		private var _numAdded		: uint		= 0;
+		private var _toAdd			: Array		= null;
+		private var _numRemoved		: uint		= 0;
+		private var _toRemove		: Array		= null;
 		
 		public function get numCallbacks() : uint
 		{
