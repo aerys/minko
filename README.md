@@ -80,6 +80,7 @@ Tutorials
 * [Your first Minko application](http://blogs.aerys.in/jeanmarc-leroux/2012/08/03/tutorial-your-first-minko-application/)
 * [Display your first 3D object with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/09/tutorial-display-your-first-3d-object-with-minko/)
 * [Your first mobile 3D application with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/20/tutorial-your-first-mobile-3d-application-with-minko/)
+* [Add pixel-perfect 3D mouse interactivity](http://blogs.aerys.in/jeanmarc-leroux/2012/08/27/tutorial-add-pixel-perfect-3d-mouse-interactivity/)
 
 Plugins
 -------
