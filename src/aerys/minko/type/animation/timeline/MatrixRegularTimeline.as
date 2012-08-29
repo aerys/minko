@@ -43,13 +43,10 @@ package aerys.minko.type.animation.timeline
 			var out : Matrix4x4 = currentTarget[propertyName] as Matrix4x4;
 			
 			if (!out)
-			{
 				throw new Error(
-					"'" + propertyName
-					+ "' could not be found in '"
+					"Property '" + propertyName + "' could not be found in '"
 					+ currentTarget + "'."
 				);
-			}
 			
 			var previousTime		: Number	= previousTimeId * _deltaTime;
 			var nextTime			: Number	= nextTimeId * _deltaTime;
@@ -65,7 +62,12 @@ package aerys.minko.type.animation.timeline
 			else if (interpolationRatio == 1.)
 				out.copyFrom(nextMatrix);
 			else
-				out.interpolateBetween(previousMatrix, nextMatrix, interpolationRatio, _interpolateScale);
+				out.interpolateBetween(
+					previousMatrix,
+					nextMatrix,
+					interpolationRatio,
+					_interpolateScale
+				);
 		}
 
 		override public function clone() : ITimeline
