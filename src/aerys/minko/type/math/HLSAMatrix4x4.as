@@ -10,7 +10,7 @@ package aerys.minko.type.math
 		private static const BWGT			: Number 			= 0.0820;
 		private static const SQRT2			: Number			= Math.sqrt(2.0);
 		private static const SQRT3			: Number			= Math.sqrt(3.0);
-		private static const INV_SQRT2		: Number			= 1.0 / SQRT2;
+		private static const INV_SQRT2		: Number			= 1. / SQRT2;
 		
 		private var _hue				: Number		= 0;
 		private var _saturation			: Number		= 1;
@@ -174,7 +174,10 @@ package aerys.minko.type.math
 			updateDiffuseColorMatrix();
 		}
 		
-		public function HLSAMatrix4x4(hue : Number, luminance : Number, saturation : Number, alpha : Number)
+		public function HLSAMatrix4x4(hue 			: Number	= 0.,
+									  luminance 	: Number	= 1.,
+									  saturation 	: Number	= 1.,
+									  alpha 		: Number	= 1.)
 		{
 			super();
 			
@@ -193,8 +196,13 @@ package aerys.minko.type.math
 			append(_hueMatrix);
 			append(_saturationMatrix);
 			append(_luminanceMatrix);
-			appendTranslation(0, 0, _alpha);
+			setColumn(3, new Vector4(0, 0, 0, _alpha));
 			unlock();
+		}
+		
+		override public function clone() : Matrix4x4
+		{
+			return new HLSAMatrix4x4(_hue, _luminance, _saturation, _alpha);
 		}
 	}
 }
