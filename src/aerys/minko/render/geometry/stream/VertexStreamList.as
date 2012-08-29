@@ -1,9 +1,9 @@
 package aerys.minko.render.geometry.stream
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.type.Signal;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	import aerys.minko.type.Signal;
 
 	public final class VertexStreamList implements IVertexStream
 	{
@@ -101,15 +101,45 @@ package aerys.minko.render.geometry.stream
 			return id < _streams.length ? _streams[id] : null;
 		}
 
-		public function deleteVertexByIndex(index : uint) : Boolean
+		public function get(index 		: uint,
+							component 	: VertexComponent 	= null,
+							offset 		: uint 				= 0) : Number
 		{
-			if (index > numVertices)
-				return false;
-
+			if (!format.hasComponent(component))
+				throw new Error(
+					'This stream does not provide the \'' + component + '\' vertex component.'
+				);
+			
+			return getStreamByComponent(component).get(index, component, offset);
+		}
+		
+		public function set(index 		: uint,
+							value 		: Number,
+							component 	: VertexComponent 	= null,
+							offset 		: uint 				= 0) : void
+		{
+			if (!format.hasComponent(component))
+				throw new Error(
+					'This stream does not provide the \'' + component + '\' vertex component.'
+				);
+			
+			return getStreamByComponent(component).set(index, value, component, offset);
+		}
+		
+		public function deleteVertex(index : uint) : IVertexStream
+		{
 			for each (var stream : VertexStream in _streams)
-				stream.deleteVertexByIndex(index);
+				stream.deleteVertex(index);
 
-			return true;
+			return this;
+		}
+		
+		public function duplicateVertex(index : uint) : IVertexStream
+		{
+			for each (var stream : VertexStream in _streams)
+				stream.duplicateVertex(index);
+			
+			return this;
 		}
 		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void

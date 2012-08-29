@@ -21,20 +21,20 @@ package aerys.minko.render.geometry.stream
 		
 		private static const TMP_NUMBERS	: Vector.<Number>	= new <Number>[];
 		
-		minko_stream var _data			: ByteArray;
 		minko_stream var _localDispose	: Boolean;
+		minko_stream var _data			: ByteArray;
 		
-		private var _usage				: uint;
-		private var _format				: VertexFormat;
-		private var _resource			: VertexBuffer3DResource;
+		private var _usage			: uint;
+		private var _format			: VertexFormat;
+		private var _resource		: VertexBuffer3DResource;
 		
-		private var _minimum			: Vector.<Number>;
-		private var _maximum			: Vector.<Number>;
+		private var _minimum		: Vector.<Number>;
+		private var _maximum		: Vector.<Number>;
 		
-		private var _locked				: Boolean;
-
-		private var _changed			: Signal;
-		private var _boundsChanged		: Signal;
+		private var _locked			: Boolean;
+		
+		private var _changed		: Signal;
+		private var _boundsChanged	: Signal;
 		
 		public function get format() : VertexFormat
 		{
@@ -104,18 +104,16 @@ package aerys.minko.render.geometry.stream
 		public function VertexStream(usage	: uint,
 									 format	: VertexFormat,
 									 data 	: ByteArray	= null,
-									 offset	: uint		= 0,
 									 length	: uint		= 0)
 		{
 			super();
 			
-			initialize(format, usage, data, offset, length);
+			initialize(format, usage, data, length);
 		}
 		
 		private function initialize(format	: VertexFormat,
 									usage	: uint,
 									data 	: ByteArray,
-									offset	: uint,
 									length	: uint) : void
 		{
 			_changed = new Signal('VertexStream.changed');
@@ -130,22 +128,30 @@ package aerys.minko.render.geometry.stream
 			_data.endian = Endian.LITTLE_ENDIAN;
 			if (data)
 			{
-				if (data.endian != Endian.LITTLE_ENDIAN)
-					throw new Error('Endianness must be Endian.LITTLE_ENDIAN.');
-				if (length == 0)
-					length = data.bytesAvailable;
-				if ((length - offset) % format.numBytesPerVertex != 0)
-					throw new Error('Incompatible format/length.');
+				length ||= data.bytesAvailable;
+				validateData(data, length);
 				
-				data.readBytes(_data, offset, length);
+				data.readBytes(_data, 0, length);
 				_data.position = 0;
 				
 				updateMinMax();
 			}
 		}
 		
+		private function validateData(data : ByteArray, length : uint = 0) : void
+		{
+			length ||= data.bytesAvailable;
+			
+			if (data.endian != Endian.LITTLE_ENDIAN)
+				throw new Error('Endianness must be Endian.LITTLE_ENDIAN.');
+			if (length % format.numBytesPerVertex != 0)
+				throw new Error('Incompatible format/length.');
+		}
+		
 		private function updateMinMax() : void
 		{
+			checkReadUsage(this);
+			
 			var size	: uint	= format.numBytesPerVertex >>> 2;
 			var i		: uint	= 0;
 			
@@ -158,7 +164,7 @@ package aerys.minko.render.geometry.stream
 			}
 			
 			var boundsHaveChanged 	: Boolean 	= false;
-			var numFloats			: uint		= data.bytesAvailable >> 2;
+			var numFloats			: uint		= _data.bytesAvailable >>> 2;
 			
 			_data.position = 0;
 			for (i = 0; i < numFloats; i += size)
@@ -185,12 +191,12 @@ package aerys.minko.render.geometry.stream
 				_boundsChanged.execute(this);
 		}
 		
-		public function deleteVertexByIndex(index : uint) : Boolean
+		public function deleteVertex(index : uint) : IVertexStream
 		{
 			checkWriteUsage(this);
 			
 			if (index > numVertices)
-				return false;
+				throw new Error('Index out of bounds.');
 
 			_data.position = 0;
 			_data.readBytes(_data, _format.numBytesPerVertex * index);
@@ -199,10 +205,26 @@ package aerys.minko.render.geometry.stream
 			if (!_locked)
 			{
 				_changed.execute(this);
+				
+				// FIXME: check if bounds have actually changed?
 				updateMinMax();
 			}
 
-			return true;
+			return this;
+		}
+		
+		public function duplicateVertex(index : uint) : IVertexStream
+		{
+			var numBytesPerVertex : uint = format.numBytesPerVertex;
+			
+			_data.position = _data.length;
+			_data.writeBytes(_data, numBytesPerVertex * index, numBytesPerVertex);
+			_data.position = 0;
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
 		}
 
 		public function getStreamByComponent(vertexComponent : VertexComponent) : VertexStream
@@ -210,9 +232,15 @@ package aerys.minko.render.geometry.stream
 			return _format.hasComponent(vertexComponent) ? this : null;
 		}
 
-		public function get(index : uint) : Number
+		public function get(index 		: uint,
+							component 	: VertexComponent 	= null,
+							offset 		: uint 				= 0) : Number
 		{
 			var value : Number = 0.;
+			
+			index += offset;
+			if (component)
+				index += format.getOffsetForComponent(component);
 			
 			checkReadUsage(this);
 			
@@ -275,6 +303,8 @@ package aerys.minko.render.geometry.stream
 			_locked = false;
 			_data.position = 0;
 			
+			validateData(_data);
+			
 			if (hasChanged)
 			{
 				_changed.execute(this);
@@ -289,11 +319,18 @@ package aerys.minko.render.geometry.stream
 		 * @param value
 		 * 
 		 */
-		public function set(offset : uint, value : Number) : void
+		public function set(index 		: uint,
+							value 		: Number,
+							component 	: VertexComponent 	= null,
+							offset 		: uint 				= 0) : void
 		{
 			checkWriteUsage(this);
 			
-			_data.position = offset * 4;
+			index += offset;
+			if (component)
+				index += format.getOffsetForComponent(component);
+			
+			_data.position = index << 2;
 			_data.writeFloat(value);
 			_data.position = 0;
 			
@@ -328,7 +365,7 @@ package aerys.minko.render.geometry.stream
 		 * @param data
 		 * 
 		 */
-		public function push(data : ByteArray, offset : uint = 0, length : uint = 0) : void
+		public function pushBytes(data : ByteArray, offset : uint = 0, length : uint = 0) : VertexStream
 		{
 			checkWriteUsage(this);
 			
@@ -344,8 +381,25 @@ package aerys.minko.render.geometry.stream
 				_changed.execute(this);
 				_boundsChanged.execute(this);
 			}
+			
+			return this;
 		}
-
+		
+		public function pushFloat(value : Number) : VertexStream
+		{
+			_data.position = _data.bytesAvailable;
+			_data.writeFloat(value);
+			_data.position = 0;
+			
+			if (!_locked)
+			{
+				_changed.execute(this);
+				_boundsChanged.execute(this);
+			}
+			
+			return this;
+		}
+		
 		/**
 		 * Apply matrix transformation to all vertices
 		 * 
@@ -357,33 +411,34 @@ package aerys.minko.render.geometry.stream
 									   transform	: Matrix4x4,
 									   normalize	: Boolean) : void
 		{
-			if (component.numProperties < 3)
+			if (component.numProperties != 3)
 				throw new Error('Vertex component \'' + component.toString() + '\' does not have a size of 3.');
 				
-			var offset			: uint		= _format.getBytesOffsetForComponent(component);
-			var vertexSize		: uint		= _format.numBytesPerVertex;
-			var vertices		: ByteArray	= lock();
-			var numVertices		: uint		= vertices.length / vertexSize;
-			var tmpLength		: uint		= numVertices * 3;
-				
-			TMP_NUMBERS.length = tmpLength;
+			checkReadUsage(this);
+			checkWriteUsage(this);
 			
-			for (var i : int = 0, k : int = offset; i < tmpLength; i += 3, k += vertexSize)
+			var offset		: uint	= _format.getBytesOffsetForComponent(component);
+			var vertexSize	: uint	= _format.numBytesPerVertex;
+			var numVertices	: uint	= this.numVertices;
+			
+			TMP_NUMBERS.length = numVertices * 3;
+			
+			for (var i : uint = 0; i < numVertices; ++i)
 			{
-				vertices.position = i * vertexSize + offset;
+				_data.position = vertexSize * i + offset;
 				
-				TMP_NUMBERS[i]				= vertices.readFloat();
-				TMP_NUMBERS[uint(i + 1)]	= vertices.readFloat();
-				TMP_NUMBERS[uint(i + 2)]	= vertices.readFloat();
+				TMP_NUMBERS[uint(i * 3)]		= _data.readFloat();
+				TMP_NUMBERS[uint(i * 3 + 1)]	= _data.readFloat();
+				TMP_NUMBERS[uint(i * 3 + 2)]	= _data.readFloat();
 			}
 				
 			transform.transformRawVectors(TMP_NUMBERS, TMP_NUMBERS);
 			
-			for (i = 0, k = offset; i < tmpLength; i += 3, k += vertexSize)
+			for (i = 0; i < numVertices; ++i)
 			{
-				var x	: Number	= TMP_NUMBERS[i];
-				var y	: Number 	= TMP_NUMBERS[i + 1];
-				var z	: Number 	= TMP_NUMBERS[i + 2];
+				var x	: Number	= TMP_NUMBERS[uint(i * 3)];
+				var y	: Number 	= TMP_NUMBERS[uint(i * 3 + 1)];
+				var z	: Number 	= TMP_NUMBERS[uint(i * 3 + 2)];
 		
 				if (normalize)
 				{
@@ -393,17 +448,21 @@ package aerys.minko.render.geometry.stream
 					y /= m;
 					z /= m;
 				}
+			
+				_data.position = vertexSize * i + offset;
 				
-				vertices.position = i * vertexSize + offset;
-				
-				vertices.writeFloat(x);
-				vertices.writeFloat(y);
-				vertices.writeFloat(z);
+				_data.writeFloat(x);
+				_data.writeFloat(y);
+				_data.writeFloat(z);
 			}
 			
-			vertices.position = 0;
+			_data.position = 0;
 			
-			unlock();
+			if (!_locked)
+			{
+				_changed.execute(this);
+				_boundsChanged.execute(this);
+			}
 		}
 		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
@@ -521,9 +580,12 @@ package aerys.minko.render.geometry.stream
 
 			// a bit expensive... but hey, it works :)
 			var stream	: VertexStream	= extractSubStream(streams[0], usage, format);
-
+			var data	: ByteArray		= stream._data;
+			
+			data.position = data.length;
 			for  (i = 1; i < numStreams; ++i)
-				stream.data.writeBytes(extractSubStream(streams[i], usage, format).data);
+				data.writeBytes(extractSubStream(streams[i], usage, format)._data);
+			data.position = 0;
 
 			return stream;
 		}
