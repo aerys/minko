@@ -6,8 +6,8 @@ package aerys.minko.render.material.basic
 		public static const DEPTH_TEST								: String = 'depthTest';
 		public static const TRIANGLE_CULLING						: String = 'triangleCulling';
 		public static const DIFFUSE_COLOR							: String = 'diffuseColor';
-		public static const DIFFUSE_COLOR_MATRIX					: String = 'diffuseColorMatrix';
 		public static const DIFFUSE_MAP								: String = 'diffuseMap';
+		public static const DIFFUSE_TRANSFORM						: String = 'diffuseTransform';
 		public static const ALPHA_THRESHOLD							: String = 'alphaThreshold';
 		
 		public static const DIFFUSE_FILTERING						: String = 'diffuseFiltering';
