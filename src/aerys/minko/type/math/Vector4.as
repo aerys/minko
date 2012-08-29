@@ -202,12 +202,9 @@ package aerys.minko.type.math
 			return Vector3D.distance(u._vector, v._vector);
 		}
 
-		public static function copy(source : Vector4, target : Vector4 = null) : Vector4
+		public function copyFrom(source : Vector4) : Vector4
 		{
-			target ||= FACTORY.create() as Vector4;
-			target.set(source.x, source.y, source.z, source.w);
-
-			return target;
+			return set(source.x, source.y, source.z, source.w);
 		}
 
 		public function incrementBy(vector : Vector4) : Vector4
@@ -219,7 +216,7 @@ package aerys.minko.type.math
 
 			return this;
 		}
-
+		
 		public function decrementBy(vector : Vector4) : Vector4
 		{
 			_vector.decrementBy(vector._vector);
@@ -238,6 +235,36 @@ package aerys.minko.type.math
 			_changed.execute(this);
 
 			return this;
+		}
+		
+		public function lerp(target : Vector4, ratio : Number) : Vector4
+		{
+			if (ratio == 1.)
+				return copyFrom(target);
+			
+			if (ratio != 0.)
+			{
+				var x : Number = _vector.x;
+				var y : Number = _vector.y;
+				var z : Number = _vector.z;
+				var w : Number = _vector.w;
+				
+				set(
+					x + (target._vector.x - x) * ratio,
+					y + (target._vector.y - y) * ratio,
+					z + (target._vector.z - z) * ratio,
+					w + (target._vector.w - w) * ratio
+				);
+			}
+			
+			return this;
+		}
+		
+		public function equals(v : Vector4, allFour : Boolean = false, tolerance : Number = 0.) : Boolean
+		{
+			return tolerance
+				? _vector.nearEquals(v._vector, tolerance, allFour);
+				: _vector.equals(v._vector, allFour)
 		}
 
 		public function project() : Vector4
@@ -300,9 +327,7 @@ package aerys.minko.type.math
 		{
 			if (x != _vector.x || y != _vector.y || z != _vector.z || w != _vector.w)
 			{
-				_vector.x = x;
-				_vector.y = y;
-				_vector.z = z;
+				_vector.setTo(x, y, z);
 				_vector.w = w;
 
 				_update = UPDATE_ALL;
@@ -315,8 +340,7 @@ package aerys.minko.type.math
 
 		public function toString() : String
 		{
-			return "(" + _vector.x + ", " + _vector.y + ", " + _vector.z + ", "
-				   + _vector.w + ")";
+			return '(' + _vector.x + ', ' + _vector.y + ', ' + _vector.z + ', ' + _vector.w + ')';
 		}
 
 		public static function scale(v : Vector4, s : Number, out : Vector4 = null) : Vector4
