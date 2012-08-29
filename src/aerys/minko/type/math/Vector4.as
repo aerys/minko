@@ -35,7 +35,7 @@ package aerys.minko.type.math
 			'y'	: 'y',
 			'z'	: 'z',
 			'w'	: 'w'
-		}
+		};
 
 		minko_math var _vector	: Vector3D	= new Vector3D();
 
@@ -161,7 +161,8 @@ package aerys.minko.type.math
 								   v 	: Vector4,
 								   out	: Vector4 = null) : Vector4
 		{
-			out = copy(u, out);
+			out ||= new Vector4();
+			out.copyFrom(u);
 
 			return out.incrementBy(v);
 		}
@@ -170,7 +171,8 @@ package aerys.minko.type.math
 										v 	: Vector4,
 										out : Vector4 = null) : Vector4
 		{
-			out = copy(u, out);
+			out ||= new Vector4();
+			out.copyFrom(u);
 			
 			return out.decrementBy(v);
 		}
@@ -263,8 +265,8 @@ package aerys.minko.type.math
 		public function equals(v : Vector4, allFour : Boolean = false, tolerance : Number = 0.) : Boolean
 		{
 			return tolerance
-				? _vector.nearEquals(v._vector, tolerance, allFour);
-				: _vector.equals(v._vector, allFour)
+				? _vector.nearEquals(v._vector, tolerance, allFour)
+				: _vector.equals(v._vector, allFour);
 		}
 
 		public function project() : Vector4
@@ -364,13 +366,6 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public static function normalize(v : Vector4, out : Vector4 = null) : Vector4
-		{
-			out = copy(v, out);
-			
-			return out.normalize();
-		}
-		
 		public function lock() : void
 		{
 			_locked = true;
