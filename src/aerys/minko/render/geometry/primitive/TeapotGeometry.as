@@ -9,6 +9,7 @@ package aerys.minko.render.geometry.primitive
 	
 	import flash.geom.Vector3D;
 	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 	
 	/**
 	 * Utah Teapot
@@ -169,6 +170,9 @@ package aerys.minko.render.geometry.primitive
 			var indexData	: ByteArray	= new ByteArray();
 			var vertexData	: ByteArray	= new ByteArray();
 			
+			vertexData.endian = Endian.LITTLE_ENDIAN;
+			indexData.endian = Endian.LITTLE_ENDIAN;
+			
 			var patch			: Vector.<Vector3D>	= new Vector.<Vector3D>(16, true);
 			var currentVertexId	: uint				= 0;
 			
@@ -183,9 +187,12 @@ package aerys.minko.render.geometry.primitive
 				currentVertexId += (divs + 1) * (divs + 1);
 			}
 			
+			vertexData.position = 0;
+			indexData.position = 0;
+			
 			// this is slow and memory consuming and could be avoided by non duplicating all border
 			// vertices on genPatchVertexData and genPatchIndexData...
-			GeometrySanitizer.removeDuplicatedVertices(vertexData, indexData, 3);
+			GeometrySanitizer.removeDuplicatedVertices(vertexData, indexData, 12);
 			
 			super(
 				new <IVertexStream>[
