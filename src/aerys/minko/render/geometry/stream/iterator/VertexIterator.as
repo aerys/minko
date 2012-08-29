@@ -131,7 +131,7 @@ package aerys.minko.render.geometry.stream.iterator
 				}
 				else
 				{
-					_vertex._index = index;
+					_vertex.index = index;
 				}
 
 				vertex = _vertex;
@@ -170,7 +170,7 @@ package aerys.minko.render.geometry.stream.iterator
 		{
 			var index : int = int(name);
 
-			if (_vstream.deleteVertexByIndex(index))
+			if (_vstream.deleteVertex(index))
 			{
 				if (index <= _index)
 					++_offset;
