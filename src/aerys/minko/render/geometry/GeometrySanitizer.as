@@ -28,7 +28,7 @@ package aerys.minko.render.geometry
 			var numVertices		: uint 	= vertexData.bytesAvailable / bytesPerVertex;
 			
 			for (var indexId : uint = 0; indexId < numIndices; ++indexId)
-				if (indexData.readShort() >= numVertices)
+				if (indexData.readUnsignedShort() >= numVertices)
 					break;
 			
 			indexData.position = startPosition;
@@ -74,8 +74,8 @@ package aerys.minko.render.geometry
 				var partialIndexData	: ByteArray			= new ByteArray();
 				
 				// local variables
-				var oldVertexIds		: Vector.<int>		= new Vector.<uint>(3, true);
-				var newVertexIds		: Vector.<int>		= new Vector.<uint>(3, true);
+				var oldVertexIds		: Vector.<uint>		= new Vector.<uint>(3, true);
+				var newVertexIds		: Vector.<uint>		= new Vector.<uint>(3, true);
 				var newVertexNeeded		: Vector.<Boolean>	= new Vector.<Boolean>(3, true);
 				
 				var usedVerticesDic		: Dictionary		= new Dictionary();	// this dictionary maps old and new indices
@@ -104,7 +104,7 @@ package aerys.minko.render.geometry
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)
 					{
 						inIndices.position = (usedIndicesCount + localVertexId) << 2;
-						oldVertexIds[localVertexId]	= inIndices.readShort();
+						oldVertexIds[localVertexId]	= inIndices.readUnsignedShort();
 						
 						var tmp : Object = usedVerticesDic[oldVertexIds[localVertexId]];
 						
@@ -221,7 +221,7 @@ package aerys.minko.render.geometry
 			
 			for (var indexId : int = 0; indexId < numIndices; ++indexId)
 			{
-				index = indexData.readShort();
+				index = indexData.readUnsignedShort();
 				indexData.position -= 2;
 				indexData.writeShort(oldVertexIdToNewVertexId[index]);
 			}
@@ -253,7 +253,7 @@ package aerys.minko.render.geometry
 			// flag unused vertices by scanning the index buffer
 			var oldVertexIdToUsage : Vector.<Boolean> = new Vector.<Boolean>(oldNumVertices, true);
 			for (indexId = 0; indexId < numIndices; ++indexId)
-				oldVertexIdToUsage[indexData.readShort()] = true;
+				oldVertexIdToUsage[indexData.readUnsignedShort()] = true;
 			
 			// scan the flags, fix vertex buffer, and store old to new vertex id mapping
 			var oldVertexIdToNewVertexId : Vector.<uint> = new Vector.<uint>(oldNumVertices, true);
@@ -280,7 +280,7 @@ package aerys.minko.render.geometry
 			indexData.position = indexDataStartPosition;
 			for (indexId = 0; indexId < numIndices; ++indexId)
 			{
-				var index : uint = indexData.readShort();
+				var index : uint = indexData.readUnsignedShort();
 				
 				indexData.position -= 4;
 				indexData.writeShort(oldVertexIdToNewVertexId[index]);
