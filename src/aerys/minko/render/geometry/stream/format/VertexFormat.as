@@ -138,17 +138,21 @@ package aerys.minko.render.geometry.stream.format
 		/**
 		 * Add the components from the vertex format passed in attribute that we don't have in this one.
 		 */
-		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : void
+		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : VertexFormat
 		{
 			for each (var component : VertexComponent in otherVertexFormat._components)
 				addComponent(component, force);
+				
+			return this;
 		}
 
-		public function intersectWith(otherVertexFormat : VertexFormat) : void
+		public function intersectWith(otherVertexFormat : VertexFormat) : VertexFormat
 		{
 			for each (var component : VertexComponent in _components)
 				if (!otherVertexFormat.hasComponent(component))
 					removeComponent(component);
+				
+			return this;
 		}
 
 		public function getBytesOffsetForComponent(component : VertexComponent, index : uint = 0) : uint
