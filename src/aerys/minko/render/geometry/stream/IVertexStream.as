@@ -1,8 +1,8 @@
 package aerys.minko.render.geometry.stream
 {
-	import aerys.minko.type.Signal;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	import aerys.minko.type.Signal;
 
 	public interface IVertexStream
 	{
@@ -11,9 +11,20 @@ package aerys.minko.render.geometry.stream
 		
 		function get changed()			: Signal;
 		function get boundsChanged()	: Signal;
+		
+		function get(index 		: uint,
+					 component 	: VertexComponent 	= null,
+					 offset 	: uint 				= 0) : Number;
+		
+		function set(index 		: uint,
+					 value 		: Number,
+					 component 	: VertexComponent 	= null,
+					 offset 	: uint 				= 0) : void;
 
+		function deleteVertex(index : uint) : IVertexStream;
+		function duplicateVertex(index : uint) : IVertexStream;
+		
 		function disposeLocalData(waitForUpload : Boolean = true) : void;
-		function deleteVertexByIndex(index : uint) : Boolean;
 		function getStreamByComponent(component : VertexComponent) : VertexStream;
 		function dispose() : void;
 	}
