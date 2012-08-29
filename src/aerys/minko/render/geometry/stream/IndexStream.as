@@ -50,12 +50,11 @@ package aerys.minko.render.geometry.stream
 
 		public function IndexStream(usage	: uint,
 									data 	: ByteArray	= null,
-									offset	: uint		= 0,
 									length	: uint		= 0)
 		{
 			super();
 
-			initialize(data, offset, length, usage);
+			initialize(data, length, usage);
 		}
 
 		minko_stream function invalidate() : void
@@ -68,7 +67,6 @@ package aerys.minko.render.geometry.stream
 		}
 
 		private function initialize(data	: ByteArray,
-									offset	: uint,
 									length 	: uint,
 									usage	: uint) : void
 		{
@@ -88,7 +86,7 @@ package aerys.minko.render.geometry.stream
 				if (length % 6 != 0)
 					throw new Error();
 				
-				_data.writeBytes(data, offset, length);
+				data.readBytes(_data, 0, length);
 			}
 			else
 			{
@@ -107,7 +105,7 @@ package aerys.minko.render.geometry.stream
 			checkReadUsage(this);
 			
 			_data.position = index << 1;
-			value = _data.readShort();
+			value = _data.readUnsignedShort();
 			_data.position = 0;
 			
 			return value;
@@ -124,12 +122,13 @@ package aerys.minko.render.geometry.stream
 			invalidate();
 		}
 
-		public function deleteTriangleByIndex(index : uint) : void
+		public function deleteTriangle(triangleIndex : uint) : void
 		{
 			checkWriteUsage(this);
 			
 			_data.position = 0;
-			_data.writeBytes(_data, index * 12, 12);
+			_data.writeBytes(_data, triangleIndex * 12, 12);
+			_data.length -= 12;
 			_data.position = 0;
 			
 			invalidate();
@@ -137,7 +136,7 @@ package aerys.minko.render.geometry.stream
 
 		public function clone(usage : uint = 0) : IndexStream
 		{
-			return new IndexStream(usage || _usage, _data, length);
+			return new IndexStream(usage || _usage, _data);
 		}
 
 		public function toString() : String
@@ -148,24 +147,47 @@ package aerys.minko.render.geometry.stream
 		public function concat(indexStream : IndexStream,
 							   firstIndex	: uint	= 0,
 							   count		: uint	= 0,
-							   offset		: uint 	= 0) : IndexStream
+							   indexOffset	: uint 	= 0) : IndexStream
 		{
 			checkReadUsage(indexStream);
 			checkWriteUsage(this);
-			
-			_data.position = _data.length;
-			_data.writeBytes(indexStream._data);
-			_data.position = 0;
 
-			invalidate();
+			pushBytes(indexStream._data, firstIndex, count, indexOffset);
+			indexStream._data.position = 0;
 			
 			return this;
 		}
 
-		public function push(indices 	: Vector.<uint>,
-							 firstIndex	: uint	= 0,
-							 count		: uint	= 0,
-							 offset		: uint 	= 0) : void
+		public function pushBytes(bytes			: ByteArray,
+								  firstIndex	: uint	= 0,
+								  count			: uint	= 0,
+								  indexOffset	: uint	= 0) : IndexStream
+		{
+			count ||= bytes.length >>> 1;
+			
+			_data.position = _data.length;
+			
+			if (indexOffset == 0)
+				_data.writeBytes(bytes, firstIndex << 1, count << 1);
+			else
+			{
+				bytes.position = firstIndex << 1;
+				for (var i : uint = 0; i < count; ++i)
+					_data.writeShort(bytes.readUnsignedShort() + indexOffset);
+			}
+
+			_data.position = 0;
+			bytes.position = (firstIndex + count) << 1;
+			
+			invalidate();
+			
+			return this;
+		}
+		
+		public function pushVector(indices 		: Vector.<uint>,
+								   firstIndex	: uint	= 0,
+								   count		: uint	= 0,
+								   offset		: uint 	= 0) : IndexStream
 		{
 			checkWriteUsage(this);
 			
@@ -179,6 +201,29 @@ package aerys.minko.render.geometry.stream
 			_data.position = 0;
 
 			invalidate();
+			
+			return this;
+		}
+		
+		public function pushTriangle(index1 : uint, index2 : uint, index3 : uint) : IndexStream
+		{
+			return setTriangle(length * 3, index1, index2, index3);
+		}
+		
+		public function setTriangle(triangleIndex	: uint,
+									index1 			: uint,
+									index2 			: uint,
+									index3 			: uint) : IndexStream
+		{
+			_data.position = triangleIndex << 1;
+			_data.writeShort(index1);
+			_data.writeShort(index2);
+			_data.writeShort(index3);
+			_data.position = 0;
+			
+			invalidate();
+			
+			return this;
 		}
 
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
