@@ -1,13 +1,14 @@
 package aerys.minko.render.resource
 {
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.type.Signal;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
+	import aerys.minko.type.Signal;
 	
 	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
+	import flash.utils.ByteArray;
 
 	/**
 	 * VertexBuffer3DResource objects handle vertex buffers allocation
