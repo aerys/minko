@@ -469,18 +469,18 @@ package aerys.minko.type.math
 		{
 			if (withScale)
 			{
-				var scale	: Vector4	= target.getScale(TMP_VECTOR4);
-				var tx		: Number	= scale.x;
-				var ty		: Number	= scale.y;
-				var tz		: Number	= scale.z;
+				var scale	: Vector4	= getScale(TMP_VECTOR4);
+				var sx		: Number	= scale.x;
+				var sy		: Number	= scale.y;
+				var sz		: Number	= scale.z;
 				
-				scale = getScale(TMP_VECTOR4);
+				scale = target.getScale(TMP_VECTOR4);
 				
 				_matrix.interpolateTo(target._matrix, ratio);
 				_matrix.appendScale(
-					tx + (scale.x - tx) * ratio,
-					ty + (scale.y - ty) * ratio,
-					tz + (scale.z - tz) * ratio
+					sx + (scale.x - sx) * ratio,
+					sy + (scale.y - sy) * ratio,
+					sz + (scale.z - sz) * ratio
 				);
 			}
 			else
