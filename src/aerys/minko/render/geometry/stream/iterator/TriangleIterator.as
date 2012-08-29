@@ -89,7 +89,7 @@ package aerys.minko.render.geometry.stream.iterator
 		{
 			var index 	: uint 	= uint(name);
 			
-			_ib.deleteTriangleByIndex(index);
+			_ib.deleteTriangle(index);
 			
 			return true;
 		}
