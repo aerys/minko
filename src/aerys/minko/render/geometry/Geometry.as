@@ -1124,6 +1124,8 @@ package aerys.minko.render.geometry
 			
 			var dataIndexStreamData : Vector.<uint> 	= _indexStream._data;
 			var xyzVertexStreamData	: Vector.<Number>	= xyzVertexStream._data;
+			var maxDistance			: Number 			= Number.POSITIVE_INFINITY;
+			var triangleIndice		: int 				= -3;
 			
 			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
 			{
@@ -1183,12 +1185,16 @@ package aerys.minko.render.geometry
 				if (v < 0 || u + v > 1)
 					continue;
 				
-				//t = Vector4.dotProduct(edge2, qvec) * invDet;
+				t =  (edge2X * qvecX + edge2Y * qvecY + edge2Z * qvecZ) * invDet; 
 				
-				return triangleIndex / 3;				
+				if (t < maxDistance)
+				{
+					maxDistance = t;
+					triangleIndice = triangleIndex;
+				}
 			}
 			
-			return -1;
+			return triangleIndice / 3;				
 		}
 	}
 }

@@ -9,6 +9,16 @@ package aerys.minko.scene.node.camera
 	{
 		public static const ZOOM_DEFAULT : Number = 1;
 		
+		public function get zoom():Number
+		{
+			return cameraData.zoom;
+		}
+
+		public function set zoom(value:Number):void
+		{
+			cameraData.zoom = value;
+		}
+		
 		public function OrthographicCamera(zoom 	: Number = ZOOM_DEFAULT,
 										   zNear 	: Number = AbstractCamera.DEFAULT_ZNEAR,
 										   zFar 	: Number = AbstractCamera.DEFAULT_ZFAR)
@@ -16,7 +26,7 @@ package aerys.minko.scene.node.camera
 			super(zNear, zFar);
 			_cameraData.zoom = zoom;
 		}
-		
+
 		override protected function initialize():void
 		{
 			addController(new CameraController(true));
