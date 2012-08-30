@@ -14,6 +14,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.type.bounding.BoundingSphere;
 	import aerys.minko.type.bounding.IBoundingVolume;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 
 	/**
@@ -502,7 +503,18 @@ package aerys.minko.render.geometry
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
 			
-			for (var i : uint = 0; i < numTriangles; ++i)
+			for (var i : uint = 0; i < numVertices; ++i)
+			{
+				i0 = i * normalsVertexSize + normalsOffset;
+				i1 = i * normalsVertexSize + normalsOffset + 1;
+				i2 = i * normalsVertexSize + normalsOffset + 2;
+				
+				normalsData[i0] = 0.;
+				normalsData[i1] = 0.;
+				normalsData[i2] = 0.;
+			}
+			
+			for (i = 0; i < numTriangles; ++i)
 			{
 				var i0	: uint 		= indices[uint(3 * i)];
 				var i1	: uint 		= indices[uint(3 * i + 1)];
@@ -597,7 +609,15 @@ package aerys.minko.render.geometry
 			uvData = uvStream == xyzStream ? xyzData : uvStream.lock();
 			tangentsData = tangentsStream == xyzStream ? xyzData : tangentsStream.lock();
 			
-			for (var i : uint = 0; i < numTriangles; ++i)
+			for (var i : uint = 0; i < numVertices; ++i)
+			{
+				ii 							= i * tangentsVertexSize + tangentsOffset;
+				tangentsData[ii] 			= 0;
+				tangentsData[uint(ii + 1)] 	= 0;
+				tangentsData[uint(ii + 2)] 	= 0;
+			}
+			
+			for (i = 0; i < numTriangles; ++i)
 			{
 				var ii 		: uint		= i * 3;
 				
@@ -889,6 +909,112 @@ package aerys.minko.render.geometry
 		private function indexStreamChangedHandler(stream : IndexStream) : void
 		{
 			_changed.execute(this);
+		}
+		
+		public function castRay(ray : Ray, transform : Matrix4x4 = null) : int
+		{
+			var indexStreamDataSize : uint 	= indexStream._data.length;
+			
+			var u 		: Number 	= 0;
+			var v 		: Number 	= 0;
+			var t		: Number 	= 0;
+			var det 	: Number 	= 0;
+			var invDet	: Number 	= 0;
+			var EPSILON : Number 	= 0.00001;
+			
+			var localOrigin 	: Vector4	= ray.origin;
+			var localDirection 	: Vector4 	= ray.direction;
+			
+			if (transform)
+			{
+				localOrigin = transform.transformVector(ray.origin);
+
+				localDirection = transform.deltaTransformVector(ray.direction);
+				localDirection.normalize();
+			}
+			
+			var vertexStream 	: IVertexStream 	= getVertexStream(0);
+			
+			var xyzVertexStream : VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.XYZ);
+			var format 			: VertexFormat 		= xyzVertexStream.format;
+			var size 			: int 				= format.vertexSize;
+			var offset			: uint 				= format.getOffsetForComponent(VertexComponent.XYZ);
+			
+			var localDirectionX : Number 			= localDirection.x;
+			var localDirectionY	: Number 			= localDirection.y;
+			var localDirectionZ	: Number 			= localDirection.z;
+			
+			var localOriginX 	: Number 			= localOrigin.x;
+			var localOriginY	: Number 			= localOrigin.y;
+			var localOriginZ	: Number 			= localOrigin.z;
+			
+			var dataIndexStreamData : Vector.<uint> 	= _indexStream._data;
+			var xyzVertexStreamData	: Vector.<Number>	= xyzVertexStream._data;
+			
+			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
+			{
+				var indexv0 : uint = dataIndexStreamData[triangleIndex] * size + offset;
+				var indexv1 : uint = dataIndexStreamData[int(triangleIndex + 1)] * size + offset;
+				var indexv2 : uint = dataIndexStreamData[int(triangleIndex + 2)] * size + offset;
+				
+				var v0X : Number = xyzVertexStreamData[int(indexv0)];
+				var v0Y : Number = xyzVertexStreamData[int(indexv0 + 1)];
+				var v0Z : Number = xyzVertexStreamData[int(indexv0 + 2)];
+
+				var v1X : Number = xyzVertexStreamData[int(indexv1)];
+				var v1Y : Number = xyzVertexStreamData[int(indexv1 + 1)];
+				var v1Z : Number = xyzVertexStreamData[int(indexv1 + 2)];
+				
+				var v2X : Number = xyzVertexStreamData[int(indexv2)];
+				var v2Y : Number = xyzVertexStreamData[int(indexv2 + 1)];
+				var v2Z : Number = xyzVertexStreamData[int(indexv2 + 2)];
+				
+				var edge1X : Number = v1X - v0X;
+				var edge1Y : Number = v1Y - v0Y;
+				var edge1Z : Number = v1Z - v0Z;
+				
+				var edge2X : Number = v2X - v0X;
+				var edge2Y : Number = v2Y - v0Y;
+				var edge2Z : Number = v2Z - v0Z;				
+				
+				// cross product
+				var pvecX : Number = localDirectionY * edge2Z - edge2Y * localDirectionZ;
+				var pvecY : Number = localDirectionZ * edge2X - edge2Z * localDirectionX;
+				var pvecZ : Number = localDirectionX * edge2Y - edge2X * localDirectionY;
+				
+				// dot product
+				det = (edge1X * pvecX + edge1Y * pvecY + edge1Z * pvecZ);
+				
+				if (det > - EPSILON && det < EPSILON)
+					continue;
+				
+				invDet = 1.0 / det;
+				
+				var tvecX : Number = localOriginX - v0X;
+				var tvecY : Number = localOriginY - v0Y;
+				var tvecZ : Number = localOriginZ - v0Z;
+				
+				u = (tvecX * pvecX + tvecY * pvecY + tvecZ * pvecZ) * invDet;
+				
+				if (u < 0 || u > 1)
+					continue;
+				
+				var qvecX : Number = tvecY * edge1Z - edge1Y * tvecZ;
+				var qvecY : Number = tvecZ * edge1X - edge1Z * tvecX;
+				var qvecZ : Number = tvecX * edge1Y - edge1X * tvecY;
+				
+				
+				v = (localDirectionX * qvecX + localDirectionY * qvecY + localDirectionZ * qvecZ) * invDet;
+				
+				if (v < 0 || u + v > 1)
+					continue;
+				
+				//t = Vector4.dotProduct(edge2, qvec) * invDet;
+				
+				return triangleIndex / 3;				
+			}
+			
+			return -1;
 		}
 	}
 }

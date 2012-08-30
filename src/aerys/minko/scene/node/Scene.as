@@ -4,6 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.scene.RenderingController;
+	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -22,7 +23,7 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		minko_scene var _camera		: Camera				= null;
+		minko_scene var _camera		: AbstractCamera		= null;
 		
 		private var _renderingCtrl	: RenderingController	= new RenderingController();
 		
@@ -32,7 +33,7 @@ package aerys.minko.scene.node
 		private var _enterFrame		: Signal				= new Signal('Scene.enterFrame');
 		private var _exitFrame		: Signal				= new Signal('Scene.exitFrame');
 
-		public function get activeCamera() : Camera
+		public function get activeCamera() : AbstractCamera
 		{
 			return _camera;
 		}

@@ -2,12 +2,9 @@ package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.MeshVisibilityDataProvider;
-	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.bounding.FrustumCulling;
-	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 
 	
