@@ -44,6 +44,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Skybox](http://static.aerys.in:8080/minko/images/vignette_minko_skybox.jpg)](http://static.aerys.in:8080/minko/examples/SkyboxExample.html)
 [![Spritesheet](http://static.aerys.in:8080/minko/images/vignette_minko_spritesheet.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/04/20/spritesheets-with-minko/)
 [![HDR Bloom](http://static.aerys.in:8080/minko/images/vignette_minko_hdr.jpg)](http://static.aerys.in:8080/minko/examples/HDRExample.html)
+[![Pixel Picking](http://static.aerys.in:8080/minko/images/vignette_minko_picking.jpg)](http://static.aerys.in:8080/minko/examples/PickingExample.html)
 
 Tools
 -----
@@ -60,8 +61,12 @@ Features
 * AS3 GPU programming
 * JIT shaders compiler
 * Multi-pass rendering
-* Post-processing
+* Post-processing (noise, HDR bloom, vignettage...)
+* Ray casting
 * Hardware accelerated skinning/morphing animations
+* Lighting engine (Phong lighting, environmental mapping, shadow mapping, fog...)
+* Pixel-perfect 3D mouse interactivity
+* 3D assets compression
 
 Documentation
 -------------
@@ -75,6 +80,7 @@ Tutorials
 * [Your first Minko application](http://blogs.aerys.in/jeanmarc-leroux/2012/08/03/tutorial-your-first-minko-application/)
 * [Display your first 3D object with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/09/tutorial-display-your-first-3d-object-with-minko/)
 * [Your first mobile 3D application with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/20/tutorial-your-first-mobile-3d-application-with-minko/)
+* [Add pixel-perfect 3D mouse interactivity](http://blogs.aerys.in/jeanmarc-leroux/2012/08/27/tutorial-add-pixel-perfect-3d-mouse-interactivity/)
 
 Plugins
 -------
