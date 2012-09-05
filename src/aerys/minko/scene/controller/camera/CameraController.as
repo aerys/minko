@@ -62,6 +62,8 @@ package aerys.minko.scene.controller.camera
 			
 			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
+			
+			updateProjection();
 		}
 		
 		private function removedFromSceneHandler(camera : Camera, scene : Scene) : void
@@ -84,29 +86,29 @@ package aerys.minko.scene.controller.camera
 		
 		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4) : void
 		{
-			var cameraData			: CameraDataProvider	= _camera.cameraData;
-			var cameraWorldToScreen	: Matrix4x4				= cameraData.worldToScreen;
-			var cameraScreenToWorld	: Matrix4x4				= cameraData.screenToWorld;
-			var cameraViewToWorld	: Matrix4x4				= cameraData.viewToWorld;
-			var cameraPosition		: Vector4				= cameraData.position;
-			var cameraDirection		: Vector4				= cameraData.direction;
+			var cameraData		: CameraDataProvider	= _camera.cameraData;
+			var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
+			var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
+			var viewToWorld		: Matrix4x4				= cameraData.viewToWorld;
+			var cameraPosition	: Vector4				= cameraData.position;
+			var cameraDirection	: Vector4				= cameraData.direction;
 			
-			cameraWorldToScreen.lock()
-			cameraScreenToWorld.lock()
+			worldToScreen.lock();
+			screenToWorld.lock();
 			cameraPosition.lock();
 			cameraDirection.lock();
 			
-			cameraWorldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
-			cameraScreenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
-			cameraViewToWorld.transformVector(Vector4.ZERO, cameraPosition);
-			cameraViewToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraDirection).normalize();
+			worldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
+			screenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
+			viewToWorld.transformVector(Vector4.ZERO, cameraPosition);
+			viewToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraDirection).normalize();
+
+			cameraData.frustum.updateFromMatrix(worldToScreen);
 			
-			cameraWorldToScreen.unlock();
-			cameraScreenToWorld.unlock();
+			worldToScreen.unlock();
+			screenToWorld.unlock();
 			cameraPosition.unlock();
 			cameraDirection.unlock();
-			
-			cameraData.frustum.updateFromMatrix(cameraWorldToScreen);
 		}
 		
 		private function viewportSizeChanged(bindings 	: DataBindings,
@@ -119,7 +121,8 @@ package aerys.minko.scene.controller.camera
 		
 		private function cameraPropertyChangedHandler(provider : IDataProvider, property : String) : void
 		{
-			updateProjection();
+			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView')
+				updateProjection();
 		}
 		
 		private function updateProjection() : void
@@ -145,12 +148,12 @@ package aerys.minko.scene.controller.camera
 			screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
 			worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
 			
+			cameraData.frustum.updateFromMatrix(worldToScreen);
+			
 			projection.unlock();
 			screenToView.unlock();
 			screenToWorld.unlock();
 			worldToScreen.unlock();
-			
-			cameraData.frustum.updateFromMatrix(worldToScreen);
 		}
 		
 		private function cameraActivatedHandler(camera : Camera) : void

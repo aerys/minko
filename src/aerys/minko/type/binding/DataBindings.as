@@ -53,7 +53,6 @@ package aerys.minko.type.binding
 			var dataDescriptor			: Object			= provider.dataDescriptor;
 			
 			provider.changed.add(providerChangedHandler);
-			provider.propertyChanged.add(providerChangedHandler);
 			
 			_providerToBindingNames[provider] = providerBindingNames;
 			_providers.push(provider);
@@ -106,7 +105,6 @@ package aerys.minko.type.binding
 			_bindingNames.length = indexWrite;
 			
 			provider.changed.remove(providerChangedHandler);
-			provider.propertyChanged.remove(providerChangedHandler);
 			
 			_providers.splice(_providers.indexOf(provider), 1);
 			

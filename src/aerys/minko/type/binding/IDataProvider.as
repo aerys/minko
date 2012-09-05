@@ -6,7 +6,6 @@ package aerys.minko.type.binding
 	{
 		function get dataDescriptor() 	: Object;
 		function get usage()			: uint;
-		function get propertyChanged()	: Signal;
 		
 		function clone()				: IDataProvider;
 	}
