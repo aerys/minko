@@ -11,7 +11,7 @@ package aerys.minko.scene.node
 	{
 		public static const DEFAULT_FOV		: Number	= Math.PI * .25;
 		public static const DEFAULT_ZNEAR	: Number	= .1;
-		public static const DEFAULT_ZFAR	: Number	= 500.;
+		public static const DEFAULT_ZFAR	: Number	= 1000.;
 
 		private var _cameraData		: CameraDataProvider	= null;
 		

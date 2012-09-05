@@ -199,14 +199,9 @@ package aerys.minko.type.math
 		private static const CULLING_SPHERE		: uint				= 0x00000001;
 		private static const CULLING_BOX		: uint				= 0x00000002;
 
-		private static const CLIPPING			: uint				= 0x00000001;
-		private static const CLIPPING_IGNORE	: uint				= 0x00000002;
-		private static const CLIPPING_DISCARD	: uint				= 0x00000004;
-
 		private static const SPANNING			: uint				= 0x0000000f;
 
 		private static const TMP_NUMBERS_1		: Vector.<Number>	= new <Number>[];
-		private static const TMP_NUMBERS_2		: Vector.<Number>	= new <Number>[];
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
 
 		private static const THICKNESS			: Number			= 0.0001;
@@ -234,7 +229,7 @@ package aerys.minko.type.math
 			return _points;
 		}
 		
-		public function updateFromDescription(fov	: Number,
+		/*public function updateFromDescription(fov	: Number,
 											  ratio	: Number,
 											  zNear	: Number,
 											  zFar 	: Number) : void
@@ -252,7 +247,7 @@ package aerys.minko.type.math
 			_planes[FAR].set(	0,			0,			1 - m33,	m43).normalize();
 			
 			_points			= null;
-		}
+		}*/
 
 		/**
 		 * Update the frustum planes according to the specified project matrix.
@@ -282,7 +277,7 @@ package aerys.minko.type.math
 				data[3] - data[1],
 				data[7] - data[5],
 				data[11] - data[9],
-				data[13] + data[15]
+				-data[13] - data[15]
 			).normalize();
 
 			(_planes[BOTTOM] as Plane).set(
@@ -371,23 +366,16 @@ package aerys.minko.type.math
 
 			if (transform != null)
 			{
-				TMP_NUMBERS_1[0] = cx;
-				TMP_NUMBERS_1[1] = cy;
-				TMP_NUMBERS_1[2] = cz;
-				TMP_NUMBERS_1[3] = 1;
-				TMP_NUMBERS_1[4] = 1;
-				TMP_NUMBERS_1[5] = 1;
-				TMP_NUMBERS_2.length = 0;
+				transform.transformVector(center, TMP_VECTOR4);
+				cx = TMP_VECTOR4.x;
+				cy = TMP_VECTOR4.y;
+				cz = TMP_VECTOR4.z;
 				
-				transform.transformRawVectors(TMP_NUMBERS_1, TMP_NUMBERS_2);
+				var scale : Vector4 = transform.transformVector(Vector4.ONE, TMP_VECTOR4);
 				
-				cx = TMP_NUMBERS_2[0];
-				cy = TMP_NUMBERS_2[1];
-				cz = TMP_NUMBERS_2[2];
-				
-				radius *= Math.max(TMP_NUMBERS_2[3] - cx, TMP_NUMBERS_2[4] - cy, TMP_NUMBERS_2[5] - cz);
+				radius *= Math.max(scale.x - cx, scale.y - cy, scale.z - cz);
 			}
-
+			
 			for (var i : int = 0; i < 6; ++i)
 			{
 				if (((CULLING_SPHERE << (i << 2)) & culling) == 0)
@@ -396,7 +384,7 @@ package aerys.minko.type.math
 				p = _planes[i];
 				d = p._a * cx + p._b * cy + p._c * cz - p._d;
 
-				if (d + radius < 0.0)
+				if (d + radius < 0)
 					return OUTSIDE;
 				else if (d - radius <= 0.0)
 					result |= SPANNING << (i << 2);
@@ -581,21 +569,14 @@ package aerys.minko.type.math
 
 			if (transform)
 			{
-				TMP_NUMBERS_1[0] = cx;
-				TMP_NUMBERS_1[1] = cy;
-				TMP_NUMBERS_1[2] = cz;
-				TMP_NUMBERS_1[3] = 1;
-				TMP_NUMBERS_1[4] = 1;
-				TMP_NUMBERS_1[5] = 1;
-				TMP_NUMBERS_2.length = 0;
+				transform.transformVector(center, TMP_VECTOR4);
+				cx = TMP_VECTOR4.x;
+				cy = TMP_VECTOR4.y;
+				cz = TMP_VECTOR4.z;
 				
-				transform.transformRawVectors(TMP_NUMBERS_1, TMP_NUMBERS_2);
+				var scale : Vector4 = transform.transformVector(Vector4.ONE, TMP_VECTOR4);
 				
-				cx = TMP_NUMBERS_2[0];
-				cy = TMP_NUMBERS_2[1];
-				cz = TMP_NUMBERS_2[2];
-				
-				radius *= Math.max(TMP_NUMBERS_2[3] - cx, TMP_NUMBERS_2[4] - cy, TMP_NUMBERS_2[5] - cz);
+				radius *= Math.max(scale.x - cx, scale.y - cy, scale.z - cz);
 			}
 
 			for (var i : int = 0; i < 6; i++)
