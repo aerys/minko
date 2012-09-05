@@ -19,6 +19,11 @@ package aerys.minko.scene.controller
 	{
 		private var _targetsInScene	: uint	= 0;
 		
+		public function get numTargetsInScene() : uint
+		{
+			return _targetsInScene;
+		}
+		
 		public function EnterFrameController(targetType	: Class = null)
 		{
 			super(targetType);
