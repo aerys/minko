@@ -10,22 +10,25 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.animation.SkinningMethod;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
 	import flash.geom.Matrix3D;
 	import flash.utils.Dictionary;
 	
-	public class SkinningController extends EnterFrameController implements IRebindableController
+	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{
 		private var _skinningHelper		: AbstractSkinningHelper;
 		private var _isDirty			: Boolean;
 		
 		private var _method				: uint;
-		private var _bindShape			: Matrix3D;
+		private var _bindShapeMatrix	: Matrix3D;
 		private var _skeletonRoot		: Group;
 		private var _joints				: Vector.<Group>;
 		private var _invBindMatrices	: Vector.<Matrix3D>;
+		
+		private var _numVisibleTargets	: uint;
 		
 		public function get skinningMethod() : uint
 		{
@@ -35,7 +38,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		public function get bindShape() : Matrix4x4
 		{
 			var bindShape : Matrix4x4 = new Matrix4x4();
-			bindShape.minko_math::_matrix = _bindShape;
+			bindShape.minko_math::_matrix = _bindShapeMatrix;
 			
 			return bindShape;
 		}
@@ -72,50 +75,59 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super(Mesh);
 			
-			var numJoints : uint = joints.length;
-			
-			_method			 	= method;
+			_method				= method;
 			_skeletonRoot		= skeletonRoot;
-			_joints				= joints.slice();
-			_bindShape			= bindShape.minko_math::_matrix;
-			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
+			_bindShapeMatrix	= bindShape.minko_math::_matrix;
 			_isDirty			= false;
 			
+			initialize(joints, invBindMatrices);
+		}
+		
+		private function initialize(joints			: Vector.<Group>,
+									invBindMatrices	: Vector.<Matrix4x4>) : void
+		{
+			var numJoints : uint = joints.length;
+			
+			_joints	= joints.slice();
+			
+			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
 				_invBindMatrices[jointId] = invBindMatrices[jointId].minko_math::_matrix;
 			
-			init();
-		}
-		
-		private function init() : void
-		{
 			if (skinningMethod == SkinningMethod.SOFTWARE_MATRIX)
-				_skinningHelper = new SoftwareSkinningHelper(_method, _bindShape, _invBindMatrices);
+				_skinningHelper = new SoftwareSkinningHelper(_method, _bindShapeMatrix, _invBindMatrices);
 			else
-				_skinningHelper = new ShaderSkinningHelper(_method, _bindShape, _invBindMatrices);
+				_skinningHelper = new ShaderSkinningHelper(_method, _bindShapeMatrix, _invBindMatrices);
 		}
 		
-		override protected function targetAddedHandler(ctrl		: EnterFrameController,
-													   target	: ISceneNode) : void
+		override protected function targetAddedToSceneHandler(target	: ISceneNode,
+															  scene		: Scene) : void
 		{
-			super.targetAddedHandler(ctrl, target);
+			super.targetAddedToSceneHandler(target, scene);
 			
-			if (numTargets == 1)
+			if (numTargetsInScene == 1)
 				subscribeToJoints();
 			
+			var mesh : Mesh = target as Mesh;
+			
+			mesh.bindings.addCallback('inFrustum', meshVisibilityChangedHandler);
+			_skinningHelper.addMesh(mesh);
+			
 			_isDirty = true;
-			_skinningHelper.addMesh(target as Mesh);
 		}
 		
-		override protected function targetRemovedHandler(ctrl	: EnterFrameController,
-														 target	: ISceneNode) : void
+		override protected function targetRemovedFromSceneHandler(target	: ISceneNode,
+																  scene		: Scene) : void
 		{
-			super.targetRemovedHandler(ctrl, target);
+			super.targetRemovedFromSceneHandler(target, scene);
 			
 			if (numTargets == 0)
 				unsubscribeFromJoints();
 			
-			_skinningHelper.removeMesh(target as Mesh);
+			var mesh : Mesh = target as Mesh;
+			
+			mesh.bindings.removeCallback('inFrustum', meshVisibilityChangedHandler);
+			_skinningHelper.removeMesh(mesh);
 		}
 		
 		private function jointLocalToWorldChangedHandler(emitter : Matrix4x4) : void
@@ -171,7 +183,7 @@ package aerys.minko.scene.controller.mesh.skinning
 														   destination	: BitmapData, 
 														   time			: Number) : void
 		{
-			if (_isDirty)
+			if (_isDirty && _skinningHelper.numMeshes != 0)
 			{
 				_skinningHelper.update(_skeletonRoot, _joints);
 				_isDirty = false;
@@ -181,6 +193,17 @@ package aerys.minko.scene.controller.mesh.skinning
 		override public function clone() : AbstractController
 		{
 			return new SkinningController(_method, _skeletonRoot, _joints, bindShape, invBindMatrices);
+		}
+		
+		private function meshVisibilityChangedHandler(bindings 	: DataBindings,
+												  property	: String,
+												  oldValue	: Boolean,
+												  newValue	: Boolean) : void
+		{
+			if (newValue)
+				_skinningHelper.addMesh(bindings.owner as Mesh);
+			else
+				_skinningHelper.removeMesh(bindings.owner as Mesh);
 		}
 	}
 }
