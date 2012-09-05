@@ -28,6 +28,11 @@ package aerys.minko.scene.controller.mesh.skinning
 		protected var _bindShape		: Matrix3D;
 		protected var _invBindMatrices	: Vector.<Matrix3D>;
 		
+		public function get numMeshes() : uint
+		{
+			return _targets.length;
+		}
+		
 		public function AbstractSkinningHelper(method			: uint,
 											   bindShape		: Matrix3D,
 											   invBindMatrices	: Vector.<Matrix3D>)
