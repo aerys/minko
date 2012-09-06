@@ -10,9 +10,8 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.bounding.IBoundingVolume;
+	import aerys.minko.type.math.BoundingBox;
+	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -40,7 +39,7 @@ package aerys.minko.render.geometry
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Geometry implements IBoundingVolume
+	public class Geometry
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;

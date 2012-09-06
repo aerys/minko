@@ -8,7 +8,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.bounding.FrustumCulling;
+	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Ray;
 
@@ -230,7 +230,7 @@ package aerys.minko.scene.node
 			this.material = material || DEFAULT_MATERIAL;
 			
 			_visibility = new VisibilityController();
-			_visibility.frustumCulling = FrustumCulling.BOX;
+			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 		}
 		

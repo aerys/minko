@@ -1,9 +1,6 @@
-package aerys.minko.type.bounding
+package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko_math;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Ray;
-	import aerys.minko.type.math.Vector4;
 
 
 	/**
@@ -59,7 +56,7 @@ package aerys.minko.type.bounding
 			_center.changed.add(centerChangedHandler);
 		}
 		
-		private function centerChangedHandler(center : Vector4, property : String) : void
+		private function centerChangedHandler(center : Vector4) : void
 		{
 			throw new Error('This property is read-only.');
 		}
@@ -82,7 +79,7 @@ package aerys.minko.type.bounding
 			return new BoundingSphere(center, radius);
 		}
 
-		minko_math function update(min : Vector4, max : Vector4) : void
+		minko_math function updateFromMinMax(min : Vector4, max : Vector4) : void
 		{
 			_center._vector.x = (max.x + min.x) / 2.;
 			_center._vector.y = (max.y + min.y) / 2.;
@@ -90,6 +87,12 @@ package aerys.minko.type.bounding
 
 			_radius = Math.max(Vector4.distance(_center, max),
 							   Vector4.distance(_center, min));
+		}
+		
+		minko_math function update(center : Vector4, radius : Number) : void
+		{
+			_center._vector.copyFrom(center._vector);
+			_radius = radius;
 		}
 
 		public function clone() : BoundingSphere

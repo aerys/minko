@@ -1,10 +1,7 @@
 package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko_math;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.bounding.FrustumCulling;
-	import aerys.minko.type.bounding.IBoundingVolume;
+	import aerys.minko.type.enum.FrustumCulling;
 
 	/**
 	 * The frustum is the geometrical six-sided 3D shape which represents
@@ -180,14 +177,7 @@ package aerys.minko.type.math
 	{
 		use namespace minko_math;
 		
-		public static const OUTSIDE				: uint				= 0x00000000;
-		public static const INSIDE				: uint				= 0xf0000000;
-		public static const SPANNING_LEFT		: uint				= SPANNING << (LEFT << 2);
-		public static const SPANNING_TOP		: uint				= SPANNING << (TOP << 2);
-		public static const SPANNING_RIGHT		: uint				= SPANNING << (RIGHT << 2);
-		public static const SPANNING_BOTTOM		: uint				= SPANNING << (BOTTOM << 2);
-		public static const SPANNING_NEAR		: uint				= SPANNING << (NEAR << 2);
-		public static const SPANNING_FAR		: uint				= SPANNING << (FAR << 2);
+		public static const INSIDE				: int				= -1;
 
 		private static const LEFT				: int				= 0;
 		private static const TOP				: int				= 1;
@@ -315,7 +305,8 @@ package aerys.minko.type.math
 		 */
 		public function testVector(vector 		: Vector4,
 								   transform	: Matrix4x4 = null,
-								   mask			: int 		= 0xffffff) : uint
+								   culling		: uint 		= 0xffffff,
+								   firstPlane	: uint		= 0) : uint
 		{
 			var result	: uint 		= 0;
 			var p 		: Plane	= null;
@@ -326,14 +317,16 @@ package aerys.minko.type.math
 
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_SPHERE << (i << 2)) & mask) == 0)
+				var planeIndex : uint = (i + firstPlane) % 6;
+				
+				if (((CULLING_BOX << (planeIndex << 2)) & culling) == 0)
 					continue ;
-
-				p = _planes[i];
+				
+				p = _planes[planeIndex];
 				d = p._a * vector.x + p._b * vector.y + p._c * vector.z - p._d;
 
 				if (d < 0.)
-					return OUTSIDE;
+					return planeIndex;
 			}
 
 			return INSIDE;
@@ -347,9 +340,10 @@ package aerys.minko.type.math
 		 * @param myCulling The bitmask that describes the planes to test.
 		 * @return A bitmask where each plane test is store in a 4-bits value.
 		 */
-		public function testBoundingSphere(sphere 		: BoundingSphere,
-										   transform	: Matrix4x4	= null,
-										   culling		: int 		= 0xffffff) : int
+		public function testBoundingSphere(sphere 			: BoundingSphere,
+										   transform		: Matrix4x4	= null,
+										   culling			: uint 		= 0xffffff,
+										   firstPlane		: uint		= 0) : int
 		{
 			var center	: Vector4	= sphere.center;
 			var radius	: Number	= sphere.radius;
@@ -378,19 +372,19 @@ package aerys.minko.type.math
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_SPHERE << (i << 2)) & culling) == 0)
+				var planeIndex : uint = (i + firstPlane) % 6;
+				
+				if (((CULLING_BOX << (planeIndex << 2)) & culling) == 0)
 					continue ;
-
-				p = _planes[i];
+				
+				p = _planes[planeIndex];				
 				d = p._a * cx + p._b * cy + p._c * cz - p._d;
-
-				if (d + radius < 0)
-					return OUTSIDE;
-				else if (d - radius <= 0.0)
-					result |= SPANNING << (i << 2);
+				
+				if (d + radius < 0.)
+					return planeIndex;
 			}
 
-			return result || INSIDE;
+			return INSIDE;
 		}
 
 		/**
@@ -403,17 +397,18 @@ package aerys.minko.type.math
 		 *
 		 */
 		public function testBoundingBox(box			: BoundingBox,
-										transform	: Matrix4x4 = null,
-										culling		: int		= 0xffffffff) : uint
+										transform	: Matrix4x4 	= null,
+										culling		: uint			= 0xffffffff,
+										firstPlane	: uint			= 0) : int
 		{
 			var result		: uint				= 0;
 			var count		: int				= 0;
 			var vertices	: Vector.<Number>	= box._vertices;
 			var p			: Plane				= null;
-
+			
 			if (!culling)
 				return INSIDE;
-
+			
 			// transform vertices
 			if (transform != null)
 			{
@@ -421,7 +416,7 @@ package aerys.minko.type.math
 				transform.transformRawVectors(vertices, TMP_NUMBERS_1);
 				vertices = TMP_NUMBERS_1;
 			}
-
+			
 			var x1	: Number	= vertices[0];
 			var y1	: Number	= vertices[1];
 			var z1	: Number	= vertices[2];
@@ -446,36 +441,36 @@ package aerys.minko.type.math
 			var x8	: Number	= vertices[21];
 			var y8	: Number	= vertices[22];
 			var z8	: Number	= vertices[23];
-
+			
 			for (var i : int = 0; i < 6; ++i)
 			{
-				if (((CULLING_BOX << (i << 2)) & culling) == 0)
+				var planeIndex : uint = (i + firstPlane) % 6;
+				
+				if (((CULLING_BOX << (planeIndex << 2)) & culling) == 0)
 					continue ;
-
-				p = _planes[i];
-
+				
+				p = _planes[planeIndex];
+				
 				var pa	: Number	= p.a;
 				var pb	: Number	= p.b;
 				var pc	: Number	= p.c;
 				var pd	: Number	= p.d;
-
-				// test vertices
-				count = pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
-				count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
-				count += pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1;
-				count += pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1;
-				count += pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1;
-				count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
-				count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
-				count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
-
+				
+				// test each vertex
+				count = (pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1)
+					+ (pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1)
+				    + (pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1);
+				
 				if (count == -8)
-					return OUTSIDE;
-				else if (count != 8)
-					result |= SPANNING << (i << 2);
+					return planeIndex;
 			}
-
-			return result || INSIDE;
+			
+			return INSIDE;
 		}
 
 		/**
@@ -508,35 +503,26 @@ package aerys.minko.type.math
 		 * the spanning planes.
 		 *
 		 */
-		public function testBoundingVolume(volume		: IBoundingVolume,
-										   transform	: Matrix4x4	= null,
-										   cullingMask	: int 		= 0xffffffff) : uint
+		public function testBoundingVolume(boundingSphere	: BoundingSphere,
+										   boundingBox		: BoundingBox,
+										   transform		: Matrix4x4	= null,
+										   cullingMask		: uint 		= 0xffffffff,
+										   firstPlane		: uint		= 0) : int
 		{
-			//cullingMask = cullingMask & volume.frustumCulling;
-
-			var box		: BoundingBox		= volume.boundingBox;
-			var sphere	: BoundingSphere	= volume.boundingSphere;
-
 			if (!cullingMask)
 				return INSIDE;
 
-			if ((cullingMask & FrustumCulling.SPHERE) == 0)
-				return testBoundingBox(box, transform, cullingMask);
-			
-			if ((cullingMask & FrustumCulling.BOX) == 0)
-				return testBoundingSphere(sphere, transform, cullingMask);
-
-			var center		: Vector4			= sphere.center;
-			var radius		: Number			= sphere.radius;
+			var center		: Vector4			= boundingSphere.center;
+			var radius		: Number			= boundingSphere.radius;
 			var result		: int				= 0;
-			var vertices	: Vector.<Number>	= box._vertices;
+			var vertices	: Vector.<Number>	= boundingBox._vertices;
 			var count		: int				= 0;
 
 			if ((cullingMask & FrustumCulling.BOX) != 0 && transform != null)
 			{
 				vertices = TMP_NUMBERS_1;
 				vertices.length = 0;
-				transform.transformRawVectors(box._vertices, vertices);
+				transform.transformRawVectors(boundingBox._vertices, vertices);
 			}
 
 			var x1	: Number	= vertices[0];
@@ -581,8 +567,9 @@ package aerys.minko.type.math
 
 			for (var i : int = 0; i < 6; i++)
 			{
-				var p 	: Plane		= _planes[i];
-				var d 	: Number	= 0;
+				var planeIndex	: uint		= (i + firstPlane) % 6;
+				var p 			: Plane		= _planes[i];
+				var d 			: Number	= 0;
 
 				// bounding sphere
 				if (((CULLING_SPHERE << (i << 2)) & cullingMask))
@@ -590,7 +577,7 @@ package aerys.minko.type.math
 					d = p._a * cx + p._b * cy + p._c * cz - p._d;
 					
 					if (d + radius < .0)
-						return OUTSIDE;
+						return planeIndex;
 					else if (d - radius > .0)
 						continue ;
 				}
@@ -604,27 +591,21 @@ package aerys.minko.type.math
 					var pd	: Number	= p.d;
 
 					// test vertices
-					count += pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1;
-					count += pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1;
-					count += pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1;
-					count += pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1;
-					count += pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1;
-					count += pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1;
-					count += pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1;
-					count += pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1;
+					count = (pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1)
+						+ (pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1);
 
 					if (count == -8)
-						return OUTSIDE;
-					else if (count != 8)
-						result |= SPANNING << (i << 2);
-				}
-				else
-				{
-					result |= SPANNING << (i << 2);
+						return planeIndex;
 				}
 			}
 
-			return result || INSIDE;
+			return INSIDE;
 		}
 		
 		public function toProjectionMatrix(out : Matrix4x4 = null) : Matrix4x4
