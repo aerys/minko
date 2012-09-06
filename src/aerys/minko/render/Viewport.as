@@ -73,13 +73,11 @@ package aerys.minko.render
 		 * @return 
 		 * 
 		 */
-		override public function get visible() : Boolean
-		{
-			return _stage3d.visible;
-		}
 		override public function set visible(value : Boolean) : void
 		{
-			_stage3d.visible = value;
+			if (_stage3d)
+				_stage3d.visible = value;
+			
 			super.visible = value;
 		}
 		
@@ -266,7 +264,7 @@ package aerys.minko.render
 			}
 			else
 			{
-				_stage3d.visible = true;
+				_stage3d.visible = visible;
 			}
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;

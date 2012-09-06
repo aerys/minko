@@ -72,23 +72,28 @@ package aerys.minko.scene.node.camera
 		
 		public function get worldToView() : Matrix4x4
 		{
-			return localToWorld;
+			return worldToLocal;
 		}
 		
 		public function get viewToWorld() : Matrix4x4
 		{
-			return worldToLocal;
+			return localToWorld;
 		}
 		
-		public function AbstractCamera(zNear		: Number = DEFAULT_ZNEAR,
-									   zFar			: Number = DEFAULT_ZFAR)
+		public function get worldToScreen() : Matrix4x4
+		{
+			return _cameraData.worldToScreen;
+		}
+		
+		public function AbstractCamera(zNear	: Number = DEFAULT_ZNEAR,
+									   zFar		: Number = DEFAULT_ZFAR)
 		{
 			super();
 			
 			_cameraData = new CameraDataProvider(worldToView, viewToWorld);
 			
-			_cameraData.zNear 		= zNear;
-			_cameraData.zFar 		= zFar;
+			_cameraData.zNear 	= zNear;
+			_cameraData.zFar 	= zFar;
 			
 			initialize();
 		}

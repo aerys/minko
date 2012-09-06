@@ -143,12 +143,21 @@ package aerys.minko.scene.controller.camera
 			screenToWorld.lock();
 			worldToScreen.lock();
 			
-			if(!_ortho)
-				cameraData.projection.perspectiveFoV(cameraData.fieldOfView/cameraData.zoom, ratio, cameraData.zNear, cameraData.zFar);
+			if (_ortho)
+				projection.ortho(
+					viewportWidth / cameraData.zoom,
+					viewportHeight / cameraData.zoom,
+					cameraData.zNear,
+					cameraData.zFar
+				);
 			else
-				cameraData.projection.ortho(viewportWidth/cameraData.zoom, viewportHeight/cameraData.zoom, cameraData.zNear, cameraData.zFar);
+				projection.perspectiveFoV(
+					cameraData.fieldOfView,
+					ratio,
+					cameraData.zNear,
+					cameraData.zFar
+				);
 			
-		//	projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
 			screenToView.copyFrom(projection).invert();
 			screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
 			worldToScreen.copyFrom(_camera.worldToLocal).append(projection);

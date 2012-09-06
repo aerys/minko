@@ -42,16 +42,6 @@ package aerys.minko.scene.data
 		private var _screenToView		: Matrix4x4		= new Matrix4x4();
 		private var _frustum			: Frustum		= new Frustum();
 
-		public function set viewToWorld(value:Matrix4x4):void
-		{
-			_viewToWorld = value;
-		}
-
-		public function set worldToView(value:Matrix4x4):void
-		{
-			_worldToView = value;
-		}
-
 		override public function get usage() : uint
 		{
 			return DataProviderUsage.MANAGED;

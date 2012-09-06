@@ -712,180 +712,6 @@ package aerys.minko.render.geometry
 				tangentsStream.unlock();
 		}
 		
-		/*public function computeTangentSpace(streamUsage : uint, replace : Boolean = false) : Geometry
-		{
-			var indices			: Vector.<uint>	= _indexStream._data;
-			var numTriangles	: int			= _indexStream.length / 3;
-			var numStreams		: int			= _vertexStreams.length;
-			
-			for (var streamId : int = 0; streamId < numStreams; ++streamId)
-			{
-				var stream			: IVertexStream		= _vertexStreams[streamId];
-				
-				var withNormals		: Boolean			= stream.getStreamByComponent(VertexComponent.NORMAL) == null;
-				var f				: int				= withNormals ? 6 : 3;
-				
-				// (x, y, z) positions
-				var xyzStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.XYZ);
-				var xyzOffset		: int 				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-				var xyzSize			: int 				= xyzStream.format.size;
-				var xyz				: Vector.<Number>	= xyzStream._data;
-				
-				// (u, v) texture coordinates
-				var uvStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.UV);
-				
-				if (!uvStream)
-					throw new Error('Missing vertex components u, v.');
-				
-				var uvOffset		: int 				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
-				var uvSize			: int 				= uvStream.format.size;
-				var uv				: Vector.<Number>	= uvStream._data;
-				
-				var numVertices		: int				= xyz.length / xyzSize;
-				
-				var data			: Vector.<Number>	= new Vector.<Number>(f * numVertices);
-				
-				// normal
-				var nx				: Number 			= 0.;
-				var ny				: Number 			= 0.;
-				var nz				: Number 			= 0.;
-				
-				// tangent
-				var tx				: Number 			= 0.;
-				var ty				: Number 			= 0.;
-				var tz				: Number 			= 0.;
-				
-				var i				: int				= 0;
-				var ii 				: int 				= 0;
-				
-				for (i = 0; i < numTriangles; ++i)
-				{
-					ii = i * 3;
-					
-					var i0		: int 		= indices[ii];
-					var i1		: int 		= indices[int(ii + 1)];
-					var i2		: int 		= indices[int(ii + 2)];
-					
-					var ii0		: int 		= xyzOffset + xyzSize * i0;
-					var ii1		: int		= xyzOffset + xyzSize * i1;
-					var ii2		: int 		= xyzOffset + xyzSize * i2;
-					
-					var x0		: Number 	= xyz[ii0];
-					var y0		: Number 	= xyz[int(ii0 + 1)];
-					var z0		: Number 	= xyz[int(ii0 + 2)];
-					var u0		: Number	= uv[int(uvOffset + uvSize * i0)];
-					var v0		: Number	= uv[int(uvOffset + uvSize * i0 + 1)];
-					
-					var x1		: Number 	= xyz[ii1];
-					var y1		: Number 	= xyz[int(ii1 + 1)];
-					var z1		: Number 	= xyz[int(ii1 + 2)];
-					var u1		: Number	= uv[int(uvOffset + uvSize * i1)];
-					var v1		: Number	= uv[int(uvOffset + uvSize * i1 + 1)];
-					
-					var x2		: Number 	= xyz[ii2];
-					var y2		: Number 	= xyz[int(ii2 + 1)];
-					var z2		: Number 	= xyz[int(ii2 + 2)];
-					var u2		: Number	= uv[int(uvOffset + uvSize * i2)];
-					var v2		: Number	= uv[int(uvOffset + uvSize * i2 + 1)];
-					
-					var v0v2	: Number 	= v0 - v2;
-					var v1v2 	: Number 	= v1 - v2;
-					var coef 	: Number 	= (u0 - u2) * v1v2 - (u1 - u2) * v0v2;
-					
-					if (coef == 0.)
-						coef = 1.;
-					else
-						coef = 1. / coef;
-					
-					tx = coef * (v1v2 * (x0 - x2) - v0v2 * (x1 - x2));
-					ty = coef * (v1v2 * (y0 - y2) - v0v2 * (y1 - y2));
-					tz = coef * (v1v2 * (z0 - z2) - v0v2 * (z1 - z2));
-					
-					if (withNormals)
-					{
-						nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
-						ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
-						nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
-					}
-					
-					ii = i0 * f;
-					data[ii] += tx;
-					data[int(ii + 1)] += ty;
-					data[int(ii + 2)] += tz;
-					if (withNormals)
-					{
-						data[int(ii + 3)] += nx;
-						data[int(ii + 4)] += ny;
-						data[int(ii + 5)] += nz;
-					}
-					
-					ii = i1 * f;
-					data[ii] += tx;
-					data[int(ii + 1)] += ty;
-					data[int(ii + 2)] += tz;
-					if (withNormals)
-					{
-						data[int(ii + 3)] += nx;
-						data[int(ii + 4)] += ny;
-						data[int(ii + 5)] += nz;
-					}
-					
-					ii = i2 * f;
-					data[ii] += tx;
-					data[int(ii + 1)] += ty;
-					data[int(ii + 2)] += tz;
-					if (withNormals)
-					{
-						data[int(ii + 3)] += nx;
-						data[int(ii + 4)] += ny;
-						data[int(ii + 5)] += nz;
-					}
-				}
-				
-				for (i = 0; i < numVertices; ++i)
-				{
-					ii = i * f;
-					
-					tx = data[ii];
-					ty = data[int(ii + 1)];
-					tz = data[int(ii + 2)];
-					
-					var mag	: Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
-					
-					if (mag != 0.)
-					{
-						data[ii] /= mag;
-						data[int(ii + 1)] /= mag;
-						data[int(ii + 2)] /= mag;
-					}
-					
-					if (withNormals)
-					{
-						nx = data[int(ii + 3)];
-						ny = data[int(ii + 4)];
-						nz = data[int(ii + 5)];
-						
-						mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
-						
-						if (mag != 0.)
-						{
-							data[int(ii + 3)] /= mag;
-							data[int(ii + 4)] /= mag;
-							data[int(ii + 5)] /= mag;
-						}
-					}
-				}
-				
-				pushVertexStreamInList(
-					streamId,
-					new VertexStream(streamUsage, withNormals ? FORMAT_TN : FORMAT_TANGENTS, data),
-					replace
-				);
-			}
-			
-			return this;
-		}*/
-		
 		private function pushVertexStreamInList(index 			: uint,
 												vertexStream 	: VertexStream,
 												force 			: Boolean	= false) : void
@@ -1124,6 +950,8 @@ package aerys.minko.render.geometry
 			
 			var dataIndexStreamData : Vector.<uint> 	= _indexStream._data;
 			var xyzVertexStreamData	: Vector.<Number>	= xyzVertexStream._data;
+			var maxDistance			: Number 			= Number.POSITIVE_INFINITY;
+			var triangleIndice		: int 				= -3;
 			
 			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
 			{
@@ -1183,12 +1011,16 @@ package aerys.minko.render.geometry
 				if (v < 0 || u + v > 1)
 					continue;
 				
-				//t = Vector4.dotProduct(edge2, qvec) * invDet;
+				t =  (edge2X * qvecX + edge2Y * qvecY + edge2Z * qvecZ) * invDet; 
 				
-				return triangleIndex / 3;				
+				if (t < maxDistance)
+				{
+					maxDistance = t;
+					triangleIndice = triangleIndex;
+				}
 			}
 			
-			return -1;
+			return triangleIndice / 3;				
 		}
 	}
 }
