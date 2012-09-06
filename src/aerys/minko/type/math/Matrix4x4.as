@@ -173,6 +173,16 @@ package aerys.minko.type.math
 			return this;
 		}
 		
+		public function copyFromMatrix3D(matrix : Matrix3D) : Matrix4x4
+		{
+			_matrix.copyFrom(matrix);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
 		public function clone() : Matrix4x4
 		{
 			return new Matrix4x4().copyFrom(this);
