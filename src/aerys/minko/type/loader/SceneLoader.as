@@ -133,6 +133,9 @@ package aerys.minko.type.loader
 			if (_parserOptions != null && _parserOptions.parser != null)
 			{
 				_parser = new (_parserOptions.parser)(_parserOptions);
+				
+				if (!_parser.isParsable(byteArray))
+					throw new Error('Invalid datatype for this parser.');
 			}
 			else
 			{
@@ -147,7 +150,7 @@ package aerys.minko.type.loader
 				}
 				
 				if (parserId == numRegisteredParser)
-					throw new Error('No parser could be found for this datatype');
+					throw new Error('No parser could be found for this datatype.');
 			}
 
 			byteArray.position = startPosition;

@@ -8,10 +8,9 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.math.BoundingBox;
 	import aerys.minko.type.math.BoundingSphere;
-	import aerys.minko.type.enum.FrustumCulling;
-	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -164,7 +163,7 @@ package aerys.minko.scene.controller.mesh
 			
 			if (culling != FrustumCulling.DISABLED && _mesh.geometry.boundingBox)
 			{
-				var camera : Camera = (_mesh.root as Scene).activeCamera;
+				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				
 				if (!camera)
 					return ;

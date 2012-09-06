@@ -60,6 +60,15 @@ package aerys.minko.render.shader.part
 				);
 			}
 			
+			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
+			{
+				var alphaThreshold : SFloat = meshBindings.getParameter(
+					BasicProperties.ALPHA_THRESHOLD, 1
+				);
+				
+				kill(subtract(0.5, lessThan(diffuseColor.w, alphaThreshold)));
+			}
+			
 			return diffuseColor;
 		}
 	}

@@ -96,10 +96,14 @@ package aerys.minko.scene.node
 				if (_material)
 					_bindings.removeProvider(_material);
 				
+				var oldMaterial : Material = _material;
+				
 				_material = value;
 				
 				if (value)
 					_bindings.addProvider(value);
+				
+				_materialChanged.execute(this, oldMaterial, value);
 			}
 		}
 		

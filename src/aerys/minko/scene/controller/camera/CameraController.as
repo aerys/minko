@@ -3,9 +3,9 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.CameraDataProvider;
-	import aerys.minko.scene.node.Camera;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
@@ -15,18 +15,21 @@ package aerys.minko.scene.controller.camera
 	{
 		use namespace minko_scene;
 		
-		private var _camera		: Camera	= null;
+		private var _camera		: AbstractCamera	= null;
+		private var _ortho 		: Boolean 			= false;
 		
-		public function CameraController()
+		public function CameraController(ortho : Boolean = false)
 		{
-			super(Camera);
+			super(AbstractCamera);
+			
+			_ortho = ortho;
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
 		}
 		
 		private function targetAddedHandler(controller	: CameraController,
-											target		: Camera) : void
+											target		: AbstractCamera) : void
 		{
 			if (_camera != null)
 				throw new Error('The CameraController can target only one Camera object.');
@@ -38,7 +41,7 @@ package aerys.minko.scene.controller.camera
 		}
 		
 		private function targetRemovedHandler(controller	: CameraController,
-											  target		: Camera) : void
+											  target		: AbstractCamera) : void
 		{
 			_camera.addedToScene.remove(addedToSceneHandler);
 			_camera.removedFromScene.remove(removedFromSceneHandler);
@@ -46,7 +49,7 @@ package aerys.minko.scene.controller.camera
 			_camera = null;
 		}
 		
-		private function addedToSceneHandler(camera : Camera, scene : Scene) : void
+		private function addedToSceneHandler(camera : AbstractCamera, scene : Scene) : void
 		{
 			var sceneBindings : DataBindings = scene.bindings;
 			
@@ -66,7 +69,7 @@ package aerys.minko.scene.controller.camera
 			updateProjection();
 		}
 		
-		private function removedFromSceneHandler(camera : Camera, scene : Scene) : void
+		private function removedFromSceneHandler(camera : AbstractCamera, scene : Scene) : void
 		{
 			var sceneBindings : DataBindings = scene.bindings;
 			
@@ -143,7 +146,21 @@ package aerys.minko.scene.controller.camera
 			screenToWorld.lock();
 			worldToScreen.lock();
 			
-			projection.perspectiveFoV(cameraData.fieldOfView, ratio, cameraData.zNear, cameraData.zFar);
+			if (_ortho)
+				projection.ortho(
+					viewportWidth / cameraData.zoom,
+					viewportHeight / cameraData.zoom,
+					cameraData.zNear,
+					cameraData.zFar
+				);
+			else
+				projection.perspectiveFoV(
+					cameraData.fieldOfView,
+					ratio,
+					cameraData.zNear,
+					cameraData.zFar
+				);
+			
 			screenToView.copyFrom(projection).invert();
 			screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
 			worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
@@ -156,7 +173,7 @@ package aerys.minko.scene.controller.camera
 			worldToScreen.unlock();
 		}
 		
-		private function cameraActivatedHandler(camera : Camera) : void
+		private function cameraActivatedHandler(camera : AbstractCamera) : void
 		{
 			var scene : Scene = camera.root as Scene;
 			
@@ -164,7 +181,7 @@ package aerys.minko.scene.controller.camera
 			resetSceneCamera(scene);
 		}
 		
-		private function cameraDeactivatedHandler(camera : Camera) : void
+		private function cameraDeactivatedHandler(camera : AbstractCamera) : void
 		{
 			var scene 	: Scene	= camera.root as Scene;
 			
@@ -174,17 +191,17 @@ package aerys.minko.scene.controller.camera
 		
 		private function resetSceneCamera(scene : Scene) : void
 		{
-			var cameras 	: Vector.<ISceneNode> 	= scene.getDescendantsByType(Camera);
+			var cameras 	: Vector.<ISceneNode> 	= scene.getDescendantsByType(AbstractCamera);
 			var numCameras 	: uint 					= cameras.length;
 			var cameraId 	: uint 					= 0;
-			var camera 		: Camera 				= null;
+			var camera 		: AbstractCamera 		= null;
 			
 			if (_camera.enabled)
 			{
 				scene._camera = _camera;
 				for (cameraId; cameraId < numCameras; ++cameraId)
 				{
-					camera = cameras[cameraId] as Camera;
+					camera = cameras[cameraId] as AbstractCamera;
 					camera.enabled = camera == _camera;
 				}
 			}
@@ -193,7 +210,7 @@ package aerys.minko.scene.controller.camera
 				scene._camera = null;
 				for (cameraId; cameraId < numCameras; ++cameraId)
 				{
-					camera = cameras[cameraId] as Camera;
+					camera = cameras[cameraId] as AbstractCamera;
 					if (camera.enabled)
 						scene._camera = camera;
 				}

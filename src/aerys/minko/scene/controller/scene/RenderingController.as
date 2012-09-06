@@ -238,23 +238,24 @@ package aerys.minko.scene.controller.scene
 			}
 			
 			// apply passes
-			var previous 		: ShaderInstance 	= null;
+			var previous 		: ShaderInstance	= null;
 			var callTriangles	: uint				= 0;
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
+			var passes			: Array				= _passes.concat();
 			
 			for (i = 0; i < numPasses; ++i)
 			{
-				var pass	: ShaderInstance	= _passes[i];
+				var pass	: ShaderInstance	= passes[i];
+				var calls 	: Array				= _passInstanceToDrawCalls[pass];
 				
-				if (!(pass.settings.enabled && pass.shader.enabled))
+				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
 					continue;
 				
-				var calls 		: Array	= _passInstanceToDrawCalls[pass];
 				var numCalls	: uint	= calls.length;
 				
-				pass.begin.execute(pass, context, backBuffer);
 				pass.prepareContext(context, backBuffer, previous);
+				pass.begin.execute(pass, context, backBuffer);
 				previous = pass;
 				
 				// sort draw calls if necessary
@@ -281,7 +282,7 @@ package aerys.minko.scene.controller.scene
 				pass.end.execute(pass, context, backBuffer);
 			}
 			
-			// force clear is nothing was rendered
+			// force clear if nothing was rendered
 			if (numTriangles == 0)
 			{
 				var color : uint = backBuffer.backgroundColor;

@@ -182,13 +182,17 @@ package aerys.minko.type.math
 			return u._vector.dotProduct(v._vector);
 		}
 
-		public static function crossProduct(u : Vector4, v : Vector4) : Vector4
+		public static function crossProduct(u : Vector4, v : Vector4, out : Vector4 = null) : Vector4
 		{
-			return new Vector4(
+			out ||= FACTORY.create() as Vector4;
+
+			out.set(
 				u._vector.y * v._vector.z - v._vector.y * u._vector.z,
 				u._vector.z * v._vector.x - v._vector.z * u._vector.x,
 				u._vector.x * v._vector.y - v._vector.x * u._vector.y
 			);
+			
+			return out;
 		}
 
 		public function compareTo(v : Vector4, allFour : Boolean = false) : Boolean
