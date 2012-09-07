@@ -992,7 +992,7 @@ package aerys.minko.render.geometry
 			_changed.execute(this);
 		}
 		
-		public function castRay(ray : Ray, transform : Matrix4x4 = null) : int
+		public function cast(ray : Ray, transform : Matrix4x4 = null) : int
 		{
 			var indexStreamDataSize : uint 	= indexStream._data.length;
 			
