@@ -799,6 +799,18 @@ package aerys.minko.type.math
 			return invert();
 		}
 		
+		public function world(translation	: Vector4,
+							  rotation		: Vector4,
+							  scale			: Vector4) : Matrix4x4
+		{
+			_matrix.recompose(new <Vector3D>[translation._vector, rotation._vector, scale._vector]);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
 		/**
 		 * Builds a (left-handed) view transform.
 		 * <br /><br />
