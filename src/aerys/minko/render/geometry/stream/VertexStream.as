@@ -150,8 +150,6 @@ package aerys.minko.render.geometry.stream
 		
 		private function updateMinMax() : void
 		{
-			checkReadUsage(this);
-			
 			var size	: uint	= format.numBytesPerVertex >>> 2;
 			var i		: uint	= 0;
 			
@@ -281,7 +279,7 @@ package aerys.minko.render.geometry.stream
 				throw new Error('Cannot lock stream data which is already disposed.');
 			
 			checkReadUsage(this);
-			checkWriteUsage(this);
+//			checkWriteUsage(this);
 			
 			_locked = true;
 			_data.position = 0;
@@ -307,6 +305,8 @@ package aerys.minko.render.geometry.stream
 			
 			if (hasChanged)
 			{
+				checkWriteUsage(this);
+				
 				_changed.execute(this);
 				updateMinMax();
 			}
