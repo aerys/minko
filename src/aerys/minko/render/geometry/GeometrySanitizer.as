@@ -16,8 +16,11 @@ package aerys.minko.render.geometry
 	 */
 	public final class GeometrySanitizer
 	{
-		public static const INDEX_LIMIT		: uint = 524270;
-		public static const VERTEX_LIMIT	: uint = 65535;
+//		public static const INDEX_LIMIT		: uint = 524270;
+//		public static const VERTEX_LIMIT	: uint = 65535;
+		
+		public static const INDEX_LIMIT		: uint = 5242;
+		public static const VERTEX_LIMIT	: uint = 6553;
 		
 		public static function isValid(indexData		: ByteArray,
 									   vertexData		: ByteArray,
@@ -47,27 +50,35 @@ package aerys.minko.render.geometry
 		 * @param dwordsPerVertex 
 		 */		
 		public static function splitBuffers(inVertices		: ByteArray,
-											inIndices		: ByteArray,
+											inIndices		: Vector.<uint>,
 											outVertices		: Vector.<ByteArray>,
 											outIndices		: Vector.<ByteArray>,
 											bytesPerVertex	: uint = 12) : void
 		{
 			var inVerticesStartPosition	: uint	= inVertices.position;
 			var numVertices				: uint	= inVertices.bytesAvailable / bytesPerVertex;
-			var inIndicesStartPosition	: uint	= inIndices.position;
-			var numIndices				: uint	= inIndices.bytesAvailable >>> 1;
+			var numIndices				: int	= inIndices.length;
 			
 			if (numIndices < INDEX_LIMIT && numVertices < VERTEX_LIMIT)
 			{
+				var indices : ByteArray = new ByteArray();
+				
+				indices.endian = Endian.LITTLE_ENDIAN;
+				for (var i : uint = 0; i < numIndices; ++i)
+					indices.writeShort(inIndices[i]);
+				indices.position = 0;
+				
 				outVertices.push(inVertices);
-				outIndices.push(inIndices);
+				outIndices.push(indices);
 				
 				return;
 			}
 			
-			while (inIndices.bytesAvailable)
+			var totalUsedIndices : int = 0;
+			
+			while (numIndices > 0)
 			{
-				var indexDataLength		: uint				= inIndices.bytesAvailable >> 1;
+				var indexDataLength		: uint				= numIndices;
 				
 				// new buffers
 				var partialVertexData	: ByteArray			= new ByteArray();
@@ -103,8 +114,7 @@ package aerys.minko.render.geometry
 					neededVerticesCount = 0;
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)
 					{
-						inIndices.position = (usedIndicesCount + localVertexId) << 2;
-						oldVertexIds[localVertexId]	= inIndices.readUnsignedShort();
+						oldVertexIds[localVertexId]	= inIndices[uint(totalUsedIndices + usedIndicesCount + localVertexId)];
 						
 						var tmp : Object = usedVerticesDic[oldVertexIds[localVertexId]];
 						
@@ -121,7 +131,6 @@ package aerys.minko.render.geometry
 					// it fills, let insert the triangle
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)
 					{
-						
 						if (newVertexNeeded[localVertexId])
 						{
 							// copy current vertex into the new array
@@ -145,15 +154,17 @@ package aerys.minko.render.geometry
 					usedIndicesCount += 3;
 				}
 				
+				totalUsedIndices += usedIndicesCount;
+				numIndices -= usedIndicesCount;
+				
 				partialVertexData.position = 0;
 				outVertices.push(partialVertexData);
 
 				partialIndexData.position = 0;
 				outIndices.push(partialIndexData);
-				
-				inVertices.position = inVerticesStartPosition;
-				inIndices.position = inIndicesStartPosition;
 			}
+			
+			inVertices.position = inVerticesStartPosition;
 		}
 		
 		/**
@@ -282,7 +293,7 @@ package aerys.minko.render.geometry
 			{
 				var index : uint = indexData.readUnsignedShort();
 				
-				indexData.position -= 4;
+				indexData.position -= 2;
 				indexData.writeShort(oldVertexIdToNewVertexId[index]);
 			}
 			indexData.position = indexDataStartPosition;
