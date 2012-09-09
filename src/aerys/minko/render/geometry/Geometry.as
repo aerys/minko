@@ -1072,5 +1072,36 @@ package aerys.minko.render.geometry
 			
 			return triangleIndice / 3;				
 		}
+		
+		public function invertWinding(flipNormals : Boolean = true, flipTangents : Boolean = true) : Geometry
+		{
+			var numIndices		: uint		= indexStream.length;
+			var numTriangles	: uint		= numIndices / 3;
+			var indices			: ByteArray	= indexStream.lock();
+			
+			for (var i : uint = 0; i < numTriangles; ++i)
+			{
+				var i0 : uint = indices.readUnsignedShort();
+				var i1 : uint = indices.readUnsignedShort();
+				var i2 : uint = indices.readUnsignedShort();
+				
+				indices.position -= 6;
+				indices.writeShort(i2);
+				indices.writeShort(i1);
+				indices.writeShort(i0);
+			}
+			
+			indexStream.unlock();
+			
+			if (numVertexStreams)
+			{
+				if (flipNormals && getVertexStream(0).format.hasComponent(VertexComponent.NORMAL))
+					computeNormals();
+				if (flipTangents && getVertexStream(0).format.hasComponent(VertexComponent.TANGENT))
+					computeTangentSpace();
+			}
+			
+			return this;
+		}
 	}
 }
