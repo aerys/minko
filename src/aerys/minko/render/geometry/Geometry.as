@@ -859,40 +859,6 @@ package aerys.minko.render.geometry
 			_boundingBox = new BoundingBox(min, max);
 		}
 		
-		public function split() : Vector.<Geometry>
-		{
-			var geometries		: Vector.<Geometry> = new <Geometry>[];
-			var numGeometries	: uint				= 0;
-			var geometryId 		: uint				= 0;
-			var numStreams		: uint				= _vertexStreams.length; 
-			var indexData		: ByteArray			= _indexStream.minko_stream::_data;
-			
-			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
-			{
-				var stream	: VertexStream	= _vertexStreams[streamId] as VertexStream;
-				if (stream == null)
-					stream = VertexStream.extractSubStream(_vertexStreams[streamId], StreamUsage.DYNAMIC);
-				
-				var vertexData	: ByteArray				= stream.minko_stream::_data;
-				var vertexDatas	: Vector.<ByteArray>	= new <ByteArray>[];
-				var indexDatas	: Vector.<ByteArray>	= new <ByteArray>[];
-				
-				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.numBytesPerVertex);
-				
-				if (streamId == 0)
-				{
-					numGeometries = geometries.length = vertexDatas.length;
-					for (geometryId = 0; geometryId < numGeometries; ++geometryId)
-						geometries[geometryId] = new Geometry(new <IVertexStream>[], new IndexStream(StreamUsage.DYNAMIC, indexDatas[geometryId]));
-				}
-				
-				for (geometryId = 0; geometryId < numGeometries; ++geometryId)
-					geometries[geometryId].setVertexStream(new VertexStream(StreamUsage.DYNAMIC, stream.format, vertexDatas[geometryId]), streamId);
-			}
-			
-			return geometries;
-		}
-		
 		public function merge(geometry			: Geometry,
 							  vertexStreamUsage : uint = 3,
 							  indexStreamUsage 	: uint = 3) : Geometry
