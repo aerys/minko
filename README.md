@@ -49,7 +49,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 Tools
 -----
 
-[ShaderLab](http://blogs.aerys.in/jeanmarc-leroux/2012/07/17/minko-shaderlab-beta/) is a tool to create hardware accelerated rendering effectcs without a single line of code.
+[ShaderLab](http://blogs.aerys.in/jeanmarc-leroux/2012/07/17/minko-shaderlab-beta/) is a tool to create hardware accelerated rendering effects without a single line of code.
 
 [![ShaderLab Beta](http://static.aerys.in:8080/minko/images/banner_minko_shaderlab.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/07/17/minko-shaderlab-beta/)
 
