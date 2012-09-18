@@ -12,6 +12,8 @@ Minko is a free and open source real-time 3D framework for the web, desktop and 
 Documentation
 -------------
 
+Complete documentation can be found on the developers [Hub](http://hub.aerys.in):
+
 * [Developers Reference](http://hub.aerys.in/index.php/Minko:Developers_Reference)
 * [Tutorials](http://hub.aerys.in/index.php/Minko:Tutorials)
 * [Plugins](http://hub.aerys.in/index.php/Minko:Plugins)
