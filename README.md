@@ -9,6 +9,13 @@ Minko is a free and open source real-time 3D framework for the web, desktop and 
 * Android 2.2+ smartphones and tablets
 * iPhone 3GS, iPhone 4, iPhone 4S, iPad, iPad 2 and iPad 3
 
+Documentation
+-------------
+
+* [Developers Reference](http://hub.aerys.in/index.php/Minko:Developers_Reference)
+* [Tutorials](http://hub.aerys.in/index.php/Minko:Tutorials)
+* [Plugins](http://hub.aerys.in/index.php/Minko:Plugins)
+
 Examples
 --------
 
@@ -67,28 +74,6 @@ Features
 * Lighting engine (Phong lighting, environmental mapping, shadow mapping, fog...)
 * Pixel-perfect 3D mouse interactivity
 * 3D assets compression
-
-Documentation
--------------
-
-* [Developers Reference](http://answers.aerys.in/discussion/145/minko-2-developers-reference-download#Item_1)
-
-Tutorials
----------
-
-* [Getting started with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/05/28/getting-started-with-minko-2/)
-* [Your first Minko application](http://blogs.aerys.in/jeanmarc-leroux/2012/08/03/tutorial-your-first-minko-application/)
-* [Display your first 3D object with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/09/tutorial-display-your-first-3d-object-with-minko/)
-* [Your first mobile 3D application with Minko](http://blogs.aerys.in/jeanmarc-leroux/2012/08/20/tutorial-your-first-mobile-3d-application-with-minko/)
-* [Add pixel-perfect 3D mouse interactivity](http://blogs.aerys.in/jeanmarc-leroux/2012/08/27/tutorial-add-pixel-perfect-3d-mouse-interactivity/)
-
-Plugins
--------
-
-* [minko-lighting](https://github.com/aerys/minko-lighting), a powerful lighting engine
-* [minko-collada](https://github.com/aerys/minko-collada), a Collada (*.dae) files loader
-* [minko-effects](https://github.com/aerys/minko-effects), a set of rendering/post-processing effects
-* [minko-picking](https://github.com/aerys/minko-picking), a plugin to add pixel-perfect mouse interactivity
 
 Support
 -------
