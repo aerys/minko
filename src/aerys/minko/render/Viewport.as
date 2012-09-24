@@ -7,6 +7,7 @@ package aerys.minko.render
 	import aerys.minko.type.Signal;
 	
 	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
@@ -232,6 +233,8 @@ package aerys.minko.render
 			stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 			stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
 			
+			stage.addEventListener(Event.RESIZE, stageResizedHandler);
+			
 			setupOnStage(stage);
 		}
 		
@@ -243,6 +246,8 @@ package aerys.minko.render
 			
 			stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 			stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
+			
+			stage.removeEventListener(Event.RESIZE, stageResizedHandler);
 			
 			if (_stage3d != null)
 				_stage3d.visible = false;
@@ -322,6 +327,8 @@ package aerys.minko.render
 		private function stageResizedHandler(event : Event) : void
 		{
 			updateMask();
+			updateStage3D();
+			updateBackBuffer();
 		}
 		
 		private function parentResizedHandler(event : Event) : void
@@ -351,8 +358,12 @@ package aerys.minko.render
 				return ;
 			
 			_invalidBackBuffer = false;
-			_stage3d.context3D.configureBackBuffer(_width, _height, _antiAliasing, true);
-			_backBuffer = new RenderTarget(_width, _height, null, 0, _backgroundColor);
+			
+			var backBufferWidth		: Number = _width * getGlobalScaleX();
+			var backBufferHeight	: Number = _height * getGlobalScaleY();
+			
+			_stage3d.context3D.configureBackBuffer(backBufferWidth, backBufferHeight, _antiAliasing, true);
+			_backBuffer = new RenderTarget(backBufferWidth, backBufferHeight, null, 0, _backgroundColor);
 			
 			graphics.clear();
 			graphics.beginFill(0, 0);
@@ -445,6 +456,34 @@ package aerys.minko.render
 			
 			if (_autoResize && displayObject.parent == stage)
 				displayObject.mask = null;
+		}
+		
+		private function getGlobalScaleX() : Number
+		{
+			var currentParent	: DisplayObjectContainer	= parent;
+			var scale			: Number					= scaleX; 
+			
+			while(currentParent != stage)
+			{
+				scale *= currentParent.scaleX;
+				currentParent = currentParent.parent;
+			}
+			
+			return scale;
+		}
+		
+		private function getGlobalScaleY() : Number
+		{
+			var currentParent	: DisplayObjectContainer	= parent;
+			var scale			: Number					= scaleY; 
+			
+			while(currentParent != stage)
+			{
+				scale *= currentParent.scaleY;
+				currentParent = currentParent.parent;
+			}
+			
+			return scale;
 		}
 	}
 }
