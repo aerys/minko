@@ -137,6 +137,9 @@ package aerys.minko.scene.controller.mesh
 			var geom 	: Geometry 	= _mesh.geometry;
 			var culling	: uint		= _visibilityData.frustumCulling;
 			
+			if (!geom.boundingBox || !geom.boundingSphere)
+				return ;
+			
 			if (culling & FrustumCulling.BOX)
 				transform.transformRawVectors(
 					geom.boundingBox._vertices,
