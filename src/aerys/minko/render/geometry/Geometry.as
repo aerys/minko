@@ -902,45 +902,25 @@ package aerys.minko.render.geometry
 		
 		public function flipNormals(flipTangents : Boolean = true) : Geometry
 		{
-			var numStreams : uint = this.numVertexStreams;
+			var numStreams 	: uint 		= this.numVertexStreams;
+			var m 			: Matrix4x4 = new Matrix4x4();
+			
+			m.appendScale(-1, -1, -1);
 			
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 			{
 				var vertexStream	: IVertexStream		= getVertexStream(streamId);
 				var normalsStream 	: VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.NORMAL);
-				var tangentsStream 	: VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.NORMAL);
+				var tangentsStream 	: VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.TANGENT);
 				
 				if (normalsStream != null)
-					invertVertexStreamComponent(normalsStream, VertexComponent.NORMAL);
+					normalsStream.applyTransform(VertexComponent.NORMAL, m, true);
 				
 				if (tangentsStream != null)
-					invertVertexStreamComponent(tangentsStream, VertexComponent.TANGENT);
+					tangentsStream.applyTransform(VertexComponent.TANGENT, m, true);
 			}
 			
 			return this;
-		}
-		
-		private function invertVertexStreamComponent(vertexStream : VertexStream, component : VertexComponent) : void
-		{
-			var componentOffset	: uint				= vertexStream.format.getBytesOffsetForComponent(component);
-			var vertexSize		: uint				= vertexStream.format.numBytesPerVertex;
-			var numVertices		: uint				= vertexStream.numVertices;
-			var data			: ByteArray			= vertexStream.lock();
-			var numValues		: uint				= component.numProperties >>> 2;
-			var tmp				: Vector.<Number>	= new Vector.<Number>(numValues);
-			
-			for (var i : uint = 0; i < numVertices; ++i)
-			{
-				data.position = i * vertexSize + componentOffset;
-				for (var j : uint = 0; j < numValues; ++j)
-					tmp[j] = data.readFloat();
-				
-				data.position = i * vertexSize + componentOffset;
-				for (j = 0; j < numValues; ++j)
-					data.writeFloat(-tmp[j]);
-			}
-			
-			vertexStream.unlock();
 		}
 		
 		private function vertexStreamChangedHandler(stream : IVertexStream) : void
