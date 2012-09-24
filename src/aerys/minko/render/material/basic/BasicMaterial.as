@@ -3,6 +3,7 @@ package aerys.minko.render.material.basic
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public class BasicMaterial extends Material
@@ -158,6 +159,13 @@ package aerys.minko.render.material.basic
 		public function BasicMaterial(properties : Object = null, effect : Effect = null, name : String = DEFAULT_NAME)
 		{
 			super(effect || DEFAULT_EFFECT, properties, name);
+		}
+		
+		override public function clone() : IDataProvider
+		{
+			var mat : BasicMaterial	= new BasicMaterial(this, effect, name);
+			
+			return mat;
 		}
 	}
 }

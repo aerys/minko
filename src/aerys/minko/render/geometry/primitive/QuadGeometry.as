@@ -40,12 +40,12 @@ package aerys.minko.render.geometry.primitive
 			);
 		}
 		
-		private function buildVertexStream(doubleSided			: Boolean,
-										   numColumns			: uint,
-										   numRows				: uint,
-										   vertexStreamUsage	: uint,
-										   width 				: Number = 1,
-										   height 				: Number = 1) : VertexStream
+		protected function buildVertexStream(doubleSided			: Boolean,
+											 numColumns			: uint,
+											 numRows			: uint,
+											 vertexStreamUsage	: uint,
+											 width 				: Number = 1,
+											 height 			: Number = 1) : VertexStream
 		{
 			var vertices 	: Vector.<Number> 	= new <Number>[];
 			
@@ -66,10 +66,10 @@ package aerys.minko.render.geometry.primitive
 			return new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
 		}
 		
-		private function buildIndexStream(doubleSided		: Boolean,
-										  numColumns		: uint,
-										  numRows			: uint,
-										  indexStreamUsage	: uint) : IndexStream
+		protected function buildIndexStream(doubleSided			: Boolean,
+											numColumns			: uint,
+											numRows				: uint,
+											indexStreamUsage	: uint) : IndexStream
 		{
 			var indices	: Vector.<uint>	= new <uint>[];
 			

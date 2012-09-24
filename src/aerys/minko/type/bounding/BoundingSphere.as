@@ -59,7 +59,7 @@ package aerys.minko.type.bounding
 			_center.changed.add(centerChangedHandler);
 		}
 		
-		private function centerChangedHandler(center : Vector4, property : String) : void
+		private function centerChangedHandler(center : Vector4) : void
 		{
 			throw new Error('This property is read-only.');
 		}

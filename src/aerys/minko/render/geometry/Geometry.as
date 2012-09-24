@@ -853,6 +853,8 @@ package aerys.minko.render.geometry
 				_indexStream = _indexStream.concat(geometry._indexStream, 0, 0, indexOffset);
 			
 			updateBoundingVolumes();
+			
+			_changed.execute(this);
 
 			return this;				
 		}
