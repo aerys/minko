@@ -62,7 +62,7 @@ package aerys.minko.render.resource
 
 			if (update)
 			{
-				_indexBuffer.uploadFromVector(_stream._data, 0, _stream.length);
+				_indexBuffer.uploadFromByteArray(_stream._data, 0, 0, _stream.length);
 
 				_update = false;
 				_numIndices = _stream.length;

@@ -14,7 +14,6 @@ package aerys.minko.type.binding
 		private var _descriptor				: Object		= {};
 		
 		private var _changed				: Signal		= new Signal('DataProvider.changed');
-		private var _propertyChanged		: Signal		= new Signal('DataProvider.propertyChanged');
 			
 		private var _nameToProperty			: Object		= {};
 		private var _propertyToNames		: Dictionary	= new Dictionary();  // dic[Vector.<String>[]]
@@ -32,11 +31,6 @@ package aerys.minko.type.binding
 		public function get changed() : Signal
 		{
 			return _changed;
-		}
-		
-		public function get propertyChanged() : Signal
-		{
-			return _propertyChanged;
 		}
 		
 		public function get name() : String
@@ -149,7 +143,7 @@ package aerys.minko.type.binding
 				
 				if (newPropertyNames == null)
 				{
-					newPropertyNames = _propertyToNames[property] = new <String>[name];
+					_propertyToNames[property] = newPropertyNames = new <String>[name];
 					property.changed.add(propertyChangedHandler);
 				}
 				else
@@ -206,9 +200,9 @@ package aerys.minko.type.binding
 			switch (_usage)
 			{
 				case DataProviderUsage.EXCLUSIVE:
-				case DataProviderUsage.SHARED:
 					return new DataProvider(_nameToProperty, _name + '_cloned', _usage);
-				
+				case DataProviderUsage.SHARED:
+					return this;
 				case DataProviderUsage.MANAGED:
 					throw new Error('This dataprovider is managed, and must not be cloned');
 					
@@ -223,7 +217,7 @@ package aerys.minko.type.binding
 			var numNames	: uint				= names.length;
 			
 			for (var nameId : uint = 0; nameId < numNames; ++nameId)
-				_propertyChanged.execute(this, names[nameId]);
+				_changed.execute(this, names[nameId]);
 		}
 	}
 }

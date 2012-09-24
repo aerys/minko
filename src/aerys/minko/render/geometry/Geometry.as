@@ -10,12 +10,13 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.bounding.BoundingBox;
-	import aerys.minko.type.bounding.BoundingSphere;
-	import aerys.minko.type.bounding.IBoundingVolume;
+	import aerys.minko.type.math.BoundingBox;
+	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
+	
+	import flash.utils.ByteArray;
 
 	/**
 	 * Geometry objects store and provide a secure access to the geometry of 3D objects
@@ -39,22 +40,12 @@ package aerys.minko.render.geometry
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Geometry implements IBoundingVolume
+	public class Geometry
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
 		
-		private static const FORMAT_NORMALS		: VertexFormat		= new VertexFormat(
-			VertexComponent.NORMAL
-		);
-		private static const FORMAT_TANGENTS	: VertexFormat		= new VertexFormat(
-			VertexComponent.TANGENT
-		);
-		private static const FORMAT_TN			: VertexFormat		= new VertexFormat(
-			VertexComponent.TANGENT,
-			VertexComponent.NORMAL
-		);
-		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
+		private static const TMP_MATRIX	: Matrix4x4	= new Matrix4x4();
 		
 		minko_scene var _vertexStreams		: Vector.<IVertexStream>	= null;
 
@@ -208,7 +199,7 @@ package aerys.minko.render.geometry
 				_indexStream = new IndexStream(
 					StreamUsage.DYNAMIC,
 					null,
-					_vertexStreams[0].length
+					_vertexStreams[0].numVertices
 				);
 			}
 			
@@ -351,10 +342,10 @@ package aerys.minko.render.geometry
 		 * @param replace Whether the existing normals data should be replaced if it exists.
 		 * 
 		 */
-		public function computeNormals(streamUsage : int = -1) : Geometry
+		public function computeNormals(streamUsage : int = -1, triangles : Vector.<uint> = null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
-			var indices			: Vector.<uint>	= indexStream.lock();
+			var indices			: ByteArray		= indexStream.lock();
 			var numTriangles	: int			= indexStream.length / 3;
 			var stream			: IVertexStream	= null;
 			
@@ -367,20 +358,21 @@ package aerys.minko.render.geometry
 				
 				if (streamUsage < 0)
 					streamUsage = stream.getStreamByComponent(VertexComponent.XYZ).usage;
+				streamUsage |= StreamUsage.WRITE;
 					
 				for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				{
 					stream = getVertexStream(streamId);
 					
-					var numVertices		: uint				= stream.length;
+					var numVertices		: uint				= stream.numVertices;
 					var xyzStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.XYZ);
 					var normalsStream 	: VertexStream		= stream.getStreamByComponent(VertexComponent.NORMAL);
 					var hasNormals		: Boolean			= normalsStream != null;
 					
 					if (!hasNormals)
-						normalsStream = new VertexStream(streamUsage, FORMAT_NORMALS, new Vector.<Number>(numVertices * 3));
+						normalsStream = new VertexStream(streamUsage, new VertexFormat(VertexComponent.NORMAL));
 					
-					fillNormalsData(indices, normalsStream, xyzStream, numVertices);
+					fillNormalsData(indices, normalsStream, xyzStream, triangles);
 					
 					if (!hasNormals)
 						pushVertexStreamInList(streamId, normalsStream);
@@ -411,11 +403,12 @@ package aerys.minko.render.geometry
 		 * @param replace Whether to replace existing normals or tangents data.
 		 * 
 		 */
-		public function computeTangentSpace(computeNormals : Boolean = true, streamUsage : int = -1) : Geometry
+		public function computeTangentSpace(computeNormals 	: Boolean 		= true,
+											streamUsage 	: int 			= -1,
+											triangles 		: Vector.<uint>	= null) : Geometry
 		{
 			var numStreams		: uint			= this.numVertexStreams;
-			var indices			: Vector.<uint>	= indexStream.lock();
-			var numTriangles	: int			= indexStream.length / 3;
+			var indices			: ByteArray		= indexStream.lock();
 			var stream			: IVertexStream	= null;
 			
 			if (numStreams != 0)
@@ -431,12 +424,12 @@ package aerys.minko.render.geometry
 				
 				if (streamUsage < 0)
 					streamUsage = stream.getStreamByComponent(VertexComponent.XYZ).usage;
+				streamUsage |= StreamUsage.WRITE;
 				
 				for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 				{
 					stream = getVertexStream(streamId);
 					
-					var numVertices		: uint				= stream.length;
 					var xyzStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.XYZ);
 					var uvStream		: VertexStream		= stream.getStreamByComponent(VertexComponent.UV);
 					var normalsStream 	: VertexStream		= stream.getStreamByComponent(VertexComponent.NORMAL);
@@ -444,35 +437,31 @@ package aerys.minko.render.geometry
 					var hasNormals		: Boolean			= normalsStream != null;
 					var hasTangents		: Boolean			= tangentsStream != null;
 					
-					if (!hasNormals && !hasTangents)
+					if (!hasNormals && computeNormals && !hasTangents)
 					{
 						normalsStream = tangentsStream = new VertexStream(
 							streamUsage,
-							new VertexFormat(VertexComponent.NORMAL, VertexComponent.TANGENT),
-							new Vector.<Number>(numVertices * 6)
+							new VertexFormat(VertexComponent.NORMAL, VertexComponent.TANGENT)
 						);
 					}
 					else if (!hasNormals && computeNormals)
 					{
 						normalsStream = new VertexStream(
 							streamUsage,
-							new VertexFormat(VertexComponent.NORMAL),
-							new Vector.<Number>(numVertices * 3)
+							new VertexFormat(VertexComponent.NORMAL)
 						);
 					}
 					else if (!hasTangents)
 					{
 						tangentsStream = new VertexStream(
 							streamUsage,
-							new VertexFormat(VertexComponent.TANGENT),
-							new Vector.<Number>(numVertices * 3)
+							new VertexFormat(VertexComponent.TANGENT)
 						);
 					}
 					
+					fillTangentsData(indices, tangentsStream, xyzStream, uvStream, triangles);
 					if (computeNormals)
-						fillNormalsData(indices, normalsStream, xyzStream, numVertices);
-					
-					fillTangentsData(indices, tangentsStream, xyzStream, uvStream, numVertices);
+						fillNormalsData(indices, normalsStream, xyzStream, triangles);
 					
 					if (!hasNormals)
 						pushVertexStreamInList(streamId, normalsStream);
@@ -484,168 +473,236 @@ package aerys.minko.render.geometry
 			return this;
 		}
 		
-		private function fillNormalsData(indices		: Vector.<uint>,
+		private function fillNormalsData(indices		: ByteArray,
 										 normalsStream	: VertexStream,
 										 xyzStream		: VertexStream,
-										 numVertices	: uint) : void
+										 triangles		: Vector.<uint>) : void
 		{
-			var numTriangles		: uint				= indices.length / 3;
+			var numTriangles		: uint				= triangles ? triangles.length : indices.length / 6;
 			var nx					: Number 			= 0.;
-			var ny					: Number 			= 0.;
+			var ny					: Number		 	= 0.;
 			var nz					: Number 			= 0.;
 			var mag					: Number			= 0.;
-			var xyzOffset			: uint				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-			var xyzVertexSize		: uint				= xyzStream.format.vertexSize;
-			var xyzData				: Vector.<Number>	= xyzStream.lock();
-			var normalsOffset		: uint				= normalsStream.format.getOffsetForComponent(VertexComponent.NORMAL);
-			var normalsVertexSize	: uint				= normalsStream.format.vertexSize;
-			var normalsData			: Vector.<Number>	= null;
+			var xyzOffset			: uint				= xyzStream.format.getBytesOffsetForComponent(VertexComponent.XYZ);
+			var xyzVertexSize		: uint				= xyzStream.format.numBytesPerVertex;
+			var xyzData				: ByteArray			= xyzStream.lock();
+			var normalsOffset		: uint				= normalsStream.format.getBytesOffsetForComponent(VertexComponent.NORMAL);
+			var normalsVertexSize	: uint				= normalsStream.format.numBytesPerVertex;
+			var normalsData			: ByteArray			= null;
+			var numVertices			: uint				= xyzStream.numVertices;
+			var i 					: uint 				= 0;
+			var ii					: uint				= 0;
+			var i0					: uint				= 0;
+			var i1					: uint				= 0;
+			var i2					: uint				= 0;
 			
 			normalsData = normalsStream == xyzStream ? xyzData : normalsStream.lock();
 			
-			for (var i : uint = 0; i < numVertices; ++i)
+			for (i = 0; i < numTriangles; ++i)
 			{
-				i0 = i * normalsVertexSize + normalsOffset;
-				i1 = i * normalsVertexSize + normalsOffset + 1;
-				i2 = i * normalsVertexSize + normalsOffset + 2;
+				ii = triangles ? triangles[i] * 3 : i * 3;
+				i0 = indices.readUnsignedShort();
+				i1 = indices.readUnsignedShort();
+				i2 = indices.readUnsignedShort();
 				
-				normalsData[i0] = 0.;
-				normalsData[i1] = 0.;
-				normalsData[i2] = 0.;
+				normalsData.position = i0 * normalsVertexSize + normalsOffset;
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
+				
+				normalsData.position = i1 * normalsVertexSize + normalsOffset;
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
+				
+				normalsData.position = i2 * normalsVertexSize + normalsOffset;
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
+				normalsData.writeFloat(0.);
 			}
 			
 			for (i = 0; i < numTriangles; ++i)
 			{
-				var i0	: uint 		= indices[uint(3 * i)];
-				var i1	: uint 		= indices[uint(3 * i + 1)];
-				var i2	: uint 		= indices[uint(3 * i + 2)];
+				ii = triangles ? triangles[i] * 3 : i * 3;
 				
-				var ii0	: uint 		= xyzOffset + xyzVertexSize * i0;
-				var ii1	: uint		= xyzOffset + xyzVertexSize * i1;
-				var ii2	: uint 		= xyzOffset + xyzVertexSize * i2;
+				indices.position = ii << 1;
+				i0 = indices.readUnsignedShort();
+				i1 = indices.readUnsignedShort();
+				i2 = indices.readUnsignedShort();
 				
-				var x0	: Number	= xyzData[ii0];
-				var y0	: Number 	= xyzData[uint(ii0 + 1)];
-				var z0	: Number 	= xyzData[uint(ii0 + 2)];
-				var x1	: Number 	= xyzData[ii1];
-				var y1	: Number 	= xyzData[uint(ii1 + 1)];
-				var z1	: Number 	= xyzData[uint(ii1 + 2)];
-				var x2	: Number 	= xyzData[ii2];
-				var y2	: Number 	= xyzData[uint(ii2 + 1)];
-				var z2	: Number 	= xyzData[uint(ii2 + 2)];
+				xyzData.position = xyzOffset + xyzVertexSize * i0;
+				var x0	: Number	= xyzData.readFloat();
+				var y0	: Number 	= xyzData.readFloat();
+				var z0	: Number 	= xyzData.readFloat();
+				
+				xyzData.position = xyzOffset + xyzVertexSize * i1;
+				var x1	: Number 	= xyzData.readFloat();
+				var y1	: Number 	= xyzData.readFloat();
+				var z1	: Number 	= xyzData.readFloat();
+				
+				xyzData.position = xyzOffset + xyzVertexSize * i2;
+				var x2	: Number 	= xyzData.readFloat();
+				var y2	: Number 	= xyzData.readFloat();
+				var z2	: Number 	= xyzData.readFloat();
 				
 				nx = (y0 - y2) * (z0 - z1) - (z0 - z2) * (y0 - y1);
 				ny = (z0 - z2) * (x0 - x1) - (x0 - x2) * (z0 - z1);
 				nz = (x0 - x2) * (y0 - y1) - (y0 - y2) * (x0 - x1);
 				
-				mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
+//				mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
+//				
+//				if (mag != 0.)
+//				{
+//					nx /= mag;
+//					ny /= mag;
+//					nz /= mag;
+//				}
 				
-				if (mag != 0.)
-				{
-					nx /= mag;
-					ny /= mag;
-					nz /= mag;
-				}
+				ii = i0 * normalsVertexSize + normalsOffset;
+				normalsData.position = ii;
+				var nx0 : Number = nx + normalsData.readFloat();
+				var ny0 : Number = ny + normalsData.readFloat();
+				var nz0 : Number = nz + normalsData.readFloat();
 				
-				ii0 = i0 * normalsVertexSize + normalsOffset;
-				ii1 = i1 * normalsVertexSize + normalsOffset;
-				ii2 = i2 * normalsVertexSize + normalsOffset;
+				normalsData.position = ii;
+				normalsData.writeFloat(nx0);
+				normalsData.writeFloat(ny0);
+				normalsData.writeFloat(nz0);
 				
-				normalsData[ii0] += nx;
-				normalsData[uint(ii0 + 1)] += ny;
-				normalsData[uint(ii0 + 2)] += nz;
+				ii = i1 * normalsVertexSize + normalsOffset;
+				normalsData.position = ii;
+				var nx1 : Number = nx + normalsData.readFloat();
+				var ny1 : Number = ny + normalsData.readFloat();
+				var nz1 : Number = nz + normalsData.readFloat();
 				
-				normalsData[ii1] += nx;
-				normalsData[uint(ii1 + 1)] += ny;
-				normalsData[uint(ii1 + 2)] += nz;
+				normalsData.position = ii;
+				normalsData.writeFloat(nx1);
+				normalsData.writeFloat(ny1);
+				normalsData.writeFloat(nz1);
+			
+				ii = i2 * normalsVertexSize + normalsOffset;
+				normalsData.position = ii;
+				var nx2 : Number = nx + normalsData.readFloat();
+				var ny2 : Number = ny + normalsData.readFloat();
+				var nz2 : Number = nz + normalsData.readFloat();
 				
-				normalsData[ii2] += nx;
-				normalsData[uint(ii2 + 1)] += ny;
-				normalsData[uint(ii2 + 2)] += nz;
+				normalsData.position = ii;
+				normalsData.writeFloat(nx2);
+				normalsData.writeFloat(ny2);
+				normalsData.writeFloat(nz2);
 			}
 			
 			for (i = 0; i < numVertices; ++i)
 			{
-				i0 = i * normalsVertexSize + normalsOffset;
-				i1 = i * normalsVertexSize + normalsOffset + 1;
-				i2 = i * normalsVertexSize + normalsOffset + 2;
-				
-				nx = normalsData[i0];
-				ny = normalsData[i1];
-				nz = normalsData[i2];
+				ii = i * normalsVertexSize + normalsOffset;
+				normalsData.position = ii;
+				nx = normalsData.readFloat();
+				ny = normalsData.readFloat();
+				nz = normalsData.readFloat();
 				
 				mag = Math.sqrt(nx * nx + ny * ny + nz * nz);
 				
 				if (mag != 0.)
 				{
-					normalsData[i0] = nx / mag;
-					normalsData[i1] = ny / mag;
-					normalsData[i2] = nz / mag;
+					normalsData.position = ii;
+					normalsData.writeFloat(nx / mag);
+					normalsData.writeFloat(ny / mag);
+					normalsData.writeFloat(nz / mag);
 				}
 			}
 			
+			normalsData.position = 0;
+			indices.position = 0;
 			normalsStream.unlock();
 			if (xyzStream.locked)
 				xyzStream.unlock(false);
 		}
 		
-		private function fillTangentsData(indices			: Vector.<uint>,
+		private function fillTangentsData(indices			: ByteArray,
 										  tangentsStream	: VertexStream,
 										  xyzStream			: VertexStream,
 										  uvStream			: VertexStream,
-										  numVertices		: uint) : void
+										  triangles			: Vector.<uint>) : void
 		{
-			var numTriangles		: uint				= indices.length / 3;
-			var xyzOffset			: uint				= xyzStream.format.getOffsetForComponent(VertexComponent.XYZ);
-			var xyzVertexSize		: uint				= xyzStream.format.vertexSize;
-			var xyzData				: Vector.<Number>	= xyzStream.lock();
-			var uvOffset			: uint				= uvStream.format.getOffsetForComponent(VertexComponent.UV);
-			var uvVertexSize		: uint				= uvStream.format.vertexSize;
-			var uvData				: Vector.<Number>	= null;
-			var tangentsOffset		: uint				= tangentsStream.format.getOffsetForComponent(VertexComponent.TANGENT);
-			var tangentsVertexSize	: uint				= tangentsStream.format.vertexSize;
-			var tangentsData		: Vector.<Number>	= null;
+			var numTriangles		: uint		= triangles ? triangles.length : indices.length / 6;
+			var xyzOffset			: uint		= xyzStream.format.getBytesOffsetForComponent(VertexComponent.XYZ);
+			var xyzVertexSize		: uint		= xyzStream.format.numBytesPerVertex;
+			var xyzData				: ByteArray	= xyzStream.lock();
+			var uvOffset			: uint		= uvStream.format.getBytesOffsetForComponent(VertexComponent.UV);
+			var uvVertexSize		: uint		= uvStream.format.numBytesPerVertex;
+			var uvData				: ByteArray	= null;
+			var tangentsOffset		: uint		= tangentsStream.format.getBytesOffsetForComponent(VertexComponent.TANGENT);
+			var tangentsVertexSize	: uint		= tangentsStream.format.numBytesPerVertex;
+			var tangentsData		: ByteArray	= null;
+			var numVertices			: uint		= xyzStream.numVertices;
+			var i					: uint		= 0;
+			var ii 					: uint		= 0;
+			var i0 					: uint		= 0;
+			var i1 					: uint		= 0;
+			var i2 					: uint		= 0;
 			
 			uvData = uvStream == xyzStream ? xyzData : uvStream.lock();
 			tangentsData = tangentsStream == xyzStream ? xyzData : tangentsStream.lock();
 			
-			for (var i : uint = 0; i < numVertices; ++i)
+			for (i = 0; i < numTriangles; ++i)
 			{
-				ii 							= i * tangentsVertexSize + tangentsOffset;
-				tangentsData[ii] 			= 0;
-				tangentsData[uint(ii + 1)] 	= 0;
-				tangentsData[uint(ii + 2)] 	= 0;
+				ii = triangles ? triangles[i] * 3 : i * 3;
+				indices.position = ii << 1;
+				i0 = indices.readUnsignedShort();
+				i1 = indices.readUnsignedShort();
+				i2 = indices.readUnsignedShort();
+				
+				tangentsData.position = i0 * tangentsVertexSize + tangentsOffset;
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
+				
+				tangentsData.position = i1 * tangentsVertexSize + tangentsOffset;
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
+				
+				tangentsData.position = i2 * tangentsVertexSize + tangentsOffset;
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
+				tangentsData.writeFloat(0.);
 			}
 			
 			for (i = 0; i < numTriangles; ++i)
 			{
-				var ii 		: uint		= i * 3;
+				ii = triangles ? triangles[i] * 3 : i * 3;
+			
+				indices.position = ii << 1;
+				i0 = indices.readUnsignedShort();
+				i1 = indices.readUnsignedShort();
+				i2 = indices.readUnsignedShort();
 				
-				var i0		: uint 		= indices[ii];
-				var i1		: uint 		= indices[uint(ii + 1)];
-				var i2		: uint 		= indices[uint(ii + 2)];
+				xyzData.position = xyzOffset + xyzVertexSize * i0;
+				var x0		: Number 	= xyzData.readFloat();
+				var y0		: Number 	= xyzData.readFloat();
+				var z0		: Number 	= xyzData.readFloat();
 				
-				var ii0		: uint 		= xyzOffset + xyzVertexSize * i0;
-				var ii1		: uint		= xyzOffset + xyzVertexSize * i1;
-				var ii2		: uint 		= xyzOffset + xyzVertexSize * i2;
+				uvData.position = uvOffset + uvVertexSize * i0;
+				var u0		: Number	= uvData.readFloat();
+				var v0		: Number	= uvData.readFloat();
 				
-				var x0		: Number 	= xyzData[ii0];
-				var y0		: Number 	= xyzData[uint(ii0 + 1)];
-				var z0		: Number 	= xyzData[uint(ii0 + 2)];
-				var u0		: Number	= uvData[uint(uvOffset + uvVertexSize * i0)];
-				var v0		: Number	= uvData[uint(uvOffset + uvVertexSize * i0 + 1)];
+				xyzData.position = xyzOffset + xyzVertexSize * i1;
+				var x1		: Number 	= xyzData.readFloat();
+				var y1		: Number 	= xyzData.readFloat();
+				var z1		: Number 	= xyzData.readFloat();
 				
-				var x1		: Number 	= xyzData[ii1];
-				var y1		: Number 	= xyzData[uint(ii1 + 1)];
-				var z1		: Number 	= xyzData[uint(ii1 + 2)];
-				var u1		: Number	= uvData[int(uvOffset + uvVertexSize * i1)];
-				var v1		: Number	= uvData[int(uvOffset + uvVertexSize * i1 + 1)];
+				uvData.position = uvOffset + uvVertexSize * i1;
+				var u1		: Number	= uvData.readFloat();
+				var v1		: Number	= uvData.readFloat();
 				
-				var x2		: Number 	= xyzData[ii2];
-				var y2		: Number 	= xyzData[uint(ii2 + 1)];
-				var z2		: Number 	= xyzData[uint(ii2 + 2)];
-				var u2		: Number	= uvData[uint(uvOffset + uvVertexSize * i2)];
-				var v2		: Number	= uvData[uint(uvOffset + uvVertexSize * i2 + 1)];
+				xyzData.position = xyzOffset + xyzVertexSize * i2;
+				var x2		: Number 	= xyzData.readFloat();
+				var y2		: Number 	= xyzData.readFloat();
+				var z2		: Number 	= xyzData.readFloat();
+				
+				uvData.position = uvOffset + uvVertexSize * i2;
+				var u2		: Number	= uvData.readFloat();
+				var v2		: Number	= uvData.readFloat();
 				
 				var v0v2	: Number 	= v0 - v2;
 				var v1v2 	: Number 	= v1 - v2;
@@ -668,29 +725,47 @@ package aerys.minko.render.geometry
 					tz /= mag;
 				}
 				
-				ii0 = i0 * tangentsVertexSize + tangentsOffset;
-				ii1 = i1 * tangentsVertexSize + tangentsOffset;
-				ii2 = i2 * tangentsVertexSize + tangentsOffset;
+				ii = i0 * tangentsVertexSize + tangentsOffset;
+				tangentsData.position = ii;
+				var tx0 : Number = tx + tangentsData.readFloat();
+				var ty0 : Number = ty + tangentsData.readFloat();
+				var tz0 : Number = ty + tangentsData.readFloat();
 				
-				tangentsData[ii0] += tx;
-				tangentsData[uint(ii0 + 1)] += ty;
-				tangentsData[uint(ii0 + 2)] += tz;
+				tangentsData.position = ii;
+				tangentsData.writeFloat(tx0);
+				tangentsData.writeFloat(ty0);
+				tangentsData.writeFloat(tz0);
 				
-				tangentsData[ii1] += tx;
-				tangentsData[uint(ii1 + 1)] += ty;
-				tangentsData[uint(ii1 + 2)] += tz;
+				ii = i1 * tangentsVertexSize + tangentsOffset;
+				tangentsData.position = ii;
+				var tx1 : Number = tx + tangentsData.readFloat();
+				var ty1 : Number = ty + tangentsData.readFloat();
+				var tz1 : Number = ty + tangentsData.readFloat();
 				
-				tangentsData[ii2] += tx;
-				tangentsData[uint(ii2 + 1)] += ty;
-				tangentsData[uint(ii2 + 2)] += tz;
+				tangentsData.position = ii;
+				tangentsData.writeFloat(tx1);
+				tangentsData.writeFloat(ty1);
+				tangentsData.writeFloat(tz1);
+				
+				ii = i2 * tangentsVertexSize + tangentsOffset;
+				tangentsData.position = ii;
+				var tx2 : Number = tx + tangentsData.readFloat();
+				var ty2 : Number = ty + tangentsData.readFloat();
+				var tz2 : Number = ty + tangentsData.readFloat();
+				
+				tangentsData.position = ii;
+				tangentsData.writeFloat(tx2);
+				tangentsData.writeFloat(ty2);
+				tangentsData.writeFloat(tz2);
 			}
 			
 			for (i = 0; i < numVertices; ++i)
 			{
 				ii = i * tangentsVertexSize + tangentsOffset;
-				tx = tangentsData[ii];
-				ty = tangentsData[uint(ii + 1)];
-				tz = tangentsData[uint(ii + 2)];
+				tangentsData.position = ii;
+				tx = tangentsData.readFloat();
+				ty = tangentsData.readFloat();
+				tz = tangentsData.readFloat();
 				mag = Math.sqrt(tx * tx + ty * ty + tz * tz);
 				
 				if (mag != 0.)
@@ -700,11 +775,13 @@ package aerys.minko.render.geometry
 					tz /= mag;
 				}
 				
-				tangentsData[ii] = tx;
-				tangentsData[uint(ii + 1)] = ty;
-				tangentsData[uint(ii + 2)] = tz;
+				tangentsData.position = ii;
+				tangentsData.writeFloat(tx);
+				tangentsData.writeFloat(ty);
+				tangentsData.writeFloat(tz);
 			}
 			
+			indices.position = 0;
 			xyzStream.unlock(tangentsStream == xyzStream);
 			if (uvStream.locked)
 				uvStream.unlock(false);
@@ -749,7 +826,7 @@ package aerys.minko.render.geometry
 				if (!xyzStream)
 					return ;
 				
-				var offset		: uint		= xyzStream.format.getOffsetForComponent(
+				var offset		: uint		= xyzStream.format.getBytesOffsetForComponent(
 					VertexComponent.XYZ
 				);
 				var streamMinX	: Number	= xyzStream.getMinimum(offset);
@@ -782,40 +859,6 @@ package aerys.minko.render.geometry
 			_boundingBox = new BoundingBox(min, max);
 		}
 		
-		public function split() : Vector.<Geometry>
-		{
-			var geometries		: Vector.<Geometry> = new Vector.<Geometry>;
-			var numGeometries	: uint				= 0;
-			var geometryId 		: uint				= 0;
-			var numStreams		: uint				= _vertexStreams.length; 
-			var indexData		: Vector.<uint>		= _indexStream.minko_stream::_data;
-			
-			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
-			{
-				var stream	: VertexStream	= _vertexStreams[streamId] as VertexStream;
-				if (stream == null)
-					stream = VertexStream.extractSubStream(_vertexStreams[streamId], StreamUsage.DYNAMIC);
-				
-				var vertexData	: Vector.<Number>			= stream.minko_stream::_data;
-				var vertexDatas	: Vector.<Vector.<Number>>	= new Vector.<Vector.<Number>>();
-				var indexDatas	: Vector.<Vector.<uint>>	= new Vector.<Vector.<uint>>();
-				
-				GeometrySanitizer.splitBuffers(vertexData, indexData, vertexDatas, indexDatas, stream.format.vertexSize);
-				
-				if (streamId == 0)
-				{
-					numGeometries = geometries.length = vertexDatas.length;
-					for (geometryId = 0; geometryId < numGeometries; ++geometryId)
-						geometries[geometryId] = new Geometry(new <IVertexStream>[], new IndexStream(StreamUsage.DYNAMIC, indexDatas[geometryId]));
-				}
-				
-				for (geometryId = 0; geometryId < numGeometries; ++geometryId)
-					geometries[geometryId].setVertexStream(new VertexStream(StreamUsage.DYNAMIC, stream.format, vertexDatas[geometryId]), streamId);
-			}
-			
-			return geometries;
-		}
-		
 		public function merge(geometry			: Geometry,
 							  vertexStreamUsage : uint = 3,
 							  indexStreamUsage 	: uint = 3) : Geometry
@@ -835,7 +878,7 @@ package aerys.minko.render.geometry
 				vertexStreamsToConcat.push(geometry._vertexStreams[0]);
 
 			var indexOffset : uint = vertexStreamsToConcat.length != 1
-				? vertexStreamsToConcat[0].length
+				? (vertexStreamsToConcat[0] as VertexStream).numVertices
 				: 0;
 			
 			if (vertexStreamsToConcat.length != 0)
@@ -881,18 +924,22 @@ package aerys.minko.render.geometry
 		
 		private function invertVertexStreamComponent(vertexStream : VertexStream, component : VertexComponent) : void
 		{
-			var componentOffset	: uint				= vertexStream.format.getOffsetForComponent(component);
-			var vertexSize		: uint				= vertexStream.format.vertexSize;
-			var numVertices		: uint				= vertexStream.length;
-			var data			: Vector.<Number>	= vertexStream.lock();
+			var componentOffset	: uint				= vertexStream.format.getBytesOffsetForComponent(component);
+			var vertexSize		: uint				= vertexStream.format.numBytesPerVertex;
+			var numVertices		: uint				= vertexStream.numVertices;
+			var data			: ByteArray			= vertexStream.lock();
+			var numValues		: uint				= component.numProperties >>> 2;
+			var tmp				: Vector.<Number>	= new Vector.<Number>(numValues);
 			
 			for (var i : uint = 0; i < numVertices; ++i)
 			{
-				var offset 	: uint		= i * vertexSize + componentOffset;
+				data.position = i * vertexSize + componentOffset;
+				for (var j : uint = 0; j < numValues; ++j)
+					tmp[j] = data.readFloat();
 				
-				data[offset] = -data[offset];
-				data[uint(offset + 1)] = -data[uint(offset + 1)];
-				data[uint(offset + 2)] = -data[uint(offset + 2)];
+				data.position = i * vertexSize + componentOffset;
+				for (j = 0; j < numValues; ++j)
+					data.writeFloat(-tmp[j]);
 			}
 			
 			vertexStream.unlock();
@@ -935,43 +982,44 @@ package aerys.minko.render.geometry
 				localDirection.normalize();
 			}
 			
-			var vertexStream 	: IVertexStream 	= getVertexStream(0);
+			var vertexStream 	: IVertexStream = getVertexStream(0);
 			
-			var xyzVertexStream : VertexStream 		= vertexStream.getStreamByComponent(VertexComponent.XYZ);
-			var format 			: VertexFormat 		= xyzVertexStream.format;
-			var size 			: int 				= format.vertexSize;
-			var offset			: uint 				= format.getOffsetForComponent(VertexComponent.XYZ);
+			var xyzVertexStream : VertexStream 	= vertexStream.getStreamByComponent(VertexComponent.XYZ);
+			var format 			: VertexFormat 	= xyzVertexStream.format;
+			var xyzVertexSize 	: uint 			= format.numBytesPerVertex;
+			var offset			: uint 			= format.getOffsetForComponent(VertexComponent.XYZ);
 			
-			var localDirectionX : Number 			= localDirection.x;
-			var localDirectionY	: Number 			= localDirection.y;
-			var localDirectionZ	: Number 			= localDirection.z;
+			var localDirectionX : Number 		= localDirection.x;
+			var localDirectionY	: Number 		= localDirection.y;
+			var localDirectionZ	: Number 		= localDirection.z;
 			
-			var localOriginX 	: Number 			= localOrigin.x;
-			var localOriginY	: Number 			= localOrigin.y;
-			var localOriginZ	: Number 			= localOrigin.z;
+			var localOriginX 	: Number 		= localOrigin.x;
+			var localOriginY	: Number 		= localOrigin.y;
+			var localOriginZ	: Number 		= localOrigin.z;
 			
-			var dataIndexStreamData : Vector.<uint> 	= _indexStream._data;
-			var xyzVertexStreamData	: Vector.<Number>	= xyzVertexStream._data;
-			var maxDistance			: Number 			= Number.POSITIVE_INFINITY;
-			var triangleIndice		: int 				= -3;
+			var indicesData 	: ByteArray 	= _indexStream.lock();
+			var xyzData			: ByteArray		= xyzVertexStream.lock();
+			var maxDistance		: Number 		= Number.POSITIVE_INFINITY;
+			var triangleIndice	: int 			= -3;
 			
 			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
 			{
-				var indexv0 : uint = dataIndexStreamData[triangleIndex] * size + offset;
-				var indexv1 : uint = dataIndexStreamData[int(triangleIndex + 1)] * size + offset;
-				var indexv2 : uint = dataIndexStreamData[int(triangleIndex + 2)] * size + offset;
+				indicesData.position = triangleIndex * 6;
 				
-				var v0X : Number = xyzVertexStreamData[int(indexv0)];
-				var v0Y : Number = xyzVertexStreamData[int(indexv0 + 1)];
-				var v0Z : Number = xyzVertexStreamData[int(indexv0 + 2)];
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
+				var v0X : Number = xyzData.readFloat();
+				var v0Y : Number = xyzData.readFloat();
+				var v0Z : Number = xyzData.readFloat();
 
-				var v1X : Number = xyzVertexStreamData[int(indexv1)];
-				var v1Y : Number = xyzVertexStreamData[int(indexv1 + 1)];
-				var v1Z : Number = xyzVertexStreamData[int(indexv1 + 2)];
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+				var v1X : Number = xyzData.readFloat();
+				var v1Y : Number = xyzData.readFloat();
+				var v1Z : Number = xyzData.readFloat();
 				
-				var v2X : Number = xyzVertexStreamData[int(indexv2)];
-				var v2Y : Number = xyzVertexStreamData[int(indexv2 + 1)];
-				var v2Z : Number = xyzVertexStreamData[int(indexv2 + 2)];
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+				var v2X : Number = xyzData.readFloat();
+				var v2Y : Number = xyzData.readFloat();
+				var v2Z : Number = xyzData.readFloat();
 				
 				var edge1X : Number = v1X - v0X;
 				var edge1Y : Number = v1Y - v0Y;
@@ -1007,7 +1055,6 @@ package aerys.minko.render.geometry
 				var qvecY : Number = tvecZ * edge1X - edge1Z * tvecX;
 				var qvecZ : Number = tvecX * edge1Y - edge1X * tvecY;
 				
-				
 				v = (localDirectionX * qvecX + localDirectionY * qvecY + localDirectionZ * qvecZ) * invDet;
 				
 				if (v < 0 || u + v > 1)
@@ -1022,7 +1069,41 @@ package aerys.minko.render.geometry
 				}
 			}
 			
+			_indexStream.unlock(false);
+			xyzVertexStream.unlock(false);
+			
 			return triangleIndice / 3;				
+		}
+		
+		public function invertWinding(flipNormals : Boolean = true, flipTangents : Boolean = true) : Geometry
+		{
+			var numIndices		: uint		= indexStream.length;
+			var numTriangles	: uint		= numIndices / 3;
+			var indices			: ByteArray	= indexStream.lock();
+			
+			for (var i : uint = 0; i < numTriangles; ++i)
+			{
+				var i0 : uint = indices.readUnsignedShort();
+				var i1 : uint = indices.readUnsignedShort();
+				var i2 : uint = indices.readUnsignedShort();
+				
+				indices.position -= 6;
+				indices.writeShort(i2);
+				indices.writeShort(i1);
+				indices.writeShort(i0);
+			}
+			
+			indexStream.unlock();
+			
+			if (numVertexStreams)
+			{
+				if (flipNormals && getVertexStream(0).format.hasComponent(VertexComponent.NORMAL))
+					computeNormals();
+				if (flipTangents && getVertexStream(0).format.hasComponent(VertexComponent.TANGENT))
+					computeTangentSpace();
+			}
+			
+			return this;
 		}
 	}
 }

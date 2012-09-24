@@ -3,7 +3,6 @@ package aerys.minko.render.geometry.stream.iterator
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
@@ -34,17 +33,17 @@ package aerys.minko.render.geometry.stream.iterator
 	public dynamic final class VertexIterator extends Proxy
 	{
 		use namespace minko_stream;
+		
+		private var _index				: uint;
+		private var _offset				: uint;
 
-		private var _index				: int				= 0;
-		private var _offset				: int				= 0;
+		private var _singleReference	: Boolean;
 
-		private var _singleReference	: Boolean			= true;
+		private var _vertex				: VertexReference;
+		private var _vstream			: IVertexStream;
+		private var _istream			: IndexStream;
 
-		private var _vertex				: VertexReference	= null;
-		private var _vstream			: IVertexStream		= null;
-		private var _istream			: IndexStream		= null;
-
-		private var _propertyToStream	: Object			= new Object();
+		private var _propertyToStream	: Object;
 
 		public function get vertexStream() : IVertexStream
 		{
@@ -53,7 +52,7 @@ package aerys.minko.render.geometry.stream.iterator
 		
 		public function get length() : int
 		{
-			return _istream ? _istream.length : _vstream.length;
+			return _istream ? _istream.length : _vstream.numVertices;
 		}
 
 		/**
@@ -95,6 +94,8 @@ package aerys.minko.render.geometry.stream.iterator
 
 		private function initialize() : void
 		{
+			_propertyToStream = {};
+			
 			var format			: VertexFormat	= _vstream.format;
 			var numComponents	: uint			= format.numComponents;
 
@@ -102,8 +103,13 @@ package aerys.minko.render.geometry.stream.iterator
 			{
 				var component : VertexComponent = format.getComponent(componentIndex);
 				
-				for each (var field : String in component.fields)
-					_propertyToStream[field] = _vstream.getStreamByComponent(component);
+				var numProperties : uint = component.numProperties;
+				for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+				{
+					_propertyToStream[component.getProperty(propertyId)] = _vstream.getStreamByComponent(
+						component
+					);
+				}
 			}
 		}
 
@@ -112,7 +118,7 @@ package aerys.minko.render.geometry.stream.iterator
 			var index : int = int(name);
 
 			if (_istream)
-				index = _istream._data[index];
+				index = _istream.get(index);
 
 			var vertex : VertexReference	= _vertex;
 
@@ -125,7 +131,7 @@ package aerys.minko.render.geometry.stream.iterator
 				}
 				else
 				{
-					_vertex._index = index;
+					_vertex.index = index;
 				}
 
 				vertex = _vertex;
@@ -148,10 +154,15 @@ package aerys.minko.render.geometry.stream.iterator
 			
 			for (var componentIndex : uint = 0; componentIndex < numComponents; ++componentIndex)
 			{
-				var component : VertexComponent = format.getComponent(componentIndex);
-
-				for each (var field : String in component.fields)
-					ref[field] = Number(obj[field]);
+				var component 		: VertexComponent 	= format.getComponent(componentIndex);
+				var numProperties 	: uint 				= component.numProperties;
+				
+				for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+				{
+					var propertyName : String = component.getProperty(propertyId);
+					
+					ref[propertyName] = Number(obj[propertyName]);
+				}
 			}
 		}
 
@@ -159,7 +170,7 @@ package aerys.minko.render.geometry.stream.iterator
 		{
 			var index : int = int(name);
 
-			if (_vstream.deleteVertexByIndex(index))
+			if (_vstream.deleteVertex(index))
 			{
 				if (index <= _index)
 					++_offset;
@@ -175,8 +186,8 @@ package aerys.minko.render.geometry.stream.iterator
 			var index : int = int(name);
 
 			return _istream
-				   ? index < _istream.length
-				   : index < _vstream.length;
+				? index < _istream.length
+				: index < _vstream.numVertices;
 		}
 
 
@@ -186,8 +197,8 @@ package aerys.minko.render.geometry.stream.iterator
 			_offset = 0;
 
 			return _istream
-				   ? index < _istream.length ? index + 1 : 0
-				   : index < _vstream.length ? index + 1 : 0;
+				? index < _istream.length ? index + 1 : 0
+				: index < _vstream.numVertices ? index + 1 : 0;
 		}
 
 		override flash_proxy function nextName(index : int) : String
@@ -198,7 +209,7 @@ package aerys.minko.render.geometry.stream.iterator
 		override flash_proxy function nextValue(index : int) : *
 		{
 			_index = index - 1;
-			index = _istream ? _istream._data[_index] : _index;
+			index = _istream ? _istream.get(_index) : _index;
 
 			if (!_singleReference || !_vertex)
 			{
@@ -207,7 +218,7 @@ package aerys.minko.render.geometry.stream.iterator
 			}
 
 			if (_singleReference)
-				_vertex._index = -_offset + index;
+				_vertex.index = -_offset + index;
 
 			return _vertex;
 		}

@@ -56,7 +56,6 @@ package aerys.minko.type.math
 		minko_math var _b		: Number	= 0.;
 		minko_math var _c		: Number	= 0.;
 		minko_math var _d		: Number	= 0.;
-		minko_math var _normal	: Vector4	= new Vector4();
 
 		public function get a() : Number
 		{
@@ -73,12 +72,6 @@ package aerys.minko.type.math
 		public function get d() : Number
 		{
 			return _d;
-		}
-		
-		public function get normal() : Vector4
-		{
-			_normal.set(_a, _b, _c);
-			return _normal;
 		}
 		
 		/**
@@ -172,7 +165,7 @@ package aerys.minko.type.math
 		{
 			var mag	: Number	= Math.sqrt(_a * _a + _b * _b + _c * _c);
 
-			if (mag && mag != 1.)
+			if (mag != 0. && mag != 1.)
 			{
 				_a /= mag;
 				_b /= mag;

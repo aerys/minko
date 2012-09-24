@@ -20,7 +20,7 @@ package aerys.minko.render.shader.part
 			super(main);
 		}
 		
-		public function getDiffuseColor() : SFloat
+		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true) : SFloat
 		{
 			var diffuseColor : SFloat	= null;
 			
@@ -52,15 +52,15 @@ package aerys.minko.render.shader.part
 			}
 			
 			// Apply HLSA modifiers
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR_MATRIX))
+			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_TRANSFORM))
 			{
 				diffuseColor = multiply4x4(
 					diffuseColor,
-					meshBindings.getParameter(BasicProperties.DIFFUSE_COLOR_MATRIX, 16)
+					meshBindings.getParameter(BasicProperties.DIFFUSE_TRANSFORM, 16)
 				);
 			}
 			
-			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
+			if (killOnAlphaThreshold && meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
 				var alphaThreshold : SFloat = meshBindings.getParameter(
 					BasicProperties.ALPHA_THRESHOLD, 1

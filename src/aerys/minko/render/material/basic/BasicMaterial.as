@@ -147,13 +147,13 @@ package aerys.minko.render.material.basic
 			setProperty(BasicProperties.STENCIL_WRITE_MASK, value);
 		}
 		
-		public function get diffuseColorMatrix() : Matrix4x4
+		public function get diffuseTransform() : Matrix4x4
 		{
-			return getProperty(BasicProperties.DIFFUSE_COLOR_MATRIX);
+			return getProperty(BasicProperties.DIFFUSE_TRANSFORM);
 		}
-		public function set diffuseColorMatrix(value : Matrix4x4) : void
+		public function set diffuseTransform(value : Matrix4x4) : void
 		{
-			setProperty(BasicProperties.DIFFUSE_COLOR_MATRIX, value);
+			setProperty(BasicProperties.DIFFUSE_TRANSFORM, value);
 		}
 		
 		public function BasicMaterial(properties : Object = null, effect : Effect = null, name : String = DEFAULT_NAME)

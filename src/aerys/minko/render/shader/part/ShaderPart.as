@@ -683,14 +683,26 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.SAT, getNode(value)));
 		}
 		
-		protected final function min(a : Object, b : Object) : SFloat
+		protected final function min(a : Object, b : Object, ...arguments) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.MIN, getNode(a), getNode(b)));
+			var min : Instruction = new Instruction(Instruction.MIN, getNode(a), getNode(b));
+			var numArguments : uint = arguments.length;
+			
+			for (var i : uint = 0; i < numArguments; ++i)
+				min = new Instruction(Instruction.MIN, min, getNode(arguments[i]));
+			
+			return new SFloat(min);
 		}
 
-		protected final function max(a : Object, b : Object) : SFloat
+		protected final function max(a : Object, b : Object, ...arguments) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.MAX, getNode(a), getNode(b)));
+			var max : Instruction = new Instruction(Instruction.MAX, getNode(a), getNode(b));
+			var numArguments : uint = arguments.length;
+			
+			for (var i : uint = 0; i < numArguments; ++i)
+				max = new Instruction(Instruction.MAX, max, getNode(arguments[i]));
+			
+			return new SFloat(max);
 		}
 
 		protected final function greaterEqual(a : Object, b : Object) : SFloat

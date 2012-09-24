@@ -1,9 +1,6 @@
-package aerys.minko.type.bounding
+package aerys.minko.type.math
 {
 	import aerys.minko.ns.minko_math;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Ray;
-	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Vector3D;
 

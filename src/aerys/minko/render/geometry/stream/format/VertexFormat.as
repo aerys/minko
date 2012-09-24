@@ -4,31 +4,36 @@ package aerys.minko.render.geometry.stream.format
 
 	public final class VertexFormat
 	{
-		public static const XYZ			: VertexFormat 	= new VertexFormat(
+		public static const XYZ				: VertexFormat 	= new VertexFormat(
 			VertexComponent.XYZ
 		);
-		public static const XYZ_RGB		: VertexFormat 	= new VertexFormat(
+		public static const XYZ_RGB			: VertexFormat 	= new VertexFormat(
 			VertexComponent.XYZ,
 			VertexComponent.RGB
 		);
-		public static const XYZ_UV		: VertexFormat 	= new VertexFormat(
+		public static const XYZ_UV			: VertexFormat 	= new VertexFormat(
 			VertexComponent.XYZ,
 			VertexComponent.UV
 		);
-		public static const XYZ_UV_ST	: VertexFormat	= new VertexFormat(
+		public static const XYZ_UV_NORMAL	: VertexFormat 	= new VertexFormat(
+			VertexComponent.XYZ,
+			VertexComponent.UV,
+			VertexComponent.NORMAL
+		);
+		public static const XYZ_UV_ST		: VertexFormat	= new VertexFormat(
 			VertexComponent.XYZ,
 			VertexComponent.UV,
 			VertexComponent.ST
 		);
 
-		private var _vertexSize			: uint;
+		private var _bytesPerVertex		: uint;
 		private var _components			: Vector.<VertexComponent>;
 		private var _componentOffsets	: Dictionary;
-		private var _fieldOffsets		: Object;
+		private var _propertyOffsets	: Object;
 
-		public function get vertexSize() : uint
+		public function get numBytesPerVertex() : uint
 		{
-			return _vertexSize;
+			return _bytesPerVertex;
 		}
 		
 		public function get numComponents() : uint
@@ -38,17 +43,16 @@ package aerys.minko.render.geometry.stream.format
 
 		public function VertexFormat(...components)
 		{
-			_vertexSize			= 0
-			_components			= new <VertexComponent>[];
-			_componentOffsets	= new Dictionary();
-			_fieldOffsets		= {};
-
-			if (components)
-				initialize(components);
+			initialize(components);
 		}
 
 		private function initialize(components : Array) : void
 		{
+			_bytesPerVertex		= 0
+			_components			= new <VertexComponent>[];
+			_componentOffsets	= new Dictionary();
+			_propertyOffsets	= {};
+
 			for each (var component : VertexComponent in components)
 				addComponent(component);
 		}
@@ -64,12 +68,17 @@ package aerys.minko.render.geometry.stream.format
 			}
 
 			_components.push(component);
-			_componentOffsets[component] = _vertexSize;
+			_componentOffsets[component] = _bytesPerVertex;
 
-			for (var fieldName : String in component.offsets)
-				_fieldOffsets[fieldName] = _vertexSize + component.offsets[fieldName];
+			var numProperties : uint = component.numProperties;
+			for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+			{
+				var propertyName : String = component.getProperty(propertyId);
+				
+				_propertyOffsets[propertyName] = _bytesPerVertex + component.getPropertyBytesOffset(propertyName);
+			}
 
-			_vertexSize += component.size;
+			_bytesPerVertex += component.numBytes;
 		}
 
 		public function removeComponent(component : VertexComponent) : void
@@ -77,8 +86,8 @@ package aerys.minko.render.geometry.stream.format
 			if (!hasComponent(component))
 				throw new Error('No such component');
 
-			var offset	: uint = _componentOffsets[component];
-			var dwords	: uint = component.size;
+			var offset		: uint = _componentOffsets[component];
+			var numBytes	: uint = component.numBytes;
 
 			_components.splice(_components.indexOf(component), 1);
 			delete _componentOffsets[component]
@@ -86,23 +95,24 @@ package aerys.minko.render.geometry.stream.format
 			for (var otherComponent : Object in _componentOffsets)
 			{
 				var otherOffset : uint = _componentOffsets[otherComponent];
+				
 				if (otherOffset > offset)
-					_componentOffsets[otherComponent] -= dwords;
+					_componentOffsets[otherComponent] -= numBytes;
 			}
 
-			for (var fieldName : String in component.offsets)
-			{
-				delete _fieldOffsets[fieldName];
-			}
+			var numProperties : uint = component.numProperties;
+			for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+				delete _propertyOffsets[component.getProperty(propertyId)];
 
-			for (var otherFieldName : String in _fieldOffsets)
+			for (var otherFieldName : String in _propertyOffsets)
 			{
-				var otherFieldOffset : uint = _fieldOffsets[otherFieldName];
+				var otherFieldOffset : uint = _propertyOffsets[otherFieldName];
+				
 				if (otherFieldOffset > offset)
-					_fieldOffsets[otherFieldName] -= dwords;
+					_propertyOffsets[otherFieldName] -= numBytes;
 			}
 
-			_vertexSize -= dwords;
+			_bytesPerVertex -= numBytes;
 		}
 
 		/**
@@ -128,27 +138,41 @@ package aerys.minko.render.geometry.stream.format
 		/**
 		 * Add the components from the vertex format passed in attribute that we don't have in this one.
 		 */
-		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : void
+		public function unionWith(otherVertexFormat : VertexFormat, force : Boolean = false) : VertexFormat
 		{
 			for each (var component : VertexComponent in otherVertexFormat._components)
 				addComponent(component, force);
+				
+			return this;
 		}
 
-		public function intersectWith(otherVertexFormat : VertexFormat) : void
+		public function intersectWith(otherVertexFormat : VertexFormat) : VertexFormat
 		{
 			for each (var component : VertexComponent in _components)
 				if (!otherVertexFormat.hasComponent(component))
 					removeComponent(component);
+				
+			return this;
 		}
 
-		public function getOffsetForComponent(component : VertexComponent) : int
+		public function getBytesOffsetForComponent(component : VertexComponent, index : uint = 0) : uint
 		{
-			return _componentOffsets[component];
+			return _componentOffsets[component] + index * _bytesPerVertex;
+		}
+		
+		public function getOffsetForComponent(component : VertexComponent, index : uint = 0) : uint
+		{
+			return (_componentOffsets[component] >>> 2) + index * (_bytesPerVertex >>> 2);
 		}
 
-		public function getOffsetForField(fieldName : String) : int
+		public function getBytesOffsetForProperty(property : String) : uint
 		{
-			return _fieldOffsets[fieldName];
+			return _propertyOffsets[property];
+		}
+		
+		public function getOffsetForProperty(property : String, index : uint = 0) : uint
+		{
+			return (_propertyOffsets[property] >>> 2) + index * (_bytesPerVertex >>> 2);
 		}
 
 		public function clone() : VertexFormat
@@ -156,16 +180,16 @@ package aerys.minko.render.geometry.stream.format
 			var clone	: VertexFormat 	= new VertexFormat();
 			var key 	: Object		= null;
 
-			clone._vertexSize	= _vertexSize;
+			clone._bytesPerVertex	= _bytesPerVertex;
 			clone._components		= _components.slice()
 			clone._componentOffsets	= new Dictionary();
-			clone._fieldOffsets		= new Object();
+			clone._propertyOffsets	= {};
 
 			for (key in _componentOffsets)
 				clone._componentOffsets[key] = _componentOffsets[key];
 
-			for (key in _fieldOffsets)
-				clone._fieldOffsets[key] = _fieldOffsets[key];
+			for (key in _propertyOffsets)
+				clone._propertyOffsets[key] = _propertyOffsets[key];
 
 			return clone;
 		}

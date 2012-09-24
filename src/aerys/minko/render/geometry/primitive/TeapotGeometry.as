@@ -4,11 +4,12 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.GeometrySanitizer;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
 	import flash.geom.Vector3D;
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 	
 	/**
 	 * Utah Teapot
@@ -166,8 +167,11 @@ package aerys.minko.render.geometry.primitive
 									   vertexStreamUsage 	: uint 	= 3,
 									   indexStreamUsage		: uint	= 3)
 		{
-			var indexData	: Vector.<uint>		= new Vector.<uint>();
-			var vertexData	: Vector.<Number>	= new Vector.<Number>();
+			var indexData	: ByteArray	= new ByteArray();
+			var vertexData	: ByteArray	= new ByteArray();
+			
+			vertexData.endian = Endian.LITTLE_ENDIAN;
+			indexData.endian = Endian.LITTLE_ENDIAN;
 			
 			var patch			: Vector.<Vector3D>	= new Vector.<Vector3D>(16, true);
 			var currentVertexId	: uint				= 0;
@@ -183,9 +187,12 @@ package aerys.minko.render.geometry.primitive
 				currentVertexId += (divs + 1) * (divs + 1);
 			}
 			
+			vertexData.position = 0;
+			indexData.position = 0;
+			
 			// this is slow and memory consuming and could be avoided by non duplicating all border
 			// vertices on genPatchVertexData and genPatchIndexData...
-			GeometrySanitizer.removeDuplicatedVertices(vertexData, indexData, 3);
+			GeometrySanitizer.removeDuplicatedVertices(vertexData, indexData, 12);
 			
 			super(
 				new <IVertexStream>[
@@ -200,7 +207,7 @@ package aerys.minko.render.geometry.primitive
 		
 		private function genPatchVertexData(patch		: Vector.<Vector3D>, 
 								   			divs		: uint,
-											vertexData	: Vector.<Number>) : void
+											vertexData	: ByteArray) : void
 		{
 			// create 2 temporary vertex vectors and initialize them
 			var last : Vector.<Vector3D> = new Vector.<Vector3D>(divs + 1, true);
@@ -223,26 +230,27 @@ package aerys.minko.render.geometry.primitive
 					var px : Number = v / divs;
 					
 					bernstein(px, temp[0], temp[1], temp[2], temp[3], last[v]);
-					vertexData.push(last[v].x, last[v].z, last[v].y); // y up in minko, z up in the model
+					vertexData.writeFloat(last[v].x);
+					vertexData.writeFloat(last[v].z); // y up in minko, z up in the model
+					vertexData.writeFloat(last[v].y);
 				}
 			}
 		}
 		
 		private function genPatchIndexData(indexOffset	: uint,
 										   divs			: uint,
-										   indexData	: Vector.<uint>) : void
+										   indexData	: ByteArray) : void
 		{
 			for (var u : uint = 0; u < divs; ++u)
 				for (var v : uint = 0; v < divs; ++v)
-					indexData.push(
-						indexOffset + u * (divs + 1) + v,
-						indexOffset + (u + 1) * (divs + 1) + v,
-						indexOffset + u * (divs + 1) + v + 1,
-						
-						indexOffset + u * (divs + 1) + v + 1,
-						indexOffset + (u + 1) * (divs + 1) + v,
-						indexOffset + (u + 1) * (divs + 1) + v + 1
-					);
+				{
+					indexData.writeShort(indexOffset + u * (divs + 1) + v);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v);
+					indexData.writeShort(indexOffset + u * (divs + 1) + v + 1);
+					indexData.writeShort(indexOffset + u * (divs + 1) + v + 1);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v);
+					indexData.writeShort(indexOffset + (u + 1) * (divs + 1) + v + 1);
+				}
 		}
 		
 		private function bernstein(u	: Number,

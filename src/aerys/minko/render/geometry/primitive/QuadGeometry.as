@@ -62,8 +62,8 @@ package aerys.minko.render.geometry.primitive
 			
 			if (doubleSided)
 				vertices = vertices.concat(vertices);
-			
-			return new VertexStream(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
+
+			return VertexStream.fromVector(vertexStreamUsage, VertexFormat.XYZ_UV, vertices);
 		}
 		
 		protected function buildIndexStream(doubleSided			: Boolean,
@@ -95,7 +95,7 @@ package aerys.minko.render.geometry.primitive
 					indices.push((numRows + 1) * (numColumns + 1) + indices[uint(numIndices--)]);
 			}
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
 	}
 }

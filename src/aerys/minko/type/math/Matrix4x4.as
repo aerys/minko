@@ -30,11 +30,6 @@ package aerys.minko.type.math
 		
 		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		
-		public function get dataDescriptor() : Object
-		{
-			return null;
-		}
-
 		public function get translationX() : Number
 		{
 			return getTranslation(TMP_VECTOR4).x;
@@ -166,6 +161,16 @@ package aerys.minko.type.math
 		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
 		{
 			_matrix.copyFrom(matrix._matrix);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
+		public function copyFromMatrix3D(matrix : Matrix3D) : Matrix4x4
+		{
+			_matrix.copyFrom(matrix);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -469,18 +474,18 @@ package aerys.minko.type.math
 		{
 			if (withScale)
 			{
-				var scale	: Vector4	= target.getScale(TMP_VECTOR4);
-				var tx		: Number	= scale.x;
-				var ty		: Number	= scale.y;
-				var tz		: Number	= scale.z;
+				var scale	: Vector4	= getScale(TMP_VECTOR4);
+				var sx		: Number	= scale.x;
+				var sy		: Number	= scale.y;
+				var sz		: Number	= scale.z;
 				
-				scale = getScale(TMP_VECTOR4);
+				scale = target.getScale(TMP_VECTOR4);
 				
 				_matrix.interpolateTo(target._matrix, ratio);
 				_matrix.appendScale(
-					tx + (scale.x - tx) * ratio,
-					ty + (scale.y - ty) * ratio,
-					tz + (scale.z - tz) * ratio
+					sx + (scale.x - sx) * ratio,
+					sy + (scale.y - sy) * ratio,
+					sz + (scale.z - sz) * ratio
 				);
 			}
 			else
@@ -787,6 +792,18 @@ package aerys.minko.type.math
 			);
 			
 			return invert();
+		}
+		
+		public function world(translation	: Vector4,
+							  rotation		: Vector4,
+							  scale			: Vector4) : Matrix4x4
+		{
+			_matrix.recompose(new <Vector3D>[translation._vector, rotation._vector, scale._vector]);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
 		}
 		
 		/**

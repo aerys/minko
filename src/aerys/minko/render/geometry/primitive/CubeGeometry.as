@@ -5,6 +5,7 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.stream.IndexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
+	import aerys.minko.render.geometry.stream.format.VertexFormat;
 
 	/**
 	 * The CubeGeometry class represents the 3D geometry of a cube.
@@ -13,48 +14,6 @@ package aerys.minko.render.geometry.primitive
 	 */
 	public class CubeGeometry extends Geometry
 	{
-		private static const XYZ	: Vector.<Number>	= new <Number>[
-			// top
-			0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
-			0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5,
-			// bottom
-			-0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5,
-			-0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5,
-			// back
-			0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-			-0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5,
-			// front
-			-0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5,
-			-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5,
-			// left
-			-0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5,
-			-0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5,
-			// right
-			0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5,
-			0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5
-		];
-		
-		private static const UV		: Vector.<Number>	= new <Number>[
-			// top
-			1., 0., 0., 1., 1., 1.,
-			1., 0., 0., 0., 0., 1.,
-			// bottom
-			0., 0., 1., 1., 1., 0.,
-			0., 1., 1., 1., 0., 0.,
-			// back
-			0., 1., 1., 0., 0., 0.,
-			1., 0., 0., 1., 1., 1.,
-			// front
-			0., 0., 0., 1., 1., 0.,
-			0., 1., 1., 1., 1., 0.,
-			// left
-			1., 1., 0., 0., 0., 1.,
-			0., 0., 1., 1., 1., 0.,
-			// right
-			1., 1., 1., 0., 0., 0.,
-			0., 0., 0., 1., 1., 1.
-		];
-		
 		private static var _instance	: CubeGeometry	= null;
 		
 		public static function get cubeGeometry() : CubeGeometry
@@ -68,11 +27,34 @@ package aerys.minko.render.geometry.primitive
 		public function CubeGeometry(vertexStreamUsage 	: uint 	= 3,
 									 indexStreamUsage	: uint	= 3)
 		{
-			var vertexStream : VertexStream = VertexStream.fromPositionsAndUVs(XYZ, UV, vertexStreamUsage);
+			var data : Vector.<Number> = new <Number>[
+				// top
+				0.5, 0.5, 0.5, 1., 0., -0.5, 0.5, -0.5, 0., 1., 0.5, 0.5, -0.5, 1., 1.,
+				0.5, 0.5, 0.5, 1., 0., -0.5, 0.5, 0.5, 0., 0., -0.5, 0.5, -0.5, 0., 1.,
+				// bottom
+				-0.5, -0.5, -0.5, 0., 0., 0.5, -0.5, 0.5, 1., 1., 0.5, -0.5, -0.5, 1., 0.,
+				-0.5, -0.5, 0.5, 0., 1., 0.5, -0.5, 0.5, 1., 1., -0.5, -0.5, -0.5, 0., 0.,
+				// back
+				0.5, -0.5, 0.5, 0., 1., -0.5, 0.5, 0.5, 1., 0., 0.5, 0.5, 0.5, 0., 0.,
+				-0.5, 0.5, 0.5, 1., 0., 0.5, -0.5, 0.5, 0., 1., -0.5, -0.5, 0.5, 1., 1.,
+				// front
+				-0.5, 0.5, -0.5, 0., 0., -0.5, -0.5, -0.5, 0., 1., 0.5, 0.5, -0.5, 1., 0.,
+				-0.5, -0.5, -0.5, 0., 1., 0.5, -0.5, -0.5, 1., 1., 0.5, 0.5, -0.5, 1., 0.,
+				// left
+				-0.5, -0.5, -0.5, 1., 1., -0.5, 0.5, 0.5, 0., 0., -0.5, -0.5, 0.5, 0., 1.,
+				-0.5, 0.5, 0.5, 0., 0., -0.5, -0.5, -0.5, 1., 1., -0.5, 0.5, -0.5, 1., 0.,
+				// right
+				0.5, -0.5, 0.5, 1., 1., 0.5, 0.5, 0.5, 1., 0., 0.5, 0.5, -0.5, 0., 0.,
+				0.5, 0.5, -0.5, 0., 0., 0.5, -0.5, -0.5, 0., 1., 0.5, -0.5, 0.5, 1., 1.
+			];
+			
+			var vertexStream : VertexStream = VertexStream.fromVector(
+				vertexStreamUsage, VertexFormat.XYZ_UV, data
+			);
 			
 			super(
 				new <IVertexStream>[vertexStream],
-				new IndexStream(indexStreamUsage, IndexStream.dummyData(vertexStream.length, 0))
+				new IndexStream(indexStreamUsage, IndexStream.dummyData(vertexStream.numVertices, 0))
 			);
 		}
 	}

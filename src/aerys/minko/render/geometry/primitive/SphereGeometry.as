@@ -3,11 +3,11 @@ package aerys.minko.render.geometry.primitive
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
-	import aerys.minko.render.geometry.stream.VertexStreamList;
-	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
+	
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 
 	public class SphereGeometry extends Geometry
 	{
@@ -20,6 +20,19 @@ package aerys.minko.render.geometry.primitive
 		
 		public static const DEFAULT_NUM_PARALLELS	: uint 	= 10;
 		public static const DEFAULT_NUM_MERIDIANS	: uint 	= 10;
+		
+		private var _numParallels	: uint;
+		private var _numMeridians	: uint;
+		
+		public function get numParallels() : uint
+		{
+			return _numParallels;
+		}
+		
+		public function get numMeridians() : uint
+		{
+			return _numMeridians;
+		}
 
 		public function SphereGeometry(numParallels 		: uint 		= DEFAULT_NUM_PARALLELS,
 									   numMeridians 		: uint 		= 0,
@@ -27,139 +40,123 @@ package aerys.minko.render.geometry.primitive
 									   vertexStreamUsage	: uint		= 3,
 									   indexStreamsUsage	: uint		= 3)
 		{
-			numMeridians ||= numParallels;
+			_numParallels = numParallels;
+			_numMeridians = numMeridians || numParallels;
 
 			super(
-				new <IVertexStream>[buildVertexStream(numParallels, numMeridians, withNormals, vertexStreamUsage)],
-				buildIndexStream(numParallels, numMeridians, indexStreamsUsage)
+				new <IVertexStream>[buildVertexStream(withNormals, vertexStreamUsage)],
+				buildIndexStream(indexStreamsUsage)
 			);
 		}
 		
-		private function buildVertexStream(numParallels 		: uint,
-										   numMeridians			: uint,
-										   withNormals 			: Boolean,
+		private function buildVertexStream(withNormals 			: Boolean,
 										   vertexStreamUsage 	: uint) : IVertexStream
 		{
-			var numVertices	: int				= (numParallels - 2) * (numMeridians + 1) + 2;
-			var vertices	: Vector.<Number>	= new Vector.<Number>(numVertices * 3, true);
-			var normals		: Vector.<Number>	= withNormals ? new Vector.<Number>(numVertices * 3, true) : null;
-			var uv			: Vector.<Number>	= new Vector.<Number>(numVertices * 2, true);
-			var phi			: Number			= 0.;
-			var theta		: Number			= 0.;
-			var c			: int 				= 0;
-			var k			: int				= 0;
-			var j			: int				= 0;
-			var i			: int				= 0;
+			var numVertices	: int		= (numParallels - 2) * (numMeridians + 1) + 2;
+			var data		: ByteArray	= new ByteArray();
+			var c			: uint 		= 0;
+			var k			: uint		= 0;
+			var j			: uint		= 0;
+			var i			: uint		= 0;
 			
-			for (j = 1; j < numParallels - 1; j++)
+			data.endian = Endian.LITTLE_ENDIAN;
+			
+			for (j = 1; j < _numParallels - 1; j++)
 			{
-				for (i = 0; i < numMeridians + 1; i++, c += 3, k += 2)
+				for (i = 0; i < _numMeridians + 1; i++, c += 3, k += 2)
 				{
-					theta = j / (numParallels - 1) * Math.PI;
-					phi = i / numMeridians * Math.PI * 2;
+					var theta 	: Number	= j / (_numParallels - 1) * Math.PI;
+					var phi 	: Number	= i / _numMeridians * Math.PI * 2;
 					
 					var x : Number 	= Math.sin(theta) * Math.cos(phi) * .5;
 					var y : Number	= Math.cos(theta) * .5;
 					var z : Number	= -Math.sin(theta) * Math.sin(phi) * .5;
 					
-					vertices[c] = x;
-					vertices[int(c + 1)] = y;
-					vertices[int(c + 2)] = z;
+					// xyz
+					data.writeFloat(x);
+					data.writeFloat(y);
+					data.writeFloat(z);
 					
-					uv[k] = 1. - i / numMeridians;
-					uv[int(k + 1)] = j / (numParallels - 1);
+					// uv
+					data.writeFloat(1. - i / _numMeridians);
+					data.writeFloat(j / (_numParallels - 1));
 					
 					if (withNormals)
 					{
-						normals[c] = x * 2;
-						normals[int(c + 1)] = y * 2;
-						normals[int(c + 2)] = z * 2;
+						data.writeFloat(x * 2);
+						data.writeFloat(y * 2);
+						data.writeFloat(z * 2);
 					}
 				}
 			}
 			
 			// top
-			vertices[c] = 0.;
-			vertices[int(c + 1)] = .5;
-			vertices[int(c + 2)] = 0.;
-			
-			uv[k] = .5;
-			uv[int(k + 1)] = 0.;
-			
+			data.writeFloat(0.);
+			data.writeFloat(.5);
+			data.writeFloat(0.);
+			data.writeFloat(.5);
+			data.writeFloat(0.);
 			if (withNormals)
 			{
-				normals[c] = 0.;
-				normals[int(c + 1)] = 1.;
-				normals[int(c + 2)] = 0.;
+				data.writeFloat(0.);
+				data.writeFloat(1.);
+				data.writeFloat(0.);
 			}
 			
 			// bottom
-			vertices[int(c + 3)] = 0.;
-			vertices[int(c + 4)]= -.5;
-			vertices[int(c + 5)] = 0.;
-			
-			uv[int(k + 2)] = .5;
-			uv[int(k + 3)] = 1.;
-			
+			data.writeFloat(0.);
+			data.writeFloat(-.5);
+			data.writeFloat(0.);
+			data.writeFloat(.5);
+			data.writeFloat(1.);
 			if (withNormals)
 			{
-				normals[int(c + 3)] = 0.;
-				normals[int(c + 4)]= -1.;
-				normals[int(c + 5)] = 0.;
+				data.writeFloat(0.);
+				data.writeFloat(-1.);
+				data.writeFloat(0.);
 			}
 			
-			var xyzUvStream 	: VertexStream 		= VertexStream.fromPositionsAndUVs(vertices, uv, vertexStreamUsage);
-			var list			: VertexStreamList	= new VertexStreamList(xyzUvStream);
+			data.position = 0;
 			
-			if (withNormals)
-			{
-				list.pushVertexStream(
-					new VertexStream(
-						vertexStreamUsage,
-						new VertexFormat(VertexComponent.NORMAL),
-						normals
-					)
-				);
-			}
-			
-			return list;
+			return new VertexStream(
+				vertexStreamUsage,
+				withNormals ? VertexFormat.XYZ_UV_NORMAL : VertexFormat.XYZ_UV,
+				data
+			);
 		}
 		
-		private function buildIndexStream(numParallels		: uint,
-										  numMeridians		: uint,
-										  indexStreamUsage	: uint) : IndexStream
+		private function buildIndexStream(indexStreamUsage : uint) : IndexStream
 		{
-			var numFaces	: uint			= (numParallels - 2) * (numMeridians) * 2;
+			var numFaces	: uint			= (_numParallels - 2) * (_numMeridians) * 2;
 			var	indices		: Vector.<uint>	= new Vector.<uint>(numFaces * 3, true);
 			
-			numMeridians++;
-			for (var c : uint = 0, j : uint = 0; j < numParallels - 3; j++)
+			_numMeridians++;
+			for (var c : uint = 0, j : uint = 0; j < _numParallels - 3; j++)
 			{
-				for (var i : uint = 0; i < numMeridians - 1; i++)
+				for (var i : uint = 0; i < _numMeridians - 1; i++)
 				{
-					indices[int(c++)] = j * numMeridians + i;
-					indices[int(c++)] = j * numMeridians + i + 1;
-					indices[int(c++)] = (j + 1) * numMeridians + i + 1;
+					indices[uint(c++)] = j * _numMeridians + i;
+					indices[uint(c++)] = j * _numMeridians + i + 1;
+					indices[uint(c++)] = (j + 1) * _numMeridians + i + 1;
 					
-					indices[int(c++)] = j * numMeridians + i;
-					indices[int(c++)] = (j + 1) * numMeridians + i + 1;
-					indices[int(c++)] = (j + 1) * numMeridians + i;
+					indices[uint(c++)] = j * _numMeridians + i;
+					indices[uint(c++)] = (j + 1) * _numMeridians + i + 1;
+					indices[uint(c++)] = (j + 1) * _numMeridians + i;
 				}
 			}
 			
 			for (i = 0; i < numMeridians - 1; i++)
 			{
-				indices[int(c++)] = (numParallels - 2) * numMeridians;
-				indices[int(c++)] = i + 1;
-				indices[int(c++)] = i;
+				indices[uint(c++)] = (_numParallels - 2) * _numMeridians;
+				indices[uint(c++)] = i + 1;
+				indices[uint(c++)] = i;
 				
-				indices[int(c++)] = (numParallels - 2) * numMeridians + 1;
-				indices[int(c++)] = (numParallels - 3) * numMeridians + i;
-				indices[int(c++)] = (numParallels - 3) * numMeridians + i + 1;
+				indices[uint(c++)] = (_numParallels - 2) * _numMeridians + 1;
+				indices[uint(c++)] = (_numParallels - 3) * _numMeridians + i;
+				indices[uint(c++)] = (_numParallels - 3) * _numMeridians + i + 1;
 			}
 			
-			return new IndexStream(indexStreamUsage, indices);
+			return IndexStream.fromVector(indexStreamUsage, indices);
 		}
-
 	}
 }

@@ -1,11 +1,18 @@
 package aerys.minko.scene.controller.mesh
 {
+	import aerys.minko.ns.minko_math;
+	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.MeshVisibilityDataProvider;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.enum.FrustumCulling;
+	import aerys.minko.type.math.BoundingBox;
+	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	
 	/**
@@ -17,14 +24,21 @@ package aerys.minko.scene.controller.mesh
 	 */
 	public final class VisibilityController extends AbstractController
 	{
-		private static const STATE_UNDEFINED	: uint	= 0;
-		private static const STATE_INSIDE		: uint	= 1;
-		private static const STATE_OUTSIDE		: uint	= 2;
+		use namespace minko_math;
 		
-		private var _mesh			: Mesh							= null;
-		private var _state			: uint							= 0;
+		private static const TMP_VECTOR4		: Vector4	= new Vector4();
 		
-		private var _visibilityData	: MeshVisibilityDataProvider	= new MeshVisibilityDataProvider();
+		private static const STATE_UNDEFINED	: uint		= 0;
+		private static const STATE_INSIDE		: uint		= 1;
+		private static const STATE_OUTSIDE		: uint		= 2;
+		
+		private var _mesh			: Mesh;
+		private var _state			: uint;
+		private var _lastTest		: int;
+		private var _boundingBox	: BoundingBox;
+		private var _boundingSphere	: BoundingSphere;
+		
+		private var _visibilityData	: MeshVisibilityDataProvider;
 		
 		public function get visible() : Boolean
 		{
@@ -58,6 +72,11 @@ package aerys.minko.scene.controller.mesh
 		
 		private function initialize() : void
 		{
+			_boundingBox = new BoundingBox(Vector4.ZERO, Vector4.ONE);
+			_boundingSphere = new BoundingSphere(Vector4.ZERO, 0.);
+			
+			_visibilityData = new MeshVisibilityDataProvider();
+			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
 		}
@@ -94,14 +113,14 @@ package aerys.minko.scene.controller.mesh
 		private function meshAddedToSceneHandler(mesh	: Mesh,
 												 scene	: Scene) : void
 		{
-			scene.bindings.addCallback('worldToView', worldToViewChangedHandler);
+			scene.bindings.addCallback('worldToScreen', worldToViewChangedHandler);
 			mesh.localToWorld.changed.add(meshLocalToWorldChangedHandler);
 		}
 		
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
-			scene.bindings.removeCallback('worldToView', worldToViewChangedHandler);
+			scene.bindings.removeCallback('worldToScreen', worldToViewChangedHandler);
 			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
 		}
 		
@@ -113,8 +132,31 @@ package aerys.minko.scene.controller.mesh
 			testCulling();
 		}
 		
-		private function meshLocalToWorldChangedHandler(transform	: Matrix4x4) : void
+		private function meshLocalToWorldChangedHandler(transform : Matrix4x4) : void
 		{
+			var geom 	: Geometry 	= _mesh.geometry;
+			var culling	: uint		= _visibilityData.frustumCulling;
+			
+			if (!geom.boundingBox || !geom.boundingSphere)
+				return ;
+			
+			if (culling & FrustumCulling.BOX)
+				transform.transformRawVectors(
+					geom.boundingBox._vertices,
+					_boundingBox._vertices
+				);
+			
+			if (culling & FrustumCulling.SPHERE)
+			{
+				var center 	: Vector4 = transform.transformVector(geom.boundingSphere.center);
+				var scale 	: Vector4 = transform.deltaTransformVector(Vector4.ONE, TMP_VECTOR4);
+				
+				_boundingSphere.update(
+					center,
+					geom.boundingSphere.radius * Math.max(scale.x, scale.y, scale.z)
+				);
+			}
+			
 			testCulling();
 		}
 		
@@ -122,20 +164,22 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _visibilityData.frustumCulling;
 			
-			/*if (culling != FrustumCulling.DISABLED && _mesh.geometry.boundingBox)
+			if (culling != FrustumCulling.DISABLED && _mesh.geometry.boundingBox)
 			{
-				var camera : Camera = (_mesh.root as Scene).activeCamera;
+				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				
 				if (!camera)
 					return ;
 				
-				culling = camera.cameraData.frustum.testBoundingVolume(
-					_mesh.geometry,
-					_mesh.localToWorld,
-					culling
+				_lastTest = camera.cameraData.frustum.testBoundingVolume(
+					_boundingSphere,
+					_boundingBox,
+					null,
+					culling,
+					_lastTest
 				);
 				
-				var inside : Boolean = culling != Frustum.OUTSIDE;
+				var inside : Boolean = _lastTest == -1;
 				
 				if (inside && _state != STATE_INSIDE)
 				{
@@ -147,7 +191,7 @@ package aerys.minko.scene.controller.mesh
 					_visibilityData.inFrustum = false;
 					_state = STATE_OUTSIDE;
 				}
-			}*/
+			}
 		}
 		
 		override public function clone() : AbstractController
@@ -158,6 +202,5 @@ package aerys.minko.scene.controller.mesh
 			
 			return clone;
 		}
-		
 	}
 }

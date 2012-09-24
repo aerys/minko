@@ -29,7 +29,7 @@ package aerys.minko.render.geometry.stream.iterator
 
 		public function get length() : int
 		{
-			return _ib ? _ib.length / 3 : _vb.length / 3;
+			return _ib ? _ib.length / 3 : _vb.numVertices / 3;
 		}
 
 		public function TriangleIterator(vertexStream 		: IVertexStream,
@@ -87,36 +87,11 @@ package aerys.minko.render.geometry.stream.iterator
 
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
-			var index 			: int 				= int(name);
-			var deletedIndices 	: Vector.<uint> 	= _ib.deleteTriangleByIndex(index);
-
-			if (deletedIndices)
-			{
-				/*var delete0 : Boolean = true;
-				var delete1 : Boolean = true;
-				var delete2 : Boolean = true;
-				var indices : Vector.<int> = _ib._data;
-				var numIndices : int = indices.length;
-
-				for (var i : int = 0;
-					(delete0 || delete1 || delete2) && i < numIndices;
-					++i)
-				{
-					delete0 &&= indices[i] != deletedIndices[0];
-					delete1 &&= indices[i] != deletedIndices[1];
-					delete2 &&= indices[i] != deletedIndices[2];
-				}*/
-
-				// TODO: delete useless vertices
-
-
-				if (index <= _index)
-					++_offset;
-
-				return true;
-			}
-
-			return false;
+			var index 	: uint 	= uint(name);
+			
+			_ib.deleteTriangle(index);
+			
+			return true;
 		}
 	}
 }

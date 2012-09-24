@@ -4,6 +4,7 @@ package aerys.minko.render.geometry
 	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.Endian;
 
 	/**
 	 * The GeometrySanitizer static class provides methods to clean up
@@ -18,18 +19,21 @@ package aerys.minko.render.geometry
 		public static const INDEX_LIMIT		: uint = 524270;
 		public static const VERTEX_LIMIT	: uint = 65535;
 		
-		public static function isValid(indexData		: Vector.<uint>,
-									   vertexData		: Vector.<Number>,
-									   dwordsPerVertex	: uint = 3) : Boolean
+		public static function isValid(indexData		: ByteArray,
+									   vertexData		: ByteArray,
+									   bytesPerVertex	: uint = 12) : Boolean
 		{
-			var numIndices	: uint = indexData.length;
-			var numVertices	: uint = vertexData.length;
+			var startPosition	: uint	= indexData.position;
+			var numIndices		: uint 	= indexData.bytesAvailable >> 2;
+			var numVertices		: uint 	= vertexData.bytesAvailable / bytesPerVertex;
 			
 			for (var indexId : uint = 0; indexId < numIndices; ++indexId)
-				if (indexData[indexId] >= numVertices)
-					return false;
+				if (indexData.readUnsignedShort() >= numVertices)
+					break;
 			
-			return true;
+			indexData.position = startPosition;
+			
+			return indexId >= numIndices;
 		}
 		
 		/**
@@ -42,31 +46,44 @@ package aerys.minko.render.geometry
 		 * @param outIndexDatas 
 		 * @param dwordsPerVertex 
 		 */		
-		public static function splitBuffers(inVertexData	: Vector.<Number>,
-											inIndexData		: Vector.<uint>,
-											outVertexDatas	: Vector.<Vector.<Number>>,
-											outIndexDatas	: Vector.<Vector.<uint>>,
-											dwordsPerVertex	: uint = 3) : void
+		public static function splitBuffers(inVertices		: ByteArray,
+											inIndices		: Vector.<uint>,
+											outVertices		: Vector.<ByteArray>,
+											outIndices		: Vector.<ByteArray>,
+											bytesPerVertex	: uint = 12) : void
 		{
-			if (inIndexData.length < INDEX_LIMIT && inVertexData.length / dwordsPerVertex < VERTEX_LIMIT)
+			var inVerticesStartPosition	: uint	= inVertices.position;
+			var numVertices				: uint	= inVertices.bytesAvailable / bytesPerVertex;
+			var numIndices				: int	= inIndices.length;
+			
+			if (numIndices < INDEX_LIMIT && numVertices < VERTEX_LIMIT)
 			{
-				outVertexDatas.push(inVertexData);
-				outIndexDatas.push(inIndexData);
+				var indices : ByteArray = new ByteArray();
+				
+				indices.endian = Endian.LITTLE_ENDIAN;
+				for (var i : uint = 0; i < numIndices; ++i)
+					indices.writeShort(inIndices[i]);
+				indices.position = 0;
+				
+				outVertices.push(inVertices);
+				outIndices.push(indices);
 				
 				return;
 			}
 			
-			while (inIndexData.length != 0)
+			var totalUsedIndices : int = 0;
+			
+			while (numIndices > 0)
 			{
-				var indexDataLength		: uint				= inIndexData.length;
+				var indexDataLength		: uint				= numIndices;
 				
 				// new buffers
-				var partialVertexData	: Vector.<Number>	= new <Number>[];
-				var partialIndexData	: Vector.<uint>		= new <uint>[];
+				var partialVertexData	: ByteArray			= new ByteArray();
+				var partialIndexData	: ByteArray			= new ByteArray();
 				
 				// local variables
-				var oldVertexIds		: Vector.<int>		= new Vector.<int>(3, true);
-				var newVertexIds		: Vector.<int>		= new Vector.<int>(3, true);
+				var oldVertexIds		: Vector.<uint>		= new Vector.<uint>(3, true);
+				var newVertexIds		: Vector.<uint>		= new Vector.<uint>(3, true);
 				var newVertexNeeded		: Vector.<Boolean>	= new Vector.<Boolean>(3, true);
 				
 				var usedVerticesDic		: Dictionary		= new Dictionary();	// this dictionary maps old and new indices
@@ -76,8 +93,9 @@ package aerys.minko.render.geometry
 				
 				// iterators & limits
 				var localVertexId		: uint;
-				var dwordId				: uint;
-				var dwordIdLimit		: uint;
+				
+				partialVertexData.endian = Endian.LITTLE_ENDIAN;
+				partialIndexData.endian = Endian.LITTLE_ENDIAN;
 				
 				while (usedIndicesCount < indexDataLength)
 				{
@@ -93,7 +111,7 @@ package aerys.minko.render.geometry
 					neededVerticesCount = 0;
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)
 					{
-						oldVertexIds[localVertexId]		= inIndexData[uint(usedIndicesCount + localVertexId)];
+						oldVertexIds[localVertexId]	= inIndices[uint(totalUsedIndices + usedIndicesCount + localVertexId)];
 						
 						var tmp : Object = usedVerticesDic[oldVertexIds[localVertexId]];
 						
@@ -110,15 +128,14 @@ package aerys.minko.render.geometry
 					// it fills, let insert the triangle
 					for (localVertexId = 0; localVertexId < 3; ++localVertexId)
 					{
-						
 						if (newVertexNeeded[localVertexId])
 						{
 							// copy current vertex into the new array
-							dwordId			= oldVertexIds[localVertexId] * dwordsPerVertex;
-							dwordIdLimit	= dwordId + dwordsPerVertex;
-							
-							for (; dwordId < dwordIdLimit; ++dwordId)
-								partialVertexData.push(inVertexData[dwordId]);
+							partialVertexData.writeBytes(
+								inVertices,
+								oldVertexIds[localVertexId] * bytesPerVertex,
+								bytesPerVertex
+							);
 							
 							// updates the id the temporary variable, to allow use filling partial index data later
 							newVertexIds[localVertexId] = usedVerticesCount;
@@ -127,18 +144,24 @@ package aerys.minko.render.geometry
 							usedVerticesDic[oldVertexIds[localVertexId]] = usedVerticesCount++;
 						}
 						
-						partialIndexData.push(newVertexIds[localVertexId]);
+						partialIndexData.writeShort(newVertexIds[localVertexId]);
 					}
 					
 					// ... increment indices counter
 					usedIndicesCount += 3;
 				}
 				
-				outIndexDatas.push(partialIndexData);
-				outVertexDatas.push(partialVertexData);
+				totalUsedIndices += usedIndicesCount;
+				numIndices -= usedIndicesCount;
 				
-				inIndexData.splice(0, usedIndicesCount);
+				partialVertexData.position = 0;
+				outVertices.push(partialVertexData);
+
+				partialIndexData.position = 0;
+				outIndices.push(partialIndexData);
 			}
+			
+			inVertices.position = inVerticesStartPosition;
 		}
 		
 		/**
@@ -153,12 +176,14 @@ package aerys.minko.render.geometry
 		 * @param indexData 
 		 * @param dwordsPerVertex 
 		 */
-		public static function removeDuplicatedVertices(vertexData		: Vector.<Number>,
-														indexData		: Vector.<uint>,
-														dwordsPerVertex	: uint = 3) : void
+		public static function removeDuplicatedVertices(vertexData		: ByteArray,
+														indexData		: ByteArray,
+														bytesPerVertex	: uint = 12) : void
 		{
-			var numVertices					: uint			= vertexData.length / dwordsPerVertex;
-			var numIndices					: int			= indexData.length;
+			var vertexDataStartPosition		: uint			= vertexData.position;
+			var numVertices					: uint			= vertexData.bytesAvailable / bytesPerVertex;
+			var indexDataStartPosition		: uint			= indexData.position;
+			var numIndices					: uint			= indexData.bytesAvailable >>> 1;
 			var hashToNewVertexId			: Object		= {};
 			var oldVertexIdToNewVertexId	: Vector.<uint>	= new Vector.<uint>(numVertices, true);
 			var newVertexCount				: uint			= 0;
@@ -166,13 +191,17 @@ package aerys.minko.render.geometry
 			
 			for (var oldVertexId : uint = 0; oldVertexId < numVertices; ++oldVertexId)
 			{
-				var begin		: uint		= oldVertexId * dwordsPerVertex;
-				var limit		: uint		= begin + dwordsPerVertex;
-				var vertexHash	: String	= vertexData[begin].toString();
-				++begin;
-				for (; begin < limit; ++begin)
-					vertexHash += '|' + vertexData[begin].toString();
-					
+				vertexData.position = oldVertexId * bytesPerVertex;
+				
+				var numFloats	: uint		= bytesPerVertex >>> 2;
+				var vertexHash	: String	= '';
+				
+				while (numFloats)
+				{
+					vertexHash += vertexData.readFloat() + '|';
+					--numFloats;
+				}
+				
 				var index		: Object	= hashToNewVertexId[vertexHash];
 				var newVertexId	: uint		= 0;
 				
@@ -181,15 +210,12 @@ package aerys.minko.render.geometry
 					newVertexId = newVertexCount++;
 					hashToNewVertexId[vertexHash] = newVertexId;
 					
-					newLimit = (1 + newVertexId) * dwordsPerVertex;
+					newLimit = (1 + newVertexId) * bytesPerVertex;
 					
 					if (newVertexId != oldVertexId)
 					{
-						var oldOffset	: uint = oldVertexId * dwordsPerVertex;
-						var newOffset	: uint = newVertexId * dwordsPerVertex;
-						
-						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
-							vertexData[newOffset] = vertexData[oldOffset];
+						vertexData.position = newVertexId * bytesPerVertex;
+						vertexData.writeBytes(vertexData, oldVertexId * bytesPerVertex, bytesPerVertex);
 					}
 				}
 				else
@@ -198,10 +224,16 @@ package aerys.minko.render.geometry
 				oldVertexIdToNewVertexId[oldVertexId] = newVertexId;
 			}
 			
+			vertexData.position = vertexDataStartPosition;
 			vertexData.length = newLimit;
 			
 			for (var indexId : int = 0; indexId < numIndices; ++indexId)
-				indexData[indexId] = oldVertexIdToNewVertexId[indexData[indexId]];
+			{
+				index = indexData.readUnsignedShort();
+				indexData.position -= 2;
+				indexData.writeShort(oldVertexIdToNewVertexId[index]);
+			}
+			indexData.position = indexDataStartPosition;
 		}
 		
 		/**
@@ -212,13 +244,15 @@ package aerys.minko.render.geometry
 		 * @param indexData 
 		 * @param dwordsPerVertex 
 		 */		
-		public static function removeUnusedVertices(vertexData		: Vector.<Number>,
-													indexData		: Vector.<uint>,
-													dwordsPerVertex	: uint = 3) : void
+		public static function removeUnusedVertices(vertexData		: ByteArray,
+													indexData		: ByteArray,
+													bytesPerVertex	: uint = 12) : void
 		{
-			var numIndices		: int	= indexData.length;
-			var oldNumVertices	: uint	= vertexData.length / dwordsPerVertex;
-			var newNumVertices	: uint	= 0;
+			var vertexDataStartPosition	: uint	= vertexData.position;
+			var oldNumVertices			: uint	= vertexData.bytesAvailable / bytesPerVertex;
+			var newNumVertices			: uint	= 0;
+			var indexDataStartPosition	: uint	= indexData.position;
+			var numIndices				: uint	= indexData.bytesAvailable >>> 1;
 			
 			// iterators
 			var oldVertexId		: uint;
@@ -227,7 +261,7 @@ package aerys.minko.render.geometry
 			// flag unused vertices by scanning the index buffer
 			var oldVertexIdToUsage : Vector.<Boolean> = new Vector.<Boolean>(oldNumVertices, true);
 			for (indexId = 0; indexId < numIndices; ++indexId)
-				oldVertexIdToUsage[indexData[indexId]] = true;
+				oldVertexIdToUsage[indexData.readUnsignedShort()] = true;
 			
 			// scan the flags, fix vertex buffer, and store old to new vertex id mapping
 			var oldVertexIdToNewVertexId : Vector.<uint> = new Vector.<uint>(oldNumVertices, true);
@@ -242,20 +276,24 @@ package aerys.minko.render.geometry
 					// rewrite vertexbuffer in place
 					if (newVertexId != oldVertexId)
 					{
-						var newOffset	: uint = newVertexId * dwordsPerVertex;
-						var newLimit	: uint = newOffset + dwordsPerVertex;
-						var oldOffset	: uint = oldVertexId * dwordsPerVertex;
-						
-						for (; newOffset < newLimit; ++newOffset, ++oldOffset)
-							vertexData[newOffset] = vertexData[oldOffset];
+						vertexData.position = newVertexId * bytesPerVertex;
+						vertexData.writeBytes(vertexData, oldVertexId * bytesPerVertex, bytesPerVertex);
 					}
 				}
 			
-			vertexData.length = newNumVertices * dwordsPerVertex;
+			vertexData.position = vertexDataStartPosition;
+			vertexData.length = newNumVertices * bytesPerVertex;
 			
 			// rewrite index buffer in place
+			indexData.position = indexDataStartPosition;
 			for (indexId = 0; indexId < numIndices; ++indexId)
-				indexData[indexId] = oldVertexIdToNewVertexId[indexData[indexId]];
+			{
+				var index : uint = indexData.readUnsignedShort();
+				
+				indexData.position -= 2;
+				indexData.writeShort(oldVertexIdToNewVertexId[index]);
+			}
+			indexData.position = indexDataStartPosition;
 		}
 	}
 }

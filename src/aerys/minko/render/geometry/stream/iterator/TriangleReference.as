@@ -102,7 +102,7 @@ package aerys.minko.render.geometry.stream.iterator
 
 			// create a new triangle if it does not exist
 			if (ii >= _indexStream.length)
-				_indexStream.push(DUMMY_INDICES);
+				_indexStream.pushVector(DUMMY_INDICES);
 			
 			_v0 = new VertexReference(vertexStream, _indexStream.get(ii));
 			_v1 = new VertexReference(vertexStream, _indexStream.get(ii + 1));

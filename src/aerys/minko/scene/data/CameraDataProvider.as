@@ -25,9 +25,6 @@ package aerys.minko.scene.data
 			'zoom'			: 'zoom'
 		};
 		
-//		private var _changed			: Signal		= new Signal('CameraDataProvider.changed');
-//		private var _propertyChanged	: Signal		= new Signal('CameraDataProvider.propertyChanged');
-		
 		private var _position			: Vector4		= new Vector4();
 		private var _direction			: Vector4		= new Vector4();
 		private var _fieldOfView		: Number		= 0.0;
@@ -143,7 +140,12 @@ package aerys.minko.scene.data
 		{
 			_worldToView = worldToView;
 			_viewToWorld = viewToWorld;
-			
+
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			watchProperty('position', _position);
 			watchProperty('direction', _direction);
 			watchProperty('projection', _projection);
@@ -152,11 +154,6 @@ package aerys.minko.scene.data
 			watchProperty('viewToWorld', _viewToWorld);
 			watchProperty('worldToScreen', _worldToScreen);
 			watchProperty('worldToView', _worldToView);
-		}
-		
-		override public function clone() : IDataProvider
-		{
-			throw new Error('This provider is managed, and must not be cloned.');
 		}
 	}
 }

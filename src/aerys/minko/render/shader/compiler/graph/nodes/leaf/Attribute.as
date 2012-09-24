@@ -36,7 +36,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override protected function computeHash() : uint
 		{
-			return CRC32.computeForString('Attribute' + _component.fields.join());
+			return CRC32.computeForString('Attribute' + _component.toString());
 		}
 		
 		override protected function computeSize() : uint
@@ -46,7 +46,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override public function toString() : String
 		{
-			return 'Attribute ' + _component.fields + '(' + _componentId + ')';
+			return 'Attribute ' + _component.toString() + '(' + _componentId + ')';
 		}
 		
 		override public function clone() : AbstractNode

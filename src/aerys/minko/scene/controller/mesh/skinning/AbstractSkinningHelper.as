@@ -28,6 +28,11 @@ package aerys.minko.scene.controller.mesh.skinning
 		protected var _bindShape		: Matrix3D;
 		protected var _invBindMatrices	: Vector.<Matrix3D>;
 		
+		public function get numMeshes() : uint
+		{
+			return _targets.length;
+		}
+		
 		public function AbstractSkinningHelper(method			: uint,
 											   bindShape		: Matrix3D,
 											   invBindMatrices	: Vector.<Matrix3D>)
@@ -74,12 +79,12 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			for (var influenceId : uint = 0; influenceId < roundedNumInfluences; ++influenceId)
 				out[influenceId] = 
-					format.getOffsetForComponent(VertexComponent.BONES[influenceId >> 1]) 
-					+ 2 * (influenceId % 2);
+					format.getBytesOffsetForComponent(VertexComponent.BONES[influenceId >> 1]) 
+					+ ((influenceId & 0x1) << 3);
 			
 			if (numInfluences % 2 != 0)
 				out[numInfluences - 1] = 
-					format.getOffsetForComponent(VertexComponent.BONE_S);
+					format.getBytesOffsetForComponent(VertexComponent.BONE_S);
 		}
 		
 		protected final function getNumInfluences(format : VertexFormat) : uint
@@ -128,13 +133,13 @@ package aerys.minko.scene.controller.mesh.skinning
 				var quaternionOffset	: int 		= quaternionId * 4;
 				
 				var m00					: Number 	= _matrices[matrixOffset];
-				var m03 				: Number 	= _matrices[int(matrixOffset + 3)];
-				var m05					: Number 	= _matrices[int(matrixOffset + 5)];
-				var m07					: Number 	= _matrices[int(matrixOffset + 7)];
-				var m10					: Number 	= _matrices[int(matrixOffset + 10)];
-				var m11					: Number 	= _matrices[int(matrixOffset + 11)];
+				var m03 				: Number 	= _matrices[uint(matrixOffset + 3)];
+				var m05					: Number 	= _matrices[uint(matrixOffset + 5)];
+				var m07					: Number 	= _matrices[uint(matrixOffset + 7)];
+				var m10					: Number 	= _matrices[uint(matrixOffset + 10)];
+				var m11					: Number 	= _matrices[uint(matrixOffset + 11)];
 				
-				var mTrace				: Number 	= m00 + m05 + _matrices[int(matrixOffset + 10)];
+				var mTrace				: Number 	= m00 + m05 + _matrices[uint(matrixOffset + 10)];
 				var s					: Number	= 0.;
 				var nw					: Number	= 0.;
 				var nx					: Number	= 0.;
@@ -145,47 +150,47 @@ package aerys.minko.scene.controller.mesh.skinning
 				{
 					s = 2.0 * Math.sqrt(mTrace + 1.0);
 					nw = 0.25 * s;
-					nx = (_matrices[int(matrixOffset + 9)] - _matrices[int(matrixOffset + 6)]) / s;
-					ny = (_matrices[int(matrixOffset + 2)] - _matrices[int(matrixOffset + 8)]) / s;
-					nz = (_matrices[int(matrixOffset + 4)] - _matrices[int(matrixOffset + 1)]) / s;
+					nx = (_matrices[uint(matrixOffset + 9)] - _matrices[uint(matrixOffset + 6)]) / s;
+					ny = (_matrices[uint(matrixOffset + 2)] - _matrices[uint(matrixOffset + 8)]) / s;
+					nz = (_matrices[uint(matrixOffset + 4)] - _matrices[uint(matrixOffset + 1)]) / s;
 				}
 				else if (m00 > m05 && m00 > m10)
 				{
 					s = 2.0 * Math.sqrt(1.0 + m00 - m05 - m10);
 					
-					nw = (_matrices[int(matrixOffset + 9)] - _matrices[int(matrixOffset + 6)]) / s
+					nw = (_matrices[uint(matrixOffset + 9)] - _matrices[uint(matrixOffset + 6)]) / s
 					nx = 0.25 * s;
-					ny = (_matrices[int(matrixOffset + 1)] + _matrices[int(matrixOffset + 4)]) / s;
-					nz = (_matrices[int(matrixOffset + 2)] + _matrices[int(matrixOffset + 8)]) / s;
+					ny = (_matrices[uint(matrixOffset + 1)] + _matrices[uint(matrixOffset + 4)]) / s;
+					nz = (_matrices[uint(matrixOffset + 2)] + _matrices[uint(matrixOffset + 8)]) / s;
 				}
 				else if (m05 > m10)
 				{
 					s = 2.0 * Math.sqrt(1.0 + m05 - m00 - m10);
 					
-					nw = (_matrices[int(matrixOffset + 2)] - _matrices[int(matrixOffset + 8)]) / s;
-					nx = (_matrices[int(matrixOffset + 1)] + _matrices[int(matrixOffset + 4)]) / s;
+					nw = (_matrices[uint(matrixOffset + 2)] - _matrices[uint(matrixOffset + 8)]) / s;
+					nx = (_matrices[uint(matrixOffset + 1)] + _matrices[uint(matrixOffset + 4)]) / s;
 					ny = 0.25 * s;
-					nz = (_matrices[int(matrixOffset + 6)] + _matrices[int(matrixOffset + 9)]) / s;
+					nz = (_matrices[uint(matrixOffset + 6)] + _matrices[uint(matrixOffset + 9)]) / s;
 				}
 				else
 				{
 					s = 2.0 * Math.sqrt(1.0 + m10 - m00 - m05);
 					
-					nw = (_matrices[int(matrixOffset + 4)] - _matrices[int(matrixOffset + 1)]) / s;
-					nx = (_matrices[int(matrixOffset + 2)] + _matrices[int(matrixOffset + 8)]) / s;
-					ny = (_matrices[int(matrixOffset + 6)] + _matrices[int(matrixOffset + 9)]) / s;
+					nw = (_matrices[uint(matrixOffset + 4)] - _matrices[uint(matrixOffset + 1)]) / s;
+					nx = (_matrices[uint(matrixOffset + 2)] + _matrices[uint(matrixOffset + 8)]) / s;
+					ny = (_matrices[uint(matrixOffset + 6)] + _matrices[uint(matrixOffset + 9)]) / s;
 					nz = 0.25 * s;
 				}
 				
-				_dqd[quaternionOffset]			=  0.5 * ( m03 * nw + m07 * nz - m11 * ny);
-				_dqd[int(quaternionOffset + 1)]	=  0.5 * (-m03 * nz + m07 * nw + m11 * nx);
-				_dqd[int(quaternionOffset + 2)]	=  0.5 * ( m03 * ny - m07 * nx + m11 * nw);
-				_dqd[int(quaternionOffset + 3)]	= -0.5 * ( m03 * nx + m07 * ny + m11 * nz);
+				_dqd[quaternionOffset]				=  0.5 * ( m03 * nw + m07 * nz - m11 * ny);
+				_dqd[uint(quaternionOffset + 1)]	=  0.5 * (-m03 * nz + m07 * nw + m11 * nx);
+				_dqd[uint(quaternionOffset + 2)]	=  0.5 * ( m03 * ny - m07 * nx + m11 * nw);
+				_dqd[uint(quaternionOffset + 3)]	= -0.5 * ( m03 * nx + m07 * ny + m11 * nz);
 				
-				_dqn[quaternionOffset]			= nx;
-				_dqn[int(quaternionOffset + 1)]	= ny;
-				_dqn[int(quaternionOffset + 2)]	= nz;
-				_dqn[int(quaternionOffset + 3)]	= nw;
+				_dqn[quaternionOffset]				= nx;
+				_dqn[uint(quaternionOffset + 1)]	= ny;
+				_dqn[uint(quaternionOffset + 2)]	= nz;
+				_dqn[uint(quaternionOffset + 3)]	= nw;
 			}
 		}
 	}
