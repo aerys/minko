@@ -118,6 +118,8 @@ package aerys.minko.render.geometry.stream
 		{
 			_changed = new Signal('VertexStream.changed');
 			_boundsChanged = new Signal('VertexStream.boundsChanged');
+			_minimum = new <Number>[];
+			_maximum = new <Number>[];
 			
 			_resource = new VertexBuffer3DResource(this);
 			_format = format || DEFAULT_FORMAT;
@@ -338,12 +340,12 @@ package aerys.minko.render.geometry.stream
 			
 			var boundsHaveChanged : Boolean = false;
 			
-			if (value < _minimum[offset])
+			if (offset >= _minimum.length || value < _minimum[offset])
 			{
 				_minimum[offset] = value;
 				boundsHaveChanged = true;
 			}
-			else if (value > _maximum[offset])
+			else if (offset >= _maximum.length || value > _maximum[offset])
 			{
 				_maximum[offset] = value;
 				boundsHaveChanged = true;
@@ -389,6 +391,24 @@ package aerys.minko.render.geometry.stream
 		{
 			_data.position = _data.bytesAvailable;
 			_data.writeFloat(value);
+			_data.position = 0;
+			
+			if (!_locked)
+			{
+				_changed.execute(this);
+				_boundsChanged.execute(this);
+			}
+			
+			return this;
+		}
+		
+		public function pushFloats(values : Vector.<Number>) : VertexStream
+		{
+			var numFloats : uint = values.length;
+			
+			_data.position = _data.bytesAvailable;
+			for (var i : uint = 0; i < numFloats; ++i)
+				_data.writeFloat(values[i]);
 			_data.position = 0;
 			
 			if (!_locked)
