@@ -30,11 +30,6 @@ package aerys.minko.type.math
 		
 		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
 		
-		public function get dataDescriptor() : Object
-		{
-			return null;
-		}
-
 		public function get translationX() : Number
 		{
 			return getTranslation(TMP_VECTOR4).x;
