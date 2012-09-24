@@ -15,7 +15,7 @@ package aerys.minko.type.animation.timeline
 											  timeTable 		: Vector.<uint>,
 											  values			: Vector.<Matrix4x4>)
 		{
-			super(propertyPath, timeTable[int(timeTable.length - 1)]);
+			super(propertyPath, timeTable[uint(timeTable.length - 1)]);
 			
 			_timeTable = timeTable;
 			_matrices = values;
