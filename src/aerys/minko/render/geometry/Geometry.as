@@ -962,7 +962,7 @@ package aerys.minko.render.geometry
 		
 		public function castRay(ray : Ray, transform : Matrix4x4 = null) : int
 		{
-			var indexStreamDataSize : uint 	= indexStream._data.length;
+			var numVertices : uint 	= indexStream._data.length / 2;
 			
 			var u 		: Number 	= 0;
 			var v 		: Number 	= 0;
@@ -1002,9 +1002,9 @@ package aerys.minko.render.geometry
 			var maxDistance		: Number 		= Number.POSITIVE_INFINITY;
 			var triangleIndice	: int 			= -3;
 			
-			for (var triangleIndex : uint = 0; triangleIndex < indexStreamDataSize; triangleIndex += 3)
+			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += 3)
 			{
-				indicesData.position = triangleIndex * 6;
+				indicesData.position = verticeIndex * 2;
 				
 				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
 				var v0X : Number = xyzData.readFloat();
@@ -1020,7 +1020,8 @@ package aerys.minko.render.geometry
 				var v2X : Number = xyzData.readFloat();
 				var v2Y : Number = xyzData.readFloat();
 				var v2Z : Number = xyzData.readFloat();
-				
+
+
 				var edge1X : Number = v1X - v0X;
 				var edge1Y : Number = v1Y - v0Y;
 				var edge1Z : Number = v1Z - v0Z;
@@ -1065,13 +1066,11 @@ package aerys.minko.render.geometry
 				if (t < maxDistance)
 				{
 					maxDistance = t;
-					triangleIndice = triangleIndex;
+					triangleIndice = verticeIndex;
 				}
 			}
-			
 			_indexStream.unlock(false);
 			xyzVertexStream.unlock(false);
-			
 			return triangleIndice / 3;				
 		}
 		

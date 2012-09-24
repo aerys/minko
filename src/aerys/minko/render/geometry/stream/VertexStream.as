@@ -648,15 +648,17 @@ package aerys.minko.render.geometry.stream
 			for (var k : int = 0; k < numComponents; k++)
 				nativeFormats[k] = formatOut.getComponent(k).nativeFormat;
 			
-			data = new Vector.<Number>(formatOut.numBytesPerVertex * count, true);
+			data = new ByteArray();
+			data.endian = Endian.LITTLE_ENDIAN;
+			//new Vector.<Number>(formatOut.numBytesPerVertex * count, true);
 			for (var vertexId : int = 0; vertexId < count; ++vertexId)
 			{
 				for (var componentId : int = 0; componentId < numComponents; ++componentId)
 				{
 					var componentOut : VertexComponent = formatOut.getComponent(componentId);
 					
-					bytes.position = start + formatIn.numBytesPerVertex * vertexId * dwordSize
-						+ formatIn.getBytesOffsetForComponent(componentOut) * dwordSize;
+					bytes.position = start + (formatIn.numBytesPerVertex / 4) * vertexId * dwordSize
+						+ formatIn.getBytesOffsetForComponent(componentOut) / 4 * dwordSize;
 					
 					var reader : Function = null;
 					
