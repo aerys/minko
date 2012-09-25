@@ -101,29 +101,31 @@ package aerys.minko.render.geometry.stream
 			return id < _streams.length ? _streams[id] : null;
 		}
 
-		public function get(index 		: uint,
-							component 	: VertexComponent 	= null,
-							offset 		: uint 				= 0) : Number
+		public function getVertexProperty(index 		: uint,
+										  component 	: VertexComponent 	= null,
+										  offset 		: uint 				= 0) : Number
 		{
 			if (!format.hasComponent(component))
 				throw new Error(
 					'This stream does not provide the \'' + component + '\' vertex component.'
 				);
 			
-			return getStreamByComponent(component).get(index, component, offset);
+			return getStreamByComponent(component).getVertexProperty(index, component, offset);
 		}
 		
-		public function set(index 		: uint,
-							value 		: Number,
-							component 	: VertexComponent 	= null,
-							offset 		: uint 				= 0) : void
+		public function setVertexProperty(index 		: uint,
+										  value 		: Number,
+										  component 	: VertexComponent 	= null,
+										  offset 		: uint 				= 0) : void
 		{
 			if (!format.hasComponent(component))
 				throw new Error(
 					'This stream does not provide the \'' + component + '\' vertex component.'
 				);
 			
-			return getStreamByComponent(component).set(index, value, component, offset);
+			return getStreamByComponent(component).setVertexProperty(
+				index, value, component, offset
+			);
 		}
 		
 		public function deleteVertex(index : uint) : IVertexStream

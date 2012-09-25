@@ -232,15 +232,9 @@ package aerys.minko.render.geometry.stream
 			return _format.hasComponent(vertexComponent) ? this : null;
 		}
 
-		public function get(index 		: uint,
-							component 	: VertexComponent 	= null,
-							offset 		: uint 				= 0) : Number
+		public function get(index : uint) : Number
 		{
 			var value : Number = 0.;
-			
-			index += offset;
-			if (component)
-				index += format.getOffsetForComponent(component);
 			
 			checkReadUsage(this);
 			
@@ -249,6 +243,18 @@ package aerys.minko.render.geometry.stream
 			_data.position = 0;
 			
 			return value;
+		}
+		
+		public function getVertexProperty(index 		: uint,
+										  component 	: VertexComponent 	= null,
+										  offset 		: uint 				= 0) : Number
+		{
+			index *= format.numBytesPerVertex >> 2;
+			if (component)
+				index += format.getOffsetForComponent(component);
+			index += offset;
+			
+			return get(index);
 		}
 		
 		public function getVertex(index : uint) : VertexReference
@@ -313,7 +319,7 @@ package aerys.minko.render.geometry.stream
 				updateMinMax();
 			}
 		}
-
+		
 		/**
 		 * Set the value at the specified position in the stream.
 		 * 
@@ -327,10 +333,6 @@ package aerys.minko.render.geometry.stream
 							offset 		: uint 				= 0) : void
 		{
 			checkWriteUsage(this);
-			
-			index += offset;
-			if (component)
-				index += format.getOffsetForComponent(component);
 			
 			_data.position = index << 2;
 			_data.writeFloat(value);
@@ -358,6 +360,19 @@ package aerys.minko.render.geometry.stream
 				if (boundsHaveChanged)
 					_boundsChanged.execute(this);
 			}
+		}
+		
+		public function setVertexProperty(index 		: uint,
+										  value 		: Number,
+										  component 	: VertexComponent 	= null,
+										  offset	 	: uint 				= 0) : void
+		{
+			index *= format.numBytesPerVertex >> 2;
+			if (component)
+				index += format.getOffsetForComponent(component);
+			index += offset;
+			
+			set(index, value, component, offset);
 		}
 		
 		/**

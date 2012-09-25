@@ -12,14 +12,15 @@ package aerys.minko.render.geometry.stream
 		function get changed()			: Signal;
 		function get boundsChanged()	: Signal;
 		
-		function get(index 		: uint,
-					 component 	: VertexComponent 	= null,
-					 offset 	: uint 				= 0) : Number;
+		function getVertexProperty(index 		: uint,
+								   component 	: VertexComponent 	= null,
+								   offset 		: uint 				= 0) : Number;
 		
-		function set(index 		: uint,
-					 value 		: Number,
-					 component 	: VertexComponent 	= null,
-					 offset 	: uint 				= 0) : void;
+		function setVertexProperty(index 		: uint,
+								   value 		: Number,
+								   component 	: VertexComponent 	= null,
+								   offset	 	: uint 				= 0) : void;
+		
 
 		function deleteVertex(index : uint) : IVertexStream;
 		function duplicateVertex(index : uint) : IVertexStream;
