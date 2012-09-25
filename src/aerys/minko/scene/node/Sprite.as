@@ -14,20 +14,20 @@ package aerys.minko.scene.node
 		private static const EFFECT	: Effect	= new Effect(new SpriteShader());
 		private static const GEOM	: Geometry	= new BillboardsGeometry(1);
 		
-		public function get x() : Number
+		override public function get x() : Number
 		{
 			return bindings.getProperty('x') as Number;
 		}
-		public function set x(value : Number) : void
+		override public function set x(value : Number) : void
 		{
 			properties.setProperty('x', value);
 		}
 		
-		public function get y() : Number
+		override public function get y() : Number
 		{
 			return bindings.getProperty('y') as Number;
 		}
-		public function set y(value : Number) : void
+		override public function set y(value : Number) : void
 		{
 			properties.setProperty('y', value);
 		}

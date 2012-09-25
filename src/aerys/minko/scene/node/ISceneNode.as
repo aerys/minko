@@ -14,6 +14,26 @@ package aerys.minko.scene.node
 	 */
 	public interface ISceneNode
 	{
+		function get x() : Number;
+		function get y() : Number;
+		function get z() : Number;
+		function get rotationX() : Number;
+		function get rotationY() : Number;
+		function get rotationZ() : Number;
+		function get scaleX() : Number;
+		function get scaleY() : Number;
+		function get scaleZ() : Number;
+		
+		function set x(value : Number) : void;
+		function set y(value : Number) : void;
+		function set z(value : Number) : void;
+		function set rotationX(value : Number) : void;
+		function set rotationY(value : Number) : void;
+		function set rotationZ(value : Number) : void;
+		function set scaleX(value : Number) : void;
+		function set scaleY(value : Number) : void;
+		function set scaleZ(value : Number) : void;
+		
 		/**
 		 * The root of the scene or the node itself if it has no parent.
 		 * 

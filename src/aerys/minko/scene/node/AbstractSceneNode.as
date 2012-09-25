@@ -23,7 +23,6 @@ package aerys.minko.scene.node
 	 */
 	public class AbstractSceneNode implements ISceneNode
 	{
-		
 		private static var _id			: uint;
 
 		private var _name				: String;
@@ -43,6 +42,87 @@ package aerys.minko.scene.node
 		private var _controllerAdded	: Signal;
 		private var _controllerRemoved	: Signal;
 
+		public function get x() : Number
+		{
+			return _transform.translationX;
+		}
+		public function set x(value : Number) : void
+		{
+			_transform.translationX = value;
+		}
+		
+		public function get y() : Number
+		{
+			return _transform.translationX;
+		}
+		public function set y(value : Number) : void
+		{
+			_transform.translationY = value;
+		}
+		
+		public function get z() : Number
+		{
+			return _transform.translationX;
+		}
+		public function set z(value : Number) : void
+		{
+			_transform.translationZ = value;
+		}
+		
+		public function get rotationX() : Number
+		{
+			return _transform.rotationX;
+		}
+		public function set rotationX(value : Number) : void
+		{
+			_transform.rotationX = value;
+		}
+		
+		public function get rotationY() : Number
+		{
+			return _transform.rotationY;
+		}
+		public function set rotationY(value : Number) : void
+		{
+			_transform.rotationY = value;
+		}
+		
+		public function get rotationZ() : Number
+		{
+			return _transform.rotationZ;
+		}
+		public function set rotationZ(value : Number) : void
+		{
+			_transform.rotationZ = value;
+		}
+		
+		public function get scaleX() : Number
+		{
+			return _transform.scaleX;
+		}
+		public function set scaleX(value : Number) : void
+		{
+			_transform.scaleX = value;
+		}
+		
+		public function get scaleY() : Number
+		{
+			return _transform.scaleX;
+		}
+		public function set scaleY(value : Number) : void
+		{
+			_transform.scaleY = value;
+		}
+		
+		public function get scaleZ() : Number
+		{
+			return _transform.scaleZ;
+		}
+		public function set scaleZ(value : Number) : void
+		{
+			_transform.scaleZ = value;
+		}
+		
 		public function get name() : String
 		{
 			return _name;
