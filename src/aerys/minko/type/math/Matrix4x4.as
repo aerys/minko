@@ -688,10 +688,70 @@ package aerys.minko.type.math
 			return true;
 		}
 		
-		public function orient(eye			: Vector4,
-							   direction	: Vector4,
-							   up			: Vector4   = null) : Matrix4x4
+		public function orientTo(direction	: Vector4,
+								 position	: Vector4	= null,
+								 up			: Vector4   = null) : Matrix4x4
 		{
+			position ||= getTranslation();
+			
+			view(
+				position,
+				Vector4.add(position, direction),
+				up// || deltaTransformVector(Vector4.Y_AXIS)
+			);
+			
+			return invert();
+		}
+		
+		public function lookAt(target	: Vector4,
+							   position	: Vector4	= null,
+							   up		: Vector4	= null) : Matrix4x4
+		{
+			view(
+				position,
+				target,
+				up || deltaTransformVector(Vector4.Y_AXIS)
+			);
+			
+			return invert();
+		}
+		
+		public function world(translation	: Vector4,
+							  rotation		: Vector4,
+							  scale			: Vector4) : Matrix4x4
+		{
+			_matrix.recompose(new <Vector3D>[translation._vector, rotation._vector, scale._vector]);
+			
+			if (!_locked)
+				_changed.execute(this);
+			
+			return this;
+		}
+		
+		/**
+		 * Builds a (left-handed) view transform.
+		 * <br /><br />
+		 * Eye : eye position, At : eye direction, Up : up vector
+		 * <br /><br />
+		 * zaxis = normal(At - Eye)<br />
+		 * xaxis = normal(cross(Up, zaxis))<br />
+		 * yaxis = cross(zaxis, xaxis)<br />
+		 * <br />
+		 * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
+		 * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
+		 * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
+		 * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
+		 *
+		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
+		 *
+		 */
+		public function view(eye	: Vector4,
+							 lookAt : Vector4,
+							 up		: Vector4	= null) : Matrix4x4
+		{
+			eye ||= getTranslation();
+			
+			var direction : Vector4 = Vector4.subtract(lookAt, eye, TMP_VECTOR4);
 			
 			var eye_X		: Number = eye._vector.x;
 			var eye_Y		: Number = eye._vector.y;
@@ -721,7 +781,7 @@ package aerys.minko.type.math
 					up_axis_y = 0;
 					up_axis_z = 0;
 				}
-				// else, take (0, 0, 1)
+					// else, take (0, 0, 1)
 				else
 				{
 					up_axis_x = 0;
@@ -767,9 +827,9 @@ package aerys.minko.type.math
 				);
 			}
 			
-			var	m41	: Number	= - (x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
-			var	m42	: Number	= - (y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
-			var	m43	: Number	= - (z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
+			var	m41	: Number	= -(x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
+			var	m42	: Number	= -(y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
+			var	m43	: Number	= -(z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
 			
 			initialize(
 				x_axis_X,	y_axis_X,	z_axis_X,	0.,
@@ -779,57 +839,6 @@ package aerys.minko.type.math
 			);
 			
 			return this;
-		}
-		
-		public function lookAt(target	: Vector4,
-							   position	: Vector4	= null,
-							   up		: Vector4	= null) : Matrix4x4
-		{
-			view(
-				position || transformVector(Vector4.ZERO),
-				target,
-				up || deltaTransformVector(Vector4.Y_AXIS)
-			);
-			
-			return invert();
-		}
-		
-		public function world(translation	: Vector4,
-							  rotation		: Vector4,
-							  scale			: Vector4) : Matrix4x4
-		{
-			_matrix.recompose(new <Vector3D>[translation._vector, rotation._vector, scale._vector]);
-			
-			if (!_locked)
-				_changed.execute(this);
-			
-			return this;
-		}
-		
-		/**
-		 * Builds a (left-handed) view transform.
-		 * <br /><br />
-		 * Eye : eye position, At : eye direction, Up : up vector
-		 * <br /><br />
-		 * zaxis = normal(At - Eye)<br />
-		 * xaxis = normal(cross(Up, zaxis))<br />
-		 * yaxis = cross(zaxis, xaxis)<br />
-		 * <br />
-		 * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
-		 * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
-		 * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
-		 * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
-		 *
-		 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
-		 *
-		 */
-		public function view(eye	: Vector4,
-							 lookAt : Vector4,
-							 up		: Vector4	= null) : Matrix4x4
-		{
-			var direction : Vector4 = Vector4.subtract(lookAt, eye, TMP_VECTOR4);
-			
-			return orient(eye, direction, up);
 		}
 
 		public function perspectiveFoV(fov		: Number,
