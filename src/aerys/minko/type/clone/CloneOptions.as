@@ -2,6 +2,7 @@ package aerys.minko.type.clone
 {
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.AnimationController;
+	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.controller.mesh.VisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
@@ -35,8 +36,15 @@ package aerys.minko.type.clone
 		{
 			var cloneOptions : CloneOptions = new CloneOptions();
 			
-			cloneOptions._clonedControllerTypes.push(AnimationController, SkinningController);
-			cloneOptions._ignoredControllerTypes.push(VisibilityController, CameraController);
+			cloneOptions._clonedControllerTypes.push(
+				AnimationController,
+				SkinningController
+			);
+			cloneOptions._ignoredControllerTypes.push(
+				VisibilityController,
+				CameraController,
+				TransformController
+			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.REASSIGN;
 			
 			return cloneOptions;
