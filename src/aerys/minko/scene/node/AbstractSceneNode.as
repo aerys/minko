@@ -3,6 +3,7 @@ package aerys.minko.scene.node
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
+	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.clone.CloneOptions;
@@ -23,23 +24,24 @@ package aerys.minko.scene.node
 	public class AbstractSceneNode implements ISceneNode
 	{
 		
-		private static var _id			: uint							= 0;
+		private static var _id			: uint;
 
-		private var _name				: String						= null;
-		private var _root				: ISceneNode					= null;
-		private var _parent				: Group							= null;
+		private var _name				: String;
+		private var _root				: ISceneNode;
+		private var _parent				: Group;
 		
-		private var _transformData		: TransformDataProvider			= new TransformDataProvider();
-		private var _transform			: Matrix4x4						= new Matrix4x4();
+		private var _transform			: Matrix4x4;
+		private var _localToWorld		: Matrix4x4;
+		private var _worldToLocal		: Matrix4x4;
 		
-		private var _controllers		: Vector.<AbstractController>	= new <AbstractController>[];
+		private var _controllers		: Vector.<AbstractController>;
 		
-		private var _added				: Signal						= new Signal('AbstractSceneNode.added');
-		private var _removed			: Signal						= new Signal('AbstractSceneNode.removed');
-		private var _addedToScene		: Signal						= new Signal('AbstractSceneNode.addedToScene');
-		private var _removedFromScene	: Signal						= new Signal('AbstractSceneNode.removedFromScene');
-		private var _controllerAdded	: Signal						= new Signal('AbstractSceneNode.controllerAdded');
-		private var _controllerRemoved	: Signal						= new Signal('AbstractSceneNode.controllerRemoved');
+		private var _added				: Signal;
+		private var _removed			: Signal;
+		private var _addedToScene		: Signal;
+		private var _removedFromScene	: Signal;
+		private var _controllerAdded	: Signal;
+		private var _controllerRemoved	: Signal;
 
 		public function get name() : String
 		{
@@ -102,12 +104,12 @@ package aerys.minko.scene.node
 		
 		public function get localToWorld() : Matrix4x4
 		{
-			return _transformData.localToWorld;
+			return _localToWorld;
 		}
 		
 		public function get worldToLocal() : Matrix4x4
 		{
-			return _transformData.worldToLocal;
+			return _worldToLocal;
 		}
 		
 		public function get added() : Signal
@@ -145,11 +147,6 @@ package aerys.minko.scene.node
 			return _controllerRemoved;
 		}
 		
-		protected function get transformData() : TransformDataProvider
-		{
-			return _transformData;
-		}
-		
 		public function AbstractSceneNode()
 		{
 			initialize();
@@ -160,12 +157,25 @@ package aerys.minko.scene.node
 			_name = getDefaultSceneName(this);
 			_root = this;
 			
+			_transform = new Matrix4x4();
+			_localToWorld = new Matrix4x4();
+			_worldToLocal = new Matrix4x4();
+			
+			_controllers = new <AbstractController>[];
+			
+			_added = new Signal('AbstractSceneNode.added');
+			_removed = new Signal('AbstractSceneNode.removed');
+			_addedToScene = new Signal('AbstractSceneNode.addedToScene');
+			_removedFromScene = new Signal('AbstractSceneNode.removedFromScene');
+			_controllerAdded = new Signal('AbstractSceneNode.controllerAdded');
+			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
+			
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
 			_addedToScene.add(addedToSceneHandler);
 			_removedFromScene.add(removedFromSceneHandler);
 			
-			_transform.changed.add(transformChangedHandler);
+			addController(new TransformController());
 		}
 		
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
@@ -173,12 +183,6 @@ package aerys.minko.scene.node
 			_root = _parent ? _parent.root : this;
 			if (_root is Scene)
 				_addedToScene.execute(this, _root);
-			
-			if (child === this)
-			{
-				_parent.localToWorld.changed.add(transformChangedHandler);
-				transformChangedHandler(_parent.transform);
-			}
 		}
 		
 		protected function removedHandler(child : ISceneNode, parent : Group) : void
@@ -189,9 +193,6 @@ package aerys.minko.scene.node
 			_root = _parent ? _parent.root : this;
 			if (oldRoot is Scene)
 				_removedFromScene.execute(this, oldRoot);
-			
-			if (child === this)
-				parent.localToWorld.changed.remove(transformChangedHandler);
 		}
 		
 		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
@@ -202,24 +203,6 @@ package aerys.minko.scene.node
 		protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			// nothing
-		}
-		
-		protected function transformChangedHandler(transform	: Matrix4x4) : void
-		{
-			if (_parent)
-			{
-				localToWorld.lock()
-					.copyFrom(_transform)
-					.append(_parent.localToWorld)
-					.unlock();
-			}
-			else
-				localToWorld.copyFrom(_transform);
-			
-			worldToLocal.lock()
-				.copyFrom(localToWorld)
-				.invert()
-				.unlock();
 		}
 		
 		public function addController(controller : AbstractController) : ISceneNode

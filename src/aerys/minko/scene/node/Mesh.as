@@ -265,22 +265,6 @@ package aerys.minko.scene.node
 			return clone;
 		}
 		
-		override protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
-		{
-			super.addedToSceneHandler(child, scene);
-	
-			if (child === this)
-				_bindings.addProvider(transformData);
-		}
-		
-		override protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
-		{
-			super.removedFromSceneHandler(child, scene);
-			
-			if (child === this)
-				_bindings.removeProvider(transformData);
-		}
-		
 		private function geometryChangedHandler(geometry : Geometry) : void
 		{
 			_geometryChanged.execute(this, _geometry, _geometry);
