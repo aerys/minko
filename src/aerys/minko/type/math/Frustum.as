@@ -189,12 +189,8 @@ package aerys.minko.type.math
 		private static const CULLING_SPHERE		: uint				= 0x00000001;
 		private static const CULLING_BOX		: uint				= 0x00000002;
 
-		private static const SPANNING			: uint				= 0x0000000f;
-
 		private static const TMP_NUMBERS_1		: Vector.<Number>	= new <Number>[];
 		private static const TMP_VECTOR4		: Vector4			= new Vector4();
-
-		private static const THICKNESS			: Number			= 0.0001;
 
 		private var _points			: Vector.<Vector4>				= null;
 		private var _planes			: Vector.<Plane>				= new <Plane>[
@@ -219,26 +215,6 @@ package aerys.minko.type.math
 			return _points;
 		}
 		
-		/*public function updateFromDescription(fov	: Number,
-											  ratio	: Number,
-											  zNear	: Number,
-											  zFar 	: Number) : void
-		{
-			var	y_scale	: Number	= 1. / Math.tan(fov * .5);
-			var	x_scale	: Number	= y_scale / ratio;
-			var	m33		: Number	= zFar / (zFar - zNear);
-			var	m43		: Number	= -zNear * zFar / (zFar - zNear);
-
-			_planes[RIGHT].set(	-x_scale,	0,			1,			0).normalize();
-			_planes[LEFT].set(	x_scale,	0,			1,			0).normalize();
-			_planes[TOP].set(	0,			-y_scale,	1,			0).normalize();
-			_planes[BOTTOM].set(0,			y_scale,	1,			0).normalize();
-			_planes[NEAR].set(	0,			0,			m33,		-m43).normalize();
-			_planes[FAR].set(	0,			0,			1 - m33,	m43).normalize();
-			
-			_points			= null;
-		}*/
-
 		/**
 		 * Update the frustum planes according to the specified project matrix.
 		 *
@@ -247,48 +223,50 @@ package aerys.minko.type.math
 		 */
 		public function updateFromMatrix(matrix : Matrix4x4) : void
 		{
+			matrix = matrix.clone().transpose();
+			
 			var data	: Vector.<Number>	= matrix.getRawData(TMP_NUMBERS_1);
 
-			(_planes[RIGHT] as Plane).set(
-				data[3] - data[0],
-				data[7] - data[4],
-				data[11] - data[8],
-				data[12] - data[15]
-			).normalize();
-
 			(_planes[LEFT] as Plane).set(
-				data[3] + data[0],
-				data[7] + data[4],
-				data[11] + data[8],
-				-data[15] - data[12]
+				data[12] + data[0],
+				data[13] + data[1],
+				data[14] + data[2],
+				data[15] + data[3]
 			).normalize();
-
+			
 			(_planes[TOP] as Plane).set(
-				data[3] - data[1],
-				data[7] - data[5],
-				data[11] - data[9],
-				-data[13] - data[15]
+				data[12] - data[4],
+				data[13] - data[5],
+				data[14] - data[6],
+				data[15] - data[7]
 			).normalize();
-
+			
+			(_planes[RIGHT] as Plane).set(
+				data[12] - data[0],
+				data[13] - data[1],
+				data[14] - data[2],
+				data[15] - data[3]
+			).normalize();
+			
 			(_planes[BOTTOM] as Plane).set(
-				data[3] + data[1],
-				data[7] + data[5],
-				data[11] + data[9],
-				-data[15] - data[13]
+				data[12] + data[4],
+				data[13] + data[5],
+				data[14] + data[6],
+				data[15] + data[7]
 			).normalize();
-
+			
 			(_planes[NEAR] as Plane).set(
-				data[2],
-				data[6],
+				data[8],
+				data[9],
 				data[10],
-				-data[14]
+				data[11]
 			).normalize();
-
+			
 			(_planes[FAR] as Plane).set(
-				data[3] - data[2],
-				data[7] - data[6],
-				data[11] - data[10],
-				data[14] - data[15]
+				data[12] - data[8],
+				data[13] - data[9],
+				data[14] - data[10],
+				data[15] - data[11] 
 			).normalize();
 			
 			_points	= null;
@@ -309,7 +287,7 @@ package aerys.minko.type.math
 								   firstPlane	: uint		= 0) : uint
 		{
 			var result	: uint 		= 0;
-			var p 		: Plane	= null;
+			var p 		: Plane		= null;
 			var d		: Number	= 0.;
 
 			if (transform)
@@ -349,7 +327,6 @@ package aerys.minko.type.math
 			var radius	: Number	= sphere.radius;
 			var result	: int		= 0;
 			var p 		: Plane		= null;
-			var d 		: Number	= 0.;
 
 			if (!culling)
 				return INSIDE;
@@ -374,13 +351,12 @@ package aerys.minko.type.math
 			{
 				var planeIndex : uint = (i + firstPlane) % 6;
 				
-				if (((CULLING_BOX << (planeIndex << 2)) & culling) == 0)
+				if (((CULLING_SPHERE << (planeIndex << 2)) & culling) == 0)
 					continue ;
 				
 				p = _planes[planeIndex];				
-				d = p._a * cx + p._b * cy + p._c * cz - p._d;
 				
-				if (d + radius < 0.)
+				if (p._a * cx + p._b * cy + p._c * cz + p._d + radius < 0.)
 					return planeIndex;
 			}
 
@@ -402,7 +378,6 @@ package aerys.minko.type.math
 										firstPlane	: uint			= 0) : int
 		{
 			var result		: uint				= 0;
-			var count		: int				= 0;
 			var vertices	: Vector.<Number>	= box._vertices;
 			var p			: Plane				= null;
 			
@@ -457,16 +432,14 @@ package aerys.minko.type.math
 				var pd	: Number	= p.d;
 				
 				// test each vertex
-				count = (pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1)
-					+ (pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1)
-				    + (pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1);
-				
-				if (count == -8)
+				if (pa * x1 + pb * y1 + pc * z1 + pd < 0.
+					&& pa * x2 + pb * y2 + pc * z2 + pd < 0.
+					&& pa * x3 + pb * y3 + pc * z3 + pd < 0.
+					&& pa * x4 + pb * y4 + pc * z4 + pd < 0.
+					&& pa * x5 + pb * y5 + pc * z5 + pd < 0.
+					&& pa * x6 + pb * y6 + pc * z6 + pd < 0.
+					&& pa * x7 + pb * y7 + pc * z7 + pd < 0.
+					&& pa * x8 + pb * y8 + pc * z8 + pd < 0.)
 					return planeIndex;
 			}
 			
@@ -516,7 +489,6 @@ package aerys.minko.type.math
 			var radius		: Number			= boundingSphere.radius;
 			var result		: int				= 0;
 			var vertices	: Vector.<Number>	= boundingBox._vertices;
-			var count		: int				= 0;
 
 			if ((cullingMask & FrustumCulling.BOX) != 0 && transform != null)
 			{
@@ -568,13 +540,13 @@ package aerys.minko.type.math
 			for (var i : int = 0; i < 6; i++)
 			{
 				var planeIndex	: uint		= (i + firstPlane) % 6;
-				var p 			: Plane		= _planes[i];
+				var p 			: Plane		= _planes[planeIndex];
 				var d 			: Number	= 0;
 
 				// bounding sphere
-				if (((CULLING_SPHERE << (i << 2)) & cullingMask))
+				if (((CULLING_SPHERE << (planeIndex << 2)) & cullingMask))
 				{
-					d = p._a * cx + p._b * cy + p._c * cz - p._d;
+					d = p._a * cx + p._b * cy + p._c * cz + p._d;
 					
 					if (d + radius < .0)
 						return planeIndex;
@@ -583,7 +555,7 @@ package aerys.minko.type.math
 				}
 
 				// bounding box
-				if ((CULLING_BOX << (i << 2)) & cullingMask)
+				if ((CULLING_BOX << (planeIndex << 2)) & cullingMask)
 				{
 					var pa	: Number	= p.a;
 					var pb	: Number	= p.b;
@@ -591,16 +563,14 @@ package aerys.minko.type.math
 					var pd	: Number	= p.d;
 
 					// test vertices
-					count = (pa * x1 + pb * y1 + pc * z1 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x2 + pb * y2 + pc * z2 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x3 + pb * y3 + pc * z3 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x4 + pb * y4 + pc * z4 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x5 + pb * y5 + pc * z5 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x6 + pb * y6 + pc * z6 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x7 + pb * y7 + pc * z7 - pd > THICKNESS ? 1 : -1)
-						+ (pa * x8 + pb * y8 + pc * z8 - pd > THICKNESS ? 1 : -1);
-
-					if (count == -8)
+					if (pa * x1 + pb * y1 + pc * z1 + pd < 0.
+						&& pa * x2 + pb * y2 + pc * z2 + pd < 0.
+						&& pa * x3 + pb * y3 + pc * z3 + pd < 0.
+						&& pa * x4 + pb * y4 + pc * z4 + pd < 0.
+						&& pa * x5 + pb * y5 + pc * z5 + pd < 0.
+						&& pa * x6 + pb * y6 + pc * z6 + pd < 0.
+						&& pa * x7 + pb * y7 + pc * z7 + pd < 0.
+						&& pa * x8 + pb * y8 + pc * z8 + pd < 0.)
 						return planeIndex;
 				}
 			}
