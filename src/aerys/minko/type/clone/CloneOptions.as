@@ -54,7 +54,11 @@ package aerys.minko.type.clone
 		{
 			var cloneOptions : CloneOptions = new CloneOptions();
 			
-			cloneOptions._ignoredControllerTypes.push(VisibilityController, CameraController);
+			cloneOptions._ignoredControllerTypes.push(
+				VisibilityController,
+				CameraController,
+				TransformController
+			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.CLONE;
 			
 			return cloneOptions;
