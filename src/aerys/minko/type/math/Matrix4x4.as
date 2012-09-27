@@ -327,10 +327,15 @@ package aerys.minko.type.math
 		public function transformVector(input 	: Vector4,
 									    output	: Vector4	= null) : Vector4
 		{
-			var v : Vector3D = _matrix.transformVector(input._vector);
-
+			TMP_VECTOR[0] = input.x;
+			TMP_VECTOR[1] = input.y;
+			TMP_VECTOR[2] = input.z;
+			TMP_VECTOR.length = 3;
+			
+			_matrix.transformVectors(TMP_VECTOR, TMP_VECTOR);
+			
 			output ||= new Vector4();
-			output.set(v.x, v.y, v.z, v.w);
+			output.set(TMP_VECTOR[0], TMP_VECTOR[1], TMP_VECTOR[2], 1);
 
 			return output;
 		}
