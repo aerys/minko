@@ -494,10 +494,9 @@ package aerys.minko.render.geometry.stream
 			_data.position = 0;
 			
 			if (!_locked)
-			{
 				_changed.execute(this);
-				_boundsChanged.execute(this);
-			}
+			
+			updateMinMax();
 		}
 		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
