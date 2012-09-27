@@ -148,13 +148,13 @@ package aerys.minko.scene.controller.mesh
 			
 			if (culling & FrustumCulling.SPHERE)
 			{
-				var center 	: Vector4 = transform.transformVector(geom.boundingSphere.center);
-				var scale 	: Vector4 = transform.deltaTransformVector(Vector4.ONE, TMP_VECTOR4);
-				
-				_boundingSphere.update(
-					center,
-					geom.boundingSphere.radius * Math.max(scale.x, scale.y, scale.z)
+				var center 	: Vector4 	= transform.transformVector(geom.boundingSphere.center);
+				var scale 	: Vector4 	= transform.deltaTransformVector(Vector4.ONE);
+				var radius	: Number	= geom.boundingSphere.radius * Math.max(
+					Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z)
 				);
+				
+				_boundingSphere.update(center, radius);
 			}
 			
 			testCulling();
