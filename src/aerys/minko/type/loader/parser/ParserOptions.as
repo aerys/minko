@@ -20,7 +20,7 @@ package aerys.minko.type.loader.parser
 	public final class ParserOptions
 	{
 		private var _loadDependencies			: Boolean	= false;
-		private var _dependencyLoaderClosure	: Function	= defaultDependencyLoaderClosure;
+		private var _dependencyLoaderFunction	: Function	= defaultDependencyLoaderFunction;
         private var _loadSkin                   : Boolean   = false;
 		private var _skinningMethod				: uint		= SkinningMethod.SHADER_DUAL_QUATERNION;
 		private var _mipmapTextures				: Boolean	= true;
@@ -89,14 +89,14 @@ package aerys.minko.type.loader.parser
 			_mipmapTextures = value;
 		}
 		
-		public function get dependencyLoaderClosure() : Function
+		public function get dependencyLoaderFunction() : Function
 		{
-			return _dependencyLoaderClosure;
+			return _dependencyLoaderFunction;
 		}
 		
-		public function set dependencyLoaderClosure(value : Function) : void
+		public function set dependencyLoaderFunction(value : Function) : void
 		{
-			_dependencyLoaderClosure = value;
+			_dependencyLoaderFunction = value;
 		}
 		
 		public function get loadDependencies() : Boolean
@@ -123,7 +123,7 @@ package aerys.minko.type.loader.parser
 		{
 			return new ParserOptions(
 				_loadDependencies,
-				_dependencyLoaderClosure,
+				_dependencyLoaderFunction,
                 _loadSkin,
 				_skinningMethod,
 				_mipmapTextures,
@@ -145,7 +145,7 @@ package aerys.minko.type.loader.parser
 									  parser					: Class 	= null)
 		{
 			_loadDependencies			= loadDependencies;
-			_dependencyLoaderClosure	= dependencyLoaderClosure || _dependencyLoaderClosure;
+			_dependencyLoaderFunction	= dependencyLoaderClosure || _dependencyLoaderFunction;
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
 			_mipmapTextures				= mipmapTextures;
@@ -155,9 +155,9 @@ package aerys.minko.type.loader.parser
 			_parser						= parser;
 		}
 		
-		private function defaultDependencyLoaderClosure(dependencyPath	: String,
-														isTexture		: Boolean,
-														options			: ParserOptions) : ILoader
+		private function defaultDependencyLoaderFunction(dependencyPath	: String,
+														 isTexture		: Boolean,
+														 options		: ParserOptions) : ILoader
 		{
 			var loader : ILoader;
 			
