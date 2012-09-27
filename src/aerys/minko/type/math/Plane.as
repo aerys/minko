@@ -165,12 +165,19 @@ package aerys.minko.type.math
 		{
 			var mag	: Number	= Math.sqrt(_a * _a + _b * _b + _c * _c);
 
-			if (mag != 0. && mag != 1.)
+			if (mag != 0.)
 			{
 				_a /= mag;
 				_b /= mag;
 				_c /= mag;
 				_d /= mag;
+			}
+			else
+			{
+				_a = 0.;
+				_b = 0.;
+				_c = 0.;
+				_d = 0.;
 			}
 
 			return mag;
