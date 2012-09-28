@@ -1,5 +1,6 @@
 package aerys.minko.scene.node.camera
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -8,6 +9,10 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
+	
+	import flash.net.FileFilter;
+	
+	use namespace minko_scene;
 
 	public class Camera extends AbstractCamera
 	{
@@ -33,6 +38,15 @@ package aerys.minko.scene.node.camera
 		override protected function initialize() : void
 		{
 			addController(new CameraController());
+		}
+		
+		override minko_scene function cloneNode():AbstractSceneNode
+		{
+			var clone : Camera = new Camera(fieldOfView, zNear, zFar);
+			
+			clone.transform.copyFrom(this.transform);
+			
+			return clone as AbstractSceneNode;
 		}
 		
 		override public function unproject(x : Number, y : Number, out : Ray = null) : Ray

@@ -124,7 +124,7 @@ package aerys.minko.scene.controller.camera
 		
 		private function cameraPropertyChangedHandler(provider : IDataProvider, property : String) : void
 		{
-			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView')
+			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView' || property == 'zoom')
 				updateProjection();
 		}
 		

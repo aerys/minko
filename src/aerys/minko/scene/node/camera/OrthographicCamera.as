@@ -1,9 +1,13 @@
 package aerys.minko.scene.node.camera
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.camera.CameraController;
+	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Ray;
+	
+	use namespace minko_scene;
 	
 	public class OrthographicCamera extends AbstractCamera
 	{
@@ -54,6 +58,15 @@ package aerys.minko.scene.node.camera
 			localToWorld.deltaTransformVector(out.direction, out.direction);
 			
 			return out;
+		}
+		
+		override minko_scene function cloneNode():AbstractSceneNode
+		{
+			var clone : OrthographicCamera = new OrthographicCamera(zoom, zNear, zFar);
+			
+			clone.transform.copyFrom(transform);
+			
+			return clone as AbstractSceneNode;
 		}
 	}
 }
