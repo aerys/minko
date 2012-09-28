@@ -19,15 +19,14 @@ package aerys.minko.type.loader.parser
 	 */
 	public final class ParserOptions
 	{
-		private var _loadDependencies			: Boolean	= false;
-		private var _dependencyLoaderFunction	: Function	= defaultDependencyLoaderFunction;
-        private var _loadSkin                   : Boolean   = false;
-		private var _skinningMethod				: uint		= SkinningMethod.SHADER_DUAL_QUATERNION;
-		private var _mipmapTextures				: Boolean	= true;
-		private var _meshEffect					: Effect	= null;
-		private var _vertexStreamUsage			: uint		= 0;
-		private var _indexStreamUsage			: uint		= 0;
-		private var _parser						: Class		= null;
+		private var _dependencyLoaderFunction	: Function;
+        private var _loadSkin                   : Boolean;
+		private var _skinningMethod				: uint;
+		private var _mipmapTextures				: Boolean;
+		private var _meshEffect					: Effect;
+		private var _vertexStreamUsage			: uint;
+		private var _indexStreamUsage			: uint;
+		private var _parser						: Class;
 		
 		public function get skinningMethod() : uint
 		{
@@ -99,16 +98,6 @@ package aerys.minko.type.loader.parser
 			_dependencyLoaderFunction = value;
 		}
 		
-		public function get loadDependencies() : Boolean
-		{
-			return _loadDependencies;
-		}
-		
-		public function set loadDependencies(value : Boolean) : void
-		{
-			_loadDependencies = value;
-		}
-
         public function get loadSkin() : Boolean
         {
             return _loadSkin;
@@ -122,7 +111,6 @@ package aerys.minko.type.loader.parser
 		public function clone() : ParserOptions
 		{
 			return new ParserOptions(
-				_loadDependencies,
 				_dependencyLoaderFunction,
                 _loadSkin,
 				_skinningMethod,
@@ -134,8 +122,7 @@ package aerys.minko.type.loader.parser
 			);
 		}
 		
-		public function ParserOptions(loadDependencies			: Boolean 	= false,
-									  dependencyLoaderClosure	: Function 	= null,
+		public function ParserOptions(dependencyLoaderFunction	: Function 	= null,
                                       loadSkin                  : Boolean 	= true,
 									  skinningMethod			: uint		= 2,
 									  mipmapTextures			: Boolean 	= true,
@@ -144,8 +131,7 @@ package aerys.minko.type.loader.parser
 									  indexStreamUsage			: uint 		= 0,
 									  parser					: Class 	= null)
 		{
-			_loadDependencies			= loadDependencies;
-			_dependencyLoaderFunction	= dependencyLoaderClosure || _dependencyLoaderFunction;
+			_dependencyLoaderFunction	= dependencyLoaderFunction || defaultDependencyLoaderFunction;
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
 			_mipmapTextures				= mipmapTextures;
