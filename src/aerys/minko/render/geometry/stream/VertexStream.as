@@ -444,7 +444,7 @@ package aerys.minko.render.geometry.stream
 		 */
 		public function applyTransform(component	: VertexComponent, 
 									   transform	: Matrix4x4,
-									   normalize	: Boolean) : void
+									   normalize	: Boolean	= false) : void
 		{
 			if (component.numProperties != 3)
 				throw new Error('Vertex component \'' + component.toString() + '\' does not have a size of 3.');
