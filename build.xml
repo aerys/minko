@@ -18,8 +18,8 @@
 	<!--
 		Properties.
 	-->
-	<property name="app.swc" value="${app.output}/${app.name}-v${app.version}.swc"/>
-	<property name="app.swf" value="${app.output}/${app.name}-v${app.version}.swf"/>
+	<property name="app.swc" value="${app.output}/${app.name}-${app.version}.swc"/>
+	<property name="app.swf" value="${app.output}/${app.name}-${app.version}.swf"/>
 	<property name="flex.mxmlc" value="${flex.home}/bin/asdoc${exe}"/>
 	<property name="flex.compc" value="${flex.home}/bin/compc${exe}"/>
 	<property name="flex.asdoc" value="${flex.home}/bin/asdoc${exe}"/>
@@ -52,7 +52,7 @@
 	-->
 	<target name="swc" depends="clean">
 		<exec executable="${flex.compc}">
-			<arg line='-output ${app.output}/${app.name}-v${app.version}.swc'/>
+			<arg line='-output ${app.output}/${app.name}-${app.version}.swc'/>
 			<arg line='-include-libraries ${app.swcs}'/>
 			<arg line='-include-sources ${app.src}'/>
 			<arg line='-source-path ${app.src}'/>
