@@ -826,7 +826,7 @@ package aerys.minko.render.geometry
 				if (!xyzStream)
 					return ;
 				
-				var offset		: uint		= xyzStream.format.getBytesOffsetForComponent(
+				var offset		: uint		= xyzStream.format.getOffsetForComponent(
 					VertexComponent.XYZ
 				);
 				var streamMinX	: Number	= xyzStream.getMinimum(offset);
