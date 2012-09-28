@@ -15,6 +15,7 @@ package aerys.minko.type.loader
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.setTimeout;
 	
 	public class SceneLoader implements ILoader
 	{
@@ -182,26 +183,33 @@ package aerys.minko.type.loader
 		
 		private function parse() : void
 		{
-			_parser.error.add(onParseError);
-			_parser.progress.add(onParseProgress);
-			_parser.complete.add(onParseComplete);
+			_parser.error.add(parseErrorHandler);
+			_parser.progress.add(parseProgressHandler);
+			_parser.complete.add(parseCompleteHandler);
 			_parser.parse();
 		}
 		
-		private function onParseError(parser : IParser) : void
+		private function parseErrorHandler(parser : IParser) : void
 		{
 			_isComplete = true;
 		}
 		
-		private function onParseProgress(parser : IParser, progress : Number) : void
+		private function parseProgressHandler(parser : IParser, progress : Number) : void
 		{
 			_progress.execute(this, 0.5 * (1 + progress));
 		}
 		
-		private function onParseComplete(parser : IParser, loadedData : ISceneNode) : void
+		private function parseCompleteHandler(parser : IParser, loadedData : ISceneNode) : void
 		{
 			_isComplete = true;
 			_data = loadedData;
+			
+			// call later to make sure the loading is always seen as asynchronous
+			setTimeout(callLaterComplete, 0, loadedData);
+		}
+		
+		private function callLaterComplete(loadedData : ISceneNode) : void
+		{
 			_complete.execute(this, loadedData);
 		}
 	}
