@@ -26,13 +26,13 @@ package aerys.minko.render.shader.part.animation
 			
 			switch (skinningMethod)
 			{
-				case SkinningMethod.SHADER_MATRIX:
+				case SkinningMethod.HARDWARE_MATRIX:
 					return matrixSkinPosition(inPosition);
 				
-				case SkinningMethod.SHADER_DUAL_QUATERNION:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION:
 					return dualQuaternionSkinPosition(inPosition);
 				
-				case SkinningMethod.SHADER_DUAL_QUATERNION_SCALE:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION_SCALE:
 					return dualQuaternionScaleSkinPosition(inPosition);
 				
 				default:
@@ -46,13 +46,13 @@ package aerys.minko.render.shader.part.animation
 			
 			switch (skinningMethod)
 			{
-				case SkinningMethod.SHADER_MATRIX:
+				case SkinningMethod.HARDWARE_MATRIX:
 					return matrixSkinNormal(inNormal);
 					
-				case SkinningMethod.SHADER_DUAL_QUATERNION:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION:
 					return dualQuaternionSkinNormal(inNormal);
 
-				case SkinningMethod.SHADER_DUAL_QUATERNION_SCALE:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION_SCALE:
 					return dualQuaternionScaleSkinNormal(inNormal);
 					
 				default :
@@ -66,13 +66,13 @@ package aerys.minko.render.shader.part.animation
 			
 			switch (skinningMethod)
 			{
-				case SkinningMethod.SHADER_MATRIX:
+				case SkinningMethod.HARDWARE_MATRIX:
 					return matrixSkinTangent(inTangent);
 					
-				case SkinningMethod.SHADER_DUAL_QUATERNION:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION:
 					return dualQuaternionSkinTangent(inTangent);
 					
-				case SkinningMethod.SHADER_DUAL_QUATERNION_SCALE:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION_SCALE:
 					return dualQuaternionScaleSkinTangent(inTangent);
 					
 				default :

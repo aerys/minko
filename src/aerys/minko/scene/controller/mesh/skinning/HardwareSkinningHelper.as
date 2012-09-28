@@ -11,28 +11,36 @@ package aerys.minko.scene.controller.mesh.skinning
 	import flash.geom.Vector3D;
 	import flash.utils.Dictionary;
 
-	internal final class ShaderSkinningHelper extends AbstractSkinningHelper
+	internal final class HardwareSkinningHelper extends AbstractSkinningHelper
 	{
-		private var _meshToProvider	: Dictionary			= new Dictionary();
+		private var _meshToProvider	: Dictionary	= new Dictionary();
 		
-		public function ShaderSkinningHelper(method				: uint,
+		public function HardwareSkinningHelper(method			: uint,
 											 bindShape			: Matrix3D,
 											 invBindMatrices	: Vector.<Matrix3D>)
 		{
 			super(method, bindShape, invBindMatrices);
 			
-			if ((Minko.debugLevel & DebugLevel.SKINNING) != 0 && method == SkinningMethod.SHADER_DUAL_QUATERNION)
+			if ((Minko.debugLevel & DebugLevel.SKINNING) != 0 && method & SkinningMethod.HARDWARE_DUAL_QUATERNION)
 			{
 				var scale : Vector3D;
 				
 				scale = bindShape.decompose()[2];
 				if (scale.x != 1 || scale.y != 1 || scale.z != 1)
-					Minko.log(DebugLevel.SKINNING, 'Cannot use Dual Quaternion skinning when the bindingShape have a scale. Please chose another SkinningMethod.');
+					Minko.log(
+						DebugLevel.SKINNING,
+						'Cannot use Dual Quaternion skinning when the bindingShape have a scale. '
+						+ 'Please chose another SkinningMethod.'
+					);
 				
 				for each (var invBindMatrix : Matrix3D in _invBindMatrices)
 					if (scale.x != 1 || scale.y != 1 || scale.z != 1)
 					{
-						Minko.log(DebugLevel.SKINNING, 'Cannot use Dual Quaternion skinning when at least one inverse bind matrix have a scale. Please chose another SkinningMethod.');
+						Minko.log(
+							DebugLevel.SKINNING,
+							'Cannot use Dual Quaternion skinning when at least one inverse bind'
+							+ 'matrix have a scale. Please chose another SkinningMethod.'
+						);
 						break;
 					}
 			}
@@ -71,7 +79,7 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			switch (_method)
 			{
-				case SkinningMethod.SHADER_MATRIX:
+				case SkinningMethod.HARDWARE_MATRIX:
 					writeMatrices(skeletonRoot, joints);
 					
 					for (targetId = 0; targetId < numTargets; ++targetId)
@@ -79,7 +87,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					
 					break;
 				
-				case SkinningMethod.SHADER_DUAL_QUATERNION:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION:
 					writeMatrices(skeletonRoot, joints);
 					writeDualQuaternions();
 					
@@ -92,7 +100,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					}
 					break;
 				
-				case SkinningMethod.SHADER_DUAL_QUATERNION_SCALE:
+				case SkinningMethod.HARDWARE_DUAL_QUATERNION_SCALE:
 					throw new Error('This skinning method is yet to be implemented.');
 					
 				default:

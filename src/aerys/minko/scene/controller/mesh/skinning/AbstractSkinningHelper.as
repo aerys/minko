@@ -40,11 +40,6 @@ package aerys.minko.scene.controller.mesh.skinning
 			_method				= method;
 			_bindShape			= bindShape;
 			_invBindMatrices	= invBindMatrices;
-			
-			Minko.log(DebugLevel.SKINNING, 
-				'Creating SkinningController with method ' + method + ' and ' 
-				+ invBindMatrices.length + ' bones.'
-			);
 		}
 		
 		public function addMesh(mesh : Mesh) : void
@@ -87,7 +82,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					format.getBytesOffsetForComponent(VertexComponent.BONE_S);
 		}
 		
-		protected final function getNumInfluences(format : VertexFormat) : uint
+		public static function getNumInfluences(format : VertexFormat) : uint
 		{
 			return uint(format.hasComponent(VertexComponent.BONE_S))
 				+ 2 * (

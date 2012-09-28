@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.AbstractController;
@@ -11,6 +12,7 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
@@ -19,6 +21,9 @@ package aerys.minko.scene.controller.mesh.skinning
 	
 	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{
+		public static const MAX_NUM_INFLUENCES	: uint	= 8;
+		public static const MAX_NUM_JOINTS		: uint	= 51;
+		
 		private var _skinningHelper		: AbstractSkinningHelper;
 		private var _isDirty			: Boolean;
 		
@@ -93,11 +98,6 @@ package aerys.minko.scene.controller.mesh.skinning
 			_invBindMatrices	= new Vector.<Matrix3D>(numJoints, true);
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
 				_invBindMatrices[jointId] = invBindMatrices[jointId].minko_math::_matrix;
-			
-			if (skinningMethod == SkinningMethod.SOFTWARE_MATRIX)
-				_skinningHelper = new SoftwareSkinningHelper(_method, _bindShapeMatrix, _invBindMatrices);
-			else
-				_skinningHelper = new ShaderSkinningHelper(_method, _bindShapeMatrix, _invBindMatrices);
 		}
 		
 		override protected function targetAddedToSceneHandler(target	: ISceneNode,
@@ -111,6 +111,30 @@ package aerys.minko.scene.controller.mesh.skinning
 			var mesh : Mesh = target as Mesh;
 			
 			mesh.bindings.addCallback('inFrustum', meshVisibilityChangedHandler);
+			
+			if (!_skinningHelper)
+			{
+				var numInfluences 	: uint = AbstractSkinningHelper.getNumInfluences(mesh.geometry.format);
+				
+				if (_joints.length > MAX_NUM_JOINTS || numInfluences > MAX_NUM_INFLUENCES)
+				{
+					_method = SkinningMethod.SOFTWARE_MATRIX;
+					Minko.log(
+						DebugLevel.SKINNING,
+						'Too many influences/joints: switching to SkinningMethod.SOFTWARE.'
+					);
+				}
+				
+				if (skinningMethod == SkinningMethod.SOFTWARE_MATRIX)
+					_skinningHelper = new SoftwareSkinningHelper(
+						_method, _bindShapeMatrix, _invBindMatrices
+					);
+				else
+					_skinningHelper = new HardwareSkinningHelper(
+						_method, _bindShapeMatrix, _invBindMatrices
+					);
+			}
+			
 			_skinningHelper.addMesh(mesh);
 			
 			_isDirty = true;
