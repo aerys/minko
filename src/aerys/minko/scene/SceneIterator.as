@@ -16,7 +16,7 @@ package aerys.minko.scene
 	{
 		private static const TYPE_CACHE	: Dictionary		= new Dictionary(true);
 		private static const OPERATORS	: Vector.<String>	= new <String>[
-			"//", "/", "[", "]", "..", ".", "~=", "?=", "=", "@", "*"
+			"//", "/", "[", "]", "..", ".", "~=", "?=", "=", "@", "*", "(", ")"
 		];
 		private static const REGEX_TRIM	: RegExp			= /^\s+|\s+$/;
 
@@ -315,6 +315,12 @@ package aerys.minko.scene
 				else
 					_selection.length = 0;
 			}
+			else if (propertyName == 'hasController')
+			{
+				checkNextToken('(');
+				filterOnController(getToken(true));
+				checkNextToken(')');
+			}
 			else
 			{
 				var operator	: String	= getToken(true);
@@ -322,8 +328,6 @@ package aerys.minko.scene
 				
 				if (operator == "~=")
 					filterOnRegExp(propertyName, String(value), isBinding);
-				else if (operator == "?=")
-					filterOnController(String(value));
 				else
 					filterOnValue(propertyName, value, isBinding);
 			}
