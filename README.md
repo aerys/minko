@@ -54,6 +54,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Spritesheet](http://static.aerys.in:8080/minko/images/vignette_minko_spritesheet.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/04/20/spritesheets-with-minko/)
 [![HDR Bloom](http://static.aerys.in:8080/minko/images/vignette_minko_hdr.jpg)](http://static.aerys.in:8080/minko/examples/HDRExample.html)
 [![Pixel Picking](http://static.aerys.in:8080/minko/images/vignette_minko_picking.jpg)](http://static.aerys.in:8080/minko/examples/PickingExample.html)
+[![Vertex Normals and Positions](http://hub.aerys.in/images/c/cf/Vignette_minko_vertexiterator.jpg)](http://hub.aerys.in/index.php/Minko:VertexIterator_Example)
 
 Tools
 -----
