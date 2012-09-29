@@ -11,29 +11,14 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.type.math.Vector4;
 	
 	/**
-	 * Add debug meshes to see the joint and the bone described by a Group node.
-	 * This controller can be added to every joint of a skeleton to display it:
+	 * Add debug meshes to see the joints/bones of the skeleton of a skinned Mesh.
+	 * This controller can target all the meshes with a SkinningController: 
 	 * 
 	 * <pre>
 	 * var debugCtrl : JointsDebugController = new JointsDebugController();
 	 * 
-	 * for each (var m : Mesh in result.get('//mesh[hasController(SkinningController)]'))
-	 * {
-	 *   var skinningCtrl : SkinningController = m.getControllersByType(SkinningController)[0]
-	 *     as SkinningController;
-	 * 
-	 *   for each (var joint : Group in skinningCtrl.joints)
-	 *     if (joint.getControllersByType(JointsDebugController).length == 0)
-	 *       joint.addController(debugCtrl);
-	 * }
-	 * </pre> 
-	 * 
-	 * To remove this controller, you can fetch all the group that have it and remove it from
-	 * their controllers:
-	 * 
-	 * <pre>
-	 * for each (var node : ISceneNode in result.get('//group[hasController(JointsDebugController)]'))
-	 *   node.removeController(debugCtrl);
+	 * for each (var mesh : Mesh in scene.get('//mesh[hasController(SkinningController)]'))
+	 *   mesh.addController(debugCtrl);
 	 * </pre>
 	 * 
 	 * @author Jean-Marc Le Roux
