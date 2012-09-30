@@ -136,7 +136,7 @@ package aerys.minko.render.geometry.stream
 				data.readBytes(_data, 0, length);
 				_data.position = 0;
 				
-				updateMinMax();
+				updateMinMax(true);
 			}
 		}
 		
@@ -150,9 +150,10 @@ package aerys.minko.render.geometry.stream
 				throw new Error('Incompatible format/length.');
 		}
 		
-		private function updateMinMax() : void
+		private function updateMinMax(forceReadUsage : Boolean = false) : void
 		{
-			checkReadUsage(this);
+			if (!forceReadUsage)
+				checkReadUsage(this);
 			
 			var numFloatsPerVertex	: uint	= format.numBytesPerVertex >>> 2;
 			var i					: uint	= 0;
