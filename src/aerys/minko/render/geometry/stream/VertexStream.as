@@ -152,12 +152,12 @@ package aerys.minko.render.geometry.stream
 		{
 			checkReadUsage(this);
 			
-			var size	: uint	= format.numBytesPerVertex >>> 2;
-			var i		: uint	= 0;
+			var numFloatsPerVertex	: uint	= format.numBytesPerVertex >>> 2;
+			var i					: uint	= 0;
 			
-			_minimum = new Vector.<Number>(size, true);
-			_maximum = new Vector.<Number>(size, true);
-			for (i = 0; i < size; ++i)
+			_minimum = new Vector.<Number>(numFloatsPerVertex, true);
+			_maximum = new Vector.<Number>(numFloatsPerVertex, true);
+			for (i = 0; i < numFloatsPerVertex; ++i)
 			{
 				_minimum[i] = Number.MAX_VALUE;
 				_maximum[i] = -Number.MAX_VALUE;
@@ -167,9 +167,9 @@ package aerys.minko.render.geometry.stream
 			var numFloats			: uint		= _data.bytesAvailable >>> 2;
 			
 			_data.position = 0;
-			for (i = 0; i < numFloats; i += size)
+			for (i = 0; i < numFloats; i += numFloatsPerVertex)
 			{
-				for (var j : uint = 0; j < size; ++j)
+				for (var j : uint = 0; j < numFloatsPerVertex; ++j)
 				{
 					var value : Number = _data.readFloat();
 					
