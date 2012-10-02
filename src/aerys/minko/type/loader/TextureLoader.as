@@ -58,7 +58,7 @@ package aerys.minko.type.loader
 		
 		public function TextureLoader(enableMipmapping : Boolean = true)
 		{
-			_mipMapping				= enableMipmapping;
+			_mipMapping	= enableMipmapping;
 			
 			initialize();
 		}
