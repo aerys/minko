@@ -12,8 +12,6 @@ package aerys.minko.scene
 	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 	
-	import mx.messaging.channels.StreamingAMFChannel;
-	
 	public dynamic class SceneIterator extends Proxy
 	{
 		private static const TYPE_CACHE	: Dictionary		= new Dictionary(true);
