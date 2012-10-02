@@ -13,21 +13,23 @@ package aerys.minko.scene.controller.debug
 	{
 		private var _vertexPositionMaterial	: Material;
 		
-		public function VertexPositionsDebugController()
+		public function VertexPositionsDebugController(vertexPositionMaterial : Material = null)
 		{
 			super(Mesh);
 			
-			initialize();
+			initialize(vertexPositionMaterial);
 		}
 		
-		private function initialize() : void
+		private function initialize(vertexPositionMaterial : Material) : void
 		{
-			var vertexPositionBasicMaterial : Material = new BasicMaterial({
-				diffuseColor 	: 0xff00007f,
-				blending		: Blending.ALPHA
-			});
-			
-			_vertexPositionMaterial = vertexPositionBasicMaterial;
+			_vertexPositionMaterial = vertexPositionMaterial;
+			if (!_vertexPositionMaterial)
+			{
+				_vertexPositionMaterial = new BasicMaterial({
+					diffuseColor 	: 0xff00007f,
+					blending		: Blending.ALPHA
+				});
+			}
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
