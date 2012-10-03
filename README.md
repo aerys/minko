@@ -44,6 +44,11 @@ This section lists all the technical demonstrations done with Minko:
 [![Procedural Flag Animation](http://static.aerys.in:8080/minko/images/vignette_minko_flag.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/13/procedural-animated-flag-with-minko-shaderlab/)
 [![Procedural Waves](http://static.aerys.in:8080/minko/images/vignette_minko_waves.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/09/minko-shaderlab-waves-simulation-on-the-gpu-with-flash/)
 [![Gravity](http://static.aerys.in:8080/minko/images/vignette_minko_gravity.jpg)](http://aerys.in/portfolio/gravity)
+[![Submarine](http://hub.aerys.in/images/d/d6/Vignette_minko_submarine.jpg)](http://hub.aerys.in/images/d/d6/Vignette_minko_submarine.jpg)
+[![Sun ShaderLab Shader](http://hub.aerys.in/images/6/62/Vignette_minko_shaderlab_sun.jpg)](http://www.youtube.com/watch?v=NfTghWuEYcs)
+[![RaveAI](http://hub.aerys.in/images/9/9d/Vignette_minko_raveai.jpg)](http://www.youtube.com/watch?v=cJgVboZAp1M)
+[![Color Transition ShaderLab Shader](http://hub.aerys.in/images/d/d5/Vignette_minko_shaderlab_transition.jpg)](http://www.youtube.com/watch?v=bmBWB5zaZ9Y)
+[![Vortex ShaderLab Shader](http://hub.aerys.in/images/8/8b/Vignette_minko_shaderlab_vortex.jpg)](http://www.youtube.com/watch?v=Uzj5lkniPVY)
 
 Open Source Examples
 --------------------
