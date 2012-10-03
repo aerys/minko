@@ -23,9 +23,15 @@ Examples
 
 Code samples are available in a separate github repository: [minko-examples](https://github.com/aerys/minko-examples).
 
+[![!Disney Cars Land](http://hub.aerys.in/images/a/ad/Vignette_minko_disneyvirtualmagic.jpg)](http://disneyvirtualmagic.com/#/home)
+[![The Salt Mine](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)
 [![BlackSun](http://static.aerys.in:8080/minko/images/vignette_minko_blacksun.jpg)](http://blacksun.aerys.in)
 [![The Mirage](http://static.aerys.in:8080/minko/images/vignette_minko_themirage.jpg)](http://themirage.fr)
 [![Mercedes E-500](http://static.aerys.in:8080/minko/images/vignette_minko_mercedes.jpg)](http://aerys.in/portfolio/mercedes-e500)
+[![Nao Avatar](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)
+[![Real-Time Motion Tracking](http://hub.aerys.in/images/d/d8/Vignette_minko_clancampbell.jpg)](http://www.youtube.com/watch?v=0VdPwjMNzvA)
+[![ShaderLab Preview](http://hub.aerys.in/images/b/b8/Vignette_minko_shaderlab.jpg)](http://www.youtube.com/watch?v=yuR1e1PjU8Y)
+[![Minko Studio Preview 1](http://hub.aerys.in/images/8/8a/Vignette_minko_studio_preview_1.jpg)](http://www.youtube.com/watch?v=Uzj5lkniPVY)
 [![Venus](http://static.aerys.in:8080/minko/images/vignette_minko_venus.jpg)](http://static.aerys.in:8080/minko/examples/Venus.html)
 [![Globe](http://static.aerys.in:8080/minko/images/vignette_minko_globe.jpg)](http://aerys.in/portfolio/google-globe)
 [![Quake 3](http://static.aerys.in:8080/minko/images/vignette_minko_q3.jpg)](http://aerys.in/portfolio/quake-3)
