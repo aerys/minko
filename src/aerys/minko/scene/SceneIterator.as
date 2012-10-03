@@ -4,8 +4,6 @@ package aerys.minko.scene
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.binding.DataBindings;
 	
-	import avmplus.getQualifiedClassName;
-	
 	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
