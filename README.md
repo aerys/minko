@@ -61,6 +61,7 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![HDR Bloom](http://static.aerys.in:8080/minko/images/vignette_minko_hdr.jpg)](http://static.aerys.in:8080/minko/examples/HDRExample.html)
 [![Pixel Picking](http://static.aerys.in:8080/minko/images/vignette_minko_picking.jpg)](http://static.aerys.in:8080/minko/examples/PickingExample.html)
 [![Vertex Normals and Positions](http://hub.aerys.in/images/c/cf/Vignette_minko_vertexiterator.jpg)](http://hub.aerys.in/index.php/Minko:VertexIterator_Example)
+[![Bones and Joints](http://hub.aerys.in/images/5/5e/Vignette_minko_jointsdebugcontroller.jpg)](http://hub.aerys.in/index.php/Minko:JointsDebugController_Example)
 
 Tools
 -----
