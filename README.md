@@ -18,35 +18,47 @@ Complete documentation can be found on the developers [Hub](http://hub.aerys.in)
 * [Tutorials](http://hub.aerys.in/index.php/Minko:Tutorials)
 * [Plugins](http://hub.aerys.in/index.php/Minko:Plugins)
 
-Examples
+Projects
 --------
+
+This section lists all the projects done with Minko:
+
+[![The Salt Mine](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)
+[![Disney Cars Land](http://hub.aerys.in/images/a/ad/Vignette_minko_disneyvirtualmagic.jpg)](http://disneyvirtualmagic.com/#/home)
+[![BlackSun](http://static.aerys.in:8080/minko/images/vignette_minko_blacksun.jpg)](http://blacksun.aerys.in)
+[![The Mirage](http://static.aerys.in:8080/minko/images/vignette_minko_themirage.jpg)](http://themirage.fr)
+[![Real-Time Motion Tracking](http://hub.aerys.in/images/d/d8/Vignette_minko_clancampbell.jpg)](http://www.youtube.com/watch?v=0VdPwjMNzvA)
+[![Nao Avatar](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)
+
+Demos
+-----
+
+This section lists all the technical demonstrations done with Minko:
+
+[![ShaderLab Preview](http://hub.aerys.in/images/b/b8/Vignette_minko_shaderlab.jpg)](http://www.youtube.com/watch?v=yuR1e1PjU8Y)
+[![Minko Studio Preview 1](http://hub.aerys.in/images/8/8a/Vignette_minko_studio_preview_1.jpg)](http://www.youtube.com/watch?v=Uzj5lkniPVY)
+[![Globe](http://static.aerys.in:8080/minko/images/vignette_minko_globe.jpg)](http://aerys.in/portfolio/google-globe)
+[![Mercedes E-500](http://static.aerys.in:8080/minko/images/vignette_minko_mercedes.jpg)](http://aerys.in/portfolio/mercedes-e500)
+[![Venus](http://static.aerys.in:8080/minko/images/vignette_minko_venus.jpg)](http://static.aerys.in:8080/minko/examples/Venus.html)
+[![Quake 3](http://static.aerys.in:8080/minko/images/vignette_minko_q3.jpg)](http://aerys.in/portfolio/quake-3)
+[![Procedural Flag Animation](http://static.aerys.in:8080/minko/images/vignette_minko_flag.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/13/procedural-animated-flag-with-minko-shaderlab/)
+[![Procedural Waves](http://static.aerys.in:8080/minko/images/vignette_minko_waves.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/09/minko-shaderlab-waves-simulation-on-the-gpu-with-flash/)
+[![Gravity](http://static.aerys.in:8080/minko/images/vignette_minko_gravity.jpg)](http://aerys.in/portfolio/gravity)
+
+Open Source Examples
+--------------------
 
 Code samples are available in a separate github repository: [minko-examples](https://github.com/aerys/minko-examples).
 
-[![!Disney Cars Land](http://hub.aerys.in/images/a/ad/Vignette_minko_disneyvirtualmagic.jpg)](http://disneyvirtualmagic.com/#/home)
-[![The Salt Mine](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)](http://hub.aerys.in/images/7/73/Vignette_minko_wieliczka.jpg)
-[![BlackSun](http://static.aerys.in:8080/minko/images/vignette_minko_blacksun.jpg)](http://blacksun.aerys.in)
-[![The Mirage](http://static.aerys.in:8080/minko/images/vignette_minko_themirage.jpg)](http://themirage.fr)
-[![Mercedes E-500](http://static.aerys.in:8080/minko/images/vignette_minko_mercedes.jpg)](http://aerys.in/portfolio/mercedes-e500)
-[![Nao Avatar](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)](http://hub.aerys.in/images/1/19/Vignette_minko_nao.jpg)
-[![Real-Time Motion Tracking](http://hub.aerys.in/images/d/d8/Vignette_minko_clancampbell.jpg)](http://www.youtube.com/watch?v=0VdPwjMNzvA)
-[![ShaderLab Preview](http://hub.aerys.in/images/b/b8/Vignette_minko_shaderlab.jpg)](http://www.youtube.com/watch?v=yuR1e1PjU8Y)
-[![Minko Studio Preview 1](http://hub.aerys.in/images/8/8a/Vignette_minko_studio_preview_1.jpg)](http://www.youtube.com/watch?v=Uzj5lkniPVY)
-[![Venus](http://static.aerys.in:8080/minko/images/vignette_minko_venus.jpg)](http://static.aerys.in:8080/minko/examples/Venus.html)
-[![Globe](http://static.aerys.in:8080/minko/images/vignette_minko_globe.jpg)](http://aerys.in/portfolio/google-globe)
-[![Quake 3](http://static.aerys.in:8080/minko/images/vignette_minko_q3.jpg)](http://aerys.in/portfolio/quake-3)
 [![Procedural Terrain](http://static.aerys.in:8080/minko/images/vignette_minko_terrain.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/06/04/procedural-terrain-with-minko-2/)
 [![Submarine](http://static.aerys.in:8080/minko/images/vignette_minko_submarine.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/08/13/minko-weekly-roundup-1/#submarine)
 [![Wireframe](http://static.aerys.in:8080/minko/images/vignette_minko_wireframe.jpg)](http://static.aerys.in:8080/minko/examples/WireframeExample.html)
 [![Astroboy](http://static.aerys.in:8080/minko/images/vignette_minko_astroboy.jpg)](http://static.aerys.in:8080/minko/examples/AstroboyExample.html)
 [![Cel-Shading](http://static.aerys.in:8080/minko/images/vignette_minko_celshading.jpg)](http://static.aerys.in:8080/minko/examples/CelShadingExample.html)
-[![Procedural Flag Animation](http://static.aerys.in:8080/minko/images/vignette_minko_flag.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/13/procedural-animated-flag-with-minko-shaderlab/)
-[![Procedural Waves](http://static.aerys.in:8080/minko/images/vignette_minko_waves.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/09/minko-shaderlab-waves-simulation-on-the-gpu-with-flash/)
 [![Cubes Benchmark](http://static.aerys.in:8080/minko/images/vignette_minko_cubes.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/16/minko-flash-11_2-870-million-triangles-per-second/)
 [![Teapots Benchmark](http://static.aerys.in:8080/minko/images/vignette_minko_teapots.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/02/16/minko-flash-11_2-870-million-triangles-per-second/)
 [![Dynamic Textures](http://static.aerys.in:8080/minko/images/vignette_minko_dynamictexturecontroller.jpg)](http://static.aerys.in:8080/minko/examples/DynamicTextureExample.html)
 [![Texture Filtering](http://static.aerys.in:8080/minko/images/vignette_minko_filtering.jpg)](http://static.aerys.in:8080/minko/examples/TextureExample.html)
-[![Gravity](http://static.aerys.in:8080/minko/images/vignette_minko_gravity.jpg)](http://aerys.in/portfolio/gravity)
 [![Parallax And Normal Mapping](http://static.aerys.in:8080/minko/images/vignette_minko_parallaxmapping.jpg)](http://static.aerys.in:8080/minko/examples/NormalMappingExample.html)
 [![Spot Light](http://static.aerys.in:8080/minko/images/vignette_minko_spotlight.jpg)](http://static.aerys.in:8080/minko/examples/SpotLightExample.html)
 [![Point Light](http://static.aerys.in:8080/minko/images/vignette_minko_pointlight.jpg)](http://static.aerys.in:8080/minko/examples/PointLightExample.html)
