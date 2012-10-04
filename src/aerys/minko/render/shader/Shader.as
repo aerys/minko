@@ -40,7 +40,7 @@ package aerys.minko.render.shader
 		private var _enabled				: Boolean						= true;
 		private var _defaultSettings		: ShaderSettings				= new ShaderSettings(null);
 		
-		private var _instances				: Vector.<ShaderInstance>		= new <ShaderInstance>[]
+		private var _instances				: Vector.<ShaderInstance>		= new <ShaderInstance>[];
 		private var _numActiveInstances		: uint							= 0;
 		private var _numRenderedInstances	: uint							= 0;
 		private var _settings				: Vector.<ShaderSettings>		= new <ShaderSettings>[];
