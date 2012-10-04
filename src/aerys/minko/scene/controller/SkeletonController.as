@@ -23,12 +23,12 @@ package aerys.minko.scene.controller
 			return _animations;
 		}
 
-		public function goto(time : Object) : SkeletonController
+		public function seek(time : Object) : SkeletonController
 		{
 			var numAnimations	: uint	= _animations.length;
 			
 			for (var animId : uint = 0; animId < numAnimations; ++animId)
-				(_animations[animId] as AnimationController).goto(time);
+				(_animations[animId] as AnimationController).seek(time);
 			
 			return this;
 		}
