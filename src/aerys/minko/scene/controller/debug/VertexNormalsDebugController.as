@@ -14,21 +14,23 @@ package aerys.minko.scene.controller.debug
 	{
 		private var _vertexNormalMaterial	: Material;
 		
-		public function VertexNormalsDebugController()
+		public function VertexNormalsDebugController(vertexNormalMaterial : Material = null)
 		{
 			super(Mesh);
 			
-			initialize();
+			initialize(vertexNormalMaterial);
 		}
 		
-		private function initialize() : void
+		private function initialize(vertexNormalMaterial : Material) : void
 		{
-			var vertexNormalBasicMaterial : Material = new BasicMaterial({
-				diffuseColor 	: 0xffff007f,
-				blending		: Blending.ALPHA
-			});
-			
-			_vertexNormalMaterial = vertexNormalBasicMaterial;
+			_vertexNormalMaterial = vertexNormalMaterial;
+			if (!_vertexNormalMaterial)
+			{
+				_vertexNormalMaterial = new BasicMaterial({
+					diffuseColor 	: 0xffff007f,
+					blending		: Blending.ALPHA
+				});
+			}
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
