@@ -627,7 +627,9 @@ package aerys.minko.render.geometry.stream
 			return stream;
 		}
 		
-		public static function fromVector(usage : uint, format : VertexFormat, data : Vector.<Number>) : VertexStream
+		public static function fromVector(usage 	: uint,
+										  format 	: VertexFormat,
+										  data 		: Vector.<Number>) : VertexStream
 		{
 			var numValues 	: uint 			= data.length;
 			var stream		: VertexStream	= new VertexStream(usage, format);
@@ -637,7 +639,7 @@ package aerys.minko.render.geometry.stream
 				bytes.writeFloat(data[i]);
 			
 			bytes.position = 0;
-			stream.updateMinMax();
+			stream.updateMinMax(true);
 			
 			return stream;
 		}
