@@ -111,7 +111,7 @@ package aerys.minko.scene
 			}
 			
 			// parse
-			while (token = getToken())
+			while ((token = getToken()) != null)
 			{
 				switch (token)
 				{
