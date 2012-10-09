@@ -7,6 +7,7 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.math.Vector4;
 	
@@ -36,8 +37,14 @@ package aerys.minko.scene.controller.debug
 			targetRemoved.add(targetRemovedHandler);
 		}
 		
-		private function targetAddedHandler(ctrl	: VertexPositionsDebugController,
+		private function targetAddedHandler(ctrl	: VertexNormalsDebugController,
 											target	: Mesh) : void
+		{
+			target.addedToScene.add(targetAddedToSceneHandler);
+		}
+		
+		private function targetAddedToSceneHandler(target 	: Mesh,
+												   scene	: Scene) : void
 		{
 			var vertices : VertexIterator = new VertexIterator(target.geometry.getVertexStream(0));
 			
@@ -62,8 +69,9 @@ package aerys.minko.scene.controller.debug
 		private function targetRemovedHandler(ctrl		: VertexPositionsDebugController,
 											  target	: Mesh) : void
 		{
+			target.addedToScene.remove(targetAddedToSceneHandler);
 			for each (var position : Mesh in target.parent.get("/mesh[name='__normal__']"))
-			position.parent = null;
+				position.parent = null;
 		}
 	}
 }

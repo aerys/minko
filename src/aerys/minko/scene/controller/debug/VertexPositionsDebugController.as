@@ -7,6 +7,7 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.enum.Blending;
 	
 	public final class VertexPositionsDebugController extends AbstractController
@@ -38,6 +39,12 @@ package aerys.minko.scene.controller.debug
 		private function targetAddedHandler(ctrl	: VertexPositionsDebugController,
 											target	: Mesh) : void
 		{
+			target.addedToScene.add(targetAddedToSceneHandler);
+		}
+		
+		private function targetAddedToSceneHandler(target 	: Mesh,
+												   scene	: Scene) : void
+		{
 			var vertices : VertexIterator = new VertexIterator(target.geometry.getVertexStream(0));
 			
 			for each (var vertex : VertexReference in vertices)
@@ -57,6 +64,7 @@ package aerys.minko.scene.controller.debug
 		private function targetRemovedHandler(ctrl		: VertexPositionsDebugController,
 											  target	: Mesh) : void
 		{
+			target.addedToScene.remove(targetAddedToSceneHandler);
 			for each (var position : Mesh in target.parent.get("/mesh[name='__position__']"))
 				position.parent = null;
 		}
