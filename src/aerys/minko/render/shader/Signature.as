@@ -147,7 +147,7 @@ package aerys.minko.render.shader
 				return false;
 			
 			if (constructor == Vector4)
-				return (value1 as Vector4).compareTo(value2 as Vector4, true);
+				return (value1 as Vector4).equals(value2 as Vector4, true);
 			
 			if (constructor == Matrix4x4)
 				return (value1 as Matrix4x4).compareTo(value2 as Matrix4x4);
@@ -182,7 +182,7 @@ package aerys.minko.render.shader
 				
 				while (count >= 0)
 				{
-					if (!(vectors1[count] as Vector4).compareTo(vectors2[count]))
+					if (!(vectors1[count] as Vector4).equals(vectors2[count]))
 						return false;
 					
 					--count;
