@@ -121,13 +121,6 @@ package aerys.minko.scene.node
 		function removeController(controller : AbstractController) : ISceneNode;
 		
 		/**
-		 * Remove all controllers from the scene node. 
-		 * @return 
-		 * 
-		 */
-		function removeAllControllers() : ISceneNode;
-		
-		/**
 		 * The number of controllers targeting the scene node. 
 		 * @return 
 		 * 
