@@ -463,7 +463,7 @@ package aerys.minko.render.geometry
 					if (computeNormals)
 						fillNormalsData(indices, normalsStream, xyzStream, triangles);
 					
-					if (!hasNormals)
+					if (!hasNormals && normalsStream != null)
 						pushVertexStreamInList(streamId, normalsStream);
 					if (!hasTangents && tangentsStream != normalsStream)
 						pushVertexStreamInList(streamId, tangentsStream);
@@ -716,20 +716,12 @@ package aerys.minko.render.geometry
 				var tx 	: Number 	= coef * (v1v2 * (x0 - x2) - v0v2 * (x1 - x2));
 				var ty 	: Number 	= coef * (v1v2 * (y0 - y2) - v0v2 * (y1 - y2));
 				var tz 	: Number 	= coef * (v1v2 * (z0 - z2) - v0v2 * (z1 - z2));
-				var mag	: Number	= Math.sqrt(tx * tx + ty * ty + tz * tz);
-				
-				if (mag != 0.)
-				{
-					tx /= mag;
-					ty /= mag;
-					tz /= mag;
-				}
 				
 				ii = i0 * tangentsVertexSize + tangentsOffset;
 				tangentsData.position = ii;
 				var tx0 : Number = tx + tangentsData.readFloat();
 				var ty0 : Number = ty + tangentsData.readFloat();
-				var tz0 : Number = ty + tangentsData.readFloat();
+				var tz0 : Number = tz + tangentsData.readFloat();
 				
 				tangentsData.position = ii;
 				tangentsData.writeFloat(tx0);
@@ -740,7 +732,7 @@ package aerys.minko.render.geometry
 				tangentsData.position = ii;
 				var tx1 : Number = tx + tangentsData.readFloat();
 				var ty1 : Number = ty + tangentsData.readFloat();
-				var tz1 : Number = ty + tangentsData.readFloat();
+				var tz1 : Number = tz + tangentsData.readFloat();
 				
 				tangentsData.position = ii;
 				tangentsData.writeFloat(tx1);
@@ -751,7 +743,7 @@ package aerys.minko.render.geometry
 				tangentsData.position = ii;
 				var tx2 : Number = tx + tangentsData.readFloat();
 				var ty2 : Number = ty + tangentsData.readFloat();
-				var tz2 : Number = ty + tangentsData.readFloat();
+				var tz2 : Number = tz + tangentsData.readFloat();
 				
 				tangentsData.position = ii;
 				tangentsData.writeFloat(tx2);
@@ -766,7 +758,8 @@ package aerys.minko.render.geometry
 				tx = tangentsData.readFloat();
 				ty = tangentsData.readFloat();
 				tz = tangentsData.readFloat();
-				mag = Math.sqrt(tx * tx + ty * ty + tz * tz);
+				
+				var mag : Number = Math.sqrt(tx * tx + ty * ty + tz * tz);
 				
 				if (mag != 0.)
 				{
