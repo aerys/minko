@@ -940,7 +940,7 @@ package aerys.minko.render.geometry
 			_changed.execute(this);
 		}
 		
-		public function cast(ray : Ray, transform : Matrix4x4 = null) : int
+		public function cast(ray : Ray, transform : Matrix4x4 = null, hitPoint : Vector4 = null) : int
 		{
 			var numVertices : uint 	= indexStream._data.length / 2;
 			
@@ -979,7 +979,7 @@ package aerys.minko.render.geometry
 			
 			var indicesData 	: ByteArray 	= _indexStream.lock();
 			var xyzData			: ByteArray		= xyzVertexStream.lock();
-			var maxDistance		: Number 		= Number.POSITIVE_INFINITY;
+			var minDistance		: Number 		= Number.POSITIVE_INFINITY;
 			var triangleIndice	: int 			= -3;
 			
 			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += 3)
@@ -1043,14 +1043,26 @@ package aerys.minko.render.geometry
 				
 				t =  (edge2X * qvecX + edge2Y * qvecY + edge2Z * qvecZ) * invDet; 
 				
-				if (t < maxDistance)
+				if (t < minDistance)
 				{
-					maxDistance = t;
+					minDistance = t;
 					triangleIndice = verticeIndex;
 				}
 			}
+			
+			if (triangleIndice > 0 && hitPoint)
+			{
+				var origin 		: Vector4 	= ray.origin;
+				var direction 	: Vector4	= ray.direction;
+				
+				hitPoint.x = origin.x + minDistance * direction.x;
+				hitPoint.y = origin.y + minDistance * direction.y;
+				hitPoint.z = origin.z + minDistance * direction.z;
+			}
+			
 			_indexStream.unlock(false);
 			xyzVertexStream.unlock(false);
+			
 			return triangleIndice / 3;				
 		}
 		
