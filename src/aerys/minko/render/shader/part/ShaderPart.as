@@ -154,12 +154,12 @@ package aerys.minko.render.shader.part
 		
 		protected function get cameraPosition() : SFloat
 		{
-			return _main._sceneBindings.getParameter('cameraPosition', 4);
+			return _main._sceneBindings.getParameter('cameraPosition', 3);
 		}
 		
 		protected function get cameraDirection() : SFloat
 		{
-			return _main._sceneBindings.getParameter('cameraDirection', 4);
+			return _main._sceneBindings.getParameter('cameraDirection', 3);
 		}
 		
 		protected function get cameraZNear() : SFloat
