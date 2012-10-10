@@ -1043,7 +1043,7 @@ package aerys.minko.render.geometry
 				}
 			}
 			
-			if (triangleIndice > 0 && hitPoint)
+			if (triangleIndice >= 0 && hitPoint)
 			{
 				var origin 		: Vector4 	= ray.origin;
 				var direction 	: Vector4	= ray.direction;
