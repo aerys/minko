@@ -4,8 +4,6 @@ package aerys.minko.scene
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.binding.DataBindings;
 	
-	import avmplus.getQualifiedClassName;
-	
 	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
 	import flash.utils.describeType;
@@ -16,7 +14,8 @@ package aerys.minko.scene
 	{
 		private static const TYPE_CACHE	: Dictionary		= new Dictionary(true);
 		private static const OPERATORS	: Vector.<String>	= new <String>[
-			"//", "/", "[", "]", "..", ".", "~=", "?=", "=", "@", "*", "(", ")"
+			'//', '/', '[', ']', '..', '.', '~=', '?=', '=', '@', '*', '(', ')',
+			'>=', '>', '<=', '<', '==', '='
 		];
 		private static const REGEX_TRIM	: RegExp			= /^\s+|\s+$/;
 
@@ -45,13 +44,13 @@ package aerys.minko.scene
 			return _selection.toString();
 		}
 		
-		override flash_proxy function setProperty(name : *, value : *):void
-		{
-			var propertyName : String = name;
-			
-			for each (var node : ISceneNode in _selection)
-				getValueObject(node, _modifier)[propertyName] = value;
-		}
+//		override flash_proxy function setProperty(name : *, value : *):void
+//		{
+//			var propertyName : String = name;
+//			
+//			for each (var node : ISceneNode in _selection)
+//				getValueObject(node, _modifier)[propertyName] = value;
+//		}
 		
 		override flash_proxy function getProperty(name : *) : *
 		{
@@ -83,19 +82,19 @@ package aerys.minko.scene
 			return _selection[int(index - 1)];
 		}
 		
-		override flash_proxy function callProperty(name:*, ...parameters):*
-		{
-			var methodName : String = name;
-			
-			for each (var node : ISceneNode in _selection)
-			{
-				var method : Function = getValueObject(node, _modifier)[methodName];
-				
-				method.apply(null, parameters);
-			}
-			
-			return this;
-		}
+//		override flash_proxy function callProperty(name:*, ...parameters):*
+//		{
+//			var methodName : String = name;
+//			
+//			for each (var node : ISceneNode in _selection)
+//			{
+//				var method : Function = getValueObject(node, _modifier)[methodName];
+//				
+//				method.apply(null, parameters);
+//			}
+//			
+//			return this;
+//		}
 		
 		private function initialize(path : String, selection : Vector.<ISceneNode>) : void
 		{
@@ -112,7 +111,7 @@ package aerys.minko.scene
 			}
 			
 			// parse
-			while (token = getToken())
+			while ((token = getToken()) != null)
 			{
 				switch (token)
 				{
@@ -189,11 +188,11 @@ package aerys.minko.scene
 			{
 				var token : String	= getToken(true);
 				
-				if (token == "true")
+				if (token == 'true')
 					value = true;
-				else if (token == "false")
+				else if (token == 'false')
 					value = false;
-				else if (token.indexOf("0x") == 0)
+				else if (token.indexOf('0x') == 0)
 					value = parseInt(token, 16);
 			}
 			
@@ -286,7 +285,7 @@ package aerys.minko.scene
 			// apply predicates
 			var token : String = getToken();
 			
-			while (token == "[")
+			while (token == '[')
 			{
 				nextToken(token);
 				parsePredicate();
@@ -305,7 +304,17 @@ package aerys.minko.scene
 			
 			var index	: int	= parseInt(propertyName);
 			
-			if (index.toString() == propertyName)
+			if (propertyName == 'hasController')
+				filterOnController();
+			if (propertyName == 'hasProperty')
+				filterOnProperty();
+			else if (propertyName == 'position')
+				filterOnPosition();
+			else if (propertyName == 'last')
+				filterLast();
+			else if (propertyName == 'first')
+				filterFirst();
+			else if (index.toString() == propertyName)
 			{
 				if (index < _selection.length)
 				{
@@ -315,50 +324,42 @@ package aerys.minko.scene
 				else
 					_selection.length = 0;
 			}
-			else if (propertyName == 'hasController')
-			{
-				checkNextToken('(');
-				filterOnController(getToken(true));
-				checkNextToken(')');
-			}
 			else
-			{
-				var operator	: String	= getToken(true);
-				var value		: Object	= getValueToken();
-				
-				if (operator == "~=")
-					filterOnRegExp(propertyName, String(value), isBinding);
-				else
-					filterOnValue(propertyName, value, isBinding);
-			}
+				filterOnValue(propertyName, isBinding);
 			
-			checkNextToken("]");
+			checkNextToken(']');
 		}
 		
-		private function filterOnRegExp(propertyName : String, regExpString : String, isBinding : Boolean) : void
+		private function filterLast() : void
 		{
-			var numNodes	: int		= _selection.length;
+			checkNextToken('(');
+			checkNextToken(')');
 			
-			for (var i : int = numNodes - 1; i >= 0; --i)
-			{
-				var node		: ISceneNode	= _selection[i];
-				var nodeValue 	: String		= null;
-				
-				if (isBinding && (node['bindings'] is DataBindings))
-					nodeValue = String((node['bindings'] as DataBindings).getProperty(propertyName));
-				else
-					nodeValue = String(getValueObject(node, propertyName));
-				
-				var matches		: Array			= nodeValue.match(regExpString);
-				
-				if (!matches || matches.length == 0)
-					removeFromSelection(i);
-			}
+			_selection[0] = _selection[uint(_selection.length - 1)];
+			_selection.length = 1;
 		}
 		
-		private function filterOnValue(propertyName : String, value : Object, isBinding : Boolean) : void
+		private function filterFirst() : void
 		{
-			var numNodes	: int	= _selection.length;
+			checkNextToken('(');
+			checkNextToken(')');
+			
+			_selection.length = 1;
+		}
+		
+		private function filterOnValue(propertyName : String, isBinding : Boolean = false) : void
+		{
+			var operator	: String	= getToken(true);
+			var chunks		: Array		= [propertyName];
+			
+			while (operator == '.')
+			{
+				chunks.push(getToken(true));
+				operator = getToken(true);
+			}
+			
+			var value		: Object	= getValueToken();
+			var numNodes	: uint		= _selection.length;
 			
 			for (var i : int = numNodes - 1; i >= 0; --i)
 			{
@@ -368,16 +369,53 @@ package aerys.minko.scene
 				if (isBinding && (node['bindings'] is DataBindings))
 					nodeValue = (node['bindings'] as DataBindings).getProperty(propertyName);
 				else
-					nodeValue = getValueObject(node, propertyName);
+				{
+					try
+					{
+						nodeValue = getValueObject(node, chunks);
+						if (!compare(operator, nodeValue, value))
+							removeFromSelection(i);
+					}
+					catch (e : Error)
+					{
+						removeFromSelection(i);
+					}
+				}
 				
-				if (nodeValue != value)
-					removeFromSelection(i);
 			}
 		}
 		
-		private function filterOnController(controllerName : Object) : Object
+		private function compare(operator : String, a : Object, b : Object) : Boolean
 		{
-			var numNodes	: int		= _selection.length;
+			switch (operator)
+			{
+				case '>' :
+					return a > b;
+				case '>=' :
+					return a >= b;
+				case '<' :
+					return a >= b;
+				case '<=' :
+					return a <= b;
+				case '=' :
+				case '==' :
+					return a == b;
+				case '~=' :
+					var matches	: Array	= String(a).match(b);
+					
+					return matches && matches.length != 0;
+				default:
+					throw new Error('Unknown comparison operator \'' + operator + '\'');
+			}
+		}
+		
+		private function filterOnController() : Object
+		{
+			checkNextToken('(');
+			var controllerName : String = getToken(true);
+			checkNextToken(')');
+			
+			var numNodes	: uint	= _selection.length;
 			
 			for (var i : int = numNodes - 1; i >= 0; --i)
 			{
@@ -404,24 +442,78 @@ package aerys.minko.scene
 			return null;
 		}
 		
-		private function getValueObject(source : Object, modifier : String) : Object
+		private function filterOnPosition() : void
 		{
-			if (modifier)
+			checkNextToken('(');
+			checkNextToken(')');
+			
+			var operator 	: String 	= getToken(true);
+			var value 		: uint 		= uint(parseInt(getToken(true)));
+			
+			switch (operator)
 			{
-				var tokens : Array = modifier.split(".");
-				
-				for each (var token : String in tokens)
-					source = source[token];
+				case '>':
+					++value;
+				case '>=':
+					_selection = _selection.slice(value);
+					break;
+				case '<':
+					--value;
+				case '<=':
+					_selection = _selection.slice(0, value);
+					break;
+				case '=':
+				case '==':
+					_selection[0] = _selection[value];
+					_selection.length = 1;
+				default:
+					throw new Error('Unknown comparison operator \'' + operator + '\'');
 			}
+		}
+		
+		private function filterOnProperty() : void
+		{
+			checkNextToken('(');
+			
+			var chunks		: Array 	= [getToken(true)];
+			var operator	: String 	= getToken(true);
+			
+			while (operator == '.')
+			{
+				chunks.push(operator);
+				operator = getToken(true);
+			}
+			
+			if (operator != ')')
+				throwParseError(')', operator);
+			
+			var numNodes : uint	= _selection.length;
+			for (var i : int = numNodes - 1; i >= 0; --i)
+			{
+				try
+				{
+					getValueObject(_selection[i], chunks);
+				}
+				catch (e : Error)
+				{
+					removeFromSelection(i);
+				}
+			}
+		}
+		
+		private function getValueObject(source : Object, chunks : Array) : Object
+		{
+			if (chunks)
+				for each (var chunk : String in chunks)
+					source = source[chunk];
 			
 			return source;
 		}
 		
-		private function removeFromSelection(index : int) : void
+		private function removeFromSelection(index : uint) : void
 		{
-			var numNodes : int = _selection.length;
+			var numNodes : uint = _selection.length - 1;
 			
-			--numNodes;
 			_selection[index] = _selection[numNodes];
 			_selection.length = numNodes;
 		}
@@ -438,8 +530,7 @@ package aerys.minko.scene
 										 got		: String) : void
 		{
 			throw new Error(
-				"Parse error: expected '" + expected
-				+ "', got '" + got + "'."
+				'Parse error: expected \'' + expected + '\', got \'' + got + '\'.'
 			);
 		}
 	}

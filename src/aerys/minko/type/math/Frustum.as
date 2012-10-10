@@ -416,6 +416,9 @@ package aerys.minko.type.math
 			var x8	: Number	= vertices[21];
 			var y8	: Number	= vertices[22];
 			var z8	: Number	= vertices[23];
+			var cx	: Number	= (x1 - x2) * .5;
+			var cy	: Number	= (y1 - y2) * .5;
+			var cz	: Number	= (z1 - z2) * .5;
 			
 			for (var i : int = 0; i < 6; ++i)
 			{
@@ -570,7 +573,8 @@ package aerys.minko.type.math
 						&& pa * x5 + pb * y5 + pc * z5 + pd < 0.
 						&& pa * x6 + pb * y6 + pc * z6 + pd < 0.
 						&& pa * x7 + pb * y7 + pc * z7 + pd < 0.
-						&& pa * x8 + pb * y8 + pc * z8 + pd < 0.)
+						&& pa * x8 + pb * y8 + pc * z8 + pd < 0.
+						&& pa * cx + pb * cy + pc * cz + pd < 0.)
 						return planeIndex;
 				}
 			}

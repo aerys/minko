@@ -6,6 +6,7 @@ package aerys.minko.type.math
 	import aerys.minko.type.binding.IWatchable;
 	
 	import flash.geom.Matrix3D;
+	import flash.geom.Orientation3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 
@@ -573,6 +574,17 @@ package aerys.minko.type.math
 				_changed.execute(this);
 			
 			return this;
+		}
+		
+		public function getRotationQuaternion(output : Vector4 = null) : Vector4
+		{
+			var components 	: Vector.<Vector3D>	= _matrix.decompose(Orientation3D.QUATERNION);
+			var rotation	: Vector3D			= components[1];
+			
+			output ||= new Vector4();
+			output.set(rotation.x, rotation.y, rotation.z, rotation.w);
+				
+			return output;
 		}
 		
 		public function getScale(output : Vector4 = null) : Vector4

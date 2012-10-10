@@ -195,14 +195,6 @@ package aerys.minko.type.math
 			return out;
 		}
 
-		public function compareTo(v : Vector4, allFour : Boolean = false) : Boolean
-		{
-			return _vector.x == v._vector.x
-				   && _vector.y == v._vector.y
-				   && _vector.z == v._vector.z
-				   && (!allFour || (_vector.w == v._vector.w));
-		}
-
 		public static function distance(u : Vector4, v : Vector4) : Number
 		{
 			return Vector3D.distance(u._vector, v._vector);

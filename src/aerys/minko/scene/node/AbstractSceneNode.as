@@ -308,14 +308,6 @@ package aerys.minko.scene.node
 			return this;
 		}
 		
-		public function removeAllControllers() : ISceneNode
-		{
-			while (numControllers)
-				removeController(getController(0));
-			
-			return this;
-		}
-		
 		public function getController(index : uint) : AbstractController
 		{
 			return _controllers[index];
