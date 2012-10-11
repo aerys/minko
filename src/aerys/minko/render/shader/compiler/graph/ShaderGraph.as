@@ -1,23 +1,17 @@
 package aerys.minko.render.shader.compiler.graph
 {
 	import aerys.minko.Minko;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.Signature;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Extract;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Interpolate;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
-	import aerys.minko.render.shader.compiler.graph.nodes.vertex.VariadicExtract;
 	import aerys.minko.render.shader.compiler.graph.visitors.*;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
 	import aerys.minko.type.log.DebugLevel;
-	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	
 	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
 	import flash.utils.Endian;
 
 	/**
