@@ -115,6 +115,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				for (var writeIndex : uint = 0; writeIndex < 4; ++writeIndex)
 				{
 					var readIndex : uint = Components.getReadAtIndex(writeIndex, component);
+					
 					if (readIndex != 4)
 						constantData[writeIndex] = constValue[readIndex];
 				}
