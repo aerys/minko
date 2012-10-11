@@ -117,14 +117,52 @@ package aerys.minko.render.shader
 
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var nodeComponent		: uint 			= Components.createContinuous(0, 0, _node.size, _node.size);
-			var propertyComponent	: uint			= Components.stringToComponent(name);
+			var propertyName		: String		= String(name);
+			var propertyComponent	: uint			= getPropertyWriteComponentMask(propertyName);
 			var propertyNode		: AbstractNode	= getNode(value);
+			var nodeComponent		: uint 			= Components.createContinuous(0, 0, _node.size, _node.size);
+			
+			propertyNode = new Overwriter(
+				new <AbstractNode>[propertyNode],
+				new <uint>[Components.createContinuous(0, 0, 4, propertyNode.size)]
+			);
 			
 			_node = new Overwriter(
-				new <AbstractNode>[_node, propertyNode], 
+				new <AbstractNode>[_node, propertyNode],
 				new <uint>[nodeComponent, propertyComponent]
 			);
+		}
+		
+		public static function getPropertyWriteComponentMask(string : String) : uint
+		{
+			var result : uint = 0x04040404;
+			
+			for (var i : uint = 0; i < 4; ++i)
+				if (i < string.length)
+					switch (string.charAt(i))
+					{
+						case 'x': case 'X': case 'r': case 'R':
+							result = (0xffffff00 & result) | i;
+							result |= i << (8 * 0);
+							break;
+						
+						case 'y': case 'Y': case 'g': case 'G':
+							result = (0xffff00ff & result) | i << 8;
+							break;
+						
+						case 'z': case 'Z': case 'b': case 'B':
+							result = (0xff00ffff & result) | i << 16;
+							break;
+						
+						case 'w': case 'W': case 'a': case 'A':
+							result = (0x00ffffff & result) | i << 24;	
+							break;
+						
+						default:
+							throw new Error('Invalid string.');
+					}
+			
+			return result;
 		}
 
 		private function getNode(value : Object) : AbstractNode
