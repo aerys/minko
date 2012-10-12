@@ -179,16 +179,20 @@ package aerys.minko.scene.controller.camera
 			_up.changed.add(updateNextFrameHandler);
 		}
 		
-		public function bindDefaultControls(dispatcher : IEventDispatcher) : void
+		public function bindDefaultControls(dispatcher : IEventDispatcher) : ArcBallController
 		{
 			dispatcher.addEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+			
+			return this;
 		}
 		
-		public function unbindDefaultControls(dispatcher : IEventDispatcher) : void
+		public function unbindDefaultControls(dispatcher : IEventDispatcher) : ArcBallController
 		{
 			dispatcher.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+			
+			return this;
 		}
 		
 		override protected function targetAddedHandler(ctrl 	: EnterFrameController,
