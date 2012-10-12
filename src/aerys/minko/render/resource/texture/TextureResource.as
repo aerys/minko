@@ -14,7 +14,7 @@ package aerys.minko.render.resource.texture
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class TextureResource implements ITextureResource
+	public class TextureResource implements ITextureResource
 	{
 		private static const MAX_SIZE			: uint		= 2048;
 		private static const TMP_MATRIX			: Matrix	= new Matrix();
