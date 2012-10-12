@@ -8,6 +8,9 @@ package aerys.minko.type
 	{
 		private var _x					: Number			= 0.;
 		private var _y					: Number			= 0.;
+		private var _deltaX				: Number			= 0.;
+		private var _deltaY				: Number			= 0.;
+		private var _deltaDistance		: Number			= 0.;
 		
 		private var _leftButtonDown		: Boolean			= false;
 		private var _middleButtonDown	: Boolean			= false;
@@ -26,6 +29,21 @@ package aerys.minko.type
 		public function get y() : Number
 		{
 			return _y;
+		}
+		
+		public function get deltaX() : Number
+		{
+			return _deltaX;
+		}
+		
+		public function get deltaY() : Number
+		{
+			return _deltaY;
+		}
+		
+		public function get deltaDistance() : Number
+		{
+			return _deltaDistance;
 		}
 		
 		public function get leftButtonDown() : Boolean
@@ -99,6 +117,13 @@ package aerys.minko.type
 		
 		private function mouseMoveHandler(event : MouseEvent) : void
 		{
+			var localX : Number = event.localX;
+			var localY : Number = event.localY;
+			
+			_deltaX = localX - _x;
+			_deltaY = localY - _y;
+			_deltaDistance = Math.sqrt(_deltaX * deltaX + deltaY * deltaY); 
+			
 			_x = event.localX;
 			_y = event.localY;
 		}
