@@ -88,7 +88,11 @@ package aerys.minko.type.loader
 		private function loadIoErrorHandler(e : IOErrorEvent) : void
 		{
 			_textureResource = null;
-			_error.execute(this, e.errorID, e.text);
+			
+			if (_error.numCallbacks == 0)
+				throw e;
+			else
+				_error.execute(this, e.errorID, e.text);
 		}
 		
 		private function loadProgressHandler(e : ProgressEvent) : void
