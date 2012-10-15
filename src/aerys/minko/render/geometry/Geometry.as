@@ -1144,12 +1144,10 @@ package aerys.minko.render.geometry
 		 * Invert the winding of the triangles by rewritting the IndexStream. Inverting the winding
 		 * means that the front faces will become back faces and vice versa.
 		 *  
-		 * @param flipNormals
-		 * @param flipTangents
-		 * @return 
+		 * @return The Geometry object itself.
 		 * 
 		 */
-		public function invertWinding(flipNormals : Boolean = true, flipTangents : Boolean = true) : Geometry
+		public function invertWinding() : Geometry
 		{
 			var numIndices		: uint		= indexStream.length;
 			var numTriangles	: uint		= numIndices / 3;
@@ -1168,14 +1166,6 @@ package aerys.minko.render.geometry
 			}
 			
 			indexStream.unlock();
-			
-			if (numVertexStreams)
-			{
-				if (flipNormals && getVertexStream(0).format.hasComponent(VertexComponent.NORMAL))
-					computeNormals();
-				if (flipTangents && getVertexStream(0).format.hasComponent(VertexComponent.TANGENT))
-					computeTangentSpace();
-			}
 			
 			return this;
 		}
