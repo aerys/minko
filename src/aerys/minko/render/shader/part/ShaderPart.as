@@ -521,9 +521,14 @@ package aerys.minko.render.shader.part
 			return result;
 		}
 
-		protected final function subtract(value1 : Object, value2 : Object) : SFloat
+		protected final function subtract(a : Object, b : Object, ...args) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.SUB, getNode(value1), getNode(value2)));
+			var result : SFloat = new SFloat(new Instruction(Instruction.SUB, getNode(a), getNode(b)));
+			
+			for each (var arg : Object in args)
+				result = subtract(result, arg);
+			
+			return result;
 		}
 
 		protected final function dotProduct2(u : Object, v : Object) : SFloat

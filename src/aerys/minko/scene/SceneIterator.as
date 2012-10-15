@@ -306,7 +306,7 @@ package aerys.minko.scene
 			
 			if (propertyName == 'hasController')
 				filterOnController();
-			if (propertyName == 'hasProperty')
+			else if (propertyName == 'hasProperty')
 				filterOnProperty();
 			else if (propertyName == 'position')
 				filterOnPosition();

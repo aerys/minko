@@ -871,7 +871,7 @@ package aerys.minko.render.geometry
 				vertexStreamsToConcat.push(geometry._vertexStreams[0]);
 
 			var indexOffset : uint = vertexStreamsToConcat.length != 1
-				? (vertexStreamsToConcat[0] as VertexStream).numVertices
+				? (vertexStreamsToConcat[0] as IVertexStream).numVertices
 				: 0;
 			
 			if (vertexStreamsToConcat.length != 0)

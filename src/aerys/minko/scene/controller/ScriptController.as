@@ -10,10 +10,11 @@ package aerys.minko.scene.controller
 
 	public class ScriptController extends EnterFrameController
 	{
-		private var _lastTime		: Number		= 0.0;
-		private var _deltaTime		: Number		= 0.0;
-		private var _currentTarget	: ISceneNode	= null;
-		private var _viewport		: Viewport		= null;
+		private var _lastTime		: Number;
+		private var _deltaTime		: Number;
+		private var _currentTarget	: ISceneNode;
+		private var _viewport		: Viewport;
+		private var _scene			: Scene;
 		
 		protected function get deltaTime() : Number
 		{
@@ -33,6 +34,11 @@ package aerys.minko.scene.controller
 		protected function get viewport() : Viewport
 		{
 			return _viewport;
+		}
+		
+		protected function get scene() : Scene
+		{
+			return _scene;
 		}
 		
 		public function ScriptController(targetType	: Class = null)
@@ -58,6 +64,7 @@ package aerys.minko.scene.controller
 			_viewport = viewport;
 			_deltaTime = _lastTime - time;
 			_lastTime = time;
+			_scene = scene;
 			
 			var numTargets : uint = this.numTargets;
 			
