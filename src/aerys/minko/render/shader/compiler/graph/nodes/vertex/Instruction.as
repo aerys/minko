@@ -182,11 +182,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			// commutative operations invert the arguments when computing the hash if arg1.crc > arg2.crc
 			// that way, mul(a, b).hash == mul(b, a).hash
 			
-			var hashLeft  : String = argument1.hash.toString(16) + '_' + component1.toString(16);
+			var hashLeft  : String = id.toFixed(16) + '_' + argument1.hash.toString(16)
+				+ '_' + component1.toString(16);
 			
 			if ((FLAGS[_id] & InstructionFlag.SINGLE) != 0)
 				return CRC32.computeForString(hashLeft);
-			
 			else
 			{
 				var hashRight : String = argument2.hash.toString(16) + '_' + component2.toString(16);
