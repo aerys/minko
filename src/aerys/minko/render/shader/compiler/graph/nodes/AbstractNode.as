@@ -177,5 +177,21 @@ package aerys.minko.render.shader.compiler.graph.nodes
 		{
 			throw new Error('Must be overriden');
 		}
+		
+		protected function throwInvalidNodeSizeError(nodeSize	: uint) : void
+		{
+			throw new Error(
+				'Invalid value size: ' + nodeSize
+			);
+		}
+		
+		protected function throwNodeSizeTooBigError(nodeSize : uint) : void
+		{
+			throw new Error(
+				'Value does not fit in a register: size is '
+				+ nodeSize
+				+ ' but the maximum is 4.'
+			);
+		}
 	}
 }
