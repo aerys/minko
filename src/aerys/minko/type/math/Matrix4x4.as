@@ -488,7 +488,7 @@ package aerys.minko.type.math
 				scale = target.getScale(TMP_VECTOR4);
 				
 				_matrix.interpolateTo(target._matrix, ratio);
-				_matrix.appendScale(
+				_matrix.prependScale(
 					sx + (scale.x - sx) * ratio,
 					sy + (scale.y - sy) * ratio,
 					sz + (scale.z - sz) * ratio
