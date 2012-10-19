@@ -9,6 +9,12 @@ Minko is a free and open source real-time 3D framework for the web, desktop and 
 * Android 2.2+ smartphones and tablets
 * iPhone 3GS, iPhone 4, iPhone 4S, iPad, iPad 2 and iPad 3
 
+Support
+-------
+
+You can get free support on our official forum: [Aerys Answers](http://answers.aerys.in/).
+If you need professional services, please [contact us](http://aerys.in/contact)!
+
 Documentation
 -------------
 
@@ -100,11 +106,6 @@ Features
 * Lighting engine (Phong lighting, environmental mapping, shadow mapping, fog...)
 * Pixel-perfect 3D mouse interactivity
 * 3D assets compression
-
-Support
--------
-
-You can get free support on our official forum: [Aerys Answers](http://answers.aerys.in/). If you need professional services, please [contact us](http://aerys.in/contact)!
 
 Contribute
 ----------
