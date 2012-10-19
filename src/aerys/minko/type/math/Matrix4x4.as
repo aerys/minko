@@ -14,102 +14,138 @@ package aerys.minko.type.math
 		
 	public class Matrix4x4 implements IWatchable
 	{
-		private static const FACTORY			: Factory			= Factory.getFactory(Matrix4x4);
-		private static const RAD2DEG			: Number			= 180. / Math.PI;
-		private static const DEG2RAD			: Number			= Math.PI / 180.;
-		private static const EPSILON			: Number			= 1e-100;
+		private static const FACTORY				: Factory			= Factory.getFactory(Matrix4x4);
+		private static const RAD2DEG				: Number			= 180. / Math.PI;
+		private static const DEG2RAD				: Number			= Math.PI / 180.;
+		private static const EPSILON				: Number			= 1e-100;
 
-		private static const TMP_VECTOR			: Vector.<Number>	= new <Number>[];
-		private static const TMP_VECTOR4		: Vector4			= new Vector4();
-		private static const TMP_MATRIX			: Matrix4x4			= new Matrix4x4();
+		private static const TMP_VECTOR				: Vector.<Number>	= new <Number>[];
+		private static const TMP_VECTOR4			: Vector4			= new Vector4();
+		private static const TMP_MATRIX				: Matrix4x4			= new Matrix4x4();
 		
-		private var _data		: Vector.<Number>		= new <Number>[];
-		private var _numPushes	: int					= 0;
+		private static const COMPONENT_TRANSLATION	: uint				= 1;
+		private static const COMPONENT_ROTATION		: uint				= 2;
+		private static const COMPONENT_SCALE		: uint				= 4;
+		private static const COMPONENT_ALL			: uint				= 7;
 		
-		private var _locked		: Boolean				= false;
-		private var _changed	: Signal				= new Signal('Matrix4x4.changed');
+		private var _data				: Vector.<Number>	= new <Number>[];
+		private var _rotation			: Vector4			= new Vector4();
+		private var _scale				: Vector4			= new Vector4();
+		private var _translation		: Vector4			= new Vector4();
+		private var _invalidComponents	: uint				= 7;
+		private var _numPushes			: uint				= 0;
 		
-		minko_math var _matrix	: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		private var _locked		: Boolean					= false;
+		private var _changed	: Signal					= new Signal('Matrix4x4.changed');
+		
+		minko_math var _matrix	: flash.geom.Matrix3D		= new flash.geom.Matrix3D();
 		
 		public function get translationX() : Number
 		{
-			return getTranslation(TMP_VECTOR4).x;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
+			
+			return _translation.x;
 		}
 		public function set translationX(value : Number) : void
 		{
-			setTranslation(value, NaN, NaN);
+			setTranslation(value, _translation.y, _translation.z);
 		}
 		
 		public function get translationY() : Number
 		{
-			return getTranslation(TMP_VECTOR4).y;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
+			
+			return _translation.y;
 		}
 		public function set translationY(value : Number) : void
 		{
-			setTranslation(NaN, value, NaN);
+			setTranslation(_translation.x, value, _translation.z);
 		}
 		
 		public function get translationZ() : Number
 		{
-			return getTranslation(TMP_VECTOR4).z;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
+			
+			return _translation.z;
 		}
 		public function set translationZ(value : Number) : void
 		{
-			setTranslation(NaN, NaN, value);
+			setTranslation(_translation.x, _translation.y, value);
 		}
 		
 		public function get rotationX() : Number
 		{
-			return getRotation(TMP_VECTOR4).x;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
+			
+			return _rotation.x;
 		}
 		public function set rotationX(value : Number) : void
 		{
-			setRotation(value, NaN, NaN);
+			setRotation(value, _rotation.y, _rotation.z);
 		}
 		
 		public function get rotationY() : Number
 		{
-			return getRotation(TMP_VECTOR4).y;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
+			
+			return _rotation.y;
 		}
 		public function set rotationY(value : Number) : void
 		{
-			setRotation(NaN, value, NaN);
+			setRotation(_rotation.x, value, _rotation.z);
 		}
 		
 		public function get rotationZ() : Number
 		{
-			return getRotation(TMP_VECTOR4).z;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
+			
+			return _rotation.z;
 		}
 		public function set rotationZ(value : Number) : void
 		{
-			setRotation(NaN, NaN, value);
+			setRotation(_rotation.x, _rotation.y, value);
 		}
 		
 		public function get scaleX() : Number
 		{
-			return getScale(TMP_VECTOR4).x;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
+			
+			return _scale.x;
 		}
 		public function set scaleX(value : Number) : void
 		{
-			setScale(value, NaN, NaN);
+			setScale(value, _scale.y, _scale.z);
 		}
 		
 		public function get scaleY() : Number
 		{
-			return getScale(TMP_VECTOR4).y;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
+			
+			return _scale.y;
 		}
 		public function set scaleY(value : Number) : void
 		{
-			setScale(NaN, value, NaN);
+			setScale(_scale.x, value, _scale.z);
 		}
 		
 		public function get scaleZ() : Number
 		{
-			return getScale(TMP_VECTOR4).z;
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
+			
+			return _scale.z;
 		}
 		public function set scaleZ(value : Number) : void
 		{
-			setScale(NaN, NaN, value);
+			setScale(_scale.x, _scale.y, value);
 		}
 		
 		public function get determinant(): Number
@@ -154,6 +190,7 @@ package aerys.minko.type.math
 			);
 
 			_matrix.copyRawDataFrom(TMP_VECTOR);
+			_invalidComponents = COMPONENT_ALL;
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -199,7 +236,10 @@ package aerys.minko.type.math
 			
 			_numPushes--;
 			if (restore)
+			{
 				_matrix.copyRawDataFrom(_data, _numPushes * 16);
+				_invalidComponents = COMPONENT_ALL;
+			}
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -209,6 +249,7 @@ package aerys.minko.type.math
 		
 		public function prepend(m : Matrix4x4) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.prepend(m._matrix);
 			
 			if (!_locked)
@@ -219,6 +260,7 @@ package aerys.minko.type.math
 
 		public function append(m : Matrix4x4) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.append(m._matrix);
 			
 			if (!_locked)
@@ -231,6 +273,7 @@ package aerys.minko.type.math
 									   axis			: Vector4,
 									   pivotPoint	: Vector4	= null) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.appendRotation(
 				radians * RAD2DEG,
 				axis._vector,
@@ -247,6 +290,7 @@ package aerys.minko.type.math
 									y	: Number	= 1.,
 									z	: Number	= 1.) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.appendScale(x, y, z);
 			
 			if (!_locked)
@@ -257,6 +301,7 @@ package aerys.minko.type.math
 		
 		public function appendUniformScale(scale : Number) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.appendScale(scale, scale, scale);
 			
 			if (!_locked)
@@ -281,9 +326,12 @@ package aerys.minko.type.math
 										axis		: Vector4,
 										pivotPoint	: Vector4 = null) : Matrix4x4
 		{
-			_matrix.prependRotation(radians * RAD2DEG,
-									axis._vector,
-									pivotPoint ? pivotPoint._vector : null);
+			_invalidComponents = COMPONENT_ALL;
+			_matrix.prependRotation(
+				radians * RAD2DEG,
+				axis._vector,
+				pivotPoint ? pivotPoint._vector : null
+			);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -295,6 +343,7 @@ package aerys.minko.type.math
 									 y	: Number = 1.,
 									 z	: Number = 1.) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.prependScale(x, y, z);
 			
 			if (!_locked)
@@ -528,16 +577,14 @@ package aerys.minko.type.math
 		
 		public function setTranslation(x : Number, y : Number, z : Number) : Matrix4x4
 		{
-			var position : Vector4	= getTranslation(TMP_VECTOR4);
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
 			
-			if (!isNaN(x))
-				position.x = x;
-			if (!isNaN(y))
-				position.y = y;
-			if (!isNaN(z))
-				position.z = z;
+			_translation.x = x;
+			_translation.y = y;
+			_translation.z = z;
 			
-			_matrix.copyColumnFrom(3, position._vector);
+			_matrix.copyColumnFrom(3, _translation._vector);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -558,17 +605,16 @@ package aerys.minko.type.math
 		
 		public function setRotation(x : Number, y : Number, z : Number) : Matrix4x4
 		{
-			var components 	: Vector.<Vector3D>	= _matrix.decompose();
-			var rotation	: Vector3D			= components[1];
+			if (_invalidComponents)
+				updateComponents();
 			
-			if (!isNaN(x))
-				rotation.x = x;
-			if (!isNaN(y))
-				rotation.y = y;
-			if (!isNaN(z))
-				rotation.z = z;
+			_rotation._vector.setTo(x, y, z);
 			
-			_matrix.recompose(components);
+			_matrix.recompose(new <Vector3D>[
+				_translation._vector,
+				_rotation._vector,
+				_scale._vector
+			]);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -582,8 +628,8 @@ package aerys.minko.type.math
 			var rotation	: Vector3D			= components[1];
 			
 			output ||= new Vector4();
-			output.set(rotation.x, rotation.y, rotation.z, rotation.w);
-				
+			output._vector = components[1];
+			
 			return output;
 		}
 		
@@ -601,17 +647,20 @@ package aerys.minko.type.math
 		
 		public function setScale(x : Number, y : Number, z : Number) : Matrix4x4
 		{
-			var components 	: Vector.<Vector3D>	= _matrix.decompose();
-			var scale		: Vector3D			= components[2];
+			if (_invalidComponents)
+				updateComponents();
 			
-			if (!isNaN(x))
-				scale.x = x;
-			if (!isNaN(y))
-				scale.y = y;
-			if (!isNaN(z))
-				scale.z = z;
+			_scale.x = x;
+			_scale.y = y;
+			_scale.z = z;
 			
-			_matrix.recompose(components);
+			_scale._vector.setTo(x, y, z);
+			
+			_matrix.recompose(new <Vector3D>[
+				_translation._vector,
+				_rotation._vector,
+				_scale._vector
+			]);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -972,6 +1021,25 @@ package aerys.minko.type.math
 			);
 
 			return this;
+		}
+		
+		private function updateComponents(components : uint = 7) : void
+		{
+			if (_invalidComponents & components & COMPONENT_TRANSLATION)
+			{
+				_invalidComponents &= ~COMPONENT_TRANSLATION;
+				getTranslation(_translation);
+			}
+			if (_invalidComponents & components & COMPONENT_ROTATION)
+			{
+				_invalidComponents &= ~COMPONENT_ROTATION;
+				getRotation(_rotation);
+			}
+			if (_invalidComponents & components & COMPONENT_SCALE)
+			{
+				_invalidComponents &= ~COMPONENT_SCALE;
+				getScale(_scale);
+			}
 		}
 	}
 }
