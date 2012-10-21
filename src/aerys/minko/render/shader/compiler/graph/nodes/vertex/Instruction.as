@@ -207,12 +207,11 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 				case TEX: case M44: return 4;
 				
 				default:
-					var nodeSize : uint;
-					nodeSize = Components.getMaxWriteOffset(component1) 
-								- Components.getMinWriteOffset(component1) + 1;
+					var nodeSize : uint = Components.getMaxWriteOffset(component1) 
+						- Components.getMinWriteOffset(component1) + 1;
 					
 					if (nodeSize > 4)
-						throw new Error();
+						throwNodeSizeTooBigError(nodeSize);
 								
 					if (!isSingle)
 						nodeSize = Math.max(nodeSize, 
@@ -221,10 +220,10 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 						);
 					
 					if (nodeSize < 1)
-						throw new Error();
+						throwInvalidNodeSizeError(nodeSize);
 					
 					if (nodeSize > 4)
-						throw new Error();
+						throwNodeSizeTooBigError(nodeSize);
 					
 					return nodeSize;
 			}
@@ -238,6 +237,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 		override public function clone() : AbstractNode
 		{
 			var clone : Instruction;
+			
 			if (isSingle)
 			{
 				clone = new Instruction(_id, argument1);

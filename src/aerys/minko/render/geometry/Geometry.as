@@ -16,6 +16,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 	
+	import flash.geom.Point;
 	import flash.utils.ByteArray;
 
 	/**
@@ -852,6 +853,17 @@ package aerys.minko.render.geometry
 			_boundingBox = new BoundingBox(min, max);
 		}
 		
+		/**
+		 * Merge another Geometry object. The Geometry object calling the merge() method is
+		 * modified in place.
+		 *  
+		 * @param geometry The Geometry to merge.
+		 * @param vertexStreamUsage The StreamUsage to use for the new VertexStream objects.
+		 * @param indexStreamUsage The StreamUsage to use for the new IndexStream objects.
+		 * 
+		 * @return 
+		 * 
+		 */
 		public function merge(geometry			: Geometry,
 							  vertexStreamUsage : uint = 3,
 							  indexStreamUsage 	: uint = 3) : Geometry
@@ -895,6 +907,13 @@ package aerys.minko.render.geometry
 			return this;				
 		}
 		
+		/**
+		 * Flip (multiply by -1) the normals of the geometry.
+		 *  
+		 * @param flipTangents Whether to flip the tangents too, default value is true.
+		 * @return 
+		 * 
+		 */
 		public function flipNormals(flipTangents : Boolean = true) : Geometry
 		{
 			var numStreams 	: uint 		= this.numVertexStreams;
@@ -933,7 +952,24 @@ package aerys.minko.render.geometry
 			_changed.execute(this);
 		}
 		
-		public function cast(ray : Ray, transform : Matrix4x4 = null, hitPoint : Vector4 = null) : int
+		/**
+		 * Cast a ray on the 3D geometry to retrieve the ID of the hit triangle.
+		 * 
+		 * @param ray The ray to cast on the geometry.
+		 * @param transform An optional 3D transform to transform the ray into the geometry local space.
+		 * @param hitXYZ An optional reference to a Vector4 object to fill with the (x, y, z) coordinates
+		 * of the actual ray/geometry hit point.
+		 * @param hitUV An optional reference to a Point object to fill with the (u, v) texture coordinates
+		 * of the actual ray/geometry hit point.
+		 * 
+		 * @return The triangle ID (the ID of the first index of the triangle in the IndexStream) that was
+		 * hit by the specified ray, -1 otherwise.
+		 * 
+		 */
+		public function cast(ray 		: Ray,
+							 transform 	: Matrix4x4 = null,
+							 hitXYZ 	: Vector4 	= null,
+							 hitUV		: Point		= null) : int
 		{
 			var numVertices : uint 	= indexStream._data.length / 2;
 			
@@ -957,8 +993,8 @@ package aerys.minko.render.geometry
 			
 			var vertexStream 	: IVertexStream = getVertexStream(0);
 			
-			var xyzVertexStream : VertexStream 	= vertexStream.getStreamByComponent(VertexComponent.XYZ);
-			var format 			: VertexFormat 	= xyzVertexStream.format;
+			var xyzStream 		: VertexStream 	= vertexStream.getStreamByComponent(VertexComponent.XYZ);
+			var format 			: VertexFormat 	= xyzStream.format;
 			var xyzVertexSize 	: uint 			= format.numBytesPerVertex;
 			var offset			: uint 			= format.getOffsetForComponent(VertexComponent.XYZ);
 			
@@ -971,9 +1007,11 @@ package aerys.minko.render.geometry
 			var localOriginZ	: Number 		= localOrigin.z;
 			
 			var indicesData 	: ByteArray 	= _indexStream.lock();
-			var xyzData			: ByteArray		= xyzVertexStream.lock();
+			var xyzData			: ByteArray		= xyzStream.lock();
 			var minDistance		: Number 		= Number.POSITIVE_INFINITY;
 			var triangleIndice	: int 			= -3;
+			
+			var lambda			: Vector4		= new Vector4();
 			
 			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += 3)
 			{
@@ -1040,26 +1078,76 @@ package aerys.minko.render.geometry
 				{
 					minDistance = t;
 					triangleIndice = verticeIndex;
+					
+					if (hitUV)
+					{
+						lambda.x = u
+						lambda.y = v
+					}
 				}
 			}
 			
-			if (triangleIndice >= 0 && hitPoint)
+			if (triangleIndice >= 0)
 			{
-				var origin 		: Vector4 	= ray.origin;
-				var direction 	: Vector4	= ray.direction;
+				if (hitXYZ)
+				{
+					var origin 		: Vector4 	= ray.origin;
+					var direction 	: Vector4	= ray.direction;
+					
+					hitXYZ.x = origin.x + minDistance * direction.x;
+					hitXYZ.y = origin.y + minDistance * direction.y;
+					hitXYZ.z = origin.z + minDistance * direction.z;
+				}
 				
-				hitPoint.x = origin.x + minDistance * direction.x;
-				hitPoint.y = origin.y + minDistance * direction.y;
-				hitPoint.z = origin.z + minDistance * direction.z;
+				if (hitUV)
+				{
+					var uvStream : VertexStream = vertexStream.getStreamByComponent(VertexComponent.UV);
+					
+					if (!uvStream)
+						throw new Error('Missing vertex component: u, v');
+					
+					var uvData 			: ByteArray = uvStream == xyzStream ? xyzData : uvStream.lock();
+					var uvVertexSize 	: uint 		= uvStream.format.numBytesPerVertex;
+					var uvOffset 		: uint 		= uvStream.format.getOffsetForComponent(VertexComponent.UV);
+					
+					indicesData.position = triangleIndice * 2;
+					
+					uvData.position = indicesData.readUnsignedShort() * uvVertexSize + uvOffset;
+					var u0  : Number = uvData.readFloat();
+					var v0  : Number = uvData.readFloat();
+					
+					uvData.position = indicesData.readUnsignedShort() * uvVertexSize + uvOffset;
+					var u1  : Number = uvData.readFloat();
+					var v1  : Number = uvData.readFloat();
+					
+					uvData.position = indicesData.readUnsignedShort() * uvVertexSize + uvOffset;
+					var u2  : Number = uvData.readFloat();
+					var v2  : Number = uvData.readFloat(); 
+					
+					lambda.z = 1 - lambda.x - lambda.y;
+					
+					hitUV.x = lambda.z * u0 + lambda.x*u1 + lambda.y * u2;
+					hitUV.y = lambda.z * v0 + lambda.x*v1 + lambda.y * v2;
+					
+					if (uvStream != xyzStream)
+						uvStream.unlock(false);
+				}
 			}
 			
 			_indexStream.unlock(false);
-			xyzVertexStream.unlock(false);
+			xyzStream.unlock(false);
 			
 			return triangleIndice / 3;				
 		}
 		
-		public function invertWinding(flipNormals : Boolean = true, flipTangents : Boolean = true) : Geometry
+		/**
+		 * Invert the winding of the triangles by rewritting the IndexStream. Inverting the winding
+		 * means that the front faces will become back faces and vice versa.
+		 *  
+		 * @return The Geometry object itself.
+		 * 
+		 */
+		public function invertWinding() : Geometry
 		{
 			var numIndices		: uint		= indexStream.length;
 			var numTriangles	: uint		= numIndices / 3;
@@ -1078,14 +1166,6 @@ package aerys.minko.render.geometry
 			}
 			
 			indexStream.unlock();
-			
-			if (numVertexStreams)
-			{
-				if (flipNormals && getVertexStream(0).format.hasComponent(VertexComponent.NORMAL))
-					computeNormals();
-				if (flipTangents && getVertexStream(0).format.hasComponent(VertexComponent.TANGENT))
-					computeTangentSpace();
-			}
 			
 			return this;
 		}

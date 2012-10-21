@@ -30,7 +30,7 @@ package aerys.minko.type.animation.timeline
 
 			// change value.
 			var previousTime		: Number	= _timeTable[int(timeId - 1)];
-			var nextTime			: Number	= _timeTable[timeId];
+			var nextTime			: Number	= _timeTable[timeId % timeCount];
 			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
 
 			if (t < 0.)
@@ -38,7 +38,7 @@ package aerys.minko.type.animation.timeline
 			
 			currentTarget[propertyName] =
 				(1 - interpolationRatio) * _values[timeId - 1] +
-				interpolationRatio * _values[timeId];
+				interpolationRatio * _values[timeId % timeCount];
 		}
 
 		private function getIndexForTime(t : uint) : uint
