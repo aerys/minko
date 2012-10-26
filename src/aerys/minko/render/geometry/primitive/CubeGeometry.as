@@ -29,6 +29,17 @@ package aerys.minko.render.geometry.primitive
 		public function CubeGeometry(vertexStreamUsage 	: uint 	= 3,
 									 indexStreamUsage	: uint	= 3)
 		{
+			
+			var vertexStream : VertexStream = buildVertexStream(vertexStreamUsage);
+			
+			super(
+				new <IVertexStream>[vertexStream],
+				new IndexStream(indexStreamUsage, IndexStream.dummyData(vertexStream.numVertices, 0))
+			);
+		}
+		
+		protected function buildVertexStream(vertexStreamUsage : uint = 3) : VertexStream
+		{
 			var data : Vector.<Number> = new <Number>[
 				// top
 				0.5, 0.5, 0.5, 1., 0., -0.5, 0.5, -0.5, 0., 1., 0.5, 0.5, -0.5, 1., 1.,
@@ -50,13 +61,8 @@ package aerys.minko.render.geometry.primitive
 				0.5, 0.5, -0.5, 0., 0., 0.5, -0.5, -0.5, 0., 1., 0.5, -0.5, 0.5, 1., 1.
 			];
 			
-			var vertexStream : VertexStream = VertexStream.fromVector(
+			return VertexStream.fromVector(
 				vertexStreamUsage, VertexFormat.XYZ_UV, data
-			);
-			
-			super(
-				new <IVertexStream>[vertexStream],
-				new IndexStream(indexStreamUsage, IndexStream.dummyData(vertexStream.numVertices, 0))
 			);
 		}
 		

@@ -33,6 +33,7 @@ package aerys.minko.render
 		private var _stage3d			: Stage3D			= null;
 		private var _context3d			: Context3DResource	= null;
 		
+		private var _stage3dId			: uint				= 0;
 		private var _width				: uint				= 0;
 		private var _height				: uint				= 0;
 		private var _autoResize			: Boolean			= false;
@@ -202,13 +203,13 @@ package aerys.minko.render
 		}
 		
 		public function Viewport(antiAliasing	: uint	= 0,
+								 stage3dId		: uint	= 0,
 								 width			: uint 	= 0,
 								 height			: uint	= 0)
 		{
+			_stage3dId = stage3dId;
 			_antiAliasing = antiAliasing;
-			
-			if (width == 0 && height == 0)
-				_autoResize = true;
+			_autoResize = width == 0 && height == 0;
 			
 			_width = width;
 			_height = height;
@@ -232,7 +233,6 @@ package aerys.minko.render
 			
 			stage.addEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 			stage.addEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-			
 			stage.addEventListener(Event.RESIZE, stageResizedHandler);
 			
 			setupOnStage(stage);
@@ -246,14 +246,13 @@ package aerys.minko.render
 			
 			stage.removeEventListener(Event.ADDED_TO_STAGE, displayObjectAddedToStageHandler);
 			stage.removeEventListener(Event.REMOVED_FROM_STAGE, displayObjectRemovedFromStageHandler);
-			
 			stage.removeEventListener(Event.RESIZE, stageResizedHandler);
 			
 			if (_stage3d != null)
 				_stage3d.visible = false;
 		}
 		
-		private function setupOnStage(stage : Stage, stage3dId : uint = 0) : void
+		private function setupOnStage(stage : Stage) : void
 		{
 			if (_autoResize)
 			{
@@ -263,7 +262,7 @@ package aerys.minko.render
 			
 			if (!_stage3d)
 			{
-				_stage3d = stage.stage3Ds[stage3dId];
+				_stage3d = stage.stage3Ds[_stage3dId];
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
 				_stage3d.requestContext3D();
 			}
