@@ -25,11 +25,11 @@ package aerys.minko.render.shader.part
 			var diffuseColor : SFloat	= null;
 			var uv			 : SFloat	= vertexUV.xy;
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_SCALE))
-				uv.scaleBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_SCALE, 2));
+			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
+				uv.scaleBy(meshBindings.getParameter(BasicProperties.UV_SCALE, 2));
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_OFFSET))
-				uv.incrementBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_OFFSET, 2));
+			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
+				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
 			
 			uv = interpolate(uv);
 			
