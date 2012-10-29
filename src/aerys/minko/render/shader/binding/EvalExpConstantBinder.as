@@ -17,6 +17,8 @@ package aerys.minko.render.shader.binding
 		private var _evalExp		: EvalExp;
 		private var _masterBinding	: IBinder;
 		
+		private var _serializer		: Serializer;
+		
 		public function get bindingName() : String
 		{
 			return _bindingName;
@@ -31,6 +33,8 @@ package aerys.minko.render.shader.binding
 			_masterBinding	= masterBinding;
 			_evalExp		= evalExp;
 			_size			= size;
+			
+			_serializer		= new Serializer();
 		}
 		
 		public function set(cpuConstants	: Dictionary,
@@ -42,7 +46,7 @@ package aerys.minko.render.shader.binding
 			if (!cpuConstants[_bindingName])
 				cpuConstants[_bindingName] = new Vector.<Number>();
 			
-			Serializer.serializeKnownLength(value, cpuConstants[_bindingName], 0, _size);
+			_serializer.serializeKnownLength(value, cpuConstants[_bindingName], 0, _size);
 			
 			var result : Vector.<Number> = _evalExp.compute(cpuConstants);
 			if (result != null)

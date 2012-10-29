@@ -199,6 +199,10 @@ package aerys.minko.type.math
 		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
 		{
 			_matrix.copyFrom(matrix._matrix);
+			_invalidComponents = matrix._invalidComponents;
+			_translation.copyFrom(matrix._translation);
+			_rotation.copyFrom(matrix._rotation);
+			_scale.copyFrom(matrix._scale);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -209,6 +213,7 @@ package aerys.minko.type.math
 		public function copyFromMatrix3D(matrix : Matrix3D) : Matrix4x4
 		{
 			_matrix.copyFrom(matrix);
+			_invalidComponents = COMPONENT_ALL;
 			
 			if (!_locked)
 				_changed.execute(this);

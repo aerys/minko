@@ -335,8 +335,11 @@ package aerys.minko.scene
 			checkNextToken('(');
 			checkNextToken(')');
 			
-			_selection[0] = _selection[uint(_selection.length - 1)];
-			_selection.length = 1;
+			if (_selection.length)
+			{
+				_selection[0] = _selection[uint(_selection.length - 1)];
+				_selection.length = 1;
+			}
 		}
 		
 		private function filterFirst() : void

@@ -17,6 +17,8 @@ package aerys.minko.render.shader.binding
 		private var _size			: uint;
 		private var _isVertexShader	: Boolean;
 		
+		private var _serializer		: Serializer;
+		
 		/**
 		 * @inheritDoc
 		 */		
@@ -34,6 +36,8 @@ package aerys.minko.render.shader.binding
 			_offset			= offset;
 			_size			= size;
 			_isVertexShader	= isVertexShader;
+			
+			_serializer		= new Serializer();
 		}
 		
 		/**
@@ -46,7 +50,8 @@ package aerys.minko.render.shader.binding
 							value			: Object) : void
 		{
 			var constants : Vector.<Number> = _isVertexShader ? vsConstants : fsConstants;
-			Serializer.serializeKnownLength(value, constants, _offset, _size);
+			
+			_serializer.serializeKnownLength(value, constants, _offset, _size);
 		}
 	}
 }

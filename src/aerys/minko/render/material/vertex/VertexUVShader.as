@@ -20,11 +20,11 @@ package aerys.minko.render.material.vertex
 		{
 			var uv 				: SFloat = getVertexAttribute(VertexComponent.UV);
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_SCALE))
-				uv.scaleBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_SCALE, 2));
+			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
+				uv.scaleBy(meshBindings.getParameter(BasicProperties.UV_SCALE, 2));
 			
-			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_OFFSET))
-				uv.incrementBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_OFFSET, 2));
+			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
+				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
 
 			var interpolatedUv 	: SFloat = fractional(interpolate(uv));
 			

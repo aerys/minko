@@ -175,6 +175,7 @@ package aerys.minko.scene.controller.camera
 		{
 			super();
 			
+			_pitch = Math.PI * .5;
 			_lookAt.changed.add(updateNextFrameHandler);
 			_up.changed.add(updateNextFrameHandler);
 		}

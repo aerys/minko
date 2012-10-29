@@ -48,6 +48,15 @@ package aerys.minko.render.material.basic
 			setProperty(BasicProperties.DIFFUSE_MAP, value);
 		}
 		
+		public function get alphaMap() : TextureResource
+		{
+			return getProperty(BasicProperties.ALPHA_MAP) as TextureResource;
+		}
+		public function set alphaMap(value : TextureResource) : void
+		{
+			setProperty(BasicProperties.ALPHA_MAP, value);
+		}
+		
 		public function get alphaThreshold() : Number
 		{
 			return getProperty(BasicProperties.ALPHA_THRESHOLD);
