@@ -16,9 +16,11 @@ package aerys.minko.render.shader
 	 */
 	public final class ShaderDataBindings
 	{
-		private var _dataBindings	: DataBindings	= null;
-		private var _signature		: Signature		= null;
-		private var _signatureFlags	: uint			= 0;
+		private var _dataBindings	: DataBindings;
+		private var _signature		: Signature;
+		private var _signatureFlags	: uint;
+		
+		private var _serializer		: Serializer;
 		
 		public function ShaderDataBindings(bindings			: DataBindings,
 										   signature		: Signature,
@@ -27,6 +29,8 @@ package aerys.minko.render.shader
 			_dataBindings = bindings;
 			_signature = signature;
 			_signatureFlags = signatureFlags;
+			
+			_serializer = new Serializer();
 		}
 		
 		public function getParameter(name			: String,
@@ -36,7 +40,9 @@ package aerys.minko.render.shader
 			if (defaultValue != null && !propertyExists(name))
 			{
 				var constantValue : Vector.<Number> = new Vector.<Number>();
-				Serializer.serializeKnownLength(defaultValue, constantValue, 0, size);
+				
+				_serializer.serializeKnownLength(defaultValue, constantValue, 0, size);
+				
 				return new SFloat(new Constant(constantValue));
 			}
 			
@@ -79,8 +85,8 @@ package aerys.minko.render.shader
 				if (defaultValue === null)
 				{
 					throw new Error(
-						"The property '" + propertyName
-						+ "' does not exist and no default value was provided."
+						'The property \'' + propertyName
+						+ '\' does not exist and no default value was provided.'
 					);
 				}
 				

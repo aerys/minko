@@ -18,10 +18,10 @@ package aerys.minko.render.shader.compiler
 	 */
 	public class Serializer
 	{
-		public static function serializeKnownLength(data	: Object, 
-													target	: Vector.<Number>, 
-													offset	: uint, 
-													size	: uint) : void
+		public function serializeKnownLength(data	: Object, 
+											 target	: Vector.<Number>, 
+											 offset	: uint, 
+											 size	: uint) : void
 		{
 			if (data is Number)
 			{
@@ -104,9 +104,9 @@ package aerys.minko.render.shader.compiler
 			}
 		}
 		
-		public static function serializeUnknownLength(data		: Object, 
-													  target	: Vector.<Number>, 
-													  offset	: uint) : void
+		public function serializeUnknownLength(data		: Object, 
+											   target	: Vector.<Number>, 
+											   offset	: uint) : void
 		{
 			if (data is Number)
 			{
