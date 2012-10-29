@@ -142,12 +142,12 @@ package aerys.minko.type
 		
 		private function mouseMiddleDownHandler(event : MouseEvent) : void
 		{
-			_rightButtonDown = true;
+			_middleButtonDown = true;
 		}
 		
 		private function mouseMiddleUpHandler(event : MouseEvent) : void
 		{
-			_rightButtonDown = false;
+			_middleButtonDown = false;
 		}
 		
 		private function mouseRightDownHandler(event : MouseEvent) : void
