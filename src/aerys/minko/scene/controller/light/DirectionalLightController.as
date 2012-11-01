@@ -80,7 +80,7 @@ package aerys.minko.scene.controller.light
 			
 			propertyName = LightDataProvider.getPropertyName(propertyName);
 			
-			if (propertyName == 'shadowWidth' || propertyName == 'shadowMaxZ')
+			if (propertyName == 'shadowWidth' || propertyName == 'shadowZFar')
 				updateProjectionMatrix();
 		}
 		
@@ -100,7 +100,7 @@ package aerys.minko.scene.controller.light
 		
 		private function updateProjectionMatrix() : void
 		{
-			var zFar 	: Number 	= lightData.getLightProperty('shadowMaxZ');
+			var zFar 	: Number 	= lightData.getLightProperty('shadowZFar');
 			var width	: Number	= lightData.getLightProperty('shadowWidth');
 			
 			_projection.initialize(
