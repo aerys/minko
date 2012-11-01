@@ -31,8 +31,8 @@ package aerys.minko.render.shader.part.phong.attenuation
 			
 			// retrieve depthmap, transformation matrix, zNear and zFar
 			var worldToLight		: SFloat = getLightParameter(lightId, 'worldToLocal', 16);
-			var zNear				: SFloat = getLightParameter(lightId, 'zNear', 1);
-			var zFar				: SFloat = getLightParameter(lightId, 'zFar', 1);
+			var zNear				: SFloat = getLightParameter(lightId, 'shadowZNear', 1);
+			var zFar				: SFloat = getLightParameter(lightId, 'shadowZFar', 1);
 			var cubeDepthMap		: SFloat = getLightTextureParameter(lightId, 'shadowMapCube', 
 				SamplerFiltering.NEAREST,
 				SamplerMipMapping.DISABLE, 
