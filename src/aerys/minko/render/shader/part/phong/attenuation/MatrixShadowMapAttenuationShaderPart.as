@@ -65,11 +65,12 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var curDepthSubBias		: SFloat = subtract(currentDepth, shadowBias);
 			var noShadows			: SFloat = lessEqual(curDepthSubBias, precomputedDepth);
 			
-			var quality		: uint		= getLightConstant(lightId, 'shadowMapQuality');
+			var quality		: uint		= getLightConstant(lightId, 'shadowQuality');
+			
 			if (quality != ShadowMappingQuality.HARD)
 			{
 				var invertSize	: SFloat			= divide(
-					getLightParameter(lightId, 'shadowMapSamplingDistance', 1),
+					getLightParameter(lightId, 'shadowSpread', 1),
 					getLightParameter(lightId, 'shadowMapSize', 1)
 				);
 				

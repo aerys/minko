@@ -9,6 +9,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.ParallaxMappingShaderPart;
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.type.enum.NormalMappingType;
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
@@ -170,20 +171,25 @@ package aerys.minko.render.shader.part.phong
 		
 		protected function lightPropertyExists(lightId : uint, name : String) : Boolean
 		{
-			var parameterName : String = PhongProperties.getNameFor(lightId, name);
-			return sceneBindings.propertyExists(parameterName);
+			return sceneBindings.propertyExists(
+				LightDataProvider.getLightPropertyName(name, lightId)
+			);
 		}
 		
 		protected function getLightConstant(lightId : uint, name : String, defaultValue : Object = null) : *
 		{
-			var parameterName : String = PhongProperties.getNameFor(lightId, name);
-			return sceneBindings.getConstant(parameterName, defaultValue);
+			return sceneBindings.getConstant(
+				LightDataProvider.getLightPropertyName(name, lightId),
+				defaultValue
+			);
 		}
 		
 		protected function getLightParameter(lightId : uint, name : String, size : uint) : SFloat
 		{
-			var parameterName : String = PhongProperties.getNameFor(lightId, name);
-			return sceneBindings.getParameter(parameterName, size);
+			return sceneBindings.getParameter(
+				LightDataProvider.getLightPropertyName(name, lightId),
+				size
+			);
 		}
 		
 		protected function getLightTextureParameter(lightId		: uint,
@@ -193,8 +199,13 @@ package aerys.minko.render.shader.part.phong
 													wrapping	: uint = 1, 
 													dimension	: uint = 0) : SFloat
 		{
-			var parameterName : String = PhongProperties.getNameFor(lightId, name);
-			return sceneBindings.getTextureParameter(parameterName, filter, mipmap, wrapping, dimension);
+			return sceneBindings.getTextureParameter(
+				LightDataProvider.getLightPropertyName(name, lightId),
+				filter,
+				mipmap,
+				wrapping,
+				dimension
+			);
 		}
 		
 	}

@@ -1,173 +1,150 @@
 package aerys.minko.scene.node.light
 {
-	import aerys.minko.ns.minko_math;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.scene.controller.light.SpotLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingType;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
 	use namespace minko_scene;
 	
 	public class SpotLight extends AbstractLight
 	{
-		use namespace minko_math;
-		
-		public static const TYPE			: uint				= 3;
-		
-		private static const TMP_VECTOR		: Vector4			= new Vector4();
-		private static const Z_AXIS			: Vector4			= new Vector4(0, 0, 1);
-		private static const SCREEN_TO_UV	: Matrix4x4			= new Matrix4x4(
-			0.5,		0.0,		0.0,	0.0,
-			0.0, 		-0.5,		0.0,	0.0,
-			0.0,		0.0,		1.0,	0.0,
-			0.5, 		0.5,		0.0, 	1.0
-		);
-		
-		private static const FRUSTUM_POINTS	: Vector.<Vector4>	= new <Vector4>[
-			new Vector4(-1, -1, 0, 1),
-			new Vector4(-1, -1, 1, 1),
-			new Vector4(-1, +1, 0, 1),
-			new Vector4(-1, +1, 1, 1),
-			new Vector4(+1, -1, 0, 1),
-			new Vector4(+1, -1, 1, 1),
-			new Vector4(+1, +1, 0, 1),
-			new Vector4(+1, +1, 1, 1)
-		];
-		
-		private var _worldPosition	: Vector4;
-		private var _worldDirection	: Vector4;
-		private var _projection		: Matrix4x4;
-		private var _worldToScreen	: Matrix4x4;
-		private var _worldToUV		: Matrix4x4;
+		public static const LIGHT_TYPE			: uint				= 3;
 		
 		public function get diffuse() : Number
 		{
-			return getProperty('diffuse') as Number;
+			return lightData.getLightProperty('diffuse') as Number;
+		}
+		public function set diffuse(v : Number)	: void
+		{
+			lightData.setLightProperty('diffuse', v);
+			
+			if (lightData.getLightProperty('diffuseEnabled') != (v != 0))
+				lightData.setLightProperty('diffuseEnabled', v != 0);
 		}
 		
 		public function get specular() : Number
 		{
-			return getProperty('specular') as Number;
+			return lightData.getLightProperty('specular') as Number;
+		}
+		public function set specular(v : Number) : void
+		{
+			lightData.setLightProperty('specular', v);
+			
+			if (lightData.getLightProperty('specularEnabled') != (v != 0))
+				lightData.setLightProperty('specularEnabled', v != 0);
 		}
 		
 		public function get shininess() : Number
 		{
-			return getProperty('shininess') as Number;
+			return lightData.getLightProperty('shininess') as Number;
 		}
 		
 		public function get innerRadius() : Number
 		{
-			return getProperty('innerRadius') as Number;
+			return lightData.getLightProperty('innerRadius') as Number;
+		}
+		public function set innerRadius(v : Number) : void
+		{
+			lightData.setLightProperty('innerRadius', v);
+			
+			if (lightData.getLightProperty('smoothRadius') != (innerRadius != outerRadius))
+				lightData.setLightProperty('smoothRadius', innerRadius != outerRadius)
 		}
 		
 		public function get outerRadius() : Number
 		{
-			return getProperty('outerRadius') as Number;
+			return lightData.getLightProperty('outerRadius') as Number;
+		}
+		public function set outerRadius(v : Number) : void
+		{
+			lightData.setLightProperty('outerRadius', v);
+			
+			if (lightData.getLightProperty('smoothRadius') != (innerRadius != outerRadius))
+				lightData.setLightProperty('smoothRadius', innerRadius != outerRadius)
 		}
 		
 		public function get attenuationDistance() : Number
 		{
-			return getProperty('attenuationDistance') as Number;
+			return lightData.getLightProperty('attenuationDistance') as Number;
 		}
-		
-		public function get shadowMapSize() : uint
+		public function set attenuationDistance(v : Number) : void
 		{
-			return getProperty('shadowMapSize') as uint;
-		}
-		
-		public function get shadowMapZNear() : Number
-		{
-			return getProperty('zNear');
-		}
-		
-		public function get shadowMapZFar() : Number
-		{
-			return getProperty('zFar');
-		}
-		
-		public function get shadowMapQuality() : uint
-		{
-			return getProperty('shadowMapQuality');
-		}
-		
-		public function get shadowMapSamplingDistance() : uint
-		{
-			return getProperty('shadowMapSamplingDistance');
-		}
-		
-		public function set diffuse(v : Number)	: void
-		{
-			setProperty('diffuse', v);
+			lightData.setLightProperty('attenuationDistance', v);
 			
-			if (getProperty('diffuseEnabled') != (v != 0))
-				setProperty('diffuseEnabled', v != 0);
+			if (lightData.getLightProperty('attenuationEnabled') != (v != 0))
+				lightData.setLightProperty('attenuationEnabled', v != 0);
 		}
 		
-		public function set specular(v : Number) : void
+		public function get shadowZNear() : Number
 		{
-			setProperty('specular', v);
-			
-			if (getProperty('specularEnabled') != (v != 0))
-				setProperty('specularEnabled', v != 0);
+			return lightData.getLightProperty('shadowZNear');
+		}
+		public function set shadowZNear(v : Number) : void
+		{
+			lightData.setLightProperty('shadowZNear', v);
+		}
+		
+		public function get shadowZFar() : Number
+		{
+			return lightData.getLightProperty('shadowZFar');
+		}
+		public function set shadowZFar(v : Number) : void
+		{
+			lightData.setLightProperty('shadowZFar', v);
+		}
+		
+		public function get shadowQuality() : uint
+		{
+			return lightData.getLightProperty('shadowQuality');
+		}
+		public function set shadowQuality(v : uint) : void
+		{
+			lightData.setLightProperty('shadowQuality', v);
+		}
+		
+		public function get shadowSpread() : uint
+		{
+			return lightData.getLightProperty('shadowSpread');
+		}
+		public function set shadowSpread(v : uint) : void
+		{
+			lightData.setLightProperty('shadowSpread', v);
 		}
 		
 		public function set shininess(v : Number) : void
 		{
-			setProperty('shininess', v);
+			lightData.setLightProperty('shininess', v);
 		}
 		
-		public function set innerRadius(v : Number) : void
+		public function get shadowMapSize() : uint
 		{
-			setProperty('innerRadius', v);
-			
-			if (getProperty('smoothRadius') != (innerRadius != outerRadius))
-				setProperty('smoothRadius', innerRadius != outerRadius)
+			return lightData.getLightProperty('shadowMapSize') as uint;
 		}
-		
-		public function set outerRadius(v : Number) : void
-		{
-			setProperty('outerRadius', v);
-			updateProjectionMatrix();
-			
-			if (getProperty('smoothRadius') != (innerRadius != outerRadius))
-				setProperty('smoothRadius', innerRadius != outerRadius)
-		}
-		
-		public function set attenuationDistance(v : Number) : void
-		{
-			setProperty('attenuationDistance', v);
-			updateProjectionMatrix();
-			
-			if (getProperty('attenuationEnabled') != (v != 0))
-				setProperty('attenuationEnabled', v != 0);
-		}
-		
 		public function set shadowMapSize(v : uint) : void
 		{
-			setProperty('shadowMapSize', v);
+			lightData.setLightProperty('shadowMapSize', v);
+			
 			this.shadowCastingType = this.shadowCastingType;
 		}
 		
 		override public function set shadowCastingType(v : uint) : void
 		{
 			var shadowMapSize	: uint				= this.shadowMapSize;
-			var shadowMap		: TextureResource	= getProperty('shadowMap') as TextureResource;
+			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap') as TextureResource;
 			
 			if (shadowMap)
 			{
-				removeProperty('shadowMap');
+				lightData.removeProperty('shadowMap');
 				shadowMap.dispose(); 
 			}
 			
 			switch (v)
 			{
 				case ShadowMappingType.NONE:
-					setProperty('shadowCastingType', ShadowMappingType.NONE);
+					lightData.setLightProperty('shadowCastingType', ShadowMappingType.NONE);
 					break;
 				
 				case ShadowMappingType.MATRIX:
@@ -176,35 +153,13 @@ package aerys.minko.scene.node.light
 						throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
 					
 					shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
-					setProperty('shadowMap', shadowMap);
-					setProperty('shadowCastingType', ShadowMappingType.MATRIX);
+					lightData.setLightProperty('shadowMap', shadowMap);
+					lightData.setLightProperty('shadowCastingType', ShadowMappingType.MATRIX);
 					break;
 				
 				default: 
 					throw new ArgumentError('Invalid shadow casting type.');
 			}
-		}
-		
-		public function set shadowMapZNear(v : Number) : void
-		{
-			setProperty('zNear', v);
-			updateProjectionMatrix();
-		}
-		
-		public function set shadowMapZFar(v : Number) : void
-		{
-			setProperty('zFar', v);
-			updateProjectionMatrix();
-		}
-		
-		public function set shadowMapQuality(v : uint) : void
-		{
-			setProperty('shadowMapQuality', v);
-		}
-		
-		public function set shadowMapSamplingDistance(v : uint) : void
-		{
-			setProperty('shadowMapSamplingDistance', v);
 		}
 		
 		public function SpotLight(color						: uint		= 0xFFFFFFFF,
@@ -222,13 +177,13 @@ package aerys.minko.scene.node.light
 								  shadowMapQuality			: uint		= 0,
 								  shadowMapSamplingDistance	: uint		= 1)
 		{
-			_worldDirection = new Vector4();
-			_worldPosition	= new Vector4();
-			_projection		= new Matrix4x4();
-			_worldToScreen	= new Matrix4x4();
-			_worldToUV		= new Matrix4x4();
-			
-			super(color, emissionMask, shadowCastingType, TYPE)
+			super(
+				new SpotLightController(),
+				LIGHT_TYPE,
+				color,
+				emissionMask,
+				shadowCastingType
+			);
 			
 			this.diffuse					= diffuse;
 			this.specular					= specular;
@@ -236,46 +191,17 @@ package aerys.minko.scene.node.light
 			this.innerRadius				= innerRadius;
 			this.outerRadius				= outerRadius;
 			this.attenuationDistance		= attenuationDistance;
-			this.shadowMapZNear				= shadowMapZNear;
-			this.shadowMapZFar				= shadowMapZFar;
+			this.shadowZNear				= shadowMapZNear;
+			this.shadowZFar					= shadowMapZFar;
 			this.shadowMapSize				= shadowMapSize;
-			this.shadowMapQuality			= shadowMapQuality;
-			this.shadowMapSamplingDistance	= shadowMapSamplingDistance;
-			
-			setProperty('worldDirection', _worldDirection);
-			setProperty('worldPosition', _worldPosition);
-			setProperty('projection', _projection);
-			setProperty('worldToScreen', _worldToScreen);
-			setProperty('worldToUV', _worldToUV);
+			this.shadowQuality			= shadowMapQuality;
+			this.shadowSpread	= shadowMapSamplingDistance;
 			
 			if ([ShadowMappingType.NONE, 
 				ShadowMappingType.MATRIX].indexOf(shadowCastingType) == -1)
 				throw new Error('Invalid ShadowMappingType.');
 			
-			localToWorld.changed.add(transformChangedHandler);
-		}
-		
-		protected function transformChangedHandler(transform : Matrix4x4) : void
-		{
-			_worldPosition	= localToWorld.getTranslation(_worldPosition);
-			_worldDirection	= localToWorld.deltaTransformVector(Vector4.Z_AXIS, _worldDirection);
-			_worldDirection.normalize();
-			
-			_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
-		}
-		
-		private function updateProjectionMatrix() : void
-		{
-			var zNear	: Number = this.shadowMapZNear;
-			var zFar	: Number = this.shadowMapZFar;
-			var fd		: Number = 1. / Math.tan(outerRadius * 0.5);
-			var m33		: Number = 1. / (zFar - zNear);
-			var m43		: Number = -zNear / (zFar - zNear);
-			
-			_projection.initialize(fd, 0, 0, 0, 0, fd, 0, 0, 0, 0, m33, 1, 0, 0, m43, 0);
-			_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
+			transform.lookAt(Vector4.Z_AXIS, Vector4.ZERO);
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode

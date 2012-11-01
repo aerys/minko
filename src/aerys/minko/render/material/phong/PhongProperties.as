@@ -1,7 +1,5 @@
 package aerys.minko.render.material.phong
 {
-	import aerys.minko.ns.minko_lighting;
-
 	public final class PhongProperties
 	{
 		public static const RECEPTION_MASK				: String = 'lightReceptionMask';
@@ -24,16 +22,5 @@ package aerys.minko.render.material.phong
 		public static const SHADOW_BIAS					: String = 'lightShadowBias';
 		public static const CAST_SHADOWS				: String = 'lightCastShadows';
 		public static const RECEIVE_SHADOWS				: String = 'lightReceiveShadows';
-		
-		minko_lighting static function getNameFor(lightId		: uint,
-												  propertyName	: String) : String
-		{
-			return 'light_' + propertyName + '_' + lightId;
-		}
-		
-		minko_lighting static function getPropertyFor(name : String) : String
-		{
-			return name.substring('light_'.length, name.lastIndexOf('_'));
-		}
 	}
 }

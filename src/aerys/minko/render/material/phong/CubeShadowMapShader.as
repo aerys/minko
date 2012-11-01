@@ -9,6 +9,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	import aerys.minko.type.math.Matrix4x4;
@@ -56,8 +57,8 @@ package aerys.minko.render.material.phong
 		override protected function getVertexPosition() : SFloat
 		{
 			// retrieve matrices
-			var worldToLocalName	: String	= PhongProperties.getNameFor(_lightId, 'worldToLocal');
-			var projectionName		: String	= PhongProperties.getNameFor(_lightId, 'projection');
+			var worldToLocalName	: String	= LightDataProvider.getLightPropertyName('worldToLocal', _lightId);
+			var projectionName		: String	= LightDataProvider.getLightPropertyName('projection', _lightId);
 			var worldToLocal		: SFloat	= sceneBindings.getParameter(worldToLocalName, 16);
 			var viewMatrix			: Matrix4x4	= VIEW_MATRICES[_side];
 			var projection			: SFloat	= sceneBindings.getParameter(projectionName, 16);
@@ -83,8 +84,8 @@ package aerys.minko.render.material.phong
 		override protected function getPixelColor() : SFloat
 		{
 			// retrieve zNear and zFar
-			var zNearName	: String	= PhongProperties.getNameFor(_lightId, 'zNear');
-			var zFarName	: String	= PhongProperties.getNameFor(_lightId, 'zFar');
+			var zNearName	: String	= LightDataProvider.getLightPropertyName('shadowZNear', _lightId);
+			var zFarName	: String	= LightDataProvider.getLightPropertyName('shadowZFar', _lightId);
 			var zNear		: SFloat	= sceneBindings.getParameter(zNearName, 1);
 			var zFar		: SFloat	= sceneBindings.getParameter(zFarName, 1);
 			

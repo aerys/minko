@@ -8,6 +8,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
@@ -27,9 +28,10 @@ package aerys.minko.render.material.phong
 		{
 			super(renderTarget, priority);
 			
-			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
-			_diffusePart			= new DiffuseShaderPart(this);
-			_lightId				= lightId;
+			_lightId = lightId;
+			
+			_vertexAnimationPart = new VertexAnimationShaderPart(this);
+			_diffusePart = new DiffuseShaderPart(this);
 		}
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
@@ -43,8 +45,8 @@ package aerys.minko.render.material.phong
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			var lightTypeName		: String = PhongProperties.getNameFor(_lightId, 'type');
-			var worldToScreenName	: String = PhongProperties.getNameFor(_lightId, 'worldToScreen');
+			var lightTypeName		: String = LightDataProvider.getLightPropertyName('type', _lightId);
+			var worldToScreenName	: String = LightDataProvider.getLightPropertyName('worldToScreen', _lightId);
 			
 			var lightType			: uint	 = sceneBindings.getConstant(lightTypeName);
 			var worldToScreen		: SFloat = sceneBindings.getParameter(worldToScreenName, 16);
@@ -52,7 +54,7 @@ package aerys.minko.render.material.phong
 			
 			_clipspacePosition = multiply4x4(vertexPosition, worldToScreen);
 			
-			if (lightType == SpotLight.TYPE)
+			if (lightType == SpotLight.LIGHT_TYPE)
 				return float4(_clipspacePosition.xy, multiply(_clipspacePosition.z, _clipspacePosition.w), _clipspacePosition.w);
 			else
 				return _clipspacePosition;

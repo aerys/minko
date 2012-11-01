@@ -7,6 +7,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
 	
@@ -75,17 +76,21 @@ package aerys.minko.render.material.phong
 			while (_watchedProperties.length != 0)
 				sceneBindings.removeCallback(_watchedProperties.pop(), propertyChangedHandler);
 			
-			for (var lightId : uint = 0;; ++lightId)
+			for (var lightId : uint = 0; ; ++lightId)
 			{
-				var shadowCastingPropertyName : String = PhongProperties.getNameFor(lightId, 'shadowCastingType');
+				if (!lightPropertyExists(lightId, 'type'))
+					break ;
+				
+				var shadowCastingPropertyName : String = LightDataProvider.getLightPropertyName(
+					'shadowCastingType',
+					lightId
+				);
 				
 				_watchedProperties.push(shadowCastingPropertyName);
 				sceneBindings.addCallback(shadowCastingPropertyName, propertyChangedHandler);
 				
-				if (!sceneBindings.propertyExists(shadowCastingPropertyName))
-					break;
-				
-				SHADOW_FACTORIES[sceneBindings.getProperty(shadowCastingPropertyName)](lightId, passes);
+				if (sceneBindings.propertyExists(shadowCastingPropertyName))
+					SHADOW_FACTORIES[sceneBindings.getProperty(shadowCastingPropertyName)](lightId, passes);
 			}
 			
 			passes.push(_renderingPass);
@@ -143,9 +148,18 @@ package aerys.minko.render.material.phong
 			);
 		}
 		
+		private function lightPropertyExists(lightId : uint, propertyName : String) : Boolean
+		{
+			return _scene.bindings.propertyExists(
+				LightDataProvider.getLightPropertyName(propertyName, lightId)
+			);
+		}
+		
 		private function getLightProperty(lightId : uint, propertyName : String) : *
 		{
-			return _scene.bindings.getProperty(PhongProperties.getNameFor(lightId, propertyName));
+			return _scene.bindings.getProperty(
+				LightDataProvider.getLightPropertyName(propertyName, lightId)
+			);
 		}
 	}
 }

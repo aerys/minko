@@ -2,6 +2,7 @@ package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.scene.controller.light.DirectionalLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -17,155 +18,118 @@ package aerys.minko.scene.node.light
 	 */
 	public class DirectionalLight extends AbstractLight
 	{
-		public static const TYPE			: uint				= 1;
-		
-		private static const SCREEN_TO_UV	: Matrix4x4			= new Matrix4x4(
-			0.5,		0.0,		0.0,	0.0,
-			0.0, 		-0.5,		0.0,	0.0,
-			0.0,		0.0,		1.0,	0.0,
-			0.5, 		0.5,		0.0, 	1.0
-		);
-		
-		private static const Z_AXIS			: Vector4			= new Vector4(0, 0, 1);
-		private static const TMP_VECTOR		: Vector4			= new Vector4();
-		private static const FRUSTUM_POINTS	: Vector.<Vector4>	= new <Vector4>[
-			new Vector4(-1, -1, 0, 1),
-			new Vector4(-1, -1, 1, 1),
-			new Vector4(-1, +1, 0, 1),
-			new Vector4(-1, +1, 1, 1),
-			new Vector4(+1, -1, 0, 1),
-			new Vector4(+1, -1, 1, 1),
-			new Vector4(+1, +1, 0, 1),
-			new Vector4(+1, +1, 1, 1)
-		];
-		
-		private var _worldPosition	: Vector4;
-		private var _worldDirection	: Vector4;
-		private var _worldToScreen	: Matrix4x4;
-		private var _worldToUV		: Matrix4x4;
-		private var _projection		: Matrix4x4;
-		private var _shadowMapWidth	: Number;
+		private static const LIGHT_TYPE : uint = 1;
 		
 		public function get diffuse() : Number
 		{
-			return getProperty('diffuse') as Number;
+			return lightData.getLightProperty('diffuse') as Number;
+		}
+		public function set diffuse(v : Number)	: void
+		{
+			lightData.setLightProperty('diffuse', v);
+			
+			if (lightData.getLightProperty('diffuseEnabled') != (v != 0))
+				lightData.setLightProperty('diffuseEnabled', v != 0);
 		}
 		
 		public function get specular() : Number
 		{
-			return getProperty('specular') as Number;
+			return lightData.getLightProperty('specular') as Number;
+		}
+		public function set specular(v : Number) : void
+		{
+			lightData.setLightProperty('specular', v);
+			
+			if (lightData.getLightProperty('specularEnabled') != (v != 0))
+				lightData.setLightProperty('specularEnabled', v != 0);
 		}
 		
 		public function get shininess() : Number
 		{
-			return getProperty('shininess') as Number;
+			return lightData.getLightProperty('shininess') as Number;
 		}
 		
 		public function get shadowMapSize() : uint
 		{
-			return getProperty('shadowMapSize');
+			return lightData.getLightProperty('shadowMapSize');
 		}
 		
-		public function get shadowMapWidth() : Number
+		public function get shadowWidth() : Number
 		{
-			return _shadowMapWidth;
+			return lightData.getLightProperty('shadowWidth');
+		}
+		public function set shadowWidth(v : Number) : void
+		{
+			lightData.setLightProperty('shadowWidth', v);
 		}
 		
-		public function get shadowMapMaxZ() : Number
+		public function get shadowZFar() : Number
 		{
-			return getProperty('zFar');
+			return lightData.getLightProperty('shadowZFar');
+		}
+		public function set shadowZFar(v : Number) : void
+		{
+			lightData.setLightProperty('shadowZFar', v);
 		}
 		
-		public function get shadowMapQuality() : uint
+		public function get shadowQuality() : uint
 		{
-			return getProperty('shadowMapQuality');
+			return lightData.getLightProperty('shadowQuality');
+		}
+		public function set shadowQuality(v : uint) : void
+		{
+			lightData.setLightProperty('shadowQuality', v);
 		}
 		
-		public function get shadowMapSamplingDistance() : uint
+		public function get shadowSpread() : uint
 		{
-			return getProperty('shadowMapSamplingDistance');
+			return lightData.getLightProperty('shadowSpread');
 		}
-		
-		public function set diffuse(v : Number)	: void
+		public function set shadowSpread(v : uint) : void
 		{
-			setProperty('diffuse', v);
-			
-			if (getProperty('diffuseEnabled') != (v != 0))
-				setProperty('diffuseEnabled', v != 0);
-		}
-		
-		public function set specular(v : Number) : void
-		{
-			setProperty('specular', v);
-			
-			if (getProperty('specularEnabled') != (v != 0))
-				setProperty('specularEnabled', v != 0);
+			lightData.setLightProperty('shadowSpread', v);
 		}
 		
 		public function set shininess(v : Number) : void
 		{
-			setProperty('shininess', v);
+			lightData.setLightProperty('shininess', v);
 		}
 		
 		public function set shadowMapSize(v : uint) : void
 		{
-			setProperty('shadowMapSize', v);
+			lightData.setLightProperty('shadowMapSize', v);
 			
 			this.shadowCastingType = this.shadowCastingType;
 		}
-		
-		public function set shadowMapWidth(v : Number) : void
-		{
-			_shadowMapWidth = v;
-			updateProjectionMatrix();
-		}
-		
-		public function set shadowMapMaxZ(v : Number) : void
-		{
-			setProperty('zFar', v);
-			updateProjectionMatrix();
-		}
-		
 		override public function set shadowCastingType(v : uint) : void
 		{
-			var shadowMap		: TextureResource	= getProperty('shadowMap') as TextureResource;
+			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap') as TextureResource;
 			var shadowMapSize	: uint				= this.shadowMapSize;
 			
 			if (shadowMap)
 			{
-				removeProperty('shadowMap');
+				lightData.removeProperty('shadowMap');
 				shadowMap.dispose(); 
 			}
 			
 			switch (v)
 			{
 				case ShadowMappingType.NONE:
-					setProperty('shadowCastingType', ShadowMappingType.NONE);
+					lightData.setLightProperty('shadowCastingType', ShadowMappingType.NONE);
 					break;
 				
 				case ShadowMappingType.MATRIX:
-					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
-						&& shadowMapSize <= 2048))
+					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize && shadowMapSize <= 2048))
 						throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
 					
 					shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
-					setProperty('shadowMap', shadowMap);
-					setProperty('shadowCastingType', ShadowMappingType.MATRIX);
+					lightData.setLightProperty('shadowMap', shadowMap);
+					lightData.setLightProperty('shadowCastingType', ShadowMappingType.MATRIX);
 					break;
 				
 				default: 
 					throw new ArgumentError('Invalid shadow casting type.');
 			}
-		}
-		
-		public function set shadowMapQuality(v : uint) : void
-		{
-			setProperty('shadowMapQuality', v);
-		}
-		
-		public function set shadowMapSamplingDistance(v : uint) : void
-		{
-			setProperty('shadowMapSamplingDistance', v);
 		}
 		
 		public function DirectionalLight(color						: uint		= 0xFFFFFFFF,
@@ -180,62 +144,27 @@ package aerys.minko.scene.node.light
 										 shadowMapQuality			: uint		= 0,
 										 shadowMapSamplingDistance	: uint		= 1)
 		{
-			_worldPosition		= new Vector4();
-			_worldDirection		= new Vector4();
-			_worldToScreen		= new Matrix4x4();
-			_worldToUV			= new Matrix4x4();
-			_projection			= new Matrix4x4();
-			
-			super(color, emissionMask, shadowCasting, TYPE);
+			super(
+				new DirectionalLightController(),
+				LIGHT_TYPE,
+				color,
+				emissionMask,
+				shadowCasting
+			);
 			
 			this.diffuse					= diffuse;
 			this.specular					= specular;
 			this.shininess					= shininess;
-			this.shadowMapMaxZ				= shadowMapMaxZ;
-			this.shadowMapWidth				= shadowMapWidth;
+			this.shadowZFar				= shadowMapMaxZ;
+			this.shadowWidth				= shadowMapWidth;
 			this.shadowMapSize				= shadowMapSize;
-			this.shadowMapQuality			= shadowMapQuality;
-			this.shadowMapSamplingDistance	= shadowMapSamplingDistance;
-			
-			setProperty('worldPosition', _worldPosition);
-			setProperty('worldDirection', _worldDirection);
-			setProperty('worldToScreen', _worldToScreen);
-			setProperty('worldToUV', _worldToUV);
-			setProperty('projection', _projection);
+			this.shadowQuality			= shadowMapQuality;
+			this.shadowSpread	= shadowMapSamplingDistance;
 			
 			if ([ShadowMappingType.NONE, ShadowMappingType.MATRIX].indexOf(shadowCasting) == -1)
 				throw new Error('Invalid ShadowMappingType.');
 			
-			localToWorld.changed.add(transformChangedHandler);
 			transform.lookAt(Vector4.ZERO, new Vector4(1, -1, 1));
-		}
-		
-		protected function transformChangedHandler(transform : Matrix4x4) : void
-		{
-			// compute position
-			localToWorld.getTranslation(_worldPosition);
-			
-			// compute direction
-			_worldDirection	= localToWorld.deltaTransformVector(Z_AXIS, _worldDirection);
-			_worldDirection.normalize();
-			
-			// update world to screen/uv
-			_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
-		}
-		
-		private function updateProjectionMatrix() : void
-		{
-			var zFar : Number = this.shadowMapMaxZ;
-			
-			_projection.initialize(
-				2 / _shadowMapWidth, 0, 0, 0,
-				0, 2 / _shadowMapWidth, 0, 0,
-				0, 0, 2 / zFar, 0,
-				0, 0, 0, 1
-			);
-			_worldToScreen.lock().copyFrom(worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
