@@ -37,10 +37,10 @@ package aerys.minko.scene.controller.light
 		private function initialize() : void
 		{
 			_worldDirection = new Vector4();
-			_worldPosition	= new Vector4();
-			_projection		= new Matrix4x4();
-			_worldToScreen	= new Matrix4x4();
-			_worldToUV		= new Matrix4x4();
+			_worldPosition = new Vector4();
+			_projection = new Matrix4x4();
+			_worldToScreen = new Matrix4x4();
+			_worldToUV = new Matrix4x4();
 		}
 		
 		override protected function lightAddedHandler(ctrl	: LightController,
