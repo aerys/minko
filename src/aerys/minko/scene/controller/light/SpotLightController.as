@@ -76,11 +76,21 @@ package aerys.minko.scene.controller.light
 		private function lightLocalToWorldChangedHandler(localToWorld : Matrix4x4) : void
 		{
 			_worldPosition	= localToWorld.getTranslation(_worldPosition);
+			
+			_worldDirection.lock();
 			_worldDirection	= localToWorld.deltaTransformVector(Vector4.Z_AXIS, _worldDirection);
 			_worldDirection.normalize();
+			_worldDirection.unlock();
 			
-			_worldToScreen.lock().copyFrom(light.worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
+			_worldToScreen.lock()
+				.copyFrom(light.worldToLocal)
+				.append(_projection)
+				.unlock();
+			
+			_worldToUV.lock()
+				.copyFrom(_worldToScreen)
+				.append(SCREEN_TO_UV)
+				.unlock();
 		}
 		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,

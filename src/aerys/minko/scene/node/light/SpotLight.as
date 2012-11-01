@@ -17,7 +17,7 @@ package aerys.minko.scene.node.light
 	 */
 	public class SpotLight extends AbstractLight
 	{
-		public static const LIGHT_TYPE			: uint				= 3;
+		public static const LIGHT_TYPE	: uint  = 3;
 		
 		public function get diffuse() : Number
 		{
@@ -139,7 +139,8 @@ package aerys.minko.scene.node.light
 		override public function set shadowCastingType(v : uint) : void
 		{
 			var shadowMapSize	: uint				= this.shadowMapSize;
-			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap') as TextureResource;
+			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap')
+				as TextureResource;
 			
 			if (shadowMap)
 			{
@@ -191,17 +192,17 @@ package aerys.minko.scene.node.light
 				shadowCastingType
 			);
 			
-			this.diffuse					= diffuse;
-			this.specular					= specular;
-			this.shininess					= shininess;
-			this.innerRadius				= innerRadius;
-			this.outerRadius				= outerRadius;
-			this.attenuationDistance		= attenuationDistance;
-			this.shadowZNear				= shadowMapZNear;
-			this.shadowZFar					= shadowMapZFar;
-			this.shadowMapSize				= shadowMapSize;
+			this.diffuse				= diffuse;
+			this.specular				= specular;
+			this.shininess				= shininess;
+			this.innerRadius			= innerRadius;
+			this.outerRadius			= outerRadius;
+			this.attenuationDistance	= attenuationDistance;
+			this.shadowZNear			= shadowMapZNear;
+			this.shadowZFar				= shadowMapZFar;
+			this.shadowMapSize			= shadowMapSize;
 			this.shadowQuality			= shadowMapQuality;
-			this.shadowSpread	= shadowMapSamplingDistance;
+			this.shadowSpread	        = shadowMapSamplingDistance;
 			
 			if ([ShadowMappingType.NONE, 
 				ShadowMappingType.MATRIX].indexOf(shadowCastingType) == -1)

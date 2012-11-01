@@ -122,8 +122,10 @@ package aerys.minko.render.shader.part.phong
 		
 		protected function get fsTangentNormal() : SFloat
 		{
-			var normalMappingType : uint = 
-				meshBindings.getConstant(PhongProperties.NORMAL_MAPPING_TYPE, NormalMappingType.NONE)
+			var normalMappingType : uint = meshBindings.getConstant(
+                PhongProperties.NORMAL_MAPPING_TYPE,
+                NormalMappingType.NONE
+            );
 			
 			switch (normalMappingType)
 			{
@@ -137,7 +139,9 @@ package aerys.minko.render.shader.part.phong
 						SamplerFiltering.LINEAR,
 						SamplerMipMapping.LINEAR
 					);
-					var fsPixel		: SFloat = sampleTexture(fsNormalMap, fsUV).scaleBy(2).decrementBy(1);
+					var fsPixel		: SFloat = sampleTexture(fsNormalMap, fsUV);
+                    
+                    fsPixel.scaleBy(2).decrementBy(1);
 					
 					return normalize(fsPixel.rgb);
 					
@@ -176,7 +180,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightConstant(lightId : uint, name : String, defaultValue : Object = null) : *
+		protected function getLightConstant(lightId         : uint,
+                                            name            : String,
+                                            defaultValue    : Object = null) : *
 		{
 			return sceneBindings.getConstant(
 				LightDataProvider.getLightPropertyName(name, lightId),

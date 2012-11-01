@@ -1,6 +1,5 @@
 package aerys.minko.render.material.phong
 {
-	import aerys.minko.ns.minko_lighting;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
@@ -15,10 +14,9 @@ package aerys.minko.render.material.phong
 	
 	public class MatrixShadowMapShader extends Shader
 	{
-		use namespace minko_lighting;
-		
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffusePart			: DiffuseShaderPart;
+        
 		private var _lightId				: uint;
 		private var _clipspacePosition		: SFloat;
 		
@@ -38,24 +36,36 @@ package aerys.minko.render.material.phong
 		{
 			super.initializeSettings(settings);
 			
-			settings.blending			= Blending.NORMAL;
-			settings.enabled			= meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
-			settings.triangleCulling	= meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
+			settings.blending = Blending.NORMAL;
+			settings.enabled = meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
+			settings.triangleCulling = meshBindings.getConstant(
+                BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
+            );
 		}
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			var lightTypeName		: String = LightDataProvider.getLightPropertyName('type', _lightId);
-			var worldToScreenName	: String = LightDataProvider.getLightPropertyName('worldToScreen', _lightId);
+			var lightTypeName		: String = LightDataProvider.getLightPropertyName(
+                'type', _lightId
+            );
+			var worldToScreenName	: String = LightDataProvider.getLightPropertyName(
+                'worldToScreen', _lightId
+            );
 			
 			var lightType			: uint	 = sceneBindings.getConstant(lightTypeName);
 			var worldToScreen		: SFloat = sceneBindings.getParameter(worldToScreenName, 16);
-			var vertexPosition		: SFloat = localToWorld(_vertexAnimationPart.getAnimatedVertexPosition());
+			var vertexPosition		: SFloat = localToWorld(
+                _vertexAnimationPart.getAnimatedVertexPosition()
+            );
 			
 			_clipspacePosition = multiply4x4(vertexPosition, worldToScreen);
 			
 			if (lightType == SpotLight.LIGHT_TYPE)
-				return float4(_clipspacePosition.xy, multiply(_clipspacePosition.z, _clipspacePosition.w), _clipspacePosition.w);
+				return float4(
+                    _clipspacePosition.xy,
+                    multiply(_clipspacePosition.z, _clipspacePosition.w),
+                    _clipspacePosition.w
+                );
 			else
 				return _clipspacePosition;
 		}

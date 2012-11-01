@@ -4,7 +4,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
-	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
@@ -42,7 +41,9 @@ package aerys.minko.render.shader.part.phong.attenuation
 			
 			// retrieve depthmap and projection matrix
 			var worldToUV	: SFloat = getLightParameter(lightId, 'worldToUV', 16);
-			var depthMap	: SFloat = getLightTextureParameter(lightId, 'shadowMap', 
+			var depthMap	: SFloat = getLightTextureParameter(
+				lightId,
+				'shadowMap', 
 				SamplerFiltering.NEAREST, 
 				SamplerMipMapping.DISABLE, 
 				SamplerWrapping.CLAMP
@@ -55,10 +56,13 @@ package aerys.minko.render.shader.part.phong.attenuation
 			
 			var currentDepth : SFloat = uv.z;
 			currentDepth = min(subtract(1, shadowBias), currentDepth);
-			
+            
 			uv = divide(uv, uv.w);
 			
-			var outsideMap			: SFloat = notEqual(0, dotProduct4(notEqual(uv, saturate(uv)), notEqual(uv, saturate(uv))));
+			var outsideMap			: SFloat = notEqual(
+                0,
+                dotProduct4(notEqual(uv, saturate(uv)), notEqual(uv, saturate(uv)))
+            );
 			
 			var precomputedDepth	: SFloat = unpack(sampleTexture(depthMap, uv.xyyy));
 			
