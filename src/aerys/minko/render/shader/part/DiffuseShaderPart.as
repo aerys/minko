@@ -20,10 +20,11 @@ package aerys.minko.render.shader.part
 			super(main);
 		}
 		
-		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true) : SFloat
+		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true, uv : SFloat = null) : SFloat
 		{
 			var diffuseColor : SFloat	= null;
-			var uv			 : SFloat	= vertexUV.xy;
+			
+            uv ||= vertexUV.xy;
 			
 			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
 				uv.scaleBy(meshBindings.getParameter(BasicProperties.UV_SCALE, 2));
