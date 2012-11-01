@@ -74,8 +74,9 @@ package aerys.minko.scene.controller.light
 		{
 			_lightData.changed.remove(lightDataChangedHandler);
 			
-			if (!scene.enterFrame.hasCallback(sceneEnterFrameHandler))
-				scene.enterFrame.add(sceneEnterFrameHandler);
+            sortLights(scene);
+//			if (!scene.enterFrame.hasCallback(sceneEnterFrameHandler))
+//				scene.enterFrame.add(sceneEnterFrameHandler);
 		}
 		
 		protected function lightDataChangedHandler(lightData	: LightDataProvider,
