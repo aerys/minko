@@ -14,7 +14,10 @@ package aerys.minko.scene.node.light
 	use namespace minko_scene;
 	
 	/**
+	 * 
 	 * @author Romain Gilliotte
+	 * @author Jean-Marc Le Roux
+	 * 
 	 */
 	public class DirectionalLight extends AbstractLight
 	{

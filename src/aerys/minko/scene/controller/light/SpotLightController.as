@@ -7,6 +7,11 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
+	/**
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class SpotLightController extends LightController
 	{
 		private static const SCREEN_TO_UV	: Matrix4x4	= new Matrix4x4(
@@ -56,6 +61,7 @@ package aerys.minko.scene.controller.light
 			super.lightAddedToSceneHandler(light, scene);
 			
 			updateProjectionMatrix();
+			lightLocalToWorldChangedHandler(light.localToWorld);
 			light.localToWorld.changed.add(lightLocalToWorldChangedHandler);
 		}
 		
@@ -94,15 +100,15 @@ package aerys.minko.scene.controller.light
 			var zNear		: Number 	= lightData.getLightProperty('shadowZNear');
 			var zFar		: Number 	= lightData.getLightProperty('shadowZFar');
 			var outerRadius	: Number	= lightData.getLightProperty('outerRadius');
-			var fd			: Number 	= 1. / Math.tan(outerRadius * 0.5);
+			var fd			: Number 	= 1. / Math.tan(outerRadius * .5);
 			var m33			: Number 	= 1. / (zFar - zNear);
 			var m43			: Number 	= -zNear / (zFar - zNear);
 			
 			_projection.initialize(
-				fd, 	0, 		0,		0,
-				0, 		fd, 	0, 		0,
-				0, 		0,		m33, 	1,
-				0, 		0, 		m43,	0
+				fd, 	0.,		0.,		0.,
+				0.,		fd, 	0.,		0.,
+				0.,		0.,		m33, 	1.,
+				0.,		0.,		m43,	0.
 			);
 			
 			_worldToScreen.lock().copyFrom(light.worldToLocal).append(_projection).unlock();

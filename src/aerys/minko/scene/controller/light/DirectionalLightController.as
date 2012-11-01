@@ -7,6 +7,11 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
+	/**
+	 * 
+	 * @author Jean-Marc Le Roux
+	 * 
+	 */
 	public final class DirectionalLightController extends LightController
 	{
 		private static const SCREEN_TO_UV	: Matrix4x4	= new Matrix4x4(
@@ -55,6 +60,8 @@ package aerys.minko.scene.controller.light
 		{
 			super.lightAddedToSceneHandler(light, scene);
 			
+			updateProjectionMatrix();
+			lightLocalToWorldChangedHandler(light.localToWorld);
 			light.localToWorld.changed.add(lightLocalToWorldChangedHandler);
 		}
 		
