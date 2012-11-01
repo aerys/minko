@@ -169,7 +169,7 @@ package aerys.minko.scene.node.light
 								   shadowMapZNear		: Number	= 0.1,
 								   shadowMapZFar		: Number	= 1000)
 		{
-			_shadowMapSize				= shadowMapSize;
+			_shadowMapSize	= shadowMapSize;
 			
 			super(
 				new PointLightController(),
@@ -184,7 +184,7 @@ package aerys.minko.scene.node.light
 			this.shininess				= shininess;
 			this.attenuationDistance	= attenuationDistance;
 			this.shadowZNear			= shadowMapZNear;
-			this.shadowZFar			= shadowMapZFar;
+			this.shadowZFar		    	= shadowMapZFar;
 			
 			if ([ShadowMappingType.NONE,
 				 ShadowMappingType.DUAL_PARABOLOID,
