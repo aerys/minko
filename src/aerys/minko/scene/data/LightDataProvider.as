@@ -22,6 +22,13 @@ package aerys.minko.scene.data
 			
 			return this;
 		}
+        
+        public function removeLightProperty(name : String) : LightDataProvider
+        {
+            removeProperty(getLightPropertyName(name, _lightId));
+            
+            return this;
+        }
 		
 		public function getLightProperty(name	: String) : *
 		{

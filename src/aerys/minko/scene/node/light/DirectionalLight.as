@@ -106,12 +106,13 @@ package aerys.minko.scene.node.light
 		}
 		override public function set shadowCastingType(v : uint) : void
 		{
-			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap') as TextureResource;
 			var shadowMapSize	: uint				= this.shadowMapSize;
+			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap')
+                as TextureResource;
 			
 			if (shadowMap)
 			{
-				lightData.removeProperty('shadowMap');
+				lightData.removeLightProperty('shadowMap');
 				shadowMap.dispose(); 
 			}
 			
@@ -155,13 +156,13 @@ package aerys.minko.scene.node.light
 				shadowCasting
 			);
 			
-			this.diffuse					= diffuse;
-			this.specular					= specular;
-			this.shininess					= shininess;
-			this.shadowZFar				= shadowMapMaxZ;
-			this.shadowWidth				= shadowMapWidth;
-			this.shadowMapSize				= shadowMapSize;
-			this.shadowQuality			= shadowMapQuality;
+			this.diffuse		= diffuse;
+			this.specular		= specular;
+			this.shininess		= shininess;
+			this.shadowZFar		= shadowMapMaxZ;
+			this.shadowWidth	= shadowMapWidth;
+			this.shadowMapSize	= shadowMapSize;
+			this.shadowQuality	= shadowMapQuality;
 			this.shadowSpread	= shadowMapSamplingDistance;
 			
 			if ([ShadowMappingType.NONE, ShadowMappingType.MATRIX].indexOf(shadowCasting) == -1)

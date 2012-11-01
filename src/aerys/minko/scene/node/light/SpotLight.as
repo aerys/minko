@@ -144,7 +144,7 @@ package aerys.minko.scene.node.light
 			
 			if (shadowMap)
 			{
-				lightData.removeProperty('shadowMap');
+				lightData.removeLightProperty('shadowMap');
 				shadowMap.dispose(); 
 			}
 			

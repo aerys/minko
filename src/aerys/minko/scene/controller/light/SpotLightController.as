@@ -121,8 +121,15 @@ package aerys.minko.scene.controller.light
 				0.,		0.,		m43,	0.
 			);
 			
-			_worldToScreen.lock().copyFrom(light.worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
+			_worldToScreen.lock()
+                .copyFrom(light.worldToLocal)
+                .append(_projection)
+                .unlock();
+            
+			_worldToUV.lock()
+                .copyFrom(_worldToScreen)
+                .append(SCREEN_TO_UV)
+                .unlock();
 		}
 	}
 }
