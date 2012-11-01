@@ -99,9 +99,12 @@ package aerys.minko.scene.controller.light
 				);
 			}
 			
-			_lightData.changed.remove(lightDataChangedHandler);
-			_lightData = newDataProvider;
-			_lightData.changed.add(lightDataChangedHandler);
+            if (_lightData.changed.hasCallback(lightDataChangedHandler))
+            {
+    			_lightData.changed.remove(lightDataChangedHandler);
+    			_lightData = newDataProvider;
+    			_lightData.changed.add(lightDataChangedHandler);
+            }
 		}
 		
 		private static function sceneEnterFrameHandler(scene		: Scene,
