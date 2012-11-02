@@ -8,7 +8,10 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.type.binding.DataBindings;
 	
 	import flash.display.BitmapData;
@@ -36,29 +39,47 @@ package aerys.minko.render.material.phong
 		public function AbstractShadowMappingEffect(scene 			: Scene, 
 													renderingShader : Shader)
 		{
+            super();
+            
 			_renderingPass		= renderingShader;
 			_watchedProperties	= new Vector.<String>();
 			_scene				= scene;
 			
-            scene.enterFrame.add(sceneEnterFrameHandler);
+            _scene.descendantAdded.add(sceneDescendantAddedHandler);
+            updateNextFrame();
 		}
+        
+        private function updateNextFrame() : void
+        {
+            if (!_scene.enterFrame.hasCallback(sceneEnterFrameHandler))
+                _scene.enterFrame.add(sceneEnterFrameHandler);
+        }
 		
 		private function sceneEnterFrameHandler(scene		: Scene,
                                                 viewport	: Viewport,
                                                 destination	: BitmapData, 
                                                 timer		: uint) : void
 		{
-            scene.enterFrame.remove(sceneEnterFrameHandler);
+            _scene.enterFrame.remove(sceneEnterFrameHandler);
             
 			updatePasses();
 		}
+        
+        private function sceneDescendantAddedHandler(parent     : Group,
+                                                     descendant : ISceneNode) : void
+        {
+            if (descendant is AbstractLight
+                || (descendant is Group
+                    && (descendant as Group).getDescendantsByType(AbstractLight).length))
+                updateNextFrame();
+        }
 		
 		private function propertyChangedHandler(sceneBindings	: DataBindings, 
 												propertyName	: String,
 												oldValue		: Object,
 												newValue		: Object) : void
 		{
-            scene.enterFrame.add(sceneEnterFrameHandler);
+            updateNextFrame();
 		}
 		
 		private function updatePasses() : void
