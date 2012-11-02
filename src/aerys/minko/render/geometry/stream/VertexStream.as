@@ -623,6 +623,7 @@ package aerys.minko.render.geometry.stream
 			for  (i = 1; i < numStreams; ++i)
 				data.writeBytes(extractSubStream(streams[i], usage, format)._data);
 			data.position = 0;
+            stream.updateMinMax(true);
 
 			return stream;
 		}
