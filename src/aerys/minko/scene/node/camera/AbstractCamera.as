@@ -85,6 +85,11 @@ package aerys.minko.scene.node.camera
 			return _cameraData.worldToScreen;
 		}
 		
+		public function get projection() : Matrix4x4
+		{
+			return _cameraData.projection;
+		}
+		
 		public function AbstractCamera(zNear	: Number = DEFAULT_ZNEAR,
 									   zFar		: Number = DEFAULT_ZFAR)
 		{
@@ -106,27 +111,6 @@ package aerys.minko.scene.node.camera
 		public function unproject(x : Number, v : Number, out : Ray = null) : Ray
 		{
 			throw new Error('Must be overriden.');
-		}
-		
-		public function getWorldToScreen(output : Matrix4x4) : Matrix4x4
-		{
-			return output != null
-				? output.copyFrom(_cameraData.worldToScreen)
-				: _cameraData.worldToScreen.clone();
-		}
-		
-		public function getScreenToWorld(output : Matrix4x4) : Matrix4x4
-		{
-			return output != null
-				? output.copyFrom(_cameraData.screenToWorld)
-				: _cameraData.screenToWorld.clone();
-		}
-		
-		public function getProjection(output : Matrix4x4) : Matrix4x4
-		{
-			return output != null
-				? output.copyFrom(_cameraData.projection)
-				: _cameraData.projection.clone();
 		}
 	}
 }

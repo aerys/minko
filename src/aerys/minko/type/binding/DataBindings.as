@@ -182,6 +182,9 @@ package aerys.minko.type.binding
 
 		public function getProperty(bindingName : String) : *
 		{
+			if (_bindingNames.indexOf(bindingName) < 0)
+				throw new Error('The property \'' + bindingName + '\' does not exist.');
+			
 			return _bindingNameToValue[bindingName];
 		}
 		

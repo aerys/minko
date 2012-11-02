@@ -152,10 +152,9 @@ package aerys.minko.scene.node
 				);
 				
 				parent._numChildren--;
-				oldParent.descendantRemoved.execute(oldParent, this);
-				
 				_parent = null;
 				_removed.execute(this, oldParent);
+				oldParent.descendantRemoved.execute(oldParent, this);
 			}
 			
 			// set parent
@@ -166,9 +165,8 @@ package aerys.minko.scene.node
 			{
 				_parent._children[_parent.numChildren] = this;
 				_parent._numChildren++;
-				_parent.descendantAdded.execute(_parent, this);
-				
 				_added.execute(this, _parent);
+				_parent.descendantAdded.execute(_parent, this);
 			}
 		}
 		

@@ -532,8 +532,12 @@ package aerys.minko.type.math
 
 		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ROTATION | COMPONENT_TRANSLATION;
+			
 			if (withScale)
 			{
+				_invalidComponents |= COMPONENT_SCALE;
+				
 				var scale	: Vector4	= getScale(TMP_VECTOR4);
 				var sx		: Number	= scale.x;
 				var sy		: Number	= scale.y;

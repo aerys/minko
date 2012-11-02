@@ -100,8 +100,6 @@ package aerys.minko.render.shader
 					otherSignature._values[i],
 					otherSignature._flags[i]
 				);
-			
-			
 		}
 		
 		public function clone() : Signature

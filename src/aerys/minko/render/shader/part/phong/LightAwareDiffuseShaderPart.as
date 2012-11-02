@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.part
+package aerys.minko.render.shader.part.phong
 {
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
@@ -7,32 +7,17 @@ package aerys.minko.render.shader.part
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
-	public class DiffuseShaderPart extends ShaderPart
+	public class LightAwareDiffuseShaderPart extends LightAwareShaderPart
 	{
-		/**
-		 * The shader part to use a diffuse map or fallback and use a solid color.
-		 *  
-		 * @param main
-		 * 
-		 */
-		public function DiffuseShaderPart(main : Shader)
+		public function LightAwareDiffuseShaderPart(main:Shader)
 		{
 			super(main);
 		}
 		
-		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true, uv : SFloat = null) : SFloat
+		public function getDiffuseColor() : SFloat
 		{
 			var diffuseColor : SFloat	= null;
-			
-            uv ||= vertexUV.xy;
-			
-			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
-				uv.scaleBy(meshBindings.getParameter(BasicProperties.UV_SCALE, 2));
-			
-			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
-				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
-			
-			uv = interpolate(uv);
+			var uv			 : SFloat	= fsUV;
 			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP))
 			{
@@ -44,9 +29,6 @@ package aerys.minko.render.shader.part
 				);
 				
 				diffuseColor = sampleTexture(diffuseMap, uv);
-
-				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP_MULTIPLIER))
-					diffuseColor = multiply(diffuseColor, (meshBindings.getParameter(BasicProperties.DIFFUSE_MAP_MULTIPLIER, 4)));
 			}
 			else if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR))
 			{
@@ -73,7 +55,7 @@ package aerys.minko.render.shader.part
 				);
 			}
 			
-			if (killOnAlphaThreshold && meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
+			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
 				var alphaThreshold : SFloat = meshBindings.getParameter(
 					BasicProperties.ALPHA_THRESHOLD, 1

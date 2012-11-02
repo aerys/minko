@@ -71,20 +71,24 @@ package aerys.minko.scene.controller
 		{
 			var parent : ISceneNode = _node.parent;
 			
+            _node.worldToLocal.lock();
+            _node.localToWorld.lock();
+            
 			if (_node.parent)
 			{
 				_node.localToWorld.lock()
 					.copyFrom(_node.transform)
 					.append(parent.localToWorld)
-					.unlock();
 			}
 			else
 				_node.localToWorld.copyFrom(_node.transform);
 			
 			_node.worldToLocal.lock()
 				.copyFrom(_node.localToWorld)
-				.invert()
-				.unlock();
+				.invert();
+            
+            _node.worldToLocal.unlock();
+            _node.localToWorld.unlock();
 		}
 		
 		private function addedHandler(node : ISceneNode, parent : Group) : void

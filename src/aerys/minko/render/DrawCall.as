@@ -131,7 +131,7 @@ package aerys.minko.render
 		
 		public function get depth() : Number
 		{
-			if (_invalidDepth)
+			if (_invalidDepth && _enabled)
 			{
 				_invalidDepth = false;
 				
@@ -337,6 +337,9 @@ package aerys.minko.render
 		
 		public function setParameter(name : String, value : Object) : void
 		{
+//			if (!_enabled)
+//				return ;
+			
 			var binding : IBinder = _bindings[name] as IBinder;
 			
 			if (binding != null)
