@@ -4,7 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
-	import aerys.minko.scene.controller.mesh.VisibilityController;
+	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -35,7 +35,7 @@ package aerys.minko.scene.node
 		private var _material			: Material;
 		private var _bindings			: DataBindings;
 		
-		private var _visibility			: VisibilityController;
+		private var _visibility			: MeshVisibilityController;
 		
 		private var _frame				: uint;
 		
@@ -248,7 +248,7 @@ package aerys.minko.scene.node
 			this.geometry = geometry;
 			this.material = material || DEFAULT_MATERIAL;
 			
-			_visibility = new VisibilityController();
+			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 		}

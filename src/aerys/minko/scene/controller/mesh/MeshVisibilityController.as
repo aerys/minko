@@ -22,7 +22,7 @@ package aerys.minko.scene.controller.mesh
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class VisibilityController extends AbstractController
+	public final class MeshVisibilityController extends AbstractController
 	{
 		use namespace minko_math;
 		
@@ -69,7 +69,7 @@ package aerys.minko.scene.controller.mesh
             return frustumCulling == FrustumCulling.DISABLED || insideFrustum;
         }
 		
-		public function VisibilityController()
+		public function MeshVisibilityController()
 		{
 			super(Mesh);
 			
@@ -89,7 +89,7 @@ package aerys.minko.scene.controller.mesh
 			targetRemoved.add(targetRemovedHandler);
 		}
 		
-		private function targetAddedHandler(ctrl	: VisibilityController,
+		private function targetAddedHandler(ctrl	: MeshVisibilityController,
 											target	: Mesh) : void
 		{
 			if (_mesh != null)
@@ -105,7 +105,7 @@ package aerys.minko.scene.controller.mesh
 				meshAddedToSceneHandler(target, target.root as Scene);
 		}
 		
-		private function targetRemovedHandler(ctrl		: VisibilityController,
+		private function targetRemovedHandler(ctrl		: MeshVisibilityController,
 											  target	: Mesh) : void
 		{
 			_mesh = null;
@@ -204,7 +204,7 @@ package aerys.minko.scene.controller.mesh
 		
 		override public function clone() : AbstractController
 		{
-			var clone : VisibilityController = new VisibilityController();
+			var clone : MeshVisibilityController = new MeshVisibilityController();
 			
 			clone._visibilityData = _visibilityData.clone() as MeshVisibilityDataProvider;
 			
