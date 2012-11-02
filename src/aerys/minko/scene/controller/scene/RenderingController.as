@@ -610,7 +610,7 @@ package aerys.minko.scene.controller.scene
 				// create drawcall
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.enabled = mesh.visible;
+				drawCall.enabled = mesh.visible && mesh.computedVisibility;
 				if (passInstance.program != null)
 				{
 					drawCall.configure(
