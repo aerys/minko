@@ -803,7 +803,7 @@ package aerys.minko.render.geometry
 			if (_bulkUpdate)
 				return ;
 				
-			var numStreams	: int		= _vertexStreams.length;
+			var numStreams	: uint		= _vertexStreams.length;
 			var minX		: Number	= Number.MAX_VALUE;
 			var minY		: Number	= Number.MAX_VALUE;
 			var minZ		: Number	= Number.MAX_VALUE;
