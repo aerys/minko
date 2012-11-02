@@ -8,8 +8,8 @@ package aerys.minko.scene.node
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.math.Ray;
 
 	use namespace minko_scene;
@@ -161,7 +161,22 @@ package aerys.minko.scene.node
 		{
 			_visibility.visible = value;
 		}
-		
+        
+        /**
+         * Whether the mesh in inside the camera frustum or not. 
+         * @return 
+         * 
+         */
+        public function get insideFrustum() : Boolean
+        {
+            return _visibility.insideFrustum;
+        }
+        
+        public function get computedVisibility() : Boolean
+        {
+            return _visibility.computedVisibility;
+        }
+        
 		public function get frustumCulling() : uint
 		{
 			return _visibility.frustumCulling;
