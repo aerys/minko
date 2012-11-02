@@ -28,8 +28,6 @@ package aerys.minko.render.material.phong
 		private var _renderingPass		: Shader;
 		private var _watchedProperties	: Vector.<String>;
 		
-		private var _updatePasses		: Boolean;
-		
 		public function get scene() : Scene
 		{
 			return _scene;
@@ -41,21 +39,18 @@ package aerys.minko.render.material.phong
 			_renderingPass		= renderingShader;
 			_watchedProperties	= new Vector.<String>();
 			_scene				= scene;
-			_updatePasses		= true;
 			
-			scene.enterFrame.add(onSceneEnterFrame);
+            scene.enterFrame.add(sceneEnterFrameHandler);
 		}
 		
-		private function onSceneEnterFrame(scene		: Scene,
-										   viewport		: Viewport,
-										   destination	: BitmapData, 
-										   timer		: uint) : void
+		private function sceneEnterFrameHandler(scene		: Scene,
+                                                viewport	: Viewport,
+                                                destination	: BitmapData, 
+                                                timer		: uint) : void
 		{
-			if (_updatePasses)
-			{
-				updatePasses();
-				_updatePasses = false;
-			}
+            scene.enterFrame.remove(sceneEnterFrameHandler);
+            
+			updatePasses();
 		}
 		
 		private function propertyChangedHandler(sceneBindings	: DataBindings, 
@@ -63,7 +58,7 @@ package aerys.minko.render.material.phong
 												oldValue		: Object,
 												newValue		: Object) : void
 		{
-			_updatePasses = true;
+            scene.enterFrame.add(sceneEnterFrameHandler);
 		}
 		
 		private function updatePasses() : void
