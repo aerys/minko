@@ -44,7 +44,7 @@ package aerys.minko.render.shader.part.phong
 				var alphaMap 	: SFloat 	= meshBindings.getTextureParameter(BasicProperties.ALPHA_MAP);
 				var alphaSample	: SFloat	= sampleTexture(alphaMap, uv);
 				
-				diffuseColor = float4(diffuseColor.rgb, alphaSample.a);					
+				diffuseColor = float4(diffuseColor.rgb, alphaSample.r);					
 			}
 			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_TRANSFORM))

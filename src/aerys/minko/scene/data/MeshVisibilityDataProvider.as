@@ -9,12 +9,12 @@ package aerys.minko.scene.data
 		private static const DATA_DESCRIPTOR	: Object	= {
 			'visible'			: 'visible',
 			'frustumCulling'	: 'frustumCulling',
-			'inFrustum'			: 'insideFrustum'
+			'insideFrustum'		: 'insideFrustum'
 		};
 		
 		private var _visible			: Boolean	= true;
 		private var _frustumCulling		: uint		= 0;
-		private var _inFrustum			: Boolean	= true;
+		private var _insideFrustum		: Boolean	= true;
 		
 		private var _changed			: Signal	= new Signal('MeshVisibilityDataProvider.changed');
 		private var _propertyChanged	: Signal	= new Signal('MeshVisibilityDataProvider.propertyChanged');
@@ -50,16 +50,16 @@ package aerys.minko.scene.data
 			}
 		}
 		
-		public function get inFrustum() : Boolean
+		public function get insideFrustum() : Boolean
 		{
-			return _inFrustum;
+			return _insideFrustum;
 		}
-		public function set inFrustum(value : Boolean) : void
+		public function set insideFrustum(value : Boolean) : void
 		{
-			if (_inFrustum != value)
+			if (_insideFrustum != value)
 			{
-				_inFrustum = value;
-				_changed.execute(this, 'inFrustum');
+				_insideFrustum = value;
+				_changed.execute(this, 'insideFrustum');
 			}
 		}
 		
@@ -84,7 +84,7 @@ package aerys.minko.scene.data
 			
 			clone.visible = visible;
 			clone.frustumCulling = frustumCulling;
-			clone.inFrustum = inFrustum;
+			clone.insideFrustum = insideFrustum;
 			
 			return clone;
 		}
