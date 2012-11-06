@@ -470,7 +470,7 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.enabled = mesh.visible;
+					newDrawCall.enabled = mesh.visible && mesh.computedVisibility;
 					
 					if (passInstance.program != null)
 					{
@@ -567,7 +567,7 @@ package aerys.minko.scene.controller.scene
 				var passInstance	: ShaderInstance	= passTemplate.fork(meshBindings, sceneBindings);
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.enabled = mesh.visible;
+				drawCall.enabled = mesh.visible && mesh.computedVisibility;
 				if (passInstance.program != null)
 				{
 					drawCall.configure(
