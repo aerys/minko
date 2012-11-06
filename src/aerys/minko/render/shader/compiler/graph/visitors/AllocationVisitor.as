@@ -396,6 +396,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				
 				source = new AgalSourceSampler(
 					_samplers.indexOf(sampler),
+                    sampler.format,
 					sampler.dimension,
 					sampler.wrapping,
 					sampler.filter,

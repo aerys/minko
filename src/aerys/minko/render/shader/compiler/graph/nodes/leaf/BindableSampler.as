@@ -18,12 +18,13 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		}
 		
 		public function BindableSampler(bindingName	: String,
-										filter		: uint = 1, // SamplerFilter.LINEAR
-										mipmap		: uint = 0, // SamplerMipmap.DISABLE
-										wrapping	: uint = 1, // SamplerWrapping.REPEAT
-										dimension	: uint = 0) // SamplerDimension.FLAT
+                                        format      : uint  = 0, // SamplerFormat.RGBA
+										filter		: uint  = 1, // SamplerFilter.LINEAR
+										mipmap		: uint  = 0, // SamplerMipmap.DISABLE
+										wrapping	: uint  = 1, // SamplerWrapping.REPEAT
+										dimension	: uint  = 0) // SamplerDimension.FLAT
 		{
-			super(filter, mipmap, wrapping, dimension);
+			super(format, filter, mipmap, wrapping, dimension);
 			
 			_bindingName = bindingName;
 		}
@@ -40,7 +41,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override public function clone() : AbstractNode
 		{
-			return new BindableSampler(_bindingName, filter, mipmap, wrapping, dimension);
+			return new BindableSampler(_bindingName, format, filter, mipmap, wrapping, dimension);
 		}
 	}
 }

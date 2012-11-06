@@ -50,6 +50,7 @@ package aerys.minko.render.shader
 		}
 		
 		public function getTextureParameter(bindingName		: String,
+                                            format          : uint              = 0,
 											filter			: uint				= 1,
 											mipmap			: uint				= 0,
 											wrapping		: uint				= 1,
@@ -57,10 +58,10 @@ package aerys.minko.render.shader
 											defaultValue	: TextureResource	= null) : SFloat
 		{
 			if (defaultValue != null && !propertyExists(bindingName))
-				return new SFloat(new Sampler(defaultValue, filter, mipmap, wrapping, dimension));
+				return new SFloat(new Sampler(defaultValue, format, filter, mipmap, wrapping, dimension));
 			
 			return new SFloat(
-				new BindableSampler(bindingName, filter, mipmap, wrapping, dimension)
+				new BindableSampler(bindingName, format, filter, mipmap, wrapping, dimension)
 			);
 		}
 		
