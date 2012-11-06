@@ -4,6 +4,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
@@ -38,6 +39,7 @@ package aerys.minko.render.shader.part
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,
+                    meshBindings.getConstant(BasicProperties.DIFFUSE_FORMAT, SamplerFormat.RGBA),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_FILTERING, SamplerFiltering.LINEAR),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_MIPMAPPING, SamplerMipMapping.LINEAR),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_WRAPPING, SamplerWrapping.REPEAT)

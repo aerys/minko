@@ -19,6 +19,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.math.Matrix4x4;
@@ -897,12 +898,13 @@ package aerys.minko.render.shader.part
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,
-											filter			: uint = SamplerFiltering.LINEAR,
-											mipmap			: uint = SamplerMipMapping.DISABLE,
-											wrapping		: uint = SamplerWrapping.REPEAT,
-											dimension		: uint = SamplerDimension.FLAT) : SFloat
+                                            format          : uint  = SamplerFormat.RGBA,
+											filter			: uint  = SamplerFiltering.LINEAR,
+											mipmap			: uint  = SamplerMipMapping.DISABLE,
+											wrapping		: uint  = SamplerWrapping.REPEAT,
+											dimension		: uint  = SamplerDimension.FLAT) : SFloat
 		{
-			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension));
+			return new SFloat(new Sampler(textureResource, format, filter, mipmap, wrapping, dimension));
 		}
 		
 		protected final function getFieldFromArray(index	: Object,
