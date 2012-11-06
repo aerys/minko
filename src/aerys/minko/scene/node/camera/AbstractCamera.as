@@ -108,7 +108,7 @@ package aerys.minko.scene.node.camera
 			throw new Error('Must be overriden.');
 		}
 		
-		public function unproject(x : Number, v : Number, out : Ray = null) : Ray
+		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
 		{
 			throw new Error('Must be overriden.');
 		}
