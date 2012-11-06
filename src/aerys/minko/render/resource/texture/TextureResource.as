@@ -16,10 +16,11 @@ package aerys.minko.render.resource.texture
 	 */
 	public class TextureResource implements ITextureResource
 	{
-		private static const MAX_SIZE			: uint		= 2048;
-		private static const TMP_MATRIX			: Matrix	= new Matrix();
-		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
-		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
+		private static const MAX_SIZE					: uint		= 2048;
+		private static const TMP_MATRIX					: Matrix	= new Matrix();
+		private static const FORMAT_BGRA				: String	= Context3DTextureFormat.BGRA
+		private static const FORMAT_COMPRESSED			: String	= Context3DTextureFormat.COMPRESSED;
+		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= Context3DTextureFormat.COMPRESSED_ALPHA;
 		
 		private var _texture	: Texture		= null;
 		private var _mipmap		: Boolean		= false;
@@ -124,7 +125,9 @@ package aerys.minko.render.resource.texture
 			
 			atf.position 	= 6;
 			
-			_atfFormat 		= atf.readUnsignedByte() & 3;
+			var formatByte 	: uint = atf.readUnsignedByte();
+			
+			_atfFormat 		= formatByte & 7;
 			_width 			= 1 << atf.readUnsignedByte();
 			_height 		= 1 << atf.readUnsignedByte();
 			_mipmap 		= atf.readUnsignedByte() > 1;
@@ -141,10 +144,20 @@ package aerys.minko.render.resource.texture
 				if (_texture)
 					_texture.dispose();
 				
+				var format : String = FORMAT_BGRA;
+				
+				if (_atf)
+				{
+					if (_atfFormat == 5)
+						format = FORMAT_COMPRESSED_ALPHA;
+					else if (_atfFormat == 3)
+						format = FORMAT_COMPRESSED;
+				}
+				
 				_texture = context.createTexture(
 					_width,
 					_height,
-					_atf && _atfFormat == 2 ? FORMAT_COMPRESSED : FORMAT_BGRA,
+					format,
 					_bitmapData == null && _atf == null
 				);
 
@@ -203,7 +216,7 @@ package aerys.minko.render.resource.texture
 			}
 			else if (_atf)
 			{
-				_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
 			}
 		}
 		
