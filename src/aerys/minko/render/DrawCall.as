@@ -131,7 +131,7 @@ package aerys.minko.render
 			_enabled = value;
             
             if (value)
-                for each (var bindingName : String in _changes)
+                for (var bindingName : String in _changes)
                 {
                     setParameter(bindingName, _changes[bindingName]);
                     delete _changes[bindingName];
