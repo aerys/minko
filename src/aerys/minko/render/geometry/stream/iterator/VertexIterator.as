@@ -50,7 +50,7 @@ package aerys.minko.render.geometry.stream.iterator
 			return _vstream;
 		}
 		
-		public function get length() : int
+		public function get length() : uint
 		{
 			return _istream ? _istream.length : _vstream.numVertices;
 		}

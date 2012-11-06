@@ -12,7 +12,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 */
 	public class Constant extends AbstractNode
 	{
-		private var _value : Vector.<Number>
+		private var _value : Vector.<Number>;
 		
 		public function get value() : Vector.<Number>
 		{

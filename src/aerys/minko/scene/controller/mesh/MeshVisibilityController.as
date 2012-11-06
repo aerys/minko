@@ -22,7 +22,7 @@ package aerys.minko.scene.controller.mesh
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class VisibilityController extends AbstractController
+	public final class MeshVisibilityController extends AbstractController
 	{
 		use namespace minko_math;
 		
@@ -56,14 +56,20 @@ package aerys.minko.scene.controller.mesh
 		public function set frustumCulling(value : uint) : void
 		{
 			_visibilityData.frustumCulling = value;
+            testCulling();
 		}
 		
 		public function get insideFrustum() : Boolean
 		{
-			return _visibilityData.inFrustum;
+			return _visibilityData.insideFrustum;
 		}
+        
+        public function get computedVisibility() : Boolean
+        {
+            return frustumCulling == FrustumCulling.DISABLED || insideFrustum;
+        }
 		
-		public function VisibilityController()
+		public function MeshVisibilityController()
 		{
 			super(Mesh);
 			
@@ -76,12 +82,14 @@ package aerys.minko.scene.controller.mesh
 			_boundingSphere = new BoundingSphere(Vector4.ZERO, 0.);
 			
 			_visibilityData = new MeshVisibilityDataProvider();
+            
+            _state = STATE_UNDEFINED;
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
 		}
 		
-		private function targetAddedHandler(ctrl	: VisibilityController,
+		private function targetAddedHandler(ctrl	: MeshVisibilityController,
 											target	: Mesh) : void
 		{
 			if (_mesh != null)
@@ -97,7 +105,7 @@ package aerys.minko.scene.controller.mesh
 				meshAddedToSceneHandler(target, target.root as Scene);
 		}
 		
-		private function targetRemovedHandler(ctrl		: VisibilityController,
+		private function targetRemovedHandler(ctrl		: MeshVisibilityController,
 											  target	: Mesh) : void
 		{
 			_mesh = null;
@@ -113,21 +121,23 @@ package aerys.minko.scene.controller.mesh
 		private function meshAddedToSceneHandler(mesh	: Mesh,
 												 scene	: Scene) : void
 		{
-			scene.bindings.addCallback('worldToScreen', worldToViewChangedHandler);
+			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
+            
+            meshLocalToWorldChangedHandler(mesh.localToWorld);
 			mesh.localToWorld.changed.add(meshLocalToWorldChangedHandler);
 		}
 		
 		private function meshRemovedFromSceneHandler(mesh	: Mesh,
 													 scene	: Scene) : void
 		{
-			scene.bindings.removeCallback('worldToScreen', worldToViewChangedHandler);
+			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
 			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
 		}
 		
-		private function worldToViewChangedHandler(bindings		: DataBindings,
-												   propertyName	: String,
-												   oldValue		: Matrix4x4,
-												   newValue		: Matrix4x4) : void
+		private function worldToScreenChangedHandler(bindings	    : DataBindings,
+                                                     propertyName	: String,
+                                                     oldValue		: Matrix4x4,
+                                                     newValue		: Matrix4x4) : void
 		{
 			testCulling();
 		}
@@ -141,10 +151,7 @@ package aerys.minko.scene.controller.mesh
 				return ;
 			
 			if (culling & FrustumCulling.BOX)
-				transform.transformRawVectors(
-					geom.boundingBox._vertices,
-					_boundingBox._vertices
-				);
+				transform.transformRawVectors(geom.boundingBox._vertices, _boundingBox._vertices);
 			
 			if (culling & FrustumCulling.SPHERE)
 			{
@@ -164,7 +171,8 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _visibilityData.frustumCulling;
 			
-			if (culling != FrustumCulling.DISABLED && _mesh.geometry.boundingBox)
+			if (culling != FrustumCulling.DISABLED && _mesh && _mesh.geometry.boundingBox
+                && visible)
 			{
 				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				
@@ -183,12 +191,12 @@ package aerys.minko.scene.controller.mesh
 				
 				if (inside && _state != STATE_INSIDE)
 				{
-					_visibilityData.inFrustum = true;
+					_visibilityData.insideFrustum = true;
 					_state = STATE_INSIDE;
 				}
 				else if (!inside && _state != STATE_OUTSIDE)
 				{
-					_visibilityData.inFrustum = false;
+					_visibilityData.insideFrustum = false;
 					_state = STATE_OUTSIDE;
 				}
 			}
@@ -196,7 +204,7 @@ package aerys.minko.scene.controller.mesh
 		
 		override public function clone() : AbstractController
 		{
-			var clone : VisibilityController = new VisibilityController();
+			var clone : MeshVisibilityController = new MeshVisibilityController();
 			
 			clone._visibilityData = _visibilityData.clone() as MeshVisibilityDataProvider;
 			

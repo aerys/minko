@@ -122,55 +122,62 @@ package aerys.minko.scene.controller.camera
 			updateProjection();
 		}
 		
-		private function cameraPropertyChangedHandler(provider : IDataProvider, property : String) : void
+		private function cameraPropertyChangedHandler(provider : IDataProvider,
+                                                      property : String) : void
 		{
-			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView' || property == 'zoom')
+			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView'
+                || property == 'zoom')
 				updateProjection();
 		}
 		
 		private function updateProjection() : void
 		{
-			var cameraData		: CameraDataProvider	= _camera.cameraData;
-			var sceneBindings	: DataBindings			= Scene(_camera.root).bindings;
-			var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
-			var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
-			var ratio			: Number				= viewportWidth / viewportHeight;
+			var sceneBindings	: DataBindings	= Scene(_camera.root).bindings;
 			
-			var projection		: Matrix4x4				= cameraData.projection;
-			var screenToView	: Matrix4x4				= cameraData.screenToView;
-			var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
-			var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
-			
-			projection.lock();
-			screenToView.lock();
-			screenToWorld.lock();
-			worldToScreen.lock();
-			
-			if (_ortho)
-				projection.ortho(
-					viewportWidth / cameraData.zoom,
-					viewportHeight / cameraData.zoom,
-					cameraData.zNear,
-					cameraData.zFar
-				);
-			else
-				projection.perspectiveFoV(
-					cameraData.fieldOfView,
-					ratio,
-					cameraData.zNear,
-					cameraData.zFar
-				);
-			
-			screenToView.copyFrom(projection).invert();
-			screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
-			worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
-			
-			cameraData.frustum.updateFromMatrix(worldToScreen);
-			
-			projection.unlock();
-			screenToView.unlock();
-			screenToWorld.unlock();
-			worldToScreen.unlock();
+			if (sceneBindings.propertyExists('viewportWidth')
+				&& sceneBindings.propertyExists('viewportHeight'))
+			{
+				var cameraData		: CameraDataProvider	= _camera.cameraData;
+				var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
+				var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
+				var ratio			: Number				= viewportWidth / viewportHeight;
+				
+				var projection		: Matrix4x4				= cameraData.projection;
+				var screenToView	: Matrix4x4				= cameraData.screenToView;
+				var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
+				var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
+				
+				projection.lock();
+				screenToView.lock();
+				screenToWorld.lock();
+				worldToScreen.lock();
+				
+				if (_ortho)
+					projection.ortho(
+						viewportWidth / cameraData.zoom,
+						viewportHeight / cameraData.zoom,
+						cameraData.zNear,
+						cameraData.zFar
+					);
+				else
+					projection.perspectiveFoV(
+						cameraData.fieldOfView,
+						ratio,
+						cameraData.zNear,
+						cameraData.zFar
+					);
+				
+				screenToView.copyFrom(projection).invert();
+				screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
+				worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
+				
+				cameraData.frustum.updateFromMatrix(worldToScreen);
+				
+				projection.unlock();
+				screenToView.unlock();
+				screenToWorld.unlock();
+				worldToScreen.unlock();
+			}
 		}
 		
 		private function cameraActivatedHandler(camera : AbstractCamera) : void

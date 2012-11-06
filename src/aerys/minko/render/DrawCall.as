@@ -80,6 +80,8 @@ package aerys.minko.render
 		private var _invalidDepth		: Boolean							= false;
 		private var _localToWorld		: Matrix4x4							= null;
 		private var _worldToScreen		: Matrix4x4							= null;
+        
+        private var _changes            : Object                           = {};
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
@@ -127,11 +129,18 @@ package aerys.minko.render
 		public function set enabled(value : Boolean) : void
 		{
 			_enabled = value;
+            
+            if (value)
+                for (var bindingName : String in _changes)
+                {
+                    setParameter(bindingName, _changes[bindingName]);
+                    delete _changes[bindingName];
+                }
 		}
 		
 		public function get depth() : Number
 		{
-			if (_invalidDepth)
+			if (_invalidDepth && _enabled)
 			{
 				_invalidDepth = false;
 				
@@ -171,6 +180,8 @@ package aerys.minko.render
 		public function unsetBindings(meshBindings	: DataBindings,
 									  sceneBindings	: DataBindings) : void
 		{
+            _changes = {};
+            
 			for (var parameter : String in _bindings)
 			{
 				meshBindings.removeCallback(parameter, parameterChangedHandler);
@@ -337,6 +348,13 @@ package aerys.minko.render
 		
 		public function setParameter(name : String, value : Object) : void
 		{
+			if (!_enabled)
+            {
+                _changes[name] = value;
+                
+				return ;
+            }
+			
 			var binding : IBinder = _bindings[name] as IBinder;
 			
 			if (binding != null)

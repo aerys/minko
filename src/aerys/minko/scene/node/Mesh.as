@@ -4,12 +4,12 @@ package aerys.minko.scene.node
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
-	import aerys.minko.scene.controller.mesh.VisibilityController;
+	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.math.Ray;
 
 	use namespace minko_scene;
@@ -35,7 +35,7 @@ package aerys.minko.scene.node
 		private var _material			: Material;
 		private var _bindings			: DataBindings;
 		
-		private var _visibility			: VisibilityController;
+		private var _visibility			: MeshVisibilityController;
 		
 		private var _frame				: uint;
 		
@@ -161,7 +161,22 @@ package aerys.minko.scene.node
 		{
 			_visibility.visible = value;
 		}
-		
+        
+        /**
+         * Whether the mesh in inside the camera frustum or not. 
+         * @return 
+         * 
+         */
+        public function get insideFrustum() : Boolean
+        {
+            return _visibility.insideFrustum;
+        }
+        
+        public function get computedVisibility() : Boolean
+        {
+            return _visibility.computedVisibility;
+        }
+        
 		public function get frustumCulling() : uint
 		{
 			return _visibility.frustumCulling;
@@ -233,7 +248,7 @@ package aerys.minko.scene.node
 			this.geometry = geometry;
 			this.material = material || DEFAULT_MATERIAL;
 			
-			_visibility = new VisibilityController();
+			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 		}

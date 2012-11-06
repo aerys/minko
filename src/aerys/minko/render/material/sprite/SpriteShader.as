@@ -12,16 +12,20 @@ package aerys.minko.render.material.sprite
 	
 	public class SpriteShader extends Shader
 	{
-		private var _uv	: SFloat	= null;
+        private var _diffuse    : DiffuseShaderPart;
+        
+		private var _uv	        : SFloat;
 		
 		public function SpriteShader()
 		{
 			super();
+            
+            _diffuse = new DiffuseShaderPart(this);
 		}
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
-			settings.blending = Blending.ALPHA;
+//			settings.blending = Blending.ALPHA;
 			settings.depthTest = DepthTest.LESS;
 		}
 		
@@ -57,14 +61,7 @@ package aerys.minko.render.material.sprite
 		
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuseMap	: SFloat = meshBindings.getTextureParameter(
-				'diffuseMap',
-				meshBindings.getConstant("diffuseFiltering", SamplerFiltering.LINEAR),
-				meshBindings.getConstant("diffuseMipMapping", SamplerMipMapping.LINEAR),
-				meshBindings.getConstant("diffuseWrapping", SamplerWrapping.REPEAT)
-			);
-			
-			return sampleTexture(diffuseMap, interpolate(_uv));
+			return _diffuse.getDiffuseColor(true, _uv);
 		}
 	}
 }

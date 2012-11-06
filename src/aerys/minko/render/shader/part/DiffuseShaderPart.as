@@ -20,13 +20,22 @@ package aerys.minko.render.shader.part
 			super(main);
 		}
 		
-		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true) : SFloat
+		public function getDiffuseColor(killOnAlphaThreshold : Boolean = true, uv : SFloat = null) : SFloat
 		{
 			var diffuseColor : SFloat	= null;
 			
+            uv ||= vertexUV.xy;
+			
+			if (meshBindings.propertyExists(BasicProperties.UV_SCALE))
+				uv.scaleBy(meshBindings.getParameter(BasicProperties.UV_SCALE, 2));
+			
+			if (meshBindings.propertyExists(BasicProperties.UV_OFFSET))
+				uv.incrementBy(meshBindings.getParameter(BasicProperties.UV_OFFSET, 2));
+			
+			uv = interpolate(uv);
+			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP))
 			{
-				var uv			: SFloat	= vertexUV.xy;
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,
 					meshBindings.getConstant(BasicProperties.DIFFUSE_FILTERING, SamplerFiltering.LINEAR),
@@ -34,13 +43,7 @@ package aerys.minko.render.shader.part
 					meshBindings.getConstant(BasicProperties.DIFFUSE_WRAPPING, SamplerWrapping.REPEAT)
 				);
 				
-				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_SCALE))
-					uv.scaleBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_SCALE, 2));
-				
-				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_UV_OFFSET))
-					uv.incrementBy(meshBindings.getParameter(BasicProperties.DIFFUSE_UV_OFFSET, 2));
-				
-				diffuseColor = sampleTexture(diffuseMap,interpolate(uv));
+				diffuseColor = sampleTexture(diffuseMap, uv);
 			}
 			else if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR))
 			{
@@ -51,7 +54,14 @@ package aerys.minko.render.shader.part
 				diffuseColor = float4(0., 0., 0., 1.);
 			}
 			
-			// Apply HLSA modifiers
+			if (meshBindings.propertyExists(BasicProperties.ALPHA_MAP))
+			{
+				var alphaMap 	: SFloat 	= meshBindings.getTextureParameter(BasicProperties.ALPHA_MAP);
+				var alphaSample	: SFloat	= sampleTexture(alphaMap, uv);
+				
+				diffuseColor = float4(diffuseColor.rgb, alphaSample.r);					
+			}
+			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_TRANSFORM))
 			{
 				diffuseColor = multiply4x4(

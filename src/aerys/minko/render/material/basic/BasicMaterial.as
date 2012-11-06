@@ -5,6 +5,7 @@ package aerys.minko.render.material.basic
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	public class BasicMaterial extends Material
 	{
@@ -46,6 +47,15 @@ package aerys.minko.render.material.basic
 		public function set diffuseMap(value : TextureResource) : void
 		{
 			setProperty(BasicProperties.DIFFUSE_MAP, value);
+		}
+		
+		public function get alphaMap() : TextureResource
+		{
+			return getProperty(BasicProperties.ALPHA_MAP) as TextureResource;
+		}
+		public function set alphaMap(value : TextureResource) : void
+		{
+			setProperty(BasicProperties.ALPHA_MAP, value);
 		}
 		
 		public function get alphaThreshold() : Number
@@ -155,6 +165,24 @@ package aerys.minko.render.material.basic
 		{
 			setProperty(BasicProperties.DIFFUSE_TRANSFORM, value);
 		}
+        
+        public function get uvOffset() : Vector4
+        {
+            return getProperty(BasicProperties.UV_OFFSET);
+        }
+        public function set uvOffset(value : Vector4) : void
+        {
+            setProperty(BasicProperties.UV_OFFSET, value);
+        }
+        
+        public function get uvScale() : Vector4
+        {
+            return getProperty(BasicProperties.UV_SCALE);
+        }
+        public function set uvScale(value : Vector4) : void
+        {
+            setProperty(BasicProperties.UV_SCALE, value);
+        }
 		
 		public function BasicMaterial(properties : Object = null, effect : Effect = null, name : String = DEFAULT_NAME)
 		{
