@@ -40,11 +40,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 			return _dimension;
 		}
 		
-		public function AbstractSampler(format          : uint = 0, // SamplerFormat.RGBA
-                                        filter			: uint = 1, // SamplerFilter.LINEAR
+		public function AbstractSampler(filter			: uint = 1, // SamplerFilter.LINEAR
 										mipmap			: uint = 0, // SamplerMipmap.DISABLE
 										wrapping		: uint = 1, // SamplerWrapping.REPEAT
-										dimension		: uint = 0)
+										dimension		: uint = 0,
+										format          : uint = 0 // SamplerFormat.RGBA
+										)
 		{
 			super(new <AbstractNode>[], new <uint>[]);
 			

@@ -898,13 +898,13 @@ package aerys.minko.render.shader.part
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,
-                                            format          : uint  = SamplerFormat.RGBA,
 											filter			: uint  = SamplerFiltering.LINEAR,
 											mipmap			: uint  = SamplerMipMapping.DISABLE,
 											wrapping		: uint  = SamplerWrapping.REPEAT,
-											dimension		: uint  = SamplerDimension.FLAT) : SFloat
+											dimension		: uint  = SamplerDimension.FLAT,
+											format          : uint  = SamplerFormat.RGBA) : SFloat
 		{
-			return new SFloat(new Sampler(textureResource, format, filter, mipmap, wrapping, dimension));
+			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension, format));
 		}
 		
 		protected final function getFieldFromArray(index	: Object,
