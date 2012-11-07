@@ -412,7 +412,6 @@ package aerys.minko.scene.controller.scene
 			mesh.bindings.addCallback('visible', meshVisibilityChangedHandler);
 			mesh.bindings.addCallback('insideFrustum', meshVisibilityChangedHandler);
 			mesh.bindings.addCallback('effect', meshEffectChangedHandler);
-			mesh.materialChanged.add(meshMaterialChangedHandler);
 			mesh.frameChanged.add(meshFrameChangedHandler);
 			mesh.geometryChanged.add(meshGeometryChangedHandler);
 			
@@ -436,7 +435,6 @@ package aerys.minko.scene.controller.scene
 			mesh.bindings.removeCallback('visible', meshVisibilityChangedHandler);
 			mesh.bindings.removeCallback('insideFrustum', meshVisibilityChangedHandler);
 			mesh.bindings.removeCallback('effect', meshEffectChangedHandler);
-			mesh.materialChanged.remove(meshMaterialChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
 			mesh.geometryChanged.remove(meshGeometryChangedHandler);
 			
@@ -491,17 +489,6 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function meshMaterialChangedHandler(mesh		: Mesh,
-													oldMaterial	: Material,
-													newMaterial	: Material) : void
-		{
-			updateDrawCalls(
-				mesh,
-				oldMaterial ? oldMaterial.effect : null,
-				newMaterial ? newMaterial.effect : null
-			);
-		}
-		
 		private function meshEffectChangedHandler(bindings		: DataBindings,
 												  propertyName	: String,
 												  oldEffect		: Effect,
@@ -550,7 +537,7 @@ package aerys.minko.scene.controller.scene
 			drawCalls.length = 0;
 			
 			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[oldEffect];
-			
+
 			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
 			if (meshesWithSameEffect.length == 0)
 			{
@@ -585,7 +572,7 @@ package aerys.minko.scene.controller.scene
 			
 			if (!_effectToMeshes[newEffect])
 			{
-				_effectToMeshes[newEffect] = new Vector.<Mesh>();
+				_effectToMeshes[newEffect] = new <Mesh>[];
 				newEffect.passesChanged.add(effectPassesChangedHandler);
 			}
 			
@@ -642,7 +629,6 @@ package aerys.minko.scene.controller.scene
 		
 		private function removeDrawCalls(mesh : Mesh, effect : Effect) : void
 		{
-			var meshEffect		: Effect		= mesh.material.effect;
 			var meshBindings	: DataBindings	= mesh.bindings;
 			
 			// retrieve drawcalls
@@ -662,14 +648,14 @@ package aerys.minko.scene.controller.scene
 			delete _meshToDrawCalls[mesh];
 			delete _meshBindingsToMesh[meshBindings];
 			
-			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[meshEffect];
-			
+			var meshesWithSameEffect : Vector.<Mesh> = _effectToMeshes[effect];
+
 			meshesWithSameEffect.splice(meshesWithSameEffect.indexOf(mesh), 1);
 			
 			if (meshesWithSameEffect.length == 0)
 			{
-				delete _effectToMeshes[meshEffect];
-				meshEffect.passesChanged.remove(effectPassesChangedHandler);
+				delete _effectToMeshes[effect];
+                effect.passesChanged.remove(effectPassesChangedHandler);
 			}
 		}
 		

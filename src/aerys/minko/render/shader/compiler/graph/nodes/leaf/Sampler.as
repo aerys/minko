@@ -5,6 +5,8 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	import aerys.minko.render.shader.compiler.CRC32;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	
+	import flash.utils.Dictionary;
+	
 	/**
 	 * @private
 	 * @author Romain Gilliotte
@@ -15,7 +17,9 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		/**
 		 * This vector is only used to compute the hash of the Sampler. 
 		 */		
-		private static const RESOURCES : Vector.<ITextureResource> = new Vector.<ITextureResource>();
+		private static const RESOURCE_ID  : Dictionary    = new Dictionary(true);
+        
+        private static var _lastId          : uint          = 0;
 		
 		private var _textureResource : ITextureResource;
 		
@@ -37,12 +41,12 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override protected function computeHash() : uint
 		{
-			var textureResourceId : int = RESOURCES.indexOf(_textureResource);
+			var textureResourceId : uint = RESOURCE_ID[_textureResource];
 			
-			if (textureResourceId === -1)
+			if (!textureResourceId)
 			{
-				RESOURCES.push(textureResource);
-				textureResourceId = RESOURCES.length - 1;
+				RESOURCE_ID[_textureResource] = ++_lastId;
+				textureResourceId = _lastId;
 			}
 			
 			return CRC32.computeForString('Sampler' + textureResourceId)
