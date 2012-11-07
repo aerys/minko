@@ -3,9 +3,11 @@ package aerys.minko.render.geometry.stream.iterator
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
+	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	
+	import flash.utils.Dictionary;
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 
@@ -147,11 +149,12 @@ package aerys.minko.render.geometry.stream.iterator
 		
 		override flash_proxy function setProperty(name : *, value : *) : void
 		{
-			var ref				: VertexReference	= flash_proxy::getProperty(int(name));
-			var obj 			: Object 			= Object(value);
-			var format			: VertexFormat		= _vstream.format;
-			var numComponents	: uint				= format.numComponents;
-			
+			var obj 		    	: Object 			    = Object(value);
+			var format		    	: VertexFormat		    = _vstream.format;
+			var numComponents   	: uint			    	= format.numComponents;
+            var locked              : Vector.<VertexStream> = new <VertexStream>[];
+            var numLockedStreams    : uint                  = 0;
+            
 			for (var componentIndex : uint = 0; componentIndex < numComponents; ++componentIndex)
 			{
 				var component 		: VertexComponent 	= format.getComponent(componentIndex);
@@ -159,13 +162,28 @@ package aerys.minko.render.geometry.stream.iterator
 				
 				for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
 				{
-					var propertyName : String = component.getProperty(propertyId);
-					
-					ref[propertyName] = Number(obj[propertyName]);
+					var propertyName    : String        = component.getProperty(propertyId);
+                    var stream 			: VertexStream 	= _propertyToStream[propertyName];
+                    
+                    if (!stream.locked)
+                    {
+                        locked[uint(numLockedStreams++)] = stream;
+                        stream.lock();
+                    }
+                    
+                    stream.setVertexProperty(
+                        int(name),
+                        value[propertyName],
+                        component,
+                        component.getPropertyOffset(propertyName)
+                    );
 				}
 			}
+            
+            for (var i : uint = 0; i < numLockedStreams; ++i)
+                (locked[i] as VertexStream).unlock();
 		}
-
+        
 		override flash_proxy function deleteProperty(name : *) : Boolean
 		{
 			var index : int = int(name);
@@ -177,7 +195,7 @@ package aerys.minko.render.geometry.stream.iterator
 
 				return true;
 			}
-
+            
 			return false;
 		}
 

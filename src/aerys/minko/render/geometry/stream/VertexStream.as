@@ -135,9 +135,9 @@ package aerys.minko.render.geometry.stream
 				
 				data.readBytes(_data, 0, length);
 				_data.position = 0;
-				
-				updateMinMax(true);
 			}
+            
+			updateMinMax(true);
 		}
 		
 		private function validateData(data : ByteArray, length : uint = 0) : void
@@ -289,7 +289,7 @@ package aerys.minko.render.geometry.stream
 			if (_localDispose)
 				throw new Error('Cannot lock stream data which is already disposed.');
 			
-			checkReadUsage(this);
+//			checkReadUsage(this);
 //			checkWriteUsage(this);
 			
 			_locked = true;
@@ -319,7 +319,7 @@ package aerys.minko.render.geometry.stream
 				checkWriteUsage(this);
 				
 				_changed.execute(this);
-				updateMinMax();
+				updateMinMax(true);
 			}
 		}
 		
@@ -345,12 +345,12 @@ package aerys.minko.render.geometry.stream
 			
 			var boundsHaveChanged : Boolean = false;
 			
-			if (offset >= _minimum.length || value < _minimum[offset])
+			if (value < _minimum[offset])
 			{
 				_minimum[offset] = value;
 				boundsHaveChanged = true;
 			}
-			else if (offset >= _maximum.length || value > _maximum[offset])
+			else if (value > _maximum[offset])
 			{
 				_maximum[offset] = value;
 				boundsHaveChanged = true;
@@ -359,6 +359,8 @@ package aerys.minko.render.geometry.stream
 			if (!_locked)
 			{
 				_changed.execute(this);
+                
+                updateMinMax(true);
 				
 				if (boundsHaveChanged)
 					_boundsChanged.execute(this);
