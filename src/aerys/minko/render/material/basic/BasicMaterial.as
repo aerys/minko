@@ -13,6 +13,16 @@ package aerys.minko.render.material.basic
 		public static const DEFAULT_BASIC_SHADER	: BasicShader	= new BasicShader();
 		public static const DEFAULT_EFFECT			: Effect		= new Effect(DEFAULT_BASIC_SHADER);
 		
+		public function get diffuseFormat() : uint
+		{
+			return getProperty(BasicProperties.DIFFUSE_FORMAT);
+		}
+		
+		public function set diffuseFormat(value : uint) : void
+		{
+			setProperty(BasicProperties.DIFFUSE_FORMAT, value);
+		}
+		
 		public function get blending() : uint
 		{
 			return getProperty(BasicProperties.BLENDING);
