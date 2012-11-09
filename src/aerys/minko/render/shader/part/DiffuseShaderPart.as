@@ -47,9 +47,6 @@ package aerys.minko.render.shader.part
 				);
 				
 				diffuseColor = sampleTexture(diffuseMap, uv);
-
-				if (meshBindings.propertyExists(BasicProperties.DIFFUSE_MAP_MULTIPLIER))
-					diffuseColor = multiply(diffuseColor, (meshBindings.getParameter(BasicProperties.DIFFUSE_MAP_MULTIPLIER, 4)));
 			}
 			else if (meshBindings.propertyExists(BasicProperties.DIFFUSE_COLOR))
 			{
