@@ -14,7 +14,6 @@ package aerys.minko.scene.controller
 		private var _deltaTime		: Number;
 		private var _currentTarget	: ISceneNode;
 		private var _viewport		: Viewport;
-		private var _scene			: Scene;
 		
 		protected function get deltaTime() : Number
 		{
@@ -36,26 +35,16 @@ package aerys.minko.scene.controller
 			return _viewport;
 		}
 		
-		protected function get scene() : Scene
-		{
-			return _scene;
-		}
-		
 		public function ScriptController(targetType	: Class = null)
 		{
 			super(targetType);
 			
-			initialize();
-		}
-		
-		private function initialize() : void
-		{
 			var numTargets : uint = this.numTargets;
 			
 			for (var i : uint = 0; i < numTargets; ++i)
-				start(getTarget(i));
+				initialize(getTarget(i));
 		}
-		
+        
 		override protected function sceneEnterFrameHandler(scene		: Scene,
 														   viewport		: Viewport,
 														   destination	: BitmapData,
@@ -64,13 +53,28 @@ package aerys.minko.scene.controller
 			_viewport = viewport;
 			_deltaTime = _lastTime - time;
 			_lastTime = time;
-			_scene = scene;
 			
 			var numTargets : uint = this.numTargets;
 			
 			for (var i : uint = 0; i < numTargets; ++i)
-				update(getTarget(i));
+            {
+                var target : ISceneNode = getTarget(i);
+                
+                if (target.scene)
+    				update(target);
+            }
 		}
+        
+        override protected function targetAddedToSceneHandler(target    : ISceneNode,
+                                                              scene     : Scene) : void
+        {
+            super.targetAddedToSceneHandler(target, scene);
+            
+            var numTargets : uint = this.numTargets;
+            
+            for (var i : uint = 0; i < numTargets; ++i)
+                start(getTarget(i));
+        }
 		
 		override protected function targetRemovedFromSceneHandler(target	: ISceneNode,
 																  scene		: Scene) : void
@@ -83,6 +87,11 @@ package aerys.minko.scene.controller
 				stop(getTarget(i));
 		}
 		
+        protected function initialize(target : ISceneNode) : void
+        {
+            // nothing
+        }
+        
 		protected function start(target : ISceneNode) : void
 		{
 			// nothing
