@@ -257,7 +257,7 @@ package aerys.minko.render.geometry.stream
 			_data.position = 0;
 			
 			if (hasChanged)
-				_changed.execute(this);
+				invalidate();
 		}
 		
 		private static function checkReadUsage(stream : IndexStream) : void
