@@ -340,6 +340,22 @@ package aerys.minko.type.math
 
 			return result;
 		}
+        
+        /**
+         * http://www.cs.princeton.edu/courses/archive/fall00/cs426/lectures/raycast/sld017.htm
+         *  
+         * @param ray
+         * @return 
+         * 
+         */
+        public function cast(ray : Ray) : Number
+        {
+            var origin      : Vector4 = ray.origin;
+            var direction   : Vector4 = ray.direction;
+            
+            return -(origin.x * _a + origin.y * _b + origin.z * c + _d)
+                / (direction.x * _a + direction.y * _b + direction.z * _c);
+        }
 
 		public function clone() : Plane
 		{
