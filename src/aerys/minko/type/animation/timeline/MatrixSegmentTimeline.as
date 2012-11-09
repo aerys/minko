@@ -8,8 +8,8 @@ package aerys.minko.type.animation.timeline
 	
 	public final class MatrixSegmentTimeline extends AbstractTimeline
 	{
-		private var _timeTable	: Vector.<uint>			= null;
-		private var _matrices	: Vector.<Matrix4x4>	= null;
+		minko_animation var _timeTable	: Vector.<uint>			= null;
+		minko_animation var _matrices	: Vector.<Matrix4x4>	= null;
 
 		public function MatrixSegmentTimeline(propertyPath		: String,
 											  timeTable 		: Vector.<uint>,
