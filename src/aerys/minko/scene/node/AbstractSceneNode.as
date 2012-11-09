@@ -170,6 +170,11 @@ package aerys.minko.scene.node
 			}
 		}
 		
+        public function get scene() : Scene
+        {
+            return _root as Scene;
+        }
+        
 		public function get root() : ISceneNode
 		{
 			return _root;
@@ -258,9 +263,15 @@ package aerys.minko.scene.node
 		
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-			_root = _parent ? _parent.root : this;
-			if (_root is Scene)
-				_addedToScene.execute(this, _root);
+            var newRoot : ISceneNode = _parent ? _parent.root : this;
+            
+			if (newRoot != _root)
+            {
+                _root = newRoot;
+                
+                if (_root is Scene)
+    				_addedToScene.execute(this, _root);
+            }
 		}
 		
 		protected function removedHandler(child : ISceneNode, parent : Group) : void
@@ -295,9 +306,13 @@ package aerys.minko.scene.node
 		
 		public function removeController(controller : AbstractController) : ISceneNode
 		{
-			var numControllers	: uint = _controllers.length - 1;
+			var numControllers	: uint  = _controllers.length - 1;
+            var controllerId    : int   = _controllers.indexOf(controller);
+            
+            if (controllerId < 0)
+                throw new Error('The controller is not on the node.');
 			
-			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
+			_controllers[controllerId] = _controllers[numControllers];
 			_controllers.length = numControllers;
 			
 			controller.removeTarget(this);

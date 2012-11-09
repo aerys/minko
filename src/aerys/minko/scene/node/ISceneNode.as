@@ -34,6 +34,8 @@ package aerys.minko.scene.node
 		function set scaleY(value : Number) : void;
 		function set scaleZ(value : Number) : void;
 		
+        function get scene() : Scene;
+        
 		/**
 		 * The root of the scene or the node itself if it has no parent.
 		 * 
