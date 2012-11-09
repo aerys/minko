@@ -4,13 +4,14 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataProvider;
 	
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	
 	/**
 	 * The DynamicTextureController makes it possible to use Flash DisplayObjects
@@ -27,18 +28,19 @@ package aerys.minko.scene.controller.mesh
 	 */
 	public final class DynamicTextureController extends EnterFrameController
 	{
-		private var _data			: DataProvider		= null;
+		private var _data					: DataProvider		= null;
 		
-		private var _source			: DisplayObject		= null;
-		private var _framerate		: Number			= 0.;
-		private var _mipMapping		: Boolean			= false;
-		private var _propertyName	: String			= null;
-		private var _matrix			: Matrix			= null;
-		
-		private var _bitmapData	: BitmapData			= null;
-		private var _texture	: TextureResource		= null;
+		private var _source					: DisplayObject		= null;
+		private var _framerate				: Number			= 0.;
+		private var _mipMapping				: Boolean			= false;
+		private var _propertyName			: String			= null;
+		private var _matrix					: Matrix			= null;
+		private var _forceBitmapDataClear	: Boolean			= false;
+		private var _bitmapData				: BitmapData		= null;
+		private var _texture				: TextureResource	= null;
 		
 		private var _lastDraw	: Number				= 0.;
+		
 		
 		/**
 		 * Create a new DynamicTextureController.
@@ -54,13 +56,14 @@ package aerys.minko.scene.controller.mesh
 		 * into the dynamic texture. Default value is 'null'.
 		 * 
 		 */
-		public function DynamicTextureController(source			: DisplayObject,
-												 width			: Number,
-												 height			: Number,
-												 mipMapping		: Boolean	= true,
-												 framerate		: Number	= 30.,
-												 propertyName	: String	= 'diffuseMap',
-												 matrix			: Matrix	= null)
+		public function DynamicTextureController(source					: DisplayObject,
+												 width					: Number,
+												 height					: Number,
+												 mipMapping				: Boolean	= true,
+												 framerate				: Number	= 30.,
+												 propertyName			: String	= 'diffuseMap',
+												 matrix					: Matrix	= null,
+												 forceBitmapDataClear	: Boolean	= false)
 		{
 			super();
 			
@@ -70,11 +73,22 @@ package aerys.minko.scene.controller.mesh
 			_mipMapping = mipMapping;
 			_propertyName = propertyName;
 			_matrix = matrix;
+			_forceBitmapDataClear = forceBitmapDataClear;
 			
 			_data = new DataProvider();
 			_data.setProperty(propertyName, _texture);
 		}
 		
+		public function get forceBitmapDataClear():Boolean
+		{
+			return _forceBitmapDataClear;
+		}
+
+		public function set forceBitmapDataClear(value:Boolean):void
+		{
+			_forceBitmapDataClear = value;
+		}
+
 		override protected function targetAddedHandler(ctrl		: EnterFrameController,
 													   target	: ISceneNode) : void
 		{
@@ -112,6 +126,10 @@ package aerys.minko.scene.controller.mesh
 				_lastDraw = time;
 				
 				_bitmapData ||= new BitmapData(_source.width, _source.height);
+				if (_forceBitmapDataClear)
+				{
+					_bitmapData.fillRect(new Rectangle(0, 0, _bitmapData.width, _bitmapData.height), 0);
+				}
 				_bitmapData.draw(_source, _matrix);
 				
 				_texture.setContentFromBitmapData(_bitmapData, _mipMapping);
