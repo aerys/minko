@@ -42,6 +42,7 @@ package aerys.minko.render.shader.part
 					meshBindings.getConstant(BasicProperties.DIFFUSE_FILTERING, SamplerFiltering.LINEAR),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_MIPMAPPING, SamplerMipMapping.LINEAR),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_WRAPPING, SamplerWrapping.REPEAT),
+					0,
                     meshBindings.getConstant(BasicProperties.DIFFUSE_FORMAT, SamplerFormat.RGBA)
 				);
 				
