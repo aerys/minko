@@ -170,7 +170,8 @@ package aerys.minko.type
 		
 		public function popCursor() : MouseManager
 		{
-			Mouse.cursor = _cursors.pop();
+            if (_cursors.length)
+    			Mouse.cursor = _cursors.pop();
 			
 			return this;
 		}
