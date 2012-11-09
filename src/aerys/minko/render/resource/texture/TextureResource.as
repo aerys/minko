@@ -1,6 +1,7 @@
 package aerys.minko.render.resource.texture
 {
 	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.type.enum.SamplerFormat;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
@@ -16,24 +17,38 @@ package aerys.minko.render.resource.texture
 	 */
 	public class TextureResource implements ITextureResource
 	{
-		private static const MAX_SIZE			: uint		= 2048;
-		private static const TMP_MATRIX			: Matrix	= new Matrix();
-		private static const FORMAT_BGRA		: String	= Context3DTextureFormat.BGRA
-		private static const FORMAT_COMPRESSED	: String	= Context3DTextureFormat.COMPRESSED;
+		private static const MAX_SIZE					: uint		= 2048;
+		private static const TMP_MATRIX					: Matrix	= new Matrix();
+		private static const FORMAT_BGRA				: String	= Context3DTextureFormat.BGRA
+		private static const FORMAT_COMPRESSED			: String	= Context3DTextureFormat.COMPRESSED;
+		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= Context3DTextureFormat.COMPRESSED_ALPHA;
 		
-		private var _texture	: Texture		= null;
-		private var _mipmap		: Boolean		= false;
+		private static const TEXTURE_FORMAT_TO_SAMPLER	: Array 	= []
+		{
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_BGRA] 				= SamplerFormat.RGBA;
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED] 		= SamplerFormat.COMPRESSED;
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED_ALPHA] 	= SamplerFormat.COMPRESSED_ALPHA;
+		}
+		
+		private var _texture		: Texture		= null;
+		private var _mipmap			: Boolean		= false;
 
-		private var _bitmapData	: BitmapData	= null;
-		private var _atf		: ByteArray		= null;
-		private var _atfFormat	: uint			= 0;
+		private var _bitmapData		: BitmapData	= null;
+		private var _atf			: ByteArray		= null;
+		private var _atfFormat		: uint			= 0;
+		private var _format 		: String 		= FORMAT_BGRA;
 
-		private var _width		: Number		= 0;
-		private var _height		: Number		= 0;
+		private var _width			: Number		= 0;
+		private var _height			: Number		= 0;
 
-		private var _update		: Boolean		= false;
-		private var _resize		: Boolean		= false;
+		private var _update			: Boolean		= false;
+		private var _resize			: Boolean		= false;
 
+		public function get samplerFormat() : uint
+		{
+			return TEXTURE_FORMAT_TO_SAMPLER[_format];
+		}
+		
 		public function get width() : uint
 		{
 			return _width;
@@ -124,12 +139,20 @@ package aerys.minko.render.resource.texture
 			
 			atf.position 	= 6;
 			
-			_atfFormat 		= atf.readUnsignedByte() & 3;
+			var formatByte 	: uint = atf.readUnsignedByte();
+			
+			_atfFormat 		= formatByte & 7;
 			_width 			= 1 << atf.readUnsignedByte();
 			_height 		= 1 << atf.readUnsignedByte();
 			_mipmap 		= atf.readUnsignedByte() > 1;
 			
 			atf.position 	= 0;
+			
+			if (_atfFormat == 5)
+				_format = FORMAT_COMPRESSED_ALPHA;
+			else if (_atfFormat == 3)
+				_format = FORMAT_COMPRESSED;
+			
 		}
 
 		public function getNativeTexture(context : Context3DResource) : TextureBase
@@ -144,7 +167,7 @@ package aerys.minko.render.resource.texture
 				_texture = context.createTexture(
 					_width,
 					_height,
-					_atf && _atfFormat == 2 ? FORMAT_COMPRESSED : FORMAT_BGRA,
+					_format,
 					_bitmapData == null && _atf == null
 				);
 
@@ -160,9 +183,6 @@ package aerys.minko.render.resource.texture
 
 			_atf = null;
 			_bitmapData = null;
-
-			if (_texture == null)
-				throw new Error();
 			
 			return _texture;
 		}
@@ -203,7 +223,7 @@ package aerys.minko.render.resource.texture
 			}
 			else if (_atf)
 			{
-				_texture.uploadCompressedTextureFromByteArray(_atf, 0, false);
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
 			}
 		}
 		

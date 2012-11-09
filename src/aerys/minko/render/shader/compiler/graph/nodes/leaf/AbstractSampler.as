@@ -9,10 +9,16 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 	 */
 	public class AbstractSampler extends AbstractNode
 	{
+        private var _format     : uint;
 		private var _filter		: uint;
 		private var _mipmap		: uint;
 		private var _wrapping	: uint;
 		private var _dimension	: uint;
+        
+        public function get format() : uint
+        {
+            return _format;
+        }
 		
 		public function get filter() : uint 
 		{ 
@@ -37,10 +43,13 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		public function AbstractSampler(filter			: uint = 1, // SamplerFilter.LINEAR
 										mipmap			: uint = 0, // SamplerMipmap.DISABLE
 										wrapping		: uint = 1, // SamplerWrapping.REPEAT
-										dimension		: uint = 0)
+										dimension		: uint = 0,
+										format          : uint = 0 // SamplerFormat.RGBA
+										)
 		{
 			super(new <AbstractNode>[], new <uint>[]);
 			
+            _format     = format;
 			_filter		= filter;
 			_mipmap		= mipmap;
 			_wrapping	= wrapping;
