@@ -538,19 +538,22 @@ package aerys.minko.type.math
 			{
 				_invalidComponents |= COMPONENT_SCALE;
 				
-				var scale	: Vector4	= getScale(TMP_VECTOR4);
+				var scale	: Vector4	= getColumn(3, TMP_VECTOR4);
 				var sx		: Number	= scale.x;
 				var sy		: Number	= scale.y;
 				var sz		: Number	= scale.z;
+                var sw      : Number    = scale.w;
 				
-				scale = target.getScale(TMP_VECTOR4);
-				
+				scale = target.getColumn(3, TMP_VECTOR4);
+                scale.set(
+                    sx + (scale.x - sx) * ratio,
+                    sy + (scale.y - sy) * ratio,
+                    sz + (scale.z - sz) * ratio,
+                    sw + (scale.w - sw) * ratio
+                );
+                
 				_matrix.interpolateTo(target._matrix, ratio);
-				_matrix.prependScale(
-					sx + (scale.x - sx) * ratio,
-					sy + (scale.y - sy) * ratio,
-					sz + (scale.z - sz) * ratio
-				);
+                setColumn(3, scale);
 			}
 			else
 			{
