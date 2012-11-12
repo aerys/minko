@@ -81,7 +81,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 				var uvs 		: Vector.<SFloat>	= new <SFloat>[];
 				var uvDelta		: SFloat;
 				
-				if (quality >= ShadowMappingQuality.LOW)
+				if (quality > ShadowMappingQuality.LOW)
 				{
 					uvDelta = multiply(float3(-1, 0, 1), invertSize);
 					uvs.push(
@@ -92,7 +92,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 					);
 				}
 				
-				if (quality >= ShadowMappingQuality.MEDIUM)
+				if (quality > ShadowMappingQuality.MEDIUM)
 				{
 					uvDelta = multiply(float3(-2, 0, 2), invertSize);
 					uvs.push(
@@ -101,7 +101,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 					);
 				}
 				
-				if (quality >= ShadowMappingQuality.HARD)
+				if (quality > ShadowMappingQuality.HARD)
 				{
 					uvDelta = multiply(float4(-2, -1, 1, 2), invertSize);
 					uvs.push(
