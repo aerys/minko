@@ -7,17 +7,20 @@ package aerys.minko.type.animation.timeline
 	{
 		use namespace minko_animation;
 		
-		minko_animation var _timeTable	: Vector.<uint>
-		minko_animation var _values		: Vector.<Number>;
+		minko_animation var _timeTable	    : Vector.<uint>
+		minko_animation var _values		    : Vector.<Number>;
+        minko_animation var _interpolate    : Boolean;
 
 		public function ScalarTimeline(propertyPath	: String,
 									   timeTable 	: Vector.<uint>,
-									   values		: Vector.<Number>)
+									   values		: Vector.<Number>,
+                                       interpolate  : Boolean   = true)
 		{
 			super(propertyPath, timeTable[int(timeTable.length - 1)]);
 			
 			_timeTable = timeTable;
 			_values	= values;
+            _interpolate = interpolate;
 		}
 
 		override public function updateAt(t : int, target : Object):void
@@ -26,18 +29,26 @@ package aerys.minko.type.animation.timeline
 			
 			var time		: int	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
-			var timeCount	: uint 	= _timeTable.length;
-
-			// change value.
-			var previousTime		: Number	= _timeTable[int(timeId - 1)];
-			var nextTime			: Number	= _timeTable[timeId % timeCount];
-			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
-
-			if (t < 0.)
-				interpolationRatio = 1. - interpolationRatio;
-			
-			currentTarget[propertyName] = (1 - interpolationRatio) * _values[timeId - 1] +
-				interpolationRatio * _values[timeId % timeCount];
+            
+            if (_interpolate)
+            {
+    			var timeCount	: uint 	= _timeTable.length;
+    
+    			// change value.
+    			var previousTime		: Number	= _timeTable[int(timeId - 1)];
+    			var nextTime			: Number	= _timeTable[timeId % timeCount];
+    			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
+    
+    			if (t < 0.)
+    				interpolationRatio = 1. - interpolationRatio;
+    			
+    			currentTarget[propertyName] = (1 - interpolationRatio) * _values[timeId - 1] +
+    				interpolationRatio * _values[timeId % timeCount];
+            }
+            else
+            {
+                currentTarget[propertyName] = _values[timeId];
+            }
 		}
 
 		private function getIndexForTime(t : uint) : uint
@@ -66,7 +77,8 @@ package aerys.minko.type.animation.timeline
 			return new ScalarTimeline(
 				propertyPath,
 				_timeTable.slice(),
-				_values.slice()
+				_values.slice(),
+                _interpolate
 			);
 		}
 	}
