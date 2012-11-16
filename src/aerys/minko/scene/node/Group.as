@@ -113,21 +113,21 @@ package aerys.minko.scene.node
 				addChild(ISceneNode(children[childrenIndex]));
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.addedHandler(child, parent);
-			
-			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
-				_children[childIndex].added.execute(child, parent);
-		}
-		
-		override protected function removedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.removedHandler(child, parent);
-			
-			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
-				_children[childIndex].removed.execute(child, parent);
-		}
+//		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+//		{
+//			super.addedHandler(child, parent);
+//			
+//			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
+//				_children[childIndex].added.execute(child, parent);
+//		}
+//		
+//		override protected function removedHandler(child : ISceneNode, parent : Group) : void
+//		{
+//			super.removedHandler(child, parent);
+//			
+//			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
+//				_children[childIndex].removed.execute(child, parent);
+//		}
 		
 		private function descendantAddedHandler(group : Group, child : ISceneNode) : void
 		{

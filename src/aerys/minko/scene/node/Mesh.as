@@ -147,21 +147,6 @@ package aerys.minko.scene.node
 			}
 		}
 		
-		/**
-		 * Whether the mesh is visible or not.
-		 *  
-		 * @return 
-		 * 
-		 */
-		public function get visible() : Boolean
-		{
-			return _visibility.visible;
-		}
-		public function set visible(value : Boolean) : void
-		{
-			_visibility.visible = value;
-		}
-        
         /**
          * Whether the mesh in inside the camera frustum or not. 
          * @return 
@@ -172,9 +157,9 @@ package aerys.minko.scene.node
             return _visibility.insideFrustum;
         }
         
-        public function get computedVisibility() : Boolean
+        override public function get computedVisibility() : Boolean
         {
-            return _visibility.computedVisibility;
+            return scene ? _visibility.computedVisibility : super.computedVisibility;
         }
         
 		public function get frustumCulling() : uint
@@ -261,6 +246,12 @@ package aerys.minko.scene.node
 				maxDistance
 			);
 		}
+        
+        override protected function visibilityChangedHandler(node       : AbstractSceneNode,
+                                                             visibility : Boolean) : void
+        {
+            // nothing
+        }
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{

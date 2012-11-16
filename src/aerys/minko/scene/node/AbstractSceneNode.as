@@ -23,24 +23,29 @@ package aerys.minko.scene.node
 	 */
 	public class AbstractSceneNode implements ISceneNode
 	{
-		private static var _id			: uint;
-
-		private var _name				: String;
-		private var _root				: ISceneNode;
-		private var _parent				: Group;
+		private static var _id	    	    	: uint;
+        
+		private var _name	    	    		: String;
+		private var _root	        			: ISceneNode;
+		private var _parent	        			: Group;
+        
+        private var _visible                    : Boolean;
+        private var _computedVisibility         : Boolean;
 		
-		private var _transform			: Matrix4x4;
-		private var _localToWorld		: Matrix4x4;
-		private var _worldToLocal		: Matrix4x4;
+		private var _transform			        : Matrix4x4;
+		private var _localToWorld		        : Matrix4x4;
+		private var _worldToLocal	        	: Matrix4x4;
 		
-		private var _controllers		: Vector.<AbstractController>;
+		private var _controllers		        : Vector.<AbstractController>;
 		
-		private var _added				: Signal;
-		private var _removed			: Signal;
-		private var _addedToScene		: Signal;
-		private var _removedFromScene	: Signal;
-		private var _controllerAdded	: Signal;
-		private var _controllerRemoved	: Signal;
+		private var _added				        : Signal;
+		private var _removed			        : Signal;
+		private var _addedToScene		        : Signal;
+		private var _removedFromScene	        : Signal;
+		private var _controllerAdded	        : Signal;
+		private var _controllerRemoved	        : Signal;
+        private var _visibilityChanged          : Signal;
+        private var _computedVisibilityChanged  : Signal;
 
 		public function get x() : Number
 		{
@@ -146,10 +151,7 @@ package aerys.minko.scene.node
 			{
 				var oldParent : Group = _parent;
 				
-				oldParent._children.splice(
-					oldParent.getChildIndex(this),
-					1
-				);
+				oldParent._children.splice(oldParent.getChildIndex(this), 1);
 				
 				parent._numChildren--;
 				_parent = null;
@@ -179,6 +181,24 @@ package aerys.minko.scene.node
 		{
 			return _root;
 		}
+        
+        public function get visible() : Boolean
+        {
+            return _visible;
+        }
+        public function set visible(value : Boolean) : void
+        {
+            if (value != _visible)
+            {
+                _visible = value;
+                _visibilityChanged.execute(this, value);
+            }
+        }
+        
+        public function get computedVisibility() : Boolean
+        {
+            return _computedVisibility;
+        }
 		
 		public function get transform() : Matrix4x4
 		{
@@ -229,6 +249,16 @@ package aerys.minko.scene.node
 		{
 			return _controllerRemoved;
 		}
+        
+        public function get visibilityChanged() : Signal
+        {
+            return _visibilityChanged;
+        }
+        
+        public function get computedVisibilityChanged() : Signal
+        {
+            return _computedVisibilityChanged;
+        }
 		
 		public function AbstractSceneNode()
 		{
@@ -238,8 +268,10 @@ package aerys.minko.scene.node
 		private function initialize() : void
 		{
 			_name = getDefaultSceneName(this);
-			_root = this;
 			
+            _visible = true;
+            _computedVisibility = true;
+            
 			_transform = new Matrix4x4();
 			_localToWorld = new Matrix4x4();
 			_worldToLocal = new Matrix4x4();
@@ -252,38 +284,81 @@ package aerys.minko.scene.node
 			_removedFromScene = new Signal('AbstractSceneNode.removedFromScene');
 			_controllerAdded = new Signal('AbstractSceneNode.controllerAdded');
 			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
+            _visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
+            _computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
 			
+			updateRoot();
+            
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
 			_addedToScene.add(addedToSceneHandler);
 			_removedFromScene.add(removedFromSceneHandler);
+            _visibilityChanged.add(visibilityChangedHandler);
 			
 			addController(new TransformController());
 		}
 		
 		protected function addedHandler(child : ISceneNode, parent : Group) : void
 		{
-            var newRoot : ISceneNode = _parent ? _parent.root : this;
-            
-			if (newRoot != _root)
-            {
-                _root = newRoot;
-                
-                if (_root is Scene)
-    				_addedToScene.execute(this, _root);
-            }
+            parent.computedVisibilityChanged.add(parentComputedVisibilityChangedHandler);
+            parentComputedVisibilityChangedHandler(_parent, _parent.computedVisibility);
 		}
-		
+        
 		protected function removedHandler(child : ISceneNode, parent : Group) : void
 		{
-			// update root
-			var oldRoot : ISceneNode = _root;
-			
-			_root = _parent ? _parent.root : this;
-			if (oldRoot is Scene)
-				_removedFromScene.execute(this, oldRoot);
+            parent.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
+            _computedVisibility = false;
+            
+            updateRoot();
 		}
-		
+        
+        private function rootAddedOrRemovedHandler(root     : ISceneNode,
+                                                   parent   : Group) : void
+        {
+            updateRoot();
+        }
+        
+        private function updateRoot() : void
+        {
+            var newRoot : ISceneNode    = _parent ? _parent.root : this;
+            var oldRoot : ISceneNode    = _root;
+            
+            if (newRoot != oldRoot)
+            {
+                if (oldRoot)
+                {
+                    oldRoot.added.remove(rootAddedOrRemovedHandler);
+                    oldRoot.removed.remove(rootAddedOrRemovedHandler);
+                }
+                
+                newRoot.added.add(rootAddedOrRemovedHandler);
+                newRoot.removed.add(rootAddedOrRemovedHandler);
+                
+                _root = newRoot;
+                if (oldRoot is Scene)
+                    _removedFromScene.execute(this, oldRoot);
+                if (newRoot is Scene)
+                    _addedToScene.execute(this, newRoot);
+            }
+        }
+        
+        protected function visibilityChangedHandler(node        : AbstractSceneNode,
+                                                    visibility  : Boolean) : void
+        {
+            _computedVisibility = _visible && (!_parent || _parent.computedVisibility);
+            _computedVisibilityChanged.execute(this, _computedVisibility);
+        }
+
+        protected function parentComputedVisibilityChangedHandler(parent        : Group,
+                                                                  visibility    : Boolean) : void
+        {
+            var newComputedVisibility : Boolean = _visible && visibility;
+            
+            _computedVisibility = newComputedVisibility;
+            if (newComputedVisibility != computedVisibility)
+                _computedVisibilityChanged.execute(this, newComputedVisibility);
+        }
+        
 		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			// nothing
@@ -293,7 +368,7 @@ package aerys.minko.scene.node
 		{
 			// nothing
 		}
-		
+        
 		public function addController(controller : AbstractController) : ISceneNode
 		{
 			_controllers.push(controller);
