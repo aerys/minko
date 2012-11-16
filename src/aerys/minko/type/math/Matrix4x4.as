@@ -21,6 +21,7 @@ package aerys.minko.type.math
 
 		private static const TMP_VECTOR				: Vector.<Number>	= new <Number>[];
 		private static const TMP_VECTOR4			: Vector4			= new Vector4();
+        private static const TMP_VECTOR4_2			: Vector4			= new Vector4();
 		private static const TMP_MATRIX				: Matrix4x4			= new Matrix4x4();
 		
 		private static const COMPONENT_TRANSLATION	: uint				= 1;
@@ -558,7 +559,7 @@ package aerys.minko.type.math
                 {
                     var translation : Vector4   = getTranslation(TMP_VECTOR4);
                     
-                    translation.lerp(target.getTranslation(), ratio);
+                    translation.lerp(target.getTranslation(TMP_VECTOR4_2), ratio);
                     setColumn(3, translation);
                 }
 			}
