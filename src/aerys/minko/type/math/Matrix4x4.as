@@ -530,30 +530,37 @@ package aerys.minko.type.math
 			return this;
 		}
 
-		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
+		public function interpolateTo(target            : Matrix4x4,
+                                      ratio             : Number,
+                                      interpolateScale  : Boolean = true,
+                                      interpolateW      : Boolean = true) : Matrix4x4
 		{
 			_invalidComponents = COMPONENT_ROTATION | COMPONENT_TRANSLATION;
 			
-			if (withScale)
+			if (interpolateScale)
 			{
 				_invalidComponents |= COMPONENT_SCALE;
 				
-				var scale	: Vector4	= getColumn(3, TMP_VECTOR4);
-				var sx		: Number	= scale.x;
-				var sy		: Number	= scale.y;
-				var sz		: Number	= scale.z;
-                var sw      : Number    = scale.w;
+				var scale   : Vector4	= getScale(TMP_VECTOR4);
+				var sx	    : Number	= scale.x;
+				var sy	    : Number	= scale.y;
+				var sz	    : Number	= scale.z;
 				
-				scale = target.getColumn(3, TMP_VECTOR4);
-                scale.set(
-                    sx + (scale.x - sx) * ratio,
-                    sy + (scale.y - sy) * ratio,
-                    sz + (scale.z - sz) * ratio,
-                    sw + (scale.w - sw) * ratio
-                );
+				scale = target.getScale(TMP_VECTOR4);
+                sx += (scale.x - sx) * ratio;
+                sy += (scale.y - sy) * ratio;
+                sz += (scale.z - sz) * ratio;
                 
 				_matrix.interpolateTo(target._matrix, ratio);
-                setColumn(3, scale);
+                _matrix.appendScale(sx, sy, sz);
+                
+                if (interpolateW)
+                {
+                    var translation : Vector4   = getTranslation(TMP_VECTOR4);
+                    
+                    translation.lerp(target.getTranslation(), ratio);
+                    setColumn(3, translation);
+                }
 			}
 			else
 			{
@@ -566,13 +573,14 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function interpolateBetween(m1 			: Matrix4x4,
-										   m2 			: Matrix4x4,
-										   ratio 		: Number,
-										   withScale 	: Boolean = true) : Matrix4x4
+		public function interpolateBetween(m1 			    : Matrix4x4,
+										   m2 			    : Matrix4x4,
+										   ratio 		    : Number,
+										   interpolateScale : Boolean   = true,
+                                           interpolateW     : Boolean   = true) : Matrix4x4
 		{
 			_matrix.copyFrom(m1._matrix);
-			interpolateTo(m2, ratio, withScale);
+			interpolateTo(m2, ratio, interpolateScale, interpolateW);
 			
 			return this;
 		}
