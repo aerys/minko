@@ -4,13 +4,24 @@ package aerys.minko.type.animation.timeline
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 
-	use namespace minko_animation;
 	
 	public final class MatrixSegmentTimeline extends AbstractTimeline
 	{
-		minko_animation var _timeTable	: Vector.<uint>			= null;
-		minko_animation var _matrices	: Vector.<Matrix4x4>	= null;
+		use namespace minko_animation;
+		
+		private var _timeTable	: Vector.<uint>			= null;
+		private var _matrices	: Vector.<Matrix4x4>	= null;
 
+		minko_animation function get matrices() : Vector.<Matrix4x4>
+		{
+			return _matrices;
+		}
+
+		minko_animation function get timeTable() : Vector.<uint>
+		{
+			return _timeTable;
+		}
+		
 		public function MatrixSegmentTimeline(propertyPath		: String,
 											  timeTable 		: Vector.<uint>,
 											  values			: Vector.<Matrix4x4>)
