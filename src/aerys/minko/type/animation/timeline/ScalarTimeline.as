@@ -36,8 +36,7 @@ package aerys.minko.type.animation.timeline
 			if (t < 0.)
 				interpolationRatio = 1. - interpolationRatio;
 			
-			currentTarget[propertyName] =
-				(1 - interpolationRatio) * _values[timeId - 1] +
+			currentTarget[propertyName] = (1 - interpolationRatio) * _values[timeId - 1] +
 				interpolationRatio * _values[timeId % timeCount];
 		}
 
