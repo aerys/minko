@@ -35,8 +35,8 @@ package aerys.minko.type.animation.timeline
     			var timeCount	: uint 	= _timeTable.length;
     
     			// change value.
-    			var previousTime		: Number	= _timeTable[int(timeId - 1)];
-    			var nextTime			: Number	= _timeTable[timeId % timeCount];
+    			var previousTime		: Number	= _timeTable[uint(timeId - 1)];
+    			var nextTime			: Number	= _timeTable[uint(timeId % timeCount)];
     			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
     
     			if (t < 0.)
