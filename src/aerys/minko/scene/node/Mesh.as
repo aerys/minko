@@ -247,11 +247,11 @@ package aerys.minko.scene.node
 			);
 		}
         
-        override protected function visibilityChangedHandler(node       : AbstractSceneNode,
-                                                             visibility : Boolean) : void
-        {
-            // nothing
-        }
+//        override protected function visibilityChangedHandler(node       : AbstractSceneNode,
+//                                                             visibility : Boolean) : void
+//        {
+//            // nothing
+//        }
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{

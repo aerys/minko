@@ -192,6 +192,7 @@ package aerys.minko.scene.node
             {
                 _visible = value;
                 _visibilityChanged.execute(this, value);
+                updateComputedVisibility();
             }
         }
         
@@ -293,7 +294,6 @@ package aerys.minko.scene.node
 			_removed.add(removedHandler);
 			_addedToScene.add(addedToSceneHandler);
 			_removedFromScene.add(removedFromSceneHandler);
-            _visibilityChanged.add(visibilityChangedHandler);
 			
 			addController(new TransformController());
 		}
@@ -342,21 +342,22 @@ package aerys.minko.scene.node
             }
         }
         
-        protected function visibilityChangedHandler(node        : AbstractSceneNode,
-                                                    visibility  : Boolean) : void
-        {
-            _computedVisibility = _visible && (!_parent || _parent.computedVisibility);
-            _computedVisibilityChanged.execute(this, _computedVisibility);
-        }
-
         protected function parentComputedVisibilityChangedHandler(parent        : Group,
                                                                   visibility    : Boolean) : void
         {
-            var newComputedVisibility : Boolean = _visible && visibility;
+           updateComputedVisibility();
+        }
+        
+        private function updateComputedVisibility() : void
+        {
+            var newComputedVisibility : Boolean = _visible
+                && (!_parent || _parent.computedVisibility);
             
-            _computedVisibility = newComputedVisibility;
             if (newComputedVisibility != computedVisibility)
+            {
+                _computedVisibility = newComputedVisibility;
                 _computedVisibilityChanged.execute(this, newComputedVisibility);
+            }
         }
         
 		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
