@@ -87,7 +87,7 @@ package aerys.minko.render.resource.texture
 			throw new Error('Not yet implemented');
 		}
 		
-		public function getNativeTexture(context : Context3DResource) : TextureBase
+		public function getTexture(context : Context3DResource) : TextureBase
 		{
 			if (!_resource)
 				_resource = context.createCubeTexture(_size, Context3DTextureFormat.BGRA, true);

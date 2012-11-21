@@ -26,20 +26,10 @@ package aerys.minko.render
 		{
 			return _width;
 		}
-		public function set width(value : uint) : void
-		{
-			_width = value;
-			_resource.setSize(value, _height);
-		}
 		
 		public function get height() : uint
 		{
 			return _height;
-		}
-		public function set height(value : uint) : void
-		{
-			_height = value;
-			_resource.setSize(_width, value);
 		}
 		
 		public function get textureResource() : ITextureResource
@@ -91,15 +81,6 @@ package aerys.minko.render
 				throw new Error(
 					'The texture resource and the render target must have the same size.'
 				);
-		}
-		
-		public function resize(width : uint, height	: uint) : void
-		{
-			_width = width;
-			_height = height;
-			
-			if (_resource)
-				_resource.setSize(width, height);
 		}
 	}
 }

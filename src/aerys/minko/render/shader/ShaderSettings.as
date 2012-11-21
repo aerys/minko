@@ -302,7 +302,7 @@ package aerys.minko.render.shader
 				
 				if (rt && rt.textureResource)
 					context.setRenderToTexture(
-						rt.textureResource.getNativeTexture(context),
+						rt.textureResource.getTexture(context),
 						rt.useDepthAndStencil,
 						rt.antiAliasing,
 						rt.surfaceSelector

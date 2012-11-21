@@ -321,7 +321,7 @@ package aerys.minko.render
 			{
 				context.setTextureAt(
 					i,
-					(_fsTextures[i] as ITextureResource).getNativeTexture(context)
+					(_fsTextures[i] as ITextureResource).getTexture(context)
 				);
 			}
 			
