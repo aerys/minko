@@ -65,7 +65,7 @@ package aerys.minko.type.loader
 		
 		private function initialize() : void
 		{
-			_textureResource 	= new TextureResource(1, 1);
+			_textureResource 	= new TextureResource();
 			_textureResource.setContentFromBitmapData(EMPTY_BITMAPDATA, _mipMapping);
 			
 			_isComplete 		= false;
@@ -116,7 +116,6 @@ package aerys.minko.type.loader
 				if (bitmapData == null)
 					bitmapData = Bitmap(assetObject).bitmapData;
 				
-                _textureResource.setSize(bitmapData.width, bitmapData.height);
 				_textureResource.setContentFromBitmapData(bitmapData, _mipMapping);
 				bitmapData.dispose();
 				
