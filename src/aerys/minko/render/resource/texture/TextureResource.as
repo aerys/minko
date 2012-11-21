@@ -1,7 +1,9 @@
 package aerys.minko.render.resource.texture
 {
+	import aerys.minko.Minko;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.enum.SamplerFormat;
+	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
@@ -18,7 +20,6 @@ package aerys.minko.render.resource.texture
 	public class TextureResource implements ITextureResource
 	{
 		private static const MAX_SIZE					: uint		= 2048;
-		private static const TMP_MATRIX					: Matrix	= new Matrix();
 		private static const FORMAT_BGRA				: String	= Context3DTextureFormat.BGRA
 		private static const FORMAT_COMPRESSED			: String	= Context3DTextureFormat.COMPRESSED;
 		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= Context3DTextureFormat.COMPRESSED_ALPHA;
@@ -59,10 +60,9 @@ package aerys.minko.render.resource.texture
 			return _height;
 		}
 		
-		public function TextureResource(width : int = 0, height : int = 0)
+		public function TextureResource(width : uint, height : uint)
 		{
-			if (width != 0 && height != 0)
-				setSize(width, height);
+			setSize(width, height);
 		}
 
 		public function setSize(width : uint, height : uint) : void
@@ -73,59 +73,46 @@ package aerys.minko.render.resource.texture
 			
 			_width	= width;
 			_height	= height;
-			_resize = true;
+            _bitmapData	= new BitmapData(width, height, true, 0);
+            
+            if (_texture)
+            {
+                _texture.dispose();
+                _texture = null;
+            }
 		}
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
-								   				 mipmap		: Boolean,
-												 downSample	: Boolean	= false) : void
+								   				 mipmap		: Boolean) : void
 		{
 			var bitmapWidth		: uint 	= bitmapData.width;
 			var bitmapHeight	: uint 	= bitmapData.height;
-			var w				: int	= 0;
-			var h				: int	= 0;
 			
-			if (downSample)
+			if (bitmapWidth != _width || bitmapHeight != _height)
 			{
-				w = 1 << Math.floor(Math.log(bitmapWidth) * Math.LOG2E);
-				h = 1 << Math.floor(Math.log(bitmapHeight) * Math.LOG2E);
-			}
-			else
-			{
-				w = 1 << Math.ceil(Math.log(bitmapWidth) * Math.LOG2E);
-				h = 1 << Math.ceil(Math.log(bitmapHeight) * Math.LOG2E);
-			}
-			
-			if (w > MAX_SIZE)
-				w = MAX_SIZE;
-			if (h > MAX_SIZE)
-				h = MAX_SIZE;
-			
-			if (_bitmapData == null || _bitmapData.width != w || _bitmapData.height != h)
-				_bitmapData	= new BitmapData(w, h, bitmapData.transparent, 0);
-			
-			if (w != bitmapWidth || h != bitmapHeight)
-			{
-				TMP_MATRIX.identity();
-				TMP_MATRIX.scale(w / bitmapWidth, h / bitmapHeight);
-				_bitmapData.draw(bitmapData, TMP_MATRIX);
+                var matrix : Matrix = new Matrix();
+                
+                Minko.log(
+                    DebugLevel.WARNING,
+                    'BitmapData size (' + bitmapWidth + ', ' + bitmapHeight + ') '
+                    + 'and TextureResource size (' + _width + ', ' + _height + ') '
+                    + 'do not match: BitmapData will be resized.'
+                );
+                
+				matrix.identity();
+				matrix.scale(_width / bitmapWidth, _height / bitmapHeight);
+				_bitmapData.draw(bitmapData, matrix);
 			}
 			else
 			{
 				_bitmapData.draw(bitmapData);
 			}
 			
-			if (_texture
-				&& (mipmap != _mipmap
-					|| bitmapData.width != _width
-					|| bitmapData.height != _height))
+			if (_texture && mipmap != _mipmap)
 			{
 				_texture.dispose();
 				_texture = null;
 			}
-
-			_width = _bitmapData.width;
-			_height = _bitmapData.height;
 
 			_mipmap	= mipmap;
 			_update	= true;
@@ -157,10 +144,8 @@ package aerys.minko.render.resource.texture
 
 		public function getNativeTexture(context : Context3DResource) : TextureBase
 		{
-			if ((!_texture || _resize) && _width && _height)
+			if (!_texture && _width && _height)
 			{
-				_resize = false;
-				
 				if (_texture)
 					_texture.dispose();
 				

@@ -20,8 +20,7 @@ package aerys.minko.render.resource.texture
 		function get height() : uint;
 		
 		function setContentFromBitmapData(bitmapData 	: BitmapData,
-										  mipmap 		: Boolean,
-										  downSample	: Boolean	= false) : void;
+										  mipmap 		: Boolean) : void;
 		
 		function setContentFromATF(atf : ByteArray) : void;
 		

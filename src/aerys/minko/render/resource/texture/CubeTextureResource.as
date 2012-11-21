@@ -46,18 +46,18 @@ package aerys.minko.render.resource.texture
 		}
 		
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
-												 mipmap		: Boolean,
-												 downSample	: Boolean	= false) : void
+												 mipmap		: Boolean) : void
 		{
 			_bitmapDatas = new <BitmapData>[];
 			
-			var width	: Number = bitmapData.width / 4;
-			var height	: Number = bitmapData.height / 3;
-			
-			var tmpMatrix		: Matrix		= new Matrix(1, 0, 0, 1);
+			var width	    : Number = bitmapData.width / 4;
+			var height	    : Number = bitmapData.height / 3;
+			var tmpMatrix	: Matrix = new Matrix(1, 0, 0, 1);
+            
 			for (var side : uint = 0; side < 6; ++side)
 			{
 				var sideBitmapData	: BitmapData	= new BitmapData(width, height, false, 0);
+                
 				tmpMatrix.tx	= - SIDE_X[side] * width;
 				tmpMatrix.ty	= - SIDE_Y[side] * height;
 				
