@@ -24,6 +24,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.display.BitmapData;
@@ -155,9 +156,13 @@ package aerys.minko.scene.controller.scene
 			{
 				if (!_postProcessingScene)
 				{
-					_postProcessingScene = new Scene(
-						new Mesh(new QuadGeometry(), new Material(_postProcessingEffect))
-					);
+                    var screenQuad : Mesh = new Mesh(
+                        new QuadGeometry(),
+                        new Material(_postProcessingEffect)
+                    );
+                    
+                    screenQuad.frustumCulling = FrustumCulling.DISABLED;
+					_postProcessingScene = new Scene(screenQuad);
 					
 					_postProcessingScene.bindings.addProvider(
 						_postProcessingProperties
@@ -176,31 +181,30 @@ package aerys.minko.scene.controller.scene
 		{
 			if (_postProcessingEffect)
 			{
-				var w 		: int 	= 1 << Math.ceil(Math.log(backBuffer.width) * Math.LOG2E);
-				var h 		: int 	= 1 << Math.ceil(Math.log(backBuffer.height) * Math.LOG2E);
+				var w 		: uint 	= 1 << Math.ceil(Math.log(backBuffer.width) * Math.LOG2E);
+				var h 		: uint 	= 1 << Math.ceil(Math.log(backBuffer.height) * Math.LOG2E);
 				var bgcolor : uint 	= backBuffer.backgroundColor;
 				
-				if (!_postProcessingBackBuffer)
+				if (!_postProcessingBackBuffer
+                    || _postProcessingBackBuffer.width != w
+                    || _postProcessingBackBuffer.height != h
+                    || _postProcessingBackBuffer.backgroundColor != bgcolor)
 				{
-					_postProcessingBackBuffer = new RenderTarget(
-						w,
-						h,
-						new TextureResource(w, h),
-						0,
-						bgcolor
-					);
-					
-					_postProcessingProperties.setProperty(
-						'backBuffer',
-						_postProcessingBackBuffer.textureResource
-					);
-				}
-				else if (_postProcessingBackBuffer.width != w
-						 || _postProcessingBackBuffer.height != h
-						 || _postProcessingBackBuffer.backgroundColor != bgcolor)
-				{
-					_postProcessingBackBuffer.resize(w, h);
-					_postProcessingBackBuffer.backgroundColor = bgcolor;
+                    if (_postProcessingBackBuffer)
+                        _postProcessingBackBuffer.textureResource.dispose();
+                    
+                    _postProcessingBackBuffer = new RenderTarget(
+                        w,
+                        h,
+                        new TextureResource(w, h),
+                        0,
+                        bgcolor
+                    );
+                    
+                    _postProcessingProperties.setProperty(
+                        'backBuffer',
+                        _postProcessingBackBuffer.textureResource
+                    );
 				}
 				
 				return _postProcessingBackBuffer;
