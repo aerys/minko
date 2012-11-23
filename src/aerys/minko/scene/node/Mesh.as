@@ -222,7 +222,7 @@ package aerys.minko.scene.node
 			if (name)
 				this.name = name;
 			
-			_cloned = new Signal('Mesh.clones');
+			_cloned = new Signal('Mesh.cloned');
 			_materialChanged = new Signal('Mesh.materialChanged');
 			_frameChanged = new Signal('Mesh.frameChanged');
 			_geometryChanged = new Signal('Mesh.geometryChanged');
