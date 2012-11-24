@@ -184,8 +184,10 @@ package aerys.minko.render
             
 			for (var parameter : String in _bindings)
 			{
-				meshBindings.removeCallback(parameter, parameterChangedHandler);
-				sceneBindings.removeCallback(parameter, parameterChangedHandler);
+                if (meshBindings.hasCallback(parameter, parameterChangedHandler))
+				    meshBindings.removeCallback(parameter, parameterChangedHandler);
+                else if (sceneBindings.hasCallback(parameter, parameterChangedHandler))
+    				sceneBindings.removeCallback(parameter, parameterChangedHandler);
 			}
 			
 			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
@@ -223,7 +225,7 @@ package aerys.minko.render
 				geometry.computeTangentSpace();
 			}
 			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
-				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
+                && !vertexFormat.hasComponent(VertexComponent.NORMAL))
 			{
 				geometry.computeNormals();
 			}
