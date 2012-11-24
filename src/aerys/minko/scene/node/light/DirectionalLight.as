@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.DirectionalLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -135,6 +136,15 @@ package aerys.minko.scene.node.light
 					throw new ArgumentError('Invalid shadow casting type.');
 			}
 		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
 		
 		public function DirectionalLight(color						: uint		= 0xFFFFFFFF,
 									 	 diffuse					: Number	= .6,
@@ -146,7 +156,8 @@ package aerys.minko.scene.node.light
 										 shadowMapMaxZ				: Number	= 1000,
 										 shadowMapWidth				: Number	= 20,
 										 shadowMapQuality			: uint		= 0,
-										 shadowMapSamplingDistance	: uint		= 1)
+										 shadowMapSamplingDistance	: uint		= 1,
+                                         shadowBias                 : uint      = 1. / 256. / 256.)
 		{
 			super(
 				new DirectionalLightController(),
@@ -164,9 +175,7 @@ package aerys.minko.scene.node.light
 			this.shadowMapSize	= shadowMapSize;
 			this.shadowQuality	= shadowMapQuality;
 			this.shadowSpread	= shadowMapSamplingDistance;
-			
-			if ([ShadowMappingType.NONE, ShadowMappingType.MATRIX].indexOf(shadowCasting) == -1)
-				throw new Error('Invalid ShadowMappingType.');
+            this.shadowBias     = shadowBias;
 			
 			transform.lookAt(Vector4.ZERO, new Vector4(1, -1, 1));
 		}
@@ -180,7 +189,8 @@ package aerys.minko.scene.node.light
 				shininess,
 				emissionMask,
 				shadowCastingType,
-				shadowMapSize
+				shadowMapSize,
+                shadowBias
 			);
 			
 			light.name = this.name;

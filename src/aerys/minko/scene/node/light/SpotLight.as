@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.SpotLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -168,6 +169,15 @@ package aerys.minko.scene.node.light
 					throw new ArgumentError('Invalid shadow casting type.');
 			}
 		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
 		
 		public function SpotLight(color						: uint		= 0xFFFFFFFF,
 								  diffuse					: Number	= .6,
@@ -182,7 +192,8 @@ package aerys.minko.scene.node.light
 								  shadowMapZNear			: Number	= 0.1,
 								  shadowMapZFar				: Number	= 1000,
 								  shadowMapQuality			: uint		= 0,
-								  shadowMapSamplingDistance	: uint		= 1)
+								  shadowMapSamplingDistance	: uint		= 1,
+                                  shadowBias                : uint      = 1. / 256. / 256.)
 		{
 			super(
 				new SpotLightController(),
@@ -203,6 +214,7 @@ package aerys.minko.scene.node.light
 			this.shadowMapSize			= shadowMapSize;
 			this.shadowQuality			= shadowMapQuality;
 			this.shadowSpread	        = shadowMapSamplingDistance;
+            this.shadowBias             = shadowBias;
 			
 			if ([ShadowMappingType.NONE, 
 				ShadowMappingType.MATRIX].indexOf(shadowCastingType) == -1)

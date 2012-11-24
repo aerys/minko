@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
@@ -157,6 +158,15 @@ package aerys.minko.scene.node.light
 					throw new ArgumentError('Invalid shadow casting type.');
 			}
 		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
 		
 		public function PointLight(color				: uint		= 0xFFFFFFFF,
 								   diffuse				: Number	= .6,
@@ -167,7 +177,8 @@ package aerys.minko.scene.node.light
 								   shadowCastingType	: uint		= 0,
 								   shadowMapSize		: uint		= 512,
 								   shadowMapZNear		: Number	= 0.1,
-								   shadowMapZFar		: Number	= 1000)
+								   shadowMapZFar		: Number	= 1000,
+                                   shadowBias           : uint      = 1. / 256. / 256.)
 		{
 			_shadowMapSize	= shadowMapSize;
 			
@@ -185,6 +196,7 @@ package aerys.minko.scene.node.light
 			this.attenuationDistance	= attenuationDistance;
 			this.shadowZNear			= shadowMapZNear;
 			this.shadowZFar		    	= shadowMapZFar;
+            this.shadowBias             = shadowBias;
 			
 			if ([ShadowMappingType.NONE,
 				 ShadowMappingType.DUAL_PARABOLOID,
