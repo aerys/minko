@@ -82,7 +82,7 @@ package aerys.minko.scene.node
 		 * Callbacks functions must accept the following arguments:
 		 * <ul>
 		 * <li>node : ISceneNode, the scene node itself</li>
-		 * <li>parent : Group, the new parent of the scene node</li>
+		 * <li>ancestor : Group, the ancestor the scene node has been added to</li>
 		 * </ul>
 		 * @return 
 		 * 
@@ -96,7 +96,7 @@ package aerys.minko.scene.node
 		 * Callbacks functions must accept the following arguments:
 		 * <ul>
 		 * <li>node : ISceneNode, the scene node itself</li>
-		 * <li>parent : Group, the former parent of the scene node</li>
+		 * <li>ancestor : Group, the ancestor the scene node has been removed from</li>
 		 * </ul>
 		 * @return 
 		 * 

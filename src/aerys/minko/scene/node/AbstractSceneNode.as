@@ -298,25 +298,29 @@ package aerys.minko.scene.node
 			addController(new TransformController());
 		}
 		
-		protected function addedHandler(child : ISceneNode, parent : Group) : void
+		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            parent.computedVisibilityChanged.add(parentComputedVisibilityChangedHandler);
-            parentComputedVisibilityChangedHandler(_parent, _parent.computedVisibility);
-		}
-        
-		protected function removedHandler(child : ISceneNode, parent : Group) : void
-		{
-            parent.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
-            _computedVisibility = false;
+            // if ancestor == parent then the node was just added as a direct child of ancestor
+            if (ancestor == _parent)
+            {
+                _parent.computedVisibilityChanged.add(parentComputedVisibilityChangedHandler);
+                parentComputedVisibilityChangedHandler(_parent, _parent.computedVisibility);
+            }
             
             updateRoot();
 		}
         
-        private function rootAddedOrRemovedHandler(root     : ISceneNode,
-                                                   parent   : Group) : void
-        {
+		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
+		{
+            // if parent is not set anymore, ancestor is not the direct parent of child anymore
+            if (!_parent)
+            {
+                ancestor.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
+                _computedVisibility = false;
+            }
+            
             updateRoot();
-        }
+		}
         
         private function updateRoot() : void
         {
@@ -325,15 +329,6 @@ package aerys.minko.scene.node
             
             if (newRoot != oldRoot)
             {
-                if (oldRoot)
-                {
-                    oldRoot.added.remove(rootAddedOrRemovedHandler);
-                    oldRoot.removed.remove(rootAddedOrRemovedHandler);
-                }
-                
-                newRoot.added.add(rootAddedOrRemovedHandler);
-                newRoot.removed.add(rootAddedOrRemovedHandler);
-                
                 _root = newRoot;
                 if (oldRoot is Scene)
                     _removedFromScene.execute(this, oldRoot);
