@@ -47,101 +47,101 @@ package aerys.minko.scene.node
         private var _visibilityChanged          : Signal;
         private var _computedVisibilityChanged  : Signal;
 
-		public function get x() : Number
+        final public function get x() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set x(value : Number) : void
+        final public function set x(value : Number) : void
 		{
 			_transform.translationX = value;
 		}
 		
-		public function get y() : Number
+        final public function get y() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set y(value : Number) : void
+        final public function set y(value : Number) : void
 		{
 			_transform.translationY = value;
 		}
 		
-		public function get z() : Number
+        final public function get z() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set z(value : Number) : void
+        final public function set z(value : Number) : void
 		{
 			_transform.translationZ = value;
 		}
 		
-		public function get rotationX() : Number
+        final public function get rotationX() : Number
 		{
 			return _transform.rotationX;
 		}
-		public function set rotationX(value : Number) : void
+        final public function set rotationX(value : Number) : void
 		{
 			_transform.rotationX = value;
 		}
 		
-		public function get rotationY() : Number
+        final public function get rotationY() : Number
 		{
 			return _transform.rotationY;
 		}
-		public function set rotationY(value : Number) : void
+        final public function set rotationY(value : Number) : void
 		{
 			_transform.rotationY = value;
 		}
 		
-		public function get rotationZ() : Number
+        final public function get rotationZ() : Number
 		{
 			return _transform.rotationZ;
 		}
-		public function set rotationZ(value : Number) : void
+        final public function set rotationZ(value : Number) : void
 		{
 			_transform.rotationZ = value;
 		}
 		
-		public function get scaleX() : Number
+        final public function get scaleX() : Number
 		{
 			return _transform.scaleX;
 		}
-		public function set scaleX(value : Number) : void
+        final public function set scaleX(value : Number) : void
 		{
 			_transform.scaleX = value;
 		}
 		
-		public function get scaleY() : Number
+        final public function get scaleY() : Number
 		{
 			return _transform.scaleX;
 		}
-		public function set scaleY(value : Number) : void
+        final public function set scaleY(value : Number) : void
 		{
 			_transform.scaleY = value;
 		}
 		
-		public function get scaleZ() : Number
+        final public function get scaleZ() : Number
 		{
 			return _transform.scaleZ;
 		}
-		public function set scaleZ(value : Number) : void
+        final public function set scaleZ(value : Number) : void
 		{
 			_transform.scaleZ = value;
 		}
 		
-		public function get name() : String
+        public function get name() : String
 		{
 			return _name;
 		}
-		public function set name(value : String) : void
+        public function set name(value : String) : void
 		{
 			_name = value;
 		}
 		
-		public function get parent() : Group
+        final public function get parent() : Group
 		{
 			return _parent;
 		}
-		public function set parent(value : Group) : void
+        final public function set parent(value : Group) : void
 		{
 			if (value == _parent)
 				return ;
@@ -172,12 +172,12 @@ package aerys.minko.scene.node
 			}
 		}
 		
-        public function get scene() : Scene
+        final public function get scene() : Scene
         {
             return _root as Scene;
         }
         
-		public function get root() : ISceneNode
+        final public function get root() : ISceneNode
 		{
 			return _root;
 		}
@@ -201,37 +201,37 @@ package aerys.minko.scene.node
             return _computedVisibility;
         }
 		
-		public function get transform() : Matrix4x4
+        final public function get transform() : Matrix4x4
 		{
 			return _transform;
 		}
 		
-		public function get localToWorld() : Matrix4x4
+		final public function get localToWorld() : Matrix4x4
 		{
 			return _localToWorld;
 		}
 		
-		public function get worldToLocal() : Matrix4x4
+        final public function get worldToLocal() : Matrix4x4
 		{
 			return _worldToLocal;
 		}
 		
-		public function get added() : Signal
+        final public function get added() : Signal
 		{
 			return _added;
 		}
 		
-		public function get removed() : Signal
+        final public function get removed() : Signal
 		{
 			return _removed;
 		}
 
-		public function get addedToScene() : Signal
+        final public function get addedToScene() : Signal
 		{
 			return _addedToScene;
 		}
 		
-		public function get removedFromScene() : Signal
+        final public function get removedFromScene() : Signal
 		{
 			return _removedFromScene;
 		}
