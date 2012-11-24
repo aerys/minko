@@ -821,26 +821,29 @@ package aerys.minko.scene.controller.scene
 			
 			drawCall.unsetBindings(meshBindings, sceneBindings);
 			
-			// remove callback on binding changes
-			var signature		: Signature		= passInstance.signature;
-			var numKeys			: uint			= signature.numKeys;
+            if (passInstance)
+            {
+    			// remove callback on binding changes
+    			var signature		: Signature		= passInstance.signature;
+    			var numKeys			: uint			= signature.numKeys;
+    			
+    			for (var i : uint = 0; i < numKeys; ++i)
+    			{
+    				var key 	: String	= signature.getKey(i);
+    				var flags	: uint		= signature.getFlags(i);
+    				
+    				if (flags & Signature.SOURCE_MESH)
+    					meshBindings.removeCallback(key, bindingsPropertyChangedHandler);
+    				else
+    					sceneBindings.removeCallback(key, bindingsPropertyChangedHandler);
+    			}
+    			
+    			// release the shader
+    			passInstance.release();
+    			// update indexes
+    			delete _drawCallToPassInstance[drawCall];
+            }
 			
-			for (var i : uint = 0; i < numKeys; ++i)
-			{
-				var key 	: String	= signature.getKey(i);
-				var flags	: uint		= signature.getFlags(i);
-				
-				if (flags & Signature.SOURCE_MESH)
-					meshBindings.removeCallback(key, bindingsPropertyChangedHandler);
-				else
-					sceneBindings.removeCallback(key, bindingsPropertyChangedHandler);
-			}
-			
-			// release the shader
-			passInstance.release();
-			
-			// update indexes
-			delete _drawCallToPassInstance[drawCall];
 			delete _drawCallToMeshBindings[drawCall];
 			
 			var drawCalls 		: Array	= _passInstanceToDrawCalls[passInstance];
