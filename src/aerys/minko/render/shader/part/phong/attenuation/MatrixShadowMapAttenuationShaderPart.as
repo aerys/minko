@@ -18,8 +18,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 	 */
 	public class MatrixShadowMapAttenuationShaderPart extends LightAwareShaderPart implements IAttenuationShaderPart
 	{
-		private static const DEFAULT_BIAS : Number = 1 / 256 / 256;
-		
 		public function MatrixShadowMapAttenuationShaderPart(main : Shader)
 		{
 			super(main);
@@ -34,10 +32,8 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var shadowBias : SFloat;
 			if (meshBindings.propertyExists(PhongProperties.SHADOW_BIAS))
 				shadowBias = meshBindings.getParameter(PhongProperties.SHADOW_BIAS, 1);
-			else if (sceneBindings.propertyExists(PhongProperties.SHADOW_BIAS))
-				shadowBias = sceneBindings.getParameter(PhongProperties.SHADOW_BIAS, 1);
 			else
-				shadowBias = float(DEFAULT_BIAS);
+				shadowBias = getLightParameter(lightId, PhongProperties.SHADOW_BIAS, 1);
 			
 			// retrieve depthmap and projection matrix
 			var worldToUV	: SFloat = getLightParameter(lightId, 'worldToUV', 16);
