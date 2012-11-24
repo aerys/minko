@@ -204,7 +204,7 @@ package aerys.minko.type.math
 		{
             var sourceVector : Vector3D = source._vector;
             
-			return set(sourceVector.x, sourceVector.y, sourceVector.z, sourceVector..w);
+			return set(sourceVector.x, sourceVector.y, sourceVector.z, sourceVector.w);
 		}
 
 		public function incrementBy(vector : Vector4) : Vector4
