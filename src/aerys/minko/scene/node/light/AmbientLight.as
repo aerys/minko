@@ -21,12 +21,6 @@ package aerys.minko.scene.node.light
 			lightData.setLightProperty('ambient', v);
 		}
 		
-		override public function set shadowCastingType(v : uint) : void
-		{
-			if (v != ShadowMappingType.NONE)
-				throw new Error('An ambient light cannot emit shadows.');
-		}
-		
 		public function AmbientLight(color			: uint		= 0xFFFFFFFF, 
 									 ambient		: Number	= .4,
 									 emissionMask	: uint		= 0x1)
@@ -35,8 +29,7 @@ package aerys.minko.scene.node.light
 				new LightController(AmbientLight),
 				LIGHT_TYPE,
 				color,
-				emissionMask,
-				ShadowMappingType.NONE
+				emissionMask
 			);
 			
 			this.ambient = ambient;

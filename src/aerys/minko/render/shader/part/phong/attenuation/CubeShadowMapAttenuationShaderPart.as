@@ -33,11 +33,12 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var worldToLight		: SFloat = getLightParameter(lightId, 'worldToLocal', 16);
 			var zNear				: SFloat = getLightParameter(lightId, 'shadowZNear', 1);
 			var zFar				: SFloat = getLightParameter(lightId, 'shadowZFar', 1);
-			var cubeDepthMap		: SFloat = getLightTextureParameter(lightId, 'shadowMapCube', 
+			var cubeDepthMap		: SFloat = getLightTextureParameter(lightId, 'shadowMap', 
 				SamplerFiltering.NEAREST,
 				SamplerMipMapping.DISABLE, 
 				SamplerWrapping.CLAMP, 
-				SamplerDimension.CUBE);
+				SamplerDimension.CUBE
+			);
 			
 			// retrieve precompute depth
 			var positionFromLight	: SFloat = interpolate(multiply4x4(vsWorldPosition, worldToLight));

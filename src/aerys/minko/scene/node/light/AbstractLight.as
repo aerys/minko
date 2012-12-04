@@ -35,15 +35,6 @@ package aerys.minko.scene.node.light
 			lightData.setLightProperty('emissionMask', v);
 		}
 		
-		public function get shadowCastingType() : uint
-		{
-			return lightData.getLightProperty('shadowCastingType') as uint; 
-		}
-		public function set shadowCastingType(v : uint) : void
-		{
-			throw new Error('Must be overriden');
-		}
-		
 		public function get enabled() : Boolean
 		{
 			return lightData.getLightProperty('enabled') as Boolean; 
@@ -61,8 +52,7 @@ package aerys.minko.scene.node.light
 		public function AbstractLight(controller		: LightController,
 									  type				: uint,
 									  color				: uint,
-									  emissionMask		: uint,
-									  shadowCastingType	: uint)
+									  emissionMask		: uint)
 		{
 			super();
 			
@@ -71,9 +61,8 @@ package aerys.minko.scene.node.light
 			
 			addController(controller);
 			
-			this.color				= color;
-			this.emissionMask		= emissionMask;
-			this.shadowCastingType	= shadowCastingType;
+			this.color			= color;
+			this.emissionMask	= emissionMask;
 		}
 	}
 }
