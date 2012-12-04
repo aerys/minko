@@ -40,7 +40,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var depthMap	: SFloat = getLightTextureParameter(
 				lightId,
 				'shadowMap', 
-				SamplerFiltering.LINEAR, 
+				SamplerFiltering.NEAREST, 
 				SamplerMipMapping.DISABLE, 
 				SamplerWrapping.CLAMP
 			);
