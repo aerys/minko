@@ -199,7 +199,7 @@ package aerys.minko.scene.node.light
 				color,
 				diffuse,
 				specular,
-				shininess, 
+				shininess,
 				attenuationDistance, 
 				outerRadius,
 				innerRadius,
