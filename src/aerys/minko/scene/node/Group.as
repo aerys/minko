@@ -113,22 +113,6 @@ package aerys.minko.scene.node
 				addChild(ISceneNode(children[childrenIndex]));
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.addedHandler(child, parent);
-			
-			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
-				_children[childIndex].added.execute(child, parent);
-		}
-		
-		override protected function removedHandler(child : ISceneNode, parent : Group) : void
-		{
-			super.removedHandler(child, parent);
-			
-			for (var childIndex : int = 0; childIndex < _numChildren; ++childIndex)
-				_children[childIndex].removed.execute(child, parent);
-		}
-		
 		private function descendantAddedHandler(group : Group, child : ISceneNode) : void
 		{
 			if (group == this)
@@ -161,6 +145,34 @@ package aerys.minko.scene.node
 			_numDescendants -= (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
+        override protected function addedHandler(child : ISceneNode, ancestor : Group) : void
+        {
+            super.addedHandler(child, ancestor);
+            
+            var numChildren : uint = this.numChildren;
+            
+            for (var childId : uint = 0; childId < numChildren; ++childId)
+            {
+                var child : ISceneNode = _children[childId];
+                
+                child.added.execute(child, ancestor);
+            }
+        }
+        
+        override protected function removedHandler(child : ISceneNode, ancestor : Group) : void
+        {
+            super.removedHandler(child, ancestor);
+            
+            var numChildren : uint = this.numChildren;
+            
+            for (var childId : uint = 0; childId < numChildren; ++childId)
+            {
+                var child : ISceneNode = _children[childId];
+                
+                child.removed.execute(child, ancestor);
+            }
+        }
+        
 		/**
 		 * Return true if the specified scene node is a child of the Group, false otherwise.
 		 *  

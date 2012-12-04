@@ -10,7 +10,9 @@ package aerys.minko.type.animation.timeline
 		
 		private var _timeTable			: Vector.<uint>
 		private var _values				: Vector.<Matrix4x4>;
+        private var _interpolate        : Boolean;
 		private var _interpolateScale	: Boolean;
+        private var _interpolateW       : Boolean;
 
 		minko_animation function get timeTable() : Vector.<uint>
 		{
@@ -25,13 +27,17 @@ package aerys.minko.type.animation.timeline
 		public function MatrixTimeline(propertyPath		: String,
 									   timeTable		: Vector.<uint>,
 									   matrices			: Vector.<Matrix4x4>,
-									   interpolateScale	: Boolean	= false)
+                                       interpolate      : Boolean   = false,
+									   interpolateScale	: Boolean	= false,
+                                       interpolateW     : Boolean   = false)
 		{
-			super(propertyPath, timeTable[int(timeTable.length - 1)]);
+			super(propertyPath, timeTable[uint(timeTable.length - 1)]);
 			
 			_timeTable = timeTable;
 			_values = matrices;
+            _interpolate = interpolate;
 			_interpolateScale = interpolateScale;
+            _interpolateW = interpolateW;
 		}
 
 		override public function updateAt(t : int, target : Object) : void
@@ -51,21 +57,31 @@ package aerys.minko.type.animation.timeline
 			if (!out)
 			{
 				throw new Error(
-					"'" + propertyName
-					+ "' could not be found in '"
-					+ currentTarget + "'."
+                    "'" + propertyName + "' could not be found in '" + currentTarget + "'."
 				);
 			}
 
-			var previousTime		: Number	= _timeTable[int(timeId - 1)];
-			var nextTime			: Number	= _timeTable[timeId];
-			
-			out.interpolateBetween(
-				_values[int(timeId - 1)],
-				_values[timeId],
-				(time - previousTime) / (nextTime - previousTime),
-				_interpolateScale
-			);
+            if (_interpolate)
+            {
+                var previousTime		: Number	= _timeTable[int(timeId - 1)];
+                var nextTime			: Number	= _timeTable[timeId];
+                
+                out.interpolateBetween(
+                    _values[int(timeId - 1)],
+                    _values[timeId],
+                    (time - previousTime) / (nextTime - previousTime),
+                    _interpolateScale,
+                    _interpolateW
+                );
+            }
+            else
+            {
+                if (timeId == 0)
+                    out.copyFrom(_values[0]);
+                else
+                    out.copyFrom(_values[uint(timeId - 1)]);
+            }
+
 		}
 
 		private function getIndexForTime(t : uint) : uint

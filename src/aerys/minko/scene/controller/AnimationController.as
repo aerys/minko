@@ -152,7 +152,10 @@ package aerys.minko.scene.controller
 			var timeValue : uint = getAnimationTime(time);
 			
 			if (timeValue < _loopBeginTime || timeValue > _loopEndTime)
-				throw new Error('Time value is outside of playback window. To reset playback window, call resetPlaybackWindow.');
+				throw new Error(
+                    'Time value is outside of playback window. '
+                    +'To reset playback window, call resetPlaybackWindow.'
+                );
 			
 			_currentTime = timeValue;
 			
@@ -270,7 +273,8 @@ package aerys.minko.scene.controller
 				}
 				
 				if ((deltaT > 0 && lastCurrentTime > _currentTime)
-					|| (deltaT < 0 && (lastCurrentTime < _currentTime || _currentTime * lastCurrentTime < 0)))
+					|| (deltaT < 0 && (lastCurrentTime < _currentTime
+                        || _currentTime * lastCurrentTime < 0)))
 				{
 					if (_looping)
 						_looped.execute(this);

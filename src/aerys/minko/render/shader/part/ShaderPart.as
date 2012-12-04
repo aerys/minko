@@ -574,6 +574,11 @@ package aerys.minko.render.shader.part
 			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
 		
+		protected final function ternary(condition : SFloat, ifValue : SFloat, elseValue : SFloat) : SFloat
+		{
+			return mix(elseValue, ifValue, condition);
+		}
+		
 		/*protected final function rotationX(vector : Object, angle : Object) : SFloat
 		{
 			var vectorNode 	: SFloat = getNode(vector);
@@ -728,7 +733,7 @@ package aerys.minko.render.shader.part
 		
 		protected final function lessEqual(a : Object, b : Object) : SFloat
 		{
-			return saturate(add(lessThan(a, b), equal(a, b)));
+			return or(lessThan(a, b), equal(a, b));
 		}
 
 		protected final function equal(a : Object, b : Object) : SFloat

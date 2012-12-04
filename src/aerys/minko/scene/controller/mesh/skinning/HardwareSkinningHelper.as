@@ -16,8 +16,8 @@ package aerys.minko.scene.controller.mesh.skinning
 		private var _meshToProvider	: Dictionary	= new Dictionary();
 		
 		public function HardwareSkinningHelper(method			: uint,
-											 bindShape			: Matrix3D,
-											 invBindMatrices	: Vector.<Matrix3D>)
+                                               bindShape		: Matrix3D,
+                                               invBindMatrices	: Vector.<Matrix3D>)
 		{
 			super(method, bindShape, invBindMatrices);
 			
@@ -27,22 +27,17 @@ package aerys.minko.scene.controller.mesh.skinning
 				
 				scale = bindShape.decompose()[2];
 				if (scale.x != 1 || scale.y != 1 || scale.z != 1)
-					Minko.log(
-						DebugLevel.SKINNING,
-						'Cannot use Dual Quaternion skinning when the bindingShape have a scale. '
-						+ 'Please chose another SkinningMethod.'
+                    throw new Error(
+						'Cannot use SkinningMethod.HARDWARE_DUAL_QUATERNION when the ' +
+                        'bindingShape have a scale'
 					);
 				
 				for each (var invBindMatrix : Matrix3D in _invBindMatrices)
 					if (scale.x != 1 || scale.y != 1 || scale.z != 1)
-					{
-						Minko.log(
-							DebugLevel.SKINNING,
-							'Cannot use Dual Quaternion skinning when at least one inverse bind'
-							+ 'matrix have a scale. Please chose another SkinningMethod.'
+                        throw new Error(
+							'Cannot use SkinningMethod.HARDWARE_DUAL_QUATERNION when at least ' +
+                            'one inverse bind'
 						);
-						break;
-					}
 			}
 		}
 		

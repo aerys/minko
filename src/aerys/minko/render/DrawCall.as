@@ -77,6 +77,7 @@ package aerys.minko.render
 		private var _enabled			: Boolean							= true;
 		
 		private var _depth				: Number							= 0.;
+        private var _center				: Vector4							= null;
 		private var _invalidDepth		: Boolean							= false;
 		private var _localToWorld		: Matrix4x4							= null;
 		private var _worldToScreen		: Matrix4x4							= null;
@@ -147,7 +148,7 @@ package aerys.minko.render
 				if (_localToWorld != null && _worldToScreen != null)
 				{
 					var worldSpacePosition 	: Vector4	= _localToWorld.transformVector(
-						Vector4.ZERO, TMP_VECTOR4
+						_center, TMP_VECTOR4
 					);
 					var screenSpacePosition : Vector4 	= _worldToScreen.transformVector(
 						worldSpacePosition, TMP_VECTOR4
@@ -172,7 +173,6 @@ package aerys.minko.render
 			_invalidDepth = computeDepth;
 			
 			setProgram(program);
-			updateGeometry(geometry);
 			setGeometry(geometry);
 			setBindings(meshBindings, sceneBindings, computeDepth);
 		}
@@ -184,8 +184,10 @@ package aerys.minko.render
             
 			for (var parameter : String in _bindings)
 			{
-				meshBindings.removeCallback(parameter, parameterChangedHandler);
-				sceneBindings.removeCallback(parameter, parameterChangedHandler);
+                if (meshBindings.hasCallback(parameter, parameterChangedHandler))
+				    meshBindings.removeCallback(parameter, parameterChangedHandler);
+                else if (sceneBindings.hasCallback(parameter, parameterChangedHandler))
+    				sceneBindings.removeCallback(parameter, parameterChangedHandler);
 			}
 			
 			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
@@ -198,9 +200,9 @@ package aerys.minko.render
 		private function setProgram(program : Program3DResource) : void
 		{
 			_cpuConstants		= new Dictionary();
-			_vsConstants		= program._vsConstants.concat();
-			_fsConstants		= program._fsConstants.concat();
-			_fsTextures			= program._fsTextures.concat();
+			_vsConstants		= program._vsConstants.slice();
+			_fsConstants		= program._fsConstants.slice();
+			_fsTextures			= program._fsTextures.slice();
 			_vsInputComponents	= program._vertexInputComponents;
 			_vsInputIndices		= program._vertexInputIndices;
 			_bindings			= program._bindings;
@@ -223,7 +225,7 @@ package aerys.minko.render
 				geometry.computeTangentSpace();
 			}
 			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
-				&& !vertexFormat.hasComponent(VertexComponent.NORMAL))
+                && !vertexFormat.hasComponent(VertexComponent.NORMAL))
 			{
 				geometry.computeNormals();
 			}
@@ -235,6 +237,12 @@ package aerys.minko.render
 		 */		
 		public function setGeometry(geometry : Geometry, frame : uint = 0) : void
 		{
+			updateGeometry(geometry);
+			
+			_center = geometry.boundingSphere
+				? geometry.boundingSphere.center
+				: Vector4.ZERO;
+			
 			_numVertexComponents = _vsInputComponents.length;
 			_indexBuffer		 = geometry.indexStream.resource;
 			_firstIndex			 = geometry.firstIndex;
@@ -315,7 +323,7 @@ package aerys.minko.render
 			{
 				context.setTextureAt(
 					i,
-					(_fsTextures[i] as ITextureResource).getNativeTexture(context)
+					(_fsTextures[i] as ITextureResource).getTexture(context)
 				);
 			}
 			

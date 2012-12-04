@@ -23,120 +23,125 @@ package aerys.minko.scene.node
 	 */
 	public class AbstractSceneNode implements ISceneNode
 	{
-		private static var _id			: uint;
+		private static var _id	    	    	: uint;
+        
+		private var _name	    	    		: String;
+		private var _root	        			: ISceneNode;
+		private var _parent	        			: Group;
+        
+        private var _visible                    : Boolean;
+        private var _computedVisibility         : Boolean;
+		
+		private var _transform			        : Matrix4x4;
+		private var _localToWorld		        : Matrix4x4;
+		private var _worldToLocal	        	: Matrix4x4;
+		
+		private var _controllers		        : Vector.<AbstractController>;
+		
+		private var _added				        : Signal;
+		private var _removed			        : Signal;
+		private var _addedToScene		        : Signal;
+		private var _removedFromScene	        : Signal;
+		private var _controllerAdded	        : Signal;
+		private var _controllerRemoved	        : Signal;
+        private var _visibilityChanged          : Signal;
+        private var _computedVisibilityChanged  : Signal;
 
-		private var _name				: String;
-		private var _root				: ISceneNode;
-		private var _parent				: Group;
-		
-		private var _transform			: Matrix4x4;
-		private var _localToWorld		: Matrix4x4;
-		private var _worldToLocal		: Matrix4x4;
-		
-		private var _controllers		: Vector.<AbstractController>;
-		
-		private var _added				: Signal;
-		private var _removed			: Signal;
-		private var _addedToScene		: Signal;
-		private var _removedFromScene	: Signal;
-		private var _controllerAdded	: Signal;
-		private var _controllerRemoved	: Signal;
-
-		public function get x() : Number
+        final public function get x() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set x(value : Number) : void
+        final public function set x(value : Number) : void
 		{
 			_transform.translationX = value;
 		}
 		
-		public function get y() : Number
+        final public function get y() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set y(value : Number) : void
+        final public function set y(value : Number) : void
 		{
 			_transform.translationY = value;
 		}
 		
-		public function get z() : Number
+        final public function get z() : Number
 		{
 			return _transform.translationX;
 		}
-		public function set z(value : Number) : void
+        final public function set z(value : Number) : void
 		{
 			_transform.translationZ = value;
 		}
 		
-		public function get rotationX() : Number
+        final public function get rotationX() : Number
 		{
 			return _transform.rotationX;
 		}
-		public function set rotationX(value : Number) : void
+        final public function set rotationX(value : Number) : void
 		{
 			_transform.rotationX = value;
 		}
 		
-		public function get rotationY() : Number
+        final public function get rotationY() : Number
 		{
 			return _transform.rotationY;
 		}
-		public function set rotationY(value : Number) : void
+        final public function set rotationY(value : Number) : void
 		{
 			_transform.rotationY = value;
 		}
 		
-		public function get rotationZ() : Number
+        final public function get rotationZ() : Number
 		{
 			return _transform.rotationZ;
 		}
-		public function set rotationZ(value : Number) : void
+        final public function set rotationZ(value : Number) : void
 		{
 			_transform.rotationZ = value;
 		}
 		
-		public function get scaleX() : Number
+        final public function get scaleX() : Number
 		{
 			return _transform.scaleX;
 		}
-		public function set scaleX(value : Number) : void
+        final public function set scaleX(value : Number) : void
 		{
 			_transform.scaleX = value;
 		}
 		
-		public function get scaleY() : Number
+        final public function get scaleY() : Number
 		{
 			return _transform.scaleX;
 		}
-		public function set scaleY(value : Number) : void
+        final public function set scaleY(value : Number) : void
 		{
 			_transform.scaleY = value;
 		}
 		
-		public function get scaleZ() : Number
+        final public function get scaleZ() : Number
 		{
 			return _transform.scaleZ;
 		}
-		public function set scaleZ(value : Number) : void
+        final public function set scaleZ(value : Number) : void
 		{
 			_transform.scaleZ = value;
 		}
 		
-		public function get name() : String
+        public function get name() : String
 		{
 			return _name;
 		}
-		public function set name(value : String) : void
+        public function set name(value : String) : void
 		{
 			_name = value;
 		}
 		
-		public function get parent() : Group
+        final public function get parent() : Group
 		{
 			return _parent;
 		}
-		public function set parent(value : Group) : void
+        final public function set parent(value : Group) : void
 		{
 			if (value == _parent)
 				return ;
@@ -146,10 +151,7 @@ package aerys.minko.scene.node
 			{
 				var oldParent : Group = _parent;
 				
-				oldParent._children.splice(
-					oldParent.getChildIndex(this),
-					1
-				);
+				oldParent._children.splice(oldParent.getChildIndex(this), 1);
 				
 				parent._numChildren--;
 				_parent = null;
@@ -170,42 +172,66 @@ package aerys.minko.scene.node
 			}
 		}
 		
-		public function get root() : ISceneNode
+        final public function get scene() : Scene
+        {
+            return _root as Scene;
+        }
+        
+        final public function get root() : ISceneNode
 		{
 			return _root;
 		}
+        
+        public function get visible() : Boolean
+        {
+            return _visible;
+        }
+        public function set visible(value : Boolean) : void
+        {
+            if (value != _visible)
+            {
+                _visible = value;
+                _visibilityChanged.execute(this, value);
+                updateComputedVisibility();
+            }
+        }
+        
+        public function get computedVisibility() : Boolean
+        {
+            return _computedVisibility;
+        }
 		
-		public function get transform() : Matrix4x4
+        final public function get transform() : Matrix4x4
 		{
 			return _transform;
 		}
 		
-		public function get localToWorld() : Matrix4x4
+		final public function get localToWorld() : Matrix4x4
 		{
 			return _localToWorld;
 		}
 		
-		public function get worldToLocal() : Matrix4x4
+        final public function get worldToLocal() : Matrix4x4
 		{
 			return _worldToLocal;
 		}
 		
-		public function get added() : Signal
+        final public function get added() : Signal
 		{
 			return _added;
 		}
 		
-		public function get removed() : Signal
+        final public function get removed() : Signal
 		{
 			return _removed;
 		}
 
-		public function get addedToScene() : Signal
+        final public function get addedToScene() : Signal
 		{
 			return _addedToScene;
 		}
 		
-		public function get removedFromScene() : Signal
+        final public function get removedFromScene() : Signal
 		{
 			return _removedFromScene;
 		}
@@ -224,6 +250,16 @@ package aerys.minko.scene.node
 		{
 			return _controllerRemoved;
 		}
+        
+        public function get visibilityChanged() : Signal
+        {
+            return _visibilityChanged;
+        }
+        
+        public function get computedVisibilityChanged() : Signal
+        {
+            return _computedVisibilityChanged;
+        }
 		
 		public function AbstractSceneNode()
 		{
@@ -233,8 +269,10 @@ package aerys.minko.scene.node
 		private function initialize() : void
 		{
 			_name = getDefaultSceneName(this);
-			_root = this;
 			
+            _visible = true;
+            _computedVisibility = true;
+            
 			_transform = new Matrix4x4();
 			_localToWorld = new Matrix4x4();
 			_worldToLocal = new Matrix4x4();
@@ -247,7 +285,11 @@ package aerys.minko.scene.node
 			_removedFromScene = new Signal('AbstractSceneNode.removedFromScene');
 			_controllerAdded = new Signal('AbstractSceneNode.controllerAdded');
 			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
+            _visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
+            _computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
 			
+			updateRoot();
+            
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
 			_addedToScene.add(addedToSceneHandler);
@@ -256,23 +298,63 @@ package aerys.minko.scene.node
 			addController(new TransformController());
 		}
 		
-		protected function addedHandler(child : ISceneNode, parent : Group) : void
+		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			_root = _parent ? _parent.root : this;
-			if (_root is Scene)
-				_addedToScene.execute(this, _root);
+            // if ancestor == parent then the node was just added as a direct child of ancestor
+            if (ancestor == _parent)
+            {
+                _parent.computedVisibilityChanged.add(parentComputedVisibilityChangedHandler);
+                parentComputedVisibilityChangedHandler(_parent, _parent.computedVisibility);
+            }
+            
+            updateRoot();
 		}
-		
-		protected function removedHandler(child : ISceneNode, parent : Group) : void
+        
+		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			// update root
-			var oldRoot : ISceneNode = _root;
-			
-			_root = _parent ? _parent.root : this;
-			if (oldRoot is Scene)
-				_removedFromScene.execute(this, oldRoot);
+            // if parent is not set anymore, ancestor is not the direct parent of child anymore
+            if (!_parent)
+            {
+                ancestor.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
+                _computedVisibility = false;
+            }
+            
+            updateRoot();
 		}
-		
+        
+        private function updateRoot() : void
+        {
+            var newRoot : ISceneNode    = _parent ? _parent.root : this;
+            var oldRoot : ISceneNode    = _root;
+            
+            if (newRoot != oldRoot)
+            {
+                _root = newRoot;
+                if (oldRoot is Scene)
+                    _removedFromScene.execute(this, oldRoot);
+                if (newRoot is Scene)
+                    _addedToScene.execute(this, newRoot);
+            }
+        }
+        
+        protected function parentComputedVisibilityChangedHandler(parent        : Group,
+                                                                  visibility    : Boolean) : void
+        {
+           updateComputedVisibility();
+        }
+        
+        private function updateComputedVisibility() : void
+        {
+            var newComputedVisibility : Boolean = _visible
+                && (!_parent || _parent.computedVisibility);
+            
+            if (newComputedVisibility != computedVisibility)
+            {
+                _computedVisibility = newComputedVisibility;
+                _computedVisibilityChanged.execute(this, newComputedVisibility);
+            }
+        }
+        
 		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
 		{
 			// nothing
@@ -282,7 +364,7 @@ package aerys.minko.scene.node
 		{
 			// nothing
 		}
-		
+        
 		public function addController(controller : AbstractController) : ISceneNode
 		{
 			_controllers.push(controller);
@@ -295,9 +377,13 @@ package aerys.minko.scene.node
 		
 		public function removeController(controller : AbstractController) : ISceneNode
 		{
-			var numControllers	: uint = _controllers.length - 1;
+			var numControllers	: uint  = _controllers.length - 1;
+            var controllerId    : int   = _controllers.indexOf(controller);
+            
+            if (controllerId < 0)
+                throw new Error('The controller is not on the node.');
 			
-			_controllers[_controllers.indexOf(controller)] = _controllers[numControllers];
+			_controllers[controllerId] = _controllers[numControllers];
 			_controllers.length = numControllers;
 			
 			controller.removeTarget(this);

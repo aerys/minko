@@ -54,9 +54,9 @@ package aerys.minko.scene.controller.camera
 			var sceneBindings : DataBindings = scene.bindings;
 			
 			resetSceneCamera(scene);
-
-			if (camera.enabled)
-				sceneBindings.addProvider(camera.cameraData);
+            
+            if (camera.enabled)
+                sceneBindings.addProvider(camera.cameraData);
 
 			camera.activated.add(cameraActivatedHandler);
 			camera.deactivated.add(cameraDeactivatedHandler);
@@ -184,16 +184,16 @@ package aerys.minko.scene.controller.camera
 		{
 			var scene : Scene = camera.root as Scene;
 			
-			scene.bindings.addProvider(camera.cameraData);
 			resetSceneCamera(scene);
+			scene.bindings.addProvider(camera.cameraData);
 		}
 		
 		private function cameraDeactivatedHandler(camera : AbstractCamera) : void
 		{
 			var scene 	: Scene	= camera.root as Scene;
 			
-			scene.bindings.removeProvider(camera.cameraData);
 			resetSceneCamera(scene);
+			scene.bindings.removeProvider(camera.cameraData);
 		}
 		
 		private function resetSceneCamera(scene : Scene) : void

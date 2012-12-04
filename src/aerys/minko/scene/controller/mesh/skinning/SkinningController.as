@@ -80,6 +80,9 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super(Mesh);
 			
+            if (!skeletonRoot)
+                throw new Error('skeletonRoot cannot be null');
+            
 			_method				= method;
 			_skeletonRoot		= skeletonRoot;
 			_bindShapeMatrix	= bindShape.minko_math::_matrix;
@@ -114,7 +117,9 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			if (!_skinningHelper)
 			{
-				var numInfluences 	: uint = AbstractSkinningHelper.getNumInfluences(mesh.geometry.format);
+				var numInfluences 	: uint = AbstractSkinningHelper.getNumInfluences(
+                    mesh.geometry.format
+                );
 				
 				if (_joints.length > MAX_NUM_JOINTS || numInfluences > MAX_NUM_INFLUENCES)
 				{
@@ -125,14 +130,29 @@ package aerys.minko.scene.controller.mesh.skinning
 					);
 				}
 				
-				if (skinningMethod == SkinningMethod.SOFTWARE_MATRIX)
-					_skinningHelper = new SoftwareSkinningHelper(
-						_method, _bindShapeMatrix, _invBindMatrices
-					);
-				else
-					_skinningHelper = new HardwareSkinningHelper(
-						_method, _bindShapeMatrix, _invBindMatrices
-					);
+				if (skinningMethod != SkinningMethod.SOFTWARE_MATRIX)
+                {
+                    try
+                    {
+    					_skinningHelper = new HardwareSkinningHelper(
+    						_method, _bindShapeMatrix, _invBindMatrices
+    					);
+                    }
+                    catch (e : Error)
+                    {
+                        Minko.log(
+                            DebugLevel.SKINNING,
+                            'Falling back to software skinning: ' + e.message,
+                            this
+                        );
+                        
+                        _method = SkinningMethod.SOFTWARE_MATRIX;
+                    }
+                }
+                
+                _skinningHelper ||= new SoftwareSkinningHelper(
+                    _method, _bindShapeMatrix, _invBindMatrices
+                );
 			}
 			
 			_skinningHelper.addMesh(mesh);

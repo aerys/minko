@@ -61,6 +61,9 @@ package aerys.minko.render.geometry.stream
 		{
 			_data.position = 0;
 			_length = _data.length >>> 1;
+            
+            if (_length % 3 != 0)
+                throw new Error('Invalid size');
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -84,7 +87,7 @@ package aerys.minko.render.geometry.stream
 				if (length == 0)
 					length = data.bytesAvailable;
 				if (length % 6 != 0)
-					throw new Error();
+					throw new Error('Invalid size');
 				
 				data.readBytes(_data, 0, length);
 			}
@@ -257,7 +260,7 @@ package aerys.minko.render.geometry.stream
 			_data.position = 0;
 			
 			if (hasChanged)
-				_changed.execute(this);
+				invalidate();
 		}
 		
 		private static function checkReadUsage(stream : IndexStream) : void
