@@ -26,12 +26,6 @@ package aerys.minko.scene.node.light
 	{
 		public static const LIGHT_TYPE : uint = 2;
 		
-		private static const MAP_NAMES : Vector.<String> = new <String>[
-			'shadowMapCube',
-			'shadowMapDPFront',
-			'shadowMapDPBack'
-		];
-		
 		private static const TMP_VECTOR		: Vector4 = new Vector4();
 		
 		private var _shadowMapSize	: uint;
@@ -83,13 +77,11 @@ package aerys.minko.scene.node.light
 		
 		public function get shadowMapSize() : uint
 		{
-			return _shadowMapSize;
+			return lightData.getLightProperty('shadowMapSize');
 		}
 		public function set shadowMapSize(v : uint) : void
 		{
-			_shadowMapSize = v;
-			
-			this.shadowCastingType = this.shadowCastingType
+			lightData.setLightProperty('shadowMapSize', v);
 		}
 		
 		public function get shadowZNear() : Number
@@ -110,53 +102,13 @@ package aerys.minko.scene.node.light
 			lightData.setLightProperty('shadowZFar', v);
 		}
 		
-		override public function set shadowCastingType(v : uint) : void
+		public function get shadowCastingType() : uint
 		{
-			var shadowMap : ITextureResource;
-			
-			// start by clearing current shadow maps.
-			for each (var mapName : String in MAP_NAMES)
-			{
-				shadowMap = lightData.getLightProperty(mapName) as ITextureResource;
-				if (shadowMap !== null)
-				{
-					shadowMap.dispose();
-					lightData.removeProperty(mapName);
-				}
-			}
-			
-			switch (v)
-			{
-				case ShadowMappingType.NONE:
-					lightData.setLightProperty('shadowCastingType', ShadowMappingType.NONE);
-					break;
-				
-				case ShadowMappingType.DUAL_PARABOLOID:
-					if (!((_shadowMapSize & (~_shadowMapSize + 1)) == _shadowMapSize
-						&& _shadowMapSize <= 2048))
-						throw new Error(_shadowMapSize + ' is an invalid size for dual paraboloid shadow maps');
-					
-					// set textures and shadowmaptype
-					shadowMap = new TextureResource(_shadowMapSize, _shadowMapSize);
-					lightData.setLightProperty('shadowMapDPFront', shadowMap);
-					shadowMap = new TextureResource(_shadowMapSize, _shadowMapSize);
-					lightData.setLightProperty('shadowMapDPBack', shadowMap);
-					lightData.setLightProperty('shadowCastingType', ShadowMappingType.DUAL_PARABOLOID);
-					break;
-				
-				case ShadowMappingType.CUBE:
-					if (!((_shadowMapSize & (~_shadowMapSize + 1)) == _shadowMapSize
-						&& _shadowMapSize <= 1024))
-						throw new Error(_shadowMapSize + ' is an invalid size for cubic shadow maps');
-					
-					shadowMap = new CubeTextureResource(_shadowMapSize);
-					lightData.setLightProperty('shadowMapCube', shadowMap);
-					lightData.setLightProperty('shadowCastingType', ShadowMappingType.CUBE);
-					break;
-				
-				default: 
-					throw new ArgumentError('Invalid shadow casting type.');
-			}
+			return lightData.getProperty('shadowCastingType');
+		}
+		public function set shadowCastingType(value : uint) : void
+		{
+			lightData.setLightProperty('shadowCastingType', value);
 		}
         
         public function get shadowBias() : Number
@@ -176,8 +128,8 @@ package aerys.minko.scene.node.light
 								   emissionMask			: uint		= 0x1,
 								   shadowCastingType	: uint		= 0,
 								   shadowMapSize		: uint		= 512,
-								   shadowMapZNear		: Number	= 0.1,
-								   shadowMapZFar		: Number	= 1000,
+								   shadowZNear			: Number	= 0.1,
+								   shadowZFar			: Number	= 1000.,
                                    shadowBias           : uint      = 1. / 256. / 256.)
 		{
 			_shadowMapSize	= shadowMapSize;
@@ -186,30 +138,33 @@ package aerys.minko.scene.node.light
 				new PointLightController(),
 				LIGHT_TYPE,
 				color,
-				emissionMask,
-				shadowCastingType
+				emissionMask
 			);
 			
 			this.diffuse				= diffuse;
 			this.specular				= specular;
 			this.shininess				= shininess;
 			this.attenuationDistance	= attenuationDistance;
-			this.shadowZNear			= shadowMapZNear;
-			this.shadowZFar		    	= shadowMapZFar;
+			this.shadowCastingType		= shadowCastingType;
+			this.shadowZNear			= shadowZNear;
+			this.shadowZFar		    	= shadowZFar;
             this.shadowBias             = shadowBias;
-			
-			if ([ShadowMappingType.NONE,
-				 ShadowMappingType.DUAL_PARABOLOID,
-				 ShadowMappingType.CUBE].indexOf(shadowCastingType) == -1)
-				throw new Error('Invalid ShadowMappingType.');
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var light : PointLight = new PointLight(
-				color, diffuse, specular, shininess, 
-				attenuationDistance, emissionMask, 
-				shadowCastingType, shadowMapSize
+				color,
+				diffuse,
+				specular,
+				shininess, 
+				attenuationDistance,
+				emissionMask, 
+				shadowCastingType,
+				shadowMapSize,
+				shadowZFar,
+				shadowZNear,
+				shadowBias
 			);		
 			
 			light.name = this.name;

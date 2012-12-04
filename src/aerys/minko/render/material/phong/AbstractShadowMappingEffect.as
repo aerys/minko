@@ -13,19 +13,13 @@ package aerys.minko.render.material.phong
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.enum.ShadowMappingType;
 	
 	import flash.display.BitmapData;
 	
 	public class AbstractShadowMappingEffect extends Effect
 	{
 		use namespace minko_lighting;
-		
-		private const SHADOW_FACTORIES : Vector.<Function> = new <Function>[
-			manageNoShadowing,				// 0: ShadowMappingType.NONE
-			manageMatrixShadowing,			// 1: ShadowMappingType.MATRIX
-			manageDualParaboloidShadowing,	// 2: ShadowMappingType.DUAL_PARABOLOID
-			manageCubicShadowing			// 3: ShadowMappingType.CUBIC
-		];
 		
 		private var _scene				: Scene;
 		private var _renderingPass		: Shader;
@@ -97,29 +91,41 @@ package aerys.minko.render.material.phong
 				if (!lightPropertyExists(lightId, 'type'))
 					break ;
 				
-				var shadowCastingPropertyName : String = LightDataProvider.getLightPropertyName(
+				var shadowMappingPropertyName : String = LightDataProvider.getLightPropertyName(
 					'shadowCastingType',
 					lightId
 				);
 				
-				_watchedProperties.push(shadowCastingPropertyName);
-				sceneBindings.addCallback(shadowCastingPropertyName, propertyChangedHandler);
+				_watchedProperties.push(shadowMappingPropertyName);
+				sceneBindings.addCallback(shadowMappingPropertyName, propertyChangedHandler);
 				
-				if (sceneBindings.propertyExists(shadowCastingPropertyName))
-					SHADOW_FACTORIES[sceneBindings.getProperty(shadowCastingPropertyName)](lightId, passes);
+				if (sceneBindings.propertyExists(shadowMappingPropertyName))
+				{
+					var shadowMappingType : uint = sceneBindings.getProperty(
+						shadowMappingPropertyName
+					);
+					
+					switch (shadowMappingType)
+					{
+						case ShadowMappingType.MATRIX:
+							pushMatrixShadowMappingPass(lightId, passes);
+							break ;
+						case ShadowMappingType.CUBE:
+							pushCubeShadowMappingPass(lightId, passes);
+							break ;
+						case ShadowMappingType.DUAL_PARABOLOID:
+							pushDualParaboloidShadowMappingPass(lightId, passes);
+							break ;
+					}
+				}
 			}
-			
+		
 			passes.push(_renderingPass);
-			
+		
 			setPasses(passes);
 		}
 		
-		private function manageNoShadowing(lightId : uint, passes : Vector.<Shader>) : void
-		{
-			// nothing to do here, no extra rendering is necessary
-		}
-		
-		private function manageMatrixShadowing(lightId : uint, passes : Vector.<Shader>) : void
+		private function pushMatrixShadowMappingPass(lightId : uint, passes : Vector.<Shader>) : void
 		{
 			var textureResource : TextureResource	= getLightProperty(lightId, 'shadowMap');
 			var renderTarget	: RenderTarget		= new RenderTarget(
@@ -129,10 +135,10 @@ package aerys.minko.render.material.phong
 			passes.push(new MatrixShadowMapShader(lightId, lightId + 1, renderTarget));
 		}
 		
-		private function manageDualParaboloidShadowing(lightId : uint, passes : Vector.<Shader>) : void
+		private function pushDualParaboloidShadowMappingPass(lightId : uint, passes : Vector.<Shader>) : void
 		{
-			var frontTextureResource : TextureResource	= getLightProperty(lightId, 'shadowMapDPFront');
-			var backTextureResource	 : TextureResource	= getLightProperty(lightId, 'shadowMapDPBack');
+			var frontTextureResource : TextureResource	= getLightProperty(lightId, 'shadowMapFront');
+			var backTextureResource	 : TextureResource	= getLightProperty(lightId, 'shadowMapBack');
 			var size				 : uint				= frontTextureResource.width;
 			var frontRenderTarget	 : RenderTarget		= new RenderTarget(size, size, frontTextureResource, 0, 0xffffffff);
 			var backRenderTarget	 : RenderTarget		= new RenderTarget(size, size, backTextureResource, 0, 0xffffffff);
@@ -143,9 +149,9 @@ package aerys.minko.render.material.phong
 			);
 		}
 		
-		private function manageCubicShadowing(lightId : uint, passes : Vector.<Shader>) : void
+		private function pushCubeShadowMappingPass(lightId : uint, passes : Vector.<Shader>) : void
 		{
-			var textureResource	: CubeTextureResource	= getLightProperty(lightId, 'shadowMapCube');
+			var textureResource	: CubeTextureResource	= getLightProperty(lightId, 'shadowMap');
 			var size			: uint					= textureResource.size;
 			var renderTarget0	: RenderTarget			= new RenderTarget(size, size, textureResource, 0, 0xffffffff);
 			var renderTarget1	: RenderTarget			= new RenderTarget(size, size, textureResource, 1, 0xffffffff);

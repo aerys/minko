@@ -9,6 +9,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.render.shader.part.projection.IProjectionShaderPart;
 	import aerys.minko.render.shader.part.projection.ParaboloidProjectionShaderPart;
+	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.type.enum.Blending;
 	
 	import flash.geom.Rectangle;
@@ -20,10 +21,7 @@ package aerys.minko.render.material.phong
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffusePart			: DiffuseShaderPart;
 		private var _projectorPart			: IProjectionShaderPart;
-		
 		private var _lightId				: uint;
-		private var _priority				: Number;
-		private var _renderTarget			: RenderTarget;
 		
 		private var _lightSpacePosition		: SFloat;
 		
@@ -32,6 +30,8 @@ package aerys.minko.render.material.phong
 												  priority	: Number,
 												  target	: RenderTarget)
 		{
+			super(target, priority);
+			
 			_lightId				= lightId;	
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
 			_diffusePart			= new DiffuseShaderPart(this);
@@ -41,19 +41,20 @@ package aerys.minko.render.material.phong
 		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
 			passConfig.blending		= Blending.NORMAL;
-			passConfig.priority		= _priority;
-			passConfig.renderTarget	= _renderTarget;
 			passConfig.enabled		= meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
 		}
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			var worldToLight		: SFloat = sceneBindings.getParameter('lightWorldToLight' + _lightId, 16);
+			var worldToLight		: SFloat = sceneBindings.getParameter(
+				LightDataProvider.getLightPropertyName('worldToLocal', _lightId),
+				16
+			);
 			var position			: SFloat = _vertexAnimationPart.getAnimatedVertexPosition();
 			var worldPosition		: SFloat = localToWorld(position);
 			var lightPosition		: SFloat = multiply4x4(worldPosition, worldToLight);
 			var clipspacePosition	: SFloat = _projectorPart.projectVector(
-				lightPosition, PROJECTION_RECTANGLE, 0, 50
+				lightPosition, PROJECTION_RECTANGLE, 0.01, 1000
 			);
 			
 			_lightSpacePosition = interpolate(lightPosition);
@@ -66,8 +67,8 @@ package aerys.minko.render.material.phong
 			var clipspacePosition	: SFloat = _projectorPart.projectVector(
 				_lightSpacePosition,
 				PROJECTION_RECTANGLE,
-				0,
-				50
+				0.01,
+				1000
 			);
 			
 			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
@@ -78,7 +79,7 @@ package aerys.minko.render.material.phong
 				kill(subtract(0.5, lessThan(diffuse.w, alphaThreshold)));
 			}
 			
-			return float4(clipspacePosition.zzz, 1);
+			return pack(clipspacePosition.z);
 		}
 	}
 }

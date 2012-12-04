@@ -46,6 +46,7 @@ package aerys.minko.scene.controller.light
 			_lightData.setLightProperty('localToWorld', light.localToWorld);
 			_lightData.setLightProperty('worldToLocal', light.worldToLocal);
 			_lightData.setLightProperty('enabled', true);
+			_lightData.changed.add(lightDataChangedHandler);
 			
 			light.addedToScene.add(lightAddedToSceneHandler);
 			light.removedFromScene.add(lightRemovedFromSceneHandler);
@@ -62,7 +63,7 @@ package aerys.minko.scene.controller.light
 		protected function lightAddedToSceneHandler(light	: AbstractLight,
 													scene	: Scene) : void
 		{
-			_lightData.changed.add(lightDataChangedHandler);
+//			_lightData.changed.add(lightDataChangedHandler);
 			
 			sortLights(scene);
 //			if (!scene.enterFrame.hasCallback(sceneEnterFrameHandler))
@@ -72,7 +73,7 @@ package aerys.minko.scene.controller.light
 		protected function lightRemovedFromSceneHandler(light	: AbstractLight,
 														scene	: Scene) : void
 		{
-			_lightData.changed.remove(lightDataChangedHandler);
+//			_lightData.changed.remove(lightDataChangedHandler);
 			
             sortLights(scene);
 //			if (!scene.enterFrame.hasCallback(sceneEnterFrameHandler))
