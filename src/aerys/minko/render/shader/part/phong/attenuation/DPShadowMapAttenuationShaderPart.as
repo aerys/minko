@@ -42,39 +42,42 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var worldToLight	: SFloat = getLightParameter(lightId, 'worldToLocal', 16);
 			
 			var frontDepthMap	: SFloat = getLightTextureParameter(
-				lightId, 'shadowMapDPFront', 
+				lightId,
+				'shadowMapFront', 
 				SamplerFiltering.LINEAR, 
 				SamplerMipMapping.DISABLE, 
 				SamplerWrapping.CLAMP
 			);
 			
 			var backDepthMap	: SFloat = getLightTextureParameter(
-				lightId, 'shadowMapDPBack',
+				lightId,
+				'shadowMapBack',
 				SamplerFiltering.LINEAR, 
 				SamplerMipMapping.DISABLE, 
 				SamplerWrapping.CLAMP
 			);
 			
 			// transform position to light space
-			var positionFromLight		: SFloat = interpolate(multiply4x4(vsWorldPosition, worldToLight));
+			var positionFromLight		: SFloat = interpolate(
+				multiply4x4(vsWorldPosition, worldToLight)
+			);
 			var isFront					: SFloat = greaterEqual(positionFromLight.z, 0);
 			
 			// retrieve front depth
-			var uvFront					: SFloat = _paraboloidFrontPart.projectVector(positionFromLight, TEXTURE_RECTANGLE, 0, 50);
-			var frontPrecomputedDepth	: SFloat;
-			frontPrecomputedDepth = sampleTexture(frontDepthMap, uvFront);
-			frontPrecomputedDepth = frontPrecomputedDepth.x;
-//			frontPrecomputedDepth = unpack(frontPrecomputedDepth);
-			
+			var uvFront					: SFloat = _paraboloidFrontPart.projectVector(
+				positionFromLight, TEXTURE_RECTANGLE, 0.01, 1000
+			);
+			var frontPrecomputedDepth	: SFloat = unpack(sampleTexture(frontDepthMap, uvFront));
 			// retrieve back depth
-			var uvBack					: SFloat = _paraboloidBackPart.projectVector(positionFromLight, TEXTURE_RECTANGLE, 0, 50);
-			var backPrecomputedDepth	: SFloat;
-			backPrecomputedDepth = sampleTexture(backDepthMap, uvBack);
-			backPrecomputedDepth = backPrecomputedDepth.x;
-//			backPrecomputedDepth = unpack(backPrecomputedDepth);
-			
+			var uvBack					: SFloat = _paraboloidBackPart.projectVector(
+				positionFromLight, TEXTURE_RECTANGLE, 0.01, 1000
+			);
+			var backPrecomputedDepth	: SFloat = unpack(sampleTexture(backDepthMap, uvBack));
+		
 			var currentDepth			: SFloat = mix(uvBack.z, uvFront.z, isFront);
-			var precomputedDepth		: SFloat = mix(backPrecomputedDepth, frontPrecomputedDepth, isFront);
+			var precomputedDepth		: SFloat = mix(
+				backPrecomputedDepth, frontPrecomputedDepth, isFront
+			);
 			
 			return lessThan(currentDepth, add(shadowBias, precomputedDepth));
 		}

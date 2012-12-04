@@ -119,9 +119,10 @@ package aerys.minko.scene.controller.mesh
             mesh.removed.add(meshRemovedHandler);
 		}
 		
-        private function meshRemovedHandler(mesh : Mesh, parent : Group) : void
+        private function meshRemovedHandler(mesh : Mesh, ancestor : Group) : void
         {
-            parent.computedVisibilityChanged.remove(visiblityChangedHandler);
+            if (!mesh.parent)
+                ancestor.computedVisibilityChanged.remove(visiblityChangedHandler);
         }
         
 		private function meshRemovedFromSceneHandler(mesh : Mesh, scene	: Scene) : void

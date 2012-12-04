@@ -36,6 +36,9 @@ package aerys.minko.render.shader.part.phong
 		private var _distanceAttenuationPart		: DistanceAttenuationShaderPart;
 		private var _smoothConicAttenuationPart		: SmoothConicAttenuationShaderPart;
 		private var _hardConicAttenuationPart		: HardConicAttenuationShaderPart;
+		private var _matrixShadowMapAttenuation		: MatrixShadowMapAttenuationShaderPart;
+		private var _cubeShadowMapAttenuation		: CubeShadowMapAttenuationShaderPart;
+		private var _dpShadowMapAttenuation			: DPShadowMapAttenuationShaderPart;
 		
 		private function get infinitePart() : InfiniteShaderPart
 		{
@@ -67,21 +70,22 @@ package aerys.minko.render.shader.part.phong
 			return _hardConicAttenuationPart;
 		}
 		
-		private function get shadowAttenuators() : Vector.<IAttenuationShaderPart>
+		private function get matrixShadowMapAttenuation() : MatrixShadowMapAttenuationShaderPart
 		{
-			if (!_shadowAttenuators)
-			{
-				var main : Shader = this.main;
-				
-				_shadowAttenuators = new <IAttenuationShaderPart>[
-					null,
-					new MatrixShadowMapAttenuationShaderPart(main),
-					new DPShadowMapAttenuationShaderPart(main),
-					new CubeShadowMapAttenuationShaderPart(main)
-				];
-			}
-			
-			return _shadowAttenuators
+			return _matrixShadowMapAttenuation
+				|| (_matrixShadowMapAttenuation = new MatrixShadowMapAttenuationShaderPart(main));
+		}
+		
+		private function get cubeShadowMapAttenuation() : CubeShadowMapAttenuationShaderPart
+		{
+			return _cubeShadowMapAttenuation
+				|| (_cubeShadowMapAttenuation = new CubeShadowMapAttenuationShaderPart(main));
+		}
+		
+		private function get dpShadowMapAttenuation() : DPShadowMapAttenuationShaderPart
+		{
+			return _dpShadowMapAttenuation
+				|| (_dpShadowMapAttenuation = new DPShadowMapAttenuationShaderPart(main));
 		}
 		
 		public function PhongShaderPart(main : Shader)
@@ -105,14 +109,19 @@ package aerys.minko.render.shader.part.phong
 			
 			if (meshBindings.propertyExists(PhongProperties.LIGHT_MAP))
 			{
-				var lightMap	: SFloat = meshBindings.getTextureParameter(PhongProperties.LIGHT_MAP);
 				var uv			: SFloat = getVertexAttribute(VertexComponent.UV);
+				var lightMap	: SFloat = meshBindings.getTextureParameter(
+					PhongProperties.LIGHT_MAP
+				);
 				
 				contribution = sampleTexture(lightMap, interpolate(uv));
 				contribution = contribution.xyz;
 				
 				if (meshBindings.propertyExists(PhongProperties.LIGHTMAP_MULTIPLIER))
-					contribution.scaleBy(meshBindings.getParameter(PhongProperties.LIGHTMAP_MULTIPLIER, 1));
+					contribution.scaleBy(meshBindings.getParameter(
+						PhongProperties.LIGHTMAP_MULTIPLIER,
+						1
+					));
 			}
 			else
 				contribution = float3(0, 0, 0);
@@ -122,8 +131,11 @@ package aerys.minko.render.shader.part.phong
 		
 		private function getDynamicLighting() : SFloat
 		{
-			var receptionMask	: uint		= meshBindings.getConstant(PhongProperties.RECEPTION_MASK, 1);
 			var dynamicLighting : SFloat	= float3(0, 0, 0);
+			var receptionMask	: uint		= meshBindings.getConstant(
+				PhongProperties.RECEPTION_MASK,
+				1
+			);
 			
 			for (var lightId : uint = 0; ; ++lightId)
 			{
@@ -163,14 +175,20 @@ package aerys.minko.render.shader.part.phong
 		
 		private function getDirectionalLightContribution(lightId : uint) : SFloat
 		{
-			var hasDiffuse				: Boolean	= getLightConstant(lightId, 'diffuseEnabled');
-			var hasSpecular				: Boolean	= getLightConstant(lightId, 'specularEnabled');
-			var shadowCasting			: uint		= getLightConstant(lightId, 'shadowCastingType');
-			var meshReceiveShadows		: Boolean	= meshBindings.getConstant(PhongProperties.RECEIVE_SHADOWS, false);
-			var computeShadows			: Boolean	= shadowCasting != ShadowMappingType.NONE && meshReceiveShadows;
-			var normalMappingType		: uint		= meshBindings.getConstant(PhongProperties.NORMAL_MAPPING_TYPE, NormalMappingType.NONE);
-			
-			var contribution			: SFloat	= float(0);
+			var hasDiffuse			: Boolean	= getLightConstant(lightId, 'diffuseEnabled');
+			var hasSpecular			: Boolean	= getLightConstant(lightId, 'specularEnabled');
+			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
+			var contribution		: SFloat	= float(0);
+			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+				PhongProperties.RECEIVE_SHADOWS,
+				false
+			);
+			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
+				&& meshReceiveShadows;
+			var normalMappingType	: uint		= meshBindings.getConstant(
+				PhongProperties.NORMAL_MAPPING_TYPE,
+				NormalMappingType.NONE
+			);
 			
 			if (hasDiffuse)
 			{
@@ -189,7 +207,18 @@ package aerys.minko.render.shader.part.phong
 			}
 			
 			if (computeShadows)
-				contribution.scaleBy(shadowAttenuators[shadowCasting].getAttenuation(lightId));
+				switch (shadowCasting)
+				{
+					case ShadowMappingType.MATRIX :
+						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.CUBE :
+						contribution.scaleBy(cubeShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.DUAL_PARABOLOID :
+						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+				}
 			
 			return contribution;
 		}
@@ -200,9 +229,16 @@ package aerys.minko.render.shader.part.phong
 			var hasSpecular			: Boolean	= getLightConstant(lightId, 'specularEnabled');
 			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightConstant(lightId, 'attenuationEnabled');
-			var normalMappingType	: uint		= meshBindings.getConstant(PhongProperties.NORMAL_MAPPING_TYPE, NormalMappingType.NONE);
-			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(PhongProperties.RECEIVE_SHADOWS, false);
-			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE && meshReceiveShadows;
+			var normalMappingType	: uint		= meshBindings.getConstant(
+				PhongProperties.NORMAL_MAPPING_TYPE,
+				NormalMappingType.NONE
+			);
+			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+				PhongProperties.RECEIVE_SHADOWS,
+				false
+			);
+			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
+				&& meshReceiveShadows;
 			
 			var contribution		: SFloat	= float(0);
 			
@@ -226,7 +262,20 @@ package aerys.minko.render.shader.part.phong
 				contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
 			
 			if (computeShadows)
-				contribution.scaleBy(shadowAttenuators[shadowCasting].getAttenuation(lightId));
+			{
+				switch (shadowCasting)
+				{
+					case ShadowMappingType.MATRIX :
+						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.CUBE :
+						contribution.scaleBy(cubeShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.DUAL_PARABOLOID :
+						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+				}
+			}
 			
 			return contribution;
 		}
@@ -238,9 +287,16 @@ package aerys.minko.render.shader.part.phong
 			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightConstant(lightId, 'attenuationEnabled');
 			var lightHasSmoothEdge	: Boolean	= getLightConstant(lightId, 'smoothRadius');
-			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(PhongProperties.RECEIVE_SHADOWS, false);
-			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE && meshReceiveShadows;
-			var normalMappingType	: uint		= meshBindings.getConstant(PhongProperties.NORMAL_MAPPING_TYPE, NormalMappingType.NONE);
+			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+				PhongProperties.RECEIVE_SHADOWS,
+				false
+			);
+			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
+				&& meshReceiveShadows;
+			var normalMappingType	: uint		= meshBindings.getConstant(
+				PhongProperties.NORMAL_MAPPING_TYPE,
+				NormalMappingType.NONE
+			);
 			var contribution		: SFloat	= float(0);
 			
 			if (hasDiffuse)
@@ -268,7 +324,18 @@ package aerys.minko.render.shader.part.phong
 				contribution.scaleBy(hardConicAttenuationPart.getAttenuation(lightId));
 			
 			if (computeShadows)
-				contribution.scaleBy(shadowAttenuators[shadowCasting].getAttenuation(lightId));
+				switch (shadowCasting)
+				{
+					case ShadowMappingType.MATRIX :
+						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.CUBE :
+						contribution.scaleBy(cubeShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.DUAL_PARABOLOID :
+						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+				}
 			
 			return contribution;
 		}

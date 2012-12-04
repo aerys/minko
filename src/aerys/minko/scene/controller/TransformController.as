@@ -86,20 +86,20 @@ package aerys.minko.scene.controller
             _node.localToWorld.unlock();
 		}
 		
-		private function addedHandler(node : ISceneNode, parent : Group) : void
+		private function addedHandler(node : ISceneNode, ancestor : Group) : void
 		{
-			if (node === _node)
+			if (node === _node && ancestor === _node.parent)
 			{
-				parent.localToWorld.changed.add(transformChangedHandler);
+				ancestor.localToWorld.changed.add(transformChangedHandler);
 				transformChangedHandler(_node.transform);
 			}
 		}
 		
-		private function removedHandler(node : ISceneNode, parent : Group) : void
+		private function removedHandler(node : ISceneNode, ancestor : Group) : void
 		{
-			if (node === _node)
+			if (node === _node && !_node.parent)
 			{
-				parent.localToWorld.changed.remove(transformChangedHandler);
+                ancestor.localToWorld.changed.remove(transformChangedHandler);
 				transformChangedHandler(_node.transform);
 			}
 		}

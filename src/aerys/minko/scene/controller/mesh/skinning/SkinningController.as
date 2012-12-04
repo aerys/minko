@@ -80,6 +80,9 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super(Mesh);
 			
+            if (!skeletonRoot)
+                throw new Error('skeletonRoot cannot be null');
+            
 			_method				= method;
 			_skeletonRoot		= skeletonRoot;
 			_bindShapeMatrix	= bindShape.minko_math::_matrix;

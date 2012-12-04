@@ -7,7 +7,7 @@ package aerys.minko.type.math
 	
 	import flash.geom.Vector3D;
 
-	public class Vector4 implements IWatchable
+	final public class Vector4 implements IWatchable
 	{
 		use namespace minko_math;
 		
@@ -202,7 +202,9 @@ package aerys.minko.type.math
 
 		public function copyFrom(source : Vector4) : Vector4
 		{
-			return set(source.x, source.y, source.z, source.w);
+            var sourceVector : Vector3D = source._vector;
+            
+			return set(sourceVector.x, sourceVector.y, sourceVector.z, sourceVector.w);
 		}
 
 		public function incrementBy(vector : Vector4) : Vector4

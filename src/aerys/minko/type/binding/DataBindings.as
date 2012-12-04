@@ -65,7 +65,8 @@ package aerys.minko.type.binding
 				
 				if (_bindingNames.indexOf(bindingName) != -1)
 					throw new Error(
-						'Another data provider is already declaring the \'' + bindingName + '\' property.'
+						'Another data provider is already declaring the \'' + bindingName
+                        + '\' property.'
 					);
 				
 				_bindingNameToProvider[bindingName] = provider;
@@ -85,7 +86,7 @@ package aerys.minko.type.binding
 			var tmpValues				: Object			= {};
 			
 			if (providerBindingsNames == null)
-				throw new ArgumentError('Unkown provider.');
+				throw new ArgumentError('Unknown provider.');
 			
 			var numBindings : uint = _bindingNames.length;
 			for (var indexRead : uint = 0, indexWrite : uint = 0; indexRead < numBindings; ++indexRead)

@@ -284,7 +284,7 @@ package aerys.minko.render.geometry.stream
 		 */
 		public function lock() : ByteArray
 		{
-			if (_locked) 
+			if (_locked)
 				throw new Error('The stream is already locked.');
 			if (_localDispose)
 				throw new Error('Cannot lock stream data which is already disposed.');

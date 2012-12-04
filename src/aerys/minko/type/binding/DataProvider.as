@@ -121,7 +121,7 @@ package aerys.minko.type.binding
 			
 			if (oldValue === null)
 				_changed.execute(this, 'dataDescriptor');
-			else
+//			else
 				_changed.execute(this, name);
 			
 			return this;

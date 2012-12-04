@@ -42,6 +42,11 @@ package aerys.minko.type
 		
 		public function remove(callback : Function) : void
 		{
+			var index : int = _callbacks.indexOf(callback);
+			
+			if (index < 0)
+				throw new Error('This callback does not exist.');
+            
 			if (_executed)
 			{
 				if (_toRemove)
@@ -52,11 +57,6 @@ package aerys.minko.type
 				
 				return ;
 			}
-			
-			var index : int = _callbacks.indexOf(callback);
-			
-			if (index < 0)
-				throw new Error('This callback does not exist.');
 			
 			--_numCallbacks;
 			_callbacks[index] = _callbacks[_numCallbacks];

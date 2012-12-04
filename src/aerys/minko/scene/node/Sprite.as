@@ -14,7 +14,7 @@ package aerys.minko.scene.node
 		private static const EFFECT	: Effect	= new Effect(new SpriteShader());
 		private static const GEOM	: Geometry	= new BillboardsGeometry(1);
 		
-		override public function get x() : Number
+		/*override public function get x() : Number
 		{
 			return bindings.getProperty('x') as Number;
 		}
@@ -30,7 +30,7 @@ package aerys.minko.scene.node
 		override public function set y(value : Number) : void
 		{
 			properties.setProperty('y', value);
-		}
+		}*/
 		
 		public function get width() : Number
 		{

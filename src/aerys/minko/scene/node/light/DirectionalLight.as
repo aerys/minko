@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.DirectionalLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -51,10 +52,9 @@ package aerys.minko.scene.node.light
 		{
 			return lightData.getLightProperty('shininess') as Number;
 		}
-		
-		public function get shadowMapSize() : uint
+		public function set shininess(value : Number) : void
 		{
-			return lightData.getLightProperty('shadowMapSize');
+			lightData.setLightProperty('shininess', value);
 		}
 		
 		public function get shadowWidth() : Number
@@ -93,80 +93,63 @@ package aerys.minko.scene.node.light
 			lightData.setLightProperty('shadowSpread', v);
 		}
 		
-		public function set shininess(v : Number) : void
+		public function get shadowMapSize() : uint
 		{
-			lightData.setLightProperty('shininess', v);
+			return lightData.getLightProperty('shadowMapSize');
 		}
-		
 		public function set shadowMapSize(v : uint) : void
 		{
 			lightData.setLightProperty('shadowMapSize', v);
-			
-			this.shadowCastingType = this.shadowCastingType;
-		}
-		override public function set shadowCastingType(v : uint) : void
-		{
-			var shadowMapSize	: uint				= this.shadowMapSize;
-			var shadowMap		: TextureResource	= lightData.getLightProperty('shadowMap')
-                as TextureResource;
-			
-			if (shadowMap)
-			{
-				lightData.removeLightProperty('shadowMap');
-				shadowMap.dispose();
-			}
-			
-			switch (v)
-			{
-				case ShadowMappingType.NONE:
-					lightData.setLightProperty('shadowCastingType', ShadowMappingType.NONE);
-					break;
-				
-				case ShadowMappingType.MATRIX:
-					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize && shadowMapSize <= 2048))
-						throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
-					
-					shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
-					lightData.setLightProperty('shadowMap', shadowMap);
-					lightData.setLightProperty('shadowCastingType', ShadowMappingType.MATRIX);
-					break;
-				
-				default: 
-					throw new ArgumentError('Invalid shadow casting type.');
-			}
 		}
 		
-		public function DirectionalLight(color						: uint		= 0xFFFFFFFF,
-									 	 diffuse					: Number	= .6,
-										 specular					: Number	= .8,
-										 shininess					: Number	= 64,
-										 emissionMask				: uint		= 0x1,
-										 shadowCasting				: uint		= 0,
-										 shadowMapSize				: uint		= 512,
-										 shadowMapMaxZ				: Number	= 1000,
-										 shadowMapWidth				: Number	= 20,
-										 shadowMapQuality			: uint		= 0,
-										 shadowMapSamplingDistance	: uint		= 1)
+		public function get shadowCastingType() : uint
+		{
+			return lightData.getLightProperty('shadowCastingType');
+		}
+		public function set shadowCastingType(value : uint) : void
+		{
+			lightData.setLightProperty('shadowCastingType', value);
+		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
+		
+		public function DirectionalLight(color				: uint		= 0xFFFFFFFF,
+									 	 diffuse			: Number	= .6,
+										 specular			: Number	= .8,
+										 shininess			: Number	= 64,
+										 emissionMask		: uint		= 0x1,
+										 shadowCastingType	: uint		= 0,
+										 shadowMapSize		: uint		= 512,
+										 shadowZFar			: Number	= 1000,
+										 shadowWidth		: Number	= 20,
+										 shadowQuality		: uint		= 0,
+										 shadowSpread		: uint		= 1,
+                                         shadowBias         : uint      = 1. / 256. / 256.)
 		{
 			super(
 				new DirectionalLightController(),
 				LIGHT_TYPE,
 				color,
-				emissionMask,
-				shadowCasting
+				emissionMask
 			);
 			
-			this.diffuse		= diffuse;
-			this.specular		= specular;
-			this.shininess		= shininess;
-			this.shadowZFar		= shadowMapMaxZ;
-			this.shadowWidth	= shadowMapWidth;
-			this.shadowMapSize	= shadowMapSize;
-			this.shadowQuality	= shadowMapQuality;
-			this.shadowSpread	= shadowMapSamplingDistance;
-			
-			if ([ShadowMappingType.NONE, ShadowMappingType.MATRIX].indexOf(shadowCasting) == -1)
-				throw new Error('Invalid ShadowMappingType.');
+			this.diffuse			= diffuse;
+			this.specular			= specular;
+			this.shininess			= shininess;
+			this.shadowCastingType	= shadowCastingType;
+			this.shadowZFar			= shadowZFar;
+			this.shadowWidth		= shadowWidth;
+			this.shadowMapSize		= shadowMapSize;
+			this.shadowQuality		= shadowQuality;
+			this.shadowSpread		= shadowSpread;
+            this.shadowBias     	= shadowBias;
 			
 			transform.lookAt(Vector4.ZERO, new Vector4(1, -1, 1));
 		}
@@ -180,7 +163,12 @@ package aerys.minko.scene.node.light
 				shininess,
 				emissionMask,
 				shadowCastingType,
-				shadowMapSize
+				shadowMapSize,
+				shadowZFar,
+				shadowWidth,
+				shadowQuality,
+				shadowSpread,
+                shadowBias
 			);
 			
 			light.name = this.name;
