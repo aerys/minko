@@ -9,6 +9,12 @@ Minko is a free and open source real-time 3D framework for the web, desktop and 
 * Android 2.2+ smartphones and tablets
 * iPhone 3GS, iPhone 4, iPhone 4S, iPad, iPad 2 and iPad 3
 
+Support
+-------
+
+You can get free support on our official forum: [Aerys Answers](http://answers.aerys.in/).
+If you need professional services, please [contact us](http://aerys.in/contact)!
+
 Documentation
 -------------
 
@@ -56,7 +62,6 @@ Open Source Examples
 Code samples are available in a separate github repository: [minko-examples](https://github.com/aerys/minko-examples).
 
 [![Procedural Terrain](http://static.aerys.in:8080/minko/images/vignette_minko_terrain.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/06/04/procedural-terrain-with-minko-2/)
-[![Submarine](http://static.aerys.in:8080/minko/images/vignette_minko_submarine.jpg)](http://blogs.aerys.in/jeanmarc-leroux/2012/08/13/minko-weekly-roundup-1/#submarine)
 [![Wireframe](http://static.aerys.in:8080/minko/images/vignette_minko_wireframe.jpg)](http://static.aerys.in:8080/minko/examples/WireframeExample.html)
 [![Astroboy](http://static.aerys.in:8080/minko/images/vignette_minko_astroboy.jpg)](http://static.aerys.in:8080/minko/examples/AstroboyExample.html)
 [![Cel-Shading](http://static.aerys.in:8080/minko/images/vignette_minko_celshading.jpg)](http://static.aerys.in:8080/minko/examples/CelShadingExample.html)
@@ -101,11 +106,6 @@ Features
 * Lighting engine (Phong lighting, environmental mapping, shadow mapping, fog...)
 * Pixel-perfect 3D mouse interactivity
 * 3D assets compression
-
-Support
--------
-
-You can get free support on our official forum: [Aerys Answers](http://answers.aerys.in/). If you need professional services, please [contact us](http://aerys.in/contact)!
 
 Contribute
 ----------
