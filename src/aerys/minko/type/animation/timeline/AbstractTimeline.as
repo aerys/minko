@@ -1,5 +1,9 @@
 package aerys.minko.type.animation.timeline
 {
+	import aerys.minko.render.geometry.primitive.CylinderGeometry;
+	
+	import flash.utils.Dictionary;
+
 	/**
 	 * The base class to extend to create new animation timeline types.
 	 * 
@@ -8,13 +12,15 @@ package aerys.minko.type.animation.timeline
 	 */
 	public class AbstractTimeline implements ITimeline
 	{
-		private var _propertyPath	: String			= null;
-		private var _parts			: Vector.<String>	= null;
+		private var _propertyPath			: String			= null;
+		private var _parts					: Vector.<String>	= null;
+		private var _numParts				: int 				= 0;
 		
-		private var _duration		: uint				= 0;
+		private var _duration				: uint				= 0;
 		
-		private var _currentTarget	: Object			= null;
-		private var _propertyName	: String			= null;
+		protected var _currentTarget		: Object			= null;
+		protected var _propertyName			: String			= null;
+		private var _targetToCurrentTarget	: Dictionary 		= new Dictionary();
 		
 		public function get duration() : uint
 		{
@@ -47,17 +53,25 @@ package aerys.minko.type.animation.timeline
 		
 		private function initialize() : void
 		{
-			_parts = Vector.<String>(_propertyPath.split("."));
-			_propertyName = _parts[int(_parts.length - 1)] as String;
+			_parts 		= Vector.<String>(_propertyPath.split("."));
+			_numParts 	= int(_parts.length - 1);
+			
+			_propertyName = _parts[_numParts] as String;
 		}
 		
 		public function updateAt(time : int, target : Object) : void
 		{
-			_currentTarget = target;
+			if (_targetToCurrentTarget[target] == null)
+			{		
+				_currentTarget = target;
+				
+				for (var partId : int = 0; partId < _numParts; ++partId)
+					_currentTarget = _currentTarget[_parts[partId] as String];
+				
+				_targetToCurrentTarget[target] = _currentTarget;
+			}
 			
-			var lastPartId : int = _parts.length - 1;
-			for (var partId : int = 0; partId < lastPartId; ++partId)
-				_currentTarget = _currentTarget[_parts[partId] as String];
+			_currentTarget = _targetToCurrentTarget[target];
 		}
 		
 		public function clone() : ITimeline

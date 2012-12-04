@@ -339,16 +339,17 @@ package aerys.minko.scene.controller.scene
 												target 		: BitmapData,
 												time		: Number) : void
 		{
-			var viewportWidth	: Number = viewport.width;
-			var viewportHeight	: Number = viewport.height;
+			var viewportWidth	: Number 		= viewport.width;
+			var viewportHeight	: Number 		= viewport.height;
+			var sceneProperties	: DataProvider 	= _scene.properties;
 			
-			_scene.properties.setProperty('time', time);
+			sceneProperties.setProperty('time', time);
 			
 			if (viewportWidth != _lastViewportWidth)
-				_scene.properties.setProperty('viewportWidth', viewport.width);
+				sceneProperties.setProperty('viewportWidth', viewportWidth);
 			
 			if (viewportHeight != _lastViewportHeight)
-				_scene.properties.setProperty('viewportHeight', viewport.height);
+				sceneProperties.setProperty('viewportHeight', viewportHeight);
 			
 			_lastViewportWidth	= viewportWidth;
 			_lastViewportHeight	= viewportHeight
