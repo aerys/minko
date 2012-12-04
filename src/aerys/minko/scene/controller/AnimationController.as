@@ -236,11 +236,13 @@ package aerys.minko.scene.controller
 				for (var j : uint = 0; j < numTargets; ++j)
 				{
 					var ctrlTarget		: ISceneNode	= getTarget(j);
-					var numTimelines 	: int 			= _timelines.length;
-					var group			: Group			= target as Group;
 					
 					if (ctrlTarget.root != scene)
 						continue ;
+
+					var numTimelines 	: int 			= _timelines.length;
+					var group			: Group			= target as Group;
+					
 					
 					for (var i : int = 0; i < numTimelines; ++i)
 					{

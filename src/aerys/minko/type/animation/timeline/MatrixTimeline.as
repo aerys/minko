@@ -13,6 +13,7 @@ package aerys.minko.type.animation.timeline
         private var _interpolate        : Boolean;
 		private var _interpolateScale	: Boolean;
         private var _interpolateW       : Boolean;
+		private var _timeTableLength	: uint;
 
 		minko_animation function get timeTable() : Vector.<uint>
 		{
@@ -32,12 +33,13 @@ package aerys.minko.type.animation.timeline
                                        interpolateW     : Boolean   = false)
 		{
 			super(propertyPath, timeTable[uint(timeTable.length - 1)]);
-			
-			_timeTable = timeTable;
-			_values = matrices;
-            _interpolate = interpolate;
-			_interpolateScale = interpolateScale;
-            _interpolateW = interpolateW;
+		
+			_timeTableLength	= timeTable.length;
+			_timeTable 			= timeTable;
+			_values 			= matrices;
+            _interpolate 		= interpolate;
+			_interpolateScale 	= interpolateScale;
+            _interpolateW 		= interpolateW;
 		}
 
 		override public function updateAt(t : int, target : Object) : void
@@ -46,18 +48,18 @@ package aerys.minko.type.animation.timeline
 			
 			var time		: uint	= t < 0 ? duration + t : t;
 			var timeId		: uint 	= getIndexForTime(time);
-			var timeCount	: uint 	= _timeTable.length;
+			var timeCount	: uint 	= _timeTableLength;
 			
 			if (timeId >= timeCount)
 				timeId = timeCount - 1;
 			
 			// change matrix value.
-			var out : Matrix4x4 = currentTarget[propertyName];
+			var out : Matrix4x4 = _currentTarget[_propertyName];
 			
 			if (!out)
 			{
 				throw new Error(
-                    "'" + propertyName + "' could not be found in '" + currentTarget + "'."
+                    "'" + _propertyName + "' could not be found in '" + _currentTarget + "'."
 				);
 			}
 
@@ -87,7 +89,7 @@ package aerys.minko.type.animation.timeline
 		private function getIndexForTime(t : uint) : uint
 		{
 			// use a dichotomy to find the current frame in the time table.
-			var timeCount 		: uint = _timeTable.length;
+			var timeCount 		: uint = _timeTableLength;
 			var bottomTimeId	: uint = 0;
 			var upperTimeId		: uint = timeCount;
 			var timeId			: uint;

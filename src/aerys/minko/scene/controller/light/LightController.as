@@ -155,5 +155,10 @@ package aerys.minko.scene.controller.light
 		{
 			return light1.type - light2.type;
 		}
+		
+		override public function clone():AbstractController
+		{
+			return new LightController(null);
+		}
 	}
 }

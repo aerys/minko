@@ -197,20 +197,20 @@ package aerys.minko.scene.controller
 			_sceneData = new DataProvider({pickingProjection : new Matrix4x4()});
 			_meshData = new Dictionary(true);
 			
-			_mouseClick	= new Signal('PickingController.mouseClick');
-			_mouseDoubleClick = new Signal('PickingController.mouseDoubleClick');
-			_mouseDown = new Signal('PickingController.mouseDown');
-			_mouseMove = new Signal('PickingController.mouseMove');
-			_mouseUp = new Signal('PickingController.mouseUp');
-			_mouseWheel = new Signal('PickingController.mouseWheel');
-			_mouseRollOver = new Signal('PickingController.mouseRollOver');
-			_mouseRollOut = new Signal('PickingController.mouseRollOut');
-			_mouseRightClick = new Signal('PickingController.mouseRightClick');
-			_mouseRightDown = new Signal('PickingController.mouseRightDown');
-			_mouseRightUp = new Signal('PickingController.mouseRightUp');
-			_mouseMiddleClick = new Signal('PickingController.mouseMiddleClick');
-			_mouseMiddleDown = new Signal('PickingController.mouseMiddleDown');
-			_mouseMiddleUp = new Signal('PickingController.mouseMiddleUp');
+			_mouseClick			= new Signal('PickingController.mouseClick');
+			_mouseDoubleClick 	= new Signal('PickingController.mouseDoubleClick');
+			_mouseDown 			= new Signal('PickingController.mouseDown');
+			_mouseMove 			= new Signal('PickingController.mouseMove');
+			_mouseUp 			= new Signal('PickingController.mouseUp');
+			_mouseWheel 		= new Signal('PickingController.mouseWheel');
+			_mouseRollOver 		= new Signal('PickingController.mouseRollOver');
+			_mouseRollOut 		= new Signal('PickingController.mouseRollOut');
+			_mouseRightClick 	= new Signal('PickingController.mouseRightClick');
+			_mouseRightDown 	= new Signal('PickingController.mouseRightDown');
+			_mouseRightUp 		= new Signal('PickingController.mouseRightUp');
+			_mouseMiddleClick 	= new Signal('PickingController.mouseMiddleClick');
+			_mouseMiddleDown 	= new Signal('PickingController.mouseMiddleDown');
+			_mouseMiddleUp 		= new Signal('PickingController.mouseMiddleUp');
 			
 			if (!SHADER.begin.hasCallback(cleanPickingMap))
 			{

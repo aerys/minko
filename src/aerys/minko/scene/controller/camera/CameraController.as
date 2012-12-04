@@ -153,12 +153,15 @@ package aerys.minko.scene.controller.camera
 				worldToScreen.lock();
 				
 				if (_ortho)
+				{
+					var cameraZoom : Number = cameraData.zoom;
 					projection.ortho(
-						viewportWidth / cameraData.zoom,
-						viewportHeight / cameraData.zoom,
+						viewportWidth / cameraZoom,
+						viewportHeight / cameraZoom,
 						cameraData.zNear,
 						cameraData.zFar
 					);
+				}
 				else
 					projection.perspectiveFoV(
 						cameraData.fieldOfView,
