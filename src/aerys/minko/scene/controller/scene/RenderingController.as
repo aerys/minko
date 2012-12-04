@@ -409,9 +409,9 @@ package aerys.minko.scene.controller.scene
 		
 		private function addMesh(mesh : Mesh) : void
 		{
+			mesh.bindings.addCallback('visible', meshVisibilityChangedHandler);
+			mesh.bindings.addCallback('insideFrustum', meshVisibilityChangedHandler);
 			mesh.bindings.addCallback('effect', meshEffectChangedHandler);
-            
-            mesh.computedVisibilityChanged.add(meshVisibilityChangedHandler);
 			mesh.frameChanged.add(meshFrameChangedHandler);
 			mesh.geometryChanged.add(meshGeometryChangedHandler);
 			
@@ -432,9 +432,9 @@ package aerys.minko.scene.controller.scene
 		
 		private function removeMesh(mesh : Mesh) : void
 		{
+			mesh.bindings.removeCallback('visible', meshVisibilityChangedHandler);
+			mesh.bindings.removeCallback('insideFrustum', meshVisibilityChangedHandler);
 			mesh.bindings.removeCallback('effect', meshEffectChangedHandler);
-            
-            mesh.computedVisibilityChanged.remove(meshVisibilityChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
 			mesh.geometryChanged.remove(meshGeometryChangedHandler);
 			
@@ -468,7 +468,7 @@ package aerys.minko.scene.controller.scene
 					// create drawcall
 					var newDrawCall		: DrawCall			= new DrawCall();
 					
-					newDrawCall.enabled = mesh.computedVisibility;
+					newDrawCall.enabled = mesh.visible;
 					
 					if (passInstance.program != null)
 					{
@@ -554,7 +554,7 @@ package aerys.minko.scene.controller.scene
 				var passInstance	: ShaderInstance	= passTemplate.fork(meshBindings, sceneBindings);
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.enabled = mesh.computedVisibility;
+				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
 				{
 					drawCall.configure(
@@ -597,7 +597,7 @@ package aerys.minko.scene.controller.scene
 				// create drawcall
 				var drawCall		: DrawCall			= new DrawCall();
 				
-				drawCall.enabled = mesh.computedVisibility;
+				drawCall.enabled = mesh.visible;
 				if (passInstance.program != null)
 				{
 					drawCall.configure(
@@ -659,14 +659,18 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function meshVisibilityChangedHandler(mesh                  : Mesh,
-                                                      computedVisibility    : Boolean) : void
+		private function meshVisibilityChangedHandler(bindings		: DataBindings,
+													  propertyName	: String,
+													  oldValue		: Object,
+													  newValue		: Object) : void
 		{
+			var mesh			: Mesh 				= bindings.owner as Mesh;
+			var enabled			: Boolean			= newValue as Boolean;
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numDrawCalls	: uint				= drawCalls.length;
 			
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
-				(drawCalls[drawCallId] as DrawCall).enabled = computedVisibility;
+				(drawCalls[drawCallId] as DrawCall).enabled = enabled;
 		}
 		
 		private function meshFrameChangedHandler(mesh		: Mesh,
@@ -700,6 +704,7 @@ package aerys.minko.scene.controller.scene
 				{
 					var drawCall	: DrawCall	= drawCalls[callId];
 					
+					drawCall.updateGeometry(newGeometry);
 					drawCall.setGeometry(newGeometry, frame);
 				}
 			}

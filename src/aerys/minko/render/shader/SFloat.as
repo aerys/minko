@@ -133,7 +133,7 @@ package aerys.minko.render.shader
 			);
 		}
 		
-		private function getPropertyWriteComponentMask(string : String) : uint
+		public static function getPropertyWriteComponentMask(string : String) : uint
 		{
 			var result : uint = 0x04040404;
 			

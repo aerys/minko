@@ -21,7 +21,6 @@ package aerys.minko.type.math
 
 		private static const TMP_VECTOR				: Vector.<Number>	= new <Number>[];
 		private static const TMP_VECTOR4			: Vector4			= new Vector4();
-        private static const TMP_VECTOR4_2			: Vector4			= new Vector4();
 		private static const TMP_MATRIX				: Matrix4x4			= new Matrix4x4();
 		
 		private static const COMPONENT_TRANSLATION	: uint				= 1;
@@ -200,10 +199,6 @@ package aerys.minko.type.math
 		public function copyFrom(matrix : Matrix4x4) : Matrix4x4
 		{
 			_matrix.copyFrom(matrix._matrix);
-			_invalidComponents = matrix._invalidComponents;
-			_translation.copyFrom(matrix._translation);
-			_rotation.copyFrom(matrix._rotation);
-			_scale.copyFrom(matrix._scale);
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -214,7 +209,6 @@ package aerys.minko.type.math
 		public function copyFromMatrix3D(matrix : Matrix3D) : Matrix4x4
 		{
 			_matrix.copyFrom(matrix);
-			_invalidComponents = COMPONENT_ALL;
 			
 			if (!_locked)
 				_changed.execute(this);
@@ -531,37 +525,23 @@ package aerys.minko.type.math
 			return this;
 		}
 
-		public function interpolateTo(target            : Matrix4x4,
-                                      ratio             : Number,
-                                      interpolateScale  : Boolean = true,
-                                      interpolateW      : Boolean = true) : Matrix4x4
+		public function interpolateTo(target : Matrix4x4, ratio : Number, withScale : Boolean = true) : Matrix4x4
 		{
-			_invalidComponents = COMPONENT_ROTATION | COMPONENT_TRANSLATION;
-			
-			if (interpolateScale)
+			if (withScale)
 			{
-				_invalidComponents |= COMPONENT_SCALE;
-				
-				var scale   : Vector4	= getScale(TMP_VECTOR4);
-				var sx	    : Number	= scale.x;
-				var sy	    : Number	= scale.y;
-				var sz	    : Number	= scale.z;
+				var scale	: Vector4	= getScale(TMP_VECTOR4);
+				var sx		: Number	= scale.x;
+				var sy		: Number	= scale.y;
+				var sz		: Number	= scale.z;
 				
 				scale = target.getScale(TMP_VECTOR4);
-                sx += (scale.x - sx) * ratio;
-                sy += (scale.y - sy) * ratio;
-                sz += (scale.z - sz) * ratio;
-                
+				
 				_matrix.interpolateTo(target._matrix, ratio);
-                _matrix.appendScale(sx, sy, sz);
-                
-                if (interpolateW)
-                {
-                    var translation : Vector4   = getTranslation(TMP_VECTOR4);
-                    
-                    translation.lerp(target.getTranslation(TMP_VECTOR4_2), ratio);
-                    setColumn(3, translation);
-                }
+				_matrix.appendScale(
+					sx + (scale.x - sx) * ratio,
+					sy + (scale.y - sy) * ratio,
+					sz + (scale.z - sz) * ratio
+				);
 			}
 			else
 			{
@@ -574,14 +554,13 @@ package aerys.minko.type.math
 			return this;
 		}
 		
-		public function interpolateBetween(m1 			    : Matrix4x4,
-										   m2 			    : Matrix4x4,
-										   ratio 		    : Number,
-										   interpolateScale : Boolean   = true,
-                                           interpolateW     : Boolean   = true) : Matrix4x4
+		public function interpolateBetween(m1 			: Matrix4x4,
+										   m2 			: Matrix4x4,
+										   ratio 		: Number,
+										   withScale 	: Boolean = true) : Matrix4x4
 		{
 			_matrix.copyFrom(m1._matrix);
-			interpolateTo(m2, ratio, interpolateScale, interpolateW);
+			interpolateTo(m2, ratio, withScale);
 			
 			return this;
 		}
