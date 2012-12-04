@@ -95,7 +95,7 @@ package aerys.minko.scene.node.light
 		
 		public function get shadowMapSize() : uint
 		{
-			return lightData.getProperty('shadowMapSize');
+			return lightData.getLightProperty('shadowMapSize');
 		}
 		public function set shadowMapSize(v : uint) : void
 		{
