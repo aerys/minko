@@ -4,6 +4,7 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.scene.node.light.PointLight;
+	import aerys.minko.type.enum.ShadowMappingType;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
@@ -12,14 +13,14 @@ package aerys.minko.scene.controller.light
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class PointLightController extends LightController
+	public final class PointLightController extends LightShadowController
 	{
 		private var _worldPosition	: Vector4;
 		private var _projection		: Matrix4x4;
 		
 		public function PointLightController()
 		{
-			super(PointLight);
+			super(PointLight, ShadowMappingType.CUBE | ShadowMappingType.DUAL_PARABOLOID);
 			
 			initialize();
 		}

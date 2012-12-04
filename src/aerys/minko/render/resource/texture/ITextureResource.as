@@ -25,8 +25,6 @@ package aerys.minko.render.resource.texture
 		
 		function setContentFromATF(atf : ByteArray) : void;
 		
-		function getNativeTexture(context : Context3DResource) : TextureBase;
-		
-		function setSize(w : uint, h : uint) : void;
+		function getTexture(context : Context3DResource) : TextureBase;
 	}
 }

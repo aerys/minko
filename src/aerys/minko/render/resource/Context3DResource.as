@@ -68,7 +68,7 @@ package aerys.minko.render.resource
 							  stencil	: uint		= 0,
 							  mask		: uint		= 0xffffffff) : void
 		{
-			_context.clear(red, green, blue, alpha, depth, stencil);
+			_context.clear(red, green, blue, alpha, depth, stencil, mask);
 		}
 		
 		public function configureBackBuffer(width					: int,

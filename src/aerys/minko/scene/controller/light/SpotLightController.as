@@ -4,6 +4,7 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.scene.node.light.SpotLight;
+	import aerys.minko.type.enum.ShadowMappingType;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -12,7 +13,7 @@ package aerys.minko.scene.controller.light
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class SpotLightController extends LightController
+	public final class SpotLightController extends LightShadowController
 	{
 		private static const SCREEN_TO_UV	: Matrix4x4	= new Matrix4x4(
 			.5,		.0,		.0,		.0,
@@ -29,7 +30,7 @@ package aerys.minko.scene.controller.light
 		
 		public function SpotLightController()
 		{
-			super(SpotLight);
+			super(SpotLight, ShadowMappingType.MATRIX);
 			
 			initialize();
 		}

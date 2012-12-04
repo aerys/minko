@@ -42,7 +42,6 @@ package aerys.minko.render.resource.texture
 		private var _height			: Number		= 0;
 
 		private var _update			: Boolean		= false;
-		private var _resize			: Boolean		= false;
 
 		public function get samplerFormat() : uint
 		{
@@ -59,21 +58,11 @@ package aerys.minko.render.resource.texture
 			return _height;
 		}
 		
-		public function TextureResource(width : int = 0, height : int = 0)
+		public function TextureResource(width   : uint  = 0,
+                                        height  : uint  = 0)
 		{
-			if (width != 0 && height != 0)
-				setSize(width, height);
-		}
-
-		public function setSize(width : uint, height : uint) : void
-		{
-			//http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
-			if (!(width && !(width & (width - 1))) || !(height && !(height & (height - 1))))
-				throw new Error('The size must be a power of 2.');
-			
-			_width	= width;
-			_height	= height;
-			_resize = true;
+            _width = width;
+            _height = height;
 		}
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
@@ -155,12 +144,10 @@ package aerys.minko.render.resource.texture
 			
 		}
 
-		public function getNativeTexture(context : Context3DResource) : TextureBase
+		public function getTexture(context : Context3DResource) : TextureBase
 		{
-			if ((!_texture || _resize) && _width && _height)
+			if (!_texture && _width && _height)
 			{
-				_resize = false;
-				
 				if (_texture)
 					_texture.dispose();
 				
@@ -170,15 +157,12 @@ package aerys.minko.render.resource.texture
 					_format,
 					_bitmapData == null && _atf == null
 				);
-
-				_update = true;
 			}
 
 			if (_update)
 			{
 				_update = false;
-
-				uploadTextureWithMipMaps();
+				uploadBitmapDataWithMipMaps();
 			}
 
 			_atf = null;
@@ -187,7 +171,7 @@ package aerys.minko.render.resource.texture
 			return _texture;
 		}
 		
-		private function uploadTextureWithMipMaps() : void
+		private function uploadBitmapDataWithMipMaps() : void
 		{
 			if (_bitmapData)
 			{
