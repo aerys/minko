@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
@@ -24,12 +25,6 @@ package aerys.minko.scene.node.light
 	public class PointLight extends AbstractLight
 	{
 		public static const LIGHT_TYPE : uint = 2;
-		
-		private static const MAP_NAMES : Vector.<String> = new <String>[
-			'shadowMapCube',
-			'shadowMapDPFront',
-			'shadowMapDPBack'
-		];
 		
 		private static const TMP_VECTOR		: Vector4 = new Vector4();
 		
@@ -115,6 +110,15 @@ package aerys.minko.scene.node.light
 		{
 			lightData.setLightProperty('shadowCastingType', value);
 		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
 		
 		public function PointLight(color				: uint		= 0xFFFFFFFF,
 								   diffuse				: Number	= .6,
@@ -125,7 +129,8 @@ package aerys.minko.scene.node.light
 								   shadowCastingType	: uint		= 0,
 								   shadowMapSize		: uint		= 512,
 								   shadowZNear			: Number	= 0.1,
-								   shadowZFar			: Number	= 1000)
+								   shadowZFar			: Number	= 1000.,
+                                   shadowBias           : uint      = 1. / 256. / 256.)
 		{
 			_shadowMapSize	= shadowMapSize;
 			
@@ -143,6 +148,7 @@ package aerys.minko.scene.node.light
 			this.shadowCastingType		= shadowCastingType;
 			this.shadowZNear			= shadowZNear;
 			this.shadowZFar		    	= shadowZFar;
+            this.shadowBias             = shadowBias;
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
@@ -157,7 +163,8 @@ package aerys.minko.scene.node.light
 				shadowCastingType,
 				shadowMapSize,
 				shadowZFar,
-				shadowZNear
+				shadowZNear,
+				shadowBias
 			);		
 			
 			light.name = this.name;

@@ -1,6 +1,7 @@
 package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.SpotLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -142,6 +143,15 @@ package aerys.minko.scene.node.light
 		{
 			lightData.setLightProperty('shadowCastingType', value);
 		}
+        
+        public function get shadowBias() : Number
+        {
+            return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);
+        }
+        public function set shadowBias(value : Number) : void
+        {
+            lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
+        }
 		
 		public function SpotLight(color					: uint		= 0xFFFFFFFF,
 								  diffuse				: Number	= .6,
@@ -156,7 +166,8 @@ package aerys.minko.scene.node.light
 								  shadowZNear			: Number	= 0.1,
 								  shadowZFar			: Number	= 1000,
 								  shadowQuality			: uint		= 0,
-								  shadowSpread			: uint		= 1)
+								  shadowSpread			: uint		= 1,
+                                  shadowBias            : uint      = 1. / 256. / 256.)
 		{
 			super(
 				new SpotLightController(),
@@ -177,6 +188,7 @@ package aerys.minko.scene.node.light
 			this.shadowMapSize			= shadowMapSize;
 			this.shadowQuality			= shadowQuality;
 			this.shadowSpread	        = shadowSpread;
+            this.shadowBias             = shadowBias;
 			
 			transform.lookAt(Vector4.Z_AXIS, Vector4.ZERO);
 		}
@@ -197,7 +209,8 @@ package aerys.minko.scene.node.light
 				shadowZNear,
 				shadowZFar,
 				shadowQuality,
-				shadowSpread
+				shadowSpread,
+				shadowBias
 			); 
 			
 			light.name = this.name;
