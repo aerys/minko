@@ -1,6 +1,6 @@
 package aerys.minko.type.math
 {
-	public class HLSAMatrix4x4 extends Matrix4x4
+	public class HSLAMatrix4x4 extends Matrix4x4
 	{
 		private static const TMP_NUMBERS	: Vector.<Number> 	= new Vector.<Number>(16, true);
 		private static const TMP_MATRIX		: Matrix4x4			= new Matrix4x4();
@@ -174,7 +174,7 @@ package aerys.minko.type.math
 			updateDiffuseColorMatrix();
 		}
 		
-		public function HLSAMatrix4x4(hue 			: Number	= 0.,
+		public function HSLAMatrix4x4(hue 			: Number	= 0.,
 									  luminance 	: Number	= 1.,
 									  saturation 	: Number	= 1.,
 									  alpha 		: Number	= 1.)
@@ -202,7 +202,7 @@ package aerys.minko.type.math
 		
 		override public function clone() : Matrix4x4
 		{
-			return new HLSAMatrix4x4(_hue, _luminance, _saturation, _alpha);
+			return new HSLAMatrix4x4(_hue, _luminance, _saturation, _alpha);
 		}
 	}
 }

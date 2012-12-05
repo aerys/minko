@@ -50,7 +50,7 @@ package aerys.minko.type.animation.timeline
 			var a : uint = invRatio * (color1 & 0xff)
 						   + interpolationRatio * (color2 & 0xff);
 			
-			currentTarget[propertyName] = (r << 24) | (g << 16) | (b << 8) | (a & 0xff);
+			_currentTarget[_propertyName] = (r << 24) | (g << 16) | (b << 8) | (a & 0xff);
 		}
 		
 		override public function clone():ITimeline
