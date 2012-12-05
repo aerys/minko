@@ -10,6 +10,8 @@ package aerys.minko.type.animation.timeline
 		minko_animation var _timeTable	    : Vector.<uint>
 		minko_animation var _values		    : Vector.<Number>;
         minko_animation var _interpolate    : Boolean;
+		
+		private var _timeCount : uint = 0;
 
 		public function ScalarTimeline(propertyPath	: String,
 									   timeTable 	: Vector.<uint>,
@@ -18,9 +20,10 @@ package aerys.minko.type.animation.timeline
 		{
 			super(propertyPath, timeTable[int(timeTable.length - 1)]);
 			
-			_timeTable = timeTable;
-			_values	= values;
-            _interpolate = interpolate;
+			_timeTable 		= timeTable;
+			_values			= values;
+            _interpolate 	= interpolate;
+			_timeCount 		= _timeTable.length;
 		}
 
 		override public function updateAt(t : int, target : Object):void
@@ -31,32 +34,29 @@ package aerys.minko.type.animation.timeline
 			var timeId		: uint 	= getIndexForTime(time);
             
             if (_interpolate)
-            {
-    			var timeCount	: uint 	= _timeTable.length;
-    
+            {    
     			// change value.
     			var previousTime		: Number	= _timeTable[uint(timeId - 1)];
-    			var nextTime			: Number	= _timeTable[uint(timeId % timeCount)];
+    			var nextTime			: Number	= _timeTable[uint(timeId % _timeCount)];
     			var interpolationRatio	: Number	= (time - previousTime) / (nextTime - previousTime);
     
     			if (t < 0.)
     				interpolationRatio = 1. - interpolationRatio;
     			
-    			currentTarget[propertyName] = (1 - interpolationRatio) * _values[timeId - 1] +
-    				interpolationRatio * _values[timeId % timeCount];
+    			_currentTarget[_propertyName] = (1 - interpolationRatio) * _values[uint(timeId - 1)] +
+    				interpolationRatio * _values[uint(timeId % _timeCount)];
             }
             else
             {
-                currentTarget[propertyName] = _values[timeId];
+                _currentTarget[_propertyName] = _values[timeId];
             }
 		}
 
 		private function getIndexForTime(t : uint) : uint
 		{
 			// use a dichotomy to find the current frame in the time table.
-			var timeCount 		: uint = _timeTable.length;
 			var bottomTimeId	: uint = 0;
-			var upperTimeId		: uint = timeCount;
+			var upperTimeId		: uint = _timeCount;
 			var timeId			: uint;
 
 			while (upperTimeId - bottomTimeId > 1)
