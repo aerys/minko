@@ -165,6 +165,17 @@ package aerys.minko.type.math
 			_j = j;
 			_k = k;
 		}
+		
+		public function setTo(r : Number,
+							  i : Number,
+							  j : Number,
+							  k : Number) : void
+		{
+			_r = r;
+			_i = i;
+			_j = j;
+			_k = k;
+		}
 
 		public function isEqual(q : Quaternion) : Boolean
 		{
