@@ -107,7 +107,7 @@ package aerys.minko.scene.node
 		
 		public function get scaleY() : Number
 		{
-			return _transform.scaleX;
+			return _transform.scaleY;
 		}
 		public function set scaleY(value : Number) : void
 		{
