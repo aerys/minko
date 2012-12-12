@@ -4,7 +4,7 @@ package aerys.minko
 
 	public final class Minko
 	{
-		private static const VERSION	: String	= '2.1';
+		public static const VERSION	: String	= '2.1';
 		
 		private static var _logger		: ILogger	= null;
 		private static var _debugLevel	: uint		= 0; // LogLevel.DISABLED;
