@@ -249,11 +249,15 @@ package aerys.minko.render.geometry
 			{
 				var oldStream : IVertexStream = _vertexStreams[index] as IVertexStream;
 				
-				oldStream.changed.remove(vertexStreamChangedHandler);
-				oldStream.boundsChanged.remove(vertexStreamBoundsChangedHandler);
+                if (oldStream.changed.hasCallback(vertexStreamChangedHandler))
+                    oldStream.changed.remove(vertexStreamChangedHandler);
+                
+                if (oldStream.boundsChanged.hasCallback(vertexStreamBoundsChangedHandler))
+                    oldStream.boundsChanged.remove(vertexStreamBoundsChangedHandler);
 			}
 			
-			vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
+            if (vertexStream.format.hasComponent(VertexComponent.XYZ))
+    			vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
 			vertexStream.changed.add(vertexStreamChangedHandler);
 			_vertexStreams[index] = vertexStream;
 			
