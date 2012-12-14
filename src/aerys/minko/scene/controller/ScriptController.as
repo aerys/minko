@@ -84,7 +84,7 @@ package aerys.minko.scene.controller
 														   time			: Number) : void
 		{
 			_viewport = viewport;
-			_deltaTime = _lastTime - time;
+			_deltaTime = time - _lastTime;
 			_lastTime = time;
 			
             beforeUpdate();
