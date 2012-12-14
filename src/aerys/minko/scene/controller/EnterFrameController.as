@@ -29,42 +29,44 @@ package aerys.minko.scene.controller
 		{
 			super(targetType);
             
-            _numTargetsInScene = new Dictionary(true);
-			
-			targetAdded.add(targetAddedHandler);
-			targetRemoved.add(targetRemovedHandler);
+            initialize();
 		}
 		
+        private function initialize() : void
+        {
+            _numTargetsInScene = new Dictionary(true);
+            
+            targetAdded.add(targetAddedHandler);
+            targetRemoved.add(targetRemovedHandler);
+        }
+        
 		protected function targetAddedHandler(ctrl		: EnterFrameController,
 											  target	: ISceneNode) : void
 		{
-			if (target.root is Scene)
-				targetAddedToSceneHandler(target, target.root as Scene);
-			else
-				target.addedToScene.add(targetAddedToSceneHandler);
+            if (target.scene)
+                targetAddedToSceneHandler(target, target.scene);
+            
+            target.addedToScene.add(targetAddedToSceneHandler);
+            target.removedFromScene.add(targetRemovedFromSceneHandler);
 		}
 		
 		protected function targetRemovedHandler(ctrl	: EnterFrameController,
 												target	: ISceneNode) : void
 		{
-			if (target.root is Scene)
-				target.removedFromScene.remove(targetRemovedFromSceneHandler);
-			else
-				target.addedToScene.remove(targetAddedToSceneHandler);
+            if (target.scene)
+                targetRemovedFromSceneHandler(target, target.scene);
+            
+            target.addedToScene.remove(targetAddedToSceneHandler);
+            target.removedFromScene.remove(targetRemovedFromSceneHandler);
 		}
 		
 		protected function targetAddedToSceneHandler(target	: ISceneNode,
 													 scene	: Scene) : void
 		{
-			if (target.addedToScene.hasCallback(targetAddedToSceneHandler))
-				target.addedToScene.remove(targetAddedToSceneHandler);
-			
-			target.removedFromScene.add(targetRemovedFromSceneHandler);
-			
             if (!_numTargetsInScene.hasOwnProperty(scene))
             {
                 _numTargetsInScene[scene] = 1;
-				scene.enterFrame.add(sceneEnterFrameHandler);
+                scene.enterFrame.add(sceneEnterFrameHandler);
             }
             else
                 _numTargetsInScene[scene]++;
@@ -73,17 +75,14 @@ package aerys.minko.scene.controller
 		protected function targetRemovedFromSceneHandler(target	: ISceneNode,
 														 scene	: Scene) : void
 		{
-			target.removedFromScene.remove(targetRemovedFromSceneHandler);
-			target.addedToScene.add(targetAddedToSceneHandler);
-			
             _numTargetsInScene[scene]--;
-			if (_numTargetsInScene[scene] == 0)
+            if (_numTargetsInScene[scene] == 0)
             {
                 delete _numTargetsInScene[scene];
-				scene.enterFrame.remove(sceneEnterFrameHandler);
+                scene.enterFrame.remove(sceneEnterFrameHandler);
             }
 		}
-		
+        
 		protected function sceneEnterFrameHandler(scene			: Scene,
 												  viewport		: Viewport,
 												  destination	: BitmapData,
