@@ -108,7 +108,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super.targetAddedToSceneHandler(target, scene);
 			
-			if (numTargetsInScene == 1)
+			if (getNumTargetsInScene(scene) == 1)
 				subscribeToJoints();
 			
 			var mesh : Mesh = target as Mesh;

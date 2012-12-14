@@ -5,6 +5,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.scene.node.Scene;
 	
 	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
 
 	/**
 	 * EnterFrameController are controllers triggered whenever the Scene.enterFrame
@@ -17,16 +18,18 @@ package aerys.minko.scene.controller
 	 */
 	public class EnterFrameController extends AbstractController
 	{
-		private var _targetsInScene	: uint	= 0;
-		
-		public function get numTargetsInScene() : uint
-		{
-			return _targetsInScene;
-		}
-		
+		private var _numTargetsInScene	: Dictionary;
+
+        protected function getNumTargetsInScene(scene : Scene) : uint
+        {
+            return _numTargetsInScene[scene];
+        }
+        
 		public function EnterFrameController(targetType	: Class = null)
 		{
 			super(targetType);
+            
+            _numTargetsInScene = new Dictionary(true);
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
@@ -58,22 +61,27 @@ package aerys.minko.scene.controller
 			
 			target.removedFromScene.add(targetRemovedFromSceneHandler);
 			
-			++_targetsInScene;
-			
-			if (_targetsInScene == 1)
+            if (!_numTargetsInScene.hasOwnProperty(scene))
+            {
+                _numTargetsInScene[scene] = 1;
 				scene.enterFrame.add(sceneEnterFrameHandler);
+            }
+            else
+                _numTargetsInScene[scene]++;
 		}
 		
 		protected function targetRemovedFromSceneHandler(target	: ISceneNode,
 														 scene	: Scene) : void
 		{
-			--_targetsInScene;
-			
 			target.removedFromScene.remove(targetRemovedFromSceneHandler);
 			target.addedToScene.add(targetAddedToSceneHandler);
 			
-			if (_targetsInScene == 0)
+            _numTargetsInScene[scene]--;
+			if (_numTargetsInScene[scene] == 0)
+            {
+                delete _numTargetsInScene[scene];
 				scene.enterFrame.remove(sceneEnterFrameHandler);
+            }
 		}
 		
 		protected function sceneEnterFrameHandler(scene			: Scene,
