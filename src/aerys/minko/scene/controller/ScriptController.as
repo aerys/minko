@@ -46,6 +46,8 @@ package aerys.minko.scene.controller
 		public function ScriptController(targetType	: Class = null)
 		{
 			super(targetType);
+            
+            initialize();
 		}
         
         protected function initialize() : void
@@ -56,6 +58,8 @@ package aerys.minko.scene.controller
         override protected function targetAddedToSceneHandler(target    : ISceneNode,
                                                               scene     : Scene) : void
         {
+            super.targetAddedToSceneHandler(target, scene);
+            
             if (_scene && scene != _scene)
                 throw new Error(
                     'The same ScriptController instance can not be used in more than one scene ' +
@@ -68,7 +72,9 @@ package aerys.minko.scene.controller
         override protected function targetRemovedFromSceneHandler(target    : ISceneNode,
                                                                   scene     : Scene) : void
         {
-            if (numTargetsInScene == 0)
+            super.targetRemovedFromSceneHandler(target, scene);
+            
+            if (getNumTargetsInScene(scene))
                 _scene = null;
         }
         
