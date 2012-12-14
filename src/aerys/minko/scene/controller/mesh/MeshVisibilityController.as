@@ -154,7 +154,7 @@ package aerys.minko.scene.controller.mesh
 			var geom 	: Geometry 	= _mesh.geometry;
 			var culling	: uint		= _frustumCulling;
 			
-			if (!geom.boundingBox || !geom.boundingSphere)
+			if (!geom.boundingBox || !geom.boundingSphere || culling == FrustumCulling.DISABLED)
 				return ;
 			
 			if (culling & FrustumCulling.BOX)
