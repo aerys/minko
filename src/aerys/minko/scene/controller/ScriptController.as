@@ -48,6 +48,11 @@ package aerys.minko.scene.controller
 			super(targetType);
 		}
         
+        protected function initialize() : void
+        {
+            _started = new Dictionary(true);
+        }
+        
         override protected function targetAddedToSceneHandler(target    : ISceneNode,
                                                               scene     : Scene) : void
         {
