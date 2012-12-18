@@ -26,7 +26,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Mesh extends AbstractSceneNode
+	public class Mesh extends AbstractVisibleSceneNode
 	{
 		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		

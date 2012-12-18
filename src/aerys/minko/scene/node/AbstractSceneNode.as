@@ -182,25 +182,6 @@ package aerys.minko.scene.node
 			return _root;
 		}
         
-        public function get visible() : Boolean
-        {
-            return _visible;
-        }
-        public function set visible(value : Boolean) : void
-        {
-            if (value != _visible)
-            {
-                _visible = value;
-                _visibilityChanged.execute(this, value);
-                updateComputedVisibility();
-            }
-        }
-        
-        public function get computedVisibility() : Boolean
-        {
-            return _computedVisibility;
-        }
-		
         final public function get transform() : Matrix4x4
 		{
 			return _transform;
@@ -251,16 +232,6 @@ package aerys.minko.scene.node
 			return _controllerRemoved;
 		}
         
-        public function get visibilityChanged() : Signal
-        {
-            return _visibilityChanged;
-        }
-        
-        public function get computedVisibilityChanged() : Signal
-        {
-            return _computedVisibilityChanged;
-        }
-		
 		public function AbstractSceneNode()
 		{
 			initialize();
@@ -300,25 +271,11 @@ package aerys.minko.scene.node
 		
 		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            // if ancestor == parent then the node was just added as a direct child of ancestor
-            if (ancestor == _parent)
-            {
-                _parent.computedVisibilityChanged.add(parentComputedVisibilityChangedHandler);
-                parentComputedVisibilityChangedHandler(_parent, _parent.computedVisibility);
-            }
-            
             updateRoot();
 		}
         
 		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            // if parent is not set anymore, ancestor is not the direct parent of child anymore
-            if (!_parent)
-            {
-                ancestor.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
-                _computedVisibility = false;
-            }
-            
             updateRoot();
 		}
         
@@ -334,24 +291,6 @@ package aerys.minko.scene.node
                     _removedFromScene.execute(this, oldRoot);
                 if (newRoot is Scene)
                     _addedToScene.execute(this, newRoot);
-            }
-        }
-        
-        protected function parentComputedVisibilityChangedHandler(parent        : Group,
-                                                                  visibility    : Boolean) : void
-        {
-           updateComputedVisibility();
-        }
-        
-        private function updateComputedVisibility() : void
-        {
-            var newComputedVisibility : Boolean = _visible
-                && (!_parent || _parent.computedVisibility);
-            
-            if (newComputedVisibility != computedVisibility)
-            {
-                _computedVisibility = newComputedVisibility;
-                _computedVisibilityChanged.execute(this, newComputedVisibility);
             }
         }
         
