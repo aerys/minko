@@ -14,12 +14,6 @@ package aerys.minko.scene.node
 	 */
 	public interface ISceneNode
 	{
-        function get visible() : Boolean;
-        function set visible(value : Boolean) : void;
-        function get computedVisibility() : Boolean;
-        function get visibilityChanged() : Signal;
-        function get computedVisibilityChanged() : Signal;
-        
 		function get x() : Number;
 		function get y() : Number;
 		function get z() : Number;

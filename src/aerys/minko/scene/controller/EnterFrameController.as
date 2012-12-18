@@ -5,6 +5,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.scene.node.Scene;
 	
 	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
 
 	/**
 	 * EnterFrameController are controllers triggered whenever the Scene.enterFrame
@@ -17,65 +18,71 @@ package aerys.minko.scene.controller
 	 */
 	public class EnterFrameController extends AbstractController
 	{
-		private var _targetsInScene	: uint	= 0;
-		
-		public function get numTargetsInScene() : uint
-		{
-			return _targetsInScene;
-		}
-		
+		private var _numTargetsInScene	: Dictionary;
+
+        protected function getNumTargetsInScene(scene : Scene) : uint
+        {
+            return _numTargetsInScene[scene];
+        }
+        
 		public function EnterFrameController(targetType	: Class = null)
 		{
 			super(targetType);
-			
-			targetAdded.add(targetAddedHandler);
-			targetRemoved.add(targetRemovedHandler);
+            
+            initialize();
 		}
 		
+        private function initialize() : void
+        {
+            _numTargetsInScene = new Dictionary(true);
+            
+            targetAdded.add(targetAddedHandler);
+            targetRemoved.add(targetRemovedHandler);
+        }
+        
 		protected function targetAddedHandler(ctrl		: EnterFrameController,
 											  target	: ISceneNode) : void
 		{
-			if (target.root is Scene)
-				targetAddedToSceneHandler(target, target.root as Scene);
-			else
-				target.addedToScene.add(targetAddedToSceneHandler);
+            if (target.scene)
+                targetAddedToSceneHandler(target, target.scene);
+            
+            target.addedToScene.add(targetAddedToSceneHandler);
+            target.removedFromScene.add(targetRemovedFromSceneHandler);
 		}
 		
 		protected function targetRemovedHandler(ctrl	: EnterFrameController,
 												target	: ISceneNode) : void
 		{
-			if (target.root is Scene)
-				target.removedFromScene.remove(targetRemovedFromSceneHandler);
-			else
-				target.addedToScene.remove(targetAddedToSceneHandler);
+            if (target.scene)
+                targetRemovedFromSceneHandler(target, target.scene);
+            
+            target.addedToScene.remove(targetAddedToSceneHandler);
+            target.removedFromScene.remove(targetRemovedFromSceneHandler);
 		}
 		
 		protected function targetAddedToSceneHandler(target	: ISceneNode,
 													 scene	: Scene) : void
 		{
-			if (target.addedToScene.hasCallback(targetAddedToSceneHandler))
-				target.addedToScene.remove(targetAddedToSceneHandler);
-			
-			target.removedFromScene.add(targetRemovedFromSceneHandler);
-			
-			++_targetsInScene;
-			
-			if (_targetsInScene == 1)
-				scene.enterFrame.add(sceneEnterFrameHandler);
+            if (!_numTargetsInScene.hasOwnProperty(scene))
+            {
+                _numTargetsInScene[scene] = 1;
+                scene.enterFrame.add(sceneEnterFrameHandler);
+            }
+            else
+                _numTargetsInScene[scene]++;
 		}
 		
 		protected function targetRemovedFromSceneHandler(target	: ISceneNode,
 														 scene	: Scene) : void
 		{
-			--_targetsInScene;
-			
-			target.removedFromScene.remove(targetRemovedFromSceneHandler);
-			target.addedToScene.add(targetAddedToSceneHandler);
-			
-			if (_targetsInScene == 0)
-				scene.enterFrame.remove(sceneEnterFrameHandler);
+            _numTargetsInScene[scene]--;
+            if (_numTargetsInScene[scene] == 0)
+            {
+                delete _numTargetsInScene[scene];
+                scene.enterFrame.remove(sceneEnterFrameHandler);
+            }
 		}
-		
+        
 		protected function sceneEnterFrameHandler(scene			: Scene,
 												  viewport		: Viewport,
 												  destination	: BitmapData,

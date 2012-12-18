@@ -25,15 +25,15 @@ package aerys.minko.scene.node
 	 *
 	 * @author Jean-Marc Le Roux
 	 */
-	public class Group extends AbstractSceneNode
+	public class Group extends AbstractVisibleSceneNode
 	{
-		minko_scene var _children		: Vector.<ISceneNode>	= null;
-		minko_scene var _numChildren	: uint					= 0;
+		minko_scene var _children		: Vector.<ISceneNode>;
+		minko_scene var _numChildren	: uint;
 		
-		private var _numDescendants		: uint					= 0;
+		private var _numDescendants		: uint;
 		
-		private var _descendantAdded	: Signal				= new Signal('Group.descendantAdded');
-		private var _descendantRemoved	: Signal				= new Signal('Group.descendantRemoved');
+		private var _descendantAdded	: Signal;
+		private var _descendantRemoved	: Signal;
 
 		/**
 		 * The number of children of the Group.
@@ -98,8 +98,11 @@ package aerys.minko.scene.node
 		{
 			_children = new <ISceneNode>[];
 
-			descendantAdded.add(descendantAddedHandler);
-			descendantRemoved.add(descendantRemovedHandler);
+            _descendantAdded = new Signal('Group.descendantAdded');
+			_descendantAdded.add(descendantAddedHandler);
+            
+            _descendantRemoved = new Signal('Group.descendantRemoved');
+			_descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		protected function initializeChildren(children : Array) : void
