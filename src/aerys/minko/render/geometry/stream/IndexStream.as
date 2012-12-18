@@ -259,6 +259,8 @@ package aerys.minko.render.geometry.stream
 		{
 			_data.position = 0;
 			
+			_locked = false;
+			
 			if (hasChanged)
 				invalidate();
 		}
