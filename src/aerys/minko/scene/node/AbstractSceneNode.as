@@ -13,6 +13,7 @@ package aerys.minko.scene.node
 	
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.setTimeout;
 
 	use namespace minko_scene;
 	
@@ -265,12 +266,12 @@ package aerys.minko.scene.node
 		
 		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            updateRoot();
+            setTimeout(updateRoot, 0);
 		}
         
 		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            updateRoot();
+			setTimeout(updateRoot, 0);
 		}
         
         private function updateRoot() : void
