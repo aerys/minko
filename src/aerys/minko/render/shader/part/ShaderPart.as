@@ -123,24 +123,9 @@ package aerys.minko.render.shader.part
 			return _main._meshBindings.getParameter('worldToLocal', 16);
 		}
 		
-		protected function get worldToViewMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('worldToView', 16);
-		}
-		
-		protected function get viewToWorldMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('viewToWorld', 16);
-		}
-		
 		protected function get worldToScreenMatrix() : SFloat
 		{
 			return _main._sceneBindings.getParameter('worldToScreen', 16);
-		}
-		
-		protected function get screenToWorldMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('screenToWorld', 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
@@ -844,29 +829,14 @@ package aerys.minko.render.shader.part
 			return multiply4x4(localSpaceVector, localToWorldMatrix);
 		}
 		
-		protected final function localToView(localSpaceVector : Object) : SFloat
-		{
-			return worldToView(localToWorld(localSpaceVector));
-		}
-		
 		protected final function worldToLocal(worldSpaceVector : Object) : SFloat
 		{
 			return multiply4x4(worldSpaceVector, worldToLocalMatrix);
 		}
 		
-		protected final function worldToView(worldSpaceVector : Object) : SFloat
-		{
-			return multiply4x4(worldSpaceVector, worldToViewMatrix);
-		}
-		
 		protected final function worldToScreen(worldSpaceVector : Object) : SFloat
 		{
-			return viewToScreen(worldToView(worldSpaceVector));
-		}
-		
-		protected final function viewToWorld(value : Object) : SFloat
-		{
-			return multiply4x4(value, viewToWorldMatrix);
+			return multiply4x4(worldSpaceVector, worldToScreenMatrix);
 		}
 		
 		protected final function localToScreen(localSpaceVector : Object) : SFloat
@@ -890,16 +860,6 @@ package aerys.minko.render.shader.part
 		protected final function deltaWorldToLocal(vertex : Object) : SFloat
 		{
 			return multiply3x3(vertex, worldToLocalMatrix);
-		}
-		
-		protected final function deltaWorldToView(vertex : Object) : SFloat
-		{
-			return multiply3x3(vertex, worldToViewMatrix);
-		}
-		
-		protected final function deltaViewToWorld(vertex : Object) : SFloat
-		{
-			return multiply3x3(vertex, viewToWorldMatrix);
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,
