@@ -63,7 +63,7 @@ package aerys.minko.scene.controller
 		protected function targetAddedToSceneHandler(target	: ISceneNode,
 													 scene	: Scene) : void
 		{
-            if (!_numTargetsInScene.hasOwnProperty(scene))
+            if (!_numTargetsInScene[scene])
             {
                 _numTargetsInScene[scene] = 1;
                 scene.enterFrame.add(sceneEnterFrameHandler);

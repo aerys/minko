@@ -4,6 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	/**
 	 * The ISceneNode interface describes the properties of every
@@ -68,8 +69,26 @@ package aerys.minko.scene.node
 		function set name(value : String) : void;
 		
 		function get transform() : Matrix4x4;
-		function get localToWorld() : Matrix4x4;
-		function get worldToLocal() : Matrix4x4;
+		
+		function get localToWorldTransformChanged() : Signal;
+		
+		/**
+		 * Return a copy of the current local to world transform of the scene node. 
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function getLocalToWorldTransform(output : Matrix4x4 = null) : Matrix4x4;
+		
+		/**
+		 * Transform a local space vector into world space.
+		 * 
+		 * @param vector
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function localToWorld(vector : Vector4, output : Vector4 = null) : Vector4;
 		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is added to a parent scene

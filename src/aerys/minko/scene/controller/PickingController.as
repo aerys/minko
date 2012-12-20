@@ -308,7 +308,7 @@ package aerys.minko.scene.controller
                     
                     if (hit
                         && (_technique & PickingTechnique.RAYCASTING_GEOMETRY) != 0
-                        && _currentMouseOver.geometry.cast(ray, _currentMouseOver.worldToLocal) < 0)
+                        && _currentMouseOver.geometry.cast(ray, _currentMouseOver.getWorldToLocalTransform()) < 0)
                     {
                         _currentMouseOver = null;
                         hit = false;
@@ -332,7 +332,7 @@ package aerys.minko.scene.controller
     				var projection : Matrix4x4 = _sceneData.pickingProjection;
     				
     				projection.lock();
-    				projection.copyFrom(scene.activeCamera.projection);
+					scene.activeCamera.getProjection(projection);
     				
     				var rawData : Vector.<Number> = projection.getRawData();
     				

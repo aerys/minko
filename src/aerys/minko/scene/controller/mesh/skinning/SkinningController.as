@@ -174,7 +174,7 @@ package aerys.minko.scene.controller.mesh.skinning
 			_skinningHelper.removeMesh(mesh);
 		}
 		
-		private function jointLocalToWorldChangedHandler(emitter : Matrix4x4) : void
+		private function jointLocalToWorldChangedHandler(node : Group, emitter : Matrix4x4) : void
 		{
 			_isDirty = true;
 		}
@@ -205,10 +205,10 @@ package aerys.minko.scene.controller.mesh.skinning
 			var numJoints	: uint = _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-				_joints[jointId].localToWorld.changed.add(jointLocalToWorldChangedHandler);
+				_joints[jointId].localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
 			
 			if (_joints.indexOf(_skeletonRoot) == -1)
-				_skeletonRoot.localToWorld.changed.add(jointLocalToWorldChangedHandler);
+				_skeletonRoot.localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
 		}
 		
 		private function unsubscribeFromJoints() : void
@@ -216,10 +216,10 @@ package aerys.minko.scene.controller.mesh.skinning
 			var numJoints	: uint = _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-				_joints[jointId].localToWorld.changed.remove(jointLocalToWorldChangedHandler);
+				_joints[jointId].localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
 			
 			if (_joints.indexOf(_skeletonRoot) == -1)
-				_skeletonRoot.localToWorld.changed.remove(jointLocalToWorldChangedHandler);
+				_skeletonRoot.localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
 		}
 		
 		override protected function sceneEnterFrameHandler(scene		: Scene, 

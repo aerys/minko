@@ -43,8 +43,8 @@ package aerys.minko.scene.controller.light
 		{
 			_lightData = new LightDataProvider(-1);
 			_lightData.setLightProperty('type', light.type);
-			_lightData.setLightProperty('localToWorld', light.localToWorld);
-			_lightData.setLightProperty('worldToLocal', light.worldToLocal);
+			_lightData.setLightProperty('localToWorld', light.getLocalToWorldTransform());
+			_lightData.setLightProperty('worldToLocal', light.getWorldToLocalTransform());
 			_lightData.setLightProperty('enabled', true);
 			_lightData.changed.add(lightDataChangedHandler);
 			
@@ -157,7 +157,7 @@ package aerys.minko.scene.controller.light
 			return light1.type - light2.type;
 		}
 		
-		override public function clone():AbstractController
+		override public function clone() : AbstractController
 		{
 			return new LightController(null);
 		}

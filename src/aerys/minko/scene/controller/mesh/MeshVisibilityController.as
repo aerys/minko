@@ -112,8 +112,8 @@ package aerys.minko.scene.controller.mesh
 		{
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
             
-            meshLocalToWorldChangedHandler(mesh.localToWorld);
-			mesh.localToWorld.changed.add(meshLocalToWorldChangedHandler);
+            meshLocalToWorldChangedHandler(mesh, mesh.getLocalToWorldTransform());
+			mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
             mesh.visibilityChanged.add(visiblityChangedHandler);
             mesh.parent.computedVisibilityChanged.add(visiblityChangedHandler);
             mesh.removed.add(meshRemovedHandler);
@@ -129,7 +129,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
-			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
+			mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
             mesh.visibilityChanged.remove(visiblityChangedHandler);
             mesh.removed.remove(meshRemovedHandler);
 		}
@@ -149,7 +149,7 @@ package aerys.minko.scene.controller.mesh
 			testCulling();
 		}
 		
-		private function meshLocalToWorldChangedHandler(transform : Matrix4x4) : void
+		private function meshLocalToWorldChangedHandler(mesh : Mesh, transform : Matrix4x4) : void
 		{
 			var geom 	: Geometry 	= _mesh.geometry;
 			var culling	: uint		= _frustumCulling;
@@ -186,7 +186,7 @@ package aerys.minko.scene.controller.mesh
 				if (!camera)
 					return ;
 				
-				_lastTest = camera.cameraData.frustum.testBoundingVolume(
+				_lastTest = camera.frustum.testBoundingVolume(
 					_boundingSphere,
 					_boundingBox,
 					null,

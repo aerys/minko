@@ -6,6 +6,7 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	
@@ -14,17 +15,13 @@ package aerys.minko.scene.node.camera
 		public static const DEFAULT_ZNEAR	: Number	= .1;
 		public static const DEFAULT_ZFAR	: Number	= 500.;
 		
-		protected var _cameraData	: CameraDataProvider	= null;
+		protected var _cameraCtrl	: CameraController;
+		protected var _cameraData	: CameraDataProvider;
 		
-		protected var _enabled		: Boolean				= true;
+		protected var _enabled		: Boolean;
 		
-		protected var _activated	: Signal				= new Signal('Camera.activated');
-		protected var _deactivated	: Signal				= new Signal('Camera.deactivated');
-		
-		public function get cameraData() : CameraDataProvider
-		{
-			return _cameraData;
-		}
+		protected var _activated	: Signal;
+		protected var _deactivated	: Signal;
 		
 		public function get zNear() : Number
 		{
@@ -70,24 +67,19 @@ package aerys.minko.scene.node.camera
 			return _deactivated;
 		}
 		
-		public function get worldToView() : Matrix4x4
+		public function get frustum() : Frustum
 		{
-			return worldToLocal;
+			return _cameraData.frustum;
 		}
 		
-		public function get viewToWorld() : Matrix4x4
+		protected function get cameraController() : CameraController
 		{
-			return localToWorld;
+			return _cameraCtrl;
 		}
 		
-		public function get worldToScreen() : Matrix4x4
+		protected function get cameraData() : CameraDataProvider
 		{
-			return _cameraData.worldToScreen;
-		}
-		
-		public function get projection() : Matrix4x4
-		{
-			return _cameraData.projection;
+			return _cameraData;
 		}
 		
 		public function AbstractCamera(zNear	: Number = DEFAULT_ZNEAR,
@@ -95,22 +87,64 @@ package aerys.minko.scene.node.camera
 		{
 			super();
 			
-			_cameraData = new CameraDataProvider(worldToView, viewToWorld);
-			
-			_cameraData.zNear 	= zNear;
-			_cameraData.zFar 	= zFar;
-			
-			initialize();
+			initialize(zNear, zFar);
 		}
 		
-		protected function initialize() : void
+		protected function initialize(zNear : Number, zFar : Number) : void
 		{
-			throw new Error('Must be overriden.');
+			_activated = new Signal('Camera.activated');
+			_deactivated = new Signal('Camera.deactivated');
+			
+			_cameraCtrl = new CameraController();
+			
+			_cameraData = _cameraCtrl.cameraData;
+			_cameraData.zNear = zNear;
+			_cameraData.zFar = zFar;			
 		}
 		
 		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
 		{
 			throw new Error('Must be overriden.');
+		}
+		
+		/**
+		 * Return a copy of the world to view matrix. This method is an alias on the
+		 * getWorldToLocalTransform() method.
+		 *  
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		public function getWorldToViewTransform(output : Matrix4x4 = null) : Matrix4x4
+		{
+			return getWorldToLocalTransform(output);
+		}
+		
+		/**
+		 * Return a copy of the view to world matrix. This method is an alias on the
+		 * getLocalToWorldTransform() method.
+		 *  
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		public function getViewToWorldTransform(output : Matrix4x4 = null) : Matrix4x4
+		{
+			return getLocalToWorldTransform(output);
+		}
+		
+		/**
+		 * Return a copy of the projection matrix.
+		 *  
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		public function getProjection(output : Matrix4x4) : Matrix4x4
+		{
+			output ||= new Matrix4x4();
+			
+			return output.copyFrom(_cameraData.projection);
 		}
 	}
 }

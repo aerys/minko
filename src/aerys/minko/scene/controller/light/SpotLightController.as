@@ -62,8 +62,8 @@ package aerys.minko.scene.controller.light
 			super.lightAddedToSceneHandler(light, scene);
 			
 			updateProjectionMatrix();
-			lightLocalToWorldChangedHandler(light.localToWorld);
-			light.localToWorld.changed.add(lightLocalToWorldChangedHandler);
+			lightLocalToWorldChangedHandler(light, light.getLocalToWorldTransform());
+			light.localToWorldTransformChanged.add(lightLocalToWorldChangedHandler);
 		}
 		
 		override protected function lightRemovedFromSceneHandler(light : AbstractLight,
@@ -71,10 +71,11 @@ package aerys.minko.scene.controller.light
 		{
 			super.lightRemovedFromSceneHandler(light, scene);
 			
-			light.localToWorld.changed.remove(lightLocalToWorldChangedHandler);
+			light.localToWorldTransformChanged.remove(lightLocalToWorldChangedHandler);
 		}
 		
-		private function lightLocalToWorldChangedHandler(localToWorld : Matrix4x4) : void
+		private function lightLocalToWorldChangedHandler(light			: AbstractLight,
+														 localToWorld 	: Matrix4x4) : void
 		{
 			_worldPosition	= localToWorld.getTranslation(_worldPosition);
 			
@@ -84,7 +85,8 @@ package aerys.minko.scene.controller.light
 			_worldDirection.unlock();
 			
 			_worldToScreen.lock()
-				.copyFrom(light.worldToLocal)
+				.copyFrom(localToWorld)
+				.invert()
 				.append(_projection)
 				.unlock();
 			
@@ -123,7 +125,7 @@ package aerys.minko.scene.controller.light
 			);
 			
 			_worldToScreen.lock()
-                .copyFrom(light.worldToLocal)
+                .copyFrom(light.getWorldToLocalTransform())
                 .append(_projection)
                 .unlock();
             

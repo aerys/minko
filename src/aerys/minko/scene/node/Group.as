@@ -88,9 +88,10 @@ package aerys.minko.scene.node
 		
 		public function Group(...children)
 		{
+			initialize();
+			
 			super();
 
-			initialize();
 			initializeChildren(children);
 		}
 

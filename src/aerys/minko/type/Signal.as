@@ -70,20 +70,23 @@ package aerys.minko.type
 		
 		public function execute(...params) : void
 		{
-			_executed = true;
-			for (var i : uint = 0; i < _numCallbacks; ++i)
-				(_callbacks[i] as Function).apply(null, params);
-			_executed = false;
-			
-			for (i = 0; i < _numAdded; ++i)
-				add(_toAdd[i]);
-			_numAdded = 0;
-			_toAdd = null;
-			
-			for (i = 0; i < _numRemoved; ++i)
-				remove(_toRemove[i]);
-			_numRemoved = 0;
-			_toRemove = null;
+			if (_numCallbacks)
+			{
+				_executed = true;
+				for (var i : uint = 0; i < _numCallbacks; ++i)
+					(_callbacks[i] as Function).apply(null, params);
+				_executed = false;
+				
+				for (i = 0; i < _numAdded; ++i)
+					add(_toAdd[i]);
+				_numAdded = 0;
+				_toAdd = null;
+				
+				for (i = 0; i < _numRemoved; ++i)
+					remove(_toRemove[i]);
+				_numRemoved = 0;
+				_toRemove = null;
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.light
 {
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.scene.node.light.DirectionalLight;
@@ -62,8 +63,8 @@ package aerys.minko.scene.controller.light
 			super.lightAddedToSceneHandler(light, scene);
 			
 			updateProjectionMatrix();
-			lightLocalToWorldChangedHandler(light.localToWorld);
-			light.localToWorld.changed.add(lightLocalToWorldChangedHandler);
+			lightLocalToWorldChangedHandler(light, light.getLocalToWorldTransform());
+			light.localToWorldTransformChanged.add(lightLocalToWorldChangedHandler);
 		}
 		
 		override protected function lightRemovedFromSceneHandler(light	: AbstractLight,
@@ -71,7 +72,7 @@ package aerys.minko.scene.controller.light
 		{
 			super.lightRemovedFromSceneHandler(light, scene);
 			
-			light.localToWorld.changed.remove(lightLocalToWorldChangedHandler);
+			light.localToWorldTransformChanged.remove(lightLocalToWorldChangedHandler);
 		}
 		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,
@@ -85,7 +86,8 @@ package aerys.minko.scene.controller.light
 				updateProjectionMatrix();
 		}
 		
-		private function lightLocalToWorldChangedHandler(localToWorld : Matrix4x4) : void
+		private function lightLocalToWorldChangedHandler(light 			: AbstractLight,
+														 localToWorld 	: Matrix4x4) : void
 		{
 			// compute position
 			localToWorld.getTranslation(_worldPosition);
@@ -95,7 +97,7 @@ package aerys.minko.scene.controller.light
 			_worldDirection.normalize();
 			
 			// update world to screen/uv
-			_worldToScreen.lock().copyFrom(light.worldToLocal).append(_projection).unlock();
+			_worldToScreen.lock().copyFrom(localToWorld).invert().append(_projection).unlock();
 			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
 		}
 		
@@ -111,8 +113,15 @@ package aerys.minko.scene.controller.light
 				0., 			0., 			0.,			1.
 			);
 			
-			_worldToScreen.lock().copyFrom(light.worldToLocal).append(_projection).unlock();
-			_worldToUV.lock().copyFrom(_worldToScreen).append(SCREEN_TO_UV).unlock();
+			_worldToScreen.lock()
+				.copyFrom(light.getWorldToLocalTransform())
+				.append(_projection)
+				.unlock();
+			
+			_worldToUV.lock()
+				.copyFrom(_worldToScreen)
+				.append(SCREEN_TO_UV)
+				.unlock();
 		}
 	}
 }
