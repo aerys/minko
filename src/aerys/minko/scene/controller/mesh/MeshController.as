@@ -15,13 +15,21 @@ package aerys.minko.scene.controller.mesh
 		{
 			super(Mesh);
 			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
 			_worldToLocal = new Matrix4x4();
+			
+			targetAdded.add(targetAddedHandler);
 		}
 		
 		private function targetAddedHandler(ctrl	: MeshController,
 											target	: Mesh) : void
 		{
 			target.addedToScene.add(targetAddedToSceneHandler);
+			target.removedFromScene.add(targetRemovedFromSceneHandler);
 		}
 		
 		private function targetAddedToSceneHandler(target	: Mesh,
@@ -30,9 +38,18 @@ package aerys.minko.scene.controller.mesh
 			_data = new DataProvider();
 			_data.setProperty('localToWorld', target.getLocalToWorldTransform());
 			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(_worldToLocal));
-			
 			target.bindings.addProvider(_data);
+			
 			target.localToWorldTransformChanged.add(localToWorldChangedHandler);
+		}
+		
+		private function targetRemovedFromSceneHandler(target	: Mesh,
+													   scene	: Scene) : void
+		{
+			target.localToWorldTransformChanged.remove(localToWorldChangedHandler);
+			
+			target.bindings.removeProvider(_data);
+			_data = null;
 		}
 		
 		private function localToWorldChangedHandler(mesh : Mesh, localToWorld : Matrix4x4) : void
