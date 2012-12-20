@@ -2,19 +2,15 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.SceneIterator;
-	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 
 	use namespace minko_scene;

@@ -157,6 +157,7 @@ package aerys.minko.scene.node
 				parent._numChildren--;
 				_parent = null;
 				_removed.execute(this, oldParent);
+				updateRoot();
 				oldParent.descendantRemoved.execute(oldParent, this);
 			}
 			
@@ -169,6 +170,7 @@ package aerys.minko.scene.node
 				_parent._children[_parent.numChildren] = this;
 				_parent._numChildren++;
 				_added.execute(this, _parent);
+				updateRoot();
 				_parent.descendantAdded.execute(_parent, this);
 			}
 		}
@@ -255,26 +257,25 @@ package aerys.minko.scene.node
 			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged');
 			
 			updateRoot();
+			addController(new TransformController());
             
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
 			_addedToScene.add(addedToSceneHandler);
 			_removedFromScene.add(removedFromSceneHandler);
-			
-			addController(new TransformController());
 		}
 		
 		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-            setTimeout(updateRoot, 0);
+            updateRoot();
 		}
         
 		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			setTimeout(updateRoot, 0);
+			updateRoot();
 		}
-        
-        private function updateRoot() : void
+		
+        minko_scene function updateRoot() : void
         {
             var newRoot : ISceneNode    = _parent ? _parent.root : this;
             var oldRoot : ISceneNode    = _root;

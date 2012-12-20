@@ -123,6 +123,11 @@ package aerys.minko.render.shader.part
 			return _main._meshBindings.getParameter('worldToLocal', 16);
 		}
 		
+		protected function get worldToViewMatrix() : SFloat
+		{
+			return _main._meshBindings.getParameter('worldToView', 16);
+		}
+		
 		protected function get worldToScreenMatrix() : SFloat
 		{
 			return _main._sceneBindings.getParameter('worldToScreen', 16);
@@ -832,6 +837,11 @@ package aerys.minko.render.shader.part
 		protected final function worldToLocal(worldSpaceVector : Object) : SFloat
 		{
 			return multiply4x4(worldSpaceVector, worldToLocalMatrix);
+		}
+		
+		protected final function worldToView(worldSpaceVector : Object) : SFloat
+		{
+			return multiply4x4(worldSpaceVector, worldToViewMatrix);
 		}
 		
 		protected final function worldToScreen(worldSpaceVector : Object) : SFloat

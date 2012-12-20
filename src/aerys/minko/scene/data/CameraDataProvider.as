@@ -15,19 +15,20 @@ package aerys.minko.scene.data
 			'zNear'			: 'cameraZNear',
 			'zFar'			: 'cameraZFar',
 			'projection'	: 'projection',
+			'worldToView'	: 'worldToView',
 			'worldToScreen'	: 'worldToScreen',
 			'zoom'			: 'zoom'
 		};
 		
-		private var _fieldOfView		: Number;
-		private var _zNear				: Number;
-		private var _zFar				: Number;
-		private var _zoom				: Number;
-		private var _worldToScreen		: Matrix4x4;
-		private var _screenToWorld		: Matrix4x4;
-		private var _projection			: Matrix4x4;
-		private var _frustum			: Frustum;
-
+		private var _fieldOfView	: Number;
+		private var _zNear			: Number;
+		private var _zFar			: Number;
+		private var _zoom			: Number;
+		private var _worldToView	: Matrix4x4;
+		private var _worldToScreen	: Matrix4x4;
+		private var _projection		: Matrix4x4;
+		private var _frustum		: Frustum;
+		
 		override public function get usage() : uint
 		{
 			return DataProviderUsage.MANAGED;
@@ -79,6 +80,11 @@ package aerys.minko.scene.data
 			changed.execute(this, 'zFar');
 		}
 		
+		public function get worldToView() : Matrix4x4
+		{
+			return _worldToView;
+		}
+		
 		public function get worldToScreen() : Matrix4x4
 		{
 			return _worldToScreen;
@@ -106,6 +112,7 @@ package aerys.minko.scene.data
 			_frustum = new Frustum();
 			
 			watchProperty('projection', _projection = new Matrix4x4());
+			watchProperty('worldToView', _worldToView = new Matrix4x4());
 			watchProperty('worldToScreen', _worldToScreen = new Matrix4x4());
 		}
 	}

@@ -20,7 +20,7 @@ package aerys.minko.render.material.picking
 		override protected function getVertexPosition() : SFloat
 		{
 			return multiply4x4(
-				localToView(vertexAnimation.getAnimatedVertexPosition()),
+				worldToView(localToWorld(vertexAnimation.getAnimatedVertexPosition())),
 				sceneBindings.getParameter('pickingProjection', 16)
 			);
 		}

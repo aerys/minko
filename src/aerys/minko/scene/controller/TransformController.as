@@ -181,9 +181,6 @@ package aerys.minko.scene.controller
 			var root 		: ISceneNode 			= _target.root;
 			var nodes 		: Vector.<ISceneNode> 	= new <ISceneNode>[root];
 			var nodeId 		: uint 					= 0;
-			var numNodes 	: uint 					= root is Group
-				? (root as Group).numDescendants + 1
-				: 1;
 			
 			_nodeToId = new Dictionary(true);
 			_transforms = new <Matrix4x4>[];
@@ -192,7 +189,7 @@ package aerys.minko.scene.controller
 			_firstChildId = new <uint>[];
 			_idToNode = new <ISceneNode>[];
 
-			while (nodeId < numNodes)
+			while (nodes.length)
 			{
 				var node 	: ISceneNode 	= nodes.shift();
 				var group 	: Group 		= node as Group;
@@ -225,7 +222,7 @@ package aerys.minko.scene.controller
 		
 		public function getLocalToWorldTransform(node : ISceneNode) : Matrix4x4
 		{
-			if (_invalidList)
+			if (_invalidList || _nodeToId[node] == undefined)
 				updateTransformsList();
 			
 			return _localToWorldTransforms[_nodeToId[node]];
