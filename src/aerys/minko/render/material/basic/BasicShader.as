@@ -98,10 +98,8 @@ package aerys.minko.render.material.basic
 	 */
 	public class BasicShader extends Shader
 	{
-		private var _vertexAnimationPart	: VertexAnimationShaderPart	= null;
-		private var _diffuseShaderPart		: DiffuseShaderPart			= null;
-		
-		private var _vertexNormal			: SFloat					= null;
+		private var _vertexAnimationPart	: VertexAnimationShaderPart;
+		private var _diffuseShaderPart		: DiffuseShaderPart;
 		
 		protected function get diffuse() : DiffuseShaderPart
 		{
@@ -195,12 +193,6 @@ package aerys.minko.render.material.basic
 			var triangleCulling	: uint	= meshBindings.getConstant(
 				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
 			);
-			
-			_vertexNormal = _vertexAnimationPart.getAnimatedVertexNormal();
-			// flip the normal when the triangle culling is flipped
-			if (triangleCulling == TriangleCulling.FRONT)
-				_vertexNormal = multiply(vertexNormal, float4(-1, -1, -1, 1));
-			_vertexNormal = deltaLocalToWorld(_vertexNormal);
 			
 			return localToScreen(
 				_vertexAnimationPart.getAnimatedVertexPosition()
