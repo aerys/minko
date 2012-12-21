@@ -87,22 +87,43 @@ package aerys.minko.scene.node.camera
 		{
 			super();
 			
-			initialize(zNear, zFar);
+			initializeCameraData(zNear, zFar);
 		}
 		
-		protected function initialize(zNear : Number, zFar : Number) : void
+		override protected function initialize() : void
 		{
 			_enabled = true;
+			
+			super.initialize();
+		}
+
+		override protected function initializeSignals():void
+		{
+			super.initializeSignals();
+			
 			_activated = new Signal('Camera.activated');
-			_deactivated = new Signal('Camera.deactivated');
+			_deactivated = new Signal('Camera.deactivated');	
+		}
+		
+		override protected function initializeContollers():void
+		{
+			super.initializeContollers();
 			
 			_cameraCtrl = new CameraController();
-
+			addController(_cameraCtrl);
+		}
+		
+		override protected function initializeDataProviders():void
+		{
+			super.initializeDataProviders();
+			
 			_cameraData = _cameraCtrl.cameraData;
+		}
+		
+		protected function initializeCameraData(zNear : Number, zFar : Number) : void
+		{
 			_cameraData.zNear = zNear;
 			_cameraData.zFar = zFar;
-			
-			addController(_cameraCtrl);
 		}
 		
 		public function unproject(x : Number, y : Number, out : Ray = null) : Ray

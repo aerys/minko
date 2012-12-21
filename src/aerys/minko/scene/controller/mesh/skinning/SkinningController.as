@@ -103,10 +103,9 @@ package aerys.minko.scene.controller.mesh.skinning
 				_invBindMatrices[jointId] = invBindMatrices[jointId].minko_math::_matrix;
 		}
 		
-		override protected function targetAddedToSceneHandler(target	: ISceneNode,
-															  scene		: Scene) : void
+		override protected function targetAddedToScene(target : ISceneNode, scene : Scene) : void
 		{
-			super.targetAddedToSceneHandler(target, scene);
+			super.targetAddedToScene(target, scene);
 			
 			if (getNumTargetsInScene(scene) == 1)
 				subscribeToJoints();
@@ -160,10 +159,9 @@ package aerys.minko.scene.controller.mesh.skinning
 			_isDirty = true;
 		}
 		
-		override protected function targetRemovedFromSceneHandler(target	: ISceneNode,
-																  scene		: Scene) : void
+		override protected function targetRemovedFromScene(target : ISceneNode, scene : Scene) : void
 		{
-			super.targetRemovedFromSceneHandler(target, scene);
+			super.targetRemovedFromScene(target, scene);
 			
 			if (numTargets == 0)
 				unsubscribeFromJoints();

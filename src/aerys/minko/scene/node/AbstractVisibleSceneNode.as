@@ -42,23 +42,34 @@ package aerys.minko.scene.node
         public function AbstractVisibleSceneNode()
         {
             super();
-            
-            initialize();
         }
         
-        private function initialize() : void
+        override protected function initialize() : void
         {
+			super.initialize();
+			
             _visible = true;
             _computedVisibility = true;
-            
+        }
+		
+		override protected function initializeSignals() : void
+		{
+			super.initializeSignals();
+			
             _visibilityChanged = new Signal('AbstractVisibleSceneNode.visibilityChanged');
             _computedVisibilityChanged = new Signal('AbstractVisibleSceneNode.computedVisibilityChanged');
-        }
+		}
+		
+		override protected function initializeSignalHandlers() : void
+		{
+			super.initializeSignalHandlers();
+			
+			added.add(addedHandler);
+			removed.add(removedHandler);	
+		}
         
-        override protected function addedHandler(child : ISceneNode, ancestor : Group) : void
+		private function addedHandler(child : ISceneNode, ancestor : Group) : void
         {
-            super.addedHandler(child, ancestor);
-            
             // if ancestor == parent then the node was just added as a direct child of ancestor
             if (ancestor == parent)
             {
@@ -67,10 +78,8 @@ package aerys.minko.scene.node
             }
         }
         
-        override protected function removedHandler(child : ISceneNode, ancestor : Group) : void
+        private function removedHandler(child : ISceneNode, ancestor : Group) : void
         {
-            super.removedHandler(child, ancestor);
-            
             // if parent is not set anymore, ancestor is not the direct parent of child anymore
             if (!parent)
             {

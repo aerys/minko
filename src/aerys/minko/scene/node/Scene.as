@@ -115,23 +115,36 @@ package aerys.minko.scene.node
 		
 		public function Scene(...children)
 		{
-			_enterFrame = new Signal('Scene.enterFrame');
-			_exitFrame = new Signal('Scene.exitFrame');
-
 			super();
-			
-			initialize(children);
 		}
 		
-		private function initialize(children : Array) : void
+		override protected function initialize() : void
 		{
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
 			
+			super.initialize();
+		}
+		
+		override protected function initializeSignals() : void
+		{
+			super.initializeSignals();
+			
+			_enterFrame = new Signal('Scene.enterFrame');
+			_exitFrame = new Signal('Scene.exitFrame');
+		}
+		
+		override protected function initializeSignalHandlers() : void
+		{
+			added.add(addedHandler);
+		}
+		
+		override protected function initializeContollers() : void
+		{
+			super.initializeContollers();
+			
 			_renderingCtrl = new RenderingController();
 			addController(_renderingCtrl);
-			
-			initializeChildren(children);
 		}
 		
 		public function render(viewport : Viewport, destination : BitmapData = null) : void
@@ -140,7 +153,7 @@ package aerys.minko.scene.node
 			_exitFrame.execute(this, viewport, destination, getTimer());
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+		private function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			throw new Error();
 		}

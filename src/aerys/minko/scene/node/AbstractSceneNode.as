@@ -40,8 +40,6 @@ package aerys.minko.scene.node
 		
 		private var _added				        : Signal;
 		private var _removed			        : Signal;
-		private var _addedToScene		        : Signal;
-		private var _removedFromScene	        : Signal;
 		private var _controllerAdded	        : Signal;
 		private var _controllerRemoved	        : Signal;
         private var _visibilityChanged          : Signal;
@@ -157,7 +155,6 @@ package aerys.minko.scene.node
 				parent._numChildren--;
 				_parent = null;
 				_removed.execute(this, oldParent);
-				updateRoot();
 				oldParent.descendantRemoved.execute(oldParent, this);
 			}
 			
@@ -170,7 +167,6 @@ package aerys.minko.scene.node
 				_parent._children[_parent.numChildren] = this;
 				_parent._numChildren++;
 				_added.execute(this, _parent);
-				updateRoot();
 				_parent.descendantAdded.execute(_parent, this);
 			}
 		}
@@ -200,16 +196,6 @@ package aerys.minko.scene.node
 			return _removed;
 		}
 
-        final public function get addedToScene() : Signal
-		{
-			return _addedToScene;
-		}
-		
-        final public function get removedFromScene() : Signal
-		{
-			return _removedFromScene;
-		}
-		
 		public function get numControllers() : uint
 		{
 			return _controllers.length;
@@ -235,71 +221,58 @@ package aerys.minko.scene.node
 			initialize();
 		}
 		
-		private function initialize() : void
+		protected function initialize() : void
 		{
 			_name = getDefaultSceneName(this);
-			
             _visible = true;
             _computedVisibility = true;
-            
 			_transform = new Matrix4x4();
-			
 			_controllers = new <AbstractController>[];
+			_root = this;
 			
+			initializeSignals();
+			initializeSignalHandlers();
+			initializeContollers();
+			initializeDataProviders();
+		}
+		
+		protected function initializeSignals() : void
+		{
 			_added = new Signal('AbstractSceneNode.added');
 			_removed = new Signal('AbstractSceneNode.removed');
-			_addedToScene = new Signal('AbstractSceneNode.addedToScene');
-			_removedFromScene = new Signal('AbstractSceneNode.removedFromScene');
 			_controllerAdded = new Signal('AbstractSceneNode.controllerAdded');
 			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
-            _visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
-            _computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
-			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged');
-			
-			updateRoot();
-			addController(new TransformController());
-            
+			_visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
+			_computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
+			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged');			
+		}
+		
+		protected function initializeSignalHandlers() : void
+		{
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
-			_addedToScene.add(addedToSceneHandler);
-			_removedFromScene.add(removedFromSceneHandler);
 		}
 		
-		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
+		protected function initializeContollers() : void
 		{
-            updateRoot();
-		}
-        
-		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
-		{
-			updateRoot();
+			addController(new TransformController());
 		}
 		
-        minko_scene function updateRoot() : void
-        {
-            var newRoot : ISceneNode    = _parent ? _parent.root : this;
-            var oldRoot : ISceneNode    = _root;
-            
-            if (newRoot != oldRoot)
-            {
-                _root = newRoot;
-                if (oldRoot is Scene)
-                    _removedFromScene.execute(this, oldRoot);
-                if (newRoot is Scene)
-                    _addedToScene.execute(this, newRoot);
-            }
-        }
-        
-		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
+		protected function initializeDataProviders() : void
 		{
 			// nothing
 		}
 		
-		protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
+		private function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			// nothing
+           _root = _parent ? _parent.root : this;
 		}
         
+		private function removedHandler(child : ISceneNode, ancestor : Group) : void
+		{
+			_root = _parent ? _parent.root : this;
+		}
+		
 		public function addController(controller : AbstractController) : ISceneNode
 		{
 			_controllers.push(controller);

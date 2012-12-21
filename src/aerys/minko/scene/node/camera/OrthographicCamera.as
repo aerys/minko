@@ -32,9 +32,9 @@ package aerys.minko.scene.node.camera
 			_cameraData.zoom = zoom;
 		}
 		
-		override protected function initialize(zNear : Number, zFar : Number) : void
+		override protected function initializeContollers() : void
 		{
-			super.initialize(zNear, zFar);
+			super.initializeContollers();
 			
 			cameraController.orthographic = true;
 		}

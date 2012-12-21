@@ -8,6 +8,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
+	import flash.sensors.Accelerometer;
 	import flash.utils.Dictionary;
 
 	use namespace minko_math;
@@ -56,6 +57,7 @@ package aerys.minko.scene.controller
 					_localToWorldTransforms[0].copyFrom(rootTransform);
 					rootTransform._hasChanged = false;
 				}
+				
 				updateLocalToWorld();
 			}
 		}
@@ -144,8 +146,7 @@ package aerys.minko.scene.controller
 			_idToNode = null;
 		}
 		
-		private function addedHandler(node		: ISceneNode,
-									  parent	: Group) : void
+		private function addedHandler(target : ISceneNode, ancestor : Group) : void
 		{
 			// the controller will remove itself from the node when it's not its own root anymore
 			// but it will watch for the 'removed' signal to add itself back if the node becomes
@@ -154,13 +155,12 @@ package aerys.minko.scene.controller
 			_target.removeController(this);
 		}
 		
-		private function removedHandler(node	: ISceneNode,
-										parent	: Group) : void
+		private function removedHandler(target : ISceneNode, ancestor : Group) : void
 		{
-			if (_target.root == _target)
+			if (target.root == target)
 			{
-				_target.removed.remove(removedHandler);
-				_target.addController(this);
+				target.removed.remove(removedHandler);
+				target.addController(this);
 			}
 		}
 		

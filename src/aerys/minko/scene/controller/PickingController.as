@@ -508,10 +508,9 @@ package aerys.minko.scene.controller
 			}
 		}
 		
-		override protected function targetAddedToSceneHandler(target	: ISceneNode,
-															  scene		: Scene) : void
+		override protected function targetAddedToScene(target : ISceneNode, scene : Scene) : void
 		{
-			super.targetAddedToSceneHandler(target, scene);
+			super.targetAddedToScene(target, scene);
 			
 			if (!scene.bindings.propertyExists('pickingProjection'))
 				scene.bindings.addProvider(_sceneData);
@@ -520,10 +519,10 @@ package aerys.minko.scene.controller
 				throw new Error('Invalid target type: ' + getQualifiedClassName(target));
 		}
 		
-		override protected function targetRemovedFromSceneHandler(target	: ISceneNode,
-																  scene		: Scene) : void
+		override protected function targetRemovedFromScene(target 	: ISceneNode,
+														   scene 	: Scene) : void
 		{
-			super.targetRemovedFromSceneHandler(target, scene);
+			super.targetRemovedFromScene(target, scene);
 			
 			removeSceneNode(target);
 		}

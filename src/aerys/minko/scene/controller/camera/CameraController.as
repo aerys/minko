@@ -3,6 +3,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.CameraDataProvider;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
@@ -54,20 +55,25 @@ package aerys.minko.scene.controller.camera
 				throw new Error('The CameraController can target only one Camera object.');
 			
 			_camera = target;
-			_camera.addedToScene.add(addedToSceneHandler);
-			_camera.removedFromScene.add(removedFromSceneHandler);
+			_camera.added.add(addedHandler);
+			_camera.removed.add(removedHandler);
 		}
 		
 		private function targetRemovedHandler(controller	: CameraController,
 											  target		: AbstractCamera) : void
 		{
-			_camera.addedToScene.remove(addedToSceneHandler);
-			_camera.removedFromScene.remove(removedFromSceneHandler);
+			_camera.added.remove(addedHandler);
+			_camera.removed.remove(removedHandler);
 			_camera = null;
 		}
 		
-		private function addedToSceneHandler(camera : AbstractCamera, scene : Scene) : void
+		private function addedHandler(camera : AbstractCamera, ancestor : Group) : void
 		{
+			var scene : Scene = camera.scene;
+			
+			if (!scene)
+				return;
+			
 			var sceneBindings : DataBindings = scene.bindings;
 			
 			resetSceneCamera(scene);
@@ -88,8 +94,13 @@ package aerys.minko.scene.controller.camera
 			localToWorldChangedHandler(camera, camera.getLocalToWorldTransform());
 		}
 		
-		private function removedFromSceneHandler(camera : AbstractCamera, scene : Scene) : void
+		private function removedHandler(camera : AbstractCamera, ancestor : Group) : void
 		{
+			var scene : Scene = ancestor.scene;
+			
+			if (!scene)
+				return;
+			
 			var sceneBindings : DataBindings = scene.bindings;
 			
 			resetSceneCamera(scene);

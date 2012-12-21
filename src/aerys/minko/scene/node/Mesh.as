@@ -214,21 +214,11 @@ package aerys.minko.scene.node
 		{
 			super();
 
-			initialize(geometry, material, name);
+			initializeMesh(geometry, material, name);
 		}
 		
-		private function initialize(geometry	: Geometry,
-									material	: Material,
-									name		: String) : void
+		override protected function initialize() : void
 		{
-			if (name)
-				this.name = name;
-			
-			_cloned = new Signal('Mesh.cloned');
-			_materialChanged = new Signal('Mesh.materialChanged');
-			_frameChanged = new Signal('Mesh.frameChanged');
-			_geometryChanged = new Signal('Mesh.geometryChanged');
-			
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(
 				properties,
@@ -236,14 +226,39 @@ package aerys.minko.scene.node
 				DataProviderUsage.EXCLUSIVE
 			);
 			
-			this.geometry = geometry;
-			this.material = material || DEFAULT_MATERIAL;
+			super.initialize();
+		}
+		
+		override protected function initializeSignals():void
+		{
+			super.initializeSignals();
+			
+			_cloned = new Signal('Mesh.cloned');
+			_materialChanged = new Signal('Mesh.materialChanged');
+			_frameChanged = new Signal('Mesh.frameChanged');
+			_geometryChanged = new Signal('Mesh.geometryChanged');
+		}
+		
+		override protected function initializeContollers():void
+		{
+			super.initializeContollers();
 			
 			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 			
 			addController(new MeshController());
+		}
+		
+		protected function initializeMesh(geometry	: Geometry,
+										  material	: Material,
+										  name		: String) : void
+		{
+			if (name)
+				this.name = name;
+			
+			this.geometry = geometry;
+			this.material = material || DEFAULT_MATERIAL;
 		}
 		
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number

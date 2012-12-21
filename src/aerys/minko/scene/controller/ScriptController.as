@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.KeyboardManager;
@@ -55,10 +56,10 @@ package aerys.minko.scene.controller
             _started = new Dictionary(true);
         }
         
-        override protected function targetAddedToSceneHandler(target    : ISceneNode,
-                                                              scene     : Scene) : void
-        {
-            super.targetAddedToSceneHandler(target, scene);
+		override protected function targetAddedToScene(target	: ISceneNode,
+													   scene	: Scene) : void
+		{
+            super.targetAddedToScene(target, scene);
             
             if (_scene && scene != _scene)
                 throw new Error(
@@ -69,10 +70,10 @@ package aerys.minko.scene.controller
             _scene = scene;
         }
         
-        override protected function targetRemovedFromSceneHandler(target    : ISceneNode,
-                                                                  scene     : Scene) : void
+		override protected function targetRemovedFromScene(target 	: ISceneNode,
+														   scene 	: Scene) : void
         {
-            super.targetRemovedFromSceneHandler(target, scene);
+            super.targetAddedToScene(target, scene);
             
             if (getNumTargetsInScene(scene))
                 _scene = null;

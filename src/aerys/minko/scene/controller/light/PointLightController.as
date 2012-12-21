@@ -31,29 +31,27 @@ package aerys.minko.scene.controller.light
 			_projection = new Matrix4x4();
 		}
 		
-		override protected function lightAddedHandler(ctrl	: LightController,
+		override protected function targetAddedHandler(ctrl	: LightController,
 													  light	: AbstractLight) : void
 		{
-			super.lightAddedHandler(ctrl, light);
+			super.targetAddedHandler(ctrl, light);
 			
 			lightData.setLightProperty('worldPosition', _worldPosition);
 			lightData.setLightProperty('projection', _projection);
 		}
 		
-		override protected function lightAddedToSceneHandler(light 	: AbstractLight,
-															 scene	: Scene) : void
+		override protected function lightAddedToScene(scene : Scene) : void
 		{
-			super.lightAddedToSceneHandler(light, scene);
+			super.lightAddedToScene(scene);
 			
 			updateProjectionMatrix();
 			lightLocalToWorldChangedHandler(light, light.getLocalToWorldTransform());
 			light.localToWorldTransformChanged.add(lightLocalToWorldChangedHandler);
 		}
 		
-		override protected function lightRemovedFromSceneHandler(light	: AbstractLight,
-																 scene	: Scene) : void
+		override protected function lightRemovedFromScene(scene : Scene) : void
 		{
-			super.lightRemovedFromSceneHandler(light, scene);
+			super.lightRemovedFromScene(scene);
 			
 			light.localToWorldTransformChanged.remove(lightLocalToWorldChangedHandler);
 		}

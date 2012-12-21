@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataProvider;
@@ -28,13 +29,16 @@ package aerys.minko.scene.controller.mesh
 		private function targetAddedHandler(ctrl	: MeshController,
 											target	: Mesh) : void
 		{
-			target.addedToScene.add(targetAddedToSceneHandler);
-			target.removedFromScene.add(targetRemovedFromSceneHandler);
+			target.added.add(addedHandler);
+			target.removed.add(removedHandler);
 		}
 		
-		private function targetAddedToSceneHandler(target	: Mesh,
-												   scene	: Scene) : void
+		private function addedHandler(target	: Mesh,
+									  ancestor	: Group) : void
 		{
+			if (!target.scene)
+				return ;
+			
 			_data = new DataProvider();
 			_data.setProperty('localToWorld', target.getLocalToWorldTransform());
 			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(_worldToLocal));
@@ -43,9 +47,12 @@ package aerys.minko.scene.controller.mesh
 			target.localToWorldTransformChanged.add(localToWorldChangedHandler);
 		}
 		
-		private function targetRemovedFromSceneHandler(target	: Mesh,
-													   scene	: Scene) : void
+		private function removedHandler(target		: Mesh,
+										ancestor	: Group) : void
 		{
+			if (!ancestor.scene)
+				return ;
+			
 			target.localToWorldTransformChanged.remove(localToWorldChangedHandler);
 			
 			target.bindings.removeProvider(_data);

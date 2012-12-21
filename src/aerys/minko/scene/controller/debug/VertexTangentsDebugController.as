@@ -36,10 +36,10 @@ package aerys.minko.scene.controller.debug
 		private function targetAddedHandler(ctrl	: VertexTangentsDebugController,
 											target	: Mesh) : void
 		{
-			target.addedToScene.add(targetAddedToSceneHandler);
+			target.added.add(addedHandler);
 		}
 		
-		private function targetAddedToSceneHandler(target 	: Mesh,
+		private function addedHandler(target 	: Mesh,
 												   scene	: Scene) : void
 		{
 			var vertices : VertexIterator = new VertexIterator(target.geometry.getVertexStream(0));
@@ -65,7 +65,7 @@ package aerys.minko.scene.controller.debug
 		private function targetRemovedHandler(ctrl		: VertexTangentsDebugController,
 											  target	: Mesh) : void
 		{
-			target.addedToScene.remove(targetAddedToSceneHandler);
+			target.added.remove(addedHandler);
 			for each (var position : Mesh in target.parent.get("/mesh[name='__tangent__']"))
 				position.parent = null;
 		}

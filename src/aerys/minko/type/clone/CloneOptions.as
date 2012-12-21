@@ -4,6 +4,7 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.AnimationController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.controller.camera.CameraController;
+	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
 
@@ -41,6 +42,7 @@ package aerys.minko.type.clone
 				SkinningController
 			);
 			cloneOptions._ignoredControllerTypes.push(
+				MeshController,
 				MeshVisibilityController,
 				CameraController,
 				TransformController
@@ -55,6 +57,7 @@ package aerys.minko.type.clone
 			var cloneOptions : CloneOptions = new CloneOptions();
 			
 			cloneOptions._ignoredControllerTypes.push(
+				MeshController,
 				MeshVisibilityController,
 				CameraController,
 				TransformController

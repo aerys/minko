@@ -81,6 +81,14 @@ package aerys.minko.scene.node
 		function getLocalToWorldTransform(output : Matrix4x4 = null) : Matrix4x4;
 		
 		/**
+		 * Return a copy of the current world to local transform of the scene node. 
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function getWorldToLocalTransform(output : Matrix4x4 = null) : Matrix4x4;
+		
+		/**
 		 * Transform a local space vector into world space.
 		 * 
 		 * @param vector
@@ -89,6 +97,7 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function localToWorld(vector : Vector4, output : Vector4 = null) : Vector4;
+		function deltaLocalToWorld(vector : Vector4, output : Vector4 = null) : Vector4;
 		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is added to a parent scene
@@ -102,8 +111,6 @@ package aerys.minko.scene.node
 		 */
 		function get added() : Signal;
 		
-		function get addedToScene() : Signal;
-		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is removed from a parent
          * scene node. Callbacks functions must accept the following arguments:
@@ -115,8 +122,6 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function get removed() : Signal;
-		
-		function get removedFromScene() : Signal;
 		
 		/**
 		 * Get one of the scene node controllers by its index. 
