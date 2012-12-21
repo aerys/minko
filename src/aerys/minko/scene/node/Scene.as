@@ -136,6 +136,8 @@ package aerys.minko.scene.node
 		
 		override protected function initializeSignalHandlers() : void
 		{
+			super.initializeSignalHandlers();
+			
 			added.add(addedHandler);
 		}
 		
