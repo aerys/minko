@@ -46,28 +46,28 @@ package aerys.minko.scene.controller.scene
 		private static const TMP_MESHES 	: Vector.<ISceneNode> 	= new <ISceneNode>[];
 		private static const TMP_NUMBERS	: Vector.<Number>		= new <Number>[];
 		
-		private var _scene						: Scene			= null;
+		private var _scene						: Scene;
 		
-		private var _numTriangles				: uint			= 0;
+		private var _numTriangles				: uint;
 		
-		private var _stashedPropertyChanges		: Dictionary	= null;
+		private var _stashedPropertyChanges		: Dictionary;
 		
-		private var _passes						: Array			= null;
-		private var _passesAreSorted			: Boolean		= false;
+		private var _passes						: Array;
+		private var _passesAreSorted			: Boolean;
 		
-		private var _drawCallToPassInstance		: Dictionary	= null;
-		private var _passInstanceToDrawCalls	: Dictionary	= null;
+		private var _drawCallToPassInstance		: Dictionary;
+		private var _passInstanceToDrawCalls	: Dictionary;
 		
-		private var _meshToDrawCalls			: Dictionary	= null;
-		private var _drawCallToMeshBindings		: Dictionary	= null;
+		private var _meshToDrawCalls			: Dictionary;
+		private var _drawCallToMeshBindings		: Dictionary;
 		
-		private var _postProcessingBackBuffer	: RenderTarget	= null;
-		private var _postProcessingEffect		: Effect		= null;
-		private var _postProcessingScene		: Scene			= null;
-		private var _postProcessingProperties	: DataProvider	= new DataProvider(DataProviderUsage.MANAGED);
+		private var _postProcessingBackBuffer	: RenderTarget;
+		private var _postProcessingEffect		: Effect;
+		private var _postProcessingScene		: Scene;
+		private var _postProcessingProperties	: DataProvider;
 		
-		private var _lastViewportWidth			: Number		= 0;
-		private var _lastViewportHeight			: Number		= 0;
+		private var _lastViewportWidth			: Number;
+		private var _lastViewportHeight			: Number;
 		
 		/**
 		 * Index meshes by their own databinding.
@@ -137,6 +137,8 @@ package aerys.minko.scene.controller.scene
 		{
 			_passes						= [];
 			_passesAreSorted			= true;
+			
+			_postProcessingProperties = new DataProvider(DataProviderUsage.MANAGED);
 			
 			_drawCallToPassInstance		= new Dictionary();
 			_drawCallToMeshBindings		= new Dictionary();
@@ -437,7 +439,11 @@ package aerys.minko.scene.controller.scene
 		
 		private function removeMesh(mesh : Mesh) : void
 		{
-			mesh.bindings.removeCallback('effect', meshEffectChangedHandler);
+			var meshBindings : DataBindings = mesh.bindings;
+			
+			meshBindings.removeCallback('effect', meshEffectChangedHandler);
+			
+			delete _stashedPropertyChanges[meshBindings];
             
             mesh.computedVisibilityChanged.remove(meshVisibilityChangedHandler);
 			mesh.frameChanged.remove(meshFrameChangedHandler);
