@@ -139,9 +139,10 @@ package aerys.minko.scene.node.camera
 		 * @return 
 		 * 
 		 */
-		public function getWorldToViewTransform(output : Matrix4x4 = null) : Matrix4x4
+		public function getWorldToViewTransform(forceUpdate	: Boolean,
+												output 		: Matrix4x4 = null) : Matrix4x4
 		{
-			return getWorldToLocalTransform(output);
+			return getWorldToLocalTransform(forceUpdate, output);
 		}
 		
 		/**
@@ -152,9 +153,10 @@ package aerys.minko.scene.node.camera
 		 * @return 
 		 * 
 		 */
-		public function getViewToWorldTransform(output : Matrix4x4 = null) : Matrix4x4
+		public function getViewToWorldTransform(forceUpdate : Boolean,
+												output 		: Matrix4x4 = null) : Matrix4x4
 		{
-			return getLocalToWorldTransform(output);
+			return getLocalToWorldTransform(forceUpdate, output);
 		}
 		
 		/**

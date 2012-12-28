@@ -78,7 +78,8 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		function getLocalToWorldTransform(output : Matrix4x4 = null) : Matrix4x4;
+		function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
+										  output 		: Matrix4x4 = null) : Matrix4x4;
 		
 		/**
 		 * Return a copy of the current world to local transform of the scene node. 
@@ -86,7 +87,8 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		function getWorldToLocalTransform(output : Matrix4x4 = null) : Matrix4x4;
+		function getWorldToLocalTransform(forceUpdate 	: Boolean 	= false,
+										  output 		: Matrix4x4 = null) : Matrix4x4;
 		
 		/**
 		 * Transform a local space vector into world space.
@@ -96,8 +98,13 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		function localToWorld(vector : Vector4, output : Vector4 = null) : Vector4;
-		function deltaLocalToWorld(vector : Vector4, output : Vector4 = null) : Vector4;
+		function localToWorld(inputVector						: Vector4,
+							  outputVector						: Vector4 	= null,
+							  forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
+		
+		function deltaLocalToWorld(inputVector						: Vector4,
+								   outputVector						: Vector4 	= null,
+								   forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
 		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is added to a parent scene

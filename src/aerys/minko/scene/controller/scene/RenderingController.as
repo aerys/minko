@@ -20,6 +20,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Factory;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -80,7 +81,7 @@ package aerys.minko.scene.controller.scene
 		 * 
 		 * However, we don't want to trust AVM to handle circular references properly.
 		 */
-		private var _meshBindingsToMesh			: Dictionary				= null;
+		private var _meshBindingsToMesh			: Dictionary;
 		
 		/**
 		 * Index meshes by their effect.
@@ -92,8 +93,8 @@ package aerys.minko.scene.controller.scene
 		 *		- a dynamic effect removes a pass
 		 *		- and then: mesh.effect.changed is executed
 		 */
-		private var _effectToMeshes				: Dictionary				= null;
-		private var _numStashedPropertyChanges	: int						= 0;
+		private var _effectToMeshes				: Dictionary;
+		private var _numStashedPropertyChanges	: int;
 		
 		public function get numPasses() : uint
 		{
@@ -138,7 +139,7 @@ package aerys.minko.scene.controller.scene
 			_passes						= [];
 			_passesAreSorted			= true;
 			
-			_postProcessingProperties = new DataProvider(DataProviderUsage.MANAGED);
+			_postProcessingProperties 	= new DataProvider(DataProviderUsage.MANAGED);
 			
 			_drawCallToPassInstance		= new Dictionary();
 			_drawCallToMeshBindings		= new Dictionary();
@@ -218,8 +219,8 @@ package aerys.minko.scene.controller.scene
 		/**
 		 * Render current Scene
 		 */
-		private function render(viewport	: Viewport,
-								destination	: BitmapData) : uint
+		public function render(viewport		: Viewport,
+							   destination	: BitmapData) : uint
 		{
 			applyBindingChanges();
 
@@ -331,7 +332,7 @@ package aerys.minko.scene.controller.scene
 			
 			_scene = scene;
 			_scene.enterFrame.add(sceneEnterFrameHandler);
-			_scene.exitFrame.add(sceneExitFrameHandler);
+//			_scene.exitFrame.add(sceneExitFrameHandler);
 			_scene.descendantAdded.add(descendantAddedHandler);
 			_scene.descendantRemoved.add(descendantRemovedHandler);
 		}
@@ -357,17 +358,19 @@ package aerys.minko.scene.controller.scene
 			_lastViewportHeight	= viewportHeight
 		}
 		
-		private function sceneExitFrameHandler(scene 	: Scene,
-											   viewport : Viewport,
-											   target 	: BitmapData,
-											   time		: Number) : void
-		{
-			if (viewport.ready && viewport.visible)
-			{
-				_numTriangles = render(viewport, target);
-				Factory.sweep();
-			}
-		}
+//		private function sceneExitFrameHandler(scene 		: Scene,
+//											   viewport 	: Viewport,
+//											   destination 	: BitmapData,
+//											   time			: Number) : void
+//		{
+//			if (viewport.ready && viewport.visible)
+//			{
+//				_renderingBegin.execute(scene, viewport, destination, time);
+//				_numTriangles = render(viewport, destination);
+//				Factory.sweep();
+//				_renderingEnd.execute(scene, viewport, destination, time);
+//			}
+//		}
 		
 		/**
 		 * Remove callbacks and reset the whole controller.

@@ -30,7 +30,11 @@ package aerys.minko.scene.node
 		private var _properties		: DataProvider;
 		private var _bindings		: DataBindings;
 		
+		private var _numTriangles	: uint;
+		
 		private var _enterFrame		: Signal;
+		private var _renderingBegin	: Signal;
+		private var _renderingEnd	: Signal;
 		private var _exitFrame		: Signal;
 
 		public function get activeCamera() : AbstractCamera
@@ -45,7 +49,7 @@ package aerys.minko.scene.node
 		
 		public function get numTriangles() : uint
 		{
-			return _renderingCtrl.numTriangles;
+			return _numTriangles;
 		}
 		
 		public function get postProcessingEffect() : Effect
@@ -113,6 +117,16 @@ package aerys.minko.scene.node
 			return _exitFrame;
 		}
 		
+		public function get renderingBegin() : Signal
+		{
+			return _renderingBegin;
+		}
+		
+		public function get renderingEnd() : Signal
+		{
+			return _renderingEnd;
+		}
+		
 		public function Scene(...children)
 		{
 			super();
@@ -131,6 +145,8 @@ package aerys.minko.scene.node
 			super.initializeSignals();
 			
 			_enterFrame = new Signal('Scene.enterFrame');
+			_renderingBegin = new Signal('Scene.renderingBegin');
+			_renderingEnd = new Signal('Scene.renderingEnd');
 			_exitFrame = new Signal('Scene.exitFrame');
 		}
 		
@@ -143,15 +159,21 @@ package aerys.minko.scene.node
 		
 		override protected function initializeContollers() : void
 		{
-			super.initializeContollers();
-			
 			_renderingCtrl = new RenderingController();
 			addController(_renderingCtrl);
+			
+			super.initializeContollers();
 		}
 		
 		public function render(viewport : Viewport, destination : BitmapData = null) : void
 		{
 			_enterFrame.execute(this, viewport, destination, getTimer());
+			if (viewport.ready && viewport.visible)
+			{
+				_renderingBegin.execute(this, viewport, destination, getTimer());
+				_numTriangles = _renderingCtrl.render(viewport, destination);
+				_renderingEnd.execute(this, viewport, destination, getTimer());
+			}
 			_exitFrame.execute(this, viewport, destination, getTimer());
 		}
 		
