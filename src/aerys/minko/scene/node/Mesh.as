@@ -243,11 +243,11 @@ package aerys.minko.scene.node
 		{
 			super.initializeContollers();
 			
+			addController(new MeshController());
+			
 			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
-			
-			addController(new MeshController());
 		}
 		
 		protected function initializeMesh(geometry	: Geometry,
