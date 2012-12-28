@@ -151,7 +151,7 @@ package aerys.minko.scene.node.light
 			this.shadowSpread		= shadowSpread;
             this.shadowBias     	= shadowBias;
 			
-			transform.lookAt(Vector4.ZERO, new Vector4(1, -1, 1));
+			transform.lookAt(Vector4.ZERO, new Vector4(1, 1, 1));
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
