@@ -8,12 +8,12 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
 
-	public class CloneOptions
+	public final class CloneOptions
 	{
-		private var _clonedControllerTypes		: Vector.<Class>	= new <Class>[];
-		private var _ignoredControllerTypes		: Vector.<Class>	= new <Class>[];
-		private var _reassignedControllerTypes	: Vector.<Class>	= new <Class>[];
-		private var _defaultControllerAction	: uint				= ControllerCloneAction.REASSIGN;
+		private var _clonedControllerTypes		: Vector.<Class>;
+		private var _ignoredControllerTypes		: Vector.<Class>;
+		private var _reassignedControllerTypes	: Vector.<Class>;
+		private var _defaultControllerAction	: uint;
 		
 		public function get defaultControllerAction() : uint
 		{
@@ -31,6 +31,15 @@ package aerys.minko.type.clone
 		
 		public function CloneOptions()
 		{
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_clonedControllerTypes = new <Class>[];
+			_ignoredControllerTypes = new <Class>[];
+			_reassignedControllerTypes = new <Class>[];
+			_defaultControllerAction = ControllerCloneAction.REASSIGN;
 		}
 		
 		public static function get defaultOptions() : CloneOptions
