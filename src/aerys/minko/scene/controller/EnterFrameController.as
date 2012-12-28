@@ -12,8 +12,6 @@ package aerys.minko.scene.controller
 	 * EnterFrameController are controllers triggered whenever the Scene.enterFrame
 	 * signal is executed.
 	 * 
-	 * The best way to 
-	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
