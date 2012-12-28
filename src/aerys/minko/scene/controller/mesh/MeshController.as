@@ -5,6 +5,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public final class MeshController extends AbstractController
@@ -39,9 +40,12 @@ package aerys.minko.scene.controller.mesh
 			if (!target.scene)
 				return ;
 			
-			_data = new DataProvider();
+			_data = new DataProvider(
+				null, target.name + '_transforms', DataProviderUsage.EXCLUSIVE
+			);
 			_data.setProperty('localToWorld', target.getLocalToWorldTransform());
-			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(_worldToLocal));
+			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(false, _worldToLocal));
+			
 			target.bindings.addProvider(_data);
 			
 			target.localToWorldTransformChanged.add(localToWorldChangedHandler);
@@ -56,6 +60,7 @@ package aerys.minko.scene.controller.mesh
 			target.localToWorldTransformChanged.remove(localToWorldChangedHandler);
 			
 			target.bindings.removeProvider(_data);
+			
 			_data = null;
 		}
 		
