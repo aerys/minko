@@ -91,7 +91,7 @@ package aerys.minko.scene.controller.light
 			localToWorld.getTranslation(_worldPosition);
 			
 			// compute direction
-			_worldDirection	= localToWorld.deltaTransformVector(Vector4.Z_AXIS, _worldDirection);
+			localToWorld.deltaTransformVector(Vector4.Z_AXIS, _worldDirection);
 			_worldDirection.normalize();
 			
 			// update world to screen/uv
