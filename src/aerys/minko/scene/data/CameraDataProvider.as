@@ -11,6 +11,8 @@ package aerys.minko.scene.data
 	public final class CameraDataProvider extends DataProvider
 	{
 		private static const DATA_DESCRIPTOR	: Object = {
+			'position'		: 'cameraPosition',
+			'direction'		: 'cameraDirection',
 			'fieldOfView'	: 'cameraFov',
 			'zNear'			: 'cameraZNear',
 			'zFar'			: 'cameraZFar',
@@ -20,6 +22,8 @@ package aerys.minko.scene.data
 			'zoom'			: 'zoom'
 		};
 		
+		private var _position		: Vector4;
+		private var _direction		: Vector4;
 		private var _fieldOfView	: Number;
 		private var _zNear			: Number;
 		private var _zFar			: Number;
@@ -37,6 +41,16 @@ package aerys.minko.scene.data
 		override public function get dataDescriptor() : Object
 		{
 			return DATA_DESCRIPTOR;
+		}
+		
+		public function get position() : Vector4
+		{
+			return _position;
+		}
+		
+		public function get direction() : Vector4
+		{
+			return _direction;
 		}
 		
 		public function get fieldOfView() : Number
@@ -111,6 +125,8 @@ package aerys.minko.scene.data
 		{
 			_frustum = new Frustum();
 			
+			watchProperty('position', _position = new Vector4());
+			watchProperty('direction', _direction = new Vector4());
 			watchProperty('projection', _projection = new Matrix4x4());
 			watchProperty('worldToView', _worldToView = new Matrix4x4());
 			watchProperty('worldToScreen', _worldToScreen = new Matrix4x4());

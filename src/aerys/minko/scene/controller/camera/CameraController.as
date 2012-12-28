@@ -10,6 +10,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	public final class CameraController extends AbstractController
 	{
@@ -125,6 +126,9 @@ package aerys.minko.scene.controller.camera
 			var worldToView		: Matrix4x4				= cameraData.worldToView;
 			var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
 
+			localToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraData.direction);
+			localToWorld.transformVector(Vector4.ZERO, cameraData.position);
+			
 			worldToView.lock()
 				.copyFrom(localToWorld)
 				.invert()
