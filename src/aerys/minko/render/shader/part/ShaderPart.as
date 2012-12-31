@@ -836,7 +836,7 @@ package aerys.minko.render.shader.part
 		
 		protected final function localToView(localSpaceVector : Object) : SFloat
 		{
-			return worldToViewMatrix(localToWorld(localSpaceVector));
+			return worldToView(localToWorld(localSpaceVector));
 		}
 		
 		protected final function worldToLocal(worldSpaceVector : Object) : SFloat
