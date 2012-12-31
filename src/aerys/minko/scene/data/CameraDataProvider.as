@@ -16,29 +16,23 @@ package aerys.minko.scene.data
 			'fieldOfView'	: 'cameraFov',
 			'zNear'			: 'cameraZNear',
 			'zFar'			: 'cameraZFar',
-			'worldToView'	: 'worldToView',
-			'viewToWorld'	: 'viewToWorld',
 			'projection'	: 'projection',
-			'screenToView'	: 'screenToView',
+			'worldToView'	: 'worldToView',
 			'worldToScreen'	: 'worldToScreen',
-			'screenToWorld'	: 'screenToWorld',
 			'zoom'			: 'zoom'
 		};
 		
-		private var _position			: Vector4		= new Vector4();
-		private var _direction			: Vector4		= new Vector4();
-		private var _fieldOfView		: Number		= 0.0;
-		private var _zNear				: Number		= 0.0;
-		private var _zFar				: Number		= 0.0;
-		private var _zoom				: Number		= 0.0;
-		private var _worldToView		: Matrix4x4		= null;
-		private var _viewToWorld		: Matrix4x4		= null;
-		private var _worldToScreen		: Matrix4x4		= new Matrix4x4();
-		private var _screenToWorld		: Matrix4x4		= new Matrix4x4();
-		private var _projection			: Matrix4x4		= new Matrix4x4();
-		private var _screenToView		: Matrix4x4		= new Matrix4x4();
-		private var _frustum			: Frustum		= new Frustum();
-
+		private var _position		: Vector4;
+		private var _direction		: Vector4;
+		private var _fieldOfView	: Number;
+		private var _zNear			: Number;
+		private var _zFar			: Number;
+		private var _zoom			: Number;
+		private var _worldToView	: Matrix4x4;
+		private var _worldToScreen	: Matrix4x4;
+		private var _projection		: Matrix4x4;
+		private var _frustum		: Frustum;
+		
 		override public function get usage() : uint
 		{
 			return DataProviderUsage.MANAGED;
@@ -105,19 +99,9 @@ package aerys.minko.scene.data
 			return _worldToView;
 		}
 		
-		public function get viewToWorld() : Matrix4x4
-		{
-			return _viewToWorld;
-		}
-		
 		public function get worldToScreen() : Matrix4x4
 		{
 			return _worldToScreen;
-		}
-		
-		public function get screenToWorld() : Matrix4x4
-		{
-			return _screenToWorld;
 		}
 		
 		public function get projection() : Matrix4x4
@@ -125,35 +109,27 @@ package aerys.minko.scene.data
 			return _projection;
 		}
 		
-		public function get screenToView() : Matrix4x4
-		{
-			return _screenToView;
-		}
-		
 		public function get frustum() : Frustum
 		{
 			return _frustum;
 		}
 		
-		public function CameraDataProvider(worldToView	: Matrix4x4,
-										   viewToWorld	: Matrix4x4)
+		public function CameraDataProvider()
 		{
-			_worldToView = worldToView;
-			_viewToWorld = viewToWorld;
-
+			super();
+			
 			initialize();
 		}
 		
 		private function initialize() : void
 		{
-			watchProperty('position', _position);
-			watchProperty('direction', _direction);
-			watchProperty('projection', _projection);
-			watchProperty('screenToView', _screenToView);
-			watchProperty('screenToWorld', _screenToWorld);
-			watchProperty('viewToWorld', _viewToWorld);
-			watchProperty('worldToScreen', _worldToScreen);
-			watchProperty('worldToView', _worldToView);
+			_frustum = new Frustum();
+			
+			watchProperty('position', _position = new Vector4());
+			watchProperty('direction', _direction = new Vector4());
+			watchProperty('projection', _projection = new Matrix4x4());
+			watchProperty('worldToView', _worldToView = new Matrix4x4());
+			watchProperty('worldToScreen', _worldToScreen = new Matrix4x4());
 		}
 	}
 }

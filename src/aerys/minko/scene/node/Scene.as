@@ -23,15 +23,19 @@ package aerys.minko.scene.node
 	{
 		use namespace minko_scene;
 		
-		minko_scene var _camera		: AbstractCamera		= null;
+		minko_scene var _camera		: AbstractCamera;
 		
-		private var _renderingCtrl	: RenderingController	= new RenderingController();
+		private var _renderingCtrl	: RenderingController;
 		
-		private var _properties		: DataProvider			= null;
-		private var _bindings		: DataBindings			= null;
+		private var _properties		: DataProvider;
+		private var _bindings		: DataBindings;
 		
-		private var _enterFrame		: Signal				= new Signal('Scene.enterFrame');
-		private var _exitFrame		: Signal				= new Signal('Scene.exitFrame');
+		private var _numTriangles	: uint;
+		
+		private var _enterFrame		: Signal;
+		private var _renderingBegin	: Signal;
+		private var _renderingEnd	: Signal;
+		private var _exitFrame		: Signal;
 
 		public function get activeCamera() : AbstractCamera
 		{
@@ -45,7 +49,7 @@ package aerys.minko.scene.node
 		
 		public function get numTriangles() : uint
 		{
-			return _renderingCtrl.numTriangles;
+			return _numTriangles;
 		}
 		
 		public function get postProcessingEffect() : Effect
@@ -113,30 +117,67 @@ package aerys.minko.scene.node
 			return _exitFrame;
 		}
 		
+		public function get renderingBegin() : Signal
+		{
+			return _renderingBegin;
+		}
+		
+		public function get renderingEnd() : Signal
+		{
+			return _renderingEnd;
+		}
+		
 		public function Scene(...children)
 		{
 			super();
-			
-			initialize(children);
 		}
 		
-		private function initialize(children : Array) : void
+		override protected function initialize() : void
 		{
 			_bindings = new DataBindings(this);
 			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
 			
+			super.initialize();
+		}
+		
+		override protected function initializeSignals() : void
+		{
+			super.initializeSignals();
+			
+			_enterFrame = new Signal('Scene.enterFrame');
+			_renderingBegin = new Signal('Scene.renderingBegin');
+			_renderingEnd = new Signal('Scene.renderingEnd');
+			_exitFrame = new Signal('Scene.exitFrame');
+		}
+		
+		override protected function initializeSignalHandlers() : void
+		{
+			super.initializeSignalHandlers();
+			
+			added.add(addedHandler);
+		}
+		
+		override protected function initializeContollers() : void
+		{
+			_renderingCtrl = new RenderingController();
 			addController(_renderingCtrl);
 			
-			initializeChildren(children);
+			super.initializeContollers();
 		}
 		
 		public function render(viewport : Viewport, destination : BitmapData = null) : void
 		{
 			_enterFrame.execute(this, viewport, destination, getTimer());
+			if (viewport.ready && viewport.visible)
+			{
+				_renderingBegin.execute(this, viewport, destination, getTimer());
+				_numTriangles = _renderingCtrl.render(viewport, destination);
+				_renderingEnd.execute(this, viewport, destination, getTimer());
+			}
 			_exitFrame.execute(this, viewport, destination, getTimer());
 		}
 		
-		override protected function addedHandler(child : ISceneNode, parent : Group) : void
+		private function addedHandler(child : ISceneNode, parent : Group) : void
 		{
 			throw new Error();
 		}

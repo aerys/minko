@@ -202,12 +202,18 @@ package aerys.minko.scene.controller.camera
 			super.targetAddedHandler(ctrl, target);
 			
 			_update = true;
+			updateTargets();
 		}
 		
 		override protected function sceneEnterFrameHandler(scene		: Scene,
 														   viewport		: Viewport,
 														   destination	: BitmapData,
 														   time			: Number) : void
+		{
+			updateTargets();
+		}
+		
+		private function updateTargets() : void
 		{
 			if (_update && _enabled)
 			{

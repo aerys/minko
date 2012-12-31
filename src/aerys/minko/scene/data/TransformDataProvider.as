@@ -12,8 +12,6 @@ package aerys.minko.scene.data
 			'worldToLocal'	: 'worldToLocal'
 		};
 		
-		private var _changed		: Signal;
-		
 		private var _localToWorld	: Matrix4x4;
 		private var _worldToLocal	: Matrix4x4;
 		
@@ -26,29 +24,25 @@ package aerys.minko.scene.data
 		{
 			return _localToWorld;
 		}
+		public function set localToWorld(value : Matrix4x4) : void
+		{
+			
+		}
 		
 		public function get worldToLocal() : Matrix4x4
 		{
 			return _worldToLocal;
 		}
 		
-		public function TransformDataProvider(localToWorld	: Matrix4x4,
-											  worldToLocal	: Matrix4x4)
+		public function TransformDataProvider()
 		{
 			super(null, null, DataProviderUsage.MANAGED);
 			
-			initialize(localToWorld, worldToLocal);
+			initialize();
 		}
 		
-		private function initialize(localToWorld	: Matrix4x4,
-									worldToLocal	: Matrix4x4) : void
+		private function initialize() : void
 		{
-			_changed = new Signal('TransformDataProvider.changed');
-			_localToWorld = localToWorld;
-			_worldToLocal = worldToLocal;
-			
-			watchProperty('localToWorld', _localToWorld);
-			watchProperty('worldToLocal', _worldToLocal);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller
 {
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	
@@ -10,8 +11,6 @@ package aerys.minko.scene.controller
 	/**
 	 * EnterFrameController are controllers triggered whenever the Scene.enterFrame
 	 * signal is executed.
-	 * 
-	 * The best way to 
 	 * 
 	 * @author Jean-Marc Le Roux
 	 * 
@@ -44,26 +43,36 @@ package aerys.minko.scene.controller
 											  target	: ISceneNode) : void
 		{
             if (target.scene)
-                targetAddedToSceneHandler(target, target.scene);
+                targetAddedToScene(target, target.scene);
             
-            target.addedToScene.add(targetAddedToSceneHandler);
-            target.removedFromScene.add(targetRemovedFromSceneHandler);
+            target.added.add(addedHandler);
+            target.removed.add(removedHandler);
 		}
 		
 		protected function targetRemovedHandler(ctrl	: EnterFrameController,
 												target	: ISceneNode) : void
 		{
             if (target.scene)
-                targetRemovedFromSceneHandler(target, target.scene);
+                targetRemovedFromScene(target, target.scene);
             
-            target.addedToScene.remove(targetAddedToSceneHandler);
-            target.removedFromScene.remove(targetRemovedFromSceneHandler);
+            target.added.remove(addedHandler);
+            target.removed.remove(removedHandler);
 		}
 		
-		protected function targetAddedToSceneHandler(target	: ISceneNode,
-													 scene	: Scene) : void
+		private function addedHandler(target	: ISceneNode,
+									  ancestor	: Group) : void
 		{
-            if (!_numTargetsInScene.hasOwnProperty(scene))
+			var scene : Scene = target.scene;
+			
+			if (!scene)
+				return ;
+			
+			targetAddedToScene(target, scene);
+		}
+		
+		protected function targetAddedToScene(target : ISceneNode, scene : Scene) : void
+		{
+            if (!_numTargetsInScene[scene])
             {
                 _numTargetsInScene[scene] = 1;
                 scene.enterFrame.add(sceneEnterFrameHandler);
@@ -72,8 +81,18 @@ package aerys.minko.scene.controller
                 _numTargetsInScene[scene]++;
 		}
 		
-		protected function targetRemovedFromSceneHandler(target	: ISceneNode,
-														 scene	: Scene) : void
+		private function removedHandler(target		: ISceneNode,
+										ancestor	: Group) : void
+		{
+			var scene : Scene = ancestor.scene;
+			
+			if (!scene)
+				return ;
+			
+			targetRemovedFromScene(target, scene);
+		}
+		
+		protected function targetRemovedFromScene(target : ISceneNode, scene : Scene) : void
 		{
             _numTargetsInScene[scene]--;
             if (_numTargetsInScene[scene] == 0)

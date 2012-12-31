@@ -1,17 +1,19 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
+	import aerys.minko.render.shader.part.phong.attenuation.MatrixShadowMapAttenuationShaderPart;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.controller.TransformController;
-	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.clone.ControllerCloneAction;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 	
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.setTimeout;
 
 	use namespace minko_scene;
 	
@@ -29,23 +31,17 @@ package aerys.minko.scene.node
 		private var _root	        			: ISceneNode;
 		private var _parent	        			: Group;
         
-        private var _visible                    : Boolean;
-        private var _computedVisibility         : Boolean;
-		
 		private var _transform			        : Matrix4x4;
-		private var _localToWorld		        : Matrix4x4;
-		private var _worldToLocal	        	: Matrix4x4;
 		
 		private var _controllers		        : Vector.<AbstractController>;
 		
 		private var _added				        : Signal;
 		private var _removed			        : Signal;
-		private var _addedToScene		        : Signal;
-		private var _removedFromScene	        : Signal;
 		private var _controllerAdded	        : Signal;
 		private var _controllerRemoved	        : Signal;
         private var _visibilityChanged          : Signal;
         private var _computedVisibilityChanged  : Signal;
+		private var _localToWorldChanged		: Signal;
 
         final public function get x() : Number
 		{
@@ -187,16 +183,6 @@ package aerys.minko.scene.node
 			return _transform;
 		}
 		
-		final public function get localToWorld() : Matrix4x4
-		{
-			return _localToWorld;
-		}
-		
-        final public function get worldToLocal() : Matrix4x4
-		{
-			return _worldToLocal;
-		}
-		
         final public function get added() : Signal
 		{
 			return _added;
@@ -207,16 +193,6 @@ package aerys.minko.scene.node
 			return _removed;
 		}
 
-        final public function get addedToScene() : Signal
-		{
-			return _addedToScene;
-		}
-		
-        final public function get removedFromScene() : Signal
-		{
-			return _removedFromScene;
-		}
-		
 		public function get numControllers() : uint
 		{
 			return _controllers.length;
@@ -231,79 +207,67 @@ package aerys.minko.scene.node
 		{
 			return _controllerRemoved;
 		}
+		
+		public function get localToWorldTransformChanged() : Signal
+		{
+			return _localToWorldChanged;
+		}
         
 		public function AbstractSceneNode()
 		{
 			initialize();
 		}
 		
-		private function initialize() : void
+		protected function initialize() : void
 		{
 			_name = getDefaultSceneName(this);
-			
-            _visible = true;
-            _computedVisibility = true;
-            
 			_transform = new Matrix4x4();
-			_localToWorld = new Matrix4x4();
-			_worldToLocal = new Matrix4x4();
-			
 			_controllers = new <AbstractController>[];
+			_root = this;
 			
+			initializeSignals();
+			initializeSignalHandlers();
+			initializeContollers();
+			initializeDataProviders();
+		}
+		
+		protected function initializeSignals() : void
+		{
 			_added = new Signal('AbstractSceneNode.added');
 			_removed = new Signal('AbstractSceneNode.removed');
-			_addedToScene = new Signal('AbstractSceneNode.addedToScene');
-			_removedFromScene = new Signal('AbstractSceneNode.removedFromScene');
 			_controllerAdded = new Signal('AbstractSceneNode.controllerAdded');
 			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
-            _visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
-            _computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
-			
-			updateRoot();
-            
+			_visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
+			_computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
+			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged');			
+		}
+		
+		protected function initializeSignalHandlers() : void
+		{
 			_added.add(addedHandler);
 			_removed.add(removedHandler);
-			_addedToScene.add(addedToSceneHandler);
-			_removedFromScene.add(removedFromSceneHandler);
-			
+		}
+		
+		protected function initializeContollers() : void
+		{
 			addController(new TransformController());
 		}
 		
-		protected function addedHandler(child : ISceneNode, ancestor : Group) : void
-		{
-            updateRoot();
-		}
-        
-		protected function removedHandler(child : ISceneNode, ancestor : Group) : void
-		{
-            updateRoot();
-		}
-        
-        private function updateRoot() : void
-        {
-            var newRoot : ISceneNode    = _parent ? _parent.root : this;
-            var oldRoot : ISceneNode    = _root;
-            
-            if (newRoot != oldRoot)
-            {
-                _root = newRoot;
-                if (oldRoot is Scene)
-                    _removedFromScene.execute(this, oldRoot);
-                if (newRoot is Scene)
-                    _addedToScene.execute(this, newRoot);
-            }
-        }
-        
-		protected function addedToSceneHandler(child : ISceneNode, scene : Scene) : void
+		protected function initializeDataProviders() : void
 		{
 			// nothing
 		}
 		
-		protected function removedFromSceneHandler(child : ISceneNode, scene : Scene) : void
+		private function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			// nothing
+           _root = _parent ? _parent.root : this;
 		}
         
+		private function removedHandler(child : ISceneNode, ancestor : Group) : void
+		{
+			_root = _parent ? _parent.root : this;
+		}
+		
 		public function addController(controller : AbstractController) : ISceneNode
 		{
 			_controllers.push(controller);
@@ -397,6 +361,52 @@ package aerys.minko.scene.node
 			}
 			
 			return nodeMap[this];
+		}
+		
+		minko_scene function getLocalToWorldTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
+		{
+			var transformController : TransformController = root.getControllersByType(
+				TransformController
+			)[0] as TransformController;
+			
+			return transformController.getLocalToWorldTransform(this, forceUpdate);
+		}
+		
+		public function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
+												 output 		: Matrix4x4 = null) : Matrix4x4
+		{
+			output ||= new Matrix4x4();
+			output.copyFrom(getLocalToWorldTransformUnsafe(forceUpdate));
+			
+			return output;
+		}
+		
+		public function getWorldToLocalTransform(forceUpdate 	: Boolean 	= false,
+												 output			: Matrix4x4 = null) : Matrix4x4
+		{
+			return getLocalToWorldTransform(forceUpdate, output).invert();
+		}
+		
+		public function localToWorld(inputVector 						: Vector4,
+									 outputVector 						: Vector4 	= null,
+									 forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4
+		{
+			var localToWorld : Matrix4x4 = getLocalToWorldTransformUnsafe(
+				forceLocalToWorldTransformUpdate
+			);
+			
+			return localToWorld.transformVector(inputVector, outputVector);
+		}
+		
+		public function deltaLocalToWorld(inputVector						: Vector4,
+										  outputVector						: Vector4 	= null,
+										  forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4
+		{
+			var localToWorld : Matrix4x4 = getLocalToWorldTransformUnsafe(
+				forceLocalToWorldTransformUpdate
+			);
+			
+			return localToWorld.deltaTransformVector(inputVector, outputVector);
 		}
 		
 		private function listItems(clonedRoot	: ISceneNode,

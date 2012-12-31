@@ -30,17 +30,18 @@ package aerys.minko.type.math
 		private static const COMPONENT_SCALE		: uint				= 4;
 		private static const COMPONENT_ALL			: uint				= 7;
 		
-		private var _data				: Vector.<Number>	= new <Number>[];
-		private var _rotation			: Vector4			= new Vector4();
-		private var _scale				: Vector4			= new Vector4();
-		private var _translation		: Vector4			= new Vector4();
-		private var _invalidComponents	: uint				= 7;
-		private var _numPushes			: uint				= 0;
+		private var _data				: Vector.<Number>		= new <Number>[];
+		private var _rotation			: Vector4				= new Vector4();
+		private var _scale				: Vector4				= new Vector4();
+		private var _translation		: Vector4				= new Vector4();
+		private var _invalidComponents	: uint					= 7;
+		private var _numPushes			: uint					= 0;
 		
-		private var _locked		: Boolean					= false;
-		private var _changed	: Signal					= new Signal('Matrix4x4.changed');
+		private var _locked				: Boolean				= false;
+		private var _changed			: Signal				= new Signal('Matrix4x4.changed');
 		
-		minko_math var _matrix	: flash.geom.Matrix3D		= new flash.geom.Matrix3D();
+		minko_math var _matrix			: flash.geom.Matrix3D	= new flash.geom.Matrix3D();
+		minko_math var _hasChanged		: Boolean				= true;
 		
 		final public function get translationX() : Number
 		{
@@ -194,6 +195,7 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(TMP_VECTOR);
 			_invalidComponents = COMPONENT_ALL;
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 		}
@@ -203,6 +205,7 @@ package aerys.minko.type.math
 			_matrix.copyFrom(matrix._matrix);
 			_invalidComponents = COMPONENT_ALL;
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -214,6 +217,7 @@ package aerys.minko.type.math
 			_matrix.copyFrom(matrix);
 			_invalidComponents = COMPONENT_ALL;
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -245,6 +249,7 @@ package aerys.minko.type.math
 				_invalidComponents = COMPONENT_ALL;
 			}
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -256,6 +261,7 @@ package aerys.minko.type.math
 			_invalidComponents = COMPONENT_ALL;
 			_matrix.prepend(m._matrix);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -267,6 +273,7 @@ package aerys.minko.type.math
 			_invalidComponents = COMPONENT_ALL;
 			_matrix.append(m._matrix);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -284,6 +291,7 @@ package aerys.minko.type.math
 				pivotPoint ? pivotPoint._vector : null
 			);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -296,7 +304,8 @@ package aerys.minko.type.math
 		{
 			_invalidComponents = COMPONENT_ALL;
 			_matrix.appendScale(x, y, z);
-			
+
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -308,6 +317,7 @@ package aerys.minko.type.math
             _invalidComponents = COMPONENT_ALL;
             _matrix.appendScale(scale, scale, scale);
             
+			_hasChanged = true;
             if (!_locked)
                 _changed.execute(this);
             
@@ -320,6 +330,7 @@ package aerys.minko.type.math
 		{
 			_matrix.appendTranslation(x, y, z);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -337,6 +348,7 @@ package aerys.minko.type.math
 				pivotPoint ? pivotPoint._vector : null
 			);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -349,7 +361,8 @@ package aerys.minko.type.math
 		{
 			_invalidComponents = COMPONENT_ALL;
 			_matrix.prependScale(x, y, z);
-			
+		
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -360,6 +373,7 @@ package aerys.minko.type.math
 		{
 			_matrix.prependScale(scale, scale, scale);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -372,6 +386,7 @@ package aerys.minko.type.math
 		{
 			_matrix.prependTranslation(x, y, z);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -418,6 +433,7 @@ package aerys.minko.type.math
 		{
 			_matrix.identity();
 
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -428,6 +444,7 @@ package aerys.minko.type.math
 		{
 			_matrix.invert();
 
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -438,6 +455,7 @@ package aerys.minko.type.math
 		{
 			_matrix.transpose();
 
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -479,6 +497,7 @@ package aerys.minko.type.math
 		{
 			_matrix.copyRawDataFrom(input, offset, transposed);
 
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -500,7 +519,8 @@ package aerys.minko.type.math
         final public function setColumn(column : uint, value : Vector4) : Matrix4x4
 		{
 			_matrix.copyColumnFrom(column, value._vector);
-			
+		
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -522,7 +542,8 @@ package aerys.minko.type.math
         final public function setRow(row : uint, value : Vector4) : Matrix4x4
 		{
 			_matrix.copyRowFrom(row, value._vector);
-			
+
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -565,7 +586,8 @@ package aerys.minko.type.math
 			{
 				_matrix.interpolateTo(target._matrix, ratio);
 			}
-						
+			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -604,7 +626,8 @@ package aerys.minko.type.math
 			_translation.z = z;
 			
 			_matrix.copyColumnFrom(3, _translation._vector);
-			
+
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -635,6 +658,7 @@ package aerys.minko.type.math
 				_scale._vector
 			]);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -681,6 +705,7 @@ package aerys.minko.type.math
 				_scale._vector
 			]);
 			
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -810,7 +835,8 @@ package aerys.minko.type.math
             _rotation.copyFrom(rotation);
             _scale.copyFrom(scale);
             _invalidComponents = 0;
-			
+
+			_hasChanged = true;
 			if (!_locked)
 				_changed.execute(this);
 			

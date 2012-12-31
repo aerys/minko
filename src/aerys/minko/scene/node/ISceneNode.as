@@ -4,6 +4,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.clone.CloneOptions;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Vector4;
 
 	/**
 	 * The ISceneNode interface describes the properties of every
@@ -68,8 +69,42 @@ package aerys.minko.scene.node
 		function set name(value : String) : void;
 		
 		function get transform() : Matrix4x4;
-		function get localToWorld() : Matrix4x4;
-		function get worldToLocal() : Matrix4x4;
+		
+		function get localToWorldTransformChanged() : Signal;
+		
+		/**
+		 * Return a copy of the current local to world transform of the scene node. 
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
+										  output 		: Matrix4x4 = null) : Matrix4x4;
+		
+		/**
+		 * Return a copy of the current world to local transform of the scene node. 
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function getWorldToLocalTransform(forceUpdate 	: Boolean 	= false,
+										  output 		: Matrix4x4 = null) : Matrix4x4;
+		
+		/**
+		 * Transform a local space vector into world space.
+		 * 
+		 * @param vector
+		 * @param output
+		 * @return 
+		 * 
+		 */
+		function localToWorld(inputVector						: Vector4,
+							  outputVector						: Vector4 	= null,
+							  forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
+		
+		function deltaLocalToWorld(inputVector						: Vector4,
+								   outputVector						: Vector4 	= null,
+								   forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
 		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is added to a parent scene
@@ -83,8 +118,6 @@ package aerys.minko.scene.node
 		 */
 		function get added() : Signal;
 		
-		function get addedToScene() : Signal;
-		
 		/**
 		 * The signal executed when the node (or one of its ancestors) is removed from a parent
          * scene node. Callbacks functions must accept the following arguments:
@@ -96,8 +129,6 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function get removed() : Signal;
-		
-		function get removedFromScene() : Signal;
 		
 		/**
 		 * Get one of the scene node controllers by its index. 

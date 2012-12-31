@@ -3,6 +3,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.data.CameraDataProvider;
+	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
@@ -15,14 +16,34 @@ package aerys.minko.scene.controller.camera
 	{
 		use namespace minko_scene;
 		
-		private var _camera		: AbstractCamera	= null;
-		private var _ortho 		: Boolean 			= false;
+		private var _data	: CameraDataProvider;
+		private var _camera	: AbstractCamera;
+		private var _ortho 	: Boolean;
 		
-		public function CameraController(ortho : Boolean = false)
+		public function get cameraData() : CameraDataProvider
+		{
+			return _data;
+		}
+		
+		public function get orthographic() : Boolean
+		{
+			return _ortho;
+		}
+		public function set orthographic(value : Boolean) : void
+		{
+			_ortho = value;
+		}
+		
+		public function CameraController()
 		{
 			super(AbstractCamera);
 			
-			_ortho = ortho;
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_data = new CameraDataProvider();
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
@@ -35,83 +56,90 @@ package aerys.minko.scene.controller.camera
 				throw new Error('The CameraController can target only one Camera object.');
 			
 			_camera = target;
-			_camera.addedToScene.add(addedToSceneHandler);
-			_camera.removedFromScene.add(removedFromSceneHandler);
-			_camera.worldToLocal.changed.add(worldToLocalChangedHandler);
+			_camera.added.add(addedHandler);
+			_camera.removed.add(removedHandler);
 		}
 		
 		private function targetRemovedHandler(controller	: CameraController,
 											  target		: AbstractCamera) : void
 		{
-			_camera.addedToScene.remove(addedToSceneHandler);
-			_camera.removedFromScene.remove(removedFromSceneHandler);
-			_camera.worldToLocal.changed.remove(worldToLocalChangedHandler);
+			_camera.added.remove(addedHandler);
+			_camera.removed.remove(removedHandler);
 			_camera = null;
 		}
 		
-		private function addedToSceneHandler(camera : AbstractCamera, scene : Scene) : void
+		private function addedHandler(camera : AbstractCamera, ancestor : Group) : void
 		{
+			var scene : Scene = camera.scene;
+			
+			if (!scene)
+				return;
+			
 			var sceneBindings : DataBindings = scene.bindings;
 			
 			resetSceneCamera(scene);
             
             if (camera.enabled)
-                sceneBindings.addProvider(camera.cameraData);
+                sceneBindings.addProvider(_data);
 
+			camera.localToWorldTransformChanged.add(localToWorldChangedHandler);
 			camera.activated.add(cameraActivatedHandler);
 			camera.deactivated.add(cameraDeactivatedHandler);
 			
-			camera.cameraData.changed.add(cameraPropertyChangedHandler);
+			_data.changed.add(cameraPropertyChangedHandler);
 			
 			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
 			
 			updateProjection();
+			localToWorldChangedHandler(camera, camera.getLocalToWorldTransform());
 		}
 		
-		private function removedFromSceneHandler(camera : AbstractCamera, scene : Scene) : void
+		private function removedHandler(camera : AbstractCamera, ancestor : Group) : void
 		{
+			var scene : Scene = ancestor.scene;
+			
+			if (!scene)
+				return;
+			
 			var sceneBindings : DataBindings = scene.bindings;
 			
 			resetSceneCamera(scene);
 			
 			if (camera.enabled)
-				sceneBindings.removeProvider(camera.cameraData);
+				sceneBindings.removeProvider(_data);
 			
+			camera.localToWorldTransformChanged.remove(localToWorldChangedHandler);
 			camera.activated.remove(cameraActivatedHandler);
 			camera.deactivated.remove(cameraDeactivatedHandler);
 			
-			camera.cameraData.changed.remove(cameraPropertyChangedHandler);
+			_data.changed.remove(cameraPropertyChangedHandler);
 			
 			sceneBindings.removeCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);
 		}
 		
-		private function worldToLocalChangedHandler(worldToLocal : Matrix4x4) : void
+		private function localToWorldChangedHandler(camera 			: AbstractCamera,
+													localToWorld 	: Matrix4x4) : void
 		{
-			var cameraData		: CameraDataProvider	= _camera.cameraData;
+			var cameraData		: CameraDataProvider	= _data;
+			var worldToView		: Matrix4x4				= cameraData.worldToView;
 			var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
-			var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
-			var viewToWorld		: Matrix4x4				= cameraData.viewToWorld;
-			var cameraPosition	: Vector4				= cameraData.position;
-			var cameraDirection	: Vector4				= cameraData.direction;
+
+			localToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraData.direction);
+			localToWorld.transformVector(Vector4.ZERO, cameraData.position);
 			
-			worldToScreen.lock();
-			screenToWorld.lock();
-			cameraPosition.lock();
-			cameraDirection.lock();
+			worldToView.lock()
+				.copyFrom(localToWorld)
+				.invert()
+				.unlock();
 			
-			worldToScreen.copyFrom(_camera.worldToLocal).append(cameraData.projection);
-			screenToWorld.copyFrom(cameraData.screenToView).append(_camera.localToWorld);
-			viewToWorld.transformVector(Vector4.ZERO, cameraPosition);
-			viewToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraDirection).normalize();
+			worldToScreen.lock()
+				.copyFrom(worldToView)
+				.append(cameraData.projection)
+				.unlock();
 
 			cameraData.frustum.updateFromMatrix(worldToScreen);
-			
-			worldToScreen.unlock();
-			screenToWorld.unlock();
-			cameraPosition.unlock();
-			cameraDirection.unlock();
 		}
 		
 		private function viewportSizeChanged(bindings 	: DataBindings,
@@ -137,24 +165,21 @@ package aerys.minko.scene.controller.camera
 			if (sceneBindings.propertyExists('viewportWidth')
 				&& sceneBindings.propertyExists('viewportHeight'))
 			{
-				var cameraData		: CameraDataProvider	= _camera.cameraData;
+				var cameraData		: CameraDataProvider	= _data;
 				var viewportWidth	: Number				= sceneBindings.getProperty('viewportWidth');
 				var viewportHeight	: Number				= sceneBindings.getProperty('viewportHeight');
 				var ratio			: Number				= viewportWidth / viewportHeight;
 				
 				var projection		: Matrix4x4				= cameraData.projection;
-				var screenToView	: Matrix4x4				= cameraData.screenToView;
-				var screenToWorld	: Matrix4x4				= cameraData.screenToWorld;
 				var worldToScreen	: Matrix4x4				= cameraData.worldToScreen;
 				
 				projection.lock();
-				screenToView.lock();
-				screenToWorld.lock();
 				worldToScreen.lock();
 				
 				if (_ortho)
 				{
 					var cameraZoom : Number = cameraData.zoom;
+					
 					projection.ortho(
 						viewportWidth / cameraZoom,
 						viewportHeight / cameraZoom,
@@ -170,15 +195,11 @@ package aerys.minko.scene.controller.camera
 						cameraData.zFar
 					);
 				
-				screenToView.copyFrom(projection).invert();
-				screenToWorld.copyFrom(screenToView).append(_camera.localToWorld);
-				worldToScreen.copyFrom(_camera.worldToLocal).append(projection);
+				worldToScreen.copyFrom(_camera.getWorldToLocalTransform()).append(projection);
 				
 				cameraData.frustum.updateFromMatrix(worldToScreen);
 				
 				projection.unlock();
-				screenToView.unlock();
-				screenToWorld.unlock();
 				worldToScreen.unlock();
 			}
 		}
@@ -188,7 +209,7 @@ package aerys.minko.scene.controller.camera
 			var scene : Scene = camera.root as Scene;
 			
 			resetSceneCamera(scene);
-			scene.bindings.addProvider(camera.cameraData);
+			scene.bindings.addProvider(_data);
 		}
 		
 		private function cameraDeactivatedHandler(camera : AbstractCamera) : void
@@ -196,7 +217,7 @@ package aerys.minko.scene.controller.camera
 			var scene 	: Scene	= camera.root as Scene;
 			
 			resetSceneCamera(scene);
-			scene.bindings.removeProvider(camera.cameraData);
+			scene.bindings.removeProvider(_data);
 		}
 		
 		private function resetSceneCamera(scene : Scene) : void

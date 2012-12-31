@@ -89,11 +89,11 @@ package aerys.minko.scene.controller.mesh
 
 			_mesh = target;
 			
-			target.addedToScene.add(meshAddedToSceneHandler);
-			target.removedFromScene.add(meshRemovedFromSceneHandler);
+			target.added.add(addedHandler);
+			target.removed.add(removedHandler);
 			
 			if (target.root is Scene)
-				meshAddedToSceneHandler(target, target.root as Scene);
+				addedHandler(target, target.root as Scene);
 		}
 		
 		private function targetRemovedHandler(ctrl		: MeshVisibilityController,
@@ -101,19 +101,24 @@ package aerys.minko.scene.controller.mesh
 		{
 			_mesh = null;
 			
-			target.addedToScene.remove(meshAddedToSceneHandler);
-			target.removedFromScene.remove(meshRemovedFromSceneHandler);
+			target.added.remove(addedHandler);
+			target.removed.remove(removedHandler);
 			
 			if (target.root is Scene)
-				meshRemovedFromSceneHandler(target, target.root as Scene);
+				removedHandler(target, target.root as Scene);
 		}
 		
-		private function meshAddedToSceneHandler(mesh	: Mesh, scene	: Scene) : void
+		private function addedHandler(mesh : Mesh, ancestor : Group) : void
 		{
+			var scene : Scene = mesh.scene;
+			
+			if (!scene)
+				return ;
+			
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
             
-            meshLocalToWorldChangedHandler(mesh.localToWorld);
-			mesh.localToWorld.changed.add(meshLocalToWorldChangedHandler);
+            meshLocalToWorldChangedHandler(mesh, mesh.getLocalToWorldTransform());
+			mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
             mesh.visibilityChanged.add(visiblityChangedHandler);
             mesh.parent.computedVisibilityChanged.add(visiblityChangedHandler);
             mesh.removed.add(meshRemovedHandler);
@@ -125,11 +130,16 @@ package aerys.minko.scene.controller.mesh
                 ancestor.computedVisibilityChanged.remove(visiblityChangedHandler);
         }
         
-		private function meshRemovedFromSceneHandler(mesh : Mesh, scene	: Scene) : void
+		private function removedHandler(mesh : Mesh, ancestor : Group) : void
 		{
+			var scene : Scene = ancestor.scene;
+			
+			if (!scene)
+				return ;
+			
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
-			mesh.localToWorld.changed.remove(meshLocalToWorldChangedHandler);
+			mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
             mesh.visibilityChanged.remove(visiblityChangedHandler);
             mesh.removed.remove(meshRemovedHandler);
 		}
@@ -149,7 +159,7 @@ package aerys.minko.scene.controller.mesh
 			testCulling();
 		}
 		
-		private function meshLocalToWorldChangedHandler(transform : Matrix4x4) : void
+		private function meshLocalToWorldChangedHandler(mesh : Mesh, transform : Matrix4x4) : void
 		{
 			var geom 	: Geometry 	= _mesh.geometry;
 			var culling	: uint		= _frustumCulling;
@@ -186,7 +196,7 @@ package aerys.minko.scene.controller.mesh
 				if (!camera)
 					return ;
 				
-				_lastTest = camera.cameraData.frustum.testBoundingVolume(
+				_lastTest = camera.frustum.testBoundingVolume(
 					_boundingSphere,
 					_boundingBox,
 					null,

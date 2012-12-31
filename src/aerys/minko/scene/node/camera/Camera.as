@@ -32,15 +32,11 @@ package aerys.minko.scene.node.camera
 							   zFar			: Number = AbstractCamera.DEFAULT_ZFAR)
 		{
 			super(zNear, zFar);
+			
 			_cameraData.fieldOfView = fieldOfView;			
 		}
 		
-		override protected function initialize() : void
-		{
-			addController(new CameraController());
-		}
-		
-		override minko_scene function cloneNode():AbstractSceneNode
+		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Camera = new Camera(fieldOfView, zNear, zFar);
 			
@@ -70,8 +66,8 @@ package aerys.minko.scene.node.camera
 			out.origin.set(dx * zNear, dy * zNear, zNear);
 			out.direction.set(dx * zNear, dy * zNear, zNear).normalize();
 			
-			localToWorld.transformVector(out.origin, out.origin);
-			localToWorld.deltaTransformVector(out.direction, out.direction);
+			localToWorld(out.origin, out.origin);
+			deltaLocalToWorld(out.direction, out.direction);
 			
 			return out;
 		}

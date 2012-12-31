@@ -9,8 +9,8 @@ package aerys.minko.scene.node.light
 	
 	public class AbstractLight extends AbstractSceneNode
 	{
-		private var _ctrl		: LightController;
-		private var _type		: uint;
+		private var _ctrl	: LightController;
+		private var _type	: uint;
 		
 		protected function get lightData() : LightDataProvider
 		{
