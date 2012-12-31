@@ -22,18 +22,19 @@ package aerys.minko.scene.controller
 	 */
 	public final class TransformController extends AbstractController
 	{
-		private var _target					: ISceneNode;
+		private var _target								: ISceneNode;
 		
-		private var _invalidList			: Boolean;
+		private var _invalidList						: Boolean;
 		
-		private var _nodeToId				: Dictionary;
-		private var _idToNode				: Vector.<ISceneNode>
-		private var _transforms				: Vector.<Matrix4x4>;
-		private var _localToWorldTransforms : Vector.<Matrix4x4>;
-        private var _worldToLocalTransforms : Vector.<Matrix4x4>;
-		private var _numChildren			: Vector.<uint>;
-		private var _firstChildId			: Vector.<uint>;
-		private var _parentId				: Vector.<int>;
+		private var _nodeToId							: Dictionary;
+		private var _idToNode							: Vector.<ISceneNode>
+		private var _transforms							: Vector.<Matrix4x4>;
+		private var _localToWorldTransformsInitialized	: Vector.<Boolean>;
+		private var _localToWorldTransforms 			: Vector.<Matrix4x4>;
+        private var _worldToLocalTransforms 			: Vector.<Matrix4x4>;
+		private var _numChildren						: Vector.<uint>;
+		private var _firstChildId						: Vector.<uint>;
+		private var _parentId							: Vector.<int>;
 		
 		public function TransformController()
 		{
@@ -44,26 +45,15 @@ package aerys.minko.scene.controller
 		}
 		
 		private function renderingBeginHandler(scene			: Scene,
-										  viewport		: Viewport,
-										  destination	: BitmapData,
-										  time			: Number) : void
+											   viewport		: Viewport,
+											   destination	: BitmapData,
+											   time			: Number) : void
 		{
 			if (_invalidList)
 				updateTransformsList();
 			
 			if (_transforms.length)
-			{
-				var rootTransform 	: Matrix4x4	= _transforms[0];
-				var isDirty			: Boolean	= rootTransform._hasChanged;
-				
-				if (isDirty)
-				{
-					_localToWorldTransforms[0].copyFrom(rootTransform);
-					rootTransform._hasChanged = false;
-				}
-				
 				updateLocalToWorld();
-			}
 		}
 		
 		private function updateLocalToWorld(nodeId : uint = 0) : void
@@ -74,13 +64,15 @@ package aerys.minko.scene.controller
 			var rootTransform		: Matrix4x4		= _transforms[nodeId];
 			var root				: ISceneNode	= _idToNode[childId];
 			
-			if (rootTransform._hasChanged)
+			if (rootTransform._hasChanged || !_localToWorldTransformsInitialized[nodeId])
 			{
 				rootLocalToWorld.copyFrom(rootTransform);
 				
 				if (nodeId != 0)
 					rootLocalToWorld.append(_localToWorldTransforms[_parentId[nodeId]]);
 				
+				rootTransform._hasChanged = false;
+				_localToWorldTransformsInitialized[nodeId] = true;
 				root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
 			}
 
@@ -88,19 +80,22 @@ package aerys.minko.scene.controller
 			{
 				var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
 				var numChildren		: uint		= _numChildren[nodeId];
-				var isDirty			: Boolean	= localToWorld._hasChanged;
 				var firstChildId	: uint		= _firstChildId[nodeId];
 				var lastChildId		: uint		= firstChildId + numChildren;
+				var isDirty			: Boolean	= localToWorld._hasChanged ||
+												  !_localToWorldTransformsInitialized[nodeId];
 				
 				localToWorld._hasChanged = false;
+				_localToWorldTransformsInitialized[nodeId] = true;
 				
 				for (var childId : uint = firstChildId; childId < lastChildId; ++childId)
 				{
 					var childTransform		: Matrix4x4		= _transforms[childId];
 					var childLocalToWorld	: Matrix4x4		= _localToWorldTransforms[childId];
-					var childIsDirty		: Boolean		= isDirty || childTransform._hasChanged;
+					var childIsDirty		: Boolean		= isDirty || childTransform._hasChanged
+						|| !_localToWorldTransformsInitialized[childId];
 					
-					if (childIsDirty)
+					if (childIsDirty || _localToWorldTransformsInitialized[childId])
 					{
 						var child	: ISceneNode	= _idToNode[childId];
 						
@@ -109,7 +104,7 @@ package aerys.minko.scene.controller
 							.append(localToWorld);
 						
 						childTransform._hasChanged = false;
-
+						_localToWorldTransformsInitialized[childId] = true;
 						child.localToWorldTransformChanged.execute(child, childLocalToWorld);
 					}
 				}
@@ -118,11 +113,12 @@ package aerys.minko.scene.controller
         
         private function getDirtyRoot(nodeId : int) : int
         {
-            var dirtyRoot : int = nodeId;
+            var dirtyRoot : int = -1;
             
             while (nodeId >= 0)
             {
-                if ((_transforms[nodeId] as Matrix4x4)._hasChanged)
+                if ((_transforms[nodeId] as Matrix4x4)._hasChanged ||
+					!_localToWorldTransformsInitialized[nodeId])
                     dirtyRoot = nodeId;
                 
                 nodeId = _parentId[nodeId];
@@ -175,6 +171,7 @@ package aerys.minko.scene.controller
 			
 			_nodeToId = null;
 			_transforms = null;
+			_localToWorldTransformsInitialized = null;
 			_localToWorldTransforms = null;
             _worldToLocalTransforms = null;
 			_numChildren = null;
@@ -220,6 +217,7 @@ package aerys.minko.scene.controller
 			
 			_nodeToId = new Dictionary(true);
 			_transforms = new <Matrix4x4>[];
+			_localToWorldTransformsInitialized = new <Boolean>[];
 			_localToWorldTransforms = new <Matrix4x4>[];
             _worldToLocalTransforms = new <Matrix4x4>[];
 			_numChildren = new <uint>[];
@@ -236,7 +234,8 @@ package aerys.minko.scene.controller
 				_idToNode[nodeId] = node;
 				_transforms[nodeId] = node.transform;
 				_localToWorldTransforms[nodeId] = new Matrix4x4().lock();
-				
+				_localToWorldTransformsInitialized[nodeId] = false;
+
 				if (group)
 				{
 					var numChildren 	: uint = group.numChildren;
