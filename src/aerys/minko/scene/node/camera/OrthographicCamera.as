@@ -60,7 +60,7 @@ package aerys.minko.scene.node.camera
 			out.direction.set(0, 0, 1);
 			
 			localToWorld(out.origin, out.origin);
-			deltaLocalToWorld(out.direction, out.direction);
+			localToWorld(out.direction, out.direction, true);
 			
 			return out;
 		}

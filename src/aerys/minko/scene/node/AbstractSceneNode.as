@@ -371,6 +371,15 @@ package aerys.minko.scene.node
 			
 			return transformController.getLocalToWorldTransform(this, forceUpdate);
 		}
+        
+        minko_scene function getWorldToLocalTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
+        {
+            var transformController : TransformController = root.getControllersByType(
+                TransformController
+            )[0] as TransformController;
+            
+            return transformController.getWorldToLocalTransform(this, forceUpdate);
+        }
 		
 		public function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
 												 output 		: Matrix4x4 = null) : Matrix4x4
@@ -384,31 +393,40 @@ package aerys.minko.scene.node
 		public function getWorldToLocalTransform(forceUpdate 	: Boolean 	= false,
 												 output			: Matrix4x4 = null) : Matrix4x4
 		{
-			return getLocalToWorldTransform(forceUpdate, output).invert();
+            output ||= new Matrix4x4();
+            output.copyFrom(getWorldToLocalTransformUnsafe(forceUpdate));
+            
+			return output;
 		}
 		
 		public function localToWorld(inputVector 						: Vector4,
 									 outputVector 						: Vector4 	= null,
+                                     skipTranslation                    : Boolean   = false,
 									 forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4
 		{
 			var localToWorld : Matrix4x4 = getLocalToWorldTransformUnsafe(
 				forceLocalToWorldTransformUpdate
 			);
 			
-			return localToWorld.transformVector(inputVector, outputVector);
+			return skipTranslation
+                ? localToWorld.deltaTransformVector(inputVector, outputVector)
+                : localToWorld.transformVector(inputVector, outputVector);
 		}
-		
-		public function deltaLocalToWorld(inputVector						: Vector4,
-										  outputVector						: Vector4 	= null,
-										  forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4
-		{
-			var localToWorld : Matrix4x4 = getLocalToWorldTransformUnsafe(
-				forceLocalToWorldTransformUpdate
-			);
-			
-			return localToWorld.deltaTransformVector(inputVector, outputVector);
-		}
-		
+        
+        public function worldToLocal(inputVector						: Vector4,
+                                     outputVector						: Vector4 	= null,
+                                     skipTranslation                    : Boolean   = false,
+                                     forceWorldToLocalTransformUpdate	: Boolean	= false) : Vector4
+        {
+            var worldToLocal : Matrix4x4 = getWorldToLocalTransformUnsafe(
+                forceWorldToLocalTransformUpdate
+            );
+            
+            return skipTranslation
+                ? worldToLocal.deltaTransformVector(inputVector, outputVector)
+                : worldToLocal.transformVector(inputVector, outputVector);
+        }
+        
 		private function listItems(clonedRoot	: ISceneNode,
 								   nodes		: Dictionary,
 								   controllers	: Dictionary) : void

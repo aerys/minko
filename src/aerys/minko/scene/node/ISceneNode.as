@@ -100,12 +100,14 @@ package aerys.minko.scene.node
 		 */
 		function localToWorld(inputVector						: Vector4,
 							  outputVector						: Vector4 	= null,
+                              skipTranslation                   : Boolean   = false,
 							  forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
 		
-		function deltaLocalToWorld(inputVector						: Vector4,
-								   outputVector						: Vector4 	= null,
-								   forceLocalToWorldTransformUpdate	: Boolean	= false) : Vector4;
-		
+        function worldToLocal(inputVector						: Vector4,
+                              outputVector						: Vector4 	= null,
+                              skipTranslation                   : Boolean   = false,
+                              forceWorldToLocalTransformUpdate	: Boolean	= false) : Vector4;
+        
 		/**
 		 * The signal executed when the node (or one of its ancestors) is added to a parent scene
          * node. Callbacks functions must accept the following arguments:
