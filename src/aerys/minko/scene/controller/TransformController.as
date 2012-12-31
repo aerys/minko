@@ -31,8 +31,8 @@ package aerys.minko.scene.controller
 		private var _transforms				: Vector.<Matrix4x4>;
 		private var _localToWorldTransforms : Vector.<Matrix4x4>;
 		private var _numChildren			: Vector.<uint>;
-		private var _firstChildId			: Vector.<uint>
-		private var _parentId				: Vector.<int>
+		private var _firstChildId			: Vector.<uint>;
+		private var _parentId				: Vector.<int>;
 		
 		public function TransformController()
 		{
