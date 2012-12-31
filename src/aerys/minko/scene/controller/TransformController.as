@@ -68,9 +68,22 @@ package aerys.minko.scene.controller
 		
 		private function updateLocalToWorld(nodeId : uint = 0) : void
 		{
-			var numNodes 		: uint 	= _transforms.length;
-			var childrenOffset	: uint	= 1;
+			var numNodes 			: uint 			= _transforms.length;
+			var childrenOffset		: uint			= 1;
+			var rootLocalToWorld	: Matrix4x4		= _localToWorldTransforms[nodeId];
+			var rootTransform		: Matrix4x4		= _transforms[nodeId];
+			var root				: ISceneNode	= _idToNode[childId];
 			
+			if (rootTransform._hasChanged)
+			{
+				rootLocalToWorld.copyFrom(rootTransform);
+				
+				if (nodeId != 0)
+					rootLocalToWorld.append(_localToWorldTransforms[_parentId[nodeId]]);
+				
+				root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
+			}
+
 			for (; nodeId < numNodes; ++nodeId)
 			{
 				var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
