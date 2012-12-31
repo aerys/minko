@@ -834,6 +834,11 @@ package aerys.minko.render.shader.part
 			return multiply4x4(localSpaceVector, localToWorldMatrix);
 		}
 		
+		protected final function localToView(localSpaceVector : Object) : SFloat
+		{
+			return worldToView(localToWorld(localSpaceVector));
+		}
+		
 		protected final function worldToLocal(worldSpaceVector : Object) : SFloat
 		{
 			return multiply4x4(worldSpaceVector, worldToLocalMatrix);
