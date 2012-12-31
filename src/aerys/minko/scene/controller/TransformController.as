@@ -30,6 +30,7 @@ package aerys.minko.scene.controller
 		private var _idToNode				: Vector.<ISceneNode>
 		private var _transforms				: Vector.<Matrix4x4>;
 		private var _localToWorldTransforms : Vector.<Matrix4x4>;
+        private var _worldToLocalTransforms : Vector.<Matrix4x4>;
 		private var _numChildren			: Vector.<uint>;
 		private var _firstChildId			: Vector.<uint>;
 		private var _parentId				: Vector.<int>;
@@ -101,22 +102,21 @@ package aerys.minko.scene.controller
 				}
 			}
 		}
-		
-		private function updateAncestorsAndSelfLocalToWorld(nodeId : int) : void
-		{
-			var dirtyRoot : int = nodeId;
-			
-			while (nodeId >= 0)
-			{
-				if ((_transforms[nodeId] as Matrix4x4)._hasChanged)
-					dirtyRoot = nodeId;
-				
-				nodeId = _parentId[nodeId];
-			}
-			
-			if (dirtyRoot >= 0)
-				updateLocalToWorld(dirtyRoot);
-		}
+        
+        private function getDirtyRoot(nodeId : int) : int
+        {
+            var dirtyRoot : int = nodeId;
+            
+            while (nodeId >= 0)
+            {
+                if ((_transforms[nodeId] as Matrix4x4)._hasChanged)
+                    dirtyRoot = nodeId;
+                
+                nodeId = _parentId[nodeId];
+            }
+            
+            return dirtyRoot;
+        }
 		
 		private function targetAddedHandler(ctrl	: TransformController,
 											target	: ISceneNode) : void
@@ -163,6 +163,7 @@ package aerys.minko.scene.controller
 			_nodeToId = null;
 			_transforms = null;
 			_localToWorldTransforms = null;
+            _worldToLocalTransforms = null;
 			_numChildren = null;
 			_idToNode = null;
 			_parentId = null;
@@ -207,6 +208,7 @@ package aerys.minko.scene.controller
 			_nodeToId = new Dictionary(true);
 			_transforms = new <Matrix4x4>[];
 			_localToWorldTransforms = new <Matrix4x4>[];
+            _worldToLocalTransforms = new <Matrix4x4>[];
 			_numChildren = new <uint>[];
 			_firstChildId = new <uint>[];
 			_idToNode = new <ISceneNode>[];
@@ -244,6 +246,7 @@ package aerys.minko.scene.controller
 				++nodeId;
 			}
 			
+            _worldToLocalTransforms.length = _localToWorldTransforms.length;
 			_invalidList = false;
 		}
 		
@@ -256,9 +259,47 @@ package aerys.minko.scene.controller
 			var nodeId : uint = _nodeToId[node];
 			
 			if (forceUpdate)
-				updateAncestorsAndSelfLocalToWorld(nodeId);
+            {
+                var dirtyRoot : int = getDirtyRoot(nodeId);
+                
+                if (dirtyRoot >= 0)
+                    updateLocalToWorld(dirtyRoot);
+            }
 			
 			return _localToWorldTransforms[nodeId];
 		}
+        
+        public function getWorldToLocalTransform(node           : ISceneNode,
+                                                 forceUpdate    : Boolean   = false) : Matrix4x4
+        {
+            if (_invalidList || _nodeToId[node] == undefined)
+                updateTransformsList();
+            
+            var nodeId                  : uint      = _nodeToId[node];
+            var worldToLocalTransform   : Matrix4x4 = _worldToLocalTransforms[nodeId];
+            
+            if (!worldToLocalTransform)
+            {
+                _worldToLocalTransforms[nodeId] = worldToLocalTransform = new Matrix4x4();
+                if (!forceUpdate)
+                    worldToLocalTransform.copyFrom(_localToWorldTransforms[nodeId]).invert();
+            }
+            
+            if (forceUpdate)
+            {
+                var dirtyRoot : int = getDirtyRoot(nodeId);
+                
+                if (dirtyRoot >= 0)
+                {
+                    updateLocalToWorld(dirtyRoot);
+                    
+                    worldToLocalTransform
+                        .copyFrom(_localToWorldTransforms[nodeId])
+                        .invert();
+                }
+            }
+            
+            return worldToLocalTransform;
+        }
 	}
 }
