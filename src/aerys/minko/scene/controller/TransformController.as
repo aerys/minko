@@ -78,7 +78,7 @@ package aerys.minko.scene.controller
 				rootLocalToWorld.copyFrom(rootTransform);
 				
 				if (nodeId != 0)
-					rootLocalToWorld.append(_transforms[_parentId]);
+					rootLocalToWorld.append(_transforms[_parentId[nodeId]]);
 				
 				root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
 			}
