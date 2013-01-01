@@ -367,19 +367,37 @@ package aerys.minko.scene.node
 		
 		minko_scene function getLocalToWorldTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
 		{
-			return _transformController.getLocalToWorldTransform(this, forceUpdate);
+            var transformController : TransformController = _root
+                ? (_root is AbstractSceneNode
+                    ? (_root as AbstractSceneNode)._transformController
+                    : _root.getControllersByType(TransformController)[0] as TransformController)
+                : _transformController;
+            
+            return transformController.getLocalToWorldTransform(this, forceUpdate);
 		}
         
         minko_scene function getWorldToLocalTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
         {
-            return _transformController.getWorldToLocalTransform(this, forceUpdate);
+            var transformController : TransformController = _root
+                ? (_root is AbstractSceneNode
+                    ? (_root as AbstractSceneNode)._transformController
+                    : _root.getControllersByType(TransformController)[0] as TransformController)
+                : _transformController;
+            
+            return transformController.getWorldToLocalTransform(this, forceUpdate);
         }
 		
 		public function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
 												 output 		: Matrix4x4 = null) : Matrix4x4
 		{
+            var transformController : TransformController = _root
+                ? (_root is AbstractSceneNode
+                    ? (_root as AbstractSceneNode)._transformController
+                    : _root.getControllersByType(TransformController)[0] as TransformController)
+                : _transformController;
+            
 			output ||= new Matrix4x4();
-			output.copyFrom(_transformController.getLocalToWorldTransform(this, forceUpdate));
+			output.copyFrom(transformController.getLocalToWorldTransform(this, forceUpdate));
 			
 			return output;
 		}
@@ -387,8 +405,14 @@ package aerys.minko.scene.node
 		public function getWorldToLocalTransform(forceUpdate 	: Boolean 	= false,
 												 output			: Matrix4x4 = null) : Matrix4x4
 		{
+            var transformController : TransformController = _root
+                ? (_root is AbstractSceneNode
+                    ? (_root as AbstractSceneNode)._transformController
+                    : _root.getControllersByType(TransformController)[0] as TransformController)
+                : _transformController;
+            
             output ||= new Matrix4x4();
-            output.copyFrom(_transformController.getWorldToLocalTransform(this, forceUpdate));
+            output.copyFrom(transformController.getWorldToLocalTransform(this, forceUpdate));
             
 			return output;
 		}
