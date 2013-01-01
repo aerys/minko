@@ -76,7 +76,7 @@ package aerys.minko.type.clone
 			return cloneOptions;
 		}
 		
-		public function addControllerAction(controllerClass : Class, action : uint) : void
+		public function addControllerAction(controllerClass : Class, action : uint) : CloneOptions
 		{
 			switch (action)
 			{
@@ -95,6 +95,8 @@ package aerys.minko.type.clone
 				default:
 					throw new Error('Unknown action type.');
 			}
+            
+            return this;
 		}
 		
 		public function removeControllerAction(controllerClass : Class) : void
