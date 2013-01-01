@@ -129,17 +129,21 @@ package aerys.minko.scene.controller.camera
 			localToWorld.deltaTransformVector(Vector4.Z_AXIS, cameraData.direction);
 			localToWorld.transformVector(Vector4.ZERO, cameraData.position);
 			
-			worldToView.lock()
+            worldToView.lock();
+            worldToScreen.lock();
+            
+			worldToView
 				.copyFrom(localToWorld)
 				.invert()
-				.unlock();
 			
-			worldToScreen.lock()
+			worldToScreen
 				.copyFrom(worldToView)
 				.append(cameraData.projection)
-				.unlock();
 
 			cameraData.frustum.updateFromMatrix(worldToScreen);
+            
+            worldToView.unlock();
+            worldToScreen.unlock();
 		}
 		
 		private function viewportSizeChanged(bindings 	: DataBindings,
