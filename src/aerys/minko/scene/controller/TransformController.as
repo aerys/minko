@@ -82,11 +82,9 @@ package aerys.minko.scene.controller
 				var numChildren		: uint		= _numChildren[nodeId];
 				var firstChildId	: uint		= _firstChildId[nodeId];
 				var lastChildId		: uint		= firstChildId + numChildren;
-				var isDirty			: Boolean	= localToWorld._hasChanged ||
-												  !_localToWorldTransformsInitialized[nodeId];
-				
-				localToWorld._hasChanged = false;
-				_localToWorldTransformsInitialized[nodeId] = true;
+				var isDirty			: Boolean	= localToWorld._hasChanged;
+                
+                localToWorld._hasChanged = false;
 				
 				for (var childId : uint = firstChildId; childId < lastChildId; ++childId)
 				{
@@ -95,7 +93,7 @@ package aerys.minko.scene.controller
 					var childIsDirty		: Boolean		= isDirty || childTransform._hasChanged
 						|| !_localToWorldTransformsInitialized[childId];
 					
-					if (childIsDirty || _localToWorldTransformsInitialized[childId])
+					if (childIsDirty)
 					{
 						var child	: ISceneNode	= _idToNode[childId];
 						
