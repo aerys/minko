@@ -34,6 +34,7 @@ package aerys.minko.scene.node
 		private var _transform			        : Matrix4x4;
 		
 		private var _controllers		        : Vector.<AbstractController>;
+        private var _transformController        : TransformController;
 		
 		private var _added				        : Signal;
 		private var _removed			        : Signal;
@@ -250,7 +251,8 @@ package aerys.minko.scene.node
 		
 		protected function initializeContollers() : void
 		{
-			addController(new TransformController());
+            _transformController = new TransformController();
+			addController(_transformController);
 		}
 		
 		protected function initializeDataProviders() : void
@@ -365,27 +367,19 @@ package aerys.minko.scene.node
 		
 		minko_scene function getLocalToWorldTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
 		{
-			var transformController : TransformController = root.getControllersByType(
-				TransformController
-			)[0] as TransformController;
-			
-			return transformController.getLocalToWorldTransform(this, forceUpdate);
+			return _transformController.getLocalToWorldTransform(this, forceUpdate);
 		}
         
         minko_scene function getWorldToLocalTransformUnsafe(forceUpdate : Boolean = false) : Matrix4x4
         {
-            var transformController : TransformController = root.getControllersByType(
-                TransformController
-            )[0] as TransformController;
-            
-            return transformController.getWorldToLocalTransform(this, forceUpdate);
+            return _transformController.getWorldToLocalTransform(this, forceUpdate);
         }
 		
 		public function getLocalToWorldTransform(forceUpdate 	: Boolean 	= false,
 												 output 		: Matrix4x4 = null) : Matrix4x4
 		{
 			output ||= new Matrix4x4();
-			output.copyFrom(getLocalToWorldTransformUnsafe(forceUpdate));
+			output.copyFrom(_transformController.getLocalToWorldTransform(this, forceUpdate));
 			
 			return output;
 		}
@@ -394,7 +388,7 @@ package aerys.minko.scene.node
 												 output			: Matrix4x4 = null) : Matrix4x4
 		{
             output ||= new Matrix4x4();
-            output.copyFrom(getWorldToLocalTransformUnsafe(forceUpdate));
+            output.copyFrom(_transformController.getWorldToLocalTransform(this, forceUpdate));
             
 			return output;
 		}
