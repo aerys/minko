@@ -67,7 +67,7 @@ package aerys.minko.scene.controller.mesh
 		private function localToWorldChangedHandler(mesh : Mesh, localToWorld : Matrix4x4) : void
 		{
 			_data.setProperty('localToWorld', localToWorld);
-			_data.setProperty('worldToLocal', _worldToLocal.copyFrom(localToWorld).invert());
+            mesh.getWorldToLocalTransform(false, _worldToLocal);
 		}
 	}
 }
