@@ -8,13 +8,16 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.display.BitmapData;
 
 	public class LightController extends AbstractController
 	{
-		private var _light 		: AbstractLight;
-		private var _lightData	: LightDataProvider;
+		private var _light 		    : AbstractLight;
+		private var _lightData	    : LightDataProvider;
+        private var _localToWorld   : Matrix4x4;
+        private var _worldToLocal   : Matrix4x4;
 		
 		public function get lightData() : LightDataProvider
 		{
@@ -42,10 +45,13 @@ package aerys.minko.scene.controller.light
 		protected function targetAddedHandler(ctrl	: LightController,
 											 light	: AbstractLight) : void
 		{
+            _localToWorld = light.getLocalToWorldTransform();
+            _worldToLocal = light.getWorldToLocalTransform();
+            
 			_lightData = new LightDataProvider(-1);
 			_lightData.setLightProperty('type', light.type);
-			_lightData.setLightProperty('localToWorld', light.getLocalToWorldTransform());
-			_lightData.setLightProperty('worldToLocal', light.getWorldToLocalTransform());
+			_lightData.setLightProperty('localToWorld', _localToWorld);
+			_lightData.setLightProperty('worldToLocal', _worldToLocal);
 			_lightData.setLightProperty('enabled', true);
 			_lightData.changed.add(lightDataChangedHandler);
 			
@@ -55,7 +61,7 @@ package aerys.minko.scene.controller.light
 			_light = light;
 		}
 		
-		protected function targetRemovedHandler(ctrl		: LightController,
+		protected function targetRemovedHandler(ctrl	: LightController,
 											   light	: AbstractLight) : void
 		{
 			throw new Error();
@@ -76,6 +82,8 @@ package aerys.minko.scene.controller.light
 		
 		protected function lightAddedToScene(scene : Scene) : void
 		{
+            _light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
+            
 			sortLights(scene);
 		}
 		
@@ -94,6 +102,9 @@ package aerys.minko.scene.controller.light
 		
 		protected function lightRemovedFromScene(scene : Scene) : void
 		{
+            lightLocalToWorldTransformChangedHandler(_light, null);
+            _light.localToWorldTransformChanged.remove(lightLocalToWorldTransformChangedHandler);
+            
 			sortLights(scene);
 		}
 		
@@ -124,6 +135,16 @@ package aerys.minko.scene.controller.light
     			_lightData.changed.add(lightDataChangedHandler);
             }
 		}
+        
+        protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,
+                                                                    localToWorld  : Matrix4x4) : void
+        {
+            _localToWorld.copyFrom(localToWorld);
+            
+            // use getWorldToLocalTransform() in order to update the cache and save
+            // possible future computations of world to local
+            light.getWorldToLocalTransform(false, _worldToLocal);
+        }
 		
 		private static function sceneEnterFrameHandler(scene		: Scene,
 													   viewport		: Viewport,
