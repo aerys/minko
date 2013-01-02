@@ -27,7 +27,22 @@ package aerys.minko.type
 		public function add(callback : Function) : void
 		{
             if (_callbacks.indexOf(callback) >= 0)
-                throw new Error('The same callback cannot be added twice.');
+            {
+                var removeIndex : int = _toRemove ? _toRemove.indexOf(callback) : -1;
+                
+                // if that callback is in the temp. remove list, we simply remove it from this list
+                // instead of removing/adding it all over again
+                if (removeIndex >= 0)
+                {
+                    --_numRemoved;
+                    _toRemove[removeIndex] = _toRemove[_numRemoved];
+                    _toRemove.length = _numRemoved;
+                    
+                    return;
+                }
+                else
+                    throw new Error('The same callback cannot be added twice.');
+            }
             
 			if (_executed)
 			{
@@ -49,7 +64,20 @@ package aerys.minko.type
 			var index : int = _callbacks.indexOf(callback);
 			
 			if (index < 0)
-				throw new Error('This callback does not exist.');
+            {
+                var addIndex : int = _toAdd ? _toAdd.indexOf(callback) : -1;
+                
+                // if that callback is in the temp. add list, we simply remove it from this list
+                // instead of adding/removing it all over again
+                if (addIndex)
+                {
+                    --_numAdded;
+                    _toAdd[addIndex] = _toAdd[_numAdded];
+                    _toAdd.length = _numAdded;
+                }
+                else
+    				throw new Error('This callback does not exist.');
+            }
             
 			if (_executed)
 			{
