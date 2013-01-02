@@ -4,6 +4,10 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.AnimationController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.controller.camera.CameraController;
+	import aerys.minko.scene.controller.light.DirectionalLightController;
+	import aerys.minko.scene.controller.light.LightController;
+	import aerys.minko.scene.controller.light.PointLightController;
+	import aerys.minko.scene.controller.light.SpotLightController;
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
@@ -54,7 +58,11 @@ package aerys.minko.type.clone
 				MeshController,
 				MeshVisibilityController,
 				CameraController,
-				TransformController
+				TransformController,
+                LightController,
+                DirectionalLightController,
+                SpotLightController,
+                PointLightController,
 			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.REASSIGN;
 			
@@ -69,7 +77,11 @@ package aerys.minko.type.clone
 				MeshController,
 				MeshVisibilityController,
 				CameraController,
-				TransformController
+				TransformController,
+                LightController,
+                DirectionalLightController,
+                SpotLightController,
+                PointLightController
 			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.CLONE;
 			
