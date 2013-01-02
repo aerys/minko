@@ -25,6 +25,9 @@ package aerys.minko.type
 		
 		public function add(callback : Function) : void
 		{
+            if (_callbacks.indexOf(callback) >= 0)
+                throw new Error('The same callback cannot be adde twice.');
+            
 			if (_executed)
 			{
 				if (_toAdd)
