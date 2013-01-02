@@ -113,7 +113,7 @@ package aerys.minko.scene.controller
             }
         }
         
-        private function updateAncestorsAndSelfLocalToWorld(nodeId : uint) : void
+        private function updateAncestorsAndSelfLocalToWorld(nodeId : int) : void
         {
             var dirtyRoot : int = -1;
             
