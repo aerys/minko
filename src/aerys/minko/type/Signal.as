@@ -2,16 +2,16 @@ package aerys.minko.type
 {
 	public final class Signal
 	{
-		private var _name			: String	= null;
+		private var _name			: String;
 		
-		private var _callbacks		: Array		= [];
-		private var _numCallbacks	: uint		= 0;
+		private var _callbacks		: Vector.<Function>;
+		private var _numCallbacks	: uint;
 		
-		private var _executed		: Boolean	= false;
-		private var _numAdded		: uint		= 0;
-		private var _toAdd			: Array		= null;
-		private var _numRemoved		: uint		= 0;
-		private var _toRemove		: Array		= null;
+		private var _executed		: Boolean;
+		private var _numAdded		: uint;
+		private var _toAdd			: Vector.<Function>;
+		private var _numRemoved		: uint;
+		private var _toRemove		: Vector.<Function>;
 		
 		public function get numCallbacks() : uint
 		{
@@ -21,6 +21,7 @@ package aerys.minko.type
 		public function Signal(name : String)
 		{
 			_name = name;
+            _callbacks = new <Function>[];
 		}
 		
 		public function add(callback : Function) : void
@@ -33,7 +34,7 @@ package aerys.minko.type
 				if (_toAdd)
 					_toAdd.push(callback);
 				else
-					_toAdd = [callback];
+					_toAdd = new <Function>[callback];
 				++_numAdded;
 				
 				return ;
@@ -55,7 +56,7 @@ package aerys.minko.type
 				if (_toRemove)
 					_toRemove.push(callback);
 				else
-					_toRemove = [callback];
+					_toRemove = new <Function>[callback];
 				++_numRemoved;
 				
 				return ;
@@ -77,7 +78,7 @@ package aerys.minko.type
 			{
 				_executed = true;
 				for (var i : uint = 0; i < _numCallbacks; ++i)
-					(_callbacks[i] as Function).apply(null, params);
+					_callbacks[i].apply(null, params);
 				_executed = false;
 				
 				for (i = 0; i < _numAdded; ++i)
