@@ -1090,5 +1090,10 @@ package aerys.minko.type.math
 				getScale(_scale);
 			}
 		}
+        
+        public function toString() : String
+        {
+            return '[Matrix4x4 (' + getRawData(TMP_VECTOR) + ']';
+        }
 	}
 }
