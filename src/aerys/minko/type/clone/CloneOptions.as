@@ -62,7 +62,7 @@ package aerys.minko.type.clone
                 LightController,
                 DirectionalLightController,
                 SpotLightController,
-                PointLightController,
+                PointLightController
 			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.REASSIGN;
 			
