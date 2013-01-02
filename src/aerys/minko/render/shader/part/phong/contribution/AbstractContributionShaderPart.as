@@ -173,8 +173,8 @@ package aerys.minko.render.shader.part.phong.contribution
 				cLightSpecular.scaleBy(fsSpecularSample.x);
 			}
 			
-			if (meshBindings.propertyExists(PhongProperties.SHININESS_MULTIPLIER))
-				cLightShininess.scaleBy(meshBindings.getParameter(PhongProperties.SHININESS_MULTIPLIER, 1));
+			if (meshBindings.propertyExists(PhongProperties.SHININESS))
+				cLightShininess.scaleBy(meshBindings.getParameter(PhongProperties.SHININESS, 1));
 			
 			return multiply(cLightSpecular, power(fsLambertProduct, cLightShininess));
 		}
