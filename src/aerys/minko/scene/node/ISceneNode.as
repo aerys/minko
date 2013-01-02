@@ -139,7 +139,9 @@ package aerys.minko.scene.node
 		 * 
 		 */
 		function getController(index : uint) : AbstractController;
-		
+        
+        function hasController(controller : AbstractController) : Boolean;
+        
 		function getControllersByType(type			: Class,
 									  controllers	: Vector.<AbstractController> = null) : Vector.<AbstractController>;
 		/**

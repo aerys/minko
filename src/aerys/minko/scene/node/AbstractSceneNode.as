@@ -1,7 +1,6 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.render.shader.part.phong.attenuation.MatrixShadowMapAttenuationShaderPart;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.controller.TransformController;
@@ -13,7 +12,6 @@ package aerys.minko.scene.node
 	
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
-	import flash.utils.setTimeout;
 
 	use namespace minko_scene;
 	
@@ -150,7 +148,7 @@ package aerys.minko.scene.node
 				
 				oldParent._children.splice(oldParent.getChildIndex(this), 1);
 				
-				parent._numChildren--;
+				_parent._numChildren--;
 				_parent = null;
 				_removed.execute(this, oldParent);
 				oldParent.descendantRemoved.execute(oldParent, this);
@@ -301,6 +299,11 @@ package aerys.minko.scene.node
 		{
 			return _controllers[index];
 		}
+        
+        public function hasController(controller : AbstractController) : Boolean
+        {
+            return _controllers.indexOf(controller) >= 0;
+        }
 		
 		public function getControllersByType(type			: Class,
 											 controllers	: Vector.<AbstractController> = null) : Vector.<AbstractController>
