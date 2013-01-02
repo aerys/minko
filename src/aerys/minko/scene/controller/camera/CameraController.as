@@ -134,7 +134,7 @@ package aerys.minko.scene.controller.camera
             
 			worldToView
 				.copyFrom(localToWorld)
-				.invert()
+				.invert();
 			
 			worldToScreen
 				.copyFrom(worldToView)
@@ -199,7 +199,7 @@ package aerys.minko.scene.controller.camera
 						cameraData.zFar
 					);
 				
-				worldToScreen.copyFrom(_camera.getWorldToLocalTransform()).append(projection);
+                worldToScreen.copyFrom(cameraData.worldToView).append(projection);
 				
 				cameraData.frustum.updateFromMatrix(worldToScreen);
 				
