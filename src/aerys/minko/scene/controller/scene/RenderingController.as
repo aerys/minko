@@ -801,9 +801,12 @@ package aerys.minko.scene.controller.scene
 				var flags	: uint		= signature.getFlags(i);
 				
 				if (flags & Signature.SOURCE_MESH)
-					meshBindings.addCallback(key, bindingsPropertyChangedHandler);
-				else
-					sceneBindings.addCallback(key, bindingsPropertyChangedHandler);
+                {
+                    if (!meshBindings.hasCallback(key, bindingsPropertyChangedHandler))
+					    meshBindings.addCallback(key, bindingsPropertyChangedHandler);
+                }
+                else if (!sceneBindings.hasCallback(key, bindingsPropertyChangedHandler))
+                        sceneBindings.addCallback(key, bindingsPropertyChangedHandler);
 			}
 			
 			// retain the shader
