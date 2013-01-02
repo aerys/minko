@@ -80,13 +80,13 @@ package aerys.minko.render.material.phong
 			setProperty(PhongProperties.SPECULAR, value);
 		}
 		
-		public function get shininessMultiplier() : Number
+		public function get shininess() : Number
 		{
-			return getProperty(PhongProperties.SHININESS_MULTIPLIER) as Number;
+			return getProperty(PhongProperties.SHININESS) as Number;
 		}
-		public function set shininessMultiplier(value : Number) : void
+		public function set shininess(value : Number) : void
 		{
-			setProperty(PhongProperties.SHININESS_MULTIPLIER, value);
+			setProperty(PhongProperties.SHININESS, value);
 		}
 		
 		public function get normalMappingType() : uint
