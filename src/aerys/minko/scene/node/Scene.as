@@ -129,7 +129,7 @@ package aerys.minko.scene.node
 		
 		public function Scene(...children)
 		{
-			super();
+			super(children);
 		}
 		
 		override protected function initialize() : void
