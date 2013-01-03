@@ -82,15 +82,13 @@ package aerys.minko.render.material.phong
 			var sceneBindings	: DataBindings		= _scene.bindings;
 			var shader			: Shader			= null;
 			var renderTarget	: RenderTarget		= null;
+			var lightId 		: uint 				= 0;
 			
 			while (_watchedProperties.length != 0)
 				sceneBindings.removeCallback(_watchedProperties.pop(), propertyChangedHandler);
 			
-			for (var lightId : uint = 0; ; ++lightId)
+			while (lightPropertyExists(lightId++, 'type'))
 			{
-				if (!lightPropertyExists(lightId, 'type'))
-					break ;
-				
 				var shadowMappingPropertyName : String = LightDataProvider.getLightPropertyName(
 					'shadowCastingType',
 					lightId

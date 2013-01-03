@@ -237,6 +237,9 @@ package aerys.minko.render
 		 */		
 		public function setGeometry(geometry : Geometry, frame : uint = 0) : void
 		{
+			if (!_vsInputComponents)
+				return ;
+			
 			updateGeometry(geometry);
 			
 			_center = geometry.boundingSphere
@@ -284,7 +287,8 @@ package aerys.minko.render
 			for (var parameter : String in _bindings)
 			{
 				meshBindings.addCallback(parameter, parameterChangedHandler);
-				sceneBindings.addCallback(parameter, parameterChangedHandler);
+                if (!sceneBindings.hasCallback(parameter, parameterChangedHandler))
+    				sceneBindings.addCallback(parameter, parameterChangedHandler);
 				
 				if (meshBindings.propertyExists(parameter))
 					setParameter(parameter, meshBindings.getProperty(parameter));

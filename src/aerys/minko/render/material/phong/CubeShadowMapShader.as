@@ -20,11 +20,11 @@ package aerys.minko.render.material.phong
 		use namespace minko_lighting;
 		
 		private static const VIEW_MATRICES : Vector.<Matrix4x4> = new <Matrix4x4>[
-			new Matrix4x4().view(Vector4.ZERO, Vector4.X_AXIS,		Vector4.Y_AXIS),		// look at positive x
+			new Matrix4x4().view(Vector4.ZERO, Vector4.X_AXIS,		    Vector4.Y_AXIS),		// look at positive x
 			new Matrix4x4().view(Vector4.ZERO, new Vector4(-1, 0, 0),	Vector4.Y_AXIS),		// look at negative x
-			new Matrix4x4().view(Vector4.ZERO, Vector4.Y_AXIS,		new Vector4(0, 0, -1)),	// look at positive y
+			new Matrix4x4().view(Vector4.ZERO, Vector4.Y_AXIS,		    new Vector4(0, 0, -1)),	// look at positive y
 			new Matrix4x4().view(Vector4.ZERO, new Vector4(0, -1, 0),	Vector4.Z_AXIS),		// look at negative y
-			new Matrix4x4().view(Vector4.ZERO, Vector4.Z_AXIS,		Vector4.Y_AXIS),		// look at positive z (identity)
+			new Matrix4x4().view(Vector4.ZERO, Vector4.Z_AXIS,		    Vector4.Y_AXIS),		// look at positive z (identity)
 			new Matrix4x4().view(Vector4.ZERO, new Vector4(0, 0, -1),	Vector4.Y_AXIS),		// look at negative z
 		];
 		

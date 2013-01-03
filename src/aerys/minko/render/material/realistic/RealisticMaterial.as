@@ -5,6 +5,7 @@ package aerys.minko.render.material.realistic
 	import aerys.minko.render.material.phong.PhongMaterial;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.binding.IDataProvider;
 	
 	import flash.utils.Dictionary;
 	
@@ -58,5 +59,10 @@ package aerys.minko.render.material.realistic
 			
 			super(scene, properties, effect, name);
 		}
+        
+        override public function clone() : IDataProvider
+        {
+            return new RealisticMaterial((effect as RealisticEffect).scene, this, effect, name);
+        }
 	}
 }

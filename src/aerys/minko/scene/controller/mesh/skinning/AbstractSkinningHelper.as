@@ -2,6 +2,7 @@ package aerys.minko.scene.controller.mesh.skinning
 {
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.scene.node.Group;
@@ -15,6 +16,7 @@ package aerys.minko.scene.controller.mesh.skinning
 	internal class AbstractSkinningHelper
 	{
 		use namespace minko_math;
+		use namespace minko_scene;
 		
 		private static const WORLD_SKELETON_MATRIX	: Matrix3D		= new Matrix3D();
 		private static const TMP_SKINNING_MATRIX	: Matrix3D 		= new Matrix3D();
@@ -100,7 +102,9 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			var numJoints : int	= joints.length;
 			
-			WORLD_SKELETON_MATRIX.copyFrom(skeletonRoot.localToWorld._matrix);
+			WORLD_SKELETON_MATRIX.copyFrom(
+				skeletonRoot.getLocalToWorldTransformUnsafe()._matrix
+			);
 			WORLD_SKELETON_MATRIX.invert();
 			
 			for (var jointIndex : int = 0; jointIndex < numJoints; ++jointIndex)
@@ -110,7 +114,7 @@ package aerys.minko.scene.controller.mesh.skinning
 				
 				TMP_SKINNING_MATRIX.copyFrom(_bindShape);
 				TMP_SKINNING_MATRIX.append(invBindMatrix);
-				TMP_SKINNING_MATRIX.append(joint.localToWorld._matrix);
+				TMP_SKINNING_MATRIX.append(joint.getLocalToWorldTransformUnsafe()._matrix);
 				TMP_SKINNING_MATRIX.append(WORLD_SKELETON_MATRIX);
 				TMP_SKINNING_MATRIX.copyRawDataTo(_matrices, jointIndex * 16, true);
 			}

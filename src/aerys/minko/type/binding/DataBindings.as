@@ -8,16 +8,16 @@ package aerys.minko.type.binding
 
 	public final class DataBindings
 	{
-		private var _owner							: ISceneNode				= null;
+		private var _owner						: ISceneNode;
 		
-		private var _providers						: Vector.<IDataProvider> 	= new <IDataProvider>[];
-		private var _bindingNames					: Vector.<String>			= new Vector.<String>();
+		private var _providers					: Vector.<IDataProvider>;
+		private var _bindingNames				: Vector.<String>;
 		
-		private var _bindingNameToValue				: Object					= {};
-		private var _bindingNameToChangedSignal		: Object					= {};
+		private var _bindingNameToValue			: Object;
+		private var _bindingNameToChangedSignal	: Object;
 		
-		private var _bindingNameToProvider			: Object					= {};
-		private var _providerToBindingNames			: Dictionary				= new Dictionary(); // dic[Vector.<String>[]]
+		private var _bindingNameToProvider		: Object;
+		private var _providerToBindingNames		: Dictionary;
 		
 		public function get owner() : ISceneNode
 		{
@@ -37,6 +37,13 @@ package aerys.minko.type.binding
 		public function DataBindings(owner : ISceneNode)
 		{
 			_owner = owner;
+			
+			_providers = new <IDataProvider>[];
+			_bindingNames = new <String>[];
+			_bindingNameToValue = {};
+			_bindingNameToChangedSignal = {};
+			_bindingNameToProvider = {};
+			_providerToBindingNames = new Dictionary(true);
 		}
 		
 		public function contains(dataProvider : IDataProvider) : Boolean
@@ -58,26 +65,33 @@ package aerys.minko.type.binding
 			_providers.push(provider);
 			
 			for (var attrName : String in dataDescriptor)
-			{
-				// if this provider attribute is also a dataprovider, let's also bind it
-				var bindingName	: String	= dataDescriptor[attrName];
-				var attribute	: Object	= provider[attrName];
-				
-				if (_bindingNames.indexOf(bindingName) != -1)
-					throw new Error(
-						'Another data provider is already declaring the \'' + bindingName
-                        + '\' property.'
-					);
-				
-				_bindingNameToProvider[bindingName] = provider;
-				_bindingNameToValue[bindingName] = attribute;
-				
-				providerBindingNames.push(bindingName);
-				_bindingNames.push(bindingName);
-				
-				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null, attribute);
-			}
+				addBinding(
+					dataDescriptor[attrName],
+					provider[attrName],
+					provider,
+					providerBindingNames
+				);
+		}
+		
+		private function addBinding(bindingName 			: String,
+									value 					: Object,
+									provider				: IDataProvider,
+									providerBindingNames	: Vector.<String>) : void
+		{
+			if (_bindingNames.indexOf(bindingName) != -1)
+				throw new Error(
+					'Another data provider is already declaring the \'' + bindingName
+					+ '\' property.'
+				);
+			
+			_bindingNameToProvider[bindingName] = provider;
+			_bindingNameToValue[bindingName] = value;
+			
+			providerBindingNames.push(bindingName);
+			_bindingNames.push(bindingName);
+			
+			if (_bindingNameToChangedSignal[bindingName])
+				_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null, value);			
 		}
 		
 		public function removeProvider(provider : IDataProvider) : void
@@ -89,7 +103,9 @@ package aerys.minko.type.binding
 				throw new ArgumentError('Unknown provider.');
 			
 			var numBindings : uint = _bindingNames.length;
-			for (var indexRead : uint = 0, indexWrite : uint = 0; indexRead < numBindings; ++indexRead)
+			for (var indexRead : uint = 0, indexWrite : uint = 0;
+				indexRead < numBindings;
+				++indexRead)
 			{
 				var bindingName : String = _bindingNames[indexRead];
 				
@@ -101,7 +117,7 @@ package aerys.minko.type.binding
 					delete _bindingNameToProvider[bindingName];
 				}
 				else
-					_bindingNames[indexWrite++] = _bindingNames[indexRead];
+					_bindingNames[uint(indexWrite++)] = _bindingNames[indexRead];
 			}
 			_bindingNames.length = indexWrite;
 			
@@ -116,11 +132,7 @@ package aerys.minko.type.binding
 				var changedSignal : Signal = _bindingNameToChangedSignal[bindingName] as Signal;
 				
 				if (changedSignal != null)
-				{
-					changedSignal.execute(
-						this, bindingName, tmpValues[bindingName], null
-					);
-				}
+					changedSignal.execute(this, bindingName, tmpValues[bindingName], null);
 			}
 		}
 		
@@ -210,11 +222,12 @@ package aerys.minko.type.binding
 			}
 		}
 		
-		private function providerChangedHandler(source : IDataProvider, attributeName : String) : void
+		private function providerChangedHandler(source 			: IDataProvider,
+												attributeName 	: String) : void
 		{
 			if (attributeName == null)
 			{
-				throw new Error('DataProviders must change one property at a time.');
+				throw new Error('DataProviders must change only one property at a time.');
 			}
 			else if (attributeName == 'dataDescriptor')
 			{
@@ -223,15 +236,45 @@ package aerys.minko.type.binding
 			}
 			else
 			{
-				var bindingName : String		= source.dataDescriptor[attributeName];
-				var oldValue	: Object		= _bindingNameToValue[bindingName];
-				var newValue	: Object		= source[attributeName];
+				var bindingName : String	= source.dataDescriptor[attributeName];
+				var oldValue	: Object	= _bindingNameToValue[bindingName];
+				var newValue	: Object	= source[attributeName];
 				
 				_bindingNameToValue[bindingName] = newValue;
 				
 				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(this, bindingName, oldValue, newValue);
+					_bindingNameToChangedSignal[bindingName].execute(
+						this,
+						bindingName,
+						oldValue,
+						newValue
+					);
 			}
 		}
+		
+//		FIXME: handle provider's properties removal
+//		private function updateProviderBindings(provider : IDataProvider) : void
+//		{
+//			var dataDescriptor			: Object			= provider.dataDescriptor;
+//			var providerBindingNames	: Vector.<String>	= _providerToBindingNames[provider];
+//			var numBindingNames			: uint				= providerBindingNames.length;
+//			
+//			for (var bindingNameId : uint; bindingNameId < numBindingNames; ++bindingNameId)
+//			{
+//				var bindingName : String = providerBindingNames[bindingNameId];
+//				
+//				if (!dataDescriptor.hasOwnProperty(bindingName))
+//					
+//			}
+//			
+//			for (var propertyName : String in dataDescriptor)
+//				if (providerBindingNames.indexOf(propertyName) < -1)
+//					addBinding(
+//						dataDescriptor[propertyName],
+//						provider[propertyName],
+//						provider,
+//						providerBindingNames
+//					);
+//		}
 	}
 }

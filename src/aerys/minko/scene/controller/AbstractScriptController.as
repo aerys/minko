@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller
 {
+	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -9,14 +10,22 @@ package aerys.minko.scene.controller
 	import flash.display.BitmapData;
 	import flash.utils.Dictionary;
 
-	public class ScriptController extends EnterFrameController
+    use namespace minko_scene;
+    
+	public class AbstractScriptController extends EnterFrameController
 	{
-        private var _scene          : Scene;
-        private var _started        : Dictionary;
-		private var _lastTime		: Number;
-		private var _deltaTime		: Number;
-		private var _currentTarget	: ISceneNode;
-		private var _viewport		: Viewport;
+        private var _scene              : Scene;
+        private var _started            : Dictionary;
+		private var _lastTime		    : Number;
+		private var _deltaTime		    : Number;
+		private var _currentTarget	    : ISceneNode;
+		private var _viewport		    : Viewport;
+        
+        private var _targetsListLocked  : Boolean;
+        private var _targetsToAdd       : Vector.<ISceneNode>;
+        private var _targetsToRemove    : Vector.<ISceneNode>;
+		
+		private var _updateRate			: Number;
 		
         protected function get scene() : Scene
         {
@@ -43,7 +52,16 @@ package aerys.minko.scene.controller
 			return _viewport;
 		}
 		
-		public function ScriptController(targetType	: Class = null)
+		protected function get updateRate() : Number
+		{
+			return _updateRate;
+		}
+		protected function set updateRate(value : Number) : void
+		{
+			_updateRate = value;
+		}
+		
+		public function AbstractScriptController(targetType	: Class = null)
 		{
 			super(targetType);
             
@@ -55,10 +73,10 @@ package aerys.minko.scene.controller
             _started = new Dictionary(true);
         }
         
-        override protected function targetAddedToSceneHandler(target    : ISceneNode,
-                                                              scene     : Scene) : void
-        {
-            super.targetAddedToSceneHandler(target, scene);
+		override protected function targetAddedToScene(target	: ISceneNode,
+													   scene	: Scene) : void
+		{
+            super.targetAddedToScene(target, scene);
             
             if (_scene && scene != _scene)
                 throw new Error(
@@ -69,10 +87,10 @@ package aerys.minko.scene.controller
             _scene = scene;
         }
         
-        override protected function targetRemovedFromSceneHandler(target    : ISceneNode,
-                                                                  scene     : Scene) : void
+		override protected function targetRemovedFromScene(target 	: ISceneNode,
+														   scene 	: Scene) : void
         {
-            super.targetRemovedFromSceneHandler(target, scene);
+            super.targetAddedToScene(target, scene);
             
             if (getNumTargetsInScene(scene))
                 _scene = null;
@@ -83,10 +101,15 @@ package aerys.minko.scene.controller
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			_viewport = viewport;
 			_deltaTime = time - _lastTime;
+			
+			if (_updateRate != 0. && deltaTime < 1000. / _updateRate)
+				return;
+			
+			_viewport = viewport;
 			_lastTime = time;
 			
+            lockTargetsList();
             beforeUpdate();
             
 			var numTargets : uint = this.numTargets;
@@ -113,6 +136,7 @@ package aerys.minko.scene.controller
             }
             
             afterUpdate();
+            unlockTargetsList();
 		}
         
         /**
@@ -163,5 +187,57 @@ package aerys.minko.scene.controller
 		{
 			// nothing
 		}
+        
+        private function lockTargetsList() : void
+        {
+            _targetsListLocked = true;
+        }
+        
+        private function unlockTargetsList() : void
+        {
+            _targetsListLocked = false;
+            
+            if (_targetsToAdd)
+            {
+                var numTargetsToAdd : uint = _targetsToAdd.length;
+                for (var i : uint = 0; i < numTargetsToAdd; ++i)
+                    addTarget(_targetsToAdd[i]);
+                _targetsToAdd = null;
+            }
+            
+            if (_targetsToRemove)
+            {
+                var numTargetsToRemove : uint = _targetsToRemove.length;
+                for (var j : uint = 0; j < numTargetsToRemove; ++j)
+                    removeTarget(_targetsToRemove[j]);
+                _targetsToRemove = null;
+            }
+        }
+        
+        override minko_scene function addTarget(target : ISceneNode) : void
+        {
+            if (_targetsListLocked)
+            {
+                if (_targetsToAdd)
+                    _targetsToAdd.push(target);
+                else
+                    _targetsToAdd = new <ISceneNode>[target];
+            }
+            else
+                super.addTarget(target);
+        }
+        
+        override minko_scene function removeTarget(target : ISceneNode) : void
+        {
+            if (_targetsListLocked)
+            {
+                if (_targetsToRemove)
+                    _targetsToRemove.push(target);
+                else
+                    _targetsToRemove = new <ISceneNode>[target];
+            }
+            else
+                super.removeTarget(target);
+        }
 	}
 }
