@@ -237,6 +237,9 @@ package aerys.minko.render
 		 */		
 		public function setGeometry(geometry : Geometry, frame : uint = 0) : void
 		{
+			if (!_vsInputComponents)
+				return ;
+			
 			updateGeometry(geometry);
 			
 			_center = geometry.boundingSphere
