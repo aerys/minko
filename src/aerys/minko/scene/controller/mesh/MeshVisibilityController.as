@@ -142,6 +142,8 @@ package aerys.minko.scene.controller.mesh
 			mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
             mesh.visibilityChanged.remove(visiblityChangedHandler);
             mesh.removed.remove(meshRemovedHandler);
+			if (mesh.parent)
+				mesh.parent.computedVisibilityChanged.remove(visiblityChangedHandler);
 		}
 		
         private function visiblityChangedHandler(node : ISceneNode, visibility : Boolean) : void
