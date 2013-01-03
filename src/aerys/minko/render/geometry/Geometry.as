@@ -1166,6 +1166,31 @@ package aerys.minko.render.geometry
 				
 				if (hitNormal)
 				{
+					indicesData.position = triangleIndice * 2;
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
+					v0X = xyzData.readFloat();
+					v0Y = xyzData.readFloat();
+					v0Z = xyzData.readFloat();
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					v1X = xyzData.readFloat();
+					v1Y = xyzData.readFloat();
+					v1Z = xyzData.readFloat();
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					v2X = xyzData.readFloat();
+					v2Y = xyzData.readFloat();
+					v2Z = xyzData.readFloat();
+					
+					edge1X = v1X - v0X;
+					edge1Y = v1Y - v0Y;
+					edge1Z = v1Z - v0Z;
+					
+					edge2X = v2X - v0X;
+					edge2Y = v2Y - v0Y;
+					edge2Z = v2Z - v0Z;
+					
 					// length
 					var edge1Length		: Number	= Math.sqrt(edge1X * edge1X + edge1Y * edge1Y + edge1Z * edge1Z);
 					var edge2Length		: Number	= Math.sqrt(edge2X * edge2X + edge2Y * edge2Y + edge2Z * edge2Z);
@@ -1179,9 +1204,9 @@ package aerys.minko.render.geometry
 					edge2Z /= edge2Length;
 					
 					// cross product
-					hitNormal.x = edge1Y * edge2Z - edge1Z * edge2Y;
-					hitNormal.y = edge1Z * edge2X - edge1X * edge2Z;
-					hitNormal.z = edge1X * edge2Y - edge1Y * edge2X;
+					hitNormal.x = edge2Y * edge1Z - edge2Z * edge1Y;
+					hitNormal.y = edge2Z * edge1X - edge2X * edge1Z;
+					hitNormal.z = edge2X * edge1Y - edge2Y * edge1X;
 				}
 			}
 			
