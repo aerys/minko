@@ -125,22 +125,12 @@ package aerys.minko.render.shader.part
 		
 		protected function get worldToViewMatrix() : SFloat
 		{
-			return _main._sceneBindings.getParameter('worldToView', 16);
-		}
-		
-		protected function get viewToWorldMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('viewToWorld', 16);
+			return _main._meshBindings.getParameter('worldToView', 16);
 		}
 		
 		protected function get worldToScreenMatrix() : SFloat
 		{
 			return _main._sceneBindings.getParameter('worldToScreen', 16);
-		}
-		
-		protected function get screenToWorldMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('screenToWorld', 16);
 		}
 		
 		protected function get projectionMatrix() : SFloat
@@ -861,12 +851,7 @@ package aerys.minko.render.shader.part
 		
 		protected final function worldToScreen(worldSpaceVector : Object) : SFloat
 		{
-			return viewToScreen(worldToView(worldSpaceVector));
-		}
-		
-		protected final function viewToWorld(value : Object) : SFloat
-		{
-			return multiply4x4(value, viewToWorldMatrix);
+			return multiply4x4(worldSpaceVector, worldToScreenMatrix);
 		}
 		
 		protected final function localToScreen(localSpaceVector : Object) : SFloat
@@ -890,16 +875,6 @@ package aerys.minko.render.shader.part
 		protected final function deltaWorldToLocal(vertex : Object) : SFloat
 		{
 			return multiply3x3(vertex, worldToLocalMatrix);
-		}
-		
-		protected final function deltaWorldToView(vertex : Object) : SFloat
-		{
-			return multiply3x3(vertex, worldToViewMatrix);
-		}
-		
-		protected final function deltaViewToWorld(vertex : Object) : SFloat
-		{
-			return multiply3x3(vertex, viewToWorldMatrix);
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,

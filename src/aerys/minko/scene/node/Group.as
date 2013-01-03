@@ -2,19 +2,15 @@ package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.SceneIterator;
-	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
 	import flash.utils.getQualifiedClassName;
 
 	use namespace minko_scene;
@@ -90,23 +86,32 @@ package aerys.minko.scene.node
 		{
 			super();
 
-			initialize();
 			initializeChildren(children);
 		}
-
-		private function initialize() : void
+		
+		override protected function initializeSignals() : void
 		{
-			_children = new <ISceneNode>[];
-
+			super.initializeSignals();
+			
             _descendantAdded = new Signal('Group.descendantAdded');
-			_descendantAdded.add(descendantAddedHandler);
-            
             _descendantRemoved = new Signal('Group.descendantRemoved');
+		}
+		
+		override protected function initializeSignalHandlers() : void
+		{
+			super.initializeSignalHandlers();
+			
+			_descendantAdded.add(descendantAddedHandler);
 			_descendantRemoved.add(descendantRemovedHandler);
+			
+			added.add(addedHandler);
+			removed.add(removedHandler);
 		}
 		
 		protected function initializeChildren(children : Array) : void
 		{
+			_children = new <ISceneNode>[];
+			
 			while (children.length == 1 && children[0] is Array)
 				children = children[0];
 			
@@ -148,10 +153,8 @@ package aerys.minko.scene.node
 			_numDescendants -= (child is Group) ? (child as Group)._numDescendants + 1 : 1;
 		}
 		
-        override protected function addedHandler(child : ISceneNode, ancestor : Group) : void
+        private function addedHandler(child : ISceneNode, ancestor : Group) : void
         {
-            super.addedHandler(child, ancestor);
-            
             var numChildren : uint = this.numChildren;
             
             for (var childId : uint = 0; childId < numChildren; ++childId)
@@ -162,10 +165,8 @@ package aerys.minko.scene.node
             }
         }
         
-        override protected function removedHandler(child : ISceneNode, ancestor : Group) : void
+        private function removedHandler(child : ISceneNode, ancestor : Group) : void
         {
-            super.removedHandler(child, ancestor);
-            
             var numChildren : uint = this.numChildren;
             
             for (var childId : uint = 0; childId < numChildren; ++childId)

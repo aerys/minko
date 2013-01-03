@@ -6,6 +6,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.binding.IDataProvider;
+	import aerys.minko.type.math.Vector4;
 	
 	import flash.utils.Dictionary;
 	
@@ -69,22 +70,23 @@ package aerys.minko.render.material.phong
 			setProperty(PhongProperties.DIFFUSE_MULTIPLIER, value);
 		}
 		
-		public function get specularMultiplier() : Number
+		public function get specular() : Vector4
 		{
-			return getProperty(PhongProperties.SPECULAR_MULTIPLIER) as Number;
-		}
-		public function set specularMultiplier(value : Number) : void
-		{
-			setProperty(PhongProperties.SPECULAR_MULTIPLIER, value);
+			return getProperty(PhongProperties.SPECULAR) as Vector4;
 		}
 		
-		public function get shininessMultiplier() : Number
+		public function set specular(value : Vector4) : void
 		{
-			return getProperty(PhongProperties.SHININESS_MULTIPLIER) as Number;
+			setProperty(PhongProperties.SPECULAR, value);
 		}
-		public function set shininessMultiplier(value : Number) : void
+		
+		public function get shininess() : Number
 		{
-			setProperty(PhongProperties.SHININESS_MULTIPLIER, value);
+			return getProperty(PhongProperties.SHININESS) as Number;
+		}
+		public function set shininess(value : Number) : void
+		{
+			setProperty(PhongProperties.SHININESS, value);
 		}
 		
 		public function get normalMappingType() : uint

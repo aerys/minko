@@ -965,6 +965,8 @@ package aerys.minko.render.geometry
 		 * of the actual ray/geometry hit point.
 		 * @param hitUV An optional reference to a Point object to fill with the (u, v) texture coordinates
 		 * of the actual ray/geometry hit point.
+		 * @param hitNormal An optional reference to a Vector4 object to fill the normal of the intersection
+		 * point if any.
 		 * 
 		 * @return The triangle ID (the ID of the first index of the triangle in the IndexStream) that was
 		 * hit by the specified ray, -1 otherwise.
@@ -973,7 +975,8 @@ package aerys.minko.render.geometry
 		public function cast(ray 		: Ray,
 							 transform 	: Matrix4x4 = null,
 							 hitXYZ 	: Vector4 	= null,
-							 hitUV		: Point		= null) : int
+							 hitUV		: Point		= null,
+							 hitNormal	: Vector4	= null) : int
 		{
 			var numVertices : uint 	= indexStream._data.length / 2;
 			
@@ -1017,33 +1020,57 @@ package aerys.minko.render.geometry
 			
 			var lambda			: Vector4		= new Vector4();
 			
+			//vertex 1
+			var v0X 			: Number 		= .0;
+			var v0Y 			: Number 		= .0;
+			var v0Z 			: Number 		= .0;
+			
+			//vertex2
+			var v1X 			: Number 		= .0;
+			var v1Y 			: Number 		= .0;
+			var v1Z 			: Number 		= .0;
+			
+			//vertex3
+			var v2X 			: Number 		= .0;
+			var v2Y 			: Number 		= .0;
+			var v2Z 			: Number 		= .0;
+			
+			//edge 1
+			var edge1X 			: Number 		= .0;
+			var edge1Y 			: Number 		= .0;
+			var edge1Z 			: Number 		= .0;
+			
+			//edge 2
+			var edge2X 			: Number 		= .0;
+			var edge2Y 			: Number 		= .0;
+			var edge2Z 			: Number 		= .0;	
+			
 			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += 3)
 			{
 				indicesData.position = verticeIndex * 2;
 				
 				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
-				var v0X : Number = xyzData.readFloat();
-				var v0Y : Number = xyzData.readFloat();
-				var v0Z : Number = xyzData.readFloat();
+				v0X = xyzData.readFloat();
+				v0Y = xyzData.readFloat();
+				v0Z = xyzData.readFloat();
 
 				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
-				var v1X : Number = xyzData.readFloat();
-				var v1Y : Number = xyzData.readFloat();
-				var v1Z : Number = xyzData.readFloat();
+				v1X = xyzData.readFloat();
+				v1Y = xyzData.readFloat();
+				v1Z = xyzData.readFloat();
 				
 				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
-				var v2X : Number = xyzData.readFloat();
-				var v2Y : Number = xyzData.readFloat();
-				var v2Z : Number = xyzData.readFloat();
+				v2X = xyzData.readFloat();
+				v2Y = xyzData.readFloat();
+				v2Z = xyzData.readFloat();
 
-
-				var edge1X : Number = v1X - v0X;
-				var edge1Y : Number = v1Y - v0Y;
-				var edge1Z : Number = v1Z - v0Z;
+				edge1X = v1X - v0X;
+				edge1Y = v1Y - v0Y;
+				edge1Z = v1Z - v0Z;
 				
-				var edge2X : Number = v2X - v0X;
-				var edge2Y : Number = v2Y - v0Y;
-				var edge2Z : Number = v2Z - v0Z;				
+				edge2X = v2X - v0X;
+				edge2Y = v2Y - v0Y;
+				edge2Z = v2Z - v0Z;				
 				
 				// cross product
 				var pvecX : Number = localDirectionY * edge2Z - edge2Y * localDirectionZ;
@@ -1135,6 +1162,51 @@ package aerys.minko.render.geometry
 					
 					if (uvStream != xyzStream)
 						uvStream.unlock(false);
+				}
+				
+				if (hitNormal)
+				{
+					indicesData.position = triangleIndice * 2;
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
+					v0X = xyzData.readFloat();
+					v0Y = xyzData.readFloat();
+					v0Z = xyzData.readFloat();
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					v1X = xyzData.readFloat();
+					v1Y = xyzData.readFloat();
+					v1Z = xyzData.readFloat();
+					
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					v2X = xyzData.readFloat();
+					v2Y = xyzData.readFloat();
+					v2Z = xyzData.readFloat();
+					
+					edge1X = v1X - v0X;
+					edge1Y = v1Y - v0Y;
+					edge1Z = v1Z - v0Z;
+					
+					edge2X = v2X - v0X;
+					edge2Y = v2Y - v0Y;
+					edge2Z = v2Z - v0Z;
+					
+					// length
+					var edge1Length		: Number	= Math.sqrt(edge1X * edge1X + edge1Y * edge1Y + edge1Z * edge1Z);
+					var edge2Length		: Number	= Math.sqrt(edge2X * edge2X + edge2Y * edge2Y + edge2Z * edge2Z);
+					
+					// normalize
+					edge1X /= edge1Length;
+					edge1Y /= edge1Length;
+					edge1Z /= edge1Length;
+					edge2X /= edge2Length;
+					edge2Y /= edge2Length;
+					edge2Z /= edge2Length;
+					
+					// cross product
+					hitNormal.x = edge2Y * edge1Z - edge2Z * edge1Y;
+					hitNormal.y = edge2Z * edge1X - edge2X * edge1Z;
+					hitNormal.z = edge2X * edge1Y - edge2Y * edge1X;
 				}
 			}
 			

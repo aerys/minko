@@ -13,12 +13,12 @@ package aerys.minko.scene.node.camera
 	{
 		public static const ZOOM_DEFAULT : Number = 1;
 		
-		public function get zoom():Number
+		public function get zoom() : Number
 		{
 			return cameraData.zoom;
 		}
 
-		public function set zoom(value:Number):void
+		public function set zoom(value : Number) : void
 		{
 			cameraData.zoom = value;
 		}
@@ -28,14 +28,17 @@ package aerys.minko.scene.node.camera
 										   zFar 	: Number = AbstractCamera.DEFAULT_ZFAR)
 		{
 			super(zNear, zFar);
+			
 			_cameraData.zoom = zoom;
 		}
-
-		override protected function initialize():void
-		{
-			addController(new CameraController(true));
-		}
 		
+		override protected function initializeContollers() : void
+		{
+			super.initializeContollers();
+			
+			cameraController.orthographic = true;
+		}
+
 		override public function unproject(x : Number, y : Number, out : Ray = null) : Ray
 		{
 			if (!(root is Scene))
@@ -51,11 +54,13 @@ package aerys.minko.scene.node.camera
 			var xPercent		: Number		= (x / width - 0.5);
 			var yPercent 		: Number		= -(y / height - 0.5);
 			
-			out.origin.set(xPercent * width / _cameraData.zoom, yPercent * height / _cameraData.zoom, zNear);
+			out.origin.set(
+				xPercent * width / _cameraData.zoom, yPercent * height / _cameraData.zoom, zNear
+			);
 			out.direction.set(0, 0, 1);
 			
-			localToWorld.transformVector(out.origin, out.origin);
-			localToWorld.deltaTransformVector(out.direction, out.direction);
+			localToWorld(out.origin, out.origin);
+			localToWorld(out.direction, out.direction, true);
 			
 			return out;
 		}

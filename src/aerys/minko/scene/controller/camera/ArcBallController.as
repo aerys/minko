@@ -32,7 +32,7 @@ package aerys.minko.scene.controller.camera
 		private var _lookAt				: Vector4	= new Vector4(0, 0, 0, 1);
 		private var _up					: Vector4	= new Vector4(0, 1, 0, 1);
 		
-		private var _minDistance		: Number	= 0.1;
+		private var _minDistance		: Number	= 1.;
 		private var _maxDistance		: Number	= 1000;
 		
 		private var _distanceStep		: Number	= 1;
@@ -202,12 +202,18 @@ package aerys.minko.scene.controller.camera
 			super.targetAddedHandler(ctrl, target);
 			
 			_update = true;
+			updateTargets();
 		}
 		
 		override protected function sceneEnterFrameHandler(scene		: Scene,
 														   viewport		: Viewport,
 														   destination	: BitmapData,
 														   time			: Number) : void
+		{
+			updateTargets();
+		}
+		
+		private function updateTargets() : void
 		{
 			if (_update && _enabled)
 			{

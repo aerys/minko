@@ -4,7 +4,9 @@ package aerys.minko.scene.node
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
+	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
+	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -212,47 +214,62 @@ package aerys.minko.scene.node
 		{
 			super();
 
-			initialize(geometry, material, name);
+			initializeMesh(geometry, material, name);
 		}
 		
-		private function initialize(geometry	: Geometry,
-									material	: Material,
-									name		: String) : void
+		override protected function initialize() : void
 		{
-			if (name)
-				this.name = name;
+			_bindings = new DataBindings(this);
+			this.properties = new DataProvider(
+				properties,
+				'meshProperties',
+				DataProviderUsage.EXCLUSIVE
+			);
+			
+			super.initialize();
+		}
+		
+		override protected function initializeSignals():void
+		{
+			super.initializeSignals();
 			
 			_cloned = new Signal('Mesh.cloned');
 			_materialChanged = new Signal('Mesh.materialChanged');
 			_frameChanged = new Signal('Mesh.frameChanged');
 			_geometryChanged = new Signal('Mesh.geometryChanged');
+		}
+		
+		override protected function initializeContollers():void
+		{
+			super.initializeContollers();
 			
-			_bindings = new DataBindings(this);
-			this.properties = new DataProvider(properties, 'meshProperties', DataProviderUsage.EXCLUSIVE);
-			
-			this.geometry = geometry;
-			this.material = material || DEFAULT_MATERIAL;
+			addController(new MeshController());
 			
 			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
 			addController(_visibility);
 		}
 		
+		protected function initializeMesh(geometry	: Geometry,
+										  material	: Material,
+										  name		: String) : void
+		{
+			if (name)
+				this.name = name;
+			
+			this.geometry = geometry;
+			this.material = material || DEFAULT_MATERIAL;
+		}
+		
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
 		{
 			return _geometry.boundingBox.testRay(
 				ray,
-				worldToLocal,
+				getWorldToLocalTransform(),
 				maxDistance
 			);
 		}
         
-//        override protected function visibilityChangedHandler(node       : AbstractSceneNode,
-//                                                             visibility : Boolean) : void
-//        {
-//            // nothing
-//        }
-		
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Mesh = new Mesh();

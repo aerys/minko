@@ -4,15 +4,20 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.AnimationController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.controller.camera.CameraController;
+	import aerys.minko.scene.controller.light.DirectionalLightController;
+	import aerys.minko.scene.controller.light.LightController;
+	import aerys.minko.scene.controller.light.PointLightController;
+	import aerys.minko.scene.controller.light.SpotLightController;
+	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
 
-	public class CloneOptions
+	public final class CloneOptions
 	{
-		private var _clonedControllerTypes		: Vector.<Class>	= new <Class>[];
-		private var _ignoredControllerTypes		: Vector.<Class>	= new <Class>[];
-		private var _reassignedControllerTypes	: Vector.<Class>	= new <Class>[];
-		private var _defaultControllerAction	: uint				= ControllerCloneAction.REASSIGN;
+		private var _clonedControllerTypes		: Vector.<Class>;
+		private var _ignoredControllerTypes		: Vector.<Class>;
+		private var _reassignedControllerTypes	: Vector.<Class>;
+		private var _defaultControllerAction	: uint;
 		
 		public function get defaultControllerAction() : uint
 		{
@@ -30,6 +35,15 @@ package aerys.minko.type.clone
 		
 		public function CloneOptions()
 		{
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_clonedControllerTypes = new <Class>[];
+			_ignoredControllerTypes = new <Class>[];
+			_reassignedControllerTypes = new <Class>[];
+			_defaultControllerAction = ControllerCloneAction.REASSIGN;
 		}
 		
 		public static function get defaultOptions() : CloneOptions
@@ -41,9 +55,14 @@ package aerys.minko.type.clone
 				SkinningController
 			);
 			cloneOptions._ignoredControllerTypes.push(
+				MeshController,
 				MeshVisibilityController,
 				CameraController,
-				TransformController
+				TransformController,
+                LightController,
+                DirectionalLightController,
+                SpotLightController,
+                PointLightController
 			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.REASSIGN;
 			
@@ -55,16 +74,21 @@ package aerys.minko.type.clone
 			var cloneOptions : CloneOptions = new CloneOptions();
 			
 			cloneOptions._ignoredControllerTypes.push(
+				MeshController,
 				MeshVisibilityController,
 				CameraController,
-				TransformController
+				TransformController,
+                LightController,
+                DirectionalLightController,
+                SpotLightController,
+                PointLightController
 			);
 			cloneOptions._defaultControllerAction = ControllerCloneAction.CLONE;
 			
 			return cloneOptions;
 		}
 		
-		public function addControllerAction(controllerClass : Class, action : uint) : void
+		public function addControllerAction(controllerClass : Class, action : uint) : CloneOptions
 		{
 			switch (action)
 			{
@@ -83,6 +107,8 @@ package aerys.minko.type.clone
 				default:
 					throw new Error('Unknown action type.');
 			}
+            
+            return this;
 		}
 		
 		public function removeControllerAction(controllerClass : Class) : void

@@ -1,13 +1,28 @@
 package aerys.minko.render.material.picking
 {
-	import aerys.minko.render.material.basic.BasicShader;
+	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
+	import aerys.minko.render.shader.part.DiffuseShaderPart;
+	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	
 	import flash.geom.Rectangle;
 	
-	public final class PickingShader extends BasicShader
+	public final class PickingShader extends Shader
 	{
+		private var _vertexAnimation 	: VertexAnimationShaderPart;
+		private var _diffuse			: DiffuseShaderPart;
+		
+		public function PickingShader(target	: RenderTarget	= null,
+									  priority	: Number		= 0.)
+		{
+			super(null, 0.);
+			
+			_vertexAnimation = new VertexAnimationShaderPart(this);
+			_diffuse = new DiffuseShaderPart(this);
+		}
+		
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			super.initializeSettings(settings);
@@ -20,13 +35,16 @@ package aerys.minko.render.material.picking
 		override protected function getVertexPosition() : SFloat
 		{
 			return multiply4x4(
-				localToView(vertexAnimation.getAnimatedVertexPosition()),
+				worldToView(localToWorld(_vertexAnimation.getAnimatedVertexPosition())),
 				sceneBindings.getParameter('pickingProjection', 16)
 			);
 		}
 		
 		override protected function getPixelColor() : SFloat
 		{
+			// only to kill transparent pixels according to diffuse's alpha
+			_diffuse.getDiffuseColor(true);
+			
 			return float4(meshBindings.getParameter('pickingId', 3), 1);
 		}
 	}

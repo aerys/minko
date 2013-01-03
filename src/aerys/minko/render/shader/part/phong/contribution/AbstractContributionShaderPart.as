@@ -154,11 +154,14 @@ package aerys.minko.render.shader.part.phong.contribution
 			var fsLightReflectedDirection	: SFloat = reflect(fsLightDirection, fsNormal);
 			var fsLambertProduct			: SFloat = saturate(negate(dotProduct3(fsLightReflectedDirection, fsCameraDirection)));
 			
-			var cLightSpecular	: SFloat = getLightParameter(lightId, 'specular', 1);
-			var cLightShininess	: SFloat = getLightParameter(lightId, 'shininess', 1);
+			var cLightSpecular	: SFloat 	= getLightParameter(lightId, 'specular', 1);
+			var cLightShininess	: SFloat 	= getLightParameter(lightId, 'shininess', 1);
 			
-			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MULTIPLIER))
-				cLightSpecular.scaleBy(meshBindings.getParameter(PhongProperties.SPECULAR_MULTIPLIER, 1));
+			if (meshBindings.propertyExists(PhongProperties.SPECULAR))
+			{
+				var specular	: SFloat	= meshBindings.getParameter(PhongProperties.SPECULAR, 4);
+				cLightSpecular = multiply(cLightSpecular, specular.xyz);
+			}
 			
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MAP))
 			{
@@ -170,8 +173,8 @@ package aerys.minko.render.shader.part.phong.contribution
 				cLightSpecular.scaleBy(fsSpecularSample.x);
 			}
 			
-			if (meshBindings.propertyExists(PhongProperties.SHININESS_MULTIPLIER))
-				cLightShininess.scaleBy(meshBindings.getParameter(PhongProperties.SHININESS_MULTIPLIER, 1));
+			if (meshBindings.propertyExists(PhongProperties.SHININESS))
+				cLightShininess.scaleBy(meshBindings.getParameter(PhongProperties.SHININESS, 1));
 			
 			return multiply(cLightSpecular, power(fsLambertProduct, cLightShininess));
 		}

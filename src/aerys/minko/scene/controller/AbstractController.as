@@ -6,6 +6,8 @@ package aerys.minko.scene.controller
 	
 	import flash.utils.getQualifiedClassName;
 
+    use namespace minko_scene;
+    
 	/**
 	 * Controllers work on scene nodes to modify and update them. They offer the best
 	 * way to add any kind of behavior on one or multiple scene nodes. They can be used
