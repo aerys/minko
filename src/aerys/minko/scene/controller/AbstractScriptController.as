@@ -12,7 +12,7 @@ package aerys.minko.scene.controller
 
     use namespace minko_scene;
     
-	public class ScriptController extends EnterFrameController
+	public class AbstractScriptController extends EnterFrameController
 	{
         private var _scene              : Scene;
         private var _started            : Dictionary;
@@ -50,7 +50,7 @@ package aerys.minko.scene.controller
 			return _viewport;
 		}
 		
-		public function ScriptController(targetType	: Class = null)
+		public function AbstractScriptController(targetType	: Class = null)
 		{
 			super(targetType);
             
