@@ -25,6 +25,8 @@ package aerys.minko.scene.controller
         private var _targetsToAdd       : Vector.<ISceneNode>;
         private var _targetsToRemove    : Vector.<ISceneNode>;
 		
+		private var _updateRate			: Number;
+		
         protected function get scene() : Scene
         {
             return _scene;
@@ -48,6 +50,15 @@ package aerys.minko.scene.controller
 		protected function get viewport() : Viewport
 		{
 			return _viewport;
+		}
+		
+		protected function get updateRate() : Number
+		{
+			return _updateRate;
+		}
+		protected function set updateRate(value : Number) : void
+		{
+			_updateRate = value;
 		}
 		
 		public function AbstractScriptController(targetType	: Class = null)
@@ -90,8 +101,12 @@ package aerys.minko.scene.controller
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			_viewport = viewport;
 			_deltaTime = time - _lastTime;
+			
+			if (_updateRate != 0. && deltaTime < 1000. / _updateRate)
+				return;
+			
+			_viewport = viewport;
 			_lastTime = time;
 			
             lockTargetsList();
