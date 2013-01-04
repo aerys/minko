@@ -1003,7 +1003,8 @@ package aerys.minko.render.geometry
 			var xyzStream 		: VertexStream 	= vertexStream.getStreamByComponent(VertexComponent.XYZ);
 			var format 			: VertexFormat 	= xyzStream.format;
 			var xyzVertexSize 	: uint 			= format.numBytesPerVertex;
-			var offset			: uint 			= format.getOffsetForComponent(VertexComponent.XYZ);
+			var offsetInBytes	: uint 			= format.getBytesOffsetForComponent(VertexComponent.XYZ);
+			var stride			: uint			= VertexComponent.XYZ.numProperties;
 			
 			var localDirectionX : Number 		= localDirection.x;
 			var localDirectionY	: Number 		= localDirection.y;
@@ -1045,21 +1046,21 @@ package aerys.minko.render.geometry
 			var edge2Y 			: Number 		= .0;
 			var edge2Z 			: Number 		= .0;	
 			
-			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += 3)
+			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += stride)
 			{
 				indicesData.position = verticeIndex * 2;
 				
-				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes;
 				v0X = xyzData.readFloat();
 				v0Y = xyzData.readFloat();
 				v0Z = xyzData.readFloat();
 
-				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes;
 				v1X = xyzData.readFloat();
 				v1Y = xyzData.readFloat();
 				v1Z = xyzData.readFloat();
 				
-				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+				xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes;
 				v2X = xyzData.readFloat();
 				v2Y = xyzData.readFloat();
 				v2Z = xyzData.readFloat();
@@ -1168,17 +1169,17 @@ package aerys.minko.render.geometry
 				{
 					indicesData.position = triangleIndice * 2;
 					
-					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes
 					v0X = xyzData.readFloat();
 					v0Y = xyzData.readFloat();
 					v0Z = xyzData.readFloat();
 					
-					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes;
 					v1X = xyzData.readFloat();
 					v1Y = xyzData.readFloat();
 					v1Z = xyzData.readFloat();
 					
-					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offset;
+					xyzData.position = indicesData.readUnsignedShort() * xyzVertexSize + offsetInBytes;
 					v2X = xyzData.readFloat();
 					v2Y = xyzData.readFloat();
 					v2Z = xyzData.readFloat();
