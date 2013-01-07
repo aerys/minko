@@ -1,6 +1,7 @@
 package aerys.minko.type.loader.parser
 {
 	import aerys.minko.render.Effect;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.loader.ILoader;
@@ -24,6 +25,7 @@ package aerys.minko.type.loader.parser
 		private var _skinningMethod				: uint;
 		private var _mipmapTextures				: Boolean;
 		private var _meshEffect					: Effect;
+		private var _material					: Material;
 		private var _vertexStreamUsage			: uint;
 		private var _indexStreamUsage			: uint;
 		private var _parser						: Class;
@@ -68,16 +70,16 @@ package aerys.minko.type.loader.parser
 			_vertexStreamUsage = value;
 		}
 		
-		public function get effect() : Effect
+		public function get material():Material
 		{
-			return _meshEffect;
+			return _material;
 		}
 		
-		public function set effect(value : Effect) : void
+		public function set material(value:Material):void
 		{
-			_meshEffect = value;
+			_material = value;
 		}
-		
+
 		public function get mipmapTextures() : Boolean
 		{
 			return _mipmapTextures;
@@ -115,7 +117,7 @@ package aerys.minko.type.loader.parser
                 _loadSkin,
 				_skinningMethod,
 				_mipmapTextures,
-				_meshEffect,
+				_material,
 				_vertexStreamUsage,
 				_indexStreamUsage,
 				_parser
@@ -126,7 +128,7 @@ package aerys.minko.type.loader.parser
                                       loadSkin                  : Boolean 	= true,
 									  skinningMethod			: uint		= 2,
 									  mipmapTextures			: Boolean 	= true,
-									  meshEffect				: Effect 	= null,
+									  material					: Material 	= null,
 									  vertexStreamUsage			: uint 		= 0,
 									  indexStreamUsage			: uint 		= 0,
 									  parser					: Class 	= null)
@@ -135,7 +137,7 @@ package aerys.minko.type.loader.parser
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
 			_mipmapTextures				= mipmapTextures;
-			_meshEffect					= meshEffect || Mesh.DEFAULT_MATERIAL.effect;
+			_material					= _material || new Material();
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;
