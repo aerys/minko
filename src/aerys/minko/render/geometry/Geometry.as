@@ -806,7 +806,7 @@ package aerys.minko.render.geometry
 		{
 			if (_bulkUpdate)
 				return ;
-				
+
 			var numStreams	: uint		= _vertexStreams.length;
 			var minX		: Number	= Number.MAX_VALUE;
 			var minY		: Number	= Number.MAX_VALUE;
@@ -814,7 +814,13 @@ package aerys.minko.render.geometry
 			var maxX		: Number	= -Number.MAX_VALUE;
 			var maxY		: Number	= -Number.MAX_VALUE;
 			var maxZ		: Number	= -Number.MAX_VALUE;
-			
+			var streamMinX	: Number	= 0;
+			var streamMinY	: Number	= 0;
+			var streamMinZ	: Number	= 0;
+			var streamMaxX	: Number	= 0;
+			var streamMaxY	: Number	= 0;
+			var streamMaxZ	: Number	= 0;
+
 			for (var i : int = 0; i < numStreams; ++i)
 			{
 				var xyzStream	: VertexStream	= _vertexStreams[i].getStreamByComponent(
@@ -827,12 +833,29 @@ package aerys.minko.render.geometry
 				var offset		: uint		= xyzStream.format.getOffsetForComponent(
 					VertexComponent.XYZ
 				);
-				var streamMinX	: Number	= xyzStream.getMinimum(offset);
-				var streamMinY	: Number	= xyzStream.getMinimum(offset + 1);
-				var streamMinZ	: Number	= xyzStream.getMinimum(offset + 2);
-				var streamMaxX	: Number	= xyzStream.getMaximum(offset);
-				var streamMaxY	: Number	= xyzStream.getMaximum(offset + 1);
-				var streamMaxZ	: Number	= xyzStream.getMaximum(offset + 2);
+				
+				if (firstIndex != 0 || numTriangles != -1)
+				{
+					var minimum	: Vector.<Number>	= new Vector.<Number>(3, true);
+					var maximum	: Vector.<Number>	= new Vector.<Number>(3, true);
+					
+					xyzStream.getMinMaxBetween(firstIndex, numTriangles * 3, minimum, maximum);
+					streamMinX = minimum[0];
+					streamMinY = minimum[1];
+					streamMinZ = minimum[2];
+					streamMaxX = maximum[0];
+					streamMaxY = maximum[1];
+					streamMaxZ = maximum[2];
+				}
+				else
+				{
+					streamMinX = xyzStream.getMinimum(offset);
+					streamMinY = xyzStream.getMinimum(offset + 1);
+					streamMinZ = xyzStream.getMinimum(offset + 2);
+					streamMaxX = xyzStream.getMaximum(offset);
+					streamMaxY = xyzStream.getMaximum(offset + 1);
+					streamMaxZ = xyzStream.getMaximum(offset + 2);
+				}
 				
 				if (streamMinX < minX)
 					minX = streamMinX;

@@ -194,6 +194,51 @@ package aerys.minko.render.geometry.stream
 				_boundsChanged.execute(this);
 		}
 		
+		public function getMinMaxBetween(offsetVertex	: uint,
+										 numVertices	: uint,
+										 min			: Vector.<Number>,
+										 max			: Vector.<Number>) : void
+		{
+			if (min == null || min.length < 3 || max == null || max.length < 3)
+			{
+				throw new Error("min and max parameters are not valid (must not be null and have a length of 3 at least).");
+			}
+			
+			var numFloatsPerVertex	: uint				= format.numBytesPerVertex >>> 2;
+			var i					: uint				= 0;
+			
+			var minimum				: Vector.<Number>	= new Vector.<Number>(numFloatsPerVertex, true);
+			var maximum 			: Vector.<Number>	= new Vector.<Number>(numFloatsPerVertex, true);
+			var numFloats			: uint				= numVertices != 0 
+														? numVertices * numFloatsPerVertex
+														: _data.bytesAvailable >>> 2;
+			
+			for (i = 0; i < numFloatsPerVertex; ++i)
+			{
+				min[i] = Number.MAX_VALUE;
+				max[i] = -Number.MAX_VALUE;
+			}
+			
+			_data.position = offsetVertex * numFloatsPerVertex * 4;
+			for (i = 0; i < numFloats; i += numFloatsPerVertex)
+			{
+				for (var j : uint = 0; j < numFloatsPerVertex; ++j)
+				{
+					var value : Number = _data.readFloat();
+					
+					if (value < _minimum[j])
+					{
+						min[j] = value;
+					}
+					if (value > _maximum[j])
+					{
+						max[j] = value;
+					}
+				}
+			}
+			_data.position = 0;
+		}
+		
 		public function deleteVertex(index : uint) : IVertexStream
 		{
 			checkWriteUsage(this);
