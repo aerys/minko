@@ -14,9 +14,9 @@ package aerys.minko.scene.node.background
 		private var _texture	: TextureResource	= new TextureResource(2048, 2048);
 		private var _material	: BasicMaterial		= new BasicMaterial();
 		
-		public function SceneBackground()
+		public function SceneBackground(aName : String = "scene_background")
 		{
-			super (QuadGeometry.doubleSidedQuadGeometry, _material);
+			super (QuadGeometry.doubleSidedQuadGeometry, _material, aName);
 			
 			frustumCulling = FrustumCulling.DISABLED;
 			_material.effect = new Effect(new BackgroundLayerShader());
