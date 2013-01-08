@@ -102,7 +102,6 @@ package aerys.minko.scene.controller.light
 		
 		protected function lightRemovedFromScene(scene : Scene) : void
 		{
-            lightLocalToWorldTransformChangedHandler(_light, null);
             _light.localToWorldTransformChanged.remove(lightLocalToWorldTransformChangedHandler);
             
 			sortLights(scene);
