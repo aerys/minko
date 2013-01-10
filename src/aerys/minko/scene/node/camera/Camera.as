@@ -9,8 +9,9 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
+	import aerys.minko.type.math.Vector4;
 	
-	import flash.net.FileFilter;
+	import flash.geom.Point;
 	
 	use namespace minko_scene;
 
@@ -72,5 +73,19 @@ package aerys.minko.scene.node.camera
 			return out;
 		}
 		
+		override public function project(localToWorld : Matrix4x4, output : Point = null) : Point
+		{
+			output ||= new Point();
+			
+			var sceneBindings	: DataBindings	= (root as Scene).bindings;
+			var width			: Number		= sceneBindings.getProperty('viewportWidth');
+			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			var translation		: Vector4		= localToWorld.getTranslation();
+			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(translation);
+			output.x 							= width * ((screenPosition.x + 1.0) * .5);
+			output.y							= height * ((1.0 - ((screenPosition.y + 1.0) * .5)));
+			
+			return output;
+		}
 	}
 }
