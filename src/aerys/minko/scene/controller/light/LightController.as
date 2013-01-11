@@ -53,7 +53,7 @@ package aerys.minko.scene.controller.light
 			_lightData.setLightProperty('localToWorld', _localToWorld);
 			_lightData.setLightProperty('worldToLocal', _worldToLocal);
 			_lightData.setLightProperty('enabled', true);
-			_lightData.changed.add(lightDataChangedHandler);
+			_lightData.propertyChanged.add(lightDataChangedHandler);
 			
 			light.added.add(addedHandler);
 			light.removed.add(removedHandler);
@@ -127,11 +127,11 @@ package aerys.minko.scene.controller.light
 				);
 			}
 			
-            if (_lightData.changed.hasCallback(lightDataChangedHandler))
+            if (_lightData.propertyChanged.hasCallback(lightDataChangedHandler))
             {
-    			_lightData.changed.remove(lightDataChangedHandler);
+    			_lightData.propertyChanged.remove(lightDataChangedHandler);
     			_lightData = newDataProvider;
-    			_lightData.changed.add(lightDataChangedHandler);
+    			_lightData.propertyChanged.add(lightDataChangedHandler);
             }
 		}
         
