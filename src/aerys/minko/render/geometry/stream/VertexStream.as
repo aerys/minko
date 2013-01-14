@@ -194,49 +194,73 @@ package aerys.minko.render.geometry.stream
 				_boundsChanged.execute(this);
 		}
 		
-		public function getMinMaxBetween(offsetVertex	: uint,
-										 numVertices	: uint,
-										 min			: Vector.<Number>,
-										 max			: Vector.<Number>) : void
+		/**
+		 * Compute the minimum and maximum bounds of this VertexStream within the specified range
+		 * 
+		 * @param firstIndex The index of the first vertex to consider in the stream.
+		 * @param numVertices The number of vertices to consider, starting from the previous parameter
+		 * @param offsetComponents The offset in the VertexComponents
+		 * @param min The Vector where the minimum bound will be stored.
+		 * @param max The Vector where the maximum bound will be stored.
+		 * 
+		 * @return The number of components in a Vertex.
+		 * Note that if min and max are too small and fixed, this function will do nothing and
+		 * will just return the required length.
+		 * 
+		 */
+		public function getMinMaxBetween(firstIndex			: uint,
+										 numVertices		: uint,
+										 offsetComponents	: uint,
+										 min				: Vector.<Number>,
+										 max				: Vector.<Number>) : uint
 		{
-			if (min == null || min.length < 3 || max == null || max.length < 3)
+			var stride			: uint		= format.numBytesPerVertex >>> 2;
+			var vectorLength	: uint		= stride - offsetComponents;
+			if (min == null || min.length < vectorLength ||
+				max == null || max.length < vectorLength)
 			{
-				throw new Error("min and max parameters are not valid (must not be null and have a length of 3 at least).");
+				if (min.fixed || max.fixed)
+				{
+					return vectorLength;
+				}
+				else
+				{
+					min.length = vectorLength;
+					max.length = vectorLength;
+				}
 			}
 			
-			var numFloatsPerVertex	: uint				= format.numBytesPerVertex >>> 2;
-			var i					: uint				= 0;
+			var i				: uint		= 0;
+			var numFloats		: uint		= numVertices != 0 
+											? numVertices * stride
+											: _data.bytesAvailable >>> 2;
 			
-			var minimum				: Vector.<Number>	= new Vector.<Number>(numFloatsPerVertex, true);
-			var maximum 			: Vector.<Number>	= new Vector.<Number>(numFloatsPerVertex, true);
-			var numFloats			: uint				= numVertices != 0 
-														? numVertices * numFloatsPerVertex
-														: _data.bytesAvailable >>> 2;
-			
-			for (i = 0; i < numFloatsPerVertex; ++i)
+			for (i = 0; i < vectorLength; ++i)
 			{
 				min[i] = Number.MAX_VALUE;
 				max[i] = -Number.MAX_VALUE;
 			}
 			
-			_data.position = offsetVertex * numFloatsPerVertex * 4;
-			for (i = 0; i < numFloats; i += numFloatsPerVertex)
+			for (i = firstIndex * stride; i < numFloats; i += stride)
 			{
-				for (var j : uint = 0; j < numFloatsPerVertex; ++j)
+				_data.position = i * 4;
+				for (var j : uint = 0; j < vectorLength; ++j)
 				{
 					var value : Number = _data.readFloat();
 					
-					if (value < _minimum[j])
+					if (value < min[j])
 					{
 						min[j] = value;
 					}
-					if (value > _maximum[j])
+					if (value > max[j])
 					{
 						max[j] = value;
 					}
 				}
 			}
 			_data.position = 0;
+			
+			return stride;
 		}
 		
 		public function deleteVertex(index : uint) : IVertexStream

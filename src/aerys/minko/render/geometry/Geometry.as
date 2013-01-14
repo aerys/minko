@@ -836,10 +836,11 @@ package aerys.minko.render.geometry
 				
 				if (firstIndex != 0 || numTriangles != -1)
 				{
-					var minimum	: Vector.<Number>	= new Vector.<Number>(3, true);
-					var maximum	: Vector.<Number>	= new Vector.<Number>(3, true);
+					var stride	: uint				= xyzStream.format.numBytesPerVertex >>> 2;
+					var minimum	: Vector.<Number>	= new Vector.<Number>(stride - offset, true);
+					var maximum	: Vector.<Number>	= new Vector.<Number>(stride - offset, true);
 					
-					xyzStream.getMinMaxBetween(firstIndex, numTriangles * 3, minimum, maximum);
+					xyzStream.getMinMaxBetween(firstIndex, numTriangles * 3, offset, minimum, maximum);
 					streamMinX = minimum[0];
 					streamMinY = minimum[1];
 					streamMinZ = minimum[2];
