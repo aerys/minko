@@ -245,24 +245,32 @@ package aerys.minko.render.geometry
 		
 		public function setVertexStream(vertexStream : IVertexStream, index : uint = 0) : void
 		{
-			if (index < _vertexStreams.length)
-			{
-				var oldStream : IVertexStream = _vertexStreams[index] as IVertexStream;
-				
+			doSetVertexStream(vertexStream, index);
+		}
+        
+        protected function doSetVertexStream(vertexStream   : IVertexStream,
+                                             index          : uint  = 0,
+                                             executeChanged : Boolean = true) : void
+        {
+            if (index < _vertexStreams.length)
+            {
+                var oldStream : IVertexStream = _vertexStreams[index] as IVertexStream;
+                
                 if (oldStream.changed.hasCallback(vertexStreamChangedHandler))
                     oldStream.changed.remove(vertexStreamChangedHandler);
                 
                 if (oldStream.boundsChanged.hasCallback(vertexStreamBoundsChangedHandler))
                     oldStream.boundsChanged.remove(vertexStreamBoundsChangedHandler);
-			}
-			
+            }
+            
             if (vertexStream.format.hasComponent(VertexComponent.XYZ))
-    			vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
-			vertexStream.changed.add(vertexStreamChangedHandler);
-			_vertexStreams[index] = vertexStream;
-			
-			_changed.execute(this);
-		}
+                vertexStream.boundsChanged.add(vertexStreamBoundsChangedHandler);
+            vertexStream.changed.add(vertexStreamChangedHandler);
+            _vertexStreams[index] = vertexStream;
+            
+            if (executeChanged)
+                _changed.execute(this);
+        }
 		
 		/**
 		 * Apply matrix transformation to all vertices
@@ -796,7 +804,7 @@ package aerys.minko.render.geometry
 			if (!(stream is VertexStreamList))
 			{
 				stream = new VertexStreamList(stream);
-				setVertexStream(stream, index);
+                doSetVertexStream(stream, index, false);
 			}
 			
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
