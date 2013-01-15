@@ -138,11 +138,6 @@ package aerys.minko.render.shader.part
 			return _main._sceneBindings.getParameter('projection', 16);
 		}
 		
-		protected function get screenToViewMatrix() : SFloat
-		{
-			return _main._sceneBindings.getParameter('screenToView', 16);
-		}
-		
 		protected function get cameraPosition() : SFloat
 		{
 			return _main._sceneBindings.getParameter('cameraPosition', 3);
