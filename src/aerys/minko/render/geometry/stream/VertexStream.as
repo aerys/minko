@@ -200,6 +200,7 @@ package aerys.minko.render.geometry.stream
 		 * @param firstIndex The index of the first vertex to consider in the stream.
 		 * @param numVertices The number of vertices to consider, starting from the previous parameter
 		 * @param offsetComponents The offset in the VertexComponents
+		 * @param indexStream The IndexStream where the indices will be read. If null, the indices will range from firstIndex to numVertices.
 		 * @param min The Vector where the minimum bound will be stored.
 		 * @param max The Vector where the maximum bound will be stored.
 		 * 
@@ -211,11 +212,17 @@ package aerys.minko.render.geometry.stream
 		public function getMinMaxBetween(firstIndex			: uint,
 										 numVertices		: uint,
 										 offsetComponents	: uint,
+										 indexStream		: IndexStream,
 										 min				: Vector.<Number>,
 										 max				: Vector.<Number>) : uint
 		{
 			var stride			: uint		= format.numBytesPerVertex >>> 2;
 			var vectorLength	: uint		= stride - offsetComponents;
+			var i				: uint		= 0;
+			var j				: uint		= 0;
+			var index			: uint		= 0;
+			var value			: Number	= .0;
+			
 			if (min == null || min.length < vectorLength ||
 				max == null || max.length < vectorLength)
 			{
@@ -230,23 +237,19 @@ package aerys.minko.render.geometry.stream
 				}
 			}
 			
-			var i				: uint		= 0;
-			var numFloats		: uint		= numVertices != 0 
-											? numVertices * stride
-											: _data.bytesAvailable >>> 2;
-			
 			for (i = 0; i < vectorLength; ++i)
 			{
 				min[i] = Number.MAX_VALUE;
 				max[i] = -Number.MAX_VALUE;
 			}
 			
-			for (i = firstIndex * stride; i < numFloats; i += stride)
+			for (i = firstIndex; i < numVertices; ++i)
 			{
-				_data.position = i * 4;
-				for (var j : uint = 0; j < vectorLength; ++j)
+				index 			= indexStream != null ? indexStream.get(i) : i;
+				_data.position	= (index * stride + offsetComponents) * 4;
+				for (j = 0; j < vectorLength; ++j)
 				{
-					var value : Number = _data.readFloat();
+					value = _data.readFloat();
 					
 					if (value < min[j])
 					{
