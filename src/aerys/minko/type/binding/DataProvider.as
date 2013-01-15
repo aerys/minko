@@ -13,7 +13,7 @@ package aerys.minko.type.binding
 		private var _name				: String;
 		private var _descriptor			: Object;
 		
-		private var _propertyChanged			: Signal;
+		private var _propertyChanged	: Signal;
 		private var _propertyAdded		: Signal;
 		private var _propertyRemoved	: Signal;
 			
@@ -140,7 +140,7 @@ package aerys.minko.type.binding
 			_nameToProperty[name]	= newValue;
 			
 			if (propertyAdded)
-				_propertyAdded.execute(this, name);
+				_propertyAdded.execute(this, name, name, newValue);
 			else
 				_propertyChanged.execute(this, name);
 			
@@ -177,6 +177,7 @@ package aerys.minko.type.binding
 			{
 				var oldMonitoredValue	: IWatchable		= _nameToProperty[name] as IWatchable;
 				var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
+				var bindingName			: String			= _descriptor[name];
 				
 				delete _descriptor[name];
 				delete _nameToProperty[name];
@@ -193,7 +194,7 @@ package aerys.minko.type.binding
 				}
 				
 	//			_changed.execute(this, 'dataDescriptor');
-				_propertyRemoved.execute(this, name);
+				_propertyRemoved.execute(this, name, bindingName, oldMonitoredValue);
 			}
 			
 			return this;

@@ -71,14 +71,19 @@ package aerys.minko.type.binding
 			_providers.push(provider);
 			
 			for (var propertyName : String in dataDescriptor)
-				addBinding(provider, propertyName);
+				addBinding(
+					provider,
+					propertyName,
+					dataDescriptor[propertyName],
+					provider[propertyName]
+				);
 		}
 		
 		private function addBinding(provider		: IDataProvider,
-									propertyName	: String) : void
+									propertyName	: String,
+									bindingName		: String,
+									value			: Object) : void
 		{
-			var bindingName 			: String 			= provider.dataDescriptor[propertyName];
-			var value					: Object			= provider[propertyName];
 			var providerBindingNames	: Vector.<String> 	= _providerToBindingNames[provider];
 			
 			if (_bindingNames.indexOf(bindingName) != -1)
@@ -122,14 +127,19 @@ package aerys.minko.type.binding
 			var dataDescriptor : Object = provider.dataDescriptor;
 			
 			for (var propertyName : String in dataDescriptor)
-				removeBinding(provider, propertyName);
+				removeBinding(
+					provider,
+					propertyName,
+					dataDescriptor[propertyName],
+					provider[propertyName]
+				);
 		}
 		
 		public function removeBinding(provider		: IDataProvider,
-									  propertyName	: String) : void
+									  propertyName	: String,
+									  bindingName	: String,
+									  value			: Object) : void
 		{
-			var bindingName 	: String 	= provider.dataDescriptor[propertyName];
-			var value 			: Object 	= provider[propertyName];
 			var numBindings 	: uint 		= _bindingNames.length - 1;
 			var changedSignal 	: Signal 	= _bindingNameToChangedSignal[bindingName] as Signal;
 
