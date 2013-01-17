@@ -104,7 +104,7 @@ package aerys.minko.render.shader.part.animation
 				}
 				else
 				{
-					outVertexPosition = float4(0, 0, 0, 0);
+//					outVertexPosition = float4(0, 0, 0, 0);
 					
 					var jointOutVertexPosition : SFloat;
 					for (var i : uint = 0; i < (maxInfluences >> 1); ++i)
@@ -115,7 +115,9 @@ package aerys.minko.render.shader.part.animation
 						jointSkinningMatrix		= getFieldFromArray(jointId.x, skinningMatrices, true);
 						jointOutVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
 						jointOutVertexPosition	= multiply(jointAttr.y, jointOutVertexPosition);
-						outVertexPosition.incrementBy(jointOutVertexPosition);
+						outVertexPosition = outVertexPosition
+                            ? outVertexPosition.incrementBy(jointOutVertexPosition)
+                            : jointOutVertexPosition;
 						
 						jointSkinningMatrix		= getFieldFromArray(jointId.y, skinningMatrices, true);
 						jointOutVertexPosition	= multiply4x4(inVertexPosition, jointSkinningMatrix);
@@ -175,7 +177,10 @@ package aerys.minko.render.shader.part.animation
 						jointSkinningMatrix	= getFieldFromArray(jointId.x, skinningMatrices, true);
 						jointOutNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
 						jointOutNormal		= multiply(jointAttr.y, jointOutNormal);
-						outVertexNormal.incrementBy(jointOutNormal);
+//                        outVertexNormal.incrementBy(jointOutNormal)
+						outVertexNormal = outVertexNormal
+                            ? outVertexNormal.incrementBy(jointOutNormal)
+                            : jointOutNormal;
 						
 						jointSkinningMatrix	= getFieldFromArray(jointId.y, skinningMatrices, true);
 						jointOutNormal		= multiply3x3(inVertexNormal, jointSkinningMatrix);
