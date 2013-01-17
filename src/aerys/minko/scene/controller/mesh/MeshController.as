@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
@@ -11,6 +12,7 @@ package aerys.minko.scene.controller.mesh
 	public final class MeshController extends AbstractController
 	{
 		private var _data 			: DataProvider;
+        private var _localToWorld   : Matrix4x4;
 		private var _worldToLocal 	: Matrix4x4;
 		
 		public function MeshController()
@@ -22,8 +24,6 @@ package aerys.minko.scene.controller.mesh
 		
 		private function initialize() : void
 		{
-			_worldToLocal = new Matrix4x4();
-			
 			targetAdded.add(targetAddedHandler);
 		}
 		
@@ -39,16 +39,25 @@ package aerys.minko.scene.controller.mesh
 		{
 			if (!target.scene)
 				return ;
+            
+            _localToWorld = new Matrix4x4();
+            _worldToLocal = new Matrix4x4();
+            
+            var transformController : TransformController = target.scene.getControllersByType(TransformController)[0]
+                as TransformController;
 			
+            transformController.setSharedLocalToWorldTransformReference(target, _localToWorld);
+            transformController.setSharedWorldToLocalTransformReference(target, _worldToLocal);
+            transformController.synchronizeTransforms(target, true);
+            transformController.lockTransformsBeforeUpdate(target, true);
+            
 			_data = new DataProvider(
 				null, target.name + '_transforms', DataProviderUsage.EXCLUSIVE
 			);
-			_data.setProperty('localToWorld', target.getLocalToWorldTransform(true));
-			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(false, _worldToLocal));
+			_data.setProperty('localToWorld', _localToWorld);
+			_data.setProperty('worldToLocal', _worldToLocal);
 			
 			target.bindings.addProvider(_data);
-			
-			target.localToWorldTransformChanged.add(localToWorldChangedHandler);
 		}
 		
 		private function removedHandler(target		: Mesh,
@@ -57,17 +66,12 @@ package aerys.minko.scene.controller.mesh
 			if (!ancestor.scene)
 				return ;
 			
-			target.localToWorldTransformChanged.remove(localToWorldChangedHandler);
-			
 			target.bindings.removeProvider(_data);
 			_data.dispose();
 			_data = null;
-		}
-		
-		private function localToWorldChangedHandler(mesh : Mesh, localToWorld : Matrix4x4) : void
-		{
-			_data.setProperty('localToWorld', mesh.getLocalToWorldTransform());
-            mesh.getWorldToLocalTransform(false, _worldToLocal);
+            
+            _localToWorld = null;
+            _worldToLocal = null;
 		}
 	}
 }
