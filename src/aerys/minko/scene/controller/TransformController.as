@@ -68,7 +68,7 @@ package aerys.minko.scene.controller
             var childrenOffset		: uint			= 1;
             var rootLocalToWorld	: Matrix4x4		= _localToWorldTransforms[nodeId];
             var rootTransform		: Matrix4x4		= _transforms[nodeId];
-            var root				: ISceneNode	= _idToNode[childId];
+            var root				: ISceneNode	= _idToNode[nodeId];
             var subtreeMax          : uint          = nodeId;
             
             if (rootTransform._hasChanged || _initialized[nodeId] == INIT_NONE)
