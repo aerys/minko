@@ -212,6 +212,17 @@ package aerys.minko.type.binding
 			
 			return this;
 		}
+        
+        public function dispose() : void
+        {
+            removeAllProperties();
+            _propertyToNames = null;
+            _nameToProperty = null;
+            _descriptor = null;
+            _propertyAdded = null;
+            _propertyChanged = null;
+            _propertyRemoved = null;
+        }
 		
 		public function propertyExists(name : String) : Boolean
 		{
