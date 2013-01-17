@@ -10,6 +10,8 @@ package aerys.minko.scene.controller
     import flash.display.BitmapData;
     import flash.utils.Dictionary;
     
+    import mx.olap.aggregators.MaxAggregator;
+    
     use namespace minko_math;
     
     /**
@@ -60,13 +62,14 @@ package aerys.minko.scene.controller
                 updateLocalToWorld();
         }
         
-        private function updateLocalToWorld(nodeId : uint = 0) : void
+        private function updateLocalToWorld(nodeId : uint = 0, subtreeOnly : Boolean = false) : void
         {
             var numNodes 			: uint 			= _transforms.length;
             var childrenOffset		: uint			= 1;
             var rootLocalToWorld	: Matrix4x4		= _localToWorldTransforms[nodeId];
             var rootTransform		: Matrix4x4		= _transforms[nodeId];
             var root				: ISceneNode	= _idToNode[childId];
+            var subtreeMax          : uint          = nodeId;
             
             if (rootTransform._hasChanged || _initialized[nodeId] == INIT_NONE)
             {
@@ -79,8 +82,11 @@ package aerys.minko.scene.controller
                 _initialized[nodeId] = INIT_LOCAL_TO_WORLD;
                 root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
             }
+
+            if (lastChildId > subtreeMax)
+                subtreeMax = lastChildId;
             
-            for (; nodeId < numNodes; ++nodeId)
+            while (nodeId < numNodes)
             {
                 var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
                 var numChildren		: uint		= _numChildren[nodeId];
@@ -102,7 +108,7 @@ package aerys.minko.scene.controller
                         var child	: ISceneNode	= _idToNode[childId];
                         
                         childLocalToWorld
-                        .copyFrom(childTransform)
+                            .copyFrom(childTransform)
                             .append(localToWorld);
                         
                         childTransform._hasChanged = false;
@@ -110,6 +116,22 @@ package aerys.minko.scene.controller
                         child.localToWorldTransformChanged.execute(child, childLocalToWorld);
                     }
                 }
+                
+                if (subtreeOnly && nodeId && nodeId >= subtreeMax)
+                {
+                    var parentId : uint = _parentId[nodeId];
+                    
+                    nodeId = _firstChildId[parentId];
+                    while (!_numChildren[nodeId] && nodeId < subtreeMax)
+                        ++nodeId;
+                    
+                    if (nodeId >= subtreeMax)
+                        return ;
+                    
+                    nodeId = _firstChildId[nodeId];
+                }
+                else
+                    ++nodeId;
             }
         }
         
@@ -119,15 +141,14 @@ package aerys.minko.scene.controller
             
             while (nodeId >= 0)
             {
-                if ((_transforms[nodeId] as Matrix4x4)._hasChanged ||
-                    !_initialized[nodeId])
+                if ((_transforms[nodeId] as Matrix4x4)._hasChanged || !_initialized[nodeId])
                     dirtyRoot = nodeId;
                 
                 nodeId = _parentId[nodeId];
             }
             
             if (dirtyRoot >= 0)
-                updateLocalToWorld(dirtyRoot);
+                updateLocalToWorld(dirtyRoot, true);
         }
         
         private function targetAddedHandler(ctrl	: TransformController,
