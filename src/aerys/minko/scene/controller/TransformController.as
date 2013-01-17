@@ -119,6 +119,7 @@ package aerys.minko.scene.controller
                 
                 if (subtreeOnly && nodeId && nodeId >= subtreeMax)
                 {
+                    // jump to the first brother who has children
                     var parentId : uint = _parentId[nodeId];
                     
                     nodeId = _firstChildId[parentId];
