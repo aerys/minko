@@ -43,7 +43,7 @@ package aerys.minko.scene.controller.mesh
 			_data = new DataProvider(
 				null, target.name + '_transforms', DataProviderUsage.EXCLUSIVE
 			);
-			_data.setProperty('localToWorld', target.getLocalToWorldTransform());
+			_data.setProperty('localToWorld', target.getLocalToWorldTransform(true));
 			_data.setProperty('worldToLocal', target.getWorldToLocalTransform(false, _worldToLocal));
 			
 			target.bindings.addProvider(_data);
@@ -60,13 +60,13 @@ package aerys.minko.scene.controller.mesh
 			target.localToWorldTransformChanged.remove(localToWorldChangedHandler);
 			
 			target.bindings.removeProvider(_data);
-			
+			_data.dispose();
 			_data = null;
 		}
 		
 		private function localToWorldChangedHandler(mesh : Mesh, localToWorld : Matrix4x4) : void
 		{
-			_data.setProperty('localToWorld', localToWorld);
+			_data.setProperty('localToWorld', mesh.getLocalToWorldTransform());
             mesh.getWorldToLocalTransform(false, _worldToLocal);
 		}
 	}
