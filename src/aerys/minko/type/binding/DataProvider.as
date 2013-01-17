@@ -115,24 +115,19 @@ package aerys.minko.type.binding
 		public function setProperty(name : String, newValue : Object) : DataProvider
 		{
 			var oldValue 			: Object			= _nameToProperty[name];
-			var oldMonitoredValue	: IWatchable		= oldValue as IWatchable;
-			var newMonitoredValue	: IWatchable		= newValue as IWatchable;
-			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
-			var newPropertyNames	: Vector.<String>	= _propertyToNames[newMonitoredValue];
+			var oldWatchedValue	    : IWatchable		= oldValue as IWatchable;
+			var newWatchedValue	    : IWatchable		= newValue as IWatchable;
+			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldWatchedValue];
+			var newPropertyNames	: Vector.<String>	= _propertyToNames[newWatchedValue];
 			
-			if (oldMonitoredValue != null)
-			{
-				if (oldPropertyNames.length == 1)
-				{
-					oldMonitoredValue.changed.remove(propertyChangedHandler);
-					delete _propertyToNames[oldMonitoredValue];
-				}
-				else
-					oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
-			}
-			
-			if (newMonitoredValue != null)
-				watchProperty(name, newMonitoredValue);
+            if (newWatchedValue != oldWatchedValue)
+            {
+    			if (oldWatchedValue != null)
+    			    unwatchProperty(name, oldWatchedValue);
+    			
+    			if (newWatchedValue != null)
+    				watchProperty(name, newWatchedValue);
+            }
 			
 			var propertyAdded : Boolean = !_descriptor.hasOwnProperty(name);
 			
@@ -170,6 +165,24 @@ package aerys.minko.type.binding
 					newPropertyNames.push(name);
 			}
 		}
+        
+        protected function unwatchProperty(name : String, property : IWatchable) : void
+        {
+            var oldPropertyNames	: Vector.<String>	= _propertyToNames[property];
+            
+            if (oldPropertyNames.length == 1)
+            {
+                property.changed.remove(propertyChangedHandler);
+                delete _propertyToNames[property];
+            }
+            else
+            {
+                var numPropertyNames : uint = oldPropertyNames.length - 1;
+                
+                oldPropertyNames[oldPropertyNames.indexOf(name)] = oldPropertyNames[numPropertyNames];
+                oldPropertyNames.length = numPropertyNames;
+            }
+        }
 		
 		public function removeProperty(name : String) : DataProvider
 		{
@@ -183,15 +196,7 @@ package aerys.minko.type.binding
 				delete _nameToProperty[name];
 				
 				if (oldMonitoredValue != null)
-				{
-					if (oldPropertyNames.length == 1)
-					{
-						oldMonitoredValue.changed.remove(propertyChangedHandler);
-						delete _propertyToNames[oldMonitoredValue];
-					}
-					else
-						oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
-				}
+					unwatchProperty(name, oldMonitoredValue);
 				
 	//			_changed.execute(this, 'dataDescriptor');
 				_propertyRemoved.execute(this, name, bindingName, oldMonitoredValue);
