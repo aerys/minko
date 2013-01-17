@@ -214,9 +214,13 @@ package aerys.minko.scene.controller
         
         private function updateTransformsList() : void
         {
-            var root 	: ISceneNode 			= _target.root;
-            var nodes 	: Vector.<ISceneNode> 	= new <ISceneNode>[root];
-            var nodeId 	: uint 					= 0;
+            var root    	                : ISceneNode 			= _target.root;
+            var nodes   	                : Vector.<ISceneNode> 	= new <ISceneNode>[root];
+            var nodeId  	                : uint 					= 0;
+            var oldNodeToId                 : Dictionary            = _nodeToId;
+            var oldInitialized              : Vector.<uint>         = _initialized;
+            var oldLocalToWorldTransforms   : Vector.<Matrix4x4>    = _localToWorldTransforms;
+            var oldWorldToLocalTransform    : Vector.<Matrix4x4>    = _worldToLocalTransforms;
             
             _nodeToId = new Dictionary(true);
             _transforms = new <Matrix4x4>[];
@@ -231,13 +235,26 @@ package aerys.minko.scene.controller
             while (nodes.length)
             {
                 var node 	: ISceneNode 	= nodes.shift();
-                var group 	: Group 		= node as Group;
+                var group   : Group 		= node as Group;
                 
                 _nodeToId[node] = nodeId;
                 _idToNode[nodeId] = node;
                 _transforms[nodeId] = node.transform;
-                _localToWorldTransforms[nodeId] = new Matrix4x4().lock();
-                _initialized[nodeId] = INIT_NONE;
+                
+                if (oldNodeToId && node in oldNodeToId)
+                {
+                    var oldNodeId   : uint  = oldNodeToId[node];
+                    
+                    _localToWorldTransforms[nodeId] = oldLocalToWorldTransforms[oldNodeId];
+                    _worldToLocalTransforms[nodeId] = oldWorldToLocalTransform[oldNodeId];
+                    _initialized[nodeId] = oldInitialized[oldNodeId];
+                }
+                else
+                {
+                    _localToWorldTransforms[nodeId] = new Matrix4x4().lock();
+                    _worldToLocalTransforms[nodeId] = null;
+                    _initialized[nodeId] = INIT_NONE;
+                }
                 
                 if (group)
                 {
