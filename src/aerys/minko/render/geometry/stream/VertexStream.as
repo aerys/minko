@@ -243,9 +243,9 @@ package aerys.minko.render.geometry.stream
 				max[i] = -Number.MAX_VALUE;
 			}
 			
-			for (i = firstIndex; i < numVertices; ++i)
+			for (i = 0; i < numVertices; ++i)
 			{
-				index 			= indexStream != null ? indexStream.get(i) : i;
+				index 			= indexStream != null ? indexStream.get(firstIndex + i) : i;
 				_data.position	= (index * stride + offsetComponents) * 4;
 				for (j = 0; j < vectorLength; ++j)
 				{
