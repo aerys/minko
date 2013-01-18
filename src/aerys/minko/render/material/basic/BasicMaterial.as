@@ -41,11 +41,11 @@ package aerys.minko.render.material.basic
 			setProperty(BasicProperties.TRIANGLE_CULLING, value);
 		}
 		
-		public function get diffuseColor() : uint
+		public function get diffuseColor() : Object
 		{
 			return getProperty(BasicProperties.DIFFUSE_COLOR);
 		}
-		public function set diffuseColor(value : uint) : void
+		public function set diffuseColor(value : Object) : void
 		{
 			setProperty(BasicProperties.DIFFUSE_COLOR, value);
 		}

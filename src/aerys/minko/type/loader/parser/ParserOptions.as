@@ -2,6 +2,7 @@ package aerys.minko.type.loader.parser
 {
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.loader.ILoader;
@@ -70,12 +71,12 @@ package aerys.minko.type.loader.parser
 			_vertexStreamUsage = value;
 		}
 		
-		public function get material():Material
+		public function get material() : Material
 		{
 			return _material;
 		}
 		
-		public function set material(value:Material):void
+		public function set material(value : Material) : void
 		{
 			_material = value;
 		}
@@ -137,7 +138,7 @@ package aerys.minko.type.loader.parser
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
 			_mipmapTextures				= mipmapTextures;
-			_material					= _material || new Material();
+			_material					= _material || new BasicMaterial();
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;
