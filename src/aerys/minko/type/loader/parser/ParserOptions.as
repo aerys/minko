@@ -71,12 +71,12 @@ package aerys.minko.type.loader.parser
 			_vertexStreamUsage = value;
 		}
 		
-		public function get material():Material
+		public function get material() : Material
 		{
 			return _material;
 		}
 		
-		public function set material(value:Material):void
+		public function set material(value : Material) : void
 		{
 			_material = value;
 		}
