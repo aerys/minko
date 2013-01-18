@@ -192,7 +192,8 @@ package aerys.minko.scene.controller
             
             while (nodeId >= 0)
             {
-                if ((_transforms[nodeId] as Matrix4x4)._hasChanged || !_flags[nodeId])
+                if ((_transforms[nodeId] as Matrix4x4)._hasChanged
+                    || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
                     dirtyRoot = nodeId;
                 
                 nodeId = _parentId[nodeId];
