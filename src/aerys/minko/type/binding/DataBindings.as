@@ -183,6 +183,7 @@ package aerys.minko.type.binding
 									   callback		: Function) : void
 		{
 			var signal : Signal = _bindingNameToChangedSignal[bindingName];
+            
 			if (!signal)
 				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
 			

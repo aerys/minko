@@ -848,7 +848,7 @@ package aerys.minko.render.geometry
 					var minimum	: Vector.<Number>	= new Vector.<Number>(stride - offset, true);
 					var maximum	: Vector.<Number>	= new Vector.<Number>(stride - offset, true);
 					
-					xyzStream.getMinMaxBetween(firstIndex, numTriangles * 3, offset, minimum, maximum);
+					xyzStream.getMinMaxBetween(firstIndex, numTriangles * 3, offset, _indexStream, minimum, maximum);
 					streamMinX = minimum[0];
 					streamMinY = minimum[1];
 					streamMinZ = minimum[2];

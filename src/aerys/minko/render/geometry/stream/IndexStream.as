@@ -265,6 +265,38 @@ package aerys.minko.render.geometry.stream
 				invalidate();
 		}
 		
+		/**
+		 * Clones the IndexStream by creating a new underlying ByteArray and applying an offset on the indices.
+		 *
+		 * @param indexStream The IndexStream to clone.
+		 * @param offset The offset to apply on the indices.
+		 * 
+		 * @return The offseted new IndexStream.
+		 * 
+		 */
+		public static function cloneWithOffset(indexStream	: IndexStream,
+											   offset 		: uint 			= 0) : IndexStream
+		{
+			if (!(indexStream.usage & StreamUsage.READ))
+			{
+				throw new Error('Unable to read from index stream: stream usage is not set to StreamUsage.READ.');
+			}
+			
+			var newData		: ByteArray	= new ByteArray();
+			newData.endian 				= Endian.LITTLE_ENDIAN;
+			
+			var oldData		: ByteArray	= indexStream._data;
+			oldData.position = 0;
+			while (oldData.bytesAvailable)
+			{
+				var index	: uint		= oldData.readUnsignedShort() + offset;
+				newData.writeShort(index);
+			}
+			newData.position = 0;
+			
+			return new IndexStream(indexStream.usage, newData);
+		}
+		
 		private static function checkReadUsage(stream : IndexStream) : void
 		{
 			if (!(stream._usage & StreamUsage.READ))
