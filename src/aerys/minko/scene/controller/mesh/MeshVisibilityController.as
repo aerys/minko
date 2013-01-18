@@ -60,7 +60,7 @@ package aerys.minko.scene.controller.mesh
         
         public function get computedVisibility() : Boolean
         {
-            return frustumCulling == FrustumCulling.DISABLED || _computedVisibility;
+            return _frustumCulling == FrustumCulling.DISABLED || _computedVisibility;
         }
 		
 		public function MeshVisibilityController()

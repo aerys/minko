@@ -161,7 +161,9 @@ package aerys.minko.scene.node
         
         override public function get computedVisibility() : Boolean
         {
-            return scene ? _visibility.computedVisibility : super.computedVisibility;
+            return scene
+				? super.computedVisibility && _visibility.computedVisibility
+				: super.computedVisibility;
         }
         
 		public function get frustumCulling() : uint
