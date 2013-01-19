@@ -16,6 +16,9 @@ package aerys.minko.render.material.phong
 		public static const SHININESS					: String = 'shininess';
 		
 		public static const NORMAL_MAPPING_TYPE			: String = 'normalMappingType';
+		public static const NORMAL_FILTERING			: String = 'normalFiltering';
+		public static const NORMAL_MIPMAPPING			: String = 'normalMipMapping';
+		
 		public static const PARALLAX_MAPPING_NBSTEPS	: String = 'parallaxMappingNbSteps';
 		public static const PARALLAX_MAPPING_BUMP_SCALE	: String = 'parallaxMappingBumpScale';
 		

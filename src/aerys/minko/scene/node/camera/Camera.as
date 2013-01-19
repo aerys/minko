@@ -18,6 +18,8 @@ package aerys.minko.scene.node.camera
 	public class Camera extends AbstractCamera
 	{
 		public static const DEFAULT_FOV		: Number	= Math.PI * .25;
+		
+		private var _tmpVector:Vector4 = new Vector4();
 
 		public function get fieldOfView() : Number
 		{
@@ -81,7 +83,21 @@ package aerys.minko.scene.node.camera
 			var width			: Number		= sceneBindings.getProperty('viewportWidth');
 			var height			: Number		= sceneBindings.getProperty('viewportHeight');
 			var translation		: Vector4		= localToWorld.getTranslation();
-			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(translation);
+			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(translation, _tmpVector);
+			output.x 							= width * ((screenPosition.x + 1.0) * .5);
+			output.y							= height * ((1.0 - ((screenPosition.y + 1.0) * .5)));
+			
+			return output;
+		}
+		
+		public function projectPoint(point : Vector4, output : Point = null) : Point
+		{
+			output ||= new Point();
+			
+			var sceneBindings	: DataBindings	= (root as Scene).bindings;
+			var width			: Number		= sceneBindings.getProperty('viewportWidth');
+			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(point, _tmpVector);
 			output.x 							= width * ((screenPosition.x + 1.0) * .5);
 			output.y							= height * ((1.0 - ((screenPosition.y + 1.0) * .5)));
 			

@@ -69,7 +69,7 @@ package aerys.minko.type
                 
                 // if that callback is in the temp. add list, we simply remove it from this list
                 // instead of adding/removing it all over again
-                if (addIndex)
+                if (addIndex >= 0)
                 {
                     --_numAdded;
                     _toAdd[addIndex] = _toAdd[_numAdded];
