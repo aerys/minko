@@ -87,5 +87,19 @@ package aerys.minko.scene.node.camera
 			
 			return output;
 		}
+		
+		public function projectPoint(point : Vector4, output : Point = null) : Point
+		{
+			output ||= new Point();
+			
+			var sceneBindings	: DataBindings	= (root as Scene).bindings;
+			var width			: Number		= sceneBindings.getProperty('viewportWidth');
+			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			var screenPosition	: Vector4		= _cameraData.worldToScreen.projectVector(point);
+			output.x 							= width * ((screenPosition.x + 1.0) * .5);
+			output.y							= height * ((1.0 - ((screenPosition.y + 1.0) * .5)));
+			
+			return output;
+		}
 	}
 }
