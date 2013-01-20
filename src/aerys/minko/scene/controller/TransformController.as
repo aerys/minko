@@ -86,8 +86,7 @@ package aerys.minko.scene.controller
                     rootLocalToWorld.unlock();
                 
                 rootTransform._hasChanged = false;
-                _flags[nodeId] |= FLAG_INIT_LOCAL_TO_WORLD;
-                root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
+                rootFlags = (rootFlags | FLAG_INIT_LOCAL_TO_WORLD) & ~FLAG_INIT_WORLD_TO_LOCAL;
                 
                 if (rootFlags & FLAG_SYNCHRONIZE_TRANSFORMS)
                 {
@@ -98,10 +97,15 @@ package aerys.minko.scene.controller
                         rootWorldToLocal.lock();
                     
                     rootWorldToLocal.copyFrom(rootLocalToWorld).invert();
+                    rootFlags |= FLAG_INIT_WORLD_TO_LOCAL;
                     
                     if (rootFlags & FLAG_LOCK_TRANSFORMS)
                         rootWorldToLocal.unlock();
                 }
+                
+                _flags[nodeId] = rootFlags;
+                
+                root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
             }
         }
         
@@ -151,8 +155,8 @@ package aerys.minko.scene.controller
                             childLocalToWorld.unlock();
                         
                         childTransform._hasChanged = false;
-                        _flags[childId] |= FLAG_INIT_LOCAL_TO_WORLD;
-                        child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                        childFlags = (childFlags | FLAG_INIT_LOCAL_TO_WORLD)
+                            & ~FLAG_INIT_WORLD_TO_LOCAL;
                         
                         if (childFlags & FLAG_SYNCHRONIZE_TRANSFORMS)
                         {
@@ -163,10 +167,15 @@ package aerys.minko.scene.controller
                                 childWorldToLocal.lock();
                             
                             childWorldToLocal.copyFrom(childLocalToWorld).invert();
+                            childFlags |= FLAG_INIT_WORLD_TO_LOCAL;
                             
                             if (childFlags & FLAG_LOCK_TRANSFORMS)
                                 childWorldToLocal.unlock();
                         }
+                        
+                        _flags[childId] = childFlags;
+                        
+                        child.localToWorldTransformChanged.execute(child, childLocalToWorld);
                         
                         if (childId == targetNodeId)
                             return;
