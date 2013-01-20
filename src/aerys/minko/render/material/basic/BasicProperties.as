@@ -5,8 +5,8 @@ package aerys.minko.render.material.basic
 		public static const DIFFUSE_COLOR							: String	= 'diffuseColor';
 		public static const DIFFUSE_TRANSFORM						: String	= 'diffuseTransform';
 		public static const DIFFUSE_MAP								: String	= 'diffuseMap';
-		public static const DIFFUSE_MAP_FILTERING						: String	= 'diffuseFiltering';
-		public static const DIFFUSE_MIPMAPPING						: String	= 'diffuseMipMapping';
+		public static const DIFFUSE_MAP_FILTERING					: String	= 'diffuseMapFiltering';
+		public static const DIFFUSE_MAP_MIPMAPPING					: String	= 'diffuseMapMipMapping';
 		public static const DIFFUSE_WRAPPING						: String	= 'diffuseWrapping';
         public static const DIFFUSE_FORMAT  						: String	= 'diffuseFormat';
 		
