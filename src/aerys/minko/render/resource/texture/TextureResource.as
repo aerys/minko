@@ -43,7 +43,7 @@ package aerys.minko.render.resource.texture
 
 		private var _update			: Boolean		= false;
 
-		public function get samplerFormat() : uint
+		public function get format() : uint
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
 		}
