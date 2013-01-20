@@ -53,7 +53,7 @@ package aerys.minko.scene.controller
             targetRemoved.add(targetRemovedHandler);
         }
         
-        private function renderingBeginHandler(scene			: Scene,
+        private function renderingBeginHandler(scene		: Scene,
                                                viewport		: Viewport,
                                                destination	: BitmapData,
                                                time			: Number) : void
@@ -105,12 +105,15 @@ package aerys.minko.scene.controller
             }
         }
         
-        private function updateLocalToWorld(nodeId : uint = 0, subtreeOnly : Boolean = false) : void
+        private function updateLocalToWorld(nodeId : uint = 0, targetNodeId : int = -1) : void
         {
-            var numNodes 			: uint 			= _transforms.length;
-            var subtreeMax          : uint          = nodeId;
+            var numNodes 	: uint 	= _transforms.length;
+            var subtreeMax  : uint  = nodeId;
             
             updateRootLocalToWorld(nodeId);
+            
+            if (nodeId == targetNodeId)
+                return;
 
             while (nodeId < numNodes)
             {
@@ -164,10 +167,13 @@ package aerys.minko.scene.controller
                             if (childFlags & FLAG_LOCK_TRANSFORMS)
                                 childWorldToLocal.unlock();
                         }
+                        
+                        if (childId == targetNodeId)
+                            return;
                     }
                 }
                 
-                if (subtreeOnly && nodeId && nodeId >= subtreeMax)
+                if (targetNodeId >= 0 && nodeId && nodeId >= subtreeMax)
                 {
                     // jump to the first brother who has children
                     var parentId : uint = _parentId[nodeId];
@@ -186,21 +192,22 @@ package aerys.minko.scene.controller
             }
         }
         
-        private function updateAncestorsAndSelfLocalToWorld(nodeId : int) : void
+        private function updateAncestorsAndSelfLocalToWorld(nodeId : uint) : void
         {
             var dirtyRoot : int = -1;
+            var tmpNodeId : int = nodeId;
             
-            while (nodeId >= 0)
+            while (tmpNodeId >= 0)
             {
-                if ((_transforms[nodeId] as Matrix4x4)._hasChanged
+                if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
                     || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
-                    dirtyRoot = nodeId;
+                    dirtyRoot = tmpNodeId;
                 
-                nodeId = _parentId[nodeId];
+                tmpNodeId = _parentId[tmpNodeId];
             }
             
             if (dirtyRoot >= 0)
-                updateLocalToWorld(dirtyRoot, true);
+                updateLocalToWorld(dirtyRoot, nodeId);
         }
         
         private function targetAddedHandler(ctrl	: TransformController,
