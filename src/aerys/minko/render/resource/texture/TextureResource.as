@@ -47,6 +47,11 @@ package aerys.minko.render.resource.texture
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
 		}
+        
+        public function get mipMapping() : Boolean
+        {
+            return _mipmap;
+        }
 		
 		public function get width() : uint
 		{
