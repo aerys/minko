@@ -4,6 +4,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
@@ -25,7 +26,9 @@ package aerys.minko.render.shader.part.phong
 					BasicProperties.DIFFUSE_MAP,
 					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_FILTERING, SamplerFiltering.LINEAR),
 					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
-					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_WRAPPING, SamplerWrapping.REPEAT)
+					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_WRAPPING, SamplerWrapping.REPEAT),
+                    0,
+                    meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				diffuseColor = sampleTexture(diffuseMap, uv);
