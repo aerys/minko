@@ -106,6 +106,33 @@ package aerys.minko.render.material.phong
 		{
 			setProperty(PhongProperties.NORMAL_MAP, value);
 		}
+        
+        public function get normalMapFiltering() : uint
+        {
+            return getProperty(PhongProperties.NORMAL_MAP_FILTERING);
+        }
+        public function set normalMapFiltering(value : uint) : void
+        {
+            setProperty(PhongProperties.NORMAL_MAP_FILTERING, value);
+        }
+        
+        public function get normalMapMipMapping() : uint
+        {
+            return getProperty(PhongProperties.NORMAL_MAP_MIPMAPPING);
+        }
+        public function set normalMapMipMapping(value : uint) : void
+        {
+            setProperty(PhongProperties.NORMAL_MAP_MIPMAPPING, value);
+        }
+        
+        public function get normalMapFormat() : uint
+        {
+            return getProperty(PhongProperties.NORMAL_MAP_FORMAT);
+        }
+        public function set normalMapFormat(value : uint) : void
+        {
+            setProperty(PhongProperties.NORMAL_MAP_FORMAT, value);
+        }
 		
 		public function get heightMap() : TextureResource
 		{
