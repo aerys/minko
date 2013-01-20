@@ -13,12 +13,12 @@ package aerys.minko.render.material.basic
 		public static const DEFAULT_BASIC_SHADER	: BasicShader	= new BasicShader();
 		public static const DEFAULT_EFFECT			: Effect		= new Effect(DEFAULT_BASIC_SHADER);
 		
-		public function get diffuseFormat() : uint
+		public function get diffuseMapFormat() : uint
 		{
 			return getProperty(BasicProperties.DIFFUSE_MAP_FORMAT);
 		}
 		
-		public function set diffuseFormat(value : uint) : void
+		public function set diffuseMapFormat(value : uint) : void
 		{
 			setProperty(BasicProperties.DIFFUSE_MAP_FORMAT, value);
 		}
