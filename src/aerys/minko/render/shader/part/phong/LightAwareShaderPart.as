@@ -109,7 +109,8 @@ package aerys.minko.render.shader.part.phong
 		{
 			var vertexTangent : SFloat = vertexAnimationShaderPart.getAnimatedVertexTangent();
 			
-			if (meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK) != TriangleCulling.BACK)
+			if (meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK)
+                != TriangleCulling.BACK)
 				vertexTangent.negate();
 			
 			return vertexTangent;
