@@ -15,12 +15,12 @@ package aerys.minko.render.material.basic
 		
 		public function get diffuseFormat() : uint
 		{
-			return getProperty(BasicProperties.DIFFUSE_FORMAT);
+			return getProperty(BasicProperties.DIFFUSE_MAP_FORMAT);
 		}
 		
 		public function set diffuseFormat(value : uint) : void
 		{
-			setProperty(BasicProperties.DIFFUSE_FORMAT, value);
+			setProperty(BasicProperties.DIFFUSE_MAP_FORMAT, value);
 		}
 		
 		public function get blending() : uint

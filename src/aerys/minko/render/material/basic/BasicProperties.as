@@ -8,7 +8,7 @@ package aerys.minko.render.material.basic
 		public static const DIFFUSE_MAP_FILTERING					: String	= 'diffuseMapFiltering';
 		public static const DIFFUSE_MAP_MIPMAPPING					: String	= 'diffuseMapMipMapping';
 		public static const DIFFUSE_MAP_WRAPPING					: String	= 'diffuseMapWrapping';
-        public static const DIFFUSE_FORMAT  						: String	= 'diffuseFormat';
+        public static const DIFFUSE_MAP_FORMAT  					: String	= 'diffuseMapFormat';
 		
 		public static const ALPHA_THRESHOLD							: String	= 'alphaThreshold';
 		public static const ALPHA_MAP								: String	= 'alphaMap';
