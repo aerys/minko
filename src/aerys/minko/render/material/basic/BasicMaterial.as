@@ -66,6 +66,15 @@ package aerys.minko.render.material.basic
         {
             setProperty(BasicProperties.DIFFUSE_MAP_MIPMAPPING, value);
         }
+        
+        public function get diffuseMapWrapping() : uint
+        {
+            return getProperty(BasicProperties.DIFFUSE_MAP_WRAPPING);
+        }
+        public function set diffuseMapWrapping(value : uint) : void
+        {
+            setProperty(BasicProperties.DIFFUSE_MAP_WRAPPING, value);
+        }
 		
         public function get diffuseMapFormat() : uint
         {
