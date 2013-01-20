@@ -28,19 +28,18 @@ package aerys.minko.scene.controller.mesh
 	 */
 	public final class DynamicTextureController extends EnterFrameController
 	{
-		private var _data					: DataProvider		= null;
+		private var _data					: DataProvider;
 		
-		private var _source					: DisplayObject		= null;
-		private var _framerate				: Number			= 0.;
-		private var _mipMapping				: Boolean			= false;
-		private var _propertyName			: String			= null;
-		private var _matrix					: Matrix			= null;
-		private var _forceBitmapDataClear	: Boolean			= false;
-		private var _bitmapData				: BitmapData		= null;
-		private var _texture				: TextureResource	= null;
+		private var _source					: DisplayObject;
+		private var _framerate				: Number;
+		private var _mipMapping				: Boolean;
+		private var _propertyName			: String;
+		private var _matrix					: Matrix;
+		private var _forceBitmapDataClear	: Boolean;
+		private var _bitmapData				: BitmapData;
+		private var _texture				: TextureResource;
 		
-		private var _lastDraw	: Number				= 0.;
-		
+		private var _lastDraw	            : Number;
 		
 		/**
 		 * Create a new DynamicTextureController.
