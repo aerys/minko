@@ -12,6 +12,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.type.enum.NormalMappingType;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.TriangleCulling;
 	
@@ -137,8 +138,10 @@ package aerys.minko.render.shader.part.phong
 				case NormalMappingType.PARALLAX:
 					var fsNormalMap	: SFloat = meshBindings.getTextureParameter(
 						PhongProperties.NORMAL_MAP,
-						meshBindings.getConstant('normalFiltering', SamplerFiltering.LINEAR),
-						meshBindings.getConstant('normalMipMapping', SamplerMipMapping.LINEAR)
+						meshBindings.getConstant(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
+						meshBindings.getConstant(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+                        0,
+                        meshBindings.getConstant(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
 					);
 					var fsPixel		: SFloat = sampleTexture(fsNormalMap, fsUV);
                     
