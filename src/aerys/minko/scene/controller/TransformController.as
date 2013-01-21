@@ -488,39 +488,6 @@ package aerys.minko.scene.controller
             return worldToLocalTransform;
         }
         
-        public function getSharedLocalToWorldTransformReference(node    : ISceneNode) : Matrix4x4
-        {
-            return _localToWorldTransforms[getNodeId(node)];
-        }
-        
-        public function setSharedLocalToWorldTransformReference(node      : ISceneNode,
-                                                                matrix    : Matrix4x4) : void
-        {
-            var nodeId : uint = getNodeId(node);
-            
-            if (_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD)
-                matrix.copyFrom(_localToWorldTransforms[nodeId]);
-            _localToWorldTransforms[nodeId] = matrix;
-        }
-        
-        public function getSharedWorldToLocalTransformReference(node : ISceneNode) : Matrix4x4
-        {
-            var nodeId : uint = getNodeId(node);
-            
-            return _worldToLocalTransforms[nodeId]
-                || (_worldToLocalTransforms[nodeId] = new Matrix4x4());
-        }
-        
-        public function setSharedWorldToLocalTransformReference(node      : ISceneNode,
-                                                                matrix    : Matrix4x4) : void
-        {
-            var nodeId : uint = getNodeId(node);
-            
-            if (_flags[nodeId] & FLAG_INIT_WORLD_TO_LOCAL)
-                matrix.copyFrom(_worldToLocalTransforms[nodeId]);
-            _worldToLocalTransforms[nodeId] = matrix;
-        }
-        
         public function synchronizeTransforms(node : ISceneNode, enabled : Boolean) : void
         {
             var nodeId : uint = getNodeId(node);
