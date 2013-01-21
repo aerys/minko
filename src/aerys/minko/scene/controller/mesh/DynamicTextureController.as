@@ -93,7 +93,6 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetAddedHandler(ctrl, target);
 			
-//			(target as Mesh).properties.setProperty(_propertyName, _texture);
 			if (target is Scene)
 				(target as Scene).bindings.addProvider(_data);
 			else if (target is Mesh)
@@ -107,8 +106,6 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(ctrl, target);
 			
-//			(target as Mesh).properties.removeProperty(_propertyName);
-			
 			if (target is Scene)
 				(target as Scene).bindings.removeProvider(_data);
 			else if (target is Mesh)
@@ -120,15 +117,17 @@ package aerys.minko.scene.controller.mesh
 														   target	: BitmapData,
 														   time		: Number) : void
 		{
-			if (time - _lastDraw > 1000. / _framerate)
+			if (!_lastDraw || time - _lastDraw > 1000. / _framerate)
 			{
 				_lastDraw = time;
 				
 				_bitmapData ||= new BitmapData(_source.width, _source.height);
 				if (_forceBitmapDataClear)
-				{
-					_bitmapData.fillRect(new Rectangle(0, 0, _bitmapData.width, _bitmapData.height), 0);
-				}
+					_bitmapData.fillRect(
+                        new Rectangle(0, 0, _bitmapData.width, _bitmapData.height),
+                        0
+                    );
+                
 				_bitmapData.draw(_source, _matrix);
 				
 				_texture.setContentFromBitmapData(_bitmapData, _mipMapping);
