@@ -9,6 +9,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.display.BitmapData;
+	import flash.display.Stage;
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -17,6 +18,8 @@ package aerys.minko.scene.controller.camera
 	public class FirstPersonCameraController extends AbstractScriptController
 	{
 		private static const TMP_MATRIX 	: Matrix4x4 = new Matrix4x4();
+
+		private var _stage					: Stage		= null;
 
 		private var _ghostMode				: Boolean	= true;
 		private var _rotation				: Vector4	= new Vector4();
@@ -59,9 +62,9 @@ package aerys.minko.scene.controller.camera
 			_step = value;
 		}
 				
-		public function FirstPersonCameraController()
+		public function FirstPersonCameraController(stage : Stage)
 		{
-			super ();
+			_stage = stage;
 		}
 
 		public function bindDefaultControls(dispatcher : IEventDispatcher) : FirstPersonCameraController
@@ -145,13 +148,21 @@ package aerys.minko.scene.controller.camera
 			
 			_update = true;
 		}
-		
+
 		private function mouseMoveHandler(event : MouseEvent) : void
 		{
 			if (event.buttonDown)
 			{
-				_rotation.y += -(_mousePosition.x - event.stageX) * .005;
-				_rotation.x += (_mousePosition.y - event.stageY) * .005;
+				if (_stage && _stage.mouseLock)
+				{
+					_rotation.y += event.movementX * .005;
+					_rotation.x += -event.movementY * .005;
+				}
+				else
+				{
+					_rotation.y += -(_mousePosition.x - event.stageX) * .005;
+					_rotation.x += (_mousePosition.y - event.stageY) * .005;
+				}
 				
 				_update = true;
 			}
