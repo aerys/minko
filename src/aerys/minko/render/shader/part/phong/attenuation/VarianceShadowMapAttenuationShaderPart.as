@@ -73,7 +73,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 		
 		private function reduceLightBleedingWithSmoothstep(pMax : SFloat, amount : SFloat) : SFloat
 		{
-			return smoothstep(amount, float(1), pMax);
+			return smoothstep(amount, 1.0, pMax);
 		}
 		
 		public function getAttenuation(lightId : uint) : SFloat
@@ -94,11 +94,16 @@ package aerys.minko.render.shader.part.phong.attenuation
 				dimension
 			);
 			
-			var depth						: SFloat	= sampleTexture(depthMap, uv);
-			var moment1						: SFloat	= unpackHalf(depth.xy);
-			var moment2						: SFloat	= unpackHalf(depth.zw);
+			var depth						: SFloat	= _depthShaderPart.getDepthForAttenuation(lightId, worldPosition);
+			var precomputedDepth			: SFloat	= sampleTexture(depthMap, uv);
+			var moment1						: SFloat	= unpackHalf(precomputedDepth.xy);
+			var moment2						: SFloat	= unpackHalf(precomputedDepth.zw);
 			var lightBleedingCorrection		: Function	= doNotReduceLightBleeding;
-			var lightBleedingInterpolation	: uint		= getLightConstant(lightId, 'lightBleedingInterpolation', 0);
+			var lightBleedingInterpolation	: uint		= getLightConstant(
+				lightId,
+				'lightBleedingInterpolation',
+				LightBleedingInterpolation.NONE
+			);
 			switch (lightBleedingInterpolation)
 			{
 				case LightBleedingInterpolation.LINSTEP :
@@ -111,7 +116,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightBleedingBias			: SFloat	= getLightParameter(lightId, 'lightBleedingBias', 1);
 			var shadow						: SFloat	= chebyshevUpperBound(
 				float2(moment1, moment2),
-				uv.w,
+				depth,
 				lightBleedingCorrection,
 				lightBleedingBias
 			);
