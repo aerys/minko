@@ -34,7 +34,7 @@ package aerys.minko.scene.controller
 	{
 		private static var _pickingId				: uint			= 0;
 		
-		private static const PICKING_MAP			: BitmapData	= new BitmapData(1, 1, false, 0);
+		private static const PICKING_MAP			: BitmapData	= new BitmapData(1, 1, true, 0);
 		private static const SHADER					: Shader		= new PickingShader();
 		private static const ID_INCREMENT			: uint			= 1;
 		
@@ -357,7 +357,7 @@ package aerys.minko.scene.controller
 												context		: Context3DResource,
 												backBuffer	: RenderTarget) : void
 		{
-			context.clear();
+			context.clear(0, 0, 0, 0);
 		}
 		
 		private static function updatePickingMap(shader		: Shader,
@@ -388,10 +388,14 @@ package aerys.minko.scene.controller
 		
 		private function updateMouseOverElement() : void
 		{
-			var pixelColor : uint = PICKING_MAP.getPixel(0, 0);
+			var pixelColor : uint = PICKING_MAP.getPixel32(0, 0);
 			
 			_lastMouseOver = _currentMouseOver;
-			_currentMouseOver = _pickingIdToMesh[pixelColor];
+			if ((pixelColor >>> 24) == 0xFF) {
+				_currentMouseOver = _pickingIdToMesh[pixelColor & 0xFFFFFF];
+			} else {
+				_currentMouseOver = null; // wrong antialiasing color
+			}
 		}
 		
 		private function updateMouseCursor() : void
