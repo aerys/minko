@@ -25,7 +25,7 @@ package aerys.minko.scene.controller
         private var _targetsToAdd       : Vector.<ISceneNode>;
         private var _targetsToRemove    : Vector.<ISceneNode>;
 		
-		private var _updateRate			: Number;
+		private var _updateRate			: Number	= 0.;
 		
         protected function get scene() : Scene
         {
@@ -102,7 +102,7 @@ package aerys.minko.scene.controller
 														   time			: Number) : void
 		{
 			_deltaTime = time - _lastTime;
-			
+
 			if (_updateRate != 0. && deltaTime < 1000. / _updateRate)
 				return;
 			
