@@ -194,7 +194,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightParameter(lightId : uint, name : String, size : uint) : SFloat
+		protected function getLightParameter(lightId		: uint, 
+											 name			: String,
+											 size			: uint) : SFloat
 		{
 			return sceneBindings.getParameter(
 				LightDataProvider.getLightPropertyName(name, lightId),

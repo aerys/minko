@@ -31,7 +31,7 @@ package aerys.minko.scene.controller.light
 		
 		public function DirectionalLightController()
 		{
-			super(DirectionalLight, ShadowMappingType.MATRIX);
+			super(DirectionalLight, ShadowMappingType.PCF | ShadowMappingType.VARIANCE | ShadowMappingType.EXPONENTIAL);
 			
 			initialize();
 		}

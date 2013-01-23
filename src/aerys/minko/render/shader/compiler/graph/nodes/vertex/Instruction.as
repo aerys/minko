@@ -95,7 +95,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.vertex
 			FLAGS[M33] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
 			FLAGS[M44] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
 			FLAGS[M34] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.SPECIAL_MATRIX | InstructionFlag.LINEAR;
-			FLAGS[KIL] = InstructionFlag.AVAILABLE_FS | InstructionFlag.SINGLE;
+			FLAGS[KIL] = InstructionFlag.AVAILABLE_FS  | InstructionFlag.SINGLE;
 			FLAGS[TEX] = InstructionFlag.AVAILABLE_FS;
 			FLAGS[SGE] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
 			FLAGS[SLT] = InstructionFlag.AVAILABLE_ALL | InstructionFlag.COMPONENT_WISE;
