@@ -391,11 +391,10 @@ package aerys.minko.scene.controller
 			var pixelColor : uint = PICKING_MAP.getPixel32(0, 0);
 			
 			_lastMouseOver = _currentMouseOver;
-			if ((pixelColor >>> 24) == 0xFF) {
+			if ((pixelColor >>> 24) == 0xFF)
 				_currentMouseOver = _pickingIdToMesh[pixelColor & 0xFFFFFF];
-			} else {
-				_currentMouseOver = null; // wrong antialiasing color
-			}
+			else
+				_currentMouseOver = null; // wrong antialiasing color or nothing got picked
 		}
 		
 		private function updateMouseCursor() : void
