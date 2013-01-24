@@ -6,7 +6,6 @@ package aerys.minko.scene.node
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
-	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -28,7 +27,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Mesh extends AbstractVisibleSceneNode
+	public class Mesh extends AbstractVisibleSceneNode implements ITaggable
 	{
 		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		
@@ -45,6 +44,9 @@ package aerys.minko.scene.node
 		private var _materialChanged	: Signal;
 		private var _frameChanged		: Signal;
 		private var _geometryChanged	: Signal;
+		
+		private var _tag				: uint = 1;
+		private var _tagChanged			: Signal;
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -148,7 +150,29 @@ package aerys.minko.scene.node
 				_geometryChanged.execute(this, oldGeometry, value);
 			}
 		}
+				
+		public function get tag():uint
+		{
+			return _tag;
+		}
 		
+		public function set tag(value:uint):void
+		{
+			if (_tag != value)
+			{
+				var oldTag	: uint	= _tag;
+				_tag				= value;
+				
+				_properties.setProperty('tag', value);
+				_tagChanged.execute(this, oldTag, value);
+			}
+		}
+		
+		public function get tagChanged():Signal
+		{
+			return _tagChanged;
+		}
+
         /**
          * Whether the mesh in inside the camera frustum or not. 
          * @return 
@@ -212,11 +236,12 @@ package aerys.minko.scene.node
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 material	: Material	= null,
-							 name		: String	= null)
+							 name		: String	= null,
+							 tag		: uint		= 1)
 		{
 			super();
 
-			initializeMesh(geometry, material, name);
+			initializeMesh(geometry, material, name, tag);
 		}
 		
 		override protected function initialize() : void
@@ -239,6 +264,7 @@ package aerys.minko.scene.node
 			_materialChanged = new Signal('Mesh.materialChanged');
 			_frameChanged = new Signal('Mesh.frameChanged');
 			_geometryChanged = new Signal('Mesh.geometryChanged');
+			_tagChanged = new Signal('Mesh.tagChanged');
 		}
 		
 		override protected function initializeContollers():void
@@ -254,17 +280,24 @@ package aerys.minko.scene.node
 		
 		protected function initializeMesh(geometry	: Geometry,
 										  material	: Material,
-										  name		: String) : void
+										  name		: String,
+										  tag		: uint) : void
 		{
 			if (name)
 				this.name = name;
 			
-			this.geometry = geometry;
-			this.material = material || DEFAULT_MATERIAL;
+			this.geometry	= geometry;
+			this.material	= material || DEFAULT_MATERIAL;
+			_tag			= tag;
 		}
 		
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : Number
 		{
+			if (!(_tag & tag))
+			{
+				return -1;
+			}
+			
 			return _geometry.boundingBox.testRay(
 				ray,
 				getWorldToLocalTransform(),

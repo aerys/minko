@@ -11,6 +11,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.enum.DataProviderUsage;
 	
 	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 
 	/**
@@ -32,11 +33,37 @@ package aerys.minko.scene.node
 		
 		private var _numTriangles	: uint;
 		
-		private var _enterFrame		: Signal;
-		private var _renderingBegin	: Signal;
-		private var _renderingEnd	: Signal;
-		private var _exitFrame		: Signal;
+		private var _enterFrame			: Signal;
+		private var _renderingBegin		: Signal;
+		private var _renderingEnd		: Signal;
+		private var _exitFrame			: Signal;
+		private var _layerNameChanged	: Signal; // function(scene : Scene, oldName : String, newName : String);
 
+		private var _layers			: Vector.<String>	= new Vector.<String>(32, true);
+		private var _nameToLayer	: Dictionary		= new Dictionary();
+		
+		public function getLayerName(layer : uint) : String
+		{
+			return _layers[layer];
+		}
+		
+		public function setLayerName(layer : uint, name : String) : void
+		{
+			var oldName	: String = null;
+			if (_layers[layer])
+				oldName = _layers[oldName];
+			
+			_layers[layer] = name;
+			_nameToLayer[name] = layer;
+			
+			_layerNameChanged.execute(this, oldName, name);
+		}
+		
+		public function getLayerByName(name : String) : uint
+		{
+			return _nameToLayer[name];
+		}
+		
 		public function get activeCamera() : AbstractCamera
 		{
 			return _camera;
@@ -148,6 +175,7 @@ package aerys.minko.scene.node
 			_renderingBegin = new Signal('Scene.renderingBegin');
 			_renderingEnd = new Signal('Scene.renderingEnd');
 			_exitFrame = new Signal('Scene.exitFrame');
+			_layerNameChanged = new Signal('Scene.layerNameChanged');
 		}
 		
 		override protected function initializeSignalHandlers() : void
