@@ -415,7 +415,7 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : SceneIterator
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : SceneIterator
 		{
 			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
 			var numMeshes	: uint					= meshes.length;
@@ -426,6 +426,11 @@ package aerys.minko.scene.node
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
 				var mesh 		: Mesh		= meshes[i] as Mesh;
+				if (!(mesh.tag & tag))
+				{
+					continue;
+				}
+				
 				var hitDepth	: Number	= mesh.cast(ray, maxDistance);
 				
 				if (hitDepth >= 0.0)

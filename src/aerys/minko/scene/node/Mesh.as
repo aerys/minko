@@ -6,7 +6,6 @@ package aerys.minko.scene.node
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
-	import aerys.minko.scene.data.TransformDataProvider;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -28,7 +27,7 @@ package aerys.minko.scene.node
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Mesh extends AbstractVisibleSceneNode
+	public class Mesh extends AbstractVisibleSceneNode implements ITaggable
 	{
 		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		
@@ -40,6 +39,8 @@ package aerys.minko.scene.node
 		private var _visibility			: MeshVisibilityController;
 		
 		private var _cloned				: Signal;
+		
+		private var _tag				: uint = 1;
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -128,7 +129,17 @@ package aerys.minko.scene.node
 		{
 			_ctrl.geometry = value;
 		}
+				
+		public function get tag():uint
+		{
+			return _tag;
+		}
 		
+		public function set tag(value:uint):void
+		{
+			_tag				= value;
+		}
+
         /**
          * Whether the mesh in inside the camera frustum or not. 
          * @return 
@@ -171,11 +182,12 @@ package aerys.minko.scene.node
 		
 		public function Mesh(geometry	: Geometry	= null,
 							 material	: Material	= null,
-							 name		: String	= null)
+							 name		: String	= null,
+							 tag		: uint		= 1)
 		{
 			super();
 
-			initializeMesh(geometry, material, name);
+			initializeMesh(geometry, material, name, tag);
 		}
 		
 		override protected function initialize() : void
@@ -211,17 +223,24 @@ package aerys.minko.scene.node
 		
 		protected function initializeMesh(geometry	: Geometry,
 										  material	: Material,
-										  name		: String) : void
+										  name		: String,
+										  tag		: uint) : void
 		{
 			if (name)
 				this.name = name;
 			
-			this.geometry = geometry;
-			this.material = material || DEFAULT_MATERIAL;
+			this.geometry	= geometry;
+			this.material	= material || DEFAULT_MATERIAL;
+			_tag			= tag;
 		}
 		
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : Number
 		{
+			if (!(_tag & tag))
+			{
+				return -1;
+			}
+			
 			return _ctrl.geometry.boundingBox.testRay(
 				ray,
 				getWorldToLocalTransform(),

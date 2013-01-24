@@ -93,6 +93,8 @@ package aerys.minko.scene.controller
 		private var _mouseMiddleDown	: Signal;
 		private var _mouseMiddleUp		: Signal;
 		
+		private var _tag				: uint;
+		
         public function get pickingRate() : Number
         {
             return _pickingRate;
@@ -182,12 +184,14 @@ package aerys.minko.scene.controller
 		}
 		
 		public function PickingController(pickingTechnique  : uint      = 1,
-                                          pickingRate       : Number    = 15.)
+                                          pickingRate       : Number    = 15.,
+										  tag				: uint		= 1)
 		{
             super();
             
-            _technique = pickingTechnique;
-			_pickingRate = pickingRate;
+            _technique		= pickingTechnique;
+			_pickingRate	= pickingRate;
+			_tag			= tag;
             
 			initialize();
 		}
@@ -289,8 +293,7 @@ package aerys.minko.scene.controller
                             if (target is Mesh)
                             {
 								var mesh : Mesh = target as Mesh;
-                                
-                                if (mesh.cast(ray) > 0.)
+                                if (mesh.cast(ray, Number.POSITIVE_INFINITY, _tag) > 0.)
                                 {
 									if (!(_technique & PickingTechnique.PIXEL_PICKING))
 									{
@@ -303,7 +306,7 @@ package aerys.minko.scene.controller
                             else if (target is Group)
                             {
                                 var group   : Group         = target as Group;
-                                var hits    : SceneIterator = group.cast(ray);
+                                var hits    : SceneIterator = group.cast(ray, Number.POSITIVE_INFINITY, _tag);
                                 
                                 if (hits.length > 0)
                                 {
