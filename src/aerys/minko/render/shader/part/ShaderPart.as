@@ -823,7 +823,7 @@ package aerys.minko.render.shader.part
 		{
 			var value : SFloat = divide(subtract(v, min), subtract(max, min));
 			
-			return clamp(value, float(0), float(1));
+			return clamp(value, .0, 1.);
 		}
 		
 		

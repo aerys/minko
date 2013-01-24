@@ -9,6 +9,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.PointLight;
+	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
@@ -27,16 +28,25 @@ package aerys.minko.render.shader.part.phong.attenuation
 
 		private function createDepthShaderPart(lightId : uint) : void
 		{
-			var depthAlgorithmName	: String	= LightDataProvider.getLightPropertyName('depthAlgorithm', lightId);
-			var depthAlgorithm		: uint		= sceneBindings.getConstant(depthAlgorithmName, DepthAlgorithm.LINEAR);
-			switch (depthAlgorithm)
+			var lightTypeName			: String	= LightDataProvider.getLightPropertyName('type', lightId);
+			var lightType				: uint		= sceneBindings.getConstant(lightTypeName, lightId);
+			if (lightType == PointLight.LIGHT_TYPE || lightType == SpotLight.LIGHT_TYPE)
 			{
-				case DepthAlgorithm.LINEAR :
-					_depthShaderPart = new LinearDepthShaderPart(this.main);
-					break;
-				case DepthAlgorithm.PROJECTED :
-					_depthShaderPart = new ProjectedDepthShaderPart(this.main);
-					break;
+				_depthShaderPart					= new LinearDepthShaderPart(this.main);
+			}
+			else
+			{
+				var depthAlgorithmName	: String	= LightDataProvider.getLightPropertyName('depthAlgorithm', lightId);
+				var depthAlgorithm		: uint		= sceneBindings.getConstant(depthAlgorithmName, 0);
+				switch (depthAlgorithm)
+				{
+					case DepthAlgorithm.LINEAR :
+						_depthShaderPart			= new LinearDepthShaderPart(this.main);
+						break;
+					case DepthAlgorithm.PROJECTED :
+						_depthShaderPart			= new ProjectedDepthShaderPart(this.main);
+						break;
+				}
 			}
 		}
 
@@ -50,7 +60,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var e_x2			: SFloat	= moments.y;						// e(x^2)
 			var ex_2			: SFloat	= multiply(moments.x, moments.x);	// e(x)^2
 			var variance		: SFloat	= subtract(e_x2, ex_2);
-			variance						= max(MIN_VARIANCE, variance);
 			variance						= add(variance, EPSILON);
 			variance						= clamp(variance, MIN_VARIANCE, 1.0);
 			var dist			: SFloat	= subtract(depth, moments.x);
@@ -83,8 +92,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var lightType					: uint		= sceneBindings.getConstant(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
-			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
-			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
 			var depthMap					: SFloat	= getLightTextureParameter(
 				lightId,
 				'shadowMap',
@@ -94,6 +101,8 @@ package aerys.minko.render.shader.part.phong.attenuation
 				dimension
 			);
 			
+			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
+			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
 			var depth						: SFloat	= _depthShaderPart.getDepthForAttenuation(lightId, worldPosition);
 			var precomputedDepth			: SFloat	= sampleTexture(depthMap, uv);
 			var moment1						: SFloat	= unpackHalf(precomputedDepth.xy);

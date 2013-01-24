@@ -56,8 +56,6 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var lightType					: uint		= sceneBindings.getConstant(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
-			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
-			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
 			var depthMap					: SFloat	= getLightTextureParameter(
 				lightId,
 				'shadowMap',
@@ -67,12 +65,13 @@ package aerys.minko.render.shader.part.phong.attenuation
 				dimension
 			);
 			
+			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
+			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
 			var depth						: SFloat	= _depthShaderPart.getDepthForAttenuation(lightId, worldPosition);
 			var precomputedDepth			: SFloat	= unpack(sampleTexture(depthMap, uv));
 			var expFactor					: SFloat	= getLightParameter(lightId, 'exponentialFactor', 1);
 			expFactor									= max(expFactor, 1.);
-			var c							: SFloat	= negate(expFactor);
-			var shadow						: SFloat	= saturate(exp(multiply(c, subtract(depth, precomputedDepth))));
+			var shadow						: SFloat	= saturate(exp(multiply(expFactor, subtract(precomputedDepth, depth))));
 			
 			return shadow.x;
 		}
