@@ -64,6 +64,13 @@ package aerys.minko.scene.node
 			return _nameToLayer[name];
 		}
 		
+		public function belongsToLayer(leaf : ITaggable, layerName : String) : Boolean
+		{
+			var layer : uint = getLayerName(layerName);
+			
+			return (leaf.tag & layer) != 0;
+		}
+		
 		public function get activeCamera() : AbstractCamera
 		{
 			return _camera;
@@ -181,6 +188,7 @@ package aerys.minko.scene.node
 			_renderingEnd = new Signal('Scene.renderingEnd');
 			_exitFrame = new Signal('Scene.exitFrame');
 			_layerNameChanged = new Signal('Scene.layerNameChanged');
+			_layers[0] = 'Default';
 		}
 		
 		override protected function initializeSignalHandlers() : void
