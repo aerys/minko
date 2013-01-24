@@ -842,7 +842,7 @@ package aerys.minko.render.geometry
 					VertexComponent.XYZ
 				);
 				
-				if (firstIndex != 0 || numTriangles != -1)
+				if ((firstIndex != 0 || numTriangles != -1) && (xyzStream.usage & StreamUsage.READ))
 				{
 					var stride	: uint				= xyzStream.format.numBytesPerVertex >>> 2;
 					var minimum	: Vector.<Number>	= new Vector.<Number>(stride - offset, true);
