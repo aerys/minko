@@ -66,7 +66,7 @@ package aerys.minko.scene.node
 		
 		public function belongsToLayer(leaf : ITaggable, layerName : String) : Boolean
 		{
-			var layer : uint = getLayerName(layerName);
+			var layer : uint = getLayerByName(layerName);
 			
 			return (leaf.tag & layer) != 0;
 		}
