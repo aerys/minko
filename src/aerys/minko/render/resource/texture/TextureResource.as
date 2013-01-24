@@ -130,6 +130,10 @@ package aerys.minko.render.resource.texture
 			_atf			= atf;
 			_bitmapData		= null;
 			_update 		= true;
+
+			var oldWidth	: Number = _width;
+			var oldHeight	: Number = _height;
+			var oldMipmap	: Boolean = _mipmap;
 			
 			atf.position 	= 6;
 			
@@ -147,6 +151,14 @@ package aerys.minko.render.resource.texture
 			else if (_atfFormat == 3)
 				_format = FORMAT_COMPRESSED;
 			
+			if (_texture
+				&& (oldMipmap != _mipmap
+					|| oldWidth != _width
+					|| oldHeight != _height))
+			{
+				_texture.dispose();
+				_texture = null;
+			}
 		}
 
 		public function getTexture(context : Context3DResource) : TextureBase
