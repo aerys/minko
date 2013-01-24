@@ -295,6 +295,7 @@ package aerys.minko.scene.node
 		{
 			if (!(_tag & tag))
 			{
+				trace(tag);
 				return -1;
 			}
 			

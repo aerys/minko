@@ -426,12 +426,7 @@ package aerys.minko.scene.node
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
 				var mesh 		: Mesh		= meshes[i] as Mesh;
-				if (!(mesh.tag & tag))
-				{
-					continue;
-				}
-				
-				var hitDepth	: Number	= mesh.cast(ray, maxDistance);
+				var hitDepth	: Number	= mesh.cast(ray, maxDistance, tag);
 				
 				if (hitDepth >= 0.0)
 				{
