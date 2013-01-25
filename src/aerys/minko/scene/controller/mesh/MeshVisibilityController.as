@@ -60,7 +60,7 @@ package aerys.minko.scene.controller.mesh
         
         public function get computedVisibility() : Boolean
         {
-            return frustumCulling == FrustumCulling.DISABLED || _computedVisibility;
+            return _frustumCulling == FrustumCulling.DISABLED || _computedVisibility;
         }
 		
 		public function MeshVisibilityController()
@@ -149,7 +149,7 @@ package aerys.minko.scene.controller.mesh
         private function visiblityChangedHandler(node : ISceneNode, visibility : Boolean) : void
         {
             _computedVisibility = _mesh.visible && _mesh.parent.computedVisibility
-                && _insideFrustum;
+                && (_frustumCulling == FrustumCulling.DISABLED || _insideFrustum);
             _mesh.computedVisibilityChanged.execute(_mesh, _computedVisibility);
         }
         

@@ -27,18 +27,15 @@ package aerys.minko.scene.controller.debug
 	public final class JointsDebugController extends AbstractController
 	{
 		private var _jointsMaterial	: Material;
-		private var _bonesMaterial	: Material;
 		
-		public function JointsDebugController(jointsMaterial	: Material	= null,
-											  bonesMaterial		: Material	= null)
+		public function JointsDebugController(jointsMaterial : Material	= null)
 		{
 			super(Mesh);
 			
-			initialize(jointsMaterial, bonesMaterial);
+			initialize(jointsMaterial);
 		}
 		
-		private function initialize(jointsMaterial	: Material,
-									bonesMaterial	: Material) : void
+		private function initialize(jointsMaterial	: Material) : void
 		{
 			_jointsMaterial = jointsMaterial;
 			if (!_jointsMaterial)
@@ -49,17 +46,6 @@ package aerys.minko.scene.controller.debug
 				jointsBasicMaterial.depthWriteEnabled = false;
 				jointsBasicMaterial.depthTest = DepthTest.ALWAYS;
 				_jointsMaterial = jointsBasicMaterial;
-			}
-			
-			_bonesMaterial = bonesMaterial;
-			if (!_bonesMaterial)
-			{
-				var bonesBasicMaterial : BasicMaterial = new BasicMaterial();
-				
-				bonesBasicMaterial.diffuseColor = 0x00ff00ff;
-				bonesBasicMaterial.depthWriteEnabled = false;
-				bonesBasicMaterial.depthTest = DepthTest.ALWAYS;
-				_bonesMaterial = bonesBasicMaterial;
 			}
 			
 			targetAdded.add(targetAddedHandler);
@@ -73,7 +59,7 @@ package aerys.minko.scene.controller.debug
 				as SkinningController;
 			
 			for each (var joint : Group in skinningCtrl.joints)
-				addBonesAndJointsMeshes(joint);
+				addJointsMeshes(joint);
 		}
 		
 		private function targetRemovedHandler(ctrl 		: AbstractController,
@@ -83,15 +69,12 @@ package aerys.minko.scene.controller.debug
 				as SkinningController;
 			
 			for each (var joint : Group in skinningCtrl.joints)
-			{
-				joint.getChildByName('__bone__').parent = null;
 				joint.getChildByName('__joint__').parent = null;
-			}
 		}
 		
-		private function addBonesAndJointsMeshes(joint : Group) : void
+		private function addJointsMeshes(joint : Group) : void
 		{
-			if (joint.getChildByName('__bone__') || joint.getChildByName('__joint__'))
+			if (joint.getChildByName('__joint__'))
 				return ;
 			
 			var numChildren : uint = joint.numChildren;
@@ -102,29 +85,12 @@ package aerys.minko.scene.controller.debug
 				
 				if (child != null)
 				{
-					var nextJointPosition 	: Vector4 	= child.transform.transformVector(
-						Vector4.ZERO
-					);
-					var boneLength 			: Number 	= nextJointPosition.length;
-					var boneMesh 			: Mesh 		= new Mesh(
-						CubeGeometry.cubeGeometry, _bonesMaterial, '__bone__'
-					);
-					var jointMesh			: Mesh		= new Mesh(
+					var jointMesh   : Mesh  = new Mesh(
 						CubeGeometry.cubeGeometry, _jointsMaterial, '__joint__'
 					);
 					
 					jointMesh.transform.appendUniformScale(.08);
 					joint.addChild(jointMesh);
-					
-					if (boneLength != 0.)
-					{
-						boneMesh.transform
-							.lookAt(nextJointPosition)
-							.prependTranslation(0, 0, boneLength * .5)
-							.prependScale(.02, .02, boneLength);
-						
-						joint.addChild(boneMesh);
-					}
 				}
 			}
 		}

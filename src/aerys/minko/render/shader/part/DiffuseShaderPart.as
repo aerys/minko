@@ -39,11 +39,11 @@ package aerys.minko.render.shader.part
 			{
 				var diffuseMap	: SFloat	= meshBindings.getTextureParameter(
 					BasicProperties.DIFFUSE_MAP,
-					meshBindings.getConstant(BasicProperties.DIFFUSE_FILTERING, SamplerFiltering.LINEAR),
-					meshBindings.getConstant(BasicProperties.DIFFUSE_MIPMAPPING, SamplerMipMapping.LINEAR),
-					meshBindings.getConstant(BasicProperties.DIFFUSE_WRAPPING, SamplerWrapping.REPEAT),
+					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_FILTERING, SamplerFiltering.LINEAR),
+					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+					meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_WRAPPING, SamplerWrapping.REPEAT),
 					0,
-                    meshBindings.getConstant(BasicProperties.DIFFUSE_FORMAT, SamplerFormat.RGBA)
+                    meshBindings.getConstant(BasicProperties.DIFFUSE_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				diffuseColor = sampleTexture(diffuseMap, uv);

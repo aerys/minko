@@ -2,6 +2,7 @@ package aerys.minko.render.resource.texture
 {
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.IResource;
+	import aerys.minko.type.enum.SamplerFormat;
 	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -24,6 +25,17 @@ package aerys.minko.render.resource.texture
 		private var _bitmapDatas	: Vector.<BitmapData>;
 		private var _resource		: CubeTexture;
 		private var _size			: uint;
+        private var _mipMapping     : Boolean;
+        
+        public function get format() : uint
+        {
+            return SamplerFormat.RGBA;
+        }
+        
+        public function get mipMapping() : Boolean
+        {
+            return _mipMapping;
+        }
 		
 		public function CubeTextureResource(size : uint)
 		{
@@ -50,6 +62,7 @@ package aerys.minko.render.resource.texture
 												 downSample	: Boolean	= false) : void
 		{
 			_bitmapDatas = new <BitmapData>[];
+            _mipMapping = mipmap;
 			
 			var width	: Number = bitmapData.width / 4;
 			var height	: Number = bitmapData.height / 3;
@@ -58,6 +71,7 @@ package aerys.minko.render.resource.texture
 			for (var side : uint = 0; side < 6; ++side)
 			{
 				var sideBitmapData	: BitmapData	= new BitmapData(width, height, false, 0);
+                
 				tmpMatrix.tx	= - SIDE_X[side] * width;
 				tmpMatrix.ty	= - SIDE_Y[side] * height;
 				
@@ -80,6 +94,7 @@ package aerys.minko.render.resource.texture
 												  mipmap	: Boolean) : void
 		{
 			_bitmapDatas = new <BitmapData>[right, left, top, bottom, front, back];
+            _mipMapping = mipmap;
 		}
 		
 		public function setContentFromATF(atf : ByteArray) : void
@@ -99,21 +114,28 @@ package aerys.minko.render.resource.texture
 					var mipmapId	: uint			= 0;
 					var mySize		: uint			= _size;
 					var bitmapData	: BitmapData	= _bitmapDatas[side];
-					
-					while (mySize >= 1)
-					{
-						var tmpBitmapData	: BitmapData	= new BitmapData(mySize, mySize, false, 0x005500);
-						var tmpMatrix		: Matrix		= new Matrix();
-						
-						tmpMatrix.a		= mySize / bitmapData.width;
-						tmpMatrix.d		= mySize / bitmapData.height;
-						
-						tmpBitmapData.draw(bitmapData, tmpMatrix);
-						_resource.uploadFromBitmapData(tmpBitmapData, side, mipmapId);
-						
-						++mipmapId;
-						mySize /= 2;
-					}
+                    
+                    if (!_mipMapping)
+                        _resource.uploadFromBitmapData(bitmapData, side);
+                    else
+                    {
+                        while (mySize >= 1)
+    					{
+    						var tmpMatrix		: Matrix		= new Matrix();
+    						var tmpBitmapData	: BitmapData	= new BitmapData(
+                                mySize, mySize, false, 0x005500
+                            );
+    						
+    						tmpMatrix.a		= mySize / bitmapData.width;
+    						tmpMatrix.d		= mySize / bitmapData.height;
+    						
+    						tmpBitmapData.draw(bitmapData, tmpMatrix);
+    						_resource.uploadFromBitmapData(tmpBitmapData, side, mipmapId);
+    						
+    						++mipmapId;
+    						mySize /= 2;
+    					}
+                    }
 				}
 				
 				_bitmapDatas = null;

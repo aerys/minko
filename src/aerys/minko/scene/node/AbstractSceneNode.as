@@ -62,7 +62,7 @@ package aerys.minko.scene.node
 		
         final public function get z() : Number
 		{
-			return _transform.translationZ;
+			return _transform.translationZ
 		}
         final public function set z(value : Number) : void
 		{

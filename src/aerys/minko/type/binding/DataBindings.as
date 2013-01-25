@@ -56,28 +56,36 @@ package aerys.minko.type.binding
 			if (_providerToBindingNames[provider])
 				throw new Error('This provider is already bound.');
 			
-			var providerBindingNames	: Vector.<String>	= new <String>[];
-			var dataDescriptor			: Object			= provider.dataDescriptor;
+			var dataDescriptor	: Object	= provider.dataDescriptor;
 			
-			provider.changed.add(providerChangedHandler);
-			
-			_providerToBindingNames[provider] = providerBindingNames;
+			provider.propertyChanged.add(propertyChangedHandler);
+			if (provider is IDynamicDataProvider)
+			{
+				var dynamicProvider : IDynamicDataProvider = provider as IDynamicDataProvider;
+				
+				dynamicProvider.propertyAdded.add(addBinding);
+				dynamicProvider.propertyRemoved.add(removeBinding);
+			}
+				
+			_providerToBindingNames[provider] = new <String>[];
 			_providers.push(provider);
 			
-			for (var attrName : String in dataDescriptor)
+			for (var propertyName : String in dataDescriptor)
 				addBinding(
-					dataDescriptor[attrName],
-					provider[attrName],
 					provider,
-					providerBindingNames
+					propertyName,
+					dataDescriptor[propertyName],
+					provider[propertyName]
 				);
 		}
 		
-		private function addBinding(bindingName 			: String,
-									value 					: Object,
-									provider				: IDataProvider,
-									providerBindingNames	: Vector.<String>) : void
+		private function addBinding(provider		: IDataProvider,
+									propertyName	: String,
+									bindingName		: String,
+									value			: Object) : void
 		{
+			var providerBindingNames	: Vector.<String> 	= _providerToBindingNames[provider];
+			
 			if (_bindingNames.indexOf(bindingName) != -1)
 				throw new Error(
 					'Another data provider is already declaring the \'' + bindingName
@@ -97,43 +105,52 @@ package aerys.minko.type.binding
 		public function removeProvider(provider : IDataProvider) : void
 		{
 			var providerBindingsNames 	: Vector.<String> 	= _providerToBindingNames[provider];
-			var tmpValues				: Object			= {};
 			
 			if (providerBindingsNames == null)
 				throw new ArgumentError('Unknown provider.');
 			
-			var numBindings : uint = _bindingNames.length;
-			for (var indexRead : uint = 0, indexWrite : uint = 0;
-				indexRead < numBindings;
-				++indexRead)
+			var numProviders : uint = _providers.length - 1;
+			
+			provider.propertyChanged.remove(propertyChangedHandler);
+			if (provider is IDynamicDataProvider)
 			{
-				var bindingName : String = _bindingNames[indexRead];
+				var dynamicProvider : IDynamicDataProvider = provider as IDynamicDataProvider;
 				
-				if (providerBindingsNames.indexOf(bindingName) != -1)
-				{
-					tmpValues[bindingName] = _bindingNameToValue[bindingName];
-					
-					delete _bindingNameToValue[bindingName];
-					delete _bindingNameToProvider[bindingName];
-				}
-				else
-					_bindingNames[uint(indexWrite++)] = _bindingNames[indexRead];
+				dynamicProvider.propertyAdded.remove(addBinding);
+				dynamicProvider.propertyRemoved.remove(removeBinding);
 			}
-			_bindingNames.length = indexWrite;
 			
-			provider.changed.remove(providerChangedHandler);
-			
-			_providers.splice(_providers.indexOf(provider), 1);
-			
+			_providers[_providers.indexOf(provider)] = _providers[numProviders];
+			_providers.length = numProviders;
 			delete _providerToBindingNames[provider];
 			
-			for each (bindingName in providerBindingsNames)
-			{
-				var changedSignal : Signal = _bindingNameToChangedSignal[bindingName] as Signal;
+			var dataDescriptor : Object = provider.dataDescriptor;
+			
+			for (var propertyName : String in dataDescriptor)
+				removeBinding(
+					provider,
+					propertyName,
+					dataDescriptor[propertyName],
+					provider[propertyName]
+				);
+		}
+		
+		public function removeBinding(provider		: IDataProvider,
+									  propertyName	: String,
+									  bindingName	: String,
+									  value			: Object) : void
+		{
+			var numBindings 	: uint 		= _bindingNames.length - 1;
+			var changedSignal 	: Signal 	= _bindingNameToChangedSignal[bindingName] as Signal;
+
+			delete _bindingNameToValue[bindingName];
+			delete _bindingNameToProvider[bindingName];
+			
+			_bindingNames[_bindingNames.indexOf(bindingName)] = _bindingNames[numBindings];
+			_bindingNames.length = numBindings;
 				
-				if (changedSignal != null)
-					changedSignal.execute(this, bindingName, tmpValues[bindingName], null);
-			}
+			if (changedSignal != null)
+				changedSignal.execute(this, bindingName, value, null);
 		}
 		
 		public function removeAllProviders() : void
@@ -166,6 +183,7 @@ package aerys.minko.type.binding
 									   callback		: Function) : void
 		{
 			var signal : Signal = _bindingNameToChangedSignal[bindingName];
+            
 			if (!signal)
 				throw new ArgumentError('Unkown property \'' + bindingName + '\'.');
 			
@@ -222,59 +240,25 @@ package aerys.minko.type.binding
 			}
 		}
 		
-		private function providerChangedHandler(source 			: IDataProvider,
+		private function propertyChangedHandler(source 			: IDataProvider,
 												attributeName 	: String) : void
 		{
 			if (attributeName == null)
-			{
 				throw new Error('DataProviders must change only one property at a time.');
-			}
-			else if (attributeName == 'dataDescriptor')
-			{
-				removeProvider(source);
-				addProvider(source);
-			}
-			else
-			{
-				var bindingName : String	= source.dataDescriptor[attributeName];
-				var oldValue	: Object	= _bindingNameToValue[bindingName];
-				var newValue	: Object	= source[attributeName];
-				
-				_bindingNameToValue[bindingName] = newValue;
-				
-				if (_bindingNameToChangedSignal[bindingName])
-					_bindingNameToChangedSignal[bindingName].execute(
-						this,
-						bindingName,
-						oldValue,
-						newValue
-					);
-			}
+
+			var bindingName : String	= source.dataDescriptor[attributeName];
+			var oldValue	: Object	= _bindingNameToValue[bindingName];
+			var newValue	: Object	= source[attributeName];
+			
+			_bindingNameToValue[bindingName] = newValue;
+			
+			if (_bindingNameToChangedSignal[bindingName])
+				_bindingNameToChangedSignal[bindingName].execute(
+					this,
+					bindingName,
+					oldValue,
+					newValue
+				);
 		}
-		
-//		FIXME: handle provider's properties removal
-//		private function updateProviderBindings(provider : IDataProvider) : void
-//		{
-//			var dataDescriptor			: Object			= provider.dataDescriptor;
-//			var providerBindingNames	: Vector.<String>	= _providerToBindingNames[provider];
-//			var numBindingNames			: uint				= providerBindingNames.length;
-//			
-//			for (var bindingNameId : uint; bindingNameId < numBindingNames; ++bindingNameId)
-//			{
-//				var bindingName : String = providerBindingNames[bindingNameId];
-//				
-//				if (!dataDescriptor.hasOwnProperty(bindingName))
-//					
-//			}
-//			
-//			for (var propertyName : String in dataDescriptor)
-//				if (providerBindingNames.indexOf(propertyName) < -1)
-//					addBinding(
-//						dataDescriptor[propertyName],
-//						provider[propertyName],
-//						provider,
-//						providerBindingNames
-//					);
-//		}
 	}
 }

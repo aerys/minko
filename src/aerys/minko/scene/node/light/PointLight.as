@@ -28,8 +28,6 @@ package aerys.minko.scene.node.light
 		
 		private static const TMP_VECTOR		: Vector4 = new Vector4();
 		
-		private var _shadowMapSize	: uint;
-		
 		public function get diffuse() : Number
 		{
 			return lightData.getLightProperty('diffuse') as Number;
@@ -132,8 +130,6 @@ package aerys.minko.scene.node.light
 								   shadowZFar			: Number	= 1000.,
                                    shadowBias           : uint      = 1. / 256. / 256.)
 		{
-			_shadowMapSize	= shadowMapSize;
-			
 			super(
 				new PointLightController(),
 				LIGHT_TYPE,
@@ -146,6 +142,7 @@ package aerys.minko.scene.node.light
 			this.shininess				= shininess;
 			this.attenuationDistance	= attenuationDistance;
 			this.shadowCastingType		= shadowCastingType;
+            this.shadowMapSize          = shadowMapSize;
 			this.shadowZNear			= shadowZNear;
 			this.shadowZFar		    	= shadowZFar;
             this.shadowBias             = shadowBias;

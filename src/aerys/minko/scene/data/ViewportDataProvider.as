@@ -23,7 +23,7 @@ package aerys.minko.scene.data
 			if (_width != value)
 			{
 				_width = value;
-				changed.execute(this, 'width');
+				propertyChanged.execute(this, 'width');
 			}
 		}
 		
@@ -36,7 +36,7 @@ package aerys.minko.scene.data
 			if (_height != value)
 			{
 				_height = value;
-				changed.execute(this, 'height');
+				propertyChanged.execute(this, 'height');
 			}
 		}
 		

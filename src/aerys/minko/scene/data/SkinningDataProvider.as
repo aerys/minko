@@ -16,24 +16,18 @@ package aerys.minko.scene.data
 			'dqD'			: 'skinningDQd' 
 		};
 		
-		private var _method				: uint				= 0;
-		private var _numBones			: uint				= 0;
-		private var _maxInfluences		: uint				= 0;
-		private var _matrices			: Vector.<Number>	= null;
-		private var _dqN				: Vector.<Number>	= null;
-		private var _dqD				: Vector.<Number>	= null;
+		private var _method			: uint;
+		private var _numBones		: uint;
+		private var _maxInfluences	: uint;
+		private var _matrices		: Vector.<Number>;
+		private var _dqN			: Vector.<Number>;
+		private var _dqD			: Vector.<Number>;
 		
-		private var _changed			: Signal			= new Signal('SkinningDataProvider.changed');
-		private var _propertyChanged	: Signal			= new Signal('SkinningDataProvider.propertyChanged');
-		
-		public function get changed() : Signal
-		{
-			return _changed;
-		}
+		private var _changed		: Signal;
 		
 		public function get propertyChanged() : Signal
 		{
-			return _propertyChanged;
+			return _changed;
 		}
 		
 		public function get usage() : uint
@@ -109,6 +103,13 @@ package aerys.minko.scene.data
 		public function SkinningDataProvider()
 		{
 			super();
+			
+			initialize();
+		}
+		
+		private function initialize() : void
+		{
+			_changed = new Signal('SkinningDataProvider.changed');
 		}
 		
 		public function clone() : IDataProvider

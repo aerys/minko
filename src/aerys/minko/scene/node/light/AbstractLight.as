@@ -49,6 +49,33 @@ package aerys.minko.scene.node.light
 			return _type;
 		}
 		
+		public function get lightBleedingBias() : Number
+		{
+			return lightData.getLightProperty('lightBleedingBias');
+		}
+		public function set lightBleedingBias(value : Number) : void
+		{
+			lightData.setLightProperty('lightBleedingBias', value);
+		}
+		
+		public function get lightBleedingInterpolation() : uint
+		{
+			return lightData.getLightProperty('lightBleedingInterpolation');
+		}
+		public function set lightBleedingInterpolation(value : uint) : void
+		{
+			lightData.setLightProperty('lightBleedingInterpolation', value);
+		}
+		
+		public function get exponentialFactor() : uint
+		{
+			return lightData.getLightProperty('exponentialFactor');
+		}
+		public function set exponentialFactor(value : uint) : void
+		{
+			lightData.setLightProperty('exponentialFactor', value);
+		}
+		
 		public function AbstractLight(controller		: LightController,
 									  type				: uint,
 									  color				: uint,
