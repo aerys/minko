@@ -4,10 +4,9 @@ package aerys.minko.render.shader.compiler
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	import avmplus.getQualifiedClassName;
-	
 	import flash.geom.Point;
 	import flash.geom.Vector3D;
+	import flash.utils.getQualifiedClassName;
 
 	/**
 	 * The Serializer class provides a set of static methods to serialize
@@ -100,7 +99,7 @@ package aerys.minko.render.shader.compiler
 			}
 			else
 			{
-				throw new Error('Unsupported type:' + getQualifiedClassName(data));
+				throw new Error('Unsupported type:' + getQualifiedClassName(data);
 			}
 		}
 		
