@@ -126,7 +126,7 @@ package aerys.minko.scene.controller
 					_totalTime = _timelines[timelineId].duration;
 			
 			setPlaybackWindow(0, _totalTime);
-			goto(0).play();
+			seek(0).play();
 		}
 		
 		override public function clone() : AbstractController
@@ -147,7 +147,7 @@ package aerys.minko.scene.controller
 			return _timelines[index];
 		}
 		
-		public function goto(time : Object) : AnimationController
+		public function seek(time : Object) : AnimationController
 		{
 			var timeValue : uint = getAnimationTime(time);
 			
