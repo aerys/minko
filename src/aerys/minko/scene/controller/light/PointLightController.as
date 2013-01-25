@@ -20,7 +20,7 @@ package aerys.minko.scene.controller.light
 		
 		public function PointLightController()
 		{
-			super(PointLight, ShadowMappingType.CUBE | ShadowMappingType.DUAL_PARABOLOID);
+			super(PointLight, ShadowMappingType.CUBE | ShadowMappingType.DUAL_PARABOLOID | ShadowMappingType.VARIANCE | ShadowMappingType.EXPONENTIAL);
 			
 			initialize();
 		}
@@ -43,15 +43,14 @@ package aerys.minko.scene.controller.light
 		override protected function lightAddedToScene(scene : Scene) : void
 		{
 			super.lightAddedToScene(scene);
-			
+
+            light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
 			updateProjectionMatrix();
 		}
 		
-        override protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,
-                                                                             localToWorld  : Matrix4x4) : void
+        protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,
+                                                                    localToWorld  : Matrix4x4) : void
 		{
-            super.lightLocalToWorldTransformChangedHandler(light, localToWorld);
-            
 			localToWorld.getTranslation(_worldPosition);
 		}
 		

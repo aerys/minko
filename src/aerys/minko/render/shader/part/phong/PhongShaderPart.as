@@ -7,13 +7,16 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.phong.attenuation.CubeShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.DPShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.DistanceAttenuationShaderPart;
+	import aerys.minko.render.shader.part.phong.attenuation.ExponentialShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.HardConicAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.IAttenuationShaderPart;
-	import aerys.minko.render.shader.part.phong.attenuation.MatrixShadowMapAttenuationShaderPart;
+	import aerys.minko.render.shader.part.phong.attenuation.PCFShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.SmoothConicAttenuationShaderPart;
+	import aerys.minko.render.shader.part.phong.attenuation.VarianceShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.InfiniteShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.LocalizedShaderPart;
 	import aerys.minko.type.enum.NormalMappingType;
+	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
 	/**
@@ -36,9 +39,11 @@ package aerys.minko.render.shader.part.phong
 		private var _distanceAttenuationPart		: DistanceAttenuationShaderPart;
 		private var _smoothConicAttenuationPart		: SmoothConicAttenuationShaderPart;
 		private var _hardConicAttenuationPart		: HardConicAttenuationShaderPart;
-		private var _matrixShadowMapAttenuation		: MatrixShadowMapAttenuationShaderPart;
+		private var _matrixShadowMapAttenuation		: PCFShadowMapAttenuationShaderPart;
 		private var _cubeShadowMapAttenuation		: CubeShadowMapAttenuationShaderPart;
 		private var _dpShadowMapAttenuation			: DPShadowMapAttenuationShaderPart;
+		private var _varianceShadowMapAttenuation	: VarianceShadowMapAttenuationShaderPart;
+		private var _exponentialShadowMapAttenuation: ExponentialShadowMapAttenuationShaderPart;
 		
 		private function get infinitePart() : InfiniteShaderPart
 		{
@@ -70,10 +75,10 @@ package aerys.minko.render.shader.part.phong
 			return _hardConicAttenuationPart;
 		}
 		
-		private function get matrixShadowMapAttenuation() : MatrixShadowMapAttenuationShaderPart
+		private function get matrixShadowMapAttenuation() : PCFShadowMapAttenuationShaderPart
 		{
 			return _matrixShadowMapAttenuation
-				|| (_matrixShadowMapAttenuation = new MatrixShadowMapAttenuationShaderPart(main));
+				|| (_matrixShadowMapAttenuation = new PCFShadowMapAttenuationShaderPart(main));
 		}
 		
 		private function get cubeShadowMapAttenuation() : CubeShadowMapAttenuationShaderPart
@@ -86,6 +91,18 @@ package aerys.minko.render.shader.part.phong
 		{
 			return _dpShadowMapAttenuation
 				|| (_dpShadowMapAttenuation = new DPShadowMapAttenuationShaderPart(main));
+		}
+		
+		private function get varianceShadowMapAttenuation() : VarianceShadowMapAttenuationShaderPart
+		{
+			return _varianceShadowMapAttenuation
+				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main));
+		}
+		
+		private function get exponentialShadowMapAttenuation() : ExponentialShadowMapAttenuationShaderPart
+		{
+			return _exponentialShadowMapAttenuation
+				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main));
 		}
 		
 		public function PhongShaderPart(main : Shader)
@@ -209,7 +226,7 @@ package aerys.minko.render.shader.part.phong
 			if (computeShadows)
 				switch (shadowCasting)
 				{
-					case ShadowMappingType.MATRIX :
+					case ShadowMappingType.PCF :
 						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 					case ShadowMappingType.CUBE :
@@ -217,6 +234,12 @@ package aerys.minko.render.shader.part.phong
 						break ;
 					case ShadowMappingType.DUAL_PARABOLOID :
 						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.VARIANCE :
+						contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.EXPONENTIAL :
+						contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 				}
 			
@@ -265,7 +288,7 @@ package aerys.minko.render.shader.part.phong
 			{
 				switch (shadowCasting)
 				{
-					case ShadowMappingType.MATRIX :
+					case ShadowMappingType.PCF :
 						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 					case ShadowMappingType.CUBE :
@@ -273,6 +296,12 @@ package aerys.minko.render.shader.part.phong
 						break ;
 					case ShadowMappingType.DUAL_PARABOLOID :
 						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.VARIANCE :
+						contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.EXPONENTIAL :
+						contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 				}
 			}
@@ -326,7 +355,7 @@ package aerys.minko.render.shader.part.phong
 			if (computeShadows)
 				switch (shadowCasting)
 				{
-					case ShadowMappingType.MATRIX :
+					case ShadowMappingType.PCF :
 						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 					case ShadowMappingType.CUBE :
@@ -334,6 +363,12 @@ package aerys.minko.render.shader.part.phong
 						break ;
 					case ShadowMappingType.DUAL_PARABOLOID :
 						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.VARIANCE :
+						contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+						break ;
+					case ShadowMappingType.EXPONENTIAL :
+						contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
 						break ;
 				}
 			

@@ -186,7 +186,7 @@ package aerys.minko.render
 			{
                 if (meshBindings.hasCallback(parameter, parameterChangedHandler))
 				    meshBindings.removeCallback(parameter, parameterChangedHandler);
-                else if (sceneBindings.hasCallback(parameter, parameterChangedHandler))
+                if (sceneBindings.hasCallback(parameter, parameterChangedHandler))
     				sceneBindings.removeCallback(parameter, parameterChangedHandler);
 			}
 			

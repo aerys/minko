@@ -86,7 +86,7 @@ package aerys.minko.scene.controller.camera
 			camera.activated.add(cameraActivatedHandler);
 			camera.deactivated.add(cameraDeactivatedHandler);
 			
-			_data.changed.add(cameraPropertyChangedHandler);
+			_data.propertyChanged.add(cameraPropertyChangedHandler);
 			
 			sceneBindings.addCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.addCallback('viewportHeight', viewportSizeChanged);
@@ -113,7 +113,7 @@ package aerys.minko.scene.controller.camera
 			camera.activated.remove(cameraActivatedHandler);
 			camera.deactivated.remove(cameraDeactivatedHandler);
 			
-			_data.changed.remove(cameraPropertyChangedHandler);
+			_data.propertyChanged.remove(cameraPropertyChangedHandler);
 			
 			sceneBindings.removeCallback('viewportWidth', viewportSizeChanged);
 			sceneBindings.removeCallback('viewportHeight', viewportSizeChanged);

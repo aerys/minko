@@ -16,9 +16,9 @@ package aerys.minko.render.shader.part.phong.attenuation
 	 * 
 	 * @author Romain Gilliotte
 	 */
-	public class MatrixShadowMapAttenuationShaderPart extends LightAwareShaderPart implements IAttenuationShaderPart
+	public class PCFShadowMapAttenuationShaderPart extends LightAwareShaderPart implements IAttenuationShaderPart
 	{
-		public function MatrixShadowMapAttenuationShaderPart(main : Shader)
+		public function PCFShadowMapAttenuationShaderPart(main : Shader)
 		{
 			super(main);
 		}

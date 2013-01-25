@@ -7,16 +7,18 @@ package aerys.minko.type.binding
 	import flash.utils.Proxy;
 	import flash.utils.flash_proxy;
 	
-	public dynamic class DataProvider extends Proxy implements IDataProvider
+	public dynamic class DataProvider extends Proxy implements IDynamicDataProvider
 	{	
-		private var _usage					: uint			= 1;
-		private var _name					: String		= null;
-		private var _descriptor				: Object		= {};
+		private var _usage				: uint;
+		private var _name				: String;
+		private var _descriptor			: Object;
 		
-		private var _changed				: Signal		= new Signal('DataProvider.changed');
+		private var _propertyChanged	: Signal;
+		private var _propertyAdded		: Signal;
+		private var _propertyRemoved	: Signal;
 			
-		private var _nameToProperty			: Object		= {};
-		private var _propertyToNames		: Dictionary	= new Dictionary();  // dic[Vector.<String>[]]
+		private var _nameToProperty		: Object;
+		private var _propertyToNames	: Dictionary;
 		
 		public function get usage() : uint
 		{
@@ -28,9 +30,19 @@ package aerys.minko.type.binding
 			return _descriptor;
 		}
 		
-		public function get changed() : Signal
+		public function get propertyChanged() : Signal
 		{
-			return _changed;
+			return _propertyChanged;
+		}
+		
+		public function get propertyAdded() : Signal
+		{
+			return _propertyAdded;
+		}
+		
+		public function get propertyRemoved() : Signal
+		{
+			return _propertyRemoved;
 		}
 		
 		public function get name() : String
@@ -55,8 +67,14 @@ package aerys.minko.type.binding
 		
 		private function initialize(properties : Object) : void
 		{
-			var propertyName : String = null;
+			_descriptor = {};
+			_propertyChanged = new Signal('DataProvider.changed');
+			_propertyAdded = new Signal('DataProvider.propertyAdded');
+			_propertyRemoved = new Signal('DataProvider.propertyRemoved');
+			_nameToProperty = {};
+			_propertyToNames = new Dictionary();
 			
+			var propertyName : String = null;
 			
 			if (properties is DataProvider)
 			{
@@ -97,32 +115,29 @@ package aerys.minko.type.binding
 		public function setProperty(name : String, newValue : Object) : DataProvider
 		{
 			var oldValue 			: Object			= _nameToProperty[name];
-			var oldMonitoredValue	: IWatchable		= oldValue as IWatchable;
-			var newMonitoredValue	: IWatchable		= newValue as IWatchable;
-			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
-			var newPropertyNames	: Vector.<String>	= _propertyToNames[newMonitoredValue];
+			var oldWatchedValue	    : IWatchable		= oldValue as IWatchable;
+			var newWatchedValue	    : IWatchable		= newValue as IWatchable;
+			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldWatchedValue];
+			var newPropertyNames	: Vector.<String>	= _propertyToNames[newWatchedValue];
 			
-			if (oldMonitoredValue != null)
-			{
-				if (oldPropertyNames.length == 1)
-				{
-					oldMonitoredValue.changed.remove(propertyChangedHandler);
-					delete _propertyToNames[oldMonitoredValue];
-				}
-				else
-					oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
-			}
+            if (newWatchedValue != oldWatchedValue)
+            {
+    			if (oldWatchedValue != null)
+    			    unwatchProperty(name, oldWatchedValue);
+    			
+    			if (newWatchedValue != null)
+    				watchProperty(name, newWatchedValue);
+            }
 			
-			if (newMonitoredValue != null)
-				watchProperty(name, newMonitoredValue);
+			var propertyAdded : Boolean = !_descriptor.hasOwnProperty(name);
 			
 			_descriptor[name]		= name;
 			_nameToProperty[name]	= newValue;
 			
-			if (oldValue === null)
-				_changed.execute(this, 'dataDescriptor');
-//			else
-				_changed.execute(this, name);
+			if (propertyAdded)
+				_propertyAdded.execute(this, name, name, newValue);
+			else
+				_propertyChanged.execute(this, name);
 			
 			return this;
 		}
@@ -150,27 +165,42 @@ package aerys.minko.type.binding
 					newPropertyNames.push(name);
 			}
 		}
+        
+        protected function unwatchProperty(name : String, property : IWatchable) : void
+        {
+            var oldPropertyNames	: Vector.<String>	= _propertyToNames[property];
+            
+            if (oldPropertyNames.length == 1)
+            {
+                property.changed.remove(propertyChangedHandler);
+                delete _propertyToNames[property];
+            }
+            else
+            {
+                var numPropertyNames : uint = oldPropertyNames.length - 1;
+                
+                oldPropertyNames[oldPropertyNames.indexOf(name)] = oldPropertyNames[numPropertyNames];
+                oldPropertyNames.length = numPropertyNames;
+            }
+        }
 		
 		public function removeProperty(name : String) : DataProvider
 		{
-			var oldMonitoredValue	: IWatchable	= _nameToProperty[name] as IWatchable;
-			var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
-			
-			delete _descriptor[name];
-			delete _nameToProperty[name];
-			
-			if (oldMonitoredValue != null)
+			if (_descriptor.hasOwnProperty(name))
 			{
-				if (oldPropertyNames.length == 1)
-				{
-					oldMonitoredValue.changed.remove(propertyChangedHandler);
-					delete _propertyToNames[oldMonitoredValue];
-				}
-				else
-					oldPropertyNames.splice(oldPropertyNames.indexOf(name), 1);
+				var oldMonitoredValue	: IWatchable		= _nameToProperty[name] as IWatchable;
+				var oldPropertyNames	: Vector.<String>	= _propertyToNames[oldMonitoredValue];
+				var bindingName			: String			= _descriptor[name];
+				
+				delete _descriptor[name];
+				delete _nameToProperty[name];
+				
+				if (oldMonitoredValue != null)
+					unwatchProperty(name, oldMonitoredValue);
+				
+	//			_changed.execute(this, 'dataDescriptor');
+				_propertyRemoved.execute(this, name, bindingName, oldMonitoredValue);
 			}
-			
-			_changed.execute(this, 'dataDescriptor');
 			
 			return this;
 		}
@@ -182,6 +212,17 @@ package aerys.minko.type.binding
 			
 			return this;
 		}
+        
+        public function dispose() : void
+        {
+            removeAllProperties();
+            _propertyToNames = null;
+            _nameToProperty = null;
+            _descriptor = null;
+            _propertyAdded = null;
+            _propertyChanged = null;
+            _propertyRemoved = null;
+        }
 		
 		public function propertyExists(name : String) : Boolean
 		{
@@ -190,7 +231,7 @@ package aerys.minko.type.binding
 		
 		public function invalidate() : DataProvider
 		{
-			_changed.execute(this, null);
+			_propertyChanged.execute(this, null);
 			
 			return this;
 		}
@@ -217,7 +258,7 @@ package aerys.minko.type.binding
 			var numNames	: uint				= names.length;
 			
 			for (var nameId : uint = 0; nameId < numNames; ++nameId)
-				_changed.execute(this, names[nameId]);
+				_propertyChanged.execute(this, names[nameId]);
 		}
 	}
 }

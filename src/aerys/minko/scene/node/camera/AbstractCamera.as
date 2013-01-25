@@ -3,12 +3,12 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
+	
+	import flash.geom.Point;
 	
 	public class AbstractCamera extends AbstractSceneNode
 	{
@@ -127,6 +127,11 @@ package aerys.minko.scene.node.camera
 		}
 		
 		public function unproject(x : Number, y : Number, out : Ray = null) : Ray
+		{
+			throw new Error('Must be overriden.');
+		}
+		
+		public function project(localToWorld : Matrix4x4, output : Point = null) : Point
 		{
 			throw new Error('Must be overriden.');
 		}

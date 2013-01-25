@@ -11,7 +11,9 @@ package aerys.minko.render.shader.compiler
 		public static const AVAILABLE_FS	: uint = 2;
 		public static const AVAILABLE_CPU	: uint = 4;
 		
-		public static const AVAILABLE_ALL	: uint = 1 | 2 | 4;
+		public static const AVAILABLE_ALL	: uint = AVAILABLE_VS
+													| AVAILABLE_FS
+													| AVAILABLE_CPU;
 		
 		public static const SPECIAL_MATRIX	: uint = 8;
 		public static const COMMUTATIVE		: uint = 16;

@@ -12,7 +12,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	
-	public class MatrixShadowMapShader extends Shader
+	public class PCFShadowMapShader extends Shader
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffusePart			: DiffuseShaderPart;
@@ -20,7 +20,7 @@ package aerys.minko.render.material.phong
 		private var _lightId				: uint;
 		private var _clipspacePosition		: SFloat;
 		
-		public function MatrixShadowMapShader(lightId		: uint,
+		public function PCFShadowMapShader(lightId		: uint,
 											  priority		: Number,
 											  renderTarget	: RenderTarget)
 		{

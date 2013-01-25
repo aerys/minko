@@ -194,6 +194,78 @@ package aerys.minko.render.geometry.stream
 				_boundsChanged.execute(this);
 		}
 		
+		/**
+		 * Compute the minimum and maximum bounds of this VertexStream within the specified range
+		 * 
+		 * @param firstIndex The index of the first vertex to consider in the stream.
+		 * @param numVertices The number of vertices to consider, starting from the previous parameter
+		 * @param offsetComponents The offset in the VertexComponents
+		 * @param indexStream The IndexStream where the indices will be read. If null, the indices will range from firstIndex to numVertices.
+		 * @param min The Vector where the minimum bound will be stored.
+		 * @param max The Vector where the maximum bound will be stored.
+		 * 
+		 * @return The number of components in a Vertex.
+		 * Note that if min and max are too small and fixed, this function will do nothing and
+		 * will just return the required length.
+		 * 
+		 */
+		public function getMinMaxBetween(firstIndex			: uint,
+										 numVertices		: uint,
+										 offsetComponents	: uint,
+										 indexStream		: IndexStream,
+										 min				: Vector.<Number>,
+										 max				: Vector.<Number>) : uint
+		{
+			var stride			: uint		= format.numBytesPerVertex >>> 2;
+			var vectorLength	: uint		= stride - offsetComponents;
+			var i				: uint		= 0;
+			var j				: uint		= 0;
+			var index			: uint		= 0;
+			var value			: Number	= .0;
+			
+			if (min == null || min.length < vectorLength ||
+				max == null || max.length < vectorLength)
+			{
+				if (min.fixed || max.fixed)
+				{
+					return vectorLength;
+				}
+				else
+				{
+					min.length = vectorLength;
+					max.length = vectorLength;
+				}
+			}
+			
+			for (i = 0; i < vectorLength; ++i)
+			{
+				min[i] = Number.MAX_VALUE;
+				max[i] = -Number.MAX_VALUE;
+			}
+			
+			for (i = 0; i < numVertices; ++i)
+			{
+				index 			= indexStream != null ? indexStream.get(firstIndex + i) : i;
+				_data.position	= (index * stride + offsetComponents) * 4;
+				for (j = 0; j < vectorLength; ++j)
+				{
+					value = _data.readFloat();
+					
+					if (value < min[j])
+					{
+						min[j] = value;
+					}
+					if (value > max[j])
+					{
+						max[j] = value;
+					}
+				}
+			}
+			_data.position = 0;
+			
+			return stride;
+		}
+		
 		public function deleteVertex(index : uint) : IVertexStream
 		{
 			checkWriteUsage(this);
