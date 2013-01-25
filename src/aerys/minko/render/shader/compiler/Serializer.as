@@ -99,7 +99,7 @@ package aerys.minko.render.shader.compiler
 			}
 			else
 			{
-				throw new Error('Unsupported type:' + getQualifiedClassName(data);
+				throw new Error('Unsupported type:' + getQualifiedClassName(data));
 			}
 		}
 		
