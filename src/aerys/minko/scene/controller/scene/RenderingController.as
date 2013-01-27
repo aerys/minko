@@ -324,7 +324,7 @@ package aerys.minko.scene.controller.scene
 			_scene.enterFrame.add(sceneEnterFrameHandler);
 //			_scene.exitFrame.add(sceneExitFrameHandler);
 			_scene.descendantAdded.add(descendantAddedHandler);
-			_scene.descendantRemoved.add(descendantRemovedHandler);
+//			_scene.descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		private function sceneEnterFrameHandler(scene 		: Scene,
@@ -368,9 +368,10 @@ package aerys.minko.scene.controller.scene
 		private function targetRemovedHandler(controller : RenderingController,
 											  scene		 : Scene) : void
 		{
-			_scene.descendantAdded.remove(descendantAddedHandler);
-			_scene.descendantRemoved.remove(descendantRemovedHandler);
-			_scene = null;
+			throw new Error();
+//			_scene.descendantAdded.remove(descendantAddedHandler);
+//			_scene.descendantRemoved.remove(descendantRemovedHandler);
+//			_scene = null;
 		}
 		
 		/**
@@ -394,25 +395,28 @@ package aerys.minko.scene.controller.scene
 		 * Is called each time something is removed from the scene.
 		 * This will forward its calls to removeMesh.
 		 */
-		private function descendantRemovedHandler(group : Group,
-											 	  child : ISceneNode) : void
-		{
-			if (child is Mesh)
-				removeMesh(Mesh(child));
-			else if (child is Group)
-			{
-				for each (var mesh : Mesh in Group(child).getDescendantsByType(Mesh, TMP_MESHES))
-					removeMesh(mesh);
-				TMP_MESHES.length = 0;
-			}
-		}
+//		private function descendantRemovedHandler(group : Group,
+//											 	  child : ISceneNode) : void
+//		{
+//			if (child is Mesh)
+//				removeMesh(Mesh(child));
+//			else if (child is Group)
+//			{
+//				for each (var mesh : Mesh in Group(child).getDescendantsByType(Mesh, TMP_MESHES))
+//					removeMesh(mesh);
+//				TMP_MESHES.length = 0;
+//			}
+//		}
 		
 		private function addMesh(mesh : Mesh) : void
 		{
-			mesh.bindings.addCallback('effect', meshEffectChangedHandler);
-			mesh.bindings.addCallback('computedVisibility', meshVisibilityChangedHandler);
-			mesh.bindings.addCallback('frame', meshFrameChangedHandler);
-			mesh.bindings.addCallback('geometry', meshGeometryChangedHandler);
+			var meshBindings : DataBindings = mesh.bindings;
+			
+			mesh.removed.add(meshRemovedHandler);
+			meshBindings.addCallback('effect', meshEffectChangedHandler);
+			meshBindings.addCallback('computedVisibility', meshVisibilityChangedHandler);
+			meshBindings.addCallback('frame', meshFrameChangedHandler);
+			meshBindings.addCallback('geometry', meshGeometryChangedHandler);
             
 			// retrieve references to the data we want to use, to save some function calls
 			var material	: Material	= mesh.material;
@@ -428,13 +432,18 @@ package aerys.minko.scene.controller.scene
 			createDrawCalls(mesh, effect);
 		}
 		
+		private function meshRemovedHandler(mesh : Mesh, ancestor : Group) : void
+		{
+			removeMesh(mesh);
+		}
 		
 		private function removeMesh(mesh : Mesh) : void
 		{
 			var meshBindings : DataBindings = mesh.bindings;
 			
+			mesh.removed.remove(meshRemovedHandler);
 			meshBindings.removeCallback('effect', meshEffectChangedHandler);
-			meshBindings.removeCallback('computedVisibility', meshEffectChangedHandler);
+			meshBindings.removeCallback('computedVisibility', meshVisibilityChangedHandler);
 			meshBindings.removeCallback('frame', meshFrameChangedHandler);
 			meshBindings.removeCallback('geometry', meshGeometryChangedHandler);
 			
@@ -643,6 +652,10 @@ package aerys.minko.scene.controller.scene
 			
 			// retrieve drawcalls
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+			
+			if (!drawCalls)
+				return ;
+			
 			var numDrawCalls	: uint				= drawCalls.length;
 			
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
@@ -689,9 +702,13 @@ package aerys.minko.scene.controller.scene
 												 newFrame		: uint) : void
 		{
 			var mesh		: Mesh				= bindings.owner as Mesh;
+			var geom		: Geometry			= mesh.geometry;
+			
+			if (!geom)
+				return ;
+			
 			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numCalls	: uint				= drawCalls.length;
-			var geom		: Geometry			= mesh.geometry;
 			
 			for (var callId : uint = 0; callId < numCalls; ++callId)
 			{
@@ -711,14 +728,19 @@ package aerys.minko.scene.controller.scene
 			
 			if (drawCalls != null)
 			{
-				var numCalls	: uint	= drawCalls.length;
-				var frame		: uint	= mesh.frame;
-				
-				for (var callId : uint = 0; callId < numCalls; ++callId)
+				if (!newGeometry)
+					removeDrawCalls(mesh, mesh.material.effect);
+				else
 				{
-					var drawCall	: DrawCall	= drawCalls[callId];
+					var numCalls	: uint	= drawCalls.length;
+					var frame		: uint	= mesh.frame;
 					
-					drawCall.setGeometry(newGeometry, frame);
+					for (var callId : uint = 0; callId < numCalls; ++callId)
+					{
+						var drawCall	: DrawCall	= drawCalls[callId];
+						
+						drawCall.setGeometry(newGeometry, frame);
+					}
 				}
 			}
 		}
