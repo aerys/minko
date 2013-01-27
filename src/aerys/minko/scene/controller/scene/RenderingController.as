@@ -322,9 +322,7 @@ package aerys.minko.scene.controller.scene
 			
 			_scene = scene;
 			_scene.enterFrame.add(sceneEnterFrameHandler);
-//			_scene.exitFrame.add(sceneExitFrameHandler);
 			_scene.descendantAdded.add(descendantAddedHandler);
-//			_scene.descendantRemoved.add(descendantRemovedHandler);
 		}
 		
 		private function sceneEnterFrameHandler(scene 		: Scene,
@@ -348,20 +346,6 @@ package aerys.minko.scene.controller.scene
 			_lastViewportHeight	= viewportHeight
 		}
 		
-//		private function sceneExitFrameHandler(scene 		: Scene,
-//											   viewport 	: Viewport,
-//											   destination 	: BitmapData,
-//											   time			: Number) : void
-//		{
-//			if (viewport.ready && viewport.visible)
-//			{
-//				_renderingBegin.execute(scene, viewport, destination, time);
-//				_numTriangles = render(viewport, destination);
-//				Factory.sweep();
-//				_renderingEnd.execute(scene, viewport, destination, time);
-//			}
-//		}
-		
 		/**
 		 * Remove callbacks and reset the whole controller.
 		 */
@@ -369,9 +353,6 @@ package aerys.minko.scene.controller.scene
 											  scene		 : Scene) : void
 		{
 			throw new Error();
-//			_scene.descendantAdded.remove(descendantAddedHandler);
-//			_scene.descendantRemoved.remove(descendantRemovedHandler);
-//			_scene = null;
 		}
 		
 		/**
@@ -390,23 +371,6 @@ package aerys.minko.scene.controller.scene
 				TMP_MESHES.length = 0;
 			}
 		}
-		
-		/**
-		 * Is called each time something is removed from the scene.
-		 * This will forward its calls to removeMesh.
-		 */
-//		private function descendantRemovedHandler(group : Group,
-//											 	  child : ISceneNode) : void
-//		{
-//			if (child is Mesh)
-//				removeMesh(Mesh(child));
-//			else if (child is Group)
-//			{
-//				for each (var mesh : Mesh in Group(child).getDescendantsByType(Mesh, TMP_MESHES))
-//					removeMesh(mesh);
-//				TMP_MESHES.length = 0;
-//			}
-//		}
 		
 		private function addMesh(mesh : Mesh) : void
 		{
