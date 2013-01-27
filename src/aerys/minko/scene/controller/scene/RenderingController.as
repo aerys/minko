@@ -410,11 +410,10 @@ package aerys.minko.scene.controller.scene
 		private function addMesh(mesh : Mesh) : void
 		{
 			mesh.bindings.addCallback('effect', meshEffectChangedHandler);
+			mesh.bindings.addCallback('computedVisibility', meshVisibilityChangedHandler);
+			mesh.bindings.addCallback('frame', meshFrameChangedHandler);
+			mesh.bindings.addCallback('geometry', meshGeometryChangedHandler);
             
-            mesh.computedVisibilityChanged.add(meshVisibilityChangedHandler);
-			mesh.frameChanged.add(meshFrameChangedHandler);
-			mesh.geometryChanged.add(meshGeometryChangedHandler);
-			
 			// retrieve references to the data we want to use, to save some function calls
 			var material	: Material	= mesh.material;
 			
@@ -435,13 +434,12 @@ package aerys.minko.scene.controller.scene
 			var meshBindings : DataBindings = mesh.bindings;
 			
 			meshBindings.removeCallback('effect', meshEffectChangedHandler);
+			meshBindings.removeCallback('computedVisibility', meshEffectChangedHandler);
+			meshBindings.removeCallback('frame', meshFrameChangedHandler);
+			meshBindings.removeCallback('geometry', meshGeometryChangedHandler);
 			
 			delete _stashedPropertyChanges[meshBindings];
             
-            mesh.computedVisibilityChanged.remove(meshVisibilityChangedHandler);
-			mesh.frameChanged.remove(meshFrameChangedHandler);
-			mesh.geometryChanged.remove(meshGeometryChangedHandler);
-			
 			var material : Material = mesh.material;
 			
 			if (!material)
@@ -672,20 +670,25 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function meshVisibilityChangedHandler(mesh                  : Mesh,
-                                                      computedVisibility    : Boolean) : void
+		private function meshVisibilityChangedHandler(bindings			: DataBindings,
+													  propertyName		: String,
+													  oldVisibility		: Boolean,
+													  newVisibility		: Boolean) : void
 		{
+			var mesh			: Mesh				= bindings.owner as Mesh;
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numDrawCalls	: uint				= drawCalls.length;
 			
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
-				(drawCalls[drawCallId] as DrawCall).enabled = computedVisibility;
+				(drawCalls[drawCallId] as DrawCall).enabled = newVisibility;
 		}
 		
-		private function meshFrameChangedHandler(mesh		: Mesh,
-												 oldFrame	: uint,
-												 newFrame	: uint) : void
+		private function meshFrameChangedHandler(bindings		: DataBindings,
+												 propertyName	: String,
+												 oldFrame		: uint,
+												 newFrame		: uint) : void
 		{
+			var mesh		: Mesh				= bindings.owner as Mesh;
 			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numCalls	: uint				= drawCalls.length;
 			var geom		: Geometry			= mesh.geometry;
@@ -698,10 +701,12 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function meshGeometryChangedHandler(mesh		: Mesh,
-													oldGeometry	: Geometry,
-													newGeometry	: Geometry) : void
+		private function meshGeometryChangedHandler(bindings		: DataBindings,
+													propertyName	: String,
+													oldGeometry		: Geometry,
+													newGeometry		: Geometry) : void
 		{
+			var mesh		: Mesh				= bindings.owner as Mesh;
 			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			
 			if (drawCalls != null)

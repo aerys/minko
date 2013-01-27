@@ -32,19 +32,14 @@ package aerys.minko.scene.node
 	{
 		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
 		
-		private var _geometry			: Geometry;
+		private var _ctrl				: MeshController;
 		private var _properties			: DataProvider;
 		private var _material			: Material;
 		private var _bindings			: DataBindings;
 		
 		private var _visibility			: MeshVisibilityController;
 		
-		private var _frame				: uint;
-		
 		private var _cloned				: Signal;
-		private var _materialChanged	: Signal;
-		private var _frameChanged		: Signal;
-		private var _geometryChanged	: Signal;
 		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
@@ -104,8 +99,6 @@ package aerys.minko.scene.node
 				
 				if (value)
 					_bindings.addProvider(value);
-				
-				_materialChanged.execute(this, oldMaterial, value);
 			}
 		}
 		
@@ -128,25 +121,12 @@ package aerys.minko.scene.node
 		 */
 		public function get geometry() : Geometry
 		{
-			return _geometry;
+			return _ctrl.geometry;
 		}
 		
 		public function set geometry(value : Geometry) : void
 		{
-			if (_geometry != value)
-			{
-				var oldGeometry	: Geometry = _geometry;
-				
-				if (oldGeometry)
-					oldGeometry.changed.remove(geometryChangedHandler);
-				
-				_geometry = value;
-				
-				if (value)
-					_geometry.changed.add(geometryChangedHandler);
-				
-				_geometryChanged.execute(this, oldGeometry, value);
-			}
+			_ctrl.geometry = value;
 		}
 		
         /**
@@ -180,34 +160,13 @@ package aerys.minko.scene.node
 			return _cloned;
 		}
 		
-		public function get materialChanged() : Signal
-		{
-			return _materialChanged;
-		}
-		
-		public function get frameChanged() : Signal
-		{
-			return _frameChanged;
-		}
-		
-		public function get geometryChanged() : Signal
-		{
-			return _geometryChanged;
-		}
-		
 		public function get frame() : uint
 		{
-			return _frame;
+			return _ctrl.frame;
 		}
 		public function set frame(value : uint) : void
 		{
-			if (_frame != value)
-			{
-				var oldFrame : uint = _frame;
-				
-				_frame = value;
-				_frameChanged.execute(this, oldFrame, value);
-			}
+			_ctrl.frame = value;
 		}
 		
 		public function Mesh(geometry	: Geometry	= null,
@@ -236,16 +195,14 @@ package aerys.minko.scene.node
 			super.initializeSignals();
 			
 			_cloned = new Signal('Mesh.cloned');
-			_materialChanged = new Signal('Mesh.materialChanged');
-			_frameChanged = new Signal('Mesh.frameChanged');
-			_geometryChanged = new Signal('Mesh.geometryChanged');
 		}
 		
 		override protected function initializeContollers():void
 		{
 			super.initializeContollers();
 			
-			addController(new MeshController());
+			_ctrl = new MeshController();
+			addController(_ctrl);
 			
 			_visibility = new MeshVisibilityController();
 			_visibility.frustumCulling = FrustumCulling.ENABLED;
@@ -265,7 +222,7 @@ package aerys.minko.scene.node
 		
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : Number
 		{
-			return _geometry.boundingBox.testRay(
+			return _ctrl.geometry.boundingBox.testRay(
 				ray,
 				getWorldToLocalTransform(),
 				maxDistance
@@ -277,7 +234,7 @@ package aerys.minko.scene.node
 			var clone : Mesh = new Mesh();
 			
 			clone.name 		= name;
-			clone.geometry 	= _geometry;
+			clone.geometry 	= _ctrl.geometry;
 			
 			clone.properties = DataProvider(_properties.clone());
 			clone._bindings.copySharedProvidersFrom(_bindings);
@@ -288,11 +245,6 @@ package aerys.minko.scene.node
 			this.cloned.execute(this, clone);
 			
 			return clone;
-		}
-		
-		private function geometryChangedHandler(geometry : Geometry) : void
-		{
-			_geometryChanged.execute(this, _geometry, _geometry);
 		}
 	}
 }
