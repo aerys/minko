@@ -30,7 +30,7 @@ package aerys.minko.scene.controller.light
 		
 		public function SpotLightController()
 		{
-			super(SpotLight, ShadowMappingType.MATRIX);
+			super(SpotLight, ShadowMappingType.PCF | ShadowMappingType.VARIANCE | ShadowMappingType.EXPONENTIAL);
 			
 			initialize();
 		}

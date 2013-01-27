@@ -13,16 +13,6 @@ package aerys.minko.render.material.basic
 		public static const DEFAULT_BASIC_SHADER	: BasicShader	= new BasicShader();
 		public static const DEFAULT_EFFECT			: Effect		= new Effect(DEFAULT_BASIC_SHADER);
 		
-		public function get diffuseFormat() : uint
-		{
-			return getProperty(BasicProperties.DIFFUSE_FORMAT);
-		}
-		
-		public function set diffuseFormat(value : uint) : void
-		{
-			setProperty(BasicProperties.DIFFUSE_FORMAT, value);
-		}
-		
 		public function get blending() : uint
 		{
 			return getProperty(BasicProperties.BLENDING);
@@ -58,7 +48,43 @@ package aerys.minko.render.material.basic
 		{
 			setProperty(BasicProperties.DIFFUSE_MAP, value);
 		}
+        
+        public function get diffuseMapFiltering() : uint
+        {
+            return getProperty(BasicProperties.DIFFUSE_MAP_FILTERING);
+        }
+        public function set diffuseMapFiltering(value : uint) : void
+        {
+            setProperty(BasicProperties.DIFFUSE_MAP_FILTERING, value);
+        }
+        
+        public function get diffuseMapMipMapping() : uint
+        {
+            return getProperty(BasicProperties.DIFFUSE_MAP_MIPMAPPING);
+        }
+        public function set diffuseMapMipMapping(value : uint) : void
+        {
+            setProperty(BasicProperties.DIFFUSE_MAP_MIPMAPPING, value);
+        }
+        
+        public function get diffuseMapWrapping() : uint
+        {
+            return getProperty(BasicProperties.DIFFUSE_MAP_WRAPPING);
+        }
+        public function set diffuseMapWrapping(value : uint) : void
+        {
+            setProperty(BasicProperties.DIFFUSE_MAP_WRAPPING, value);
+        }
 		
+        public function get diffuseMapFormat() : uint
+        {
+            return getProperty(BasicProperties.DIFFUSE_MAP_FORMAT);
+        }
+        public function set diffuseMapFormat(value : uint) : void
+        {
+            setProperty(BasicProperties.DIFFUSE_MAP_FORMAT, value);
+        }
+        
 		public function get alphaMap() : TextureResource
 		{
 			return getProperty(BasicProperties.ALPHA_MAP) as TextureResource;

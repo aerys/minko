@@ -28,19 +28,18 @@ package aerys.minko.scene.controller.mesh
 	 */
 	public final class DynamicTextureController extends EnterFrameController
 	{
-		private var _data					: DataProvider		= null;
+		private var _data					: DataProvider;
 		
-		private var _source					: DisplayObject		= null;
-		private var _framerate				: Number			= 0.;
-		private var _mipMapping				: Boolean			= false;
-		private var _propertyName			: String			= null;
-		private var _matrix					: Matrix			= null;
-		private var _forceBitmapDataClear	: Boolean			= false;
-		private var _bitmapData				: BitmapData		= null;
-		private var _texture				: TextureResource	= null;
+		private var _source					: DisplayObject;
+		private var _framerate				: Number;
+		private var _mipMapping				: Boolean;
+		private var _propertyName			: String;
+		private var _matrix					: Matrix;
+		private var _forceBitmapDataClear	: Boolean;
+		private var _bitmapData				: BitmapData;
+		private var _texture				: TextureResource;
 		
-		private var _lastDraw	: Number				= 0.;
-		
+		private var _lastDraw	            : Number;
 		
 		/**
 		 * Create a new DynamicTextureController.
@@ -94,7 +93,6 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetAddedHandler(ctrl, target);
 			
-//			(target as Mesh).properties.setProperty(_propertyName, _texture);
 			if (target is Scene)
 				(target as Scene).bindings.addProvider(_data);
 			else if (target is Mesh)
@@ -108,8 +106,6 @@ package aerys.minko.scene.controller.mesh
 		{
 			super.targetRemovedHandler(ctrl, target);
 			
-//			(target as Mesh).properties.removeProperty(_propertyName);
-			
 			if (target is Scene)
 				(target as Scene).bindings.removeProvider(_data);
 			else if (target is Mesh)
@@ -121,15 +117,17 @@ package aerys.minko.scene.controller.mesh
 														   target	: BitmapData,
 														   time		: Number) : void
 		{
-			if (time - _lastDraw > 1000. / _framerate)
+			if (!_lastDraw || time - _lastDraw > 1000. / _framerate)
 			{
 				_lastDraw = time;
 				
 				_bitmapData ||= new BitmapData(_source.width, _source.height);
 				if (_forceBitmapDataClear)
-				{
-					_bitmapData.fillRect(new Rectangle(0, 0, _bitmapData.width, _bitmapData.height), 0);
-				}
+					_bitmapData.fillRect(
+                        new Rectangle(0, 0, _bitmapData.width, _bitmapData.height),
+                        0
+                    );
+                
 				_bitmapData.draw(_source, _matrix);
 				
 				_texture.setContentFromBitmapData(_bitmapData, _mipMapping);

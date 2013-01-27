@@ -154,9 +154,11 @@ package aerys.minko.scene.controller.mesh
 		
         private function visiblityChangedHandler(node : ISceneNode, visibility : Boolean) : void
         {
-            _data.computedVisibility = _mesh.visible && _mesh.parent.computedVisibility
-                && _insideFrustum;
-            _mesh.computedVisibilityChanged.execute(_mesh, _data.computedVisibility);
+			var computedVisibility : Boolean = _mesh.visible && _mesh.parent.computedVisibility
+				&& (_frustumCulling == FrustumCulling.DISABLED || _insideFrustum);
+			
+			_data.computedVisibility = computedVisibility;
+            _mesh.computedVisibilityChanged.execute(_mesh, computedVisibility);
         }
         
 		private function worldToScreenChangedHandler(bindings	    : DataBindings,

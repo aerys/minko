@@ -12,6 +12,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
+	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
@@ -105,7 +106,7 @@ package aerys.minko.render.material.phong
 					
 					switch (shadowMappingType)
 					{
-						case ShadowMappingType.MATRIX:
+						case ShadowMappingType.PCF:
 							pushMatrixShadowMappingPass(lightId, passes);
 							break ;
 						case ShadowMappingType.CUBE:
@@ -113,6 +114,12 @@ package aerys.minko.render.material.phong
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
 							pushDualParaboloidShadowMappingPass(lightId, passes);
+							break ;
+						case ShadowMappingType.VARIANCE:
+							pushVarianceShadowMappingPass(lightId, passes);
+							break ;
+						case ShadowMappingType.EXPONENTIAL:
+							pushExponentialShadowMappingPass(lightId, passes);
 							break ;
 					}
 				}
@@ -130,7 +137,7 @@ package aerys.minko.render.material.phong
 				textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 			);
 			
-			passes.push(new MatrixShadowMapShader(lightId, lightId + 1, renderTarget));
+			passes.push(new PCFShadowMapShader(lightId, lightId + 1, renderTarget));
 		}
 		
 		private function pushDualParaboloidShadowMappingPass(lightId : uint, passes : Vector.<Shader>) : void
@@ -166,6 +173,75 @@ package aerys.minko.render.material.phong
 				new CubeShadowMapShader(lightId, 4, lightId + 0.5, renderTarget4),
 				new CubeShadowMapShader(lightId, 5, lightId + 0.6, renderTarget5)
 			);
+		}
+		
+		private function pushVarianceShadowMappingPass(lightId : uint, passes : Vector.<Shader>) : void
+		{
+			var lightType			: uint				= getLightProperty(lightId, 'type');
+			if (lightType != PointLight.LIGHT_TYPE)
+			{
+				var textureResource : TextureResource	= getLightProperty(lightId, 'shadowMap');
+				var renderTarget	: RenderTarget		= new RenderTarget(
+					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
+				);
+				
+				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+			}
+			else
+			{
+				var cubeTexture		: CubeTextureResource	= getLightProperty(lightId, 'shadowMap');
+				var size			: uint					= cubeTexture.size;
+				var renderTarget0	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 0, 0xffffffff);
+				var renderTarget1	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 1, 0xffffffff);
+				var renderTarget2	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 2, 0xffffffff);
+				var renderTarget3	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 3, 0xffffffff);
+				var renderTarget4	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 4, 0xffffffff);
+				var renderTarget5	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 5, 0xffffffff);
+				
+				passes.push(
+					new VarianceShadowMapShader(lightId, 0, lightId + 0.1, renderTarget0),
+					new VarianceShadowMapShader(lightId, 1, lightId + 0.2, renderTarget1),
+					new VarianceShadowMapShader(lightId, 2, lightId + 0.3, renderTarget2),
+					new VarianceShadowMapShader(lightId, 3, lightId + 0.4, renderTarget3),
+					new VarianceShadowMapShader(lightId, 4, lightId + 0.5, renderTarget4),
+					new VarianceShadowMapShader(lightId, 5, lightId + 0.6, renderTarget5)
+				);
+			}
+
+		}
+		
+		private function pushExponentialShadowMappingPass(lightId:uint, passes:Vector.<Shader>):void
+		{
+			var lightType			: uint				= getLightProperty(lightId, 'type');
+			if (lightType != PointLight.LIGHT_TYPE)
+			{
+				var textureResource : TextureResource	= getLightProperty(lightId, 'shadowMap');
+				var renderTarget	: RenderTarget		= new RenderTarget(
+					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
+				);
+			
+				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+			}
+			else
+			{
+				var cubeTexture		: CubeTextureResource	= getLightProperty(lightId, 'shadowMap');
+				var size			: uint					= cubeTexture.size;
+				var renderTarget0	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 0, 0xffffffff);
+				var renderTarget1	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 1, 0xffffffff);
+				var renderTarget2	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 2, 0xffffffff);
+				var renderTarget3	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 3, 0xffffffff);
+				var renderTarget4	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 4, 0xffffffff);
+				var renderTarget5	: RenderTarget			= new RenderTarget(size, size, cubeTexture, 5, 0xffffffff);
+				
+				passes.push(
+					new ExponentialShadowMapShader(lightId, 0, lightId + 0.1, renderTarget0),
+					new ExponentialShadowMapShader(lightId, 1, lightId + 0.2, renderTarget1),
+					new ExponentialShadowMapShader(lightId, 2, lightId + 0.3, renderTarget2),
+					new ExponentialShadowMapShader(lightId, 3, lightId + 0.4, renderTarget3),
+					new ExponentialShadowMapShader(lightId, 4, lightId + 0.5, renderTarget4),
+					new ExponentialShadowMapShader(lightId, 5, lightId + 0.6, renderTarget5)
+				);
+			}
 		}
 		
 		private function lightPropertyExists(lightId : uint, propertyName : String) : Boolean

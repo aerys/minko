@@ -711,7 +711,37 @@ package aerys.minko.type.math
 			
 			return this;
 		}
-
+		
+		final public function getForward(output : Vector4 = null) : Vector4
+		{
+			output ||= new Vector4();
+			_matrix.copyColumnTo(2, output._vector);
+			
+			output.changed.execute(output);
+			
+			return output;
+		}
+		
+		final public function getSide(output : Vector4 = null) : Vector4
+		{
+			output ||= new Vector4();
+			_matrix.copyColumnTo(0, output._vector);
+			
+			output.changed.execute(output);
+			
+			return output;
+		}
+		
+		final public function getUp(output : Vector4 = null) : Vector4
+		{
+			output ||= new Vector4();
+			_matrix.copyColumnTo(1, output._vector);
+			
+			output.changed.execute(output);
+			
+			return output;
+		}
+		
         final public function toDualQuaternion(n : Vector4,
                                                d : Vector4) : void
 		{

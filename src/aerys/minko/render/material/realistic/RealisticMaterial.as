@@ -22,6 +22,42 @@ package aerys.minko.render.material.realistic
 		{
 			setProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP, value);
 		}
+        
+        public function get environmentMapFiltering() : uint
+        {
+            return getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FILTERING);
+        }
+        public function set environmentMapFiltering(value : uint) : void
+        {
+            setProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FILTERING, value);
+        }
+        
+        public function get environmentMapMipMapping() : uint
+        {
+            return getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_MIPMAPPING);
+        }
+        public function set environmentMapMipMapping(value : uint) : void
+        {
+            setProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_MIPMAPPING, value);
+        }
+        
+        public function get environmentMapWrapping() : uint
+        {
+            return getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_WRAPPING);
+        }
+        public function set environmentMapWrapping(value : uint) : void
+        {
+            setProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_WRAPPING, value);
+        }
+        
+        public function get environmentMapFormat() : uint
+        {
+            return getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FORMAT);
+        }
+        public function set environmentMapFormat(value : uint) : void
+        {
+            setProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FORMAT, value);
+        }
 		
 		public function get reflectivity() : Number
 		{

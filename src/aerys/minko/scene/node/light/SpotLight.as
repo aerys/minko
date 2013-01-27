@@ -143,7 +143,7 @@ package aerys.minko.scene.node.light
 		{
 			lightData.setLightProperty('shadowCastingType', value);
 		}
-        
+		
         public function get shadowBias() : Number
         {
             return lightData.getLightProperty(PhongProperties.SHADOW_BIAS);

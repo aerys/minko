@@ -362,13 +362,31 @@ package aerys.minko.render.shader.part
 		protected final function pack(scalar : Object) : SFloat
 		{
 			if (getNode(scalar).size != 1)
-				throw new ArgumentError('Argument of size 1 expected. ' + scalar + ' received');
+				throw new ArgumentError('Argument of size 1 expected. ' + getNode(scalar).size + ' received');
 			
 			var bitSh	: SFloat = float4(256. * 256. * 256., 256. * 256, 256., 1.);
 			var bitMsk	: SFloat = float4(0., 1. / 256., 1. / 256., 1. / 256.);
 			var comp	: SFloat = fractional(multiply(scalar, bitSh));
 			
 			return subtract(comp, multiply(comp.xxyz, bitMsk));
+		}
+
+		/**
+		 * Packs a [0 .. 1] scalar value into a float2.
+		 * 
+		 * @param scalar
+		 * @return 
+		 * 
+		 */
+		protected final function packHalf(scalar : Object) : SFloat
+		{
+			if (getNode(scalar).size != 1)
+				throw new ArgumentError('Argument of size 1 expected. ' + getNode(scalar).size + ' received');
+			
+			var bias	: SFloat	= float2(1. / 255., .0);
+			var output	: SFloat	= float2(scalar, fractional(multiply(scalar, 255.)));
+
+			return subtract(output, multiply(output.yy, bias));
 		}
 		
 		/**
@@ -383,6 +401,18 @@ package aerys.minko.render.shader.part
 			var bitSh : SFloat = float4(1. / (256. * 256. * 256.), 1. / (256. * 256.), 1. / 256., 1.);
 			
 			return dotProduct4(packedScalar, bitSh);
+		}
+		
+		/**
+		 * Unpacks a [0 .. 1] scalar value from a float2.
+		 * 
+		 * @param scalar
+		 * @return 
+		 * 
+		 */
+		protected final function unpackHalf(packedScalar : Object) : SFloat
+		{
+			return add(packedScalar.x, divide(packedScalar.y, 255.));
 		}
 		
 		protected final function rgba(color : uint) : SFloat
@@ -495,6 +525,11 @@ package aerys.minko.render.shader.part
 		protected final function power(base : Object, exp : Object) : SFloat
 		{
 			return new SFloat(new Instruction(Instruction.POW, getNode(base), getNode(exp)));
+		}
+		
+		protected final function exp(exponent : Object) : SFloat
+		{
+			return power(Math.E, exponent);
 		}
 
 		protected final function add(a : Object, b : Object, ...args) : SFloat
@@ -700,6 +735,11 @@ package aerys.minko.render.shader.part
 			
 			return new SFloat(max);
 		}
+		
+		protected final function clamp(value : Object, lowerBound : Object, upperBound : Object) : SFloat
+		{
+			return max(lowerBound, min(upperBound, value));
+		}
 
 		protected final function greaterEqual(a : Object, b : Object) : SFloat
 		{
@@ -770,6 +810,22 @@ package aerys.minko.render.shader.part
 		{
 			return add(a, multiply(factor, subtract(b, a)));
 		}
+		
+		protected final function smoothstep(a : Object, b : Object, factor : Object) : SFloat
+		{
+			var x : SFloat = saturate(divide(subtract(factor, a), subtract(b, a)));
+			
+			// smoothstep(t) = 3t^2 - 2t^3
+			return multiply(x, x, subtract(3., multiply(2, x)));
+		}
+		
+		protected final function linstep(min : Object, max : Object, v : Object) : SFloat
+		{
+			var value : SFloat = divide(subtract(v, min), subtract(max, min));
+			
+			return clamp(value, .0, 1.);
+		}
+		
 		
 		protected final function transform2DCoordinates(value	: Object,
 												 		source	: Rectangle, 

@@ -18,6 +18,9 @@ package aerys.minko.render.resource.texture
 	{
 		function get width() : uint;
 		function get height() : uint;
+        
+        function get format() : uint;
+        function get mipMapping() : Boolean;
 		
 		function setContentFromBitmapData(bitmapData 	: BitmapData,
 										  mipmap 		: Boolean,

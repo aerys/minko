@@ -4,6 +4,7 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.ShadowMappingType;
 
 	public class LightShadowController extends LightController
@@ -43,6 +44,7 @@ package aerys.minko.scene.controller.light
 			var shadowMapSize		: uint				= lightData.getLightProperty('shadowMapSize');
 			var shadowMap			: ITextureResource	= lightData.getLightProperty('shadowMap')
 				as TextureResource;
+			var lightType			: uint				= lightData.getLightProperty('type');
 			
 			if (shadowMappingType != ShadowMappingType.NONE
 				&& !(_shadowMappingSupport & shadowMappingType))
@@ -59,7 +61,7 @@ package aerys.minko.scene.controller.light
 				case ShadowMappingType.NONE:
 					break;
 				
-				case ShadowMappingType.MATRIX:
+				case ShadowMappingType.PCF:
 					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
 						&& shadowMapSize <= 2048))
 						throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
@@ -75,6 +77,27 @@ package aerys.minko.scene.controller.light
 					
 					shadowMap = new CubeTextureResource(shadowMapSize);
 					lightData.setLightProperty('shadowMap', shadowMap);
+					break ;
+				
+				case ShadowMappingType.VARIANCE:
+				case ShadowMappingType.EXPONENTIAL:
+					if (lightType != PointLight.LIGHT_TYPE)
+					{
+						if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
+							&& shadowMapSize <= 2048))
+							throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
+						shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
+						lightData.setLightProperty('shadowMap', shadowMap);
+					}
+					else
+					{
+						if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
+							&& shadowMapSize <= 1024))
+							throw new Error(shadowMapSize + ' is an invalid size for cubic shadow maps');
+						
+						shadowMap = new CubeTextureResource(shadowMapSize);
+						lightData.setLightProperty('shadowMap', shadowMap);
+					}
 					break ;
 				
 				case ShadowMappingType.DUAL_PARABOLOID:

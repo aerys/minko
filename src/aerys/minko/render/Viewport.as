@@ -15,9 +15,9 @@ package aerys.minko.render
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
+	import flash.display3D.Context3DProfile;
+	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.events.TouchEvent;
 	import flash.geom.Point;
 
 	/**
@@ -189,7 +189,7 @@ package aerys.minko.render
 		public function set antiAliasing(value : uint) : void
 		{
 			_antiAliasing = value;
-			updateStage3D();
+			updateBackBuffer();
 		}
 		
 		/**
@@ -266,10 +266,8 @@ package aerys.minko.render
 				_stage3d.addEventListener(Event.CONTEXT3D_CREATE, context3dCreatedHandler);
 				_stage3d.requestContext3D();
 			}
-			else
-			{
-				_stage3d.visible = visible;
-			}
+			
+			_stage3d.visible = visible;
 			
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;

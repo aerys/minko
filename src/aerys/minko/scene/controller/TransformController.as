@@ -53,7 +53,7 @@ package aerys.minko.scene.controller
             targetRemoved.add(targetRemovedHandler);
         }
         
-        private function renderingBeginHandler(scene			: Scene,
+        private function renderingBeginHandler(scene		: Scene,
                                                viewport		: Viewport,
                                                destination	: BitmapData,
                                                time			: Number) : void
@@ -86,8 +86,7 @@ package aerys.minko.scene.controller
                     rootLocalToWorld.unlock();
                 
                 rootTransform._hasChanged = false;
-                _flags[nodeId] |= FLAG_INIT_LOCAL_TO_WORLD;
-                root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
+                rootFlags = (rootFlags | FLAG_INIT_LOCAL_TO_WORLD) & ~FLAG_INIT_WORLD_TO_LOCAL;
                 
                 if (rootFlags & FLAG_SYNCHRONIZE_TRANSFORMS)
                 {
@@ -98,19 +97,27 @@ package aerys.minko.scene.controller
                         rootWorldToLocal.lock();
                     
                     rootWorldToLocal.copyFrom(rootLocalToWorld).invert();
+                    rootFlags |= FLAG_INIT_WORLD_TO_LOCAL;
                     
                     if (rootFlags & FLAG_LOCK_TRANSFORMS)
                         rootWorldToLocal.unlock();
                 }
+                
+                _flags[nodeId] = rootFlags;
+                
+                root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
             }
         }
         
-        private function updateLocalToWorld(nodeId : uint = 0, subtreeOnly : Boolean = false) : void
+        private function updateLocalToWorld(nodeId : uint = 0, targetNodeId : int = -1) : void
         {
-            var numNodes 			: uint 			= _transforms.length;
-            var subtreeMax          : uint          = nodeId;
+            var numNodes 	: uint 	= _transforms.length;
+            var subtreeMax  : uint  = nodeId;
             
             updateRootLocalToWorld(nodeId);
+            
+            if (nodeId == targetNodeId)
+                return;
 
             while (nodeId < numNodes)
             {
@@ -148,8 +155,8 @@ package aerys.minko.scene.controller
                             childLocalToWorld.unlock();
                         
                         childTransform._hasChanged = false;
-                        _flags[childId] |= FLAG_INIT_LOCAL_TO_WORLD;
-                        child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                        childFlags = (childFlags | FLAG_INIT_LOCAL_TO_WORLD)
+                            & ~FLAG_INIT_WORLD_TO_LOCAL;
                         
                         if (childFlags & FLAG_SYNCHRONIZE_TRANSFORMS)
                         {
@@ -160,14 +167,22 @@ package aerys.minko.scene.controller
                                 childWorldToLocal.lock();
                             
                             childWorldToLocal.copyFrom(childLocalToWorld).invert();
+                            childFlags |= FLAG_INIT_WORLD_TO_LOCAL;
                             
                             if (childFlags & FLAG_LOCK_TRANSFORMS)
                                 childWorldToLocal.unlock();
                         }
+                        
+                        _flags[childId] = childFlags;
+                        
+                        child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                        
+                        if (childId == targetNodeId)
+                            return;
                     }
                 }
                 
-                if (subtreeOnly && nodeId && nodeId >= subtreeMax)
+                if (targetNodeId >= 0 && nodeId && nodeId >= subtreeMax)
                 {
                     // jump to the first brother who has children
                     var parentId : uint = _parentId[nodeId];
@@ -186,21 +201,81 @@ package aerys.minko.scene.controller
             }
         }
         
-        private function updateAncestorsAndSelfLocalToWorld(nodeId : int) : void
+        private function updateLocalToWorldPath(path : Vector.<uint> = null) : void
         {
-            var dirtyRoot : int = -1;
+            var numNodes 	    : uint 	    = path.length;
+            var nodeId          : uint      = path[uint(numNodes - 1)];
+            var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
             
-            while (nodeId >= 0)
+            updateRootLocalToWorld(nodeId);
+            
+            for (var i : int = numNodes - 2; i >= 0; --i)
             {
-                if ((_transforms[nodeId] as Matrix4x4)._hasChanged
-                    || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
-                    dirtyRoot = nodeId;
+                var childId             : uint          = path[i];
+                var childTransform		: Matrix4x4		= _transforms[childId];
+                var childLocalToWorld	: Matrix4x4		= _localToWorldTransforms[childId];
+                var childFlags          : uint          = _flags[childId];
+                var child	            : ISceneNode	= _idToNode[childId];
+                        
+                if (childFlags & FLAG_LOCK_TRANSFORMS)
+                    childLocalToWorld.lock();
                 
-                nodeId = _parentId[nodeId];
+                childLocalToWorld
+                    .copyFrom(childTransform)
+                    .append(localToWorld);
+                
+                if (childFlags & FLAG_LOCK_TRANSFORMS)
+                    childLocalToWorld.unlock();
+                
+                childTransform._hasChanged = false;
+                childFlags = (childFlags | FLAG_INIT_LOCAL_TO_WORLD)
+                    & ~FLAG_INIT_WORLD_TO_LOCAL;
+                
+                if (childFlags & FLAG_SYNCHRONIZE_TRANSFORMS)
+                {
+                    var childWorldToLocal : Matrix4x4 = _worldToLocalTransforms[childId]
+                        || (_worldToLocalTransforms[childId] = new Matrix4x4());
+                    
+                    if (childFlags & FLAG_LOCK_TRANSFORMS)
+                        childWorldToLocal.lock();
+                    
+                    childWorldToLocal.copyFrom(childLocalToWorld).invert();
+                    childFlags |= FLAG_INIT_WORLD_TO_LOCAL;
+                    
+                    if (childFlags & FLAG_LOCK_TRANSFORMS)
+                        childWorldToLocal.unlock();
+                }
+                
+                _flags[childId] = childFlags;
+                
+                child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                
+                localToWorld = childLocalToWorld;
+            }
+        }
+        
+        private function updateAncestorsAndSelfLocalToWorld(nodeId : uint) : void
+        {
+            var dirtyRoot   : int           = -1;
+            var tmpNodeId   : int           = nodeId;
+            var path        : Vector.<uint> = new <uint>[];
+            var numNodes    : uint          = 0;
+            
+            while (tmpNodeId >= 0)
+            {
+                if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
+                    || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
+                    dirtyRoot = tmpNodeId;
+                
+                path[numNodes] = tmpNodeId;
+                ++numNodes;
+                
+                tmpNodeId = _parentId[tmpNodeId];
             }
             
             if (dirtyRoot >= 0)
-                updateLocalToWorld(dirtyRoot, true);
+                updateLocalToWorldPath(path);
+//                updateLocalToWorld(dirtyRoot, nodeId);
         }
         
         private function targetAddedHandler(ctrl	: TransformController,
@@ -411,26 +486,6 @@ package aerys.minko.scene.controller
             }
             
             return worldToLocalTransform;
-        }
-        
-        public function setSharedLocalToWorldTransformReference(node      : ISceneNode,
-                                                                matrix    : Matrix4x4) : void
-        {
-            var nodeId : uint = getNodeId(node);
-            
-            if (_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD)
-                matrix.copyFrom(_localToWorldTransforms[nodeId]);
-            _localToWorldTransforms[nodeId] = matrix;
-        }
-        
-        public function setSharedWorldToLocalTransformReference(node      : ISceneNode,
-                                                                matrix    : Matrix4x4) : void
-        {
-            var nodeId : uint = getNodeId(node);
-            
-            if (_flags[nodeId] & FLAG_INIT_WORLD_TO_LOCAL)
-                matrix.copyFrom(_worldToLocalTransforms[nodeId]);
-            _worldToLocalTransforms[nodeId] = matrix;
         }
         
         public function synchronizeTransforms(node : ISceneNode, enabled : Boolean) : void

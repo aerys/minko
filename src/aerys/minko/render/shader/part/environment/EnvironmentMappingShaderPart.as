@@ -11,6 +11,7 @@ package aerys.minko.render.shader.part.environment
 	import aerys.minko.type.enum.EnvironmentMappingType;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
@@ -40,9 +41,9 @@ package aerys.minko.render.shader.part.environment
 			var reflectionType 			: int	 = meshBindings.getConstant(
 				EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE
 			);
+            var reflectionMap           : SFloat    = getEnvironmentMap(reflectionType);
 			
 			// retrieve reflection color from reflection map
-			var reflectionMap			: SFloat;
 			var reflectionMapUV			: SFloat;
 			var reflectionColor			: SFloat;
 			
@@ -53,24 +54,18 @@ package aerys.minko.render.shader.part.environment
 					break;
 				
 				case EnvironmentMappingType.PROBE:
-					reflectionMap	= meshBindings.getTextureParameter(EnvironmentMappingProperties.ENVIRONMENT_MAP);
 					reflectionMapUV = _probeProjectionPart.projectVector(reflected, new Rectangle(0, 0, 1, 1));
 					reflectionColor = sampleTexture(reflectionMap, reflectionMapUV);
 					break;
 				
 				case EnvironmentMappingType.BLINN_NEWELL:
-					reflectionMap	= meshBindings.getTextureParameter(EnvironmentMappingProperties.ENVIRONMENT_MAP);
 					reflectionMapUV = _blinnNewellProjectionPart.projectVector(reflected, new Rectangle(0, 0, 1, 1));
 					reflectionColor = sampleTexture(reflectionMap, reflectionMapUV);
 					break;
 				
 				case EnvironmentMappingType.CUBE:
-					reflectionMap	= meshBindings.getTextureParameter(
-						EnvironmentMappingProperties.ENVIRONMENT_MAP, 
-						SamplerFiltering.NEAREST, SamplerMipMapping.DISABLE, SamplerWrapping.CLAMP, SamplerDimension.CUBE
-					);
 					reflectionColor = sampleTexture(reflectionMap, reflected);
-					break
+					break;
 				
 				default:
 					throw new Error('Unsupported reflection type');
@@ -88,6 +83,21 @@ package aerys.minko.render.shader.part.environment
 			
 			return reflectionColor;
 		}
+        
+        public function getEnvironmentMap(environmentMappingType : uint = 0) : SFloat
+        {
+            if (!environmentMappingType)
+                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE);
+            
+            return meshBindings.getTextureParameter(
+                EnvironmentMappingProperties.ENVIRONMENT_MAP,
+                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_FILTERING, SamplerFiltering.NEAREST),
+                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_MIPMAPPING, SamplerMipMapping.DISABLE),
+                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_WRAPPING, SamplerWrapping.CLAMP),
+                environmentMappingType == EnvironmentMappingType.CUBE ? SamplerDimension.CUBE : SamplerDimension.FLAT,
+                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_FORMAT, SamplerFormat)
+            );
+        }
 		
 		public function applyEnvironmentMapping(diffuse : SFloat) : SFloat
 		{

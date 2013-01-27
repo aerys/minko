@@ -12,6 +12,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.type.enum.NormalMappingType;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.TriangleCulling;
 	
@@ -109,7 +110,8 @@ package aerys.minko.render.shader.part.phong
 		{
 			var vertexTangent : SFloat = vertexAnimationShaderPart.getAnimatedVertexTangent();
 			
-			if (meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK) != TriangleCulling.BACK)
+			if (meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK)
+                != TriangleCulling.BACK)
 				vertexTangent.negate();
 			
 			return vertexTangent;
@@ -136,8 +138,10 @@ package aerys.minko.render.shader.part.phong
 				case NormalMappingType.PARALLAX:
 					var fsNormalMap	: SFloat = meshBindings.getTextureParameter(
 						PhongProperties.NORMAL_MAP,
-						SamplerFiltering.LINEAR,
-						SamplerMipMapping.LINEAR
+						meshBindings.getConstant(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
+						meshBindings.getConstant(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+                        0,
+                        meshBindings.getConstant(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
 					);
 					var fsPixel		: SFloat = sampleTexture(fsNormalMap, fsUV);
                     
@@ -190,7 +194,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightParameter(lightId : uint, name : String, size : uint) : SFloat
+		protected function getLightParameter(lightId		: uint, 
+											 name			: String,
+											 size			: uint) : SFloat
 		{
 			return sceneBindings.getParameter(
 				LightDataProvider.getLightPropertyName(name, lightId),
