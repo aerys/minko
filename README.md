@@ -85,6 +85,8 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Vertex Normals and Positions](http://hub.aerys.in/images/c/cf/Vignette_minko_vertexiterator.jpg)](http://hub.aerys.in/index.php/Minko:VertexIterator_Example)
 [![Bones and Joints](http://hub.aerys.in/images/5/5e/Vignette_minko_jointsdebugcontroller.jpg)](http://hub.aerys.in/index.php/Minko:JointsDebugController_Example)
 [![HLSA](http://hub.aerys.in/images/d/d5/Vignette_minko_hlsa.jpg)](http://hub.aerys.in/index.php/Minko:HLSA_Example)
+[![Sound](http://hub.aerys.in/images/b/b7/Vignette_minko_sound.jpg)](http://hub.aerys.in/index.php/Minko:Sound_Example)
+[![FPS Camera](http://hub.aerys.in/images/b/b2/Vignette_minko_fps.jpg)](http://hub.aerys.in/index.php/Minko:FirstPersonCameraController_Example)
 
 Tools
 -----
