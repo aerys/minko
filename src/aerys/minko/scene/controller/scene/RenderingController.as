@@ -593,13 +593,13 @@ package aerys.minko.scene.controller.scene
 												 oldFrame		: uint,
 												 newFrame		: uint) : void
 		{
-			var mesh	: Mesh		= bindings.owner as Mesh;
-			var geom	: Geometry	= mesh.geometry;
-			
-			if (!geom)
+			var mesh		: Mesh				= bindings.owner as Mesh;
+			var geom		: Geometry			= mesh.geometry;
+			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+
+			if (!geom || !drawCalls)
 				return ;
 			
-			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numDrawCalls	: uint				= drawCalls.length;
 			
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
