@@ -26,17 +26,20 @@ package aerys.minko.scene.controller.debug
 	 */
 	public final class JointsDebugController extends AbstractController
 	{
+		private var _jointSize		: Number;
 		private var _jointsMaterial	: Material;
 		
-		public function JointsDebugController(jointsMaterial : Material	= null)
+		public function JointsDebugController(jointsSize		: Number	= 0.08,
+											  jointsMaterial 	: Material	= null)
 		{
 			super(Mesh);
 			
-			initialize(jointsMaterial);
+			initialize(jointsSize, jointsMaterial);
 		}
 		
-		private function initialize(jointsMaterial	: Material) : void
+		private function initialize(jointSize : Number, jointsMaterial	: Material) : void
 		{
+			_jointSize = jointSize;
 			_jointsMaterial = jointsMaterial;
 			if (!_jointsMaterial)
 			{
@@ -89,7 +92,7 @@ package aerys.minko.scene.controller.debug
 						CubeGeometry.cubeGeometry, _jointsMaterial, '__joint__'
 					);
 					
-					jointMesh.transform.appendUniformScale(.08);
+					jointMesh.transform.appendUniformScale(_jointSize);
 					joint.addChild(jointMesh);
 				}
 			}
