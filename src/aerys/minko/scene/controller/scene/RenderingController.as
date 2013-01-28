@@ -877,7 +877,7 @@ package aerys.minko.scene.controller.scene
 				else
 				{
 					_sceneBindingsUsageCount[key]--;
-					if (meshBindingsUsageCount[key] == 0)
+					if (_sceneBindingsUsageCount[key] == 0)
 					{
 						sceneBindings.removeCallback(key, bindingsPropertyChangedHandler);
 						delete _sceneBindingsUsageCount[key];
