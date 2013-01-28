@@ -46,8 +46,8 @@ package aerys.minko.render.material.phong
 			super.initializeSettings(settings);
 			
 			settings.blending			= Blending.NORMAL;
-			settings.enabled 			= meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
-			settings.triangleCulling	= meshBindings.getConstant(
+			settings.enabled 			= meshBindings.getProperty(PhongProperties.CAST_SHADOWS, true);
+			settings.triangleCulling	= meshBindings.getProperty(
 				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
 			);
 		}
@@ -55,7 +55,7 @@ package aerys.minko.render.material.phong
 		private function createDepthShaderPart() : void
 		{
 			var lightTypeName			: String	= LightDataProvider.getLightPropertyName('type', _lightId);
-			var lightType				: uint		= sceneBindings.getConstant(lightTypeName, _lightId);
+			var lightType				: uint		= sceneBindings.getProperty(lightTypeName, _lightId);
 			if (lightType == PointLight.LIGHT_TYPE || lightType == SpotLight.LIGHT_TYPE)
 			{
 				_depthShaderPart					= new LinearDepthShaderPart(this);
@@ -63,7 +63,7 @@ package aerys.minko.render.material.phong
 			else
 			{
 				var depthAlgorithmName	: String	= LightDataProvider.getLightPropertyName('depthAlgorithm', _lightId);
-				var depthAlgorithm		: uint		= sceneBindings.getConstant(depthAlgorithmName, 0);
+				var depthAlgorithm		: uint		= sceneBindings.getProperty(depthAlgorithmName, 0);
 				switch (depthAlgorithm)
 				{
 					case DepthAlgorithm.LINEAR :

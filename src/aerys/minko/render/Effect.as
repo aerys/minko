@@ -2,8 +2,11 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataBindingsProxy;
+	import aerys.minko.type.binding.Signature;
 
 	/**
 	 * The base class to define effects.
@@ -13,22 +16,17 @@ package aerys.minko.render
 	 */
 	public class Effect
 	{
-		private var _passes			: Vector.<Shader>	= null;
-		private var _passesChanged	: Signal			= new Signal('Effect.passesChanged');
+		private var _extraPasses	: Vector.<Shader>;
+		private var _instances		: Vector.<EffectInstance>;
 		
-		public function get passesChanged() : Signal
+		public function get numExtraPasses() : uint
 		{
-			return _passesChanged;
+			return _extraPasses.length;
 		}
 		
-		public function get numPasses() : uint
+		public function Effect(...extraPasses)
 		{
-			return _passes.length;
-		}
-		
-		public function Effect(...passes)
-		{
-			initialize(passes);
+			initialize(extraPasses);
 		}
 		
 		private function initialize(passes : Array) : void
@@ -36,59 +34,124 @@ package aerys.minko.render
 			while (passes[0] is Array)
 				passes = passes[0];
 			
-			_passes = Vector.<Shader>(passes);
+			_extraPasses = Vector.<Shader>(passes);
+			_instances = new <EffectInstance>[];
 		}
 		
-		public function getPass(index : uint = 0) : Shader
+		public function getExtraPass(index : uint = 0) : Shader
 		{
-			return _passes[index];
+			return _extraPasses[index];
 		}
 		
-		public function setPasses(newPasses : Vector.<Shader>) : Effect
+		public function setExtraPasses(extraPasses : Vector.<Shader>) : Effect
 		{
-			_passes = newPasses.slice();
-			_passesChanged.execute(this);
+			var numExtraPasses : uint = extraPasses.length;
+			
+			for (var extraPassId : uint = 0; extraPassId < numExtraPasses; ++extraPassId)
+				_extraPasses[extraPassId] = extraPasses[extraPassId];
+			_extraPasses.length = numExtraPasses;
+			
+			invalidateInstance();
 			
 			return this;
 		}
 		
-		public function addPass(pass : Shader) : Effect
+		public function addExtraPass(pass : Shader) : Effect
 		{
-			if (hasPass(pass))
+			if (hasExtraPass(pass))
 				throw new Error('This pass is already in the effect.');
 			
-			_passes.push(pass);
-			_passesChanged.execute(this);
+			_extraPasses.push(pass);
+			
+			invalidateInstance();
 			
 			return this;
 		}
 		
-		public function removePass(pass : Shader) : Effect
+		public function removeExtraPass(pass : Shader) : Effect
 		{
-			var numPasses 	: int 	= _passes.length - 1;
-			var index		: int	= _passes.indexOf(pass);
+			var numPasses 	: int 	= _extraPasses.length - 1;
+			var index		: int	= _extraPasses.indexOf(pass);
 			
 			if (index < 0)
 				throw new Error('This pass does not exists.');
 			
 			for (; index < numPasses; index++)
-				_passes[index] = _passes[int(index + 1)];
+				_extraPasses[index] = _extraPasses[int(index + 1)];
 			
-			_passes.length = numPasses;
+			_extraPasses.length = numPasses;
 			
-			_passesChanged.execute(this);
+			invalidateInstance();
 			
 			return this;
 		}
 		
-		public function hasPass(pass : Shader) : Boolean
+		public function hasExtraPass(pass : Shader) : Boolean
 		{
-			return _passes.indexOf(pass) >= 0;
+			return _extraPasses.indexOf(pass) >= 0;
 		}
 		
 		public function clone() : Effect
 		{
-			return new Effect().setPasses(_passes);
+			return new Effect().setExtraPasses(_extraPasses);
+		}
+		
+		private function invalidateInstance() : void
+		{
+			var numInstances : uint = _instances.length;
+			
+			for (var instanceId : uint = 0; instanceId < numInstances; ++instanceId)
+			{
+				var instance : EffectInstance = _instances[instanceId] as EffectInstance;
+				
+				instance.passesChanged.execute(instance);
+			}
+		}
+		
+		public function fork(sceneBindings	: DataBindings,
+							 meshBindings 	: DataBindings) : EffectInstance
+		{
+			var instance : EffectInstance = findInstance(sceneBindings, meshBindings);
+			
+			if (!instance)
+			{
+				var signature : Signature = new Signature();
+				var sceneBindingsProxy : DataBindingsProxy	= new DataBindingsProxy(
+					sceneBindings, signature, Signature.SOURCE_SCENE
+				);
+				var meshBindingsProxy : DataBindingsProxy	= new DataBindingsProxy(
+					meshBindings, signature, Signature.SOURCE_MESH
+				);
+				
+				instance = new EffectInstance(
+					this,
+					initializePasses(sceneBindingsProxy, meshBindingsProxy),
+					_extraPasses,
+					signature
+				);
+				
+				_instances.push(instance);
+			}
+			
+			return instance;
+		}
+		
+		private function findInstance(sceneBindings	: DataBindings,
+									  meshBindings 	: DataBindings) : EffectInstance
+		{
+			var numPasses : int = _instances.length;
+			
+			for (var passId : uint = 0; passId < numPasses; ++passId)
+				if (_instances[passId].signature.isValid(sceneBindings, meshBindings))
+					return _instances[passId];
+			
+			return null;
+		}
+		
+		protected function initializePasses(sceneBindings	: DataBindingsProxy,
+											meshBindings 	: DataBindingsProxy) : Vector.<Shader>
+		{
+			return new <Shader>[];
 		}
 	}
 }

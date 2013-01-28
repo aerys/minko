@@ -229,8 +229,8 @@ package aerys.minko.scene.controller
 			if (!effect)
 				return ;
 			
-			if (!effect.hasPass(SHADER))
-				effect.addPass(SHADER);
+			if (!effect.hasExtraPass(SHADER))
+				effect.addExtraPass(SHADER);
 			
 			EFFECT_USE_COUNTER[effect]++;
 		}
@@ -243,7 +243,7 @@ package aerys.minko.scene.controller
 			EFFECT_USE_COUNTER[effect]--;
 			
 			if (EFFECT_USE_COUNTER[effect] == 0)
-				effect.removePass(SHADER);
+				effect.removeExtraPass(SHADER);
 		}
 		
 		private function effectChangedHandler(bindings	: DataBindings,

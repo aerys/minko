@@ -86,19 +86,18 @@ package aerys.minko.render.material.realistic
 			setProperty(EnvironmentMappingProperties.ENVIRONMENT_BLENDING, value);
 		}
 		
-		public function RealisticMaterial(scene			: Scene,
-										  properties	: Object	= null,
+		public function RealisticMaterial(properties	: Object	= null,
 										  effect		: Effect	= null,
 										  name			: String	= DEFAULT_NAME)
 		{
-			effect ||= SCENE_TO_EFFECT[scene] || (SCENE_TO_EFFECT[scene] = new RealisticEffect(scene));
+			effect ||= new RealisticEffect();
 			
-			super(scene, properties, effect, name);
+			super(properties, effect, name);
 		}
         
         override public function clone() : IDataProvider
         {
-            return new RealisticMaterial((effect as RealisticEffect).scene, this, effect, name);
+            return new RealisticMaterial(this, effect, name);
         }
 	}
 }

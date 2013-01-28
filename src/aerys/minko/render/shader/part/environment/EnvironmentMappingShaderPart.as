@@ -38,7 +38,7 @@ package aerys.minko.render.shader.part.environment
 			var cWorldCameraPosition	: SFloat = this.cameraPosition;
 			var vsWorldVertexToCamera	: SFloat = normalize(subtract(cWorldCameraPosition, vsWorldPosition));
 			var reflected				: SFloat = normalize(interpolate(reflect(vsWorldVertexToCamera.xyzz, vsWorldNormal.xyzz)));
-			var reflectionType 			: int	 = meshBindings.getConstant(
+			var reflectionType 			: int	 = meshBindings.getProperty(
 				EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE
 			);
             var reflectionMap           : SFloat    = getEnvironmentMap(reflectionType);
@@ -87,15 +87,15 @@ package aerys.minko.render.shader.part.environment
         public function getEnvironmentMap(environmentMappingType : uint = 0) : SFloat
         {
             if (!environmentMappingType)
-                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE);
+                meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE);
             
             return meshBindings.getTextureParameter(
                 EnvironmentMappingProperties.ENVIRONMENT_MAP,
-                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_FILTERING, SamplerFiltering.NEAREST),
-                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_MIPMAPPING, SamplerMipMapping.DISABLE),
-                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_WRAPPING, SamplerWrapping.CLAMP),
+                meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FILTERING, SamplerFiltering.NEAREST),
+                meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_MIPMAPPING, SamplerMipMapping.DISABLE),
+                meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_WRAPPING, SamplerWrapping.CLAMP),
                 environmentMappingType == EnvironmentMappingType.CUBE ? SamplerDimension.CUBE : SamplerDimension.FLAT,
-                meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_MAP_FORMAT, SamplerFormat)
+                meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_MAP_FORMAT, SamplerFormat)
             );
         }
 		
@@ -107,7 +107,7 @@ package aerys.minko.render.shader.part.environment
 			return _blending.blend(
 				getEnvironmentColor(),
 				diffuse,
-				meshBindings.getConstant(EnvironmentMappingProperties.ENVIRONMENT_BLENDING, Blending.ALPHA)
+				meshBindings.getProperty(EnvironmentMappingProperties.ENVIRONMENT_BLENDING, Blending.ALPHA)
 			);
 		}
 	}

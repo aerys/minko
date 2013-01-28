@@ -28,7 +28,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 		private function createDepthShaderPart(lightId : uint) : void
 		{
 			var lightTypeName			: String	= LightDataProvider.getLightPropertyName('type', lightId);
-			var lightType				: uint		= sceneBindings.getConstant(lightTypeName, lightId);
+			var lightType				: uint		= sceneBindings.getProperty(lightTypeName, lightId);
 			if (lightType == PointLight.LIGHT_TYPE || lightType == SpotLight.LIGHT_TYPE)
 			{
 				_depthShaderPart					= new LinearDepthShaderPart(this.main);
@@ -36,7 +36,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			else
 			{
 				var depthAlgorithmName	: String	= LightDataProvider.getLightPropertyName('depthAlgorithm', lightId);
-				var depthAlgorithm		: uint		= sceneBindings.getConstant(depthAlgorithmName, 0);
+				var depthAlgorithm		: uint		= sceneBindings.getProperty(depthAlgorithmName, 0);
 				switch (depthAlgorithm)
 				{
 					case DepthAlgorithm.LINEAR :
@@ -54,7 +54,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			createDepthShaderPart(lightId);
 			
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
-			var lightType					: uint		= sceneBindings.getConstant(lightTypeName);
+			var lightType					: uint		= sceneBindings.getProperty(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
 			var depthMap					: SFloat	= getLightTextureParameter(
 				lightId,

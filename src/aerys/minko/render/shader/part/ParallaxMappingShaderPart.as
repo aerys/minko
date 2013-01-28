@@ -25,7 +25,7 @@ package aerys.minko.render.shader.part
 		public function getSteepParallaxMappedUV(fsBaseUV : SFloat) : SFloat
 		{
 			// Retrieve attributes, constants, textures, config
-			var numSteps	: uint		= meshBindings.getConstant(PhongProperties.PARALLAX_MAPPING_NBSTEPS, DEFAULT_STEEP_NSTEPS);
+			var numSteps	: uint		= meshBindings.getProperty(PhongProperties.PARALLAX_MAPPING_NBSTEPS, DEFAULT_STEEP_NSTEPS);
 			
 			var fsHeightMap	: SFloat	= meshBindings.getTextureParameter(
 				PhongProperties.HEIGHT_MAP, SamplerFiltering.LINEAR, SamplerMipMapping.LINEAR

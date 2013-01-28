@@ -1,12 +1,12 @@
-package aerys.minko.render.shader
+package aerys.minko.type.binding
 {
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Constant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
-	import aerys.minko.type.binding.DataBindings;
 
 	/**
 	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.
@@ -14,21 +14,15 @@ package aerys.minko.render.shader
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public final class ShaderDataBindings
+	public final class ShaderDataBindingsProxy extends DataBindingsProxy
 	{
-		private var _dataBindings	: DataBindings;
-		private var _signature		: Signature;
-		private var _signatureFlags	: uint;
-		
 		private var _serializer		: Serializer;
 		
-		public function ShaderDataBindings(bindings			: DataBindings,
-										   signature		: Signature,
-										   signatureFlags	: uint)
+		public function ShaderDataBindingsProxy(bindings		: DataBindings,
+												signature		: Signature,
+												signatureFlags	: uint)
 		{
-			_dataBindings = bindings;
-			_signature = signature;
-			_signatureFlags = signatureFlags;
+			super(bindings, signature, signatureFlags);
 			
 			_serializer = new Serializer();
 		}
@@ -63,52 +57,6 @@ package aerys.minko.render.shader
 			return new SFloat(
 				new BindableSampler(bindingName, filter, mipmap, wrapping, dimension, format)
 			);
-		}
-		
-		public function propertyExists(propertyName : String) : Boolean
-		{
-			var value 	: Boolean	= _dataBindings.propertyExists(propertyName);
-			
-			_signature.update(
-				propertyName,
-				value,
-				Signature.OPERATION_EXISTS | _signatureFlags
-			);
-			
-			return value;
-		}
-		
-		public function getConstant(propertyName : String,
-									defaultValue : Object	= null) : *
-		{
-			if (!_dataBindings.propertyExists(propertyName))
-			{
-				if (defaultValue === null)
-				{
-					throw new Error(
-						'The property \'' + propertyName
-						+ '\' does not exist and no default value was provided.'
-					);
-				}
-				
-				_signature.update(
-					propertyName,
-					false,
-					Signature.OPERATION_EXISTS | _signatureFlags
-				);
-				
-				return defaultValue;
-			}
-			
-			var value : Object = _dataBindings.getProperty(propertyName);
-
-			_signature.update(
-				propertyName,
-				value,
-				Signature.OPERATION_GET | _signatureFlags
-			);
-			
-			return value;
 		}
 	}
 }

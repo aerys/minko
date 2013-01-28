@@ -149,7 +149,7 @@ package aerys.minko.render.shader.part.phong
 		private function getDynamicLighting() : SFloat
 		{
 			var dynamicLighting : SFloat	= float3(0, 0, 0);
-			var receptionMask	: uint		= meshBindings.getConstant(
+			var receptionMask	: uint		= meshBindings.getProperty(
 				PhongProperties.RECEPTION_MASK,
 				1
 			);
@@ -196,13 +196,13 @@ package aerys.minko.render.shader.part.phong
 			var hasSpecular			: Boolean	= getLightConstant(lightId, 'specularEnabled');
 			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
 			var contribution		: SFloat	= float(0);
-			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
 				PhongProperties.RECEIVE_SHADOWS,
 				false
 			);
 			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
 				&& meshReceiveShadows;
-			var normalMappingType	: uint		= meshBindings.getConstant(
+			var normalMappingType	: uint		= meshBindings.getProperty(
 				PhongProperties.NORMAL_MAPPING_TYPE,
 				NormalMappingType.NONE
 			);
@@ -252,11 +252,11 @@ package aerys.minko.render.shader.part.phong
 			var hasSpecular			: Boolean	= getLightConstant(lightId, 'specularEnabled');
 			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightConstant(lightId, 'attenuationEnabled');
-			var normalMappingType	: uint		= meshBindings.getConstant(
+			var normalMappingType	: uint		= meshBindings.getProperty(
 				PhongProperties.NORMAL_MAPPING_TYPE,
 				NormalMappingType.NONE
 			);
-			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
 				PhongProperties.RECEIVE_SHADOWS,
 				false
 			);
@@ -316,13 +316,13 @@ package aerys.minko.render.shader.part.phong
 			var shadowCasting		: uint		= getLightConstant(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightConstant(lightId, 'attenuationEnabled');
 			var lightHasSmoothEdge	: Boolean	= getLightConstant(lightId, 'smoothRadius');
-			var meshReceiveShadows	: Boolean	= meshBindings.getConstant(
+			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
 				PhongProperties.RECEIVE_SHADOWS,
 				false
 			);
 			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
 				&& meshReceiveShadows;
-			var normalMappingType	: uint		= meshBindings.getConstant(
+			var normalMappingType	: uint		= meshBindings.getProperty(
 				PhongProperties.NORMAL_MAPPING_TYPE,
 				NormalMappingType.NONE
 			);
