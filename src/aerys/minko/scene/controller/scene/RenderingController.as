@@ -668,10 +668,11 @@ package aerys.minko.scene.controller.scene
 			var mesh		: Mesh				= bindings.owner as Mesh;
 			var geom		: Geometry			= mesh.geometry;
 			
-			if (!geom)
+			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
+
+			if (!geom || !drawCalls)
 				return ;
 			
-			var drawCalls	: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
 			var numCalls	: uint				= drawCalls.length;
 			
 			for (var callId : uint = 0; callId < numCalls; ++callId)
