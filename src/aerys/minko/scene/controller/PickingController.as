@@ -59,6 +59,8 @@ package aerys.minko.scene.controller
 		
         private var _technique          : uint;
 		private var _pickingRate		: Number;
+		
+		private var _dispatchers		: Dictionary;
         
 		private var _lastPickingTime	: uint;
 		private var _useHandCursor		: Boolean;
@@ -192,6 +194,8 @@ package aerys.minko.scene.controller
 		
 		private function initialize() : void
 		{
+			_dispatchers = new Dictionary(true);
+			
 			_pickingIdToMesh = [];
 			_sceneData = new DataProvider({pickingProjection : new Matrix4x4()});
 			_meshData = new Dictionary(true);
@@ -256,6 +260,9 @@ package aerys.minko.scene.controller
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
+			if (!_dispatchers[viewport])
+				bindDefaultInputs(viewport);
+			
 			// toggle picking pass
 			if (time - _lastPickingTime > 1000. / _pickingRate && _toDispatch != EVENT_NONE)
 			{
@@ -470,6 +477,8 @@ package aerys.minko.scene.controller
 		
 		public function bindDefaultInputs(dispatcher : IEventDispatcher) : void
 		{
+			_dispatchers[dispatcher] = true;
+			
 			dispatcher.addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
 			dispatcher.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 			dispatcher.addEventListener(MouseEvent.CLICK, clickHandler);
@@ -494,6 +503,8 @@ package aerys.minko.scene.controller
 		
 		public function unbindDefaultInputs(dispatcher : IEventDispatcher) : void
 		{
+			delete _dispatchers[dispatcher];
+			
 			dispatcher.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
 			dispatcher.removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 			dispatcher.removeEventListener(MouseEvent.CLICK, clickHandler);
