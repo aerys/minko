@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller.mesh
 {
+	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.node.Group;
@@ -12,8 +13,33 @@ package aerys.minko.scene.controller.mesh
 	public final class MeshController extends AbstractController
 	{
 		private var _data 			: DataProvider;
+		
+		private var _geometry		: Geometry;
+		private var _frame			: uint;
         private var _localToWorld   : Matrix4x4;
 		private var _worldToLocal 	: Matrix4x4;
+
+		public function get geometry() : Geometry
+		{
+			return _geometry;
+		}
+		public function set geometry(value : Geometry) : void
+		{
+			_geometry = value;
+			if (_data)
+				_data.setProperty('geometry', value);
+		}
+		
+		public function get frame() : uint
+		{
+			return _frame;
+		}
+		public function set frame(value : uint) : void
+		{
+			_frame = value;
+			if (_data)
+				_data.setProperty('frame', value);
+		}
 		
 		public function MeshController()
 		{
@@ -56,6 +82,8 @@ package aerys.minko.scene.controller.mesh
 			_data = new DataProvider(
 				null, target.name + '_transforms', DataProviderUsage.EXCLUSIVE
 			);
+			_data.setProperty('geometry', _geometry);
+			_data.setProperty('frame', _frame);
 			_data.setProperty('localToWorld', _localToWorld);
 			_data.setProperty('worldToLocal', _worldToLocal);
 			

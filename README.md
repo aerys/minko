@@ -84,6 +84,8 @@ Code samples are available in a separate github repository: [minko-examples](htt
 [![Pixel Picking](http://static.aerys.in:8080/minko/images/vignette_minko_picking.jpg)](http://static.aerys.in:8080/minko/examples/PickingExample.html)
 [![Vertex Normals and Positions](http://hub.aerys.in/images/c/cf/Vignette_minko_vertexiterator.jpg)](http://hub.aerys.in/index.php/Minko:VertexIterator_Example)
 [![Bones and Joints](http://hub.aerys.in/images/5/5e/Vignette_minko_jointsdebugcontroller.jpg)](http://hub.aerys.in/index.php/Minko:JointsDebugController_Example)
+[![Sound](http://hub.aerys.in/images/b/b7/Vignette_minko_sound.jpg)](http://hub.aerys.in/index.php/Minko:Sound_Example)
+[![FPS Camera](http://hub.aerys.in/images/b/b2/Vignette_minko_fps.jpg)](http://hub.aerys.in/index.php/Minko:FirstPersonCameraController_Example)
 
 Tools
 -----
@@ -110,7 +112,7 @@ Features
 Contribute
 ----------
 
-`minko` is LGPL-licensed.  Make sure you tell us everything that's wrong!
+`minko` is MIT-licensed.  Make sure you tell us everything that's wrong!
 
 * [Source code](https://github.com/aerys/minko)
 * [Issue tracker](https://github.com/aerys/minko/issues)

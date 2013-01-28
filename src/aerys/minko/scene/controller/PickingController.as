@@ -21,14 +21,13 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	
-	import avmplus.getQualifiedClassName;
-	
 	import flash.display.BitmapData;
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
 	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
 	import flash.utils.Dictionary;
+	import flash.utils.getQualifiedClassName;
 	
 	public class PickingController extends EnterFrameController
 	{
@@ -282,12 +281,15 @@ package aerys.minko.scene.controller
                             
                             if (target is Mesh)
                             {
-                                var mesh : Mesh = target as Mesh;
+								var mesh : Mesh = target as Mesh;
                                 
                                 if (mesh.cast(ray) > 0.)
                                 {
-                                    _lastMouseOver = _currentMouseOver;
-                                    _currentMouseOver = mesh;
+									if (!(_technique & PickingTechnique.PIXEL_PICKING))
+									{
+										_lastMouseOver = _currentMouseOver;
+										_currentMouseOver = mesh;
+									}
                                     hit = true;
                                 }
                             }
@@ -298,8 +300,11 @@ package aerys.minko.scene.controller
                                 
                                 if (hits.length > 0)
                                 {
-                                    _lastMouseOver = _currentMouseOver;
-                                    _currentMouseOver = hits[0] as Mesh;
+									if (!(_technique & PickingTechnique.PIXEL_PICKING))
+									{
+										_lastMouseOver = _currentMouseOver;
+										_currentMouseOver = hits[0] as Mesh;
+									}
                                     hit = true;
                                 }
                             }

@@ -10,6 +10,7 @@ package aerys.minko.render.geometry
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.IWatchable;
 	import aerys.minko.type.math.BoundingBox;
 	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
@@ -41,7 +42,7 @@ package aerys.minko.render.geometry
 	 * @author Jean-Marc Le Roux
 	 * 
 	 */
-	public class Geometry
+	public class Geometry implements IWatchable
 	{
 		use namespace minko_scene;
 		use namespace minko_stream;
@@ -810,7 +811,7 @@ package aerys.minko.render.geometry
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
-		private function updateBoundingVolumes() : void
+		protected function updateBoundingVolumes() : void
 		{
 			if (_bulkUpdate)
 				return ;
