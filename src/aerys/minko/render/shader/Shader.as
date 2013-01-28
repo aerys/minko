@@ -141,11 +141,13 @@ package aerys.minko.render.shader
 		{
 			var pass : ShaderInstance = findPass(sceneBindings, meshBindings);
 			
-			if (pass == null)
+			if (!pass)
 			{
 				var signature	: Signature			= new Signature();
-				var config		: ShaderSettings	= findOrCreateSettings(sceneBindings, meshBindings);
-
+				var config		: ShaderSettings	= findOrCreateSettings(
+					sceneBindings, meshBindings
+				);
+				
 				signature.mergeWith(config.signature);
 				
 				var program		: Program3DResource	= null;
