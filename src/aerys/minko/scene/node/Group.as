@@ -263,7 +263,7 @@ package aerys.minko.scene.node
 
 		public function removeChildAt(position : uint) : Group
 		{
-			if (position >= _numChildren || position < 0)
+			if (position >= _numChildren)
 				throw new Error('The scene node is not a child of the caller.');
 			
 			(_children[position] as ISceneNode).parent = null;

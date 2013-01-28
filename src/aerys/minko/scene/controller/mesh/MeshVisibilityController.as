@@ -9,6 +9,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.math.BoundingBox;
 	import aerys.minko.type.math.BoundingSphere;
@@ -39,9 +40,11 @@ package aerys.minko.scene.controller.mesh
 		private var _boundingBox	    : BoundingBox;
 		private var _boundingSphere	    : BoundingSphere;
 		
+		private var _data				: DataProvider;
+		
         private var _frustumCulling     : uint;
         private var _insideFrustum      : Boolean;
-        private var _computedVisibility : Boolean;
+//        private var _data.computedVisibility : Boolean;
 		
 		public function get frustumCulling() : uint
 		{
@@ -60,7 +63,7 @@ package aerys.minko.scene.controller.mesh
         
         public function get computedVisibility() : Boolean
         {
-            return _frustumCulling == FrustumCulling.DISABLED || _computedVisibility;
+            return _data.computedVisibility;
         }
 		
 		public function MeshVisibilityController()
@@ -72,6 +75,9 @@ package aerys.minko.scene.controller.mesh
 		
 		private function initialize() : void
 		{
+			_data = new DataProvider();
+			_data.setProperty('computedVisibility', false);
+			
 			_boundingBox = new BoundingBox(Vector4.ZERO, Vector4.ONE);
 			_boundingSphere = new BoundingSphere(Vector4.ZERO, 0.);
 			
@@ -148,9 +154,11 @@ package aerys.minko.scene.controller.mesh
 		
         private function visiblityChangedHandler(node : ISceneNode, visibility : Boolean) : void
         {
-            _computedVisibility = _mesh.visible && _mesh.parent.computedVisibility
-                && (_frustumCulling == FrustumCulling.DISABLED || _insideFrustum);
-            _mesh.computedVisibilityChanged.execute(_mesh, _computedVisibility);
+			var computedVisibility : Boolean = _mesh.visible && _mesh.parent.computedVisibility
+				&& (_frustumCulling == FrustumCulling.DISABLED || _insideFrustum);
+			
+			_data.computedVisibility = computedVisibility;
+            _mesh.computedVisibilityChanged.execute(_mesh, computedVisibility);
         }
         
 		private function worldToScreenChangedHandler(bindings	    : DataBindings,
@@ -190,8 +198,13 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _frustumCulling;
 			
-			if (culling != FrustumCulling.DISABLED && _mesh && _mesh.geometry.boundingBox
-                && _mesh.visible)
+			if (culling != FrustumCulling.DISABLED)
+			{
+				_data.computedVisibility = true;
+				return;
+			}
+			
+			if (_mesh && _mesh.geometry.boundingBox && _mesh.visible)
 			{
 				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				
@@ -211,14 +224,14 @@ package aerys.minko.scene.controller.mesh
 				if (inside && _state != STATE_INSIDE)
 				{
 					_insideFrustum = true;
-                    _computedVisibility = _mesh.parent.computedVisibility && _mesh.visible;
+                    _data.computedVisibility = _mesh.parent.computedVisibility && _mesh.visible;
                     _mesh.computedVisibilityChanged.execute(_mesh, computedVisibility);
 					_state = STATE_INSIDE;
 				}
 				else if (!inside && _state != STATE_OUTSIDE)
 				{
 					_insideFrustum = false;
-                    _computedVisibility = false;
+                    _data.computedVisibility = false;
                     _mesh.computedVisibilityChanged.execute(_mesh, false);
 					_state = STATE_OUTSIDE;
 				}
