@@ -12,18 +12,22 @@ package aerys.minko.scene.controller.debug
     
     public final class BonesDebugController extends AbstractController
     {
-        private var _material   : Material;
+		private var _bonesThickness	: Number;
+        private var _material   	: Material;
         
-        public function BonesDebugController(bonesMaterial : Material = null)
+        public function BonesDebugController(bonesThickness	: Number	= 0.02,
+											 bonesMaterial 	: Material 	= null)
         {
             super(Mesh);
             
-            initialize(bonesMaterial);
+            initialize(bonesThickness, bonesMaterial);
         }
         
-        private function initialize(bonesMaterial : Material) : void
+        private function initialize(bonesThickness : Number, bonesMaterial : Material) : void
         {
+			_bonesThickness = bonesThickness;
             _material = bonesMaterial;
+			
             if (!_material)
             {
                 var bonesBasicMaterial : BasicMaterial = new BasicMaterial();
@@ -86,7 +90,7 @@ package aerys.minko.scene.controller.debug
                         boneMesh.transform
                             .lookAt(nextJointPosition)
                             .prependTranslation(0, 0, boneLength * .5)
-                            .prependScale(.02, .02, boneLength);
+                            .prependScale(_bonesThickness, _bonesThickness, boneLength);
                         
                         joint.addChild(boneMesh);
                     }
