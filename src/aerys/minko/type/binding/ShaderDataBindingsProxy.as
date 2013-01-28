@@ -16,15 +16,11 @@ package aerys.minko.type.binding
 	 */
 	public final class ShaderDataBindingsProxy extends DataBindingsProxy
 	{
-		private var _serializer		: Serializer;
-		
 		public function ShaderDataBindingsProxy(bindings		: DataBindings,
 												signature		: Signature,
 												signatureFlags	: uint)
 		{
 			super(bindings, signature, signatureFlags);
-			
-			_serializer = new Serializer();
 		}
 		
 		public function getParameter(name			: String,
@@ -33,9 +29,10 @@ package aerys.minko.type.binding
 		{
 			if (defaultValue != null && !propertyExists(name))
 			{
-				var constantValue : Vector.<Number> = new Vector.<Number>();
+				var constantValue 	: Vector.<Number> 	= new Vector.<Number>();
+				var serializer 		: Serializer		= new Serializer();
 				
-				_serializer.serializeKnownLength(defaultValue, constantValue, 0, size);
+				serializer.serializeKnownLength(defaultValue, constantValue, 0, size);
 				
 				return new SFloat(new Constant(constantValue));
 			}
