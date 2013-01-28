@@ -112,7 +112,7 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			var mesh : Mesh = target as Mesh;
 			
-			mesh.bindings.addCallback('inFrustum', meshVisibilityChangedHandler);
+			mesh.bindings.addCallback('insideFrustum', meshVisibilityChangedHandler);
 			
 			if (!_skinningHelper)
 			{
@@ -163,12 +163,12 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super.targetRemovedFromScene(target, scene);
 			
-			if (numTargets == 0)
+			if (getNumTargetsInScene(scene) == 0)
 				unsubscribeFromJoints();
 			
 			var mesh : Mesh = target as Mesh;
 			
-			mesh.bindings.removeCallback('inFrustum', meshVisibilityChangedHandler);
+			mesh.bindings.removeCallback('insideFrustum', meshVisibilityChangedHandler);
 			_skinningHelper.removeMesh(mesh);
 		}
 		
