@@ -718,7 +718,7 @@ package aerys.minko.scene.controller.scene
 					var meshBindings		: DataBindings		= _drawCallToMeshBindings[drawCall];
 					var meshGeometry		: Geometry			= (meshBindings.owner as Mesh).geometry
 					var meshChanges			: Vector.<String>	= _stashedPropertyChanges[meshBindings];
-					trace(meshChanges);
+					
 					var needUpdateFromMesh	: Boolean 			= meshChanges != null ?
 						passInstanceSignature.useProperties(meshChanges, false) :
 						false;
