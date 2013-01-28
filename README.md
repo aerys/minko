@@ -110,7 +110,7 @@ You can get free support on our official forum: [Aerys Answers](http://answers.a
 Contribute
 ----------
 
-`minko` is LGPL-licensed.  Make sure you tell us everything that's wrong!
+`minko` is MIT-licensed.  Make sure you tell us everything that's wrong!
 
 * [Source code](https://github.com/aerys/minko)
 * [Issue tracker](https://github.com/aerys/minko/issues)

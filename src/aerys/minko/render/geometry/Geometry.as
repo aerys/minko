@@ -811,7 +811,7 @@ package aerys.minko.render.geometry
 			(stream as VertexStreamList).pushVertexStream(vertexStream, force);
 		}
 		
-		private function updateBoundingVolumes() : void
+		protected function updateBoundingVolumes() : void
 		{
 			if (_bulkUpdate)
 				return ;
