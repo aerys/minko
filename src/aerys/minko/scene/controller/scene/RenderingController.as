@@ -569,7 +569,7 @@ package aerys.minko.scene.controller.scene
 			meshesWithSameEffectInstance.splice(meshesWithSameEffectInstance.indexOf(mesh), 1);
 			if (meshesWithSameEffectInstance.length == 0)
 			{
-				delete _effectInstanceToMeshes[effect];
+				delete _effectInstanceToMeshes[effectInstance];
 				_effectInstances.splice(_effectInstances.indexOf(effectInstance), 1);
                 effectInstance.passesChanged.remove(effectInstancePassesChangedHandler);
 			}
