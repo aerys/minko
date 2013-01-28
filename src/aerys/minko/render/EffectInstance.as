@@ -48,7 +48,9 @@ package aerys.minko.render
 		
 		public function getPass(index : uint) : Shader
 		{
-			return index < _passes.length ? _passes[index] : _extraPasses[index];
+			var numPasses : uint = _passes.length;
+			
+			return index < numPasses ? _passes[index] : _extraPasses[uint(index - numPasses)];
 		}
 	}
 }
