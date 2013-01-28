@@ -7,10 +7,10 @@ package aerys.minko.type.enum
 
 	public final class TriangleCulling
 	{
-		public static const NONE	: int = 0;
-		public static const BACK	: int = 1;
-		public static const FRONT	: int = 2;
-		public static const BOTH	: int = 3;
+		public static const NONE	: uint = 0;
+		public static const BACK	: uint = 1;
+		public static const FRONT	: uint = 2;
+		public static const BOTH	: uint = 3;
 		
 		minko_render static const STRINGS : Vector.<String> = new <String>[
 			Context3DTriangleFace.NONE,
