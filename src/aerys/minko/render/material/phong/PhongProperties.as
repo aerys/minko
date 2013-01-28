@@ -10,7 +10,7 @@ package aerys.minko.render.material.phong
 		
 		public static const LIGHTMAP_MULTIPLIER			: String = 'lightMapMultiplier';
 		public static const AMBIENT_MULTIPLIER			: String = 'ambientMultiplier';
-		public static const DIFFUSE_MULTIPLIER			: String = 'aiffuseMultiplier';
+		public static const DIFFUSE_MULTIPLIER			: String = 'diffuseMultiplier';
 		public static const SPECULAR					: String = 'specular';
 		public static const SHININESS					: String = 'shininess';
 		
