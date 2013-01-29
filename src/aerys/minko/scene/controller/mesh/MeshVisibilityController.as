@@ -10,6 +10,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.math.BoundingBox;
 	import aerys.minko.type.math.BoundingSphere;
@@ -75,8 +76,11 @@ package aerys.minko.scene.controller.mesh
 		
 		private function initialize() : void
 		{
-			_data = new DataProvider();
-			_data.setProperty('computedVisibility', false);
+			_data = new DataProvider(
+				{ computedVisibility : false },
+				'MeshVisibilityDataProvider',
+				DataProviderUsage.EXCLUSIVE
+			);
 			
 			_boundingBox = new BoundingBox(Vector4.ZERO, Vector4.ONE);
 			_boundingSphere = new BoundingSphere(Vector4.ZERO, 0.);
