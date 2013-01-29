@@ -9,6 +9,7 @@ package aerys.minko.render.shader
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.geom.Rectangle;
+	import aerys.minko.type.binding.Signature;
 
 	public class ShaderSettings
 	{

@@ -41,7 +41,7 @@ package aerys.minko.render.material.phong
 		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
 			passConfig.blending		= Blending.NORMAL;
-			passConfig.enabled		= meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
+			passConfig.enabled		= meshBindings.getProperty(PhongProperties.CAST_SHADOWS, true);
 		}
 		
 		override protected function getVertexPosition() : SFloat

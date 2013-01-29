@@ -16,6 +16,7 @@ package aerys.minko.scene.controller
 	{
         private var _scene              : Scene;
         private var _started            : Dictionary;
+		private var _time				: Number;
 		private var _lastTime		    : Number;
 		private var _deltaTime		    : Number;
 		private var _currentTarget	    : ISceneNode;
@@ -25,12 +26,17 @@ package aerys.minko.scene.controller
         private var _targetsToAdd       : Vector.<ISceneNode>;
         private var _targetsToRemove    : Vector.<ISceneNode>;
 		
-		private var _updateRate			: Number	= 0.;
+		private var _updateRate			: Number;
 		
         protected function get scene() : Scene
         {
             return _scene;
         }
+		
+		protected function get time() : Number
+		{
+			return _time;
+		}
         
 		protected function get deltaTime() : Number
 		{
@@ -102,12 +108,12 @@ package aerys.minko.scene.controller
 														   time			: Number) : void
 		{
 			_deltaTime = time - _lastTime;
+			_time = time;
 
 			if (_updateRate != 0. && deltaTime < 1000. / _updateRate)
 				return;
 			
 			_viewport = viewport;
-			_lastTime = time;
 			
             lockTargetsList();
             beforeUpdate();
@@ -137,6 +143,8 @@ package aerys.minko.scene.controller
             
             afterUpdate();
             unlockTargetsList();
+			
+			_lastTime = time;
 		}
         
         /**

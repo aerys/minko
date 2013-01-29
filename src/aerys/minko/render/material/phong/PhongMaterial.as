@@ -188,21 +188,20 @@ package aerys.minko.render.material.phong
 			setProperty(PhongProperties.RECEIVE_SHADOWS, value);
 		}
 		
-		public function PhongMaterial(scene 		: Scene,
-									  properties 	: Object 	= null,
+		public function PhongMaterial(properties 	: Object 	= null,
 									  effect		: Effect	= null,
 									  name 			: String 	= DEFAULT_NAME)
 		{
 			super(
 				properties,
-				effect || (EFFECTS[scene] || (EFFECTS[scene] = new PhongEffect(scene))),
+				effect || new PhongEffect(),
 				name
 			);
 		}
 		
 		override public function clone() : IDataProvider
 		{
-			return new PhongMaterial((effect as PhongEffect).scene, this, effect, name);
+			return new PhongMaterial(this, effect, name);
 		}
 	}
 }

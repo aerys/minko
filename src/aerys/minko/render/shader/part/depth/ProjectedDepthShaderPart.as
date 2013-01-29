@@ -20,7 +20,7 @@ package aerys.minko.render.shader.part.depth
 		{
 			var lightTypeName		: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var worldToScreenName	: String 	= LightDataProvider.getLightPropertyName('worldToScreen', lightId);
-			var lightType			: uint		= sceneBindings.getConstant(lightTypeName);
+			var lightType			: uint		= sceneBindings.getProperty(lightTypeName);
 			var worldToScreen		: SFloat 	= sceneBindings.getParameter(worldToScreenName, 16);
 			var position			: SFloat	= vPosition;
 			var worldPosition		: SFloat	= localToWorld(position);

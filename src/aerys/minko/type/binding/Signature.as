@@ -1,7 +1,6 @@
-package aerys.minko.render.shader
+package aerys.minko.type.binding
 {
 	import aerys.minko.type.Signal;
-	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
@@ -29,7 +28,7 @@ package aerys.minko.render.shader
 			return _keys.length;
 		}
 		
-		public function Signature(shaderName : String)
+		public function Signature()
 		{
 		}
 		
@@ -60,8 +59,8 @@ package aerys.minko.render.shader
 			_flags.push(flags);
 		}
 		
-		public function isValid(meshBindings 	: DataBindings,
-								sceneBindings	: DataBindings) : Boolean
+		public function isValid(sceneBindings	: DataBindings,
+								meshBindings 	: DataBindings) : Boolean
 		{
 			var numKeys	: uint	= _keys.length;
 			
@@ -104,7 +103,7 @@ package aerys.minko.render.shader
 		
 		public function clone() : Signature
 		{
-			var clone : Signature = new Signature(null);
+			var clone : Signature = new Signature();
 			
 			clone._flags	= _flags.slice();
 			clone._keys		= _keys.slice();

@@ -130,45 +130,45 @@ package aerys.minko.render.material.basic
 			super.initializeSettings(settings);
 			
 			// depth test
-			settings.depthWriteEnabled = meshBindings.getConstant(
+			settings.depthWriteEnabled = meshBindings.getProperty(
 				BasicProperties.DEPTH_WRITE_ENABLED, true
 			);
-			settings.depthTest = meshBindings.getConstant(
+			settings.depthTest = meshBindings.getProperty(
 				BasicProperties.DEPTH_TEST, DepthTest.LESS
 			);
 			
-			settings.triangleCulling = meshBindings.getConstant(
+			settings.triangleCulling = meshBindings.getProperty(
 				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
 			);
 
 			// stencil operations
-			settings.stencilTriangleFace = meshBindings.getConstant(
+			settings.stencilTriangleFace = meshBindings.getProperty(
 				BasicProperties.STENCIL_TRIANGLE_FACE, TriangleCulling.BOTH
 			);
-			settings.stencilCompareMode = meshBindings.getConstant(
+			settings.stencilCompareMode = meshBindings.getProperty(
 				BasicProperties.STENCIL_COMPARE_MODE, DepthTest.EQUAL
 			);
-			settings.stencilActionOnBothPass = meshBindings.getConstant(
+			settings.stencilActionOnBothPass = meshBindings.getProperty(
 				BasicProperties.STENCIL_ACTION_BOTH_PASS, StencilAction.KEEP
 			);
-			settings.stencilActionOnDepthFail = meshBindings.getConstant(
+			settings.stencilActionOnDepthFail = meshBindings.getProperty(
 				BasicProperties.STENCIL_ACTION_DEPTH_FAIL, StencilAction.KEEP
 			);
-			settings.stencilActionOnDepthPassStencilFail = meshBindings.getConstant(
+			settings.stencilActionOnDepthPassStencilFail = meshBindings.getProperty(
 				BasicProperties.STENCIL_ACTION_DEPTH_PASS_STENCIL_FAIL, StencilAction.KEEP
 			);
-			settings.stencilReferenceValue = meshBindings.getConstant(
+			settings.stencilReferenceValue = meshBindings.getProperty(
 				BasicProperties.STENCIL_REFERENCE_VALUE, 0
 			);
-			settings.stencilReadMask = meshBindings.getConstant(
+			settings.stencilReadMask = meshBindings.getProperty(
 				BasicProperties.STENCIL_READ_MASK, 255
 			);
-			settings.stencilWriteMask = meshBindings.getConstant(
+			settings.stencilWriteMask = meshBindings.getProperty(
 				BasicProperties.STENCIL_WRITE_MASK, 255
 			);
 			
 			// blending and priority
-			var blending : uint = meshBindings.getConstant(
+			var blending : uint = meshBindings.getProperty(
 				BasicProperties.BLENDING, Blending.NORMAL
 			);
 
@@ -190,7 +190,7 @@ package aerys.minko.render.material.basic
 		 */
 		override protected function getVertexPosition() : SFloat
 		{
-			var triangleCulling	: uint	= meshBindings.getConstant(
+			var triangleCulling	: uint	= meshBindings.getProperty(
 				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
 			);
 			

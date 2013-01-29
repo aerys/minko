@@ -33,7 +33,7 @@ package aerys.minko.render.shader.part.depth
 		{
 			var lightTypeName		: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var projectionName		: String 	= LightDataProvider.getLightPropertyName('projection', lightId);
-			var lightType			: uint		= sceneBindings.getConstant(lightTypeName);
+			var lightType			: uint		= sceneBindings.getProperty(lightTypeName);
 			var projection			: SFloat	= sceneBindings.getParameter(projectionName, 16);
 			var viewMatrix			: Matrix4x4	= VIEW_MATRICES[face];
 			var worldToLightName	: String	= LightDataProvider.getLightPropertyName('worldToLocal', lightId);
@@ -71,7 +71,7 @@ package aerys.minko.render.shader.part.depth
 		public function getUV(lightId : uint, fsWorldPosition : SFloat) : SFloat
 		{
 			var lightTypeName			: String	= LightDataProvider.getLightPropertyName('type', lightId);
-			var lightType				: uint		= sceneBindings.getConstant(lightTypeName, lightId);
+			var lightType				: uint		= sceneBindings.getProperty(lightTypeName, lightId);
 			var transformPropertyName	: String	= lightType == PointLight.LIGHT_TYPE ? 'worldToLocal' : 'worldToUV';
 			var transformName			: String	= LightDataProvider.getLightPropertyName(transformPropertyName, lightId);
 			var transform				: SFloat 	= sceneBindings.getParameter(transformName, 16);

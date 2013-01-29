@@ -12,6 +12,8 @@ package aerys.minko.render.shader
 	import aerys.minko.type.binding.DataBindings;
 	
 	import flash.utils.getQualifiedClassName;
+	import aerys.minko.type.binding.Signature;
+	import aerys.minko.type.binding.ShaderDataBindingsProxy;
 	
 	use namespace minko_shader;
 	
@@ -32,8 +34,8 @@ package aerys.minko.render.shader
 		use namespace minko_shader;
 		use namespace minko_render;
 		
-		minko_shader var _meshBindings		: ShaderDataBindings			= null;
-		minko_shader var _sceneBindings		: ShaderDataBindings			= null;
+		minko_shader var _meshBindings		: ShaderDataBindingsProxy		= null;
+		minko_shader var _sceneBindings		: ShaderDataBindingsProxy		= null;
 		minko_shader var _kills				: Vector.<AbstractNode>			= new <AbstractNode>[];
 		
 		private var _name					: String						= null;
@@ -134,23 +136,25 @@ package aerys.minko.render.shader
 			_name = getQualifiedClassName(this);
 		}
 		
-		public function fork(meshBindings	: DataBindings,
-							 sceneBindings	: DataBindings) : ShaderInstance
+		public function fork(sceneBindings	: DataBindings,
+							 meshBindings	: DataBindings) : ShaderInstance
 		{
-			var pass : ShaderInstance = findPass(meshBindings, sceneBindings);
+			var pass : ShaderInstance = findPass(sceneBindings, meshBindings);
 			
-			if (pass == null)
+			if (!pass)
 			{
-				var signature	: Signature			= new Signature(_name);
-				var config		: ShaderSettings	= findOrCreateSettings(meshBindings, sceneBindings);
-
+				var signature	: Signature			= new Signature();
+				var config		: ShaderSettings	= findOrCreateSettings(
+					sceneBindings, meshBindings
+				);
+				
 				signature.mergeWith(config.signature);
 				
 				var program		: Program3DResource	= null;
 				
 				if (config.enabled)
 				{
-					program = findOrCreateProgram(meshBindings, sceneBindings);
+					program = findOrCreateProgram(sceneBindings, meshBindings);
 					signature.mergeWith(program.signature);
 				}
 				
@@ -220,32 +224,32 @@ package aerys.minko.render.shader
 		}
 		
 		
-		private function findPass(meshBindings	: DataBindings,
-								  sceneBindings	: DataBindings) : ShaderInstance
+		private function findPass(sceneBindings	: DataBindings,
+								  meshBindings	: DataBindings) : ShaderInstance
 		{
 			var numPasses : int = _instances.length;
 			
 			for (var passId : uint = 0; passId < numPasses; ++passId)
-				if (_instances[passId].signature.isValid(meshBindings, sceneBindings))
+				if (_instances[passId].signature.isValid(sceneBindings, meshBindings))
 					return _instances[passId];
 			
 			return null;
 		}
 		
-		private function findOrCreateProgram(meshBindings	: DataBindings,
-											 sceneBindings	: DataBindings) : Program3DResource
+		private function findOrCreateProgram(sceneBindings	: DataBindings,
+											 meshBindings	: DataBindings) : Program3DResource
 		{
 			var numPrograms	: int = _programs.length;
 			var program 	: Program3DResource;
 			
 			for (var programId : uint = 0; programId < numPrograms; ++programId)
-				if (_programs[programId].signature.isValid(meshBindings, sceneBindings))
+				if (_programs[programId].signature.isValid(sceneBindings, meshBindings))
 					return _programs[programId];
 			
-			var signature		: Signature		= new Signature(_name);
+			var signature		: Signature		= new Signature();
 			
-			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
-			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
+			_meshBindings	= new ShaderDataBindingsProxy(meshBindings, signature, Signature.SOURCE_MESH);
+			_sceneBindings	= new ShaderDataBindingsProxy(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
 			var vertexPosition	: AbstractNode	= getVertexPosition()._node;
 			var pixelColor		: AbstractNode	= getPixelColor()._node;
@@ -261,21 +265,21 @@ package aerys.minko.render.shader
 			return program;
 		}
 		
-		private function findOrCreateSettings(meshBindings 	: DataBindings,
-											 sceneBindings	: DataBindings) : ShaderSettings
+		private function findOrCreateSettings(sceneBindings	: DataBindings,
+											  meshBindings 	: DataBindings) : ShaderSettings
 		{
 			var numConfigs	: int 				= _settings.length;
 			var config		: ShaderSettings	= null;
 			
 			for (var configId : int = 0; configId < numConfigs; ++configId)
-				if (_settings[configId].signature.isValid(meshBindings, sceneBindings))
+				if (_settings[configId].signature.isValid(sceneBindings, meshBindings))
 					return _settings[configId];
 			
-			var signature : Signature = new Signature(_name);
+			var signature : Signature = new Signature();
 			
 			config			= _defaultSettings.clone(signature);
-			_meshBindings	= new ShaderDataBindings(meshBindings, signature, Signature.SOURCE_MESH);
-			_sceneBindings	= new ShaderDataBindings(sceneBindings, signature, Signature.SOURCE_SCENE);
+			_meshBindings	= new ShaderDataBindingsProxy(meshBindings, signature, Signature.SOURCE_MESH);
+			_sceneBindings	= new ShaderDataBindingsProxy(sceneBindings, signature, Signature.SOURCE_SCENE);
 			
 			initializeSettings(config);
 			
