@@ -56,6 +56,7 @@ package aerys.minko.scene.controller.camera
 				throw new Error('The CameraController can target only one Camera object.');
 			
 			_camera = target;
+            _camera.localToWorldTransformChanged.enabled = true;
 			_camera.added.add(addedHandler);
 			_camera.removed.add(removedHandler);
 		}
