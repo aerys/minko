@@ -60,7 +60,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override public function clone() : AbstractNode
 		{
-			return new Sampler(_textureResource, format, filter, mipmap, wrapping, dimension);
+			return new Sampler(_textureResource, filter, mipmap, wrapping, dimension, format);
 		}
 
 	}
