@@ -5,10 +5,13 @@ package aerys.minko.scene.controller
     import aerys.minko.scene.node.Group;
     import aerys.minko.scene.node.ISceneNode;
     import aerys.minko.scene.node.Scene;
+    import aerys.minko.scene.node.camera.Camera;
+    import aerys.minko.type.Signal;
     import aerys.minko.type.math.Matrix4x4;
     
     import flash.display.BitmapData;
     import flash.utils.Dictionary;
+    import flash.utils.getTimer;
     
     import mx.olap.aggregators.MaxAggregator;
     
@@ -105,7 +108,10 @@ package aerys.minko.scene.controller
                 
                 _flags[nodeId] = rootFlags;
                 
-                root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
+                var localToWorldTransformChanged : Signal = root.localToWorldTransformChanged;
+                
+                if (root.localToWorldTransformChanged.enabled)
+                    root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
             }
         }
         
@@ -175,7 +181,10 @@ package aerys.minko.scene.controller
                         
                         _flags[childId] = childFlags;
                         
-                        child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                        var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
+                        
+                        if (localToWorldTransformChanged.enabled)
+                            localToWorldTransformChanged.execute(child, childLocalToWorld);
                         
                         if (childId == targetNodeId)
                             return;
@@ -248,7 +257,10 @@ package aerys.minko.scene.controller
                 
                 _flags[childId] = childFlags;
                 
-                child.localToWorldTransformChanged.execute(child, childLocalToWorld);
+                var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
+                
+                if (localToWorldTransformChanged.enabled)
+                    localToWorldTransformChanged.execute(child, childLocalToWorld);
                 
                 localToWorld = childLocalToWorld;
             }
