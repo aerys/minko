@@ -115,16 +115,13 @@ package aerys.minko.scene.controller
             }
         }
         
-        private function updateLocalToWorld(nodeId : uint = 0, targetNodeId : int = -1) : void
+        private function updateLocalToWorld(nodeId : uint = 0) : void
         {
             var numNodes 	: uint 	= _transforms.length;
             var subtreeMax  : uint  = nodeId;
             
             updateRootLocalToWorld(nodeId);
             
-            if (nodeId == targetNodeId)
-                return;
-
             while (nodeId < numNodes)
             {
                 var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
@@ -185,28 +182,10 @@ package aerys.minko.scene.controller
                         
                         if (localToWorldTransformChanged.enabled)
                             localToWorldTransformChanged.execute(child, childLocalToWorld);
-                        
-                        if (childId == targetNodeId)
-                            return;
                     }
                 }
-                
-                if (targetNodeId >= 0 && nodeId && nodeId >= subtreeMax)
-                {
-                    // jump to the first brother who has children
-                    var parentId : uint = _parentId[nodeId];
-                    
-                    nodeId = _firstChildId[parentId];
-                    while (!_numChildren[nodeId] && nodeId < subtreeMax)
-                        ++nodeId;
-                    
-                    if (nodeId >= subtreeMax)
-                        return ;
-                    
-                    nodeId = _firstChildId[nodeId];
-                }
-                else
-                    ++nodeId;
+				
+				++nodeId;
             }
         }
         
