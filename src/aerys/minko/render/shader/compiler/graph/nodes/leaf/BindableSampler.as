@@ -42,7 +42,7 @@ package aerys.minko.render.shader.compiler.graph.nodes.leaf
 		
 		override public function clone() : AbstractNode
 		{
-			return new BindableSampler(_bindingName, format, filter, mipmap, wrapping, dimension);
+			return new BindableSampler(_bindingName, filter, mipmap, wrapping, dimension, format);
 		}
 	}
 }

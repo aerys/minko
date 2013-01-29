@@ -163,7 +163,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		{
 			super.targetRemovedFromScene(target, scene);
 			
-			if (numTargets == 0)
+			if (getNumTargetsInScene(scene) == 0)
 				unsubscribeFromJoints();
 			
 			var mesh : Mesh = target as Mesh;

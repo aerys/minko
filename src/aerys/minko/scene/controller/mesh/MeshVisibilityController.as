@@ -53,7 +53,8 @@ package aerys.minko.scene.controller.mesh
 		public function set frustumCulling(value : uint) : void
 		{
 			_frustumCulling = value;
-            testCulling();
+			if (_mesh && _mesh.root is Scene)
+            	testCulling();
 		}
 		
 		public function get insideFrustum() : Boolean
@@ -100,6 +101,9 @@ package aerys.minko.scene.controller.mesh
 			
 			if (target.root is Scene)
 				addedHandler(target, target.root as Scene);
+			
+			if (_frustumCulling)
+				testCulling();
 		}
 		
 		private function targetRemovedHandler(ctrl		: MeshVisibilityController,
