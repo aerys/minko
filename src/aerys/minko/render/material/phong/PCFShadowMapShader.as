@@ -21,8 +21,8 @@ package aerys.minko.render.material.phong
 		private var _clipspacePosition		: SFloat;
 		
 		public function PCFShadowMapShader(lightId		: uint,
-											  priority		: Number,
-											  renderTarget	: RenderTarget)
+										   priority		: Number,
+										   renderTarget	: RenderTarget)
 		{
 			super(renderTarget, priority);
 			
@@ -37,8 +37,7 @@ package aerys.minko.render.material.phong
 			super.initializeSettings(settings);
 			
 			settings.blending = Blending.NORMAL;
-			settings.enabled = meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
-			settings.triangleCulling = meshBindings.getConstant(
+			settings.triangleCulling = meshBindings.getProperty(
                 BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
             );
 		}
@@ -52,7 +51,7 @@ package aerys.minko.render.material.phong
                 'worldToScreen', _lightId
             );
 			
-			var lightType			: uint	 = sceneBindings.getConstant(lightTypeName);
+			var lightType			: uint	 = sceneBindings.getProperty(lightTypeName);
 			var worldToScreen		: SFloat = sceneBindings.getParameter(worldToScreenName, 16);
 			var vertexPosition		: SFloat = localToWorld(
                 _vertexAnimationPart.getAnimatedVertexPosition()

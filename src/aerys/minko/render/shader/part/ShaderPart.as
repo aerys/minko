@@ -5,7 +5,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.ShaderDataBindings;
+	import aerys.minko.type.binding.ShaderDataBindingsProxy;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -178,12 +178,12 @@ package aerys.minko.render.shader.part
 			_main = main;
 		}
 		
-		protected function get meshBindings() : ShaderDataBindings
+		protected function get meshBindings() : ShaderDataBindingsProxy
 		{
 			return _main._meshBindings;
 		}
 		
-		protected function get sceneBindings() : ShaderDataBindings
+		protected function get sceneBindings() : ShaderDataBindingsProxy
 		{
 			return _main._sceneBindings;
 		}

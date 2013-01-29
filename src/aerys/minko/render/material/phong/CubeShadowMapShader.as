@@ -49,9 +49,9 @@ package aerys.minko.render.material.phong
 		
 		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
-			passConfig.triangleCulling	= meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
+			passConfig.triangleCulling	= meshBindings.getProperty(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK);
 			passConfig.blending			= Blending.NORMAL;
-			passConfig.enabled			= meshBindings.getConstant(PhongProperties.CAST_SHADOWS, true);
+			passConfig.enabled			= meshBindings.getProperty(PhongProperties.CAST_SHADOWS, true);
 		}
 		
 		override protected function getVertexPosition() : SFloat

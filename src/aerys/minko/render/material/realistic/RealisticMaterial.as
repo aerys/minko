@@ -2,6 +2,7 @@ package aerys.minko.render.material.realistic
 {
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.environment.EnvironmentMappingProperties;
+	import aerys.minko.render.material.phong.PhongEffect;
 	import aerys.minko.render.material.phong.PhongMaterial;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.scene.node.Scene;
@@ -86,19 +87,16 @@ package aerys.minko.render.material.realistic
 			setProperty(EnvironmentMappingProperties.ENVIRONMENT_BLENDING, value);
 		}
 		
-		public function RealisticMaterial(scene			: Scene,
-										  properties	: Object	= null,
+		public function RealisticMaterial(properties	: Object	= null,
 										  effect		: Effect	= null,
 										  name			: String	= DEFAULT_NAME)
 		{
-			effect ||= SCENE_TO_EFFECT[scene] || (SCENE_TO_EFFECT[scene] = new RealisticEffect(scene));
-			
-			super(scene, properties, effect, name);
+			super(properties, effect || new PhongEffect(new RealisticShader()), name);
 		}
         
         override public function clone() : IDataProvider
         {
-            return new RealisticMaterial((effect as RealisticEffect).scene, this, effect, name);
+            return new RealisticMaterial(this, effect, name);
         }
 	}
 }

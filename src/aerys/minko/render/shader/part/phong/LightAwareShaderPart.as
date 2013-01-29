@@ -57,7 +57,7 @@ package aerys.minko.render.shader.part.phong
 			
 			result = interpolate(result.xy);
 			
-			var normalMappingType : uint = meshBindings.getConstant(
+			var normalMappingType : uint = meshBindings.getProperty(
 				PhongProperties.NORMAL_MAPPING_TYPE, NormalMappingType.NONE
 			);
 			
@@ -110,7 +110,7 @@ package aerys.minko.render.shader.part.phong
 		{
 			var vertexTangent : SFloat = vertexAnimationShaderPart.getAnimatedVertexTangent();
 			
-			if (meshBindings.getConstant(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK)
+			if (meshBindings.getProperty(BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK)
                 != TriangleCulling.BACK)
 				vertexTangent.negate();
 			
@@ -124,7 +124,7 @@ package aerys.minko.render.shader.part.phong
 		
 		protected function get fsTangentNormal() : SFloat
 		{
-			var normalMappingType : uint = meshBindings.getConstant(
+			var normalMappingType : uint = meshBindings.getProperty(
                 PhongProperties.NORMAL_MAPPING_TYPE,
                 NormalMappingType.NONE
             );
@@ -138,10 +138,10 @@ package aerys.minko.render.shader.part.phong
 				case NormalMappingType.PARALLAX:
 					var fsNormalMap	: SFloat = meshBindings.getTextureParameter(
 						PhongProperties.NORMAL_MAP,
-						meshBindings.getConstant(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
-						meshBindings.getConstant(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+						meshBindings.getProperty(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
+						meshBindings.getProperty(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
                         0,
-                        meshBindings.getConstant(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
+                        meshBindings.getProperty(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
 					);
 					var fsPixel		: SFloat = sampleTexture(fsNormalMap, fsUV);
                     
@@ -188,7 +188,7 @@ package aerys.minko.render.shader.part.phong
                                             name            : String,
                                             defaultValue    : Object = null) : *
 		{
-			return sceneBindings.getConstant(
+			return sceneBindings.getProperty(
 				LightDataProvider.getLightPropertyName(name, lightId),
 				defaultValue
 			);

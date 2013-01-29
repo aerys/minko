@@ -11,6 +11,7 @@ package aerys.minko.render.shader
 	
 	import flash.display3D.Context3D;
 	import flash.geom.Rectangle;
+	import aerys.minko.type.binding.Signature;
 
 	/**
 	 * The base class for static shaders. 

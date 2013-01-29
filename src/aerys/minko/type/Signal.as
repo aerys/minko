@@ -3,6 +3,7 @@ package aerys.minko.type
 	public final class Signal
 	{
 		private var _name			: String;
+        private var _enabled        : Boolean;
 		
 		private var _callbacks		: Vector.<Function>;
 		private var _numCallbacks	: uint;
@@ -13,14 +14,25 @@ package aerys.minko.type
 		private var _numRemoved		: uint;
 		private var _toRemove		: Vector.<Function>;
 		
+        public function get enabled() : Boolean
+        {
+            return _enabled;
+        }
+        public function set enabled(value : Boolean) : void
+        {
+            _enabled = value;
+        }
+        
 		public function get numCallbacks() : uint
 		{
 			return _numCallbacks;
 		}
 		
-		public function Signal(name : String)
+		public function Signal(name : String, enabled : Boolean = true)
 		{
 			_name = name;
+            _enabled = enabled;
+            
             _callbacks = new <Function>[];
 		}
 		
@@ -102,7 +114,7 @@ package aerys.minko.type
 		
 		public function execute(...params) : void
 		{
-			if (_numCallbacks)
+			if (_numCallbacks && _enabled)
 			{
 				_executed = true;
 				for (var i : uint = 0; i < _numCallbacks; ++i)
