@@ -11,6 +11,10 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
+	
+	import avmplus.getQualifiedClassName;
+	
+	import flash.net.getClassByAlias;
 
 	public final class CloneOptions
 	{
@@ -88,8 +92,18 @@ package aerys.minko.type.clone
 			return cloneOptions;
 		}
 		
-		public function addControllerAction(controllerClass : Class, action : uint) : CloneOptions
+		public function setActionForControllerClass(controllerClass	: Class,
+													action			: uint) : CloneOptions
 		{
+			var index : int = 0;
+			
+			if ((index = _clonedControllerTypes.indexOf(controllerClass)) >= 0)
+				_clonedControllerTypes.slice(index, 1);
+			else if ((index = _ignoredControllerTypes.indexOf(controllerClass)) >= 0)
+				_ignoredControllerTypes.slice(index, 1);
+			else if ((index = _reassignedControllerTypes.indexOf(controllerClass)) >= 0)
+				_reassignedControllerTypes.slice(index, 1);
+			
 			switch (action)
 			{
 				case ControllerCloneAction.CLONE:
@@ -107,13 +121,8 @@ package aerys.minko.type.clone
 				default:
 					throw new Error('Unknown action type.');
 			}
-            
-            return this;
-		}
-		
-		public function removeControllerAction(controllerClass : Class) : void
-		{
-			throw new Error('Implement me.');
+			
+			return this;
 		}
 		
 		public function getActionForController(controller : AbstractController) : uint

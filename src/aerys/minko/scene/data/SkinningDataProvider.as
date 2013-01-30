@@ -16,18 +16,18 @@ package aerys.minko.scene.data
 			'dqD'			: 'skinningDQd' 
 		};
 		
-		private var _method			: uint;
-		private var _numBones		: uint;
-		private var _maxInfluences	: uint;
-		private var _matrices		: Vector.<Number>;
-		private var _dqN			: Vector.<Number>;
-		private var _dqD			: Vector.<Number>;
+		private var _method				: uint;
+		private var _numBones			: uint;
+		private var _maxInfluences		: uint;
+		private var _matrices			: Vector.<Number>;
+		private var _dqN				: Vector.<Number>;
+		private var _dqD				: Vector.<Number>;
 		
-		private var _changed		: Signal;
+		private var _propertyChanged	: Signal;
 		
 		public function get propertyChanged() : Signal
 		{
-			return _changed;
+			return _propertyChanged;
 		}
 		
 		public function get usage() : uint
@@ -47,7 +47,7 @@ package aerys.minko.scene.data
 		public function set method(value : uint) : void
 		{
 			_method = value;
-			_changed.execute(this, 'method');
+			_propertyChanged.execute(this, 'method', DATA_DESCRIPTOR['method'], value);
 		}
 		
 		public function get numBones() : uint
@@ -57,7 +57,7 @@ package aerys.minko.scene.data
 		public function set numBones(value : uint) : void
 		{
 			_numBones = value;
-			_changed.execute(this, 'numBones');
+			_propertyChanged.execute(this, 'numBones', DATA_DESCRIPTOR['numBones'], value);
 		}
 		
 		public function get maxInfluences() : uint
@@ -67,7 +67,7 @@ package aerys.minko.scene.data
 		public function set maxInfluences(value : uint) : void
 		{
 			_maxInfluences = value;
-			_changed.execute(this, 'maxInfluences');
+			_propertyChanged.execute(this, 'maxInfluences', DATA_DESCRIPTOR['maxInfluences'], value);
 		}
 		
 		public function get matrices() : Vector.<Number>
@@ -77,7 +77,7 @@ package aerys.minko.scene.data
 		public function set matrices(value : Vector.<Number>) : void
 		{
 			_matrices = value;
-			_changed.execute(this, 'matrices');
+			_propertyChanged.execute(this, 'matrices', DATA_DESCRIPTOR['matrices'], value);
 		}
 		
 		public function get dqN() : Vector.<Number>
@@ -87,7 +87,7 @@ package aerys.minko.scene.data
 		public function set dqN(value : Vector.<Number>) : void
 		{
 			_dqN = value;
-			_changed.execute(this, 'dqN');
+			_propertyChanged.execute(this, 'dqN', DATA_DESCRIPTOR['dqN'], value);
 		}
 		
 		public function get dqD() : Vector.<Number>
@@ -97,7 +97,7 @@ package aerys.minko.scene.data
 		public function set dqD(value : Vector.<Number>) : void
 		{
 			_dqD = value;
-			_changed.execute(this, 'dqD');
+			_propertyChanged.execute(this, 'dqD', DATA_DESCRIPTOR['dqD'], value);
 		}
 		
 		public function SkinningDataProvider()
@@ -109,7 +109,7 @@ package aerys.minko.scene.data
 		
 		private function initialize() : void
 		{
-			_changed = new Signal('SkinningDataProvider.changed');
+			_propertyChanged = new Signal('SkinningDataProvider.propertyChanged');
 		}
 		
 		public function clone() : IDataProvider

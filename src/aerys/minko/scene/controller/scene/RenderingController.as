@@ -263,12 +263,12 @@ package aerys.minko.scene.controller.scene
 				var pass			: ShaderInstance	= passes[i];
 				var calls 			: Array				= _passInstanceToDrawCalls[pass];
 				var settings		: ShaderSettings	= pass.settings;
-				var renderTarget 	: RenderTarget 		= settings.renderTarget;
+				var renderTarget 	: RenderTarget 		= settings.renderTarget || backBuffer;
 				
 				settings.setupRenderTarget(
 					context,
 					backBuffer,
-					previous != null ? previous.settings : null,
+					previous ? previous.settings : null,
 					!clearedTargets[renderTarget]
 				);
 				clearedTargets[renderTarget] = true;

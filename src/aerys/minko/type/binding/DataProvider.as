@@ -198,7 +198,6 @@ package aerys.minko.type.binding
 				if (oldMonitoredValue != null)
 					unwatchProperty(name, oldMonitoredValue);
 				
-	//			_changed.execute(this, 'dataDescriptor');
 				_propertyRemoved.execute(this, name, bindingName, oldMonitoredValue);
 			}
 			
@@ -246,7 +245,6 @@ package aerys.minko.type.binding
 					return this;
 				case DataProviderUsage.MANAGED:
 					throw new Error('This dataprovider is managed, and must not be cloned');
-					
 				default:
 					throw new Error('Unkown usage value');
 			}
