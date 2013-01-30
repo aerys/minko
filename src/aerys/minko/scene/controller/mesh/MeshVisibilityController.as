@@ -158,6 +158,7 @@ package aerys.minko.scene.controller.mesh
         
 		private function worldToScreenChangedHandler(bindings	    : DataBindings,
                                                      propertyName	: String,
+													 bindingName	: String,
                                                      value			: Matrix4x4) : void
 		{
 			testCulling();

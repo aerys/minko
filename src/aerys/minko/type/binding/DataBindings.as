@@ -19,7 +19,7 @@ package aerys.minko.type.binding
 		private var _bindingNameToProvider		: Object;
 		private var _providerToBindingNames		: Dictionary;
 		
-		private var _consumers					: Vector.<IDataBindingConsumer>;
+		private var _consumers					: Vector.<IDataBindingsConsumer>;
 		
 		public function get owner() : ISceneNode
 		{
@@ -46,7 +46,7 @@ package aerys.minko.type.binding
 			_bindingNameToChangedSignal = {};
 			_bindingNameToProvider = {};
 			_providerToBindingNames = new Dictionary(true);
-			_consumers = new <IDataBindingConsumer>[];
+			_consumers = new <IDataBindingsConsumer>[];
 		}
 		
 		public function contains(dataProvider : IDataProvider) : Boolean
@@ -102,7 +102,7 @@ package aerys.minko.type.binding
 			_bindingNames.push(bindingName);
 			
 			if (_bindingNameToChangedSignal[bindingName])
-				_bindingNameToChangedSignal[bindingName].execute(this, bindingName, value);			
+				_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null, value);			
 		}
 		
 		public function removeProvider(provider : IDataProvider) : void
@@ -251,6 +251,10 @@ package aerys.minko.type.binding
 			if (propertyName == null)
 				throw new Error('DataProviders must change only one property at a time.');
 
+			var oldValue : Object = _bindingNameToValue[bindingName];
+			
+			_bindingNameToValue[bindingName] = value;
+			
 			var numConsumers : uint = _consumers.length;
 			for (var consumerId : uint = 0; consumerId < numConsumers; ++consumerId)
 				_consumers[consumerId].setProperty(bindingName, value);
@@ -259,11 +263,12 @@ package aerys.minko.type.binding
 				_bindingNameToChangedSignal[bindingName].execute(
 					this,
 					bindingName,
+					oldValue,
 					value
 				);
 		}
 		
-		public function addConsumer(consumer : IDataBindingConsumer) : void
+		public function addConsumer(consumer : IDataBindingsConsumer) : void
 		{
 			_consumers.push(consumer);
 			
@@ -276,11 +281,15 @@ package aerys.minko.type.binding
 			}
 		}
 		
-		public function removeConsumer(consumer : IDataBindingConsumer) : void
+		public function removeConsumer(consumer : IDataBindingsConsumer) : void
 		{
 			var numConsumers : uint = _consumers.length - 1;
+			var index : int = _consumers.indexOf(consumer);
 			
-			_consumers[_consumers.indexOf(consumer)] = _consumers[numConsumers];
+			if (index < 0)
+				throw new Error('This consumer does not exist.');
+			
+			_consumers[index] = _consumers[numConsumers];
 			_consumers.length = numConsumers;
 		}
 	}

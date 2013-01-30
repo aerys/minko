@@ -74,9 +74,11 @@ package aerys.minko.scene.controller.light
 		}
 		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,
-															propertyName	: String) : void
+															propertyName	: String,
+															bindingName		: String,
+															value			: Object) : void
 		{
-			super.lightDataChangedHandler(lightData, propertyName);
+			super.lightDataChangedHandler(lightData, propertyName, bindingName, value);
 			
 			propertyName = LightDataProvider.getPropertyName(propertyName);
 			

@@ -607,8 +607,7 @@ package aerys.minko.scene.controller.scene
             if (!drawCalls)
                 return;
             
-			var numDrawCalls	: uint				= drawCalls.length;
-			
+			var numDrawCalls	: uint	= drawCalls.length;
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
 				(drawCalls[drawCallId] as DrawCall).enabled = newVisibility;
 		}

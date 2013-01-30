@@ -173,7 +173,7 @@ package aerys.minko.render
 									  sceneBindings	: DataBindings) : void
 		{
 			meshBindings.removeConsumer(_bindingsConsumer);
-			meshBindings.removeConsumer(_bindingsConsumer);
+			sceneBindings.removeConsumer(_bindingsConsumer);
 			
 			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
 				sceneBindings.removeCallback('worldToScreen', transformChangedHandler);
@@ -350,12 +350,13 @@ package aerys.minko.render
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
 												 property 	: String,
-												 value		: Matrix4x4) : void
+												 oldValue	: Matrix4x4,
+												 newValue	: Matrix4x4) : void
 		{
 			if (property == 'worldToScreen')
-				_worldToScreen = value;
+				_worldToScreen = newValue;
 			else if (property == 'localToWorld')
-				_localToWorld = value;
+				_localToWorld = newValue;
 			
 			_invalidDepth = true;
 		}

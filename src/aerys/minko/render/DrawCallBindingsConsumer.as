@@ -4,9 +4,9 @@ package aerys.minko.render
 	import aerys.minko.render.shader.binding.IBinder;
 	
 	import flash.utils.Dictionary;
-	import aerys.minko.type.binding.IDataBindingConsumer;
+	import aerys.minko.type.binding.IDataBindingsConsumer;
 
-	internal final class DrawCallBindingsConsumer implements IDataBindingConsumer
+	internal final class DrawCallBindingsConsumer implements IDataBindingsConsumer
 	{
 		private var _enabled		: Boolean;
 		

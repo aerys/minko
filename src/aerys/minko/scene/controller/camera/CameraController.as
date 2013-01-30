@@ -149,7 +149,8 @@ package aerys.minko.scene.controller.camera
 		
 		private function viewportSizeChanged(bindings 	: DataBindings,
 											 key 		: String,
-											 oldValue 	: Object) : void
+											 oldValue 	: Object,
+											 newValue 	: Object) : void
 		{
 			updateProjection();
 		}

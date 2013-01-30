@@ -28,50 +28,12 @@ package aerys.minko.scene.controller.light
 			_shadowMappingSupport = shadowMappingSupport;
 		}
 		
-//		override protected function lightAddedToScene(scene : Scene) : void
-//		{
-//			super.lightAddedToScene(scene);
-//		}
-//		
-//		override protected function lightRemovedFromScene(scene : Scene) : void
-//		{
-//			super.lightRemovedFromScene(scene);
-//			
-//			scene.descendantAdded.add(sceneDescendantAddedHandler);
-//		}
-//		
-//		private function sceneDescendantAddedHandler(scene : Scene, descendant : ISceneNode) : void
-//		{
-//			if (descendant is Mesh)
-//				addMesh(descendant as Mesh);
-//			else if (descendant is Group)
-//				for each (var mesh : Mesh in (descendant as Group).getDescendantsByType(Mesh))
-//					addMesh(mesh);
-//		}
-//		
-//		private function addMesh(mesh : Mesh) : void
-//		{
-//			mesh.removed.add(meshRemovedHandler);
-//			mesh.bindings.addCallback(PhongProperties.CAST_SHADOWS, );
-//		}
-//		
-//		private function meshCastShadowChangedHandler(bindings		: DataBindings,
-//													  propertyName	: String,
-//													  oldValue		: Boolean,
-//		) : void
-//		{
-//			
-//		}
-//
-//		private function meshRemovedHandler(mesh : Mesh, ancestor : Group) : void
-//		{
-//			mesh.removed.remove(meshRemovedHandler);
-//		}
-		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,
-															propertyName	: String) : void
+															propertyName	: String,
+															bindingName		: String,
+															value			: Object) : void
 		{
-			super.lightDataChangedHandler(lightData, propertyName);
+			super.lightDataChangedHandler(lightData, propertyName, bindingName, value);
 			
 			propertyName = LightDataProvider.getPropertyName(propertyName);
 			

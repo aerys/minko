@@ -13,8 +13,6 @@ package aerys.minko.scene.controller
     import flash.utils.Dictionary;
     import flash.utils.getTimer;
     
-    import mx.olap.aggregators.MaxAggregator;
-    
     use namespace minko_math;
     
     /**
