@@ -108,8 +108,10 @@ package aerys.minko.scene.controller.light
 			sortLights(scene);
 		}
 		
-		protected function lightDataChangedHandler(lightData	: LightDataProvider,
-												   propertyName	: String) : void
+		protected function lightDataChangedHandler(lightData		: LightDataProvider,
+												   propertyName		: String,
+												   bindingName		: String,
+												   value			: Object) : void
 		{
 			// nothing
 		}

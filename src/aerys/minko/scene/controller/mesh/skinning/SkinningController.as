@@ -10,6 +10,7 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.log.DebugLevel;
@@ -40,14 +41,6 @@ package aerys.minko.scene.controller.mesh.skinning
 			return _method;
 		}
 		
-		public function get bindShape() : Matrix4x4
-		{
-			var bindShape : Matrix4x4 = new Matrix4x4();
-			bindShape.minko_math::_matrix = _bindShapeMatrix;
-			
-			return bindShape;
-		}
-		
 		public function get skeletonRoot() : Group
 		{
 			return _skeletonRoot;
@@ -56,20 +49,6 @@ package aerys.minko.scene.controller.mesh.skinning
 		public function get joints() : Vector.<Group>
 		{
 			return _joints;
-		}
-		
-		public function get invBindMatrices() : Vector.<Matrix4x4>
-		{
-			var numMatrices		: uint					= _invBindMatrices.length;
-			var invBindMatrices : Vector.<Matrix4x4>	= new Vector.<Matrix4x4>(numMatrices);
-			
-			for (var matrixId : uint = 0; matrixId < numMatrices; ++matrixId)
-			{
-				invBindMatrices[matrixId] = new Matrix4x4();
-				invBindMatrices[matrixId].minko_math::_matrix = _invBindMatrices[matrixId];
-			}
-			
-			return invBindMatrices;
 		}
 		
 		public function SkinningController(method			: uint,
@@ -200,7 +179,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		private function subscribeToJoints() : void
 		{
-			var numJoints	: uint = _joints.length;
+			var numJoints	: uint	= _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
 				_joints[jointId].localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
@@ -211,7 +190,7 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		private function unsubscribeFromJoints() : void
 		{
-			var numJoints	: uint = _joints.length;
+			var numJoints	: uint	= _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
 				_joints[jointId].localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
@@ -234,7 +213,31 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		override public function clone() : AbstractController
 		{
-			return new SkinningController(_method, _skeletonRoot, _joints, bindShape, invBindMatrices);
+			return new SkinningController(
+				_method,
+				_skeletonRoot,
+				_joints,
+				getBindShapeMatrix(),
+				getInvBindMatrices()
+			);
+		}
+		
+		public function getInvBindMatrices() : Vector.<Matrix4x4>
+		{
+			var numMatrices		: uint					= _invBindMatrices.length;
+			var invBindMatrices : Vector.<Matrix4x4>	= new Vector.<Matrix4x4>(numMatrices);
+			
+			for (var matrixId : uint = 0; matrixId < numMatrices; ++matrixId)
+				invBindMatrices[matrixId] = new Matrix4x4().copyFromMatrix3D(
+					_invBindMatrices[matrixId]
+				);
+			
+			return invBindMatrices;
+		}
+		
+		public function getBindShapeMatrix() : Matrix4x4
+		{
+			return new Matrix4x4().copyFromMatrix3D(_bindShapeMatrix);
 		}
 		
 		private function meshVisibilityChangedHandler(bindings 	: DataBindings,

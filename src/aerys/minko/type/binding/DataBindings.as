@@ -19,6 +19,8 @@ package aerys.minko.type.binding
 		private var _bindingNameToProvider		: Object;
 		private var _providerToBindingNames		: Dictionary;
 		
+		private var _consumers					: Vector.<IDataBindingsConsumer>;
+		
 		public function get owner() : ISceneNode
 		{
 			return _owner;
@@ -44,6 +46,7 @@ package aerys.minko.type.binding
 			_bindingNameToChangedSignal = {};
 			_bindingNameToProvider = {};
 			_providerToBindingNames = new Dictionary(true);
+			_consumers = new <IDataBindingsConsumer>[];
 		}
 		
 		public function contains(dataProvider : IDataProvider) : Boolean
@@ -241,24 +244,53 @@ package aerys.minko.type.binding
 		}
 		
 		private function propertyChangedHandler(source 			: IDataProvider,
-												attributeName 	: String) : void
+												propertyName 	: String,
+												bindingName		: String,
+												value			: Object) : void
 		{
-			if (attributeName == null)
+			if (propertyName == null)
 				throw new Error('DataProviders must change only one property at a time.');
 
-			var bindingName : String	= source.dataDescriptor[attributeName];
-			var oldValue	: Object	= _bindingNameToValue[bindingName];
-			var newValue	: Object	= source[attributeName];
+			var oldValue : Object = _bindingNameToValue[bindingName];
 			
-			_bindingNameToValue[bindingName] = newValue;
+			_bindingNameToValue[bindingName] = value;
+			
+			var numConsumers : uint = _consumers.length;
+			for (var consumerId : uint = 0; consumerId < numConsumers; ++consumerId)
+				_consumers[consumerId].setProperty(bindingName, value);
 			
 			if (_bindingNameToChangedSignal[bindingName])
 				_bindingNameToChangedSignal[bindingName].execute(
 					this,
 					bindingName,
 					oldValue,
-					newValue
+					value
 				);
+		}
+		
+		public function addConsumer(consumer : IDataBindingsConsumer) : void
+		{
+			_consumers.push(consumer);
+			
+			var numProperties : uint = this.numProperties;
+			for (var propertyId : uint = 0; propertyId < numProperties; ++propertyId)
+			{
+				var bindingName : String = _bindingNames[propertyId];
+				
+				consumer.setProperty(bindingName, _bindingNameToValue[bindingName]);
+			}
+		}
+		
+		public function removeConsumer(consumer : IDataBindingsConsumer) : void
+		{
+			var numConsumers : uint = _consumers.length - 1;
+			var index : int = _consumers.indexOf(consumer);
+			
+			if (index < 0)
+				throw new Error('This consumer does not exist.');
+			
+			_consumers[index] = _consumers[numConsumers];
+			_consumers.length = numConsumers;
 		}
 	}
 }

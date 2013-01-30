@@ -135,9 +135,9 @@ package aerys.minko.type.binding
 			_nameToProperty[name]	= newValue;
 			
 			if (propertyAdded)
-				_propertyAdded.execute(this, name, name, newValue);
+				_propertyAdded.execute(this, name, dataDescriptor[name], newValue);
 			else
-				_propertyChanged.execute(this, name);
+				_propertyChanged.execute(this, name, dataDescriptor[name], newValue);
 			
 			return this;
 		}
@@ -198,7 +198,6 @@ package aerys.minko.type.binding
 				if (oldMonitoredValue != null)
 					unwatchProperty(name, oldMonitoredValue);
 				
-	//			_changed.execute(this, 'dataDescriptor');
 				_propertyRemoved.execute(this, name, bindingName, oldMonitoredValue);
 			}
 			
@@ -246,7 +245,6 @@ package aerys.minko.type.binding
 					return this;
 				case DataProviderUsage.MANAGED:
 					throw new Error('This dataprovider is managed, and must not be cloned');
-					
 				default:
 					throw new Error('Unkown usage value');
 			}
@@ -258,7 +256,11 @@ package aerys.minko.type.binding
 			var numNames	: uint				= names.length;
 			
 			for (var nameId : uint = 0; nameId < numNames; ++nameId)
-				_propertyChanged.execute(this, names[nameId]);
+			{
+				var propertyName : String = names[nameId];
+				
+				_propertyChanged.execute(this, propertyName, dataDescriptor[propertyName], source);
+			}
 		}
 	}
 }

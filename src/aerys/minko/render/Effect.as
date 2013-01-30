@@ -5,7 +5,6 @@ package aerys.minko.render
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.binding.DataBindingsProxy;
 	import aerys.minko.type.binding.Signature;
 
 	/**

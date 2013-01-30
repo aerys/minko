@@ -8,6 +8,7 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
@@ -52,9 +53,20 @@ package aerys.minko.scene.controller.mesh
 		}
 		public function set frustumCulling(value : uint) : void
 		{
-			_frustumCulling = value;
-			if (_mesh && _mesh.root is Scene)
-            	testCulling();
+			if (value != _frustumCulling)
+			{
+				_frustumCulling = value;
+				if (value == FrustumCulling.DISABLED)
+				{
+					_data.computedVisibility = true;
+					_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+				}
+				else if (_mesh && _mesh.scene)
+				{
+					_mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
+	            	testCulling();
+				}
+			}
 		}
 		
 		public function get insideFrustum() : Boolean
@@ -77,7 +89,7 @@ package aerys.minko.scene.controller.mesh
 		private function initialize() : void
 		{
 			_data = new DataProvider(
-				{ computedVisibility : false },
+				{ computedVisibility : true },
 				'MeshVisibilityDataProvider',
 				DataProviderUsage.EXCLUSIVE
 			);
@@ -129,9 +141,13 @@ package aerys.minko.scene.controller.mesh
 				return ;
 			
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
-            
-            meshLocalToWorldChangedHandler(mesh, mesh.getLocalToWorldTransform());
-			mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
+
+			if (_frustumCulling)
+			{
+	            meshLocalToWorldChangedHandler(mesh, mesh.getLocalToWorldTransform());
+				mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
+			}
+			
             mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
             mesh.bindings.addProvider(_data);
 		}
@@ -145,8 +161,10 @@ package aerys.minko.scene.controller.mesh
 			
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
-			mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
-            mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
+			if (_frustumCulling)
+				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+
+			mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
             mesh.bindings.removeProvider(_data);
 		}
 		
@@ -158,8 +176,8 @@ package aerys.minko.scene.controller.mesh
         
 		private function worldToScreenChangedHandler(bindings	    : DataBindings,
                                                      propertyName	: String,
-                                                     oldValue		: Matrix4x4,
-                                                     newValue		: Matrix4x4) : void
+													 bindingName	: String,
+                                                     value			: Matrix4x4) : void
 		{
 			testCulling();
 		}
@@ -193,13 +211,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _frustumCulling;
 			
-			if (culling != FrustumCulling.DISABLED)
-			{
-				_data.computedVisibility = true;
-				return;
-			}
-			
-			if (_mesh && _mesh.geometry.boundingBox && _mesh.visible)
+			if (_mesh && _mesh.geometry && _mesh.geometry.boundingBox && _mesh.visible)
 			{
 				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				

@@ -13,7 +13,7 @@ package aerys.minko.render.shader
 	
 	import flash.utils.getQualifiedClassName;
 	import aerys.minko.type.binding.Signature;
-	import aerys.minko.type.binding.ShaderDataBindingsProxy;
+	import aerys.minko.render.ShaderDataBindingsProxy;
 	
 	use namespace minko_shader;
 	

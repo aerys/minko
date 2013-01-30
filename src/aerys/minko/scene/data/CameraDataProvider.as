@@ -60,7 +60,7 @@ package aerys.minko.scene.data
 		public function set fieldOfView(value : Number) : void
 		{
 			_fieldOfView = value;
-			propertyChanged.execute(this, 'fieldOfView');
+			propertyChanged.execute(this, 'fieldOfView', DATA_DESCRIPTOR['fieldOfView'], value);
 		}
 		
 		public function get zoom():Number
@@ -71,7 +71,7 @@ package aerys.minko.scene.data
 		public function set zoom(value:Number):void
 		{
 			_zoom = value;
-			propertyChanged.execute(this, 'zoom');
+			propertyChanged.execute(this, 'zoom', DATA_DESCRIPTOR['zoom'], value);
 		}
 		
 		public function get zNear() : Number
@@ -81,7 +81,7 @@ package aerys.minko.scene.data
 		public function set zNear(value : Number) : void
 		{
 			_zNear = value;
-			propertyChanged.execute(this, 'zNear');
+			propertyChanged.execute(this, 'zNear', DATA_DESCRIPTOR['zNear'], value);
 		}
 		
 		public function get zFar() : Number
@@ -91,7 +91,7 @@ package aerys.minko.scene.data
 		public function set zFar(value : Number) : void
 		{
 			_zFar = value;
-			propertyChanged.execute(this, 'zFar');
+			propertyChanged.execute(this, 'zFar', DATA_DESCRIPTOR['zFar'], value);
 		}
 		
 		public function get worldToView() : Matrix4x4
