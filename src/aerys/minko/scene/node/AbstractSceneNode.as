@@ -238,7 +238,7 @@ package aerys.minko.scene.node
 			_controllerRemoved = new Signal('AbstractSceneNode.controllerRemoved');
 			_visibilityChanged = new Signal('AbstractSceneNode.visibilityChanged');
 			_computedVisibilityChanged = new Signal('AbstractSceneNode.computedVisibilityChanged');
-			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged', false);			
+			_localToWorldChanged = new Signal('AbstractSceneNode.localToWorldChanged', false, true);			
 		}
 		
 		protected function initializeSignalHandlers() : void
