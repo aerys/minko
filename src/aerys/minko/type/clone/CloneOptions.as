@@ -94,11 +94,11 @@ package aerys.minko.type.clone
 			var index : int = 0;
 			
 			if ((index = _clonedControllerTypes.indexOf(controllerClass)) >= 0)
-				_clonedControllerTypes.slice(index, 1);
+				_clonedControllerTypes.splice(index, 1);
 			else if ((index = _ignoredControllerTypes.indexOf(controllerClass)) >= 0)
-				_ignoredControllerTypes.slice(index, 1);
+				_ignoredControllerTypes.splice(index, 1);
 			else if ((index = _reassignedControllerTypes.indexOf(controllerClass)) >= 0)
-				_reassignedControllerTypes.slice(index, 1);
+				_reassignedControllerTypes.splice(index, 1);
 			
 			switch (action)
 			{
