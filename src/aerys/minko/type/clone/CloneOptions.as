@@ -11,10 +11,6 @@ package aerys.minko.type.clone
 	import aerys.minko.scene.controller.mesh.MeshController;
 	import aerys.minko.scene.controller.mesh.MeshVisibilityController;
 	import aerys.minko.scene.controller.mesh.skinning.SkinningController;
-	
-	import avmplus.getQualifiedClassName;
-	
-	import flash.net.getClassByAlias;
 
 	public final class CloneOptions
 	{
