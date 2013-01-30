@@ -910,14 +910,15 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function bindingsPropertyChangedHandler(meshBindings 	: DataBindings,
+		private function bindingsPropertyChangedHandler(bindings 		: DataBindings,
 														propertyName	: String,
-														value			: Object) : void
+														oldValue		: Object,
+														newValue		: Object) : void
 		{
-			var changes : Vector.<String>	= _stashedPropertyChanges[meshBindings];
+			var changes : Vector.<String>	= _stashedPropertyChanges[bindings];
 			
 			if (!changes)
-				_stashedPropertyChanges[meshBindings] = changes = new <String>[propertyName];
+				_stashedPropertyChanges[bindings] = changes = new <String>[propertyName];
 			else
 				changes.push(propertyName);
 			
