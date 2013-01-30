@@ -1,6 +1,8 @@
-package aerys.minko.type.binding
+package aerys.minko.render
 {
 	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.Signature;
 	
 	public class DataBindingsProxy
 	{

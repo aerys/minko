@@ -1,10 +1,16 @@
 package aerys.minko.scene.controller.light
 {
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.PointLight;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingType;
 
 	public class LightShadowController extends LightController
@@ -21,6 +27,46 @@ package aerys.minko.scene.controller.light
 			
 			_shadowMappingSupport = shadowMappingSupport;
 		}
+		
+//		override protected function lightAddedToScene(scene : Scene) : void
+//		{
+//			super.lightAddedToScene(scene);
+//		}
+//		
+//		override protected function lightRemovedFromScene(scene : Scene) : void
+//		{
+//			super.lightRemovedFromScene(scene);
+//			
+//			scene.descendantAdded.add(sceneDescendantAddedHandler);
+//		}
+//		
+//		private function sceneDescendantAddedHandler(scene : Scene, descendant : ISceneNode) : void
+//		{
+//			if (descendant is Mesh)
+//				addMesh(descendant as Mesh);
+//			else if (descendant is Group)
+//				for each (var mesh : Mesh in (descendant as Group).getDescendantsByType(Mesh))
+//					addMesh(mesh);
+//		}
+//		
+//		private function addMesh(mesh : Mesh) : void
+//		{
+//			mesh.removed.add(meshRemovedHandler);
+//			mesh.bindings.addCallback(PhongProperties.CAST_SHADOWS, );
+//		}
+//		
+//		private function meshCastShadowChangedHandler(bindings		: DataBindings,
+//													  propertyName	: String,
+//													  oldValue		: Boolean,
+//		) : void
+//		{
+//			
+//		}
+//
+//		private function meshRemovedHandler(mesh : Mesh, ancestor : Group) : void
+//		{
+//			mesh.removed.remove(meshRemovedHandler);
+//		}
 		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,
 															propertyName	: String) : void

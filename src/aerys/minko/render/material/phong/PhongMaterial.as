@@ -13,8 +13,8 @@ package aerys.minko.render.material.phong
 	public class PhongMaterial extends BasicMaterial
 	{
 		public static const DEFAULT_NAME	: String		= 'PhongMaterial';
-		
-		private static const EFFECTS		: Dictionary	= new Dictionary(true);
+
+		private static const DEFAULT_EFFECT	: PhongEffect	= new PhongEffect();
 		
 		public function get receptionMask() : uint
 		{
@@ -194,7 +194,7 @@ package aerys.minko.render.material.phong
 		{
 			super(
 				properties,
-				effect || new PhongEffect(),
+				effect || DEFAULT_EFFECT,
 				name
 			);
 		}

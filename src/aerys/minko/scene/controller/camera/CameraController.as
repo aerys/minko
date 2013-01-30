@@ -149,17 +149,18 @@ package aerys.minko.scene.controller.camera
 		
 		private function viewportSizeChanged(bindings 	: DataBindings,
 											 key 		: String,
-											 oldValue 	: Object,
-											 newValue 	: Object) : void
+											 oldValue 	: Object) : void
 		{
 			updateProjection();
 		}
 		
-		private function cameraPropertyChangedHandler(provider : IDataProvider,
-                                                      property : String) : void
+		private function cameraPropertyChangedHandler(provider 		: IDataProvider,
+                                                      propertyName 	: String,
+													  bindingName	: String,
+													  value			: Object) : void
 		{
-			if (property == 'zFar' || property == 'zNear' || property == 'fieldOfView'
-                || property == 'zoom')
+			if (propertyName == 'zFar' || propertyName == 'zNear' || propertyName == 'fieldOfView'
+                || propertyName == 'zoom')
 				updateProjection();
 		}
 		

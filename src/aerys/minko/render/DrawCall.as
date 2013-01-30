@@ -82,7 +82,7 @@ package aerys.minko.render
 		private var _localToWorld		: Matrix4x4							= null;
 		private var _worldToScreen		: Matrix4x4							= null;
         
-        private var _changes            : Object                           = {};
+		private var _bindingsConsumer	: DrawCallBindingsConsumer;
 		
 		public function get vertexComponents() : Vector.<VertexComponent>
 		{
@@ -130,13 +130,8 @@ package aerys.minko.render
 		public function set enabled(value : Boolean) : void
 		{
 			_enabled = value;
-            
-            if (value)
-                for (var bindingName : String in _changes)
-                {
-                    setParameter(bindingName, _changes[bindingName]);
-                    delete _changes[bindingName];
-                }
+			if (_bindingsConsumer)
+				_bindingsConsumer.enabled = value;
 		}
 		
 		public function get depth() : Number
@@ -167,9 +162,6 @@ package aerys.minko.render
 								  sceneBindings	: DataBindings,
 								  computeDepth	: Boolean) : void
 		{
-//			if (_bindings != null)
-//				unsetBindings(meshBindings, sceneBindings);
-		
 			_invalidDepth = computeDepth;
 			
 			setProgram(program);
@@ -180,15 +172,8 @@ package aerys.minko.render
 		public function unsetBindings(meshBindings	: DataBindings,
 									  sceneBindings	: DataBindings) : void
 		{
-            _changes = {};
-            
-			for (var parameter : String in _bindings)
-			{
-                if (meshBindings.hasCallback(parameter, parameterChangedHandler))
-				    meshBindings.removeCallback(parameter, parameterChangedHandler);
-                if (sceneBindings.hasCallback(parameter, parameterChangedHandler))
-    				sceneBindings.removeCallback(parameter, parameterChangedHandler);
-			}
+			meshBindings.removeConsumer(_bindingsConsumer);
+			meshBindings.removeConsumer(_bindingsConsumer);
 			
 			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
 				sceneBindings.removeCallback('worldToScreen', transformChangedHandler);
@@ -206,6 +191,15 @@ package aerys.minko.render
 			_vsInputComponents	= program._vertexInputComponents;
 			_vsInputIndices		= program._vertexInputIndices;
 			_bindings			= program._bindings;
+			
+			_bindingsConsumer	= new DrawCallBindingsConsumer(
+				_bindings,
+				_cpuConstants,
+				_vsConstants,
+				_fsConstants,
+				_fsTextures
+			);
+			_bindingsConsumer.enabled = _enabled;
 			
 			triangleCulling		= TriangleCulling.FRONT;
 			blending			= Blending.NORMAL;
@@ -284,17 +278,8 @@ package aerys.minko.render
 									 sceneBindings	: DataBindings,
 									 computeDepth	: Boolean) : void
 		{
-			for (var parameter : String in _bindings)
-			{
-				meshBindings.addCallback(parameter, parameterChangedHandler);
-                if (!sceneBindings.hasCallback(parameter, parameterChangedHandler))
-    				sceneBindings.addCallback(parameter, parameterChangedHandler);
-				
-				if (meshBindings.propertyExists(parameter))
-					setParameter(parameter, meshBindings.getProperty(parameter));
-				else if (sceneBindings.propertyExists(parameter))
-					setParameter(parameter, sceneBindings.getProperty(parameter));
-			}
+			meshBindings.addConsumer(_bindingsConsumer);
+			sceneBindings.addConsumer(_bindingsConsumer);
 			
 			if (computeDepth)
 			{
@@ -360,36 +345,17 @@ package aerys.minko.render
 		
 		public function setParameter(name : String, value : Object) : void
 		{
-			if (!_enabled)
-            {
-                _changes[name] = value;
-                
-				return ;
-            }
-			
-			var binding : IBinder = _bindings[name] as IBinder;
-			
-			if (binding != null)
-				binding.set(_cpuConstants, _vsConstants, _fsConstants, _fsTextures, value);
-		}
-		
-		private function parameterChangedHandler(dataBindings	: DataBindings,
-												 property		: String,
-												 oldValue		: Object,
-												 newValue		: Object) : void
-		{
-			newValue !== null && setParameter(property, newValue);
+			_bindingsConsumer.setProperty(name, value);
 		}
 		
 		private function transformChangedHandler(bindings 	: DataBindings,
 												 property 	: String,
-												 oldValue	: Matrix4x4,
-												 newValue 	: Matrix4x4) : void
+												 value		: Matrix4x4) : void
 		{
 			if (property == 'worldToScreen')
-				_worldToScreen = newValue;
+				_worldToScreen = value;
 			else if (property == 'localToWorld')
-				_localToWorld = newValue;
+				_localToWorld = value;
 			
 			_invalidDepth = true;
 		}

@@ -3,13 +3,13 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.type.binding.Signature;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.geom.Rectangle;
-	import aerys.minko.type.binding.Signature;
 
 	public class ShaderSettings
 	{
@@ -293,9 +293,10 @@ package aerys.minko.render.shader
 			return clone;
 		}
 		
-		public function prepareContext(context 		: Context3DResource,
-									   backBuffer	: RenderTarget,
-									   previous		: ShaderSettings) : void
+		public function setupRenderTarget(context		: Context3DResource,
+										  backBuffer	: RenderTarget,
+										  previous		: ShaderSettings,
+										  clear			: Boolean) : void
 		{
 			if (!previous || previous._renderTarget != _renderTarget)
 			{
@@ -311,16 +312,24 @@ package aerys.minko.render.shader
 				else
 					context.setRenderToBackBuffer();
 				
-				var color 	: uint 	= rt.backgroundColor;
-				
-				context.clear(
-					((color >> 24) & 0xff) / 255.,
-					((color >> 16) & 0xff) / 255.,
-					((color >> 8) & 0xff) / 255.,
-					(color & 0xff) / 255.
-				);
-			}
-			
+				if (clear)
+				{
+					var color 	: uint 	= rt.backgroundColor;
+					
+					context.clear(
+						((color >> 24) & 0xff) / 255.,
+						((color >> 16) & 0xff) / 255.,
+						((color >> 8) & 0xff) / 255.,
+						(color & 0xff) / 255.
+					);
+				}
+			}			
+		}
+		
+		public function prepareContext(context 		: Context3DResource,
+									   backBuffer	: RenderTarget,
+									   previous		: ShaderSettings) : void
+		{
 			context
 				.setScissorRectangle(_rectangle)
 				.setDepthTest(_enableDepthWrite, _compareMode)
