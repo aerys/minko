@@ -35,8 +35,9 @@ package aerys.minko.render.material.phong
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			super.initializeSettings(settings);
-			
+
 			settings.blending = Blending.NORMAL;
+			settings.enabled = meshBindings.getProperty(PhongProperties.CAST_SHADOWS, false);
 			settings.triangleCulling = meshBindings.getProperty(
                 BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
             );

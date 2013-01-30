@@ -72,8 +72,8 @@ package aerys.minko.scene.controller.mesh
             var transformController : TransformController = target.scene.getControllersByType(TransformController)[0]
                 as TransformController;
 			
-            _localToWorld = transformController.getLocalToWorldTransform(target, true);
-            _worldToLocal = transformController.getWorldToLocalTransform(target, true);
+            _localToWorld = transformController.getLocalToWorldTransform(target);
+            _worldToLocal = transformController.getWorldToLocalTransform(target);
             transformController.synchronizeTransforms(target, true);
             transformController.lockTransformsBeforeUpdate(target, true);
             

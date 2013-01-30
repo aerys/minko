@@ -5,13 +5,13 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.Signature;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	import flash.display3D.Context3D;
 	import flash.geom.Rectangle;
-	import aerys.minko.type.binding.Signature;
 
 	/**
 	 * The base class for static shaders. 

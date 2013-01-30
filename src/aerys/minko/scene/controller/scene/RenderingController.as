@@ -14,12 +14,12 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderInstance;
+	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -57,6 +57,7 @@ package aerys.minko.scene.controller.scene
 		
 		private var _passes						: Array;
 		private var _passesAreSorted			: Boolean;
+		private var _numEnabledPasses			: uint;
 		
 		private var _drawCallToPassInstance		: Dictionary;
 		private var _passInstanceToDrawCalls	: Dictionary;
@@ -96,6 +97,11 @@ package aerys.minko.scene.controller.scene
 				numPasses += _postProcessingEffect.numExtraPasses;
 			
 			return numPasses;
+		}
+		
+		public function get numEnabledPasses() : uint
+		{
+			return _numEnabledPasses;
 		}
 		
 		public function get numTriangles() : uint
@@ -221,6 +227,8 @@ package aerys.minko.scene.controller.scene
 							   destination	: BitmapData) : uint
 		{
 			applyBindingChanges();
+			
+			_numEnabledPasses = 0;
 
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
@@ -248,14 +256,27 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
+			var clearedTargets	: Dictionary		= new Dictionary(true);
 			
 			for (i = 0; i < numPasses; ++i)
 			{
-				var pass	: ShaderInstance	= passes[i];
-				var calls 	: Array				= _passInstanceToDrawCalls[pass];
+				var pass			: ShaderInstance	= passes[i];
+				var calls 			: Array				= _passInstanceToDrawCalls[pass];
+				var settings		: ShaderSettings	= pass.settings;
+				var renderTarget 	: RenderTarget 		= settings.renderTarget || backBuffer;
+				
+				settings.setupRenderTarget(
+					context,
+					backBuffer,
+					previous ? previous.settings : null,
+					!clearedTargets[renderTarget]
+				);
+				clearedTargets[renderTarget] = true;
 				
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
 					continue;
+				
+				++_numEnabledPasses;
 				
 				var numCalls	: uint	= calls.length;
 				
@@ -586,8 +607,7 @@ package aerys.minko.scene.controller.scene
             if (!drawCalls)
                 return;
             
-			var numDrawCalls	: uint				= drawCalls.length;
-			
+			var numDrawCalls	: uint	= drawCalls.length;
 			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
 				(drawCalls[drawCallId] as DrawCall).enabled = newVisibility;
 		}
@@ -890,15 +910,15 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function bindingsPropertyChangedHandler(meshBindings 	: DataBindings,
+		private function bindingsPropertyChangedHandler(bindings 		: DataBindings,
 														propertyName	: String,
 														oldValue		: Object,
 														newValue		: Object) : void
 		{
-			var changes : Vector.<String>	= _stashedPropertyChanges[meshBindings];
+			var changes : Vector.<String>	= _stashedPropertyChanges[bindings];
 			
 			if (!changes)
-				_stashedPropertyChanges[meshBindings] = changes = new <String>[propertyName];
+				_stashedPropertyChanges[bindings] = changes = new <String>[propertyName];
 			else
 				changes.push(propertyName);
 			

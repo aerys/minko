@@ -2,17 +2,18 @@ package aerys.minko.type
 {
 	public final class Signal
 	{
-		private var _name			: String;
-        private var _enabled        : Boolean;
+		private var _name					: String;
+        private var _enabled        		: Boolean;
+		private var _disableWhenNoCallbacks	: Boolean;
 		
-		private var _callbacks		: Vector.<Function>;
-		private var _numCallbacks	: uint;
+		private var _callbacks				: Vector.<Function>;
+		private var _numCallbacks			: uint;
 		
-		private var _executed		: Boolean;
-		private var _numAdded		: uint;
-		private var _toAdd			: Vector.<Function>;
-		private var _numRemoved		: uint;
-		private var _toRemove		: Vector.<Function>;
+		private var _executed				: Boolean;
+		private var _numAdded				: uint;
+		private var _toAdd					: Vector.<Function>;
+		private var _numRemoved				: uint;
+		private var _toRemove				: Vector.<Function>;
 		
         public function get enabled() : Boolean
         {
@@ -28,10 +29,13 @@ package aerys.minko.type
 			return _numCallbacks;
 		}
 		
-		public function Signal(name : String, enabled : Boolean = true)
+		public function Signal(name 					: String,
+							   enabled 					: Boolean 	= true,
+							   disableWhenNoCallbacks	: Boolean	= false)
 		{
 			_name = name;
             _enabled = enabled;
+			_disableWhenNoCallbacks = disableWhenNoCallbacks;
             
             _callbacks = new <Function>[];
 		}
@@ -69,6 +73,9 @@ package aerys.minko.type
 			
 			_callbacks[_numCallbacks] = callback;
 			++_numCallbacks;
+			
+			if (_numCallbacks == 1 && _disableWhenNoCallbacks)
+				_enabled = true;
 		}
 		
 		public function remove(callback : Function) : void
@@ -105,6 +112,9 @@ package aerys.minko.type
 			--_numCallbacks;
 			_callbacks[index] = _callbacks[_numCallbacks];
 			_callbacks.length = _numCallbacks;
+			
+			if (!_numCallbacks && _disableWhenNoCallbacks)
+				_enabled = false;
 		}
 		
 		public function hasCallback(callback : Function) : Boolean

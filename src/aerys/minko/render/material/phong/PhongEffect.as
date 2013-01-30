@@ -8,12 +8,14 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.PointLight;
-	import aerys.minko.type.binding.DataBindingsProxy;
+	import aerys.minko.render.DataBindingsProxy;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
 	public class PhongEffect extends Effect
 	{
 		use namespace minko_lighting;
+		
+		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
 		
 		private var _renderingShader	: Shader;
 		
@@ -21,7 +23,7 @@ package aerys.minko.render.material.phong
 		{
             super();
             
-			_renderingShader = renderingShader || new PhongShader();
+			_renderingShader = renderingShader || DEFAUT_SHADER;
 		}
 		
 		override protected function initializePasses(sceneBindings	: DataBindingsProxy,
@@ -46,16 +48,13 @@ package aerys.minko.render.material.phong
 					switch (shadowMappingType)
 					{
 						case ShadowMappingType.PCF:
-							if (meshBindings.getProperty('castShadows', false))
-								pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
+							pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.CUBE:
-							if (meshBindings.getProperty('castShadows', false))
-								pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+							pushCubeShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
-							if (meshBindings.getProperty('castShadows', false))
-								pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
+							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.VARIANCE:
 							pushVarianceShadowMappingPass(sceneBindings, lightId, passes);

@@ -1,10 +1,16 @@
 package aerys.minko.scene.controller.light
 {
+	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.PointLight;
+	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingType;
 
 	public class LightShadowController extends LightController
@@ -23,9 +29,11 @@ package aerys.minko.scene.controller.light
 		}
 		
 		override protected function lightDataChangedHandler(lightData		: LightDataProvider,
-															propertyName	: String) : void
+															propertyName	: String,
+															bindingName		: String,
+															value			: Object) : void
 		{
-			super.lightDataChangedHandler(lightData, propertyName);
+			super.lightDataChangedHandler(lightData, propertyName, bindingName, value);
 			
 			propertyName = LightDataProvider.getPropertyName(propertyName);
 			
