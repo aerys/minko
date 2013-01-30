@@ -179,43 +179,24 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		private function subscribeToJoints() : void
 		{
-			var numJoints						: uint 		= _joints.length;
-			var localToWorldTransformChanged 	: Signal 	= null;
+			var numJoints	: uint	= _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-			{
-				localToWorldTransformChanged = _joints[jointId].localToWorldTransformChanged;
-				localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
-				localToWorldTransformChanged.enabled = true;
-			}
+				_joints[jointId].localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
 			
 			if (_joints.indexOf(_skeletonRoot) == -1)
-			{
-				localToWorldTransformChanged = _skeletonRoot.localToWorldTransformChanged;
-				localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
-				localToWorldTransformChanged.enabled = true;
-			}
+				_skeletonRoot.localToWorldTransformChanged.add(jointLocalToWorldChangedHandler);
 		}
 		
 		private function unsubscribeFromJoints() : void
 		{
-			var numJoints						: uint 		= _joints.length;
-			var localToWorldTransformChanged 	: Signal 	= null;
+			var numJoints	: uint	= _joints.length;
 			
 			for (var jointId : uint = 0; jointId < numJoints; ++jointId)
-			{
-				localToWorldTransformChanged = _joints[jointId].localToWorldTransformChanged;
-				localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
-				localToWorldTransformChanged.enabled = !!localToWorldTransformChanged.numCallbacks;
-			}
+				_joints[jointId].localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
 			
 			if (_joints.indexOf(_skeletonRoot) == -1)
-			{
-				localToWorldTransformChanged = _skeletonRoot.localToWorldTransformChanged;
-				localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
-				localToWorldTransformChanged.enabled = !!localToWorldTransformChanged.numCallbacks;
-			}
-			
+				_skeletonRoot.localToWorldTransformChanged.remove(jointLocalToWorldChangedHandler);
 		}
 		
 		override protected function sceneEnterFrameHandler(scene		: Scene, 
