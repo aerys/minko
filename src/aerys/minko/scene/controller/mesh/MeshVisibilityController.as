@@ -59,7 +59,10 @@ package aerys.minko.scene.controller.mesh
 				if (value == FrustumCulling.DISABLED)
 				{
 					_data.computedVisibility = true;
-					_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+					if (_mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
+					{
+						_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+					}
 				}
 				else if (_mesh && _mesh.scene)
 				{
