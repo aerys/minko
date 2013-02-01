@@ -408,7 +408,7 @@ package aerys.minko.scene.controller
 			_lastMouseOver = _currentMouseOver;
 			if ((pixelColor >>> 24) == 0xFF)
 			{
-				var mesh	: Mesh	= _pickingIdToMesh[pixelColor & 0xFFFFFF];;
+				var mesh	: Mesh	= _pickingIdToMesh[pixelColor & 0xFFFFFF];
 				
 				_currentMouseOver	= mesh.tag & _tag ? mesh : null;
 			}
