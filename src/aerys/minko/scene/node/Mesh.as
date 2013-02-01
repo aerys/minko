@@ -206,14 +206,14 @@ package aerys.minko.scene.node
 			super.initialize();
 		}
 		
-		override protected function initializeSignals():void
+		override protected function initializeSignals() : void
 		{
 			super.initializeSignals();
 			
 			_cloned = new Signal('Mesh.cloned');
 		}
 		
-		override protected function initializeContollers():void
+		override protected function initializeContollers() : void
 		{
 			super.initializeContollers();
 			
