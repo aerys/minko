@@ -13,7 +13,9 @@ package aerys.minko.render.material.realistic
 	public class RealisticMaterial extends PhongMaterial
 	{
 		private static const DEFAULT_NAME		: String		= 'RealisticMaterial';
-		private static const SCENE_TO_EFFECT	: Dictionary	= new Dictionary(true);
+        private static const DEFAULT_EFFECT     : Effect        = new PhongEffect(
+            new RealisticShader()
+        );
 		
 		public function get environmentMap() : ITextureResource
 		{
@@ -91,7 +93,7 @@ package aerys.minko.render.material.realistic
 										  effect		: Effect	= null,
 										  name			: String	= DEFAULT_NAME)
 		{
-			super(properties, effect || new PhongEffect(new RealisticShader()), name);
+			super(properties, effect || DEFAULT_EFFECT, name);
 		}
         
         override public function clone() : IDataProvider
