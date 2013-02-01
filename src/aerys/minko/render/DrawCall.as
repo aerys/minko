@@ -214,15 +214,15 @@ package aerys.minko.render
 		  */
 		public function updateGeometry(geometry : Geometry) : void
 		{
-			var vertexFormat : VertexFormat	= geometry.format;
+			var vertexFormat    : VertexFormat	= geometry.format;
+            var hasNormals      : Boolean       = vertexFormat.hasComponent(VertexComponent.NORMAL);
 			
 			if (_vsInputComponents.indexOf(VertexComponent.TANGENT) >= 0
 				&& !vertexFormat.hasComponent(VertexComponent.TANGENT))
 			{
-				geometry.computeTangentSpace();
+				geometry.computeTangentSpace(!hasNormals);
 			}
-			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0
-                && !vertexFormat.hasComponent(VertexComponent.NORMAL))
+			else if (_vsInputComponents.indexOf(VertexComponent.NORMAL) >= 0 && !hasNormals)
 			{
 				geometry.computeNormals();
 			}
