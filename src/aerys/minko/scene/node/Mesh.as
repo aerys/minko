@@ -238,7 +238,9 @@ package aerys.minko.scene.node
 			_tag			= tag;
 		}
 		
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : Number
+		public function cast(ray            : Ray,
+                             maxDistance    : Number    = Number.POSITIVE_INFINITY,
+                             tag            : uint      = 1) : Number
 		{
 			if (!(_tag & tag))
 				return -1;
