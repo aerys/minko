@@ -60,9 +60,7 @@ package aerys.minko.scene.controller.mesh
 				{
 					_data.computedVisibility = true;
 					if (_mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
-					{
 						_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
-					}
 				}
 				else if (_mesh && _mesh.scene)
 				{

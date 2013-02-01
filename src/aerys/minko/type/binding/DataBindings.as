@@ -100,6 +100,10 @@ package aerys.minko.type.binding
 			
 			providerBindingNames.push(bindingName);
 			_bindingNames.push(bindingName);
+            
+            var numConsumers : uint = _consumers.length;
+            for (var consumerId : uint = 0; consumerId < numConsumers; ++consumerId)
+                _consumers[consumerId].setProperty(bindingName, value);
 			
 			if (_bindingNameToChangedSignal[bindingName])
 				_bindingNameToChangedSignal[bindingName].execute(this, bindingName, null, value);			
@@ -151,6 +155,10 @@ package aerys.minko.type.binding
 			
 			_bindingNames[_bindingNames.indexOf(bindingName)] = _bindingNames[numBindings];
 			_bindingNames.length = numBindings;
+            
+            var numConsumers : uint = _consumers.length;
+            for (var consumerId : uint = 0; consumerId < numConsumers; ++consumerId)
+                _consumers[consumerId].setProperty(bindingName, null);
 				
 			if (changedSignal != null)
 				changedSignal.execute(this, bindingName, value, null);
