@@ -1,11 +1,5 @@
 package aerys.minko.render
 {
-	import aerys.minko.ns.minko_render;
-	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.type.KeyboardManager;
-	import aerys.minko.type.MouseManager;
-	import aerys.minko.type.Signal;
-	
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Graphics;
@@ -15,10 +9,14 @@ package aerys.minko.render
 	import flash.display.Stage3D;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-	import flash.display3D.Context3DProfile;
-	import flash.display3D.Context3DRenderMode;
 	import flash.events.Event;
 	import flash.geom.Point;
+	
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.type.KeyboardManager;
+	import aerys.minko.type.MouseManager;
+	import aerys.minko.type.Signal;
 
 	/**
 	 * The Viewport is the display area where a 3D scene can be rendered.
