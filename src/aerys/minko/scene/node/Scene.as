@@ -39,7 +39,7 @@ package aerys.minko.scene.node
 		private var _renderingEnd	: Signal;
 		private var _exitFrame		: Signal;
 
-		private var _assets				: AssetsLibrary;		
+		private var _assets			: AssetsLibrary;		
 		
 		public function get assets() : AssetsLibrary
 		{
