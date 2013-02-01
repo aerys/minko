@@ -14,10 +14,9 @@ package aerys.minko.render.material.picking
 		private var _vertexAnimation 	: VertexAnimationShaderPart;
 		private var _diffuse			: DiffuseShaderPart;
 		
-		public function PickingShader(target	: RenderTarget	= null,
-									  priority	: Number		= 0.)
+		public function PickingShader()
 		{
-			super(null, 0.);
+			super(null, Number.MAX_VALUE);
 			
 			_vertexAnimation = new VertexAnimationShaderPart(this);
 			_diffuse = new DiffuseShaderPart(this);
@@ -29,7 +28,7 @@ package aerys.minko.render.material.picking
 			
 			settings.priority = Number.MAX_VALUE;
 			settings.scissorRectangle = new Rectangle(0, 0, 1, 1);
-//			settings.enabled = meshBindings.propertyExists('pickingId');
+			settings.enabled = meshBindings.propertyExists('pickingId');
 		}
 		
 		override protected function getVertexPosition() : SFloat
