@@ -172,8 +172,11 @@ package aerys.minko.render
 		public function unsetBindings(meshBindings	: DataBindings,
 									  sceneBindings	: DataBindings) : void
 		{
-			meshBindings.removeConsumer(_bindingsConsumer);
-			sceneBindings.removeConsumer(_bindingsConsumer);
+			if (_bindingsConsumer != null)
+			{
+				meshBindings.removeConsumer(_bindingsConsumer);
+				sceneBindings.removeConsumer(_bindingsConsumer);
+			}
 			
 			if (sceneBindings.hasCallback('worldToScreen', transformChangedHandler))
 				sceneBindings.removeCallback('worldToScreen', transformChangedHandler);
