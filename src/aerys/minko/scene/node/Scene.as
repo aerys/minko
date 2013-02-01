@@ -9,6 +9,7 @@ package aerys.minko.scene.node
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.loader.AssetsLibrary;
 	
 	import flash.display.BitmapData;
 	import flash.utils.Dictionary;
@@ -37,40 +38,14 @@ package aerys.minko.scene.node
 		private var _renderingBegin		: Signal;
 		private var _renderingEnd		: Signal;
 		private var _exitFrame			: Signal;
-		private var _layerNameChanged	: Signal; // function(scene : Scene, oldName : String, newName : String);
 
-		private var _layers			: Vector.<String>	= new Vector.<String>(32, true);
-		private var _nameToLayer	: Dictionary		= new Dictionary();
+		private var _assets				: AssetsLibrary;		
 		
-		public function getLayerName(layer : uint) : String
+		public function get assets():AssetsLibrary
 		{
-			return _layers[layer];
+			return _assets;
 		}
-		
-		public function setLayerName(layer : uint, name : String) : void
-		{
-			var oldName	: String = null;
-			if (_layers[layer])
-				oldName = _layers[oldName];
-			
-			_layers[layer] = name;
-			_nameToLayer[name] = layer;
-			
-			_layerNameChanged.execute(this, oldName, name);
-		}
-		
-		public function getLayerByName(name : String) : uint
-		{
-			return _nameToLayer[name];
-		}
-		
-		public function belongsToLayer(leaf : ITaggable, layerName : String) : Boolean
-		{
-			var layer : uint = getLayerByName(layerName);
-			
-			return (leaf.tag & layer) != 0;
-		}
-		
+
 		public function get activeCamera() : AbstractCamera
 		{
 			return _camera;
@@ -173,9 +148,10 @@ package aerys.minko.scene.node
 		
 		override protected function initialize() : void
 		{
-			_bindings = new DataBindings(this);
-			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
-			
+			_bindings 					= new DataBindings(this);
+			_assets						= new AssetsLibrary();
+			this.properties 			= new DataProvider(DataProviderUsage.EXCLUSIVE);
+
 			super.initialize();
 		}
 		
@@ -183,12 +159,10 @@ package aerys.minko.scene.node
 		{
 			super.initializeSignals();
 			
-			_enterFrame = new Signal('Scene.enterFrame');
-			_renderingBegin = new Signal('Scene.renderingBegin');
-			_renderingEnd = new Signal('Scene.renderingEnd');
-			_exitFrame = new Signal('Scene.exitFrame');
-			_layerNameChanged = new Signal('Scene.layerNameChanged');
-			_layers[0] = 'Default';
+			_enterFrame			= new Signal('Scene.enterFrame');
+			_renderingBegin 	= new Signal('Scene.renderingBegin');
+			_renderingEnd 		= new Signal('Scene.renderingEnd');
+			_exitFrame 			= new Signal('Scene.exitFrame');
 		}
 		
 		override protected function initializeSignalHandlers() : void

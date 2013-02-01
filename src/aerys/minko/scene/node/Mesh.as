@@ -130,16 +130,20 @@ package aerys.minko.scene.node
 			_ctrl.geometry = value;
 		}
 				
-		public function get tag():uint
+		public function get tag() : uint
 		{
 			return _tag;
 		}
 		
-		public function set tag(value:uint):void
+		public function set tag(value : uint) : void
 		{
-			_tag				= value;
+			if (_tag != value)
+			{
+				_tag = value;
+				_properties.setProperty('tag', value);
+			}
 		}
-
+		
         /**
          * Whether the mesh in inside the camera frustum or not. 
          * @return 
@@ -237,10 +241,7 @@ package aerys.minko.scene.node
 		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : Number
 		{
 			if (!(_tag & tag))
-			{
-				trace(tag);
 				return -1;
-			}
 			
 			return _ctrl.geometry.boundingBox.testRay(
 				ray,

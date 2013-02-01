@@ -342,8 +342,11 @@ package aerys.minko.scene.node
 		public function load(request	: URLRequest,
 							 options	: ParserOptions	= null) : ILoader
 		{
-			var loader	: SceneLoader	= new SceneLoader(options);
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
 			
+			var loader	: SceneLoader	= new SceneLoader(options);
+
 			loader.complete.add(loaderCompleteHandler);
 			loader.load(request);
 			
@@ -361,6 +364,9 @@ package aerys.minko.scene.node
 		public function loadClass(classObject	: Class,
 								  options		: ParserOptions	= null) : SceneLoader
 		{
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
+			
 			var loader : SceneLoader = new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
@@ -381,6 +387,9 @@ package aerys.minko.scene.node
 		public function loadBytes(bytes		: ByteArray,
 								  options	: ParserOptions	= null) : ILoader
 		{
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
+			
 			var loader	: SceneLoader	= new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
