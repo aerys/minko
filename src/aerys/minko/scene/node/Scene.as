@@ -9,8 +9,10 @@ package aerys.minko.scene.node
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.loader.AssetsLibrary;
 	
 	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 
 	/**
@@ -32,10 +34,17 @@ package aerys.minko.scene.node
 		
 		private var _numTriangles	: uint;
 		
-		private var _enterFrame		: Signal;
-		private var _renderingBegin	: Signal;
-		private var _renderingEnd	: Signal;
-		private var _exitFrame		: Signal;
+		private var _enterFrame			: Signal;
+		private var _renderingBegin		: Signal;
+		private var _renderingEnd		: Signal;
+		private var _exitFrame			: Signal;
+
+		private var _assets				: AssetsLibrary;		
+		
+		public function get assets():AssetsLibrary
+		{
+			return _assets;
+		}
 
 		public function get activeCamera() : AbstractCamera
 		{
@@ -139,9 +148,10 @@ package aerys.minko.scene.node
 		
 		override protected function initialize() : void
 		{
-			_bindings = new DataBindings(this);
-			this.properties = new DataProvider(DataProviderUsage.EXCLUSIVE);
-			
+			_bindings 					= new DataBindings(this);
+			_assets						= new AssetsLibrary();
+			this.properties 			= new DataProvider(DataProviderUsage.EXCLUSIVE);
+
 			super.initialize();
 		}
 		
@@ -149,10 +159,10 @@ package aerys.minko.scene.node
 		{
 			super.initializeSignals();
 			
-			_enterFrame = new Signal('Scene.enterFrame');
-			_renderingBegin = new Signal('Scene.renderingBegin');
-			_renderingEnd = new Signal('Scene.renderingEnd');
-			_exitFrame = new Signal('Scene.exitFrame');
+			_enterFrame			= new Signal('Scene.enterFrame');
+			_renderingBegin 	= new Signal('Scene.renderingBegin');
+			_renderingEnd 		= new Signal('Scene.renderingEnd');
+			_exitFrame 			= new Signal('Scene.exitFrame');
 		}
 		
 		override protected function initializeSignalHandlers() : void

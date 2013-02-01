@@ -342,8 +342,11 @@ package aerys.minko.scene.node
 		public function load(request	: URLRequest,
 							 options	: ParserOptions	= null) : ILoader
 		{
-			var loader	: SceneLoader	= new SceneLoader(options);
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
 			
+			var loader	: SceneLoader	= new SceneLoader(options);
+
 			loader.complete.add(loaderCompleteHandler);
 			loader.load(request);
 			
@@ -361,6 +364,9 @@ package aerys.minko.scene.node
 		public function loadClass(classObject	: Class,
 								  options		: ParserOptions	= null) : SceneLoader
 		{
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
+			
 			var loader : SceneLoader = new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
@@ -381,6 +387,9 @@ package aerys.minko.scene.node
 		public function loadBytes(bytes		: ByteArray,
 								  options	: ParserOptions	= null) : ILoader
 		{
+			if (options != null && scene != null && options.assets == null)
+				options.assets = scene.assets;
+			
 			var loader	: SceneLoader	= new SceneLoader(options);
 			
 			loader.complete.add(loaderCompleteHandler);
@@ -415,7 +424,7 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY) : SceneIterator
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : SceneIterator
 		{
 			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
 			var numMeshes	: uint					= meshes.length;
@@ -426,7 +435,7 @@ package aerys.minko.scene.node
 			for (var i : uint = 0; i < numMeshes; ++i)
 			{
 				var mesh 		: Mesh		= meshes[i] as Mesh;
-				var hitDepth	: Number	= mesh.cast(ray, maxDistance);
+				var hitDepth	: Number	= mesh.cast(ray, maxDistance, tag);
 				
 				if (hitDepth >= 0.0)
 				{

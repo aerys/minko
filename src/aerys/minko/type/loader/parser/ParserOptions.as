@@ -5,6 +5,7 @@ package aerys.minko.type.loader.parser
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
+	import aerys.minko.type.loader.AssetsLibrary;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
@@ -30,6 +31,7 @@ package aerys.minko.type.loader.parser
 		private var _vertexStreamUsage			: uint;
 		private var _indexStreamUsage			: uint;
 		private var _parser						: Class;
+		private var _assets						: AssetsLibrary;
 		
 		public function get skinningMethod() : uint
 		{
@@ -110,6 +112,16 @@ package aerys.minko.type.loader.parser
         {
             _loadSkin = value;
         }
+		
+		public function get assets() : AssetsLibrary
+		{
+			return _assets;
+		}
+		
+		public function set assets(value  :AssetsLibrary):void
+		{
+			_assets = value;
+		}
 
 		public function clone() : ParserOptions
 		{
@@ -121,18 +133,20 @@ package aerys.minko.type.loader.parser
 				_material,
 				_vertexStreamUsage,
 				_indexStreamUsage,
-				_parser
+				_parser,
+				_assets
 			);
 		}
 		
-		public function ParserOptions(dependencyLoaderFunction	: Function 	= null,
-                                      loadSkin                  : Boolean 	= true,
-									  skinningMethod			: uint		= 2,
-									  mipmapTextures			: Boolean 	= true,
-									  material					: Material 	= null,
-									  vertexStreamUsage			: uint 		= 0,
-									  indexStreamUsage			: uint 		= 0,
-									  parser					: Class 	= null)
+		public function ParserOptions(dependencyLoaderFunction	: Function 		= null,
+                                      loadSkin                  : Boolean 		= true,
+									  skinningMethod			: uint			= 2,
+									  mipmapTextures			: Boolean 		= true,
+									  material					: Material 		= null,
+									  vertexStreamUsage			: uint 			= 0,
+									  indexStreamUsage			: uint 			= 0,
+									  parser					: Class			= null,
+									  assets					: AssetsLibrary	= null)
 		{
 			_dependencyLoaderFunction	= dependencyLoaderFunction || defaultDependencyLoaderFunction;
             _loadSkin                   = loadSkin;
@@ -142,6 +156,7 @@ package aerys.minko.type.loader.parser
 			_vertexStreamUsage			= vertexStreamUsage;
 			_indexStreamUsage			= indexStreamUsage;
 			_parser						= parser;
+			_assets						= assets;
 		}
 		
 		private function defaultDependencyLoaderFunction(dependencyPath	: String,

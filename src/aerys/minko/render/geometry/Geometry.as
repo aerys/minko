@@ -62,6 +62,18 @@ package aerys.minko.render.geometry
 		
 		private var _changed		: Signal;
 		
+		private var _name			: String;
+		
+		public function get name():String
+		{
+			return _name;
+		}
+
+		public function set name(value:String):void
+		{
+			_name = value;
+		}
+
 		/**
 		 * The number of IVertexStreams objects stored in the geometry. 
 		 * @return 
@@ -166,18 +178,21 @@ package aerys.minko.render.geometry
 		public function Geometry(vertexStreams	: Vector.<IVertexStream>	= null,
 								 indexStream	: IndexStream				= null,
 								 firstIndex		: uint						= 0,
-								 numTriangles	: int						= -1)
+								 numTriangles	: int						= -1,
+								 name			: String					= null)
 		{			
-			initialize(vertexStreams, indexStream, firstIndex, numTriangles);
+			initialize(vertexStreams, indexStream, firstIndex, numTriangles, name);
 		}
 		
 		private function initialize(vertexStreams	: Vector.<IVertexStream>	= null,
 									indexStream		: IndexStream				= null,
 									firstIndex		: uint						= 0,
-									numTriangles	: int						= -1) : void
+									numTriangles	: int						= -1,
+									name			: String					= null) : void
 		{
 			_changed = new Signal('Geometry.changed');
 			
+			_name			= name;
 			_firstIndex 	= firstIndex;
 			_numTriangles	= numTriangles;
 			
