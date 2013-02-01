@@ -5,10 +5,7 @@ package aerys.minko.render.material.realistic
 	import aerys.minko.render.material.phong.PhongEffect;
 	import aerys.minko.render.material.phong.PhongMaterial;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.IDataProvider;
-	
-	import flash.utils.Dictionary;
 	
 	public class RealisticMaterial extends PhongMaterial
 	{
