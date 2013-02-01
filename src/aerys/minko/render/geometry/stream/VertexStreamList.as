@@ -67,7 +67,8 @@ package aerys.minko.render.geometry.stream
 			return vertexStreamList;
 		}
 
-		public function pushVertexStream(vertexStream : VertexStream, force : Boolean = false) : void
+		public function pushVertexStream(vertexStream   : VertexStream,
+                                         force          : Boolean = false) : void
 		{
 			if (numVertices && vertexStream.numVertices != numVertices)
 				throw new Error('All streams must have the same total number of vertices.');
@@ -78,6 +79,8 @@ package aerys.minko.render.geometry.stream
 			
 			vertexStream.changed.add(subStreamChangedHandler);
 			vertexStream.boundsChanged.add(subStreamBoundsChangedHandler);
+            
+            _changed.execute(this);
 		}
 		
 		public function getSubStreamById(id : int) : VertexStream
