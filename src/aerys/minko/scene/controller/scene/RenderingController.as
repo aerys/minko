@@ -236,15 +236,15 @@ package aerys.minko.scene.controller.scene
 			var numTriangles	: uint 				= 0;
 			
 			var sortValues 		: Vector.<Number> 	= TMP_NUMBERS;
-			var i				: uint				= 0;
+			var passId			: uint				= 0;
 			
 			context.enableErrorChecking = (Minko.debugLevel & DebugLevel.CONTEXT) != 0;
-			
+            
 			// sort passes
 			if (!_passesAreSorted && numPasses > 1)
 			{
-				for (i = 0; i < numPasses; ++i)
-					sortValues[i] = -(_passes[i] as ShaderInstance).settings.priority;
+				for (passId = 0; passId < numPasses; ++passId)
+					sortValues[passId] = -(_passes[passId] as ShaderInstance).settings.priority;
 				
 				Sort.flashSort(sortValues, _passes, numPasses);
 				_passesAreSorted = true;
@@ -258,9 +258,9 @@ package aerys.minko.scene.controller.scene
 			var passes			: Array				= _passes.concat();
 			var clearedTargets	: Dictionary		= new Dictionary(true);
 			
-			for (i = 0; i < numPasses; ++i)
+			for (passId = 0; passId < numPasses; ++passId)
 			{
-				var pass			: ShaderInstance	= passes[i];
+				var pass			: ShaderInstance	= passes[passId];
 				var calls 			: Array				= _passInstanceToDrawCalls[pass];
 				var settings		: ShaderSettings	= pass.settings;
 				var renderTarget 	: RenderTarget 		= settings.renderTarget || backBuffer;
@@ -274,7 +274,10 @@ package aerys.minko.scene.controller.scene
 				clearedTargets[renderTarget] = true;
 				
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
+                {
+                    previous = pass;
 					continue;
+                }
 				
 				++_numEnabledPasses;
 				
@@ -287,8 +290,8 @@ package aerys.minko.scene.controller.scene
 				// sort draw calls if necessary
 				if (pass.settings.depthSortDrawCalls)
 				{
-					for (var k : uint = 0; k < numCalls; ++k)
-						sortValues[k] = -(calls[k] as DrawCall).depth;
+					for (var drawCallId : uint = 0; drawCallId < numCalls; ++drawCallId)
+						sortValues[drawCallId] = -(calls[drawCallId] as DrawCall).depth;
 					
 					Sort.flashSort(sortValues, calls, numCalls);
 				}
