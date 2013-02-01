@@ -1092,8 +1092,8 @@ package aerys.minko.render.geometry
 			//edge 2
 			var edge2X 			: Number 		= .0;
 			var edge2Y 			: Number 		= .0;
-			var edge2Z 			: Number 		= .0;	
-			
+			var edge2Z 			: Number 		= .0;
+            
 			for (var verticeIndex : uint = 0; verticeIndex < numVertices; verticeIndex += stride)
 			{
 				indicesData.position = verticeIndex * 2;
