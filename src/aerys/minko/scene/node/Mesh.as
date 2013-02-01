@@ -42,6 +42,9 @@ package aerys.minko.scene.node
 		
 		private var _tag				: uint = 1;
 		
+		private var _tag				: uint = 1;
+		private var _tagChanged			: Signal;
+		
 		/**
 		 * A DataProvider object already bound to the Mesh bindings.
 		 * 
@@ -143,7 +146,29 @@ package aerys.minko.scene.node
 				_properties.setProperty('tag', value);
 			}
 		}
+				
+		public function get tag():uint
+		{
+			return _tag;
+		}
 		
+		public function set tag(value:uint):void
+		{
+			if (_tag != value)
+			{
+				var oldTag	: uint	= _tag;
+				_tag				= value;
+				
+				_properties.setProperty('tag', value);
+				_tagChanged.execute(this, oldTag, value);
+			}
+		}
+		
+		public function get tagChanged():Signal
+		{
+			return _tagChanged;
+		}
+
         /**
          * Whether the mesh in inside the camera frustum or not. 
          * @return 
