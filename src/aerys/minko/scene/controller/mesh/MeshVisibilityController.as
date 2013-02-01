@@ -59,7 +59,10 @@ package aerys.minko.scene.controller.mesh
 				if (value == FrustumCulling.DISABLED)
 				{
 					_data.computedVisibility = true;
-					_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+					if (_mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
+					{
+						_mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
+					}
 				}
 				else if (_mesh && _mesh.scene)
 				{
@@ -175,8 +178,8 @@ package aerys.minko.scene.controller.mesh
         }
         
 		private function worldToScreenChangedHandler(bindings	    : DataBindings,
-                                                     propertyName	: String,
 													 bindingName	: String,
+													 oldValue		: Matrix4x4,
                                                      value			: Matrix4x4) : void
 		{
 			testCulling();
