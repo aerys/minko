@@ -66,6 +66,11 @@ package aerys.minko.scene.node
 			return _numTriangles;
 		}
 		
+		public function get numDrawCalls() : uint
+		{
+			return _renderingCtrl.numDrawCalls;
+		}
+		
 		public function get postProcessingEffect() : Effect
 		{
 			return _renderingCtrl.postProcessingEffect;
