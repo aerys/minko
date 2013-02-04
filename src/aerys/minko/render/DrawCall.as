@@ -183,6 +183,8 @@ package aerys.minko.render
 			
 			if (meshBindings.hasCallback('localToWorld', transformChangedHandler))
 				meshBindings.removeCallback('localToWorld', transformChangedHandler);
+            
+            _bindingsConsumer = null;
 		}
 		
 		private function setProgram(program : Program3DResource) : void
