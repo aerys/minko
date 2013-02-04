@@ -298,9 +298,6 @@ package aerys.minko.render
 
 		public function apply(context : Context3DResource, previous : DrawCall) : uint
 		{
-			if (!_enabled)
-				return 0;
-			
 			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA)
 				   .setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants)
 				   .setProgramConstantsFromVector(PROGRAM_TYPE_FRAGMENT, 0, _fsConstants);
