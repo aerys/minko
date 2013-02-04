@@ -108,11 +108,6 @@ package aerys.minko.scene.controller.scene
 				: _numEnabledPasses;
 		}
 		
-		public function get numTriangles() : uint
-		{
-			return _numTriangles;
-		}
-		
 		public function get numDrawCalls() : uint
 		{
 			return _numDrawCalls;
@@ -121,6 +116,11 @@ package aerys.minko.scene.controller.scene
 		public function get numEnabledDrawCalls() : uint
 		{
 			return _numEnabledDrawCalls;
+		}
+		
+		public function get numTriangles() : uint
+		{
+			return _numTriangles;
 		}
 		
 		public function get postProcessingEffect() : Effect
@@ -243,6 +243,7 @@ package aerys.minko.scene.controller.scene
 			applyBindingChanges();
 			
 			_numEnabledPasses = 0;
+			_numDrawCalls = 0;
 
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
@@ -266,11 +267,9 @@ package aerys.minko.scene.controller.scene
 			
 			// apply passes
 			var previous 		: ShaderInstance	= null;
-			var callTriangles	: uint				= 0;
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
-			var clearedTargets	: Dictionary		= new Dictionary(true);
 			
 			_numEnabledDrawCalls = 0;
 			
@@ -284,10 +283,8 @@ package aerys.minko.scene.controller.scene
 				settings.setupRenderTarget(
 					context,
 					backBuffer,
-					previous ? previous.settings : null,
-					true//!clearedTargets[renderTarget]
+					previous ? previous.settings : null
 				);
-				clearedTargets[renderTarget] = true;
 				
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
                 {
@@ -314,12 +311,12 @@ package aerys.minko.scene.controller.scene
 				
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
+					_numDrawCalls++;
 					call = calls[j];
 					if (call.enabled)
 					{
 						_numEnabledDrawCalls++;
-						callTriangles = call.apply(context, previousCall);
-						numTriangles += callTriangles;
+						numTriangles = call.apply(context, previousCall);
 						previousCall = call;
 					}
 				}
