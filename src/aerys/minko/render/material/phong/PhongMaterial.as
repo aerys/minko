@@ -70,12 +70,12 @@ package aerys.minko.render.material.phong
 			setProperty(PhongProperties.DIFFUSE_MULTIPLIER, value);
 		}
 		
-		public function get specular() : Vector4
+		public function get specular() : Object
 		{
-			return getProperty(PhongProperties.SPECULAR) as Vector4;
+			return getProperty(PhongProperties.SPECULAR) as Object;
 		}
 		
-		public function set specular(value : Vector4) : void
+		public function set specular(value : Object) : void
 		{
 			setProperty(PhongProperties.SPECULAR, value);
 		}
