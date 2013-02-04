@@ -61,6 +61,7 @@ package aerys.minko.scene.controller.scene
 		
 		private var _drawCallToPassInstance		: Dictionary;
 		private var _passInstanceToDrawCalls	: Dictionary;
+		private var _numDrawCalls				: uint;
 		
 		private var _meshToDrawCalls			: Dictionary;
 		private var _meshToEffectInstance		: Dictionary;
@@ -102,6 +103,11 @@ package aerys.minko.scene.controller.scene
 		public function get numEnabledPasses() : uint
 		{
 			return _numEnabledPasses;
+		}
+		
+		public function get numDrawCalls() : uint
+		{
+			return _numDrawCalls;
 		}
 		
 		public function get numTriangles() : uint
@@ -229,6 +235,7 @@ package aerys.minko.scene.controller.scene
 			applyBindingChanges();
 			
 			_numEnabledPasses = 0;
+			_numDrawCalls = 0;
 
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
@@ -300,6 +307,7 @@ package aerys.minko.scene.controller.scene
 					
 					if (callTriangles != 0)
 					{
+						_numDrawCalls++;
 						numTriangles += callTriangles;
 						previousCall = call;
 					}
