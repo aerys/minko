@@ -4,7 +4,6 @@ package aerys.minko.render.resource.texture
 	import aerys.minko.type.enum.SamplerFormat;
 	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix;
@@ -19,9 +18,9 @@ package aerys.minko.render.resource.texture
 	{
 		private static const MAX_SIZE					: uint		= 2048;
 		private static const TMP_MATRIX					: Matrix	= new Matrix();
-		private static const FORMAT_BGRA				: String	= Context3DTextureFormat.BGRA
-		private static const FORMAT_COMPRESSED			: String	= Context3DTextureFormat.COMPRESSED;
-		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= Context3DTextureFormat.COMPRESSED_ALPHA;
+		private static const FORMAT_BGRA				: String	= 'bgra';
+		private static const FORMAT_COMPRESSED			: String	= 'compressed';
+		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= 'compressedAlpha';
 		
 		private static const TEXTURE_FORMAT_TO_SAMPLER	: Array 	= []
 		{
@@ -30,18 +29,18 @@ package aerys.minko.render.resource.texture
 			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED_ALPHA] 	= SamplerFormat.COMPRESSED_ALPHA;
 		}
 		
-		private var _texture		: Texture		= null;
-		private var _mipmap			: Boolean		= false;
+		private var _texture		: Texture;
+		private var _mipmap			: Boolean;
 
-		private var _bitmapData		: BitmapData	= null;
-		private var _atf			: ByteArray		= null;
-		private var _atfFormat		: uint			= 0;
-		private var _format 		: String 		= FORMAT_BGRA;
+		private var _bitmapData		: BitmapData;
+		private var _atf			: ByteArray;
+		private var _atfFormat		: uint;
+		private var _format 		: String;
 
-		private var _width			: Number		= 0;
-		private var _height			: Number		= 0;
+		private var _width			: Number;
+		private var _height			: Number;
 
-		private var _update			: Boolean		= false;
+		private var _update			: Boolean;
 
 		public function get format() : uint
 		{
@@ -68,6 +67,7 @@ package aerys.minko.render.resource.texture
 		{
             _width = width;
             _height = height;
+			_format = FORMAT_BGRA;
 		}
 
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
@@ -110,7 +110,8 @@ package aerys.minko.render.resource.texture
 			}
 			
 			if (_texture
-				&& (mipmap != _mipmap
+				&& (_format	!= FORMAT_BGRA
+					|| mipmap != _mipmap
 					|| bitmapData.width != _width
 					|| bitmapData.height != _height))
 			{
@@ -120,6 +121,7 @@ package aerys.minko.render.resource.texture
 
 			_width = _bitmapData.width;
 			_height = _bitmapData.height;
+			_format = FORMAT_BGRA;
 
 			_mipmap	= mipmap;
 			_update	= true;
@@ -134,6 +136,7 @@ package aerys.minko.render.resource.texture
 			var oldWidth	: Number = _width;
 			var oldHeight	: Number = _height;
 			var oldMipmap	: Boolean = _mipmap;
+			var oldFormat	: String = _format;
 			
 			atf.position 	= 6;
 			
@@ -150,9 +153,12 @@ package aerys.minko.render.resource.texture
 				_format = FORMAT_COMPRESSED_ALPHA;
 			else if (_atfFormat == 3)
 				_format = FORMAT_COMPRESSED;
+			else
+				_format = FORMAT_BGRA;
 			
 			if (_texture
-				&& (oldMipmap != _mipmap
+				&& (oldFormat != _format
+					|| oldMipmap != _mipmap
 					|| oldWidth != _width
 					|| oldHeight != _height))
 			{
