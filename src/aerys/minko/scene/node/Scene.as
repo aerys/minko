@@ -61,6 +61,16 @@ package aerys.minko.scene.node
 			return _renderingCtrl.numEnabledPasses;
 		}
 		
+		public function get numDrawCalls() : uint
+		{
+			return _renderingCtrl.numDrawCalls;
+		}
+		
+		public function get numEnabledDrawCalls() : uint
+		{
+			return _renderingCtrl.numEnabledDrawCalls;
+		}
+		
 		public function get numTriangles() : uint
 		{
 			return _numTriangles;
