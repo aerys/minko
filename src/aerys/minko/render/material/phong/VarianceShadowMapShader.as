@@ -7,14 +7,8 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
-	import aerys.minko.render.shader.part.depth.DepthAlgorithm;
 	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
 	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
-	import aerys.minko.render.shader.part.depth.ProjectedDepthShaderPart;
-	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.light.PointLight;
-	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	
