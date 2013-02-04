@@ -410,7 +410,7 @@ package aerys.minko.scene.controller
 			{
 				var mesh	: Mesh	= _pickingIdToMesh[pixelColor & 0xFFFFFF];
 				
-				_currentMouseOver	= mesh.tag & _tag ? mesh : null;
+				_currentMouseOver	= mesh && (mesh.tag & _tag) != 0 ? mesh : null;
 			}
 			else
 				_currentMouseOver = null; // wrong antialiasing color or nothing got picked
