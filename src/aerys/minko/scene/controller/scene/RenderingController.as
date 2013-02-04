@@ -256,7 +256,6 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
-			var clearedTargets	: Dictionary		= new Dictionary(true);
 			
 			for (passId = 0; passId < numPasses; ++passId)
 			{
@@ -268,10 +267,8 @@ package aerys.minko.scene.controller.scene
 				settings.setupRenderTarget(
 					context,
 					backBuffer,
-					previous ? previous.settings : null,
-					!clearedTargets[renderTarget]
+					previous ? previous.settings : null
 				);
-				clearedTargets[renderTarget] = true;
 				
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
                 {
