@@ -295,8 +295,7 @@ package aerys.minko.render.shader
 		
 		public function setupRenderTarget(context		: Context3DResource,
 										  backBuffer	: RenderTarget,
-										  previous		: ShaderSettings,
-										  clear			: Boolean) : void
+										  previous		: ShaderSettings) : void
 		{
 			if (!previous || previous._renderTarget != _renderTarget)
 			{
@@ -312,17 +311,14 @@ package aerys.minko.render.shader
 				else
 					context.setRenderToBackBuffer();
 				
-				if (clear)
-				{
-					var color 	: uint 	= rt.backgroundColor;
-					
-					context.clear(
-						((color >> 24) & 0xff) / 255.,
-						((color >> 16) & 0xff) / 255.,
-						((color >> 8) & 0xff) / 255.,
-						(color & 0xff) / 255.
-					);
-				}
+				var color 	: uint 	= rt.backgroundColor;
+				
+				context.clear(
+					((color >> 24) & 0xff) / 255.,
+					((color >> 16) & 0xff) / 255.,
+					((color >> 8) & 0xff) / 255.,
+					(color & 0xff) / 255.
+				);
 			}			
 		}
 		
