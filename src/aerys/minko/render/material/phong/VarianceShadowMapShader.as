@@ -58,10 +58,9 @@ package aerys.minko.render.material.phong
 			_depthShaderPart = new LinearDepthShaderPart(this);
 		}
 		
-		
 		override protected function getVertexPosition() : SFloat
 		{
-			createDepthShaderPart(_lightId);
+			createDepthShaderPart();
 			
 			return _depthShaderPart.getVertexPosition(_lightId, _vertexAnimationPart.getAnimatedVertexPosition(), _face);
 		}
@@ -73,7 +72,7 @@ package aerys.minko.render.material.phong
 		{
 			if (_depthShaderPart == null)
 			{
-				createDepthShaderPart(_lightId);
+				createDepthShaderPart();
 			}
 			
 			var depth	: SFloat	= _depthShaderPart.getPixelColor(_lightId);
