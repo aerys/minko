@@ -3,6 +3,7 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.ShaderDataBindingsProxy;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
@@ -10,10 +11,9 @@ package aerys.minko.render.shader
 	import aerys.minko.render.shader.part.ShaderPart;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.Signature;
 	
 	import flash.utils.getQualifiedClassName;
-	import aerys.minko.type.binding.Signature;
-	import aerys.minko.render.ShaderDataBindingsProxy;
 	
 	use namespace minko_shader;
 	
