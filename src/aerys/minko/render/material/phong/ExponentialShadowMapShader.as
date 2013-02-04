@@ -54,26 +54,7 @@ package aerys.minko.render.material.phong
 		
 		private function createDepthShaderPart() : void
 		{
-			var lightTypeName			: String	= LightDataProvider.getLightPropertyName('type', _lightId);
-			var lightType				: uint		= sceneBindings.getProperty(lightTypeName, _lightId);
-			if (lightType == PointLight.LIGHT_TYPE || lightType == SpotLight.LIGHT_TYPE)
-			{
-				_depthShaderPart					= new LinearDepthShaderPart(this);
-			}
-			else
-			{
-				var depthAlgorithmName	: String	= LightDataProvider.getLightPropertyName('depthAlgorithm', _lightId);
-				var depthAlgorithm		: uint		= sceneBindings.getProperty(depthAlgorithmName, 0);
-				switch (depthAlgorithm)
-				{
-					case DepthAlgorithm.LINEAR :
-						_depthShaderPart			= new LinearDepthShaderPart(this);
-						break;
-					case DepthAlgorithm.PROJECTED :
-						_depthShaderPart			= new ProjectedDepthShaderPart(this);
-						break;
-				}
-			}
+			_depthShaderPart = new LinearDepthShaderPart(this);
 		}
 		
 		override protected function getVertexPosition() : SFloat
