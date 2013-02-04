@@ -50,9 +50,6 @@ package aerys.minko.scene.controller.scene
 		private var _scene						: Scene;
 		
 		private var _numTriangles				: uint;
-		private var _numEnabledPasses			: uint;
-		private var _numDrawCalls				: uint;
-		private var _numEnabledDrawCalls		: uint;
 		
 		private var _stashedPropertyChanges		: Dictionary;
 		
@@ -60,9 +57,11 @@ package aerys.minko.scene.controller.scene
 		
 		private var _passes						: Array;
 		private var _passesAreSorted			: Boolean;
+		private var _numEnabledPasses			: uint;
 		
 		private var _drawCallToPassInstance		: Dictionary;
 		private var _passInstanceToDrawCalls	: Dictionary;
+		private var _numDrawCalls				: uint;
 		
 		private var _meshToDrawCalls			: Dictionary;
 		private var _meshToEffectInstance		: Dictionary;
@@ -103,14 +102,7 @@ package aerys.minko.scene.controller.scene
 		
 		public function get numEnabledPasses() : uint
 		{
-			return _postProcessingScene
-				? _numEnabledPasses + _postProcessingScene.numEnabledPasses
-				: _numEnabledPasses;
-		}
-		
-		public function get numTriangles() : uint
-		{
-			return _numTriangles;
+			return _numEnabledPasses;
 		}
 		
 		public function get numDrawCalls() : uint
@@ -118,9 +110,9 @@ package aerys.minko.scene.controller.scene
 			return _numDrawCalls;
 		}
 		
-		public function get numEnabledDrawCalls() : uint
+		public function get numTriangles() : uint
 		{
-			return _numEnabledDrawCalls;
+			return _numTriangles;
 		}
 		
 		public function get postProcessingEffect() : Effect
@@ -243,6 +235,7 @@ package aerys.minko.scene.controller.scene
 			applyBindingChanges();
 			
 			_numEnabledPasses = 0;
+			_numDrawCalls = 0;
 
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
@@ -270,9 +263,6 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
-			var clearedTargets	: Dictionary		= new Dictionary(true);
-			
-			_numEnabledDrawCalls = 0;
 			
 			for (passId = 0; passId < numPasses; ++passId)
 			{
@@ -284,10 +274,8 @@ package aerys.minko.scene.controller.scene
 				settings.setupRenderTarget(
 					context,
 					backBuffer,
-					previous ? previous.settings : null,
-					true//!clearedTargets[renderTarget]
+					previous ? previous.settings : null
 				);
-				clearedTargets[renderTarget] = true;
 				
 				if (!pass.settings.enabled || !pass.shader.enabled || !calls)
                 {
@@ -315,10 +303,11 @@ package aerys.minko.scene.controller.scene
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
 					call = calls[j];
-					if (call.enabled)
+					callTriangles = call.apply(context, previousCall);
+					
+					if (callTriangles != 0)
 					{
-						_numEnabledDrawCalls++;
-						callTriangles = call.apply(context, previousCall);
+						_numDrawCalls++;
 						numTriangles += callTriangles;
 						previousCall = call;
 					}
@@ -555,7 +544,6 @@ package aerys.minko.scene.controller.scene
 					);
 				}
 				drawCalls[passId] = drawCall;
-				++_numDrawCalls;
 				
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
 				bindShaderInstance(passInstance, drawCall, meshBindings);
@@ -596,7 +584,6 @@ package aerys.minko.scene.controller.scene
 				
 				unbindShaderInstance(passInstance, drawCall, meshBindings);
 			}
-			_numDrawCalls -= numDrawCalls;
 			
 			delete _meshToEffectInstance[effectInstance];
             
