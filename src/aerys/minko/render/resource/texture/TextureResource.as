@@ -16,6 +16,8 @@ package aerys.minko.render.resource.texture
 	 */
 	public class TextureResource implements ITextureResource
 	{
+		public static const EMPTY_BITMAPDATA			: BitmapData	= new BitmapData(1, 1, false, 0);
+		
 		private static const MAX_SIZE					: uint		= 2048;
 		private static const TMP_MATRIX					: Matrix	= new Matrix();
 		private static const FORMAT_BGRA				: String	= 'bgra';
@@ -42,6 +44,8 @@ package aerys.minko.render.resource.texture
 
 		private var _update			: Boolean;
 
+		private var _async			: Boolean;
+		
 		public function get format() : uint
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
@@ -127,11 +131,12 @@ package aerys.minko.render.resource.texture
 			_update	= true;
 		}
 
-		public function setContentFromATF(atf : ByteArray) : void
+		public function setContentFromATF(atf : ByteArray, async : Boolean = false) : void
 		{
 			_atf			= atf;
 			_bitmapData		= null;
 			_update 		= true;
+			_async			= async;
 
 			var oldWidth	: Number = _width;
 			var oldHeight	: Number = _height;
@@ -230,7 +235,11 @@ package aerys.minko.render.resource.texture
 			}
 			else if (_atf)
 			{
-				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
+				if (_async)
+				{
+					_texture.uploadFromBitmapData(EMPTY_BITMAPDATA);
+				}
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0, _async);
 			}
 		}
 		

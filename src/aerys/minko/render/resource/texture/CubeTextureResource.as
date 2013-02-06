@@ -97,7 +97,7 @@ package aerys.minko.render.resource.texture
             _mipMapping = mipmap;
 		}
 		
-		public function setContentFromATF(atf : ByteArray) : void
+		public function setContentFromATF(atf : ByteArray, async : Boolean = false) : void
 		{
 			throw new Error('Not yet implemented');
 		}
