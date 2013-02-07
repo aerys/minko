@@ -509,7 +509,7 @@ package aerys.minko.type.math
 			out ||= new Vector4();
 			
 			_matrix.copyColumnTo(column, out._vector);
-			output._update |= Vector4.UPDATE_ALL;
+			out._update |= Vector4.UPDATE_ALL;
 			
 			if (!out.locked)
 				out.changed.execute(out);
@@ -533,7 +533,7 @@ package aerys.minko.type.math
 			out ||= new Vector4();
 			
 			_matrix.copyColumnTo(row, out._vector);
-			output._update |= Vector4.UPDATE_ALL;
+			out._update |= Vector4.UPDATE_ALL;
 			
 			if (!out.locked)
 				out.changed.execute(out);
