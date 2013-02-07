@@ -1,11 +1,9 @@
 package aerys.minko.render.resource.texture
 {
 	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.render.resource.IResource;
 	import aerys.minko.type.enum.SamplerFormat;
 	
 	import flash.display.BitmapData;
-	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.CubeTexture;
 	import flash.display3D.textures.TextureBase;
@@ -26,7 +24,7 @@ package aerys.minko.render.resource.texture
 		private var _resource		: CubeTexture;
 		private var _size			: uint;
         private var _mipMapping     : Boolean;
-        
+		
         public function get format() : uint
         {
             return SamplerFormat.RGBA;
@@ -36,11 +34,6 @@ package aerys.minko.render.resource.texture
         {
             return _mipMapping;
         }
-		
-		public function CubeTextureResource(size : uint)
-		{
-			_size = size;
-		}
 		
 		public function get width() : uint
 		{
@@ -56,7 +49,12 @@ package aerys.minko.render.resource.texture
 		{
 			return _size;
 		}
-		
+
+		public function CubeTextureResource(size : uint)
+		{
+			_size = size;
+		}
+
 		public function setContentFromBitmapData(bitmapData	: BitmapData,
 												 mipmap		: Boolean,
 												 downSample	: Boolean	= false) : void
@@ -97,7 +95,7 @@ package aerys.minko.render.resource.texture
             _mipMapping = mipmap;
 		}
 		
-		public function setContentFromATF(atf : ByteArray, async : Boolean = false) : void
+		public function setContentFromATF(atf : ByteArray) : void
 		{
 			throw new Error('Not yet implemented');
 		}

@@ -44,8 +44,6 @@ package aerys.minko.render.resource.texture
 
 		private var _update			: Boolean;
 
-		private var _async			: Boolean;
-		
 		public function get format() : uint
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
@@ -131,12 +129,11 @@ package aerys.minko.render.resource.texture
 			_update	= true;
 		}
 
-		public function setContentFromATF(atf : ByteArray, async : Boolean = false) : void
+		public function setContentFromATF(atf : ByteArray) : void
 		{
 			_atf			= atf;
 			_bitmapData		= null;
 			_update 		= true;
-			_async			= async;
 
 			var oldWidth	: Number = _width;
 			var oldHeight	: Number = _height;
@@ -178,7 +175,7 @@ package aerys.minko.render.resource.texture
 			{
 				if (_texture)
 					_texture.dispose();
-				
+								
 				_texture = context.createTexture(
 					_width,
 					_height,
@@ -235,11 +232,7 @@ package aerys.minko.render.resource.texture
 			}
 			else if (_atf)
 			{
-				if (_async)
-				{
-					_texture.uploadFromBitmapData(EMPTY_BITMAPDATA);
-				}
-				_texture.uploadCompressedTextureFromByteArray(_atf, 0, _async);
+				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
 			}
 		}
 		
