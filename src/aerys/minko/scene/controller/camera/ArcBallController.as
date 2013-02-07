@@ -5,6 +5,7 @@ package aerys.minko.scene.controller.camera
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Quaternion;
 	import aerys.minko.type.math.Vector4;
 	
 	import flash.display.BitmapData;
@@ -23,9 +24,14 @@ package aerys.minko.scene.controller.camera
 		
 		private var _enabled			: Boolean	= true;
 		
+		private var _previousTime		: uint		= 0;
+		
 		private var _distance			: Number	= 1.;
 		private var _yaw				: Number	= 0;
 		private var _pitch				: Number	= 0;
+		private var _newDistance		: Number	= 1.;
+		private var _newYaw				: Number	= 0;
+		private var _newPitch			: Number	= 0;
 		private var _update				: Boolean	= true;
 		
 		private var _position			: Vector4	= new Vector4(0, 0, 0, 1);
@@ -39,6 +45,29 @@ package aerys.minko.scene.controller.camera
 		private var _yawStep			: Number	= 0.01;
 		private var _pitchStep			: Number	= 0.01;
 		
+		private var _inertia			: Number	= 1.0;
+		private var _interpolationSpeed	: Number	= 1;
+		
+		public function get inertia() : Number
+		{
+			return _inertia;
+		}
+
+		public function set inertia(value : Number):void
+		{
+			_inertia = value;
+		}
+
+		public function get interpolationSpeed() : Number
+		{
+			return _interpolationSpeed;
+		}
+
+		public function set interpolationSpeed(value : Number):void
+		{
+			_interpolationSpeed = value;
+		}
+
 		public function get enabled() : Boolean
 		{
 			return _enabled;
@@ -58,11 +87,11 @@ package aerys.minko.scene.controller.camera
 		 */		
 		public function get distance() : Number
 		{
-			return _distance;
+			return _newDistance;
 		}
 		public function set distance(value : Number) : void
 		{
-			_distance = value;
+			_newDistance = value;
 			_update = true;
 		}
 		
@@ -71,11 +100,11 @@ package aerys.minko.scene.controller.camera
 		 */		
 		public function get yaw() : Number
 		{
-			return _yaw;
+			return _newYaw;
 		}
 		public function set yaw(value : Number) : void
 		{
-			_yaw = value;
+			_newYaw = value;
 			_update = true;
 		}
 		
@@ -84,11 +113,11 @@ package aerys.minko.scene.controller.camera
 		 */		
 		public function get pitch() : Number
 		{
-			return _pitch;
+			return _newPitch;
 		}
 		public function set pitch(value : Number)	: void
 		{
-			_pitch = value;
+			_newPitch = value;
 			_update = true;
 		}
 		
@@ -175,7 +204,7 @@ package aerys.minko.scene.controller.camera
 		{
 			super();
 			
-			_pitch = Math.PI * .5;
+			_newPitch = Math.PI * .5;
 			_lookAt.changed.add(updateNextFrameHandler);
 			_up.changed.add(updateNextFrameHandler);
 		}
@@ -210,28 +239,50 @@ package aerys.minko.scene.controller.camera
 														   destination	: BitmapData,
 														   time			: Number) : void
 		{
-			updateTargets();
+			updateTargets((time - _previousTime) * .001);
+			_previousTime = time;
 		}
 		
-		private function updateTargets() : void
+		private function clampValues() : void
 		{
-			if (_update && _enabled)
+			if (_newDistance < _minDistance)
+				_newDistance = _minDistance;
+			if (_newDistance > _maxDistance)
+				_newDistance = _maxDistance;
+			if (_newPitch <= EPSILON)
+				_newPitch = EPSILON;
+			if (_newPitch > Math.PI - EPSILON)
+				_newPitch = Math.PI - EPSILON;
+		}
+		
+		private function dampValues(time : Number, dampingFactor : Number) : void
+		{
+			_distance	= interpolate(_distance,	_newDistance,	time,	dampingFactor);
+			_pitch		= interpolate(_pitch,		_newPitch,		time,	dampingFactor);
+			_yaw		= interpolate(_yaw,			_newYaw, 		time,	dampingFactor);
+		}
+		
+		private function updateTargets(time : Number = 1) : void
+		{
+			var enableInertia	: Boolean	= (_inertia != 1. && _interpolationSpeed != 1.);
+			if (enableInertia || (_update && _enabled))
 			{
-				if (_distance < _minDistance)
-					_distance = _minDistance;
-				if (_distance > _maxDistance)
-					_distance = _maxDistance;
-				if (_pitch <= EPSILON)
-					_pitch = EPSILON;
-				if (_pitch > Math.PI - EPSILON)
-					_pitch = Math.PI - EPSILON;
+				clampValues();
+				
+				if (enableInertia)
+					dampValues(time * _interpolationSpeed, _inertia);
+				else
+				{
+					_yaw = _newYaw;
+					_pitch = _newPitch;
+					_distance = _newDistance;
+				}
 				
 				_position.set(
 					_lookAt.x + _distance * Math.cos(_yaw) * Math.sin(_pitch),
 					_lookAt.y + _distance * Math.cos(_pitch),
 					_lookAt.z + _distance * Math.sin(_yaw) * Math.sin(_pitch)
 				);
-				
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
 				
 				var numTargets : uint = this.numTargets;
@@ -244,8 +295,8 @@ package aerys.minko.scene.controller.camera
 		
 		protected function mouseWheelHandler(e : MouseEvent) : void
 		{
-			_distance	-=	e.delta * _distanceStep;
-			_update		=	true;
+			_newDistance	-=	e.delta * _distanceStep;
+			_update			=	true;
 		}
 		
 		protected function mouseMoveHandler(e : MouseEvent) : void
@@ -253,8 +304,8 @@ package aerys.minko.scene.controller.camera
 			// compute position
 			if (e.buttonDown && _enabled)
 			{
-				_yaw	+= (_mousePosition.x - e.stageX) * _yawStep;
-				_pitch	+= (_mousePosition.y - e.stageY) * _pitchStep;
+				_newYaw		+= (_mousePosition.x - e.stageX) * _yawStep;
+				_newPitch		+= (_mousePosition.y - e.stageY) * _pitchStep;
 				
 				_update = true;
 			}
@@ -265,6 +316,11 @@ package aerys.minko.scene.controller.camera
 		private function updateNextFrameHandler(vector : Vector4) : void
 		{
 			_update = true;
+		}
+		
+		private function interpolate(src : Number, dst : Number, dt : Number, factor : Number) : Number
+		{
+			return (((src * factor) + (dst * dt)) / (factor + dt));
 		}
 	}
 }
