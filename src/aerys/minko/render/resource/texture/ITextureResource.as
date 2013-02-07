@@ -26,7 +26,7 @@ package aerys.minko.render.resource.texture
 										  mipmap 		: Boolean,
 										  downSample	: Boolean	= false) : void;
 		
-		function setContentFromATF(atf : ByteArray, async : Boolean = false) : void;
+		function setContentFromATF(atf : ByteArray) : void;
 		
 		function getTexture(context : Context3DResource) : TextureBase;
 	}
