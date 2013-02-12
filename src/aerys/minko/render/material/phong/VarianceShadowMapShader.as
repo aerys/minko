@@ -2,6 +2,7 @@ package aerys.minko.render.material.phong
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicProperties;
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
@@ -31,7 +32,6 @@ package aerys.minko.render.material.phong
 			
 			_lightId				= lightId;
 			_face					= face;
-			
 			_vertexAnimationPart	= new VertexAnimationShaderPart(this);
 			_diffusePart			= new DiffuseShaderPart(this);
 		}

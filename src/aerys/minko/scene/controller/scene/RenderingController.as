@@ -417,7 +417,7 @@ package aerys.minko.scene.controller.scene
 			}
 		}
 		
-		private function addMesh(mesh : Mesh) : void
+		public function addMesh(mesh : Mesh) : void
 		{
 			var meshBindings : DataBindings = mesh.bindings;
 			

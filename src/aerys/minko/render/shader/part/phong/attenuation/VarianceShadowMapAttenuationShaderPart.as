@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.part.phong.attenuation
 {
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
@@ -17,10 +18,12 @@ package aerys.minko.render.shader.part.phong.attenuation
 		private static const MIN_VARIANCE		: Number			= 0.002;
 		private static const EPSILON			: Number			= 0.0001;
 		private var _depthShaderPart			: IDepthShaderPart	= null;
+		private var _shadowMap					: ITextureResource	= null;
 		
-		public function VarianceShadowMapAttenuationShaderPart(main:Shader)
+		public function VarianceShadowMapAttenuationShaderPart(main : Shader, shadowMap : ITextureResource = null)
 		{
 			super(main);
+			_shadowMap = shadowMap;
 		}
 
 		private function createDepthShaderPart() : void
@@ -29,18 +32,19 @@ package aerys.minko.render.shader.part.phong.attenuation
 		}
 
 		
-		private function chebyshevUpperBound(moments					: SFloat,
+		private function chebyshevUpperBound(moment1					: SFloat,
+											 moment2					: SFloat,
 											 depth						: SFloat,
 											 lightBleedingCorrection	: Function,
 											 lightBleedingBias 			: SFloat) : SFloat
 		{
-			var p				: SFloat	= lessEqual(depth, moments.x);
-			var e_x2			: SFloat	= moments.y;						// e(x^2)
-			var ex_2			: SFloat	= multiply(moments.x, moments.x);	// e(x)^2
+			var p				: SFloat	= lessEqual(depth, moment1);
+			var e_x2			: SFloat	= moment2;						// e(x^2)
+			var ex_2			: SFloat	= multiply(moment1, moment1);	// e(x)^2
 			var variance		: SFloat	= subtract(e_x2, ex_2);
 			variance						= add(variance, EPSILON);
-			variance						= clamp(variance, MIN_VARIANCE, 1.0);
-			var dist			: SFloat	= subtract(depth, moments.x);
+			variance						= max(variance, MIN_VARIANCE);
+			var dist			: SFloat	= subtract(depth, moment1);
 			var distSquared		: SFloat	= multiply(dist, dist);
 			var pMax			: SFloat	= divide(variance, add(variance, distSquared));
 			pMax							= lightBleedingCorrection(pMax, lightBleedingBias);
@@ -70,14 +74,23 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var lightType					: uint		= sceneBindings.getProperty(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
-			var depthMap					: SFloat	= getLightTextureParameter(
-				lightId,
-				'shadowMap',
-				SamplerFiltering.LINEAR,
-				SamplerMipMapping.LINEAR,
-				SamplerWrapping.CLAMP,
-				dimension
-			);
+			var depthMap					: SFloat	= null;
+			if (!_shadowMap)
+				depthMap								= getLightTextureParameter(
+					lightId,
+					'shadowMap',
+					SamplerFiltering.LINEAR,
+					SamplerMipMapping.DISABLE,
+					SamplerWrapping.CLAMP,
+					dimension
+				);
+			else
+				depthMap								= getTexture(_shadowMap,
+					SamplerFiltering.LINEAR,
+					SamplerMipMapping.DISABLE,
+					SamplerWrapping.CLAMP,
+					dimension
+				);
 			
 			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
 			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
@@ -102,13 +115,14 @@ package aerys.minko.render.shader.part.phong.attenuation
 			}
 			var lightBleedingBias			: SFloat	= getLightParameter(lightId, 'lightBleedingBias', 1);
 			var shadow						: SFloat	= chebyshevUpperBound(
-				float2(moment1, moment2),
+				moment1,
+				moment2,
 				depth,
 				lightBleedingCorrection,
 				lightBleedingBias
 			);
 			
-			return shadow.x;
+			return shadow.xxx;
 		}
 	}
 }
