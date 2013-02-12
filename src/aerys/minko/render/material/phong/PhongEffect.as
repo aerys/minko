@@ -1,14 +1,24 @@
 package aerys.minko.render.material.phong
 {
 	import aerys.minko.ns.minko_lighting;
+	import aerys.minko.render.DataBindingsProxy;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.geometry.primitive.QuadGeometry;
+	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.effect.blur.BlurEffect;
+	import aerys.minko.render.shader.effect.blur.BlurQuality;
+	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.PointLight;
-	import aerys.minko.render.DataBindingsProxy;
+	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
 	public class PhongEffect extends Effect
@@ -18,12 +28,14 @@ package aerys.minko.render.material.phong
 		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
 		
 		private var _renderingShader	: Shader;
+		private var _scene				: Scene;
 		
-		public function PhongEffect(renderingShader : Shader = null)
+		public function PhongEffect(renderingShader : Shader = null, scene : Scene = null)
 		{
             super();
             
-			_renderingShader = renderingShader || DEFAUT_SHADER;
+			_renderingShader	= renderingShader || DEFAUT_SHADER;
+			_scene				= scene;
 		}
 		
 		override protected function initializePasses(sceneBindings	: DataBindingsProxy,
@@ -128,8 +140,8 @@ package aerys.minko.render.material.phong
 		}
 		
 		private function pushVarianceShadowMappingPass(sceneBindings	: DataBindingsProxy,
-													   lightId 		: uint,
-													   passes 		: Vector.<Shader>) : void
+													   lightId 			: uint,
+													   passes 			: Vector.<Shader>) : void
 		{
 			var lightType	: uint	= getLightProperty(
 				sceneBindings, lightId, 'type'
@@ -137,14 +149,15 @@ package aerys.minko.render.material.phong
 			
 			if (lightType != PointLight.LIGHT_TYPE)
 			{
-				var textureResource : TextureResource	= getLightProperty(
-					sceneBindings, lightId, 'shadowMap'
-				);
+				var textureResource : ITextureResource	= tryAddShadowBlurPass(sceneBindings, lightId);
 				var renderTarget	: RenderTarget		= new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				
 				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+				
+				if (_renderingShader is PhongShader)
+					PhongShader(_renderingShader).shadowMap = textureResource;
 			}
 			else
 			{
@@ -161,7 +174,6 @@ package aerys.minko.render.material.phong
 							new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
 					));
 			}
-
 		}
 		
 		private function pushExponentialShadowMappingPass(sceneBindings	: DataBindingsProxy,
@@ -174,14 +186,15 @@ package aerys.minko.render.material.phong
 			
 			if (lightType != PointLight.LIGHT_TYPE)
 			{
-				var textureResource : TextureResource	= getLightProperty(
-					sceneBindings, lightId, 'shadowMap'
-				);
+				var textureResource : ITextureResource	= tryAddShadowBlurPass(sceneBindings, lightId);
 				var renderTarget	: RenderTarget		= new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
-			
+				
 				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+				
+				if (_renderingShader is PhongShader)
+					PhongShader(_renderingShader).shadowMap = textureResource;
 			}
 			else
 			{
@@ -198,6 +211,47 @@ package aerys.minko.render.material.phong
 						new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
 					));
 			}
+		}
+		
+		private function tryAddShadowBlurPass(sceneBindings	: DataBindingsProxy,
+											  lightId 		: uint) : ITextureResource
+		{
+			var quality			: uint							= getLightProperty(sceneBindings, lightId, 'shadowQuality');
+			var texture			: TextureResource				= getLightProperty(sceneBindings, lightId, 'rawShadowMap');
+			if (!_scene || quality == ShadowMappingQuality.HARD)
+			{
+				return texture;
+			}
+			
+			var controllers		: Vector.<AbstractController>	= _scene.getControllersByType(RenderingController);
+			if (controllers.length == 0)
+				return texture;
+			
+			var blurQuality		: uint							= BlurQuality.LOW;
+			switch (quality)
+			{
+				case ShadowMappingQuality.MEDIUM :
+					blurQuality = BlurQuality.NORMAL;
+					break;
+				case ShadowMappingQuality.HIGH :
+					blurQuality = BlurQuality.HIGH;
+					break;
+				case ShadowMappingQuality.VERY_HIGH :
+					blurQuality = BlurQuality.VERY_HIGH;
+					break;
+			}
+			var destTexture		: TextureResource				= getLightProperty(sceneBindings, lightId, 'shadowMap');
+			var renderingCtrl	: RenderingController			= RenderingController(controllers[0]);
+			var renderTarget	: RenderTarget					= new RenderTarget(destTexture.width, destTexture.height, destTexture, 0, 0xffffffff, true, quality >> 1);
+			var passes			: Vector.<Shader>				= BlurEffect.getBlurPasses(
+				blurQuality, 1, 1,
+				texture, renderTarget, Number.POSITIVE_INFINITY);
+			var material		: Material						= new Material(new Effect().setExtraPasses(passes));
+			var mesh			: Mesh							= new Mesh(QuadGeometry.quadGeometry, material);
+			
+			renderingCtrl.addMesh(mesh);
+			
+			return destTexture;
 		}
 		
 		private function lightPropertyExists(sceneBindings 	: DataBindingsProxy,

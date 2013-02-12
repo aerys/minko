@@ -95,6 +95,8 @@ package aerys.minko.scene.controller.light
 							&& shadowMapSize <= 2048))
 							throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
 						shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
+						lightData.setLightProperty('rawShadowMap', shadowMap);
+						shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
 						lightData.setLightProperty('shadowMap', shadowMap);
 					}
 					else

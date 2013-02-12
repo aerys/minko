@@ -2,6 +2,7 @@ package aerys.minko.render.shader.part.phong
 {
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.material.phong.PhongProperties;
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.attenuation.CubeShadowMapAttenuationShaderPart;
@@ -44,6 +45,7 @@ package aerys.minko.render.shader.part.phong
 		private var _dpShadowMapAttenuation			: DPShadowMapAttenuationShaderPart;
 		private var _varianceShadowMapAttenuation	: VarianceShadowMapAttenuationShaderPart;
 		private var _exponentialShadowMapAttenuation: ExponentialShadowMapAttenuationShaderPart;
+		private var _shadowMap:ITextureResource;
 		
 		private function get infinitePart() : InfiniteShaderPart
 		{
@@ -96,24 +98,26 @@ package aerys.minko.render.shader.part.phong
 		private function get varianceShadowMapAttenuation() : VarianceShadowMapAttenuationShaderPart
 		{
 			return _varianceShadowMapAttenuation
-				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main));
+				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main, _shadowMap));
 		}
 		
 		private function get exponentialShadowMapAttenuation() : ExponentialShadowMapAttenuationShaderPart
 		{
 			return _exponentialShadowMapAttenuation
-				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main));
+				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main, _shadowMap));
 		}
 		
-		public function PhongShaderPart(main : Shader)
+		public function PhongShaderPart(main : Shader, shadowMap : ITextureResource = null)
 		{
 			super(main);
+			_shadowMap = shadowMap;
 		}
 		
-		public function getLightingColor() : SFloat
+		public function getLightingColor(shadowMap : ITextureResource = null) : SFloat
 		{
 			var lightValue : SFloat = float3(0, 0, 0);
 			
+			_shadowMap ||= shadowMap;
 			lightValue.incrementBy(getStaticLighting());
 			lightValue.incrementBy(getDynamicLighting());
 			
