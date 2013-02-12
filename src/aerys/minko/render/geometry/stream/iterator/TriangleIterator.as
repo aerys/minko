@@ -71,9 +71,9 @@ package aerys.minko.render.geometry.stream.iterator
 			if (_singleReference)
 			{
 				_triangle._index = _index;
-				_triangle.v0._index = _ib._data[int(_index * 3)];
-				_triangle.v1._index = _ib._data[int(_index * 3 + 1)];
-				_triangle.v2._index = _ib._data[int(_index * 3 + 2)];
+				_triangle.v0.index = _ib.get(_index * 3);
+				_triangle.v1.index = _ib.get(_index * 3 + 1);
+				_triangle.v2.index = _ib.get(_index * 3 + 2);
 				_triangle._update = TriangleReference.UPDATE_ALL;
 			}
 
