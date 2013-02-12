@@ -120,15 +120,6 @@ package aerys.minko.scene.node.light
             lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
         }
 		
-		public function get depthAlgorithm() : uint
-		{
-			return lightData.getLightProperty('depthAlgorithm');
-		}
-		public function set depthAlgorithm(value : uint) : void
-		{
-			lightData.setLightProperty('depthAlgorithm', value);
-		}
-		
 		public function DirectionalLight(color				: uint		= 0xFFFFFFFF,
 									 	 diffuse			: Number	= .6,
 										 specular			: Number	= .8,

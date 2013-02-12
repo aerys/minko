@@ -25,10 +25,10 @@ package aerys.minko.type.math
 
 		private static const FACTORY			: Factory	= Factory.getFactory(Vector4);
 
-		private static const UPDATE_NONE		: uint		= 0;
-		private static const UPDATE_LENGTH		: uint		= 1;
-		private static const UPDATE_LENGTH_SQ	: uint		= 2;
-		private static const UPDATE_ALL			: uint		= 3; // UPDATE_LENGTH | UPDATE_LENGTH_SQ;
+		minko_math static const UPDATE_NONE			: uint		= 0;
+		minko_math static const UPDATE_LENGTH		: uint		= 1;
+		minko_math static const UPDATE_LENGTH_SQ	: uint		= 2;
+		minko_math static const UPDATE_ALL			: uint		= 3; // UPDATE_LENGTH | UPDATE_LENGTH_SQ;
 		
 		private static const DATA_DESCRIPTOR	: Object	= {
 			'x'	: 'x',
@@ -38,8 +38,7 @@ package aerys.minko.type.math
 		};
 
 		minko_math var _vector	: Vector3D	= new Vector3D();
-
-		private var _update		: uint		= 0;
+		minko_math var _update		: uint		= 0;
 
 		private var _length		: Number	= 0.;
 		private var _lengthSq	: Number	= 0.;

@@ -25,6 +25,21 @@ package aerys.minko.type.loader
 			initializeSignals();
 		}
 		
+		public function get materials():Object
+		{
+			return _materials;
+		}
+
+		public function get textures():Object
+		{
+			return _textures;
+		}
+
+		public function get geometries():Object
+		{
+			return _geometries;
+		}
+
 		private function initialize():void
 		{
 			_geometries		= {};
