@@ -364,8 +364,7 @@ package aerys.minko.type.math
 
 		public function toString() : String
 		{
-			return "(" + _a + ", " + _b + ", "
-				   + _c + ", " + _d + ")";
+			return '(' + _a + ', ' + _b + ', ' + _c + ', ' + _d + ')';
 		}
 
 		private function createGaussianFromPlanes(plane1 : Plane, 

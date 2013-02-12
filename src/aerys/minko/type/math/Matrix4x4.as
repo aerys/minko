@@ -509,6 +509,7 @@ package aerys.minko.type.math
 			out ||= new Vector4();
 			
 			_matrix.copyColumnTo(column, out._vector);
+			out._update |= Vector4.UPDATE_ALL;
 			
 			if (!out.locked)
 				out.changed.execute(out);
@@ -532,6 +533,7 @@ package aerys.minko.type.math
 			out ||= new Vector4();
 			
 			_matrix.copyColumnTo(row, out._vector);
+			out._update |= Vector4.UPDATE_ALL;
 			
 			if (!out.locked)
 				out.changed.execute(out);
@@ -611,6 +613,7 @@ package aerys.minko.type.math
 			output ||= new Vector4();
 			_matrix.copyColumnTo(3, output._vector);
 			
+			output._update |= Vector4.UPDATE_ALL;
 			output.changed.execute(output);
 			
 			return output;
@@ -639,7 +642,8 @@ package aerys.minko.type.math
 			var components 	: Vector.<Vector3D>	= _matrix.decompose();
 			
 			output ||= new Vector4();
-			output._vector = components[1];			
+			output._vector = components[1];
+			output._update |= Vector4.UPDATE_ALL;
 			output.changed.execute(output, null);
 			
 			return output;
@@ -672,6 +676,7 @@ package aerys.minko.type.math
 			
 			output ||= new Vector4();
 			output._vector = components[1];
+			output._update |= Vector4.UPDATE_ALL;
 			
 			return output;
 		}
@@ -682,6 +687,7 @@ package aerys.minko.type.math
 			
 			output ||= new Vector4();
 			output._vector = components[2];
+			output._update |= Vector4.UPDATE_ALL;
 			
 			output.changed.execute(output, null);
 			
@@ -716,6 +722,7 @@ package aerys.minko.type.math
 		{
 			output ||= new Vector4();
 			_matrix.copyColumnTo(2, output._vector);
+			output._update |= Vector4.UPDATE_ALL;
 			
 			output.changed.execute(output);
 			
@@ -726,6 +733,7 @@ package aerys.minko.type.math
 		{
 			output ||= new Vector4();
 			_matrix.copyColumnTo(0, output._vector);
+			output._update |= Vector4.UPDATE_ALL;
 			
 			output.changed.execute(output);
 			
@@ -736,6 +744,7 @@ package aerys.minko.type.math
 		{
 			output ||= new Vector4();
 			_matrix.copyColumnTo(1, output._vector);
+			output._update |= Vector4.UPDATE_ALL;
 			
 			output.changed.execute(output);
 			

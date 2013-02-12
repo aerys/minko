@@ -29,8 +29,6 @@ package aerys.minko.scene.node
 	 */
 	public class Mesh extends AbstractVisibleSceneNode implements ITaggable
 	{
-		public static const DEFAULT_MATERIAL	: Material	= new BasicMaterial();
-		
 		private var _ctrl				: MeshController;
 		private var _properties			: DataProvider;
 		private var _material			: Material;
@@ -234,7 +232,7 @@ package aerys.minko.scene.node
 				this.name = name;
 			
 			this.geometry	= geometry;
-			this.material	= material || DEFAULT_MATERIAL;
+			this.material	= material;
 			_tag			= tag;
 		}
 		

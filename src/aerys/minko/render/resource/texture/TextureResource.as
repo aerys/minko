@@ -16,6 +16,8 @@ package aerys.minko.render.resource.texture
 	 */
 	public class TextureResource implements ITextureResource
 	{
+		public static const EMPTY_BITMAPDATA			: BitmapData	= new BitmapData(1, 1, false, 0);
+		
 		private static const MAX_SIZE					: uint		= 2048;
 		private static const TMP_MATRIX					: Matrix	= new Matrix();
 		private static const FORMAT_BGRA				: String	= 'bgra';
@@ -173,7 +175,7 @@ package aerys.minko.render.resource.texture
 			{
 				if (_texture)
 					_texture.dispose();
-				
+								
 				_texture = context.createTexture(
 					_width,
 					_height,
