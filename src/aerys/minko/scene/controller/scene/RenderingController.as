@@ -438,7 +438,7 @@ package aerys.minko.scene.controller.scene
 			removeMesh(mesh);
 		}
 		
-		private function removeMesh(mesh : Mesh) : void
+		public function removeMesh(mesh : Mesh) : void
 		{
 			var meshBindings : DataBindings = mesh.bindings;
 			

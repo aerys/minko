@@ -11,26 +11,13 @@ package aerys.minko.render.material.phong
 	{
 		private var _diffuse	: LightAwareDiffuseShaderPart;
 		private var _phong		: PhongShaderPart;
-		private var _shadowMap	: ITextureResource;
-		
-		public function get shadowMap():ITextureResource
-		{
-			return _shadowMap;
-		}
 
-		public function set shadowMap(value:ITextureResource):void
-		{
-			_shadowMap = value;
-		}
-		
 		public function PhongShader(renderTarget	: RenderTarget		= null,
-									priority		: Number			= 0.,
-									shadowMap		: ITextureResource	= null)
+									priority		: Number			= 0.)
 		{
 			super(renderTarget, priority);
 			
 			// init shader parts
-			_shadowMap	= shadowMap;
 			_diffuse	= new LightAwareDiffuseShaderPart(this);
 			_phong		= new PhongShaderPart(this);
 		}
@@ -38,7 +25,7 @@ package aerys.minko.render.material.phong
 		override protected function getPixelColor() : SFloat
 		{
 			var color	 : SFloat = _diffuse.getDiffuseColor();
-			var lighting : SFloat = _phong.getLightingColor(_shadowMap);
+			var lighting : SFloat = _phong.getLightingColor();
 			
 			color = float4(multiply(lighting, color.rgb), color.a);
 			

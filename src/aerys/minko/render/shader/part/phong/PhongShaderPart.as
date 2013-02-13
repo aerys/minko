@@ -45,7 +45,6 @@ package aerys.minko.render.shader.part.phong
 		private var _dpShadowMapAttenuation			: DPShadowMapAttenuationShaderPart;
 		private var _varianceShadowMapAttenuation	: VarianceShadowMapAttenuationShaderPart;
 		private var _exponentialShadowMapAttenuation: ExponentialShadowMapAttenuationShaderPart;
-		private var _shadowMap:ITextureResource;
 		
 		private function get infinitePart() : InfiniteShaderPart
 		{
@@ -98,26 +97,24 @@ package aerys.minko.render.shader.part.phong
 		private function get varianceShadowMapAttenuation() : VarianceShadowMapAttenuationShaderPart
 		{
 			return _varianceShadowMapAttenuation
-				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main, _shadowMap));
+				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main));
 		}
 		
 		private function get exponentialShadowMapAttenuation() : ExponentialShadowMapAttenuationShaderPart
 		{
 			return _exponentialShadowMapAttenuation
-				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main, _shadowMap));
+				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main));
 		}
 		
-		public function PhongShaderPart(main : Shader, shadowMap : ITextureResource = null)
+		public function PhongShaderPart(main : Shader)
 		{
 			super(main);
-			_shadowMap = shadowMap;
 		}
 		
-		public function getLightingColor(shadowMap : ITextureResource = null) : SFloat
+		public function getLightingColor() : SFloat
 		{
 			var lightValue : SFloat = float3(0, 0, 0);
 			
-			_shadowMap ||= shadowMap;
 			lightValue.incrementBy(getStaticLighting());
 			lightValue.incrementBy(getDynamicLighting());
 			

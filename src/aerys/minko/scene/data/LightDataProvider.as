@@ -15,6 +15,11 @@ package aerys.minko.scene.data
 			_lightId = lightId;
 		}
 		
+		public function get lightId():int
+		{
+			return _lightId;
+		}
+
 		public function setLightProperty(name		: String,
 										 newValue	: Object) : LightDataProvider
 		{

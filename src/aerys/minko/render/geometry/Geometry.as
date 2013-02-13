@@ -925,7 +925,7 @@ package aerys.minko.render.geometry
 			if (numVertexStreams != 0 && geometry.numVertexStreams != 0
 				&& numVertexStreams != geometry.numVertexStreams)
 			{
-				throw new Error('Both geometry must have the same number of vertex streams.');
+				throw new Error('Both geometries must have the same number of vertex streams.');
 			}
 
 			if (numVertexStreams != 0)
