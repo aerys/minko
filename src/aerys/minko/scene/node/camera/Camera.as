@@ -59,8 +59,12 @@ package aerys.minko.scene.node.camera
 			var zNear			: Number		= _cameraData.zNear;
 			var zFar			: Number		= _cameraData.zFar;
 			var fovDiv2			: Number		= _cameraData.fieldOfView * 0.5;
-			var width			: Number		= sceneBindings.getProperty('viewportWidth');
-			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			var width			: Number		= sceneBindings.propertyExists('viewportWidth')
+                ? sceneBindings.getProperty('viewportWidth')
+                : 0.;
+			var height			: Number		= sceneBindings.propertyExists('viewportHeight')
+                ? sceneBindings.getProperty('viewportHeight')
+                : 0.;
 			var xPercent		: Number		= 2.0 * (x / width - 0.5);
 			var yPercent 		: Number		= 2.0 * (y / height - 0.5);
 			var dx				: Number 		= Math.tan(fovDiv2) * xPercent * (width / height);
