@@ -149,13 +149,20 @@ package aerys.minko.render.material.phong
 			
 			if (lightType != PointLight.LIGHT_TYPE)
 			{
-				var textureResource : ITextureResource	= tryAddShadowBlurPass(sceneBindings, lightId);
-				var renderTarget	: RenderTarget		= new RenderTarget(
+				var textureResource : ITextureResource	= null;
+				var renderTarget	: RenderTarget		= null;
+				
+				if (willAddShadowBlurPass(sceneBindings, lightId))
+					textureResource	= getLightProperty(sceneBindings, lightId, 'rawShadowMap');
+				else
+					textureResource	= getLightProperty(sceneBindings, lightId, 'shadowMap');
+				renderTarget		= new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				
 				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1, renderTarget));
-				
+				textureResource = tryAddShadowBlurPass(sceneBindings, lightId);
+
 				if (_renderingShader is PhongShader)
 					PhongShader(_renderingShader).shadowMap = textureResource;
 			}
@@ -186,12 +193,19 @@ package aerys.minko.render.material.phong
 			
 			if (lightType != PointLight.LIGHT_TYPE)
 			{
-				var textureResource : ITextureResource	= tryAddShadowBlurPass(sceneBindings, lightId);
-				var renderTarget	: RenderTarget		= new RenderTarget(
+				var textureResource : ITextureResource	= null;
+				var renderTarget	: RenderTarget		= null;
+				
+				if (willAddShadowBlurPass(sceneBindings, lightId))
+					textureResource	= getLightProperty(sceneBindings, lightId, 'rawShadowMap');
+				else
+					textureResource	= getLightProperty(sceneBindings, lightId, 'shadowMap');
+				renderTarget		= new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				
 				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1, renderTarget));
+				textureResource = tryAddShadowBlurPass(sceneBindings, lightId);
 				
 				if (_renderingShader is PhongShader)
 					PhongShader(_renderingShader).shadowMap = textureResource;
@@ -213,6 +227,14 @@ package aerys.minko.render.material.phong
 			}
 		}
 		
+		private function willAddShadowBlurPass(sceneBindings	: DataBindingsProxy,
+							    			   lightId 			: uint) : Boolean
+		{
+			var quality	: uint	= getLightProperty(sceneBindings, lightId, 'shadowQuality');
+			
+			return _scene && quality != ShadowMappingQuality.HARD;
+		}
+		
 		private function tryAddShadowBlurPass(sceneBindings	: DataBindingsProxy,
 											  lightId 		: uint) : ITextureResource
 		{
@@ -227,25 +249,13 @@ package aerys.minko.render.material.phong
 			if (controllers.length == 0)
 				return texture;
 			
-			var blurQuality		: uint							= BlurQuality.LOW;
-			switch (quality)
-			{
-				case ShadowMappingQuality.MEDIUM :
-					blurQuality = BlurQuality.NORMAL;
-					break;
-				case ShadowMappingQuality.HIGH :
-					blurQuality = BlurQuality.HIGH;
-					break;
-				case ShadowMappingQuality.VERY_HIGH :
-					blurQuality = BlurQuality.VERY_HIGH;
-					break;
-			}
+			var numPasses		: uint							= quality >> 1;
 			var destTexture		: TextureResource				= getLightProperty(sceneBindings, lightId, 'shadowMap');
 			var renderingCtrl	: RenderingController			= RenderingController(controllers[0]);
 			var renderTarget	: RenderTarget					= new RenderTarget(destTexture.width, destTexture.height, destTexture, 0, 0xffffffff, true, quality >> 1);
 			var passes			: Vector.<Shader>				= BlurEffect.getBlurPasses(
-				blurQuality, 1, 1,
-				texture, renderTarget, Number.POSITIVE_INFINITY);
+				texture.width, quality, 1,
+				texture, renderTarget, lightId + 2);
 			var material		: Material						= new Material(new Effect().setExtraPasses(passes));
 			var mesh			: Mesh							= new Mesh(QuadGeometry.quadGeometry, material);
 			
