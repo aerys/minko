@@ -706,6 +706,9 @@ package aerys.minko.render.geometry.stream
 										  format 	: VertexFormat,
 										  data 		: Vector.<Number>) : VertexStream
 		{
+            if (data.length % (format.numBytesPerVertex >> 2))
+                throw new Error('Invalid data length.');
+            
 			var numValues 	: uint 			= data.length;
 			var stream		: VertexStream	= new VertexStream(usage, format);
 			var bytes		: ByteArray 	= stream._data;
