@@ -238,7 +238,7 @@ package aerys.minko.scene.node
 		public function addChildAt(node : ISceneNode, position : uint) : Group
 		{
 			if (!node)
-				throw new Error('Parameter \'scene\' must not be null.');
+				throw new Error('Parameter \'node\' must not be null.');
 
 			node.parent = this;
 
