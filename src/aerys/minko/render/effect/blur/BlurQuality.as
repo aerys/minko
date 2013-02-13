@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.effect.blur
+package aerys.minko.render.effect.blur
 {
 	public final class BlurQuality
 	{
