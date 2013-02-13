@@ -5,7 +5,7 @@ package aerys.minko.scene.node
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.primitive.BillboardsGeometry;
 	import aerys.minko.render.material.Material;
-	import aerys.minko.render.material.sprite.SpriteShader;
+	import aerys.minko.render.shader.sprite.SpriteShader;
 	
 	use namespace minko_scene;
 	

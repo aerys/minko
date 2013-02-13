@@ -1,4 +1,4 @@
-package aerys.minko.render.material.vertex
+package aerys.minko.render.shader.vertex
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicShader;

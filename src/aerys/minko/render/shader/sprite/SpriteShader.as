@@ -1,4 +1,4 @@
-package aerys.minko.render.material.sprite
+package aerys.minko.render.shader.sprite
 {
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;

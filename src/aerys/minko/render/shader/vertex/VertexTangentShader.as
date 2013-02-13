@@ -1,9 +1,8 @@
-package aerys.minko.render.material.vertex
+package aerys.minko.render.shader.vertex
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
-	import aerys.minko.render.shader.Shader;
 	
 	public class VertexTangentShader extends BasicShader
 	{
