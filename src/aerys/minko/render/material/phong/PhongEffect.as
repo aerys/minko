@@ -10,8 +10,8 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.effect.blur.BlurEffect;
-	import aerys.minko.render.shader.effect.blur.BlurQuality;
+	import aerys.minko.render.effect.blur.BlurEffect;
+	import aerys.minko.render.effect.blur.BlurQuality;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
@@ -161,10 +161,7 @@ package aerys.minko.render.material.phong
 				);
 				
 				passes.push(new VarianceShadowMapShader(lightId, 4, lightId + 1, renderTarget));
-				textureResource = tryAddShadowBlurPass(sceneBindings, lightId);
-
-				if (_renderingShader is PhongShader)
-					PhongShader(_renderingShader).shadowMap = textureResource;
+				tryAddShadowBlurPass(sceneBindings, lightId);
 			}
 			else
 			{
@@ -205,10 +202,7 @@ package aerys.minko.render.material.phong
 				);
 				
 				passes.push(new ExponentialShadowMapShader(lightId, 4, lightId + 1, renderTarget));
-				textureResource = tryAddShadowBlurPass(sceneBindings, lightId);
-				
-				if (_renderingShader is PhongShader)
-					PhongShader(_renderingShader).shadowMap = textureResource;
+				tryAddShadowBlurPass(sceneBindings, lightId);
 			}
 			else
 			{
