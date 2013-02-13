@@ -64,12 +64,12 @@ package aerys.minko.render.geometry
 		
 		private var _name			: String;
 		
-		public function get name():String
+		public function get name() : String
 		{
 			return _name;
 		}
 
-		public function set name(value:String):void
+		public function set name(value : String) : void
 		{
 			_name = value;
 		}
