@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.part.phong.attenuation
 {
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
@@ -14,12 +15,13 @@ package aerys.minko.render.shader.part.phong.attenuation
 	
 	public final class ExponentialShadowMapAttenuationShaderPart extends LightAwareShaderPart implements IAttenuationShaderPart
 	{
-		private static const EPSILON			: Number	= 0.0001;
 		private var _depthShaderPart			: IDepthShaderPart;
+		private var _shadowMap					: ITextureResource;
 		
-		public function ExponentialShadowMapAttenuationShaderPart(main:Shader)
+		public function ExponentialShadowMapAttenuationShaderPart(main : Shader, shadowMap : ITextureResource = null)
 		{
 			super(main);
+			_shadowMap = shadowMap;
 		}
 		
 		private function createDepthShaderPart() : void
@@ -34,14 +36,23 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var lightType					: uint		= sceneBindings.getProperty(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
-			var depthMap					: SFloat	= getLightTextureParameter(
-				lightId,
-				'shadowMap',
-				SamplerFiltering.LINEAR,
-				SamplerMipMapping.LINEAR,
-				SamplerWrapping.CLAMP,
-				dimension
-			);
+			var depthMap					: SFloat	= null;
+			if (!_shadowMap)
+				depthMap								= getLightTextureParameter(
+					lightId,
+					'shadowMap',
+					SamplerFiltering.LINEAR,
+					SamplerMipMapping.DISABLE,
+					SamplerWrapping.CLAMP,
+					dimension
+				);
+			else
+				depthMap								= getTexture(_shadowMap,
+					SamplerFiltering.LINEAR,
+					SamplerMipMapping.DISABLE,
+					SamplerWrapping.CLAMP,
+					dimension
+				);
 			
 			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
 			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);
