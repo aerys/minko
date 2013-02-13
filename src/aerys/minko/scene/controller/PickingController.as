@@ -3,7 +3,7 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.material.picking.PickingShader;
+	import aerys.minko.render.shader.picking.PickingShader;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.scene.SceneIterator;

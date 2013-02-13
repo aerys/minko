@@ -1,4 +1,4 @@
-package aerys.minko.render.material.picking
+package aerys.minko.render.shader.picking
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.SFloat;
