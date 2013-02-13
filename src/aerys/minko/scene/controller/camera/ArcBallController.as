@@ -47,13 +47,25 @@ package aerys.minko.scene.controller.camera
 		
 		private var _inertia			: Number	= 1.0;
 		private var _interpolationSpeed	: Number	= 1;
+		private var _speed				: Number	= 1;
 		
+		public function get speed() : Number
+		{
+			return _speed;
+		}
+
+		public function set speed(value : Number) : void
+		{
+			_speed = value;
+			_update = true;
+		}
+
 		public function get inertia() : Number
 		{
 			return _inertia;
 		}
 
-		public function set inertia(value : Number):void
+		public function set inertia(value : Number) : void
 		{
 			_inertia = value;
 		}
@@ -63,7 +75,7 @@ package aerys.minko.scene.controller.camera
 			return _interpolationSpeed;
 		}
 
-		public function set interpolationSpeed(value : Number):void
+		public function set interpolationSpeed(value : Number) : void
 		{
 			_interpolationSpeed = value;
 		}
@@ -279,9 +291,9 @@ package aerys.minko.scene.controller.camera
 				}
 				
 				_position.set(
-					_lookAt.x + _distance * Math.cos(_yaw) * Math.sin(_pitch),
-					_lookAt.y + _distance * Math.cos(_pitch),
-					_lookAt.z + _distance * Math.sin(_yaw) * Math.sin(_pitch)
+					_speed * (_lookAt.x + _distance * Math.cos(_yaw) * Math.sin(_pitch)),
+					_speed * (_lookAt.y + _distance * Math.cos(_pitch)),
+					_speed * (_lookAt.z + _distance * Math.sin(_yaw) * Math.sin(_pitch))
 				);
 				TMP_MATRIX.lookAt(_lookAt, _position, _up);
 				
@@ -305,7 +317,7 @@ package aerys.minko.scene.controller.camera
 			if (e.buttonDown && _enabled)
 			{
 				_newYaw		+= (_mousePosition.x - e.stageX) * _yawStep;
-				_newPitch		+= (_mousePosition.y - e.stageY) * _pitchStep;
+				_newPitch	+= (_mousePosition.y - e.stageY) * _pitchStep;
 				
 				_update = true;
 			}
