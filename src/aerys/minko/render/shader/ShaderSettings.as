@@ -5,6 +5,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.binding.Signature;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.ColorMask;
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
@@ -46,6 +47,8 @@ package aerys.minko.render.shader
 		private var _stencilReadMask						: uint			= 255;
 		private var _stencilWriteMask						: uint			= 255;
 		
+		private var _colorMask			                    : uint			= 0;    
+
 		minko_render function get signature() : Signature
 		{
 			return _signature;
@@ -236,6 +239,15 @@ package aerys.minko.render.shader
 			_stencilWriteMask = value;
 		}
 		
+		public function get colorMask() : uint
+		{
+			return _colorMask;
+		}
+		public function set colorMask(value : uint) : void
+		{
+			_colorMask = value;
+		}
+		
 		public function ShaderSettings(signature : Signature)
 		{
 			_numUses								= 0;
@@ -256,6 +268,7 @@ package aerys.minko.render.shader
 			stencilReferenceValue					= 0;
 			stencilReadMask							= 255;
 			stencilWriteMask						= 255;
+			colorMask								= ColorMask.RGBA;
 		}
 		
 		public function retain() : void
@@ -342,7 +355,13 @@ package aerys.minko.render.shader
 					StencilAction.STRINGS[stencilActionOnBothPass],
 					StencilAction.STRINGS[stencilActionOnDepthFail],
 					StencilAction.STRINGS[stencilActionOnDepthPassStencilFail]
+				)
+				.setColorMask(
+					(_colorMask & ColorMask.RED)	!= 0,
+					(_colorMask & ColorMask.GREEN)	!= 0,
+					(_colorMask & ColorMask.BLUE)	!= 0,
+					(_colorMask & ColorMask.ALPHA)	!= 0
 				);
-		}		
+		}
 	}
 }
