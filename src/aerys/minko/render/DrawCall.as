@@ -68,12 +68,6 @@ package aerys.minko.render
 		private var _triangleCulling	: uint								= 0;
 		private var _triangleCullingStr	: String							= null;
 		
-		private var _colorMask			: uint								= 0;
-		private var _colorMaskR			: Boolean							= true;
-		private var _colorMaskG			: Boolean							= true;
-		private var _colorMaskB			: Boolean							= true;
-		private var _colorMaskA			: Boolean							= true;
-		
 		private var _enabled			: Boolean							= true;
 		
 		private var _depth				: Number							= 0.;
@@ -108,19 +102,6 @@ package aerys.minko.render
 		{
 			_triangleCulling = value;
 			_triangleCullingStr = TriangleCulling.STRINGS[value];
-		}
-		
-		public function get colorMask() : uint
-		{
-			return _colorMask;
-		}
-		public function set colorMask(value : uint) : void
-		{
-			_colorMask = value;
-			_colorMaskR = (value & ColorMask.RED) != 0;
-			_colorMaskG = (value & ColorMask.GREEN) != 0;
-			_colorMaskB = (value & ColorMask.BLUE) != 0;
-			_colorMaskA = (value & ColorMask.ALPHA) != 0;
 		}
 
 		public function get enabled() : Boolean
@@ -208,7 +189,6 @@ package aerys.minko.render
 			
 			triangleCulling		= TriangleCulling.FRONT;
 			blending			= Blending.NORMAL;
-			colorMask			= ColorMask.RGBA;
 		}
 		
 		 /**
@@ -300,8 +280,7 @@ package aerys.minko.render
 
 		public function apply(context : Context3DResource, previous : DrawCall) : uint
 		{
-			context.setColorMask(_colorMaskR, _colorMaskG, _colorMaskB, _colorMaskA)
-				   .setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants)
+			context.setProgramConstantsFromVector(PROGRAM_TYPE_VERTEX, 0, _vsConstants)
 				   .setProgramConstantsFromVector(PROGRAM_TYPE_FRAGMENT, 0, _fsConstants);
 			
 			var numTextures	: uint	= _fsTextures.length;
