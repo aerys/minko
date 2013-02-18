@@ -3,7 +3,10 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
+	import aerys.minko.scene.node.light.PointLight;
+	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
@@ -18,16 +21,15 @@ package aerys.minko.render.shader.part.phong.attenuation
 	 */
 	public class PCFShadowMapAttenuationShaderPart extends LightAwareShaderPart implements IAttenuationShaderPart
 	{
+		private var _depthShaderPart	: LinearDepthShaderPart;
 		public function PCFShadowMapAttenuationShaderPart(main : Shader)
 		{
 			super(main);
+			_depthShaderPart = new LinearDepthShaderPart(main);
 		}
 		
 		public function getAttenuation(lightId : uint) : SFloat
 		{
-			var lightType	: uint		= getLightConstant(lightId, 'type');
-			var screenPos	: SFloat	= interpolate(localToScreen(fsLocalPosition));
-			
 			// retrieve shadow bias
 			var shadowBias : SFloat;
 			if (meshBindings.propertyExists(PhongProperties.SHADOW_BIAS))
@@ -35,38 +37,28 @@ package aerys.minko.render.shader.part.phong.attenuation
 			else
 				shadowBias = getLightParameter(lightId, PhongProperties.SHADOW_BIAS, 1);
 			
-			// retrieve depthmap and projection matrix
-			var worldToUV	: SFloat = getLightParameter(lightId, 'worldToUV', 16);
+			// retrieve depthmap matrix
+			var lightType			: uint		= getLightConstant(lightId, 'type');
 			var depthMap	: SFloat = getLightTextureParameter(
 				lightId,
 				'shadowMap', 
 				SamplerFiltering.NEAREST, 
 				SamplerMipMapping.DISABLE, 
-				SamplerWrapping.CLAMP
+				SamplerWrapping.CLAMP,
+				lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT
 			);
 			
-			// read expected depth from shadow map, and compute current depth
-			var uv : SFloat;
-			uv = multiply4x4(vsWorldPosition, worldToUV);
-			uv = interpolate(uv);
+			var fsWorldPosition 	: SFloat 	= interpolate(vsWorldPosition);
+			var uv 					: SFloat 	= _depthShaderPart.getUV(lightId, fsWorldPosition);
+			var currentDepth 		: SFloat 	= _depthShaderPart.getDepthForAttenuation(lightId, fsWorldPosition);
+			var precomputedDepth	: SFloat 	= unpack(sampleTexture(depthMap, uv));
+			var curDepthSubBias		: SFloat 	= min(subtract(1, shadowBias), currentDepth);
+			var noShadows			: SFloat 	= lessEqual(curDepthSubBias, add(shadowBias, precomputedDepth));
+
+			if (lightType == PointLight.LIGHT_TYPE)
+				return noShadows;
 			
-			var currentDepth : SFloat = uv.z;
-			currentDepth = min(subtract(1, shadowBias), currentDepth);
-            
-			uv = divide(uv, uv.w);
-			
-			var outsideMap			: SFloat = notEqual(
-                0,
-                dotProduct4(notEqual(uv, saturate(uv)), notEqual(uv, saturate(uv)))
-            );
-			
-			var precomputedDepth	: SFloat = unpack(sampleTexture(depthMap, uv.xyyy));
-			
-			var curDepthSubBias		: SFloat = subtract(currentDepth, shadowBias);
-			var noShadows			: SFloat = lessEqual(curDepthSubBias, precomputedDepth);
-			
-			var quality		: uint		= getLightConstant(lightId, 'shadowQuality');
-			
+			var quality				: uint		= getLightConstant(lightId, 'shadowQuality');
 			if (quality != ShadowMappingQuality.HARD)
 			{
 				var invertSize	: SFloat			= divide(
@@ -118,14 +110,14 @@ package aerys.minko.render.shader.part.phong.attenuation
 						unpack(sampleTexture(depthMap, uvs[sampleId + 1].zw))
 					);
 					
-					var localNoShadows : SFloat = lessEqual(curDepthSubBias, precomputedDepth);
+					var localNoShadows : SFloat = lessEqual(curDepthSubBias, add(shadowBias, precomputedDepth));
 					noShadows.incrementBy(dotProduct4(localNoShadows, float4(1, 1, 1, 1)));
 				}
 				
 				noShadows.scaleBy(1 / (2 * numSamples + 1));
 			}
 			
-			return noShadows;
+			return noShadows.x;
 		}
 	}
 }
