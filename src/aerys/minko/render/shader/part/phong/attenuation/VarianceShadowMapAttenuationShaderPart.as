@@ -18,12 +18,10 @@ package aerys.minko.render.shader.part.phong.attenuation
 		private static const MIN_VARIANCE		: Number			= 0.002;
 		private static const EPSILON			: Number			= 0.0001;
 		private var _depthShaderPart			: IDepthShaderPart	= null;
-		private var _shadowMap					: ITextureResource	= null;
 		
-		public function VarianceShadowMapAttenuationShaderPart(main : Shader, shadowMap : ITextureResource = null)
+		public function VarianceShadowMapAttenuationShaderPart(main : Shader)
 		{
 			super(main);
-			_shadowMap = shadowMap;
 		}
 
 		private function createDepthShaderPart() : void
@@ -74,23 +72,14 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var lightTypeName				: String 	= LightDataProvider.getLightPropertyName('type', lightId);
 			var lightType					: uint		= sceneBindings.getProperty(lightTypeName);
 			var dimension					: uint		= lightType == PointLight.LIGHT_TYPE ? SamplerDimension.CUBE : SamplerDimension.FLAT;
-			var depthMap					: SFloat	= null;
-			if (!_shadowMap)
-				depthMap								= getLightTextureParameter(
-					lightId,
-					'shadowMap',
-					SamplerFiltering.LINEAR,
-					SamplerMipMapping.DISABLE,
-					SamplerWrapping.CLAMP,
-					dimension
-				);
-			else
-				depthMap								= getTexture(_shadowMap,
-					SamplerFiltering.LINEAR,
-					SamplerMipMapping.DISABLE,
-					SamplerWrapping.CLAMP,
-					dimension
-				);
+			var depthMap					: SFloat	= getLightTextureParameter(
+				lightId,
+				'shadowMap',
+				SamplerFiltering.LINEAR,
+				SamplerMipMapping.DISABLE,
+				SamplerWrapping.CLAMP,
+				dimension
+			);
 			
 			var worldPosition				: SFloat	= interpolate(vsWorldPosition);
 			var uv							: SFloat	= _depthShaderPart.getUV(lightId, worldPosition);

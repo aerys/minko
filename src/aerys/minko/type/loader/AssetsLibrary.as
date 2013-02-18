@@ -25,22 +25,22 @@ package aerys.minko.type.loader
 			initializeSignals();
 		}
 		
-		public function get materials():Object
+		public function get materials() : Object
 		{
 			return _materials;
 		}
 
-		public function get textures():Object
+		public function get textures() : Object
 		{
 			return _textures;
 		}
 
-		public function get geometries():Object
+		public function get geometries() : Object
 		{
 			return _geometries;
 		}
 
-		private function initialize():void
+		private function initialize() : void
 		{
 			_geometries		= {};
 			_textures		= {};
@@ -54,7 +54,7 @@ package aerys.minko.type.loader
 			_nameToLayer	= {};
 		}
 		
-		private function initializeSignals():void
+		private function initializeSignals() : void
 		{
 			_geometryAdded	= new Signal('AssetsLibrary.geometryAdded');
 			_textureAdded	= new Signal('AssetsLibrary.textureAdded');
@@ -62,22 +62,22 @@ package aerys.minko.type.loader
 			_layerAdded		= new Signal('AssetsLibrary.layerAdded');
 		}
 		
-		public function get layerAdded():Signal
+		public function get layerAdded() : Signal
 		{
 			return _layerAdded;
 		}
 
-		public function get materialAdded():Signal
+		public function get materialAdded() : Signal
 		{
 			return _materialAdded;
 		}
 
-		public function get textureAdded():Signal
+		public function get textureAdded() : Signal
 		{
 			return _textureAdded;
 		}
 
-		public function get geometryAdded():Signal
+		public function get geometryAdded() : Signal
 		{
 			return _geometryAdded;
 		}

@@ -9,12 +9,17 @@ package aerys.minko.render.material.basic
 		public static const DIFFUSE_MAP_MIPMAPPING					: String	= 'diffuseMapMipMapping';
 		public static const DIFFUSE_MAP_WRAPPING					: String	= 'diffuseMapWrapping';
         public static const DIFFUSE_MAP_FORMAT  					: String	= 'diffuseMapFormat';
+		public static const UV_SCALE								: String	= 'uvScale';
+		public static const UV_OFFSET					: String	= 'diffuseMapUvOffset';
 		
 		public static const ALPHA_THRESHOLD							: String	= 'alphaThreshold';
 		public static const ALPHA_MAP								: String	= 'alphaMap';
-		
-		public static const UV_SCALE								: String	= 'uvScale';
-		public static const UV_OFFSET								: String	= 'uvOffset';
+		public static const ALPHA_MAP_FILTERING						: String	= 'alphaMapFiltering';
+		public static const ALPHA_MAP_MIPMAPPING					: String	= 'alphaMapMipMapping';
+		public static const ALPHA_MAP_WRAPPING						: String	= 'alphaMapWrapping';
+		public static const ALPHA_MAP_FORMAT  						: String	= 'alphaMapFormat';
+		public static const ALPHA_MAP_UV_SCALE						: String	= 'alphaMapUvScale';
+		public static const ALPHA_MAP_UV_OFFSET						: String	= 'alphaMapUvOffset';
 		
 		public static const BLENDING								: String	= 'blending';
 		public static const DEPTH_TEST								: String	= 'depthTest';

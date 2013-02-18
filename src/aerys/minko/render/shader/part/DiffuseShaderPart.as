@@ -58,8 +58,14 @@ package aerys.minko.render.shader.part
 			}
 			
 			if (meshBindings.propertyExists(BasicProperties.ALPHA_MAP))
-			{
-				var alphaMap 	: SFloat 	= meshBindings.getTextureParameter(BasicProperties.ALPHA_MAP);
+			{	
+				var alphaMap 	: SFloat 	= meshBindings.getTextureParameter(
+					BasicProperties.ALPHA_MAP,
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FILTERING, 1),
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_MIPMAPPING, 0),
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_WRAPPING, 1),
+					0,
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FORMAT, 0));
 				var alphaSample	: SFloat	= sampleTexture(alphaMap, uv);
 				
 				diffuseColor = float4(diffuseColor.rgb, alphaSample.r);					

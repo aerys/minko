@@ -128,10 +128,19 @@ package aerys.minko.render.geometry.stream
 		public function deleteTriangle(triangleIndex : uint) : void
 		{
 			checkWriteUsage(this);
+						
+			_data.position = _data.length - 6;
+			var v0 : uint = _data.readShort();
+			var v1 : uint = _data.readShort();
+			var v2 : uint = _data.readShort();
 			
-			_data.position = 0;
-			_data.writeBytes(_data, triangleIndex * 12, 12);
-			_data.length -= 12;
+			_data.position = triangleIndex * 12;
+			_data.writeShort(v0);
+			_data.writeShort(v1);
+			_data.writeShort(v2);
+			
+//			_data.writeBytes(_data, triangleIndex * 12, 12);
+			_data.length -= 6;
 			_data.position = 0;
 			
 			invalidate();
