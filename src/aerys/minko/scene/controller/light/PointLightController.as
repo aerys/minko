@@ -20,7 +20,13 @@ package aerys.minko.scene.controller.light
 		
 		public function PointLightController()
 		{
-			super(PointLight, ShadowMappingType.CUBE | ShadowMappingType.DUAL_PARABOLOID | ShadowMappingType.VARIANCE | ShadowMappingType.EXPONENTIAL);
+			super(
+				PointLight, 
+				ShadowMappingType.PCF
+				| ShadowMappingType.DUAL_PARABOLOID
+				| ShadowMappingType.VARIANCE
+				| ShadowMappingType.EXPONENTIAL
+			);
 			
 			initialize();
 		}

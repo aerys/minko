@@ -4,14 +4,14 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.DataBindingsProxy;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.effect.blur.BlurEffect;
+	import aerys.minko.render.effect.blur.BlurQuality;
 	import aerys.minko.render.geometry.primitive.QuadGeometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.effect.blur.BlurEffect;
-	import aerys.minko.render.effect.blur.BlurQuality;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
@@ -51,17 +51,18 @@ package aerys.minko.render.material.phong
 				
 				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
 				{
-					var shadowMappingType : uint = getLightProperty(
+					var shadowMappingType 	: uint	= getLightProperty(
 						sceneBindings, lightId, 'shadowCastingType'
 					);
+					var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
 					
 					switch (shadowMappingType)
 					{
 						case ShadowMappingType.PCF:
-							pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
-							break ;
-						case ShadowMappingType.CUBE:
-							pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+							if (lightType == PointLight.LIGHT_TYPE)
+								pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+							else
+								pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
 							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
@@ -129,11 +130,11 @@ package aerys.minko.render.material.phong
 			var textureSize	: uint					= cubeTexture.size;
 			
 			for (var i : uint = 0; i < 6; ++i)
-				passes.push(new CubeShadowMapShader(
+				passes.push(new PCFShadowMapShader(
 					lightId,
-					i,
 					lightId + .1 * i,
-					new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
+					new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff),
+					i
 				));
 		}
 		

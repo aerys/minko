@@ -89,28 +89,29 @@ package aerys.minko.scene.controller.light
 					break;
 				
 				case ShadowMappingType.PCF:
-					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
-						&& shadowMapSize <= 2048))
-						throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
-					
-					shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
-					lightData.setLightProperty('shadowMap', shadowMap);
+					if (lightType == PointLight.LIGHT_TYPE)
+					{
+						if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
+							&& shadowMapSize <= 1024))
+							throw new Error(shadowMapSize + ' is an invalid size for cubic shadow maps');
+						
+						shadowMap = new CubeTextureResource(shadowMapSize);
+						lightData.setLightProperty('shadowMap', shadowMap);
+					}
+					else
+					{
+						if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
+							&& shadowMapSize <= 2048))
+							throw new Error(shadowMapSize + ' is an invalid size for a shadow map');
+						
+						shadowMap = new TextureResource(shadowMapSize, shadowMapSize);
+						lightData.setLightProperty('shadowMap', shadowMap);
+					}
 					break;
-				
-				case ShadowMappingType.CUBE:
-					if (!((shadowMapSize & (~shadowMapSize + 1)) == shadowMapSize
-						&& shadowMapSize <= 1024))
-						throw new Error(shadowMapSize + ' is an invalid size for cubic shadow maps');
-					
-					shadowMap = new CubeTextureResource(shadowMapSize);
-					lightData.setLightProperty('shadowMap', shadowMap);
-					break ;
-				
 				case ShadowMappingType.VARIANCE:
 				case ShadowMappingType.EXPONENTIAL:
 					pushVsmOrEsm(lightType, shadowMapSize, shadowMap);
-					break ;
-				
+					break;
 				case ShadowMappingType.DUAL_PARABOLOID:
 //					throw new Error('Dual paraboloïd shadow mapping is yet to be implemented.');
 					

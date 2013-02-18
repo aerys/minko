@@ -7,8 +7,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
-	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.light.SpotLight;
+	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	
@@ -19,17 +18,21 @@ package aerys.minko.render.material.phong
         
 		private var _lightId				: uint;
 		private var _clipspacePosition		: SFloat;
+		private var _depthShaderPart		: LinearDepthShaderPart;
+		private var _side					: uint;
 		
 		public function PCFShadowMapShader(lightId		: uint,
 										   priority		: Number,
-										   renderTarget	: RenderTarget)
+										   renderTarget	: RenderTarget,
+										   side			: uint = 4)
 		{
 			super(renderTarget, priority);
 			
-			_lightId = lightId;
-			
-			_vertexAnimationPart = new VertexAnimationShaderPart(this);
-			_diffusePart = new DiffuseShaderPart(this);
+			_vertexAnimationPart 	= new VertexAnimationShaderPart(this);
+			_depthShaderPart		= new LinearDepthShaderPart(this);
+			_diffusePart 			= new DiffuseShaderPart(this);
+			_lightId 				= lightId;
+			_side					= side;
 		}
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
@@ -45,38 +48,15 @@ package aerys.minko.render.material.phong
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			var lightTypeName		: String = LightDataProvider.getLightPropertyName(
-                'type', _lightId
-            );
-			var worldToScreenName	: String = LightDataProvider.getLightPropertyName(
-                'worldToScreen', _lightId
-            );
-			
-			var lightType			: uint	 = sceneBindings.getProperty(lightTypeName);
-			var worldToScreen		: SFloat = sceneBindings.getParameter(worldToScreenName, 16);
-			var vertexPosition		: SFloat = localToWorld(
-                _vertexAnimationPart.getAnimatedVertexPosition()
-            );
-			
-			_clipspacePosition = multiply4x4(vertexPosition, worldToScreen);
-			
-			if (lightType == SpotLight.LIGHT_TYPE)
-				return float4(
-                    _clipspacePosition.xy,
-                    multiply(_clipspacePosition.z, _clipspacePosition.w),
-                    _clipspacePosition.w
-                );
-			else
-				return _clipspacePosition;
+			return _depthShaderPart.getVertexPosition(
+				_lightId,
+				_vertexAnimationPart.getAnimatedVertexPosition(),
+				_side
+			);
 		}
 		
-		/**
-		 * @see http://www.mvps.org/directx/articles/linear_z/linearz.htm Linear Z-buffering
-		 */		
 		override protected function getPixelColor() : SFloat
 		{
-			var iClipspacePosition	: SFloat = interpolate(_clipspacePosition);
-			
 			if (meshBindings.propertyExists(BasicProperties.ALPHA_THRESHOLD))
 			{
 				var diffuse			: SFloat	= _diffusePart.getDiffuseColor();
@@ -87,7 +67,7 @@ package aerys.minko.render.material.phong
 				kill(subtract(0.5, lessThan(diffuse.w, alphaThreshold)));
 			}
 			
-			return pack(iClipspacePosition.z);
+			return pack(_depthShaderPart.getPixelColor(_lightId));
 		}
 	}
 }
