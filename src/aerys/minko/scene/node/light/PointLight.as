@@ -72,7 +72,19 @@ package aerys.minko.scene.node.light
 			if (lightData.getLightProperty('attenuationEnabled') != (v != 0))
 				lightData.setLightProperty('attenuationEnabled', v != 0);
 		}
-		
+		public function get attenuationPolynomial() : Vector4
+		{
+			return lightData.getLightProperty('attenuationPolynomial');
+		}
+		public function set attenuationPolynomial(value : Vector4) : void
+		{
+			lightData.setLightProperty('attenuationPolynomial', value);
+			
+			var notEqual	: Boolean = value.equals(Vector4.ZERO);
+			if (lightData.getLightProperty('attenuationEnabled') != notEqual)
+				lightData.setLightProperty('attenuationEnabled', notEqual);
+		}
+
 		public function get shadowMapSize() : uint
 		{
 			return lightData.getLightProperty('shadowMapSize');

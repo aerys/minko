@@ -10,6 +10,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.phong.attenuation.HardConicAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.IAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.PCFShadowMapAttenuationShaderPart;
+	import aerys.minko.render.shader.part.phong.attenuation.PolynomialAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.SmoothConicAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.attenuation.VarianceShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.InfiniteShaderPart;
@@ -35,6 +36,7 @@ package aerys.minko.render.shader.part.phong
 		private var _infinitePart					: InfiniteShaderPart;
 		private var _localizedPart					: LocalizedShaderPart;
 		private var _distanceAttenuationPart		: DistanceAttenuationShaderPart;
+		private var _polynomialAttenuationPart		: PolynomialAttenuationShaderPart;
 		private var _smoothConicAttenuationPart		: SmoothConicAttenuationShaderPart;
 		private var _hardConicAttenuationPart		: HardConicAttenuationShaderPart;
 		private var _matrixShadowMapAttenuation		: PCFShadowMapAttenuationShaderPart;
@@ -58,6 +60,12 @@ package aerys.minko.render.shader.part.phong
 		{
 			_distanceAttenuationPart ||= new DistanceAttenuationShaderPart(main);
 			return _distanceAttenuationPart;
+		}
+		
+		private function get polynomialAttenuationPart() : PolynomialAttenuationShaderPart
+		{
+			_polynomialAttenuationPart ||= new PolynomialAttenuationShaderPart(main);
+			return _polynomialAttenuationPart;
 		}
 		
 		private function get smoothConicAttenuationPart() : SmoothConicAttenuationShaderPart
@@ -270,7 +278,12 @@ package aerys.minko.render.shader.part.phong
 			}
 			
 			if (isAttenuated)
-				contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+			{
+				if (lightPropertyExists(lightId, 'attenuationPolynomial'))
+					contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
+				else
+					contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+			}
 			
 			if (computeShadows)
 			{
@@ -330,7 +343,12 @@ package aerys.minko.render.shader.part.phong
 			}
 			
 			if (isAttenuated)
-				contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+			{
+				if (lightPropertyExists(lightId, 'attenuationPolynomial'))
+					contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
+				else
+					contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+			}
 			
 			if (lightHasSmoothEdge)
 				contribution.scaleBy(smoothConicAttenuationPart.getAttenuation(lightId));
