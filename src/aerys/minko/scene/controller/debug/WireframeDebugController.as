@@ -37,7 +37,10 @@ package aerys.minko.scene.controller.debug
 		private function targetAddedHandler(ctrl	: WireframeDebugController,
 											target	: Mesh) : void
 		{
-			target.added.add(addedHandler);
+			if (target.scene)
+				addedHandler(target, target.parent);
+			else
+				target.added.add(addedHandler);
 			target.removed.add(removedHandler);
 		}
 		
