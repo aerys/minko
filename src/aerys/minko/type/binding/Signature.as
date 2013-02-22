@@ -134,6 +134,9 @@ package aerys.minko.type.binding
 		
 		private function compare(value1 : Object, value2 : Object) : Boolean
 		{
+			if (value1 == null && value2 == null)
+				return true;
+			
 			if ((value1 == null && value2 != null) || (value1 != null && value2 == null))
 				return false;
 			
