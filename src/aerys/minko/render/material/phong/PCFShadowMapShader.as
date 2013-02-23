@@ -39,7 +39,7 @@ package aerys.minko.render.material.phong
 		{
 			super.initializeSettings(settings);
 
-			settings.blending = Blending.NORMAL;
+			settings.blending = Blending.OPAQUE;
 			settings.enabled = meshBindings.getProperty(PhongProperties.CAST_SHADOWS, false);
 			settings.triangleCulling = meshBindings.getProperty(
                 BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK

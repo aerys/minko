@@ -38,7 +38,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 				shadowBias = getLightParameter(lightId, PhongProperties.SHADOW_BIAS, 1);
 			
 			// retrieve depthmap matrix
-			var lightType			: uint		= getLightConstant(lightId, 'type');
+			var lightType			: uint		= getLightProperty(lightId, 'type');
 			var depthMap	: SFloat = getLightTextureParameter(
 				lightId,
 				'shadowMap', 
@@ -58,7 +58,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			if (lightType == PointLight.LIGHT_TYPE)
 				return noShadows;
 			
-			var quality				: uint		= getLightConstant(lightId, 'shadowQuality');
+			var quality				: uint		= getLightProperty(lightId, 'shadowQuality');
 			if (quality != ShadowMappingQuality.HARD)
 			{
 				var invertSize	: SFloat			= divide(

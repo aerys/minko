@@ -15,6 +15,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderInstance;
 	import aerys.minko.render.shader.ShaderSettings;
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
@@ -50,6 +51,9 @@ package aerys.minko.scene.controller.scene
 		private var _scene						: Scene;
 		
 		private var _numTriangles				: uint;
+		private var _numEnabledPasses			: uint;
+		private var _numDrawCalls				: uint;
+		private var _numEnabledDrawCalls		: uint;
 		
 		private var _stashedPropertyChanges		: Dictionary;
 		
@@ -57,11 +61,9 @@ package aerys.minko.scene.controller.scene
 		
 		private var _passes						: Array;
 		private var _passesAreSorted			: Boolean;
-		private var _numEnabledPasses			: uint;
 		
 		private var _drawCallToPassInstance		: Dictionary;
 		private var _passInstanceToDrawCalls	: Dictionary;
-		private var _numDrawCalls				: uint;
 		
 		private var _meshToDrawCalls			: Dictionary;
 		private var _meshToEffectInstance		: Dictionary;
@@ -102,12 +104,19 @@ package aerys.minko.scene.controller.scene
 		
 		public function get numEnabledPasses() : uint
 		{
-			return _numEnabledPasses;
+			return _postProcessingScene
+				? _numEnabledPasses + _postProcessingScene.numEnabledPasses
+				: _numEnabledPasses;
 		}
 		
 		public function get numDrawCalls() : uint
 		{
 			return _numDrawCalls;
+		}
+		
+		public function get numEnabledDrawCalls() : uint
+		{
+			return _numEnabledDrawCalls;
 		}
 		
 		public function get numTriangles() : uint
@@ -259,10 +268,11 @@ package aerys.minko.scene.controller.scene
 			
 			// apply passes
 			var previous 		: ShaderInstance	= null;
-			var callTriangles	: uint				= 0;
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
+			
+			_numEnabledDrawCalls = 0;
 			
 			for (passId = 0; passId < numPasses; ++passId)
 			{
@@ -302,13 +312,12 @@ package aerys.minko.scene.controller.scene
 				
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
+					_numDrawCalls++;
 					call = calls[j];
-					callTriangles = call.apply(context, previousCall);
-					
-					if (callTriangles != 0)
+					if (call.enabled)
 					{
-						_numDrawCalls++;
-						numTriangles += callTriangles;
+						_numEnabledDrawCalls++;
+						numTriangles += call.apply(context, previousCall);
 						previousCall = call;
 					}
 				}
@@ -519,32 +528,66 @@ package aerys.minko.scene.controller.scene
 			var effectInstance	: EffectInstance	= effect.fork(sceneBindings, meshBindings);
 			var numPasses		: uint				= effectInstance.numPasses;
 			var drawCalls 		: Vector.<DrawCall>	= new <DrawCall>[];
+            var passInstance    : ShaderInstance    = null;
             
-			_meshToEffectInstance[mesh] = effectInstance;
+            // try to fork every shader
+            var instances   : Vector.<ShaderInstance>   = new <ShaderInstance>[];
+            var fallback    : Boolean                   = false;
+            var passId      : int                       = 0;
+            
+            while (passId < numPasses)
+            {
+                var pass    : Shader    = effectInstance.getPass(passId);
+                
+                passInstance = pass.fork(sceneBindings, meshBindings);
+                if (!passInstance)
+                {
+                    if (fallback)
+                        throw new Error();
+                    
+                    // some shader compilation failed: fallback
+                    fallback = true;
+                    effectInstance = effect.fork(sceneBindings, meshBindings, fallback);
+                    
+                    // reset the loop
+                    numPasses = effectInstance.numPasses;
+                    passId = 0;
+                    
+                    continue ;
+                }
+                
+                instances[passId] = passInstance;
+                ++passId
+            }
+            
+            _meshToEffectInstance[mesh] = effectInstance;
             _meshBindingsUsageCount[meshBindings] = {};
-			
-			bindEffectInstance(effectInstance, meshBindings);
-			
-			for (var passId : uint = 0; passId < numPasses; ++passId)
-			{
-				// fork pass if needed
-				var pass			: Shader			= effectInstance.getPass(passId);
-				var passInstance	: ShaderInstance	= pass.fork(sceneBindings, meshBindings);
-				var drawCall		: DrawCall			= new DrawCall();
-				
+            
+            bindEffectInstance(effectInstance, meshBindings);
+            
+            var numInstances : uint = instances.length;
+            for (var instanceId : uint = 0; instanceId < numInstances; ++instanceId)
+            {
+				var drawCall    : DrawCall  = new DrawCall();
+                
+                passInstance = instances[instanceId];
+                
 				drawCall.enabled = mesh.computedVisibility;
-				if (passInstance.program != null)
-				{
-					drawCall.configure(
-						passInstance.program,
-						mesh.geometry,
-						meshBindings,
-						sceneBindings,
-						passInstance.settings.depthSortDrawCalls
-					);
-				}
-				drawCalls[passId] = drawCall;
-				
+                
+                if (passInstance.program)
+                {
+    				drawCall.configure(
+    					passInstance.program,
+    					mesh.geometry,
+    					meshBindings,
+    					sceneBindings,
+    					passInstance.settings.depthSortDrawCalls
+    				);
+                }
+                    
+				drawCalls[instanceId] = drawCall;
+				++_numDrawCalls;
+                
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
 				bindShaderInstance(passInstance, drawCall, meshBindings);
 			}
@@ -567,41 +610,39 @@ package aerys.minko.scene.controller.scene
 		{
 			var meshBindings	: DataBindings		= mesh.bindings;
 			var drawCalls		: Vector.<DrawCall>	= _meshToDrawCalls[mesh];
-			var effectInstance	: EffectInstance	= _meshToEffectInstance[mesh];
 			
-			unbindEffectInstance(effectInstance, meshBindings);
-			
-			if (!drawCalls)
-				return ;
-			
-			var numDrawCalls	: uint	= drawCalls.length;
-			
-			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
-			{
-				// retrieve drawcall, and shaderInstance
-				var drawCall		: DrawCall			= drawCalls[drawCallId];
-				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
-				
-				unbindShaderInstance(passInstance, drawCall, meshBindings);
-			}
-			
-			delete _meshToEffectInstance[effectInstance];
-            
-            delete _meshBindingsUsageCount[meshBindings];
-			
-			// update indexes
-			delete _meshToDrawCalls[mesh];
-			
-			// update effect instances list and mesh to effect instance indexes
-			var meshesWithSameEffectInstance : Vector.<Mesh> = _effectInstanceToMeshes[effectInstance];
-
-			meshesWithSameEffectInstance.splice(meshesWithSameEffectInstance.indexOf(mesh), 1);
-			if (meshesWithSameEffectInstance.length == 0)
-			{
-				delete _effectInstanceToMeshes[effectInstance];
-				_effectInstances.splice(_effectInstances.indexOf(effectInstance), 1);
-                effectInstance.passesChanged.remove(effectInstancePassesChangedHandler);
-			}
+			if (drawCalls)
+            {
+    			var effectInstance	: EffectInstance	= _meshToEffectInstance[mesh];
+    			var numDrawCalls	: uint	            = drawCalls.length;
+                
+    			unbindEffectInstance(effectInstance, meshBindings);
+    			
+    			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
+    			{
+    				// retrieve drawcall, and shaderInstance
+    				var drawCall		: DrawCall			= drawCalls[drawCallId];
+    				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
+    				
+    				unbindShaderInstance(passInstance, drawCall, meshBindings);
+    			}
+    			_numDrawCalls -= numDrawCalls;
+                
+                delete _meshToEffectInstance[effectInstance];
+                delete _meshBindingsUsageCount[meshBindings];
+                delete _meshToDrawCalls[mesh];
+                
+                // update effect instances list and mesh to effect instance indexes
+                var meshesWithSameEffectInstance : Vector.<Mesh> = _effectInstanceToMeshes[effectInstance];
+                
+                meshesWithSameEffectInstance.splice(meshesWithSameEffectInstance.indexOf(mesh), 1);
+                if (meshesWithSameEffectInstance.length == 0)
+                {
+                    delete _effectInstanceToMeshes[effectInstance];
+                    _effectInstances.splice(_effectInstances.indexOf(effectInstance), 1);
+                    effectInstance.passesChanged.remove(effectInstancePassesChangedHandler);
+                }
+            }
 		}
 		
 		private function meshVisibilityChangedHandler(bindings			: DataBindings,
@@ -932,5 +973,12 @@ package aerys.minko.scene.controller.scene
 			
 			++_numStashedPropertyChanges;
 		}
+        
+        private function effectPassCompilationFailedHandler(effect  : Effect,
+                                                            pass    : Shader,
+                                                            error   : ShaderCompilerError) : void
+        {
+            
+        }
 	}
 }

@@ -2,6 +2,7 @@ package aerys.minko.render
 {
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
@@ -15,9 +16,9 @@ package aerys.minko.render
 	 */
 	public class Effect
 	{
-		private var _extraPasses	: Vector.<Shader>;
-		private var _instances		: Vector.<EffectInstance>;
-		
+		private var _extraPasses	        : Vector.<Shader>;
+		private var _instances		        : Vector.<EffectInstance>;
+        
 		public function get numExtraPasses() : uint
 		{
 			return _extraPasses.length;
@@ -108,27 +109,32 @@ package aerys.minko.render
 		}
 		
 		public function fork(sceneBindings	: DataBindings,
-							 meshBindings 	: DataBindings) : EffectInstance
+							 meshBindings 	: DataBindings,
+                             fallback       : Boolean   = false) : EffectInstance
 		{
 			var instance : EffectInstance = findInstance(sceneBindings, meshBindings);
 			
+            if (fallback)
+            {
+                // this instance doesn't actually work: let's delete it
+                _instances.splice(_instances.indexOf(instance), 1);
+                instance = null;
+            }
+            
 			if (!instance)
 			{
 				var signature : Signature = new Signature();
 				var sceneBindingsProxy : DataBindingsProxy	= new DataBindingsProxy(
 					sceneBindings, signature, Signature.SOURCE_SCENE
 				);
-				var meshBindingsProxy : DataBindingsProxy	= new DataBindingsProxy(
+				var meshBindingsProxy   : DataBindingsProxy	= new DataBindingsProxy(
 					meshBindings, signature, Signature.SOURCE_MESH
 				);
+                var passes             : Vector.<Shader>    = fallback
+                    ? initializeFallbackPasses(sceneBindingsProxy, meshBindingsProxy)
+                    : initializePasses(sceneBindingsProxy, meshBindingsProxy);
 				
-				instance = new EffectInstance(
-					this,
-					initializePasses(sceneBindingsProxy, meshBindingsProxy),
-					_extraPasses,
-					signature
-				);
-				
+                instance = new EffectInstance(this, passes, _extraPasses, signature);
 				_instances.push(instance);
 			}
 			
@@ -152,5 +158,11 @@ package aerys.minko.render
 		{
 			return new <Shader>[];
 		}
+        
+        protected function initializeFallbackPasses(sceneBindings	: DataBindingsProxy,
+                                                    meshBindings 	: DataBindingsProxy) : Vector.<Shader>
+        {
+            return new <Shader>[];
+        }
 	}
 }

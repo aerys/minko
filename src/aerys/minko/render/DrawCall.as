@@ -188,7 +188,7 @@ package aerys.minko.render
 			_bindingsConsumer.enabled = _enabled;
 			
 			triangleCulling		= TriangleCulling.FRONT;
-			blending			= Blending.NORMAL;
+			blending			= Blending.OPAQUE;
 		}
 		
 		 /**

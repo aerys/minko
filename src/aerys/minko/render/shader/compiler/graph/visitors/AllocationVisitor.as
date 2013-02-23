@@ -1,5 +1,7 @@
 package aerys.minko.render.shader.compiler.graph.visitors
 {
+	import aerys.minko.render.Profile;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.binding.*;
 	import aerys.minko.render.shader.compiler.allocation.*;
@@ -9,7 +11,6 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.*;
 	import aerys.minko.render.shader.compiler.register.*;
 	import aerys.minko.render.shader.compiler.sequence.*;
-	import aerys.minko.render.geometry.stream.format.VertexComponent;
 
 	/**
 	 * @private
@@ -18,6 +19,8 @@ package aerys.minko.render.shader.compiler.graph.visitors
 	 */
 	public class AllocationVisitor extends AbstractVisitor
 	{
+        private var _profile            : Profile;
+        
 		private var _allocStore			: AllocationStore;
 		
 		// allocators
@@ -95,40 +98,40 @@ package aerys.minko.render.shader.compiler.graph.visitors
 			return _textures;
 		}
 		
-		public function AllocationVisitor()
+		public function AllocationVisitor(profile : Profile)
 		{
+            _profile = profile;
 		}
 		
 		override protected function start() : void
 		{
 			super.start();
+            
+            _opAllocator		= new Allocator(1, RegisterType.OUTPUT, true, true, true);
+            _ocAllocator		= new Allocator(1, RegisterType.OUTPUT, true, true, false);
+            _attributeAllocator = new Allocator(_profile.numMaxVertexAttributes, RegisterType.VERTEX_ATTRIBUTE, true, true, true);
+            _vsConstAllocator	= new Allocator(_profile.numMaxVertexConstants, RegisterType.CONSTANT, true, false, true);
+            _fsConstAllocator	= new Allocator(_profile.numMaxFragmentConstants, RegisterType.CONSTANT, true, false, false);
+            _vsTempAllocator	= new Allocator(_profile.numMaxVertexTemporaries, RegisterType.TEMPORARY, false, false, true);
+            _fsTempAllocator	= new Allocator(_profile.numMaxFragmentTemporaries, RegisterType.TEMPORARY, false, false, false);
+            _varyingAllocator	= new Allocator(_profile.numMaxVaryings, RegisterType.VARYING, true, true, true);
 			
-			// allocators
-			_opAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, true);
-			_ocAllocator				= new Allocator(1, RegisterType.OUTPUT, true, true, false);
-			_attributeAllocator			= new Allocator(RegisterLimit.VS_MAX_ATTRIBUTE, RegisterType.ATTRIBUTE, true, true, true);
-			_vsConstAllocator			= new Allocator(RegisterLimit.VS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, true);
-			_fsConstAllocator			= new Allocator(RegisterLimit.FS_MAX_CONSTANT, RegisterType.CONSTANT, true, false, false);
-			_vsTempAllocator			= new Allocator(RegisterLimit.VS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, true);
-			_fsTempAllocator			= new Allocator(RegisterLimit.FS_MAX_TEMPORARY, RegisterType.TEMPORARY, false, false, false);
-			_varyingAllocator			= new Allocator(RegisterLimit.MAX_VARYING, RegisterType.VARYING, true, true, true);
-			
-			_allocStore					= new AllocationStore();
+			_allocStore			= new AllocationStore();
 			
 			// first pass data
-			_vsInstructions				= new Vector.<Instruction>();
-			_fsInstructions				= new Vector.<Instruction>();
-			_vsConstants				= new Vector.<Constant>();
-			_fsConstants				= new Vector.<Constant>();
-			_vsParams					= new Vector.<BindableConstant>();
-			_fsParams					= new Vector.<BindableConstant>();
-			_samplers					= new Vector.<AbstractSampler>();
+			_vsInstructions		= new <Instruction>[];
+			_fsInstructions		= new <Instruction>[];
+			_vsConstants		= new <Constant>[];
+			_fsConstants		= new <Constant>[];
+			_vsParams			= new <BindableConstant>[];
+			_fsParams			= new <BindableConstant>[];
+			_samplers			= new <AbstractSampler>[];
 			
 			// final compiled data
-			_paramBindings				= new Object();
-			_vertexComponents			= new Vector.<VertexComponent>();
-			_vertexIndices				= new Vector.<uint>();
-			_textures					= new Vector.<ITextureResource>();
+			_paramBindings		= {};
+			_vertexComponents	= new <VertexComponent>[];
+			_vertexIndices		= new <uint>[];
+			_textures			= new <ITextureResource>[];
 		}
 		
 		override public function process(shaderGraph : ShaderGraph) : void

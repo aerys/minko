@@ -22,7 +22,7 @@ package aerys.minko.scene.node.light
 	 */
 	public class DirectionalLight extends AbstractLight
 	{
-		private static const LIGHT_TYPE : uint = 1;
+		public static const LIGHT_TYPE : uint = 1;
 		
 		public function get diffuse() : Number
 		{

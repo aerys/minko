@@ -11,7 +11,11 @@ package aerys.minko.render
 		private var _extraPasses 	: Vector.<Shader>;
 		private var _signature		: Signature;
 		
+        private var _numUses        : uint;
+        
 		private var _passesChanged	: Signal;
+        private var _retained       : Signal;
+        private var _released       : Signal;
 		
 		public function get effect() : Effect
 		{
@@ -32,6 +36,13 @@ package aerys.minko.render
 		{
 			return _passes.length + _extraPasses.length;
 		}
+        
+        public function get isDisposable() : Boolean
+        {
+            return _numUses == 0;
+        }
+        
+//        public function 
 		
 		public function EffectInstance(generator 	: Effect,
 									   passes		: Vector.<Shader>,
@@ -44,6 +55,8 @@ package aerys.minko.render
 			_signature = signature;
 			
 			_passesChanged = new Signal('EffectInstance.passesChanged');
+            _retained = new Signal('EffectInstance.retained');
+            _released = new Signal('EffectInstance.released');
 		}
 		
 		public function getPass(index : uint) : Shader
@@ -52,5 +65,17 @@ package aerys.minko.render
 			
 			return index < numPasses ? _passes[index] : _extraPasses[uint(index - numPasses)];
 		}
+        
+        public function retain() : void
+        {
+            ++_numUses;
+            _retained.execute(this, _numUses);
+        }
+        
+        public function release() : void
+        {
+            --_numUses;
+            _released.execute(this, _numUses);
+        }
 	}
 }
