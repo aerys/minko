@@ -107,6 +107,12 @@ package aerys.minko.scene.controller.mesh
 			if (!ancestor.scene)
 				return ;
 			
+            if (ancestor.scene.renderingBegin.hasCallback(nextFrameHanlder))
+            {
+                ancestor.scene.renderingBegin.remove(nextFrameHanlder);
+                return ;
+            }
+            
 			target.bindings.removeProvider(_data);
 			_data.dispose();
 			_data = null;
