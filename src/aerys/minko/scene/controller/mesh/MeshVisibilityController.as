@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
 	import aerys.minko.ns.minko_math;
+	import aerys.minko.render.Viewport;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
@@ -17,6 +18,8 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
+	
+	import flash.display.BitmapData;
 
 	
 	/**
@@ -143,15 +146,25 @@ package aerys.minko.scene.controller.mesh
 			
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
 
-			if (_frustumCulling)
-			{
-	            meshLocalToWorldChangedHandler(mesh, mesh.getLocalToWorldTransform());
-				mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
-			}
-			
-            mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
-            mesh.bindings.addProvider(_data);
+			scene.renderingBegin.add(nextFrameHanlder);
 		}
+        
+        private function nextFrameHanlder(scene			: Scene,
+                                          viewport		: Viewport,
+                                          destination	: BitmapData,
+                                          time			: Number) : void
+        {
+            scene.renderingBegin.remove(nextFrameHanlder);
+            
+            if (_frustumCulling)
+            {
+                meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
+                _mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
+            }
+            
+            _mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
+            _mesh.bindings.addProvider(_data);
+        }
 		
 		private function removedHandler(mesh : Mesh, ancestor : Group) : void
 		{
