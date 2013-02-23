@@ -1,5 +1,6 @@
 package aerys.minko.scene.controller.mesh
 {
+	import aerys.minko.render.Viewport;
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.TransformController;
@@ -10,8 +11,12 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Matrix4x4;
 	
+	import flash.display.BitmapData;
+	
 	public final class MeshController extends AbstractController
 	{
+        private var _mesh           : Mesh;
+        
 		private var _data 			: DataProvider;
 		
 		private var _geometry		: Geometry;
@@ -66,27 +71,35 @@ package aerys.minko.scene.controller.mesh
 			if (!target.scene)
 				return ;
             
-            _localToWorld = new Matrix4x4();
-            _worldToLocal = new Matrix4x4();
-            
-            var transformController : TransformController = target.scene.getControllersByType(TransformController)[0]
-                as TransformController;
-			
-            _localToWorld = transformController.getLocalToWorldTransform(target);
-            _worldToLocal = transformController.getWorldToLocalTransform(target);
-            transformController.synchronizeTransforms(target, true);
-            transformController.lockTransformsBeforeUpdate(target, true);
-            
-			_data = new DataProvider(
-				null, target.name + '_transforms', DataProviderUsage.EXCLUSIVE
-			);
-			_data.setProperty('geometry', _geometry);
-			_data.setProperty('frame', _frame);
-			_data.setProperty('localToWorld', _localToWorld);
-			_data.setProperty('worldToLocal', _worldToLocal);
-			
-			target.bindings.addProvider(_data);
+            _mesh = target;
+            target.scene.renderingBegin.add(nextFrameHanlder);
 		}
+        
+        private function nextFrameHanlder(scene			: Scene,
+                                          viewport		: Viewport,
+                                          destination	: BitmapData,
+                                          time			: Number) : void
+        {
+            scene.renderingBegin.remove(nextFrameHanlder);
+
+            var transformController : TransformController = scene.getControllersByType(TransformController)[0]
+                as TransformController;
+            
+            _localToWorld = transformController.getLocalToWorldTransform(_mesh);
+            _worldToLocal = transformController.getWorldToLocalTransform(_mesh);
+            transformController.synchronizeTransforms(_mesh, true);
+            transformController.lockTransformsBeforeUpdate(_mesh, true);
+            
+            _data = new DataProvider(
+                null, _mesh.name + '_DataProvider', DataProviderUsage.EXCLUSIVE
+            );
+            _data.setProperty('geometry', _geometry);
+            _data.setProperty('frame', _frame);
+            _data.setProperty('localToWorld', _localToWorld);
+            _data.setProperty('worldToLocal', _worldToLocal);
+            
+            _mesh.bindings.addProvider(_data);
+        }
 		
 		private function removedHandler(target		: Mesh,
 										ancestor	: Group) : void
@@ -100,6 +113,8 @@ package aerys.minko.scene.controller.mesh
             
             _localToWorld = null;
             _worldToLocal = null;
+            
+            _mesh = null;
 		}
 	}
 }
