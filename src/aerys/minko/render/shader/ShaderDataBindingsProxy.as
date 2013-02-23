@@ -1,7 +1,6 @@
-package aerys.minko.render
+package aerys.minko.render.shader
 {
 	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.compiler.Serializer;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableSampler;
@@ -9,6 +8,7 @@ package aerys.minko.render
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Sampler;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.Signature;
+	import aerys.minko.render.DataBindingsProxy;
 
 	/**
 	 * The wrapper used to expose scene/mesh data bindings in ActionScript shaders.
