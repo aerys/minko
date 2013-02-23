@@ -3,7 +3,6 @@ package aerys.minko.render.shader
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.ns.minko_shader;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.ShaderDataBindingsProxy;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.shader.compiler.ShaderCompilerError;
