@@ -2,7 +2,6 @@ package aerys.minko.render.material.phong
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicShader;
-	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.part.phong.LightAwareDiffuseShaderPart;
 	import aerys.minko.render.shader.part.phong.PhongShaderPart;
