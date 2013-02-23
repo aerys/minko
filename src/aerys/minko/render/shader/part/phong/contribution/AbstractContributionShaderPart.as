@@ -159,8 +159,9 @@ package aerys.minko.render.shader.part.phong.contribution
 			
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR))
 			{
-				var specular	: SFloat	= meshBindings.getParameter(PhongProperties.SPECULAR, 4);
-				cLightSpecular = multiply(cLightSpecular, specular.xyz);
+				var specular	: SFloat	= meshBindings.getParameter(PhongProperties.SPECULAR, 1);
+                
+				cLightSpecular = multiply(cLightSpecular, specular);
 			}
 			
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MAP))

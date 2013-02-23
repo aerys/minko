@@ -8,15 +8,18 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.effect.blur.BlurQuality;
 	import aerys.minko.render.geometry.primitive.QuadGeometry;
 	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
@@ -25,36 +28,79 @@ package aerys.minko.render.material.phong
 	{
 		use namespace minko_lighting;
 		
-		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
+//		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
 		
-		private var _renderingShader	: Shader;
-		
+//		private var _renderingShader	    : Shader;
+        
 		public function PhongEffect(renderingShader : Shader = null)
 		{
             super();
             
-			_renderingShader	= renderingShader || DEFAUT_SHADER;
+//			_renderingShader = renderingShader || DEFAUT_SHADER;
+//            _renderingShader.compilationFailed.add(renderingShaderCompilationFailedHandler);
 		}
-		
-		override protected function initializePasses(sceneBindings	: DataBindingsProxy,
-													 meshBindings	: DataBindingsProxy) : Vector.<Shader>
-		{
-			var passes			: Vector.<Shader>	= super.initializePasses(sceneBindings, meshBindings);
-			
-			var shader			: Shader			= null;
-			var renderTarget	: RenderTarget		= null;
-			
-			for (var lightId : uint = 0; ; ++lightId)
+        
+        override protected function initializePasses(sceneBindings	: DataBindingsProxy,
+                                                     meshBindings	: DataBindingsProxy) : Vector.<Shader>
+        {
+            var passes : Vector.<Shader>    = super.initializePasses(sceneBindings, meshBindings);
+            
+            for (var lightId : uint = 0;
+                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                ++lightId)
+            {
+                if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
+                {
+                    var shadowMappingType 	: uint	= getLightProperty(
+                        sceneBindings, lightId, 'shadowCastingType'
+                    );
+                    var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
+                    
+                    switch (shadowMappingType)
+                    {
+                        case ShadowMappingType.PCF:
+                            if (lightType == PointLight.LIGHT_TYPE)
+                                pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+                            else
+                                pushPCFShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.DUAL_PARABOLOID:
+                            pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.VARIANCE:
+                            pushVarianceShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.EXPONENTIAL:
+                            pushExponentialShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                    }
+                }
+            }
+            
+            passes.push(new PhongShader(null, 0));
+            
+            return passes;
+        }
+        
+        override protected function initializeFallbackPasses(sceneBindings  : DataBindingsProxy,
+                                                             meshBindings   : DataBindingsProxy) : Vector.<Shader>
+        {
+            var passes : Vector.<Shader>    = super.initializeFallbackPasses(sceneBindings, meshBindings);
+            
+			for (var lightId : uint = 0;
+                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                ++lightId)
 			{
-				if (!lightPropertyExists(sceneBindings, lightId, 'enabled'))
-					break ;
-				
+                var lightType   : uint	= getLightProperty(sceneBindings, lightId, 'type');
+                
+                if (lightType != AmbientLight.LIGHT_TYPE)
+                    passes.push(new MultiPassPhongShader(null, 0, lightId));
+                
 				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
 				{
 					var shadowMappingType 	: uint	= getLightProperty(
 						sceneBindings, lightId, 'shadowCastingType'
 					);
-					var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
 					
 					switch (shadowMappingType)
 					{
@@ -62,7 +108,7 @@ package aerys.minko.render.material.phong
 							if (lightType == PointLight.LIGHT_TYPE)
 								pushCubeShadowMappingPass(sceneBindings, lightId, passes);
 							else
-								pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
+								pushPCFShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
 							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
@@ -76,13 +122,13 @@ package aerys.minko.render.material.phong
 					}
 				}
 			}
-			
-			passes.push(_renderingShader);
-			
-			return passes;
+            
+            passes.push(new AmbientShader(null, .5));
+            
+            return passes;
 		}
 		
-		private function pushMatrixShadowMappingPass(sceneBindings	: DataBindingsProxy,
+		private function pushPCFShadowMappingPass(sceneBindings	: DataBindingsProxy,
 													 lightId 		: uint,
 													 passes 		: Vector.<Shader>) : void
 		{

@@ -14,6 +14,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
+	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	public class LightAwareShaderPart extends ShaderPart
@@ -140,6 +141,7 @@ package aerys.minko.render.shader.part.phong
 						PhongProperties.NORMAL_MAP,
 						meshBindings.getProperty(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
 						meshBindings.getProperty(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+                        meshBindings.getProperty(PhongProperties.NORMAL_MAP_WRAPPING, SamplerWrapping.REPEAT),
                         0,
                         meshBindings.getProperty(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
 					);
@@ -184,7 +186,7 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightConstant(lightId         : uint,
+		protected function getLightProperty(lightId         : uint,
                                             name            : String,
                                             defaultValue    : Object = null) : *
 		{

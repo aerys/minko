@@ -169,7 +169,7 @@ package aerys.minko.render.material.basic
 			
 			// blending and priority
 			var blending : uint = meshBindings.getProperty(
-				BasicProperties.BLENDING, Blending.NORMAL
+				BasicProperties.BLENDING, Blending.OPAQUE
 			);
 
 			if ((blending & 0xff) == BlendingSource.SOURCE_ALPHA)

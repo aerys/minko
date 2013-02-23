@@ -40,7 +40,7 @@ package aerys.minko.render.material.phong
 		
 		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
-			passConfig.blending		= Blending.NORMAL;
+			passConfig.blending		= Blending.OPAQUE;
 			passConfig.enabled		= meshBindings.getProperty(PhongProperties.CAST_SHADOWS, true);
 		}
 		

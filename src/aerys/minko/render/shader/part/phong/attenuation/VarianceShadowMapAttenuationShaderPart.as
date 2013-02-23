@@ -88,7 +88,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var moment1						: SFloat	= unpackHalf(precomputedDepth.xy);
 			var moment2						: SFloat	= unpackHalf(precomputedDepth.zw);
 			var lightBleedingCorrection		: Function	= doNotReduceLightBleeding;
-			var lightBleedingInterpolation	: uint		= getLightConstant(
+			var lightBleedingInterpolation	: uint		= getLightProperty(
 				lightId,
 				'lightBleedingInterpolation',
 				LightBleedingInterpolation.NONE

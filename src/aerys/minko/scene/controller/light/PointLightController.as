@@ -50,8 +50,10 @@ package aerys.minko.scene.controller.light
 		{
 			super.lightAddedToScene(scene);
 
-            light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
+            light.localToWorld(Vector4.ZERO, _worldPosition);
 			updateProjectionMatrix();
+            
+            light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
 		}
 		
         protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,

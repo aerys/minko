@@ -6,6 +6,7 @@ package aerys.minko.render.shader
 	import aerys.minko.render.ShaderDataBindingsProxy;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.resource.Program3DResource;
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.render.shader.compiler.graph.ShaderGraph;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.part.ShaderPart;
@@ -34,22 +35,23 @@ package aerys.minko.render.shader
 		use namespace minko_shader;
 		use namespace minko_render;
 		
-		minko_shader var _meshBindings		: ShaderDataBindingsProxy		= null;
-		minko_shader var _sceneBindings		: ShaderDataBindingsProxy		= null;
-		minko_shader var _kills				: Vector.<AbstractNode>			= new <AbstractNode>[];
+		minko_shader var _meshBindings		: ShaderDataBindingsProxy;
+		minko_shader var _sceneBindings		: ShaderDataBindingsProxy;
+		minko_shader var _kills				: Vector.<AbstractNode>;
 		
-		private var _name					: String						= null;
-		private var _enabled				: Boolean						= true;
-		private var _defaultSettings		: ShaderSettings				= new ShaderSettings(null);
+		private var _name					: String;
+		private var _enabled				: Boolean;
+		private var _defaultSettings		: ShaderSettings;
 		
-		private var _instances				: Vector.<ShaderInstance>		= new <ShaderInstance>[];
-		private var _numActiveInstances		: uint							= 0;
-		private var _numRenderedInstances	: uint							= 0;
-		private var _settings				: Vector.<ShaderSettings>		= new <ShaderSettings>[];
-		private var _programs				: Vector.<Program3DResource>	= new <Program3DResource>[];
+		private var _instances				: Vector.<ShaderInstance>;
+		private var _numActiveInstances		: uint;
+		private var _numRenderedInstances	: uint;
+		private var _settings				: Vector.<ShaderSettings>;
+		private var _programs				: Vector.<Program3DResource>;
 		
-		private var _begin					: Signal						= new Signal('Shader.begin');
-		private var _end					: Signal						= new Signal('Shader.end');
+		private var _begin					: Signal;
+		private var _end					: Signal;
+        private var _compilationFailed      : Signal;
 		
 		/**
 		 * The name of the shader. Default value is the qualified name of the
@@ -66,6 +68,23 @@ package aerys.minko.render.shader
 		{
 			_name = value;
 		}
+        
+        /**
+         * Whether the shader (and all its forks) are enabled for rendering
+         * or not.
+         * 
+         * @return 
+         * 
+         */
+        public function get enabled() : Boolean
+        {
+            return _enabled;
+        }
+        public function set enabled(value : Boolean) : void
+        {
+            _enabled = value;
+        }
+        
 		
 		/**
 		 * The signal executed when the shader (one of its forks) is used
@@ -102,22 +121,11 @@ package aerys.minko.render.shader
 		{
 			return _end;
 		}
-		
-		/**
-		 * Whether the shader (and all its forks) are enabled for rendering
-		 * or not.
-		 * 
-		 * @return 
-		 * 
-		 */
-		public function get enabled() : Boolean
-		{
-			return _enabled;
-		}
-		public function set enabled(value : Boolean) : void
-		{
-			_enabled = value;
-		}
+        
+        public function get compilationFailed() : Signal
+        {
+            return _compilationFailed;
+        }
 		
 		/**
 		 *  
@@ -129,12 +137,32 @@ package aerys.minko.render.shader
 							   priority		: Number		= 0.0)
 		{
 			super(this);
-			
-			_defaultSettings.renderTarget = renderTarget;
-			_defaultSettings.priority = priority;
-			
-			_name = getQualifiedClassName(this);
+            
+            initialize(renderTarget, priority);
 		}
+        
+        private function initialize(renderTarget	: RenderTarget,
+                                    priority		: Number) : void
+        {
+            _kills = new <AbstractNode>[];
+            
+            _name = getQualifiedClassName(this);
+            _enabled = true;
+            
+            _defaultSettings = new ShaderSettings(null);
+            _defaultSettings.renderTarget = renderTarget;
+            _defaultSettings.priority = priority;
+            
+            _instances = new <ShaderInstance>[];
+            _numActiveInstances	= 0;
+            _numRenderedInstances = 0;
+            _settings = new <ShaderSettings>[];
+            _programs = new <Program3DResource>[];
+            
+            _begin = new Signal('Shader.begin');
+            _end = new Signal('Shader.end');
+            _compilationFailed = new Signal('Shader.compilationFailed');
+        }
 		
 		public function fork(sceneBindings	: DataBindings,
 							 meshBindings	: DataBindings) : ShaderInstance
@@ -155,6 +183,10 @@ package aerys.minko.render.shader
 				if (config.enabled)
 				{
 					program = findOrCreateProgram(sceneBindings, meshBindings);
+                    
+                    if (!program)
+                        return null;
+                    
 					signature.mergeWith(program.signature);
 				}
 				
@@ -255,13 +287,24 @@ package aerys.minko.render.shader
 			var pixelColor		: AbstractNode	= getPixelColor()._node;
 			var shaderGraph		: ShaderGraph	= new ShaderGraph(vertexPosition, pixelColor, _kills);
 			
-			program			= shaderGraph.generateProgram(_name, signature);
-			_meshBindings	= null;
-			_sceneBindings	= null;
-			_kills.length	= 0;
-			
-			_programs.push(program);
-			
+            try
+            {
+			    program	= shaderGraph.generateProgram(_name, signature);
+                _programs.push(program);
+                
+                _meshBindings	= null;
+                _sceneBindings	= null;
+                _kills.length	= 0;
+            }
+            catch (e : ShaderCompilerError)
+            {
+                _meshBindings	= null;
+                _sceneBindings	= null;
+                _kills.length	= 0;
+                
+                _compilationFailed.execute(e);
+            }
+		    
 			return program;
 		}
 		
