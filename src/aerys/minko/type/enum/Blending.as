@@ -18,14 +18,17 @@ package aerys.minko.type.enum
 	 */
 	public final class Blending
 	{
-		public static const NORMAL		: uint		= BlendingSource.ONE
+		public static const OPAQUE		: uint		= BlendingSource.ONE
 													  | BlendingDestination.ZERO;
 
 		public static const ALPHA		: uint		= BlendingSource.SOURCE_ALPHA
 													  | BlendingDestination.ONE_MINUS_SOURCE_ALPHA;
 
-		public static const ADDITIVE	: uint		= BlendingSource.SOURCE_ALPHA
-													  | BlendingDestination.ONE;
+//		public static const ADDITIVE	: uint		= BlendingSource.SOURCE_ALPHA
+//													  | BlendingDestination.ONE;
+        
+        public static const ADDITIVE	: uint		= BlendingSource.DESTINATION_ALPHA
+            | BlendingDestination.ONE;
 
 		public static const LIGHT		: uint		= BlendingSource.ZERO
 													  | BlendingDestination.SOURCE_COLOR;
