@@ -12,35 +12,44 @@ package aerys.minko.render.resource
 
 	public final class Context3DResource
 	{
-		private var _context				: Context3D					= null;
+		private var _context				                : Context3D;
 		
-		private var _enableErrorChecking	: Boolean					= false;
+		private var _enableErrorChecking	                : Boolean;
 		
-		private var _rttTarget				: TextureBase				= null;
-		private var _rttDepthAndStencil		: Boolean					= false;
-		private var _rttAntiAliasing		: int						= 0;
-		private var _rttSurfaceSelector		: int						= 0;
-		private var _rectangle				: Rectangle					= null;
+		private var _rttTarget			                	: TextureBase;
+		private var _rttDepthAndStencil	                	: Boolean;
+		private var _rttAntiAliasing	                	: int;
+		private var _rttSurfaceSelector		                : int;
+		private var _rectangle				                : Rectangle;
 		
-		private var _depthMask				: Boolean					= false;
-		private var _passCompareMode		: String					= null;
+		private var _depthMask			                	: Boolean;
+		private var _passCompareMode	                	: String;
 		
-		private var _program				: Program3D					= null;
+		private var _program			                	: Program3D;
 		
-		private var _blendingSource			: String					= null;
-		private var _blendingDestination	: String					= null;
+		private var _blendingSource		                	: String;
+		private var _blendingDestination                	: String;
 		
-		private var _triangleCulling		: String					= null;
+		private var _triangleCulling	                	: String;
 		
-		private var _vertexBuffers			: Vector.<VertexBuffer3D>	= new Vector.<VertexBuffer3D>(8, true);
-		private var _vertexBuffersOffsets	: Vector.<int>				= new Vector.<int>(8, true);
-		private var _vertexBuffersFormats	: Vector.<String>			= new Vector.<String>(8, true);
-		private var _textures				: Vector.<TextureBase>		= new Vector.<TextureBase>(8, true);
+		private var _vertexBuffers			                : Vector.<VertexBuffer3D>;
+		private var _vertexBuffersOffsets	                : Vector.<int>;
+		private var _vertexBuffersFormats	                : Vector.<String>;
+		private var _textures				                : Vector.<TextureBase>;
 		
-		private var _colorMaskRed			: Boolean					= false;
-		private var _colorMaskGreen			: Boolean					= false;
-		private var _colorMaskBlue			: Boolean					= false;
-		private var _colorMaskAlpha			: Boolean					= false;
+		private var _colorMaskRed			                : Boolean;
+		private var _colorMaskGreen			                : Boolean;
+		private var _colorMaskBlue			                : Boolean;
+		private var _colorMaskAlpha	                		: Boolean;
+        
+        private var _stencilRefNum                          : uint;
+        private var _stencilReadMask                        : uint;
+        private var _stencilWriteMask                       : uint;
+        private var _stencilTriangleFace                    : String;
+        private var _stencilCompareMode                     : String;
+        private var _stencilActionOnBothPass                : String;
+        private var _stencilActionOnDepthFail               : String;
+        private var _stencilActionOnDepthPassStencilFail    : String;
 		
 		public function get enabledErrorChecking() : Boolean
 		{
@@ -58,7 +67,17 @@ package aerys.minko.render.resource
 		public function Context3DResource(context : Context3D)
 		{
 			_context = context;
+            
+            initialize();
 		}
+        
+        private function initialize() : void
+        {
+            _vertexBuffers = new Vector.<VertexBuffer3D>(8, true);
+            _vertexBuffersOffsets = new Vector.<int>(8, true);
+            _vertexBuffersFormats = new Vector.<String>(8, true);
+            _textures = new Vector.<TextureBase>(8, true);
+        }
 		
 		public function clear(red		: Number	= 0.0,
 							  green		: Number	= 0.0,
@@ -303,7 +322,17 @@ package aerys.minko.render.resource
 												 readMask	: uint 	= 255,
 												 writeMask	: uint 	= 255) : Context3DResource			
 		{
-			_context.setStencilReferenceValue(refNum, readMask, writeMask);
+            if (refNum != _stencilRefNum
+                || readMask != _stencilReadMask
+                || writeMask != _stencilWriteMask
+                )
+            {
+                _context.setStencilReferenceValue(refNum, readMask, writeMask);
+                
+                _stencilRefNum = refNum;
+                _stencilReadMask = readMask;
+                _stencilWriteMask = writeMask;
+            }
 			
 			return this;
 		}
@@ -313,14 +342,28 @@ package aerys.minko.render.resource
 										  actionOnBothPass				: String = 'keep', 
 										  actionOnDepthFail				: String = 'keep', 
 										  actionOnDepthPassStencilFail	: String = 'keep') : Context3DResource
-		{			
-			_context.setStencilActions( 
-				triangleFace,
-				compareMode,
-				actionOnBothPass,
-				actionOnDepthFail,
-				actionOnDepthPassStencilFail
-			);			
+		{
+            if (triangleFace != _stencilTriangleFace
+                || compareMode != _stencilCompareMode
+                || actionOnBothPass != _stencilActionOnBothPass
+                || actionOnDepthFail != _stencilActionOnDepthFail
+                || actionOnDepthPassStencilFail != _stencilActionOnDepthPassStencilFail
+            )
+            {
+    			_context.setStencilActions( 
+    				triangleFace,
+    				compareMode,
+    				actionOnBothPass,
+    				actionOnDepthFail,
+    				actionOnDepthPassStencilFail
+    			);
+                
+                _stencilTriangleFace = triangleFace;
+                _stencilCompareMode = compareMode;
+                _stencilActionOnBothPass = actionOnBothPass;
+                _stencilActionOnDepthFail = actionOnDepthFail;
+                _stencilActionOnDepthPassStencilFail = actionOnDepthPassStencilFail;
+            }
 
 			return this;
 		}
