@@ -1,4 +1,4 @@
-package aerys.minko.render.shader.part.depth
+package aerys.minko.render.shader.part.phong.depth
 {
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
@@ -7,11 +7,11 @@ package aerys.minko.render.shader.part.depth
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.scene.node.light.SpotLight;
 	
-	public final class ProjectedDepthShaderPart extends ShaderPart implements IDepthShaderPart
+	public final class ProjectedDepthFromLightShaderPart extends ShaderPart implements IDepthFromLightShaderPart
 	{
 		private var _clipspacePosition		: SFloat;
 		
-		public function ProjectedDepthShaderPart(main:Shader)
+		public function ProjectedDepthFromLightShaderPart(main:Shader)
 		{
 			super(main);
 		}

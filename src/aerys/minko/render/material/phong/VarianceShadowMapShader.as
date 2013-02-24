@@ -8,8 +8,8 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
-	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
-	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.IDepthFromLightShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
 	
@@ -17,7 +17,7 @@ package aerys.minko.render.material.phong
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffusePart			: DiffuseShaderPart;
-		private var _depthShaderPart		: IDepthShaderPart;
+		private var _depthShaderPart		: IDepthFromLightShaderPart;
 		private var _lightId				: uint;
 		private var _lightSpacePosition		: SFloat;
 		private var _clipspacePosition		: SFloat;
@@ -49,7 +49,7 @@ package aerys.minko.render.material.phong
 		
 		private function createDepthShaderPart() : void
 		{
-			_depthShaderPart = new LinearDepthShaderPart(this);
+			_depthShaderPart = new LinearDepthFromLightShaderPart(this);
 		}
 		
 		override protected function getVertexPosition() : SFloat
