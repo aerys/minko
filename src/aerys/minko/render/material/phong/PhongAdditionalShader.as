@@ -11,14 +11,14 @@ package aerys.minko.render.material.phong
     import aerys.minko.type.enum.BlendingSource;
     import aerys.minko.type.enum.DepthTest;
     
-    public class MultiPassPhongShader extends BasicShader
+    public class PhongAdditionalShader extends BasicShader
     {
         private var _diffuse	: LightAwareDiffuseShaderPart;
         private var _phong		: PhongShaderPart;
         
         private var _lightId    : int;
         
-        public function MultiPassPhongShader(renderTarget   : RenderTarget  = null,
+        public function PhongAdditionalShader(renderTarget   : RenderTarget  = null,
                                              priority       : Number        = 0.0,
                                              lightId        : int           = -1)
         {
@@ -43,7 +43,7 @@ package aerys.minko.render.material.phong
         
         override protected function getPixelColor() : SFloat
         {
-            return float4(_phong.getDynamicLighting(true, _lightId), 1);
+            return float4(_phong.getAdditionalLighting(_lightId), 1);
         }
     }
 }

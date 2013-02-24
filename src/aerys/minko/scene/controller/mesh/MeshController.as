@@ -72,17 +72,8 @@ package aerys.minko.scene.controller.mesh
 				return ;
             
             _mesh = target;
-            target.scene.renderingBegin.add(nextFrameHanlder);
-		}
-        
-        private function nextFrameHanlder(scene			: Scene,
-                                          viewport		: Viewport,
-                                          destination	: BitmapData,
-                                          time			: Number) : void
-        {
-            scene.renderingBegin.remove(nextFrameHanlder);
-
-            var transformController : TransformController = scene.getControllersByType(TransformController)[0]
+            
+            var transformController : TransformController = target.scene.getControllersByType(TransformController)[0]
                 as TransformController;
             
             _localToWorld = transformController.getLocalToWorldTransform(_mesh);
@@ -99,7 +90,7 @@ package aerys.minko.scene.controller.mesh
             _data.setProperty('worldToLocal', _worldToLocal);
             
             _mesh.bindings.addProvider(_data);
-        }
+		}
 		
 		private function removedHandler(target		: Mesh,
 										ancestor	: Group) : void
@@ -107,12 +98,6 @@ package aerys.minko.scene.controller.mesh
 			if (!ancestor.scene)
 				return ;
 			
-            if (ancestor.scene.renderingBegin.hasCallback(nextFrameHanlder))
-            {
-                ancestor.scene.renderingBegin.remove(nextFrameHanlder);
-                return ;
-            }
-            
 			target.bindings.removeProvider(_data);
 			_data.dispose();
 			_data = null;

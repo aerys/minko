@@ -146,16 +146,6 @@ package aerys.minko.scene.controller.mesh
 			
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
 
-			scene.renderingBegin.add(nextFrameHanlder);
-		}
-        
-        private function nextFrameHanlder(scene			: Scene,
-                                          viewport		: Viewport,
-                                          destination	: BitmapData,
-                                          time			: Number) : void
-        {
-            scene.renderingBegin.remove(nextFrameHanlder);
-            
             if (_frustumCulling)
             {
                 meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
@@ -164,8 +154,8 @@ package aerys.minko.scene.controller.mesh
             
             _mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
             _mesh.bindings.addProvider(_data);
-        }
-		
+		}
+        
 		private function removedHandler(mesh : Mesh, ancestor : Group) : void
 		{
 			var scene : Scene = ancestor.scene;
@@ -174,12 +164,6 @@ package aerys.minko.scene.controller.mesh
 				return ;
             
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
-            
-            if (scene.renderingBegin.hasCallback(nextFrameHanlder))
-            {
-                scene.renderingBegin.remove(nextFrameHanlder);
-                return ;
-            }
             
 			if (_frustumCulling)
 				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);

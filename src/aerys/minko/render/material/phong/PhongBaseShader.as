@@ -5,14 +5,15 @@ package aerys.minko.render.material.phong
     import aerys.minko.render.shader.SFloat;
     import aerys.minko.render.shader.ShaderSettings;
     import aerys.minko.render.shader.part.phong.PhongShaderPart;
+    import aerys.minko.scene.node.light.DirectionalLight;
     import aerys.minko.type.enum.Blending;
     
-    public class AmbientShader extends BasicShader
+    public class PhongBaseShader extends BasicShader
     {
         private var _phong : PhongShaderPart;
         
-        public function AmbientShader(renderTarget  : RenderTarget  = null,
-                                      priority      : Number        = 0.0)
+        public function PhongBaseShader(renderTarget  : RenderTarget  = null,
+                                          priority      : Number        = 0.0)
         {
             super(renderTarget, priority);
             
@@ -28,9 +29,13 @@ package aerys.minko.render.material.phong
         
         override protected function getPixelColor() : SFloat
         {
-            var diffuse : SFloat    = super.getPixelColor();
+            var diffuse     : SFloat    = super.getPixelColor();
+            var lighting    : SFloat    = _phong.getBaseLighting();
             
-            return float4(multiply(diffuse.rgb, _phong.getAmbientLighting()), diffuse.a);
+            return float4(
+                multiply(diffuse.rgb, lighting),
+                diffuse.a
+            );
         }
     }
 }

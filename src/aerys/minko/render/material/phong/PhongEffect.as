@@ -20,6 +20,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AmbientLight;
+	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
@@ -28,16 +29,9 @@ package aerys.minko.render.material.phong
 	{
 		use namespace minko_lighting;
 		
-//		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
-		
-//		private var _renderingShader	    : Shader;
-        
 		public function PhongEffect(renderingShader : Shader = null)
 		{
             super();
-            
-//			_renderingShader = renderingShader || DEFAUT_SHADER;
-//            _renderingShader.compilationFailed.add(renderingShaderCompilationFailedHandler);
 		}
         
         override protected function initializePasses(sceneBindings	: DataBindingsProxy,
@@ -51,10 +45,10 @@ package aerys.minko.render.material.phong
             {
                 if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
                 {
+                    var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
                     var shadowMappingType 	: uint	= getLightProperty(
                         sceneBindings, lightId, 'shadowCastingType'
                     );
-                    var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
                     
                     switch (shadowMappingType)
                     {
@@ -77,7 +71,7 @@ package aerys.minko.render.material.phong
                 }
             }
             
-            passes.push(new PhongShader(null, 0));
+            passes.push(new PhongSinglePassShader(null, 0));
             
             return passes;
         }
@@ -85,7 +79,8 @@ package aerys.minko.render.material.phong
         override protected function initializeFallbackPasses(sceneBindings  : DataBindingsProxy,
                                                              meshBindings   : DataBindingsProxy) : Vector.<Shader>
         {
-            var passes : Vector.<Shader>    = super.initializeFallbackPasses(sceneBindings, meshBindings);
+            var passes              : Vector.<Shader>   = super.initializeFallbackPasses(sceneBindings, meshBindings);
+            var discardDirectional  : Boolean           = true;
             
 			for (var lightId : uint = 0;
                 lightPropertyExists(sceneBindings, lightId, 'enabled');
@@ -93,8 +88,14 @@ package aerys.minko.render.material.phong
 			{
                 var lightType   : uint	= getLightProperty(sceneBindings, lightId, 'type');
                 
-                if (lightType != AmbientLight.LIGHT_TYPE)
-                    passes.push(new MultiPassPhongShader(null, 0, lightId));
+                if (lightType != AmbientLight.LIGHT_TYPE
+                    && getLightProperty(sceneBindings, lightId, 'enabled'))
+                {
+                    if (lightType == DirectionalLight.LIGHT_TYPE && discardDirectional)
+                        discardDirectional = false;
+                    else
+                        passes.push(new PhongAdditionalShader(null, 0, lightId));
+                }
                 
 				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
 				{
@@ -123,7 +124,7 @@ package aerys.minko.render.material.phong
 				}
 			}
             
-            passes.push(new AmbientShader(null, .5));
+            passes.push(new PhongBaseShader(null, .5));
             
             return passes;
 		}
@@ -217,10 +218,10 @@ package aerys.minko.render.material.phong
 				
 				for (var i : uint = 0; i < 6; ++i)
 					passes.push(new VarianceShadowMapShader(
-							lightId,
-							i,
-							lightId + .1 * i,
-							new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
+                        lightId,
+                        i,
+                        lightId + .1 * i,
+                        new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
 					));
 			}
 		}
@@ -243,7 +244,7 @@ package aerys.minko.render.material.phong
 				else
 					textureResource	= getLightProperty(sceneBindings, lightId, 'shadowMap');
 				
-				renderTarget		= new RenderTarget(
+				renderTarget = new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				

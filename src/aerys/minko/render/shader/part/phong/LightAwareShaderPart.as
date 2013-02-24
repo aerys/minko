@@ -179,16 +179,16 @@ package aerys.minko.render.shader.part.phong
 			return deltaLocalToTangent(deltaWorldToLocal(v));
 		}
 		
-		protected function lightPropertyExists(lightId : uint, name : String) : Boolean
+		public function lightPropertyExists(lightId : uint, name : String) : Boolean
 		{
 			return sceneBindings.propertyExists(
 				LightDataProvider.getLightPropertyName(name, lightId)
 			);
 		}
 		
-		protected function getLightProperty(lightId         : uint,
-                                            name            : String,
-                                            defaultValue    : Object = null) : *
+		public function getLightProperty(lightId         : uint,
+                                         name            : String,
+                                         defaultValue    : Object = null) : *
 		{
 			return sceneBindings.getProperty(
 				LightDataProvider.getLightPropertyName(name, lightId),
@@ -196,9 +196,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightParameter(lightId		: uint, 
-											 name			: String,
-											 size			: uint) : SFloat
+		public function getLightParameter(lightId		: uint, 
+                                          name			: String,
+                                          size			: uint) : SFloat
 		{
 			return sceneBindings.getParameter(
 				LightDataProvider.getLightPropertyName(name, lightId),
