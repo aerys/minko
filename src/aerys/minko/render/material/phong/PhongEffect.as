@@ -56,13 +56,15 @@ package aerys.minko.render.material.phong
         private var _specularShaders    : Array;
         private var _diffuseShader      : Array;
         
+        private var _lightAccumulator   : RenderTarget;
+        
 		public function PhongEffect(singlePassShader    : Shader    = null,
                                     baseShader          : Shader    = null)
 		{
             super();
             
             _singlePassShader = singlePassShader || new PhongSinglePassShader(null, 0);
-            _baseShader = baseShader || new PhongEmissiveShader(null, .5);
+//            _baseShader = baseShader || new PhongEmissiveShader(null, .5);
             
             _diffuseShader = [];
             _specularShaders = [];
@@ -117,6 +119,8 @@ package aerys.minko.render.material.phong
             var discardDirectional  : Boolean           = true;
             var ambientEnabled      : Boolean           = meshBindings.propertyExists('lightmap');
             
+//            _lightAccumulator ||= new RenderTarget(1024, 1024, new TextureResource(1024, 1024));
+            
 			for (var lightId : uint = 0;
                 lightPropertyExists(sceneBindings, lightId, 'enabled');
                 ++lightId)
@@ -131,12 +135,12 @@ package aerys.minko.render.material.phong
                 
                 if (getLightProperty(sceneBindings, lightId, 'diffuseEnabled'))
                     passes.push(
-                        _diffuseShader[lightId] ||= new PhongAdditionalShader(lightId, true, false, null, .5)
+                        _diffuseShader[lightId] ||= new PhongAdditionalShader(lightId, true, false, _lightAccumulator, .5)
                     );
                 
                 if (getLightProperty(sceneBindings, lightId, 'specularEnabled'))
                     passes.push(
-                        _specularShaders[lightId] ||= new PhongAdditionalShader(lightId, false, true, null, 0.)
+                        _specularShaders[lightId] ||= new PhongAdditionalShader(lightId, false, true, _lightAccumulator, 0.)
                     );
                 
 				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
@@ -167,10 +171,11 @@ package aerys.minko.render.material.phong
 			}
             
             if (ambientEnabled)
-                passes.push(_ambientShader ||= new PhongAmbientShader(null, .75));
+                passes.push(_ambientShader ||= new PhongAmbientShader(_lightAccumulator, .75));
             
-            passes.push(_zPrepassShader ||= new ZPrepassShader(null, 1));
-            passes.push(_emissiveShader ||= new PhongEmissiveShader(null, .25));
+            passes.push(_zPrepassShader ||= new ZPrepassShader(_lightAccumulator, 1));
+//            passes.push(_emissiveShader ||= new PhongEmissiveShader(_lightAccumulator.textureResource, null, .25));
+            passes.push(_emissiveShader ||= new PhongEmissiveShader(null, null, .25));
             
             return passes;
 		}

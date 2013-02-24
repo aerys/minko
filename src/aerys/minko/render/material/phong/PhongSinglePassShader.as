@@ -12,7 +12,7 @@ package aerys.minko.render.material.phong
 		private var _phong		: PhongShaderPart;
 
 		public function PhongSinglePassShader(renderTarget	: RenderTarget		= null,
-									priority		: Number			= 0.)
+                                              priority		: Number			= 0.)
 		{
 			super(renderTarget, priority);
 			
@@ -24,14 +24,9 @@ package aerys.minko.render.material.phong
 		override protected function getPixelColor() : SFloat
 		{
             var diffuse : SFloat = _diffuse.getDiffuseColor();
-                
-            return float4(
-                multiply(
-                    add(_phong.getDynamicLighting(), _phong.getStaticLighting()),
-                    diffuse.rgb
-                ),
-                diffuse.a
-            );
+            var phong   : SFloat = add(_phong.getDynamicLighting(), _phong.getStaticLighting());    
+            
+            return float4(multiply(diffuse.rgb, phong), diffuse.a);
 		}
 	}
 }
