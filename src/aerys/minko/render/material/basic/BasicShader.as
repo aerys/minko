@@ -1,10 +1,8 @@
 package aerys.minko.render.material.basic
 {
-	import aerys.minko.render.DrawCall;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.ShaderInstance;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
@@ -190,10 +188,6 @@ package aerys.minko.render.material.basic
 		 */
 		override protected function getVertexPosition() : SFloat
 		{
-			var triangleCulling	: uint	= meshBindings.getProperty(
-				BasicProperties.TRIANGLE_CULLING, TriangleCulling.BACK
-			);
-			
 			return localToScreen(
 				_vertexAnimationPart.getAnimatedVertexPosition()
 			);
@@ -205,9 +199,7 @@ package aerys.minko.render.material.basic
 		 */
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuse	: SFloat = _diffuseShaderPart.getDiffuseColor();
-			
-			return diffuse;
+			return _diffuseShaderPart.getDiffuseColor();
 		}
 	}
 }
