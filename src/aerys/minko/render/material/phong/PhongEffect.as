@@ -14,6 +14,30 @@ package aerys.minko.render.material.phong
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
+    /**
+     * <p>The PhongEffect using the Phong lighting model to render the geometry according to
+     * the lighting setup of the scene. It supports an infinite number of lights/projected
+     * shadows and will automatically switch between singlepass and multipass rendering
+     * in order to give the best performances whenever possible.</p>
+     * 
+     * </p>Because of the Stage3D restrictions regarding the number of shader operations or
+     * the number of available registers, the number of lights might be to big to allow them
+     * to be rendered in a single pass. In this situation, the PhongEffect will automatically
+     * fallback and use multipass rendering.</p>
+     * 
+     * <p>Multipass rendering is done as follow:</p>
+     * <ul>
+     * <li>The "base" pass renders objects with one per-pixel directional lights with shadows,
+     * the lightmap and the ambient/emissive lighting.</li>
+     * <li>Each "additional" pass (one per light) will render a single light with shadows and
+     * blend it using additive blending.</li>
+     * </ul>
+     * 
+     * The singlepass rendering will mimic this behavior in order to get preserve consistency.
+     * 
+     * @author Jean-Marc Le Roux
+     * 
+     */
 	public class PhongEffect extends Effect
 	{
         private var _singlePassShader   : Shader;
