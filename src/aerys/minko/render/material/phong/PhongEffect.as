@@ -65,7 +65,7 @@ package aerys.minko.render.material.phong
                 }
             }
             
-            passes.push(new PhongSinglePassShader(null, 0));
+            passes.push(_singlePassShader);
             
             return passes;
         }
@@ -118,7 +118,7 @@ package aerys.minko.render.material.phong
 				}
 			}
             
-            passes.push(new PhongBaseShader(null, .5));
+            passes.push(_baseShader);
             
             return passes;
 		}
