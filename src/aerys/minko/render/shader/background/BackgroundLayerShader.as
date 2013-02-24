@@ -1,38 +1,34 @@
 package aerys.minko.render.shader.background
 {
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.shader.SFloat;
+	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	
 	public class BackgroundLayerShader extends BasicShader
 	{
+		private static const ZMAX	: Number	= 1. - 1e-7;
+        
+        private var _diffuse    : DiffuseShaderPart;
+        private var _uv         : SFloat;
+        
 		public function BackgroundLayerShader(target : RenderTarget = null)
 		{
-			super(target, Number.MAX_VALUE);
+			super(target, 0.);
+            
+            _diffuse = new DiffuseShaderPart(this);
 		}
-		private static const ZMAX	: Number	= 1. - 1e-7;
 		
 		override protected function getVertexPosition() : SFloat
 		{
-			return float4(
-				multiply(vertexXYZ.x, 2),
-				multiply(vertexXYZ.y, 2),
-				ZMAX,
-				1
-			);
+			return float4(sign(vertexXYZ.xy), ZMAX, 1);
 		}
 		
 		override protected function getPixelColor() : SFloat
 		{
-			var diffuseMap	: SFloat	= meshBindings.getTextureParameter(BasicProperties.DIFFUSE_MAP);
-			
-			var uv 			: SFloat 	= multiply(
-				float4(1, 1, 1, 1),
-				interpolate(vertexUV)
-			);
-			
-			return sampleTexture(diffuseMap, uv);
+            var uv : SFloat = interpolate(divide(add(sign(vertexXYZ.xy), 1), 2));
+            
+            return _diffuse.getDiffuseColor(false, uv);
 		}
 	}
 }
