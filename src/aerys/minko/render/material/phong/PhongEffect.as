@@ -1,24 +1,13 @@
 package aerys.minko.render.material.phong
 {
-	import aerys.minko.ns.minko_lighting;
 	import aerys.minko.render.DataBindingsProxy;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.effect.blur.BlurEffect;
-	import aerys.minko.render.effect.blur.BlurQuality;
-	import aerys.minko.render.geometry.primitive.QuadGeometry;
-	import aerys.minko.render.material.Material;
-	import aerys.minko.render.material.basic.BasicShader;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.compiler.ShaderCompilerError;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.scene.node.light.PointLight;
@@ -27,11 +16,16 @@ package aerys.minko.render.material.phong
 	
 	public class PhongEffect extends Effect
 	{
-		use namespace minko_lighting;
-		
-		public function PhongEffect(renderingShader : Shader = null)
+        private var _singlePassShader   : Shader;
+        private var _baseShader         : Shader;
+        
+		public function PhongEffect(singlePassShader    : Shader    = null,
+                                    baseShader          : Shader    = null)
 		{
             super();
+            
+            _singlePassShader = singlePassShader || new PhongSinglePassShader(null, 0);
+            _baseShader = baseShader || new PhongBaseShader(null, .5);
 		}
         
         override protected function initializePasses(sceneBindings	: DataBindingsProxy,

@@ -20,13 +20,6 @@ package aerys.minko.render.material.phong
             _phong = new PhongShaderPart(this);
         }
         
-        override protected function initializeSettings(settings:ShaderSettings):void
-        {
-            super.initializeSettings(settings);
-            
-            settings.blending = Blending.OPAQUE;
-        }
-        
         override protected function getPixelColor() : SFloat
         {
             var diffuse     : SFloat    = super.getPixelColor();
