@@ -19,19 +19,19 @@ package aerys.minko.type.enum
 	public final class Blending
 	{
 		public static const OPAQUE		: uint		= BlendingSource.ONE
-													  | BlendingDestination.ZERO;
+            | BlendingDestination.ZERO;
 
 		public static const ALPHA		: uint		= BlendingSource.SOURCE_ALPHA
-													  | BlendingDestination.ONE_MINUS_SOURCE_ALPHA;
+            | BlendingDestination.ONE_MINUS_SOURCE_ALPHA;
 
-//		public static const ADDITIVE	: uint		= BlendingSource.SOURCE_ALPHA
-//													  | BlendingDestination.ONE;
-        
-        public static const ADDITIVE	: uint		= BlendingSource.DESTINATION_ALPHA
+        public static const ADDITIVE	: uint		= BlendingSource.ONE
             | BlendingDestination.ONE;
 
 		public static const LIGHT		: uint		= BlendingSource.ZERO
-													  | BlendingDestination.SOURCE_COLOR;
+            | BlendingDestination.SOURCE_COLOR;
+        
+        public static const MODULATE    : uint      = BlendingSource.DESTINATION_COLOR
+            | BlendingDestination.SOURCE_COLOR;
 		
 		minko_render static const STRINGS : Vector.<String> = new <String>[
 			Context3DBlendFactor.DESTINATION_ALPHA,

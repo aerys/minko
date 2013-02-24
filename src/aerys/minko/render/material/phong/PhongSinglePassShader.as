@@ -26,9 +26,9 @@ package aerys.minko.render.material.phong
             var diffuse : SFloat = _diffuse.getDiffuseColor();
                 
             return float4(
-                add(
-                    multiply(diffuse.rgb, _phong.getBaseLighting()),
-                    _phong.getAdditionalLighting()
+                multiply(
+                    add(_phong.getDynamicLighting(), _phong.getStaticLighting()),
+                    diffuse.rgb
                 ),
                 diffuse.a
             );

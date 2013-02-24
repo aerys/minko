@@ -15,6 +15,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.phong.attenuation.VarianceShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.InfiniteShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.LocalizedShaderPart;
+	import aerys.minko.scene.controller.debug.BonesDebugController;
 	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.scene.node.light.PointLight;
@@ -132,56 +133,6 @@ package aerys.minko.render.shader.part.phong
 			return contribution;
 		}
 		
-//		public function getDynamicLighting(skipAmbient : Boolean   = false,
-//                                           lightId     : int       = -1) : SFloat
-//		{
-//			var dynamicLighting : SFloat	= float3(0, 0, 0);
-//            var multiPassMode   : Boolean   = lightId != -1;
-//			var receptionMask	: uint		= meshBindings.getProperty(
-//				PhongProperties.RECEPTION_MASK,
-//				1
-//			);
-//            
-//            if (!multiPassMode)
-//                lightId = 0;
-//			
-//			while (lightPropertyExists(lightId, 'emissionMask'))
-//			{
-//				var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
-//				
-//				if ((emissionMask & receptionMask) != 0)
-//				{
-//					var type    : uint  = getLightProperty(lightId, 'type');
-//                    
-//                    if ((type != AmbientLight.LIGHT_TYPE || !skipAmbient)
-//                        && getLightProperty(lightId, 'enabled'))
-//                    {
-//    					var color           : SFloat	= getLightParameter(lightId, 'color', 4);
-//                        var contribution    : SFloat    = null;
-//                        
-//                        if (type == AmbientLight.LIGHT_TYPE)
-//                            contribution = getAmbientLightContribution(lightId);
-//                        else if (type == DirectionalLight.LIGHT_TYPE)
-//                            contribution = getDirectionalLightContribution(lightId);
-//                        else if (type == PointLight.LIGHT_TYPE)
-//                            contribution = getPointLightContribution(lightId);
-//                        else if (type == SpotLight.LIGHT_TYPE)
-//                            contribution = getSpotLightContribution(lightId);
-//                        
-//                        if (contribution)
-//                            dynamicLighting.incrementBy(multiply(color.rgb, contribution));
-//                    }
-//				}
-//                
-//                if (multiPassMode)
-//                    break;
-//                
-//                ++lightId;
-//			}
-//			
-//			return dynamicLighting;
-//		}
-		
         public function getAmbientLighting() : SFloat
         {
             var ambientLighting : SFloat    = float3(0., 0., 0.);
@@ -213,8 +164,6 @@ package aerys.minko.render.shader.part.phong
                 ++lightId;
             }
             
-            ambientLighting.incrementBy(multiply(lessEqual(ambientLighting, 0), .5));
-            
             return ambientLighting;
         }
         
@@ -228,7 +177,9 @@ package aerys.minko.render.shader.part.phong
 			return ambient;
 		}
 		
-		public function getDirectionalLightContribution(lightId : uint) : SFloat
+		public function getDirectionalLightContribution(lightId     : uint,
+                                                        diffuse     : Boolean   = true,
+                                                        specular    : Boolean   = true) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
@@ -238,13 +189,22 @@ package aerys.minko.render.shader.part.phong
 			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
 				&& meshReceiveShadows;
             var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getDirectionalLightSpecular(lightId);
             
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            if (diffuse)
+            {
+                var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId);
+                
+                if (diffuseLighting)
+                    contribution = diffuseLighting;
+            }
+            
+            if (specular)
+            {
+                var specularLighting    : SFloat    = getDirectionalLightSpecular(lightId);
+                
+                if (specularLighting)
+                    contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            }
 			
             // attenuation
 			if (contribution && computeShadows)
@@ -262,7 +222,9 @@ package aerys.minko.render.shader.part.phong
 			return contribution;
 		}
         
-        public function getSpotLightContribution(lightId : uint) : SFloat
+        public function getSpotLightContribution(lightId    : uint,
+                                                 diffuse    : Boolean   = true,
+                                                 specular   : Boolean   = true) : SFloat
         {
             var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
             var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
@@ -274,13 +236,22 @@ package aerys.minko.render.shader.part.phong
             var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
                 && meshReceiveShadows;
             var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getSpotLightSpecular(lightId);
             
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            if (diffuse)
+            {
+                var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId);
+                
+                if (diffuseLighting)
+                    contribution = diffuseLighting;
+            }
+            
+            if (specular)
+            {
+                var specularLighting    : SFloat    = getSpotLightSpecular(lightId);
+                
+                if (specularLighting)
+                    contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            }
 
             // attenuation
             if (contribution)
@@ -319,7 +290,9 @@ package aerys.minko.render.shader.part.phong
             return contribution;
         }
 		
-        public function getPointLightContribution(lightId : uint) : SFloat
+        public function getPointLightContribution(lightId   : uint,
+                                                  diffuse   : Boolean   = true,
+                                                  specular  : Boolean   = true) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
@@ -331,13 +304,22 @@ package aerys.minko.render.shader.part.phong
 				&& meshReceiveShadows;
 			
 			var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getPointLightSpecular(lightId);
             
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            if (diffuse)
+            {
+                var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId);
+                
+                if (diffuseLighting)
+                    contribution = diffuseLighting;
+            }
+            
+            if (specular)
+            {
+                var specularLighting    : SFloat    = getPointLightSpecular(lightId);
+                
+                if (specularLighting)
+                    contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+            }
 			
             // attenuation
             if (contribution)
@@ -372,44 +354,6 @@ package aerys.minko.render.shader.part.phong
 			
 			return contribution;
 		}
-        
-//        private function getDiffuse(receptionMask : uint = 1) : SFloat
-//        {
-//            var diffuse     : SFloat    = null;
-//            var lightId     : uint      = 0;
-//            
-//            while (lightPropertyExists(lightId, 'emissionMask'))
-//            {
-//                var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
-//                
-//                if ((emissionMask & receptionMask) != 0)
-//                {
-//                    var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
-//                        && getLightProperty(lightId, 'enabled');
-//                    
-//                    if (!isEnabled)
-//                        continue;
-//                    
-//                    var color	        : SFloat	= getLightParameter(lightId, 'color', 4);
-//                    var type            : uint  	= getLightProperty(lightId, 'type');
-//                    var contribution    : SFloat    = null;
-//                    
-//                    if (type == DirectionalLight.LIGHT_TYPE)
-//                        contribution = getDirectionalLightDiffuse(lightId);
-//                    else if (type == SpotLight.LIGHT_TYPE)
-//                        contribution = getSpotLightDiffuse(lightId);
-//                    else if (type == PointLight.LIGHT_TYPE)
-//                        contribution = getPointLightDiffuse(lightId);
-//                    
-//                    if (contribution)
-//                        diffuse = diffuse ? add(diffuse, contribution) : contribution;
-//                }
-//                
-//                ++lightId;
-//            }
-//            
-//            return diffuse;
-//        }
         
         private function getDirectionalLightDiffuse(lightId : int) : SFloat
         {
@@ -554,25 +498,12 @@ package aerys.minko.render.shader.part.phong
             return null;
         }
         
-        public function getBaseLighting() : SFloat
+        public function getDynamicLighting(lightId  : int       = -1,
+                                           ambient  : Boolean   = true,
+                                           diffuse  : Boolean   = true,
+                                           specular : Boolean   = true) : SFloat
         {
-            var lighting : SFloat = add(getAmbientLighting(), getStaticLighting());
-            
-            for (var lightId : uint = 0; lightPropertyExists(lightId, 'type'); ++lightId)
-                if (getLightProperty(lightId, 'type') == DirectionalLight.LIGHT_TYPE
-                    && getLightProperty(lightId, 'enabled'))
-                {
-                    lighting.incrementBy(getDirectionalLightContribution(lightId))
-                    break;
-                }
-            
-            return lighting;
-        }
-        
-        public function getAdditionalLighting(lightId   : int   = -1) : SFloat
-        {
-            var additionalLighting  : SFloat	= float3(0, 0, 0);
-            var discardDirectional  : Boolean   = true;
+            var diffuseLighting     : SFloat	= float3(0, 0, 0);
             var singleLight         : Boolean   = lightId != -1;
             var receptionMask	    : uint		= meshBindings.getProperty(
                 PhongProperties.RECEPTION_MASK,
@@ -590,16 +521,8 @@ package aerys.minko.render.shader.part.phong
                 {
                     var type    : uint  = getLightProperty(lightId, 'type');
                     
-                    // if not in single light mode, discard first directional mode because it's
-                    // already in the base lighting
-                    if (type == DirectionalLight.LIGHT_TYPE && discardDirectional && !singleLight)
-                    {
-                        discardDirectional = false;
-                        ++lightId;
-                        continue;
-                    }
-                    
-                    if (type != AmbientLight.LIGHT_TYPE && getLightProperty(lightId, 'enabled'))
+                    if ((type != AmbientLight.LIGHT_TYPE || ambient)
+                        && getLightProperty(lightId, 'enabled'))
                     {
                         var color           : SFloat	= getLightParameter(lightId, 'color', 4);
                         var contribution    : SFloat    = null;
@@ -607,14 +530,14 @@ package aerys.minko.render.shader.part.phong
                         if (type == AmbientLight.LIGHT_TYPE)
                             contribution = getAmbientLightContribution(lightId);
                         else if (type == DirectionalLight.LIGHT_TYPE)
-                            contribution = getDirectionalLightContribution(lightId);
+                            contribution = getDirectionalLightContribution(lightId, diffuse, specular);
                         else if (type == PointLight.LIGHT_TYPE)
-                            contribution = getPointLightContribution(lightId);
+                            contribution = getPointLightContribution(lightId, diffuse, specular);
                         else if (type == SpotLight.LIGHT_TYPE)
-                            contribution = getSpotLightContribution(lightId);
+                            contribution = getSpotLightContribution(lightId, diffuse, specular);
                         
                         if (contribution)
-                            additionalLighting.incrementBy(multiply(color.rgb, contribution));
+                            diffuseLighting.incrementBy(multiply(color.rgb, contribution));
                     }
                 }
                 
@@ -624,7 +547,8 @@ package aerys.minko.render.shader.part.phong
                 ++lightId;
             }
             
-            return additionalLighting;
+            return diffuseLighting;
         }
+        
 	}
 }

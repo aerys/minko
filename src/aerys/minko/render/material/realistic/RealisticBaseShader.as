@@ -23,13 +23,15 @@ package aerys.minko.render.material.realistic
         
         override protected function getPixelColor() : SFloat
         {
-            var diffuse     : SFloat    = _envMapping.applyEnvironmentMapping(super.getPixelColor());
-            var lighting    : SFloat    = _phong.getBaseLighting();
+//            var diffuse     : SFloat    = _envMapping.applyEnvironmentMapping(super.getPixelColor());
+//            var lighting    : SFloat    = _phong.getBaseLighting();
+//            
+//            return float4(
+//                multiply(diffuse.rgb, lighting),
+//                diffuse.a
+//            );
             
-            return float4(
-                multiply(diffuse.rgb, lighting),
-                diffuse.a
-            );
+            return float4(1, 1, 1, 1);
         }        
     }
 }

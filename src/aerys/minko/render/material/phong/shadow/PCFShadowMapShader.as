@@ -1,4 +1,4 @@
-package aerys.minko.render.material.phong
+package aerys.minko.render.material.phong.shadow
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicProperties;
@@ -10,6 +10,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
+	import aerys.minko.render.material.phong.PhongProperties;
 	
 	public class PCFShadowMapShader extends Shader
 	{
