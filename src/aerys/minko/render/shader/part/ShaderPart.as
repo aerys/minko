@@ -484,9 +484,14 @@ package aerys.minko.render.shader.part
 		 * @return
 		 *
 		 */
-		protected final function divide(value1 : Object, value2 : Object) : SFloat
+		protected final function divide(value1 : Object, value2 : Object, ...args) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            var result : SFloat = new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            
+            for each (var arg : Object in args)
+                result = multiply(result, arg);
+            
+			return result;
 		}
 
 		protected final function fractional(value : Object) : SFloat

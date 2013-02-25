@@ -15,7 +15,7 @@ package aerys.minko.render.material.phong.multipass
     {
         private var _lightAccumulator   : ITextureResource;
         
-        private var _screenUv           : SFloat;
+        private var _screenPos          : SFloat;
         
         public function PhongEmissiveShader(lightAccumulator    : ITextureResource,
                                             renderTarget        : RenderTarget  = null,
@@ -39,17 +39,7 @@ package aerys.minko.render.material.phong.multipass
         
         override protected function getVertexPosition() : SFloat
         {
-            var pos : SFloat = super.getVertexPosition();
-            
-//            _screenUv = divide(pos.xy, pos.w);
-//            _screenUv = float2(
-//                divide(add(_screenUv.x, 1), 2),
-//                subtract(1, divide(subtract(1, _screenUv.y), 2))
-//            );
-            
-            _screenUv = pos.xy;
-            
-            return pos;
+            return _screenPos = super.getVertexPosition();
         }
         
         override protected function getPixelColor() : SFloat
@@ -58,10 +48,12 @@ package aerys.minko.render.material.phong.multipass
             
             if (_lightAccumulator)
             {
-                var uv : SFloat = interpolate(_screenUv);
-                var lighting : SFloat = sampleTexture(getTexture(_lightAccumulator), uv);
+                var uv : SFloat = interpolate(_screenPos);
                 
-                return float4(uv, 0, 1);
+                uv = divide(uv.xy, uv.w);
+                uv = multiply(add(float2(uv.x, negate(uv.y)), 1), .5);
+                
+                var lighting : SFloat = sampleTexture(getTexture(_lightAccumulator), uv);
                 
                 diffuse = float4(multiply(diffuse.rgb, lighting.rgb), diffuse.a);
             }
