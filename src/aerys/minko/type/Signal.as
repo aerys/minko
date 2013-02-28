@@ -69,8 +69,10 @@ package aerys.minko.type
 				return ;
 			}
 			
-			if (_callbacks) _callbacks[_numCallbacks] = callback;
-			else _callbacks = new <Function>[callback];
+			if (_callbacks)
+				_callbacks[_numCallbacks] = callback;
+			else
+				_callbacks = new <Function>[callback];
 			++_numCallbacks;
 			
 			if (_numCallbacks == 1 && _disableWhenNoCallbacks)
