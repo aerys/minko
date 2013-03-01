@@ -30,7 +30,7 @@ package aerys.minko.scene.controller.light
 			
 			initialize();
 		}
-
+		
 		private function initialize() : void
 		{
 			_worldPosition = new Vector4();
@@ -38,7 +38,7 @@ package aerys.minko.scene.controller.light
 		}
 		
 		override protected function targetAddedHandler(ctrl	: LightController,
-													  light	: AbstractLight) : void
+													   light	: AbstractLight) : void
 		{
 			super.targetAddedHandler(ctrl, light);
 			
@@ -49,15 +49,20 @@ package aerys.minko.scene.controller.light
 		override protected function lightAddedToScene(scene : Scene) : void
 		{
 			super.lightAddedToScene(scene);
-
-            light.localToWorld(Vector4.ZERO, _worldPosition);
+			
+			light.localToWorld(Vector4.ZERO, _worldPosition);
 			updateProjectionMatrix();
-            
-            light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
+			light.localToWorldTransformChanged.add(lightLocalToWorldTransformChangedHandler);
 		}
 		
-        protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,
-                                                                    localToWorld  : Matrix4x4) : void
+		override protected function lightRemovedFromScene(scene:Scene):void
+		{
+			super.lightRemovedFromScene(scene);
+			light.localToWorldTransformChanged.remove(lightLocalToWorldTransformChangedHandler);
+		}
+		
+		protected function lightLocalToWorldTransformChangedHandler(light         : AbstractLight,
+																	localToWorld  : Matrix4x4) : void
 		{
 			localToWorld.getTranslation(_worldPosition);
 		}
