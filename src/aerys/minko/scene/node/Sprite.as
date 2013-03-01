@@ -14,23 +14,23 @@ package aerys.minko.scene.node
 		private static const EFFECT	: Effect	= new Effect(new SpriteShader());
 		private static const GEOM	: Geometry	= new BillboardsGeometry(1);
 		
-		/*override public function get x() : Number
-		{
-			return bindings.getProperty('x') as Number;
-		}
-		override public function set x(value : Number) : void
-		{
-			properties.setProperty('x', value);
-		}
-		
-		override public function get y() : Number
-		{
-			return bindings.getProperty('y') as Number;
-		}
-		override public function set y(value : Number) : void
-		{
-			properties.setProperty('y', value);
-		}*/
+//		override public function get x() : Number
+//		{
+//			return bindings.getProperty('x') as Number;
+//		}
+//		override public function set x(value : Number) : void
+//		{
+//			properties.setProperty('x', value);
+//		}
+//		
+//		override public function get y() : Number
+//		{
+//			return bindings.getProperty('y') as Number;
+//		}
+//		override public function set y(value : Number) : void
+//		{
+//			properties.setProperty('y', value);
+//		}
 		
 		public function get width() : Number
 		{
@@ -68,13 +68,15 @@ package aerys.minko.scene.node
 		{
 			super(GEOM, new Material(EFFECT, properties));
 			
-			this.x = x;
-			this.y = y;
-			this.width 	= width;
-			this.height = height;
-			this.depth 	= depth;
-		}
-		
+            this.properties.setProperties({
+                x : x,
+                y : y,
+                width : width,
+                height : height,
+                depth : depth
+            });
+        }
+        
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var s : Sprite = new Sprite(x, y, width, height, {}, depth);

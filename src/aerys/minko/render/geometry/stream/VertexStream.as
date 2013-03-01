@@ -781,7 +781,7 @@ package aerys.minko.render.geometry.stream
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.numBytesPerVertex * count * dwordSize;
 			
-			stream.data = data;
+			stream._data = data;
 			
 			return stream;
 		}

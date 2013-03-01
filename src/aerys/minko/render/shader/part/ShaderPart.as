@@ -5,7 +5,7 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.ShaderDataBindingsProxy;
+	import aerys.minko.render.shader.ShaderDataBindingsProxy;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.Attribute;
 	import aerys.minko.render.shader.compiler.graph.nodes.leaf.BindableConstant;
@@ -484,9 +484,14 @@ package aerys.minko.render.shader.part
 		 * @return
 		 *
 		 */
-		protected final function divide(value1 : Object, value2 : Object) : SFloat
+		protected final function divide(value1 : Object, value2 : Object, ...args) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            var result : SFloat = new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            
+            for each (var arg : Object in args)
+                result = multiply(result, arg);
+            
+			return result;
 		}
 
 		protected final function fractional(value : Object) : SFloat

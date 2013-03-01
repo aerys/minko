@@ -1,14 +1,16 @@
 package aerys.minko.render.shader.compiler.graph
 {
 	import aerys.minko.Minko;
+	import aerys.minko.render.Profile;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.Program3DResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.type.binding.Signature;
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.visitors.*;
 	import aerys.minko.render.shader.compiler.register.Components;
 	import aerys.minko.render.shader.compiler.sequence.AgalInstruction;
+	import aerys.minko.type.binding.Signature;
 	import aerys.minko.type.log.DebugLevel;
 	
 	import flash.utils.ByteArray;
@@ -31,7 +33,7 @@ package aerys.minko.render.shader.compiler.graph
 		private static const RESOLVE_PARAMETRIZED	: ResolveParametrizedComputationVisitor	= new ResolveParametrizedComputationVisitor();
 		private static const REMOVE_USELESS			: RemoveUselessComputation				= new RemoveUselessComputation();
 		private static const COPY_INSERTER			: CopyInserterVisitor					= new CopyInserterVisitor();
-		private static const ALLOCATOR				: AllocationVisitor						= new AllocationVisitor();
+		private static const ALLOCATOR				: AllocationVisitor						= new AllocationVisitor(Profile.BASELINE);
 		private static const INTERPOLATE_FINDER		: InterpolateFinder						= new InterpolateFinder();
 		private static const WRITE_DOT				: WriteDot								= new WriteDot();
 		private static const MATRIX_TRANSFORMATION	: MatrixTransformationGrouper			= new MatrixTransformationGrouper();
@@ -219,6 +221,13 @@ package aerys.minko.render.shader.compiler.graph
 			ALLOCATOR.clear();
 			
 			_isCompiled = true;
+            
+            if (_vertexSequence.length > Profile.BASELINE.numMaxVertexOperations)
+                throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VERTEX_OPERATIONS);
+            if (_fragmentSequence.length > Profile.BASELINE.numMaxFragmentOperations)
+                throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_FRAGMENT_OPERATIONS);
+            if (_textures.length > Profile.BASELINE.numMaxFragmentSamplers)
+                throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_FRAGMENT_SAMPLERS);
 		}
 		
 		private function computeBinaryProgram(sequence			: Vector.<AgalInstruction>,

@@ -254,7 +254,7 @@ package aerys.minko.render.shader
 			_signature								= signature;
 			
 			depthTest								= DepthTest.LESS;
-			blending								= Blending.NORMAL;
+			blending								= Blending.OPAQUE;
 			triangleCulling							= TriangleCulling.BACK;
 			renderTarget							= null;
 			depthWriteEnabled						= true;

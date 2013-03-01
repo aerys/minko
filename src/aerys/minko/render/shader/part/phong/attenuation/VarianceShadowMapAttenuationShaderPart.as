@@ -3,8 +3,8 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
-	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.IDepthFromLightShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.PointLight;
@@ -17,7 +17,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 	{
 		private static const MIN_VARIANCE		: Number			= 0.002;
 		private static const EPSILON			: Number			= 0.0001;
-		private var _depthShaderPart			: IDepthShaderPart	= null;
+		private var _depthShaderPart			: IDepthFromLightShaderPart	= null;
 		
 		public function VarianceShadowMapAttenuationShaderPart(main : Shader)
 		{
@@ -26,7 +26,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 
 		private function createDepthShaderPart() : void
 		{
-			_depthShaderPart = new LinearDepthShaderPart(this.main);
+			_depthShaderPart = new LinearDepthFromLightShaderPart(this.main);
 		}
 
 		
@@ -88,7 +88,7 @@ package aerys.minko.render.shader.part.phong.attenuation
 			var moment1						: SFloat	= unpackHalf(precomputedDepth.xy);
 			var moment2						: SFloat	= unpackHalf(precomputedDepth.zw);
 			var lightBleedingCorrection		: Function	= doNotReduceLightBleeding;
-			var lightBleedingInterpolation	: uint		= getLightConstant(
+			var lightBleedingInterpolation	: uint		= getLightProperty(
 				lightId,
 				'lightBleedingInterpolation',
 				LightBleedingInterpolation.NONE

@@ -14,6 +14,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.type.enum.SamplerFiltering;
 	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
+	import aerys.minko.type.enum.SamplerWrapping;
 	import aerys.minko.type.enum.TriangleCulling;
 	
 	public class LightAwareShaderPart extends ShaderPart
@@ -140,6 +141,7 @@ package aerys.minko.render.shader.part.phong
 						PhongProperties.NORMAL_MAP,
 						meshBindings.getProperty(PhongProperties.NORMAL_MAP_FILTERING, SamplerFiltering.LINEAR),
 						meshBindings.getProperty(PhongProperties.NORMAL_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+                        meshBindings.getProperty(PhongProperties.NORMAL_MAP_WRAPPING, SamplerWrapping.REPEAT),
                         0,
                         meshBindings.getProperty(PhongProperties.NORMAL_MAP_FORMAT, SamplerFormat.RGBA)
 					);
@@ -177,16 +179,16 @@ package aerys.minko.render.shader.part.phong
 			return deltaLocalToTangent(deltaWorldToLocal(v));
 		}
 		
-		protected function lightPropertyExists(lightId : uint, name : String) : Boolean
+		public function lightPropertyExists(lightId : uint, name : String) : Boolean
 		{
 			return sceneBindings.propertyExists(
 				LightDataProvider.getLightPropertyName(name, lightId)
 			);
 		}
 		
-		protected function getLightConstant(lightId         : uint,
-                                            name            : String,
-                                            defaultValue    : Object = null) : *
+		public function getLightProperty(lightId         : uint,
+                                         name            : String,
+                                         defaultValue    : Object = null) : *
 		{
 			return sceneBindings.getProperty(
 				LightDataProvider.getLightPropertyName(name, lightId),
@@ -194,9 +196,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightParameter(lightId		: uint, 
-											 name			: String,
-											 size			: uint) : SFloat
+		public function getLightParameter(lightId		: uint, 
+                                          name			: String,
+                                          size			: uint) : SFloat
 		{
 			return sceneBindings.getParameter(
 				LightDataProvider.getLightPropertyName(name, lightId),

@@ -1,5 +1,6 @@
 package aerys.minko.render.shader.compiler.allocation
 {
+	import aerys.minko.render.shader.compiler.ShaderCompilerError;
 	import aerys.minko.render.shader.compiler.graph.nodes.AbstractNode;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Instruction;
 	import aerys.minko.render.shader.compiler.graph.nodes.vertex.Overwriter;
@@ -188,16 +189,39 @@ package aerys.minko.render.shader.compiler.allocation
 				// if the previous loop are not broken, we are out of registers!
 				if (regOffset == _offsetLimit && localOffset == maxLocalOffset + 1)
 				{
-					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
-					var numRegisters	: String = (_offsetLimit / 4).toString();
-					var allocSize		: String = (alloc.maxSize).toString();
-					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
-					
-					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
-						numRegisters + ' registers are full, or too fragmented to allocate ' +
-						allocSize + ' contiguous ' + alignement + ' floats';
-					
-					throw new Error(errorMessage);
+//					var registerType	: String = RegisterType.stringifyType(_type, _isVertexShader);
+//					var numRegisters	: String = (_offsetLimit / 4).toString();
+//					var allocSize		: String = (alloc.maxSize).toString();
+//					var alignement		: String = alloc.aligned ? 'aligned' : 'non-aligned';
+//					
+//					var errorMessage	: String = 'Unable to allocate: all "' + registerType + '" ' +
+//						numRegisters + ' registers are full, or too fragmented to allocate ' +
+//						allocSize + ' contiguous ' + alignement + ' floats';
+//					
+//					throw new Error(errorMessage);
+                    
+                    if (_type == RegisterType.VARYING)
+                        throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VARYINGS);
+                    
+                    if (_isVertexShader)
+                    {
+                        if (_type == RegisterType.VERTEX_ATTRIBUTE)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VERTEX_ATTRIBUTES);
+                        if (_type == RegisterType.CONSTANT)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VERTEX_CONSTANTS);
+                        if (_type == RegisterType.TEMPORARY)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_VERTEX_TEMPORARIES);
+                    }
+                    else
+                    {
+                        if (type == RegisterType.CONSTANT)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_FRAGMENT_CONSTANTS);
+                        if (_type == RegisterType.TEMPORARY)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_FRAGMENT_TEMPORARIES);
+                        if (_type == RegisterType.SAMPLER)
+                            throw new ShaderCompilerError(ShaderCompilerError.TOO_MANY_FRAGMENT_SAMPLERS);
+                        
+                    }
 				}
 			}
 		}

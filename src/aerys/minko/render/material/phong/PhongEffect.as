@@ -1,60 +1,162 @@
 package aerys.minko.render.material.phong
 {
-	import aerys.minko.ns.minko_lighting;
 	import aerys.minko.render.DataBindingsProxy;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.effect.blur.BlurEffect;
-	import aerys.minko.render.effect.blur.BlurQuality;
-	import aerys.minko.render.geometry.primitive.QuadGeometry;
-	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.phong.multipass.PhongAdditionalShader;
+	import aerys.minko.render.material.phong.multipass.PhongAmbientShader;
+	import aerys.minko.render.material.phong.multipass.PhongEmissiveShader;
+	import aerys.minko.render.material.phong.multipass.ZPrepassShader;
+	import aerys.minko.render.material.phong.shadow.ExponentialShadowMapShader;
+	import aerys.minko.render.material.phong.shadow.PCFShadowMapShader;
+	import aerys.minko.render.material.phong.shadow.ParaboloidShadowMapShader;
+	import aerys.minko.render.material.phong.shadow.VarianceShadowMapShader;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
+	import avmplus.USE_ITRAITS;
+	
+    /**
+     * <p>The PhongEffect using the Phong lighting model to render the geometry according to
+     * the lighting setup of the scene. It supports an infinite number of lights/projected
+     * shadows and will automatically switch between singlepass and multipass rendering
+     * in order to give the best performances whenever possible.</p>
+     * 
+     * </p>Because of the Stage3D restrictions regarding the number of shader operations or
+     * the number of available registers, the number of lights might be to big to allow them
+     * to be rendered in a single pass. In this situation, the PhongEffect will automatically
+     * fallback and use multipass rendering.</p>
+     * 
+     * <p>Multipass rendering is done as follow:</p>
+     * <ul>
+     * <li>The "base" pass renders objects with one per-pixel directional lights with shadows,
+     * the lightmap and the ambient/emissive lighting.</li>
+     * <li>Each "additional" pass (one per light) will render a single light with shadows and
+     * blend it using additive blending.</li>
+     * </ul>
+     * 
+     * The singlepass rendering will mimic this behavior in order to get preserve consistency.
+     * 
+     * @author Jean-Marc Le Roux
+     * 
+     */
 	public class PhongEffect extends Effect
 	{
-		use namespace minko_lighting;
-		
-		private static const DEFAUT_SHADER	: Shader	= new PhongShader();
-		
-		private var _renderingShader	: Shader;
-		
-		public function PhongEffect(renderingShader : Shader = null)
+        private var _useRenderToTarget  : Boolean;
+        private var _singlePassShader   : Shader;
+        private var _baseShader         : Shader;
+        
+        private var _targets            : Array;
+        
+		public function PhongEffect(useRenderToTarget   : Boolean   = false,
+                                    singlePassShader    : Shader    = null,
+                                    baseShader          : Shader    = null)
 		{
             super();
             
-			_renderingShader	= renderingShader || DEFAUT_SHADER;
+            _useRenderToTarget = useRenderToTarget;
+            _singlePassShader = singlePassShader || new PhongSinglePassShader(null, 0);
+//            _baseShader = baseShader || new PhongEmissiveShader(null, .5);
+            
+            _targets = [];
 		}
-		
-		override protected function initializePasses(sceneBindings	: DataBindingsProxy,
-													 meshBindings	: DataBindingsProxy) : Vector.<Shader>
-		{
-			var passes			: Vector.<Shader>	= super.initializePasses(sceneBindings, meshBindings);
-			
-			var shader			: Shader			= null;
-			var renderTarget	: RenderTarget		= null;
-			
-			for (var lightId : uint = 0; ; ++lightId)
+        
+        override protected function initializePasses(sceneBindings	: DataBindingsProxy,
+                                                     meshBindings	: DataBindingsProxy) : Vector.<Shader>
+        {
+            var passes : Vector.<Shader>    = super.initializePasses(sceneBindings, meshBindings);
+            
+            for (var lightId : uint = 0;
+                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                ++lightId)
+            {
+                if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
+                {
+                    var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
+                    var shadowMappingType 	: uint	= getLightProperty(
+                        sceneBindings, lightId, 'shadowCastingType'
+                    );
+                    
+                    switch (shadowMappingType)
+                    {
+                        case ShadowMappingType.PCF:
+                            if (lightType == PointLight.LIGHT_TYPE)
+                                pushCubeShadowMappingPass(sceneBindings, lightId, passes);
+                            else
+                                pushPCFShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.DUAL_PARABOLOID:
+                            pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.VARIANCE:
+                            pushVarianceShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                        case ShadowMappingType.EXPONENTIAL:
+                            pushExponentialShadowMappingPass(sceneBindings, lightId, passes);
+                            break ;
+                    }
+                }
+            }
+            
+            passes.push(_singlePassShader);
+            
+            return passes;
+        }
+        
+        override protected function initializeFallbackPasses(sceneBindings  : DataBindingsProxy,
+                                                             meshBindings   : DataBindingsProxy) : Vector.<Shader>
+        {
+            var passes              : Vector.<Shader>   = super.initializeFallbackPasses(sceneBindings, meshBindings);
+            var discardDirectional  : Boolean           = true;
+            var ambientEnabled      : Boolean           = meshBindings.propertyExists('lightmap');
+            var renderTarget        : RenderTarget      = null;
+            
+            if (_useRenderToTarget)
+            {
+                var accumulatorSize : uint  = sceneBindings.getProperty('viewportWidth');
+                
+                accumulatorSize = 1 << Math.ceil(Math.log(accumulatorSize) * Math.LOG2E);
+                
+                renderTarget = _targets[accumulatorSize] = new RenderTarget(
+                    accumulatorSize, accumulatorSize,
+                    new TextureResource(accumulatorSize, accumulatorSize)
+                );
+            }
+            
+			for (var lightId : uint = 0;
+                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                ++lightId)
 			{
-				if (!lightPropertyExists(sceneBindings, lightId, 'enabled'))
-					break ;
-				
+                var lightType : uint = getLightProperty(sceneBindings, lightId, 'type');
+                
+                if (lightType == AmbientLight.LIGHT_TYPE)
+                {
+                    ambientEnabled = true;
+                    continue;
+                }
+                
+                if (getLightProperty(sceneBindings, lightId, 'diffuseEnabled'))
+                    passes.push(
+                        new PhongAdditionalShader(lightId, true, false, renderTarget, .5)
+                    );
+                
+                if (getLightProperty(sceneBindings, lightId, 'specularEnabled'))
+                    passes.push(
+                        new PhongAdditionalShader(lightId, false, true, null, 0.)
+                    );
+                
 				if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
 				{
 					var shadowMappingType 	: uint	= getLightProperty(
 						sceneBindings, lightId, 'shadowCastingType'
 					);
-					var lightType			: uint	= getLightProperty(sceneBindings, lightId, 'type');
 					
 					switch (shadowMappingType)
 					{
@@ -62,7 +164,7 @@ package aerys.minko.render.material.phong
 							if (lightType == PointLight.LIGHT_TYPE)
 								pushCubeShadowMappingPass(sceneBindings, lightId, passes);
 							else
-								pushMatrixShadowMappingPass(sceneBindings, lightId, passes);
+								pushPCFShadowMappingPass(sceneBindings, lightId, passes);
 							break ;
 						case ShadowMappingType.DUAL_PARABOLOID:
 							pushDualParaboloidShadowMappingPass(sceneBindings, lightId, passes);
@@ -76,15 +178,21 @@ package aerys.minko.render.material.phong
 					}
 				}
 			}
-			
-			passes.push(_renderingShader);
-			
-			return passes;
+            
+            if (ambientEnabled)
+                passes.push(new PhongAmbientShader(renderTarget, .75));
+            
+            passes.push(new ZPrepassShader(renderTarget, 1));
+            passes.push(new PhongEmissiveShader(
+                renderTarget ? renderTarget.textureResource : null, null, .25
+            ));
+            
+            return passes;
 		}
 		
-		private function pushMatrixShadowMappingPass(sceneBindings	: DataBindingsProxy,
-													 lightId 		: uint,
-													 passes 		: Vector.<Shader>) : void
+		private function pushPCFShadowMappingPass(sceneBindings	: DataBindingsProxy,
+                                                  lightId 		: uint,
+                                                  passes 		: Vector.<Shader>) : void
 		{
 			var textureResource : TextureResource	= getLightProperty(
 				sceneBindings, lightId, 'shadowMap'
@@ -171,10 +279,10 @@ package aerys.minko.render.material.phong
 				
 				for (var i : uint = 0; i < 6; ++i)
 					passes.push(new VarianceShadowMapShader(
-							lightId,
-							i,
-							lightId + .1 * i,
-							new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
+                        lightId,
+                        i,
+                        lightId + .1 * i,
+                        new RenderTarget(textureSize, textureSize, cubeTexture, i, 0xffffffff)
 					));
 			}
 		}
@@ -197,7 +305,7 @@ package aerys.minko.render.material.phong
 				else
 					textureResource	= getLightProperty(sceneBindings, lightId, 'shadowMap');
 				
-				renderTarget		= new RenderTarget(
+				renderTarget = new RenderTarget(
 					textureResource.width, textureResource.height, textureResource, 0, 0xffffffff
 				);
 				

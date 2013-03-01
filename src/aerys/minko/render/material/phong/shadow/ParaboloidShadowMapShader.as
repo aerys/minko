@@ -1,4 +1,4 @@
-package aerys.minko.render.material.phong
+package aerys.minko.render.material.phong.shadow
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicProperties;
@@ -13,6 +13,7 @@ package aerys.minko.render.material.phong
 	import aerys.minko.type.enum.Blending;
 	
 	import flash.geom.Rectangle;
+	import aerys.minko.render.material.phong.PhongProperties;
 	
 	public class ParaboloidShadowMapShader extends Shader
 	{
@@ -40,7 +41,7 @@ package aerys.minko.render.material.phong
 		
 		override protected function initializeSettings(passConfig : ShaderSettings) : void
 		{
-			passConfig.blending		= Blending.NORMAL;
+			passConfig.blending		= Blending.OPAQUE;
 			passConfig.enabled		= meshBindings.getProperty(PhongProperties.CAST_SHADOWS, true);
 		}
 		

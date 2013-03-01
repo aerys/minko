@@ -153,6 +153,19 @@ package aerys.minko.scene.node.light
             lightData.setLightProperty(PhongProperties.SHADOW_BIAS, value);
         }
 		
+		public function get attenuationPolynomial() : Vector4
+		{
+			return lightData.getLightProperty('attenuationPolynomial');
+		}
+		public function set attenuationPolynomial(value : Vector4) : void
+		{
+			lightData.setLightProperty('attenuationPolynomial', value);
+			
+			var notEqual	: Boolean = value.equals(Vector4.ZERO);
+			if (lightData.getLightProperty('attenuationEnabled') != notEqual)
+				lightData.setLightProperty('attenuationEnabled', notEqual);
+		}
+		
 		public function SpotLight(color					: uint		= 0xFFFFFFFF,
 								  diffuse				: Number	= .6,
 								  specular				: Number	= .8,

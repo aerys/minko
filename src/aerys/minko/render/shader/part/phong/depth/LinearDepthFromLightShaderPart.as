@@ -1,16 +1,15 @@
-package aerys.minko.render.shader.part.depth
+package aerys.minko.render.shader.part.phong.depth
 {
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.ShaderPart;
-	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
 	import aerys.minko.scene.data.LightDataProvider;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 	
-	public final class LinearDepthShaderPart extends ShaderPart implements IDepthShaderPart
+	public final class LinearDepthFromLightShaderPart extends ShaderPart implements IDepthFromLightShaderPart
 	{
 		private static const VIEW_MATRICES : Vector.<Matrix4x4> = new <Matrix4x4>[
 			new Matrix4x4().view(Vector4.ZERO, Vector4.X_AXIS,		    Vector4.Y_AXIS),		// look at positive x
@@ -24,7 +23,7 @@ package aerys.minko.render.shader.part.depth
 		private var _lightSpacePosition		: SFloat;
 		private var _clipspacePosition		: SFloat;
 		
-		public function LinearDepthShaderPart(main : Shader)
+		public function LinearDepthFromLightShaderPart(main : Shader)
 		{
 			super(main);
 		}
