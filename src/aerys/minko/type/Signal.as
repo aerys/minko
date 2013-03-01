@@ -36,13 +36,11 @@ package aerys.minko.type
 			_name = name;
             _enabled = enabled;
 			_disableWhenNoCallbacks = disableWhenNoCallbacks;
-            
-            _callbacks = new <Function>[];
 		}
 		
 		public function add(callback : Function) : void
 		{
-            if (_callbacks.indexOf(callback) >= 0)
+            if (_callbacks && _callbacks.indexOf(callback) >= 0)
             {
                 var removeIndex : int = _toRemove ? _toRemove.indexOf(callback) : -1;
                 
@@ -71,7 +69,10 @@ package aerys.minko.type
 				return ;
 			}
 			
-			_callbacks[_numCallbacks] = callback;
+			if (_callbacks)
+				_callbacks[_numCallbacks] = callback;
+			else
+				_callbacks = new <Function>[callback];
 			++_numCallbacks;
 			
 			if (_numCallbacks == 1 && _disableWhenNoCallbacks)
@@ -80,7 +81,7 @@ package aerys.minko.type
 		
 		public function remove(callback : Function) : void
 		{
-			var index : int = _callbacks.indexOf(callback);
+			var index : int = (_callbacks ? _callbacks.indexOf(callback) : -1);
 			
 			if (index < 0)
             {
@@ -119,7 +120,7 @@ package aerys.minko.type
 		
 		public function hasCallback(callback : Function) : Boolean
 		{
-			return _callbacks.indexOf(callback) >= 0;
+			return _callbacks && _callbacks.indexOf(callback) >= 0;
 		}
 		
 		public function execute(...params) : void
