@@ -302,7 +302,7 @@ package aerys.minko.scene.controller.scene
 				previous = pass;
 				
 				// sort draw calls if necessary
-				if (pass.settings.depthSortDrawCalls)
+				if (pass.settings.depthSortDrawCalls && numCalls > 1)
 				{
 					for (var drawCallId : uint = 0; drawCallId < numCalls; ++drawCallId)
 						sortValues[drawCallId] = -(calls[drawCallId] as DrawCall).depth;
