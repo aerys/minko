@@ -897,10 +897,15 @@ package aerys.minko.render.geometry
 				if (streamMaxZ > maxZ)
 					maxZ = streamMaxZ;
 			}
-			
-			var min : Vector4	= new Vector4(minX, minY, minZ);
-			var max : Vector4	= new Vector4(maxX, maxY, maxZ);
-			
+
+			createBoundingVolumes(
+				new Vector4(minX, minY, minZ),
+				new Vector4(maxX, maxY, maxZ)
+			);
+		}
+		
+		protected function createBoundingVolumes(min : Vector4, max : Vector4) : void
+		{
 			_boundingSphere = BoundingSphere.fromMinMax(min, max);
 			_boundingBox = new BoundingBox(min, max);
 		}
