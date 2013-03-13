@@ -34,6 +34,7 @@ package aerys.minko.scene.controller.mesh
 		use namespace minko_math;
 		
 		private static const TMP_VECTOR4		: Vector4	= new Vector4();
+        private static const TMP_VECTOR4_2		: Vector4	= new Vector4();
 		
 		private static const STATE_UNDEFINED	: uint		= 0;
 		private static const STATE_INSIDE		: uint		= 1;
@@ -199,8 +200,8 @@ package aerys.minko.scene.controller.mesh
 			
 			if (culling & FrustumCulling.SPHERE)
 			{
-				var center 	: Vector4 	= transform.transformVector(geom.boundingSphere.center);
-				var scale 	: Vector4 	= transform.deltaTransformVector(Vector4.ONE);
+				var center 	: Vector4 	= transform.transformVector(geom.boundingSphere.center, TMP_VECTOR4);
+				var scale 	: Vector4 	= transform.deltaTransformVector(Vector4.ONE, TMP_VECTOR4_2);
 				var radius	: Number	= geom.boundingSphere.radius * Math.max(
 					Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z)
 				);
