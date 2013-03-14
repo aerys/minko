@@ -61,14 +61,14 @@ package aerys.minko.render.shader.part
 			{	
 				var alphaMap 	: SFloat 	= meshBindings.getTextureParameter(
 					BasicProperties.ALPHA_MAP,
-					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FILTERING, 1),
-					meshBindings.getProperty(BasicProperties.ALPHA_MAP_MIPMAPPING, 0),
-					meshBindings.getProperty(BasicProperties.ALPHA_MAP_WRAPPING, 1),
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FILTERING, SamplerFiltering.LINEAR),
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_WRAPPING, SamplerWrapping.REPEAT),
 					0,
-					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FORMAT, 0));
+					meshBindings.getProperty(BasicProperties.ALPHA_MAP_FORMAT, SamplerFormat.RGBA));
 				var alphaSample	: SFloat	= sampleTexture(alphaMap, uv);
 				
-				diffuseColor = float4(diffuseColor.rgb, alphaSample.r);					
+				diffuseColor = float4(diffuseColor.rgb, alphaSample.r);
 			}
 			
 			if (meshBindings.propertyExists(BasicProperties.DIFFUSE_TRANSFORM))
