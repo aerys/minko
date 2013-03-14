@@ -1,12 +1,15 @@
 package aerys.minko.scene.controller.debug
 {
+	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.primitive.LineGeometry;
 	import aerys.minko.render.geometry.stream.iterator.TriangleIterator;
 	import aerys.minko.render.geometry.stream.iterator.TriangleReference;
 	import aerys.minko.render.material.line.LineMaterial;
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.type.math.Matrix4x4;
 	
 	import flash.utils.Dictionary;
 	
@@ -14,6 +17,7 @@ package aerys.minko.scene.controller.debug
 	{
 		private var _wireframeMaterial	: LineMaterial;
 		private var _targetToWireframe	: Dictionary	= new Dictionary();
+		private var _geometryToMesh		: Dictionary 	= new Dictionary();
 		
 		public function get material() : LineMaterial
 		{
@@ -36,7 +40,7 @@ package aerys.minko.scene.controller.debug
 		
 		private function targetAddedHandler(ctrl	: WireframeDebugController,
 											target	: Mesh) : void
-		{
+		{			
 			if (target.scene)
 				addedHandler(target, target.parent);
 			else
@@ -66,7 +70,16 @@ package aerys.minko.scene.controller.debug
 			var lines		: Mesh				= new Mesh(linesGeom, this.material);
 			_targetToWireframe[target] = lines;
 			 
-			target.parent.addChild(lines);
+			target.localToWorldTransformChanged.add(updateTransform);
+			updateTransform(target, target.getLocalToWorldTransform());
+			target.scene.addChild(lines);
+		}
+		
+		private function updateTransform(child : ISceneNode, childLocalToWorld : Matrix4x4) : void
+		{
+			var lineMesh : Mesh = _targetToWireframe[child];
+			
+			lineMesh.transform.copyFrom(childLocalToWorld);
 		}
 		
 		private function removeWireframes(target : Mesh) : void
@@ -82,11 +95,13 @@ package aerys.minko.scene.controller.debug
 			if (target.added.hasCallback(addedHandler))
 				target.added.remove(addedHandler);
 			target.removed.remove(removedHandler);
+			target.localToWorldTransformChanged.remove(updateTransform);
 			removeWireframes(target);
 		}
 		
 		private function removedHandler(target : Mesh, ancestor : Group) : void
 		{
+
 			removeWireframes(target);
 		}
 	}
