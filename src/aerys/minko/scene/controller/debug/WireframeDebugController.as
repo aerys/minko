@@ -18,11 +18,25 @@ package aerys.minko.scene.controller.debug
 		private var _wireframeMaterial	: LineMaterial;
 		private var _targetToWireframe	: Dictionary	= new Dictionary();
 		private var _geometryToMesh		: Dictionary 	= new Dictionary();
+		private var _visible 			: Boolean 		= true;
 		
 		public function get material() : LineMaterial
 		{
 			return _wireframeMaterial
 				|| (_wireframeMaterial = new LineMaterial({diffuseColor : 0xffffffff, lineThickness	: 1.}));
+		}
+		
+		public function set visible(value : Boolean) : void
+		{
+			_visible = value;
+			
+			for each (var wireframe : Mesh in _targetToWireframe)
+				wireframe.visible = value;
+		}
+		
+		public function get visible() : Boolean
+		{
+			return _visible;
 		}
 		
 		public function WireframeDebugController()
@@ -68,6 +82,7 @@ package aerys.minko.scene.controller.debug
 			}
 			
 			var lines		: Mesh				= new Mesh(linesGeom, this.material);
+			lines.visible 	= _visible;
 			_targetToWireframe[target] = lines;
 			 
 			target.localToWorldTransformChanged.add(updateTransform);
@@ -79,7 +94,10 @@ package aerys.minko.scene.controller.debug
 		{
 			var lineMesh : Mesh = _targetToWireframe[child];
 			
-			lineMesh.transform.copyFrom(childLocalToWorld);
+			if (lineMesh == null)
+				child.localToWorldTransformChanged.remove(updateTransform);
+			else
+				lineMesh.transform.copyFrom(childLocalToWorld);
 		}
 		
 		private function removeWireframes(target : Mesh) : void
@@ -101,8 +119,12 @@ package aerys.minko.scene.controller.debug
 		
 		private function removedHandler(target : Mesh, ancestor : Group) : void
 		{
-
 			removeWireframes(target);
+		}
+		
+		override public function clone():AbstractController
+		{
+			return null;
 		}
 	}
 }
