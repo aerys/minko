@@ -34,6 +34,10 @@ package aerys.minko.render.shader.part.environment
 		
 		public function getEnvironmentColor() : SFloat
 		{
+            if (!meshBindings.propertyExists(EnvironmentMappingProperties.ENVIRONMENT_MAPPING_TYPE)
+                || !meshBindings.propertyExists(EnvironmentMappingProperties.ENVIRONMENT_MAP))
+                return float4(0, 0, 0, 0);
+            
 			// compute reflected vector
 			var cWorldCameraPosition	: SFloat = this.cameraPosition;
 			var vsWorldVertexToCamera	: SFloat = normalize(subtract(cWorldCameraPosition, vsWorldPosition));
