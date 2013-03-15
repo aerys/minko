@@ -172,9 +172,13 @@ package aerys.minko.scene.controller.mesh
 			if (!scene)
 				return ;
             
+            if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
+                scene.renderingBegin.remove(sceneRenderingBeginHandler);
+            
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
-			if (_frustumCulling)
+			if (_frustumCulling
+                && mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
 				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
 
 			mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);

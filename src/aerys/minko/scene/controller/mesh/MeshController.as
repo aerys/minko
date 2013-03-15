@@ -104,12 +104,20 @@ package aerys.minko.scene.controller.mesh
 		private function removedHandler(target		: Mesh,
 										ancestor	: Group) : void
 		{
-			if (!ancestor.scene)
+            var scene : Scene = ancestor.scene;
+            
+			if (!scene)
 				return ;
+
+            if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
+                scene.renderingBegin.remove(sceneRenderingBeginHandler);
 			
-			target.bindings.removeProvider(_data);
-			_data.dispose();
-			_data = null;
+            if (_data)
+            {
+    			target.bindings.removeProvider(_data);
+    			_data.dispose();
+    			_data = null;
+            }
             
             _localToWorld = null;
             _worldToLocal = null;
