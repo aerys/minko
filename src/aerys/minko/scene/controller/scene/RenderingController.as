@@ -244,8 +244,7 @@ package aerys.minko.scene.controller.scene
 			applyBindingChanges();
 			
 			_numEnabledPasses = 0;
-			_numDrawCalls = 0;
-
+            
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
 			var numPasses		: uint 				= _passes.length;
@@ -271,8 +270,6 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
-			
-			_numEnabledDrawCalls = 0;
 			
 			for (passId = 0; passId < numPasses; ++passId)
 			{
@@ -312,11 +309,9 @@ package aerys.minko.scene.controller.scene
 				
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
-					_numDrawCalls++;
 					call = calls[j];
 					if (call.enabled)
 					{
-						_numEnabledDrawCalls++;
 						numTriangles += call.apply(context, previousCall);
 						previousCall = call;
 					}
@@ -587,6 +582,8 @@ package aerys.minko.scene.controller.scene
                     
 				drawCalls[instanceId] = drawCall;
 				++_numDrawCalls;
+                if (drawCall.enabled)
+                    ++_numEnabledDrawCalls;
                 
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
 				bindShaderInstance(passInstance, drawCall, meshBindings);
@@ -617,6 +614,9 @@ package aerys.minko.scene.controller.scene
     			var numDrawCalls	: uint	            = drawCalls.length;
                 
     			unbindEffectInstance(effectInstance, meshBindings);
+                
+                if (_numDrawCalls == 0)
+                    throw new Error();
     			
     			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
     			{
@@ -624,6 +624,9 @@ package aerys.minko.scene.controller.scene
     				var drawCall		: DrawCall			= drawCalls[drawCallId];
     				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
     				
+                    if (drawCall.enabled)
+                        --_numEnabledDrawCalls;
+                    
     				unbindShaderInstance(passInstance, drawCall, meshBindings);
     			}
     			_numDrawCalls -= numDrawCalls;
