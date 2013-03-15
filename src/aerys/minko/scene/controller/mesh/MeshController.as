@@ -72,9 +72,18 @@ package aerys.minko.scene.controller.mesh
 				return ;
             
             _mesh = target;
+            _mesh.scene.renderingBegin.add(sceneRenderingBeginHandler);
+		}
+        
+        private function sceneRenderingBeginHandler(scene			: Scene,
+                                                    viewport		: Viewport,
+                                                    destination	    : BitmapData,
+                                                    time			: Number) : void
+        {
+            scene.renderingBegin.remove(sceneRenderingBeginHandler);
             
-            var transformController : TransformController = target.scene.getControllersByType(TransformController)[0]
-                as TransformController;
+            var transformController : TransformController = _mesh.scene
+                .getControllersByType(TransformController)[0] as TransformController;
             
             _localToWorld = transformController.getLocalToWorldTransform(_mesh);
             _worldToLocal = transformController.getWorldToLocalTransform(_mesh);
@@ -90,7 +99,7 @@ package aerys.minko.scene.controller.mesh
             _data.setProperty('worldToLocal', _worldToLocal);
             
             _mesh.bindings.addProvider(_data);
-		}
+        }
 		
 		private function removedHandler(target		: Mesh,
 										ancestor	: Group) : void

@@ -148,14 +148,22 @@ package aerys.minko.scene.controller.mesh
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
 
             if (_frustumCulling)
-            {
-                meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
-                _mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
-            }
+                scene.renderingBegin.add(sceneRenderingBeginHandler);
             
             _mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
             _mesh.bindings.addProvider(_data);
 		}
+        
+        private function sceneRenderingBeginHandler(scene			: Scene,
+                                                    viewport		: Viewport,
+                                                    destination	    : BitmapData,
+                                                    time			: Number) : void
+        {
+            scene.renderingBegin.remove(sceneRenderingBeginHandler);
+            
+            meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
+            _mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
+        }
         
 		private function removedHandler(mesh : Mesh, ancestor : Group) : void
 		{
