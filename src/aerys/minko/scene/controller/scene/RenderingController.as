@@ -813,6 +813,20 @@ package aerys.minko.scene.controller.scene
 						meshBindings
 					);
 					
+                    // the new shader failed to compile
+                    if (!replacementInstance)
+                    {
+                        var mesh    : Mesh      = meshBindings.owner as Mesh;
+                        var effect  : Effect    = _meshToEffectInstance[mesh].effect;
+                        
+                        delete _stashedPropertyChanges[meshBindings];
+                        
+                        deleteDrawCalls(mesh, effect);
+                        createDrawCalls(mesh, effect);
+                        
+                        break;
+                    }
+                    
 					if (replacementInstance.program != null)
 						drawCall.configure(
 							replacementInstance.program,
