@@ -615,9 +615,6 @@ package aerys.minko.scene.controller.scene
                 
     			unbindEffectInstance(effectInstance, meshBindings);
                 
-                if (_numDrawCalls == 0)
-                    throw new Error();
-    			
     			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
     			{
     				// retrieve drawcall, and shaderInstance
