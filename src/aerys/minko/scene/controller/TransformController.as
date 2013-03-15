@@ -50,6 +50,20 @@ package aerys.minko.scene.controller
         {
             super();
             
+            initialize();
+        }
+        
+        private function initialize() : void
+        {
+            _transforms = new <Matrix4x4>[];
+            _flags = new <uint>[];
+            _localToWorldTransforms = new <Matrix4x4>[];
+            _worldToLocalTransforms = new <Matrix4x4>[];
+            _numChildren = new <uint>[];
+            _firstChildId = new <uint>[];
+            _idToNode = new <ISceneNode>[];
+            _parentId = new <int>[];
+            
             targetAdded.add(targetAddedHandler);
             targetRemoved.add(targetRemovedHandler);
         }
@@ -310,13 +324,14 @@ package aerys.minko.scene.controller
             _target = null;
             
             _nodeToId = null;
-            _transforms = null;
-            _flags = null;
-            _localToWorldTransforms = null;
-            _worldToLocalTransforms = null;
-            _numChildren = null;
-            _idToNode = null;
-            _parentId = null;
+            _transforms.length = 0;
+            _flags.length = 0;
+            _localToWorldTransforms.length = 0;
+            _worldToLocalTransforms.length = 0;
+            _numChildren.length = 0;
+            _firstChildId.length = 0;
+            _idToNode.length = 0;
+            _parentId.length = 0;
         }
         
         private function addedHandler(target : ISceneNode, ancestor : Group) : void
@@ -369,9 +384,9 @@ package aerys.minko.scene.controller
             
             _nodeToId = new Dictionary(true);
             _transforms.length = 0;
-            _flags.length = 0;
-            _localToWorldTransforms.length = 0;
-            _worldToLocalTransforms.length = 0;
+            _flags = new <uint>[];
+            _localToWorldTransforms = new <Matrix4x4>[];
+            _worldToLocalTransforms = new <Matrix4x4>[];
             _numChildren.length = 0;
             _firstChildId.length = 0;
             _idToNode.length = 0;
@@ -380,17 +395,18 @@ package aerys.minko.scene.controller
             
             while (nodes.length)
             {
-                var node 	: ISceneNode 	= nodes.shift();
-                var group   : Group 		= node as Group;
+                var node 	    : ISceneNode 	= nodes.shift();
+                var group       : Group 		= node as Group;
+                var oldNodeId   : int           = oldNodeToId && node in oldNodeToId
+                    ? oldNodeToId[node]
+                    : -1;
                 
                 _nodeToId[node] = nodeId;
                 _idToNode[nodeId] = node;
                 _transforms[nodeId] = node.transform;
                 
-                if (oldNodeToId && node in oldNodeToId)
+                if (oldNodeId >= 0 && oldNodeId < oldLocalToWorldTransforms.length)
                 {
-                    var oldNodeId   : uint  = oldNodeToId[node];
-                    
                     _localToWorldTransforms[nodeId] = oldLocalToWorldTransforms[oldNodeId];
                     _worldToLocalTransforms[nodeId] = oldWorldToLocalTransform[oldNodeId];
                     _flags[nodeId] = oldInitialized[oldNodeId];
