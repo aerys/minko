@@ -368,14 +368,15 @@ package aerys.minko.scene.controller
             var oldWorldToLocalTransform    : Vector.<Matrix4x4>    = _worldToLocalTransforms;
             
             _nodeToId = new Dictionary(true);
-            _transforms = new <Matrix4x4>[];
-            _flags = new <uint>[];
-            _localToWorldTransforms = new <Matrix4x4>[];
-            _worldToLocalTransforms = new <Matrix4x4>[];
-            _numChildren = new <uint>[];
-            _firstChildId = new <uint>[];
-            _idToNode = new <ISceneNode>[];
-            _parentId = new <int>[-1];
+            _transforms.length = 0;
+            _flags.length = 0;
+            _localToWorldTransforms.length = 0;
+            _worldToLocalTransforms.length = 0;
+            _numChildren.length = 0;
+            _firstChildId.length = 0;
+            _idToNode.length = 0;
+            _parentId.length = 1;
+            _parentId[0] = -1;
             
             while (nodes.length)
             {
