@@ -140,7 +140,7 @@ package aerys.minko.scene.node.light
 								   shadowMapSize		: uint		= 512,
 								   shadowZNear			: Number	= 0.1,
 								   shadowZFar			: Number	= 1000.,
-                                   shadowBias           : uint      = 1. / 256. / 256.)
+                                   shadowBias           : Number      = 1. / 256. / 256.)
 		{
 			super(
 				new PointLightController(),
