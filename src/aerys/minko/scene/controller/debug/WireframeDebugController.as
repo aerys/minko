@@ -65,7 +65,7 @@ package aerys.minko.scene.controller.debug
 		private function addedHandler(target 	: Mesh,
 									  ancestor	: Group) : void
 		{
-			if (!target.scene)
+			if (!target.scene || target.geometry == null)
 				return ;
 			
 			var triangles	: TriangleIterator = new TriangleIterator(
@@ -113,7 +113,8 @@ package aerys.minko.scene.controller.debug
 			if (target.added.hasCallback(addedHandler))
 				target.added.remove(addedHandler);
 			target.removed.remove(removedHandler);
-			target.localToWorldTransformChanged.remove(updateTransform);
+			if (target.localToWorldTransformChanged.hasCallback(updateTransform))
+				target.localToWorldTransformChanged.remove(updateTransform);
 			removeWireframes(target);
 		}
 		
