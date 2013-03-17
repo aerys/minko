@@ -1,9 +1,9 @@
 Description
 -----------
 
-* Minko is a free and open source real-time 3D framework created by [Aerys](http://aerys.in).
-* Minko is designed to create fast and robust 3D applications for the web, desktop
-* and mobile devices. It is currently compatible with the following platforms:
+Minko is a free and open source real-time 3D framework created by [Aerys](http://aerys.in).
+Minko is designed to create fast and robust 3D applications for the web, desktop
+and mobile devices. It is currently compatible with the following platforms:
 
 * Mac and Windows computers
 * Any web browser with Flash 11+
