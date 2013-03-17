@@ -19,6 +19,7 @@ Links
 * [Support](http://minko.io/support)
 * [Documentation](http://doc.minko.io)
 * [Forum](http://forum.minko.io)
+* [Examples](https://github.com/aerys/minko-examples)
 
 Plugins
 -------
