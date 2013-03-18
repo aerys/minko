@@ -1,5 +1,7 @@
 package aerys.minko.render.shader.part.phong
 {
+	import flash.display3D.textures.Texture;
+	
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
@@ -21,7 +23,10 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.NormalMappingType;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.ShadowMappingType;
+	
+	import avmplus.FLASH10_FLAGS;
 	
 	/**
 	 * This shader part compute the lighting contribution of all lights
@@ -115,7 +120,12 @@ package aerys.minko.render.shader.part.phong
 			{
 				var uv			: SFloat = getVertexAttribute(VertexComponent.UV);
 				var lightMap	: SFloat = meshBindings.getTextureParameter(
-					PhongProperties.LIGHT_MAP
+					PhongProperties.LIGHT_MAP,
+					1,
+					0,
+					1,
+					0,
+					meshBindings.getProperty(PhongProperties.LIGHT_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				contribution = sampleTexture(lightMap, interpolate(uv));
