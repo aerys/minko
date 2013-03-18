@@ -5,8 +5,6 @@ package aerys.minko.render.material.phong.multipass
     import aerys.minko.render.resource.texture.ITextureResource;
     import aerys.minko.render.shader.SFloat;
     import aerys.minko.render.shader.ShaderSettings;
-    import aerys.minko.render.shader.part.phong.PhongShaderPart;
-    import aerys.minko.type.enum.Blending;
     import aerys.minko.type.enum.BlendingDestination;
     import aerys.minko.type.enum.BlendingSource;
     import aerys.minko.type.enum.DepthTest;

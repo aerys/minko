@@ -122,13 +122,51 @@ package aerys.minko.type
 			return _callbacks.indexOf(callback) >= 0;
 		}
 		
-		public function execute(...params) : void
+		public function execute(...p) : void
 		{
 			if (_numCallbacks && _enabled)
 			{
 				_executed = true;
 				for (var i : uint = 0; i < _numCallbacks; ++i)
-					_callbacks[i].apply(null, params);
+                {
+                    switch (p.length)
+                    {
+    					case 0:
+                            _callbacks[i]();
+                            break ;
+                        case 1:
+                            _callbacks[i](p[0]);
+                            break ;
+                        case 2:
+                            _callbacks[i](p[0], p[1]);
+                            break ;
+                        case 3:
+                            _callbacks[i](p[0], p[1], p[2]);
+                            break ;
+                        case 4:
+                            _callbacks[i](p[0], p[1], p[2], p[3]);
+                            break ;
+                        case 5:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4]);
+                            break ;
+                        case 6:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5]);
+                            break ;
+                        case 7:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
+                            break ;
+                        case 8:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
+                            break ;
+                        case 9:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
+                            break ;
+                        case 10:
+                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+                            break ;
+                    }
+//                   _callbacks[i].apply(null, params);
+                }
 				_executed = false;
 				
 				for (i = 0; i < _numAdded; ++i)

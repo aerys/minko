@@ -1,5 +1,9 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import flash.geom.Matrix3D;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
@@ -9,10 +13,6 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
-	
-	import flash.geom.Matrix3D;
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
 	
 	internal final class SoftwareSkinningHelper extends AbstractSkinningHelper
 	{
@@ -84,55 +84,63 @@ package aerys.minko.scene.controller.mesh.skinning
 			var format				: VertexFormat;
 			var dataLength			: uint;
 			var bytesPerVertex		: uint;
-			var positionStride		: uint;
-			var normalStride		: uint;
+			var stride				: uint;
 			var numInfluences		: uint;
 			
 			for (var streamId : uint = 0; streamId < numStreams; ++streamId)
 			{
-				var realStream			: VertexStream	= VertexStream(realGeometry.getVertexStream(streamId));
-				var fakeStream			: VertexStream	= VertexStream(fakeGeometry.getVertexStream(streamId));
-				var realData			: ByteArray		= realStream.lock();
-				var fakeData			: ByteArray		= fakeStream.lock();
+				var realStreamXYZ		: VertexStream	= VertexStream(realGeometry.getVertexStream(streamId).getStreamByComponent(VertexComponent.XYZ));
+				var fakeStreamXYZ		: VertexStream	= VertexStream(fakeGeometry.getVertexStream(streamId).getStreamByComponent(VertexComponent.XYZ));
+				
+				var realStreamNormal	: VertexStream	= VertexStream(realGeometry.getVertexStream(streamId).getStreamByComponent(VertexComponent.NORMAL));
+				var fakeStreamNormal	: VertexStream	= VertexStream(fakeGeometry.getVertexStream(streamId).getStreamByComponent(VertexComponent.NORMAL));
+				
+				var realDataXYZ			: ByteArray		= realStreamXYZ.lock();
+				var fakeDataXYZ			: ByteArray		= fakeStreamXYZ.lock();
+				
+				var realDataNormal		: ByteArray;
+				var fakeDataNormal		: ByteArray;
+				
+				if (realStreamXYZ != realStreamNormal)
+					realDataNormal = realStreamNormal.lock();
+				else
+					realDataNormal = realDataXYZ;
+				
+				if (fakeStreamXYZ != fakeStreamNormal)
+					fakeDataNormal = fakeStreamNormal.lock();
+				else
+					fakeDataNormal = fakeDataXYZ;
 				
 				if (streamId == 0)
 				{
-					format				= realStream.format;
-					dataLength			= realData.length;
+					format				= realStreamXYZ.format;
+					dataLength			= realDataXYZ.length;
 					bytesPerVertex		= format.numBytesPerVertex;
-					positionStride		= format.getBytesOffsetForComponent(VertexComponent.XYZ);
-					normalStride		= format.getBytesOffsetForComponent(VertexComponent.NORMAL);
+					stride				= format.getBytesOffsetForComponent(VertexComponent.XYZ);
 					getInfluenceStrides(format, TMP_VECTOR);
 					numInfluences		= influenceStrides.length;
 				}
 				
 				for (var offset : uint = 0; offset < dataLength; offset += bytesPerVertex)
 				{
-					var positionOffset	: uint		= offset + positionStride;
-					realData.position = positionOffset;
-					var inX				: Number	= realData.readFloat();
-					var inY				: Number	= realData.readFloat();
-					var inZ				: Number	= realData.readFloat();
+					var positionOffset	: uint		= offset + stride;
+					realDataXYZ.position = positionOffset;
 					
-					var normalOffset	: uint		= offset + normalStride;
-					realData.position = normalOffset;
-					var inNx			: Number	= realData.readFloat();
-					var inNy			: Number	= realData.readFloat();
-					var inNz			: Number	= realData.readFloat();
+					var inX				: Number	= realDataXYZ.readFloat();
+					var inY				: Number	= realDataXYZ.readFloat();
+					var inZ				: Number	= realDataXYZ.readFloat();
+					
 					
 					var outX			: Number	= 0;
 					var outY			: Number	= 0;
 					var outZ			: Number	= 0;
-					var outNx			: Number	= 0;
-					var outNy			: Number	= 0;
-					var outNz			: Number	= 0;
 					
 					for (var influenceId : uint = 0; influenceId < numInfluences; ++influenceId)
 					{
-						realData.position = offset + influenceStrides[influenceId];
+						realDataXYZ.position = offset + influenceStrides[influenceId];
 						
-						var jointId			: Number	= realData.readFloat();
-						var jointWeight		: Number	= realData.readFloat();
+						var jointId			: Number	= realDataXYZ.readFloat();
+						var jointWeight		: Number	= realDataXYZ.readFloat();
 						var matrixOffset	: uint		= 16 * jointId;
 						
 						if (jointWeight != 0)
@@ -151,7 +159,48 @@ package aerys.minko.scene.controller.mesh.skinning
 								+ inY * _matrices[uint(matrixOffset + 9)]
 								+ inZ * _matrices[uint(matrixOffset + 10)]
 								+ _matrices[uint(matrixOffset + 11)]);
-							
+						}
+					}
+										
+					fakeDataXYZ.position = positionOffset;
+					fakeDataXYZ.writeFloat(outX);
+					fakeDataXYZ.writeFloat(outY);
+					fakeDataXYZ.writeFloat(outZ);
+				}
+				
+				
+				if (streamId == 0)
+				{
+					format				= realStreamNormal.format;
+					dataLength			= realDataNormal.length;
+					bytesPerVertex		= format.numBytesPerVertex;
+					stride				= format.getBytesOffsetForComponent(VertexComponent.NORMAL);
+					getInfluenceStrides(format, TMP_VECTOR);
+					numInfluences		= influenceStrides.length;
+				}
+				
+				for (offset = 0; offset < dataLength; offset += bytesPerVertex)
+				{
+					var normalOffset	: uint		= offset + stride;
+					realDataNormal.position = normalOffset;
+					var inNx			: Number	= realDataNormal.readFloat();
+					var inNy			: Number	= realDataNormal.readFloat();
+					var inNz			: Number	= realDataNormal.readFloat();
+					
+					var outNx			: Number	= 0;
+					var outNy			: Number	= 0;
+					var outNz			: Number	= 0;
+					
+					for (influenceId = 0; influenceId < numInfluences; ++influenceId)
+					{
+						realDataNormal.position = offset + influenceStrides[influenceId];
+						
+						jointId			= realDataNormal.readFloat();
+						jointWeight		= realDataNormal.readFloat();
+						matrixOffset	= 16 * jointId;
+						
+						if (jointWeight != 0)
+						{							
 							outNx += jointWeight * (inNx * _matrices[uint(matrixOffset + 0)]
 								+ inNy * _matrices[uint(matrixOffset + 1)]
 								+ inNz * _matrices[uint(matrixOffset + 2)]);
@@ -167,20 +216,20 @@ package aerys.minko.scene.controller.mesh.skinning
 					}
 					
 					var invNormalLength : Number = 1 / Math.sqrt(outNx * outNx + outNy * outNy + outNz * outNz);
-					
-					fakeData.position = positionOffset;
-					fakeData.writeFloat(outX);
-					fakeData.writeFloat(outY);
-					fakeData.writeFloat(outZ);
-					
-					fakeData.position = normalOffset;
-					fakeData.writeFloat(outNx * invNormalLength);
-					fakeData.writeFloat(outNy * invNormalLength);
-					fakeData.writeFloat(outNz * invNormalLength);
+										
+					fakeDataNormal.position = normalOffset;
+					fakeDataNormal.writeFloat(outNx * invNormalLength);
+					fakeDataNormal.writeFloat(outNy * invNormalLength);
+					fakeDataNormal.writeFloat(outNz * invNormalLength);
 				}
 				
-				realStream.unlock(false);
-				fakeStream.unlock();
+				realStreamXYZ.unlock(false);
+				if (realStreamNormal != realStreamXYZ)
+					realStreamNormal.unlock(false);
+				
+				fakeStreamXYZ.unlock();
+				if (fakeStreamNormal != fakeStreamXYZ)
+					fakeStreamNormal.unlock(false);
 			}
 		}
 	}
