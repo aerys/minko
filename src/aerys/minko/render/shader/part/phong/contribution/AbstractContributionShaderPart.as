@@ -1,9 +1,12 @@
 package aerys.minko.render.shader.part.phong.contribution
 {
+	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
+	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 
 	/**
 	 * Methods in this class allow to compute light contributions.
@@ -167,7 +170,14 @@ package aerys.minko.render.shader.part.phong.contribution
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MAP))
 			{
 				var fsSpecularSample 	: SFloat	= sampleTexture(
-					meshBindings.getTextureParameter(PhongProperties.SPECULAR_MAP),
+					meshBindings.getTextureParameter(
+						PhongProperties.SPECULAR_MAP,
+						1,
+						0,
+						1,
+						0,
+						meshBindings.getProperty(PhongProperties.SPECULAR_MAP_FORMAT, SamplerFormat.RGBA)
+					),
 					fsUV
 				);
 				
