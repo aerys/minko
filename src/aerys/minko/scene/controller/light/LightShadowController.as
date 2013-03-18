@@ -23,8 +23,6 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
-	
-	import flashx.textLayout.factory.TruncationOptions;
 
 	public class LightShadowController extends LightController
 	{
