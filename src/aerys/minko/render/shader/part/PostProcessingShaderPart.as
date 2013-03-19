@@ -43,7 +43,7 @@ package aerys.minko.render.shader.part
 		
 		public function sampleBackBuffer(uv : SFloat) : SFloat
 		{
-			return sampleTexture(backBufferTexture, interpolate(vertexUV));
+			return sampleTexture(backBufferTexture, uv || interpolate(vertexUV));
 		}
 	}
 }
