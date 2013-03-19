@@ -72,7 +72,8 @@ package aerys.minko.render.material.phong
             var passes : Vector.<Shader>    = super.initializePasses(sceneBindings, meshBindings);
             
             for (var lightId : uint = 0;
-                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                lightPropertyExists(sceneBindings, lightId, 'enabled')
+                    && getLightProperty(sceneBindings, lightId, 'enabled');
                 ++lightId)
             {
                 if (lightPropertyExists(sceneBindings, lightId, 'shadowCastingType'))
@@ -129,7 +130,8 @@ package aerys.minko.render.material.phong
             }
             
 			for (var lightId : uint = 0;
-                lightPropertyExists(sceneBindings, lightId, 'enabled');
+                lightPropertyExists(sceneBindings, lightId, 'enabled')
+                    && getLightProperty(sceneBindings, lightId, 'enabled');
                 ++lightId)
 			{
                 var lightType : uint = getLightProperty(sceneBindings, lightId, 'type');
@@ -177,8 +179,8 @@ package aerys.minko.render.material.phong
 				}
 			}
             
-            if (ambientEnabled)
-                passes.push(new PhongAmbientShader(renderTarget, .75));
+//            if (ambientEnabled)
+//                passes.push(new PhongAmbientShader(renderTarget, .75));
             
             passes.push(new ZPrepassShader(renderTarget, 1));
             passes.push(new PhongEmissiveShader(
