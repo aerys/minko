@@ -290,18 +290,18 @@ package aerys.minko.scene.controller
             _target = target;
             _invalidList = true;
             
-            if (target is Scene)
-            {
-                (target as Scene).renderingBegin.add(renderingBeginHandler);
-                return;
-            }
-            
             if (target is Group)
             {
                 var targetGroup : Group = target as Group;
                 
                 targetGroup.descendantAdded.add(descendantAddedHandler);
                 targetGroup.descendantRemoved.add(descendantRemovedHandler);
+            }
+			
+            if (target is Scene)
+            {
+                (target as Scene).renderingBegin.add(renderingBeginHandler);
+                return;
             }
             
             target.added.add(addedHandler);
