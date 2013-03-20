@@ -115,7 +115,7 @@ package aerys.minko.type.loader.parser
 		
 		public function get assets() : AssetsLibrary
 		{
-			return _assets || (_assets = new AssetsLibrary());
+			return _assets;
 		}
 		
 		public function set assets(value : AssetsLibrary):void

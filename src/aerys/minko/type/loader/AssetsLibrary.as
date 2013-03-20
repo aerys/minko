@@ -8,6 +8,14 @@ package aerys.minko.type.loader
 	
 	public final class AssetsLibrary
 	{
+		private var _numGeometries 	: uint 						= 0;
+		private var _numMaterials	: uint 						= 0;
+		private var _numTextures	: uint 						= 0;
+		
+		private var _geometryList	: Vector.<Geometry> 		= new Vector.<Geometry>();
+		private var _materialList	: Vector.<Material> 		= new Vector.<Material>();
+		private var _textureList	: Vector.<TextureResource> 	= new Vector.<TextureResource>();
+		
 		private var _geometries		: Object;
 		private var _textures		: Object;
 		private var _materials		: Object;
@@ -25,21 +33,51 @@ package aerys.minko.type.loader
 			initializeSignals();
 		}
 		
-		public function get materials() : Object
+		public function get numTextures() : uint
 		{
-			return _materials;
+			return _numTextures;
 		}
-
-		public function get textures() : Object
+		
+		public function get numGeometries() : uint
 		{
-			return _textures;
+			return _numGeometries;
 		}
-
-		public function get geometries() : Object
+		
+		public function get numMaterials() : uint
 		{
-			return _geometries;
+			return _numMaterials;
 		}
-
+		
+		public function getMaterialAt(index : uint): Material
+		{
+			return _materialList[index];
+		}
+		
+		public function getGeometryAt(index : uint): Geometry
+		{
+			return _geometryList[index];
+		}
+		
+		public function getTextureAt(index : uint): TextureResource
+		{
+			return _textureList[index];
+		}
+		
+		public function getMaterialByName(name : String) : Material
+		{
+			return _materials[name];
+		}
+		
+		public function getTextureByName(name : String) : TextureResource
+		{
+			return _textures[name];
+		}
+		
+		public function getGeometryByName(name : String) : Geometry
+		{
+			return _geometries[name];
+		}
+		
 		private function initialize() : void
 		{
 			_geometries		= {};
@@ -84,12 +122,16 @@ package aerys.minko.type.loader
 		
 		public function setGeometry(name : String, geometry : Geometry) : void
 		{
+			++_numGeometries;
+			_geometryList.push(geometry);
 			_geometries[name] = geometry;
 			_geometryAdded.execute(this, name, geometry);
 		}
 
 		public function setTexture(name : String, texture : TextureResource) : void
 		{
+			++_numTextures;
+			_textureList.push(texture);
 			_textures[name] = texture;
 			_textureAdded.execute(this, name, texture);
 		}
@@ -97,6 +139,9 @@ package aerys.minko.type.loader
 		public function setMaterial(name : String, material : Material) : void
 		{
 			name ||= material.name;
+			
+			++_numMaterials;
+			_materialList.push(material);	
 			_materials[name] = material;
 			_materialAdded.execute(this, name, material);
 		}
@@ -106,21 +151,6 @@ package aerys.minko.type.loader
 			name ||= 'Layer_' + layer;
 			_layers[layer] = name;
 			_layerAdded.execute(this, name, layer);
-		}
-		
-		public function getGeometry(name : String) : Geometry
-		{
-			return _geometries[name];
-		}
-		
-		public function getTexture(name : String) : TextureResource
-		{
-			return _textures[name];
-		}
-		
-		public function getMaterial(name : String) : Material
-		{
-			return _materials[name];
 		}
 		
 		public function getLayerTag(name : String, ... params) : uint
