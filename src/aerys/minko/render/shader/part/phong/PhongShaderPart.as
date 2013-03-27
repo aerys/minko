@@ -1,7 +1,5 @@
 package aerys.minko.render.shader.part.phong
 {
-	import flash.display3D.textures.Texture;
-	
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
@@ -17,7 +15,6 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.phong.attenuation.VarianceShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.InfiniteShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.LocalizedShaderPart;
-	import aerys.minko.scene.controller.debug.BonesDebugController;
 	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.scene.node.light.PointLight;
@@ -25,8 +22,6 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.type.enum.NormalMappingType;
 	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.ShadowMappingType;
-	
-	import avmplus.FLASH10_FLAGS;
 	
 	/**
 	 * This shader part compute the lighting contribution of all lights

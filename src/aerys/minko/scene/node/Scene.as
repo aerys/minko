@@ -1,5 +1,10 @@
 package aerys.minko.scene.node
 {
+	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
+	
+	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.Viewport;
@@ -10,10 +15,6 @@ package aerys.minko.scene.node
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.loader.AssetsLibrary;
-	
-	import flash.display.BitmapData;
-	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
 
 	/**
 	 * Scene objects are the root of any 3D scene.

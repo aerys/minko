@@ -1,17 +1,15 @@
 package aerys.minko.scene.controller
 {
+    import flash.display.BitmapData;
+    import flash.utils.Dictionary;
+    
     import aerys.minko.ns.minko_math;
     import aerys.minko.render.Viewport;
     import aerys.minko.scene.node.Group;
     import aerys.minko.scene.node.ISceneNode;
     import aerys.minko.scene.node.Scene;
-    import aerys.minko.scene.node.camera.Camera;
     import aerys.minko.type.Signal;
     import aerys.minko.type.math.Matrix4x4;
-    
-    import flash.display.BitmapData;
-    import flash.utils.Dictionary;
-    import flash.utils.getTimer;
     
     use namespace minko_math;
     
