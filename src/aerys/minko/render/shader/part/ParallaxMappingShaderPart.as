@@ -5,7 +5,9 @@ package aerys.minko.render.shader.part
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
+	import aerys.minko.type.enum.SamplerWrapping;
 	
 	/**
 	 * 
@@ -28,8 +30,14 @@ package aerys.minko.render.shader.part
 			var numSteps	: uint		= meshBindings.getProperty(PhongProperties.PARALLAX_MAPPING_NBSTEPS, DEFAULT_STEEP_NSTEPS);
 			
 			var fsHeightMap	: SFloat	= meshBindings.getTextureParameter(
-				PhongProperties.HEIGHT_MAP, SamplerFiltering.LINEAR, SamplerMipMapping.LINEAR
+				PhongProperties.HEIGHT_MAP, 
+				meshBindings.getProperty(PhongProperties.HEIGHT_MAP_FILTERING, SamplerFiltering.LINEAR),
+				meshBindings.getProperty(PhongProperties.HEIGHT_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
+				meshBindings.getProperty(PhongProperties.HEIGHT_MAP_WRAPPING, SamplerWrapping.REPEAT),
+				0, 
+				meshBindings.getProperty(PhongProperties.HEIGHT_MAP_FORMAT, SamplerFormat.RGBA)
 			);
+			
 			var cBumpScale	: SFloat	= meshBindings.getParameter(
 				PhongProperties.PARALLAX_MAPPING_BUMP_SCALE, 1, DEFAULT_BUMPSCALE
 			);
