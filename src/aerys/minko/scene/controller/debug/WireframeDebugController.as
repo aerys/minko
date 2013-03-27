@@ -15,7 +15,8 @@ package aerys.minko.scene.controller.debug
 	
 	public final class WireframeDebugController extends AbstractController
 	{
-		private var _wireframeMaterial	: LineMaterial;
+		private static var _wireframeMaterial	: LineMaterial;
+		
 		private var _targetToWireframe	: Dictionary	= new Dictionary();
 		private var _geometryToMesh		: Dictionary 	= new Dictionary();
 		private var _visible 			: Boolean 		= true;
