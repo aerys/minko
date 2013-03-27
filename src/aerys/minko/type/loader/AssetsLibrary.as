@@ -2,6 +2,7 @@ package aerys.minko.type.loader
 {
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
+	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.Signal;
@@ -122,28 +123,38 @@ package aerys.minko.type.loader
 		
 		public function setGeometry(name : String, geometry : Geometry) : void
 		{
-			++_numGeometries;
-			_geometryList.push(geometry);
-			_geometries[name] = geometry;
-			_geometryAdded.execute(this, name, geometry);
+			if (_geometryList.indexOf(geometry) == -1)
+			{
+				++_numGeometries;
+				_geometryList.push(geometry);
+				_geometries[name] = geometry;
+				_geometryAdded.execute(this, name, geometry);
+			}
 		}
 
 		public function setTexture(name : String, texture : TextureResource) : void
 		{
-			++_numTextures;
-			_textureList.push(texture);
-			_textures[name] = texture;
-			_textureAdded.execute(this, name, texture);
+			if (_textureList.indexOf(texture) == -1)
+			{
+				++_numTextures;
+				_textureList.push(texture);
+				_textures[name] = texture;
+				_textureAdded.execute(this, name, texture);
+			}
 		}
 		
 		public function setMaterial(name : String, material : Material) : void
 		{
+			material ||= new BasicMaterial();
 			name ||= material.name;
 			
-			++_numMaterials;
-			_materialList.push(material);	
-			_materials[name] = material;
-			_materialAdded.execute(this, name, material);
+			if (_materialList.indexOf(material) == -1)
+			{
+				++_numMaterials;
+				_materialList.push(material);	
+				_materials[name] = material;
+				_materialAdded.execute(this, name, material);
+			}
 		}
 		
 		public function setLayer(name : String, layer : uint) : void
