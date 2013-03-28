@@ -24,7 +24,7 @@ package aerys.minko.scene.controller.debug
 		public function get material() : LineMaterial
 		{
 			return _wireframeMaterial
-				|| (_wireframeMaterial = new LineMaterial({diffuseColor : 0xffffffff, lineThickness	: 1.}));
+				|| (_wireframeMaterial = new LineMaterial({diffuseColor : 0x509dc7ff, lineThickness	: 1.}));
 		}
 		
 		public function set visible(value : Boolean) : void
