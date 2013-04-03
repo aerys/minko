@@ -1,13 +1,13 @@
 package aerys.minko.render.material.line
 {
 	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.geometry.primitive.LineGeometry;
 	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
-	import aerys.minko.type.enum.SamplerFormat;
+	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.TriangleCulling;
-	import aerys.minko.render.geometry.primitive.LineGeometry;
 	
 	public class LineShader extends Shader
 	{
@@ -20,8 +20,17 @@ package aerys.minko.render.material.line
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
 			super.initializeSettings(settings);
+			// depth test
+			settings.depthWriteEnabled = meshBindings.getProperty(
+				BasicProperties.DEPTH_WRITE_ENABLED, true
+			);
+			settings.depthTest = meshBindings.getProperty(
+				BasicProperties.DEPTH_TEST, DepthTest.LESS
+			);
 			
-			settings.triangleCulling = TriangleCulling.NONE;
+			settings.triangleCulling = meshBindings.getProperty(
+				BasicProperties.TRIANGLE_CULLING, TriangleCulling.NONE
+			);
 		}
 		
 		override protected function getVertexPosition():SFloat
