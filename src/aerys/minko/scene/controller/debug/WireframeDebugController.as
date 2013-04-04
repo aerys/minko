@@ -86,7 +86,9 @@ package aerys.minko.scene.controller.debug
 			lines.visible 	= _visible;
 			_targetToWireframe[target] = lines;
 			 
-			target.localToWorldTransformChanged.add(updateTransform);
+			if (!target.localToWorldTransformChanged.hasCallback(updateTransform))
+				target.localToWorldTransformChanged.add(updateTransform);
+			
 			updateTransform(target, target.getLocalToWorldTransform());
 			target.scene.addChild(lines);
 		}
