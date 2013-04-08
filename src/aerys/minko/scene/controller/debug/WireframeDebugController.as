@@ -32,7 +32,10 @@ package aerys.minko.scene.controller.debug
 			_visible = value;
 			
 			for each (var wireframe : Mesh in _targetToWireframe)
-				wireframe.visible = value;
+			{
+				if (wireframe)
+					wireframe.visible = value;
+			}
 		}
 		
 		public function get visible() : Boolean
