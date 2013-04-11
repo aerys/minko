@@ -53,7 +53,7 @@ package aerys.minko.render.resource
         private var _stencilActionOnDepthFail               : String;
         private var _stencilActionOnDepthPassStencilFail    : String;
 		
-		minko_render function get context() : Context3D
+		public function get context() : Context3D
 		{
 			return _context;
 		}
