@@ -221,7 +221,7 @@ package aerys.minko.scene.controller
                 childLocalToWorld
                     .copyFrom(childTransform)
                     .append(localToWorld);
-                
+					
                 if (childFlags & FLAG_LOCK_TRANSFORMS)
                     childLocalToWorld.unlock();
                 
@@ -257,16 +257,16 @@ package aerys.minko.scene.controller
         
         private function updateAncestorsAndSelfLocalToWorld(nodeId : uint) : void
         {
-            var dirtyRoot   : int           = -1;
+           	//var dirtyRoot   : int           = -1;
             var tmpNodeId   : int           = nodeId;
             var path        : Vector.<uint> = new <uint>[];
             var numNodes    : uint          = 0;
             
             while (tmpNodeId >= 0)
             {
-                if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
-                    || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
-                    dirtyRoot = tmpNodeId;
+                //if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
+                //    || !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
+                //    dirtyRoot = tmpNodeId;*/
                 
                 path[numNodes] = tmpNodeId;
                 ++numNodes;
@@ -274,9 +274,9 @@ package aerys.minko.scene.controller
                 tmpNodeId = _parentId[tmpNodeId];
             }
             
-            if (dirtyRoot >= 0)
+            //if (dirtyRoot >= 0)
                 updateLocalToWorldPath(path);
-//                updateLocalToWorld(dirtyRoot, nodeId);
+			//updateLocalToWorld(dirtyRoot, nodeId);
         }
         
         private function targetAddedHandler(ctrl	: TransformController,
