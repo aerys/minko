@@ -6,13 +6,11 @@ package aerys.minko.scene.controller
 	import aerys.minko.render.shader.picking.PickingShader;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
-	import aerys.minko.scene.node.camera.Camera;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -305,8 +303,8 @@ package aerys.minko.scene.controller
                             }
                             else if (target is Group)
                             {
-                                var group   : Group         = target as Group;
-                                var hits    : SceneIterator = group.cast(ray, Number.POSITIVE_INFINITY, _tag);
+                                var group   : Group                 = target as Group;
+                                var hits    : Vector.<ISceneNode>   = group.cast(ray, Number.POSITIVE_INFINITY, _tag);
                                 
                                 if (hits.length > 0)
                                 {

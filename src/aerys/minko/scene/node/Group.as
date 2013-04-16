@@ -1,15 +1,15 @@
 package aerys.minko.scene.node
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.scene.SceneIterator;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.parser.ParserOptions;
 	import aerys.minko.type.math.Ray;
-	
-	import flash.net.URLRequest;
+    import aerys.minko.type.xpath.XPathEvaluator;
+
+    import flash.net.URLRequest;
 	import flash.utils.ByteArray;
 	import flash.utils.getQualifiedClassName;
 
@@ -405,9 +405,11 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function get(xpath : String) : SceneIterator
+		public function get(xpath : String) : Vector.<ISceneNode>
 		{
-			return new SceneIterator(xpath, new <ISceneNode>[this]);
+            var xpathEval : XPathEvaluator = new XPathEvaluator(xpath, new <ISceneNode>[this], null);
+
+			return xpathEval.selection;
 		}
 		
 		private function loaderCompleteHandler(loader	: ILoader,
@@ -424,7 +426,7 @@ package aerys.minko.scene.node
 		 * @return 
 		 * 
 		 */
-		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : SceneIterator
+		public function cast(ray : Ray, maxDistance : Number = Number.POSITIVE_INFINITY, tag : uint = 1) : Vector.<ISceneNode>
 		{
 			var meshes		: Vector.<ISceneNode> 	= getDescendantsByType(Mesh);
 			var numMeshes	: uint					= meshes.length;
@@ -448,7 +450,7 @@ package aerys.minko.scene.node
 			if (numItems > 1)
 				Sort.flashSort(depth, hit, numItems);
 			
-			return new SceneIterator(null, Vector.<ISceneNode>(hit));
+			return Vector.<ISceneNode>(hit);
 		}
 		
 		override minko_scene function cloneNode() : AbstractSceneNode
