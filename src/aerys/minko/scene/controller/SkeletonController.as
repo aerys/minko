@@ -1,6 +1,8 @@
 package aerys.minko.scene.controller
 {
-	/**
+import aerys.minko.scene.controller.animation.AnimationController;
+
+/**
 	 * The SkeletonController aggregates AnimationController objects
 	 * and control them in order to start/stop playing animations on
 	 * multiple scene nodes at the same time and control a whole
