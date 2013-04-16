@@ -1010,7 +1010,7 @@ package aerys.minko.render.geometry
 		 * @param ray The ray to cast on the geometry.
 		 * @param transform An optional 3D transform to transform the ray into the geometry local space.
 		 * @param hitXYZ An optional reference to a Vector4 object to fill with the (x, y, z) coordinates
-		 * of the actual ray/geometry hit point.
+		 * of the actual ray/geometry hit point in local space.
 		 * @param hitUV An optional reference to a Point object to fill with the (u, v) texture coordinates
 		 * of the actual ray/geometry hit point.
 		 * @param hitNormal An optional reference to a Vector4 object to fill the normal of the intersection
@@ -1171,12 +1171,9 @@ package aerys.minko.render.geometry
 			{
 				if (hitXYZ)
 				{
-					var origin 		: Vector4 	= ray.origin;
-					var direction 	: Vector4	= ray.direction;
-					
-					hitXYZ.x = origin.x + minDistance * direction.x;
-					hitXYZ.y = origin.y + minDistance * direction.y;
-					hitXYZ.z = origin.z + minDistance * direction.z;
+					hitXYZ.x = localOrigin.x + minDistance * localDirection.x;
+					hitXYZ.y = localOrigin.y + minDistance * localDirection.y;
+					hitXYZ.z = localOrigin.z + minDistance * localDirection.z;
 				}
 				
 				if (hitUV)
