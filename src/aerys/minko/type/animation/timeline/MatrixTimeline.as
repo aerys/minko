@@ -15,6 +15,21 @@ package aerys.minko.type.animation.timeline
         private var _interpolateW       : Boolean;
 		private var _timeTableLength	: uint;
 
+		minko_animation function get interpolate() : Boolean
+		{
+			return _interpolate;
+		}
+		
+		minko_animation function get interpolateScale() : Boolean
+		{
+			return _interpolateScale;
+		}
+		
+		minko_animation function get interpolateW() : Boolean
+		{
+			return _interpolateW;
+		}
+		
 		minko_animation function get timeTable() : Vector.<uint>
 		{
 			return _timeTable;
@@ -112,7 +127,10 @@ package aerys.minko.type.animation.timeline
 			return new MatrixTimeline(
 				propertyPath,
 				_timeTable.slice(),
-				_values.slice()
+				_values.slice(),
+				_interpolate,
+				_interpolateScale,
+				_interpolateW
 			);
 		}
 	}

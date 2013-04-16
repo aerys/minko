@@ -982,7 +982,7 @@ package aerys.minko.render.geometry
 				if (normalsStream != null)
 					normalsStream.applyTransform(VertexComponent.NORMAL, m, true);
 				
-				if (tangentsStream != null)
+				if (tangentsStream != null && flipTangents)
 					tangentsStream.applyTransform(VertexComponent.TANGENT, m, true);
 			}
 			

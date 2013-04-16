@@ -162,7 +162,10 @@ package aerys.minko.render
         protected function initializeFallbackPasses(sceneBindings	: DataBindingsProxy,
                                                     meshBindings 	: DataBindingsProxy) : Vector.<Shader>
         {
-            return new <Shader>[];
+            // FIXME: throw with explicit error message
+            throw new Error(
+                'One of the Shader failed to compile and the Effect does not provide a fallback.'
+            );
         }
 	}
 }

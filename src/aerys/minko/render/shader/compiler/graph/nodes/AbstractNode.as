@@ -1,7 +1,5 @@
 package aerys.minko.render.shader.compiler.graph.nodes
 {
-	import aerys.minko.render.shader.compiler.register.Components;
-	
 	import flash.utils.Dictionary;
 
 	public class AbstractNode

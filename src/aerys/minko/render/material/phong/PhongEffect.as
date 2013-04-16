@@ -49,21 +49,21 @@ package aerys.minko.render.material.phong
      */
 	public class PhongEffect extends Effect
 	{
-        private var _useRenderToTarget  : Boolean;
+        private var _useRenderToTexture : Boolean;
         private var _singlePassShader   : Shader;
-        private var _baseShader         : Shader;
+        private var _emissiveShader     : Shader;
         
         private var _targets            : Array;
         
-		public function PhongEffect(useRenderToTarget   : Boolean   = false,
-                                    singlePassShader    : Shader    = null,
-                                    baseShader          : Shader    = null)
+		public function PhongEffect(useRenderToTexture   : Boolean   = false,
+                                    singlePassShader     : Shader    = null,
+                                    emissiveShader           : Shader    = null)
 		{
             super();
             
-            _useRenderToTarget = useRenderToTarget;
+            _useRenderToTexture = useRenderToTexture;
             _singlePassShader = singlePassShader || new PhongSinglePassShader(null, 0);
-//            _baseShader = baseShader || new PhongEmissiveShader(null, .5);
+            _emissiveShader = emissiveShader || new PhongEmissiveShader(null, null, .25);
             
             _targets = [];
 		}
@@ -113,12 +113,12 @@ package aerys.minko.render.material.phong
         override protected function initializeFallbackPasses(sceneBindings  : DataBindingsProxy,
                                                              meshBindings   : DataBindingsProxy) : Vector.<Shader>
         {
-            var passes              : Vector.<Shader>   = super.initializeFallbackPasses(sceneBindings, meshBindings);
+            var passes              : Vector.<Shader>   = new <Shader>[];
             var discardDirectional  : Boolean           = true;
             var ambientEnabled      : Boolean           = meshBindings.propertyExists('lightmap');
             var renderTarget        : RenderTarget      = null;
             
-            if (_useRenderToTarget)
+            if (_useRenderToTexture)
             {
                 var accumulatorSize : uint  = sceneBindings.getProperty('viewportWidth');
                 

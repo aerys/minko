@@ -73,21 +73,8 @@ package aerys.minko.type.binding
 			_propertyRemoved = new Signal('DataProvider.propertyRemoved');
 			_nameToProperty = {};
 			_propertyToNames = new Dictionary();
-			
-			var propertyName : String = null;
-			
-			if (properties is DataProvider)
-			{
-				var provider : DataProvider = properties as DataProvider;
-				
-				for each (propertyName in provider.dataDescriptor)
-					setProperty(propertyName, provider[propertyName]);
-			}
-			else if (properties is Object)
-			{
-				for (propertyName in properties)
-					setProperty(propertyName, properties[propertyName]);
-			}
+						
+			setProperties(properties);
 		}
 		
 		override flash_proxy function getProperty(name : *) : *
@@ -144,8 +131,18 @@ package aerys.minko.type.binding
 		
 		public function setProperties(properties : Object) : DataProvider
 		{
-			for (var propertyName : String in properties)
-				setProperty(propertyName, properties[propertyName]);
+			var propertyName : String = null;
+			
+			if (properties is DataProvider)
+			{
+				var provider : DataProvider = properties as DataProvider;
+				
+				for each (propertyName in provider.dataDescriptor)
+					setProperty(propertyName, provider[propertyName]);
+			}
+			else 
+				for (propertyName in properties)
+					setProperty(propertyName, properties[propertyName]);
 				
 			return this;
 		}

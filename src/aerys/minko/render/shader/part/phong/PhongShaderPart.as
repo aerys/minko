@@ -15,12 +15,12 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.render.shader.part.phong.attenuation.VarianceShadowMapAttenuationShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.InfiniteShaderPart;
 	import aerys.minko.render.shader.part.phong.contribution.LocalizedShaderPart;
-	import aerys.minko.scene.controller.debug.BonesDebugController;
 	import aerys.minko.scene.node.light.AmbientLight;
 	import aerys.minko.scene.node.light.DirectionalLight;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.NormalMappingType;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
 	/**
@@ -115,7 +115,12 @@ package aerys.minko.render.shader.part.phong
 			{
 				var uv			: SFloat = getVertexAttribute(VertexComponent.UV);
 				var lightMap	: SFloat = meshBindings.getTextureParameter(
-					PhongProperties.LIGHT_MAP
+					PhongProperties.LIGHT_MAP,
+					1,
+					0,
+					1,
+					0,
+					meshBindings.getProperty(PhongProperties.LIGHT_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				contribution = sampleTexture(lightMap, interpolate(uv));

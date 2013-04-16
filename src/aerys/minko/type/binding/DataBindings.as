@@ -250,6 +250,11 @@ package aerys.minko.type.binding
 					addProvider(provider);
 			}
 		}
+        
+        public function hasProvider(provider : DataProvider) : Boolean
+        {
+            return provider in _providers;
+        }
 		
 		private function propertyChangedHandler(source 			: IDataProvider,
 												propertyName 	: String,

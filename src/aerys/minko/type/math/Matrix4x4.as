@@ -498,6 +498,7 @@ package aerys.minko.type.math
 			_matrix.copyRawDataFrom(input, offset, transposed);
 
 			_hasChanged = true;
+            _invalidComponents |= COMPONENT_ALL;
 			if (!_locked)
 				_changed.execute(this);
 
@@ -522,6 +523,7 @@ package aerys.minko.type.math
 			_matrix.copyColumnFrom(column, value._vector);
 		
 			_hasChanged = true;
+            _invalidComponents |= COMPONENT_ALL;
 			if (!_locked)
 				_changed.execute(this);
 			
@@ -546,6 +548,7 @@ package aerys.minko.type.math
 			_matrix.copyRowFrom(row, value._vector);
 
 			_hasChanged = true;
+            _invalidComponents |= COMPONENT_ALL;
 			if (!_locked)
 				_changed.execute(this);
 			

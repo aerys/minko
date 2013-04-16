@@ -9,6 +9,8 @@ package aerys.minko.render.resource
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
+	
+	import aerys.minko.ns.minko_render;
 
 	public final class Context3DResource
 	{
@@ -50,6 +52,11 @@ package aerys.minko.render.resource
         private var _stencilActionOnBothPass                : String;
         private var _stencilActionOnDepthFail               : String;
         private var _stencilActionOnDepthPassStencilFail    : String;
+		
+		public function get context() : Context3D
+		{
+			return _context;
+		}
 		
 		public function get enabledErrorChecking() : Boolean
 		{

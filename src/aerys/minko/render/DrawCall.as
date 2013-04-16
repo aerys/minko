@@ -268,10 +268,12 @@ package aerys.minko.render
 			
 			if (computeDepth)
 			{
-//				_worldToScreen = sceneBindings.getProperty('worldToScreen') as Matrix4x4;
-//				_localToWorld = meshBindings.getProperty('localToWorld') as Matrix4x4;
-				
+                if (sceneBindings.propertyExists('worldToScreen'))
+                    _worldToScreen = sceneBindings.getProperty('worldToScreen');
 				sceneBindings.addCallback('worldToScreen', transformChangedHandler);
+                
+                if (meshBindings.propertyExists('localToWorld'))
+                    _localToWorld = meshBindings.getProperty('localToWorld');
 				meshBindings.addCallback('localToWorld', transformChangedHandler);
 				
 				_invalidDepth = true;

@@ -1,11 +1,20 @@
 package aerys.minko.scene.controller
 {
+	import flash.display.BitmapData;
+	import flash.events.IEventDispatcher;
+	import flash.events.MouseEvent;
+	import flash.ui.Mouse;
+	import flash.ui.MouseCursor;
+	import flash.utils.Dictionary;
+	import flash.utils.getQualifiedClassName;
+	
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.Viewport;
-	import aerys.minko.render.shader.picking.PickingShader;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.picking.PickingShader;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
@@ -18,14 +27,6 @@ package aerys.minko.scene.controller
 	import aerys.minko.type.enum.PickingTechnique;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
-	
-	import flash.display.BitmapData;
-	import flash.events.IEventDispatcher;
-	import flash.events.MouseEvent;
-	import flash.ui.Mouse;
-	import flash.ui.MouseCursor;
-	import flash.utils.Dictionary;
-	import flash.utils.getQualifiedClassName;
 	
 	public class PickingController extends EnterFrameController
 	{
@@ -586,7 +587,7 @@ package aerys.minko.scene.controller
 			mesh.bindings.addProvider(meshData);
 			mesh.bindings.addCallback('effect', effectChangedHandler);
 			
-			if (mesh.material && mesh.material.effect)
+			if (mesh.material && mesh.material.effect && mesh.geometry.getVertexStream(0).format.hasComponent(VertexComponent.XYZ))
 				addPickingToEffect(mesh.material.effect);
 		}
 		

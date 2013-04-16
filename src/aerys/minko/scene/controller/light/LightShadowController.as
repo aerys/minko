@@ -5,7 +5,6 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.render.effect.blur.BlurEffect;
 	import aerys.minko.render.geometry.primitive.QuadGeometry;
 	import aerys.minko.render.material.Material;
-	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.resource.texture.CubeTextureResource;
 	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
@@ -13,18 +12,12 @@ package aerys.minko.scene.controller.light
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.scene.RenderingController;
 	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.camera.AbstractCamera;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.scene.node.light.PointLight;
-	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
-	
-	import flashx.textLayout.factory.TruncationOptions;
 
 	public class LightShadowController extends LightController
 	{
