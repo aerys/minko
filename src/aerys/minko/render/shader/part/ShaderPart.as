@@ -934,11 +934,11 @@ package aerys.minko.render.shader.part
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,
-											filter			: uint  = SamplerFiltering.LINEAR,
-											mipmap			: uint  = SamplerMipMapping.DISABLE,
-											wrapping		: uint  = SamplerWrapping.REPEAT,
-											dimension		: uint  = SamplerDimension.FLAT,
-											format          : uint  = SamplerFormat.RGBA) : SFloat
+											filter			: uint  = 1, // SamplerFiltering.LINEAR
+											mipmap			: uint  = 0, // SamplerMipMapping.DISABLE
+											wrapping		: uint  = 1, // SamplerWrapping.REPEAT
+											dimension		: uint  = 0, // SamplerDimension.FLAT
+											format          : uint  = 0) : SFloat
 		{
 			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension, format));
 		}
