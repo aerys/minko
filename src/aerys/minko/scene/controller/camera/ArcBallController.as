@@ -266,14 +266,7 @@ package aerys.minko.scene.controller.camera
 			if (_newPitch > Math.PI - EPSILON)
 				_newPitch = Math.PI - EPSILON;
 		}
-		
-		private function dampValues(time : Number, dampingFactor : Number) : void
-		{
-			_distance	= interpolate(_distance,	_newDistance,	time,	dampingFactor);
-			_pitch		= interpolate(_pitch,		_newPitch,		time,	dampingFactor);
-			_yaw		= interpolate(_yaw,			_newYaw, 		time,	dampingFactor);
-		}
-		
+
 		private function updateTargets(time : Number = 1) : void
 		{
 			var enableInertia	: Boolean	= (_inertia != 1. && _interpolationSpeed != 1.);
@@ -282,7 +275,14 @@ package aerys.minko.scene.controller.camera
 				clampValues();
 				
 				if (enableInertia)
-					dampValues(time * _interpolationSpeed, _inertia);
+                {
+                    var dt      : Number = time * _interpolationSpeed;
+                    var factor  : Number = _inertia;
+
+                    _distance   = (((_distance * factor)    + (_newDistance * dt)) / (factor + dt));
+                    _pitch      = (((_pitch * factor)       + (_newPitch * dt)) / (factor + dt));
+                    _yaw        = (((_yaw * factor)         + (_newYaw * dt)) / (factor + dt));
+                }
 				else
 				{
 					_yaw = _newYaw;
@@ -329,10 +329,5 @@ package aerys.minko.scene.controller.camera
 		{
 			_update = true;
 		}
-		
-		private function interpolate(src : Number, dst : Number, dt : Number, factor : Number) : Number
-		{
-			return (((src * factor) + (dst * dt)) / (factor + dt));
-		}
-	}
+    }
 }
