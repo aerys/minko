@@ -219,8 +219,9 @@ package aerys.minko.scene.controller
 					childLocalToWorld.lock();
 				
 				childLocalToWorld
-				.copyFrom(childTransform)
+					.copyFrom(childTransform)
 					.append(localToWorld);
+				
 				
 				if (childFlags & FLAG_LOCK_TRANSFORMS)
 					childLocalToWorld.unlock();
@@ -264,7 +265,8 @@ package aerys.minko.scene.controller
 			
 			while (tmpNodeId >= 0)
 			{
-				if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
+				if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged 
+					|| _localToWorldTransforms[tmpNodeId]._hasChanged
 					|| !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
 					dirtyRoot = tmpNodeId;
 				
