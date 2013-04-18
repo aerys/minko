@@ -8,7 +8,6 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.math.Vector4;
 	

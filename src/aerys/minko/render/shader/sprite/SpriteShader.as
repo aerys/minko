@@ -4,11 +4,7 @@ package aerys.minko.render.shader.sprite
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
-	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.enum.SamplerFiltering;
-	import aerys.minko.type.enum.SamplerMipMapping;
-	import aerys.minko.type.enum.SamplerWrapping;
 	
 	public class SpriteShader extends Shader
 	{

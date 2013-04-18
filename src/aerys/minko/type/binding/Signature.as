@@ -1,6 +1,5 @@
 package aerys.minko.type.binding
 {
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 

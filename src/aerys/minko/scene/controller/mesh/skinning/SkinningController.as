@@ -1,5 +1,9 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import flash.display.BitmapData;
+	import flash.geom.Matrix3D;
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
@@ -10,15 +14,10 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.display.BitmapData;
-	import flash.geom.Matrix3D;
-	import flash.utils.Dictionary;
 	
 	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{

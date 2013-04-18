@@ -1,14 +1,13 @@
 ﻿package aerys.minko.render.geometry.stream.iterator
 {
+	import flash.utils.Proxy;
+	import flash.utils.flash_proxy;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IVertexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
-	
-	import flash.utils.Proxy;
-	import flash.utils.flash_proxy;
 
 	/**
 	 * VertexReference object are high-level OOP-oriented vertices data proxy.

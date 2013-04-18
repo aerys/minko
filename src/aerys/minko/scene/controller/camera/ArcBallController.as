@@ -1,19 +1,16 @@
 package aerys.minko.scene.controller.camera
 {
+	import flash.display.BitmapData;
+	import flash.events.IEventDispatcher;
+	import flash.events.MouseEvent;
+	import flash.geom.Point;
+	
 	import aerys.minko.render.Viewport;
 	import aerys.minko.scene.controller.EnterFrameController;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Quaternion;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.display.BitmapData;
-	import flash.events.IEventDispatcher;
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
-	import flash.ui.Mouse;
-	import flash.ui.MouseCursor;
 	
 	public class ArcBallController extends EnterFrameController
 	{

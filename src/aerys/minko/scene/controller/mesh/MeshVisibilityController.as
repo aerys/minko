@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
+	import flash.display.BitmapData;
+	
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.geometry.Geometry;
@@ -9,7 +11,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
@@ -18,8 +19,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.display.BitmapData;
 
 	
 	/**

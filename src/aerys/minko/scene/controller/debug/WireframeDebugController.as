@@ -1,6 +1,7 @@
 package aerys.minko.scene.controller.debug
 {
-	import aerys.minko.render.geometry.Geometry;
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.render.geometry.primitive.LineGeometry;
 	import aerys.minko.render.geometry.stream.iterator.TriangleIterator;
 	import aerys.minko.render.geometry.stream.iterator.TriangleReference;
@@ -10,8 +11,6 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.utils.Dictionary;
 	
 	public final class WireframeDebugController extends AbstractController
 	{

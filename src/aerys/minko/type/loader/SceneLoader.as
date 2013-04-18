@@ -6,12 +6,8 @@ package aerys.minko.type.loader
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
 	
-	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.loader.parser.IParser;
