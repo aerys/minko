@@ -1,7 +1,6 @@
 package aerys.minko.scene.node.camera
 {
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
