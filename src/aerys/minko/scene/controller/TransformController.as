@@ -43,6 +43,7 @@ package aerys.minko.scene.controller
 		private var _numChildren			: Vector.<uint>;
 		private var _firstChildId			: Vector.<uint>;
 		private var _parentId				: Vector.<int>;
+		private var _prevLocalToWorld		: Matrix4x4;
 		
 		public function TransformController()
 		{
@@ -61,6 +62,7 @@ package aerys.minko.scene.controller
 			_firstChildId = new <uint>[];
 			_idToNode = new <ISceneNode>[];
 			_parentId = new <int>[];
+			_prevLocalToWorld = new Matrix4x4();
 			
 			targetAdded.add(targetAddedHandler);
 			targetRemoved.add(targetRemovedHandler);
@@ -80,13 +82,15 @@ package aerys.minko.scene.controller
 		
 		private function updateRootLocalToWorld(nodeId : uint = 0) : void
 		{
-			var rootLocalToWorld	: Matrix4x4		= _localToWorldTransforms[nodeId];
-			var rootTransform		: Matrix4x4		= _transforms[nodeId];
-			var root				: ISceneNode	= _idToNode[nodeId];
-			var rootFlags           : uint          = _flags[nodeId];
+			var rootLocalToWorld		: Matrix4x4		= _localToWorldTransforms[nodeId];
+			var rootTransform			: Matrix4x4		= _transforms[nodeId];
+			var root					: ISceneNode	= _idToNode[nodeId];
+			var rootFlags           	: uint			= _flags[nodeId];
 			
 			if (rootTransform._hasChanged || !(rootFlags & FLAG_INIT_LOCAL_TO_WORLD))
 			{
+				_prevLocalToWorld.copyFrom(rootLocalToWorld);
+				
 				if (rootFlags & FLAG_LOCK_TRANSFORMS)
 					rootLocalToWorld.lock();
 				
@@ -120,15 +124,15 @@ package aerys.minko.scene.controller
 				
 				var localToWorldTransformChanged : Signal = root.localToWorldTransformChanged;
 				
-				if (root.localToWorldTransformChanged.enabled)
+				if (root.localToWorldTransformChanged.enabled && !_prevLocalToWorld.compareTo(rootLocalToWorld))
 					root.localToWorldTransformChanged.execute(root, rootLocalToWorld);
 			}
 		}
 		
 		private function updateLocalToWorld(nodeId : uint = 0) : void
 		{
-			var numNodes 	: uint 	= _transforms.length;
-			var subtreeMax  : uint  = nodeId;
+			var numNodes 				: uint			= _transforms.length;
+			var subtreeMax  			: uint			= nodeId;
 			
 			updateRootLocalToWorld(nodeId);
 			
@@ -152,9 +156,11 @@ package aerys.minko.scene.controller
 					var childFlags          : uint          = _flags[childId];
 					var childIsDirty		: Boolean		= isDirty || childTransform._hasChanged
 						|| !(childFlags & FLAG_INIT_LOCAL_TO_WORLD);
-					
+															
 					if (childIsDirty)
 					{
+						_prevLocalToWorld.copyFrom(childLocalToWorld);
+						
 						var child	: ISceneNode	= _idToNode[childId];
 						
 						if (childFlags & FLAG_LOCK_TRANSFORMS)
@@ -190,7 +196,7 @@ package aerys.minko.scene.controller
 						
 						var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
 						
-						if (localToWorldTransformChanged.enabled)
+						if (localToWorldTransformChanged.enabled && !_prevLocalToWorld.compareTo(childLocalToWorld))
 							localToWorldTransformChanged.execute(child, childLocalToWorld);
 					}
 				}
@@ -204,7 +210,6 @@ package aerys.minko.scene.controller
 			var numNodes				: uint		= path.length;
 			var nodeId					: uint		= path[uint(numNodes - 1)];
 			var localToWorld 			: Matrix4x4	= _localToWorldTransforms[nodeId];
-			var prevChildLocalToWorld	: Matrix4x4	= new Matrix4x4();
 			
 			updateRootLocalToWorld(nodeId);
 			
@@ -216,7 +221,7 @@ package aerys.minko.scene.controller
 				var childFlags          : uint          = _flags[childId];
 				var child	            : ISceneNode	= _idToNode[childId];
 				
-				prevChildLocalToWorld.copyFrom(childLocalToWorld);
+				_prevLocalToWorld.copyFrom(childLocalToWorld);
 				
 				if (childFlags & FLAG_LOCK_TRANSFORMS)
 					childLocalToWorld.lock();
@@ -252,7 +257,7 @@ package aerys.minko.scene.controller
 				
 				var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
 				
-				if (localToWorldTransformChanged.enabled && !prevChildLocalToWorld.compareTo(childLocalToWorld))
+				if (localToWorldTransformChanged.enabled && !_prevLocalToWorld.compareTo(childLocalToWorld))
 					localToWorldTransformChanged.execute(child, childLocalToWorld);
 				
 				localToWorld = childLocalToWorld;
