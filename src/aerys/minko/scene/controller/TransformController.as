@@ -201,9 +201,10 @@ package aerys.minko.scene.controller
 		
 		private function updateLocalToWorldPath(path : Vector.<uint> = null) : void
 		{
-			var numNodes 	    : uint 	    = path.length;
-			var nodeId          : uint      = path[uint(numNodes - 1)];
-			var localToWorld 	: Matrix4x4	= _localToWorldTransforms[nodeId];
+			var numNodes				: uint		= path.length;
+			var nodeId					: uint		= path[uint(numNodes - 1)];
+			var localToWorld 			: Matrix4x4	= _localToWorldTransforms[nodeId];
+			var prevChildLocalToWorld	: Matrix4x4	= new Matrix4x4();
 			
 			updateRootLocalToWorld(nodeId);
 			
@@ -215,12 +216,15 @@ package aerys.minko.scene.controller
 				var childFlags          : uint          = _flags[childId];
 				var child	            : ISceneNode	= _idToNode[childId];
 				
+				prevChildLocalToWorld.copyFrom(childLocalToWorld);
+				
 				if (childFlags & FLAG_LOCK_TRANSFORMS)
 					childLocalToWorld.lock();
 				
 				childLocalToWorld
-				.copyFrom(childTransform)
+					.copyFrom(childTransform)
 					.append(localToWorld);
+				
 				
 				if (childFlags & FLAG_LOCK_TRANSFORMS)
 					childLocalToWorld.unlock();
@@ -248,7 +252,7 @@ package aerys.minko.scene.controller
 				
 				var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
 				
-				if (localToWorldTransformChanged.enabled)
+				if (localToWorldTransformChanged.enabled && !prevChildLocalToWorld.compareTo(childLocalToWorld))
 					localToWorldTransformChanged.execute(child, childLocalToWorld);
 				
 				localToWorld = childLocalToWorld;
@@ -264,7 +268,8 @@ package aerys.minko.scene.controller
 			
 			while (tmpNodeId >= 0)
 			{
-				if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged
+				if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged 
+					|| (tmpNodeId != nodeId && _localToWorldTransforms[tmpNodeId]._hasChanged)
 					|| !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
 					dirtyRoot = tmpNodeId;
 				
