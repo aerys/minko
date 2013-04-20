@@ -4,7 +4,6 @@ package aerys.minko.type.loader
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.Signal;
 	
 	public final class AssetsLibrary

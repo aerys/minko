@@ -1,17 +1,13 @@
 package aerys.minko.scene.node.camera
 {
+	import flash.geom.Point;
+	
 	import aerys.minko.ns.minko_scene;
-	import aerys.minko.scene.controller.camera.CameraController;
-	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.geom.Point;
 	
 	use namespace minko_scene;
 

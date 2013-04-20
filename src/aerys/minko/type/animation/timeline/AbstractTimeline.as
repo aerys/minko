@@ -1,7 +1,5 @@
 package aerys.minko.type.animation.timeline
 {
-	import aerys.minko.render.geometry.primitive.CylinderGeometry;
-	
 	import flash.utils.Dictionary;
 
 	/**

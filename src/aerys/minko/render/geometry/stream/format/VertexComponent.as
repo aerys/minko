@@ -1,7 +1,5 @@
 package aerys.minko.render.geometry.stream.format
 {
-	import flash.utils.ByteArray;
-
 	public final class VertexComponent
 	{
 		private static const INSTANCIATED_COMPONENTS	: Object = {};

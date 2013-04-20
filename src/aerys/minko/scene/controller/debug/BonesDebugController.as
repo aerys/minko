@@ -4,10 +4,7 @@ package aerys.minko.scene.controller.debug
 	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
-	import aerys.minko.render.geometry.primitive.CubeGeometry;
 	import aerys.minko.render.geometry.primitive.LineGeometry;
-	import aerys.minko.render.material.Material;
-	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.material.line.LineMaterial;
 	import aerys.minko.render.material.line.LineShader;
 	import aerys.minko.scene.controller.AbstractController;

@@ -1,9 +1,8 @@
 package aerys.minko.type.enum
 {
-	import aerys.minko.ns.minko_render;
-	
-	import flash.display.TriangleCulling;
 	import flash.display3D.Context3DTriangleFace;
+	
+	import aerys.minko.ns.minko_render;
 
 	public final class TriangleCulling
 	{

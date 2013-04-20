@@ -1,17 +1,13 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
-	import aerys.minko.Minko;
+	import flash.geom.Matrix3D;
+	
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.type.animation.SkinningMethod;
-	import aerys.minko.type.log.DebugLevel;
-	
-	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
 
 	internal class AbstractSkinningHelper
 	{

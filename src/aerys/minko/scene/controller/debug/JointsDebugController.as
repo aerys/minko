@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller.debug
 {
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.render.geometry.primitive.CubeGeometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
@@ -8,9 +10,6 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.math.Vector4;
-	
-	import flash.utils.Dictionary;
 	
 	/**
 	 * Add debug meshes to see the joints/bones of the skeleton of a skinned Mesh.
