@@ -1,14 +1,13 @@
 package aerys.minko.render.shader.sprite
 {
+	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.BlendingSource;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.enum.SamplerFiltering;
-	import aerys.minko.type.enum.SamplerMipMapping;
-	import aerys.minko.type.enum.SamplerWrapping;
 	
 	public class SpriteShader extends Shader
 	{
@@ -25,8 +24,25 @@ package aerys.minko.render.shader.sprite
 		
 		override protected function initializeSettings(settings : ShaderSettings) : void
 		{
-//			settings.blending = Blending.ALPHA;
-			settings.depthTest = DepthTest.LESS;
+			var blending : uint = meshBindings.getProperty(
+				BasicProperties.BLENDING, Blending.OPAQUE
+			);
+			settings.depthWriteEnabled = meshBindings.getProperty(
+				BasicProperties.DEPTH_WRITE_ENABLED, true
+			);
+			settings.depthTest = meshBindings.getProperty(
+				BasicProperties.DEPTH_TEST, DepthTest.LESS
+			);
+			
+			if ((blending & 0xff) == BlendingSource.SOURCE_ALPHA)
+			{
+				settings.priority -= 0.5;
+				settings.depthSortDrawCalls = true;
+			}
+			
+			settings.blending			= blending;
+			settings.enabled			= true;
+			settings.scissorRectangle	= null;
 		}
 		
 		override protected function getVertexPosition() : SFloat
