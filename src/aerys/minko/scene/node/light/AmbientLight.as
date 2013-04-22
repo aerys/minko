@@ -3,8 +3,6 @@ package aerys.minko.scene.node.light
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.controller.light.LightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.type.enum.ShadowMappingType;
 
 	use namespace minko_scene;
 	

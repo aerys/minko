@@ -1,10 +1,8 @@
 package aerys.minko.scene.node
 {
 	import flash.display.BitmapData;
-	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
-	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.Viewport;

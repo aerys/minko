@@ -1,16 +1,14 @@
 package aerys.minko.type.loader.parser
 {
+	import flash.net.URLRequest;
+	
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.type.animation.SkinningMethod;
 	import aerys.minko.type.loader.AssetsLibrary;
 	import aerys.minko.type.loader.ILoader;
 	import aerys.minko.type.loader.SceneLoader;
 	import aerys.minko.type.loader.TextureLoader;
-	
-	import flash.net.URLRequest;
 	
 	/**
 	 * ParserOptions objects provide properties and function references

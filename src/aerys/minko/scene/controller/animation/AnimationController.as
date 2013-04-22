@@ -1,15 +1,16 @@
 package aerys.minko.scene.controller.animation
 {
-import aerys.minko.scene.controller.*;
-	import aerys.minko.render.Viewport;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.animation.timeline.ITimeline;
-	
-	import flash.display.BitmapData;
-	import flash.utils.getTimer;
+import flash.display.BitmapData;
+import flash.utils.getTimer;
+
+import aerys.minko.render.Viewport;
+import aerys.minko.scene.controller.AbstractController;
+import aerys.minko.scene.controller.EnterFrameController;
+import aerys.minko.scene.node.Group;
+import aerys.minko.scene.node.ISceneNode;
+import aerys.minko.scene.node.Scene;
+import aerys.minko.type.Signal;
+import aerys.minko.type.animation.timeline.ITimeline;
 
 	/**
 	 * The AnimationController uses timelines to animate properties of scene nodes.
@@ -308,6 +309,30 @@ import aerys.minko.scene.controller.*;
             return this;
         }
 
+		public function changeLabel(oldName : String, newName : String) : IAnimationController
+		{
+			var index : int = _labelNames.indexOf(oldName);
+			
+			if (index < 0)
+				throw new Error('The time label named \'' + oldName + '\' does not exist.');
+			
+			_labelNames[index] = newName;
+			
+			return this;
+		}
+		
+		public function setTimeForLabel(name : String, newTime : Number) : IAnimationController
+		{
+			var index : int = _labelNames.indexOf(name);
+			
+			if (index < 0)
+				throw new Error('The time label named \'' + name + '\' does not exist.');
+			
+			_labelTimes[index] = newTime;
+			
+			return this;
+		}
+		
         public function removeLabel(name : String) : IAnimationController
         {
             var index : int = _labelNames.indexOf(name);
