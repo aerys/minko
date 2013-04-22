@@ -21,8 +21,6 @@ package aerys.minko.render.material.phong
 	import aerys.minko.type.enum.ShadowMappingQuality;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
-	import avmplus.USE_ITRAITS;
-	
     /**
      * <p>The PhongEffect using the Phong lighting model to render the geometry according to
      * the lighting setup of the scene. It supports an infinite number of lights/projected
