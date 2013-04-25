@@ -189,6 +189,8 @@ package aerys.minko.type.loader
 		private function parseErrorHandler(parser : IParser) : void
 		{
 			_isComplete = true;
+            
+            _parser = null;
 		}
 		
 		private function parseProgressHandler(parser : IParser, progress : Number) : void
@@ -200,6 +202,8 @@ package aerys.minko.type.loader
 		{
 			_isComplete = true;
 			_data = loadedData;
+            
+            _parser = null;
 			
 			// call later to make sure the loading is always seen as asynchronous
 			setTimeout(callLaterComplete, 0, loadedData);
