@@ -178,7 +178,7 @@ package aerys.minko.scene.node.light
 								  shadowZFar			: Number	= 1000,
 								  shadowQuality			: uint		= 0,
 								  shadowSpread			: uint		= 1,
-                                  shadowBias            : uint      = 1. / 256. / 256.)
+                                  shadowBias            : Number    = 1. / 256. / 256.)
 		{
 			super(
 				new SpotLightController(),

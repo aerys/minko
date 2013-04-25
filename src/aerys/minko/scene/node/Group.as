@@ -159,8 +159,7 @@ package aerys.minko.scene.node
             
             for (var childId : uint = 0; childId < numChildren; ++childId)
             {
-                var child : ISceneNode = _children[childId];
-                
+                child = _children[childId];
                 child.added.execute(child, ancestor);
             }
         }
@@ -171,8 +170,7 @@ package aerys.minko.scene.node
             
             for (var childId : uint = 0; childId < numChildren; ++childId)
             {
-                var child : ISceneNode = _children[childId];
-                
+                child = _children[childId];
                 child.removed.execute(child, ancestor);
             }
         }

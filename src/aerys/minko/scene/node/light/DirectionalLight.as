@@ -125,7 +125,7 @@ package aerys.minko.scene.node.light
 										 shadowWidth		: Number	= 20,
 										 shadowQuality		: uint		= 0,
 										 shadowSpread		: uint		= 1,
-                                         shadowBias         : uint      = .002)
+                                         shadowBias         : Number    = .002)
 		{
 			super(
 				new DirectionalLightController(),
