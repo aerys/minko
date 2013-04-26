@@ -1,10 +1,13 @@
 package aerys.minko.scene.node.camera
 {
+	import flash.geom.Point;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.math.Ray;
+	import aerys.minko.type.math.Vector4;
 	
 	use namespace minko_scene;
 	
@@ -62,6 +65,22 @@ package aerys.minko.scene.node.camera
 			localToWorld(out.direction, out.direction, true);
 			
 			return out;
+		}
+		
+		override public function project(worldPosition:Vector4, output:Point=null):Point
+		{
+			output ||= new Point();
+			
+			var sceneBindings	: DataBindings	= (root as Scene).bindings;
+			var width			: Number		= sceneBindings.getProperty('viewportWidth');
+			var height			: Number		= sceneBindings.getProperty('viewportHeight');
+			
+			worldPosition = worldToLocal(worldPosition, null, false, true);
+			
+			output.x = width  * (0.5 + (worldPosition.x / (width  / _cameraData.zoom)));
+			output.y = height * (0.5 - (worldPosition.y / (height / _cameraData.zoom)));
+			
+			return output;
 		}
 		
 		override minko_scene function cloneNode():AbstractSceneNode
