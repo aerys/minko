@@ -1,0 +1,302 @@
+#include "OpenGLESContext.hpp"
+
+OpenGLESContext::~OpenGLESContext()
+{
+	for (std::shared_ptr<const unsigned int> vertexBuffer : _vertexBuffers)
+		glDeleteBuffers(1, vertexBuffer.get());
+
+	for (std::shared_ptr<const unsigned int> indexBuffer : _indexBuffers)
+		glDeleteBuffers(1, indexBuffer.get());
+
+	for (std::shared_ptr<const unsigned int> texture : _textures)
+		glDeleteTextures(1, texture.get());
+}
+
+void
+OpenGLESContext::clear(float 			red,
+					    float 			green,
+					    float 			blue,
+					    float 			alpha,
+					    float 			depth,
+					    unsigned int 	stencil,
+					    unsigned int 	mask)
+{
+	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
+	//
+	// void glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+	// red, green, blue, alpha Specify the red, green, blue, and alpha values used when the color buffers are cleared.
+	// The initial values are all 0.
+	// 
+	// glClearColor specify clear values for the color buffers
+	glClearColor(red, green, blue, alpha);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml
+	//
+	// void glClearDepth(GLdouble depth);
+	// void glClearDepthf(GLfloat depth);
+	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
+	// 
+	// glClearColor specify the clear value for the depth buffer
+	glClearDepth(depth);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
+	//
+	// void glClearStencil(GLint s)
+	// s Specifies the index used when the stencil buffer is cleared. The initial value is 0.
+	//
+	// glClearStencil specify the clear value for the stencil buffer
+	glClearStencil(stencil);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
+	//
+	// void glClear(GLbitfield mask);
+	// mask
+	// Bitwise OR of masks that indicate the buffers to be cleared. The three masks are GL_COLOR_BUFFER_BIT,
+	// GL_DEPTH_BUFFER_BIT, and GL_STENCIL_BUFFER_BIT.
+	//
+	// glClear clear buffers to preset values
+	glClear(mask);
+}
+
+void
+OpenGLESContext::present()
+{
+	// http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml
+	//
+	// force execution of GL commands in finite time
+	glFlush();
+}
+
+void
+OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glDrawElements.xml
+	// 
+	// void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
+	// mode Specifies what kind of primitives to render.
+	// count Specifies the number of elements to be rendered.
+	// type Specifies the type of the values in indices.
+	// indices Specifies a pointer to the location where the indices are stored.
+	//
+	// glDrawElements render primitives from array data
+	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, NULL);
+}
+
+const unsigned int
+OpenGLESContext::createVertexBuffer(const unsigned int size)
+{
+	std::shared_ptr<unsigned int> vertexBuffer;
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glGenBuffers.xml
+	// 
+	// void glGenBuffers(GLsizei n, GLuint* buffers);
+	// n Specifies the number of buffer object names to be vertexBufferd.
+	// buffers Specifies an array in which the generated buffer object names are stored.
+	// 
+	// glGenBuffers returns n buffer object names in buffers. There is no
+	// guarantee that the names form a contiguous set of integers; however,
+	// it is guaranteed that none of the returned names was in use immediately
+	// before the call to glGenBuffers.
+	glGenBuffers(1, vertexBuffer.get());
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glBindBuffer.xml
+	// 
+	// void glBindBuffer(GLenum target, GLuint buffer);
+	// target Specifies the target to which the buffer object is bound.
+	// buffer Specifies the name of a buffer object.
+	// 
+	// glBindBuffer binds a buffer object to the specified buffer binding point.
+	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glBufferData.xml
+	//
+	// void glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage)
+	// target Specifies the target buffer object.
+	// size Specifies the size in bytes of the buffer object's new data store.
+	// data Specifies a pointer to data that will be copied into the data store for initialization, or NULL if no data is to be copied.
+	// usage Specifies the expected usage pattern of the data store.
+	//
+	// glBufferData creates and initializes a buffer object's data store
+	glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+
+	_vertexBuffers.push_back(vertexBuffer);
+
+	return *vertexBuffer;
+}
+
+void
+OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
+									     const unsigned int 	offset,
+									     const unsigned int 	size,
+									     void* 					data)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glBufferSubData.xml
+	//
+	// void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+	// target Specifies the target buffer object
+	// offset Specifies the offset into the buffer object's data store where data replacement will begin, measured in bytes.
+	// size Specifies the size in bytes of the data store region being replaced.
+	// data Specifies a pointer to the new data that will be copied into the data store.
+	//
+	// glBufferSubData updates a subset of a buffer object's data store
+	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}
+
+void
+OpenGLESContext::disposeVertexBuffer(const unsigned int vertexBuffer)
+{
+	removeAllocationFromList(vertexBuffer, _vertexBuffers);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
+	// 
+	// void glDeleteBuffers(GLsizei n, const GLuint* buffers)
+	// n Specifies the number of buffer objects to be deleted.
+	// buffers Specifies an array of buffer objects to be deleted.
+	//
+	// glDeleteBuffers deletes n buffer objects named by the elements of the array buffers. After a buffer object is
+	// deleted, it has no contents, and its name is free for reuse (for example by glGenBuffers). If a buffer object
+	// that is currently bound is deleted, the binding reverts to 0 (the absence of any buffer object).
+	glDeleteBuffers(1, &vertexBuffer);
+}
+
+void
+OpenGLESContext::setVertexBufferAt(const unsigned int index,
+								    const unsigned int vertexBuffer)
+{
+	throw;
+}
+
+const unsigned int
+OpenGLESContext::createIndexBuffer(const unsigned int size)
+{
+	std::shared_ptr<unsigned int> indexBuffer;
+
+	glGenBuffers(1, indexBuffer.get());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+
+	_indexBuffers.push_back(indexBuffer);
+
+	return *indexBuffer;
+}
+
+void
+OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
+										  const unsigned int 	offset,
+										  const unsigned int 	size,
+										  void*					data)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+}
+
+void
+OpenGLESContext::disposeIndexBuffer(const unsigned int indexBuffer)
+{
+	removeAllocationFromList(indexBuffer, _indexBuffers);
+
+	glDeleteBuffers(1, &indexBuffer);
+}
+
+const unsigned int
+OpenGLESContext::createTexture(unsigned int 	width,
+							    unsigned int 	height,
+							    bool			mipMapping)
+{
+	std::shared_ptr<unsigned int> texture;
+
+	// make sure width is a power of 2
+	if (!((width != 0) && !(width & (width - 1))))
+		throw ;
+
+	// make sure height is a power of 2
+	if (!((height != 0) && !(height & (height - 1))))
+		throw ;
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
+	//
+	// void glGenTextures(GLsizei n, GLuint* textures)
+	// n Specifies the number of texture names to be generated.
+	// textures Specifies an array in which the generated texture names are stored.
+	//
+	// glGenTextures generate texture names
+	glGenTextures(1, texture.get());
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+	//
+	// void glBindTexture(GLenum target, GLuint texture);
+	// target Specifies the target to which the texture is bound.
+	// texture Specifies the name of a texture.
+	//
+	// glBindTexture bind a named texture to a texturing target
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+	//
+	// void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border,
+	// GLenum format, GLenum type, const GLvoid* data);
+	// target Specifies the target texture.
+	// level Specifies the level-of-detail number. Level 0 is the base image level. Level n is the nth mipmap reduction
+	// image. If target is GL_TEXTURE_RECTANGLE or GL_PROXY_TEXTURE_RECTANGLE, level must be 0.
+	// internalFormat Specifies the number of color components in the texture. Must be one of base internal formats given in Table 1,
+	// one of the sized internal formats given in Table 2, or one of the compressed internal formats given in Table 3,
+	// below.
+	// width Specifies the width of the texture image.
+	// height Specifies the height of the texture image.
+	// border This value must be 0.
+	// format Specifies the format of the pixel data.
+	// type Specifies the data type of the pixel data
+	// data Specifies a pointer to the image data in memory.
+	//
+	// glTexImage2D specify a two-dimensional texture image
+	if (mipMapping)
+		for (unsigned int size = width > height ? width : height;
+			 size > 0;
+			 size = size >> 1, width = width >> 1, height = height >> 1)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);		
+		}
+	else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	_textures.push_back(texture);
+
+	return *texture;
+}
+
+void
+OpenGLESContext::uploadTextureData(const unsigned int 	texture,
+								    unsigned int 		width,
+								    unsigned int 		height,
+								    unsigned int 		mipLevel,
+								    void*				data)
+{
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+void
+OpenGLESContext::disposeTexture(const unsigned int texture)
+{
+	removeAllocationFromList(texture, _textures);
+
+	glDeleteTextures(1, &texture);
+}
+
+void
+OpenGLESContext::removeAllocationFromList(const unsigned int 								alloc,
+										   std::list<std::shared_ptr<const unsigned int>> 	list)
+{
+	std::list<std::shared_ptr<const unsigned int>>::iterator it = list.begin();
+
+	for (; it != list.end(); ++it)
+		if (**it == alloc)
+			list.erase(it);
+
+	if (it == list.end())
+		throw ;
+}
