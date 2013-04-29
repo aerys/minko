@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "minko/Common.hpp"
-#include "Vector4.hpp"
+#include "Vector3.hpp"
 
 class Matrix4x4 :
 	public std::enable_shared_from_this<Matrix4x4>
@@ -46,7 +46,7 @@ public:
 
 	ptr
 	rotationY(float radians);
-
+	
 	ptr
 	rotationZ(float radians);
 
@@ -72,8 +72,25 @@ public:
 	ptr
 	invert();
 
-	Matrix4x4::ptr
-	operator*(Matrix4x4::ptr value);
+	inline
+	ptr
+	operator*(ptr value)
+	{
+		Matrix4x4::ptr m1 = Matrix4x4::create(shared_from_this());
+
+		m1->append(value);
+
+		return m1;
+	}
+
+	inline
+	ptr
+	operator*=(Matrix4x4::ptr value)
+	{
+		append(value);
+
+		return shared_from_this();
+	}
 
 	bool
 	operator==(Matrix4x4& value);
@@ -102,9 +119,9 @@ public:
 	 *
 	 */
 	ptr
-	view(Vector4::ptr 	eye,
-         Vector4::ptr 	lookAt,
-         Vector4::ptr 	up	= 0);
+	view(Vector3::const_ptr 	eye,
+         Vector3::const_ptr 	lookAt,
+         Vector3::const_ptr 	up	= 0);
 
 private:
 	Matrix4x4();

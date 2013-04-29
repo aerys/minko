@@ -260,16 +260,6 @@ Matrix4x4::prepend(Matrix4x4::ptr matrix)
 	return shared_from_this();
 }
 
-Matrix4x4::ptr
-Matrix4x4::operator*(Matrix4x4::ptr value)
-{
-	Matrix4x4::ptr m1 = Matrix4x4::create(shared_from_this());
-
-	m1->append(value);
-
-	return m1;
-}
-
 bool
 Matrix4x4::operator==(Matrix4x4& value)
 {
@@ -301,7 +291,7 @@ Matrix4x4::perspectiveFoV(float fov,
 /**
  * Builds a (left-handed) view transform.
  * <br /><br />
- * Eye : eye position, At : eye direction, Up : up vector
+ * Eye : eye position, At : eye zAxis, Up : up vector
  * <br /><br />
  * zaxis = normal(At - Eye)<br />
  * xaxis = normal(cross(Up, zaxis))<br />
@@ -316,96 +306,43 @@ Matrix4x4::perspectiveFoV(float fov,
  *
  */
 Matrix4x4::ptr
-Matrix4x4::view(Vector4::ptr 	eye,
-         		Vector4::ptr 	lookAt,
-         		Vector4::ptr 	up)
+Matrix4x4::view(Vector3::const_ptr 	eye,
+         		Vector3::const_ptr 	lookAt,
+         		Vector3::const_ptr 	upAxis)
 {
-/*	Vector4::ptr	direction = Vector4::subtract(lookAt, eye, TMP_VECTOR4);
+	Vector3::ptr	zAxis = lookAt - eye;
 
-	float eye_X		: Number = eye._vector.x;
-	float eye_Y		: Number = eye._vector.y;
-	float eye_Z		: Number = eye._vector.z;
+	zAxis->normalize();
 
-	float z_axis_X	: Number = direction._vector.x;
-	float z_axis_Y	: Number = direction._vector.y;
-	float z_axis_Z	: Number = direction._vector.z;
-
-	float up_axis_x	: Number;
-	float up_axis_y	: Number;
-	float up_axis_z	: Number;
-
-	if (up != null)
+	if (upAxis == 0)
 	{
-		// if up axis was given, take it. An error will be raised later if it is colinear to direction
-		up_axis_x = up._vector.x;
-		up_axis_y = up._vector.y;
-		up_axis_z = up._vector.z;
-	}
-	else
-	{
-		// if direction is colinear to (0, 1, 0), take (1, 0, 0) as up vector
-		if (z_axis_X == 0 && z_axis_Y != 0 && z_axis_Z == 0)
-		{
-			up_axis_x = 1;
-			up_axis_y = 0;
-			up_axis_z = 0;
-		}
-			// else, take (0, 0, 1)
+		if (zAxis->x() == 0. && zAxis->y() != 0. && zAxis->z() == 0.)
+			upAxis = Vector3::xAxis();
 		else
-		{
-			up_axis_x = 0;
-			up_axis_y = 1;
-			up_axis_z = 0;
-		}
+			upAxis = Vector3::yAxis();
 	}
 
-	var l : Number;
+	Vector3::ptr xAxis = Vector3::create(upAxis)->cross(zAxis)->normalize();
+	Vector3::ptr yAxis = Vector3::create(zAxis)->cross(xAxis)->normalize();
 
-	l = 1 / Math.sqrt(z_axis_X * z_axis_X + z_axis_Y * z_axis_Y + z_axis_Z * z_axis_Z);
-
-	z_axis_X *= l;
-	z_axis_Y *= l;
-	z_axis_Z *= l;
-
-	var x_axis_X : Number = up_axis_y * z_axis_Z - z_axis_Y * up_axis_z;
-	var x_axis_Y : Number = up_axis_z * z_axis_X - z_axis_Z * up_axis_x;
-	var x_axis_Z : Number = up_axis_x * z_axis_Y - z_axis_X * up_axis_y;
-
-	l = 1 / Math.sqrt(x_axis_X * x_axis_X + x_axis_Y * x_axis_Y + x_axis_Z * x_axis_Z);
-
-	x_axis_X *= l;
-	x_axis_Y *= l;
-	x_axis_Z *= l;
-
-	var y_axis_X : Number = z_axis_Y * x_axis_Z - x_axis_Y * z_axis_Z;
-	var y_axis_Y : Number = z_axis_Z * x_axis_X - x_axis_Z * z_axis_X;
-	var y_axis_Z : Number = z_axis_X * x_axis_Y - x_axis_X * z_axis_Y;
-
-	l = 1 / Math.sqrt(y_axis_X * y_axis_X + y_axis_Y * y_axis_Y + y_axis_Z * y_axis_Z);
-
-	y_axis_X *= l;
-	y_axis_Y *= l;
-	y_axis_Z *= l;
-
-	if ((x_axis_X == 0 && x_axis_Y == 0 && x_axis_Z == 0)
-		|| (y_axis_X == 0 && y_axis_Y == 0 && y_axis_Z == 0))
+	if ((xAxis->x() == 0. && xAxis->y() == 0. && xAxis->z() == 0.)
+		|| (yAxis->x() == 0. && yAxis->y() == 0. && yAxis->z() == 0.))
 	{
-		throw new Error(
-			'Invalid argument(s): the eye direction (look at - eye position) '
-			+ 'and the up vector appear to be the same.'
+		throw std::invalid_argument(
+			"the eye direction (look at - eye position) and the up vector appear to be the same"
 		);
 	}
 
-	var	m41	: Number	= -(x_axis_X * eye_X + x_axis_Y * eye_Y + x_axis_Z * eye_Z);
-	var	m42	: Number	= -(y_axis_X * eye_X + y_axis_Y * eye_Y + y_axis_Z * eye_Z);
-	var	m43	: Number	= -(z_axis_X * eye_X + z_axis_Y * eye_Y + z_axis_Z * eye_Z);
+	float m41 = -xAxis->dot(eye);
+	float m42 = -yAxis->dot(eye);
+	float m43 = -zAxis->dot(eye);
 
 	return initialize(
-		x_axis_X,	y_axis_X,	z_axis_X,	0.,
-		x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
-		x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
+		xAxis->x(),	yAxis->x(),	zAxis->x(),	0.,
+		xAxis->y(),	yAxis->y(),	zAxis->y(),	0.,
+		xAxis->z(),	yAxis->z(),	zAxis->z(),	0.,
 		m41,		m42,		m43,		1.
-	);*/
+	);
 
 	return shared_from_this();
 }

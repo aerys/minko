@@ -36,47 +36,47 @@ public:
 
 	inline
 	ptr
-	operator-(Vector4::ptr value)
+	copyFrom(ptr value)
 	{
-		return Vector4::create(_x - value->_x, _y - value->_y, _z - value->_z, _w - value->_w);
-	}
-
-	inline
-	ptr
-	operator+(Vector4::ptr value)
-	{
-		return Vector4::create(_x + value->_x, _y + value->_y, _z + value->_z, _w + value->_w);
-	}
-
-	inline
-	ptr
-	operator+=(Vector4::ptr value)
-	{
-		_x += value->_x;
-		_y += value->_y;
-		_z += value->_z;
-		_w += value->_w;
+		_x = value->_x;
+		_y = value->_y;
+		_z = value->_z;
+		_w = value->_w;
 
 		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
-	inline
 	ptr
-	operator-=(Vector4::ptr value)
+	normalize()
 	{
-		_x -= value->_x;
-		_y -= value->_y;
-		_z -= value->_z;
-		_w -= value->_w;
+		float l = sqrtf(_x * _x + _y * _y + _z * _z + _w * _w);
+
+		if (l != 0.)
+		{
+			_x /= l;
+			_y /= l;
+			_z /= l;
+			_w /= l;
+		}
 
 		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
-	inline
-	bool
-	operator==(Vector4::ptr value)
+	ptr
+	cross(ptr value)
 	{
-		return _x == value->_x && _y == value->_y && _z == value->_z && _w == value->_w;
+		_x = _y * value->_z - _z * value->_y;
+		_y = _z * value->_w - _w * value->_z;
+		_z = _w * value->_x - _x * value->_w;
+		_w = _x * value->_y - _y * value->_x;
+
+		return std::static_pointer_cast<Vector4>(shared_from_this());
+	}
+
+	float
+	dot(ptr value)
+	{
+		return _x * value->_x + _y * value->_y + _z * value->_z + _w * value->_w;
 	}
 
 protected:
@@ -86,3 +86,48 @@ protected:
 	{
 	}
 };
+
+inline
+Vector4::ptr
+operator-(Vector4::ptr value)
+{
+	return Vector4::create(-value->x(), -value->y(), -value->z(), -value->w());
+}
+
+inline
+Vector4::ptr
+operator-(Vector4::ptr a, Vector4::ptr b)
+{
+	return Vector4::create(a->x() - b->x(), a->y() - b->y(), a->z() - b->z(), a->w() - b->w());
+}
+
+inline
+Vector4::ptr
+operator+(Vector4::ptr a, Vector4::ptr b)
+{
+	return Vector4::create(a->x() + b->x(), a->y() + b->y(), a->z() + b->z(), a->w() + b->w());
+}
+
+inline
+Vector4::ptr
+operator+=(Vector4::ptr a, Vector4::ptr b)
+{
+	a->x(a->x() + b->x());
+	a->y(a->y() + b->y());
+	a->z(a->z() + b->z());
+	a->w(a->w() + b->w());
+
+	return a;
+}
+
+inline
+Vector4::ptr
+operator-=(Vector4::ptr a, Vector4::ptr b)
+{
+	a->x(a->x() - b->x());
+	a->y(a->y() - b->y());
+	a->z(a->z() - b->z());
+	a->z(a->w() - b->w());
+
+	return a;
+}

@@ -50,43 +50,41 @@ public:
 
 	inline
 	ptr
-	operator-(Vector2::ptr value)
+	copyFrom(ptr value)
 	{
-		return Vector2::create(_x - value->_x, _y - value->_y);
+		_x = value->_x;
+		_y = value->_y;
+
+		return shared_from_this();
 	}
 
-	inline
 	ptr
-	operator+(Vector2::ptr value)
+	normalize()
 	{
-		return Vector2::create(_x + value->_x, _y + value->_y);
+		float l = sqrtf(_x * _x + _y * _y);
+		
+		if (l != 0.)
+		{
+			_x /= l;
+			_y /= l;
+		}
+
+		return shared_from_this();
 	}
 
-	inline
 	ptr
-	operator+=(Vector2::ptr value)
+	cross(ptr value)
 	{
-		_x += value->_x;
-		_y += value->_y;
+		_x = _y * value->_x - _x * value->_y;
+		_y = _x * value->_y - _y * value->_x;
 
 		return std::static_pointer_cast<Vector2>(shared_from_this());
 	}
 
-	inline
-	ptr
-	operator-=(Vector2::ptr value)
+	float
+	dot(ptr value)
 	{
-		_x -= value->_x;
-		_y -= value->_y;
-
-		return std::static_pointer_cast<Vector2>(shared_from_this());
-	}
-
-	inline
-	bool
-	operator==(Vector2::ptr value)
-	{
-		return _x == value->_x && _y == value->_y;
+		return _x * value->_x + _y * value->_y;
 	}
 
 protected:
@@ -96,3 +94,44 @@ protected:
 	{
 	}
 };
+
+inline
+Vector2::ptr
+operator-(Vector2::ptr value)
+{
+	return Vector2::create(-value->x(), -value->y());
+}
+
+inline
+Vector2::ptr
+operator-(Vector2::ptr a, Vector2::ptr b)
+{
+	return Vector2::create(a->x() - b->x(), a->y() - b->y());
+}
+
+inline
+Vector2::ptr
+operator+(Vector2::ptr a, Vector2::ptr b)
+{
+	return Vector2::create(a->x() + b->x(), a->y() + b->y());
+}
+
+inline
+Vector2::ptr
+operator+=(Vector2::ptr a, Vector2::ptr b)
+{
+	a->x(a->x() + b->x());
+	a->y(a->y() + b->y());
+
+	return a;
+}
+
+inline
+Vector2::ptr
+operator-=(Vector2::ptr a, Vector2::ptr b)
+{
+	a->x(a->x() - b->x());
+	a->y(a->y() - b->y());
+
+	return a;
+}

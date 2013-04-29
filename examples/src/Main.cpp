@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <sys/time.h>
+
 #include "minko/Minko.hpp"
 
 void clear()
@@ -59,6 +61,12 @@ int main(int argc, char *argv[])
   Node::ptr           camera    = Node::create("camera");
   Node::ptr           mesh      = Node::create("mesh");
   DataProvider::ptr   material  = DataProvider::create();
+
+  Matrix4x4::ptr      m         = Matrix4x4::create();
+
+  m->view(Vector3::zero(), Vector3::zAxis(), Vector3::yAxis());
+
+  std::cout << std::to_string(*m) << std::endl;
 
   //try
   {
