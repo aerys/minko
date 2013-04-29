@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include "minko/Common.hpp"
 
 class Vector2 :
 	public std::enable_shared_from_this<Vector2>
@@ -15,7 +15,10 @@ protected:
 public:
 	inline static
 	ptr
-	create(float x, float y);
+	create(float x, float y)
+	{
+		return std::shared_ptr<Vector2>(new Vector2(x, y));
+	}
 
 	inline
 	float
@@ -45,6 +48,51 @@ public:
 		_y = y;
 	}
 
+	inline
+	ptr
+	operator-(Vector2::ptr value)
+	{
+		return Vector2::create(_x - value->_x, _y - value->_y);
+	}
+
+	inline
+	ptr
+	operator+(Vector2::ptr value)
+	{
+		return Vector2::create(_x + value->_x, _y + value->_y);
+	}
+
+	inline
+	ptr
+	operator+=(Vector2::ptr value)
+	{
+		_x += value->_x;
+		_y += value->_y;
+
+		return std::static_pointer_cast<Vector2>(shared_from_this());
+	}
+
+	inline
+	ptr
+	operator-=(Vector2::ptr value)
+	{
+		_x -= value->_x;
+		_y -= value->_y;
+
+		return std::static_pointer_cast<Vector2>(shared_from_this());
+	}
+
+	inline
+	bool
+	operator==(Vector2::ptr value)
+	{
+		return _x == value->_x && _y == value->_y;
+	}
+
 protected:
-	Vector2(float x, float y);
+	Vector2(float x, float y) :
+		_x(x),
+		_y(y)
+	{
+	}
 };

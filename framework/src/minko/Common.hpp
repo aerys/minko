@@ -10,6 +10,7 @@
 #include <map>
 #include <exception>
 #include <stdexcept>
+#include <cmath>
 
 class OpenGLESContext;
 
@@ -44,6 +45,20 @@ std::shared_ptr<T>
 operator-(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
 	return *a - b;
+}
+
+template<typename T>
+std::shared_ptr<T>
+operator+(std::shared_ptr<T> a, std::shared_ptr<T> b)
+{
+	return *a + b;
+}
+
+template<typename T>
+std::shared_ptr<T>
+operator/(std::shared_ptr<T> a, std::shared_ptr<T> b)
+{
+	return *a / b;
 }
 
 namespace std

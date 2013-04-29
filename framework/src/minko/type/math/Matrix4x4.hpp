@@ -1,11 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <vector>
 #include <sstream>
-#include <cmath>
 
+#include "minko/Common.hpp"
 #include "Vector4.hpp"
 
 class Matrix4x4 :

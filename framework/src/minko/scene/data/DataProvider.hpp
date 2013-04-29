@@ -1,11 +1,6 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <iterator>
-#include <vector>
-
+#include "minko/Common.hpp"
 #include "minko/type/Any.hpp"
 #include "minko/type/Signal.hpp"
 

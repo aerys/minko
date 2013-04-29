@@ -60,16 +60,6 @@ int main(int argc, char *argv[])
   Node::ptr           mesh      = Node::create("mesh");
   DataProvider::ptr   material  = DataProvider::create();
 
-  Matrix4x4::ptr m1 = Matrix4x4::create();
-  Matrix4x4::ptr m2 = Matrix4x4::create();
-
-  m1->translation(3, 3, 3);
-  m2->translation(-3, -3, -3);
-
-  Matrix4x4::ptr m3 = m1 * m2;
-
-  std::cout << std::to_string(m3) << std::endl;
-
   //try
   {
     (*material)["diffuseColor"] = 0x0000ffff;
