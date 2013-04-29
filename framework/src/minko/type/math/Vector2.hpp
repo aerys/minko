@@ -76,8 +76,11 @@ public:
 	ptr
 	cross(ptr value)
 	{
-		_x = _y * value->_x - _x * value->_y;
-		_y = _x * value->_y - _y * value->_x;
+		float x = _y * value->_x - _x * value->_y;
+		float y = _x * value->_y - _y * value->_x;
+
+		_x = x;
+		_y = y;
 
 		return std::static_pointer_cast<Vector2>(shared_from_this());
 	}

@@ -276,23 +276,6 @@ Matrix4x4::perspectiveFoV(float fov,
 	);
 }
 
-/**
- * Builds a (left-handed) view transform.
- * <br /><br />
- * Eye : eye position, At : eye zAxis, Up : up vector
- * <br /><br />
- * zaxis = normal(At - Eye)<br />
- * xaxis = normal(cross(Up, zaxis))<br />
- * yaxis = cross(zaxis, xaxis)<br />
- * <br />
- * [      xaxis.x          yaxis.x            zaxis.x  	     0 ]<br />
- * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
- * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
- * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
- *
- * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
- *
- */
 Matrix4x4::ptr
 Matrix4x4::view(Vector3::const_ptr 	eye,
          		Vector3::const_ptr 	lookAt,
@@ -321,10 +304,10 @@ Matrix4x4::view(Vector3::const_ptr 	eye,
 		);
 	}
 
-	float m41 = -xAxis->dot(eye);
-	float m42 = -yAxis->dot(eye);
-	float m43 = -zAxis->dot(eye);
-
+	float m41 = -(xAxis->dot(eye));
+	float m42 = -(yAxis->dot(eye));
+	float m43 = -(zAxis->dot(eye));
+	
 	return initialize(
 		xAxis->x(),	yAxis->x(),	zAxis->x(),	0.,
 		xAxis->y(),	yAxis->y(),	zAxis->y(),	0.,

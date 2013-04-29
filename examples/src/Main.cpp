@@ -64,10 +64,14 @@ int main(int argc, char *argv[])
 
   Matrix4x4::ptr      m         = Matrix4x4::create();
 
+  Vector3::ptr t = (Vector3::zAxis() - Vector3::zero())->normalize()->cross(Vector3::yAxis())->normalize();
+
+  std::cout << t->x() << ", " << t->y() << ", " << t->z() << std::endl;  
+
+  return 0.;
+
   m *= m;
   m->view(Vector3::zero(), Vector3::zAxis(), Vector3::yAxis());
-
-  std::cout << std::to_string(*m) << std::endl;
 
   return 0.;
 

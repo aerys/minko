@@ -68,9 +68,9 @@ public:
 	const_ptr
 	zero()
 	{
-		static const_ptr zAxis = createConst(0., 0., 0.);
+		static const_ptr zero = createConst(0., 0., 0.);
 
-		return zAxis;
+		return zero;
 	}
 
 	inline
@@ -118,9 +118,13 @@ public:
 	ptr
 	cross(ptr value)
 	{
-		_x = _y * value->_z - _z * value->_y;
-		_y = _z * value->_x - _x * value->_z;
-		_z = _x * value->_y - _y * value->_x;
+		float x = _y * value->_z - _z * value->_y;
+		float y = _z * value->_x - _x * value->_z;
+		float z = _x * value->_y - _y * value->_x;
+
+		_x = x;
+		_y = y;
+		_z = z;
 
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
