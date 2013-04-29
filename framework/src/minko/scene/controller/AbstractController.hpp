@@ -4,7 +4,7 @@
 #include <functional>
 #include <list>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 class AbstractController
 {

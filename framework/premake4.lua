@@ -19,4 +19,3 @@ project "minko-framework"
       links { "GL", "GLU", "glut" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
-

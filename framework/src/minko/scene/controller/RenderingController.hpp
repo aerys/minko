@@ -3,7 +3,7 @@
 #include <memory>
 #include <list>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 class RenderingController :
 	public AbstractController,

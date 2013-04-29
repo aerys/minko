@@ -6,7 +6,7 @@
 #include <exception>
 #include <stdexcept>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 class DataBindings :
 	public std::enable_shared_from_this<DataBindings>

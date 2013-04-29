@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 class SurfaceController :
 	public AbstractController,

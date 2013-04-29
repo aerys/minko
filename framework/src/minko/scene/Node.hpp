@@ -6,7 +6,7 @@
 #include <list>
 #include <string>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 class Node :
 	public std::enable_shared_from_this<Node>

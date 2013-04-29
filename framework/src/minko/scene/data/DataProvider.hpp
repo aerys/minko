@@ -6,8 +6,8 @@
 #include <iterator>
 #include <vector>
 
-#include "Any.hpp"
-#include "Signal.hpp"
+#include "minko/type/Any.hpp"
+#include "minko/type/Signal.hpp"
 
 class DataProvider :
 	public std::enable_shared_from_this<DataProvider>

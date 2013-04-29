@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "Minko.hpp"
+#include "minko/Minko.hpp"
 
 void clear()
 {
@@ -66,11 +66,6 @@ int main(int argc, char *argv[])
 
     mesh->addController(SurfaceController::create(CubeGeometry::create(), material));
     camera->addController(RenderingController::create(OpenGLESContext::create()));
-
-    Matrix4x4::ptr m1 = Matrix4x4::create();
-    Matrix4x4::ptr m2 = Matrix4x4::create(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-    std::cout << std::to_string(m1 * m2) << std::endl;
 
     scene->descendantAdded()->add([](Node::ptr node, Node::ptr descendant)
     {
