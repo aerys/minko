@@ -186,6 +186,17 @@ public:
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
 
+	inline
+	ptr
+	lerp(ptr target, float ratio)
+	{
+		return setTo(
+			_x + (target->_x - _x) * ratio,
+			_y + (target->_y - _y) * ratio,
+			_z + (target->_z - _z) * ratio
+		);
+	}
+
 protected:
 	Vector3(float x, float y, float z) :
 		Vector2(x, y),
