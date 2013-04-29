@@ -137,6 +137,9 @@ public:
 	ptr
 	lerp(Matrix4x4::ptr target, float ratio);
 
+	Vector3::ptr
+	translation(Vector3::ptr output = 0);
+
 private:
 	Matrix4x4();
 

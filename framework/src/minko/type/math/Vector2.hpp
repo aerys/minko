@@ -52,10 +52,17 @@ public:
 	ptr
 	copyFrom(ptr value)
 	{
-		_x = value->_x;
-		_y = value->_y;
+		return setTo(value->_x, value->_y);
+	}
 
-		return shared_from_this();
+	inline
+	ptr
+	setTo(float x, float y)
+	{
+		_x = x;
+		_y = y;
+
+		return std::static_pointer_cast<Vector2>(shared_from_this());
 	}
 
 	ptr

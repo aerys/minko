@@ -170,24 +170,24 @@ Matrix4x4::invert()
 Matrix4x4::ptr
 Matrix4x4::append(Matrix4x4::ptr matrix)
 {
-	Matrix4x4 m = *matrix;
+	std::vector<float>& mv = matrix->_m;
 
-	float m0 = _m[0] * m._m[0] + _m[1] * m._m[4] + _m[2] * m._m[8] + _m[3] * m._m[12];
-	float m1 = _m[0] * m._m[1] + _m[1] * m._m[5] + _m[2] * m._m[9] + _m[3] * m._m[13];
-	float m2 = _m[0] * m._m[2] + _m[1] * m._m[6] + _m[2] * m._m[10] + _m[3] * m._m[14];
-	float m3 = _m[0] * m._m[3] + _m[1] * m._m[7] + _m[2] * m._m[11] + _m[3] * m._m[15];
-	float m4 = _m[4] * m._m[0] + _m[5] * m._m[4] + _m[6] * m._m[8] + _m[7] * m._m[12];
-	float m5 = _m[4] * m._m[1] + _m[5] * m._m[5] + _m[6] * m._m[9] + _m[7] * m._m[13];
-	float m6 = _m[4] * m._m[2] + _m[5] * m._m[6] + _m[6] * m._m[10] + _m[7] * m._m[14];
-	float m7 = _m[4] * m._m[3] + _m[5] * m._m[7] + _m[6] * m._m[11] + _m[7] * m._m[15];
-	float m8 = _m[8] * m._m[0] + _m[9] * m._m[4] + _m[10] * m._m[8] + _m[11] * m._m[12];
-	float m9 = _m[8] * m._m[1] + _m[9] * m._m[5] + _m[10] * m._m[9] + _m[11] * m._m[13];
-	float m10 = _m[8] * m._m[2] + _m[9] * m._m[6] + _m[10] * m._m[10] + _m[11] * m._m[14];
-	float m11 = _m[8] * m._m[3] + _m[9] * m._m[7] + _m[10] * m._m[11] + _m[11] * m._m[15];
-	float m12 = _m[12] * m._m[0] + _m[13] * m._m[4] + _m[14] * m._m[8] + _m[15] * m._m[12];
-	float m13 = _m[12] * m._m[1] + _m[13] * m._m[5] + _m[14] * m._m[9] + _m[15] * m._m[13];
-	float m14 = _m[12] * m._m[2] + _m[13] * m._m[6] + _m[14] * m._m[10] + _m[15] * m._m[14];
-	float m15 = _m[12] * m._m[3] + _m[13] * m._m[7] + _m[14] * m._m[11] + _m[15] * m._m[15];
+	float m0 = _m[0] * mv[0] + _m[1] * mv[4] + _m[2] * mv[8] + _m[3] * mv[12];
+	float m1 = _m[0] * mv[1] + _m[1] * mv[5] + _m[2] * mv[9] + _m[3] * mv[13];
+	float m2 = _m[0] * mv[2] + _m[1] * mv[6] + _m[2] * mv[10] + _m[3] * mv[14];
+	float m3 = _m[0] * mv[3] + _m[1] * mv[7] + _m[2] * mv[11] + _m[3] * mv[15];
+	float m4 = _m[4] * mv[0] + _m[5] * mv[4] + _m[6] * mv[8] + _m[7] * mv[12];
+	float m5 = _m[4] * mv[1] + _m[5] * mv[5] + _m[6] * mv[9] + _m[7] * mv[13];
+	float m6 = _m[4] * mv[2] + _m[5] * mv[6] + _m[6] * mv[10] + _m[7] * mv[14];
+	float m7 = _m[4] * mv[3] + _m[5] * mv[7] + _m[6] * mv[11] + _m[7] * mv[15];
+	float m8 = _m[8] * mv[0] + _m[9] * mv[4] + _m[10] * mv[8] + _m[11] * mv[12];
+	float m9 = _m[8] * mv[1] + _m[9] * mv[5] + _m[10] * mv[9] + _m[11] * mv[13];
+	float m10 = _m[8] * mv[2] + _m[9] * mv[6] + _m[10] * mv[10] + _m[11] * mv[14];
+	float m11 = _m[8] * mv[3] + _m[9] * mv[7] + _m[10] * mv[11] + _m[11] * mv[15];
+	float m12 = _m[12] * mv[0] + _m[13] * mv[4] + _m[14] * mv[8] + _m[15] * mv[12];
+	float m13 = _m[12] * mv[1] + _m[13] * mv[5] + _m[14] * mv[9] + _m[15] * mv[13];
+	float m14 = _m[12] * mv[2] + _m[13] * mv[6] + _m[14] * mv[10] + _m[15] * mv[14];
+	float m15 = _m[12] * mv[3] + _m[13] * mv[7] + _m[14] * mv[11] + _m[15] * mv[15];
 
 	_m[0] = m0;
 	_m[1] = m1;
@@ -215,27 +215,27 @@ Matrix4x4::append(Matrix4x4::ptr matrix)
 Matrix4x4::ptr
 Matrix4x4::prepend(Matrix4x4::ptr matrix)
 {
-	Matrix4x4 m = *matrix;
+	std::vector<float>& mv = matrix->_m;
 
-	float m0 = m._m[0] * _m[0] + m._m[1] * _m[4] + m._m[2] * _m[8] + m._m[3] * _m[12];
-	float m1 = m._m[0] * _m[1] + m._m[1] * _m[5] + m._m[2] * _m[9] + m._m[3] * _m[13];
-	float m2 = m._m[0] * _m[2] + m._m[1] * _m[6] + m._m[2] * _m[10] + m._m[3] * _m[14];
-	float m3 = m._m[0] * _m[3] + m._m[1] * _m[7] + m._m[2] * _m[11] + m._m[3] * _m[15];
+	float m0 = mv[0] * _m[0] + mv[1] * _m[4] + mv[2] * _m[8] + mv[3] * _m[12];
+	float m1 = mv[0] * _m[1] + mv[1] * _m[5] + mv[2] * _m[9] + mv[3] * _m[13];
+	float m2 = mv[0] * _m[2] + mv[1] * _m[6] + mv[2] * _m[10] + mv[3] * _m[14];
+	float m3 = mv[0] * _m[3] + mv[1] * _m[7] + mv[2] * _m[11] + mv[3] * _m[15];
 
-	float m4 = m._m[4] * _m[0] + m._m[5] * _m[4] + m._m[6] * _m[8] + m._m[7] * _m[12];
-	float m5 = m._m[4] * _m[1] + m._m[5] * _m[5] + m._m[6] * _m[9] + m._m[7] * _m[13];
-	float m6 = m._m[4] * _m[2] + m._m[5] * _m[6] + m._m[6] * _m[10] + m._m[7] * _m[14];
-	float m7 = m._m[4] * _m[3] + m._m[5] * _m[7] + m._m[6] * _m[11] + m._m[7] * _m[15];
+	float m4 = mv[4] * _m[0] + mv[5] * _m[4] + mv[6] * _m[8] + mv[7] * _m[12];
+	float m5 = mv[4] * _m[1] + mv[5] * _m[5] + mv[6] * _m[9] + mv[7] * _m[13];
+	float m6 = mv[4] * _m[2] + mv[5] * _m[6] + mv[6] * _m[10] + mv[7] * _m[14];
+	float m7 = mv[4] * _m[3] + mv[5] * _m[7] + mv[6] * _m[11] + mv[7] * _m[15];
 
-	float m8 = m._m[8] * _m[0] + m._m[9] * _m[4] + m._m[10] * _m[8] + m._m[11] * _m[12];
-	float m9 = m._m[8] * _m[1] + m._m[9] * _m[5] + m._m[10] * _m[9] + m._m[11] * _m[13];
-	float m10 = m._m[8] * _m[2] + m._m[9] * _m[6] + m._m[10] * _m[10] + m._m[11] * _m[14];
-	float m11 = m._m[8] * _m[3] + m._m[9] * _m[7] + m._m[10] * _m[11] + m._m[11] * _m[15];
+	float m8 = mv[8] * _m[0] + mv[9] * _m[4] + mv[10] * _m[8] + mv[11] * _m[12];
+	float m9 = mv[8] * _m[1] + mv[9] * _m[5] + mv[10] * _m[9] + mv[11] * _m[13];
+	float m10 = mv[8] * _m[2] + mv[9] * _m[6] + mv[10] * _m[10] + mv[11] * _m[14];
+	float m11 = mv[8] * _m[3] + mv[9] * _m[7] + mv[10] * _m[11] + mv[11] * _m[15];
 
-	float m12 = m._m[12] * _m[0] + m._m[13] * _m[4] + m._m[14] * _m[8] + m._m[15] * _m[12];
-	float m13 = m._m[12] * _m[1] + m._m[13] * _m[5] + m._m[14] * _m[9] + m._m[15] * _m[13];
-	float m14 = m._m[12] * _m[2] + m._m[13] * _m[6] + m._m[14] * _m[10] + m._m[15] * _m[14];
-	float m15 = m._m[12] * _m[3] + m._m[13] * _m[7] + m._m[14] * _m[11] + m._m[15] * _m[15];
+	float m12 = mv[12] * _m[0] + mv[13] * _m[4] + mv[14] * _m[8] + mv[15] * _m[12];
+	float m13 = mv[12] * _m[1] + mv[13] * _m[5] + mv[14] * _m[9] + mv[15] * _m[13];
+	float m14 = mv[12] * _m[2] + mv[13] * _m[6] + mv[14] * _m[10] + mv[15] * _m[14];
+	float m15 = mv[12] * _m[3] + mv[13] * _m[7] + mv[14] * _m[11] + mv[15] * _m[15];
 
 	_m[0] = m0;
 	_m[1] = m1;
@@ -332,4 +332,10 @@ Matrix4x4::lerp(Matrix4x4::ptr target, float ratio)
 		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
 
 	return shared_from_this();
+}
+
+Vector3::ptr
+Matrix4x4::translation(Vector3::ptr output)
+{
+	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
 }

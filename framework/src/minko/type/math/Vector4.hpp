@@ -38,13 +38,20 @@ public:
 	ptr
 	copyFrom(ptr value)
 	{
-		_x = value->_x;
-		_y = value->_y;
-		_z = value->_z;
-		_w = value->_w;
+		return setTo(value->_x, value->_y, value->_z, value->_w);
+	}
+
+	inline
+	ptr
+	setTo(float x, float y, float z, float w)
+	{
+		_x = x;
+		_y = y;
+		_z = z;
+		_w = w;
 
 		return std::static_pointer_cast<Vector4>(shared_from_this());
-	}
+	}	
 
 	inline
 	ptr

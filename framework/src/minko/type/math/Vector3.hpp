@@ -91,9 +91,16 @@ public:
 	ptr
 	copyFrom(ptr value)
 	{
-		_x = value->_x;
-		_y = value->_y;
-		_z = value->_z;
+		return setTo(value->_x, value->_y, value->_z);
+	}
+
+	inline
+	ptr
+	setTo(float x, float y, float z)
+	{
+		_x = x;
+		_y = y;
+		_z = z;
 
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
