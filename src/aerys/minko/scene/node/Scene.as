@@ -35,6 +35,8 @@ package aerys.minko.scene.node
 		
 		private var _enterFrame		: Signal;
 		private var _renderingBegin	: Signal;
+		private var _beforePresent	: Signal;
+		private var _afterPresent	: Signal;
 		private var _renderingEnd	: Signal;
 		private var _exitFrame		: Signal;
 
@@ -145,6 +147,16 @@ package aerys.minko.scene.node
 			return _renderingBegin;
 		}
 		
+		public function get beforePresent() : Signal
+		{
+			return _beforePresent;
+		}
+		
+		public function get afterPresent() : Signal
+		{
+			return _afterPresent;
+		}
+		
 		public function get renderingEnd() : Signal
 		{
 			return _renderingEnd;
@@ -170,6 +182,8 @@ package aerys.minko.scene.node
 			
 			_enterFrame			= new Signal('Scene.enterFrame');
 			_renderingBegin 	= new Signal('Scene.renderingBegin');
+			_beforePresent	 	= new Signal('Scene.beforePresent');
+			_afterPresent 		= new Signal('Scene.afterPresent');
 			_renderingEnd 		= new Signal('Scene.renderingEnd');
 			_exitFrame 			= new Signal('Scene.exitFrame');
 		}

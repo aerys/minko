@@ -1,5 +1,10 @@
 package aerys.minko.scene.controller.scene
 {
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
+	
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.DrawCall;
@@ -21,6 +26,7 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
@@ -28,9 +34,6 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.log.DebugLevel;
-	
-	import flash.display.BitmapData;
-	import flash.utils.Dictionary;
 	
 	/**
 	 * The RenderingController works on the scene to issue all the related
@@ -189,6 +192,9 @@ package aerys.minko.scene.controller.scene
 					_postProcessingScene.bindings.addProvider(
 						_postProcessingProperties
 					);
+					
+					_postProcessingScene.beforePresent.add(postProcessingSceneBeforePresentHandler);
+					_postProcessingScene.afterPresent.add(postProcessingSceneAfterPresentHandler);
 				}
 				else
 				{
@@ -197,6 +203,16 @@ package aerys.minko.scene.controller.scene
 					screen.material.effect = _postProcessingEffect;
 				}
 			}
+		}
+		
+		private function postProcessingSceneBeforePresentHandler(scene : Scene, viewport : Viewport, destination : BitmapData, time : uint) : void
+		{
+			_scene.beforePresent.execute(scene, viewport, destination, time);
+		}
+		
+		private function postProcessingSceneAfterPresentHandler(scene : Scene, viewport : Viewport, destination : BitmapData, time : uint) : void
+		{
+			_scene.afterPresent.execute(scene, viewport, destination, time);
 		}
 		
 		private function getRenderingBackBuffer(backBuffer : RenderTarget) : RenderTarget
@@ -341,7 +357,11 @@ package aerys.minko.scene.controller.scene
 				if (destination)
 					context.drawToBitmapData(destination);
 				else
+				{
+					_scene.beforePresent.execute(_scene, viewport, destination, getTimer());
 					context.present();
+					_scene.afterPresent.execute(_scene, viewport, destination, getTimer());
+				}
 			}
 			
 			return numTriangles;
