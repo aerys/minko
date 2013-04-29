@@ -10,6 +10,17 @@ project "minko-framework"
       defines { "DEBUG" }
       flags { "Symbols" }
       links { "GL", "GLU", "glut" }
+      buildoptions "-std=c++0x"
+      linkoptions "-std=c++0x"
+
+   configuration "Release"
+      defines { "NDEBUG" }
+      flags { "Optimize" }
+      links { "GL", "GLU", "glut" }
+      buildoptions "-std=c++0x"
+      linkoptions "-std=c++0x"
+
+   configuration "macosx"
       buildoptions
       {
          "-std=c++11",
@@ -20,10 +31,7 @@ project "minko-framework"
          "-std=c++11",
          "-stdlib=libc++"
       }
-
-   configuration "Release"
-      defines { "NDEBUG" }
-      flags { "Optimize" }
-      links { "GL", "GLU", "glut" }
-      buildoptions "-std=c++0x"
-      linkoptions "-std=c++0x"
+      libdirs
+      {
+         "/opt/local/lib/"
+      }
