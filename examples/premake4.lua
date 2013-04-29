@@ -10,8 +10,8 @@ project "minko-examples"
       defines { "DEBUG" }
       flags { "Symbols" }
       links { "GL", "GLU", "glut", "minko-framework" }
-      buildoptions "-std=c++0x"
-      linkoptions "-std=c++0x"
+      buildoptions { "-std=c++11" }
+      linkoptions { "-std=c++11" }
 
    configuration "Release"
       defines { "NDEBUG" }
@@ -20,3 +20,18 @@ project "minko-examples"
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
 
+   configuration "macosx"
+      buildoptions
+      {
+         "-std=c++11",
+         "-stdlib=libc++"
+      }
+      linkoptions
+      {
+         "-std=c++11",
+         "-stdlib=libc++"
+      }
+      libdirs
+      {
+         "/opt/local/lib/"
+      }
