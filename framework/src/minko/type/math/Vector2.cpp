@@ -7,7 +7,6 @@ Vector2::create(float x, float y)
 }
 
 Vector2::Vector2(float x, float y) :
-	std::enable_shared_from_this<Vector2>(),
 	_x(x),
 	_y(y)
 {

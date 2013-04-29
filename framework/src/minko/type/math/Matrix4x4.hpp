@@ -19,11 +19,21 @@ public:
 
 	inline static
 	ptr
-	create();
+	create()
+	{
+		auto m = std::shared_ptr<Matrix4x4>(new Matrix4x4());
+
+		m->identity();
+
+		return m;
+	}
 
 	inline static
 	ptr
-	create(ptr value);
+	create(ptr value)
+	{
+		return std::shared_ptr<Matrix4x4>(new Matrix4x4(value));
+	}
 
 	ptr
 	initialize(float m00, float m01, float m02, float m03,
@@ -65,8 +75,8 @@ public:
 	ptr
 	invert();
 
-	Matrix4x4
-	operator*(Matrix4x4& value);
+	Matrix4x4::ptr
+	operator*(Matrix4x4::ptr value);
 
 	bool
 	operator==(Matrix4x4& value);
@@ -98,7 +108,7 @@ public:
 	view(Vector4::ptr 	eye,
          Vector4::ptr 	lookAt,
          Vector4::ptr 	up	= 0);
-	 
+
 private:
 	Matrix4x4();
 
@@ -123,7 +133,7 @@ namespace std
 			<< values[4] << ", " << values[5] << ", " << values[6] << ", " << values[7] << ", "
 			<< values[8] << ", " << values[9] << ", " << values[10] << ", " << values[11] << ", "
 			<< values[12] << ", " << values[13] << ", " << values[14] << ", " << values[15] << ")";
-		
+
 		return stream.str();
-	}	
+	}
 }

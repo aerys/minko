@@ -10,8 +10,16 @@ project "minko-framework"
       defines { "DEBUG" }
       flags { "Symbols" }
       links { "GL", "GLU", "glut" }
-      buildoptions "-std=c++0x"
-      linkoptions "-std=c++0x"
+      buildoptions
+      {
+         "-std=c++11",
+         "-stdlib=libc++"
+      }
+      linkoptions
+      {
+         "-std=c++11",
+         "-stdlib=libc++"
+      }
 
    configuration "Release"
       defines { "NDEBUG" }

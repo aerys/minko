@@ -54,7 +54,7 @@ template<typename T>
 std::shared_ptr<T>
 operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return std::make_shared<T>(*a * *b);
+	return *a * b;
 }
 
 template<typename T>
