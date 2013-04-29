@@ -64,9 +64,12 @@ int main(int argc, char *argv[])
 
   Matrix4x4::ptr      m         = Matrix4x4::create();
 
+  m *= m;
   m->view(Vector3::zero(), Vector3::zAxis(), Vector3::yAxis());
 
   std::cout << std::to_string(*m) << std::endl;
+
+  return 0.;
 
   //try
   {

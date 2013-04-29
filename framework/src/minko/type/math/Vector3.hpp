@@ -16,16 +16,9 @@ protected:
 public:
 	inline static
 	ptr
-	create(float x, float y, float z)
+	create(float x = 0., float y = 0., float z = 0.)
 	{
 		return std::shared_ptr<Vector3>(new Vector3(x, y, z));
-	}
-
-	inline static
-	ptr
-	create(ptr value)
-	{
-		return std::shared_ptr<Vector3>(new Vector3(value->_x, value->_y, value->_z));
 	}
 
 	inline static
@@ -105,6 +98,7 @@ public:
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
 
+	inline
 	ptr
 	normalize()
 	{
@@ -120,6 +114,7 @@ public:
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
 
+	inline
 	ptr
 	cross(ptr value)
 	{
@@ -130,10 +125,54 @@ public:
 		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
 
+	inline
 	float
 	dot(ptr value)
 	{
 		return _x * value->_x + _y * value->_y + _z * value->_z;
+	}
+
+	inline
+	ptr
+	operator-()
+	{
+		return create(-_x, -_y, -_z);
+	}
+
+	inline
+	ptr
+	operator-(ptr value)
+	{
+		return create(_x - value->_x, _y - value->_y, _z - value->_z);
+	}
+
+	inline
+	ptr
+	operator+(ptr value)
+	{
+		return create(_x + value->_x, _y + value->_y, _z + value->_z);
+	}
+
+	inline
+	ptr
+	operator+=(ptr value)
+	{
+		_x += value->_x;
+		_y += value->_y;
+		_z += value->_z;
+
+		return std::static_pointer_cast<Vector3>(shared_from_this());
+	}
+
+	inline
+	ptr
+	operator-=(ptr value)
+	{
+		_x -= value->_x;
+		_y -= value->_y;
+		_z -= value->_z;
+
+		return std::static_pointer_cast<Vector3>(shared_from_this());
 	}
 
 protected:
@@ -143,46 +182,3 @@ protected:
 	{
 	}
 };
-
-inline
-Vector3::ptr
-operator-(Vector3::ptr value)
-{
-	return Vector3::create(-value->x(), -value->y(), -value->z());
-}
-
-inline
-Vector3::ptr
-operator-(Vector3::ptr a, Vector3::ptr b)
-{
-	return Vector3::create(a->x() - b->x(), a->y() - b->y(), a->z() - b->z());
-}
-
-inline
-Vector3::ptr
-operator+(Vector3::ptr a, Vector3::ptr b)
-{
-	return Vector3::create(a->x() + b->x(), a->y() + b->y(), a->z() + b->z());
-}
-
-inline
-Vector3::ptr
-operator+=(Vector3::ptr a, Vector3::ptr b)
-{
-	a->x(a->x() + b->x());
-	a->y(a->y() + b->y());
-	a->z(a->z() + b->z());
-
-	return a;
-}
-
-inline
-Vector3::ptr
-operator-=(Vector3::ptr a, Vector3::ptr b)
-{
-	a->x(a->x() - b->x());
-	a->y(a->y() - b->y());
-	a->z(a->z() - b->z());
-
-	return a;
-}

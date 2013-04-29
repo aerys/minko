@@ -310,8 +310,8 @@ Matrix4x4::view(Vector3::const_ptr 	eye,
 			upAxis = Vector3::yAxis();
 	}
 
-	Vector3::ptr xAxis = Vector3::create(upAxis)->cross(zAxis)->normalize();
-	Vector3::ptr yAxis = Vector3::create(zAxis)->cross(xAxis)->normalize();
+	Vector3::ptr xAxis = Vector3::create()->copyFrom(upAxis)->cross(zAxis)->normalize();
+	Vector3::ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis)->normalize();
 
 	if ((xAxis->x() == 0. && xAxis->y() == 0. && xAxis->z() == 0.)
 		|| (yAxis->x() == 0. && yAxis->y() == 0. && yAxis->z() == 0.))

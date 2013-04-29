@@ -46,6 +46,7 @@ public:
 		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
+	inline
 	ptr
 	normalize()
 	{
@@ -62,6 +63,7 @@ public:
 		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
+	inline
 	ptr
 	cross(ptr value)
 	{
@@ -73,10 +75,56 @@ public:
 		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
+	inline
 	float
 	dot(ptr value)
 	{
 		return _x * value->_x + _y * value->_y + _z * value->_z + _w * value->_w;
+	}
+
+	inline
+	ptr
+	operator-()
+	{
+		return create(-_x, -_y, -_z, -_w);
+	}
+
+	inline
+	ptr
+	operator-(ptr value)
+	{
+		return create(_x - value->_x, _y - value->_y, _z - value->_z, _w - value->_w);
+	}
+
+	inline
+	ptr
+	operator+(ptr value)
+	{
+		return create(_x + value->_x, _y + value->_y, _z + value->_z, _w + value->_w);
+	}
+
+	inline
+	ptr
+	operator+=(ptr value)
+	{
+		_x += value->_x;
+		_y += value->_y;
+		_z += value->_z;
+		_w += value->_w;
+
+		return std::static_pointer_cast<Vector4>(shared_from_this());
+	}
+
+	inline
+	ptr
+	operator-=(ptr value)
+	{
+		_x -= value->_x;
+		_y -= value->_y;
+		_z -= value->_z;
+		_w -= value->_w;
+
+		return std::static_pointer_cast<Vector4>(shared_from_this());
 	}
 
 protected:
@@ -86,48 +134,3 @@ protected:
 	{
 	}
 };
-
-inline
-Vector4::ptr
-operator-(Vector4::ptr value)
-{
-	return Vector4::create(-value->x(), -value->y(), -value->z(), -value->w());
-}
-
-inline
-Vector4::ptr
-operator-(Vector4::ptr a, Vector4::ptr b)
-{
-	return Vector4::create(a->x() - b->x(), a->y() - b->y(), a->z() - b->z(), a->w() - b->w());
-}
-
-inline
-Vector4::ptr
-operator+(Vector4::ptr a, Vector4::ptr b)
-{
-	return Vector4::create(a->x() + b->x(), a->y() + b->y(), a->z() + b->z(), a->w() + b->w());
-}
-
-inline
-Vector4::ptr
-operator+=(Vector4::ptr a, Vector4::ptr b)
-{
-	a->x(a->x() + b->x());
-	a->y(a->y() + b->y());
-	a->z(a->z() + b->z());
-	a->w(a->w() + b->w());
-
-	return a;
-}
-
-inline
-Vector4::ptr
-operator-=(Vector4::ptr a, Vector4::ptr b)
-{
-	a->x(a->x() - b->x());
-	a->y(a->y() - b->y());
-	a->z(a->z() - b->z());
-	a->z(a->w() - b->w());
-
-	return a;
-}

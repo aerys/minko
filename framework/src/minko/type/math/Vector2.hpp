@@ -72,6 +72,7 @@ public:
 		return shared_from_this();
 	}
 
+	inline
 	ptr
 	cross(ptr value)
 	{
@@ -81,10 +82,52 @@ public:
 		return std::static_pointer_cast<Vector2>(shared_from_this());
 	}
 
+	inline
 	float
 	dot(ptr value)
 	{
 		return _x * value->_x + _y * value->_y;
+	}
+
+	inline
+	ptr
+	operator-()
+	{
+		return create(-_x, -_y);
+	}
+
+	inline
+	ptr
+	operator-(ptr value)
+	{
+		return create(_x - value->_x, _y - value->_y);
+	}
+
+	inline
+	ptr
+	operator+(ptr value)
+	{
+		return create(_x + value->_x, _y + value->_y);
+	}
+
+	inline
+	ptr
+	operator+=(ptr value)
+	{
+		_x += value->_x;
+		_y += value->_y;
+
+		return std::static_pointer_cast<Vector2>(shared_from_this());
+	}
+
+	inline
+	ptr
+	operator-=(ptr value)
+	{
+		_x -= value->_x;
+		_y -= value->_y;
+
+		return std::static_pointer_cast<Vector2>(shared_from_this());
 	}
 
 protected:
