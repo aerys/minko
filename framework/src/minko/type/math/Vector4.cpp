@@ -11,3 +11,37 @@ Vector4::Vector4(float x, float y, float z, float w) :
 	_w(w)
 {
 }
+
+Vector4::ptr
+Vector4::incrementBy(ptr value)
+{
+	_x += value->_x;
+	_y += value->_y;
+	_z += value->_z;
+	_w += value->_w;
+
+	return std::static_pointer_cast<Vector4>(shared_from_this());
+}
+
+Vector4::ptr
+Vector4::decrementBy(ptr value)
+{
+	_x -= value->_x;
+	_y -= value->_y;
+	_z -= value->_z;
+	_w -= value->_w;
+
+	return std::static_pointer_cast<Vector4>(shared_from_this());
+}
+
+Vector4&
+Vector4::operator-(Vector4& value)
+{
+	return *Vector4::create(_x - value._x, _y - value._y, _z - value._z, _w - value._w);
+}
+
+bool
+Vector4::operator==(Vector4& value)
+{
+	return _x == value._x && _y == value._y && _z == value._z && _w == value._w;
+}

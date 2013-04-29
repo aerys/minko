@@ -2,14 +2,14 @@
 
 OpenGLESContext::~OpenGLESContext()
 {
-	for (std::shared_ptr<const unsigned int> vertexBuffer : _vertexBuffers)
-		glDeleteBuffers(1, vertexBuffer.get());
+	for (auto vertexBuffer : _vertexBuffers)
+		glDeleteBuffers(1, &vertexBuffer);
 
-	for (std::shared_ptr<const unsigned int> indexBuffer : _indexBuffers)
-		glDeleteBuffers(1, indexBuffer.get());
+	for (auto indexBuffer : _indexBuffers)
+		glDeleteBuffers(1, &indexBuffer);
 
-	for (std::shared_ptr<const unsigned int> texture : _textures)
-		glDeleteTextures(1, texture.get());
+	for (auto texture : _textures)
+		glDeleteTextures(1, &texture);
 }
 
 void
@@ -87,7 +87,7 @@ OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTria
 const unsigned int
 OpenGLESContext::createVertexBuffer(const unsigned int size)
 {
-	std::shared_ptr<unsigned int> vertexBuffer;
+	unsigned int vertexBuffer;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glGenBuffers.xml
 	// 
@@ -99,7 +99,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 	// guarantee that the names form a contiguous set of integers; however,
 	// it is guaranteed that none of the returned names was in use immediately
 	// before the call to glGenBuffers.
-	glGenBuffers(1, vertexBuffer.get());
+	glGenBuffers(1, &vertexBuffer);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glBindBuffer.xml
 	// 
@@ -108,7 +108,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 	// buffer Specifies the name of a buffer object.
 	// 
 	// glBindBuffer binds a buffer object to the specified buffer binding point.
-	glBindBuffer(GL_ARRAY_BUFFER, *vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glBufferData.xml
 	//
@@ -123,7 +123,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 
 	_vertexBuffers.push_back(vertexBuffer);
 
-	return *vertexBuffer;
+	return vertexBuffer;
 }
 
 void
@@ -149,7 +149,7 @@ OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 void
 OpenGLESContext::disposeVertexBuffer(const unsigned int vertexBuffer)
 {
-	removeAllocationFromList(vertexBuffer, _vertexBuffers);
+	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
 	// 
@@ -165,7 +165,7 @@ OpenGLESContext::disposeVertexBuffer(const unsigned int vertexBuffer)
 
 void
 OpenGLESContext::setVertexBufferAt(const unsigned int index,
-								    const unsigned int vertexBuffer)
+								   const unsigned int vertexBuffer)
 {
 	throw;
 }
@@ -173,15 +173,15 @@ OpenGLESContext::setVertexBufferAt(const unsigned int index,
 const unsigned int
 OpenGLESContext::createIndexBuffer(const unsigned int size)
 {
-	std::shared_ptr<unsigned int> indexBuffer;
+	unsigned int indexBuffer;
 
-	glGenBuffers(1, indexBuffer.get());
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *indexBuffer);
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
-	return *indexBuffer;
+	return indexBuffer;
 }
 
 void
@@ -197,7 +197,7 @@ OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 void
 OpenGLESContext::disposeIndexBuffer(const unsigned int indexBuffer)
 {
-	removeAllocationFromList(indexBuffer, _indexBuffers);
+	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
 	glDeleteBuffers(1, &indexBuffer);
 }
@@ -207,7 +207,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 							    unsigned int 	height,
 							    bool			mipMapping)
 {
-	std::shared_ptr<unsigned int> texture;
+	unsigned int texture;
 
 	// make sure width is a power of 2
 	if (!((width != 0) && !(width & (width - 1))))
@@ -224,7 +224,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 	// textures Specifies an array in which the generated texture names are stored.
 	//
 	// glGenTextures generate texture names
-	glGenTextures(1, texture.get());
+	glGenTextures(1, &texture);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
 	//
@@ -233,7 +233,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	glBindTexture(GL_TEXTURE_2D, *texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -265,7 +265,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 
 	_textures.push_back(texture);
 
-	return *texture;
+	return texture;
 }
 
 void
@@ -282,21 +282,7 @@ OpenGLESContext::uploadTextureData(const unsigned int 	texture,
 void
 OpenGLESContext::disposeTexture(const unsigned int texture)
 {
-	removeAllocationFromList(texture, _textures);
+	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
-}
-
-void
-OpenGLESContext::removeAllocationFromList(const unsigned int 								alloc,
-										   std::list<std::shared_ptr<const unsigned int>> 	list)
-{
-	std::list<std::shared_ptr<const unsigned int>>::iterator it = list.begin();
-
-	for (; it != list.end(); ++it)
-		if (**it == alloc)
-			list.erase(it);
-
-	if (it == list.end())
-		throw ;
 }

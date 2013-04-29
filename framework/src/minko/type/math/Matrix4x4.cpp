@@ -335,9 +335,9 @@ Matrix4x4::perspectiveFoV(float fov,
 Matrix4x4::ptr
 Matrix4x4::view(Vector4::ptr 	eye,
          		Vector4::ptr 	lookAt,
-         		Vector4::ptr 	up	= 0)
+         		Vector4::ptr 	up)
 {
-	Vector4::ptr	direction : Vector4 = Vector4.subtract(lookAt, eye, TMP_VECTOR4);
+/*	Vector4::ptr	direction = Vector4::subtract(lookAt, eye, TMP_VECTOR4);
 	
 	float eye_X		: Number = eye._vector.x;
 	float eye_Y		: Number = eye._vector.y;
@@ -422,5 +422,7 @@ Matrix4x4::view(Vector4::ptr 	eye,
 		x_axis_Y,	y_axis_Y,	z_axis_Y,	0.,
 		x_axis_Z,	y_axis_Z,	z_axis_Z,	0.,
 		m41,		m42,		m43,		1.
-	);
+	);*/
+
+	return shared_from_this();
 }

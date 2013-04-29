@@ -3,7 +3,7 @@
 #include <memory>
 
 class Vector2 :
-	private std::enable_shared_from_this<Vector2>
+	public std::enable_shared_from_this<Vector2>
 {
 public:
 	typedef std::shared_ptr<Vector2>	ptr;

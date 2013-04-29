@@ -5,11 +5,10 @@
 #include "Vector3.hpp"
 
 class Vector4 :
-	private std::enable_shared_from_this<Vector4>,
 	public Vector3
 {
 public:
-	typedef std::shared_ptr<Vector3>	ptr;
+	typedef std::shared_ptr<Vector4>	ptr;
 
 protected:
 	float _w;
@@ -33,11 +32,17 @@ public:
 		_w = w;
 	}
 
+	Vector4&
+	operator-(Vector4& value);
+
+	bool
+	operator==(Vector4& value);
+
 	ptr
-	subtract(ptr value)
-	{
-		return Vector4::shared_from_this();
-	}
+	incrementBy(ptr value);
+
+	ptr
+	decrementBy(ptr value);
 
 protected:
 	Vector4(float x, float y, float z, float w);

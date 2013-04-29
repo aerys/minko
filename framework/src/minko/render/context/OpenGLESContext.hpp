@@ -9,27 +9,22 @@
 
 #include <memory>
 #include <list>
+#include <algorithm>
 
 class OpenGLESContext
 {
 public:
 	typedef std::shared_ptr<OpenGLESContext> ptr;
 
-private:
-	OpenGLESContext()
-	{
-		
-	}
-
 public:
+	~OpenGLESContext();
+
 	static
 	ptr
 	create()
 	{
 		return std::shared_ptr<OpenGLESContext>(new OpenGLESContext());
 	}
-
-	~OpenGLESContext();
 
 	void
 	clear(float red 			= 0.f,
@@ -89,11 +84,7 @@ public:
 	disposeTexture(const unsigned int texture);
 
 private:
-	std::list<std::shared_ptr<const unsigned int>>	_vertexBuffers;
-	std::list<std::shared_ptr<const unsigned int>>	_indexBuffers;
-	std::list<std::shared_ptr<const unsigned int>>	_textures;
-
-	void
-	removeAllocationFromList(const unsigned int 							alloc,
-							 std::list<std::shared_ptr<const unsigned int>> list);
+	std::list<unsigned int>	_vertexBuffers;
+	std::list<unsigned int>	_indexBuffers;
+	std::list<unsigned int>	_textures;
 };

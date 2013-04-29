@@ -5,7 +5,6 @@
 #include "Vector2.hpp"
 
 class Vector3 :
-	private std::enable_shared_from_this<Vector3>,
 	public Vector2
 {
 public:
