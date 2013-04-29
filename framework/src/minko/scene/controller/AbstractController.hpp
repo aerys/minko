@@ -1,10 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <functional>
-#include <list>
-
-#include "minko/Minko.hpp"
+#include "minko/Common.hpp"
+#include "minko/type/Signal.hpp"
 
 class AbstractController
 {

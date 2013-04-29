@@ -1,12 +1,8 @@
 #pragma once
 
-#include <memory>
-#include <algorithm>
-#include <map>
-#include <list>
-#include <string>
-
-#include "minko/Minko.hpp"
+#include "minko/Common.hpp"
+#include "minko/type/Signal.hpp"
+#include "minko/scene/data/DataBindings.hpp"
 
 class Node :
 	public std::enable_shared_from_this<Node>

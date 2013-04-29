@@ -34,14 +34,14 @@ Vector4::decrementBy(ptr value)
 	return std::static_pointer_cast<Vector4>(shared_from_this());
 }
 
-Vector4&
-Vector4::operator-(Vector4& value)
+Vector4::ptr
+Vector4::operator-(Vector4::ptr value)
 {
-	return *Vector4::create(_x - value._x, _y - value._y, _z - value._z, _w - value._w);
+	return Vector4::create(_x - value->_x, _y - value->_y, _z - value->_z, _w - value->_w);
 }
 
 bool
-Vector4::operator==(Vector4& value)
+Vector4::operator==(Vector4::ptr value)
 {
-	return _x == value._x && _y == value._y && _z == value._z && _w == value._w;
+	return _x == value->_x && _y == value->_y && _z == value->_z && _w == value->_w;
 }

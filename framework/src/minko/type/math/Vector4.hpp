@@ -32,11 +32,11 @@ public:
 		_w = w;
 	}
 
-	Vector4&
-	operator-(Vector4& value);
+	Vector4::ptr
+	operator-(Vector4::ptr value);
 
 	bool
-	operator==(Vector4& value);
+	operator==(Vector4::ptr value);
 
 	ptr
 	incrementBy(ptr value);

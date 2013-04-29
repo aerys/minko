@@ -1,9 +1,7 @@
 #pragma once
 
-#include <functional>
-#include <memory>
-
-#include "minko/Minko.hpp"
+#include "minko/Common.hpp"
+#include "minko/scene/controller/AbstractController.hpp"
 
 class SurfaceController :
 	public AbstractController,

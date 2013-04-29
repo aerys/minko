@@ -95,8 +95,6 @@ DataBindings::assertPropertyExists(const std::string& propertyName)
 void
 DataBindings::dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> provider, const std::string& propertyName)
 {
-	Minko::log("dataProviderPropertyChangedHandler: " + propertyName);
-
 	if (_propertyChanged.count(propertyName) != 0)
 		(*propertyChangedSignal(propertyName))(shared_from_this(), provider, propertyName);
 }

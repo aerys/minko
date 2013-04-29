@@ -1,12 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <list>
-#include <algorithm>
-#include <exception>
-#include <stdexcept>
-
-#include "minko/Minko.hpp"
+#include "minko/Common.hpp"
+#include "minko/scene/data/DataProvider.hpp"
 
 class DataBindings :
 	public std::enable_shared_from_this<DataBindings>

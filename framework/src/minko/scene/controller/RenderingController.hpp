@@ -1,9 +1,7 @@
 #pragma once
 
-#include <memory>
-#include <list>
-
-#include "minko/Minko.hpp"
+#include "minko/Common.hpp"
+#include "minko/scene/controller/AbstractController.hpp"
 
 class RenderingController :
 	public AbstractController,
