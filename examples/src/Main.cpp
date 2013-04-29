@@ -68,10 +68,9 @@ int main(int argc, char *argv[])
 
   std::cout << t->x() << ", " << t->y() << ", " << t->z() << std::endl;  
 
-  return 0.;
-
-  m *= m;
   m->view(Vector3::zero(), Vector3::zAxis(), Vector3::yAxis());
+
+  std::cout << std::to_string(*m) << std::endl;
 
   return 0.;
 

@@ -129,9 +129,13 @@ public:
 	 *
 	 */
 	ptr
-	view(Vector3::const_ptr 	eye,
-         Vector3::const_ptr 	lookAt,
-         Vector3::const_ptr 	up	= 0);
+	view(Vector3::const_ptr eye, Vector3::const_ptr lookAt, Vector3::const_ptr up = 0);
+
+	ptr
+	lookAt(Vector3::const_ptr lookAt, Vector3::const_ptr position, Vector3::const_ptr up = 0);
+
+	ptr
+	lerp(Matrix4x4::ptr target, float ratio);
 
 private:
 	Matrix4x4();

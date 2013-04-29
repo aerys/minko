@@ -277,9 +277,7 @@ Matrix4x4::perspectiveFoV(float fov,
 }
 
 Matrix4x4::ptr
-Matrix4x4::view(Vector3::const_ptr 	eye,
-         		Vector3::const_ptr 	lookAt,
-         		Vector3::const_ptr 	upAxis)
+Matrix4x4::view(Vector3::const_ptr eye, Vector3::const_ptr lookAt, Vector3::const_ptr upAxis)
 {
 	Vector3::ptr	zAxis = lookAt - eye;
 
@@ -314,6 +312,24 @@ Matrix4x4::view(Vector3::const_ptr 	eye,
 		xAxis->z(),	yAxis->z(),	zAxis->z(),	0.,
 		m41,		m42,		m43,		1.
 	);
+
+	return shared_from_this();
+}
+
+Matrix4x4::ptr
+Matrix4x4::lookAt(Vector3::const_ptr lookAt, Vector3::const_ptr	position, Vector3::const_ptr up)
+{
+	if (position == 0)
+		position == Vector3::create(_m[3], _m[7], _m[11]);
+
+	return view(position, lookAt, up)->invert();
+}
+
+Matrix4x4::ptr
+Matrix4x4::lerp(Matrix4x4::ptr target, float ratio)
+{
+	for (auto i = 0; i < 16; ++i)
+		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
 
 	return shared_from_this();
 }
