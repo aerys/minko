@@ -33,12 +33,12 @@ class AbstractController;
 class SurfaceController;
 class RenderingController;
 
-template<typename T>
+/*template<typename T>
 std::shared_ptr<T>
 operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
 	return *a * b;
-}
+}*/
 
 /*template<typename T>
 std::shared_ptr<T>
@@ -47,7 +47,7 @@ operator-(std::shared_ptr<T> a, std::shared_ptr<T> b)
 	return *a - b;
 }*/
 
-template<typename T>
+/*template<typename T>
 std::shared_ptr<T>
 operator+(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
@@ -80,7 +80,7 @@ std::shared_ptr<T>
 operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
 	return *a -= b;
-}
+}*/
 
 namespace std
 {

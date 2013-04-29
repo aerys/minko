@@ -72,29 +72,6 @@ public:
 	ptr
 	invert();
 
-	inline
-	ptr
-	operator*(ptr value)
-	{
-		Matrix4x4::ptr m1 = Matrix4x4::create(shared_from_this());
-
-		m1->append(value);
-
-		return m1;
-	}
-
-	inline
-	ptr
-	operator*=(Matrix4x4::ptr value)
-	{
-		append(value);
-
-		return shared_from_this();
-	}
-
-	bool
-	operator==(Matrix4x4& value);
-
 	ptr
 	perspectiveFoV(float fov,
                    float ratio,
@@ -133,6 +110,30 @@ private:
 			  float m20, float m21, float m22, float m23,
 			  float m30, float m31, float m32, float m33);
 };
+
+/*bool
+operator==(Matrix4x4& a, Matrix4x4& b)
+{
+	for (auto i = 0; i < 16; ++i)
+		if (a.values()[i] != b.values()[i])
+			return false;
+
+	return true;
+}*/
+
+inline
+Matrix4x4::ptr
+operator*(Matrix4x4::ptr a, Matrix4x4::ptr b)
+{
+	return Matrix4x4::create(a)->append(b);
+}
+
+inline
+Matrix4x4::ptr
+operator*=(Matrix4x4::ptr a, Matrix4x4::ptr b)
+{
+	return a->append(b);
+}
 
 namespace std
 {

@@ -260,18 +260,6 @@ Matrix4x4::prepend(Matrix4x4::ptr matrix)
 	return shared_from_this();
 }
 
-bool
-Matrix4x4::operator==(Matrix4x4& value)
-{
-	std::vector<float> m = value._m;
-
-	for (auto i = 0; i < 16; ++i)
-		if (_m[i] != m[i])
-			return false;
-
-	return true;
-}
-
 Matrix4x4::ptr
 Matrix4x4::perspectiveFoV(float fov,
                           float ratio,
