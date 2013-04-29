@@ -4,10 +4,10 @@ Matrix4x4::ptr
 Matrix4x4::translation(float x, float y, float z)
 {
 	initialize(
-		1, 0, 0, x,
-		0, 1, 0, y,
-		0, 0, 1, z,
-		0, 0, 0, 1
+		1., 0., 0., x,
+		0., 1., 0., y,
+		0., 0., 1., z,
+		0., 0., 0., 1.
 	);
 
 	return shared_from_this();
@@ -17,10 +17,10 @@ Matrix4x4::ptr
 Matrix4x4::rotationX(float radians)
 {
 	initialize(
-		1, 	0, 				0, 				0,
-		0, 	cosf(radians),	-sinf(radians), 0,
-		0,	sinf(radians),	cosf(radians),	0,
-		0,	0,				0,				1
+		1., 0., 			0.,				0.,
+		0., cosf(radians),	-sinf(radians), 0.,
+		0.,	sinf(radians),	cosf(radians),	0.,
+		0.,	0.,				0.,				1.
 	);
 
 	return shared_from_this();
@@ -30,10 +30,10 @@ Matrix4x4::ptr
 Matrix4x4::rotationY(float radians)
 {
 	initialize(
-		cosf(radians),	0,	sinf(radians),	0,
-		0,				1,	0,				0,
-		-sinf(radians),	0,	cosf(radians),	0,
-		0,				0,	0,				1
+		cosf(radians),	0.,	sinf(radians),	0.,
+		0.,				1.,	0.,				0.,
+		-sinf(radians),	0.,	cosf(radians),	0.,
+		0.,				0.,	0.,				1.
 	);
 
 	return shared_from_this();
@@ -43,10 +43,10 @@ Matrix4x4::ptr
 Matrix4x4::rotationZ(float radians)
 {
 	initialize(
-		cosf(radians),	-sinf(radians),	0,	0,
-		sinf(radians),	cosf(radians),	0,	0,
-		0,				0,				1,	0,
-		0,				0,				0,	1
+		cosf(radians),	-sinf(radians),	0.,	0.,
+		sinf(radians),	cosf(radians),	0.,	0.,
+		0.,				0.,				1.,	0.,
+		0.,				0.,				0.,	1.
 	);
 
 	return shared_from_this();
