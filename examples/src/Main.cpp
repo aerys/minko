@@ -9,14 +9,14 @@
 void clear()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_DEPTH_TEST);  
+  glEnable(GL_DEPTH_TEST);
 }
 
 void setupProjection()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-2.0, 2.0, -2.0, 2.0, -2.0, 500.0);  
+  glOrtho(-2.0, 2.0, -2.0, 2.0, -2.0, 500.0);
 }
 
 void setupModelView()
@@ -29,7 +29,7 @@ void setupModelView()
   glRotatef(20, 0, 1, 0);
   glRotatef(30, 0, 0, 1);
   glRotatef(5, 1, 0, 0);
-  glTranslatef(-300, 0, 0);  
+  glTranslatef(-300, 0, 0);
 }
 
 void draw()
@@ -40,8 +40,8 @@ void draw()
   glutStrokeCharacter(GLUT_STROKE_ROMAN, 'n');
   glutStrokeCharacter(GLUT_STROKE_ROMAN, 'k');
   glutStrokeCharacter(GLUT_STROKE_ROMAN, 'o');
-  
-  glutSwapBuffers();  
+
+  glutSwapBuffers();
 }
 
 void render()
@@ -59,6 +59,16 @@ int main(int argc, char *argv[])
   Node::ptr           camera    = Node::create("camera");
   Node::ptr           mesh      = Node::create("mesh");
   DataProvider::ptr   material  = DataProvider::create();
+
+  Matrix4x4::ptr m1 = Matrix4x4::create();
+  Matrix4x4::ptr m2 = Matrix4x4::create();
+
+  m1->translation(3, 3, 3);
+  m2->translation(-3, -3, -3);
+
+  Matrix4x4::ptr m3 = m1 * m2;
+
+  std::cout << std::to_string(m3) << std::endl;
 
   //try
   {
