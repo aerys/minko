@@ -1,59 +1,68 @@
 #pragma once
 
-#include <memory>
+#include "minko/Common.hpp"
 
-class Geometry
+namespace minko
 {
-public:
-	typedef std::shared_ptr<Geometry> ptr;
-
-	struct VertexXYZ
+	namespace render
 	{
-		float x;
-		float y;
-		float z;
-	};
+		namespace geometry
+		{
+			class Geometry
+			{
+			public:
+				typedef std::shared_ptr<Geometry> ptr;
 
-private:
-	VertexXYZ*		_vertices;
-	short*			_indices;
+				struct VertexXYZ
+				{
+					float x;
+					float y;
+					float z;
+				};
 
-protected:
+			private:
+				VertexXYZ*		_vertices;
+				short*			_indices;
 
-	Geometry()
-	{
+			protected:
+
+				Geometry()
+				{
+				}
+
+				Geometry(VertexXYZ* vertices, short* indices)
+					: _vertices(vertices), _indices(indices)
+				{
+				}
+
+			public:
+
+				static
+				ptr
+				create()
+				{
+					return std::shared_ptr<Geometry>(new Geometry());
+				}
+
+				static
+				ptr
+				create(VertexXYZ* vertices, short* indices)
+				{
+					return std::shared_ptr<Geometry>(new Geometry(vertices, indices));
+				}
+
+				void
+				vertices(VertexXYZ* vertices)
+				{
+					_vertices = vertices;
+				}
+
+				void
+				indices(short* indices)
+				{
+					_indices = indices;
+				}
+			};
+		}
 	}
-
-	Geometry(VertexXYZ* vertices, short* indices)
-		: _vertices(vertices), _indices(indices)
-	{
-	}
-
-public:
-
-	static
-	ptr
-	create()
-	{
-		return std::shared_ptr<Geometry>(new Geometry());
-	}
-
-	static
-	ptr
-	create(VertexXYZ* vertices, short* indices)
-	{
-		return std::shared_ptr<Geometry>(new Geometry(vertices, indices));
-	}
-
-	void
-	vertices(VertexXYZ* vertices)
-	{
-		_vertices = vertices;
-	}
-
-	void
-	indices(short* indices)
-	{
-		_indices = indices;
-	}
-};
+}

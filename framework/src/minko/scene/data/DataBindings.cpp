@@ -1,5 +1,7 @@
 #include "DataBindings.hpp"
 
+using namespace minko::scene::data;
+
 DataBindings::DataBindings() :
 	enable_shared_from_this()
 {

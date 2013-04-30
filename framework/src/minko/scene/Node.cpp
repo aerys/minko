@@ -1,6 +1,7 @@
 #include "Node.hpp"
-
 #include "minko/scene/controller/AbstractController.hpp"
+
+using namespace minko::scene;
 
 unsigned int Node::_id = 0;
 

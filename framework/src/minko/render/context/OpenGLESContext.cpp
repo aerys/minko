@@ -1,5 +1,7 @@
 #include "OpenGLESContext.hpp"
 
+using namespace minko::render::context;
+
 OpenGLESContext::~OpenGLESContext()
 {
 	for (auto vertexBuffer : _vertexBuffers)

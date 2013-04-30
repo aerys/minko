@@ -1,7 +1,9 @@
 #include "DrawCall.hpp"
 
-DrawCall::DrawCall()
-	: _vertexBuffer(0)
+using namespace minko::render;
+
+DrawCall::DrawCall() :
+	_vertexBuffer(0)
 {
 
 }

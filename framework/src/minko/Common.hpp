@@ -1,37 +1,66 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <memory>
 #include <algorithm>
-#include <list>
-#include <vector>
-#include <functional>
-#include <map>
-#include <exception>
-#include <stdexcept>
 #include <cmath>
+#include <exception>
+#include <functional>
+#include <iostream>
+#include <list>
+#include <map>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
-class OpenGLESContext;
+namespace minko
+{
+	namespace render
+	{
+		namespace context
+		{
+			class AbstractContext;
+			class OpenGLESContext;			
+		}
 
-class Vector2;
-class Vector3;
-class Vector4;
-class Matrix4x4;
+		namespace geometry
+		{
+			class Geometry;
+			class CubeGeometry;
+		}
 
-template<typename... A>
-class Signal;
+		class DrawCall;
+	}
 
-class Node;
-class Geometry;
-class DrawCall;
+	namespace scene
+	{
+		class Node;
 
-class DataProvider;
-class DataBindings;
+		namespace controller
+		{
+			class AbstractController;
+			class SurfaceController;
+			class RenderingController;
+		}
 
-class AbstractController;
-class SurfaceController;
-class RenderingController;
+		namespace data
+		{
+			class DataProvider;
+			class DataBindings;
+		}
+	}
+
+	namespace math
+	{
+		class Vector2;
+		class Vector3;
+		class Vector4;
+		class Matrix4x4;
+	}
+
+	template<typename... A>
+	class Signal;
+}
 
 template<typename T>
 std::shared_ptr<T>

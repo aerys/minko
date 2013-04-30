@@ -1,6 +1,8 @@
 #include "RenderingController.hpp"
 #include "minko/scene/Node.hpp"
 
+using namespace minko::scene::controller;
+
 void
 RenderingController::initialize()
 {

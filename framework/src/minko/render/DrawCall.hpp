@@ -1,20 +1,26 @@
 #pragma once
 
-#include <memory>
+#include "minko/Common.hpp"
 
-class DrawCall
+namespace minko
 {
-public:
-	typedef std::shared_ptr<DrawCall> ptr;
+	namespace render
+	{
+		class DrawCall
+		{
+		public:
+			typedef std::shared_ptr<DrawCall> ptr;
 
-private:
+		private:
 
-	unsigned int _vertexBuffer;
-	unsigned int _indexBuffer;
+			unsigned int _vertexBuffer;
+			unsigned int _indexBuffer;
 
-public:
-	DrawCall();
+		public:
+			DrawCall();
 
-	void
-	render();
-};
+			void
+			render();
+		};		
+	}
+}

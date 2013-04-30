@@ -1,12 +1,7 @@
-#include <iostream>
-#include <functional>
-#include <exception>
-#include <stdexcept>
-#include <string>
-
-#include <sys/time.h>
-
 #include "minko/Minko.hpp"
+
+using namespace minko::scene;
+using namespace minko::math;
 
 void clear()
 {
@@ -57,63 +52,20 @@ void render()
 /* Set up everything, and start the GLUT main loop. */
 int main(int argc, char *argv[])
 {
-  Node::ptr           scene     = Node::create("scene");
   Node::ptr           camera    = Node::create("camera");
   Node::ptr           mesh      = Node::create("mesh");
-  DataProvider::ptr   material  = DataProvider::create();
+  DataProvider::ptr   material  = data::DataProvider::create();
 
-  Matrix4x4::ptr      m         = Matrix4x4::create();
+  Matrix4x4::ptr      m1        = Matrix4x4::create();
+  Matrix4x4::ptr      m2        = Matrix4x4::create();
 
-  Vector3::ptr t = (Vector3::zAxis() - Vector3::zero())->normalize()->cross(Vector3::yAxis())->normalize();
+  m1->appendRotation(Vector4::create(0, 1, 0, .5));
+  m2->append(Matrix4x4::create()->rotationY(.5));
 
-  std::cout << t->x() << ", " << t->y() << ", " << t->z() << std::endl;  
+  std::cout << std::to_string(*m1) << std::endl;
+  std::cout << std::to_string(*m2) << std::endl;
 
-  m->view(Vector3::zero(), Vector3::zAxis(), Vector3::yAxis());
-
-  std::cout << std::to_string(*m) << std::endl;
-
-  return 0.;
-
-  //try
-  {
-    (*material)["diffuseColor"] = 0x0000ffff;
-
-    mesh->addController(SurfaceController::create(CubeGeometry::create(), material));
-    camera->addController(RenderingController::create(OpenGLESContext::create()));
-
-    scene->descendantAdded()->add([](Node::ptr node, Node::ptr descendant)
-    {
-      std::cout << "descendant added: " << descendant->name() << std::endl;
-    });
-
-    scene->descendantRemoved()->add([](Node::ptr node, Node::ptr descendant)
-    {
-      std::cout << "descendant removed: " << descendant->name() << std::endl;
-    });
-
-    mesh->bindings()->propertyChangedSignal("diffuseColor")->add([](DataBindings::ptr b, DataProvider::ptr p, const std::string& propertyName)
-    {
-      std::cout << "bindings property changed: " << propertyName << std::endl;
-    });
-
-    //material->setProperty("diffuseColor", 0x000000ff);
-    (*material)["diffuseColor"] = 0x00ff00ff;
-
-    scene->addChild(mesh);
-    scene->addChild(camera);
-
-    camera->parent()->removeChild(camera);
-  }
-  /*catch (const std::invalid_argument& ia)
-  {
-    std::cerr << "Invalid argument:" << ia.what() << std::endl;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << e.what() << std::endl;
-  }*/
-
-  glutInit(&argc, argv);
+  /*glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
   glutInitWindowSize(500, 500);
   glutInitWindowPosition(300, 200);
@@ -121,7 +73,7 @@ int main(int argc, char *argv[])
 
   glutDisplayFunc(render);
 
-  glutMainLoop();
+  glutMainLoop();*/
 
   return 0;
 } /* end func main */

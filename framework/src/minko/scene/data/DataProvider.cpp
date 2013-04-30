@@ -1,5 +1,7 @@
 #include "DataProvider.hpp"
 
+using namespace minko::scene::data;
+
 void
 DataProvider::unsetProperty(const std::string& propertyName)
 {
