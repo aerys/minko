@@ -32,12 +32,12 @@ package aerys.minko.render.shader.part.projection
 			if (!_front)
 				vector = multiply(vector, float3(1, 1, -1));
 
-			var length : SFloat = length(vector);
+			var vectorLength : SFloat = length(vector);
 			
-			vector = divide(vector, length);
+			vector = divide(vector, vectorLength);
 			vector = float3(
 				transform2DCoordinates(divide(vector.xy, add(vector.z, 1)), CLIPSPACE_RECTANGLE, target), 
-				divide(subtract(length, zNear), zFar - zNear)
+				divide(subtract(vectorLength, zNear), zFar - zNear)
 			);
 			
 			return vector;
