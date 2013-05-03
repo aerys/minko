@@ -18,9 +18,9 @@ namespace minko
 				typedef std::shared_ptr<DataBindings>	ptr;
 
 			private:
-				typedef std::shared_ptr<DataProvider>													DataProviderPtr;
-				typedef std::shared_ptr<Signal<ptr, std::shared_ptr<DataProvider>, const std::string&>>	PropertyChangedSignal;
-				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::cd					DataProviderPropertyChangedCd;
+				typedef std::shared_ptr<DataProvider>									DataProviderPtr;
+				typedef std::shared_ptr<Signal<ptr, const std::string&>>				PropertyChangedSignal;
+				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::cd	DataProviderPropertyChangedCd;
 
 				std::list<DataProviderPtr>									_providers;
 				std::map<std::string, DataProviderPtr>						_propertyNameToProvider;
@@ -75,7 +75,7 @@ namespace minko
 				}
 
 				PropertyChangedSignal
-				propertyChangedSignal(const std::string& propertyName);
+				propertyChanged(const std::string& propertyName);
 
 			private:
 				DataBindings();
@@ -84,7 +84,16 @@ namespace minko
 				assertPropertyExists(const std::string& propertyName);
 
 				void 
-				dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> provider, const std::string& propertyName);
+				dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> 	provider,
+												   const std::string& 				propertyName);
+
+				void
+				dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> 	provider,
+												 const std::string& 			propertyName);
+
+				void
+				dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	provider,
+												   const std::string& 			propertyName);
 			};
 		}
 	}

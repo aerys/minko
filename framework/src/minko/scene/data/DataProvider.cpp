@@ -13,3 +13,13 @@ DataProvider::unsetProperty(const std::string& propertyName)
 		(*_propertyRemoved)(shared_from_this(), propertyName);
 	}
 }
+
+void
+DataProvider::propertyWrapperInitHandler(const std::string& propertyName)
+{
+	_propertyAdded->execute(shared_from_this(), propertyName);
+
+	_values[propertyName] = DataProviderPropertyWrapper::create(
+		std::bind(&Signal<ptr, const std::string&>::execute, _propertyChanged, shared_from_this(), propertyName)
+	);
+}

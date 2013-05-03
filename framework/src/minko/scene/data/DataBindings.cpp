@@ -3,9 +3,8 @@
 using namespace minko::scene::data;
 
 DataBindings::DataBindings() :
-	enable_shared_from_this()
+	std::enable_shared_from_this<DataBindings>()
 {
-
 }
 
 void
@@ -19,6 +18,20 @@ DataBindings::addProvider(std::shared_ptr<DataProvider> provider)
 		throw std::invalid_argument("provider");
 
 	_providers.push_back(provider);
+
+	provider->propertyAdded()->add(std::bind(
+		&DataBindings::dataProviderPropertyAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+	
+	provider->propertyRemoved()->add(std::bind(
+		&DataBindings::dataProviderPropertyRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 
 	for (auto property : provider->values())
 	{
@@ -68,20 +81,23 @@ DataBindings::hasProperty(const std::string& propertyName)
 }
 
 DataBindings::PropertyChangedSignal
-DataBindings::propertyChangedSignal(const std::string& propertyName)
+DataBindings::propertyChanged(const std::string& propertyName)
 {
 	//assertPropertyExists(propertyName);
 
 	if (_propertyChanged.count(propertyName) == 0)
 	{
-		_propertyChanged[propertyName] = Signal<std::shared_ptr<DataBindings>, std::shared_ptr<DataProvider>, const std::string&>::create();
+		_propertyChanged[propertyName] = Signal<std::shared_ptr<DataBindings>, const std::string&>::create();
 
-		std::shared_ptr<DataProvider> provider = _propertyNameToProvider[propertyName];
+		if (_propertyNameToProvider.count(propertyName) != 0)
+		{
+			std::shared_ptr<DataProvider> provider = _propertyNameToProvider[propertyName];
 
-		if (_dataProviderPropertyChangedCd.count(provider) == 0)
-			_dataProviderPropertyChangedCd[provider] = (*provider->propertyChanged()) += std::bind(
-				&DataBindings::dataProviderPropertyChangedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
-			);
+			if (_dataProviderPropertyChangedCd.count(provider) == 0)
+				_dataProviderPropertyChangedCd[provider] = (*provider->propertyChanged()) += std::bind(
+					&DataBindings::dataProviderPropertyChangedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+				);
+		}
 	}
 
 	return _propertyChanged[propertyName];
@@ -95,8 +111,42 @@ DataBindings::assertPropertyExists(const std::string& propertyName)
 }
 
 void
-DataBindings::dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> provider, const std::string& propertyName)
+DataBindings::dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> 	provider,
+												 const std::string& 			propertyName)
 {
 	if (_propertyChanged.count(propertyName) != 0)
-		(*propertyChangedSignal(propertyName))(shared_from_this(), provider, propertyName);
+		(*propertyChanged(propertyName))(shared_from_this(), propertyName);
+}
+
+void
+DataBindings::dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> provider,
+											   const std::string& 			 propertyName)
+{
+	if (_propertyNameToProvider.count(propertyName) != 0)
+		throw std::logic_error("Duplicate binding property name: " + propertyName);
+
+	_propertyNameToProvider[propertyName] = provider;
+
+	if (_propertyChanged.count(propertyName) != 0)
+		_dataProviderPropertyChangedCd[provider] = (*provider->propertyChanged()) += std::bind(
+			&DataBindings::dataProviderPropertyChangedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		);
+
+	dataProviderPropertyChangedHandler(provider, propertyName);	
+}
+
+void
+DataBindings::dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	provider,
+												 const std::string&				propertyName)
+{
+	_propertyNameToProvider.erase(propertyName);
+
+	if (_dataProviderPropertyChangedCd.count(provider) != 0)
+		for (auto property : provider->values())
+			if (_propertyChanged.count(property.first) != 0)
+				return;
+
+	(*provider->propertyChanged()) -= _dataProviderPropertyChangedCd[provider];
+
+	dataProviderPropertyChangedHandler(provider, propertyName);
 }

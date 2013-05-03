@@ -30,6 +30,10 @@ namespace minko
 		}
 
 		class DrawCall;
+
+		class Effect;
+		class GLSLShader;
+		class ShaderProgramInputs;
 	}
 
 	namespace scene

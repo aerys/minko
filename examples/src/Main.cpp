@@ -2,6 +2,7 @@
 
 using namespace minko::scene;
 using namespace minko::math;
+using namespace minko::render;
 
 void clear()
 {
@@ -52,28 +53,32 @@ void render()
 /* Set up everything, and start the GLUT main loop. */
 int main(int argc, char *argv[])
 {
-  Node::ptr           camera    = Node::create("camera");
-  Node::ptr           mesh      = Node::create("mesh");
-  DataProvider::ptr   material  = data::DataProvider::create();
-
-  Matrix4x4::ptr      m1        = Matrix4x4::create();
-  Matrix4x4::ptr      m2        = Matrix4x4::create();
-
-  m1->appendRotation(Vector4::create(0, 1, 0, .5));
-  m2->append(Matrix4x4::create()->rotationY(.5));
-
-  std::cout << std::to_string(*m1) << std::endl;
-  std::cout << std::to_string(*m2) << std::endl;
-
-  /*glutInit(&argc, argv);
+  glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
   glutInitWindowSize(500, 500);
   glutInitWindowPosition(300, 200);
-  glutCreateWindow("Hello World!");
+  glutCreateWindow("Minko Examples");
 
-  glutDisplayFunc(render);
+  context::OpenGLESContext::ptr  oglContext  = OpenGLESContext::create();
+  Node::ptr                      camera      = Node::create("camera");
+  Node::ptr                      mesh        = Node::create("mesh");
+  DataProvider::ptr              material    = data::DataProvider::create();
 
-  glutMainLoop();*/
+  //(*material)["material/diffuseColor"] = 0x0000ff;
 
+  mesh->bindings()->addProvider(material);
+
+  GLSLShader::ptr shader = GLSLShader::fromFiles(
+    oglContext,
+    "../shaders/Basic.vertex.glsl",
+    "../shaders/Red.fragment.glsl"
+  );
+
+  Effect::ptr fx = Effect::create(mesh->bindings(), {shader})
+    ->bind("material/diffuseColor", "diffuseColor")
+    ->bind("transforms/worldMatrix", "worldMatrix");
+
+  (*material)["material/diffuseColor"] = 0x0000ff;
+  
   return 0;
 } /* end func main */

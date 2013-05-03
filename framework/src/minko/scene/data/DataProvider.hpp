@@ -86,7 +86,7 @@ namespace minko
 				{
 					if (_values.count(propertyName) == 0)
 						_values[propertyName] = DataProviderPropertyWrapper::create(
-								std::bind(&Signal<ptr, const std::string&>::execute, _propertyChanged, shared_from_this(), propertyName)
+							std::bind(&DataProvider::propertyWrapperInitHandler, shared_from_this(), propertyName)
 						);
 
 					return *_values[propertyName];
@@ -103,12 +103,14 @@ namespace minko
 				void
 				setProperty(const std::string& propertyName, T value)
 				{
+					bool isNewValue = _values.count(propertyName) == 0;
+
 					_values[propertyName] = DataProviderPropertyWrapper::create(
 						value,
 						std::bind(&Signal<ptr, const std::string&>::execute, _propertyChanged, shared_from_this(), propertyName)
 					);
 
-					if (_values.count(propertyName) == 0)
+					if (isNewValue)
 					{
 						_names.push_back(propertyName);
 						(*_propertyAdded)(shared_from_this(), propertyName);
@@ -127,9 +129,11 @@ namespace minko
 					_propertyAdded(Signal<ptr, const std::string&>::create()),
 					_propertyRemoved(Signal<ptr, const std::string&>::create())
 				{
-
 				}
 
+				void
+				propertyWrapperInitHandler(const std::string& propertyName);
+	
 				class DataProviderPropertyWrapper :
 					public Any,
 					public std::enable_shared_from_this<DataProviderPropertyWrapper>
@@ -141,14 +145,14 @@ namespace minko
 					std::function<void(void)> _changedCallack;
 
 				public:
-					static
+					inline static
 					ptr
 					create(const Any& value, std::function<void(void)> changedCallback)
 					{
 						return std::shared_ptr<DataProviderPropertyWrapper>(new DataProviderPropertyWrapper(value, changedCallback));
 					}
 
-					static
+					inline static
 					ptr
 					create(std::function<void(void)> changedCallback)
 					{
@@ -185,5 +189,3 @@ namespace minko
 		}
 	}
 }
-
-			

@@ -12,6 +12,24 @@ OpenGLESContext::~OpenGLESContext()
 
 	for (auto texture : _textures)
 		glDeleteTextures(1, &texture);
+
+	for (auto program : _programs)
+		glDeleteProgram(program);
+
+	for (auto vertexShader : _vertexShaders)
+		glDeleteShader(vertexShader);
+
+	for (auto fragmentShader : _fragmentShaders)
+		glDeleteShader(fragmentShader);
+}
+
+void
+OpenGLESContext::configureViewport(const unsigned int x,
+				  				   const unsigned int y,
+				  				   const unsigned int width,
+				  				   const unsigned int height)
+{
+	glViewport(x, y, width, height);
 }
 
 void
@@ -129,7 +147,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
+OpenGLESContext::uploadVertexBufferData(const unsigned int 		vertexBuffer,
 									     const unsigned int 	offset,
 									     const unsigned int 	size,
 									     void* 					data)
@@ -149,7 +167,7 @@ OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 }
 
 void
-OpenGLESContext::disposeVertexBuffer(const unsigned int vertexBuffer)
+OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 {
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
@@ -197,7 +215,7 @@ OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 }
 
 void
-OpenGLESContext::disposeIndexBuffer(const unsigned int indexBuffer)
+OpenGLESContext::deleteIndexBuffer(const unsigned int indexBuffer)
 {
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
@@ -282,9 +300,208 @@ OpenGLESContext::uploadTextureData(const unsigned int 	texture,
 }
 
 void
-OpenGLESContext::disposeTexture(const unsigned int texture)
+OpenGLESContext::deleteTexture(const unsigned int texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
+}
+
+const unsigned int
+OpenGLESContext::createProgram()
+{
+	return glCreateProgram();
+}
+
+void
+OpenGLESContext::attachShader(const unsigned int program, const unsigned int shader)
+{
+	glAttachShader(program, shader);	
+}
+
+void
+OpenGLESContext::linkProgram(const unsigned int program)
+{
+	glLinkProgram(program);
+}
+
+void
+OpenGLESContext::deleteProgram(const unsigned int program)
+{
+	_programs.erase(std::find(_programs.begin(), _programs.end(), program));
+
+	glDeleteProgram(program);
+}
+
+void
+OpenGLESContext::compileShader(const unsigned int shader)
+{
+	glCompileShader(shader);
+}
+
+void
+OpenGLESContext::setProgram(const unsigned int program)
+{
+	glUseProgram(program);
+}
+
+void
+OpenGLESContext::setShaderSource(const unsigned int shader,
+							     const std::string& source)
+{
+	const char* sourceString = source.c_str();
+
+	glShaderSource(shader, 1, &sourceString, 0);
+}
+
+const unsigned int
+OpenGLESContext::createVertexShader()
+{
+	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+	_vertexShaders.push_back(vertexShader);
+
+	return vertexShader;
+}
+
+void
+OpenGLESContext::deleteVertexShader(const unsigned int vertexShader)
+{
+	_vertexShaders.erase(std::find(_vertexShaders.begin(), _vertexShaders.end(), vertexShader));
+
+	glDeleteShader(vertexShader);
+}
+
+const unsigned int
+OpenGLESContext::createFragmentShader()
+{
+	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	_fragmentShaders.push_back(fragmentShader);
+
+	return fragmentShader;
+}
+
+void
+OpenGLESContext::deleteFragmentShader(const unsigned int fragmentShader)
+{
+	_fragmentShaders.erase(std::find(_fragmentShaders.begin(), _fragmentShaders.end(), fragmentShader));
+
+	glDeleteShader(fragmentShader);
+}
+
+std::shared_ptr<ShaderProgramInputs>
+OpenGLESContext::getProgramInputs(const unsigned int program)
+{
+	std::vector<std::string> names;
+	std::vector<ShaderProgramInputs::Type> types;
+	std::vector<int> locations;
+
+	int total = -1;
+	int maxUniformNameLength = -1;
+
+	glUseProgram(program);
+
+	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
+	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
+
+	for (int i = 0; i < total; ++i) 
+	{
+    	int nameLength = -1;
+    	int size = -1;
+    	GLenum type = GL_ZERO;
+    	char name[maxUniformNameLength];
+
+    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, name);
+	
+	    name[nameLength] = 0;
+
+	    ShaderProgramInputs::Type inputType = ShaderProgramInputs::Type::unknown;
+
+	    switch (type)
+	    {
+	    	case GL_FLOAT:
+	    		inputType = ShaderProgramInputs::Type::float1;
+	    		break;
+	    	case GL_INT:
+	    		inputType = ShaderProgramInputs::Type::int1;
+	    		break;
+	    	case GL_FLOAT_VEC2:
+	    		inputType = ShaderProgramInputs::Type::float2;
+	    		break;
+	    	case GL_INT_VEC2:
+	    		inputType = ShaderProgramInputs::Type::int2;
+		    	break;
+	    	case GL_FLOAT_VEC3:
+	    		inputType = ShaderProgramInputs::Type::float3;
+	    		break;
+	    	case GL_INT_VEC3:
+	    		inputType = ShaderProgramInputs::Type::int3;
+	    		break;
+	    	case GL_FLOAT_VEC4:
+	    		inputType = ShaderProgramInputs::Type::float4;
+	    		break;
+	    	case GL_INT_VEC4:
+	    		inputType = ShaderProgramInputs::Type::int4;
+	    		break;
+	    	case GL_FLOAT_MAT3:
+	    		inputType = ShaderProgramInputs::Type::float9;
+		    	break;
+	    	case GL_FLOAT_MAT4:
+	    		inputType = ShaderProgramInputs::Type::float16;
+	    		break ;
+	    }
+
+	    names.push_back(name);
+	    types.push_back(inputType);
+	    locations.push_back(glGetUniformLocation(program, name));
+	}
+
+	return ShaderProgramInputs::create(shared_from_this(), program, names, types, locations);
+}
+
+std::string
+OpenGLESContext::getShaderCompilationLogs(const unsigned int shader)
+{
+	int compileStatus = -1;
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+
+	if (compileStatus != GL_TRUE)
+	{
+		int logsLength = -1;
+		char buffer[1024];
+		int bufferLength = -1;
+
+		glGetShaderSource(shader, 1024, &bufferLength, buffer);
+		std::cout << buffer << bufferLength << std::endl;
+
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logsLength);
+
+		if (logsLength > 0)
+		{
+			char logs[logsLength];
+
+			glGetShaderInfoLog(shader, logsLength, &logsLength, logs);
+
+			return std::string(logs);
+		}
+	}
+
+	return std::string();
+}
+
+std::string
+OpenGLESContext::getProgramInfoLogs(const unsigned int program)
+{
+	int programInfoMaxLength = -1;
+	int programInfoLength = -1;
+
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &programInfoMaxLength);
+
+	char programInfo[programInfoMaxLength];
+
+	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, programInfo);
+
+	return std::string(programInfo);
 }
