@@ -53,15 +53,15 @@ package aerys.minko.render.material.phong
         
         private var _targets            : Array;
         
-		public function PhongEffect(useRenderToTexture   : Boolean   = false,
-                                    singlePassShader     : Shader    = null,
-                                    emissiveShader           : Shader    = null)
+		public function PhongEffect(renderTarget			: RenderTarget 	= null,
+                                    singlePassShader     	: Shader    	= null,
+                                    emissiveShader       	: Shader    	= null)
 		{
             super();
-            
-            _useRenderToTexture = useRenderToTexture;
-            _singlePassShader = singlePassShader || new PhongSinglePassShader(null, 0);
-            _emissiveShader = emissiveShader || new PhongEmissiveShader(null, null, .25);
+			
+            _useRenderToTexture	= renderTarget != null;
+            _singlePassShader 	= singlePassShader || new PhongSinglePassShader(renderTarget, 0);
+            _emissiveShader 	= emissiveShader || new PhongEmissiveShader(null, renderTarget, .25);
             
             _targets = [];
 		}

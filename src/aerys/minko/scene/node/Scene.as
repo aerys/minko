@@ -33,6 +33,8 @@ package aerys.minko.scene.node
 		
 		private var _numTriangles	: uint;
 		
+		private var _beforeClear	: Signal;
+		private var _afterClear		: Signal;
 		private var _enterFrame		: Signal;
 		private var _renderingBegin	: Signal;
 		private var _beforePresent	: Signal;
@@ -162,6 +164,16 @@ package aerys.minko.scene.node
 			return _renderingEnd;
 		}
 		
+		public function get beforeClear() : Signal
+		{
+			return _beforeClear;
+		}
+		
+		public function get afterClear() : Signal
+		{
+			return _afterClear;
+		}
+		
 		public function Scene(...children)
 		{
 			super(children);
@@ -186,6 +198,8 @@ package aerys.minko.scene.node
 			_afterPresent 		= new Signal('Scene.afterPresent');
 			_renderingEnd 		= new Signal('Scene.renderingEnd');
 			_exitFrame 			= new Signal('Scene.exitFrame');
+			_beforeClear		= new Signal('Scene.beforeClear');
+			_afterClear			= new Signal('Scene.afterClear');
 		}
 		
 		override protected function initializeSignalHandlers() : void

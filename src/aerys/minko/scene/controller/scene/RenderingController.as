@@ -340,13 +340,14 @@ package aerys.minko.scene.controller.scene
 			if (numTriangles == 0)
 			{
 				var color : uint = backBuffer.backgroundColor;
-				
+				_scene.beforeClear.execute(_scene, viewport, destination, getTimer());
 				context.clear(
 					(color >>> 24) / 255.,
 					((color >> 16) & 0xff) / 255.,
 					((color >> 8) & 0xff) / 255.,
 					(color & 0xff) / 255.
 				);
+				_scene.afterClear.execute(_scene, viewport, destination, getTimer());
 			}
 			
 			// present
