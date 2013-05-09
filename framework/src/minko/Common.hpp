@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -32,17 +33,20 @@ namespace minko
 		class DrawCall;
 
 		class Effect;
-		class GLSLShader;
+		class GLSLProgram;
 		class ShaderProgramInputs;
 	}
 
 	namespace scene
 	{
+		class Scene;
 		class Node;
+		class NodeSet;
 
 		namespace controller
 		{
 			class AbstractController;
+			class TransformController;
 			class SurfaceController;
 			class RenderingController;
 		}

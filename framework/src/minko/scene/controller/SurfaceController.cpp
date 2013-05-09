@@ -3,8 +3,13 @@
 
 using namespace minko::scene::controller;
 
-SurfaceController::SurfaceController(std::shared_ptr<Geometry> geometry, std::shared_ptr<DataProvider> material)
-	: AbstractController(), _geometry(geometry), _material(material)
+SurfaceController::SurfaceController(std::shared_ptr<Geometry> 		geometry,
+									 std::shared_ptr<DataProvider> 	material,
+									 std::shared_ptr<Effect>		effect) :
+	AbstractController(),
+	_geometry(geometry),
+	_material(material),
+	_effect(effect)
 {
 }
 

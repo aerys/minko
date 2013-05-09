@@ -38,7 +38,7 @@ namespace minko
 				   const unsigned int 				program,
 				   std::vector<std::string> 		names,
 				   std::vector<Type> 				types,
-				   std::vector<int> 				locations)
+				   std::vector<unsigned int> 		locations)
 			{
 				return std::shared_ptr<ShaderProgramInputs>(new ShaderProgramInputs(
 					context,
@@ -98,7 +98,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<int>&
+			const std::vector<unsigned int>&
 			locations()
 			{
 				return _locations;
@@ -109,14 +109,14 @@ namespace minko
 			const unsigned int 					_program;
 			std::vector<std::string>			_names;
 			std::vector<Type> 					_types;
-			std::vector<int>					_locations;
+			std::vector<unsigned int>			_locations;
 
 		private:
 			ShaderProgramInputs(std::shared_ptr<AbstractContext>	context,
 								const unsigned int 					program,
 								std::vector<std::string> 			names,
 						 		std::vector<Type> 					types,
-						 		std::vector<int> 					locations) :
+						 		std::vector<unsigned int> 			locations) :
 				std::enable_shared_from_this<ShaderProgramInputs>(),
 				_context(context),
 				_program(program),

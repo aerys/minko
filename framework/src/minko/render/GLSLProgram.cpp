@@ -1,14 +1,14 @@
-#include "GLSLShader.hpp"
+#include "GLSLProgram.hpp"
 #include "minko/render/context/AbstractContext.hpp"
 
 #include <fstream>
 
 using namespace minko::render;
 
-GLSLShader::GLSLShader(GLSLShader::AbstractContextPtr context,
+GLSLProgram::GLSLProgram(GLSLProgram::AbstractContextPtr context,
 					   const std::string& 			  vertexShaderSource,
 					   const std::string &			  fragmentShaderSource) :
-	std::enable_shared_from_this<GLSLShader>(),
+	std::enable_shared_from_this<GLSLProgram>(),
 	_context(context),
 	_program(context->createProgram()),
 	_vertexShader(context->createVertexShader()),
@@ -27,8 +27,8 @@ GLSLShader::GLSLShader(GLSLShader::AbstractContextPtr context,
 	_context->linkProgram(_program);
 }
 
-GLSLShader::ptr
-GLSLShader::fromFiles(GLSLShader::AbstractContextPtr 	context,
+GLSLProgram::ptr
+GLSLProgram::fromFiles(GLSLProgram::AbstractContextPtr 	context,
 		  			  const std::string& 				vertexShaderFile,
 		  			  const std::string& 				fragmentShaderFile)
 {
@@ -36,7 +36,7 @@ GLSLShader::fromFiles(GLSLShader::AbstractContextPtr 	context,
 }
 
 const std::string
-GLSLShader::loadShaderFile(const std::string& filename)
+GLSLProgram::loadShaderFile(const std::string& filename)
 {
 	std::fstream file(filename, std::ios::in | std::ios::ate);
 

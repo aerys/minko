@@ -11,11 +11,11 @@ namespace minko
 		using namespace minko::render::context;
 		using namespace minko::scene::data;
 
-		class GLSLShader :
-			public std::enable_shared_from_this<GLSLShader>
+		class GLSLProgram :
+			public std::enable_shared_from_this<GLSLProgram>
 		{
 		public:
-			typedef std::shared_ptr<GLSLShader>	ptr;
+			typedef std::shared_ptr<GLSLProgram>	ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractContext>		AbstractContextPtr;
@@ -37,7 +37,7 @@ namespace minko
 				   const std::string& 	vertexShaderSource,
 				   const std::string& 	fragmentShaderSource)
 			{
-				return std::shared_ptr<GLSLShader>(new GLSLShader(
+				return std::shared_ptr<GLSLProgram>(new GLSLProgram(
 					context,
 					vertexShaderSource,
 					fragmentShaderSource
@@ -46,7 +46,7 @@ namespace minko
 
 			static
 			ptr
-			fromFiles(GLSLShader::AbstractContextPtr 	context,
+			fromFiles(GLSLProgram::AbstractContextPtr 	context,
 		  			  const std::string& 				vertexShaderFile,
 					  const std::string& 				fragmentShaderFile);
 
@@ -79,7 +79,7 @@ namespace minko
 			}
 
 		private:
-			GLSLShader(AbstractContextPtr context,
+			GLSLProgram(AbstractContextPtr context,
 					   const std::string& vertexShaderSource,
 					   const std::string& fragmentShaderSource);
 

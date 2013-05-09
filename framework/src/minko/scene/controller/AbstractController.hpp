@@ -24,7 +24,7 @@ namespace minko
 
 			protected:
 				inline
-				std::list<std::shared_ptr<Node>>
+				const std::list<std::shared_ptr<Node>>&
 				targets()
 				{
 					return _targets;
@@ -35,7 +35,11 @@ namespace minko
 					_targetAdded(Signal<ptr, std::shared_ptr<Node>>::create()),
 					_targetRemoved(Signal<ptr, std::shared_ptr<Node>>::create())
 				{
+				}
 
+				virtual
+				~AbstractController()
+				{
 				}
 
 				const unsigned int

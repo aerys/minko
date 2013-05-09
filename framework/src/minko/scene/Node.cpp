@@ -1,5 +1,6 @@
 #include "Node.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
+#include "minko/scene/Scene.hpp"
 
 using namespace minko::scene;
 
@@ -9,6 +10,9 @@ Node::Node() :
 	enable_shared_from_this(),
 	_name("Node_" + std::to_string(Node::_id++)),
 	_tags(1),
+	_scene(nullptr),
+	_root(nullptr),
+	_parent(nullptr),
 	_bindings(DataBindings::create()),
 	_added(Signal<ptr, ptr>::create()),
 	_removed(Signal<ptr, ptr>::create()),
@@ -16,7 +20,6 @@ Node::Node() :
 	_descendantRemoved(Signal<ptr, ptr>::create()),
 	_tagsChanged(Signal<ptr>::create())
 {
-
 }
 
 Node::ptr
@@ -28,26 +31,26 @@ Node::addChild(Node::ptr child)
 	_children.push_back(child);
 
 	// bubble up
-	_childToDescendantAddedCd[child] = (*child->_descendantAdded) += std::bind(
+	_childToDescendantAddedCd[child] = child->_descendantAdded->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, _descendantAdded, std::placeholders::_1, std::placeholders::_2
-	);
-	_childToDescendantRemovedCd[child] = (*child->_descendantRemoved) += std::bind(
+	));
+	_childToDescendantRemovedCd[child] = child->_descendantRemoved->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, _descendantRemoved, std::placeholders::_1, std::placeholders::_2
-	);
+	));
 
 	// bubble down
-	_childToAddedCd[child] = *_added += std::bind(
+	_childToAddedCd[child] = _added->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, child->_added, std::placeholders::_1, std::placeholders::_2
-	);
-	_childToRemovedCd[child] = *_removed += std::bind(
+	));
+	_childToRemovedCd[child] = _removed->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, child->_removed, std::placeholders::_1, std::placeholders::_2
-	);
+	));
 
 	child->_parent = shared_from_this();
 	child->updateRoot();
 
-	(*child->_added)(child, shared_from_this());
-	(*_descendantAdded)(shared_from_this(), child);
+	child->_added->execute(child, shared_from_this());
+	_descendantAdded->execute(shared_from_this(), child);
 
 	return shared_from_this();
 }
@@ -77,8 +80,8 @@ Node::removeChild(Node::ptr child)
 	child->_parent = 0;
 	child->updateRoot();
 
-	(*child->_removed)(child, shared_from_this());
-	(*_descendantRemoved)(shared_from_this(), child);
+	child->_removed->execute(child, shared_from_this());
+	_descendantRemoved->execute(shared_from_this(), child);
 
 	return shared_from_this();
 }
@@ -96,7 +99,7 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 		throw;
 
 	_controllers.push_back(controller);
-	(*controller->targetAdded())(controller, shared_from_this());
+	controller->targetAdded()->execute(controller, shared_from_this());
 
 	return shared_from_this();
 }
@@ -112,7 +115,7 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 		throw;
 
 	_controllers.erase(it);
-	(*controller->targetRemoved())(controller, shared_from_this());
+	controller->targetRemoved()->execute(controller, shared_from_this());
 
 	return shared_from_this();
 }
@@ -127,6 +130,7 @@ void
 Node::updateRoot()
 {
 	_root = _parent ? _parent->_root : shared_from_this();
+	_scene = std::dynamic_pointer_cast<Scene>(_root);
 
 	for (auto child : _children)
 		child->updateRoot();

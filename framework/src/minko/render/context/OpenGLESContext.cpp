@@ -395,7 +395,7 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 {
 	std::vector<std::string> names;
 	std::vector<ShaderProgramInputs::Type> types;
-	std::vector<int> locations;
+	std::vector<unsigned int> locations;
 
 	int total = -1;
 	int maxUniformNameLength = -1;
@@ -452,9 +452,14 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 	    		break ;
 	    }
 
-	    names.push_back(name);
-	    types.push_back(inputType);
-	    locations.push_back(glGetUniformLocation(program, name));
+	    int location = glGetUniformLocation(program, name);
+
+	    if (location >= 0)
+	    {
+		    names.push_back(name);
+		    types.push_back(inputType);
+		    locations.push_back(location);
+		}
 	}
 
 	return ShaderProgramInputs::create(shared_from_this(), program, names, types, locations);

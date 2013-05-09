@@ -24,23 +24,42 @@ namespace minko
 			public:
 				static
 				ptr
-				create(std::shared_ptr<Geometry> geometry, std::shared_ptr<DataProvider> material)
+				create(std::shared_ptr<Geometry> 		geometry,
+					   std::shared_ptr<DataProvider> 	material,
+					   std::shared_ptr<Effect>			effect)
 				{
-					ptr surface(new SurfaceController(geometry, material));
+					ptr surface(new SurfaceController(geometry, material, effect));
 
 					surface->initialize();
 
 					return surface;
 				}
 
+				inline
+				std::shared_ptr<Geometry>
+				geometry()
+				{
+					return _geometry;
+				}
+
+				inline
+				std::shared_ptr<DataProvider>
+				material()
+				{
+					return _material;
+				}
+
 			private:
 				std::shared_ptr<Geometry>		_geometry;
 				std::shared_ptr<DataProvider>	_material;
+				std::shared_ptr<Effect>			_effect;
 
 				std::shared_ptr<DrawCall>		_drawCall;
 
 			private:
-				SurfaceController(std::shared_ptr<Geometry> geometry, std::shared_ptr<DataProvider> material);
+				SurfaceController(std::shared_ptr<Geometry> 	geometry,
+								  std::shared_ptr<DataProvider> material,
+								  std::shared_ptr<Effect>		effect);
 
 				void
 				initialize();

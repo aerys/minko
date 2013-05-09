@@ -16,16 +16,16 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<data::DataBindings>	DataBindingsPtr;
-			typedef std::shared_ptr<GLSLShader>			GLSLShaderPtr;
+			typedef std::shared_ptr<GLSLProgram>		GLSLProgramPtr;
 
 		private:
 			DataBindingsPtr 			_bindings;
-			std::vector<GLSLShaderPtr>	_shaders;
+			std::vector<GLSLProgramPtr>	_shaders;
 
 		public:
 			inline static
 			ptr
-			create(DataBindingsPtr bindings, std::vector<GLSLShaderPtr> shaders)
+			create(DataBindingsPtr bindings, std::vector<GLSLProgramPtr> shaders)
 			{
 				return std::shared_ptr<Effect>(new Effect(bindings, shaders));
 			}
@@ -34,7 +34,7 @@ namespace minko
 			bind(const std::string& bindingName, const std::string& propertyName);
 
 		private:
-			Effect(DataBindingsPtr bindings, std::vector<GLSLShaderPtr> shaders);
+			Effect(DataBindingsPtr bindings, std::vector<GLSLProgramPtr> shaders);
 
 			void
 			propertyChangedHandler(DataBindingsPtr bindings, const std::string& propertyName);

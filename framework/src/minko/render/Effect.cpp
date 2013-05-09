@@ -3,7 +3,7 @@
 
 using namespace minko::render;
 
-Effect::Effect(Effect::DataBindingsPtr bindings, std::vector<Effect::GLSLShaderPtr> shaders) :
+Effect::Effect(Effect::DataBindingsPtr bindings, std::vector<Effect::GLSLProgramPtr> shaders) :
 	std::enable_shared_from_this<Effect>(),
 	_bindings(bindings),
 	_shaders(shaders)

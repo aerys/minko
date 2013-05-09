@@ -18,6 +18,9 @@ RenderingController::initialize()
 void
 RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
 {
+	if (target->controllers<RenderingController>().size() > 1)
+		throw std::logic_error("There cannot be two RenderingController on the same node.");
+
 	_addedCd = target->added()->add(std::bind(
 		&RenderingController::addedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
 	));

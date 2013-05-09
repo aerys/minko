@@ -62,23 +62,28 @@ int main(int argc, char *argv[])
   context::OpenGLESContext::ptr  oglContext  = OpenGLESContext::create();
   Node::ptr                      camera      = Node::create("camera");
   Node::ptr                      mesh        = Node::create("mesh");
-  DataProvider::ptr              material    = data::DataProvider::create();
+  Node::ptr                      root        = Node::create("root", {camera, mesh});
 
-  //(*material)["material/diffuseColor"] = 0x0000ff;
-
-  mesh->bindings()->addProvider(material);
-
-  GLSLShader::ptr shader = GLSLShader::fromFiles(
+  GLSLProgram::ptr shader = GLSLProgram::fromFiles(
     oglContext,
     "../shaders/Basic.vertex.glsl",
     "../shaders/Red.fragment.glsl"
   );
 
   Effect::ptr fx = Effect::create(mesh->bindings(), {shader})
-    ->bind("material/diffuseColor", "diffuseColor")
-    ->bind("transforms/worldMatrix", "worldMatrix");
+    ->bind("diffuseMaterial/rgba", "diffuseColor")
+    ->bind("transform/modelToWorldMatrix", "modelToWorldMatrix")
+    ->bind("transform/worldToScreenMatrix", "worldToScreenMatrix");
 
-  (*material)["material/diffuseColor"] = 0x0000ff;
-  
+  mesh->addController(TransformController::create());
+
+  mesh->addController(SurfaceController::create(
+    CubeGeometry::create(),
+    data::DataProvider::create(),
+    fx
+  ));
+
+  mesh->controller<SurfaceController>()->material()->setProperty("diffuseMaterial/rgba", 0x0000ff);
+    
   return 0;
-} /* end func main */
+}

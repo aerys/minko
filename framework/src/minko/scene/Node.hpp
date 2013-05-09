@@ -1,5 +1,7 @@
 #pragma once
 
+#include <typeinfo>
+
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/data/DataBindings.hpp"
@@ -18,14 +20,17 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Node>	ptr;
 
+		protected:
+			std::string 										_name;
+			std::list<ptr>										_children;			
+
 		private:
 			static unsigned int									_id;
 
-			std::string 										_name;
 			unsigned int										_tags;
+			std::shared_ptr<Scene>								_scene;
 			ptr 												_root;
 			ptr													_parent;
-			std::list<ptr>										_children;
 			std::shared_ptr<DataBindings>						_bindings;
 			std::list<std::shared_ptr<AbstractController>>		_controllers;
 
@@ -46,16 +51,43 @@ namespace minko
 			ptr
 			create()
 			{
-				return std::shared_ptr<Node>(new Node());
+				ptr node = std::shared_ptr<Node>(new Node());
+
+				node->_root = node;
+
+				return node;
+			}
+
+			static
+			ptr
+			create(const std::list<ptr>& children)
+			{
+				ptr node = create();
+
+				node->_children = children;
+
+				return node;				
 			}
 
 			static
 			ptr
 			create(const std::string& name)
 			{
-				ptr node = std::shared_ptr<Node>(new Node());
+				ptr node = create();
 
 				node->name(name);
+
+				return node;
+			}
+
+			static
+			ptr
+			create(const std::string& name, const std::list<ptr>& children)
+			{
+				ptr node = create();
+
+				node->_name = name;
+				node->_children = children;
 
 				return node;
 			}
@@ -99,10 +131,24 @@ namespace minko
 			}
 
 			inline
+			std::shared_ptr<Scene>
+			scene()
+			{
+				return _scene;
+			}
+
+			inline
 			ptr
 			root()
 			{
 				return _root;
+			}
+
+			inline
+			const std::list<ptr>&
+			children()
+			{
+				return _children;
 			}
 
 			inline
@@ -165,7 +211,49 @@ namespace minko
 			bool
 			hasController(std::shared_ptr<AbstractController> controller);
 
-		private:
+			template <typename T>
+			std::vector<std::shared_ptr<T>>
+			controllers()
+			{
+				std::vector<std::shared_ptr<T>> result;
+				unsigned int counter = 0;
+
+				for (auto controller : _controllers)
+				{
+					std::shared_ptr<T> typedController = std::dynamic_pointer_cast<T>(controller);
+
+					if (typedController != nullptr)
+						result.push_back(typedController);
+				}
+
+				return result;
+			}
+
+			template <typename T>
+			std::shared_ptr<T>
+			controller(const unsigned int position = 0)
+			{
+				unsigned int counter = 0;
+
+				for (auto controller : _controllers)
+				{
+					std::shared_ptr<T> typedController = std::dynamic_pointer_cast<T>(controller);
+
+					if (typedController != nullptr)
+						if (counter == position)
+							return typedController;
+						else
+							++counter;
+				}
+
+				return nullptr;
+			}
+
+			virtual ~Node()
+			{
+			}
+
+		protected:
 			Node();
 
 			void
@@ -173,4 +261,3 @@ namespace minko
 		};
 	}
 }
-			
