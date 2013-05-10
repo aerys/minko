@@ -42,19 +42,24 @@ namespace minko
 			{
 				ptr scene = create();
 
-				scene->_children = children;
+				for (auto child : children)
+					scene->addChild(child);
 
 				return scene;
 			}
 
 			inline static
 			ptr
-			create(const std::string& name, std::list<std::shared_ptr<Node>>& children)
+			create(const std::string& name, const std::list<std::shared_ptr<Node>>& children)
 			{
 				ptr scene = create();
 
 				scene->_name = name;
-				scene->_children = children;
+				
+				for (auto child : children)
+					scene->addChild(child);
+
+				return scene;
 			}
 
 			inline
@@ -73,6 +78,14 @@ namespace minko
 
 			void
 			render();
+
+		private:
+			Scene() :
+				Node(),
+				_enterFrame(std::shared_ptr<Signal<ptr>>(Signal<ptr>::create())),
+				_exitFrame(std::shared_ptr<Signal<ptr>>(Signal<ptr>::create()))
+			{
+			}
 		};
 	}
 }

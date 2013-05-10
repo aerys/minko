@@ -27,15 +27,17 @@ namespace minko
 
 			private:
 				typedef std::shared_ptr<Node>					NodePtr;
-				typedef std::shared_ptr<RenderingController>	RenderingControllerPtr;
-				typedef Signal<RenderingControllerPtr>::cd		EnterFrameCd;
 
 			public:
 				inline static
 				ptr
 				create()
 				{
-					return std::shared_ptr<TransformController>(new TransformController());
+					ptr ctrl = std::shared_ptr<TransformController>(new TransformController());
+
+					ctrl->initialize();
+
+					return ctrl;
 				}
 
 				inline
@@ -52,10 +54,11 @@ namespace minko
 
 				NodePtr											_referenceFrame;
 
-				std::map<RenderingControllerPtr, EnterFrameCd>	_renderingCtrlToEnterFrameCd;
-
 			private:
 				TransformController();
+
+				void
+				initialize();
 
 				void
 				targetAddedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
@@ -70,7 +73,7 @@ namespace minko
 				removedHandler(NodePtr node, NodePtr ancestor);
 
 				void
-				enterFrameHandler(RenderingControllerPtr renderingController);
+				enterFrameHandler(std::shared_ptr<Scene> scene);
 
 				void
 				updateReferenceFrame(NodePtr node);

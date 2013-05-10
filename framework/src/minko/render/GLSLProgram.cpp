@@ -29,8 +29,8 @@ GLSLProgram::GLSLProgram(GLSLProgram::AbstractContextPtr context,
 
 GLSLProgram::ptr
 GLSLProgram::fromFiles(GLSLProgram::AbstractContextPtr 	context,
-		  			  const std::string& 				vertexShaderFile,
-		  			  const std::string& 				fragmentShaderFile)
+		  			   const std::string& 				vertexShaderFile,
+		  			   const std::string& 				fragmentShaderFile)
 {
 	return create(context, loadShaderFile(vertexShaderFile), loadShaderFile(fragmentShaderFile));
 }
@@ -43,7 +43,7 @@ GLSLProgram::loadShaderFile(const std::string& filename)
 	if (file.is_open())
 	{
 		unsigned int size = file.tellg();
-		char* content = new char[size + 1]();
+		char content[size + 1];
 
 		content[size] = 0;
 		file.seekg(0, std::ios::beg);

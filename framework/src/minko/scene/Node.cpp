@@ -129,8 +129,15 @@ Node::hasController(std::shared_ptr<AbstractController> controller)
 void
 Node::updateRoot()
 {
-	_root = _parent ? _parent->_root : shared_from_this();
+	_root = _parent ? (_parent->_root ? _parent->_root : _parent) : shared_from_this();
 	_scene = std::dynamic_pointer_cast<Scene>(_root);
+
+	std::cout << "Node::updateRoot() " << name() << std::endl;
+	std::cout << "root: " << _root->name() << std::endl;
+	if (_scene != nullptr)
+		std::cout << "  scene: " << _scene->name() << std::endl;
+	else
+		std::cout << "  no scene" << std::endl;
 
 	for (auto child : _children)
 		child->updateRoot();

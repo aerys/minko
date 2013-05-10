@@ -56,7 +56,7 @@ OpenGLESContext::clear(float 			red,
 	// void glClearDepthf(GLfloat depth);
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	// 
-	// glClearColor specify the clear value for the depth buffer
+	// glClearDepth specify the clear value for the depth buffer
 	glClearDepth(depth);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml

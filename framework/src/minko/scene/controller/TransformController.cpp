@@ -1,7 +1,7 @@
 #include "TransformController.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/scene/Scene.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/scene/NodeSet.hpp"
 
 using namespace minko::scene::controller;
 using namespace minko::scene::data;
@@ -11,8 +11,12 @@ TransformController::TransformController() :
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_data(DataProvider::create()),
-	_referenceFrame(nullptr),
-	_renderingCtrlToEnterFrameCd()
+	_referenceFrame(nullptr)
+{
+}
+
+void
+TransformController::initialize()
 {
 	targetAdded()->add(std::bind(
 		&TransformController::targetAddedHandler,
@@ -32,16 +36,32 @@ TransformController::TransformController() :
 }
 
 void
-TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl,
+										std::shared_ptr<Node> 				target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("TransformController cannot have more than one target.");
 
 	target->bindings()->addProvider(_data);
+	target->added()->add(std::bind(
+		&TransformController::addedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+	target->removed()->add(std::bind(
+		&TransformController::removedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+
+	updateReferenceFrame(target);
 }
 
 void
-TransformController::targetRemovedHandler(std::shared_ptr<AbstractController>, std::shared_ptr<Node> target)
+TransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
+										  std::shared_ptr<Node> 				target)
 {
 	target->bindings()->removeProvider(_data);
 }
@@ -59,7 +79,7 @@ TransformController::removedHandler(std::shared_ptr<Node> node, std::shared_ptr<
 }
 
 void
-TransformController::enterFrameHandler(std::shared_ptr<RenderingController> renderingController)
+TransformController::enterFrameHandler(std::shared_ptr<Scene> scene)
 {
 	std::cout << "TransformController::enterFrameHandler()" << std::endl;
 }
@@ -67,11 +87,28 @@ TransformController::enterFrameHandler(std::shared_ptr<RenderingController> rend
 void
 TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 {
-	while (node != nullptr)
-	{
-		if (node->controller<TransformController>() != nullptr)
-			_referenceFrame = node;
+	std::shared_ptr<Node> searchNode = node;
 
-		node = node->parent();
+	std::cout << "TransformController::updateReferenceFrame()" << std::endl;
+	std::cout << "node: " << node->name() << std::endl;
+
+	while (searchNode != nullptr)
+	{
+		if (searchNode->controller<TransformController>() != nullptr)
+			_referenceFrame = searchNode;
+
+		searchNode = searchNode->parent();
+	}
+
+	std::cout << "reference frame: " << _referenceFrame->name() << std::endl;
+
+	if (_referenceFrame == node && node->scene() != nullptr)
+	{
+		std::cout << "listen to enterFrame" << std::endl;
+		node->scene()->enterFrame()->add(std::bind(
+			&TransformController::enterFrameHandler,
+			shared_from_this(),
+			std::placeholders::_1
+		));
 	}
 }

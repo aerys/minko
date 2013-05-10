@@ -9,14 +9,14 @@ project "minko-examples"
    configuration "Debug"
       defines { "DEBUG" }
       flags { "Symbols" }
-      links { "GL", "GLU", "glut", "minko-framework" }
+      links { "minko-framework", "GL", "GLU", "glut", "m" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
       
    configuration "Release"
       defines { "NDEBUG" }
       flags { "Optimize" }
-      links { "GL", "GLU", "glut", "minko-framework" }
+      links { "minko-framework", "GL", "GLU", "glut", "m" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
 

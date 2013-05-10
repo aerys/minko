@@ -64,7 +64,8 @@ namespace minko
 			{
 				ptr node = create();
 
-				node->_children = children;
+				for (auto child : children)
+					node->addChild(child);
 
 				return node;				
 			}
@@ -87,7 +88,9 @@ namespace minko
 				ptr node = create();
 
 				node->_name = name;
-				node->_children = children;
+
+				for (auto child : children)
+					node->addChild(child);
 
 				return node;
 			}
