@@ -89,9 +89,6 @@ TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 {
 	std::shared_ptr<Node> searchNode = node;
 
-	std::cout << "TransformController::updateReferenceFrame()" << std::endl;
-	std::cout << "node: " << node->name() << std::endl;
-
 	while (searchNode != nullptr)
 	{
 		if (searchNode->controller<TransformController>() != nullptr)
@@ -100,11 +97,8 @@ TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 		searchNode = searchNode->parent();
 	}
 
-	std::cout << "reference frame: " << _referenceFrame->name() << std::endl;
-
 	if (_referenceFrame == node && node->scene() != nullptr)
 	{
-		std::cout << "listen to enterFrame" << std::endl;
 		node->scene()->enterFrame()->add(std::bind(
 			&TransformController::enterFrameHandler,
 			shared_from_this(),
