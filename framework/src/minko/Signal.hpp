@@ -1,23 +1,33 @@
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/SignalConnection.hpp"
 
 namespace minko
 {
 	template <typename... A>
-	class Signal
+	class Signal :
+		public std::enable_shared_from_this<Signal<A...>>
 	{
 	public:
-		typedef std::shared_ptr<Signal<A...>>	ptr;
-		typedef std::shared_ptr<int>			cd;
+		typedef std::shared_ptr<Signal<A...>>			ptr;
+		typedef std::shared_ptr<SignalConnection<A...>>	cd;
 
 	private:
-		typedef std::function<void(A...)>	Callback;
-
-		std::list<Callback>	_callbacks;
+		typedef std::function<void(A...)>				Callback;
+		typedef typename std::list<cd>::iterator		ConnectionIterator;
 
 	private:
-		Signal()
+		std::list<cd>					_connections;
+
+		bool							_locked;
+		std::list<cd>					_toAdd;
+		std::list<ConnectionIterator>	_toRemove;
+
+	private:
+		Signal() :
+			std::enable_shared_from_this<Signal<A...>>(),
+			_locked(false)
 		{}
 
 	public:
@@ -31,34 +41,73 @@ namespace minko
 		cd
 		add(Callback callback)
 		{
-			_callbacks.push_back(callback);
+			cd connection = SignalConnection<A...>::create(
+				Signal<A...>::shared_from_this(),
+				callback
+			);
 
-			return std::make_shared<int>(_callbacks.size() - 1);
+			if (_locked)
+				_toAdd.push_back(connection);
+			else
+				_connections.push_back(connection);
+
+			return connection;
 		}
 
 		void
-		remove(cd callbackId)
+		remove(cd connection)
 		{
-			int index = *callbackId;
+			ConnectionIterator it = std::find(
+				_connections.begin(), _connections.end(), connection
+			);
 
-			// invalid callback descriptor
-			if (index < 0)
-				throw;
+			if (it == _connections.end() || connection->_signal != Signal<A...>::shared_from_this())
+				throw std::invalid_argument("connection");
 
-			typename std::list<Callback>::iterator it = _callbacks.begin();
+			if (_locked)
+				_toRemove.push_back(it);
+			else
+			{
+				_connections.erase(it);
+				connection->_signal = nullptr;
+			}
+		}
 
-			std::advance(it, index);
-			_callbacks.erase(it);
+		cd
+		swap(cd connection, Callback callback)
+		{
+			if (connection == nullptr)
+				return add(callback);
 
-			*callbackId = -1;
+			ConnectionIterator it = std::find(
+				_connections.begin(), _connections.end(), connection
+			);
+
+			if (it == _connections.end() || connection->_signal != Signal<A...>::shared_from_this())
+				throw std::invalid_argument("connection");
+
+			connection->_callback = callback;
+
+			return connection;
 		}
 
 		inline
 		void
 		execute(A... arguments)
 		{
-			for (auto callback : _callbacks)
-				callback(arguments...);
+			_locked = true;
+			for (auto connection : _connections)
+				connection->_callback(arguments...);
+			_locked = false;
+
+			for (auto connection : _toAdd)
+				_connections.push_back(connection);
+
+			for (auto connectionIt : _toRemove)
+			{
+				(*connectionIt)->_signal = nullptr;
+				_connections.erase(connectionIt);
+			}
 		}
 
 		inline

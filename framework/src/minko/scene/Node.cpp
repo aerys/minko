@@ -39,6 +39,7 @@ Node::addChild(Node::ptr child)
 	));
 
 	// bubble down
+	std::cout << "addChild(): " << _name << ", " << child->_name << std::endl;
 	_childToAddedCd[child] = _added->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, child->_added, std::placeholders::_1, std::placeholders::_2
 	));
@@ -61,19 +62,21 @@ Node::removeChild(Node::ptr child)
 	std::list<Node::ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
 
 	if (it == _children.end())
-		throw;
+		throw std::invalid_argument("child");
 
 	_children.erase(it);
 
+	std::cout << "removeChild(): " << _name << ", " << child->_name << std::endl;
+
 	// bubble up
-	(*child->_descendantAdded) -= _childToDescendantAddedCd[child];
-	(*child->_descendantRemoved) -= _childToDescendantRemovedCd[child];
+	child->_descendantAdded->remove(_childToDescendantAddedCd[child]);
+	child->_descendantRemoved->remove(_childToDescendantRemovedCd[child]);
 	_childToDescendantAddedCd.erase(child);
 	_childToDescendantRemovedCd.erase(child);
 
 	// bubble down
-	*_added -= _childToAddedCd[child];
-	*_removed -= _childToRemovedCd[child];
+	_added->remove(_childToAddedCd[child]);
+	_removed->remove(_childToRemovedCd[child]);
 	_childToAddedCd.erase(child);
 	_childToRemovedCd.erase(child);
 

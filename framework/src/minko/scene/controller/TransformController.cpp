@@ -98,11 +98,14 @@ TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 	}
 
 	if (_referenceFrame == node && node->scene() != nullptr)
-	{
-		node->scene()->enterFrame()->add(std::bind(
-			&TransformController::enterFrameHandler,
-			shared_from_this(),
-			std::placeholders::_1
-		));
-	}
+		_enterFrameCd = node->scene()->enterFrame()->swap(
+			_enterFrameCd,
+			std::bind(
+				&TransformController::enterFrameHandler,
+				shared_from_this(),
+				std::placeholders::_1
+			)
+		);
+	else if (_enterFrameCd != nullptr)
+		_enterFrameCd->signal()->remove(_enterFrameCd);
 }

@@ -48,11 +48,13 @@ namespace minko
 				}
 
 			private:
-				std::shared_ptr<Matrix4x4>						_transform;
-				std::shared_ptr<Matrix4x4>						_modelToWorld;
-				std::shared_ptr<DataProvider>					_data;
+				std::shared_ptr<Matrix4x4>			_transform;
+				std::shared_ptr<Matrix4x4>			_modelToWorld;
+				std::shared_ptr<DataProvider>		_data;
 
-				NodePtr											_referenceFrame;
+				NodePtr								_referenceFrame;
+
+				Signal<std::shared_ptr<Scene>>::cd	_enterFrameCd;
 
 			private:
 				TransformController();

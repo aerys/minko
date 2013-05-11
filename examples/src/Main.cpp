@@ -5,6 +5,7 @@ using namespace minko::math;
 using namespace minko::render;
 
 Scene::ptr  root;
+unsigned int i = 0;
 
 void
 renderScene()
@@ -44,6 +45,9 @@ int main(int argc, char** argv)
 
   root = Scene::create("scene", {camera, mesh});
 
+  root->removeChild(camera);
+  root->removeChild(mesh);
+
   GLSLProgram::ptr shader = GLSLProgram::fromFiles(
     oglContext,
     "../shaders/Basic.vertex.glsl",
@@ -62,6 +66,9 @@ int main(int argc, char** argv)
     data::DataProvider::create(),
     fx
   ));
+
+  root->addChild(camera);
+  root->addChild(mesh);
 
 //  renderScene();
   glutMainLoop();
