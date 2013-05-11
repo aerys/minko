@@ -9,9 +9,7 @@ namespace minko
 	namespace scene
 	{
 		namespace data
-		{
-			using namespace minko::type;
-			
+		{			
 			class DataProvider :
 				public std::enable_shared_from_this<DataProvider>
 			{

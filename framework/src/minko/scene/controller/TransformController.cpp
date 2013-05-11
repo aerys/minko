@@ -172,14 +172,8 @@ TransformController::RootTransformController::updateEnterFrameListeners()
 	);
 
 	for (auto descendant : NodeSet::create(targets()[0]->root())->descendants(true)->nodes())
-	{
-		std::cout << "enter frame handler on " << descendant->name() << std::endl;
-
 		for (auto renderingCtrl : descendant->controllers<RenderingController>())
-		{
 			_enterFrameCds.push_back(renderingCtrl->enterFrame()->add(callback));
-		}
-	}
 }
 
 void
@@ -205,6 +199,4 @@ void
 TransformController::RootTransformController::enterFrameHandler(std::shared_ptr<RenderingController> ctrl)
 {
 	// TODO: update transforms list
-
-	std::cout << "TransformController::RootTransformController::enterFrameHandler()" << std::endl;
 }

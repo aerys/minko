@@ -11,14 +11,17 @@
 #include "minko/render/context/AbstractContext.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"
 
+namespace
+{
+	using namespace minko::render;
+}
+
 namespace minko
 {
 	namespace render
 	{
 		namespace context
 		{
-			using namespace minko::render;
-
 			class OpenGLESContext :
 				public AbstractContext,
 				public std::enable_shared_from_this<OpenGLESContext>

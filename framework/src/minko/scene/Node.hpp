@@ -6,14 +6,16 @@
 #include "minko/Signal.hpp"
 #include "minko/scene/data/DataBindings.hpp"
 
+namespace
+{
+	using namespace minko::scene::data;
+	using namespace minko::scene::controller;
+}
+
 namespace minko
 {
 	namespace scene
 	{
-		using namespace minko::type;
-		using namespace minko::scene::data;
-		using namespace minko::scene::controller;
-
 		class Node :
 			public std::enable_shared_from_this<Node>
 		{

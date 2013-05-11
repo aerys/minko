@@ -65,6 +65,7 @@ namespace minko
 		class Matrix4x4;
 	}
 
+	class Any;
 	template<typename... A>
 	class Signal;
 	template<typename... A>
