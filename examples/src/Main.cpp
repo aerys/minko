@@ -46,6 +46,7 @@ int main(int argc, char** argv)
   Node::ptr                      root         = Node::create("root", {group, camera});
 
   renderingController = RenderingController::create(oglContext);
+  camera->addController(renderingController);
 
   GLSLProgram::ptr shader = GLSLProgram::fromFiles(
     oglContext,

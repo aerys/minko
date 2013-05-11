@@ -92,24 +92,19 @@ TransformController::controllerAddedOrRemovedHandler(std::shared_ptr<Node> 					
 void
 TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 {
-	std::shared_ptr<Node> searchNode = node;
+	auto searchNode 		= node;
+	auto newReferenceFrame 	= node;
 
 	while (searchNode != nullptr)
 	{
 		if (searchNode->controller<TransformController>() != nullptr)
-			_referenceFrame = searchNode;
+			newReferenceFrame = searchNode;
 
 		searchNode = searchNode->parent();
 	}
 
-	if (_referenceFrame == node)
-	{
-		// FIXME: add RootTransformController
-	}
-	else
-	{
-		// FIXME: remove RootTransformController (if any)
-	}
+	if (newReferenceFrame == node && newReferenceFrame->controller<RootTransformController>() == nullptr)
+		newReferenceFrame->addController(RootTransformController::create());
 }
 
 void
@@ -121,19 +116,20 @@ TransformController::TransformController::RootTransformController::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-
-	targetRemoved()->add(std::bind(
-		&TransformController::RootTransformController::targetRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
 }
 
 void
 TransformController::RootTransformController::targetAddedHandler(std::shared_ptr<AbstractController> 	ctrl,
 																 std::shared_ptr<Node>					target)
 {
+	for (auto descendant : NodeSet::create(targets())->descendants()->nodes())
+	{
+		auto rootTransformCtrl = descendant->controller<RootTransformController>();
+
+		if (rootTransformCtrl != nullptr)
+			descendant->removeController(rootTransformCtrl);
+	}
+
 	auto callback = std::bind(
 		&TransformController::RootTransformController::descendantAddedOrRemovedHandler,
 		shared_from_this(),
@@ -146,14 +142,6 @@ TransformController::RootTransformController::targetAddedHandler(std::shared_ptr
 
 	updateEnterFrameListeners();
 	updateControllerAddedOrRemovedListeners();
-}
-
-void
-TransformController::RootTransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
-											  					   std::shared_ptr<Node>				target)
-{
-	target->descendantAdded()->remove(_descendantAddedCd);
-	target->descendantRemoved()->remove(_descendantRemovedCd);
 }
 
 void
@@ -183,9 +171,15 @@ TransformController::RootTransformController::updateEnterFrameListeners()
 		std::placeholders::_1
 	);
 
-	for (auto descendant : NodeSet::create(targets())->descendants(true)->nodes())
+	for (auto descendant : NodeSet::create(targets()[0]->root())->descendants(true)->nodes())
+	{
+		std::cout << "enter frame handler on " << descendant->name() << std::endl;
+
 		for (auto renderingCtrl : descendant->controllers<RenderingController>())
+		{
 			_enterFrameCds.push_back(renderingCtrl->enterFrame()->add(callback));
+		}
+	}
 }
 
 void
@@ -193,15 +187,15 @@ TransformController::RootTransformController::updateControllerAddedOrRemovedList
 {
 	_controllerAddedOrRemovedCds.clear();
 
+	auto callback = std::bind(
+		&TransformController::RootTransformController::controllerAddedOrRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	);
+
 	for (auto descendant : NodeSet::create(targets())->descendants(true)->nodes())
 	{
-		auto callback = std::bind(
-			&TransformController::RootTransformController::controllerAddedOrRemovedHandler,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
-		);
-
 		descendant->controllerAdded()->add(callback);
 		descendant->controllerRemoved()->add(callback);
 	}

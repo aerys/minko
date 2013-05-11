@@ -95,6 +95,7 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 		throw;
 
 	_controllers.push_back(controller);
+	controller->_targets.push_back(shared_from_this());
 	controller->targetAdded()->execute(controller, shared_from_this());
 	_controllerAdded->execute(shared_from_this(), controller);
 
@@ -112,6 +113,9 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 		throw;
 
 	_controllers.erase(it);
+	controller->_targets.erase(
+		std::find(controller->_targets.begin(), controller->_targets.end(), shared_from_this())
+	);
 	controller->targetRemoved()->execute(controller, shared_from_this());
 	_controllerRemoved->execute(shared_from_this(), controller);
 

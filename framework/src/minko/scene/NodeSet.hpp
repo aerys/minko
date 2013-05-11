@@ -30,6 +30,28 @@ namespace minko
 
 			inline static
 			ptr
+			create(const std::vector<std::shared_ptr<Node>>& nodes)
+			{
+				ptr set = create();
+
+				set->_nodes.insert(nodes.begin(), nodes.end());
+
+				return set;
+			}
+
+			inline static
+			ptr
+			create(std::shared_ptr<Node> node)
+			{
+				ptr set = create();
+
+				set->_nodes.insert(node);
+
+				return set;
+			}
+
+			inline static
+			ptr
 			create()
 			{
 				return std::shared_ptr<NodeSet>(new NodeSet());

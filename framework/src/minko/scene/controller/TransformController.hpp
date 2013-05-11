@@ -121,9 +121,6 @@ namespace minko
 					targetAddedHandler(AbstractControllerPtr ctrl, NodePtr target);
 
 					void
-					targetRemovedHandler(AbstractControllerPtr 	ctrl, NodePtr target);
-
-					void
 					controllerAddedOrRemovedHandler(NodePtr node, AbstractControllerPtr	ctrl);
 
 					void

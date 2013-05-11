@@ -3,28 +3,33 @@
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
+namespace
+{
+	using namespace minko::scene;
+}
+
 namespace minko
 {
 	namespace scene
 	{
 		namespace controller
 		{
-			using namespace minko;
-
 			class AbstractController
 			{
+				friend class minko::scene::Node;
+
 			public:
 				typedef std::shared_ptr<AbstractController>	ptr;
 
 			private:
-				std::list<std::shared_ptr<Node>>					_targets;
+				std::vector<std::shared_ptr<Node>>					_targets;
 
 				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetAdded;
 				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetRemoved;
 
 			protected:
 				inline
-				const std::list<std::shared_ptr<Node>>&
+				const std::vector<std::shared_ptr<Node>>&
 				targets()
 				{
 					return _targets;
