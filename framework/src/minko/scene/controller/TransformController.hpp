@@ -27,6 +27,9 @@ namespace minko
 
 			private:
 				typedef std::shared_ptr<Node>					NodePtr;
+				typedef std::shared_ptr<AbstractController>		AbstractControllerPtr;
+				typedef std::shared_ptr<RenderingController>	RenderingControllerPtr;
+				typedef Signal<RenderingControllerPtr>			EnterFrameCd;
 
 			public:
 				inline static
@@ -48,13 +51,15 @@ namespace minko
 				}
 
 			private:
-				std::shared_ptr<Matrix4x4>			_transform;
-				std::shared_ptr<Matrix4x4>			_modelToWorld;
-				std::shared_ptr<DataProvider>		_data;
+				std::shared_ptr<Matrix4x4>								_transform;
+				std::shared_ptr<Matrix4x4>								_modelToWorld;
+				std::shared_ptr<Matrix4x4>								_worldToModel;
+				std::shared_ptr<DataProvider>							_data;
 
-				NodePtr								_referenceFrame;
+				NodePtr													_referenceFrame;
 
-				Signal<std::shared_ptr<Scene>>::cd	_enterFrameCd;
+				Signal<NodePtr, NodePtr>::cd 							_addedCd;
+				Signal<NodePtr, NodePtr>::cd 							_removedCd;
 
 			private:
 				TransformController();
@@ -69,17 +74,71 @@ namespace minko
 				targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
 
 				void
-				addedHandler(NodePtr node, NodePtr ancestor);
+				addedOrRemovedHandler(NodePtr node, NodePtr ancestor);
 
 				void
-				removedHandler(NodePtr node, NodePtr ancestor);
-
-				void
-				enterFrameHandler(std::shared_ptr<Scene> scene);
+				controllerAddedOrRemovedHandler(std::shared_ptr<Node> 				node,
+									   			std::shared_ptr<AbstractController>  ctrl);
 
 				void
 				updateReferenceFrame(NodePtr node);
-			};			
+
+			private:
+				class RootTransformController :
+					public std::enable_shared_from_this<RootTransformController>,
+					public AbstractController
+				{
+				public:
+					typedef std::shared_ptr<RootTransformController> ptr;
+
+				private:
+					typedef std::shared_ptr<Node>				NodePtr;
+					typedef std::shared_ptr<AbstractController>	AbstractControllerPtr;
+
+				public:
+					inline static
+					ptr
+					create()
+					{
+						auto ctrl = std::shared_ptr<RootTransformController>(new RootTransformController());
+
+						ctrl->initialize();
+
+						return ctrl;
+					}
+
+				private:
+					Signal<NodePtr, NodePtr>::cd 							_descendantAddedCd;
+					Signal<NodePtr, NodePtr>::cd 							_descendantRemovedCd;
+					std::list<Signal<NodePtr, AbstractControllerPtr>::cd> 	_controllerAddedOrRemovedCds;
+					std::list<Signal<RenderingControllerPtr>::cd>			_enterFrameCds;
+
+				private:
+					void
+					initialize();
+
+					void
+					targetAddedHandler(AbstractControllerPtr ctrl, NodePtr target);
+
+					void
+					targetRemovedHandler(AbstractControllerPtr 	ctrl, NodePtr target);
+
+					void
+					controllerAddedOrRemovedHandler(NodePtr node, AbstractControllerPtr	ctrl);
+
+					void
+					descendantAddedOrRemovedHandler(NodePtr node, NodePtr descendant);
+
+					void
+					updateEnterFrameListeners();
+
+					void
+					updateControllerAddedOrRemovedListeners();
+
+					void
+					enterFrameHandler(std::shared_ptr<RenderingController> ctrl);
+				};
+			};
 		}
 	}
 }

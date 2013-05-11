@@ -1,7 +1,7 @@
 #include "TransformController.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/scene/Scene.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 
 using namespace minko::scene::controller;
 using namespace minko::scene::data;
@@ -10,8 +10,7 @@ TransformController::TransformController() :
 	minko::scene::controller::AbstractController(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
-	_data(DataProvider::create()),
-	_referenceFrame(nullptr)
+	_data(DataProvider::create())
 {
 }
 
@@ -33,6 +32,7 @@ TransformController::initialize()
 	));
 
 	_data->setProperty("transforms/modelToWorldMatrix", _modelToWorld);
+	_data->setProperty("transforms/worldToModelMatrix", _worldToModel);
 }
 
 void
@@ -41,16 +41,19 @@ TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 {
 	if (targets().size() > 1)
 		throw std::logic_error("TransformController cannot have more than one target.");
+	if (target->controller<TransformController>(1) != nullptr)
+		throw std::logic_error("A node cannot have more than one TransformController.");
 
 	target->bindings()->addProvider(_data);
-	target->added()->add(std::bind(
-		&TransformController::addedHandler,
+	
+	_addedCd = target->added()->add(std::bind(
+		&TransformController::addedOrRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-	target->removed()->add(std::bind(
-		&TransformController::removedHandler,
+	_removedCd = target->removed()->add(std::bind(
+		&TransformController::addedOrRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -64,24 +67,26 @@ TransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	c
 										  std::shared_ptr<Node> 				target)
 {
 	target->bindings()->removeProvider(_data);
+
+	target->added()->remove(_addedCd);
+	target->removed()->remove(_removedCd);
+
+	_referenceFrame = nullptr;
 }
 
 void
-TransformController::addedHandler(std::shared_ptr<Node> node, std::shared_ptr<Node> ancestor)
+TransformController::addedOrRemovedHandler(std::shared_ptr<Node> node, std::shared_ptr<Node> ancestor)
 {
 	updateReferenceFrame(node);
 }
 
 void
-TransformController::removedHandler(std::shared_ptr<Node> node, std::shared_ptr<Node> ancestor)
+TransformController::controllerAddedOrRemovedHandler(std::shared_ptr<Node> 					node,
+													 std::shared_ptr<AbstractController> 	ctrl)
 {
-	updateReferenceFrame(node);
-}
-
-void
-TransformController::enterFrameHandler(std::shared_ptr<Scene> scene)
-{
-	std::cout << "TransformController::enterFrameHandler()" << std::endl;
+	if (std::dynamic_pointer_cast<TransformController>(ctrl) != nullptr
+		|| std::dynamic_pointer_cast<RenderingController>(ctrl) != nullptr)
+		updateReferenceFrame(node);
 }
 
 void
@@ -97,15 +102,115 @@ TransformController::updateReferenceFrame(std::shared_ptr<Node> node)
 		searchNode = searchNode->parent();
 	}
 
-	if (_referenceFrame == node && node->scene() != nullptr)
-		_enterFrameCd = node->scene()->enterFrame()->swap(
-			_enterFrameCd,
-			std::bind(
-				&TransformController::enterFrameHandler,
-				shared_from_this(),
-				std::placeholders::_1
-			)
+	if (_referenceFrame == node)
+	{
+		// FIXME: add RootTransformController
+	}
+	else
+	{
+		// FIXME: remove RootTransformController (if any)
+	}
+}
+
+void
+TransformController::TransformController::RootTransformController::initialize()
+{
+	targetAdded()->add(std::bind(
+		&TransformController::RootTransformController::targetAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+
+	targetRemoved()->add(std::bind(
+		&TransformController::RootTransformController::targetRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+}
+
+void
+TransformController::RootTransformController::targetAddedHandler(std::shared_ptr<AbstractController> 	ctrl,
+																 std::shared_ptr<Node>					target)
+{
+	auto callback = std::bind(
+		&TransformController::RootTransformController::descendantAddedOrRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	);
+
+	_descendantAddedCd = target->descendantAdded()->add(callback);
+	_descendantRemovedCd = target->descendantRemoved()->add(callback);
+
+	updateEnterFrameListeners();
+	updateControllerAddedOrRemovedListeners();
+}
+
+void
+TransformController::RootTransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
+											  					   std::shared_ptr<Node>				target)
+{
+	target->descendantAdded()->remove(_descendantAddedCd);
+	target->descendantRemoved()->remove(_descendantRemovedCd);
+}
+
+void
+TransformController::RootTransformController::controllerAddedOrRemovedHandler(std::shared_ptr<Node>					node,
+														 					  std::shared_ptr<AbstractController>	ctrl)
+{
+	if (std::dynamic_pointer_cast<RenderingController>(ctrl) != nullptr)
+		updateEnterFrameListeners();
+}
+
+void
+TransformController::RootTransformController::descendantAddedOrRemovedHandler(std::shared_ptr<Node> node,
+														 					  std::shared_ptr<Node> descendant)
+{
+	updateEnterFrameListeners();
+	updateControllerAddedOrRemovedListeners();
+}
+
+void
+TransformController::RootTransformController::updateEnterFrameListeners()
+{
+	_enterFrameCds.clear();
+
+	auto callback = std::bind(
+		&TransformController::RootTransformController::enterFrameHandler,
+		shared_from_this(),
+		std::placeholders::_1
+	);
+
+	for (auto descendant : NodeSet::create(targets())->descendants(true)->nodes())
+		for (auto renderingCtrl : descendant->controllers<RenderingController>())
+			_enterFrameCds.push_back(renderingCtrl->enterFrame()->add(callback));
+}
+
+void
+TransformController::RootTransformController::updateControllerAddedOrRemovedListeners()
+{
+	_controllerAddedOrRemovedCds.clear();
+
+	for (auto descendant : NodeSet::create(targets())->descendants(true)->nodes())
+	{
+		auto callback = std::bind(
+			&TransformController::RootTransformController::controllerAddedOrRemovedHandler,
+			shared_from_this(),
+			std::placeholders::_1,
+			std::placeholders::_2
 		);
-	else if (_enterFrameCd != nullptr)
-		_enterFrameCd->signal()->remove(_enterFrameCd);
+
+		descendant->controllerAdded()->add(callback);
+		descendant->controllerRemoved()->add(callback);
+	}
+}
+
+void
+TransformController::RootTransformController::enterFrameHandler(std::shared_ptr<RenderingController> ctrl)
+{
+	// TODO: update transforms list
+
+	std::cout << "TransformController::RootTransformController::enterFrameHandler()" << std::endl;
 }

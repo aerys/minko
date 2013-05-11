@@ -39,7 +39,6 @@ namespace minko
 
 	namespace scene
 	{
-		class Scene;
 		class Node;
 		class NodeSet;
 

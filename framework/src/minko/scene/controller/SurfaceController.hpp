@@ -3,17 +3,20 @@
 #include "minko/Common.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
 
+namespace
+{
+	using namespace minko;
+	using namespace minko::render;
+	using namespace minko::render::geometry;
+	using namespace minko::scene::data;
+}
+
 namespace minko
 {
 	namespace scene
 	{
 		namespace controller
 		{
-			using namespace minko;
-			using namespace minko::render;
-			using namespace minko::render::geometry;
-			using namespace minko::scene::data;
-
 			class SurfaceController :
 				public AbstractController,
 				public std::enable_shared_from_this<SurfaceController>

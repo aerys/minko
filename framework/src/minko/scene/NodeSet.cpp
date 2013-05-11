@@ -25,7 +25,27 @@ NodeSet::descendants(bool andSelf, NodeSet::ptr result)
 		result->_nodes.insert(node->children().begin(), node->children().end());
 	}
 
-	return shared_from_this();
+	return result;
+}
+
+NodeSet::ptr
+NodeSet::ancestors(bool andSelf, NodeSet::ptr result)
+{
+	if (result == nullptr)
+		result = create();
+
+	for (auto node : _nodes)
+	{
+		while (node != nullptr)
+		{
+			if (andSelf)
+				result->_nodes.insert(node);
+
+			if (node->parent() != nullptr)
+				result->_nodes.insert(node->parent());
+			node = node->parent();
+		}
+	}
 }
 
 NodeSet::ptr
@@ -42,7 +62,7 @@ NodeSet::children(bool andSelf, NodeSet::ptr result)
 		result->_nodes.insert(node->children().begin(), node->children().end());
 	}
 
-	return shared_from_this();
+	return result;
 }
 
 NodeSet::ptr
@@ -55,5 +75,5 @@ NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, ptr result)
 		if (filter(node))
 			result->_nodes.insert(node);
 
-	return shared_from_this();
+	return result;
 }

@@ -3,16 +3,19 @@
 #include "minko/Common.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
 
+namespace
+{
+	using namespace minko::scene;
+	using namespace minko::render;
+	using namespace minko::render::context;
+}
+
 namespace minko
 {
 	namespace scene
 	{
 		namespace controller
 		{
-			using namespace minko::scene;
-			using namespace minko::render;
-			using namespace minko::render::context;
-
 			class RenderingController :
 				public AbstractController,
 				public std::enable_shared_from_this<RenderingController>
@@ -63,7 +66,10 @@ namespace minko
 
 			private:
 				RenderingController(std::shared_ptr<OpenGLESContext> context) :
-					AbstractController(), _context(context)
+					AbstractController(),
+					_context(context),
+					_enterFrame(Signal<ptr>::create()),
+					_exitFrame(Signal<ptr>::create())
 				{
 				}
 

@@ -5,7 +5,8 @@
 namespace minko
 {
 	template <typename... T>
-	class SignalConnection
+	class SignalConnection :
+		public std::enable_shared_from_this<SignalConnection<T...>>
 	{
 		friend class Signal<T...>;
 
@@ -17,6 +18,12 @@ namespace minko
 		signal()
 		{
 			return _signal;
+		}
+
+		~SignalConnection()
+		{
+			if (_signal != nullptr)
+				_signal->remove(SignalConnection<T...>::shared_from_this());
 		}
 
 	private:

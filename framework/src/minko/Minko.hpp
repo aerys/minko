@@ -12,7 +12,6 @@
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/Signal.hpp"
-#include "minko/scene/Scene.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/scene/data/DataProvider.hpp"

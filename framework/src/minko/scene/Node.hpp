@@ -20,30 +20,34 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Node>	ptr;
 
+		private:
+			typedef std::shared_ptr<AbstractController>	AbstractControllerPtr;
+
 		protected:
-			std::string 										_name;
-			std::list<ptr>										_children;			
+			std::string 											_name;
+			std::list<ptr>											_children;			
 
 		private:
-			static unsigned int									_id;
+			static unsigned int										_id;
 
-			unsigned int										_tags;
-			std::shared_ptr<Scene>								_scene;
-			ptr 												_root;
-			ptr													_parent;
-			std::shared_ptr<DataBindings>						_bindings;
-			std::list<std::shared_ptr<AbstractController>>		_controllers;
+			unsigned int											_tags;
+			ptr 													_root;
+			ptr														_parent;
+			std::shared_ptr<DataBindings>							_bindings;
+			std::list<AbstractControllerPtr>						_controllers;
 
-			std::shared_ptr<Signal<ptr, ptr>>					_added;
-			std::shared_ptr<Signal<ptr, ptr>>					_removed;
-			std::shared_ptr<Signal<ptr, ptr>>					_descendantAdded;
-			std::shared_ptr<Signal<ptr, ptr>>					_descendantRemoved;
-			std::shared_ptr<Signal<ptr>> 						_tagsChanged;
+			std::shared_ptr<Signal<ptr, ptr>>						_added;
+			std::shared_ptr<Signal<ptr, ptr>>						_removed;
+			std::shared_ptr<Signal<ptr, ptr>>						_descendantAdded;
+			std::shared_ptr<Signal<ptr, ptr>>						_descendantRemoved;
+			std::shared_ptr<Signal<ptr>> 							_tagsChanged;
+			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerAdded;
+			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerRemoved;
 
-			std::map<ptr, Signal<ptr, ptr>::cd>					_childToDescendantAddedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd>					_childToDescendantRemovedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd> 				_childToAddedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd> 				_childToRemovedCd;
+			std::map<ptr, Signal<ptr, ptr>::cd>						_childToDescendantAddedCd;
+			std::map<ptr, Signal<ptr, ptr>::cd>						_childToDescendantRemovedCd;
+			std::map<ptr, Signal<ptr, ptr>::cd> 					_childToAddedCd;
+			std::map<ptr, Signal<ptr, ptr>::cd> 					_childToRemovedCd;
 
 		public:
 
@@ -134,13 +138,6 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Scene>
-			scene()
-			{
-				return _scene;
-			}
-
-			inline
 			ptr
 			root()
 			{
@@ -194,6 +191,20 @@ namespace minko
 			tagsChanged()
 			{
 				return _tagsChanged;
+			}
+
+			inline
+			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>
+			controllerAdded()
+			{
+				return _controllerAdded;
+			}
+
+			inline
+			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>
+			controllerRemoved()
+			{
+				return _controllerRemoved;
 			}
 
 			ptr

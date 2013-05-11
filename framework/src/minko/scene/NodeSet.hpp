@@ -8,8 +8,7 @@ namespace minko
 	{
 		using namespace minko::scene;
 
-		class NodeSet :
-			public std::enable_shared_from_this<NodeSet>
+		class NodeSet
 		{
 		public:
 			typedef std::shared_ptr<NodeSet> ptr;
@@ -47,6 +46,9 @@ namespace minko
 			descendants(bool andSelf = false, ptr result = nullptr);
 
 			ptr
+			ancestors(bool andSelf = false, ptr result = nullptr);
+
+			ptr
 			children(bool andSelf = false, ptr result = nullptr);
 
 			ptr
@@ -54,13 +56,11 @@ namespace minko
 
 		private:
 			NodeSet(const std::set<std::shared_ptr<Node>>& nodes) :
-				std::enable_shared_from_this<NodeSet>(),
 				_nodes(nodes)
 			{
 			}
 
 			NodeSet() :
-				std::enable_shared_from_this<NodeSet>(),
 				_nodes()
 			{
 			}

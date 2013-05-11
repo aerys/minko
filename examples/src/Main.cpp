@@ -4,8 +4,7 @@ using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::render;
 
-Scene::ptr  root;
-unsigned int i = 0;
+RenderingController::ptr renderingController;
 
 void
 renderScene()
@@ -22,9 +21,10 @@ renderScene()
   glEnd();
   glFlush();
 
+  renderingController->render();
+
   glutPostRedisplay();
 
-  root->render();
 }
 
 /* Main method - main entry point of application
@@ -42,11 +42,10 @@ int main(int argc, char** argv)
   context::OpenGLESContext::ptr  oglContext   = OpenGLESContext::create();
   Node::ptr                      camera       = Node::create("camera");
   Node::ptr                      mesh         = Node::create("mesh");
+  Node::ptr                      group        = Node::create("group", {mesh});
+  Node::ptr                      root         = Node::create("root", {group, camera});
 
-  root = Scene::create("scene", {camera, mesh});
-
-  root->removeChild(camera);
-  root->removeChild(mesh);
+  renderingController = RenderingController::create(oglContext);
 
   GLSLProgram::ptr shader = GLSLProgram::fromFiles(
     oglContext,
@@ -60,15 +59,13 @@ int main(int argc, char** argv)
     ->bind("transform/worldToScreenMatrix", "worldToScreenMatrix");
 
   mesh->addController(TransformController::create());
+  group->addController(TransformController::create());
 
   mesh->addController(SurfaceController::create(
     CubeGeometry::create(),
     data::DataProvider::create(),
     fx
   ));
-
-  root->addChild(camera);
-  root->addChild(mesh);
 
 //  renderScene();
   glutMainLoop();

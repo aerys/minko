@@ -1,6 +1,5 @@
 #include "Node.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
-#include "minko/scene/Scene.hpp"
 
 using namespace minko::scene;
 
@@ -10,7 +9,6 @@ Node::Node() :
 	enable_shared_from_this(),
 	_name("Node_" + std::to_string(Node::_id++)),
 	_tags(1),
-	_scene(nullptr),
 	_root(nullptr),
 	_parent(nullptr),
 	_bindings(DataBindings::create()),
@@ -18,6 +16,8 @@ Node::Node() :
 	_removed(Signal<ptr, ptr>::create()),
 	_descendantAdded(Signal<ptr, ptr>::create()),
 	_descendantRemoved(Signal<ptr, ptr>::create()),
+	_controllerAdded(Signal<ptr, std::shared_ptr<AbstractController>>::create()),
+	_controllerRemoved(Signal<ptr, std::shared_ptr<AbstractController>>::create()),
 	_tagsChanged(Signal<ptr>::create())
 {
 }
@@ -39,7 +39,6 @@ Node::addChild(Node::ptr child)
 	));
 
 	// bubble down
-	std::cout << "addChild(): " << _name << ", " << child->_name << std::endl;
 	_childToAddedCd[child] = _added->add(std::bind(
 		&Signal<Node::ptr, Node::ptr>::execute, child->_added, std::placeholders::_1, std::placeholders::_2
 	));
@@ -66,17 +65,11 @@ Node::removeChild(Node::ptr child)
 
 	_children.erase(it);
 
-	std::cout << "removeChild(): " << _name << ", " << child->_name << std::endl;
-
 	// bubble up
-	child->_descendantAdded->remove(_childToDescendantAddedCd[child]);
-	child->_descendantRemoved->remove(_childToDescendantRemovedCd[child]);
 	_childToDescendantAddedCd.erase(child);
 	_childToDescendantRemovedCd.erase(child);
 
 	// bubble down
-	_added->remove(_childToAddedCd[child]);
-	_removed->remove(_childToRemovedCd[child]);
 	_childToAddedCd.erase(child);
 	_childToRemovedCd.erase(child);
 
@@ -103,6 +96,7 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 
 	_controllers.push_back(controller);
 	controller->targetAdded()->execute(controller, shared_from_this());
+	_controllerAdded->execute(shared_from_this(), controller);
 
 	return shared_from_this();
 }
@@ -119,6 +113,7 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 
 	_controllers.erase(it);
 	controller->targetRemoved()->execute(controller, shared_from_this());
+	_controllerRemoved->execute(shared_from_this(), controller);
 
 	return shared_from_this();
 }
@@ -133,7 +128,6 @@ void
 Node::updateRoot()
 {
 	_root = _parent ? (_parent->_root ? _parent->_root : _parent) : shared_from_this();
-	_scene = std::dynamic_pointer_cast<Scene>(_root);
 
 	for (auto child : _children)
 		child->updateRoot();
