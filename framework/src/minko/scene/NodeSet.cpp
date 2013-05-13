@@ -5,24 +5,32 @@
 using namespace minko::scene;
 
 NodeSet::ptr
-NodeSet::descendants(bool andSelf, NodeSet::ptr result)
+NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::ptr result)
 {
 	if (result == nullptr)
 		result = create();
 
-	std::list<std::shared_ptr<Node>> nodesStack(_nodes.begin(), _nodes.end());
+	std::list<std::shared_ptr<Node>> nodesStack;
 
-	while (nodesStack.size() != 0)
+	for (auto node : _nodes)
 	{
-		auto node = nodesStack.front();
+		nodesStack.push_front(node);
 
-		nodesStack.pop_front();
+		while (nodesStack.size() != 0)
+		{
+			auto descendant = nodesStack.front();
 
-		if (andSelf)
-			result->_nodes.insert(node);
+			nodesStack.pop_front();
 
-		nodesStack.insert(nodesStack.end(), node->children().begin(), node->children().end());
-		result->_nodes.insert(node->children().begin(), node->children().end());
+			if (descendant != node || andSelf)
+				result->_nodes.push_back(descendant);
+
+			nodesStack.insert(
+				depthFirst ? nodesStack.begin() : nodesStack.end(),
+				descendant->children().begin(),
+				descendant->children().end()
+			);
+		}
 	}
 
 	return result;
@@ -39,10 +47,10 @@ NodeSet::ancestors(bool andSelf, NodeSet::ptr result)
 		while (node != nullptr)
 		{
 			if (andSelf)
-				result->_nodes.insert(node);
+				result->_nodes.push_back(node);
 
 			if (node->parent() != nullptr)
-				result->_nodes.insert(node->parent());
+				result->_nodes.push_back(node->parent());
 			node = node->parent();
 		}
 	}
@@ -57,9 +65,9 @@ NodeSet::children(bool andSelf, NodeSet::ptr result)
 	for (auto node : _nodes)
 	{
 		if (andSelf)
-			result->_nodes.insert(node);
+			result->_nodes.push_back(node);
 
-		result->_nodes.insert(node->children().begin(), node->children().end());
+		result->_nodes.insert(result->_nodes.end(), node->children().begin(), node->children().end());
 	}
 
 	return result;
@@ -73,7 +81,7 @@ NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, ptr result)
 
 	for (auto node : _nodes)
 		if (filter(node))
-			result->_nodes.insert(node);
+			result->_nodes.push_back(node);
 
 	return result;
 }

@@ -14,7 +14,7 @@ namespace minko
 			typedef std::shared_ptr<NodeSet> ptr;
 
 		private:
-			std::set<std::shared_ptr<Node>> _nodes;
+			std::vector<std::shared_ptr<Node>> _nodes;
 
 		public:
 			inline static
@@ -23,7 +23,7 @@ namespace minko
 			{
 				ptr set = create();
 
-				set->_nodes.insert(nodes.begin(), nodes.end());
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
 				return set;
 			}
@@ -34,7 +34,7 @@ namespace minko
 			{
 				ptr set = create();
 
-				set->_nodes.insert(nodes.begin(), nodes.end());
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
 				return set;
 			}
@@ -45,7 +45,7 @@ namespace minko
 			{
 				ptr set = create();
 
-				set->_nodes.insert(node);
+				set->_nodes.push_back(node);
 
 				return set;
 			}
@@ -58,14 +58,14 @@ namespace minko
 			}
 
 			inline
-			const std::set<std::shared_ptr<Node>>
+			const std::vector<std::shared_ptr<Node>>
 			nodes()
 			{
 				return _nodes;
 			}
 
 			ptr
-			descendants(bool andSelf = false, ptr result = nullptr);
+			descendants(bool andSelf = false, bool depthFirst = true, ptr result = nullptr);
 
 			ptr
 			ancestors(bool andSelf = false, ptr result = nullptr);
@@ -77,11 +77,6 @@ namespace minko
 			where(std::function<bool(std::shared_ptr<Node>)> filter, ptr result = nullptr);
 
 		private:
-			NodeSet(const std::set<std::shared_ptr<Node>>& nodes) :
-				_nodes(nodes)
-			{
-			}
-
 			NodeSet() :
 				_nodes()
 			{
