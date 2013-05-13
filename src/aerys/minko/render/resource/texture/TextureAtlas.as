@@ -92,7 +92,7 @@ package aerys.minko.render.resource.texture
 				}
 			}
 			
-			if ((node = getRectangle(width, height, rootId * 2 + 1)))
+			if (node == getRectangle(width, height, rootId * 2 + 1))
 				return node;
 			
 			return getRectangle(width, height, rootId * 2 + 2);
