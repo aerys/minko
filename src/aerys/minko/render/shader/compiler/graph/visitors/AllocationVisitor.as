@@ -360,7 +360,7 @@ package aerys.minko.render.shader.compiler.graph.visitors
 				}
 				
 				source1	= getSourceFor(instruction.argument1, instruction.component1, destAlloc, isVertexShader);
-				source2	= instruction.isSingle ? new AgalSourceEmpty() : getSourceFor(instruction.argument2, instruction.component2, destAlloc, isVertexShader);
+				source2	= instruction.isSingle ? new AgalSourceEmpty() : IAgalToken(getSourceFor(instruction.argument2, instruction.component2, destAlloc, isVertexShader));
 				
 				result.push(new AgalInstruction(instruction.id, destination, source1, source2));
 			}
