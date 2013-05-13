@@ -139,5 +139,14 @@ package aerys.minko.scene.controller.animation
         {
             return _labelTimes[index];
         }
+		
+		override public function clone():AbstractController
+		{			
+			var newController : MasterAnimationController = new MasterAnimationController(_animations);
+			newController._labelNames = _labelNames;
+			newController._labelTimes = _labelTimes;
+			
+			return newController;
+		}
     }
 }
