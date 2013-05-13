@@ -5,6 +5,7 @@ package aerys.minko.scene.controller
 	
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.node.AbstractSceneNode;
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Scene;
@@ -40,6 +41,7 @@ package aerys.minko.scene.controller
 		private var _flags	                : Vector.<uint>;
 		private var _localToWorldTransforms : Vector.<Matrix4x4>;
 		private var _worldToLocalTransforms : Vector.<Matrix4x4>;
+		private var _worldToLocalUpToDate	: Vector.<Boolean>;
 		private var _numChildren			: Vector.<uint>;
 		private var _firstChildId			: Vector.<uint>;
 		private var _parentId				: Vector.<int>;
@@ -253,7 +255,11 @@ package aerys.minko.scene.controller
 						childWorldToLocal.unlock();
 				}
 				
-				_flags[childId] = childFlags;
+				_flags[childId]					= childFlags;
+				_worldToLocalUpToDate[childId]	= true;
+				
+				if (child is Group)
+					setDescendantsAsDirty(child as Group, path);
 				
 				var localToWorldTransformChanged : Signal = child.localToWorldTransformChanged;
 				
@@ -261,6 +267,23 @@ package aerys.minko.scene.controller
 					localToWorldTransformChanged.execute(child, childLocalToWorld);
 				
 				localToWorld = childLocalToWorld;
+			}
+		}
+		
+		private function setDescendantsAsDirty(node : Group, ignoreIDs : Vector.<uint> = null) : void
+		{
+			for (var i : int = 0; i < node.numChildren; ++i)
+			{
+				var child	: ISceneNode	= node.getChildAt(i);
+				var id		: int			= _nodeToId[child];
+				
+				if (ignoreIDs.indexOf(id) != -1)
+					continue;
+				
+				if (child is Group)
+					setDescendantsAsDirty(child as Group, ignoreIDs);
+				
+				_worldToLocalUpToDate[id] = false;
 			}
 		}
 		
@@ -275,7 +298,8 @@ package aerys.minko.scene.controller
 			{
 				if ((_transforms[tmpNodeId] as Matrix4x4)._hasChanged 
 					|| (tmpNodeId != nodeId && _localToWorldTransforms[tmpNodeId]._hasChanged)
-					|| !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD))
+					|| !(_flags[nodeId] & FLAG_INIT_LOCAL_TO_WORLD)
+					|| !_worldToLocalUpToDate[tmpNodeId])
 					dirtyRoot = tmpNodeId;
 				
 				path[numNodes] = tmpNodeId;
@@ -395,6 +419,7 @@ package aerys.minko.scene.controller
 			_flags = new <uint>[];
 			_localToWorldTransforms = new <Matrix4x4>[];
 			_worldToLocalTransforms = new <Matrix4x4>[];
+			_worldToLocalUpToDate = new Vector.<Boolean>();
 			_numChildren.length = 0;
 			_firstChildId.length = 0;
 			_idToNode.length = 0;
@@ -412,6 +437,7 @@ package aerys.minko.scene.controller
 				_nodeToId[node] = nodeId;
 				_idToNode[nodeId] = node;
 				_transforms[nodeId] = node.transform;
+				_worldToLocalUpToDate[nodeId] = false;
 				
 				if (oldNodeId >= 0 && oldNodeId < oldLocalToWorldTransforms.length)
 				{
