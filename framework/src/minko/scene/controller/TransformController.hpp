@@ -29,6 +29,17 @@ namespace minko
 				typedef std::shared_ptr<Node>					NodePtr;
 				typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
 
+			private:
+				std::shared_ptr<Matrix4x4>					_transform;
+				std::shared_ptr<Matrix4x4>					_modelToWorld;
+				std::shared_ptr<Matrix4x4>					_worldToModel;
+				std::shared_ptr<DataProvider>				_data;
+
+				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetAddedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetRemovedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd 		_addedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd 		_removedCd;
+
 			public:
 				inline static
 				ptr
@@ -48,16 +59,12 @@ namespace minko
 					return _transform;
 				}
 
-			private:
-				std::shared_ptr<Matrix4x4>					_transform;
-				std::shared_ptr<Matrix4x4>					_modelToWorld;
-				std::shared_ptr<Matrix4x4>					_worldToModel;
-				std::shared_ptr<DataProvider>				_data;
-
-				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetRemovedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd 		_addedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd 		_removedCd;
+				inline
+				std::shared_ptr<Matrix4x4>
+				modelToWorldMatrix()
+				{
+					return _modelToWorld;
+				}
 
 			private:
 				TransformController();
@@ -105,7 +112,7 @@ namespace minko
 
 					std::map<NodePtr, unsigned int>					_nodeToId;
 					std::vector<NodePtr>							_idToNode;
-					std::vector<unsigned int> 						_parentId;
+					std::vector<int>		 						_parentId;
 					std::vector<unsigned int> 						_firstChildId;
 					std::vector<unsigned int>						_numChildren;
 					bool											_invalidLists;

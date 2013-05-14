@@ -249,10 +249,13 @@ TransformController::RootTransformController::updateTransformsList()
 		{
 			auto ancestorId = _nodeToId[ancestor];
 
+			_parentId.push_back(ancestorId);
 			if (_numChildren[ancestorId] == 0)
 				_firstChildId[ancestorId] = nodeId;
 			_numChildren[ancestorId]++;
 		}
+		else
+			_parentId.push_back(-1);
 
 		++nodeId;
 	}
@@ -272,6 +275,10 @@ TransformController::RootTransformController::updateTransforms()
 		auto numChildren 				= _numChildren[nodeId];
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
+		auto parentId 					= _parentId[nodeId];
+
+		if (parentId == -1)
+			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 			_modelToWorld[childId]->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
