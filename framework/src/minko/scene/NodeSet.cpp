@@ -44,16 +44,18 @@ NodeSet::ancestors(bool andSelf, NodeSet::ptr result)
 
 	for (auto node : _nodes)
 	{
+		if (andSelf)
+			result->_nodes.push_back(node);
+		
 		while (node != nullptr)
 		{
-			if (andSelf)
-				result->_nodes.push_back(node);
-
 			if (node->parent() != nullptr)
 				result->_nodes.push_back(node->parent());
 			node = node->parent();
 		}
 	}
+
+	return result;
 }
 
 NodeSet::ptr

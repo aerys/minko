@@ -425,3 +425,11 @@ Matrix4x4::translation(Vector3::ptr output)
 {
 	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
 }
+
+Matrix4x4::ptr
+Matrix4x4::copyFrom(Matrix4x4::ptr source)
+{
+	std::copy(source->_m.begin(), source->_m.end(), _m.begin());
+
+	return shared_from_this();
+}

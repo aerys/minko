@@ -9,20 +9,24 @@ namespace minko
 	class Signal :
 		public std::enable_shared_from_this<Signal<A...>>
 	{
+		friend class SignalConnection<A...>;
+
 	public:
 		typedef std::shared_ptr<Signal<A...>>			ptr;
 		typedef std::shared_ptr<SignalConnection<A...>>	cd;
 
 	private:
 		typedef std::function<void(A...)>				Callback;
-		typedef typename std::list<cd>::iterator		ConnectionIterator;
+		typedef typename std::list<Callback>::iterator	CallbackIterator;
 
 	private:
-		std::list<cd>					_connections;
+		std::list<Callback>								_callbacks;
+		std::list<unsigned int>							_connectionIds;
+		unsigned int 									_nextConnectId;
 
-		bool							_locked;
-		std::list<cd>					_toAdd;
-		std::list<ConnectionIterator>	_toRemove;
+		bool											_locked;
+		std::list<std::pair<Callback, unsigned int>>	_toAdd;
+		std::list<CallbackIterator>						_toRemove;
 
 	private:
 		Signal() :
@@ -43,13 +47,16 @@ namespace minko
 		{
 			cd connection = SignalConnection<A...>::create(
 				Signal<A...>::shared_from_this(),
-				callback
+				_nextConnectId++
 			);
 
 			if (_locked)
-				_toAdd.push_back(connection);
+				_toAdd.push_back(std::pair<Callback, unsigned int>(callback, connection->_id));
 			else
-				_connections.push_back(connection);
+			{
+				_callbacks.push_back(callback);
+				_connectionIds.push_back(connection->_id);
+			}
 
 			return connection;
 		}
@@ -57,20 +64,50 @@ namespace minko
 		void
 		remove(cd connection)
 		{
-			ConnectionIterator it = std::find(
-				_connections.begin(), _connections.end(), connection
-			);
+			auto connectionIdIt = _connectionIds.begin();
+			auto callbackIt 	= _callbacks.begin();
 
-			if (it == _connections.end() || connection->_signal != Signal<A...>::shared_from_this())
+			while (connectionIdIt != _connectionIds.end() && *connectionIdIt != connection->_id)
+			{
+				connectionIdIt++;
+				callbackIt++;
+			}
+
+			if (connectionIdIt == _connectionIds.end()
+				|| connection->_signal != Signal<A...>::shared_from_this())
 				throw std::invalid_argument("connection");
 
-			if (_locked)
-				_toRemove.push_back(it);
-			else
+			connection->_signal = nullptr;
+
+			removeConnectionByIterator(connectionIdIt, callbackIt);
+		}
+
+		void
+		removeConnectionById(const unsigned int connectionId)
+		{
+			auto connectionIdIt = _connectionIds.begin();
+			auto callbackIt 	= _callbacks.begin();
+			auto id 			= 0;
+
+			while (connectionIdIt != _connectionIds.end() && *connectionIdIt != connectionId)
 			{
-				_connections.erase(it);
-				connection->_signal = nullptr;
+				connectionIdIt++;
+				callbackIt++;
 			}
+
+			removeConnectionByIterator(connectionIdIt, callbackIt);
+		}
+
+		void
+		removeConnectionByIterator(std::list<unsigned int>::iterator connectionIdIt,
+								   CallbackIterator				 	 callbackIt)
+		{
+			_connectionIds.erase(connectionIdIt);
+
+			if (_locked)
+				_toRemove.push_back(callbackIt);
+			else
+				_callbacks.erase(callbackIt);
 		}
 
 		cd
@@ -79,11 +116,8 @@ namespace minko
 			if (connection == nullptr)
 				return add(callback);
 
-			ConnectionIterator it = std::find(
-				_connections.begin(), _connections.end(), connection
-			);
-
-			if (it == _connections.end() || connection->_signal != Signal<A...>::shared_from_this())
+			if (std::find(_connectionIds.begin(), _connectionIds.end(), connection->_id) == _connectionIds.end()
+				|| connection->_signal != Signal<A...>::shared_from_this())
 				throw std::invalid_argument("connection");
 
 			connection->_callback = callback;
@@ -96,18 +130,20 @@ namespace minko
 		execute(A... arguments)
 		{
 			_locked = true;
-			for (auto connection : _connections)
-				connection->_callback(arguments...);
+			for (auto callback : _callbacks)
+				callback(arguments...);
 			_locked = false;
 
-			for (auto connection : _toAdd)
-				_connections.push_back(connection);
-
-			for (auto connectionIt : _toRemove)
+			for (auto callbackAndConnectionId : _toAdd)
 			{
-				(*connectionIt)->_signal = nullptr;
-				_connections.erase(connectionIt);
+				_callbacks.push_back(callbackAndConnectionId.first);
+				_connectionIds.push_back(callbackAndConnectionId.second);
 			}
+			_toAdd.clear();
+
+			for (auto callbackIt : _toRemove)
+				_callbacks.erase(callbackIt);
+			_toRemove.clear();
 		}
 
 		inline

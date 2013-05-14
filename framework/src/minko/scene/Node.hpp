@@ -4,6 +4,7 @@
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/scene/data/DataBindings.hpp"
 
 namespace
@@ -46,11 +47,6 @@ namespace minko
 			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerAdded;
 			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerRemoved;
 
-			std::map<ptr, Signal<ptr, ptr>::cd>						_childToDescendantAddedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd>						_childToDescendantRemovedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd> 					_childToAddedCd;
-			std::map<ptr, Signal<ptr, ptr>::cd> 					_childToRemovedCd;
-
 		public:
 
 			static
@@ -91,9 +87,7 @@ namespace minko
 			ptr
 			create(const std::string& name, const std::list<ptr>& children)
 			{
-				ptr node = create();
-
-				node->_name = name;
+				ptr node = create(name);
 
 				for (auto child : children)
 					node->addChild(child);
@@ -128,7 +122,18 @@ namespace minko
 				if (_tags != tags)
 				{
 					_tags = tags;
-					(*_tagsChanged)(shared_from_this());
+
+					// bubble down
+					auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+					for (auto descendant : descendants->nodes())
+						descendant->_tagsChanged->execute(shared_from_this());
+
+					// bubble up
+					auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+					for (auto ancestor : ancestors->nodes())
+						ancestor->_tagsChanged->execute(shared_from_this());
+
+					_tagsChanged->execute(shared_from_this());
 				}
 			}
 

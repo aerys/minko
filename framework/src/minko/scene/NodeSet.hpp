@@ -58,7 +58,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<std::shared_ptr<Node>>
+			const std::vector<std::shared_ptr<Node>>&
 			nodes()
 			{
 				return _nodes;

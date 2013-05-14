@@ -23,24 +23,27 @@ namespace minko
 		~SignalConnection()
 		{
 			if (_signal != nullptr)
-				_signal->remove(SignalConnection<T...>::shared_from_this());
+			{
+				_signal->removeConnectionById(_id);
+				_signal = nullptr;
+			}
 		}
 
 	private:
 		std::shared_ptr<Signal<T...>>	_signal;
-		std::function<void(T...)>		_callback;
+		const unsigned int				_id;
 
 	private:
 		inline static
 		ptr
-		create(std::shared_ptr<Signal<T...>> signal, std::function<void(T...)> callback)
+		create(std::shared_ptr<Signal<T...>> signal, const unsigned int id)
 		{
-			return std::shared_ptr<SignalConnection<T...>>(new SignalConnection(signal, callback));
+			return std::shared_ptr<SignalConnection<T...>>(new SignalConnection(signal, id));
 		}
 
-		SignalConnection(std::shared_ptr<Signal<T...>> signal, std::function<void(T...)> callback) :
+		SignalConnection(std::shared_ptr<Signal<T...>> signal, const unsigned int id) :
 			_signal(signal),
-			_callback(callback)
+			_id(id)
 		{
 		}
 	};

@@ -155,6 +155,9 @@ namespace minko
 			Vector3::ptr
 			translation(Vector3::ptr output = 0);
 
+			ptr
+			copyFrom(Matrix4x4::ptr source);
+
 		private:
 			Matrix4x4();
 

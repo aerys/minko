@@ -1,30 +1,29 @@
+#include <time.h>
+
 #include "minko/Minko.hpp"
 
 using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::render;
+using namespace minko::render::context;
 
 RenderingController::ptr renderingController;
+clock_t start = clock();
+unsigned int numFrames = 0;
 
 void
 renderScene()
 {
-  glClearColor(0., 0.0, 0.0, 0.0);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glColor3f(1.0, 1.0, 1.0);
-  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-  glBegin(GL_POLYGON);
-      glVertex2f(-0.5, -0.5);
-      glVertex2f(-0.5, 0.5);
-      glVertex2f(0.5, 0.5);
-      glVertex2f(0.5, -0.5);
-  glEnd();
-  glFlush();
-
   renderingController->render();
 
   glutPostRedisplay();
 
+  //std::cout << "frame " << numFrames << std::endl;
+  ++numFrames;
+  if (numFrames % 500 == 0)
+  {
+    std::cout << (float)numFrames / ((float)(clock() - start) / CLOCKS_PER_SEC) << " fps." << std::endl;
+  }
 }
 
 /* Main method - main entry point of application
@@ -39,13 +38,28 @@ int main(int argc, char** argv)
   glutCreateWindow("OpenGL - First window demo");
   glutDisplayFunc(renderScene);
 
-  context::OpenGLESContext::ptr  oglContext   = OpenGLESContext::create();
-  Node::ptr                      camera       = Node::create("camera");
-  Node::ptr                      mesh         = Node::create("mesh");
-  Node::ptr                      group        = Node::create("group", {mesh});
-  Node::ptr                      root         = Node::create("root", {group, camera});
+  auto oglContext   = OpenGLESContext::create();
+  auto camera       = Node::create("camera");
+  auto mesh         = Node::create("mesh");
+  auto group        = Node::create("group", {mesh});
+
+  std::cout << group->children().size() << std::endl;
+
+  auto root         = Node::create("root", {group, camera});
+
+  /*for (auto i = 0; i < 17000; ++i)
+  {
+    std::cout << i << std::endl;
+    group->addChild(Node::create("test" + std::to_string(i))->addController(TransformController::create()));
+  }*/
 
   renderingController = RenderingController::create(oglContext);
+
+  auto ok = camera->controllerAdded()->add([](Node::ptr node, AbstractController::ptr ctrl)
+  {
+    std::cout << "camera->controllerAdded()" << std::endl;
+  });
+
   camera->addController(renderingController);
 
   GLSLProgram::ptr shader = GLSLProgram::fromFiles(
@@ -55,20 +69,20 @@ int main(int argc, char** argv)
   );
 
   Effect::ptr fx = Effect::create(mesh->bindings(), {shader})
-    ->bind("diffuseMaterial/rgba", "diffuseColor")
-    ->bind("transform/modelToWorldMatrix", "modelToWorldMatrix")
+    ->bind("diffuseMaterial/rgba",          "diffuseColor")
+    ->bind("transform/modelToWorldMatrix",  "modelToWorldMatrix")
     ->bind("transform/worldToScreenMatrix", "worldToScreenMatrix");
 
-  mesh->addController(TransformController::create());
-  group->addController(TransformController::create());
+  //mesh->addController(TransformController::create());
+  //group->addController(TransformController::create());
 
-  mesh->addController(SurfaceController::create(
+  /*mesh->addController(SurfaceController::create(
     CubeGeometry::create(),
     data::DataProvider::create(),
     fx
-  ));
+  ));*/
 
-//  renderScene();
+  //renderScene();
   glutMainLoop();
 
   return 0;

@@ -30,27 +30,18 @@ Node::addChild(Node::ptr child)
 
 	_children.push_back(child);
 
-	// bubble up
-	_childToDescendantAddedCd[child] = child->_descendantAdded->add(std::bind(
-		&Signal<Node::ptr, Node::ptr>::execute, _descendantAdded, std::placeholders::_1, std::placeholders::_2
-	));
-	_childToDescendantRemovedCd[child] = child->_descendantRemoved->add(std::bind(
-		&Signal<Node::ptr, Node::ptr>::execute, _descendantRemoved, std::placeholders::_1, std::placeholders::_2
-	));
-
-	// bubble down
-	_childToAddedCd[child] = _added->add(std::bind(
-		&Signal<Node::ptr, Node::ptr>::execute, child->_added, std::placeholders::_1, std::placeholders::_2
-	));
-	_childToRemovedCd[child] = _removed->add(std::bind(
-		&Signal<Node::ptr, Node::ptr>::execute, child->_removed, std::placeholders::_1, std::placeholders::_2
-	));
-
 	child->_parent = shared_from_this();
 	child->updateRoot();
 
-	child->_added->execute(child, shared_from_this());
-	_descendantAdded->execute(shared_from_this(), child);
+	// bubble down
+	auto descendants = NodeSet::create(child)->descendants();
+	for (auto descendant : descendants->nodes())
+		descendant->_added->execute(shared_from_this(), child);
+
+	// bubble up
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+	for (auto ancestor : ancestors->nodes())
+		ancestor->_descendantAdded->execute(shared_from_this(), child);
 
 	return shared_from_this();
 }
@@ -65,19 +56,18 @@ Node::removeChild(Node::ptr child)
 
 	_children.erase(it);
 
-	// bubble up
-	_childToDescendantAddedCd.erase(child);
-	_childToDescendantRemovedCd.erase(child);
-
-	// bubble down
-	_childToAddedCd.erase(child);
-	_childToRemovedCd.erase(child);
-
-	child->_parent = 0;
+	child->_parent = nullptr;
 	child->updateRoot();
 
-	child->_removed->execute(child, shared_from_this());
-	_descendantRemoved->execute(shared_from_this(), child);
+	// bubble down
+	auto descendants = NodeSet::create(child)->descendants();
+	for (auto descendant : descendants->nodes())
+		descendant->_removed->execute(shared_from_this(), child);
+
+	// bubble up
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+	for (auto ancestor : ancestors->nodes())
+		ancestor->_descendantRemoved->execute(shared_from_this(), child);
 
 	return shared_from_this();
 }
@@ -92,12 +82,28 @@ Node::ptr
 Node::addController(std::shared_ptr<AbstractController> controller)
 {
 	if (hasController(controller))
-		throw;
+		throw std::logic_error("The same controller cannot be added twice.");
 
 	_controllers.push_back(controller);
 	controller->_targets.push_back(shared_from_this());
+
+	// bubble down
+	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+	for (auto descendant : descendants->nodes())
+	{
+		std::cout << "bubble down: " << descendant->name() << std::endl;
+		descendant->_controllerAdded->execute(shared_from_this(), controller);
+	}
+
+	// bubble up
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
+	for (auto ancestor : ancestors->nodes())
+	{
+		std::cout << "bubble up: " << ancestor->name() << std::endl;
+		ancestor->_controllerAdded->execute(shared_from_this(), controller);
+	}
+
 	controller->targetAdded()->execute(controller, shared_from_this());
-	_controllerAdded->execute(shared_from_this(), controller);
 
 	return shared_from_this();
 }
@@ -110,14 +116,24 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 	);
 
 	if (it == _controllers.end())
-		throw;
+		throw std::invalid_argument("controller");
 
 	_controllers.erase(it);
 	controller->_targets.erase(
 		std::find(controller->_targets.begin(), controller->_targets.end(), shared_from_this())
 	);
+
+	// bubble down
+	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+	for (auto descendant : descendants->nodes())
+		descendant->_controllerRemoved->execute(shared_from_this(), controller);
+
+	// bubble up
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
+	for (auto ancestor : ancestors->nodes())
+		ancestor->_controllerRemoved->execute(shared_from_this(), controller);
+
 	controller->targetRemoved()->execute(controller, shared_from_this());
-	_controllerRemoved->execute(shared_from_this(), controller);
 
 	return shared_from_this();
 }
