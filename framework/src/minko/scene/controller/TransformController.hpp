@@ -27,7 +27,7 @@ namespace minko
 
 			private:
 				typedef std::shared_ptr<Node>					NodePtr;
-				typedef std::shared_ptr<AbstractController>		AbstractControllerPtr;
+				typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
 
 			public:
 				inline static
@@ -49,15 +49,15 @@ namespace minko
 				}
 
 			private:
-				std::shared_ptr<Matrix4x4>								_transform;
-				std::shared_ptr<Matrix4x4>								_modelToWorld;
-				std::shared_ptr<Matrix4x4>								_worldToModel;
-				std::shared_ptr<DataProvider>							_data;
+				std::shared_ptr<Matrix4x4>					_transform;
+				std::shared_ptr<Matrix4x4>					_modelToWorld;
+				std::shared_ptr<Matrix4x4>					_worldToModel;
+				std::shared_ptr<DataProvider>				_data;
 
-				Signal<AbstractControllerPtr, NodePtr>::cd 				_targetAddedCd;
-				Signal<AbstractControllerPtr, NodePtr>::cd 				_targetRemovedCd;
-				Signal<NodePtr, NodePtr>::cd 							_addedCd;
-				Signal<NodePtr, NodePtr>::cd 							_removedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetAddedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetRemovedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd 		_addedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd 		_removedCd;
 
 			private:
 				TransformController();
@@ -66,13 +66,13 @@ namespace minko
 				initialize();
 
 				void
-				targetAddedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
+				targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 				void
-				targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
+				targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 				void
-				addedOrRemovedHandler(NodePtr node, NodePtr ancestor);
+				addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			private:
 				class RootTransformController :
@@ -83,10 +83,8 @@ namespace minko
 					typedef std::shared_ptr<RootTransformController> ptr;
 
 				private:
-					typedef std::shared_ptr<Node>					NodePtr;
-					typedef std::shared_ptr<AbstractController>		AbstractControllerPtr;
-					typedef std::shared_ptr<RenderingController>	RenderingControllerPtr;
-					typedef Signal<RenderingControllerPtr>::cd 		EnterFrameCallback;
+					typedef std::shared_ptr<RenderingController>	RenderingCtrlPtr;
+					typedef Signal<RenderingCtrlPtr>::cd 			EnterFrameCallback;
 
 				public:
 					inline static
@@ -101,41 +99,41 @@ namespace minko
 					}
 
 				private:
-					std::vector<std::shared_ptr<Matrix4x4>>					_transform;
-					std::vector<std::shared_ptr<Matrix4x4>>					_modelToWorld;
-					//std::vector<std::shared_ptr<Matrix4x4>>					_worldToModel;
+					std::vector<std::shared_ptr<Matrix4x4>>			_transform;
+					std::vector<std::shared_ptr<Matrix4x4>>			_modelToWorld;
+					//std::vector<std::shared_ptr<Matrix4x4>>		_worldToModel;
 
-					std::map<std::shared_ptr<Node>, unsigned int>			_nodeToId;
-					std::vector<std::shared_ptr<Node>>						_idToNode;
-					std::vector<unsigned int> 								_parentId;
-					std::vector<unsigned int> 								_firstChildId;
-					std::vector<unsigned int>								_numChildren;
-					bool													_invalidLists;
+					std::map<NodePtr, unsigned int>					_nodeToId;
+					std::vector<NodePtr>							_idToNode;
+					std::vector<unsigned int> 						_parentId;
+					std::vector<unsigned int> 						_firstChildId;
+					std::vector<unsigned int>						_numChildren;
+					bool											_invalidLists;
 
-					std::list<Any>											_targetCds;
-					std::map<RenderingControllerPtr, EnterFrameCallback>	_enterFrameCds;
+					std::list<Any>									_targetCds;
+					std::map<RenderingCtrlPtr, EnterFrameCallback>	_enterFrameCds;
 
 				private:
 					void
 					initialize();
 
 					void
-					targetAddedHandler(AbstractControllerPtr ctrl, NodePtr target);
+					targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 					void
-					targetRemovedHandler(AbstractControllerPtr ctrl, NodePtr target);
+					targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 					void
-					controllerRemovedHandler(NodePtr node, AbstractControllerPtr	ctrl);
+					controllerRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 					void
-					controllerAddedHandler(NodePtr node, AbstractControllerPtr	ctrl);
+					controllerAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
 					void
-					descendantRemovedHandler(NodePtr node, NodePtr descendant);
+					removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 					void
-					descendantAddedHandler(NodePtr node, NodePtr descendant);
+					addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 					void
 					updateTransformsList();
@@ -144,7 +142,7 @@ namespace minko
 					updateTransforms();
 
 					void
-					enterFrameHandler(std::shared_ptr<RenderingController> ctrl);
+					enterFrameHandler(RenderingCtrlPtr ctrl);
 				};
 			};
 		}

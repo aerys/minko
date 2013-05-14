@@ -50,20 +50,24 @@ TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 		&TransformController::addedOrRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	);
 
 	_addedCd = target->added()->add(callback);
 	_removedCd = target->removed()->add(callback);
 
-	addedOrRemovedHandler(target, target);
+	addedOrRemovedHandler(nullptr, target, target->parent());
 }
 
 void
-TransformController::addedOrRemovedHandler(std::shared_ptr<Node> node, std::shared_ptr<Node> ancestor)
+TransformController::addedOrRemovedHandler(std::shared_ptr<Node> node,
+										   std::shared_ptr<Node> target,
+										   std::shared_ptr<Node> parent)
 {
-	if (node->parent() && !node->root()->controller<RootTransformController>())
-		node->root()->addController(RootTransformController::create());
+	if (target == targets()[0] && !target->root()->controller<RootTransformController>()
+		&& (target != target->root() || target->children().size() != 0))
+		target->root()->addController(RootTransformController::create());
 }
 
 void
@@ -72,13 +76,15 @@ TransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	c
 {
 	target->bindings()->removeProvider(_data);
 
-	target->added()->remove(_addedCd);
-	target->removed()->remove(_removedCd);
+	_addedCd = nullptr;
+	_removedCd = nullptr;
 }
 
 void
 TransformController::RootTransformController::initialize()
 {
+	std::cout << "RootTransformController::initialize()" << std::endl;
+
 	_targetCds.push_back(targetAdded()->add(std::bind(
 		&TransformController::RootTransformController::targetAddedHandler,
 		shared_from_this(),
@@ -98,32 +104,36 @@ void
 TransformController::RootTransformController::targetAddedHandler(std::shared_ptr<AbstractController> 	ctrl,
 																 std::shared_ptr<Node>					target)
 {
-	_targetCds.push_back(target->descendantAdded()->add(std::bind(
-		&TransformController::RootTransformController::descendantAddedHandler,
+	_targetCds.push_back(target->added()->add(std::bind(
+		&TransformController::RootTransformController::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	)));
-	_targetCds.push_back(target->descendantRemoved()->add(std::bind(
-		&TransformController::RootTransformController::descendantRemovedHandler,
+	_targetCds.push_back(target->removed()->add(std::bind(
+		&TransformController::RootTransformController::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	)));
 	_targetCds.push_back(target->controllerAdded()->add(std::bind(
 		&TransformController::RootTransformController::controllerAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	)));
 	_targetCds.push_back(target->controllerRemoved()->add(std::bind(
 		&TransformController::RootTransformController::controllerRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+		std::placeholders::_3
 	)));
 
-	descendantAddedHandler(target, target);
+	addedHandler(nullptr, target, target->parent());
 }
 
 void
@@ -136,6 +146,7 @@ TransformController::RootTransformController::targetRemovedHandler(std::shared_p
 
 void
 TransformController::RootTransformController::controllerAddedHandler(std::shared_ptr<Node>					node,
+																	 std::shared_ptr<Node> 					target,
 														 			 std::shared_ptr<AbstractController>	ctrl)
 {
 	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
@@ -152,6 +163,7 @@ TransformController::RootTransformController::controllerAddedHandler(std::shared
 
 void
 TransformController::RootTransformController::controllerRemovedHandler(std::shared_ptr<Node>				node,
+																	   std::shared_ptr<Node> 				target,
 																	   std::shared_ptr<AbstractController>	ctrl)
 {
 	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
@@ -163,8 +175,9 @@ TransformController::RootTransformController::controllerRemovedHandler(std::shar
 }
 
 void
-TransformController::RootTransformController::descendantAddedHandler(std::shared_ptr<Node> node,
-														 			 std::shared_ptr<Node> descendant)
+TransformController::RootTransformController::addedHandler(std::shared_ptr<Node> node,
+												  		   std::shared_ptr<Node> target,
+														   std::shared_ptr<Node> parent)
 {
 	auto enterFrameCallback = std::bind(
 		&TransformController::RootTransformController::enterFrameHandler,
@@ -172,15 +185,15 @@ TransformController::RootTransformController::descendantAddedHandler(std::shared
 		std::placeholders::_1
 	);
 
-	auto descendants = NodeSet::create(descendant)->descendants(true);
-	for (auto d : descendants->nodes())
+	auto descendants = NodeSet::create(target)->descendants(true);
+	for (auto descendant : descendants->nodes())
 	{
-		auto rootTransformCtrl = d->controller<RootTransformController>();
+		auto rootTransformCtrl = descendant->controller<RootTransformController>();
 
 		if (rootTransformCtrl && rootTransformCtrl != shared_from_this())
-			d->removeController(rootTransformCtrl);
+			descendant->removeController(rootTransformCtrl);
 
-		for (auto renderingCtrl : d->controllers<RenderingController>())
+		for (auto renderingCtrl : descendant->controllers<RenderingController>())
 			_enterFrameCds[renderingCtrl] = renderingCtrl->enterFrame()->add(enterFrameCallback);
 	}
 
@@ -188,12 +201,13 @@ TransformController::RootTransformController::descendantAddedHandler(std::shared
 }
 
 void
-TransformController::RootTransformController::descendantRemovedHandler(std::shared_ptr<Node> node,
-																	   std::shared_ptr<Node> descendant)
+TransformController::RootTransformController::removedHandler(std::shared_ptr<Node> node,
+														     std::shared_ptr<Node> target,
+															 std::shared_ptr<Node> parent)
 {
-	auto descendants = NodeSet::create(descendant)->descendants(true);
-	for (auto d : descendants->nodes())
-		for (auto renderingCtrl : d->controllers<RenderingController>())
+	auto descendants = NodeSet::create(target)->descendants(true);
+	for (auto descendant : descendants->nodes())
+		for (auto renderingCtrl : descendant->controllers<RenderingController>())
 			_enterFrameCds.erase(renderingCtrl);
 
 	_invalidLists = true;

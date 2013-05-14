@@ -24,28 +24,26 @@ namespace minko
 			typedef std::shared_ptr<Node>	ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractController>	AbstractControllerPtr;
+			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
 
 		protected:
-			std::string 											_name;
-			std::list<ptr>											_children;			
+			std::string 									_name;
+			std::list<ptr>									_children;			
 
 		private:
-			static unsigned int										_id;
+			static unsigned int								_id;
 
-			unsigned int											_tags;
-			ptr 													_root;
-			ptr														_parent;
-			std::shared_ptr<DataBindings>							_bindings;
-			std::list<AbstractControllerPtr>						_controllers;
+			unsigned int									_tags;
+			ptr 											_root;
+			ptr												_parent;
+			std::shared_ptr<DataBindings>					_bindings;
+			std::list<AbsCtrlPtr>							_controllers;
 
-			std::shared_ptr<Signal<ptr, ptr>>						_added;
-			std::shared_ptr<Signal<ptr, ptr>>						_removed;
-			std::shared_ptr<Signal<ptr, ptr>>						_descendantAdded;
-			std::shared_ptr<Signal<ptr, ptr>>						_descendantRemoved;
-			std::shared_ptr<Signal<ptr>> 							_tagsChanged;
-			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerAdded;
-			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>		_controllerRemoved;
+			std::shared_ptr<Signal<ptr, ptr, ptr>>			_added;
+			std::shared_ptr<Signal<ptr, ptr, ptr>>			_removed;
+			std::shared_ptr<Signal<ptr, ptr>>				_tagsChanged;
+			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>	_controllerAdded;
+			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>	_controllerRemoved;
 
 		public:
 
@@ -126,14 +124,12 @@ namespace minko
 					// bubble down
 					auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 					for (auto descendant : descendants->nodes())
-						descendant->_tagsChanged->execute(shared_from_this());
+						descendant->_tagsChanged->execute(descendant, shared_from_this());
 
 					// bubble up
-					auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+					auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 					for (auto ancestor : ancestors->nodes())
-						ancestor->_tagsChanged->execute(shared_from_this());
-
-					_tagsChanged->execute(shared_from_this());
+						ancestor->_tagsChanged->execute(ancestor, shared_from_this());
 				}
 			}
 
@@ -166,14 +162,14 @@ namespace minko
 			}
 
 			inline
-			Signal<ptr, ptr>::ptr
+			Signal<ptr, ptr, ptr>::ptr
 			added()
 			{
 				return _added;
 			}
 
 			inline
-			Signal<ptr, ptr>::ptr
+			Signal<ptr, ptr, ptr>::ptr
 			removed()
 			{
 				return _removed;
@@ -181,34 +177,20 @@ namespace minko
 
 			inline
 			Signal<ptr, ptr>::ptr
-			descendantAdded()
-			{
-				return _descendantAdded;
-			}
-
-			inline
-			Signal<ptr, ptr>::ptr
-			descendantRemoved()
-			{
-				return _descendantRemoved;
-			}
-
-			inline
-			Signal<ptr>::ptr
 			tagsChanged()
 			{
 				return _tagsChanged;
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>
+			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>
 			controllerAdded()
 			{
 				return _controllerAdded;
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr, AbstractControllerPtr>>
+			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>
 			controllerRemoved()
 			{
 				return _controllerRemoved;

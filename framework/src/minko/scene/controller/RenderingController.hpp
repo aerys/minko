@@ -33,11 +33,11 @@ namespace minko
 				Signal<ptr>::ptr						_enterFrame;
 				Signal<ptr>::ptr						_exitFrame;
 
-				Signal<NodePtr, NodePtr>::cd			_addedCd;
-				Signal<NodePtr, NodePtr>::cd			_removedCd;
-				Signal<NodePtr, NodePtr>::cd			_rootAddedCd;
-				Signal<NodePtr, NodePtr>::cd			_rootDescendantAddedCd;
-				Signal<NodePtr, NodePtr>::cd			_rootDescendantRemovedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd	_addedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd	_removedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootAddedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootDescendantAddedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootDescendantRemovedCd;
 
 			public:
 				static
@@ -83,16 +83,16 @@ namespace minko
 				targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
 
 				void
-				addedHandler(NodePtr node, NodePtr ancestor);
+				addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 				void
-				removedHandler(NodePtr node, NodePtr ancestor);
+				removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 				void
-				rootDescendantAddedHandler(NodePtr node, NodePtr ancestor);
+				rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 				void
-				rootDescendantRemovedHandler(NodePtr node, NodePtr ancestor);
+				rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 				void
 				geometryChanged(std::shared_ptr<SurfaceController>);
