@@ -7,9 +7,12 @@
  */
 package aerys.minko.scene.controller.animation
 {
+    import flash.utils.Dictionary;
+    
     import aerys.minko.scene.controller.AbstractController;
+    import aerys.minko.scene.controller.IRebindableController;
 
-    public class MasterAnimationController extends AbstractController implements IAnimationController
+    public class MasterAnimationController extends AbstractController implements IAnimationController, IRebindableController
     {
         private var _animations : Vector.<IAnimationController>;
         private var _isPlaying  : Boolean;
@@ -147,6 +150,20 @@ package aerys.minko.scene.controller.animation
 			newController._labelTimes = _labelTimes;
 			
 			return newController;
+		}
+		
+		public function rebindDependencies(nodeMap : Dictionary, controllerMap : Dictionary) : void
+		{
+			var newAnimations : Vector.<IAnimationController> = new Vector.<IAnimationController>();
+			
+			for(var i : int = 0; i < _animations.length; ++i)
+			{
+				var newController : IAnimationController = controllerMap[_animations[i]] as IAnimationController;
+				if (newController)
+					newAnimations.push(newController);
+			}
+			
+			_animations = newAnimations;
 		}
     }
 }

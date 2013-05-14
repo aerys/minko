@@ -83,7 +83,7 @@ package aerys.minko.scene.node
             // if parent is not set anymore, ancestor is not the direct parent of child anymore
             if (!parent)
             {
-                ancestor.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
+               	ancestor.computedVisibilityChanged.remove(parentComputedVisibilityChangedHandler);
                 updateComputedVisibility();
             }
         }
