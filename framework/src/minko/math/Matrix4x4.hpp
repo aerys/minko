@@ -70,6 +70,12 @@ namespace minko
 			prepend(ptr matrix);
 
 			ptr
+			appendTranslation(float x, float y, float z);
+
+			ptr
+			prependTranslation(float x, float y, float z);
+
+			ptr
 			appendRotation(Vector4::ptr quaternion);
 
 			ptr

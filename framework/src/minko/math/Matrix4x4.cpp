@@ -291,6 +291,28 @@ Matrix4x4::prepend(Matrix4x4::ptr matrix)
 }
 
 Matrix4x4::ptr
+Matrix4x4::appendTranslation(float x, float y, float z)
+{
+	return append(
+		1.,	0.,	0., x,
+		0.,	1.,	0., y,
+		0.,	0.,	1., z,
+		0.,	0.,	0., 1.
+	);
+}
+
+Matrix4x4::ptr
+Matrix4x4::prependTranslation(float x, float y, float z)
+{
+	return prepend(
+		1.,	0.,	0., x,
+		0.,	1.,	0., y,
+		0.,	0.,	1., z,
+		0.,	0.,	0., 1.
+	);
+}
+
+Matrix4x4::ptr
 Matrix4x4::appendRotation(Vector4::ptr quaternion)
 {
 	return appendRotation(quaternion->w(), quaternion);
