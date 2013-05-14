@@ -143,6 +143,17 @@ package aerys.minko.scene.controller.animation
             return _labelTimes[index];
         }
 		
+		public function getLabelTimeByName(name : String) : Number
+		{
+			for(var index : int = 0; index < numLabels; ++index)
+			{
+				if (_labelNames[index] == name)
+					return _labelTimes[index];
+			}
+			
+			return NaN;
+		}
+		
 		override public function clone():AbstractController
 		{			
 			var newController : MasterAnimationController = new MasterAnimationController(_animations);

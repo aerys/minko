@@ -20,5 +20,7 @@ package aerys.minko.scene.controller.animation
         function getLabelName(index : uint) : String;
 
         function getLabelTime(index : uint) : Number;
+		
+		function getLabelTimeByName(name : String) : Number;
     }
 }
