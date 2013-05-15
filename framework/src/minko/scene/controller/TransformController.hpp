@@ -3,6 +3,7 @@
 #include "minko/Common.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
 #include "minko/scene/controller/RenderingController.hpp"
+#include "minko/Any.hpp"
 
 namespace
 {

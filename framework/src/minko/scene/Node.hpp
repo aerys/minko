@@ -28,7 +28,7 @@ namespace minko
 
 		protected:
 			std::string 									_name;
-			std::list<ptr>									_children;			
+			std::list<ptr>									_children;
 
 		private:
 			static unsigned int								_id;
@@ -67,7 +67,7 @@ namespace minko
 				for (auto child : children)
 					node->addChild(child);
 
-				return node;				
+				return node;
 			}
 
 			static
@@ -198,10 +198,10 @@ namespace minko
 
 			ptr
 			addChild(ptr Node);
-			
+
 			ptr
 			removeChild(ptr Node);
-			
+
 			bool
 			contains(ptr Node);
 
@@ -243,10 +243,12 @@ namespace minko
 					std::shared_ptr<T> typedController = std::dynamic_pointer_cast<T>(controller);
 
 					if (typedController != nullptr)
+					{
 						if (counter == position)
 							return typedController;
 						else
 							++counter;
+					}
 				}
 
 				return nullptr;

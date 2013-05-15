@@ -413,7 +413,7 @@ Matrix4x4::view(Vector3::const_ptr eye, Vector3::const_ptr lookAt, Vector3::cons
 	float m41 = -(xAxis->dot(eye));
 	float m42 = -(yAxis->dot(eye));
 	float m43 = -(zAxis->dot(eye));
-	
+
 	return initialize(
 		xAxis->x(),	yAxis->x(),	zAxis->x(),	0.,
 		xAxis->y(),	yAxis->y(),	zAxis->y(),	0.,
@@ -428,7 +428,7 @@ Matrix4x4::ptr
 Matrix4x4::lookAt(Vector3::const_ptr lookAt, Vector3::const_ptr	position, Vector3::const_ptr up)
 {
 	if (position == 0)
-		position == Vector3::create(_m[3], _m[7], _m[11]);
+		position = Vector3::create(_m[3], _m[7], _m[11]);
 
 	return view(position, lookAt, up)->invert();
 }

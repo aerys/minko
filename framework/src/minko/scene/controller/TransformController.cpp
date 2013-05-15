@@ -45,7 +45,7 @@ TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 		throw std::logic_error("A node cannot have more than one TransformController.");
 
 	target->bindings()->addProvider(_data);
-	
+
 	auto callback = std::bind(
 		&TransformController::addedOrRemovedHandler,
 		shared_from_this(),
@@ -169,7 +169,7 @@ TransformController::RootTransformController::controllerRemovedHandler(std::shar
 	if (renderingCtrl != nullptr)
 		_enterFrameCds.erase(renderingCtrl);
 	else if (std::dynamic_pointer_cast<TransformController>(ctrl) != nullptr)
-		_invalidLists = true;	
+		_invalidLists = true;
 }
 
 void
@@ -290,6 +290,6 @@ TransformController::RootTransformController::enterFrameHandler(std::shared_ptr<
 {
 	if (_invalidLists)
 		updateTransformsList();
-	
+
 	updateTransforms();
 }

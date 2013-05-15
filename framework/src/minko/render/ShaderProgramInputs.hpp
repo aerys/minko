@@ -9,11 +9,11 @@ namespace minko
 		using namespace minko::render::context;
 
 		class ShaderProgramInputs :
-			public std::enable_shared_from_this<ShaderProgramInputs>		
-		{				
+			public std::enable_shared_from_this<ShaderProgramInputs>
+		{
 		public:
 			typedef std::shared_ptr<ShaderProgramInputs>	ptr;
-				
+
 			enum Type
 			{
 				unknown,
@@ -77,9 +77,9 @@ namespace minko
 						return "float9";
 					case Type::float16:
 						return "float16";
+					default:
+						throw std::invalid_argument("type");
 				}
-
-				throw std::invalid_argument("type");
 			}
 
 		public:
@@ -102,7 +102,7 @@ namespace minko
 			locations()
 			{
 				return _locations;
-			}			
+			}
 
 		private:
 			std::shared_ptr<AbstractContext>	_context;
