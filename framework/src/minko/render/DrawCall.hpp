@@ -12,7 +12,6 @@ namespace minko
 			typedef std::shared_ptr<DrawCall> ptr;
 
 		private:
-
 			unsigned int _vertexBuffer;
 			unsigned int _indexBuffer;
 

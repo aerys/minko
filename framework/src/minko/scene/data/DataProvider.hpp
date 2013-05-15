@@ -105,16 +105,21 @@ namespace minko
 
 					_values[propertyName] = DataProviderPropertyWrapper::create(
 						value,
-						std::bind(&Signal<ptr, const std::string&>::execute, _propertyChanged, shared_from_this(), propertyName)
+						std::bind(
+							&Signal<ptr, const std::string&>::execute,
+							_propertyChanged,
+							shared_from_this(),
+							propertyName
+						)
 					);
 
 					if (isNewValue)
 					{
 						_names.push_back(propertyName);
-						(*_propertyAdded)(shared_from_this(), propertyName);
+						_propertyAdded->execute(shared_from_this(), propertyName);
 					}
 					else
-						(*_propertyChanged)(shared_from_this(), propertyName);
+						_propertyChanged->execute(shared_from_this(), propertyName);
 				}
 
 				void
@@ -147,14 +152,18 @@ namespace minko
 					ptr
 					create(const Any& value, std::function<void(void)> changedCallback)
 					{
-						return std::shared_ptr<DataProviderPropertyWrapper>(new DataProviderPropertyWrapper(value, changedCallback));
+						return std::shared_ptr<DataProviderPropertyWrapper>(
+							new DataProviderPropertyWrapper(value, changedCallback)
+						);
 					}
 
 					inline static
 					ptr
 					create(std::function<void(void)> changedCallback)
 					{
-						return std::shared_ptr<DataProviderPropertyWrapper>(new DataProviderPropertyWrapper(changedCallback));
+						return std::shared_ptr<DataProviderPropertyWrapper>(
+							new DataProviderPropertyWrapper(changedCallback)
+						);
 					}	
 
 				  	template <typename ValueType>

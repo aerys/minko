@@ -16,25 +16,21 @@ auto group = Node::create("group", {mesh});
 void
 renderScene()
 {
-  group->controller<TransformController>()->transform()->appendTranslation(1, 0, 0);
-  mesh->controller<TransformController>()->transform()->appendRotation(.1, Vector3::yAxis());
-
+  //group->controller<TransformController>()->transform()->appendTranslation(1, 0, 0);
+  //mesh->controller<TransformController>()->transform()->appendRotation(.1, Vector3::yAxis());
+  
   renderingController->render();
 
   glutPostRedisplay();
 
-  //std::cout << "frame " << numFrames << std::endl;
   if (numFrames % 100 == 0)
     std::cout << (float)numFrames / ((float)(clock() - start) / CLOCKS_PER_SEC) << " fps." << std::endl;
   ++numFrames;
 
   //std::cout << std::to_string(group->controller<TransformController>()->transform()) << std::endl;
-  std::cout << std::to_string(mesh->controller<TransformController>()->modelToWorldMatrix()) << std::endl;
+  //std::cout << std::to_string(mesh->controller<TransformController>()->modelToWorldMatrix()) << std::endl;
 }
 
-/* Main method - main entry point of application
-the freeglut library does the window creation work for us, 
-regardless of the platform. */
 int main(int argc, char** argv)
 {
   glutInit(&argc, argv);
@@ -47,6 +43,9 @@ int main(int argc, char** argv)
   auto oglContext   = OpenGLESContext::create();
   auto camera       = Node::create("camera");
   auto root         = Node::create("root", {group, camera});
+
+  for (auto i = 0; i < 10000; ++i)
+    group->addChild(Node::create()->addController(TransformController::create()));
 
   camera->addController(renderingController = RenderingController::create(oglContext));
 
@@ -63,6 +62,8 @@ int main(int argc, char** argv)
 
   mesh->addController(TransformController::create());
   group->addController(TransformController::create());
+
+  std::cout << std::to_string(mesh->bindings()->getProperty<Matrix4x4::ptr>("transform/modelToWorldMatrix")) << std::endl;
 
   /*mesh->addController(SurfaceController::create(
     CubeGeometry::create(),

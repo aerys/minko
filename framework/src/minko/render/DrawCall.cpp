@@ -3,7 +3,8 @@
 using namespace minko::render;
 
 DrawCall::DrawCall() :
-	_vertexBuffer(0)
+	_vertexBuffer(-1),
+	_indexBuffer(-1)
 {
 
 }

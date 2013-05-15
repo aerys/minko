@@ -25,6 +25,7 @@ namespace minko
 
 				std::map<std::string, PropertyChangedSignal>				_propertyChanged;
 
+				std::map<DataProviderPtr, std::list<Any>>					_propertyAddedOrRemovedCds;
 				std::map<DataProviderPtr, DataProviderPropertyChangedCd>	_dataProviderPropertyChangedCd;
 
 			public:
@@ -91,9 +92,8 @@ namespace minko
 
 				void
 				dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	provider,
-												   const std::string& 			propertyName);
+												   const std::string& 				propertyName);
 			};
 		}
 	}
 }
-			

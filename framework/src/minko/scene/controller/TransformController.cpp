@@ -31,8 +31,8 @@ TransformController::initialize()
 		std::placeholders::_2
 	));
 
-	_data->setProperty("transforms/modelToWorldMatrix", _modelToWorld);
-	_data->setProperty("transforms/worldToModelMatrix", _worldToModel);
+	_data->setProperty("transform/modelToWorldMatrix", _modelToWorld);
+	_data->setProperty("transform/worldToModelMatrix", _worldToModel);
 }
 
 void
@@ -83,8 +83,6 @@ TransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	c
 void
 TransformController::RootTransformController::initialize()
 {
-	std::cout << "RootTransformController::initialize()" << std::endl;
-
 	_targetCds.push_back(targetAdded()->add(std::bind(
 		&TransformController::RootTransformController::targetAddedHandler,
 		shared_from_this(),
