@@ -363,13 +363,12 @@ import aerys.minko.type.animation.timeline.ITimeline;
 		
 		public function getLabelTimeByName(name : String) : Number
 		{
-			for(var index : int = 0; index < numLabels; ++index)
-			{
-				if (_labelNames[index] == name)
-					return _labelTimes[index];
-			}
+			var index : int = _labelNames.indexOf(name);
 			
-			return NaN;
+			if (index < 0)
+				throw new Error('The time label named \'' + name + '\' does not exist.');
+			
+			return _labelTimes[index];
 		}
 	}
 }
