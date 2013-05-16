@@ -74,7 +74,7 @@ package aerys.minko.render.shader.part.phong.contribution
 		 * @param lightId The id of the light
 		 * @return Shader subgraph representing the diffuse value of this light. 
 		 */
-		public function computeDiffuseInWorldSpace(lightId : uint) : SFloat
+		public function computeDiffuseInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			throw new Error('Must be overriden');
 		}
@@ -110,7 +110,7 @@ package aerys.minko.render.shader.part.phong.contribution
 		 * @param lightId
 		 * @return 
 		 */
-		public function computeSpecularInWorldSpace(lightId : uint) : SFloat
+		public function computeSpecularInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			throw new Error('Must be overriden');
 		}

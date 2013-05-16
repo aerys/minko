@@ -34,11 +34,11 @@ package aerys.minko.render.shader.part.phong.contribution
 		/**
 		 * @inherit
 		 */
-		override public function computeDiffuseInWorldSpace(lightId : uint) : SFloat
+		override public function computeDiffuseInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			var cWorldLightDirection : SFloat = getLightParameter(lightId, 'worldDirection', 3);
 			
-			return diffuseFromVectors(lightId, cWorldLightDirection, fsWorldNormal);
+			return diffuseFromVectors(lightId, cWorldLightDirection, normal);
 		}
 		
 		/**
@@ -75,13 +75,13 @@ package aerys.minko.render.shader.part.phong.contribution
 		/**
 		 * @inherit
 		 */
-		override public function computeSpecularInWorldSpace(lightId : uint) : SFloat
+		override public function computeSpecularInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			var cWorldLightDirection	: SFloat = getLightParameter(lightId, 'worldDirection', 3);
 			var cWorldCameraPosition	: SFloat = sceneBindings.getParameter('cameraPosition', 4);
 			var fsWorldCameraDirection	: SFloat = normalize(subtract(fsWorldPosition, cWorldCameraPosition));
 			
-			return specularFromVectors(lightId, cWorldLightDirection, fsWorldNormal, fsWorldCameraDirection);
+			return specularFromVectors(lightId, cWorldLightDirection, normal, fsWorldCameraDirection);
 		}
 		
 	}

@@ -97,12 +97,12 @@ package aerys.minko.render.shader.part.phong
 			return normalize(v.xyz);
 		}
 		
-		protected function get fsLocalNormal() : SFloat
+		public function get fsLocalNormal() : SFloat
 		{
 			return normalize(interpolate(vsLocalNormal));
 		}
 		
-		protected function get fsWorldNormal() : SFloat
+		public function get fsWorldNormal() : SFloat
 		{
 			return normalize(interpolate(deltaLocalToWorld(vsLocalNormal)));
 		}
