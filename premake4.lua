@@ -1,5 +1,5 @@
-solution "minko-framework"
+solution "minko"
    configurations { "Debug", "Release" }
 
-include 'framework'
 include 'examples'
+include 'framework'

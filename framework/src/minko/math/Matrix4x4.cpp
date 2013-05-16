@@ -219,7 +219,7 @@ Matrix4x4::invert()
 	if (det == 0.)
 		throw;
 
-    float invdet = 1. / det;
+    float invdet = 1.f / det;
 
 	float m0 = (_m[5] * c5 - _m[6] * c4 + _m[7] * c3) * invdet;
 	float m1 = (-_m[1] * c5 + _m[2] * c4 - _m[3] * c3) * invdet;
@@ -321,12 +321,12 @@ Matrix4x4::appendRotation(Vector4::ptr quaternion)
 Matrix4x4::ptr
 Matrix4x4::appendRotation(float radians, Vector3::ptr axis)
 {
-	float xy2 	= 2. * axis->x() * axis->y();
-	float xz2 	= 2. * axis->x() * axis->z();
-	float xw2 	= 2. * axis->x() * radians;
-	float yz2 	= 2. * axis->y() * axis->z();
-	float yw2 	= 2. * axis->y() * radians;
-	float zw2 	= 2. * axis->z() * radians;
+	float xy2 	= 2.f * axis->x() * axis->y();
+	float xz2 	= 2.f * axis->x() * axis->z();
+	float xw2 	= 2.f * axis->x() * radians;
+	float yz2 	= 2.f * axis->y() * axis->z();
+	float yw2 	= 2.f * axis->y() * radians;
+	float zw2 	= 2.f * axis->z() * radians;
 	float xx 	= axis->x() * axis->x();
 	float yy 	= axis->y() * axis->y();
 	float zz 	= axis->z() * axis->z();
@@ -349,12 +349,12 @@ Matrix4x4::prependRotation(Vector4::ptr quaternion)
 Matrix4x4::ptr
 Matrix4x4::prependRotation(float radians, Vector3::ptr axis)
 {
-	float xy2 	= 2. * axis->x() * axis->y();
-	float xz2 	= 2. * axis->x() * axis->z();
-	float xw2 	= 2. * axis->x() * radians;
-	float yz2 	= 2. * axis->y() * axis->z();
-	float yw2 	= 2. * axis->y() * radians;
-	float zw2 	= 2. * axis->z() * radians;
+	float xy2 	= 2.f * axis->x() * axis->y();
+	float xz2 	= 2.f * axis->x() * axis->z();
+	float xw2 	= 2.f * axis->x() * radians;
+	float yz2 	= 2.f * axis->y() * axis->z();
+	float yw2 	= 2.f * axis->y() * radians;
+	float zw2 	= 2.f * axis->z() * radians;
 	float xx 	= axis->x() * axis->x();
 	float yy 	= axis->y() * axis->y();
 	float zz 	= axis->z() * axis->z();
@@ -374,13 +374,13 @@ Matrix4x4::perspectiveFoV(float fov,
                           float zNear,
                           float zFar)
 {
-	float fd = 1. / tanf(fov * 0.5);
+	float fd = 1.f / tanf(fov * .5f);
 
 	return initialize(
-		fd / ratio,	0.,								0.,		0.,
-		0.,			fd,								0.,		0.,
-		0.,			0.,			 zFar / (zFar - zNear),		1.,
-		0.,			0.,	-zNear * zFar / (zFar - zNear),		0.
+		fd / ratio,	0.f,	0.f,							0.f,
+		0.f,		fd,		0.f,							0.f,
+		0.f,		0.f,	zFar / (zFar - zNear),			1.f,
+		0.f,		0.f,	-zNear * zFar / (zFar - zNear),	0.f
 	);
 }
 

@@ -3,3 +3,6 @@
 Makefile
 bin
 obj
+/minko.opensdf
+/minko.sdf
+/minko.sln

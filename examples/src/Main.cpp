@@ -11,13 +11,16 @@ RenderingController::ptr renderingController;
 clock_t start;
 unsigned int numFrames = 0;
 auto mesh = Node::create("mesh");
-auto group = Node::create("group", {mesh});
+auto group = Node::create("group");
 
 void
 renderScene()
 {
   //group->controller<TransformController>()->transform()->appendTranslation(1, 0, 0);
   //mesh->controller<TransformController>()->transform()->appendRotation(.1, Vector3::yAxis());
+
+  for (auto node : group->children())
+	  node->controller<TransformController>()->transform()->appendTranslation(1, 0, 0);
   
   renderingController->render();
 
@@ -40,40 +43,52 @@ int main(int argc, char** argv)
   glutCreateWindow("OpenGL - First window demo");
   glutDisplayFunc(renderScene);
 
+#ifdef _WIN32
+  glewInit();
+#endif
+
   auto oglContext   = OpenGLESContext::create();
   auto camera       = Node::create("camera");
-  auto root         = Node::create("root", {group, camera});
+  auto root         = Node::create("root");
 
-  for (auto i = 0; i < 10000; ++i)
+  root->addChild(group)->addChild(camera);
+
+  for (auto i = 0; i < 40000; ++i)
     group->addChild(Node::create()->addController(TransformController::create()));
 
   camera->addController(renderingController = RenderingController::create(oglContext));
 
-  auto shader = GLSLProgram::fromFiles(
+  /*auto shader = GLSLProgram::fromFiles(
     oglContext,
     "../shaders/Basic.vertex.glsl",
     "../shaders/Red.fragment.glsl"
   );
 
-  auto fx = Effect::create(mesh->bindings(), {shader})
+  std::vector<GLSLProgram::ptr> shaders;
+  shaders.push_back(shader);
+
+  mesh->addController(SurfaceController::create(
+    CubeGeometry::create(),
+    data::DataProvider::create(),
+    fx
+  ));
+
+  auto fx = Effect::create(mesh->bindings(), shaders)
     ->bind("diffuseMaterial/rgba",          "diffuseColor")
     ->bind("transform/modelToWorldMatrix",  "modelToWorldMatrix")
     ->bind("transform/worldToScreenMatrix", "worldToScreenMatrix");
+  */
 
   mesh->addController(TransformController::create());
   group->addController(TransformController::create());
 
-  std::cout << std::to_string(mesh->bindings()->getProperty<Matrix4x4::ptr>("transform/modelToWorldMatrix")) << std::endl;
-
-  /*mesh->addController(SurfaceController::create(
-    CubeGeometry::create(),
-    data::DataProvider::create(),
-    fx
-  ));*/
+  group->addChild(mesh);
+  
+ // std::cout << std::to_string(mesh->bindings()->getProperty<Matrix4x4::ptr>("transform/modelToWorldMatrix")) << std::endl;
 
   start = clock();
 
-  //renderScene();
+  renderScene();
   glutMainLoop();
 
   return 0;

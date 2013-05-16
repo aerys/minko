@@ -6,32 +6,38 @@ project "minko-framework"
    includedirs { "src" }
    targetdir "bin"
 
-   configuration "Debug"
+   configuration { "debug", "linux" }
       defines { "DEBUG" }
       flags { "Symbols" }
       links { "GL", "GLU", "glut" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
 
-   configuration "Release"
+   configuration { "release", "linux" }
       defines { "NDEBUG" }
       flags { "Optimize" }
       links { "GL", "GLU", "glut" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
 
-   configuration "macosx"
-      buildoptions
-      {
-         "-std=c++11",
-         "-stdlib=libc++"
-      }
-      linkoptions
-      {
-         "-std=c++11",
-         "-stdlib=libc++"
-      }
-      libdirs
-      {
-         "/opt/local/lib/"
-      }
+   configuration { "Debug", "x32", "windows" }
+	  defines { "DEBUG" }
+	  flags { "Symbols" }
+	  includedirs { "lib/win32/includes" }
+	  
+   configuration { "Release", "x32", "windows" }
+	  defines { "NDEBUG" }
+	  flags { "Optimize" }
+	  includedirs { "lib/win32/includes" }
+	  
+   configuration { "debug", "macosx" }
+	  defines { "DEBUG" }
+      buildoptions { "-std=c++11", "-stdlib=libc++" }
+      linkoptions { "-std=c++11", "-stdlib=libc++" }
+      libdirs { "/opt/local/lib/" }
+
+   configuration { "release", "macosx" }
+	  defines { "NDEBUG" }
+	  buildoptions { "-std=c++11", "-stdlib=libc++" }
+      linkoptions { "-std=c++11", "-stdlib=libc++" }
+      libdirs { "/opt/local/lib/" }
