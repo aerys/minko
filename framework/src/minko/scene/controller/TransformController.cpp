@@ -264,8 +264,8 @@ TransformController::RootTransformController::updateTransformsList()
 void
 TransformController::RootTransformController::updateTransforms()
 {
-	auto numNodes 	= _transform.size();
-	auto nodeId 	= 0;
+	unsigned int numNodes 	= _transform.size();
+	unsigned int nodeId 	= 0;
 
 	while (nodeId < numNodes)
 	{

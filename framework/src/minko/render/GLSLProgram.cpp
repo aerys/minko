@@ -42,15 +42,15 @@ GLSLProgram::loadShaderFile(const std::string& filename)
 
 	if (file.is_open())
 	{
-		unsigned int size = file.tellg();
-		char content[size + 1];
+		unsigned int size = (unsigned int)file.tellg();
+		std::vector<char> content(size + 1);
 
 		content[size] = 0;
 		file.seekg(0, std::ios::beg);
-		file.read(content, size);
+		file.read(&content[0], size);
 		file.close();
 
-		return std::string(content);
+		return std::string(&content[0]);
 	}
 	else
 		throw std::invalid_argument("filename");

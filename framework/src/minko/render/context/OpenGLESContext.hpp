@@ -2,9 +2,13 @@
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
-# include <GLUT/glut.h>          /* Open GL Util    APPLE */
+# include <GLUT/glut.h>
+#endif
+#ifdef _WIN32
+# include "GL/glew.h"
+# include "GL/glut.h"
 #else
-# include <GL/glut.h>            /* Open GL Util    OpenGL*/
+# include <GL/glut.h>
 #endif
 
 #include "minko/Common.hpp"

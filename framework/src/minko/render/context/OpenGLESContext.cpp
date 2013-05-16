@@ -410,9 +410,9 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
     	int nameLength = -1;
     	int size = -1;
     	GLenum type = GL_ZERO;
-    	char name[maxUniformNameLength];
+    	std::vector<char> name(maxUniformNameLength);
 
-    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, name);
+    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
 	
 	    name[nameLength] = 0;
 
@@ -452,11 +452,11 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 	    		break ;
 	    }
 
-	    int location = glGetUniformLocation(program, name);
+	    int location = glGetUniformLocation(program, &name[0]);
 
 	    if (location >= 0)
 	    {
-		    names.push_back(name);
+		    names.push_back(std::string(&name[0]));
 		    types.push_back(inputType);
 		    locations.push_back(location);
 		}
@@ -485,11 +485,11 @@ OpenGLESContext::getShaderCompilationLogs(const unsigned int shader)
 
 		if (logsLength > 0)
 		{
-			char logs[logsLength];
+			std::vector<char> logs(logsLength);
 
-			glGetShaderInfoLog(shader, logsLength, &logsLength, logs);
+			glGetShaderInfoLog(shader, logsLength, &logsLength, &logs[0]);
 
-			return std::string(logs);
+			return std::string(&logs[0]);
 		}
 	}
 
@@ -504,9 +504,9 @@ OpenGLESContext::getProgramInfoLogs(const unsigned int program)
 
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &programInfoMaxLength);
 
-	char programInfo[programInfoMaxLength];
+	std::vector<char> programInfo(programInfoMaxLength);
 
-	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, programInfo);
+	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, &programInfo[0]);
 
-	return std::string(programInfo);
+	return std::string(&programInfo[0]);
 }
