@@ -187,6 +187,11 @@ package aerys.minko.scene.controller.animation
 			
 			_labelNames[index] = newName;
 			
+			var numAnimations : uint = _animations.length;
+			
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				_animations[animationId].changeLabel(oldName, newName);
+			
 			return this;
 		}
 		
@@ -198,6 +203,11 @@ package aerys.minko.scene.controller.animation
 				throw new Error('The time label named \'' + name + '\' does not exist.');
 			
 			_labelTimes[index] = newTime;
+			
+			var numAnimations : uint = _animations.length;
+			
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				_animations[animationId].setTimeForLabel(name, newTime);
 			
 			return this;
 		}
