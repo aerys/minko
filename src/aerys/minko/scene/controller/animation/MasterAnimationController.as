@@ -177,5 +177,29 @@ package aerys.minko.scene.controller.animation
 			
 			_animations = newAnimations;
 		}
+		
+		public function changeLabel(oldName : String, newName : String) : IAnimationController
+		{
+			var index : int = _labelNames.indexOf(oldName);
+			
+			if (index < 0)
+				throw new Error('The time label named \'' + oldName + '\' does not exist.');
+			
+			_labelNames[index] = newName;
+			
+			return this;
+		}
+		
+		public function setTimeForLabel(name : String, newTime : Number) : IAnimationController
+		{
+			var index : int = _labelNames.indexOf(name);
+			
+			if (index < 0)
+				throw new Error('The time label named \'' + name + '\' does not exist.');
+			
+			_labelTimes[index] = newTime;
+			
+			return this;
+		}
 	}
 }
