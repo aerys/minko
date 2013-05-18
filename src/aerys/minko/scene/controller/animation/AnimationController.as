@@ -333,6 +333,11 @@ import aerys.minko.type.animation.timeline.ITimeline;
 			return this;
 		}
 		
+		public function hasLabel(name : String) : Boolean
+		{
+			return _labelNames.indexOf(name) >= 0;
+		}
+		
         public function removeLabel(name : String) : IAnimationController
         {
             var index : int = _labelNames.indexOf(name);

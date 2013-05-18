@@ -53,9 +53,17 @@ package aerys.minko.scene.controller.animation
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+			{
+				if (_animations[animationId].hasLabel(name))
+					_animations[animationId].removeLabel(name);
 				_animations[animationId].addLabel(name,  time);
-			
+			}
 			return this;
+		}
+		
+		public function hasLabel(name : String) : Boolean
+		{
+			return _labelNames.indexOf(name) >= 0;
 		}
 		
 		public function removeLabel(name : String) : IAnimationController
@@ -190,8 +198,11 @@ package aerys.minko.scene.controller.animation
 			var numAnimations : uint = _animations.length;
 			
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+			{
+				if (!_animations[animationId].hasLabel(oldName))
+					_animations[animationId].addLabel(oldName, getLabelTime(index));
 				_animations[animationId].changeLabel(oldName, newName);
-			
+			}
 			return this;
 		}
 		
