@@ -593,8 +593,8 @@ package aerys.minko.render.shader.part
 		{
 			var vectorNode : AbstractNode = getNode(vector);
 			
-			if (vectorNode.size < 4)
-				throw new Error('The argument \'vector\' should have a size of 4.');
+			if (vectorNode.size < 3)
+				throw new Error('The argument \'vector\' should have a size of 3.');
 			
 			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
