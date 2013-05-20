@@ -1,8 +1,11 @@
 *.sublime-workspace
 *.sublime-project
 Makefile
-bin
-obj
-/minko.opensdf
-/minko.sdf
-/minko.sln
+framework/bin
+framework/obj
+examples/bin
+examples/obj
+*.opensdf
+*.sdf
+*.sln
+*.suo
