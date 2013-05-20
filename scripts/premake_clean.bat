@@ -1,5 +1,4 @@
 chdir ..
+scripts\premake4.exe removeDLLs
 scripts\premake4.exe clean
-rm minko.sdf
-rm minko.v11.suo
-rm minko.suo
+scripts\premake4.exe cleanVS
