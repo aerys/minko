@@ -26,6 +26,7 @@ project "minko-examples"
 	  links { "minko-framework", "freeglut", "glew32" }
 	  libdirs { "../framework/lib/win32/bin" }
 	  includedirs { "../framework/lib/win32/includes" }
+
 	  
    configuration { "release", "x32", "windows" }
 	  defines { "NDEBUG" }
