@@ -628,7 +628,7 @@ package aerys.minko.scene.controller.scene
     			}
     			_numDrawCalls -= numDrawCalls;
                 
-                delete _meshToEffectInstance[effectInstance];
+                delete _meshToEffectInstance[mesh];
                 delete _meshBindingsUsageCount[meshBindings];
                 delete _meshToDrawCalls[mesh];
                 
