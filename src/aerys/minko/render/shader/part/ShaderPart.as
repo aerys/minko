@@ -489,7 +489,7 @@ package aerys.minko.render.shader.part
             var result : SFloat = new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
             
             for each (var arg : Object in args)
-                result = multiply(result, arg);
+                result = divide(result, arg);
             
 			return result;
 		}
