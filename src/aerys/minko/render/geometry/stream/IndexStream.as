@@ -219,7 +219,7 @@ package aerys.minko.render.geometry.stream
 		
 		public function pushTriangle(index1 : uint, index2 : uint, index3 : uint) : IndexStream
 		{
-			return setTriangle(length * 3, index1, index2, index3);
+			return setTriangle(length, index1, index2, index3);
 		}
 		
 		public function setTriangle(triangleIndex	: uint,
