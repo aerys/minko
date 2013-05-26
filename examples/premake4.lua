@@ -15,7 +15,7 @@ project "minko-examples"
       
    configuration { "release", "linux" }
       defines { "NDEBUG" }
-      flags { "Optimize" }
+      flags { "OptimizeSpeed" }
       links { "minko-framework", "GL", "GLU", "glut", "m" }
       buildoptions "-std=c++0x"
       linkoptions "-std=c++0x"
@@ -30,19 +30,20 @@ project "minko-examples"
 	  
    configuration { "release", "x32", "windows" }
 	  defines { "NDEBUG" }
-	  flags { "Optimize" }
+	  flags { "OptimizeSpeed" }
 	  links { "minko-framework", "freeglut", "glew32" }
 	  libdirs { "../framework/lib/win32/bin" }
 	  includedirs { "../framework/lib/win32/includes" }
 
    configuration { "debug", "macosx" }
 	  defines { "DEBUG" }
-      buildoptions { "-std=c++11", "-stdlib=libc++" }
-      linkoptions { "-std=c++11", "-stdlib=libc++" }
-      libdirs { "/opt/local/lib/" }
+     buildoptions { "-std=c++11", "-stdlib=libc++" }
+     linkoptions { "-std=c++11", "-stdlib=libc++" }
+     libdirs { "/opt/local/lib/" }
 
    configuration { "release", "macosx" }
 	  defines { "NDEBUG" }
+     flags { "OptimizeSpeed" }
 	  buildoptions { "-std=c++11", "-stdlib=libc++" }
-      linkoptions { "-std=c++11", "-stdlib=libc++" }
-      libdirs { "/opt/local/lib/" }
+     linkoptions { "-std=c++11", "-stdlib=libc++" }
+     libdirs { "/opt/local/lib/" }
