@@ -13,6 +13,10 @@ newaction {
 		project(2).basedir .. "/lib/win32/bin/freeglut.dll",
 		project(1).basedir .. "/bin/freeglut.dll"
 	  )
+	  os.copyfile(
+		project(2).basedir .. "/lib/win32/bin/glew32.dll",
+		project(1).basedir .. "/bin/glew32.dll"
+	  )
 	end
 }
 
