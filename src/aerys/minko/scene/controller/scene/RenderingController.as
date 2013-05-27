@@ -485,7 +485,7 @@ package aerys.minko.scene.controller.scene
             if (!effect)
                 return ;
             
-			deleteDrawCalls(mesh, material.effect);
+			deleteDrawCalls(mesh, effect);
 		}
 		
 		private function effectInstancePassesChangedHandler(effectInstance : EffectInstance) : void
@@ -648,12 +648,12 @@ package aerys.minko.scene.controller.scene
     				unbindShaderInstance(passInstance, drawCall, meshBindings);
     			}
     			_numDrawCalls -= numDrawCalls;
-                
-                delete _meshToEffectInstance[effectInstance];
+
+                delete _meshToEffectInstance[mesh];
                 delete _meshBindingsUsageCount[meshBindings];
                 delete _meshToDrawCalls[mesh];
-                
-                // update effect instances list and mesh to effect instance indexes
+
+				// update effect instances list and mesh to effect instance indexes
                 var meshesWithSameEffectInstance : Vector.<Mesh> = _effectInstanceToMeshes[effectInstance];
                 
                 meshesWithSameEffectInstance.splice(meshesWithSameEffectInstance.indexOf(mesh), 1);

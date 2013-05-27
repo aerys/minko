@@ -85,15 +85,14 @@ package aerys.minko.scene.node
 		{
 			return _material;
 		}
+
 		public function set material(value : Material) : void
 		{
 			if (_material != value)
 			{
 				if (_material)
 					_bindings.removeProvider(_material);
-				
-				var oldMaterial : Material = _material;
-				
+
 				_material = value;
 				
 				if (value)
@@ -163,6 +162,7 @@ package aerys.minko.scene.node
 		{
 			return _visibility.frustumCulling;
 		}
+
 		public function set frustumCulling(value : uint) : void
 		{
 			_visibility.frustumCulling = value;
@@ -209,12 +209,44 @@ package aerys.minko.scene.node
 			super.initializeSignals();
 			
 			_cloned = new Signal('Mesh.cloned');
+			added.add(addedToSceneHandler);
 		}
-		
+
+		private function addedToSceneHandler(child : ISceneNode, ancestor : Group) : void
+		{
+			added.remove(addedToSceneHandler);
+			removed.add(removedFromSceneHandler);
+
+			if (_material && !_bindings.hasProvider(_material))
+				_bindings.addProvider(_material);
+
+			if (!_bindings.hasProvider(_properties))
+				_bindings.addProvider(_properties);
+
+			if (!hasController(_ctrl))
+			{
+				addController(_visibility);
+				addController(_ctrl);
+			}
+		}
+
+		private function removedFromSceneHandler(child : ISceneNode, ancestor : Group) : void
+		{
+			added.add(addedToSceneHandler);
+
+			if (_material && _bindings.hasProvider(_material))
+				_bindings.removeProvider(_material);
+
+			_bindings.removeProvider(_properties);
+
+			removeController(_visibility);
+			removeController(_ctrl);
+		}
+
 		override protected function initializeContollers() : void
 		{
 			super.initializeContollers();
-			
+
 			_ctrl = new MeshController();
 			addController(_ctrl);
 			
@@ -249,7 +281,7 @@ package aerys.minko.scene.node
 				maxDistance
 			);
 		}
-        
+
 		override minko_scene function cloneNode() : AbstractSceneNode
 		{
 			var clone : Mesh = new Mesh();

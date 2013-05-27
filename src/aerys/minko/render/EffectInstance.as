@@ -77,5 +77,6 @@ package aerys.minko.render
             --_numUses;
             _released.execute(this, _numUses);
         }
+
 	}
 }

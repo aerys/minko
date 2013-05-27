@@ -253,8 +253,13 @@ package aerys.minko.type.binding
         
         public function hasProvider(provider : DataProvider) : Boolean
         {
-            return provider in _providers;
-        }
+			for each (var accessibleProvider : DataProvider in _providers)
+			{
+				if (accessibleProvider == provider)
+					return true;
+			}
+			return false;
+		}
 		
 		private function propertyChangedHandler(source 			: IDataProvider,
 												propertyName 	: String,
