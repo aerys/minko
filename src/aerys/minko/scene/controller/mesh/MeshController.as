@@ -61,8 +61,10 @@ package aerys.minko.scene.controller.mesh
 		private function targetAddedHandler(ctrl	: MeshController,
 											target	: Mesh) : void
 		{
-			target.added.add(addedHandler);
-			target.removed.add(removedHandler);
+			if (!target.added.hasCallback(addedHandler))
+				target.added.add(addedHandler);
+			if (!target.removed.hasCallback(removedHandler))
+				target.removed.add(removedHandler);
 		}
 		
 		private function addedHandler(target	: Mesh,
@@ -70,7 +72,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			if (!target.scene)
 				return ;
-            
+			
             _mesh = target;
             _mesh.scene.renderingBegin.add(sceneRenderingBeginHandler);
 		}

@@ -1,6 +1,5 @@
 package aerys.minko.scene.controller.scene
 {
-	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
@@ -26,7 +25,6 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.Sort;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;

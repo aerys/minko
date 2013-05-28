@@ -174,14 +174,18 @@ package aerys.minko.scene.controller.mesh
             if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
                 scene.renderingBegin.remove(sceneRenderingBeginHandler);
             
-			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
+			if (scene.bindings.hasCallback('worldToScreen', worldToScreenChangedHandler))
+				scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
 			if (_frustumCulling
                 && mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
 				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
 
-			mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
-            mesh.bindings.removeProvider(_data);
+			if (mesh.computedVisibilityChanged.hasCallback(computedVisiblityChangedHandler))
+			{
+				mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
+            	mesh.bindings.removeProvider(_data);
+			}
 		}
 		
         private function computedVisiblityChangedHandler(node               : ISceneNode,
@@ -227,7 +231,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _frustumCulling;
 			
-			if (_mesh && _mesh.geometry && _mesh.geometry.boundingBox && _mesh.visible)
+			if (_mesh && _mesh.geometry && _mesh.geometry.boundingBox && _mesh.visible && _mesh.root is Scene)
 			{
 				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				

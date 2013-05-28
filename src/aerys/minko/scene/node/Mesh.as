@@ -222,25 +222,17 @@ package aerys.minko.scene.node
 
 			if (!_bindings.hasProvider(_properties))
 				_bindings.addProvider(_properties);
-
-			if (!hasController(_ctrl))
-			{
-				addController(_visibility);
-				addController(_ctrl);
-			}
 		}
 
 		private function removedFromSceneHandler(child : ISceneNode, ancestor : Group) : void
 		{
+			removed.remove(removedFromSceneHandler);
 			added.add(addedToSceneHandler);
 
 			if (_material && _bindings.hasProvider(_material))
 				_bindings.removeProvider(_material);
 
 			_bindings.removeProvider(_properties);
-
-			removeController(_visibility);
-			removeController(_ctrl);
 		}
 
 		override protected function initializeContollers() : void
