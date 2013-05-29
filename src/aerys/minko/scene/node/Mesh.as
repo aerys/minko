@@ -243,6 +243,10 @@ package aerys.minko.scene.node
 			if (!(_tag & tag))
 				return -1;
 			
+			if(_ctrl.geometry.boundingBox == null) {
+				return -1;
+			}
+			
 			return _ctrl.geometry.boundingBox.testRay(
 				ray,
 				getWorldToLocalTransform(),
