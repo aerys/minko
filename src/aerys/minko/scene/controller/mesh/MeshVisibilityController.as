@@ -139,7 +139,7 @@ package aerys.minko.scene.controller.mesh
 		
 		private function addedHandler(mesh : Mesh, ancestor : Group) : void
 		{
-			var scene : Scene = mesh.scene;
+			var scene : Scene = ancestor.scene;
 			
 			if (!scene)
 				return ;
@@ -170,22 +170,18 @@ package aerys.minko.scene.controller.mesh
 			
 			if (!scene)
 				return ;
-            
+
             if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
                 scene.renderingBegin.remove(sceneRenderingBeginHandler);
             
-			if (scene.bindings.hasCallback('worldToScreen', worldToScreenChangedHandler))
-				scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
+			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
 			if (_frustumCulling
                 && mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
 				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
 
-			if (mesh.computedVisibilityChanged.hasCallback(computedVisiblityChangedHandler))
-			{
 				mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
             	mesh.bindings.removeProvider(_data);
-			}
 		}
 		
         private function computedVisiblityChangedHandler(node               : ISceneNode,
