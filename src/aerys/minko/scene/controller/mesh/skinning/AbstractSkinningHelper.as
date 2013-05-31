@@ -61,17 +61,17 @@ package aerys.minko.scene.controller.mesh.skinning
 		public function AbstractSkinningHelper(method			: uint,
 											   bindShape		: Matrix3D,
 											   invBindMatrices	: Vector.<Matrix3D>,
-											   flattenSkinning	: Boolean = false,
-											   numFps			: uint = 0,
-											   skeletonRoot		: Group = null,
-											   joints			: Vector.<Group> = null)
+											   flattenSkinning	: Boolean			= false,
+											   numFps			: uint				= 0,
+											   skeletonRoot		: Group				= null,
+											   joints			: Vector.<Group>	= null)
 		{
 			_method				= method;
 			_bindShape			= bindShape;
 			_invBindMatrices	= invBindMatrices;
 			
 			if (flattenSkinning)
-				_isStatic		= initializeStaticSkinning(numFps, skeletonRoot, joints);
+				initializeStaticSkinning(numFps, skeletonRoot, joints);
 		}
 		
 		public function addMesh(mesh : Mesh) : void
@@ -90,23 +90,13 @@ package aerys.minko.scene.controller.mesh.skinning
 				removeMesh(_targets[0]);
 		}
 		
-		public function set isStatic(value : Boolean) : void
-		{
-			_isStatic = value;
-		}
-		
-		public function get isStatic()	: Boolean
-		{
-			return _isStatic;
-		}
-		
 		public function update(skeletonRoot			: Group,
 							   joints				: Vector.<Group>,
 							   forceStaticUpdate	: Boolean,
 							   numFps				: uint) : void
 		{
-			if (_isStatic && forceStaticUpdate)
-				_isStatic	= initializeStaticSkinning(numFps, skeletonRoot, joints);
+			if (forceStaticUpdate)
+				initializeStaticSkinning(numFps, skeletonRoot, joints);
 			
 			updateTargetSkinning(skeletonRoot, joints);			
 		}
@@ -155,8 +145,17 @@ package aerys.minko.scene.controller.mesh.skinning
 			_numJoints	= 0;
 			_timeStep	= 0.0;
 			
+			// unlock the update of the transform matrices of all the animated nodes
+			// encountered between a joint and the skeleton root
+			for (var node:Object in _nodeToAnimationController)
+			{
+				var controller	: AnimationController	= _nodeToAnimationController[node];
+				controller.unlockTimelineUpdate("transform");
+			}
+			
 			_nodeToAnimationController		= null;
 			_jointAnimationController		= null;
+			
 			_jointSkinMatricesByFrame		= null;
 			_jointDualQuaternionsDByFrame	= null;
 			_jointDualQuaternionsNByFrame	= null;
@@ -164,21 +163,20 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		protected function initializeStaticSkinning(numFps			: uint,
 													skeletonRoot	: Group,
-													joints			: Vector.<Group>) : Boolean
+													joints			: Vector.<Group>) : void
 			
 		{
-			_numFps = numFps < 30 ? 30 : numFps;
+			_isStatic	= true;
+			_numFps		= numFps;
 			
 			initializeJointSkinMatrices(skeletonRoot, joints);
 			
 			if (_method == SkinningMethod.HARDWARE_DUAL_QUATERNION)
 			{
-				var dualQuaternions	: Array = computeDualQuaternionsFromMatrices(_jointSkinMatricesByFrame);
-				_jointDualQuaternionsDByFrame = dualQuaternions[0];
-				_jointDualQuaternionsNByFrame = dualQuaternions[1];
-			}
-			
-			return _jointSkinMatricesByFrame.length > 0;
+				var dualQuaternions	: Array		= computeDualQuaternionsFromMatrices(_jointSkinMatricesByFrame);
+				_jointDualQuaternionsDByFrame	= dualQuaternions[0];
+				_jointDualQuaternionsNByFrame	= dualQuaternions[1];
+			}			
 		}
 		
 		private function initializeJointSkinMatrices(skeletonRoot	: Group,
@@ -280,13 +278,10 @@ package aerys.minko.scene.controller.mesh.skinning
 				while (currentNode != skeletonRoot);
 			}
 			
-			_numFrames = totalTime > 0
-				? uint(totalTime * 1e-3 * _numFps) // total time is in milliseconds
-				: 0;
+			_numFrames	= uint(totalTime * 1e-3 * _numFps); // total time is in milliseconds
+			_numFrames	= _numFrames < 2 ? 2 : _numFrames; 
 			
-			_timeStep = _numFrames > 1
-				? totalTime / (_numFrames - 1)
-				: 0.0;
+			_timeStep	= totalTime / (_numFrames - 1);
 		}
 		
 		private function resampleTransformTimelines() : Dictionary
@@ -305,19 +300,19 @@ package aerys.minko.scene.controller.mesh.skinning
 				var timeline	: MatrixTimeline 		= getTransformMatrixTimeline(controller);
 				var timeTable	: Vector.<uint>			= timeline.minko_animation::timeTable;
 				var matrices	: Vector.<Matrix4x4>	= timeline.minko_animation::matrices;
-				var numTimes	: uint	= timeTable.length;
+				var numTimes	: uint					= timeTable.length;
+
+				var interpMatrices	: Vector.<Number> 	= new Vector.<Number>(_numFrames << 4, true); // one 4x4 matrix per frame
 				
-				var interpMatrices	: Vector.<Number> = new Vector.<Number>(_numFrames << 4, true); // one 4x4 matrix per frame
-				
-				var timeIndex	: uint	= 0
+				var timeIndex	: uint	 	= 0
 				var time		: Number	= 0.0;	
 				for (var frameId:uint = 0; frameId < _numFrames; ++frameId)
 				{					
 					if (time < timeTable[0])
-						TMP_MATRIX_4X4 = matrices[0];
+						TMP_MATRIX_4X4 = matrices[0].clone();
 						
 					else if (time > timeTable[numTimes-1])
-						TMP_MATRIX_4X4 = matrices[numTimes-1];
+						TMP_MATRIX_4X4 = matrices[numTimes-1].clone();
 						
 					else
 					{
@@ -376,10 +371,10 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			var TMP_MATRIX	: Matrix3D	= new Matrix3D();
 			
-			var numMatrices	: uint	= _numFrames * _numJoints;
-			var jointSkinMatricesByFrame	: Vector.<Number> = new Vector.<Number>(numMatrices << 4, true);
+			var numMatrices					: uint				= _numFrames * _numJoints;
+			var jointSkinMatricesByFrame	: Vector.<Number> 	= new Vector.<Number>(numMatrices << 4, true);
 			
-			var jointLocalToWorld		: Matrix3D	= new Matrix3D();
+			var jointLocalToWorld			: Matrix3D			= new Matrix3D();
 			for (var jointId:uint = 0; jointId<_numJoints; ++jointId)
 			{				
 				for (var frameId:uint = 0; frameId<_numFrames; ++frameId)
@@ -427,7 +422,7 @@ package aerys.minko.scene.controller.mesh.skinning
 			}
 			return jointSkinMatricesByFrame;
 		}
-		
+
 		private function getJointCurrentFrame(jointId	: uint)	: uint
 		{
 			var jointController		: AnimationController = _jointAnimationController[jointId];

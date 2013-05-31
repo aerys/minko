@@ -173,7 +173,8 @@ package aerys.minko.scene.controller.mesh.skinning
 			
 			_skinningHelper.addMesh(mesh);
 			
-			_isDirty = true;
+			_isDirty 		= true;
+			_updateStatic	= _flattenSkinning;
 		}
 		
 		override protected function targetRemovedFromScene(target : ISceneNode, scene : Scene) : void
@@ -213,19 +214,7 @@ package aerys.minko.scene.controller.mesh.skinning
 				subscribeToJoints();
 			
 			_isDirty		= true;
-			_updateStatic	= true;
-		}
-		
-		public function get numFps() : uint
-		{
-			return _numFps;
-		}
-		
-		public function set numFps(value	: uint) : void
-		{
-			_numFps				= value;
-			_updateStatic		= true;
-			_flattenSkinning 	= true;
+			_updateStatic	= _flattenSkinning;
 		}
 		
 		public function get flattenSkinning() : Boolean
@@ -235,13 +224,23 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		public function set flattenSkinning(value	: Boolean) : void
 		{
-			_flattenSkinning = value;
-			_skinningHelper.isStatic = value;
+			_flattenSkinning	= value;
 			if (!_flattenSkinning)
 				_skinningHelper.clearStaticSkinning();
-			_updateStatic = true;
+			_updateStatic		= _flattenSkinning;
 		}
 
+		public function get numFps() : uint
+		{
+			return _numFps;
+		}
+		
+		public function set numFps(value	: uint) : void
+		{
+			_numFps				= value;
+			_flattenSkinning 	= true;
+			_updateStatic		= _flattenSkinning;
+		}
 		
 		private function subscribeToJoints() : void
 		{
@@ -279,6 +278,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					_updateStatic,
 					_numFps
 				);
+				
 				_isDirty		= false;
 				_updateStatic	= false;
 			}
