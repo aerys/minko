@@ -97,10 +97,11 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		public function update(skeletonRoot			: Group,
 							   joints				: Vector.<Group>,
-							   forceStaticUpdate	: Boolean) : void
+							   forceStaticUpdate	: Boolean,
+							   numFps				: uint) : void
 		{
-			if (_isStatic && forceStaticUpdate)
-				_isStatic	= initializeStaticSkinning(_numFps, skeletonRoot, joints);
+			if (forceStaticUpdate)
+				_isStatic	= initializeStaticSkinning(numFps, skeletonRoot, joints);
 			
 			updateTargetSkinning(skeletonRoot, joints);			
 		}
@@ -140,6 +141,20 @@ package aerys.minko.scene.controller.mesh.skinning
 				+ uint(format.hasComponent(VertexComponent.BONE_8_9))
 				+ uint(format.hasComponent(VertexComponent.BONE_10_11))
 			);
+		}
+		
+		public function clearStaticSkinning() : void
+		{
+			_isStatic	= false;
+			_numFrames	= 0;
+			_numJoints	= 0;
+			_timeStep	= 0.0;
+			
+			_nodeToAnimationController		= null;
+			_jointAnimationController		= null;
+			_jointSkinMatricesByFrame		= null;
+			_jointDualQuaternionsDByFrame	= null;
+			_jointDualQuaternionsNByFrame	= null;
 		}
 		
 		protected function initializeStaticSkinning(numFps			: uint,

@@ -199,6 +199,23 @@ package aerys.minko.scene.controller.mesh.skinning
 			_updateStatic	= true;
 		}
 		
+		public function set numFps(value	: uint) : void
+		{
+			_numFps			= value;
+			_updateStatic	= true;
+		}
+		
+		public function set flattenSkinning(value	: Boolean) : void
+		{
+			_flattenSkinning = value;
+			if (!_flattenSkinning)
+			{
+				_skinningHelper.clearStaticSkinning();
+			}
+			_updateStatic	= _flattenSkinning
+		}
+
+		
 		private function subscribeToJoints() : void
 		{
 			var numJoints	: uint	= _joints.length;
@@ -226,13 +243,14 @@ package aerys.minko.scene.controller.mesh.skinning
 														   destination	: BitmapData, 
 														   time			: Number) : void
 		{
-			if ((_skinningHelper.isStatic || _isDirty) 
+			if ((_flattenSkinning || _isDirty) 
 				&& _skinningHelper.numMeshes != 0)
 			{
 				_skinningHelper.update(
 					_skeletonRoot, 
 					_joints, 
-					_updateStatic
+					_updateStatic,
+					_numFps
 				);
 				_isDirty		= false;
 				_updateStatic	= false;
