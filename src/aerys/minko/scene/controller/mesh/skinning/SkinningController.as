@@ -1,5 +1,9 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
+	import flash.display.BitmapData;
+	import flash.geom.Matrix3D;
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
@@ -14,10 +18,6 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.display.BitmapData;
-	import flash.geom.Matrix3D;
-	import flash.utils.Dictionary;
 	
 	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{
@@ -49,9 +49,26 @@ package aerys.minko.scene.controller.mesh.skinning
 			return _skeletonRoot;
 		}
 		
+		public function set skinningMethod(value : uint) : void
+		{
+			_method = value;
+			
+			for (var targetId : uint = 0; targetId < numTargets; targetId++)
+			{
+				var target : ISceneNode = getTarget(targetId);
+				targetRemovedFromScene(target, target.scene);
+				targetAddedToScene(target, target.scene);
+			}
+		}
+		
 		public function get joints() : Vector.<Group>
 		{
 			return _joints;
+		}
+		
+		public function get numJoints() : uint
+		{
+			return _joints.length;
 		}
 		
 		public function SkinningController(method			: uint,
