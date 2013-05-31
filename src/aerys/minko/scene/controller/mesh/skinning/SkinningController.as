@@ -1,9 +1,5 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
-	import flash.display.BitmapData;
-	import flash.geom.Matrix3D;
-	import flash.utils.Dictionary;
-	
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
@@ -19,6 +15,10 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.type.log.DebugLevel;
 	import aerys.minko.type.math.Matrix4x4;
 	
+	import flash.display.BitmapData;
+	import flash.geom.Matrix3D;
+	import flash.utils.Dictionary;
+	
 	public final class SkinningController extends EnterFrameController implements IRebindableController
 	{
 		public static const MAX_NUM_INFLUENCES	: uint	= 8;
@@ -26,6 +26,10 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		private var _skinningHelper		: AbstractSkinningHelper;
 		private var _isDirty			: Boolean;
+		
+		private var _flattenSkinning	: Boolean;
+		private var _numFps				: uint = 0;
+		private var _updateStatic		: Boolean;
 		
 		private var _method				: uint;
 		private var _bindShapeMatrix	: Matrix3D;
@@ -54,17 +58,23 @@ package aerys.minko.scene.controller.mesh.skinning
 										   skeletonRoot		: Group,
 										   joints			: Vector.<Group>,
 										   bindShape		: Matrix4x4,
-										   invBindMatrices	: Vector.<Matrix4x4>)
+										   invBindMatrices	: Vector.<Matrix4x4>,
+										   flattenSkinning	: Boolean 	= false,
+										   numFps			: uint 		= 0)
 		{
 			super(Mesh);
 			
-            if (!skeletonRoot)
-                throw new Error('skeletonRoot cannot be null');
-            
+			if (!skeletonRoot)
+				throw new Error('skeletonRoot cannot be null');
+			
 			_method				= method;
 			_skeletonRoot		= skeletonRoot;
 			_bindShapeMatrix	= bindShape.minko_math::_matrix;
 			_isDirty			= false;
+			
+			_flattenSkinning	= flattenSkinning;
+			_numFps				= numFps;
+			_updateStatic		= false;
 			
 			initialize(joints, invBindMatrices);
 		}
@@ -95,8 +105,8 @@ package aerys.minko.scene.controller.mesh.skinning
 			if (!_skinningHelper)
 			{
 				var numInfluences 	: uint = AbstractSkinningHelper.getNumInfluences(
-                    mesh.geometry.format
-                );
+					mesh.geometry.format
+				);
 				
 				if (_joints.length > MAX_NUM_JOINTS || numInfluences > MAX_NUM_INFLUENCES)
 				{
@@ -108,28 +118,40 @@ package aerys.minko.scene.controller.mesh.skinning
 				}
 				
 				if (skinningMethod != SkinningMethod.SOFTWARE_MATRIX)
-                {
-                    try
-                    {
-    					_skinningHelper = new HardwareSkinningHelper(
-    						_method, _bindShapeMatrix, _invBindMatrices
-    					);
-                    }
-                    catch (e : Error)
-                    {
-                        Minko.log(
-                            DebugLevel.SKINNING,
-                            'Falling back to software skinning: ' + e.message,
-                            this
-                        );
-                        
-                        _method = SkinningMethod.SOFTWARE_MATRIX;
-                    }
-                }
-                
-                _skinningHelper ||= new SoftwareSkinningHelper(
-                    _method, _bindShapeMatrix, _invBindMatrices
-                );
+				{
+					try
+					{
+						_skinningHelper = new HardwareSkinningHelper(
+							_method, 
+							_bindShapeMatrix, 
+							_invBindMatrices,
+							_flattenSkinning,
+							_numFps,
+							_skeletonRoot,
+							_joints
+						);
+					}
+					catch (e : Error)
+					{
+						Minko.log(
+							DebugLevel.SKINNING,
+							'Falling back to software skinning: ' + e.message,
+							this
+						);
+						
+						_method = SkinningMethod.SOFTWARE_MATRIX;
+					}
+				}
+				
+				_skinningHelper ||= new SoftwareSkinningHelper(
+					_method, 
+					_bindShapeMatrix, 
+					_invBindMatrices,
+					_flattenSkinning,
+					_numFps,
+					_skeletonRoot,
+					_joints
+				);
 			}
 			
 			_skinningHelper.addMesh(mesh);
@@ -173,7 +195,8 @@ package aerys.minko.scene.controller.mesh.skinning
 			if (numTargets != 0)
 				subscribeToJoints();
 			
-			_isDirty = true;
+			_isDirty		= true;
+			_updateStatic	= true;
 		}
 		
 		private function subscribeToJoints() : void
@@ -203,10 +226,16 @@ package aerys.minko.scene.controller.mesh.skinning
 														   destination	: BitmapData, 
 														   time			: Number) : void
 		{
-			if (_isDirty && _skinningHelper.numMeshes != 0)
+			if ((_skinningHelper.isStatic || _isDirty) 
+				&& _skinningHelper.numMeshes != 0)
 			{
-				_skinningHelper.update(_skeletonRoot, _joints);
-				_isDirty = false;
+				_skinningHelper.update(
+					_skeletonRoot, 
+					_joints, 
+					_updateStatic
+				);
+				_isDirty		= false;
+				_updateStatic	= false;
 			}
 		}
 		
@@ -217,7 +246,9 @@ package aerys.minko.scene.controller.mesh.skinning
 				_skeletonRoot,
 				_joints,
 				getBindShapeMatrix(),
-				getInvBindMatrices()
+				getInvBindMatrices(),
+				_flattenSkinning,
+				_numFps
 			);
 		}
 		
@@ -240,9 +271,9 @@ package aerys.minko.scene.controller.mesh.skinning
 		}
 		
 		private function meshVisibilityChangedHandler(bindings 	: DataBindings,
-												  property	: String,
-												  oldValue	: Boolean,
-												  newValue	: Boolean) : void
+													  property	: String,
+													  oldValue	: Boolean,
+													  newValue	: Boolean) : void
 		{
 			if (newValue)
 				_skinningHelper.addMesh(bindings.owner as Mesh);

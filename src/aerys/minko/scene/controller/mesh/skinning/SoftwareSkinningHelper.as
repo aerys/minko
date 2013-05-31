@@ -1,9 +1,5 @@
 package aerys.minko.scene.controller.mesh.skinning
 {
-	import flash.geom.Matrix3D;
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
-	
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
@@ -14,6 +10,10 @@ package aerys.minko.scene.controller.mesh.skinning
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.animation.SkinningMethod;
 	
+	import flash.geom.Matrix3D;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	
 	internal final class SoftwareSkinningHelper extends AbstractSkinningHelper
 	{
 		private static const TMP_VECTOR : Vector.<uint> = new <uint>[];
@@ -23,9 +23,22 @@ package aerys.minko.scene.controller.mesh.skinning
 		
 		public function SoftwareSkinningHelper(method			: uint,
 											   bindShape		: Matrix3D, 
-											   invBindMatrices	: Vector.<Matrix3D>)
+											   invBindMatrices	: Vector.<Matrix3D>,
+											   flattenSkinning	: Boolean = false,
+											   numFps			: uint = 0,
+											   skeletonRoot		: Group = null,
+											   joints			: Vector.<Group> = null
+		)
 		{
-			super(method, bindShape, invBindMatrices);
+			super(
+				method, 
+				bindShape,
+				invBindMatrices,
+				flattenSkinning,
+				numFps,
+				skeletonRoot,
+				joints
+			);
 			
 			if (method != SkinningMethod.SOFTWARE_MATRIX)
 				throw new Error('Method not supported');
@@ -49,8 +62,8 @@ package aerys.minko.scene.controller.mesh.skinning
 			delete _meshToFlattenedGeometry[mesh];
 		}
 		
-		override public function update(skeletonRoot	: Group, 
-										joints			: Vector.<Group>) : void
+		override protected function updateTargetSkinning(skeletonRoot	: Group, 
+														 joints			: Vector.<Group>) : void
 		{
 			writeMatrices(skeletonRoot, joints);
 			
@@ -161,7 +174,7 @@ package aerys.minko.scene.controller.mesh.skinning
 								+ _matrices[uint(matrixOffset + 11)]);
 						}
 					}
-										
+					
 					fakeDataXYZ.position = positionOffset;
 					fakeDataXYZ.writeFloat(outX);
 					fakeDataXYZ.writeFloat(outY);
@@ -216,7 +229,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					}
 					
 					var invNormalLength : Number = 1 / Math.sqrt(outNx * outNx + outNy * outNy + outNz * outNz);
-										
+					
 					fakeDataNormal.position = normalOffset;
 					fakeDataNormal.writeFloat(outNx * invNormalLength);
 					fakeDataNormal.writeFloat(outNy * invNormalLength);

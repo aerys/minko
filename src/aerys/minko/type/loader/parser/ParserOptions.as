@@ -23,6 +23,8 @@ package aerys.minko.type.loader.parser
 		private var _dependencyLoaderFunction	: Function;
         private var _loadSkin                   : Boolean;
 		private var _skinningMethod				: uint;
+		private var _flattenSkinning			: Boolean;
+		private var _skinningNumFps				: uint;
 		private var _mipmapTextures				: Boolean;
 		private var _meshEffect					: Effect;
 		private var _material					: Material;
@@ -39,6 +41,16 @@ package aerys.minko.type.loader.parser
 		public function set skinningMethod(value : uint) : void
 		{
 			_skinningMethod = value;
+		}
+		
+		public function get skinningNumFps() : uint
+		{
+			return _skinningNumFps;
+		}
+		
+		public function set skinningNumFps(value : uint) : void
+		{
+			_skinningNumFps = value;
 		}
 		
 		public function get parser() : Class
@@ -111,6 +123,16 @@ package aerys.minko.type.loader.parser
             _loadSkin = value;
         }
 		
+		public function get flattenSkinning() : Boolean
+		{
+			return _flattenSkinning;
+		}
+		
+		public function set flattenSkinning(value : Boolean) : void
+		{
+			_flattenSkinning = value;
+		}
+		
 		public function get assets() : AssetsLibrary
 		{
 			return _assets;
@@ -127,6 +149,8 @@ package aerys.minko.type.loader.parser
 				_dependencyLoaderFunction,
                 _loadSkin,
 				_skinningMethod,
+				_flattenSkinning,
+				_skinningNumFps,
 				_mipmapTextures,
 				_material,
 				_vertexStreamUsage,
@@ -139,6 +163,8 @@ package aerys.minko.type.loader.parser
 		public function ParserOptions(dependencyLoaderFunction	: Function 		= null,
                                       loadSkin                  : Boolean 		= true,
 									  skinningMethod			: uint			= 2,
+									  flattenSkinning			: Boolean		= false,
+									  skinningNumFps			: uint			= 0,
 									  mipmapTextures			: Boolean 		= true,
 									  material					: Material 		= null,
 									  vertexStreamUsage			: uint 			= 0,
@@ -149,6 +175,8 @@ package aerys.minko.type.loader.parser
 			_dependencyLoaderFunction	= dependencyLoaderFunction || defaultDependencyLoaderFunction;
             _loadSkin                   = loadSkin;
 			_skinningMethod				= skinningMethod;
+			_flattenSkinning			= flattenSkinning;
+			_skinningNumFps				= skinningNumFps;
 			_mipmapTextures				= mipmapTextures;
 			_material					= _material || new BasicMaterial();
 			_vertexStreamUsage			= vertexStreamUsage;

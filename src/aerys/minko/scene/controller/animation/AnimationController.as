@@ -1,17 +1,17 @@
 package aerys.minko.scene.controller.animation
 {
-import flash.display.BitmapData;
-import flash.utils.getTimer;
-
-import aerys.minko.render.Viewport;
-import aerys.minko.scene.controller.AbstractController;
-import aerys.minko.scene.controller.EnterFrameController;
-import aerys.minko.scene.node.Group;
-import aerys.minko.scene.node.ISceneNode;
-import aerys.minko.scene.node.Scene;
-import aerys.minko.type.Signal;
-import aerys.minko.type.animation.timeline.ITimeline;
-
+	import aerys.minko.render.Viewport;
+	import aerys.minko.scene.controller.AbstractController;
+	import aerys.minko.scene.controller.EnterFrameController;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.animation.timeline.ITimeline;
+	
+	import flash.display.BitmapData;
+	import flash.utils.getTimer;
+	
 	/**
 	 * The AnimationController uses timelines to animate properties of scene nodes.
 	 *  
@@ -32,29 +32,31 @@ import aerys.minko.type.animation.timeline.ITimeline;
 		
 		private var _timeFunction	: Function;
 		private var _labelNames		: Vector.<String>;
-        private var _labelTimes     : Vector.<Number>;
+		private var _labelTimes     : Vector.<Number>;
 		
 		private var _lastTime		: Number;
 		
 		private var _looped			: Signal;
 		private var _started		: Signal;
 		private var _stopped		: Signal;
-
-        public function get numLabels() : uint
-        {
-            return _labelNames.length;
-        }
-
+		
+		private var _isTimelineUpdateLocked	: Vector.<Boolean>;
+		
+		public function get numLabels() : uint
+		{
+			return _labelNames.length;
+		}
+		
 		public function get timeFunction() : Function
 		{
 			return _timeFunction;
 		}
-
+		
 		public function set timeFunction(value : Function) : void
 		{
 			_timeFunction = value;
 		}
-
+		
 		public function get numTimelines() : uint
 		{
 			return _timelines.length;
@@ -69,7 +71,7 @@ import aerys.minko.type.animation.timeline.ITimeline;
 		{
 			return _stopped;
 		}
-
+		
 		public function get looped() : Signal
 		{
 			return _looped;
@@ -102,7 +104,7 @@ import aerys.minko.type.animation.timeline.ITimeline;
 		{
 			return _currentTime;
 		}
-
+		
 		public function AnimationController(timelines 	: Vector.<ITimeline>,
 											loop		: Boolean	= true)
 		{
@@ -117,24 +119,51 @@ import aerys.minko.type.animation.timeline.ITimeline;
 			_timelines = timelines.slice();
 			_looping = loop;
 			_labelNames = new <String>[];
-            _labelTimes = new <Number>[];
+			_labelTimes = new <Number>[];
 			_looped	= new Signal('AnimationController.looped');
 			_started = new Signal('AnimationController.started');
 			_stopped = new Signal('AnimationController.stopped');
 			
 			var numTimelines : uint = _timelines.length;
 			
-			for (var timelineId : uint = 0; timelineId < numTimelines; ++timelineId)
+			_isTimelineUpdateLocked	= new Vector.<Boolean>(numTimelines, true);
+			for (var timelineId:uint = 0; timelineId < numTimelines; ++timelineId)
+			{
 				if (_totalTime < _timelines[timelineId].duration)
 					_totalTime = _timelines[timelineId].duration;
+				
+				_isTimelineUpdateLocked[timelineId] = false;				
+			}
 			
 			setPlaybackWindow(0, _totalTime);
 			seek(0).play();
 		}
 		
+		public function lockTimelineUpdate(propertyPath	: String)	: void
+		{
+			changeTimelineUpdateFlag(propertyPath, true);
+		}
+		
+		public function unlockTimelineUpdate(propertyPath	: String)	: void
+		{
+			changeTimelineUpdateFlag(propertyPath, false);
+		}
+		
+		private function changeTimelineUpdateFlag(propertyPath	: String,
+												  isLocked		: Boolean)	: void
+		{
+			var numTimelines	: uint = _timelines.length;
+			for (var timelineId:uint = 0; timelineId < numTimelines; ++timelineId)
+				if (_timelines[timelineId].propertyPath == propertyPath)
+					_isTimelineUpdateLocked[timelineId] = isLocked ? 1 : 0;
+		}
+		
 		override public function clone() : AbstractController
 		{
-			return new AnimationController(_timelines.slice());
+			var clone : AnimationController = new AnimationController(_timelines.slice(), _looping);
+			clone._isTimelineUpdateLocked	= _isTimelineUpdateLocked.slice();
+			
+			return clone;
 		}
 		
 		public function cloneTimelines() : void
@@ -156,9 +185,9 @@ import aerys.minko.type.animation.timeline.ITimeline;
 			
 			if (timeValue < _loopBeginTime || timeValue > _loopEndTime)
 				throw new Error(
-                    'Time value is outside of playback window. '
-                    +'To reset playback window, call resetPlaybackWindow.'
-                );
+					'Time value is outside of playback window. '
+					+'To reset playback window, call resetPlaybackWindow.'
+				);
 			
 			_currentTime = timeValue;
 			
@@ -242,20 +271,21 @@ import aerys.minko.type.animation.timeline.ITimeline;
 					
 					if (ctrlTarget.root != scene)
 						continue ;
-
+					
 					var numTimelines 	: int 			= _timelines.length;
 					var group			: Group			= target as Group;
 					
 					
 					for (var i : int = 0; i < numTimelines; ++i)
-					{
-						var timeline : ITimeline = _timelines[i] as ITimeline;
-						
-						timeline.updateAt(
-							_currentTime % (timeline.duration + 1),
-							ctrlTarget
-						);
-					}
+						if (!_isTimelineUpdateLocked[i])
+						{
+							var timeline : ITimeline = _timelines[i] as ITimeline;
+							
+							timeline.updateAt(
+								_currentTime % (timeline.duration + 1),
+								ctrlTarget
+							);
+						}
 				}
 			}
 		}
@@ -279,7 +309,7 @@ import aerys.minko.type.animation.timeline.ITimeline;
 				
 				if ((deltaT > 0 && lastCurrentTime > _currentTime)
 					|| (deltaT < 0 && (lastCurrentTime < _currentTime
-                        || _currentTime * lastCurrentTime < 0)))
+						|| _currentTime * lastCurrentTime < 0)))
 				{
 					if (_looping)
 						_looped.execute(this);
@@ -297,18 +327,18 @@ import aerys.minko.type.animation.timeline.ITimeline;
 			
 			return _isPlaying || _updateOneTime;
 		}
-
-        public function addLabel(name : String, time : Number) : IAnimationController
-        {
-            if (_labelNames.indexOf(name) >= 0)
-                throw new Error('A label with the same name already exists.');
-
-            _labelNames.push(name);
-            _labelTimes.push(time);
-
-            return this;
-        }
-
+		
+		public function addLabel(name : String, time : Number) : IAnimationController
+		{
+			if (_labelNames.indexOf(name) >= 0)
+				throw new Error('A label with the same name already exists.');
+			
+			_labelNames.push(name);
+			_labelTimes.push(time);
+			
+			return this;
+		}
+		
 		public function changeLabel(oldName : String, newName : String) : IAnimationController
 		{
 			var index : int = _labelNames.indexOf(oldName);
@@ -338,28 +368,28 @@ import aerys.minko.type.animation.timeline.ITimeline;
 			return _labelNames.indexOf(name) >= 0;
 		}
 		
-        public function removeLabel(name : String) : IAnimationController
-        {
-            var index : int = _labelNames.indexOf(name);
-
-            if (index < 0)
-                throw new Error('The time label named \'' + name + '\' does not exist.');
-
-            var numLabels : uint = _labelNames.length - 1;
-
-            _labelNames[index] = _labelNames[numLabels];
-            _labelNames.length = numLabels;
-
-            _labelTimes[index] = _labelTimes[numLabels];
-            _labelTimes.length = numLabels;
-
-            return this;
-        }
-
-        public function getLabelName(index : uint) : String
-        {
-            return _labelNames[index];
-        }
+		public function removeLabel(name : String) : IAnimationController
+		{
+			var index : int = _labelNames.indexOf(name);
+			
+			if (index < 0)
+				throw new Error('The time label named \'' + name + '\' does not exist.');
+			
+			var numLabels : uint = _labelNames.length - 1;
+			
+			_labelNames[index] = _labelNames[numLabels];
+			_labelNames.length = numLabels;
+			
+			_labelTimes[index] = _labelTimes[numLabels];
+			_labelTimes.length = numLabels;
+			
+			return this;
+		}
+		
+		public function getLabelName(index : uint) : String
+		{
+			return _labelNames[index];
+		}
 		
 		public function getLabelTime(index : uint) : Number
 		{
