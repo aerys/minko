@@ -90,6 +90,11 @@ package aerys.minko.scene.controller.mesh.skinning
 				removeMesh(_targets[0]);
 		}
 		
+		public function set isStatic(value : Boolean) : void
+		{
+			_isStatic = value;
+		}
+		
 		public function get isStatic()	: Boolean
 		{
 			return _isStatic;
@@ -100,7 +105,7 @@ package aerys.minko.scene.controller.mesh.skinning
 							   forceStaticUpdate	: Boolean,
 							   numFps				: uint) : void
 		{
-			if (forceStaticUpdate)
+			if (_isStatic && forceStaticUpdate)
 				_isStatic	= initializeStaticSkinning(numFps, skeletonRoot, joints);
 			
 			updateTargetSkinning(skeletonRoot, joints);			
@@ -162,7 +167,7 @@ package aerys.minko.scene.controller.mesh.skinning
 													joints			: Vector.<Group>) : Boolean
 			
 		{
-			_numFps = numFps;
+			_numFps = numFps < 30 ? 30 : numFps;
 			
 			initializeJointSkinMatrices(skeletonRoot, joints);
 			

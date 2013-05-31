@@ -216,20 +216,30 @@ package aerys.minko.scene.controller.mesh.skinning
 			_updateStatic	= true;
 		}
 		
+		public function get numFps() : uint
+		{
+			return _numFps;
+		}
+		
 		public function set numFps(value	: uint) : void
 		{
-			_numFps			= value;
-			_updateStatic	= true;
+			_numFps				= value;
+			_updateStatic		= true;
+			_flattenSkinning 	= true;
+		}
+		
+		public function get flattenSkinning() : Boolean
+		{
+			return _flattenSkinning;
 		}
 		
 		public function set flattenSkinning(value	: Boolean) : void
 		{
 			_flattenSkinning = value;
+			_skinningHelper.isStatic = value;
 			if (!_flattenSkinning)
-			{
 				_skinningHelper.clearStaticSkinning();
-			}
-			_updateStatic	= _flattenSkinning
+			_updateStatic = true;
 		}
 
 		
