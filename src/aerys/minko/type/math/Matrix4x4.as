@@ -1135,7 +1135,8 @@ package aerys.minko.type.math
         
         public function toString() : String
         {
-            return '[Matrix4x4 (' + getRawData(TMP_VECTOR) + ']';
+        	TMP_VECTOR.length = 16;
+            return '[Matrix4x4 (' + getRawData(TMP_VECTOR) + ')]';
         }
 	}
 }
