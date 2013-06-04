@@ -10,16 +10,29 @@ package aerys.minko.scene.controller.mesh.skinning
 	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 	import flash.utils.Dictionary;
-
+	
 	internal final class HardwareSkinningHelper extends AbstractSkinningHelper
 	{
 		private var _meshToProvider	: Dictionary	= new Dictionary();
 		
 		public function HardwareSkinningHelper(method			: uint,
-                                               bindShape		: Matrix3D,
-                                               invBindMatrices	: Vector.<Matrix3D>)
+											   bindShape		: Matrix3D,
+											   invBindMatrices	: Vector.<Matrix3D>,
+											   flattenSkinning	: Boolean = false,
+											   numFps			: uint = 0,
+											   skeletonRoot		: Group = null,
+											   joints			: Vector.<Group> = null)
 		{
-			super(method, bindShape, invBindMatrices);
+			super(
+				method, 
+				bindShape, 
+				invBindMatrices,
+				flattenSkinning,
+				numFps,
+				skeletonRoot,
+				joints
+			);
+			
 			
 			if ((Minko.debugLevel & DebugLevel.SKINNING) != 0 && method & SkinningMethod.HARDWARE_DUAL_QUATERNION)
 			{
@@ -27,17 +40,17 @@ package aerys.minko.scene.controller.mesh.skinning
 				
 				scale = bindShape.decompose()[2];
 				if (scale.x != 1 || scale.y != 1 || scale.z != 1)
-                    throw new Error(
+					throw new Error(
 						'Cannot use SkinningMethod.HARDWARE_DUAL_QUATERNION when the ' +
-                        'bindingShape have a scale'
+						'bindingShape have a scale'
 					);
 				
 				for each (var invBindMatrix : Matrix3D in _invBindMatrices)
-					if (scale.x != 1 || scale.y != 1 || scale.z != 1)
-                        throw new Error(
-							'Cannot use SkinningMethod.HARDWARE_DUAL_QUATERNION when at least ' +
-                            'one inverse bind'
-						);
+				if (scale.x != 1 || scale.y != 1 || scale.z != 1)
+					throw new Error(
+						'Cannot use SkinningMethod.HARDWARE_DUAL_QUATERNION when at least ' +
+						'one inverse bind'
+					);
 			}
 		}
 		
@@ -66,8 +79,8 @@ package aerys.minko.scene.controller.mesh.skinning
 			delete _meshToProvider[mesh];
 		}
 		
-		override public function update(skeletonRoot	: Group, 
-										joints			: Vector.<Group>) : void 
+		override protected function updateTargetSkinning(skeletonRoot	: Group, 
+														 joints			: Vector.<Group>) : void 
 		{
 			var numTargets	: uint = _targets.length;
 			var targetId	: uint;
@@ -83,8 +96,7 @@ package aerys.minko.scene.controller.mesh.skinning
 					break;
 				
 				case SkinningMethod.HARDWARE_DUAL_QUATERNION:
-					writeMatrices(skeletonRoot, joints);
-					writeDualQuaternions();
+					writeDualQuaternions(skeletonRoot, joints);
 					
 					for (targetId = 0; targetId < numTargets; ++targetId)
 					{

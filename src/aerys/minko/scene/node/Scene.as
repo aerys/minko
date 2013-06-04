@@ -1,5 +1,8 @@
 package aerys.minko.scene.node
 {
+	import flash.display.BitmapData;
+	import flash.utils.getTimer;
+	
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.Effect;
 	import aerys.minko.render.Viewport;
@@ -10,10 +13,6 @@ package aerys.minko.scene.node
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.loader.AssetsLibrary;
-	
-	import flash.display.BitmapData;
-	import flash.utils.Dictionary;
-	import flash.utils.getTimer;
 
 	/**
 	 * Scene objects are the root of any 3D scene.
@@ -34,8 +33,12 @@ package aerys.minko.scene.node
 		
 		private var _numTriangles	: uint;
 		
+		private var _beforeClear	: Signal;
+		private var _afterClear		: Signal;
 		private var _enterFrame		: Signal;
 		private var _renderingBegin	: Signal;
+		private var _beforePresent	: Signal;
+		private var _afterPresent	: Signal;
 		private var _renderingEnd	: Signal;
 		private var _exitFrame		: Signal;
 
@@ -146,9 +149,29 @@ package aerys.minko.scene.node
 			return _renderingBegin;
 		}
 		
+		public function get beforePresent() : Signal
+		{
+			return _beforePresent;
+		}
+		
+		public function get afterPresent() : Signal
+		{
+			return _afterPresent;
+		}
+		
 		public function get renderingEnd() : Signal
 		{
 			return _renderingEnd;
+		}
+		
+		public function get beforeClear() : Signal
+		{
+			return _beforeClear;
+		}
+		
+		public function get afterClear() : Signal
+		{
+			return _afterClear;
 		}
 		
 		public function Scene(...children)
@@ -171,8 +194,12 @@ package aerys.minko.scene.node
 			
 			_enterFrame			= new Signal('Scene.enterFrame');
 			_renderingBegin 	= new Signal('Scene.renderingBegin');
+			_beforePresent	 	= new Signal('Scene.beforePresent');
+			_afterPresent 		= new Signal('Scene.afterPresent');
 			_renderingEnd 		= new Signal('Scene.renderingEnd');
 			_exitFrame 			= new Signal('Scene.exitFrame');
+			_beforeClear		= new Signal('Scene.beforeClear');
+			_afterClear			= new Signal('Scene.afterClear');
 		}
 		
 		override protected function initializeSignalHandlers() : void

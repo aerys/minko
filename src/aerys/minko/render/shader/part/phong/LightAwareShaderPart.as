@@ -97,12 +97,12 @@ package aerys.minko.render.shader.part.phong
 			return normalize(v.xyz);
 		}
 		
-		protected function get fsLocalNormal() : SFloat
+		public function get fsLocalNormal() : SFloat
 		{
 			return normalize(interpolate(vsLocalNormal));
 		}
 		
-		protected function get fsWorldNormal() : SFloat
+		public function get fsWorldNormal() : SFloat
 		{
 			return normalize(interpolate(deltaLocalToWorld(vsLocalNormal)));
 		}
@@ -179,16 +179,16 @@ package aerys.minko.render.shader.part.phong
 			return deltaLocalToTangent(deltaWorldToLocal(v));
 		}
 		
-		protected function lightPropertyExists(lightId : uint, name : String) : Boolean
+		public function lightPropertyExists(lightId : uint, name : String) : Boolean
 		{
 			return sceneBindings.propertyExists(
 				LightDataProvider.getLightPropertyName(name, lightId)
 			);
 		}
 		
-		protected function getLightProperty(lightId         : uint,
-                                            name            : String,
-                                            defaultValue    : Object = null) : *
+		public function getLightProperty(lightId         : uint,
+                                         name            : String,
+                                         defaultValue    : Object = null) : *
 		{
 			return sceneBindings.getProperty(
 				LightDataProvider.getLightPropertyName(name, lightId),
@@ -196,9 +196,9 @@ package aerys.minko.render.shader.part.phong
 			);
 		}
 		
-		protected function getLightParameter(lightId		: uint, 
-											 name			: String,
-											 size			: uint) : SFloat
+		public function getLightParameter(lightId		: uint, 
+                                          name			: String,
+                                          size			: uint) : SFloat
 		{
 			return sceneBindings.getParameter(
 				LightDataProvider.getLightPropertyName(name, lightId),

@@ -20,6 +20,7 @@ package aerys.minko.render.shader.part.phong
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.scene.node.light.SpotLight;
 	import aerys.minko.type.enum.NormalMappingType;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.ShadowMappingType;
 	
 	/**
@@ -80,40 +81,30 @@ package aerys.minko.render.shader.part.phong
 		private function get matrixShadowMapAttenuation() : PCFShadowMapAttenuationShaderPart
 		{
 			return _matrixShadowMapAttenuation
-				|| (_matrixShadowMapAttenuation = new PCFShadowMapAttenuationShaderPart(main));
+			|| (_matrixShadowMapAttenuation = new PCFShadowMapAttenuationShaderPart(main));
 		}
 		
 		private function get dpShadowMapAttenuation() : DPShadowMapAttenuationShaderPart
 		{
 			return _dpShadowMapAttenuation
-				|| (_dpShadowMapAttenuation = new DPShadowMapAttenuationShaderPart(main));
+			|| (_dpShadowMapAttenuation = new DPShadowMapAttenuationShaderPart(main));
 		}
 		
 		private function get varianceShadowMapAttenuation() : VarianceShadowMapAttenuationShaderPart
 		{
 			return _varianceShadowMapAttenuation
-				|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main));
+			|| (_varianceShadowMapAttenuation = new VarianceShadowMapAttenuationShaderPart(main));
 		}
 		
 		private function get exponentialShadowMapAttenuation() : ExponentialShadowMapAttenuationShaderPart
 		{
 			return _exponentialShadowMapAttenuation
-				|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main));
+			|| (_exponentialShadowMapAttenuation = new ExponentialShadowMapAttenuationShaderPart(main));
 		}
 		
 		public function PhongShaderPart(main : Shader)
 		{
 			super(main);
-		}
-		
-		public function getLightingColor(lightId : int = -1) : SFloat
-		{
-			var lightValue : SFloat = float3(0, 0, 0);
-			
-			lightValue.incrementBy(getStaticLighting());
-			lightValue.incrementBy(getDynamicLighting(false, lightId));
-			
-			return lightValue;
 		}
 		
 		public function getStaticLighting() : SFloat
@@ -124,7 +115,12 @@ package aerys.minko.render.shader.part.phong
 			{
 				var uv			: SFloat = getVertexAttribute(VertexComponent.UV);
 				var lightMap	: SFloat = meshBindings.getTextureParameter(
-					PhongProperties.LIGHT_MAP
+					PhongProperties.LIGHT_MAP,
+					1,
+					0,
+					1,
+					0,
+					meshBindings.getProperty(PhongProperties.LIGHT_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				contribution = sampleTexture(lightMap, interpolate(uv));
@@ -142,93 +138,41 @@ package aerys.minko.render.shader.part.phong
 			return contribution;
 		}
 		
-		public function getDynamicLighting(skipAmbient : Boolean   = false,
-                                           lightId     : int       = -1) : SFloat
+		public function getAmbientLighting() : SFloat
 		{
-			var dynamicLighting : SFloat	= float3(0, 0, 0);
-            var multiPassMode   : Boolean   = lightId != -1;
+			var ambientLighting : SFloat    = float3(0., 0., 0.);
+			var lightId         : uint      = 0;
 			var receptionMask	: uint		= meshBindings.getProperty(
 				PhongProperties.RECEPTION_MASK,
 				1
 			);
-            
-            if (!multiPassMode)
-                lightId = 0;
 			
-			while (lightPropertyExists(lightId, 'emissionMask'))
+			while (lightPropertyExists(lightId, 'emissionMask')
+				&& getLightProperty(lightId, 'type') == AmbientLight.LIGHT_TYPE)
 			{
 				var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
 				
 				if ((emissionMask & receptionMask) != 0)
 				{
-					var type    : uint  = getLightProperty(lightId, 'type');
-                    
-                    if ((type != AmbientLight.LIGHT_TYPE || !skipAmbient)
-                        && getLightProperty(lightId, 'enabled'))
-                    {
-    					var color           : SFloat	= getLightParameter(lightId, 'color', 4);
-                        var contribution    : SFloat    = null;
-                        
-                        if (type == AmbientLight.LIGHT_TYPE)
-                            contribution = getAmbientLightContribution(lightId);
-                        else if (type == DirectionalLight.LIGHT_TYPE)
-                            contribution = getDirectionalLightContribution(lightId);
-                        else if (type == PointLight.LIGHT_TYPE)
-                            contribution = getPointLightContribution(lightId);
-                        else if (type == SpotLight.LIGHT_TYPE)
-                            contribution = getSpotLightContribution(lightId);
-                        
-                        if (contribution)
-                            dynamicLighting.incrementBy(multiply(color.rgb, contribution));
-                    }
+					var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
+						&& getLightProperty(lightId, 'enabled');
+					
+					if (!isEnabled)
+						continue;
+					
+					var color			: SFloat	= getLightParameter(lightId, 'color', 4);
+					var contribution	: SFloat	= getAmbientLightContribution(lightId);
+					
+					ambientLighting.incrementBy(multiply(color.rgb, contribution));
 				}
-                
-                if (multiPassMode)
-                    break;
-                
-                ++lightId;
+				
+				++lightId;
 			}
 			
-			return dynamicLighting;
+			return ambientLighting;
 		}
 		
-        public function getAmbientLighting() : SFloat
-        {
-            var ambientLighting : SFloat    = float3(0., 0., 0.);
-            var lightId         : uint      = 0;
-            var receptionMask	: uint		= meshBindings.getProperty(
-                PhongProperties.RECEPTION_MASK,
-                1
-            );
-            
-            while (lightPropertyExists(lightId, 'emissionMask')
-                && getLightProperty(lightId, 'type') == AmbientLight.LIGHT_TYPE)
-            {
-                var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
-                
-                if ((emissionMask & receptionMask) != 0)
-                {
-                    var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
-                        && getLightProperty(lightId, 'enabled');
-                    
-                    if (!isEnabled)
-                        continue;
-                    
-                    var color			: SFloat	= getLightParameter(lightId, 'color', 4);
-                    var contribution	: SFloat	= getAmbientLightContribution(lightId);
-                    
-                    ambientLighting.incrementBy(multiply(color.rgb, contribution));
-                }
-                
-                ++lightId;
-            }
-            
-            ambientLighting.incrementBy(multiply(lessEqual(ambientLighting, 0), .5));
-            
-            return ambientLighting;
-        }
-        
-		private function getAmbientLightContribution(lightId : uint) : SFloat
+		public function getAmbientLightContribution(lightId : uint) : SFloat
 		{
 			var ambient : SFloat = getLightParameter(lightId, 'ambient', 1);
 			
@@ -238,7 +182,10 @@ package aerys.minko.render.shader.part.phong
 			return ambient;
 		}
 		
-		private function getDirectionalLightContribution(lightId : uint) : SFloat
+		public function getDirectionalLightContribution(lightId     	: uint,
+														diffuse     	: Boolean   = true,
+														specular    	: Boolean   = true,
+														normal 			: SFloat	= null) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
@@ -247,89 +194,113 @@ package aerys.minko.render.shader.part.phong
 			);
 			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
 				&& meshReceiveShadows;
-            var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getDirectionalLightSpecular(lightId);
-            
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+			var contribution		: SFloat	= null;
 			
-            // attenuation
+			if (diffuse)
+			{
+				var diffuseLighting     : SFloat    = getDirectionalLightDiffuse(lightId, normal);
+				
+				if (diffuseLighting)
+					contribution = diffuseLighting;
+			}
+			
+			if (specular)
+			{
+				var specularLighting    : SFloat    = getDirectionalLightSpecular(lightId, normal);
+				
+				if (specularLighting)
+					contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+			}
+			
+			// attenuation
 			if (contribution && computeShadows)
-            {
-                if (shadowCasting == ShadowMappingType.PCF)
-                    contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
-                else if (shadowCasting == ShadowMappingType.DUAL_PARABOLOID)
-                    contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
-                else if (shadowCasting == ShadowMappingType.VARIANCE)
-                    contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
-                else if (shadowCasting == ShadowMappingType.EXPONENTIAL)
-                    contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
-            }
-            
+			{
+				if (shadowCasting == ShadowMappingType.PCF)
+					contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+				else if (shadowCasting == ShadowMappingType.DUAL_PARABOLOID)
+					contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+				else if (shadowCasting == ShadowMappingType.VARIANCE)
+					contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+				else if (shadowCasting == ShadowMappingType.EXPONENTIAL)
+					contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
+			}
+			
 			return contribution;
 		}
-        
-        private function getSpotLightContribution(lightId : uint) : SFloat
-        {
-            var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
-            var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
-            var lightHasSmoothEdge	: Boolean	= getLightProperty(lightId, 'smoothRadius');
-            var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
-                PhongProperties.RECEIVE_SHADOWS,
-                false
-            );
-            var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
-                && meshReceiveShadows;
-            var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getSpotLightSpecular(lightId);
-            
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
-
-            // attenuation
-            if (contribution)
-            {
-                if (isAttenuated)
-                {
-                    if (lightPropertyExists(lightId, 'attenuationPolynomial'))
-                        contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
-                    else
-                        contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
-                }
-                
-                if (lightHasSmoothEdge)
-                    contribution.scaleBy(smoothConicAttenuationPart.getAttenuation(lightId));
-                else
-                    contribution.scaleBy(hardConicAttenuationPart.getAttenuation(lightId));
-                
-                if (computeShadows)
-                    switch (shadowCasting)
-                    {
-                        case ShadowMappingType.PCF :
-                            contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
-                            break ;
-                        case ShadowMappingType.DUAL_PARABOLOID :
-                            contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
-                            break ;
-                        case ShadowMappingType.VARIANCE :
-                            contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
-                            break ;
-                        case ShadowMappingType.EXPONENTIAL :
-                            contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
-                            break ;
-                    }
-            }
-            
-            return contribution;
-        }
 		
-		private function getPointLightContribution(lightId : uint) : SFloat
+		public function getSpotLightContribution(lightId    : uint,
+												 diffuse    : Boolean   = true,
+												 specular   : Boolean   = true,
+												 normal 	: SFloat 	= null) : SFloat
+		{
+			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
+			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
+			var lightHasSmoothEdge	: Boolean	= getLightProperty(lightId, 'smoothRadius');
+			var meshReceiveShadows	: Boolean	= meshBindings.getProperty(
+				PhongProperties.RECEIVE_SHADOWS,
+				false
+			);
+			var computeShadows		: Boolean	= shadowCasting != ShadowMappingType.NONE
+				&& meshReceiveShadows;
+			var contribution		: SFloat	= null;
+			
+			if (diffuse)
+			{
+				var diffuseLighting     : SFloat    = getSpotLightDiffuse(lightId, normal);
+				
+				if (diffuseLighting)
+					contribution = diffuseLighting;
+			}
+			
+			if (specular)
+			{
+				var specularLighting    : SFloat    = getSpotLightSpecular(lightId, normal);
+				
+				if (specularLighting)
+					contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+			}
+			
+			// attenuation
+			if (contribution)
+			{
+				if (isAttenuated)
+				{
+					if (lightPropertyExists(lightId, 'attenuationPolynomial'))
+						contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
+					else
+						contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+				}
+				
+				if (lightHasSmoothEdge)
+					contribution.scaleBy(smoothConicAttenuationPart.getAttenuation(lightId));
+				else
+					contribution.scaleBy(hardConicAttenuationPart.getAttenuation(lightId));
+				
+				if (computeShadows)
+					switch (shadowCasting)
+					{
+						case ShadowMappingType.PCF :
+							contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.DUAL_PARABOLOID :
+							contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.VARIANCE :
+							contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.EXPONENTIAL :
+							contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+					}
+			}
+			
+			return contribution;
+		}
+		
+		public function getPointLightContribution(lightId   : uint,
+												  diffuse   : Boolean   = true,
+												  specular  : Boolean   = true,
+												  normal 	: SFloat 	= null) : SFloat
 		{
 			var shadowCasting		: uint		= getLightProperty(lightId, 'shadowCastingType');
 			var isAttenuated		: Boolean	= getLightProperty(lightId, 'attenuationEnabled');
@@ -341,237 +312,271 @@ package aerys.minko.render.shader.part.phong
 				&& meshReceiveShadows;
 			
 			var contribution		: SFloat	= null;
-            var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId);
-            var specularLighting    : SFloat    = getPointLightSpecular(lightId);
-            
-            if (diffuseLighting)
-                contribution = diffuseLighting;
-            if (specularLighting)
-                contribution = contribution ? add(contribution, specularLighting) : specularLighting;
 			
-            // attenuation
-            if (contribution)
-            {
-    			if (isAttenuated)
-    			{
-    				if (lightPropertyExists(lightId, 'attenuationPolynomial'))
-    					contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
-    				else
-    					contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
-    			}
-    			
-    			if (computeShadows)
-    			{
-    				switch (shadowCasting)
-    				{
-    					case ShadowMappingType.PCF :
-    						contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
-    						break ;
-    					case ShadowMappingType.DUAL_PARABOLOID :
-    						contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
-    						break ;
-    					case ShadowMappingType.VARIANCE :
-    						contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
-    						break ;
-    					case ShadowMappingType.EXPONENTIAL :
-    						contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
-    						break ;
-    				}
-    			}
-            }
+			if (diffuse)
+			{
+				var diffuseLighting     : SFloat    = getPointLightDiffuse(lightId, normal);
+				
+				if (diffuseLighting)
+					contribution = diffuseLighting;
+			}
+			
+			if (specular)
+			{
+				var specularLighting    : SFloat    = getPointLightSpecular(lightId, normal);
+				
+				if (specularLighting)
+					contribution = contribution ? add(contribution, specularLighting) : specularLighting;
+			}
+			
+			// attenuation
+			if (contribution)
+			{
+				if (isAttenuated)
+				{
+					if (lightPropertyExists(lightId, 'attenuationPolynomial'))
+						contribution.scaleBy(polynomialAttenuationPart.getAttenuation(lightId));
+					else
+						contribution.scaleBy(distanceAttenuationPart.getAttenuation(lightId));
+				}
+				
+				if (computeShadows)
+				{
+					switch (shadowCasting)
+					{
+						case ShadowMappingType.PCF :
+							contribution.scaleBy(matrixShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.DUAL_PARABOLOID :
+							contribution.scaleBy(dpShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.VARIANCE :
+							contribution.scaleBy(varianceShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+						case ShadowMappingType.EXPONENTIAL :
+							contribution.scaleBy(exponentialShadowMapAttenuation.getAttenuation(lightId));
+							break ;
+					}
+				}
+			}
 			
 			return contribution;
 		}
-        
-        private function getDiffuse(receptionMask : uint = 1) : SFloat
-        {
-            var diffuse     : SFloat    = null;
-            var lightId     : uint      = 0;
-            
-            while (lightPropertyExists(lightId, 'emissionMask'))
-            {
-                var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
-                
-                if ((emissionMask & receptionMask) != 0)
-                {
-                    var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
-                        && getLightProperty(lightId, 'enabled');
-                    
-                    if (!isEnabled)
-                        continue;
-                    
-                    var color	        : SFloat	= getLightParameter(lightId, 'color', 4);
-                    var type            : uint  	= getLightProperty(lightId, 'type');
-                    var contribution    : SFloat    = null;
-                    
-                    if (type == DirectionalLight.LIGHT_TYPE)
-                        contribution = getDirectionalLightDiffuse(lightId);
-                    else if (type == SpotLight.LIGHT_TYPE)
-                        contribution = getSpotLightDiffuse(lightId);
-                    else if (type == PointLight.LIGHT_TYPE)
-                        contribution = getPointLightDiffuse(lightId);
-                    
-                    if (contribution)
-                        diffuse = diffuse ? add(diffuse, contribution) : contribution;
-                }
-                
-                ++lightId;
-            }
-            
-            return diffuse;
-        }
-        
-        private function getDirectionalLightDiffuse(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'diffuseEnabled'))
-            {
-                var normalMappingType	: uint		= meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                return normalMappingType != NormalMappingType.NONE
-                    ? localizedPart.computeDiffuseInTangentSpace(lightId)
-                    : localizedPart.computeDiffuseInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-        private function getSpotLightDiffuse(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'diffuseEnabled'))
-            {
-                var normalMappingType   : uint  = meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                return normalMappingType != NormalMappingType.NONE
-                    ? localizedPart.computeDiffuseInTangentSpace(lightId)
-                    : localizedPart.computeDiffuseInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-        private function getPointLightDiffuse(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'diffuseEnabled'))
-            {
-                var normalMappingType   : uint  = meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                return normalMappingType != NormalMappingType.NONE
-                    ? localizedPart.computeDiffuseInTangentSpace(lightId)
-                    : localizedPart.computeDiffuseInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-        private function getSpecular(receptionMask : uint = 1) : SFloat
-        {
-            var specular        : SFloat    = null;
-            var lightId         : uint      = 0;
-            
-            while (lightPropertyExists(lightId, 'emissionMask'))
-            {
-                var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
-                
-                if ((emissionMask & receptionMask) != 0)
-                {
-                    var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
-                        && getLightProperty(lightId, 'enabled');
-                    
-                    if (!isEnabled)
-                        continue;
-                    
-                    var color	        : SFloat	= getLightParameter(lightId, 'color', 4);
-                    var type            : uint  	= getLightProperty(lightId, 'type');
-                    var contribution    : SFloat    = null;
-                    
-                    if (type == DirectionalLight.LIGHT_TYPE)
-                        contribution = getDirectionalLightSpecular(lightId);
-                    else if (type == SpotLight.LIGHT_TYPE)
-                        contribution = getSpotLightSpecular(lightId);
-                    else if (type == PointLight.LIGHT_TYPE)
-                        contribution = getPointLightContribution(lightId);
-                    
-                    if (contribution)
-                        specular = specular ? add(specular, contribution) : contribution;
-                }
-                
-                ++lightId;
-            }
-            
-            return specular;
-        }
-
-        private function getDirectionalLightSpecular(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'specularEnabled'))
-            {
-                var normalMappingType	: uint		= meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                if (normalMappingType != NormalMappingType.NONE)
-                    return infinitePart.computeSpecularInTangentSpace(lightId);
-                else
-                    return infinitePart.computeSpecularInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-        private function getSpotLightSpecular(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'specularEnabled'))
-            {
-                var normalMappingType	: uint		= meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                if (normalMappingType != NormalMappingType.NONE)
-                    return localizedPart.computeSpecularInTangentSpace(lightId);
-                else
-                    return localizedPart.computeSpecularInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-        private function getPointLightSpecular(lightId : int) : SFloat
-        {
-            if (getLightProperty(lightId, 'specularEnabled'))
-            {
-                var normalMappingType	: uint		= meshBindings.getProperty(
-                    PhongProperties.NORMAL_MAPPING_TYPE,
-                    NormalMappingType.NONE
-                );
-                
-                if (normalMappingType != NormalMappingType.NONE)
-                    return localizedPart.computeSpecularInTangentSpace(lightId);
-                else
-                    return localizedPart.computeSpecularInWorldSpace(lightId);
-            }
-            
-            return null;
-        }
-        
-		public function applyPhongLighting(diffuse : SFloat) : SFloat
+		
+		private function getDirectionalLightDiffuse(lightId 		: int,
+													normal	 		: SFloat  = null) : SFloat
 		{
-            var diffuseWithLighting : SFloat = add(
-                multiply(diffuse.rgb, getAmbientLighting()),
-                add(getStaticLighting(), getDynamicLighting(true))
-            );
-            
-			return float4(diffuseWithLighting, diffuse.a);
+			if (getLightProperty(lightId, 'diffuseEnabled'))
+			{
+				var normalMappingType	: uint		= meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				if (normal)
+				{
+					return infinitePart.computeDiffuseInWorldSpace(lightId, normal);
+				}
+				else
+					return normalMappingType != NormalMappingType.NONE
+						? infinitePart.computeDiffuseInTangentSpace(lightId)
+						: infinitePart.computeDiffuseInWorldSpace(lightId, infinitePart.fsWorldNormal);
+			}
+			
+			return null;
 		}
+		
+		private function getSpotLightDiffuse(lightId 	: int,
+											 normal 	: SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'diffuseEnabled'))
+			{
+				var normalMappingType   : uint  = meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				if (normal)
+					return localizedPart.computeDiffuseInWorldSpace(lightId, normal);
+				else
+					return normalMappingType != NormalMappingType.NONE
+						? localizedPart.computeDiffuseInTangentSpace(lightId)
+						: localizedPart.computeDiffuseInWorldSpace(lightId, localizedPart.fsWorldNormal);
+			}
+			
+			return null;
+		}
+		
+		private function getPointLightDiffuse(lightId 	: int,
+											  normal 	: SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'diffuseEnabled'))
+			{
+				var normalMappingType   : uint  = meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				if (normal)
+					return localizedPart.computeDiffuseInWorldSpace(lightId, normal);
+				else
+					return normalMappingType != NormalMappingType.NONE
+						? localizedPart.computeDiffuseInTangentSpace(lightId)
+						: localizedPart.computeDiffuseInWorldSpace(lightId, localizedPart.fsWorldNormal);
+			}
+			
+			return null;
+		}
+		
+		private function getSpecular(receptionMask : uint = 1, normal : SFloat = null) : SFloat
+		{
+			var specular        : SFloat    = null;
+			var lightId         : uint      = 0;
+			
+			while (lightPropertyExists(lightId, 'emissionMask'))
+			{
+				var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
+				
+				if ((emissionMask & receptionMask) != 0)
+				{
+					var isEnabled : Boolean = lightPropertyExists(lightId, 'enabled')
+						&& getLightProperty(lightId, 'enabled');
+					
+					if (!isEnabled)
+						continue;
+					
+					var color	        : SFloat	= getLightParameter(lightId, 'color', 4);
+					var type            : uint  	= getLightProperty(lightId, 'type');
+					var contribution    : SFloat    = null;
+					
+					if (type == DirectionalLight.LIGHT_TYPE)
+						contribution = getDirectionalLightSpecular(lightId, normal);
+					else if (type == SpotLight.LIGHT_TYPE)
+						contribution = getSpotLightSpecular(lightId, normal);
+					else if (type == PointLight.LIGHT_TYPE)
+						contribution = getPointLightContribution(lightId, normal);
+					
+					if (contribution)
+						specular = specular ? add(specular, contribution) : contribution;
+				}
+				
+				++lightId;
+			}
+			
+			return specular;
+		}
+		
+		private function getDirectionalLightSpecular(lightId : int, normal : SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'specularEnabled'))
+			{
+				var normalMappingType	: uint		= meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				if (normal)
+					return infinitePart.computeSpecularInWorldSpace(lightId, normal);
+				else
+					return normalMappingType != NormalMappingType.NONE 
+						? infinitePart.computeSpecularInTangentSpace(lightId)
+						: infinitePart.computeSpecularInWorldSpace(lightId, localizedPart.fsWorldNormal);
+			}
+			
+			return null;
+		}
+		
+		private function getSpotLightSpecular(lightId : int, normal : SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'specularEnabled'))
+			{
+				var normalMappingType	: uint		= meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				if (normal)
+					return localizedPart.computeSpecularInWorldSpace(lightId, normal);
+				else
+					return normalMappingType != NormalMappingType.NONE 
+						? localizedPart.computeSpecularInTangentSpace(lightId)
+						: localizedPart.computeSpecularInWorldSpace(lightId, localizedPart.fsWorldNormal);
+			}
+			
+			return null;
+		}
+		
+		private function getPointLightSpecular(lightId : int, normal : SFloat) : SFloat
+		{
+			if (getLightProperty(lightId, 'specularEnabled'))
+			{
+				var normalMappingType	: uint		= meshBindings.getProperty(
+					PhongProperties.NORMAL_MAPPING_TYPE,
+					NormalMappingType.NONE
+				);
+				
+				if (normal)
+					return localizedPart.computeSpecularInWorldSpace(lightId, normal);
+				else
+					return normalMappingType != NormalMappingType.NONE 
+						? localizedPart.computeSpecularInTangentSpace(lightId)
+						: localizedPart.computeSpecularInWorldSpace(lightId, localizedPart.fsWorldNormal);
+			}
+			
+			return null;
+		}
+		
+		public function getDynamicLighting(lightId  		: int       = -1,
+										   ambient  		: Boolean   = true,
+										   diffuse  		: Boolean   = true,
+										   specular 		: Boolean   = true,
+										   normal 			: SFloat	= null) : SFloat
+		{
+			var diffuseLighting     : SFloat	= float3(0, 0, 0);
+			var singleLight         : Boolean   = lightId != -1;
+			var receptionMask	    : uint		= meshBindings.getProperty(
+				PhongProperties.RECEPTION_MASK,
+				1
+			);
+			
+			if (!singleLight)
+				lightId = 0;
+			
+			while (lightPropertyExists(lightId, 'emissionMask'))
+			{
+				var emissionMask : uint = getLightProperty(lightId, 'emissionMask');
+				
+				if ((emissionMask & receptionMask) != 0)
+				{
+					var type    : uint  = getLightProperty(lightId, 'type');
+					
+					if ((type != AmbientLight.LIGHT_TYPE || ambient)
+						&& getLightProperty(lightId, 'enabled'))
+					{
+						var color           : SFloat	= getLightParameter(lightId, 'color', 4);
+						var contribution    : SFloat    = null;
+						
+						if (type == AmbientLight.LIGHT_TYPE)
+							contribution = getAmbientLightContribution(lightId);
+						else if (type == DirectionalLight.LIGHT_TYPE)
+							contribution = getDirectionalLightContribution(lightId, diffuse, specular, normal);
+						else if (type == PointLight.LIGHT_TYPE)
+							contribution = getPointLightContribution(lightId, diffuse, specular, normal);
+						else if (type == SpotLight.LIGHT_TYPE)
+							contribution = getSpotLightContribution(lightId, diffuse, specular, normal);
+						
+						if (contribution)
+							diffuseLighting.incrementBy(multiply(color.rgb, contribution));
+					}
+				}
+				
+				if (singleLight)
+					break;
+				
+				++lightId;
+			}
+			
+			return diffuseLighting;
+		}
+		
 	}
 }

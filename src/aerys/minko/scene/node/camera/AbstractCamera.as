@@ -7,6 +7,7 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Ray;
+	import aerys.minko.type.math.Vector4;
 	
 	import flash.geom.Point;
 	
@@ -131,7 +132,7 @@ package aerys.minko.scene.node.camera
 			throw new Error('Must be overriden.');
 		}
 		
-		public function project(localToWorld : Matrix4x4, output : Point = null) : Point
+		public function project(worldPosition : Vector4, output : Point = null) : Point
 		{
 			throw new Error('Must be overriden.');
 		}

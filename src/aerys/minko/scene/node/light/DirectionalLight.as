@@ -2,14 +2,8 @@ package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.material.phong.PhongProperties;
-	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.DirectionalLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.enum.ShadowMappingType;
-	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
 
 	use namespace minko_scene;
@@ -131,7 +125,7 @@ package aerys.minko.scene.node.light
 										 shadowWidth		: Number	= 20,
 										 shadowQuality		: uint		= 0,
 										 shadowSpread		: uint		= 1,
-                                         shadowBias         : uint      = .002)
+                                         shadowBias         : Number    = .002)
 		{
 			super(
 				new DirectionalLightController(),

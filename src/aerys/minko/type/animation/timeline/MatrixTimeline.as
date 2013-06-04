@@ -1,7 +1,6 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.math.Matrix4x4;
 	
 	public class MatrixTimeline extends AbstractTimeline
@@ -15,6 +14,21 @@ package aerys.minko.type.animation.timeline
         private var _interpolateW       : Boolean;
 		private var _timeTableLength	: uint;
 
+		minko_animation function get interpolate() : Boolean
+		{
+			return _interpolate;
+		}
+		
+		minko_animation function get interpolateScale() : Boolean
+		{
+			return _interpolateScale;
+		}
+		
+		minko_animation function get interpolateW() : Boolean
+		{
+			return _interpolateW;
+		}
+		
 		minko_animation function get timeTable() : Vector.<uint>
 		{
 			return _timeTable;
@@ -112,7 +126,10 @@ package aerys.minko.type.animation.timeline
 			return new MatrixTimeline(
 				propertyPath,
 				_timeTable.slice(),
-				_values.slice()
+				_values.slice(),
+				_interpolate,
+				_interpolateScale,
+				_interpolateW
 			);
 		}
 	}

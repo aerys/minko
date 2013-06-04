@@ -1,5 +1,9 @@
 package aerys.minko.scene.controller.scene
 {
+	import flash.display.BitmapData;
+	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
+	
 	import aerys.minko.Minko;
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.DrawCall;
@@ -28,9 +32,6 @@ package aerys.minko.scene.controller.scene
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.enum.FrustumCulling;
 	import aerys.minko.type.log.DebugLevel;
-	
-	import flash.display.BitmapData;
-	import flash.utils.Dictionary;
 	
 	/**
 	 * The RenderingController works on the scene to issue all the related
@@ -189,6 +190,9 @@ package aerys.minko.scene.controller.scene
 					_postProcessingScene.bindings.addProvider(
 						_postProcessingProperties
 					);
+					
+					_postProcessingScene.beforePresent.add(postProcessingSceneBeforePresentHandler);
+					_postProcessingScene.afterPresent.add(postProcessingSceneAfterPresentHandler);
 				}
 				else
 				{
@@ -197,6 +201,16 @@ package aerys.minko.scene.controller.scene
 					screen.material.effect = _postProcessingEffect;
 				}
 			}
+		}
+		
+		private function postProcessingSceneBeforePresentHandler(scene : Scene, viewport : Viewport, destination : BitmapData, time : uint) : void
+		{
+			_scene.beforePresent.execute(scene, viewport, destination, time);
+		}
+		
+		private function postProcessingSceneAfterPresentHandler(scene : Scene, viewport : Viewport, destination : BitmapData, time : uint) : void
+		{
+			_scene.afterPresent.execute(scene, viewport, destination, time);
 		}
 		
 		private function getRenderingBackBuffer(backBuffer : RenderTarget) : RenderTarget
@@ -244,8 +258,7 @@ package aerys.minko.scene.controller.scene
 			applyBindingChanges();
 			
 			_numEnabledPasses = 0;
-			_numDrawCalls = 0;
-
+            
 			var context			: Context3DResource	= viewport.context3D;
 			var backBuffer 		: RenderTarget		= getRenderingBackBuffer(viewport.backBuffer);
 			var numPasses		: uint 				= _passes.length;
@@ -271,8 +284,6 @@ package aerys.minko.scene.controller.scene
 			var call			: DrawCall			= null;
 			var previousCall	: DrawCall			= null;
 			var passes			: Array				= _passes.concat();
-			
-			_numEnabledDrawCalls = 0;
 			
 			for (passId = 0; passId < numPasses; ++passId)
 			{
@@ -302,7 +313,7 @@ package aerys.minko.scene.controller.scene
 				previous = pass;
 				
 				// sort draw calls if necessary
-				if (pass.settings.depthSortDrawCalls)
+				if (pass.settings.depthSortDrawCalls && numCalls > 1)
 				{
 					for (var drawCallId : uint = 0; drawCallId < numCalls; ++drawCallId)
 						sortValues[drawCallId] = -(calls[drawCallId] as DrawCall).depth;
@@ -312,11 +323,9 @@ package aerys.minko.scene.controller.scene
 				
 				for (var j : uint = 0; j < numCalls; ++j)
 				{
-					_numDrawCalls++;
 					call = calls[j];
 					if (call.enabled)
 					{
-						_numEnabledDrawCalls++;
 						numTriangles += call.apply(context, previousCall);
 						previousCall = call;
 					}
@@ -329,13 +338,14 @@ package aerys.minko.scene.controller.scene
 			if (numTriangles == 0)
 			{
 				var color : uint = backBuffer.backgroundColor;
-				
+				_scene.beforeClear.execute(_scene, viewport, destination, getTimer());
 				context.clear(
 					(color >>> 24) / 255.,
 					((color >> 16) & 0xff) / 255.,
 					((color >> 8) & 0xff) / 255.,
 					(color & 0xff) / 255.
 				);
+				_scene.afterClear.execute(_scene, viewport, destination, getTimer());
 			}
 			
 			// present
@@ -346,7 +356,11 @@ package aerys.minko.scene.controller.scene
 				if (destination)
 					context.drawToBitmapData(destination);
 				else
+				{
+					_scene.beforePresent.execute(_scene, viewport, destination, getTimer());
 					context.present();
+					_scene.afterPresent.execute(_scene, viewport, destination, getTimer());
+				}
 			}
 			
 			return numTriangles;
@@ -469,7 +483,7 @@ package aerys.minko.scene.controller.scene
             if (!effect)
                 return ;
             
-			deleteDrawCalls(mesh, material.effect);
+			deleteDrawCalls(mesh, effect);
 		}
 		
 		private function effectInstancePassesChangedHandler(effectInstance : EffectInstance) : void
@@ -587,6 +601,8 @@ package aerys.minko.scene.controller.scene
                     
 				drawCalls[instanceId] = drawCall;
 				++_numDrawCalls;
+                if (drawCall.enabled)
+                    ++_numEnabledDrawCalls;
                 
 				// retain the instance, update indexes, watch for invalidation, give to renderingList.
 				bindShaderInstance(passInstance, drawCall, meshBindings);
@@ -617,22 +633,24 @@ package aerys.minko.scene.controller.scene
     			var numDrawCalls	: uint	            = drawCalls.length;
                 
     			unbindEffectInstance(effectInstance, meshBindings);
-    			
+                
     			for (var drawCallId : uint = 0; drawCallId < numDrawCalls; ++drawCallId)
     			{
     				// retrieve drawcall, and shaderInstance
     				var drawCall		: DrawCall			= drawCalls[drawCallId];
     				var passInstance	: ShaderInstance	= _drawCallToPassInstance[drawCall];
     				
+                    if (drawCall.enabled)
+                        --_numEnabledDrawCalls;
+                    
     				unbindShaderInstance(passInstance, drawCall, meshBindings);
     			}
     			_numDrawCalls -= numDrawCalls;
-                
-                delete _meshToEffectInstance[effectInstance];
+                delete _meshToEffectInstance[mesh];
                 delete _meshBindingsUsageCount[meshBindings];
                 delete _meshToDrawCalls[mesh];
-                
-                // update effect instances list and mesh to effect instance indexes
+
+				// update effect instances list and mesh to effect instance indexes
                 var meshesWithSameEffectInstance : Vector.<Mesh> = _effectInstanceToMeshes[effectInstance];
                 
                 meshesWithSameEffectInstance.splice(meshesWithSameEffectInstance.indexOf(mesh), 1);
@@ -813,6 +831,20 @@ package aerys.minko.scene.controller.scene
 						meshBindings
 					);
 					
+                    // the new shader failed to compile
+                    if (!replacementInstance)
+                    {
+                        var mesh    : Mesh      = meshBindings.owner as Mesh;
+                        var effect  : Effect    = _meshToEffectInstance[mesh].effect;
+                        
+                        delete _stashedPropertyChanges[meshBindings];
+                        
+                        deleteDrawCalls(mesh, effect);
+                        createDrawCalls(mesh, effect);
+                        
+                        break;
+                    }
+                    
 					if (replacementInstance.program != null)
 						drawCall.configure(
 							replacementInstance.program,

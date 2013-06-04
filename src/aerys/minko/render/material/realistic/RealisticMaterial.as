@@ -11,7 +11,9 @@ package aerys.minko.render.material.realistic
 	{
 		private static const DEFAULT_NAME		: String		= 'RealisticMaterial';
         private static const DEFAULT_EFFECT     : Effect        = new PhongEffect(
-            new RealisticShader()
+            null,
+            new RealisticSinglePassShader(null, 0.),
+            new RealisticBaseShader(null, .5)
         );
 		
 		public function get environmentMap() : ITextureResource

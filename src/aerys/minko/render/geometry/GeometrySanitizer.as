@@ -1,7 +1,5 @@
 package aerys.minko.render.geometry
 {
-	import aerys.minko.render.shader.compiler.CRC32;
-	
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.Endian;

@@ -1,7 +1,6 @@
 package aerys.minko.scene.controller.light
 {
 	import aerys.minko.scene.data.LightDataProvider;
-	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.light.AbstractLight;
 	import aerys.minko.scene.node.light.DirectionalLight;

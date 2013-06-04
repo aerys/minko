@@ -1,21 +1,17 @@
 package aerys.minko.type.loader
 {
-	import aerys.minko.render.resource.texture.TextureResource;
-	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.loader.parser.IParser;
-	import aerys.minko.type.loader.parser.ParserOptions;
-	
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import flash.utils.getQualifiedClassName;
 	import flash.utils.setTimeout;
+	
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.loader.parser.IParser;
+	import aerys.minko.type.loader.parser.ParserOptions;
 	
 	public class SceneLoader implements ILoader
 	{
@@ -82,6 +78,7 @@ package aerys.minko.type.loader
 		{
 			_currentState	= STATE_IDLE;
 			
+			_error			= new Signal('SceneLoader.error');
 			_progress		= new Signal('SceneLoader.progress');
 			_complete		= new Signal('SceneLoader.complete');
 			_data			= null;
@@ -192,6 +189,8 @@ package aerys.minko.type.loader
 		private function parseErrorHandler(parser : IParser) : void
 		{
 			_isComplete = true;
+            
+            _parser = null;
 		}
 		
 		private function parseProgressHandler(parser : IParser, progress : Number) : void
@@ -203,6 +202,8 @@ package aerys.minko.type.loader
 		{
 			_isComplete = true;
 			_data = loadedData;
+            
+            _parser = null;
 			
 			// call later to make sure the loading is always seen as asynchronous
 			setTimeout(callLaterComplete, 0, loadedData);

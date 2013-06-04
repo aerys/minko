@@ -1,26 +1,5 @@
 package aerys.minko.scene.controller
 {
-	import aerys.minko.render.Effect;
-	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.Viewport;
-	import aerys.minko.render.shader.picking.PickingShader;
-	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.render.shader.Shader;
-	import aerys.minko.scene.SceneIterator;
-	import aerys.minko.scene.node.Group;
-	import aerys.minko.scene.node.ISceneNode;
-	import aerys.minko.scene.node.Mesh;
-	import aerys.minko.scene.node.Scene;
-	import aerys.minko.scene.node.camera.AbstractCamera;
-	import aerys.minko.scene.node.camera.Camera;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.binding.DataBindings;
-	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.enum.DataProviderUsage;
-	import aerys.minko.type.enum.PickingTechnique;
-	import aerys.minko.type.math.Matrix4x4;
-	import aerys.minko.type.math.Ray;
-	
 	import flash.display.BitmapData;
 	import flash.events.IEventDispatcher;
 	import flash.events.MouseEvent;
@@ -28,6 +7,26 @@ package aerys.minko.scene.controller
 	import flash.ui.MouseCursor;
 	import flash.utils.Dictionary;
 	import flash.utils.getQualifiedClassName;
+	
+	import aerys.minko.render.Effect;
+	import aerys.minko.render.RenderTarget;
+	import aerys.minko.render.Viewport;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.render.shader.Shader;
+	import aerys.minko.render.shader.picking.PickingShader;
+	import aerys.minko.scene.node.Group;
+	import aerys.minko.scene.node.ISceneNode;
+	import aerys.minko.scene.node.Mesh;
+	import aerys.minko.scene.node.Scene;
+	import aerys.minko.scene.node.camera.AbstractCamera;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.DataBindings;
+	import aerys.minko.type.binding.DataProvider;
+	import aerys.minko.type.enum.DataProviderUsage;
+	import aerys.minko.type.enum.PickingTechnique;
+	import aerys.minko.type.math.Matrix4x4;
+	import aerys.minko.type.math.Ray;
 	
 	public class PickingController extends EnterFrameController
 	{
@@ -305,8 +304,8 @@ package aerys.minko.scene.controller
                             }
                             else if (target is Group)
                             {
-                                var group   : Group         = target as Group;
-                                var hits    : SceneIterator = group.cast(ray, Number.POSITIVE_INFINITY, _tag);
+                                var group   : Group                 = target as Group;
+                                var hits    : Vector.<ISceneNode>   = group.cast(ray, Number.POSITIVE_INFINITY, _tag);
                                 
                                 if (hits.length > 0)
                                 {
@@ -588,7 +587,7 @@ package aerys.minko.scene.controller
 			mesh.bindings.addProvider(meshData);
 			mesh.bindings.addCallback('effect', effectChangedHandler);
 			
-			if (mesh.material && mesh.material.effect)
+			if (mesh.material && mesh.material.effect && mesh.geometry.getVertexStream(0).format.hasComponent(VertexComponent.XYZ))
 				addPickingToEffect(mesh.material.effect);
 		}
 		

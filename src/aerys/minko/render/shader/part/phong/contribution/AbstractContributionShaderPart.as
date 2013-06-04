@@ -1,9 +1,12 @@
 package aerys.minko.render.shader.part.phong.contribution
 {
+	import aerys.minko.render.material.basic.BasicProperties;
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
+	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 
 	/**
 	 * Methods in this class allow to compute light contributions.
@@ -71,7 +74,7 @@ package aerys.minko.render.shader.part.phong.contribution
 		 * @param lightId The id of the light
 		 * @return Shader subgraph representing the diffuse value of this light. 
 		 */
-		public function computeDiffuseInWorldSpace(lightId : uint) : SFloat
+		public function computeDiffuseInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			throw new Error('Must be overriden');
 		}
@@ -107,7 +110,7 @@ package aerys.minko.render.shader.part.phong.contribution
 		 * @param lightId
 		 * @return 
 		 */
-		public function computeSpecularInWorldSpace(lightId : uint) : SFloat
+		public function computeSpecularInWorldSpace(lightId : uint, normal : SFloat) : SFloat
 		{
 			throw new Error('Must be overriden');
 		}
@@ -159,15 +162,22 @@ package aerys.minko.render.shader.part.phong.contribution
 			
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR))
 			{
-				var specular	: SFloat	= meshBindings.getParameter(PhongProperties.SPECULAR, 1);
+				var specular	: SFloat	= meshBindings.getParameter(PhongProperties.SPECULAR, 4);
                 
-				cLightSpecular = multiply(cLightSpecular, specular);
+				cLightSpecular = multiply(cLightSpecular, specular.xyz);
 			}
 			
 			if (meshBindings.propertyExists(PhongProperties.SPECULAR_MAP))
 			{
 				var fsSpecularSample 	: SFloat	= sampleTexture(
-					meshBindings.getTextureParameter(PhongProperties.SPECULAR_MAP),
+					meshBindings.getTextureParameter(
+						PhongProperties.SPECULAR_MAP,
+						1,
+						0,
+						1,
+						0,
+						meshBindings.getProperty(PhongProperties.SPECULAR_MAP_FORMAT, SamplerFormat.RGBA)
+					),
 					fsUV
 				);
 				

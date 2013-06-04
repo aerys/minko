@@ -88,8 +88,9 @@ package aerys.minko.scene.node.light
 			
 			addController(controller);
 			
-			this.color			= color;
-			this.emissionMask	= emissionMask;
+			this.color				= color;
+			this.emissionMask		= emissionMask;
+			this.lightBleedingBias 	= 0;
 		}
 	}
 }

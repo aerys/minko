@@ -24,17 +24,18 @@ package aerys.minko.render.geometry.stream
 		minko_stream var _localDispose	: Boolean;
 		minko_stream var _data			: ByteArray;
 		
-		private var _usage			: uint;
-		private var _format			: VertexFormat;
-		private var _resource		: VertexBuffer3DResource;
+		private var _usage		    	: uint;
+		private var _format		    	: VertexFormat;
+		private var _resource	    	: VertexBuffer3DResource;
 		
-		private var _minimum		: Vector.<Number>;
-		private var _maximum		: Vector.<Number>;
+        private var _autoUpdateMinMax   : Boolean;
+		private var _minimum	    	: Vector.<Number>;
+		private var _maximum	    	: Vector.<Number>;
 		
-		private var _locked			: Boolean;
+		private var _locked		    	: Boolean;
 		
-		private var _changed		: Signal;
-		private var _boundsChanged	: Signal;
+		private var _changed	    	: Signal;
+		private var _boundsChanged  	: Signal;
 		
 		public function get format() : VertexFormat
 		{
@@ -100,6 +101,15 @@ package aerys.minko.render.geometry.stream
 		{
 			return _boundsChanged;
 		}
+        
+        public function get autoUpdateMinMax() : Boolean
+        {
+            return _autoUpdateMinMax;
+        }
+        public function set autoUpdateMinMax(value : Boolean) : void
+        {
+            _autoUpdateMinMax = value;
+        }
 
 		public function VertexStream(usage	: uint,
 									 format	: VertexFormat,
@@ -118,6 +128,8 @@ package aerys.minko.render.geometry.stream
 		{
 			_changed = new Signal('VertexStream.changed');
 			_boundsChanged = new Signal('VertexStream.boundsChanged');
+            
+            _autoUpdateMinMax = true;
 			_minimum = new <Number>[];
 			_maximum = new <Number>[];
 			
@@ -137,7 +149,7 @@ package aerys.minko.render.geometry.stream
 				_data.position = 0;
 			}
             
-			updateMinMax(true);
+   			updateMinMax(true);
 		}
 		
 		private function validateData(data : ByteArray, length : uint = 0) : void
@@ -150,7 +162,7 @@ package aerys.minko.render.geometry.stream
 				throw new Error('Incompatible format/length.');
 		}
 		
-		private function updateMinMax(forceReadUsage : Boolean = false) : void
+		public function updateMinMax(forceReadUsage : Boolean = false) : void
 		{
 			if (!forceReadUsage)
 				checkReadUsage(this);
@@ -282,7 +294,8 @@ package aerys.minko.render.geometry.stream
 				_changed.execute(this);
 				
 				// FIXME: check if bounds have actually changed?
-				updateMinMax();
+                if (_autoUpdateMinMax)
+    				updateMinMax();
 			}
 
 			return this;
@@ -391,7 +404,9 @@ package aerys.minko.render.geometry.stream
 				checkWriteUsage(this);
 				
 				_changed.execute(this);
-				updateMinMax(true);
+                
+                if (_autoUpdateMinMax)
+    				updateMinMax(true);
 			}
 		}
 		
@@ -432,7 +447,8 @@ package aerys.minko.render.geometry.stream
 			{
 				_changed.execute(this);
                 
-                updateMinMax(true);
+                if (_autoUpdateMinMax)
+                    updateMinMax(true);
 				
 				if (boundsHaveChanged)
 					_boundsChanged.execute(this);
@@ -573,7 +589,8 @@ package aerys.minko.render.geometry.stream
 			if (!_locked)
 				_changed.execute(this);
 			
-			updateMinMax();
+            if (_autoUpdateMinMax)
+    			updateMinMax();
 		}
 		
 		public function disposeLocalData(waitForUpload : Boolean = true) : void
@@ -652,6 +669,7 @@ package aerys.minko.render.geometry.stream
 			
 			newVertexStreamData.position = 0;
 			newVertexStream._data = newVertexStreamData;
+            
 			newVertexStream.updateMinMax();
 			
 			return newVertexStream;
@@ -781,7 +799,7 @@ package aerys.minko.render.geometry.stream
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.numBytesPerVertex * count * dwordSize;
 			
-			stream.data = data;
+			stream._data = data;
 			
 			return stream;
 		}

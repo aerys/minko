@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller.mesh
 {
+	import flash.display.BitmapData;
+	
 	import aerys.minko.ns.minko_math;
 	import aerys.minko.render.Viewport;
 	import aerys.minko.render.geometry.Geometry;
@@ -9,7 +11,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.scene.node.Scene;
 	import aerys.minko.scene.node.camera.AbstractCamera;
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataBindings;
 	import aerys.minko.type.binding.DataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
@@ -18,8 +19,6 @@ package aerys.minko.scene.controller.mesh
 	import aerys.minko.type.math.BoundingSphere;
 	import aerys.minko.type.math.Matrix4x4;
 	import aerys.minko.type.math.Vector4;
-	
-	import flash.display.BitmapData;
 
 	
 	/**
@@ -34,6 +33,7 @@ package aerys.minko.scene.controller.mesh
 		use namespace minko_math;
 		
 		private static const TMP_VECTOR4		: Vector4	= new Vector4();
+        private static const TMP_VECTOR4_2		: Vector4	= new Vector4();
 		
 		private static const STATE_UNDEFINED	: uint		= 0;
 		private static const STATE_INSIDE		: uint		= 1;
@@ -139,53 +139,49 @@ package aerys.minko.scene.controller.mesh
 		
 		private function addedHandler(mesh : Mesh, ancestor : Group) : void
 		{
-			var scene : Scene = mesh.scene;
+			var scene : Scene = ancestor.scene;
 			
 			if (!scene)
 				return ;
 			
 			scene.bindings.addCallback('worldToScreen', worldToScreenChangedHandler);
 
-			scene.renderingBegin.add(nextFrameHanlder);
-		}
-        
-        private function nextFrameHanlder(scene			: Scene,
-                                          viewport		: Viewport,
-                                          destination	: BitmapData,
-                                          time			: Number) : void
-        {
-            scene.renderingBegin.remove(nextFrameHanlder);
-            
             if (_frustumCulling)
-            {
-                meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
-                _mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
-            }
+                scene.renderingBegin.add(sceneRenderingBeginHandler);
             
             _mesh.computedVisibilityChanged.add(computedVisiblityChangedHandler);
             _mesh.bindings.addProvider(_data);
+		}
+        
+        private function sceneRenderingBeginHandler(scene			: Scene,
+                                                    viewport		: Viewport,
+                                                    destination	    : BitmapData,
+                                                    time			: Number) : void
+        {
+            scene.renderingBegin.remove(sceneRenderingBeginHandler);
+            
+            meshLocalToWorldChangedHandler(_mesh, _mesh.getLocalToWorldTransform());
+            _mesh.localToWorldTransformChanged.add(meshLocalToWorldChangedHandler);
         }
-		
+        
 		private function removedHandler(mesh : Mesh, ancestor : Group) : void
 		{
 			var scene : Scene = ancestor.scene;
 			
 			if (!scene)
 				return ;
+
+            if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
+                scene.renderingBegin.remove(sceneRenderingBeginHandler);
             
 			scene.bindings.removeCallback('worldToScreen', worldToScreenChangedHandler);
             
-            if (scene.renderingBegin.hasCallback(nextFrameHanlder))
-            {
-                scene.renderingBegin.remove(nextFrameHanlder);
-                return ;
-            }
-            
-			if (_frustumCulling)
+			if (_frustumCulling
+                && mesh.localToWorldTransformChanged.hasCallback(meshLocalToWorldChangedHandler))
 				mesh.localToWorldTransformChanged.remove(meshLocalToWorldChangedHandler);
 
-			mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
-            mesh.bindings.removeProvider(_data);
+				mesh.computedVisibilityChanged.remove(computedVisiblityChangedHandler);
+            	mesh.bindings.removeProvider(_data);
 		}
 		
         private function computedVisiblityChangedHandler(node               : ISceneNode,
@@ -207,7 +203,7 @@ package aerys.minko.scene.controller.mesh
 			var geom 	: Geometry 	= _mesh.geometry;
 			var culling	: uint		= _frustumCulling;
 			
-			if (!geom.boundingBox || !geom.boundingSphere || culling == FrustumCulling.DISABLED)
+			if (!geom || !geom.boundingBox || !geom.boundingSphere || culling == FrustumCulling.DISABLED)
 				return ;
 			
 			if (culling & FrustumCulling.BOX)
@@ -215,8 +211,8 @@ package aerys.minko.scene.controller.mesh
 			
 			if (culling & FrustumCulling.SPHERE)
 			{
-				var center 	: Vector4 	= transform.transformVector(geom.boundingSphere.center);
-				var scale 	: Vector4 	= transform.deltaTransformVector(Vector4.ONE);
+				var center 	: Vector4 	= transform.transformVector(geom.boundingSphere.center, TMP_VECTOR4);
+				var scale 	: Vector4 	= transform.deltaTransformVector(Vector4.ONE, TMP_VECTOR4_2);
 				var radius	: Number	= geom.boundingSphere.radius * Math.max(
 					Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z)
 				);
@@ -231,7 +227,7 @@ package aerys.minko.scene.controller.mesh
 		{
 			var culling	: uint	= _frustumCulling;
 			
-			if (_mesh && _mesh.geometry && _mesh.geometry.boundingBox && _mesh.visible)
+			if (_mesh && _mesh.geometry && _mesh.geometry.boundingBox && _mesh.visible && _mesh.root is Scene)
 			{
 				var camera : AbstractCamera = (_mesh.root as Scene).activeCamera;
 				

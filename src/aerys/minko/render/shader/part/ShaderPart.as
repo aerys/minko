@@ -484,9 +484,14 @@ package aerys.minko.render.shader.part
 		 * @return
 		 *
 		 */
-		protected final function divide(value1 : Object, value2 : Object) : SFloat
+		protected final function divide(value1 : Object, value2 : Object, ...args) : SFloat
 		{
-			return new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            var result : SFloat = new SFloat(new Instruction(Instruction.DIV, getNode(value1), getNode(value2)));
+            
+            for each (var arg : Object in args)
+                result = divide(result, arg);
+            
+			return result;
 		}
 
 		protected final function fractional(value : Object) : SFloat
@@ -588,8 +593,8 @@ package aerys.minko.render.shader.part
 		{
 			var vectorNode : AbstractNode = getNode(vector);
 			
-			if (vectorNode.size < 4)
-				throw new Error('The argument \'vector\' should have a size of 4.');
+			if (vectorNode.size < 3)
+				throw new Error('The argument \'vector\' should have a size of 3.');
 			
 			return new SFloat(new Instruction(Instruction.M34, vectorNode, getNode(matrix)));
 		}
@@ -929,11 +934,11 @@ package aerys.minko.render.shader.part
 		}
 		
 		protected final function getTexture(textureResource : ITextureResource,
-											filter			: uint  = SamplerFiltering.LINEAR,
-											mipmap			: uint  = SamplerMipMapping.DISABLE,
-											wrapping		: uint  = SamplerWrapping.REPEAT,
-											dimension		: uint  = SamplerDimension.FLAT,
-											format          : uint  = SamplerFormat.RGBA) : SFloat
+											filter			: uint  = 1, // SamplerFiltering.LINEAR
+											mipmap			: uint  = 0, // SamplerMipMapping.DISABLE
+											wrapping		: uint  = 1, // SamplerWrapping.REPEAT
+											dimension		: uint  = 0, // SamplerDimension.FLAT
+											format          : uint  = 0) : SFloat
 		{
 			return new SFloat(new Sampler(textureResource, filter, mipmap, wrapping, dimension, format));
 		}

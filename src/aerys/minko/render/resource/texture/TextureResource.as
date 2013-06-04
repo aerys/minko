@@ -233,6 +233,7 @@ package aerys.minko.render.resource.texture
 			else if (_atf)
 			{
 				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
+                _atf = null;
 			}
 		}
 		

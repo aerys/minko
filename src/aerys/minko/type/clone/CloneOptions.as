@@ -1,7 +1,7 @@
 package aerys.minko.type.clone
 {
 	import aerys.minko.scene.controller.AbstractController;
-	import aerys.minko.scene.controller.AnimationController;
+	import aerys.minko.scene.controller.animation.AnimationController;
 	import aerys.minko.scene.controller.TransformController;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.controller.light.DirectionalLightController;

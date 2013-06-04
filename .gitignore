@@ -5,9 +5,10 @@ lib/minko_logo.swf.actionScriptProperties
 .flexLibProperties
 .project
 .settings
+.idea
 bin/
 bin-debug/
 bin-release/
 build/
 html-template/
-/doc/
+doc/

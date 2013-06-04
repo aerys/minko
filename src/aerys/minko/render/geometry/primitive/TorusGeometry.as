@@ -1,15 +1,14 @@
 package aerys.minko.render.geometry.primitive 
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexFormat;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 	
 	public class TorusGeometry extends Geometry
 	{

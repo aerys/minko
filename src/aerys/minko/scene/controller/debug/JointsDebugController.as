@@ -1,5 +1,7 @@
 package aerys.minko.scene.controller.debug
 {
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.render.geometry.primitive.CubeGeometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
@@ -8,7 +10,6 @@ package aerys.minko.scene.controller.debug
 	import aerys.minko.scene.node.Group;
 	import aerys.minko.scene.node.Mesh;
 	import aerys.minko.type.enum.DepthTest;
-	import aerys.minko.type.math.Vector4;
 	
 	/**
 	 * Add debug meshes to see the joints/bones of the skeleton of a skinned Mesh.
@@ -26,8 +27,9 @@ package aerys.minko.scene.controller.debug
 	 */
 	public final class JointsDebugController extends AbstractController
 	{
-		private var _jointSize		: Number;
-		private var _jointsMaterial	: Material;
+		private var _jointSize			: Number;
+		private var _jointsMaterial		: Material;
+		private var _targetToJointsMesh	: Dictionary = new Dictionary();
 		
 		public function JointsDebugController(jointsSize		: Number	= 0.08,
 											  jointsMaterial 	: Material	= null)
@@ -61,8 +63,10 @@ package aerys.minko.scene.controller.debug
 			var skinningCtrl : SkinningController = target.getControllersByType(SkinningController)[0]
 				as SkinningController;
 			
+			_targetToJointsMesh[target] = [];
+			
 			for each (var joint : Group in skinningCtrl.joints)
-				addJointsMeshes(joint);
+			addJointsMeshes(joint, target);
 		}
 		
 		private function targetRemovedHandler(ctrl 		: AbstractController,
@@ -71,11 +75,14 @@ package aerys.minko.scene.controller.debug
 			var skinningCtrl : SkinningController = target.getControllersByType(SkinningController)[0]
 				as SkinningController;
 			
-			for each (var joint : Group in skinningCtrl.joints)
-				joint.getChildByName('__joint__').parent = null;
+			for each (var jointMesh : Mesh in _targetToJointsMesh[target])
+				jointMesh.parent = null;
+			
+			delete _targetToJointsMesh[target];
 		}
 		
-		private function addJointsMeshes(joint : Group) : void
+		private function addJointsMeshes(joint 	: Group,
+										 target : Mesh) : void
 		{
 			if (joint.getChildByName('__joint__'))
 				return ;
@@ -94,6 +101,8 @@ package aerys.minko.scene.controller.debug
 					
 					jointMesh.transform.appendUniformScale(_jointSize);
 					joint.addChild(jointMesh);
+					
+					_targetToJointsMesh[target].push(jointMesh);
 				}
 			}
 		}

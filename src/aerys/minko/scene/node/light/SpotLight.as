@@ -2,10 +2,8 @@ package aerys.minko.scene.node.light
 {
 	import aerys.minko.ns.minko_scene;
 	import aerys.minko.render.material.phong.PhongProperties;
-	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.controller.light.SpotLightController;
 	import aerys.minko.scene.node.AbstractSceneNode;
-	import aerys.minko.type.enum.ShadowMappingType;
 	import aerys.minko.type.math.Vector4;
 	
 	use namespace minko_scene;
@@ -180,7 +178,7 @@ package aerys.minko.scene.node.light
 								  shadowZFar			: Number	= 1000,
 								  shadowQuality			: uint		= 0,
 								  shadowSpread			: uint		= 1,
-                                  shadowBias            : uint      = 1. / 256. / 256.)
+                                  shadowBias            : Number    = 1. / 256. / 256.)
 		{
 			super(
 				new SpotLightController(),

@@ -3,9 +3,6 @@ package aerys.minko.render.geometry.stream.iterator
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.IndexStream;
-	import aerys.minko.type.Factory;
-	import aerys.minko.type.math.Plane;
-	import aerys.minko.type.math.Vector4;
 
 	public final class TriangleReference
 	{

@@ -1,7 +1,6 @@
 package aerys.minko.type.animation.timeline
 {
 	import aerys.minko.ns.minko_animation;
-	import aerys.minko.scene.node.ISceneNode;
 
 	public class ScalarTimeline extends AbstractTimeline
 	{

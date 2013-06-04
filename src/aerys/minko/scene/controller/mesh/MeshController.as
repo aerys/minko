@@ -61,8 +61,10 @@ package aerys.minko.scene.controller.mesh
 		private function targetAddedHandler(ctrl	: MeshController,
 											target	: Mesh) : void
 		{
-			target.added.add(addedHandler);
-			target.removed.add(removedHandler);
+			if (!target.added.hasCallback(addedHandler))
+				target.added.add(addedHandler);
+			if (!target.removed.hasCallback(removedHandler))
+				target.removed.add(removedHandler);
 		}
 		
 		private function addedHandler(target	: Mesh,
@@ -70,20 +72,20 @@ package aerys.minko.scene.controller.mesh
 		{
 			if (!target.scene)
 				return ;
-            
+			
             _mesh = target;
-            target.scene.renderingBegin.add(nextFrameHanlder);
+            _mesh.scene.renderingBegin.add(sceneRenderingBeginHandler);
 		}
         
-        private function nextFrameHanlder(scene			: Scene,
-                                          viewport		: Viewport,
-                                          destination	: BitmapData,
-                                          time			: Number) : void
+        private function sceneRenderingBeginHandler(scene			: Scene,
+                                                    viewport		: Viewport,
+                                                    destination	    : BitmapData,
+                                                    time			: Number) : void
         {
-            scene.renderingBegin.remove(nextFrameHanlder);
-
-            var transformController : TransformController = scene.getControllersByType(TransformController)[0]
-                as TransformController;
+            scene.renderingBegin.remove(sceneRenderingBeginHandler);
+            
+            var transformController : TransformController = _mesh.scene
+                .getControllersByType(TransformController)[0] as TransformController;
             
             _localToWorld = transformController.getLocalToWorldTransform(_mesh);
             _worldToLocal = transformController.getWorldToLocalTransform(_mesh);
@@ -104,18 +106,20 @@ package aerys.minko.scene.controller.mesh
 		private function removedHandler(target		: Mesh,
 										ancestor	: Group) : void
 		{
-			if (!ancestor.scene)
-				return ;
-			
-            if (ancestor.scene.renderingBegin.hasCallback(nextFrameHanlder))
-            {
-                ancestor.scene.renderingBegin.remove(nextFrameHanlder);
-                return ;
-            }
+            var scene : Scene = ancestor.scene;
             
-			target.bindings.removeProvider(_data);
-			_data.dispose();
-			_data = null;
+			if (!scene)
+				return ;
+
+            if (scene.renderingBegin.hasCallback(sceneRenderingBeginHandler))
+                scene.renderingBegin.remove(sceneRenderingBeginHandler);
+			
+            if (_data)
+            {
+    			target.bindings.removeProvider(_data);
+    			_data.dispose();
+    			_data = null;
+            }
             
             _localToWorld = null;
             _worldToLocal = null;

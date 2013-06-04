@@ -1,4 +1,4 @@
-package aerys.minko.render.material.phong
+package aerys.minko.render.material.phong.shadow
 {
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.material.basic.BasicProperties;
@@ -7,16 +7,17 @@ package aerys.minko.render.material.phong
 	import aerys.minko.render.shader.ShaderSettings;
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
-	import aerys.minko.render.shader.part.depth.IDepthShaderPart;
-	import aerys.minko.render.shader.part.depth.LinearDepthShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.IDepthFromLightShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.type.enum.Blending;
 	import aerys.minko.type.enum.TriangleCulling;
+	import aerys.minko.render.material.phong.PhongProperties;
 	
 	public final class ExponentialShadowMapShader extends Shader
 	{
 		private var _vertexAnimationPart	: VertexAnimationShaderPart;
 		private var _diffusePart			: DiffuseShaderPart;
-		private var _depthShaderPart		: IDepthShaderPart	= null;
+		private var _depthShaderPart		: IDepthFromLightShaderPart	= null;
 		private var _lightId				: uint;
 		private var _clipspacePosition		: SFloat;
 		private var _lightSpacePosition		: SFloat;
@@ -48,7 +49,7 @@ package aerys.minko.render.material.phong
 		
 		private function createDepthShaderPart() : void
 		{
-			_depthShaderPart = new LinearDepthShaderPart(this);
+			_depthShaderPart = new LinearDepthFromLightShaderPart(this);
 		}
 		
 		override protected function getVertexPosition() : SFloat

@@ -1,10 +1,10 @@
 package aerys.minko.type.binding
 {
+	import flash.utils.Dictionary;
+	
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.enum.DataProviderUsage;
-	
-	import flash.utils.Dictionary;
 
 	public final class DataBindings
 	{
@@ -249,6 +249,16 @@ package aerys.minko.type.binding
 				if (provider.usage == DataProviderUsage.SHARED)
 					addProvider(provider);
 			}
+		}
+        
+        public function hasProvider(provider : IDataProvider) : Boolean
+        {
+			for each (var accessibleProvider : IDataProvider in _providers)
+			{
+				if (accessibleProvider == provider)
+					return true;
+			}
+			return false;
 		}
 		
 		private function propertyChangedHandler(source 			: IDataProvider,
