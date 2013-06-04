@@ -58,7 +58,7 @@ package aerys.minko.render
 		
 		public function setProperty(propertyName : String, value : Object) : void
 		{
-			if (!value)
+			if (value === null)
 				return;
 			
 			if (!_enabled)
