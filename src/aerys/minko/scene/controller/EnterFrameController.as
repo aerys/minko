@@ -62,7 +62,7 @@ package aerys.minko.scene.controller
 		private function addedHandler(target	: ISceneNode,
 									  ancestor	: Group) : void
 		{
-			var scene : Scene = target.scene;
+			var scene : Scene = ancestor.scene;
 			
 			if (!scene)
 				return ;
