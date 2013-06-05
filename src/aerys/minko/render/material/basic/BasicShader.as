@@ -7,6 +7,7 @@ package aerys.minko.render.material.basic
 	import aerys.minko.render.shader.part.DiffuseShaderPart;
 	import aerys.minko.render.shader.part.animation.VertexAnimationShaderPart;
 	import aerys.minko.type.enum.Blending;
+	import aerys.minko.type.enum.BlendingDestination;
 	import aerys.minko.type.enum.BlendingSource;
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.StencilAction;
@@ -170,7 +171,7 @@ package aerys.minko.render.material.basic
 				BasicProperties.BLENDING, Blending.OPAQUE
 			);
 
-			if ((blending & 0xff) == BlendingSource.SOURCE_ALPHA)
+			if ((blending & 0xff0000) != BlendingDestination.ZERO)
 			{
 				settings.priority -= 0.5;
 				settings.depthSortDrawCalls = true;
