@@ -268,6 +268,7 @@ package aerys.minko.render
 			
 			if (computeDepth)
 			{
+
                 if (sceneBindings.propertyExists('worldToScreen'))
                     _worldToScreen = sceneBindings.getProperty('worldToScreen');
 				sceneBindings.addCallback('worldToScreen', transformChangedHandler);

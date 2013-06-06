@@ -28,7 +28,7 @@ package aerys.minko.render.material.phong
 		public static const NORMAL_MAP_MIPMAPPING		: String = 'normalMapMipMapping';
 		public static const NORMAL_MAP_FILTERING		: String = 'normalMapFiltering';
         public static const NORMAL_MAP_WRAPPING 		: String = 'normalMapWrapping';
-				
+
 		public static const PARALLAX_MAPPING_NBSTEPS	: String = 'parallaxMappingNbSteps';
 		public static const PARALLAX_MAPPING_BUMP_SCALE	: String = 'parallaxMappingBumpScale';
 		
