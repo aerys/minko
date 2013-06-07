@@ -310,7 +310,7 @@ package aerys.minko.render.geometry.stream
 		{
 			if (!(stream._usage & StreamUsage.READ))
 				throw new Error(
-					'Unable to read from vertex stream: stream usage is not set to StreamUsage.READ.'
+					'Unable to read from index stream: stream usage is not set to StreamUsage.READ.'
 				);
 		}
 		
@@ -318,7 +318,7 @@ package aerys.minko.render.geometry.stream
 		{
 			if (!(stream._usage & StreamUsage.WRITE))
 				throw new Error(
-					'Unable to write in vertex stream: stream usage is not set to StreamUsage.WRITE.'
+					'Unable to write in index stream: stream usage is not set to StreamUsage.WRITE.'
 				);
 		}
 		
