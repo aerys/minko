@@ -453,7 +453,7 @@ package aerys.minko.render.shader.part.phong
 					else if (type == SpotLight.LIGHT_TYPE)
 						contribution = getSpotLightSpecular(lightId, normal);
 					else if (type == PointLight.LIGHT_TYPE)
-						contribution = getPointLightContribution(lightId, normal);
+						contribution = getPointLightContribution(lightId, true, true, normal);
 					
 					if (contribution)
 						specular = specular ? add(specular, contribution) : contribution;
