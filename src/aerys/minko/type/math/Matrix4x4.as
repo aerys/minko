@@ -328,6 +328,7 @@ package aerys.minko.type.math
                                                 y : Number = 0.,
                                                 z : Number = 0.) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_TRANSLATION;
 			_matrix.appendTranslation(x, y, z);
 			
 			_hasChanged = true;
@@ -371,6 +372,7 @@ package aerys.minko.type.math
 		
         final public function prependUniformScale(scale : Number) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.prependScale(scale, scale, scale);
 			
 			_hasChanged = true;
@@ -384,6 +386,7 @@ package aerys.minko.type.math
                                                  y : Number	= 1.,
                                                  z : Number	= 1.) : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_TRANSLATION;
 			_matrix.prependTranslation(x, y, z);
 			
 			_hasChanged = true;
@@ -431,6 +434,7 @@ package aerys.minko.type.math
 		
         final public function identity() : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.identity();
 
 			_hasChanged = true;
@@ -442,6 +446,7 @@ package aerys.minko.type.math
 		
         final public function invert() : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.invert();
 
 			_hasChanged = true;
@@ -453,6 +458,7 @@ package aerys.minko.type.math
 		
         final public function transpose() : Matrix4x4
 		{
+			_invalidComponents = COMPONENT_ALL;
 			_matrix.transpose();
 
 			_hasChanged = true;
