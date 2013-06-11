@@ -1,19 +1,22 @@
 #include "RenderingController.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/scene/controller/SurfaceController.hpp"
+#include "minko/render/DrawCall.hpp"
+#include "minko/render/context/AbstractContext.hpp"
 
 using namespace minko::scene::controller;
 
 void
 RenderingController::initialize()
 {
-	targetAdded()->add(std::bind(
+	_targetAddedCd = targetAdded()->add(std::bind(
 		&RenderingController::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
-	targetRemoved()->add(std::bind(
+	_targetRemovedCd = targetRemoved()->add(std::bind(
 		&RenderingController::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -43,6 +46,8 @@ RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
+
+	addedHandler(target->root(), target, target->parent());
 }
 
 void
@@ -51,6 +56,8 @@ RenderingController::targetRemovedHandler(std::shared_ptr<AbstractController> 	c
 {
 	_addedCd = nullptr;
 	_removedCd = nullptr;
+
+	removedHandler(target->root(), target, target->parent());
 }
 
 void
@@ -58,7 +65,7 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 								  std::shared_ptr<Node> target,
 								  std::shared_ptr<Node> parent)
 {
-	_rootDescendantAddedCd = node->root()->added()->add(std::bind(
+	_rootDescendantAddedCd = target->root()->added()->add(std::bind(
 		&RenderingController::rootDescendantAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -66,13 +73,31 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_rootDescendantRemovedCd = node->root()->removed()->add(std::bind(
+	_rootDescendantRemovedCd = target->root()->removed()->add(std::bind(
 		&RenderingController::rootDescendantRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
+
+	_controllerAddedCd = target->root()->controllerAdded()->add(std::bind(
+		&RenderingController::controllerAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	_controllerRemovedCd = target->root()->controllerRemoved()->add(std::bind(
+		&RenderingController::controllerRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	rootDescendantAddedHandler(target->root(), target, target->parent());
 }
 
 void
@@ -82,6 +107,10 @@ RenderingController::removedHandler(std::shared_ptr<Node> node,
 {
 	_rootDescendantAddedCd = nullptr;
 	_rootDescendantRemovedCd = nullptr;
+	_controllerAddedCd = nullptr;
+	_controllerRemovedCd = nullptr;
+
+	rootDescendantRemovedHandler(target->root(), target, target->parent());
 }
 
 void
@@ -89,7 +118,16 @@ RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 												std::shared_ptr<Node> target,
 												std::shared_ptr<Node> parent)
 {
-	// TODO: create draw calls
+	auto surfaceNodes = NodeSet::create(target)
+		->descendants(true)
+		->where([](std::shared_ptr<Node>	 node)
+		{
+			return node->hasController<SurfaceController>();
+		});
+
+	for (auto surfaceNode : surfaceNodes->nodes())
+		for (auto surface : surfaceNode->controllers<SurfaceController>())
+			addSurfaceController(surface);
 }
 
 void
@@ -97,19 +135,50 @@ RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 												  std::shared_ptr<Node> target,
 												  std::shared_ptr<Node> parent)
 {
-	// TODO: delete draw calls
+	auto surfaceNodes = NodeSet::create(target)
+		->descendants(true)
+		->where([](std::shared_ptr<Node>	 node)
+		{
+			return node->hasController<SurfaceController>();
+		});
+
+	for (auto surfaceNode : surfaceNodes->nodes())
+		for (auto surface : surfaceNode->controllers<SurfaceController>())
+			removeSurfaceController(surface);
 }
 
 void
-RenderingController::geometryChanged(std::shared_ptr<SurfaceController>)
+RenderingController::controllerAddedHandler(std::shared_ptr<Node>				node,
+											std::shared_ptr<Node>				target,
+											std::shared_ptr<AbstractController>	ctrl)
 {
-	// TODO: update draw call
+	auto surfaceCtrl = std::dynamic_pointer_cast<SurfaceController>(ctrl);
+	
+	if (surfaceCtrl)
+		addSurfaceController(surfaceCtrl);
 }
 
 void
-RenderingController::materialChanged(std::shared_ptr<SurfaceController>)
+RenderingController::controllerRemovedHandler(std::shared_ptr<Node>					node,
+											  std::shared_ptr<Node>					target,
+											  std::shared_ptr<AbstractController>	ctrl)
 {
-	// TODO: update draw call
+	auto surfaceCtrl = std::dynamic_pointer_cast<SurfaceController>(ctrl);
+
+	if (surfaceCtrl)
+		removeSurfaceController(surfaceCtrl);
+}
+
+void
+RenderingController::addSurfaceController(std::shared_ptr<SurfaceController> ctrl)
+{
+	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+}
+
+void
+RenderingController::removeSurfaceController(std::shared_ptr<SurfaceController> ctrl)
+{
+	_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 }
 
 void
@@ -117,7 +186,12 @@ RenderingController::render()
 {
 	_enterFrame->execute(shared_from_this());
 
-	// TODO: do draw calls...
+	//_context->clear(0.f, 1.f, 0.f, 1.f);
+
+//	for (auto drawCall : _drawCalls)
+//		drawCall->render(_context);
+
+	_context->present();
 
 	_exitFrame->execute(shared_from_this());
 }

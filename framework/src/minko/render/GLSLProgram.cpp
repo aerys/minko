@@ -25,6 +25,8 @@ GLSLProgram::GLSLProgram(GLSLProgram::AbstractContextPtr context,
 	_context->attachShader(_program, _vertexShader);
 	_context->attachShader(_program, _fragmentShader);
 	_context->linkProgram(_program);
+
+	_inputs = _context->getProgramInputs(_program);
 }
 
 GLSLProgram::ptr
