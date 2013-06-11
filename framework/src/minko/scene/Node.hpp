@@ -1,7 +1,5 @@
 #pragma once
 
-#include <typeinfo>
-
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -213,6 +211,14 @@ namespace minko
 
 			bool
 			hasController(std::shared_ptr<AbstractController> controller);
+
+			template <typename T>
+			inline
+			bool
+			hasController()
+			{
+				return controller<T>() != nullptr;
+			}
 
 			template <typename T>
 			std::vector<std::shared_ptr<T>>

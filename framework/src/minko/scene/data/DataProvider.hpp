@@ -37,6 +37,13 @@ namespace minko
 				}
 
 				inline
+				const std::vector<std::string>&
+				propertyNames()
+				{
+					return _names;
+				}
+
+				inline
 				const std::map<std::string, WrapperPtr>&
 				values()
 				{
@@ -98,7 +105,7 @@ namespace minko
 				}
 
 				template <typename T>
-				void
+				ptr
 				setProperty(const std::string& propertyName, T value)
 				{
 					bool isNewValue = _values.count(propertyName) == 0;
@@ -120,6 +127,8 @@ namespace minko
 					}
 					else
 						_propertyChanged->execute(shared_from_this(), propertyName);
+
+					return shared_from_this();
 				}
 
 				void

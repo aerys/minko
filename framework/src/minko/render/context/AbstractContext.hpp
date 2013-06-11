@@ -49,7 +49,9 @@ namespace minko
 
 				virtual
 				void
-				setVertexBufferAt(const unsigned int index, const unsigned int vertexBuffer) = 0;
+				setVertexBufferAt(const unsigned int	program,
+								  const unsigned int	vertexBuffer,
+								  const std::string&	name) = 0;
 
 				virtual
 				void
@@ -111,6 +113,9 @@ namespace minko
 				void
 				deleteProgram(const unsigned int program) = 0;
 
+				virtual void
+				setProgram(const unsigned int program) = 0;
+
 				virtual
 				void
 				compileShader(const unsigned int shader) = 0;
@@ -135,6 +140,31 @@ namespace minko
 				virtual
 				void
 				deleteFragmentShader(const unsigned int fragmentShader) = 0;
+
+				virtual
+				std::shared_ptr<ShaderProgramInputs>
+				getProgramInputs(const unsigned int program) = 0;
+
+				virtual
+				void
+				setUniform(unsigned int location, float value) = 0;
+
+				virtual
+				void
+				setUniform(unsigned int location, float value1, float value2) = 0;
+
+				virtual
+				void
+				setUniform(unsigned int location, float value1, float value2, float value3) = 0;
+
+				virtual
+				void
+				setUniform(unsigned int location, float value1, float value2, float value3, float value4) = 0;
+
+				virtual
+				void
+				setUniform(unsigned int location, unsigned int size, const float* values) = 0;
+
 			};
 		}	
 	}
