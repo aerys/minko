@@ -186,10 +186,10 @@ RenderingController::render()
 {
 	_enterFrame->execute(shared_from_this());
 
-	//_context->clear(0.f, 1.f, 0.f, 1.f);
+	_context->clear(.5f, .5f, .5f, 1.f);
 
-//	for (auto drawCall : _drawCalls)
-//		drawCall->render(_context);
+	for (auto drawCall : _drawCalls)
+		drawCall->render(_context);
 
 	_context->present();
 

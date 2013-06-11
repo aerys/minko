@@ -4,7 +4,7 @@ using namespace minko::render::context;
 
 OpenGLESContext::OpenGLESContext()
 {
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 }
 
 OpenGLESContext::~OpenGLESContext()
@@ -80,7 +80,7 @@ OpenGLESContext::clear(float 			red,
 	// GL_DEPTH_BUFFER_BIT, and GL_STENCIL_BUFFER_BIT.
 	//
 	// glClear clear buffers to preset values
-	glClear(mask);
+	glClear((GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |GL_STENCIL_BUFFER_BIT) & mask);
 }
 
 void
@@ -90,18 +90,6 @@ OpenGLESContext::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
-
-  glClearColor(0., 0.0, 0.0, 0.0);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glColor3f(1.0, 1.0, 1.0);
-  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-  glBegin(GL_POLYGON);
-      glVertex2f(-0.5, -0.5);
-      glVertex2f(-0.5, 0.5);
-      glVertex2f(0.5, 0.5);
-      glVertex2f(0.5, -0.5);
-  glEnd();
-  glFlush();
 }
 
 void
@@ -118,10 +106,7 @@ OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTria
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-//	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, NULL);
-	glDrawArrays(GL_TRIANGLES, 0, numTriangles);
-
-	//std::cout << glGetError() << ": " << glewGetErrorString(glGetError()) << std::endl;
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
 }
 
 const unsigned int
@@ -159,7 +144,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 	// usage Specifies the expected usage pattern of the data store.
 	//
 	// glBufferData creates and initializes a buffer object's data store
-	glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GL_FLOAT), 0, GL_DYNAMIC_DRAW);
 
 	_vertexBuffers.push_back(vertexBuffer);
 
@@ -167,10 +152,10 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLESContext::uploadVertexBufferData(const unsigned int 		vertexBuffer,
-									     const unsigned int 	offset,
-									     const unsigned int 	size,
-									     void* 					data)
+OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
+									    const unsigned int 	offset,
+									    const unsigned int 	size,
+									    void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -183,7 +168,7 @@ OpenGLESContext::uploadVertexBufferData(const unsigned int 		vertexBuffer,
 	// data Specifies a pointer to the new data that will be copied into the data store.
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
-	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GL_FLOAT), size * sizeof(GL_FLOAT), data);
 }
 
 void
@@ -204,11 +189,21 @@ OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 }
 
 void
-OpenGLESContext::setVertexBufferAt(const unsigned int	program,
+OpenGLESContext::setVertexBufferAt(const unsigned int	position,
 								   const unsigned int	vertexBuffer,
-								   const std::string&	name)
+								   const unsigned int	size,
+								   const unsigned int	offset)
 {
-	glBindAttribLocation(program, vertexBuffer, name.c_str());
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glVertexAttribPointer(
+		position,
+		size,
+		GL_FLOAT,
+		GL_FALSE,
+		sizeof(GL_FLOAT) * offset,
+		(void*)0
+	);
+	glEnableVertexAttribArray(position);
 }
 
 const unsigned int
@@ -218,7 +213,7 @@ OpenGLESContext::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GL_UNSIGNED_SHORT), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
@@ -227,12 +222,12 @@ OpenGLESContext::createIndexBuffer(const unsigned int size)
 
 void
 OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
-										  const unsigned int 	offset,
-										  const unsigned int 	size,
-										  void*					data)
+										 const unsigned int 	offset,
+										 const unsigned int 	size,
+										 void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size, data);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GL_UNSIGNED_SHORT), size * sizeof(GL_UNSIGNED_SHORT), data);
 }
 
 void
@@ -557,7 +552,7 @@ OpenGLESContext::setUniform(unsigned int location, float value1, float value2, f
 }
 
 void
-OpenGLESContext::setUniform(unsigned int location, unsigned int size, const float* values)
+OpenGLESContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
-	glUniform4fv(location, size, values);
+	glUniformMatrix4fv(location, size, transpose, values);
 }
