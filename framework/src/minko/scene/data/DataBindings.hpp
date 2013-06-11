@@ -76,6 +76,13 @@ namespace minko
 				PropertyChangedSignal
 				propertyChanged(const std::string& propertyName);
 
+				inline
+				const std::list<DataProviderPtr>&
+				providers()
+				{
+					return _providers;
+				}
+
 			private:
 				DataBindings();
 

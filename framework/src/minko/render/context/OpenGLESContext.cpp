@@ -2,6 +2,11 @@
 
 using namespace minko::render::context;
 
+OpenGLESContext::OpenGLESContext()
+{
+	glEnable(GL_DEPTH_TEST);
+}
+
 OpenGLESContext::~OpenGLESContext()
 {
 	for (auto vertexBuffer : _vertexBuffers)
@@ -34,12 +39,12 @@ OpenGLESContext::configureViewport(const unsigned int x,
 
 void
 OpenGLESContext::clear(float 			red,
-					    float 			green,
-					    float 			blue,
-					    float 			alpha,
-					    float 			depth,
-					    unsigned int 	stencil,
-					    unsigned int 	mask)
+					   float 			green,
+					   float 			blue,
+					   float 			alpha,
+					   float 			depth,
+					   unsigned int 	stencil,
+					   unsigned int 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -62,7 +67,7 @@ OpenGLESContext::clear(float 			red,
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
 	// void glClearStencil(GLint s)
-	// s Specifies the index used when the stencil buffer is cleared. The initial value is 0.
+	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
 	glClearStencil(stencil);
@@ -84,7 +89,19 @@ OpenGLESContext::present()
 	// http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml
 	//
 	// force execution of GL commands in finite time
-	glFlush();
+	//glFlush();
+
+  glClearColor(0., 0.0, 0.0, 0.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glColor3f(1.0, 1.0, 1.0);
+  glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+  glBegin(GL_POLYGON);
+      glVertex2f(-0.5, -0.5);
+      glVertex2f(-0.5, 0.5);
+      glVertex2f(0.5, 0.5);
+      glVertex2f(0.5, -0.5);
+  glEnd();
+  glFlush();
 }
 
 void
@@ -101,7 +118,10 @@ OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTria
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, NULL);
+//	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, NULL);
+	glDrawArrays(GL_TRIANGLES, 0, numTriangles);
+
+	//std::cout << glGetError() << ": " << glewGetErrorString(glGetError()) << std::endl;
 }
 
 const unsigned int
@@ -184,10 +204,11 @@ OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 }
 
 void
-OpenGLESContext::setVertexBufferAt(const unsigned int index,
-								   const unsigned int vertexBuffer)
+OpenGLESContext::setVertexBufferAt(const unsigned int	program,
+								   const unsigned int	vertexBuffer,
+								   const std::string&	name)
 {
-	throw;
+	glBindAttribLocation(program, vertexBuffer, name.c_str());
 }
 
 const unsigned int
@@ -509,4 +530,34 @@ OpenGLESContext::getProgramInfoLogs(const unsigned int program)
 	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, &programInfo[0]);
 
 	return std::string(&programInfo[0]);
+}
+
+void
+OpenGLESContext::setUniform(unsigned int location, float value)
+{
+	glUniform1f(location, value);
+}
+
+void
+OpenGLESContext::setUniform(unsigned int location, float value1, float value2)
+{
+	glUniform2f(location, value1, value2);
+}
+
+void
+OpenGLESContext::setUniform(unsigned int location, float value1, float value2, float value3)
+{
+	glUniform3f(location, value1, value2, value3);
+}
+
+void
+OpenGLESContext::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
+{
+	glUniform4f(location, value1, value2, value3, value4);
+}
+
+void
+OpenGLESContext::setUniform(unsigned int location, unsigned int size, const float* values)
+{
+	glUniform4fv(location, size, values);
 }

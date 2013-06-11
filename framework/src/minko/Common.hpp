@@ -25,10 +25,12 @@ namespace minko
 			class OpenGLESContext;			
 		}
 
-		namespace geometry
+		namespace stream
 		{
-			class Geometry;
-			class CubeGeometry;
+			class VertexFormat;
+			template <typename V>
+			class VertexStream;
+			class IndexStream;
 		}
 
 		class DrawCall;
@@ -55,6 +57,12 @@ namespace minko
 		{
 			class DataProvider;
 			class DataBindings;
+
+			namespace geometry
+			{
+				class Geometry;
+				class CubeGeometry;
+			}
 		}
 	}
 
