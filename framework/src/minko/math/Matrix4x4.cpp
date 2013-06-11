@@ -434,10 +434,10 @@ Matrix4x4::prependRotation(float radians, Vector3::ptr axis)
 }
 
 Matrix4x4::ptr
-Matrix4x4::perspectiveFoV(float fov,
-                          float ratio,
-                          float zNear,
-                          float zFar)
+Matrix4x4::perspective(float fov,
+                       float ratio,
+                       float zNear,
+                       float zFar)
 {
 	float fd = 1.f / tanf(fov * .5f);
 
