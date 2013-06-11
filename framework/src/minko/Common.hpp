@@ -28,7 +28,6 @@ namespace minko
 		namespace stream
 		{
 			class VertexFormat;
-			template <typename V>
 			class VertexStream;
 			class IndexStream;
 		}
