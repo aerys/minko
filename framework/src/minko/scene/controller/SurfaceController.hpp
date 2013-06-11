@@ -7,7 +7,7 @@ namespace
 {
 	using namespace minko;
 	using namespace minko::render;
-	using namespace minko::render::geometry;
+	using namespace minko::scene::data::geometry;
 	using namespace minko::scene::data;
 }
 
@@ -23,6 +23,21 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<SurfaceController>	ptr;
+
+			private:
+				typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
+				typedef std::shared_ptr<Node>				NodePtr;
+				typedef std::shared_ptr<DrawCall>			DrawCallPtr;
+
+			private:
+				std::shared_ptr<Geometry>		_geometry;
+				std::shared_ptr<DataProvider>	_material;
+				std::shared_ptr<Effect>			_effect;
+
+				std::list<DrawCallPtr>			_drawCalls;
+
+				Signal<AbsCtrlPtr, NodePtr>::cd	_targetAddedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd	_targetRemovedCd;
 
 			public:
 				static
@@ -52,12 +67,12 @@ namespace minko
 					return _material;
 				}
 
-			private:
-				std::shared_ptr<Geometry>		_geometry;
-				std::shared_ptr<DataProvider>	_material;
-				std::shared_ptr<Effect>			_effect;
-
-				std::shared_ptr<DrawCall>		_drawCall;
+				inline
+				const std::list<DrawCallPtr>&
+				drawCalls()
+				{
+					return _drawCalls;
+				}
 
 			private:
 				SurfaceController(std::shared_ptr<Geometry> 	geometry,

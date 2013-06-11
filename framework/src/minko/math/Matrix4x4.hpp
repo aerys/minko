@@ -35,6 +35,13 @@ namespace minko
 				return std::shared_ptr<Matrix4x4>(new Matrix4x4(value));
 			}
 
+			inline
+			const std::vector<float>&
+			data()
+			{
+				return _m;
+			}
+
 			ptr
 			initialize(float m00, float m01, float m02, float m03,
 				   	   float m10, float m11, float m12, float m13,
