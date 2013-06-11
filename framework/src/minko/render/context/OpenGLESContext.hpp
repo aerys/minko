@@ -33,6 +33,14 @@ namespace minko
 			public:
 				typedef std::shared_ptr<OpenGLESContext> ptr;
 
+			private:
+				std::list<unsigned int>	_vertexBuffers;
+				std::list<unsigned int>	_indexBuffers;
+				std::list<unsigned int>	_textures;
+				std::list<unsigned int> _programs;
+				std::list<unsigned int> _vertexShaders;
+				std::list<unsigned int> _fragmentShaders;
+
 			public:
 				~OpenGLESContext();
 
@@ -68,8 +76,9 @@ namespace minko
 				createVertexBuffer(const unsigned int size);
 
 				void
-				setVertexBufferAt(const unsigned int index, const unsigned int vertexBuffer);
-
+				setVertexBufferAt(const unsigned int	program,
+								  const unsigned int	vertexBuffer,
+								  const std::string&	name);
 				void
 				uploadVertexBufferData(const unsigned int 	vertexBuffer,
 									   const unsigned int 	offset,
@@ -148,13 +157,24 @@ namespace minko
 				std::string
 				getProgramInfoLogs(const unsigned int program);
 
+				void
+				setUniform(unsigned int location, float value);
+
+				void
+				setUniform(unsigned int location, float value1, float value2);
+
+				void
+				setUniform(unsigned int location, float value1, float value2, float value3);
+
+				void
+				setUniform(unsigned int location, float value1, float value2, float value3, float value4);
+
+				void
+				setUniform(unsigned int location, unsigned int size, const float* values);
+
 			private:
-				std::list<unsigned int>	_vertexBuffers;
-				std::list<unsigned int>	_indexBuffers;
-				std::list<unsigned int>	_textures;
-				std::list<unsigned int> _programs;
-				std::list<unsigned int> _vertexShaders;
-				std::list<unsigned int> _fragmentShaders;
+				OpenGLESContext();
+
 			};
 		}
 	}
