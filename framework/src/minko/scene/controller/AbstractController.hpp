@@ -27,14 +27,6 @@ namespace minko
 				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetAdded;
 				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetRemoved;
 
-			protected:
-				inline
-				const std::vector<std::shared_ptr<Node>>&
-				targets()
-				{
-					return _targets;
-				}
-
 			public:
 				AbstractController() :
 					_targetAdded(Signal<ptr, std::shared_ptr<Node>>::create()),
@@ -47,10 +39,11 @@ namespace minko
 				{
 				}
 
-				const unsigned int
-				numTargets()
+				inline
+				const std::vector<std::shared_ptr<Node>>&
+				targets()
 				{
-					return _targets.size();
+					return _targets;
 				}
 
 				inline

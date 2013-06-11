@@ -2,29 +2,30 @@
 #include "minko/scene/data/DataBindings.hpp"
 
 using namespace minko::render;
+using namespace minko::scene::data;
 
-Effect::Effect(Effect::DataBindingsPtr bindings, std::vector<Effect::GLSLProgramPtr> shaders) :
+Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
 	std::enable_shared_from_this<Effect>(),
-	_bindings(bindings),
-	_shaders(shaders)
+	_shaders(shaders),
+	_data(DataProvider::create())
 {
+	auto i = 0;
+
+	for (auto shader : shaders)
+		_data->setProperty("effect/pass" + std::to_string(i++), shader);
 }
 
 void
-Effect::propertyChangedHandler(Effect::DataBindingsPtr bindings, const std::string& propertyName)
+Effect::propertyChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName)
 {
 	std::cout << "Effect::propertyChangedHandler: " << propertyName << std::endl;
+	// FIXME: fork?
 }
 
 Effect::ptr
-Effect::bind(const std::string& bindingName, const std::string& propertyName)
+Effect::bindInput(const std::string& bindingName, const std::string& programInputName)
 {
-	_bindings->propertyChanged(bindingName)->add(std::bind(
-		&Effect::propertyChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+	_inputNameToBindingName[programInputName] = bindingName;
 
 	return shared_from_this();
 }

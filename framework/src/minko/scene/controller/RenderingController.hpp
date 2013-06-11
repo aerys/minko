@@ -24,27 +24,37 @@ namespace minko
 				typedef std::shared_ptr<RenderingController>	ptr;
 
 			private:
-				typedef std::shared_ptr<Node>	NodePtr;
+				typedef std::shared_ptr<Node>				NodePtr;
+				typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
+				typedef std::shared_ptr<SurfaceController>	SurfaceCtrlPtr;
+				typedef std::shared_ptr<DrawCall>			DrawCallPtr;
 
 			private:
-				std::shared_ptr<OpenGLESContext>		_context;
-				std::list<std::shared_ptr<DrawCall>>	_drawCalls;
+				std::shared_ptr<AbstractContext>			_context;
+				std::list<std::shared_ptr<DrawCall>>		_drawCalls;
 
-				Signal<ptr>::ptr						_enterFrame;
-				Signal<ptr>::ptr						_exitFrame;
+				Signal<ptr>::ptr							_enterFrame;
+				Signal<ptr>::ptr							_exitFrame;
 
-				Signal<NodePtr, NodePtr, NodePtr>::cd	_addedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd	_removedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootAddedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootDescendantAddedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd	_rootDescendantRemovedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd				_targetAddedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd				_targetRemovedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd		_addedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd		_removedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd		_rootDescendantAddedCd;
+				Signal<NodePtr, NodePtr, NodePtr>::cd		_rootDescendantRemovedCd;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::cd	_controllerAddedCd;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::cd	_controllerRemovedCd;
 
 			public:
 				static
 				ptr
-				create(std::shared_ptr<OpenGLESContext> context)
+				create(std::shared_ptr<AbstractContext> context)
 				{
-					return std::shared_ptr<RenderingController>(new RenderingController(context));
+					auto ctrl = std::shared_ptr<RenderingController>(new RenderingController(context));
+
+					ctrl->initialize();
+
+					return ctrl;
 				}
 
 				void
@@ -65,7 +75,7 @@ namespace minko
 				}
 
 			private:
-				RenderingController(std::shared_ptr<OpenGLESContext> context) :
+				RenderingController(std::shared_ptr<AbstractContext> context) :
 					AbstractController(),
 					_context(context),
 					_enterFrame(Signal<ptr>::create()),
@@ -89,10 +99,29 @@ namespace minko
 				removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 				void
-				rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
+				rootDescendantAddedHandler(NodePtr	node,
+										   NodePtr	target,
+										   NodePtr	parent);
 
 				void
-				rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+				rootDescendantRemovedHandler(NodePtr	node,
+											 NodePtr	target,
+											 NodePtr	parent);
+				void
+				controllerAddedHandler(NodePtr								node,
+									   NodePtr								target,
+									   std::shared_ptr<AbstractController>	ctrl);
+
+				void
+				controllerRemovedHandler(NodePtr								node,
+										 NodePtr								target,
+										 std::shared_ptr<AbstractController>	ctrl);
+
+				void
+				RenderingController::addSurfaceController(std::shared_ptr<SurfaceController> ctrl);
+
+				void
+				RenderingController::removeSurfaceController(std::shared_ptr<SurfaceController> ctrl);
 
 				void
 				geometryChanged(std::shared_ptr<SurfaceController>);
