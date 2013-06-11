@@ -76,27 +76,35 @@ namespace minko
 			ptr
 			prepend(ptr matrix);
 
+			inline
 			ptr
 			appendTranslation(float x, float y, float z);
 
+			inline
 			ptr
 			prependTranslation(float x, float y, float z);
 
+			inline
 			ptr
 			appendRotationX(float radians);
 
+			inline
 			ptr
 			prependRotationX(float radians);
 
+			inline
 			ptr
 			appendRotationY(float radians);
 
+			inline
 			ptr
 			prependRotationY(float radians);
 
+			inline
 			ptr
 			appendRotationZ(float radians);
 
+			inline
 			ptr
 			prependRotationZ(float radians);
 
@@ -149,10 +157,10 @@ namespace minko
 			}
 
 			ptr
-			perspectiveFoV(float fov,
-		                   float ratio,
-		                   float zNear,
-		                   float zFar);
+			perspective(float fov,
+		                float ratio,
+		                float zNear,
+		                float zFar);
 
 			/**
 			 * Builds a (left-handed) view transform.
