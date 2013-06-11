@@ -16,7 +16,7 @@ DrawCall::DrawCall(std::shared_ptr<DataBindings> bindings, const std::map<std::s
 	_bindings(bindings),
 	_inputNameToBindingName(inputNameToBindingName)
 {
-	_vertexBuffer = bindings->getProperty<VertexStream<VertexFormat::XYZ>::ptr>("geometry/vertices/xyz")->buffer();
+	_vertexBuffer = bindings->getProperty<VertexStream::ptr>("geometry/vertices/xyz")->buffer();
 	_indexBuffer = bindings->getProperty<IndexStream::ptr>("geometry/indices")->buffer();
 	_program = bindings->getProperty<GLSLProgram::ptr>("effect/pass0");
 }
@@ -25,7 +25,7 @@ void
 DrawCall::render(std::shared_ptr<AbstractContext> context)
 {
 	context->setProgram(_program->program());
-	context->setVertexBufferAt(0, _vertexBuffer, "position");
+	context->setVertexBufferAt(0, _vertexBuffer, 3, 0);
 
 	for (unsigned int inputId = 0; inputId < _program->inputs()->locations().size(); ++inputId)
 	{
@@ -62,9 +62,10 @@ DrawCall::render(std::shared_ptr<AbstractContext> context)
 			context->setUniform(location, float4Value->x(), float4Value->y(), float4Value->z(), float4Value->w());
 		}
 		else if (type == ShaderProgramInputs::Type::float16)
-			context->setUniform(
+			context->setUniformMatrix4x4(
 				location,
-				16,
+				1,
+				true,
 				&(_bindings->getProperty<Matrix4x4::ptr>(name)->data()[0])
 			);
 	}
