@@ -1,6 +1,7 @@
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/render/context/AbstractContext.hpp"
 
 namespace
 {
@@ -13,16 +14,15 @@ namespace minko
 	{
 		namespace stream
 		{
-			template <typename T>
 			class VertexStream
 			{
 			public:
-				typedef std::shared_ptr<VertexStream<T>>	ptr;
+				typedef std::shared_ptr<VertexStream>	ptr;
 
 			private:
 				std::shared_ptr<AbstractContext>	_context;
 				std::string							_name;
-				std::vector<T>						_data;
+				std::vector<float>					_data;
 				int									_buffer;
 
 			public:
@@ -30,35 +30,35 @@ namespace minko
 				ptr
 				create(std::shared_ptr<AbstractContext> context)
 				{
-					return std::shared_ptr<VertexStream<T>>(new VertexStream<T>(context));
+					return std::shared_ptr<VertexStream>(new VertexStream(context));
 				}
 
 				inline static
 				ptr
 				create(std::shared_ptr<AbstractContext>	context,
 					   const std::string&				name,
-					   T*								data,
+					   float*							data,
 					   const unsigned int				size,
 					   const unsigned int				offset = 0)
 				{
-					return std::shared_ptr<VertexStream<T>>(new VertexStream(context, name, data, offset, size));
+					return std::shared_ptr<VertexStream>(new VertexStream(context, name, data, offset, size));
 				}
 
 				inline static
 				ptr
 				create(std::shared_ptr<AbstractContext>		context,
 					   const std::string&					name,
-					   typename std::vector<T>::iterator	begin,
-					   typename std::vector<T>::iterator	end)
+					   std::vector<float>::const_iterator	begin,
+					   std::vector<float>::const_iterator	end)
 				{
-					return std::shared_ptr<VertexStream<T>>(new VertexStream(context, name, begin, end));
+					return std::shared_ptr<VertexStream>(new VertexStream(context, name, begin, end));
 				}
 				
 				inline static
 				ptr
-				create(std::shared_ptr<AbstractContext>	context, const std::string& name, T* begin, T* end)
+				create(std::shared_ptr<AbstractContext>	context, const std::string& name, float* begin, float* end)
 				{
-					return std::shared_ptr<VertexStream<T>>(new VertexStream(
+					return std::shared_ptr<VertexStream>(new VertexStream(
 						context, 
 						name,
 						begin,
@@ -68,7 +68,7 @@ namespace minko
 				
 				inline static
 				ptr
-				create(std::shared_ptr<AbstractContext>	context, const std::string& name, const std::vector<T>& data)
+				create(std::shared_ptr<AbstractContext>	context, const std::string& name, const std::vector<float>& data)
 				{
 					return create(context, name, data.begin(), data.end());
 				}
@@ -81,7 +81,7 @@ namespace minko
 				}
 
 				inline
-				const std::vector<T>&
+				const std::vector<float>&
 				data()
 				{
 					return _data;
@@ -116,7 +116,7 @@ namespace minko
 
 				VertexStream(std::shared_ptr<AbstractContext>	context,
 							 const std::string&					name,
-							 T*									data,
+							 float*								data,
 							 const unsigned int					size,
 							 const unsigned int					offset) :
 					_context(context),
@@ -128,8 +128,8 @@ namespace minko
 
 				VertexStream(std::shared_ptr<AbstractContext>	context,
 							 const std::string&					name,
-							 typename std::vector<T>::iterator	begin,
-							 typename std::vector<T>::iterator	end) :
+							 std::vector<float>::const_iterator	begin,
+							 std::vector<float>::const_iterator	end) :
 					_context(context),
 					_name(name),
 					_data(begin, end),
@@ -137,7 +137,7 @@ namespace minko
 				{
 				}
 
-				VertexStream(std::shared_ptr<AbstractContext> context, const std::string& name, T* begin, T* end) :
+				VertexStream(std::shared_ptr<AbstractContext> context, const std::string& name, float* begin, float* end) :
 					_context(context),
 					_name(name),
 					_data(begin, end),

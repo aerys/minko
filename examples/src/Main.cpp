@@ -32,6 +32,11 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
+	//mesh->controller<TransformController>()->transform()->prependRotationY(.1);
+	//mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, .1f);
+
+	//group->controller<TransformController>()->transform()->prependRotationY(.1);
+
   renderingController->render();
 
   printFramerate();
@@ -42,6 +47,8 @@ renderScene()
 
 int main(int argc, char** argv)
 {
+	srand(clock());
+
   glutInit(&argc, argv);
 //	glutInitDisplayMode(GLUT_SINGLE);
 
@@ -66,8 +73,8 @@ int main(int argc, char** argv)
 
   auto shader = GLSLProgram::fromFiles(
     oglContext,
-    "shaders/Basic.vertex.glsl",
-    "shaders/Red.fragment.glsl"
+    "../shaders/Basic.vertex.glsl",
+    "../shaders/Basic.fragment.glsl"
   );
 
   std::cout << "== vertex shader compilation logs ==" << std::endl;
@@ -80,24 +87,50 @@ int main(int argc, char** argv)
   std::vector<GLSLProgram::ptr> shaders;
   shaders.push_back(shader);
 
+  auto cubeGeometry = CubeGeometry::create(oglContext);
+  auto fx = Effect::create(shaders)
+	->bindInput("material/diffuse/rgba",			"diffuseColor")
+	->bindInput("transform/modelToWorldMatrix",		"modelToWorldMatrix")
+	->bindInput("transform/worldToScreenMatrix",	"worldToScreenMatrix");
+
+  auto viewMatrix = Matrix4x4::create()->perspectiveFoV(.785f, 800.f / 600.f, .1f, 1000.f);
+
   mesh->addController(SurfaceController::create(
-    CubeGeometry::create(oglContext),
+    cubeGeometry,
     data::DataProvider::create()
-//		->setProperty("material/diffuse/rgba",			Vector4::create(1.f, 1.f, 1.f, 1.f))
-		->setProperty("transform/worldToScreenMatrix",	Matrix4x4::create()->perspectiveFoV(.785f, 800.f / 600.f, .01f, 1000.f)),
-    Effect::create(shaders)
-//		->bindInput("material/diffuse/rgba",				"diffuseColor")
-		->bindInput("transform/modelToWorldMatrix",		"modelToWorldMatrix")
-		->bindInput("transform/worldToScreenMatrix",		"worldToScreenMatrix")
+		->setProperty("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
+		->setProperty("transform/worldToScreenMatrix",	viewMatrix),
+    fx
   ));
 
   mesh->addController(TransformController::create());
-  mesh->controller<TransformController>()->transform()->appendTranslation(0., 0., 10.);
+  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
+  //group->addChild(mesh);
+
+  for (auto i = 0; i < 10000; ++i)
+  {
+	  auto cube = Node::create("cube" + std::to_string(i));
+
+	  cube->addController(SurfaceController::create(
+		cubeGeometry,
+		data::DataProvider::create()
+			->setProperty("material/diffuse/rgba",			Vector4::create(1.f, 0.f, 0.f, 1.f))
+			->setProperty("transform/worldToScreenMatrix",	viewMatrix),
+		fx
+	  ));
+
+	  cube->addController(TransformController::create());
+	  cube->controller<TransformController>()->transform()->appendTranslation(
+	    -10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
+		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
+		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f
+	  );
+
+	  group->addChild(cube);
+  }
 
   group->addController(TransformController::create());
 
-  group->addChild(mesh);
-  
   glutDisplayFunc(renderScene);
   glutMainLoop();
 
