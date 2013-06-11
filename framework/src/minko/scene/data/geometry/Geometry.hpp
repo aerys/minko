@@ -1,6 +1,7 @@
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/render/stream/VertexStream.hpp"
 
 namespace
 {
@@ -60,10 +61,9 @@ namespace minko
 						return _data->getProperty<std::shared_ptr<IndexStream>>("geometry/indices");
 					}
 
-					template <typename T>
 					inline
 					void
-					addVertexStream(std::shared_ptr<VertexStream<T>> vertexStream)
+					addVertexStream(std::shared_ptr<VertexStream> vertexStream)
 					{
 						_data->setProperty("geometry/vertices/" + vertexStream->name(), vertexStream);
 					}

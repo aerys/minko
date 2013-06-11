@@ -76,9 +76,10 @@ namespace minko
 				createVertexBuffer(const unsigned int size);
 
 				void
-				setVertexBufferAt(const unsigned int	program,
-								  const unsigned int	vertexBuffer,
-								  const std::string&	name);
+				setVertexBufferAt(const unsigned int	position,
+								   const unsigned int	vertexBuffer,
+								   const unsigned int	size,
+								   const unsigned int	offset);
 				void
 				uploadVertexBufferData(const unsigned int 	vertexBuffer,
 									   const unsigned int 	offset,
@@ -170,7 +171,7 @@ namespace minko
 				setUniform(unsigned int location, float value1, float value2, float value3, float value4);
 
 				void
-				setUniform(unsigned int location, unsigned int size, const float* values);
+				setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values);
 
 			private:
 				OpenGLESContext();

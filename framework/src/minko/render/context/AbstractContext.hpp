@@ -49,9 +49,10 @@ namespace minko
 
 				virtual
 				void
-				setVertexBufferAt(const unsigned int	program,
-								  const unsigned int	vertexBuffer,
-								  const std::string&	name) = 0;
+				setVertexBufferAt(const unsigned int	position,
+								   const unsigned int	vertexBuffer,
+								   const unsigned int	size,
+								   const unsigned int	offset) = 0;
 
 				virtual
 				void
@@ -163,7 +164,7 @@ namespace minko
 
 				virtual
 				void
-				setUniform(unsigned int location, unsigned int size, const float* values) = 0;
+				setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values) = 0;
 
 			};
 		}	

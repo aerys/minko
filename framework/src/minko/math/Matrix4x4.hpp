@@ -83,10 +83,22 @@ namespace minko
 			prependTranslation(float x, float y, float z);
 
 			ptr
-			appendRotation(Vector4::ptr quaternion);
+			appendRotationX(float radians);
 
 			ptr
-			prependRotation(Vector4::ptr quaternion);
+			prependRotationX(float radians);
+
+			ptr
+			appendRotationY(float radians);
+
+			ptr
+			prependRotationY(float radians);
+
+			ptr
+			appendRotationZ(float radians);
+
+			ptr
+			prependRotationZ(float radians);
 
 			ptr
 			appendRotation(float radians, Vector3::ptr axis);
@@ -99,6 +111,9 @@ namespace minko
 
 			ptr
 			invert();
+
+			ptr
+			transpose();
 
 			inline
 			ptr
