@@ -118,10 +118,10 @@ namespace minko
 										 std::shared_ptr<AbstractController>	ctrl);
 
 				void
-				RenderingController::addSurfaceController(std::shared_ptr<SurfaceController> ctrl);
+				addSurfaceController(std::shared_ptr<SurfaceController> ctrl);
 
 				void
-				RenderingController::removeSurfaceController(std::shared_ptr<SurfaceController> ctrl);
+				removeSurfaceController(std::shared_ptr<SurfaceController> ctrl);
 
 				void
 				geometryChanged(std::shared_ptr<SurfaceController>);
