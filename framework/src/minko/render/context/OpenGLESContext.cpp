@@ -51,7 +51,7 @@ OpenGLESContext::clear(float 			red,
 	// void glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 	// red, green, blue, alpha Specify the red, green, blue, and alpha values used when the color buffers are cleared.
 	// The initial values are all 0.
-	// 
+	//
 	// glClearColor specify clear values for the color buffers
 	glClearColor(red, green, blue, alpha);
 
@@ -60,7 +60,7 @@ OpenGLESContext::clear(float 			red,
 	// void glClearDepth(GLdouble depth);
 	// void glClearDepthf(GLfloat depth);
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
-	// 
+	//
 	// glClearDepth specify the clear value for the depth buffer
 	glClearDepth(depth);
 
@@ -98,7 +98,7 @@ OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTria
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDrawElements.xml
-	// 
+	//
 	// void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
 	// mode Specifies what kind of primitives to render.
 	// count Specifies the number of elements to be rendered.
@@ -115,11 +115,11 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 	unsigned int vertexBuffer;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glGenBuffers.xml
-	// 
+	//
 	// void glGenBuffers(GLsizei n, GLuint* buffers);
 	// n Specifies the number of buffer object names to be vertexBufferd.
 	// buffers Specifies an array in which the generated buffer object names are stored.
-	// 
+	//
 	// glGenBuffers returns n buffer object names in buffers. There is no
 	// guarantee that the names form a contiguous set of integers; however,
 	// it is guaranteed that none of the returned names was in use immediately
@@ -127,11 +127,11 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 	glGenBuffers(1, &vertexBuffer);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glBindBuffer.xml
-	// 
+	//
 	// void glBindBuffer(GLenum target, GLuint buffer);
 	// target Specifies the target to which the buffer object is bound.
 	// buffer Specifies the name of a buffer object.
-	// 
+	//
 	// glBindBuffer binds a buffer object to the specified buffer binding point.
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -177,7 +177,7 @@ OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
-	// 
+	//
 	// void glDeleteBuffers(GLsizei n, const GLuint* buffers)
 	// n Specifies the number of buffer objects to be deleted.
 	// buffers Specifies an array of buffer objects to be deleted.
@@ -294,7 +294,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);		
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
 	else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -332,7 +332,7 @@ OpenGLESContext::createProgram()
 void
 OpenGLESContext::attachShader(const unsigned int program, const unsigned int shader)
 {
-	glAttachShader(program, shader);	
+	glAttachShader(program, shader);
 }
 
 void
@@ -421,7 +421,7 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
 
-	for (int i = 0; i < total; ++i) 
+	for (int i = 0; i < total; ++i)
 	{
     	int nameLength = -1;
     	int size = -1;
@@ -429,7 +429,7 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
     	std::vector<char> name(maxUniformNameLength);
 
     	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
-	
+
 	    name[nameLength] = 0;
 
 	    ShaderProgramInputs::Type inputType = ShaderProgramInputs::Type::unknown;

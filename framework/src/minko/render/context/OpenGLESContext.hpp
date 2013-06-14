@@ -2,9 +2,8 @@
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
-# include <GLUT/glut.h>
-#endif
-#ifdef _WIN32
+# include <GL/glut.h>
+#elif _WIN32
 # include "GL/glew.h"
 # include "GL/glut.h"
 #else
@@ -85,10 +84,10 @@ namespace minko
 									   const unsigned int 	offset,
 									   const unsigned int 	size,
 									   void* 				data);
-				
+
 				void
 				deleteVertexBuffer(const unsigned int vertexBuffer);
-				
+
 				const unsigned int
 				createIndexBuffer(const unsigned int size);
 

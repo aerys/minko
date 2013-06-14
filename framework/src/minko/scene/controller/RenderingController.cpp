@@ -178,7 +178,11 @@ RenderingController::addSurfaceController(std::shared_ptr<SurfaceController> ctr
 void
 RenderingController::removeSurfaceController(std::shared_ptr<SurfaceController> ctrl)
 {
-	_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+#ifdef __GNUC__
+  // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
+#else
+        _drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+#endif
 }
 
 void
