@@ -17,6 +17,7 @@
 #include "minko/scene/data/DataProvider.hpp"
 #include "minko/scene/data/DataBindings.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
+#include "minko/render/stream/VertexAttribute.hpp"
 #include "minko/render/stream/VertexFormat.hpp"
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
