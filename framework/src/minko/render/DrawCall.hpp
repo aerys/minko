@@ -18,17 +18,18 @@ namespace minko
 			typedef std::shared_ptr<DrawCall> ptr;
 
 		private:
-			std::shared_ptr<DataBindings>				_bindings;
-			const std::map<std::string, std::string>&	_inputNameToBindingName;	
+			typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
 
-			int											_vertexBuffer;
-			int											_indexBuffer;
-			std::shared_ptr<GLSLProgram>				_program;
+		private:
+			std::shared_ptr<DataBindings>						_bindings;
+			const std::unordered_map<std::string, std::string>&	_inputNameToBindingName;
+
+			std::vector<std::function<void(AbsCtxPtr)>>			_func;
 
 		public:
 			static inline
 			ptr
-			create(std::shared_ptr<DataBindings> bindings, const std::map<std::string, std::string>& inputNameToBindingName)
+			create(std::shared_ptr<DataBindings> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName)
 			{
 				return std::shared_ptr<DrawCall>(new DrawCall(bindings, inputNameToBindingName));
 			}
@@ -40,7 +41,10 @@ namespace minko
 			initialize(std::shared_ptr<DataBindings> bindings, const std::map<std::string, std::string>& inputNameToBindingName);
 
 		private:
-			DrawCall(std::shared_ptr<DataBindings> bindings, const std::map<std::string, std::string>& inputNameToBindingName);
+			DrawCall(std::shared_ptr<DataBindings> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName);
+
+			void
+			bind(std::shared_ptr<DataBindings> bindings);
 		};		
 	}
 }

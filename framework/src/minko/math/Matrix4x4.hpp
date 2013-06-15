@@ -76,35 +76,27 @@ namespace minko
 			ptr
 			prepend(ptr matrix);
 
-			inline
 			ptr
 			appendTranslation(float x, float y, float z);
 
-			inline
 			ptr
 			prependTranslation(float x, float y, float z);
 
-			inline
 			ptr
 			appendRotationX(float radians);
 
-			inline
 			ptr
 			prependRotationX(float radians);
 
-			inline
 			ptr
 			appendRotationY(float radians);
 
-			inline
 			ptr
 			prependRotationY(float radians);
 
-			inline
 			ptr
 			appendRotationZ(float radians);
 
-			inline
 			ptr
 			prependRotationZ(float radians);
 
