@@ -32,7 +32,15 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	//mesh->controller<TransformController>()->transform()->prependRotationY(.1);
+	/*auto mesh = NodeSet::create(group)
+		->descendants()
+		->where([](Node::ptr node)
+			{
+				return node->hasController<TransformController>()
+					&& node->hasController<SurfaceController>();
+			});*/
+
+	mesh->controller<TransformController>()->transform()->prependRotationY(.01);
 	//mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, .1f);
 
 	//group->controller<TransformController>()->transform()->prependRotationY(.1);
@@ -61,9 +69,6 @@ int main(int argc, char** argv)
 #endif
 
   auto oglContext   = OpenGLESContext::create();
-
-//  oglContext->configureViewport(0, 0, 800, 600);
-
   auto camera       = Node::create("camera");
   auto root         = Node::create("root");
 
@@ -73,8 +78,8 @@ int main(int argc, char** argv)
 
   auto shader = GLSLProgram::fromFiles(
     oglContext,
-    "../shaders/Basic.vertex.glsl",
-    "../shaders/Basic.fragment.glsl"
+    "shaders/Basic.vertex.glsl",
+    "shaders/Basic.fragment.glsl"
   );
 
   std::cout << "== vertex shader compilation logs ==" << std::endl;
@@ -89,12 +94,15 @@ int main(int argc, char** argv)
 
   auto cubeGeometry = CubeGeometry::create(oglContext);
   auto fx = Effect::create(shaders)
-	->bindInput("material/diffuse/rgba",			"diffuseColor")
+	->bindInput("geometry/vertices/position",		"position")
+	->bindInput("material/diffuse/rgba",				"diffuseColor")
 	->bindInput("transform/modelToWorldMatrix",		"modelToWorldMatrix")
-	->bindInput("transform/worldToScreenMatrix",	"worldToScreenMatrix");
+	->bindInput("transform/worldToScreenMatrix",		"worldToScreenMatrix");
 
-  auto viewMatrix = Matrix4x4::create()->perspectiveFoV(.785f, 800.f / 600.f, .1f, 1000.f);
+  auto viewMatrix = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 
+  mesh->addController(TransformController::create());
+  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
   mesh->addController(SurfaceController::create(
     cubeGeometry,
     data::DataProvider::create()
@@ -103,13 +111,18 @@ int main(int argc, char** argv)
     fx
   ));
 
-  mesh->addController(TransformController::create());
-  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
-  //group->addChild(mesh);
+  group->addChild(mesh);
 
-  for (auto i = 0; i < 10000; ++i)
+  /*for (auto i = 0; i < 10000; ++i)
   {
 	  auto cube = Node::create("cube" + std::to_string(i));
+
+	  cube->addController(TransformController::create());
+	  cube->controller<TransformController>()->transform()->appendTranslation(
+	    -10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
+		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
+		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f
+	  );
 
 	  cube->addController(SurfaceController::create(
 		cubeGeometry,
@@ -119,15 +132,8 @@ int main(int argc, char** argv)
 		fx
 	  ));
 
-	  cube->addController(TransformController::create());
-	  cube->controller<TransformController>()->transform()->appendTranslation(
-	    -10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
-		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
-		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f
-	  );
-
 	  group->addChild(cube);
-  }
+  }*/
 
   group->addController(TransformController::create());
 
