@@ -23,9 +23,9 @@ namespace minko
 			typedef std::shared_ptr<GLSLProgram>		GLSLProgramPtr;
 
 		private:
-			std::vector<GLSLProgramPtr>			_shaders;
-			std::shared_ptr<DataProvider>		_data;
-			std::map<std::string, std::string>	_inputNameToBindingName;
+			std::vector<GLSLProgramPtr>						_shaders;
+			std::shared_ptr<DataProvider>					_data;
+			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
 
 		public:
 			inline static
@@ -50,7 +50,7 @@ namespace minko
 			}
 
 			inline
-			const std::map<std::string, std::string>&
+			const std::unordered_map<std::string, std::string>&
 			inputNameToBindingName()
 			{
 				return _inputNameToBindingName;

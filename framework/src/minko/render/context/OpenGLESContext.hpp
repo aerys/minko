@@ -175,6 +175,17 @@ namespace minko
 			private:
 				OpenGLESContext();
 
+				void
+				fillUniformInputs(const unsigned int						program,
+								  std::vector<std::string>&					names,
+								  std::vector<ShaderProgramInputs::Type>&	types,
+								  std::vector<unsigned int>&				locations);
+
+				void
+				fillAttributeInputs(const unsigned int						program,
+									std::vector<std::string>&				names,
+								    std::vector<ShaderProgramInputs::Type>&	types,
+								    std::vector<unsigned int>&				locations);
 			};
 		}
 	}
