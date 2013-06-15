@@ -22,7 +22,7 @@ namespace minko
 				typedef std::shared_ptr<DataProviderPropertyWrapper>	WrapperPtr;
 
 				std::vector<std::string>							_names;
-				std::map<std::string, WrapperPtr>					_values;
+				std::unordered_map<std::string, WrapperPtr>			_values;
 
 				std::shared_ptr<Signal<ptr, const std::string&>>	_propertyChanged;
 				std::shared_ptr<Signal<ptr, const std::string&>>	_propertyAdded;
@@ -44,7 +44,7 @@ namespace minko
 				}
 
 				inline
-				const std::map<std::string, WrapperPtr>&
+				const std::unordered_map<std::string, WrapperPtr>&
 				values()
 				{
 					return _values;
