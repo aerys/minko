@@ -2,6 +2,7 @@
 
 #include "minko/Common.hpp"
 #include "minko/render/stream/VertexStream.hpp"
+#include "minko/render/stream/VertexAttribute.hpp"
 
 namespace
 {
@@ -65,7 +66,8 @@ namespace minko
 					void
 					addVertexStream(std::shared_ptr<VertexStream> vertexStream)
 					{
-						_data->setProperty("geometry/vertices/" + vertexStream->name(), vertexStream);
+						for (auto attribute : vertexStream->attributes())
+							_data->setProperty("geometry/vertices/" + attribute->name(), vertexStream);
 					}
 
 				protected:

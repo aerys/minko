@@ -413,11 +413,22 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 	std::vector<ShaderProgramInputs::Type> types;
 	std::vector<unsigned int> locations;
 
+	fillUniformInputs(program, names, types, locations);
+	fillAttributeInputs(program, names, types, locations);
+
+	return ShaderProgramInputs::create(shared_from_this(), program, names, types, locations);
+}
+
+void
+OpenGLESContext::fillUniformInputs(const unsigned int						program,
+								   std::vector<std::string>&				names,
+								   std::vector<ShaderProgramInputs::Type>&	types,
+								   std::vector<unsigned int>&				locations)
+{
 	int total = -1;
 	int maxUniformNameLength = -1;
 
 	glUseProgram(program);
-
 	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
 
@@ -470,6 +481,43 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 
 	    int location = glGetUniformLocation(program, &name[0]);
 
+	    if (location >= 0 && type != ShaderProgramInputs::Type::unknown)
+	    {
+		    names.push_back(std::string(&name[0]));
+		    types.push_back(inputType);
+		    locations.push_back(location);
+		}
+	}
+}
+
+void
+OpenGLESContext::fillAttributeInputs(const unsigned int							program,
+									 std::vector<std::string>&					names,
+								     std::vector<ShaderProgramInputs::Type>&	types,
+								     std::vector<unsigned int>&					locations)
+{
+	int total = -1;
+	int maxAttributeNameLength = -1;
+
+	glUseProgram(program);
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttributeNameLength);
+	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
+
+	for (int i = 0; i < total; ++i) 
+	{
+    	int nameLength = -1;
+    	int size = -1;
+    	GLenum type = GL_ZERO;
+    	std::vector<char> name(maxAttributeNameLength);
+
+		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
+	
+	    name[nameLength] = 0;
+
+	    ShaderProgramInputs::Type inputType = ShaderProgramInputs::Type::attribute;
+
+		int location = glGetAttribLocation(program, &name[0]);
+
 	    if (location >= 0)
 	    {
 		    names.push_back(std::string(&name[0]));
@@ -477,8 +525,6 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 		    locations.push_back(location);
 		}
 	}
-
-	return ShaderProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
 
 std::string
