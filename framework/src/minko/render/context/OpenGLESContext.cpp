@@ -4,7 +4,7 @@ using namespace minko::render::context;
 
 OpenGLESContext::OpenGLESContext()
 {
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 }
 
 OpenGLESContext::~OpenGLESContext()
@@ -192,17 +192,21 @@ void
 OpenGLESContext::setVertexBufferAt(const unsigned int	position,
 								   const unsigned int	vertexBuffer,
 								   const unsigned int	size,
+								   const unsigned int	stride,
 								   const unsigned int	offset)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
 	glVertexAttribPointer(
 		position,
 		size,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(GL_FLOAT) * offset,
-		(void*)0
+		sizeof(GL_FLOAT) * stride,
+		(void*)(sizeof(GL_FLOAT) * offset)
 	);
+
 	glEnableVertexAttribArray(position);
 }
 

@@ -25,6 +25,7 @@ namespace minko
 
 				private:
 					std::shared_ptr<DataProvider>	_data;
+					unsigned int					_vertexSize;
 
 				public:
 					inline
@@ -67,12 +68,18 @@ namespace minko
 					addVertexStream(std::shared_ptr<VertexStream> vertexStream)
 					{
 						for (auto attribute : vertexStream->attributes())
-							_data->setProperty("geometry/vertices/" + attribute->name(), vertexStream);
+						{
+							_data->setProperty("geometry/vertex/attribute/" + attribute->name(), vertexStream);
+							_vertexSize += attribute->size();
+						}
+
+						_data->setProperty("geometry/vertex/size", _vertexSize);
 					}
 
 				protected:
 					Geometry() :
-						_data(DataProvider::create())
+						_data(DataProvider::create()),
+						_vertexSize(0)
 					{
 					}
 				};
