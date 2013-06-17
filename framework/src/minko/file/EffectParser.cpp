@@ -29,8 +29,5 @@ EffectParser::parse(std::shared_ptr<AbstractContext> context, const std::string&
 
 	auto bindings = root.get("bindings", 0);
 	for (auto propertyName : bindings.getMemberNames())
-	{
-		std::cout << bindings.get(propertyName, 0).asString() << " => " << propertyName << std::endl;
 		_effect->bindInput(bindings.get(propertyName, 0).asString(), propertyName);
-	}
 }

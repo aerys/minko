@@ -1,8 +1,9 @@
 // basic effect
 {
-	"name"		: "basic",
+	"name"		: "directional light",
 	"bindings"	: {
 		"position"				: "geometry/vertex/attribute/position",
+		"normal"				: "geometry/vertex/attribute/normal",
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
@@ -10,21 +11,31 @@
 	"passes"	: [{
 		"vertexShader"	: "
 			attribute vec3 position;
+			attribute vec3 normal;
+
+			varying vec3 worldNormal;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
 			void main(void)
 			{
+				worldNormal = normalize(mat3(modelToWorldMatrix) * normal);
+
 				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0);
 			}
 		",
 		"fragmentShader"	: "
-			uniform vec4 diffuseColor;
+			uniform vec4 diffuseColor	= vec4(0, 0, 0, 1);
+			uniform vec3 lightDirection	= vec3(0., 0., -1.);
+
+			varying vec3 worldNormal;
 
 			void main(void)
 			{
-				gl_FragColor = diffuseColor;
+				float lambert = -dot(normalize(worldNormal), lightDirection);
+
+				gl_FragColor = vec4(diffuseColor.rgb * lambert, diffuseColor.a);
 			}
 		"
 	}]
