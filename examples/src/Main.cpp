@@ -40,7 +40,7 @@ renderScene()
 					&& node->hasController<SurfaceController>();
 			});*/
 
-	mesh->controller<TransformController>()->transform()->prependRotationY(.01);
+	mesh->controller<TransformController>()->transform()->prependRotationY(.001);
 	//mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, .1f);
 
 	//group->controller<TransformController>()->transform()->prependRotationY(.1);
@@ -77,30 +77,20 @@ int main(int argc, char** argv)
 
   camera->addController(renderingController = RenderingController::create(oglContext));
 
-  /*
-  auto shader = GLSLProgram::fromFiles(
-    oglContext,
-    "shaders/Basic.vertex.glsl",
-    "shaders/Diffuse.fragment.glsl"
-  );
-
-  std::cout << "== vertex shader compilation logs ==" << std::endl;
-  std::cout << oglContext->getShaderCompilationLogs(shader->vertexShader()) << std::endl;
-  std::cout << "== fragment shader compilation logs ==" << std::endl;
-  std::cout << oglContext->getShaderCompilationLogs(shader->fragmentShader()) << std::endl;
-  std::cout << "== program info logs ==" << std::endl;
-  std::cout << oglContext->getProgramInfoLogs(shader->program()) << std::endl;
-  
-  std::vector<GLSLProgram::ptr> shaders;
-  shaders.push_back(shader);
-  */
-
   file::FileLoader loader;
   file::EffectParser parser;
 
-  parser.parse(oglContext, loader.load("effects/Basic.effect"));
+  parser.parse(oglContext, loader.load("effects/DirectionalLight.effect"));
 
   auto fx = parser.effect();
+
+  std::cout << "== vertex shader compilation logs ==" << std::endl;
+  std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
+  std::cout << "== fragment shader compilation logs ==" << std::endl;
+  std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
+  std::cout << "== program info logs ==" << std::endl;
+  std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+
   auto viewMatrix = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
   auto cubeGeometry = CubeGeometry::create(oglContext);
 
