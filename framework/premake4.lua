@@ -4,7 +4,12 @@ project "minko-framework"
   language "C++"
   files { "**.hpp", "**.cpp" }
   includedirs { "src" }
-  targetdir "bin"
+  
+  configuration { "debug"}
+    targetdir "bin/debug"
+
+  configuration { "release" }
+    targetdir "bin/release"
 
   configuration { "debug", "linux" }
     defines { "DEBUG" }
