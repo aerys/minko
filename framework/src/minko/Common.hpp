@@ -23,7 +23,7 @@ namespace minko
 		namespace context
 		{
 			class AbstractContext;
-			class OpenGLESContext;			
+			class OpenGLES2Context;			
 		}
 
 		namespace stream
