@@ -8,15 +8,19 @@ newaction {
 	trigger = "copyDLLs",
 	description = "Copy the required DLLs into the app. output folder",
 	execute = function()
-	  os.mkdir(project(1).basedir .. "/bin")
-	  os.copyfile(
-		project(2).basedir .. "/lib/win32/bin/freeglut.dll",
-		project(1).basedir .. "/bin/freeglut.dll"
-	  )
-	  os.copyfile(
-		project(2).basedir .. "/lib/win32/bin/glew32.dll",
-		project(1).basedir .. "/bin/glew32.dll"
-	  )
+	  os.mkdir(project(1).basedir .. "/bin/release")
+	  os.mkdir(project(1).basedir .. "/bin/debug")
+
+	  for _, file in ipairs(os.matchfiles(project(2).basedir .. "/lib/win32/bin/*.dll")) do
+		os.copyfile(
+			file,
+			project(1).basedir .. "/bin/release/" .. path.getname(file)
+		 )
+		os.copyfile(
+			file,
+			project(1).basedir .. "/bin/debug/" .. path.getname(file)
+		 )
+	  end
 	end
 }
 

@@ -15,6 +15,7 @@
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/scene/data/DataProvider.hpp"
+#include "minko/scene/data/DataProviderProperty.hpp"
 #include "minko/scene/data/DataBindings.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
 #include "minko/render/stream/VertexAttribute.hpp"
