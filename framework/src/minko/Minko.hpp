@@ -3,7 +3,7 @@
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/render/context/AbstractContext.hpp"
-#include "minko/render/context/OpenGLESContext.hpp"
+#include "minko/render/context/OpenGLES2Context.hpp"
 #include "minko/render/GLSLProgram.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"
 #include "minko/render/Effect.hpp"
