@@ -77,6 +77,12 @@ namespace minko
 		class Matrix4x4;
 	}
 
+	namespace file
+	{
+		class FileLoader;
+		class EffectParser;
+	}
+
 	class Any;
 	template<typename... A>
 	class Signal;
