@@ -27,6 +27,8 @@
 #include "minko/scene/controller/TransformController.hpp"
 #include "minko/scene/controller/SurfaceController.hpp"
 #include "minko/scene/controller/RenderingController.hpp"
+#include "minko/file/FileLoader.hpp"
+#include "minko/file/EffectParser.hpp"
 
 class Minko
 {

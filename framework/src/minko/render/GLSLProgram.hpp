@@ -44,12 +44,6 @@ namespace minko
 				));
 			}
 
-			static
-			ptr
-			fromFiles(GLSLProgram::AbstractContextPtr 	context,
-		  			  const std::string& 				vertexShaderFile,
-					  const std::string& 				fragmentShaderFile);
-
 			inline
 			const unsigned int
 			program()
@@ -82,10 +76,6 @@ namespace minko
 			GLSLProgram(AbstractContextPtr context,
 					   const std::string& vertexShaderSource,
 					   const std::string& fragmentShaderSource);
-
-			static
-			const std::string
-			loadShaderFile(const std::string& filename);
 		};
 	}
 }

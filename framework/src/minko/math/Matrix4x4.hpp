@@ -9,8 +9,7 @@ namespace minko
 	namespace math
 	{
 		class Matrix4x4 :
-			public std::enable_shared_from_this<Matrix4x4>,
-			public DataProviderProperty<std::shared_ptr<Matrix4x4>>
+			public std::enable_shared_from_this<Matrix4x4>
 		{
 		private:
 			std::vector<float> _m;

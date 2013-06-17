@@ -68,6 +68,7 @@ int main(int argc, char** argv)
   glewInit();
 #endif
 
+
   auto oglContext   = OpenGLESContext::create();
   auto camera       = Node::create("camera");
   auto root         = Node::create("root");
@@ -76,10 +77,11 @@ int main(int argc, char** argv)
 
   camera->addController(renderingController = RenderingController::create(oglContext));
 
+  /*
   auto shader = GLSLProgram::fromFiles(
     oglContext,
     "shaders/Basic.vertex.glsl",
-    "shaders/Basic.fragment.glsl"
+    "shaders/Diffuse.fragment.glsl"
   );
 
   std::cout << "== vertex shader compilation logs ==" << std::endl;
@@ -88,18 +90,19 @@ int main(int argc, char** argv)
   std::cout << oglContext->getShaderCompilationLogs(shader->fragmentShader()) << std::endl;
   std::cout << "== program info logs ==" << std::endl;
   std::cout << oglContext->getProgramInfoLogs(shader->program()) << std::endl;
-
+  
   std::vector<GLSLProgram::ptr> shaders;
   shaders.push_back(shader);
+  */
 
-  auto cubeGeometry = CubeGeometry::create(oglContext);
-  auto fx = Effect::create(shaders)
-	->bindInput("geometry/vertices/position",		"position")
-	->bindInput("material/diffuse/rgba",				"diffuseColor")
-	->bindInput("transform/modelToWorldMatrix",		"modelToWorldMatrix")
-	->bindInput("transform/worldToScreenMatrix",		"worldToScreenMatrix");
+  file::FileLoader loader;
+  file::EffectParser parser;
 
+  parser.parse(oglContext, loader.load("effects/Basic.effect"));
+
+  auto fx = parser.effect();
   auto viewMatrix = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+  auto cubeGeometry = CubeGeometry::create(oglContext);
 
   mesh->addController(TransformController::create());
   mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
