@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 #endif
 
 
-  auto oglContext   = OpenGLESContext::create();
+  auto oglContext   = OpenGLES2Context::create();
   auto camera       = Node::create("camera");
   auto root         = Node::create("root");
 
@@ -95,12 +95,13 @@ int main(int argc, char** argv)
   auto cubeGeometry = CubeGeometry::create(oglContext);
 
   mesh->addController(TransformController::create());
-  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
+  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
   mesh->addController(SurfaceController::create(
     cubeGeometry,
     data::DataProvider::create()
 		->setProperty("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
-		->setProperty("transform/worldToScreenMatrix",	viewMatrix),
+		->setProperty("transform/worldToScreenMatrix",	viewMatrix)
+		->setProperty("light/direction",					Vector3::create(0.f, -1.f, -1.f)),
     fx
   ));
 
