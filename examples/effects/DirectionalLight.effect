@@ -6,7 +6,8 @@
 		"normal"				: "geometry/vertex/attribute/normal",
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
+		"lightDirection"		: "light/direction"
 	},
 	"passes"	: [{
 		"vertexShader"	: "
