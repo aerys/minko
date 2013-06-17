@@ -13,8 +13,6 @@ Matrix4x4::translation(float x, float y, float z)
 		0., 0., 0., 1.
 	);
 
-	changed()->execute(shared_from_this());
-
 	return shared_from_this();
 }
 
