@@ -78,6 +78,7 @@ namespace minko
 				setVertexBufferAt(const unsigned int	position,
 								   const unsigned int	vertexBuffer,
 								   const unsigned int	size,
+								   const unsigned int	stride,
 								   const unsigned int	offset);
 				void
 				uploadVertexBufferData(const unsigned int 	vertexBuffer,

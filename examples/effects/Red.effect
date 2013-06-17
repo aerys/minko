@@ -2,7 +2,7 @@
 {
 	"name"		: "red",
 	"bindings"	: {
-		"position"				: "geometry/vertices/position",
+		"position"				: "geometry/vertex/attribute/position",
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
