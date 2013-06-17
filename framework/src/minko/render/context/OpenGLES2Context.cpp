@@ -1,13 +1,13 @@
-#include "OpenGLESContext.hpp"
+#include "OpenGLES2Context.hpp"
 
 using namespace minko::render::context;
 
-OpenGLESContext::OpenGLESContext()
+OpenGLES2Context::OpenGLES2Context()
 {
 	glEnable(GL_DEPTH_TEST);
 }
 
-OpenGLESContext::~OpenGLESContext()
+OpenGLES2Context::~OpenGLES2Context()
 {
 	for (auto vertexBuffer : _vertexBuffers)
 		glDeleteBuffers(1, &vertexBuffer);
@@ -29,7 +29,7 @@ OpenGLESContext::~OpenGLESContext()
 }
 
 void
-OpenGLESContext::configureViewport(const unsigned int x,
+OpenGLES2Context::configureViewport(const unsigned int x,
 				  				   const unsigned int y,
 				  				   const unsigned int width,
 				  				   const unsigned int height)
@@ -38,7 +38,7 @@ OpenGLESContext::configureViewport(const unsigned int x,
 }
 
 void
-OpenGLESContext::clear(float 			red,
+OpenGLES2Context::clear(float 			red,
 					   float 			green,
 					   float 			blue,
 					   float 			alpha,
@@ -84,7 +84,7 @@ OpenGLESContext::clear(float 			red,
 }
 
 void
-OpenGLESContext::present()
+OpenGLES2Context::present()
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml
 	//
@@ -93,7 +93,7 @@ OpenGLESContext::present()
 }
 
 void
-OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
+OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
@@ -110,7 +110,7 @@ OpenGLESContext::drawTriangles(const unsigned int indexBuffer, const int numTria
 }
 
 const unsigned int
-OpenGLESContext::createVertexBuffer(const unsigned int size)
+OpenGLES2Context::createVertexBuffer(const unsigned int size)
 {
 	unsigned int vertexBuffer;
 
@@ -152,7 +152,7 @@ OpenGLESContext::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
+OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 									    const unsigned int 	offset,
 									    const unsigned int 	size,
 									    void* 				data)
@@ -172,7 +172,7 @@ OpenGLESContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 }
 
 void
-OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
+OpenGLES2Context::deleteVertexBuffer(const unsigned int vertexBuffer)
 {
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
@@ -189,7 +189,7 @@ OpenGLESContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 }
 
 void
-OpenGLESContext::setVertexBufferAt(const unsigned int	position,
+OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 								   const unsigned int	vertexBuffer,
 								   const unsigned int	size,
 								   const unsigned int	stride,
@@ -211,7 +211,7 @@ OpenGLESContext::setVertexBufferAt(const unsigned int	position,
 }
 
 const unsigned int
-OpenGLESContext::createIndexBuffer(const unsigned int size)
+OpenGLES2Context::createIndexBuffer(const unsigned int size)
 {
 	unsigned int indexBuffer;
 
@@ -225,7 +225,7 @@ OpenGLESContext::createIndexBuffer(const unsigned int size)
 }
 
 void
-OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
+OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										 const unsigned int 	offset,
 										 const unsigned int 	size,
 										 void*					data)
@@ -235,7 +235,7 @@ OpenGLESContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 }
 
 void
-OpenGLESContext::deleteIndexBuffer(const unsigned int indexBuffer)
+OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
 {
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
@@ -243,7 +243,7 @@ OpenGLESContext::deleteIndexBuffer(const unsigned int indexBuffer)
 }
 
 const unsigned int
-OpenGLESContext::createTexture(unsigned int 	width,
+OpenGLES2Context::createTexture(unsigned int 	width,
 							    unsigned int 	height,
 							    bool			mipMapping)
 {
@@ -309,7 +309,7 @@ OpenGLESContext::createTexture(unsigned int 	width,
 }
 
 void
-OpenGLESContext::uploadTextureData(const unsigned int 	texture,
+OpenGLES2Context::uploadTextureData(const unsigned int 	texture,
 								    unsigned int 		width,
 								    unsigned int 		height,
 								    unsigned int 		mipLevel,
@@ -320,7 +320,7 @@ OpenGLESContext::uploadTextureData(const unsigned int 	texture,
 }
 
 void
-OpenGLESContext::deleteTexture(const unsigned int texture)
+OpenGLES2Context::deleteTexture(const unsigned int texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
@@ -328,25 +328,25 @@ OpenGLESContext::deleteTexture(const unsigned int texture)
 }
 
 const unsigned int
-OpenGLESContext::createProgram()
+OpenGLES2Context::createProgram()
 {
 	return glCreateProgram();
 }
 
 void
-OpenGLESContext::attachShader(const unsigned int program, const unsigned int shader)
+OpenGLES2Context::attachShader(const unsigned int program, const unsigned int shader)
 {
 	glAttachShader(program, shader);
 }
 
 void
-OpenGLESContext::linkProgram(const unsigned int program)
+OpenGLES2Context::linkProgram(const unsigned int program)
 {
 	glLinkProgram(program);
 }
 
 void
-OpenGLESContext::deleteProgram(const unsigned int program)
+OpenGLES2Context::deleteProgram(const unsigned int program)
 {
 	_programs.erase(std::find(_programs.begin(), _programs.end(), program));
 
@@ -354,19 +354,19 @@ OpenGLESContext::deleteProgram(const unsigned int program)
 }
 
 void
-OpenGLESContext::compileShader(const unsigned int shader)
+OpenGLES2Context::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
 }
 
 void
-OpenGLESContext::setProgram(const unsigned int program)
+OpenGLES2Context::setProgram(const unsigned int program)
 {
 	glUseProgram(program);
 }
 
 void
-OpenGLESContext::setShaderSource(const unsigned int shader,
+OpenGLES2Context::setShaderSource(const unsigned int shader,
 							     const std::string& source)
 {
 	const char* sourceString = source.c_str();
@@ -375,7 +375,7 @@ OpenGLESContext::setShaderSource(const unsigned int shader,
 }
 
 const unsigned int
-OpenGLESContext::createVertexShader()
+OpenGLES2Context::createVertexShader()
 {
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -385,7 +385,7 @@ OpenGLESContext::createVertexShader()
 }
 
 void
-OpenGLESContext::deleteVertexShader(const unsigned int vertexShader)
+OpenGLES2Context::deleteVertexShader(const unsigned int vertexShader)
 {
 	_vertexShaders.erase(std::find(_vertexShaders.begin(), _vertexShaders.end(), vertexShader));
 
@@ -393,7 +393,7 @@ OpenGLESContext::deleteVertexShader(const unsigned int vertexShader)
 }
 
 const unsigned int
-OpenGLESContext::createFragmentShader()
+OpenGLES2Context::createFragmentShader()
 {
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -403,7 +403,7 @@ OpenGLESContext::createFragmentShader()
 }
 
 void
-OpenGLESContext::deleteFragmentShader(const unsigned int fragmentShader)
+OpenGLES2Context::deleteFragmentShader(const unsigned int fragmentShader)
 {
 	_fragmentShaders.erase(std::find(_fragmentShaders.begin(), _fragmentShaders.end(), fragmentShader));
 
@@ -411,7 +411,7 @@ OpenGLESContext::deleteFragmentShader(const unsigned int fragmentShader)
 }
 
 std::shared_ptr<ShaderProgramInputs>
-OpenGLESContext::getProgramInputs(const unsigned int program)
+OpenGLES2Context::getProgramInputs(const unsigned int program)
 {
 	std::vector<std::string> names;
 	std::vector<ShaderProgramInputs::Type> types;
@@ -424,7 +424,7 @@ OpenGLESContext::getProgramInputs(const unsigned int program)
 }
 
 void
-OpenGLESContext::fillUniformInputs(const unsigned int						program,
+OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 								   std::vector<std::string>&				names,
 								   std::vector<ShaderProgramInputs::Type>&	types,
 								   std::vector<unsigned int>&				locations)
@@ -495,7 +495,7 @@ OpenGLESContext::fillUniformInputs(const unsigned int						program,
 }
 
 void
-OpenGLESContext::fillAttributeInputs(const unsigned int							program,
+OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
 									 std::vector<std::string>&					names,
 								     std::vector<ShaderProgramInputs::Type>&	types,
 								     std::vector<unsigned int>&					locations)
@@ -532,7 +532,7 @@ OpenGLESContext::fillAttributeInputs(const unsigned int							program,
 }
 
 std::string
-OpenGLESContext::getShaderCompilationLogs(const unsigned int shader)
+OpenGLES2Context::getShaderCompilationLogs(const unsigned int shader)
 {
 	int compileStatus = -1;
 
@@ -563,7 +563,7 @@ OpenGLESContext::getShaderCompilationLogs(const unsigned int shader)
 }
 
 std::string
-OpenGLESContext::getProgramInfoLogs(const unsigned int program)
+OpenGLES2Context::getProgramInfoLogs(const unsigned int program)
 {
 	int programInfoMaxLength = -1;
 	int programInfoLength = -1;
@@ -578,31 +578,31 @@ OpenGLESContext::getProgramInfoLogs(const unsigned int program)
 }
 
 void
-OpenGLESContext::setUniform(unsigned int location, float value)
+OpenGLES2Context::setUniform(unsigned int location, float value)
 {
 	glUniform1f(location, value);
 }
 
 void
-OpenGLESContext::setUniform(unsigned int location, float value1, float value2)
+OpenGLES2Context::setUniform(unsigned int location, float value1, float value2)
 {
 	glUniform2f(location, value1, value2);
 }
 
 void
-OpenGLESContext::setUniform(unsigned int location, float value1, float value2, float value3)
+OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, float value3)
 {
 	glUniform3f(location, value1, value2, value3);
 }
 
 void
-OpenGLESContext::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
+OpenGLES2Context::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
 {
 	glUniform4f(location, value1, value2, value3, value4);
 }
 
 void
-OpenGLESContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
+OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
 	glUniformMatrix4fv(location, size, transpose, values);
 }

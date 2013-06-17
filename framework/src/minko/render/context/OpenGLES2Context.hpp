@@ -25,12 +25,12 @@ namespace minko
 	{
 		namespace context
 		{
-			class OpenGLESContext :
+			class OpenGLES2Context :
 				public AbstractContext,
-				public std::enable_shared_from_this<OpenGLESContext>
+				public std::enable_shared_from_this<OpenGLES2Context>
 			{
 			public:
-				typedef std::shared_ptr<OpenGLESContext> ptr;
+				typedef std::shared_ptr<OpenGLES2Context> ptr;
 
 			private:
 				std::list<unsigned int>	_vertexBuffers;
@@ -41,13 +41,13 @@ namespace minko
 				std::list<unsigned int> _fragmentShaders;
 
 			public:
-				~OpenGLESContext();
+				~OpenGLES2Context();
 
 				static
 				ptr
 				create()
 				{
-					return std::shared_ptr<OpenGLESContext>(new OpenGLESContext());
+					return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
 				}
 
 				void
@@ -174,7 +174,7 @@ namespace minko
 				setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values);
 
 			private:
-				OpenGLESContext();
+				OpenGLES2Context();
 
 				void
 				fillUniformInputs(const unsigned int						program,
