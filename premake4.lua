@@ -11,7 +11,7 @@ newaction {
 	  os.mkdir(project(1).basedir .. "/bin/release")
 	  os.mkdir(project(1).basedir .. "/bin/debug")
 
-	  for _, file in ipairs(os.matchfiles(project(2).basedir .. "/lib/win32/bin/*.dll")) do
+	  for _, file in ipairs(os.matchfiles(project(2).basedir .. "/lib/gl/win32/bin/*.dll")) do
 		os.copyfile(
 			file,
 			project(1).basedir .. "/bin/release/" .. path.getname(file)
