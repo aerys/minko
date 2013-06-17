@@ -74,8 +74,8 @@ namespace minko
 
 		private:
 			GLSLProgram(AbstractContextPtr context,
-					   const std::string& vertexShaderSource,
-					   const std::string& fragmentShaderSource);
+					    const std::string& vertexShaderSource,
+					    const std::string& fragmentShaderSource);
 		};
 	}
 }

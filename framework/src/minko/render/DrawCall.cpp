@@ -41,14 +41,24 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 				? _inputNameToBindingName.find(inputName)->second
 				: inputName;
 
+			if (!_bindings->hasProperty(name))
+				continue;
+
 			if (type == ShaderProgramInputs::attribute)
 			{
 				auto vertexStream	= _bindings->getProperty<VertexStream::ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
+				auto vertexSize		= _bindings->getProperty<unsigned int>("geometry/vertex/size");
 
-				_func.push_back([location, vertexStream, attribute](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, vertexStream, attribute, vertexSize](std::shared_ptr<AbstractContext> context)
 				{
-					context->setVertexBufferAt(location, vertexStream->buffer(), attribute->size(), attribute->offset());
+					context->setVertexBufferAt(
+						location,
+						vertexStream->buffer(),
+						attribute->size(),
+						vertexSize,
+						attribute->offset()
+					);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float1)
