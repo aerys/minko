@@ -57,6 +57,8 @@ namespace minko
 		namespace data
 		{
 			class DataProvider;
+			template <typename P>
+			class DataProviderProperty;
 			class DataBindings;
 
 			namespace geometry
