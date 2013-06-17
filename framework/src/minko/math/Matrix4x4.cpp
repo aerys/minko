@@ -1,4 +1,5 @@
 #include "Matrix4x4.hpp"
+#include "minko/scene/data/DataProviderProperty.hpp"
 
 using namespace minko::math;
 
@@ -11,6 +12,8 @@ Matrix4x4::translation(float x, float y, float z)
 		0., 0., 1., z,
 		0., 0., 0., 1.
 	);
+
+	changed()->execute(shared_from_this());
 
 	return shared_from_this();
 }
