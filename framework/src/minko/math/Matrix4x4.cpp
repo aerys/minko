@@ -1,4 +1,5 @@
 #include "Matrix4x4.hpp"
+#include "minko/Signal.hpp"
 #include "minko/scene/data/DataProviderProperty.hpp"
 
 using namespace minko::math;
@@ -57,12 +58,14 @@ Matrix4x4::rotationZ(float radians)
 
 Matrix4x4::Matrix4x4() :
 	std::enable_shared_from_this<Matrix4x4>(),
+	DataProviderProperty<Matrix4x4::ptr>(),
 	_m(16)
 {
 }
 
 Matrix4x4::Matrix4x4(Matrix4x4::ptr value) :
 	std::enable_shared_from_this<Matrix4x4>(),
+	DataProviderProperty<Matrix4x4::ptr>(),
 	_m(value->_m)
 {
 }
@@ -73,44 +76,24 @@ Matrix4x4::prepend(float m00, float m01, float m02, float m03,
 			 	   float m20, float m21, float m22, float m23,
 			 	   float m30, float m31, float m32, float m33)
 {
-	float v0 = _m[0] * m00 + _m[1] * m10 + _m[2] * m20 + _m[3] * m30;
-	float v1 = _m[0] * m01 + _m[1] * m11 + _m[2] * m21 + _m[3] * m31;
-	float v2 = _m[0] * m02 + _m[1] * m12 + _m[2] * m22 + _m[3] * m32;
-	float v3 = _m[0] * m03 + _m[1] * m13 + _m[2] * m23 + _m[3] * m33;
-	float v4 = _m[4] * m00 + _m[5] * m10 + _m[6] * m20 + _m[7] * m30;
-	float v5 = _m[4] * m01 + _m[5] * m11 + _m[6] * m21 + _m[7] * m31;
-	float v6 = _m[4] * m02 + _m[5] * m12 + _m[6] * m22 + _m[7] * m32;
-	float v7 = _m[4] * m03 + _m[5] * m13 + _m[6] * m23 + _m[7] * m33;
-	float v8 = _m[8] * m00 + _m[9] * m10 + _m[10] * m20 + _m[11] * m30;
-	float v9 = _m[8] * m01 + _m[9] * m11 + _m[10] * m21 + _m[11] * m31;
-	float v10 = _m[8] * m02 + _m[9] * m12 + _m[10] * m22 + _m[11] * m32;
-	float v11 = _m[8] * m03 + _m[9] * m13 + _m[10] * m23 + _m[11] * m33;
-	float v12 = _m[12] * m00 + _m[13] * m10 + _m[14] * m20 + _m[15] * m30;
-	float v13 = _m[12] * m01 + _m[13] * m11 + _m[14] * m21 + _m[15] * m31;
-	float v14 = _m[12] * m02 + _m[13] * m12 + _m[14] * m22 + _m[15] * m32;
-	float v15 = _m[12] * m03 + _m[13] * m13 + _m[14] * m23 + _m[15] * m33;
-
-	_m[0] = v0;
-	_m[1] = v1;
-	_m[2] = v2;
-	_m[3] = v3;
-
-	_m[4] = v4;
-	_m[5] = v5;
-	_m[6] = v6;
-	_m[7] = v7;
-
-	_m[8] = v8;
-	_m[9] = v9;
-	_m[10] = v10;
-	_m[11] = v11;
-
-	_m[12] = v12;
-	_m[13] = v13;
-	_m[14] = v14;
-	_m[15] = v15;
-
-	return shared_from_this();
+	return initialize(
+		_m[0] * m00 + _m[1] * m10 + _m[2] * m20 + _m[3] * m30,
+		_m[0] * m01 + _m[1] * m11 + _m[2] * m21 + _m[3] * m31,
+		_m[0] * m02 + _m[1] * m12 + _m[2] * m22 + _m[3] * m32,
+		_m[0] * m03 + _m[1] * m13 + _m[2] * m23 + _m[3] * m33,
+		_m[4] * m00 + _m[5] * m10 + _m[6] * m20 + _m[7] * m30,
+		_m[4] * m01 + _m[5] * m11 + _m[6] * m21 + _m[7] * m31,
+		_m[4] * m02 + _m[5] * m12 + _m[6] * m22 + _m[7] * m32,
+		_m[4] * m03 + _m[5] * m13 + _m[6] * m23 + _m[7] * m33,
+		_m[8] * m00 + _m[9] * m10 + _m[10] * m20 + _m[11] * m30,
+		_m[8] * m01 + _m[9] * m11 + _m[10] * m21 + _m[11] * m31,
+		_m[8] * m02 + _m[9] * m12 + _m[10] * m22 + _m[11] * m32,
+		_m[8] * m03 + _m[9] * m13 + _m[10] * m23 + _m[11] * m33,
+		_m[12] * m00 + _m[13] * m10 + _m[14] * m20 + _m[15] * m30,
+		_m[12] * m01 + _m[13] * m11 + _m[14] * m21 + _m[15] * m31,
+		_m[12] * m02 + _m[13] * m12 + _m[14] * m22 + _m[15] * m32,
+		_m[12] * m03 + _m[13] * m13 + _m[14] * m23 + _m[15] * m33
+	);
 }
 
 Matrix4x4::ptr
@@ -119,47 +102,24 @@ Matrix4x4::append(float m00, float m01, float m02, float m03,
 			 	  float m20, float m21, float m22, float m23,
 			 	  float m30, float m31, float m32, float m33)
 {
-	float v0 = m00 * _m[0] + m01 * _m[4] + m02 * _m[8] + m03 * _m[12];
-	float v1 = m00 * _m[1] + m01 * _m[5] + m02 * _m[9] + m03 * _m[13];
-	float v2 = m00 * _m[2] + m01 * _m[6] + m02 * _m[10] + m03 * _m[14];
-	float v3 = m00 * _m[3] + m01 * _m[7] + m02 * _m[11] + m03 * _m[15];
-
-	float v4 = m10 * _m[0] + m11 * _m[4] + m12 * _m[8] + m13 * _m[12];
-	float v5 = m10 * _m[1] + m11 * _m[5] + m12 * _m[9] + m13 * _m[13];
-	float v6 = m10 * _m[2] + m11 * _m[6] + m12 * _m[10] + m13 * _m[14];
-	float v7 = m10 * _m[3] + m11 * _m[7] + m12 * _m[11] + m13 * _m[15];
-
-	float v8 = m20 * _m[0] + m21 * _m[4] + m22 * _m[8] + m23 * _m[12];
-	float v9 = m20 * _m[1] + m21 * _m[5] + m22 * _m[9] + m23 * _m[13];
-	float v10 = m20 * _m[2] + m21 * _m[6] + m22 * _m[10] + m23 * _m[14];
-	float v11 = m20 * _m[3] + m21 * _m[7] + m22 * _m[11] + m23 * _m[15];
-
-	float v12 = m30 * _m[0] + m31 * _m[4] + m32 * _m[8] + m33 * _m[12];
-	float v13 = m30 * _m[1] + m31 * _m[5] + m32 * _m[9] + m33 * _m[13];
-	float v14 = m30 * _m[2] + m31 * _m[6] + m32 * _m[10] + m33 * _m[14];
-	float v15 = m30 * _m[3] + m31 * _m[7] + m32 * _m[11] + m33 * _m[15];
-
-	_m[0] = v0;
-	_m[1] = v1;
-	_m[2] = v2;
-	_m[3] = v3;
-
-	_m[4] = v4;
-	_m[5] = v5;
-	_m[6] = v6;
-	_m[7] = v7;
-
-	_m[8] = v8;
-	_m[9] = v9;
-	_m[10] = v10;
-	_m[11] = v11;
-
-	_m[12] = v12;
-	_m[13] = v13;
-	_m[14] = v14;
-	_m[15] = v15;
-
-	return shared_from_this();
+	return initialize(
+		m00 * _m[0] + m01 * _m[4] + m02 * _m[8] + m03 * _m[12],
+		m00 * _m[1] + m01 * _m[5] + m02 * _m[9] + m03 * _m[13],
+		m00 * _m[2] + m01 * _m[6] + m02 * _m[10] + m03 * _m[14],
+		m00 * _m[3] + m01 * _m[7] + m02 * _m[11] + m03 * _m[15],
+		m10 * _m[0] + m11 * _m[4] + m12 * _m[8] + m13 * _m[12],
+		m10 * _m[1] + m11 * _m[5] + m12 * _m[9] + m13 * _m[13],
+		m10 * _m[2] + m11 * _m[6] + m12 * _m[10] + m13 * _m[14],
+		m10 * _m[3] + m11 * _m[7] + m12 * _m[11] + m13 * _m[15],
+		m20 * _m[0] + m21 * _m[4] + m22 * _m[8] + m23 * _m[12],
+		m20 * _m[1] + m21 * _m[5] + m22 * _m[9] + m23 * _m[13],
+		m20 * _m[2] + m21 * _m[6] + m22 * _m[10] + m23 * _m[14],
+		m20 * _m[3] + m21 * _m[7] + m22 * _m[11] + m23 * _m[15],
+		m30 * _m[0] + m31 * _m[4] + m32 * _m[8] + m33 * _m[12],
+		m30 * _m[1] + m31 * _m[5] + m32 * _m[9] + m33 * _m[13],
+		m30 * _m[2] + m31 * _m[6] + m32 * _m[10] + m33 * _m[14],
+		m30 * _m[3] + m31 * _m[7] + m32 * _m[11] + m33 * _m[15]
+	);
 }
 
 Matrix4x4::ptr
@@ -173,16 +133,20 @@ Matrix4x4::initialize(float m00, float m01, float m02, float m03,
 	_m[8] = m20;	_m[9] = m21; 	_m[10] = m22; 	_m[11] = m23;
 	_m[12] = m30; 	_m[13] = m31; 	_m[14] = m32; 	_m[15] = m33;
 
+	changed()->execute(shared_from_this());
+
 	return shared_from_this();
 }
 
 Matrix4x4::ptr
 Matrix4x4::identity()
 {
-	_m[0] = 1.;		_m[1] = 0.; 	_m[2] = 0.; 	_m[3] = 0.;
-	_m[4] = 0.;		_m[5] = 1.; 	_m[6] = 0.; 	_m[7] = 0.;
-	_m[8] = 0.;		_m[9] = 0.; 	_m[10] = 1.; 	_m[11] = 0.;
-	_m[12] = 0.; 	_m[13] = 0.; 	_m[14] = 0.; 	_m[15] = 1.;
+	initialize(
+		1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		0.f, 0.f, 0.f, 1.f
+	);
 
 	return shared_from_this();
 }
@@ -222,47 +186,24 @@ Matrix4x4::invert()
 
     float invdet = 1.f / det;
 
-	float m0 = (_m[5] * c5 - _m[6] * c4 + _m[7] * c3) * invdet;
-	float m1 = (-_m[1] * c5 + _m[2] * c4 - _m[3] * c3) * invdet;
-	float m2 = (_m[13] * s5 - _m[14] * s4 + _m[15] * s3) * invdet;
-	float m3 = (-_m[9] * s5 + _m[10] * s4 - _m[11] * s3) * invdet;
-
-	float m4 = (-_m[4] * c5 + _m[6] * c2 - _m[7] * c1) * invdet;
-	float m5 = (_m[0] * c5 - _m[2] * c2 + _m[3] * c1) * invdet;
-	float m6 = (-_m[12] * s5 + _m[14] * s2 - _m[15] * s1) * invdet;
-	float m7 = (_m[8] * s5 - _m[10] * s2 + _m[11] * s1) * invdet;
-
-	float m8 = (_m[4] * c4 - _m[5] * c2 + _m[7] * c0) * invdet;
-	float m9 = (-_m[0] * c4 + _m[1] * c2 - _m[3] * c0) * invdet;
-	float m10 = (_m[12] * s4 - _m[13] * s2 + _m[15] * s0) * invdet;
-	float m11 = (-_m[8] * s4 + _m[9] * s2 - _m[11] * s0) * invdet;
-
-	float m12 = (-_m[4] * c3 + _m[5] * c1 - _m[6] * c0) * invdet;
-	float m13 = (_m[0] * c3 - _m[1] * c1 + _m[2] * c0) * invdet;
-	float m14 = (-_m[12] * s3 + _m[13] * s1 - _m[14] * s0) * invdet;
-	float m15 = (_m[8] * s3 - _m[9] * s1 + _m[10] * s0) * invdet;
-
-    _m[0] = m0;
-    _m[1] = m1;
-    _m[2] = m2;
-    _m[3] = m3;
-
-    _m[4] = m4;
-    _m[5] = m5;
-    _m[6] = m6;
-    _m[7] = m7;
-
-    _m[8] = m8;
-    _m[9] = m9;
-    _m[10] = m10;
-    _m[11] = m11;
-
-    _m[12] = m12;
-    _m[13] = m13;
-    _m[14] = m14;
-    _m[15] = m15;
-
-    return shared_from_this();
+	return initialize(
+		(_m[5] * c5 - _m[6] * c4 + _m[7] * c3) * invdet,
+		(-_m[1] * c5 + _m[2] * c4 - _m[3] * c3) * invdet,
+		(_m[13] * s5 - _m[14] * s4 + _m[15] * s3) * invdet,
+		(-_m[9] * s5 + _m[10] * s4 - _m[11] * s3) * invdet,
+		(-_m[4] * c5 + _m[6] * c2 - _m[7] * c1) * invdet,
+		(_m[0] * c5 - _m[2] * c2 + _m[3] * c1) * invdet,
+		(-_m[12] * s5 + _m[14] * s2 - _m[15] * s1) * invdet,
+		(_m[8] * s5 - _m[10] * s2 + _m[11] * s1) * invdet,
+		(_m[4] * c4 - _m[5] * c2 + _m[7] * c0) * invdet,
+		(-_m[0] * c4 + _m[1] * c2 - _m[3] * c0) * invdet,
+		(_m[12] * s4 - _m[13] * s2 + _m[15] * s0) * invdet,
+		(-_m[8] * s4 + _m[9] * s2 - _m[11] * s0) * invdet,
+		(-_m[4] * c3 + _m[5] * c1 - _m[6] * c0) * invdet,
+		(_m[0] * c3 - _m[1] * c1 + _m[2] * c0) * invdet,
+		(-_m[12] * s3 + _m[13] * s1 - _m[14] * s0) * invdet,
+		(_m[8] * s3 - _m[9] * s1 + _m[10] * s0) * invdet
+	);
 }
 
 Matrix4x4::ptr
@@ -505,6 +446,8 @@ Matrix4x4::lerp(Matrix4x4::ptr target, float ratio)
 	for (auto i = 0; i < 16; ++i)
 		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
 
+	changed()->execute(shared_from_this());
+
 	return shared_from_this();
 }
 
@@ -518,6 +461,8 @@ Matrix4x4::ptr
 Matrix4x4::copyFrom(Matrix4x4::ptr source)
 {
 	std::copy(source->_m.begin(), source->_m.end(), _m.begin());
+
+	changed()->execute(shared_from_this());
 
 	return shared_from_this();
 }
