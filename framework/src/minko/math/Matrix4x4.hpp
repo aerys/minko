@@ -1,8 +1,14 @@
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/scene/data/DataProviderProperty.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+
+namespace
+{
+	using namespace minko::scene::data;
+}
 
 namespace minko
 {
@@ -42,6 +48,7 @@ namespace minko
 				return _m;
 			}
 
+			inline
 			ptr
 			initialize(float m00, float m01, float m02, float m03,
 				   	   float m10, float m11, float m12, float m13,

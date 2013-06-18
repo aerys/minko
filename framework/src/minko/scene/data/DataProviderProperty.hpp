@@ -28,6 +28,12 @@ namespace minko
 				{
 					return _changed;
 				}
+
+			protected:
+				DataProviderProperty() :
+					_changed(Signal<T>::create())
+				{
+				}
 			};
 		}
 	}
