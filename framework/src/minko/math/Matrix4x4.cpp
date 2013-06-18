@@ -7,53 +7,45 @@ using namespace minko::math;
 Matrix4x4::ptr
 Matrix4x4::translation(float x, float y, float z)
 {
-	initialize(
+	return initialize(
 		1., 0., 0., x,
 		0., 1., 0., y,
 		0., 0., 1., z,
 		0., 0., 0., 1.
 	);
-
-	return shared_from_this();
 }
 
 Matrix4x4::ptr
 Matrix4x4::rotationX(float radians)
 {
-	initialize(
+	return initialize(
 		1., 0., 			0.,				0.,
 		0., cosf(radians),	-sinf(radians), 0.,
 		0.,	sinf(radians),	cosf(radians),	0.,
 		0.,	0.,				0.,				1.
 	);
-
-	return shared_from_this();
 }
 
 Matrix4x4::ptr
 Matrix4x4::rotationY(float radians)
 {
-	initialize(
+	return initialize(
 		cosf(radians),	0.,	sinf(radians),	0.,
 		0.,				1.,	0.,				0.,
 		-sinf(radians),	0.,	cosf(radians),	0.,
 		0.,				0.,	0.,				1.
 	);
-
-	return shared_from_this();
 }
 
 Matrix4x4::ptr
 Matrix4x4::rotationZ(float radians)
 {
-	initialize(
+	return initialize(
 		cosf(radians),	-sinf(radians),	0.,	0.,
 		sinf(radians),	cosf(radians),	0.,	0.,
 		0.,				0.,				1.,	0.,
 		0.,				0.,				0.,	1.
 	);
-
-	return shared_from_this();
 }
 
 Matrix4x4::Matrix4x4() :
@@ -141,14 +133,12 @@ Matrix4x4::initialize(float m00, float m01, float m02, float m03,
 Matrix4x4::ptr
 Matrix4x4::identity()
 {
-	initialize(
+	return initialize(
 		1.f, 0.f, 0.f, 0.f,
 		0.f, 1.f, 0.f, 0.f,
 		0.f, 0.f, 1.f, 0.f,
 		0.f, 0.f, 0.f, 1.f
 	);
-
-	return shared_from_this();
 }
 
 float
@@ -427,8 +417,6 @@ Matrix4x4::view(Vector3::const_ptr eye, Vector3::const_ptr lookAt, Vector3::cons
 		xAxis->z(),	yAxis->z(),	zAxis->z(),	0.,
 		m41,		m42,		m43,		1.
 	);
-
-	return shared_from_this();
 }
 
 Matrix4x4::ptr
