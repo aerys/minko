@@ -42,12 +42,12 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, 
 	target->bindings()->addProvider(_material);
 	target->bindings()->addProvider(_geometry->data());
 	target->bindings()->addProvider(_effect->data());
-	
+
+	_drawCalls.clear();
 	for (auto shader : _effect->shaders())
 	{
 		auto drawCall = DrawCall::create(target->bindings(), _effect->inputNameToBindingName());
 
-		_drawCalls.clear();
 		_drawCalls.push_back(drawCall);
 	}
 }
