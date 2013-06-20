@@ -53,14 +53,14 @@ namespace minko
 					void
 					indices(std::shared_ptr<IndexStream> indices)
 					{
-						_data->setProperty("geometry/indices", indices);
+						_data->set("geometry/indices", indices);
 					}
 
 					inline
 					std::shared_ptr<IndexStream>
 					indices()
 					{
-						return _data->getProperty<std::shared_ptr<IndexStream>>("geometry/indices");
+						return _data->get<std::shared_ptr<IndexStream>>("geometry/indices");
 					}
 
 					inline
@@ -69,11 +69,11 @@ namespace minko
 					{
 						for (auto attribute : vertexStream->attributes())
 						{
-							_data->setProperty("geometry/vertex/attribute/" + attribute->name(), vertexStream);
+							_data->set("geometry/vertex/attribute/" + attribute->name(), vertexStream);
 							_vertexSize += attribute->size();
 						}
 
-						_data->setProperty("geometry/vertex/size", _vertexSize);
+						_data->set("geometry/vertex/size", _vertexSize);
 					}
 
 				protected:
