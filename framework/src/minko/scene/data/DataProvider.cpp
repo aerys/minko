@@ -3,9 +3,10 @@
 using namespace minko::scene::data;
 
 void
-DataProvider::unsetProperty(const std::string& propertyName)
+DataProvider::unset(const std::string& propertyName)
 {
 	_values.erase(propertyName);
+	_changedSignalCds.erase(propertyName);
 
 	if (_values.count(propertyName) == 0)
 	{
@@ -15,14 +16,37 @@ DataProvider::unsetProperty(const std::string& propertyName)
 }
 
 void
-DataProvider::propertyWrapperInitHandler(const std::string& propertyName)
+DataProvider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
-	_propertyAdded->execute(shared_from_this(), propertyName);
+	bool isNewValue = _values.count(propertyName) == 0;
 
-	_values[propertyName] = DataProviderPropertyWrapper::create(std::bind(
+	_values[propertyName] = value;
+	_changedSignalCds[propertyName] = value->changed()->add(std::bind(
 		&Signal<ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),
 		propertyName
 	));
+
+	if (isNewValue)
+	{
+		_names.push_back(propertyName);
+		_propertyAdded->execute(shared_from_this(), propertyName);
+	}
+	else
+		_propertyChanged->execute(shared_from_this(), propertyName);
+}
+
+
+void
+DataProvider::propertyWrapperInitHandler(const std::string& propertyName)
+{
+	_propertyAdded->execute(shared_from_this(), propertyName);
+
+	/*_values[propertyName] = Value::create(std::bind(
+		&Signal<ptr, const std::string&>::execute,
+		_propertyChanged,
+		shared_from_this(),
+		propertyName
+	));*/
 }

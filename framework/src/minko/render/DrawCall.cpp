@@ -25,7 +25,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 {
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program = bindings->getProperty<GLSLProgram::ptr>("effect/pass" + std::to_string(passId));
+		auto program = bindings->get<GLSLProgram::ptr>("effect/pass" + std::to_string(passId));
 
 		_func.push_back([program](std::shared_ptr<AbstractContext> context)
 		{
@@ -46,9 +46,9 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 
 			if (type == ShaderProgramInputs::attribute)
 			{
-				auto vertexStream	= _bindings->getProperty<VertexStream::ptr>(name);
+				auto vertexStream	= _bindings->get<VertexStream::ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
-				auto vertexSize		= _bindings->getProperty<unsigned int>("geometry/vertex/size");
+				auto vertexSize		= _bindings->get<unsigned int>("geometry/vertex/size");
 
 				_func.push_back([location, vertexStream, attribute, vertexSize](std::shared_ptr<AbstractContext> context)
 				{
@@ -63,7 +63,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float1)
 			{
-				auto floatValue = _bindings->getProperty<float>(name);
+				auto floatValue = _bindings->get<float>(name);
 
 				_func.push_back([location, floatValue](std::shared_ptr<AbstractContext> context)
 				{
@@ -72,7 +72,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float2)
 			{
-				auto float2Value = _bindings->getProperty<std::shared_ptr<Vector2>>(name);
+				auto float2Value = _bindings->get<std::shared_ptr<Vector2>>(name);
 
 				_func.push_back([location, float2Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -81,7 +81,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float3)
 			{
-				auto float3Value = _bindings->getProperty<std::shared_ptr<Vector3>>(name);
+				auto float3Value = _bindings->get<std::shared_ptr<Vector3>>(name);
 
 				_func.push_back([location, float3Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -90,7 +90,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float4)
 			{
-				auto float4Value = _bindings->getProperty<std::shared_ptr<Vector4>>(name);
+				auto float4Value = _bindings->get<std::shared_ptr<Vector4>>(name);
 
 				_func.push_back([location, float4Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -99,7 +99,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float16)
 			{
-				auto float16Ptr = &(_bindings->getProperty<Matrix4x4::ptr>(name)->data()[0]);
+				auto float16Ptr = &(_bindings->get<Matrix4x4::ptr>(name)->data()[0]);
 
 				_func.push_back([location, float16Ptr](std::shared_ptr<AbstractContext> context)
 				{
@@ -109,7 +109,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 		}
 	}
 
-	auto indexStream = bindings->getProperty<IndexStream::ptr>("geometry/indices");
+	auto indexStream = bindings->get<IndexStream::ptr>("geometry/indices");
 
 	_func.push_back([indexStream](std::shared_ptr<AbstractContext> context)
 	{
