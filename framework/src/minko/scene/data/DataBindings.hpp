@@ -14,16 +14,17 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<DataBindings>	ptr;
+				typedef Signal<ptr, const std::string&>	PropertyChangedSignal;
 
 			private:
 				typedef std::shared_ptr<DataProvider>									DataProviderPtr;
-				typedef std::shared_ptr<Signal<ptr, const std::string&>>				PropertyChangedSignal;
+				typedef std::shared_ptr<Signal<ptr, const std::string&>>				PropertyChangedSignalPtr;
 				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::cd	DataProviderPropertyChangedCd;
 
 				std::list<DataProviderPtr>											_providers;
 				std::unordered_map<std::string, DataProviderPtr>					_propertyNameToProvider;
 
-				std::unordered_map<std::string, PropertyChangedSignal>				_propertyChanged;
+				std::unordered_map<std::string, PropertyChangedSignalPtr>			_propertyChanged;
 
 				std::unordered_map<DataProviderPtr, std::list<Any>>					_propertyAddedOrRemovedCds;
 				std::unordered_map<DataProviderPtr, DataProviderPropertyChangedCd>	_dataProviderPropertyChangedCd;
@@ -50,30 +51,30 @@ namespace minko
 
 				template <typename T>
 				T
-				getProperty(const std::string& propertyName)
+				get(const std::string& propertyName)
 				{
 					assertPropertyExists(propertyName);
 
-					return _propertyNameToProvider[propertyName]->getProperty<T>(propertyName);
+					return _propertyNameToProvider[propertyName]->get<T>(propertyName);
 				}
 
 				template <typename T>
 				void
-				setProperty(const std::string& propertyName, T value)
+				set(const std::string& propertyName, T value)
 				{
 					assertPropertyExists(propertyName);
 
 					_propertyNameToProvider[propertyName]->setProperty<T>(propertyName, value);
 				}
 
-				inline
+				/*inline
 				Any&
 				operator[](const std::string& propertyName)
 				{
-					return getProperty<Any&>(propertyName);
-				}
+					return get<Any&>(propertyName);
+				}*/
 
-				PropertyChangedSignal
+				PropertyChangedSignalPtr
 				propertyChanged(const std::string& propertyName);
 
 				inline

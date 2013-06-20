@@ -4,6 +4,7 @@
 #include "minko/scene/controller/AbstractController.hpp"
 #include "minko/scene/data/DataProvider.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/scene/data/DataBindings.hpp"
 
 namespace
 {
@@ -29,27 +30,28 @@ namespace minko
 				typedef std::shared_ptr<Node>				NodePtr;
 
 			private:
-				std::shared_ptr<Matrix4x4>		_view;
-				std::shared_ptr<Matrix4x4>		_projection;
-				std::shared_ptr<Matrix4x4>		_viewProjection;
+				std::shared_ptr<Matrix4x4>				_view;
+				std::shared_ptr<Matrix4x4>				_projection;
+				std::shared_ptr<Matrix4x4>				_viewProjection;
 
-				std::shared_ptr<DataProvider>	_data;
+				std::shared_ptr<DataProvider>			_data;
 
-				Signal<AbsCtrlPtr, NodePtr>::cd	_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd	_targetRemovedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd			_targetAddedCd;
+				Signal<AbsCtrlPtr, NodePtr>::cd			_targetRemovedCd;
+				DataBindings::PropertyChangedSignal::cd	_modelToWorldChangedCd;
 
 			public:
 				inline static
 				ptr
 				create(float fov, float aspectRatio, float zNear, float zFar)
 				{
-					auto ctrl  = new PerspectiveCameraController(
+					auto ctrl  = std::shared_ptr<PerspectiveCameraController>(new PerspectiveCameraController(
 						fov, aspectRatio, zNear, zFar
-					);
+					));
 
 					ctrl->initialize();
 
-					return std::shared_ptr<PerspectiveCameraController>(ctrl);
+					return ctrl;
 				}
 
 			private:
@@ -64,6 +66,8 @@ namespace minko
 				void
 				targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> node);
 
+				void
+				localToWorldChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName);
 			};
 		}
 	}
