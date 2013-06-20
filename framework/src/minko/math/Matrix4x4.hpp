@@ -1,7 +1,7 @@
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/scene/data/DataProviderProperty.hpp"
+#include "minko/scene/data/Value.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 
@@ -16,7 +16,7 @@ namespace minko
 	{
 		class Matrix4x4 :
 			public std::enable_shared_from_this<Matrix4x4>,
-			public DataProviderProperty<std::shared_ptr<Matrix4x4>>
+			public Value
 		{
 		private:
 			std::vector<float> _m;
@@ -24,6 +24,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Matrix4x4>	ptr;
 
+		public:
 			inline static
 			ptr
 			create()
