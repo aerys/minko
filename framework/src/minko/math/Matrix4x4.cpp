@@ -1,6 +1,5 @@
 #include "Matrix4x4.hpp"
 #include "minko/Signal.hpp"
-#include "minko/scene/data/DataProviderProperty.hpp"
 
 using namespace minko::math;
 
@@ -49,15 +48,11 @@ Matrix4x4::rotationZ(float radians)
 }
 
 Matrix4x4::Matrix4x4() :
-	std::enable_shared_from_this<Matrix4x4>(),
-	DataProviderProperty<Matrix4x4::ptr>(),
 	_m(16)
 {
 }
 
 Matrix4x4::Matrix4x4(Matrix4x4::ptr value) :
-	std::enable_shared_from_this<Matrix4x4>(),
-	DataProviderProperty<Matrix4x4::ptr>(),
 	_m(value->_m)
 {
 }

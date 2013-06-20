@@ -52,13 +52,14 @@ namespace minko
 			class TransformController;
 			class SurfaceController;
 			class RenderingController;
+			class PerspectiveCameraController;
 		}
 
 		namespace data
 		{
 			class DataProvider;
-			template <typename P>
-			class DataProviderProperty;
+			class ValueBase;
+			class Value;
 			class DataBindings;
 
 			namespace geometry

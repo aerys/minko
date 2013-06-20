@@ -31,8 +31,8 @@ TransformController::initialize()
 		std::placeholders::_2
 	));
 
-	_data->setProperty("transform/modelToWorldMatrix", _modelToWorld);
-	_data->setProperty("transform/worldToModelMatrix", _worldToModel);
+	_data->set<Matrix4x4::ptr>("transform/modelToWorldMatrix", _modelToWorld);
+	//_data->set("transform/worldToModelMatrix", _worldToModel);
 }
 
 void

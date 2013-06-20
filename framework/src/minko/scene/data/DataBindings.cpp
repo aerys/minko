@@ -34,20 +34,7 @@ DataBindings::addProvider(std::shared_ptr<DataProvider> provider)
 	)));
 
 	for (auto property : provider->values())
-	{
-		if (_propertyNameToProvider.count(property.first) != 0)
-			throw std::logic_error("Duplicate binding property name: " + property.first);
-
-		_propertyNameToProvider[property.first] = provider;
-
-		if (_propertyChanged.count(property.first) != 0)
-			_dataProviderPropertyChangedCd[provider] = provider->propertyChanged()->add(std::bind(
-				&DataBindings::dataProviderPropertyChangedHandler,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2
-			));
-	}
+		dataProviderPropertyAddedHandler(provider, property.first);
 }
 
 void
@@ -84,7 +71,7 @@ DataBindings::hasProperty(const std::string& propertyName)
 	return _propertyNameToProvider.count(propertyName) != 0;
 }
 
-DataBindings::PropertyChangedSignal
+DataBindings::PropertyChangedSignalPtr
 DataBindings::propertyChanged(const std::string& propertyName)
 {
 	//assertPropertyExists(propertyName);
