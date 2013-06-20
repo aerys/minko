@@ -3,6 +3,7 @@
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/data/Value.hpp"
 
 namespace minko
 {
@@ -17,16 +18,20 @@ namespace minko
 				typedef std::shared_ptr<DataProvider> ptr;
 
 			private:
-				class DataProviderPropertyWrapper;
+				template <typename P>
+				class ValueWrapper;
 
-				typedef std::shared_ptr<DataProviderPropertyWrapper>	WrapperPtr;
+				typedef Signal<std::shared_ptr<Value>>::cd ChangedSignalCd;
 
-				std::vector<std::string>							_names;
-				std::unordered_map<std::string, WrapperPtr>			_values;
+			private:
 
-				std::shared_ptr<Signal<ptr, const std::string&>>	_propertyChanged;
-				std::shared_ptr<Signal<ptr, const std::string&>>	_propertyAdded;
-				std::shared_ptr<Signal<ptr, const std::string&>>	_propertyRemoved;
+				std::vector<std::string>								_names;
+				std::unordered_map<std::string, std::shared_ptr<Value>>	_values;
+				std::unordered_map<std::string, ChangedSignalCd>		_changedSignalCds;
+
+				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyChanged;
+				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyAdded;
+				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyRemoved;
 
 			public:
 				static
@@ -44,22 +49,15 @@ namespace minko
 				}
 
 				inline
-				const std::unordered_map<std::string, WrapperPtr>&
+				const std::unordered_map<std::string, std::shared_ptr<Value>>&
 				values()
 				{
 					return _values;
 				}
 
 				inline
-				const unsigned int
-				numProperties()
-				{
-					return _names.size();
-				}
-
-				inline
 				const std::string&
-				getPropertyName(const unsigned int propertyIndex)
+				propertyName(const unsigned int propertyIndex)
 				{
 					return _names[propertyIndex];
 				}
@@ -85,54 +83,31 @@ namespace minko
 					return _propertyRemoved;
 				}
 
-				inline
-				DataProviderPropertyWrapper&
-				operator[](const std::string& propertyName)
+				template <typename T>
+				typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
+				get(const std::string& propertyName)
 				{
-					if (_values.count(propertyName) == 0)
-						_values[propertyName] = DataProviderPropertyWrapper::create(
-							std::bind(&DataProvider::propertyWrapperInitHandler, shared_from_this(), propertyName)
-						);
-
-					return *_values[propertyName];
+					return std::dynamic_pointer_cast<T::element_type>(_values[propertyName]);
 				}
 
 				template <typename T>
-				T
-				getProperty(const std::string& propertyName)
+				typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
+				get(const std::string& propertyName)
 				{
-					return Any::cast<T>(*_values[propertyName]);
+					return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[propertyName])->value();
 				}
 
 				template <typename T>
 				ptr
-				setProperty(const std::string& propertyName, T value)
+				set(const std::string& propertyName, T value)
 				{
-					bool isNewValue = _values.count(propertyName) == 0;
-
-					_values[propertyName] = DataProviderPropertyWrapper::create(
-						value,
-						std::bind(
-							&Signal<ptr, const std::string&>::execute,
-							_propertyChanged,
-							shared_from_this(),
-							propertyName
-						)
-					);
-
-					if (isNewValue)
-					{
-						_names.push_back(propertyName);
-						_propertyAdded->execute(shared_from_this(), propertyName);
-					}
-					else
-						_propertyChanged->execute(shared_from_this(), propertyName);
+					registerProperty(propertyName, wrapProperty<T>(value));
 
 					return shared_from_this();
 				}
 
 				void
-				unsetProperty(const std::string& propertyName);
+				unset(const std::string& propertyName);
 
 			private:
 				DataProvider() :
@@ -145,59 +120,55 @@ namespace minko
 
 				void
 				propertyWrapperInitHandler(const std::string& propertyName);
-	
-				class DataProviderPropertyWrapper :
-					public Any,
-					public std::enable_shared_from_this<DataProviderPropertyWrapper>
+
+				template <typename T>
+				inline
+				std::shared_ptr<Value>
+				wrapProperty(typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, std::shared_ptr<Value>>::type	value)
+				{
+					return value;
+				}
+
+				template <typename T>
+				inline
+				std::shared_ptr<Value>
+				wrapProperty(typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type	value)
+				{
+					return ValueWrapper<T>::create(value);
+				}
+
+				void
+				registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
+
+				template <typename P>
+				class ValueWrapper :
+					public Value,
+					public std::enable_shared_from_this<Value>
 				{
 				public:
-					typedef std::shared_ptr<DataProviderPropertyWrapper>	ptr;
+					typedef std::shared_ptr<ValueWrapper> ptr;
 
 				private:
-					std::function<void(void)> _changedCallack;
+					P _value;
 
 				public:
 					inline static
 					ptr
-					create(const Any& value, std::function<void(void)> changedCallback)
+					create(P value)
 					{
-						return std::shared_ptr<DataProviderPropertyWrapper>(
-							new DataProviderPropertyWrapper(value, changedCallback)
-						);
+						return std::shared_ptr<ValueWrapper>(new ValueWrapper(value));
 					}
 
-					inline static
-					ptr
-					create(std::function<void(void)> changedCallback)
+					inline
+					P
+					value()
 					{
-						return std::shared_ptr<DataProviderPropertyWrapper>(
-							new DataProviderPropertyWrapper(changedCallback)
-						);
-					}	
-
-				  	template <typename ValueType>
-					Any&
-					operator=(const ValueType& rhs)
-					{
-					    Any(rhs).swap(*this);
-
-						_changedCallack();
-
-					    return *this;
+						return _value;
 					}
 
 				private:
-					DataProviderPropertyWrapper(std::function<void(void)> changedCallback) :
-						Any(),
-						enable_shared_from_this(),
-						_changedCallack(changedCallback)
-					{
-					}
-
-					DataProviderPropertyWrapper(const Any& value, std::function<void(void)> changedCallback) :
-						Any(value),
-						enable_shared_from_this(),
-						_changedCallack(changedCallback)
+					ValueWrapper(P value) :
+						_value(value)
 					{
 					}
 				};

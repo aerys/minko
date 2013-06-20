@@ -12,7 +12,7 @@ Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
 	auto i = 0;
 
 	for (auto shader : shaders)
-		_data->setProperty("effect/pass" + std::to_string(i++), shader);
+		_data->set<Effect::GLSLProgramPtr>("effect/pass" + std::to_string(i++), shader);
 }
 
 void

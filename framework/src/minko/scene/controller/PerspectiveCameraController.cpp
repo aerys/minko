@@ -10,9 +10,9 @@ PerspectiveCameraController::PerspectiveCameraController(float fov, float aspect
 	_data(DataProvider::create())
 {
 	_data
-		->setProperty("transform/viewMatrix",			_view)
-		->setProperty("transform/projectionMatrix",		_projection)
-		->setProperty("transfrom/viewProjectionMatrix",	_viewProjection);
+		->set("transform/viewMatrix",			_view)
+		->set("transform/projectionMatrix",		_projection)
+		->set("transform/worldToScreenMatrix",	_viewProjection);
 }
 
 void
@@ -34,6 +34,12 @@ PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractControll
 		throw std::logic_error("PerspectiveCameraController cannot have more than 1 target.");
 
 	target->bindings()->addProvider(_data);
+	target->bindings()->propertyChanged("transform/modelToWorldMatrix")->add(std::bind(
+		&PerspectiveCameraController::localToWorldChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 }
 
 void
@@ -42,8 +48,12 @@ PerspectiveCameraController::targetRemovedHandler(std::shared_ptr<AbstractContro
 	target->bindings()->addProvider(_data);
 }
 
-/*void
-PerspectiveCameraController::localToWorldChangedHandler()
+void
+PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName)
 {
-	// FIXME: _view->copyFrom(localToWorld)->invert();
-}*/
+	std::cout << "PerspectiveCameraController::localToWorldChangedHandler()" << std::endl;
+
+	_view->copyFrom(bindings->get<Matrix4x4::ptr>("transform/modelToWorldMatrix"))->invert();
+	_viewProjection->copyFrom(_view)->append(_projection);
+}
+
