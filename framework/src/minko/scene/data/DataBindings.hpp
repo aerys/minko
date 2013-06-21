@@ -64,7 +64,7 @@ namespace minko
 				{
 					assertPropertyExists(propertyName);
 
-					_propertyNameToProvider[propertyName]->setProperty<T>(propertyName, value);
+					_propertyNameToProvider[propertyName]->set<T>(propertyName, value);
 				}
 
 				/*inline
