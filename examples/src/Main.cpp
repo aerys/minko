@@ -99,9 +99,9 @@ int main(int argc, char** argv)
   mesh->addController(SurfaceController::create(
     cubeGeometry,
     data::DataProvider::create()
-		->setProperty("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
-		->setProperty("transform/worldToScreenMatrix",	viewMatrix)
-		->setProperty("light/direction",					Vector3::create(0.f, -1.f, -1.f)),
+		->set("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
+		->set("transform/worldToScreenMatrix",	viewMatrix)
+		->set("light/direction",				Vector3::create(0.f, -1.f, -1.f)),
     fx
   ));
 
