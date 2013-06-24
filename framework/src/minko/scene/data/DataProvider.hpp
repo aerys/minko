@@ -87,7 +87,7 @@ namespace minko
 				typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, T>::type
 				get(const std::string& propertyName)
 				{
-					return std::dynamic_pointer_cast<T::element_type>(_values[propertyName]);
+					return std::dynamic_pointer_cast<typename T::element_type>(_values[propertyName]);
 				}
 
 				template <typename T>
