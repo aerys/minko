@@ -13,12 +13,12 @@ namespace minko
 				public std::enable_shared_from_this<DataBindings>
 			{
 			public:
-				typedef std::shared_ptr<DataBindings>	ptr;
-				typedef Signal<ptr, const std::string&>	PropertyChangedSignal;
+				typedef std::shared_ptr<DataBindings>	Ptr;
+				typedef Signal<Ptr, const std::string&>	PropertyChangedSignal;
 
 			private:
 				typedef std::shared_ptr<DataProvider>									DataProviderPtr;
-				typedef std::shared_ptr<Signal<ptr, const std::string&>>				PropertyChangedSignalPtr;
+				typedef std::shared_ptr<Signal<Ptr, const std::string&>>				PropertyChangedSignalPtr;
 				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::Slot	DataProviderPropertyChangedSlot;
 
 				std::list<DataProviderPtr>											_providers;
@@ -31,7 +31,7 @@ namespace minko
 
 			public:
 				static
-				ptr
+				Ptr
 				create()
 				{
 					return std::shared_ptr<DataBindings>(new DataBindings());

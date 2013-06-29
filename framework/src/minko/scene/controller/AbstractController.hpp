@@ -19,18 +19,18 @@ namespace minko
 				friend class minko::scene::Node;
 
 			public:
-				typedef std::shared_ptr<AbstractController>	ptr;
+				typedef std::shared_ptr<AbstractController>	Ptr;
 
 			private:
 				std::vector<std::shared_ptr<Node>>					_targets;
 
-				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetAdded;
-				std::shared_ptr<Signal<ptr, std::shared_ptr<Node>>>	_targetRemoved;
+				std::shared_ptr<Signal<Ptr, std::shared_ptr<Node>>>	_targetAdded;
+				std::shared_ptr<Signal<Ptr, std::shared_ptr<Node>>>	_targetRemoved;
 
 			public:
 				AbstractController() :
-					_targetAdded(Signal<ptr, std::shared_ptr<Node>>::create()),
-					_targetRemoved(Signal<ptr, std::shared_ptr<Node>>::create())
+					_targetAdded(Signal<Ptr, std::shared_ptr<Node>>::create()),
+					_targetRemoved(Signal<Ptr, std::shared_ptr<Node>>::create())
 				{
 				}
 
@@ -47,14 +47,14 @@ namespace minko
 				}
 
 				inline
-				Signal<ptr, std::shared_ptr<Node>>::ptr
+				Signal<Ptr, std::shared_ptr<Node>>::Ptr
 				targetAdded()
 				{
 					return _targetAdded;
 				}
 
 				inline
-				Signal<ptr, std::shared_ptr<Node>>::ptr
+				Signal<Ptr, std::shared_ptr<Node>>::Ptr
 				targetRemoved()
 				{
 					return _targetRemoved;

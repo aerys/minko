@@ -15,7 +15,7 @@ namespace minko
 				public std::enable_shared_from_this<DataProvider>
 			{
 			public:
-				typedef std::shared_ptr<DataProvider> ptr;
+				typedef std::shared_ptr<DataProvider> Ptr;
 
 			private:
 				template <typename P>
@@ -29,13 +29,13 @@ namespace minko
 				std::unordered_map<std::string, std::shared_ptr<Value>>	_values;
 				std::unordered_map<std::string, ChangedSignalSlot>		_changedSignalSlots;
 
-				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyChanged;
-				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyAdded;
-				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyRemoved;
+				std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyChanged;
+				std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyAdded;
+				std::shared_ptr<Signal<Ptr, const std::string&>>		_propertyRemoved;
 
 			public:
 				static
-				ptr
+				Ptr
 				create()
 				{
 					return std::shared_ptr<DataProvider>(new DataProvider());
@@ -63,21 +63,21 @@ namespace minko
 				}
 
 				inline
-				std::shared_ptr<Signal<ptr, const std::string&>>
+				std::shared_ptr<Signal<Ptr, const std::string&>>
 				propertyChanged()
 				{
 					return _propertyChanged;
 				}
 
 				inline
-				std::shared_ptr<Signal<ptr, const std::string&>>
+				std::shared_ptr<Signal<Ptr, const std::string&>>
 				propertyAdded()
 				{
 					return _propertyAdded;
 				}
 
 				inline
-				std::shared_ptr<Signal<ptr, const std::string&>>
+				std::shared_ptr<Signal<Ptr, const std::string&>>
 				propertyRemoved()
 				{
 					return _propertyRemoved;
@@ -98,7 +98,7 @@ namespace minko
 				}
 
 				template <typename T>
-				ptr
+				Ptr
 				set(const std::string& propertyName, T value)
 				{
 					registerProperty(propertyName, wrapProperty<T>(value));
@@ -112,9 +112,9 @@ namespace minko
 			private:
 				DataProvider() :
 					enable_shared_from_this(),
-					_propertyChanged(Signal<ptr, const std::string&>::create()),
-					_propertyAdded(Signal<ptr, const std::string&>::create()),
-					_propertyRemoved(Signal<ptr, const std::string&>::create())
+					_propertyChanged(Signal<Ptr, const std::string&>::create()),
+					_propertyAdded(Signal<Ptr, const std::string&>::create()),
+					_propertyRemoved(Signal<Ptr, const std::string&>::create())
 				{
 				}
 
@@ -146,14 +146,14 @@ namespace minko
 					public std::enable_shared_from_this<Value>
 				{
 				public:
-					typedef std::shared_ptr<ValueWrapper> ptr;
+					typedef std::shared_ptr<ValueWrapper> Ptr;
 
 				private:
 					P _value;
 
 				public:
 					inline static
-					ptr
+					Ptr
 					create(P value)
 					{
 						return std::shared_ptr<ValueWrapper>(new ValueWrapper(value));

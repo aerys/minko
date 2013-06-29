@@ -24,7 +24,7 @@ namespace minko
 			{
 
 			public:
-				typedef std::shared_ptr<TransformController>	ptr;
+				typedef std::shared_ptr<TransformController>	Ptr;
 
 			private:
 				typedef std::shared_ptr<Node>					NodePtr;
@@ -43,10 +43,10 @@ namespace minko
 
 			public:
 				inline static
-				ptr
+				Ptr
 				create()
 				{
-					ptr ctrl = std::shared_ptr<TransformController>(new TransformController());
+					Ptr ctrl = std::shared_ptr<TransformController>(new TransformController());
 
 					ctrl->initialize();
 
@@ -88,7 +88,7 @@ namespace minko
 					public AbstractController
 				{
 				public:
-					typedef std::shared_ptr<RootTransformController> ptr;
+					typedef std::shared_ptr<RootTransformController> Ptr;
 
 				private:
 					typedef std::shared_ptr<RenderingController>	RenderingCtrlPtr;
@@ -96,7 +96,7 @@ namespace minko
 
 				public:
 					inline static
-					ptr
+					Ptr
 					create()
 					{
 						auto ctrl = std::shared_ptr<RootTransformController>(new RootTransformController());

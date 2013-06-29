@@ -19,37 +19,37 @@ namespace minko
 			public std::enable_shared_from_this<Node>
 		{
 		public:
-			typedef std::shared_ptr<Node>	ptr;
+			typedef std::shared_ptr<Node>	Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
 
 		protected:
 			std::string 									_name;
-			std::list<ptr>									_children;
+			std::list<Ptr>									_children;
 
 		private:
 			static unsigned int								_id;
 
 			unsigned int									_tags;
-			ptr 											_root;
-			ptr												_parent;
+			Ptr 											_root;
+			Ptr												_parent;
 			std::shared_ptr<DataBindings>					_bindings;
 			std::list<AbsCtrlPtr>							_controllers;
 
-			std::shared_ptr<Signal<ptr, ptr, ptr>>			_added;
-			std::shared_ptr<Signal<ptr, ptr, ptr>>			_removed;
-			std::shared_ptr<Signal<ptr, ptr>>				_tagsChanged;
-			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>	_controllerAdded;
-			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>	_controllerRemoved;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
+			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
+			std::shared_ptr<Signal<Ptr, Ptr>>				_tagsChanged;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerAdded;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerRemoved;
 
 		public:
 
 			static
-			ptr
+			Ptr
 			create()
 			{
-				ptr node = std::shared_ptr<Node>(new Node());
+				Ptr node = std::shared_ptr<Node>(new Node());
 
 				node->_root = node;
 
@@ -57,10 +57,10 @@ namespace minko
 			}
 
 			static
-			ptr
-			create(const std::list<ptr>& children)
+			Ptr
+			create(const std::list<Ptr>& children)
 			{
-				ptr node = create();
+				Ptr node = create();
 
 				for (auto child : children)
 					node->addChild(child);
@@ -69,10 +69,10 @@ namespace minko
 			}
 
 			static
-			ptr
+			Ptr
 			create(const std::string& name)
 			{
-				ptr node = create();
+				Ptr node = create();
 
 				node->name(name);
 
@@ -80,10 +80,10 @@ namespace minko
 			}
 
 			static
-			ptr
-			create(const std::string& name, const std::list<ptr>& children)
+			Ptr
+			create(const std::string& name, const std::list<Ptr>& children)
 			{
-				ptr node = create(name);
+				Ptr node = create(name);
 
 				for (auto child : children)
 					node->addChild(child);
@@ -132,21 +132,21 @@ namespace minko
 			}
 
 			inline
-			ptr
+			Ptr
 			parent()
 			{
 				return _parent;
 			}
 
 			inline
-			ptr
+			Ptr
 			root()
 			{
 				return _root;
 			}
 
 			inline
-			const std::list<ptr>&
+			const std::list<Ptr>&
 			children()
 			{
 				return _children;
@@ -160,53 +160,53 @@ namespace minko
 			}
 
 			inline
-			Signal<ptr, ptr, ptr>::ptr
+			Signal<Ptr, Ptr, Ptr>::Ptr
 			added()
 			{
 				return _added;
 			}
 
 			inline
-			Signal<ptr, ptr, ptr>::ptr
+			Signal<Ptr, Ptr, Ptr>::Ptr
 			removed()
 			{
 				return _removed;
 			}
 
 			inline
-			Signal<ptr, ptr>::ptr
+			Signal<Ptr, Ptr>::Ptr
 			tagsChanged()
 			{
 				return _tagsChanged;
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
 			controllerAdded()
 			{
 				return _controllerAdded;
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr, ptr, AbsCtrlPtr>>
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
 			controllerRemoved()
 			{
 				return _controllerRemoved;
 			}
 
-			ptr
-			addChild(ptr Node);
+			Ptr
+			addChild(Ptr Node);
 
-			ptr
-			removeChild(ptr Node);
+			Ptr
+			removeChild(Ptr Node);
 
 			bool
-			contains(ptr Node);
+			contains(Ptr Node);
 
-			ptr
+			Ptr
 			addController(std::shared_ptr<AbstractController> controller);
 
-			ptr
+			Ptr
 			removeController(std::shared_ptr<AbstractController> controller);
 
 			bool

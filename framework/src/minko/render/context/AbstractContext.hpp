@@ -11,7 +11,7 @@ namespace minko
 			class AbstractContext
 			{
 			public:
-				typedef std::shared_ptr<AbstractContext>	ptr;
+				typedef std::shared_ptr<AbstractContext>	Ptr;
 
 			public:
 				~AbstractContext()

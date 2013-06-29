@@ -17,7 +17,7 @@ namespace minko
 			public std::enable_shared_from_this<Effect>
 		{
 		public:
-			typedef std::shared_ptr<Effect>	ptr;
+			typedef std::shared_ptr<Effect>	Ptr;
 
 		private:
 			typedef std::shared_ptr<GLSLProgram>		GLSLProgramPtr;
@@ -29,7 +29,7 @@ namespace minko
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(std::vector<GLSLProgramPtr> shaders)
 			{
 				return std::shared_ptr<Effect>(new Effect(shaders));
@@ -56,7 +56,7 @@ namespace minko
 				return _inputNameToBindingName;
 			}
 
-			ptr
+			Ptr
 			bindInput(const std::string& bindingName, const std::string& programInputName);
 
 		private:

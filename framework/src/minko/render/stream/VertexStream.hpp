@@ -17,7 +17,7 @@ namespace minko
 			class VertexStream
 			{
 			public:
-				typedef std::shared_ptr<VertexStream>	ptr;
+				typedef std::shared_ptr<VertexStream>	Ptr;
 
 			private:
 				typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
@@ -30,14 +30,14 @@ namespace minko
 
 			public:
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext> context)
 				{
 					return std::shared_ptr<VertexStream>(new VertexStream(context));
 				}
 
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext>	context,
 					   float*							data,
 					   const unsigned int				size,
@@ -47,7 +47,7 @@ namespace minko
 				}
 
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext>		context,
 					   std::vector<float>::const_iterator	begin,
 					   std::vector<float>::const_iterator	end)
@@ -56,7 +56,7 @@ namespace minko
 				}
 				
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext>	context, float* begin, float* end)
 				{
 					return std::shared_ptr<VertexStream>(new VertexStream(
@@ -67,7 +67,7 @@ namespace minko
 				}
 				
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext>	context, const std::vector<float>& data)
 				{
 					return create(context, data.begin(), data.end());

@@ -14,19 +14,19 @@ namespace minko
 			public std::enable_shared_from_this<Loader>
 		{
 		public:
-			typedef std::shared_ptr<Loader>	ptr;
+			typedef std::shared_ptr<Loader>	Ptr;
 
 		private:
 			std::vector<char>				_data;
 
 			std::shared_ptr<Options>		_options;
 
-			std::shared_ptr<Signal<ptr>>	_complete;
-			std::shared_ptr<Signal<ptr>>	_error;
+			std::shared_ptr<Signal<Ptr>>	_complete;
+			std::shared_ptr<Signal<Ptr>>	_error;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create()
 			{
 				return std::shared_ptr<Loader>(new Loader());
@@ -47,14 +47,14 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr>>
+			std::shared_ptr<Signal<Ptr>>
 			complete()
 			{
 				return _complete;
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr>>
+			std::shared_ptr<Signal<Ptr>>
 			error()
 			{
 				return _error;

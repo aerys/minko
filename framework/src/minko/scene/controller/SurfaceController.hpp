@@ -22,7 +22,7 @@ namespace minko
 				public std::enable_shared_from_this<SurfaceController>
 			{
 			public:
-				typedef std::shared_ptr<SurfaceController>	ptr;
+				typedef std::shared_ptr<SurfaceController>	Ptr;
 
 			private:
 				typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
@@ -41,12 +41,12 @@ namespace minko
 
 			public:
 				static
-				ptr
+				Ptr
 				create(std::shared_ptr<Geometry> 		geometry,
 					   std::shared_ptr<DataProvider> 	material,
 					   std::shared_ptr<Effect>			effect)
 				{
-					ptr surface(new SurfaceController(geometry, material, effect));
+					Ptr surface(new SurfaceController(geometry, material, effect));
 
 					surface->initialize();
 
