@@ -7,8 +7,8 @@
 using namespace minko::file;
 
 Loader::Loader() :
-	_complete(Signal<Loader::ptr>::create()),
-	_error(Signal<Loader::ptr>::create())
+	_complete(Signal<Loader::Ptr>::create()),
+	_error(Signal<Loader::Ptr>::create())
 {
 }
 

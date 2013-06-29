@@ -53,7 +53,7 @@ PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<DataBind
 {
 	std::cout << "PerspectiveCameraController::localToWorldChangedHandler()" << std::endl;
 
-	_view->copyFrom(bindings->get<Matrix4x4::ptr>("transform/modelToWorldMatrix"))->invert();
+	_view->copyFrom(bindings->get<Matrix4x4::Ptr>("transform/modelToWorldMatrix"))->invert();
 	_viewProjection->copyFrom(_view)->append(_projection);
 }
 

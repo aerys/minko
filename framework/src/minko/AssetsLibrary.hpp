@@ -8,7 +8,7 @@ namespace minko
 		public std::enable_shared_from_this<AssetsLibrary>
 	{
 	public:
-		typedef std::shared_ptr<AssetsLibrary>						ptr;
+		typedef std::shared_ptr<AssetsLibrary>						Ptr;
 
 	private:
 		typedef std::shared_ptr<render::geometry::Geometry>			GeometryPtr;
@@ -19,7 +19,7 @@ namespace minko
 
 	public:
 		inline static
-		ptr
+		Ptr
 		create(AbsContextPtr context)
 		{
 			return std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));

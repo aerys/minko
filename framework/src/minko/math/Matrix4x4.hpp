@@ -22,11 +22,11 @@ namespace minko
 			std::vector<float> _m;
 
 		public:
-			typedef std::shared_ptr<Matrix4x4>	ptr;
+			typedef std::shared_ptr<Matrix4x4>	Ptr;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create()
 			{
 				auto m = std::shared_ptr<Matrix4x4>(new Matrix4x4());
@@ -37,8 +37,8 @@ namespace minko
 			}
 
 			inline static
-			ptr
-			create(ptr value)
+			Ptr
+			create(Ptr value)
 			{
 				return std::shared_ptr<Matrix4x4>(new Matrix4x4(value));
 			}
@@ -51,22 +51,22 @@ namespace minko
 			}
 
 			inline
-			ptr
+			Ptr
 			initialize(float m00, float m01, float m02, float m03,
 				   	   float m10, float m11, float m12, float m13,
 				       float m20, float m21, float m22, float m23,
 				       float m30, float m31, float m32, float m33);
 
-			ptr
+			Ptr
 			translation(float x, float y, float z);
 
-			ptr
+			Ptr
 			rotationX(float radians);
 
-			ptr
+			Ptr
 			rotationY(float radians);
 			
-			ptr
+			Ptr
 			rotationZ(float radians);
 
 			inline
@@ -76,59 +76,59 @@ namespace minko
 				return _m;
 			}
 
-			ptr
+			Ptr
 			identity();
 
-			ptr
-			append(ptr matrix);
+			Ptr
+			append(Ptr matrix);
 
-			ptr
-			prepend(ptr matrix);
+			Ptr
+			prepend(Ptr matrix);
 
-			ptr
+			Ptr
 			appendTranslation(float x, float y, float z);
 
-			ptr
+			Ptr
 			prependTranslation(float x, float y, float z);
 
-			ptr
+			Ptr
 			appendRotationX(float radians);
 
-			ptr
+			Ptr
 			prependRotationX(float radians);
 
-			ptr
+			Ptr
 			appendRotationY(float radians);
 
-			ptr
+			Ptr
 			prependRotationY(float radians);
 
-			ptr
+			Ptr
 			appendRotationZ(float radians);
 
-			ptr
+			Ptr
 			prependRotationZ(float radians);
 
-			ptr
-			appendRotation(float radians, Vector3::ptr axis);
+			Ptr
+			appendRotation(float radians, Vector3::Ptr axis);
 
-			ptr
-			prependRotation(float radians, Vector3::ptr axis);
+			Ptr
+			prependRotation(float radians, Vector3::Ptr axis);
 
 			float
 			determinant();
 
-			ptr
+			Ptr
 			invert();
 
-			ptr
+			Ptr
 			transpose();
 
 			inline
-			ptr
-			operator*(ptr value)
+			Ptr
+			operator*(Ptr value)
 			{
-				Matrix4x4::ptr m1 = Matrix4x4::create(shared_from_this());
+				auto m1 = Matrix4x4::create(shared_from_this());
 
 				m1->append(value);
 
@@ -136,8 +136,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			operator*=(Matrix4x4::ptr value)
+			Ptr
+			operator*=(Matrix4x4::Ptr value)
 			{
 				append(value);
 
@@ -157,7 +157,7 @@ namespace minko
 				return true;
 			}
 
-			ptr
+			Ptr
 			perspective(float fov,
 		                float ratio,
 		                float zNear,
@@ -180,35 +180,35 @@ namespace minko
 			 * @return Returns a left-handed view Matrix3D to convert world coordinates into eye coordinates
 			 *
 			 */
-			ptr
-			view(Vector3::const_ptr eye, Vector3::const_ptr lookAt, Vector3::const_ptr up = 0);
+			Ptr
+			view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr up = 0);
 
-			ptr
-			lookAt(Vector3::const_ptr lookAt, Vector3::const_ptr position, Vector3::const_ptr up = 0);
+			Ptr
+			lookAt(Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up = 0);
 
-			ptr
-			lerp(Matrix4x4::ptr target, float ratio);
+			Ptr
+			lerp(Matrix4x4::Ptr target, float ratio);
 
-			Vector3::ptr
-			translation(Vector3::ptr output = 0);
+			Vector3::Ptr
+			translation(Vector3::Ptr output = 0);
 
-			ptr
-			copyFrom(Matrix4x4::ptr source);
+			Ptr
+			copyFrom(Matrix4x4::Ptr source);
 
 		private:
 			Matrix4x4();
 
-			Matrix4x4(ptr value);
+			Matrix4x4(Ptr value);
 
 			inline
-			ptr
+			Ptr
 			append(float m00, float m01, float m02, float m03,
 				   float m10, float m11, float m12, float m13,
 				   float m20, float m21, float m22, float m23,
 				   float m30, float m31, float m32, float m33);
 
 			inline
-			ptr
+			Ptr
 			prepend(float m00, float m01, float m02, float m03,
 				   	float m10, float m11, float m12, float m13,
 				   	float m20, float m21, float m22, float m23,

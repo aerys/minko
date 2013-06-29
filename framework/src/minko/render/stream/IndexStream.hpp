@@ -16,7 +16,7 @@ namespace minko
 			class IndexStream
 			{
 			public:
-				typedef std::shared_ptr<IndexStream>	ptr;
+				typedef std::shared_ptr<IndexStream>	Ptr;
 
 			private:
 				std::vector<unsigned short>			_data;
@@ -25,14 +25,14 @@ namespace minko
 
 			public:
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext> context, std::vector<unsigned short>& data)
 				{
 					return std::shared_ptr<IndexStream>(new IndexStream(context, data));
 				}
 
 				inline static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext> context, unsigned short* begin, unsigned short* end)
 				{
 					return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
