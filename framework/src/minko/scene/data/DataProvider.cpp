@@ -6,7 +6,7 @@ void
 DataProvider::unset(const std::string& propertyName)
 {
 	_values.erase(propertyName);
-	_changedSignalCds.erase(propertyName);
+	_changedSignalSlots.erase(propertyName);
 
 	if (_values.count(propertyName) == 0)
 	{
@@ -21,7 +21,7 @@ DataProvider::registerProperty(const std::string& propertyName, std::shared_ptr<
 	bool isNewValue = _values.count(propertyName) == 0;
 
 	_values[propertyName] = value;
-	_changedSignalCds[propertyName] = value->changed()->add(std::bind(
+	_changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
 		&Signal<ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),

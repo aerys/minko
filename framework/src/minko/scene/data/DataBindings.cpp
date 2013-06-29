@@ -19,14 +19,14 @@ DataBindings::addProvider(std::shared_ptr<DataProvider> provider)
 
 	_providers.push_back(provider);
 
-	_propertyAddedOrRemovedCds[provider].push_back(provider->propertyAdded()->add(std::bind(
+	_propertyAddedOrRemovedSlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
 		&DataBindings::dataProviderPropertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	)));
 	
-	_propertyAddedOrRemovedCds[provider].push_back(provider->propertyRemoved()->add(std::bind(
+	_propertyAddedOrRemovedSlots[provider].push_back(provider->propertyRemoved()->connect(std::bind(
 		&DataBindings::dataProviderPropertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -48,15 +48,15 @@ DataBindings::removeProvider(std::shared_ptr<DataProvider> provider)
 		throw std::invalid_argument("provider");
 
 	_providers.erase(it);
-	_propertyAddedOrRemovedCds.erase(provider);
+	_propertyAddedOrRemovedSlots.erase(provider);
 
 	for (auto property : provider->values())
 		_propertyNameToProvider.erase(property.first);
 
-	if (_dataProviderPropertyChangedCd.count(provider) != 0)
-		_dataProviderPropertyChangedCd.erase(provider);
+	if (_dataProviderPropertyChangedSlot.count(provider) != 0)
+		_dataProviderPropertyChangedSlot.erase(provider);
 
-	_dataProviderPropertyChangedCd.erase(provider);
+	_dataProviderPropertyChangedSlot.erase(provider);
 }
 
 bool
@@ -84,8 +84,8 @@ DataBindings::propertyChanged(const std::string& propertyName)
 		{
 			std::shared_ptr<DataProvider> provider = _propertyNameToProvider[propertyName];
 
-			if (_dataProviderPropertyChangedCd.count(provider) == 0)
-				_dataProviderPropertyChangedCd[provider] = provider->propertyChanged()->add(std::bind(
+			if (_dataProviderPropertyChangedSlot.count(provider) == 0)
+				_dataProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
 					&DataBindings::dataProviderPropertyChangedHandler,
 					shared_from_this(),
 					std::placeholders::_1,
@@ -122,7 +122,7 @@ DataBindings::dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> pro
 	_propertyNameToProvider[propertyName] = provider;
 
 	if (_propertyChanged.count(propertyName) != 0)
-		_dataProviderPropertyChangedCd[provider] = provider->propertyChanged()->add(std::bind(
+		_dataProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
 			&DataBindings::dataProviderPropertyChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -138,12 +138,12 @@ DataBindings::dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	
 {
 	_propertyNameToProvider.erase(propertyName);
 
-	if (_dataProviderPropertyChangedCd.count(provider) != 0)
+	if (_dataProviderPropertyChangedSlot.count(provider) != 0)
 		for (auto property : provider->values())
 			if (_propertyChanged.count(property.first) != 0)
 				return;
 
-	_dataProviderPropertyChangedCd.erase(provider);
+	_dataProviderPropertyChangedSlot.erase(provider);
 
 	dataProviderPropertyChangedHandler(provider, propertyName);
 }
