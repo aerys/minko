@@ -11,68 +11,68 @@ namespace minko
 			public Vector2
 		{
 		public:
-			typedef std::shared_ptr<Vector3>	ptr;
-			typedef std::shared_ptr<Vector3>	const_ptr;
+			typedef std::shared_ptr<Vector3>	Ptr;
+			typedef std::shared_ptr<Vector3>	ConstPtr;
 
 		protected:
 			float _z;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(float x = 0., float y = 0., float z = 0.)
 			{
 				return std::shared_ptr<Vector3>(new Vector3(x, y, z));
 			}
 
 			inline static
-			const_ptr
-			createConst(float x, float y, float z)
+			ConstPtr
+			createConst(float x = 0., float y = 0., float z = 0.)
 			{
 				return std::shared_ptr<Vector3>(new Vector3(x, y, z));
 			}
 
 			inline static
-			const_ptr
+			ConstPtr
 			upAxis()
 			{
-				static const_ptr upAxis = createConst(0., 1., 0.);
+				static ConstPtr upAxis = createConst(0., 1., 0.);
 
 				return upAxis;
 			}
 
 			inline static
-			const_ptr
+			ConstPtr
 			xAxis()
 			{
-				static const_ptr xAxis = createConst(1., 0., 0.);
+				static ConstPtr xAxis = createConst(1., 0., 0.);
 
 				return xAxis;
 			}
 
 			inline static
-			const_ptr
+			ConstPtr
 			yAxis()
 			{
-				static const_ptr yAxis = createConst(0., 1., 0.);
+				static ConstPtr yAxis = createConst(0., 1., 0.);
 
 				return yAxis;
 			}
 
 			inline static
-			const_ptr
+			ConstPtr
 			zAxis()
 			{
-				static const_ptr zAxis = createConst(0., 0., 1.);
+				static ConstPtr zAxis = createConst(0., 0., 1.);
 
 				return zAxis;
 			}
 
 			inline static
-			const_ptr
+			ConstPtr
 			zero()
 			{
-				static const_ptr zero = createConst(0., 0., 0.);
+				static ConstPtr zero = createConst(0., 0., 0.);
 
 				return zero;
 			}
@@ -92,14 +92,14 @@ namespace minko
 			}
 
 			inline
-			ptr
-			copyFrom(ptr value)
+			Ptr
+			copyFrom(Ptr value)
 			{
 				return setTo(value->_x, value->_y, value->_z);
 			}
 
 			inline
-			ptr
+			Ptr
 			setTo(float x, float y, float z)
 			{
 				_x = x;
@@ -110,7 +110,7 @@ namespace minko
 			}
 
 			inline
-			ptr
+			Ptr
 			normalize()
 			{
 				float l = sqrtf(_x * _x + _y * _y + _z * _z);
@@ -126,8 +126,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			cross(ptr value)
+			Ptr
+			cross(Ptr value)
 			{
 				float x = _y * value->_z - _z * value->_y;
 				float y = _z * value->_x - _x * value->_z;
@@ -142,35 +142,35 @@ namespace minko
 
 			inline
 			float
-			dot(ptr value)
+			dot(Ptr value)
 			{
 				return _x * value->_x + _y * value->_y + _z * value->_z;
 			}
 
 			inline
-			ptr
+			Ptr
 			operator-()
 			{
 				return create(-_x, -_y, -_z);
 			}
 
 			inline
-			ptr
-			operator-(ptr value)
+			Ptr
+			operator-(Ptr value)
 			{
 				return create(_x - value->_x, _y - value->_y, _z - value->_z);
 			}
 
 			inline
-			ptr
-			operator+(ptr value)
+			Ptr
+			operator+(Ptr value)
 			{
 				return create(_x + value->_x, _y + value->_y, _z + value->_z);
 			}
 
 			inline
-			ptr
-			operator+=(ptr value)
+			Ptr
+			operator+=(Ptr value)
 			{
 				_x += value->_x;
 				_y += value->_y;
@@ -180,8 +180,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			operator-=(ptr value)
+			Ptr
+			operator-=(Ptr value)
 			{
 				_x -= value->_x;
 				_y -= value->_y;
@@ -191,8 +191,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			lerp(ptr target, float ratio)
+			Ptr
+			lerp(Ptr target, float ratio)
 			{
 				return setTo(
 					_x + (target->_x - _x) * ratio,

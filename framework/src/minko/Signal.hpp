@@ -16,7 +16,7 @@ namespace minko
 		class SignalSlot;
 
 	public:
-		typedef std::shared_ptr<Signal<A...>>			ptr;
+		typedef std::shared_ptr<Signal<A...>>			Ptr;
 		typedef std::shared_ptr<SignalSlot<A...>>		Slot;
 
 	private:
@@ -65,7 +65,7 @@ namespace minko
 
 	public:
 		static
-		ptr
+		Ptr
 		create()
 		{
 			return std::shared_ptr<Signal<A...>>(new Signal<A...>());
@@ -74,7 +74,9 @@ namespace minko
 		Slot
 		connect(Callback callback)
 		{
-			auto connection = SignalSlot<A...>::create(Signal<A...>::shared_from_this(), _nextConnectId++);
+			auto connection = SignalSlot<A...>::create(
+				Signal<A...>::shared_from_this(), _nextConnectId++
+			);
 
 			if (_locked)
 				_toAdd.push_back(std::pair<Callback, unsigned int>(callback, connection->_id));
@@ -117,7 +119,7 @@ namespace minko
 			friend class Signal<T...>;
 
 		public:
-			typedef std::shared_ptr<SignalSlot<T...>>	ptr;
+			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
 		public:
 			std::shared_ptr<Signal<T...>>
@@ -141,7 +143,7 @@ namespace minko
 
 		private:
 			inline static
-			ptr
+			Ptr
 			create(std::shared_ptr<Signal<T...>> signal, const unsigned int id)
 			{
 				return std::shared_ptr<SignalSlot<T...>>(new SignalSlot(signal, id));

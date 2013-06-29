@@ -17,7 +17,7 @@ namespace minko
 			public std::enable_shared_from_this<EffectParser>
 		{
 		public:
-			typedef std::shared_ptr<EffectParser>	ptr;
+			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
 			typedef std::shared_ptr<Loader> LoaderPtr;
@@ -36,11 +36,11 @@ namespace minko
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
 
-			std::shared_ptr<Signal<ptr>>							_complete;
+			std::shared_ptr<Signal<Ptr>>							_complete;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create()
 			{
 				return std::shared_ptr<EffectParser>(new EffectParser());
@@ -54,7 +54,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Signal<ptr>>
+			std::shared_ptr<Signal<Ptr>>
 			complete()
 			{
 				return _complete;

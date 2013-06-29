@@ -11,7 +11,7 @@ using namespace minko::render;
 EffectParser::EffectParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0),
-	_complete(Signal<EffectParser::ptr>::create())
+	_complete(Signal<EffectParser::Ptr>::create())
 {
 }
 

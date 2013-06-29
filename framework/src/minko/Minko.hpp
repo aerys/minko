@@ -23,7 +23,6 @@
 #include "minko/scene/controller/RenderingController.hpp"
 #include "minko/scene/controller/PerspectiveCameraController.hpp"
 #include "minko/render/stream/VertexAttribute.hpp"
-#include "minko/render/stream/VertexFormat.hpp"
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
 #include "minko/scene/data/geometry/Geometry.hpp"
