@@ -28,7 +28,8 @@
 #include "minko/render/stream/IndexStream.hpp"
 #include "minko/scene/data/geometry/Geometry.hpp"
 #include "minko/scene/data/geometry/CubeGeometry.hpp"
-#include "minko/file/FileLoader.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/Loader.hpp"
 #include "minko/file/EffectParser.hpp"
 
 class Minko
