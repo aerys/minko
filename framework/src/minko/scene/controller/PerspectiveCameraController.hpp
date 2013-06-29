@@ -36,9 +36,9 @@ namespace minko
 
 				std::shared_ptr<DataProvider>			_data;
 
-				Signal<AbsCtrlPtr, NodePtr>::cd			_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd			_targetRemovedCd;
-				DataBindings::PropertyChangedSignal::cd	_modelToWorldChangedCd;
+				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
+				DataBindings::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
 
 			public:
 				inline static

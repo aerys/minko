@@ -88,8 +88,6 @@ namespace minko
 	class Any;
 	template<typename... A>
 	class Signal;
-	template<typename... A>
-	class SignalConnection;
 }
 
 template<typename T>

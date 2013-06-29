@@ -33,8 +33,8 @@ namespace minko
 			std::unordered_map<std::string, std::string>			_bindings;
 			std::string												_dependenciesCode;
 
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::cd>	_loaderCompleteCds;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::cd>	_loaderErrorCds;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
 
 			std::shared_ptr<Signal<ptr>>							_complete;
 
