@@ -80,7 +80,8 @@ namespace minko
 
 	namespace file
 	{
-		class FileLoader;
+		class Options;
+		class Loader;
 		class EffectParser;
 	}
 
