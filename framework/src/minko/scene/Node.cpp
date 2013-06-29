@@ -12,16 +12,16 @@ Node::Node() :
 	_root(nullptr),
 	_parent(nullptr),
 	_bindings(DataBindings::create()),
-	_added(Signal<ptr, ptr, ptr>::create()),
-	_removed(Signal<ptr, ptr, ptr>::create()),
-	_controllerAdded(Signal<ptr, ptr, Node::AbsCtrlPtr>::create()),
-	_controllerRemoved(Signal<ptr, ptr, Node::AbsCtrlPtr>::create()),
-	_tagsChanged(Signal<ptr, ptr>::create())
+	_added(Signal<Ptr, Ptr, Ptr>::create()),
+	_removed(Signal<Ptr, Ptr, Ptr>::create()),
+	_controllerAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
+	_controllerRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
+	_tagsChanged(Signal<Ptr, Ptr>::create())
 {
 }
 
-Node::ptr
-Node::addChild(Node::ptr child)
+Node::Ptr
+Node::addChild(Node::Ptr child)
 {
 	if (child->_parent)
 		child->_parent->removeChild(child);
@@ -44,10 +44,10 @@ Node::addChild(Node::ptr child)
 	return shared_from_this();
 }
 
-Node::ptr
-Node::removeChild(Node::ptr child)
+Node::Ptr
+Node::removeChild(Node::Ptr child)
 {
-	std::list<Node::ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
+	std::list<Node::Ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
 
 	if (it == _children.end())
 		throw std::invalid_argument("child");
@@ -71,12 +71,12 @@ Node::removeChild(Node::ptr child)
 }
 
 bool
-Node::contains(Node::ptr node)
+Node::contains(Node::Ptr node)
 {
 	return std::find(_children.begin(), _children.end(), node) != _children.end();
 }
 
-Node::ptr
+Node::Ptr
 Node::addController(std::shared_ptr<AbstractController> controller)
 {
 	if (hasController(controller))
@@ -100,10 +100,10 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 	return shared_from_this();
 }
 
-Node::ptr
+Node::Ptr
 Node::removeController(std::shared_ptr<AbstractController> controller)
 {
-	std::list<AbstractController::ptr>::iterator it = std::find(
+	std::list<AbstractController::Ptr>::iterator it = std::find(
 		_controllers.begin(), _controllers.end(), controller
 	);
 

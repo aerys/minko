@@ -11,7 +11,7 @@ namespace minko
 			class VertexAttribute
 			{
 			public:
-				typedef std::shared_ptr<VertexAttribute> ptr;
+				typedef std::shared_ptr<VertexAttribute> Ptr;
 
 			private:
 				const std::string	_name;
@@ -20,7 +20,7 @@ namespace minko
 
 			public:
 				inline static
-				ptr
+				Ptr
 				create(const std::string& name, unsigned int size, unsigned int offset)
 				{
 					return std::shared_ptr<VertexAttribute>(new VertexAttribute(name, size, offset));

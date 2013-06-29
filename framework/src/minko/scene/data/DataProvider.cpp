@@ -22,7 +22,7 @@ DataProvider::registerProperty(const std::string& propertyName, std::shared_ptr<
 
 	_values[propertyName] = value;
 	_changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
-		&Signal<ptr, const std::string&>::execute,
+		&Signal<DataProvider::Ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),
 		propertyName

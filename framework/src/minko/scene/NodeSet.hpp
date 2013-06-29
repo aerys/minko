@@ -11,17 +11,17 @@ namespace minko
 		class NodeSet
 		{
 		public:
-			typedef std::shared_ptr<NodeSet> ptr;
+			typedef std::shared_ptr<NodeSet> Ptr;
 
 		private:
 			std::vector<std::shared_ptr<Node>> _nodes;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(const std::list<std::shared_ptr<Node>>& nodes)
 			{
-				ptr set = create();
+				Ptr set = create();
 
 				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
@@ -29,10 +29,10 @@ namespace minko
 			}
 
 			inline static
-			ptr
+			Ptr
 			create(const std::vector<std::shared_ptr<Node>>& nodes)
 			{
-				ptr set = create();
+				Ptr set = create();
 
 				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
@@ -40,10 +40,10 @@ namespace minko
 			}
 
 			inline static
-			ptr
+			Ptr
 			create(std::shared_ptr<Node> node)
 			{
-				ptr set = create();
+				Ptr set = create();
 
 				set->_nodes.push_back(node);
 
@@ -51,7 +51,7 @@ namespace minko
 			}
 
 			inline static
-			ptr
+			Ptr
 			create()
 			{
 				return std::shared_ptr<NodeSet>(new NodeSet());
@@ -64,17 +64,17 @@ namespace minko
 				return _nodes;
 			}
 
-			ptr
-			descendants(bool andSelf = false, bool depthFirst = true, ptr result = nullptr);
+			Ptr
+			descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);
 
-			ptr
-			ancestors(bool andSelf = false, ptr result = nullptr);
+			Ptr
+			ancestors(bool andSelf = false, Ptr result = nullptr);
 
-			ptr
-			children(bool andSelf = false, ptr result = nullptr);
+			Ptr
+			children(bool andSelf = false, Ptr result = nullptr);
 
-			ptr
-			where(std::function<bool(std::shared_ptr<Node>)> filter, ptr result = nullptr);
+			Ptr
+			where(std::function<bool(std::shared_ptr<Node>)> filter, Ptr result = nullptr);
 
 		private:
 			NodeSet() :

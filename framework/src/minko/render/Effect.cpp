@@ -22,7 +22,7 @@ Effect::propertyChangedHandler(std::shared_ptr<DataBindings> bindings, const std
 	// FIXME: fork?
 }
 
-Effect::ptr
+Effect::Ptr
 Effect::bindInput(const std::string& bindingName, const std::string& programInputName)
 {
 	_inputNameToBindingName[programInputName] = bindingName;

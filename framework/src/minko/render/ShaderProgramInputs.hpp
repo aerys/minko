@@ -12,7 +12,7 @@ namespace minko
 			public std::enable_shared_from_this<ShaderProgramInputs>
 		{
 		public:
-			typedef std::shared_ptr<ShaderProgramInputs>	ptr;
+			typedef std::shared_ptr<ShaderProgramInputs>	Ptr;
 
 			enum Type
 			{
@@ -33,7 +33,7 @@ namespace minko
 
 		public:
 			static
-			ptr
+			Ptr
 			create(std::shared_ptr<AbstractContext>	context,
 				   const unsigned int 				program,
 				   std::vector<std::string> 		names,

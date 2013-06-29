@@ -15,7 +15,7 @@ namespace minko
 			public std::enable_shared_from_this<GLSLProgram>
 		{
 		public:
-			typedef std::shared_ptr<GLSLProgram>	ptr;
+			typedef std::shared_ptr<GLSLProgram>	Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractContext>		AbstractContextPtr;
@@ -32,7 +32,7 @@ namespace minko
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(AbstractContextPtr	context,
 				   const std::string& 	vertexShaderSource,
 				   const std::string& 	fragmentShaderSource)

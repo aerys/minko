@@ -4,8 +4,8 @@
 
 using namespace minko::scene;
 
-NodeSet::ptr
-NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::ptr result)
+NodeSet::Ptr
+NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -36,8 +36,8 @@ NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::ptr result)
 	return result;
 }
 
-NodeSet::ptr
-NodeSet::ancestors(bool andSelf, NodeSet::ptr result)
+NodeSet::Ptr
+NodeSet::ancestors(bool andSelf, NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -58,8 +58,8 @@ NodeSet::ancestors(bool andSelf, NodeSet::ptr result)
 	return result;
 }
 
-NodeSet::ptr
-NodeSet::children(bool andSelf, NodeSet::ptr result)
+NodeSet::Ptr
+NodeSet::children(bool andSelf, NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -75,8 +75,8 @@ NodeSet::children(bool andSelf, NodeSet::ptr result)
 	return result;
 }
 
-NodeSet::ptr
-NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, ptr result)
+NodeSet::Ptr
+NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();

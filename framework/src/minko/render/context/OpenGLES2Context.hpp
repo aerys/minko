@@ -30,7 +30,7 @@ namespace minko
 				public std::enable_shared_from_this<OpenGLES2Context>
 			{
 			public:
-				typedef std::shared_ptr<OpenGLES2Context> ptr;
+				typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
 			private:
 				std::list<unsigned int>	_vertexBuffers;
@@ -44,7 +44,7 @@ namespace minko
 				~OpenGLES2Context();
 
 				static
-				ptr
+				Ptr
 				create()
 				{
 					return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
