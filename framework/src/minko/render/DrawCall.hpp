@@ -15,7 +15,7 @@ namespace minko
 		class DrawCall
 		{
 		public:
-			typedef std::shared_ptr<DrawCall> ptr;
+			typedef std::shared_ptr<DrawCall> Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
@@ -28,7 +28,7 @@ namespace minko
 
 		public:
 			static inline
-			ptr
+			Ptr
 			create(std::shared_ptr<DataBindings> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName)
 			{
 				return std::shared_ptr<DrawCall>(new DrawCall(bindings, inputNameToBindingName));

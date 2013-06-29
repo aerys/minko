@@ -14,7 +14,7 @@ namespace minko
 		class Options
 		{
 		public:
-			typedef std::shared_ptr<Options> ptr;
+			typedef std::shared_ptr<Options> Ptr;
 
 		private:
 			std::shared_ptr<AbstractContext>	_context;
@@ -22,7 +22,7 @@ namespace minko
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(std::shared_ptr<AbstractContext> context)
 			{
 				return std::shared_ptr<Options>(new Options(context));

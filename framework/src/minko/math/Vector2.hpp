@@ -10,7 +10,7 @@ namespace minko
 			public std::enable_shared_from_this<Vector2>
 		{
 		public:
-			typedef std::shared_ptr<Vector2>	ptr;
+			typedef std::shared_ptr<Vector2>	Ptr;
 
 		protected:
 			float _x;
@@ -18,7 +18,7 @@ namespace minko
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(float x, float y)
 			{
 				return std::shared_ptr<Vector2>(new Vector2(x, y));
@@ -53,14 +53,14 @@ namespace minko
 			}
 
 			inline
-			ptr
-			copyFrom(ptr value)
+			Ptr
+			copyFrom(Ptr value)
 			{
 				return setTo(value->_x, value->_y);
 			}
 
 			inline
-			ptr
+			Ptr
 			setTo(float x, float y)
 			{
 				_x = x;
@@ -69,7 +69,7 @@ namespace minko
 				return std::static_pointer_cast<Vector2>(shared_from_this());
 			}
 
-			ptr
+			Ptr
 			normalize()
 			{
 				float l = sqrtf(_x * _x + _y * _y);
@@ -84,8 +84,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			cross(ptr value)
+			Ptr
+			cross(Ptr value)
 			{
 				float x = _y * value->_x - _x * value->_y;
 				float y = _x * value->_y - _y * value->_x;
@@ -98,35 +98,35 @@ namespace minko
 
 			inline
 			float
-			dot(ptr value)
+			dot(Ptr value)
 			{
 				return _x * value->_x + _y * value->_y;
 			}
 
 			inline
-			ptr
+			Ptr
 			operator-()
 			{
 				return create(-_x, -_y);
 			}
 
 			inline
-			ptr
-			operator-(ptr value)
+			Ptr
+			operator-(Ptr value)
 			{
 				return create(_x - value->_x, _y - value->_y);
 			}
 
 			inline
-			ptr
-			operator+(ptr value)
+			Ptr
+			operator+(Ptr value)
 			{
 				return create(_x + value->_x, _y + value->_y);
 			}
 
 			inline
-			ptr
-			operator+=(ptr value)
+			Ptr
+			operator+=(Ptr value)
 			{
 				_x += value->_x;
 				_y += value->_y;
@@ -135,8 +135,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			operator-=(ptr value)
+			Ptr
+			operator-=(Ptr value)
 			{
 				_x -= value->_x;
 				_y -= value->_y;
@@ -145,8 +145,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			lerp(ptr target, float ratio)
+			Ptr
+			lerp(Ptr target, float ratio)
 			{
 				return setTo(_x + (target->_x - _x) * ratio, _y + (target->_y - _y) * ratio);
 			}

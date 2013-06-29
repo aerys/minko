@@ -11,14 +11,14 @@ namespace minko
 			public Vector3
 		{
 		public:
-			typedef std::shared_ptr<Vector4>	ptr;
+			typedef std::shared_ptr<Vector4>	Ptr;
 
 		protected:
 			float _w;
 
 		public:
 			inline static
-			ptr
+			Ptr
 			create(float x, float y, float z, float w = 1.)
 			{
 				return std::shared_ptr<Vector4>(new Vector4(x, y, z, w));
@@ -39,14 +39,14 @@ namespace minko
 			}
 
 			inline
-			ptr
-			copyFrom(ptr value)
+			Ptr
+			copyFrom(Ptr value)
 			{
 				return setTo(value->_x, value->_y, value->_z, value->_w);
 			}
 
 			inline
-			ptr
+			Ptr
 			setTo(float x, float y, float z, float w)
 			{
 				_x = x;
@@ -58,7 +58,7 @@ namespace minko
 			}	
 
 			inline
-			ptr
+			Ptr
 			normalize()
 			{
 				float l = sqrtf(_x * _x + _y * _y + _z * _z + _w * _w);
@@ -75,8 +75,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			cross(ptr value)
+			Ptr
+			cross(Ptr value)
 			{
 				float x = _y * value->_z - _z * value->_y;
 				float y = _z * value->_w - _w * value->_z;
@@ -93,35 +93,35 @@ namespace minko
 
 			inline
 			float
-			dot(ptr value)
+			dot(Ptr value)
 			{
 				return _x * value->_x + _y * value->_y + _z * value->_z + _w * value->_w;
 			}
 
 			inline
-			ptr
+			Ptr
 			operator-()
 			{
 				return create(-_x, -_y, -_z, -_w);
 			}
 
 			inline
-			ptr
-			operator-(ptr value)
+			Ptr
+			operator-(Ptr value)
 			{
 				return create(_x - value->_x, _y - value->_y, _z - value->_z, _w - value->_w);
 			}
 
 			inline
-			ptr
-			operator+(ptr value)
+			Ptr
+			operator+(Ptr value)
 			{
 				return create(_x + value->_x, _y + value->_y, _z + value->_z, _w + value->_w);
 			}
 
 			inline
-			ptr
-			operator+=(ptr value)
+			Ptr
+			operator+=(Ptr value)
 			{
 				_x += value->_x;
 				_y += value->_y;
@@ -132,8 +132,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			operator-=(ptr value)
+			Ptr
+			operator-=(Ptr value)
 			{
 				_x -= value->_x;
 				_y -= value->_y;
@@ -144,8 +144,8 @@ namespace minko
 			}
 
 			inline
-			ptr
-			lerp(ptr target, float ratio)
+			Ptr
+			lerp(Ptr target, float ratio)
 			{
 				return setTo(
 					_x + (target->_x - _x) * ratio,

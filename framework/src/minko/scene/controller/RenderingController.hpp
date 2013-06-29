@@ -21,7 +21,7 @@ namespace minko
 				public std::enable_shared_from_this<RenderingController>
 			{
 			public:
-				typedef std::shared_ptr<RenderingController>	ptr;
+				typedef std::shared_ptr<RenderingController>	Ptr;
 
 			private:
 				typedef std::shared_ptr<Node>				NodePtr;
@@ -33,11 +33,11 @@ namespace minko
 				std::shared_ptr<AbstractContext>			_context;
 				std::list<std::shared_ptr<DrawCall>>		_drawCalls;
 
-				Signal<ptr>::ptr							_enterFrame;
-				Signal<ptr>::ptr							_exitFrame;
+				Signal<Ptr>::Ptr							_enterFrame;
+				Signal<Ptr>::Ptr							_exitFrame;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
@@ -47,7 +47,7 @@ namespace minko
 
 			public:
 				static
-				ptr
+				Ptr
 				create(std::shared_ptr<AbstractContext> context)
 				{
 					auto ctrl = std::shared_ptr<RenderingController>(new RenderingController(context));
@@ -61,14 +61,14 @@ namespace minko
 				render();
 
 				inline
-				Signal<ptr>::ptr
+				Signal<Ptr>::Ptr
 				enterFrame()
 				{
 					return _enterFrame;
 				}
 
 				inline
-				Signal<ptr>::ptr
+				Signal<Ptr>::Ptr
 				exitFrame()
 				{
 					return _exitFrame;
@@ -78,8 +78,8 @@ namespace minko
 				RenderingController(std::shared_ptr<AbstractContext> context) :
 					AbstractController(),
 					_context(context),
-					_enterFrame(Signal<ptr>::create()),
-					_exitFrame(Signal<ptr>::create())
+					_enterFrame(Signal<Ptr>::create()),
+					_exitFrame(Signal<Ptr>::create())
 				{
 				}
 
