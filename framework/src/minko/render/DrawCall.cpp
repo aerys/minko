@@ -4,7 +4,6 @@
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
 #include "minko/render/GLSLProgram.hpp"
-#include "minko/render/stream/VertexFormat.hpp"
 #include "minko/scene/data/DataBindings.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/render/stream/VertexAttribute.hpp"
@@ -25,7 +24,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 {
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program = bindings->get<GLSLProgram::ptr>("effect/pass" + std::to_string(passId));
+		auto program = bindings->get<GLSLProgram::Ptr>("effect/pass" + std::to_string(passId));
 
 		_func.push_back([program](std::shared_ptr<AbstractContext> context)
 		{
@@ -46,7 +45,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 
 			if (type == ShaderProgramInputs::attribute)
 			{
-				auto vertexStream	= _bindings->get<VertexStream::ptr>(name);
+				auto vertexStream	= _bindings->get<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
 				auto vertexSize		= _bindings->get<unsigned int>("geometry/vertex/size");
 
@@ -99,7 +98,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float16)
 			{
-				auto float16Ptr = &(_bindings->get<Matrix4x4::ptr>(name)->data()[0]);
+				auto float16Ptr = &(_bindings->get<Matrix4x4::Ptr>(name)->data()[0]);
 
 				_func.push_back([location, float16Ptr](std::shared_ptr<AbstractContext> context)
 				{
@@ -109,7 +108,7 @@ DrawCall::bind(std::shared_ptr<DataBindings> bindings)
 		}
 	}
 
-	auto indexStream = bindings->get<IndexStream::ptr>("geometry/indices");
+	auto indexStream = bindings->get<IndexStream::Ptr>("geometry/indices");
 
 	_func.push_back([indexStream](std::shared_ptr<AbstractContext> context)
 	{

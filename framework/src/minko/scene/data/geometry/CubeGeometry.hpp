@@ -1,7 +1,6 @@
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/render/stream/VertexFormat.hpp"
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
 
@@ -17,10 +16,10 @@ namespace minko
 					public Geometry
 				{
 				public:
-					typedef std::shared_ptr<Geometry> ptr;
+					typedef std::shared_ptr<Geometry> Ptr;
 
 					static
-					ptr
+					Ptr
 					create(std::shared_ptr<AbstractContext> context)
 					{
 						return std::shared_ptr<CubeGeometry>(new CubeGeometry(context));

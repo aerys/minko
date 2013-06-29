@@ -21,7 +21,7 @@ namespace minko
 				class Geometry
 				{
 				public:
-					typedef std::shared_ptr<Geometry> ptr;
+					typedef std::shared_ptr<Geometry> Ptr;
 
 				private:
 					std::shared_ptr<DataProvider>	_data;
@@ -36,7 +36,7 @@ namespace minko
 					}
 
 					static
-					ptr
+					Ptr
 					create()
 					{
 						return std::shared_ptr<Geometry>(new Geometry());

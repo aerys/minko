@@ -23,7 +23,7 @@ namespace minko
 				public std::enable_shared_from_this<PerspectiveCameraController>
 			{
 			public:
-				typedef std::shared_ptr<PerspectiveCameraController> ptr;
+				typedef std::shared_ptr<PerspectiveCameraController> Ptr;
 
 			private:
 				typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
@@ -42,7 +42,7 @@ namespace minko
 
 			public:
 				inline static
-				ptr
+				Ptr
 				create(float fov, float aspectRatio, float zNear, float zFar)
 				{
 					auto ctrl  = std::shared_ptr<PerspectiveCameraController>(new PerspectiveCameraController(
