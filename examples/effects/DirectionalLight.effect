@@ -1,4 +1,4 @@
-// basic effect
+// directional light effect
 {
 	"name"		: "directional light",
 	"bindings"	: {
@@ -9,6 +9,7 @@
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
 		"lightDirection"		: "light/direction"
 	},
+	"includes"	: [ "Phong.glsl" ],
 	"passes"	: [{
 		"vertexShader"	: "
 			attribute vec3 position;
@@ -34,9 +35,7 @@
 
 			void main(void)
 			{
-				float lambert = -dot(normalize(worldNormal), lightDirection);
-
-				gl_FragColor = vec4(diffuseColor.rgb * lambert, diffuseColor.a);
+				gl_FragColor = vec4(diffuseColor.rgb * lambert(worldNormal, lightDirection), diffuseColor.a);
 			}
 		"
 	}]
