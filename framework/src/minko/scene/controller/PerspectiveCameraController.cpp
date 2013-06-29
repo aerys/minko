@@ -18,11 +18,11 @@ PerspectiveCameraController::PerspectiveCameraController(float fov, float aspect
 void
 PerspectiveCameraController::initialize()
 {
-	_targetAddedCd = targetAdded()->add(std::bind(
+	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&PerspectiveCameraController::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
 	));
 
-	_targetRemovedCd = targetRemoved()->add(std::bind(
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&PerspectiveCameraController::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
 	));
 }
@@ -34,7 +34,7 @@ PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractControll
 		throw std::logic_error("PerspectiveCameraController cannot have more than 1 target.");
 
 	target->bindings()->addProvider(_data);
-	target->bindings()->propertyChanged("transform/modelToWorldMatrix")->add(std::bind(
+	target->bindings()->propertyChanged("transform/modelToWorldMatrix")->connect(std::bind(
 		&PerspectiveCameraController::localToWorldChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
