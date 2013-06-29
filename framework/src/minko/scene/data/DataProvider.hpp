@@ -21,13 +21,13 @@ namespace minko
 				template <typename P>
 				class ValueWrapper;
 
-				typedef Signal<std::shared_ptr<Value>>::cd ChangedSignalCd;
+				typedef Signal<std::shared_ptr<Value>>::Slot ChangedSignalSlot;
 
 			private:
 
 				std::vector<std::string>								_names;
 				std::unordered_map<std::string, std::shared_ptr<Value>>	_values;
-				std::unordered_map<std::string, ChangedSignalCd>		_changedSignalCds;
+				std::unordered_map<std::string, ChangedSignalSlot>		_changedSignalSlots;
 
 				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyChanged;
 				std::shared_ptr<Signal<ptr, const std::string&>>		_propertyAdded;
