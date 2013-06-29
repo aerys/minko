@@ -36,14 +36,14 @@ namespace minko
 				Signal<ptr>::ptr							_enterFrame;
 				Signal<ptr>::ptr							_exitFrame;
 
-				Signal<AbsCtrlPtr, NodePtr>::cd				_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd				_targetRemovedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd		_addedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd		_removedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd		_rootDescendantAddedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd		_rootDescendantRemovedCd;
-				Signal<NodePtr, NodePtr, AbsCtrlPtr>::cd	_controllerAddedCd;
-				Signal<NodePtr, NodePtr, AbsCtrlPtr>::cd	_controllerRemovedCd;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerAddedSlot;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerRemovedSlot;
 
 			public:
 				static

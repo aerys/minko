@@ -1,7 +1,6 @@
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/SignalConnection.hpp"
 
 namespace minko
 {
@@ -9,15 +8,16 @@ namespace minko
 	class Signal :
 		public std::enable_shared_from_this<Signal<A...>>
 	{
-		friend class SignalConnection<A...>;
-
-	public:
-		typedef std::shared_ptr<Signal<A...>>			ptr;
-		typedef std::shared_ptr<SignalConnection<A...>>	cd;
-
 	private:
 		typedef std::function<void(A...)>				Callback;
 		typedef typename std::list<Callback>::iterator	CallbackIterator;
+
+		template <typename... A>
+		class SignalSlot;
+
+	public:
+		typedef std::shared_ptr<Signal<A...>>			ptr;
+		typedef std::shared_ptr<SignalSlot<A...>>		Slot;
 
 	private:
 		std::list<Callback>								_callbacks;
@@ -32,54 +32,7 @@ namespace minko
 		Signal() :
 			std::enable_shared_from_this<Signal<A...>>(),
 			_locked(false)
-		{}
-
-	public:
-		static
-		ptr
-		create()
 		{
-			return std::shared_ptr<Signal<A...>>(new Signal<A...>());
-		}
-
-		cd
-		add(Callback callback)
-		{
-			cd connection = SignalConnection<A...>::create(
-				Signal<A...>::shared_from_this(),
-				_nextConnectId++
-			);
-
-			if (_locked)
-				_toAdd.push_back(std::pair<Callback, unsigned int>(callback, connection->_id));
-			else
-			{
-				_callbacks.push_back(callback);
-				_connectionIds.push_back(connection->_id);
-			}
-
-			return connection;
-		}
-
-		void
-		remove(cd connection)
-		{
-			auto connectionIdIt = _connectionIds.begin();
-			auto callbackIt 	= _callbacks.begin();
-
-			while (connectionIdIt != _connectionIds.end() && *connectionIdIt != connection->_id)
-			{
-				connectionIdIt++;
-				callbackIt++;
-			}
-
-			if (connectionIdIt == _connectionIds.end()
-				|| connection->_signal != Signal<A...>::shared_from_this())
-				throw std::invalid_argument("connection");
-
-			connection->_signal = nullptr;
-
-			removeConnectionByIterator(connectionIdIt, callbackIt);
 		}
 
 		void
@@ -110,17 +63,26 @@ namespace minko
 				_callbacks.erase(callbackIt);
 		}
 
-		cd
-		swap(cd connection, Callback callback)
+	public:
+		static
+		ptr
+		create()
 		{
-			if (connection == nullptr)
-				return add(callback);
+			return std::shared_ptr<Signal<A...>>(new Signal<A...>());
+		}
 
-			if (std::find(_connectionIds.begin(), _connectionIds.end(), connection->_id) == _connectionIds.end()
-				|| connection->_signal != Signal<A...>::shared_from_this())
-				throw std::invalid_argument("connection");
+		Slot
+		connect(Callback callback)
+		{
+			auto connection = SignalSlot<A...>::create(Signal<A...>::shared_from_this(), _nextConnectId++);
 
-			connection->_callback = callback;
+			if (_locked)
+				_toAdd.push_back(std::pair<Callback, unsigned int>(callback, connection->_id));
+			else
+			{
+				_callbacks.push_back(callback);
+				_connectionIds.push_back(connection->_id);
+			}
 
 			return connection;
 		}
@@ -146,25 +108,51 @@ namespace minko
 			_toRemove.clear();
 		}
 
-		inline
-		cd
-		operator+=(Callback callback)
-		{
-			return add(callback);
-		}
+	private:
 
-		inline
-		void
-		operator-=(cd callbackId)
+		template <typename... T>
+		class SignalSlot :
+			public std::enable_shared_from_this<SignalSlot<T...>>
 		{
-			remove(callbackId);
-		}
+			friend class Signal<T...>;
 
-		inline
-		void
-		operator()(A... arguments)
-		{
-			return execute(arguments...);
-		}
+		public:
+			typedef std::shared_ptr<SignalSlot<T...>>	ptr;
+
+		public:
+			std::shared_ptr<Signal<T...>>
+			signal()
+			{
+				return _signal;
+			}
+
+			~SignalSlot()
+			{
+				if (_signal != nullptr)
+				{
+					_signal->removeConnectionById(_id);
+					_signal = nullptr;
+				}
+			}
+
+		private:
+			std::shared_ptr<Signal<T...>>	_signal;
+			const unsigned int				_id;
+
+		private:
+			inline static
+			ptr
+			create(std::shared_ptr<Signal<T...>> signal, const unsigned int id)
+			{
+				return std::shared_ptr<SignalSlot<T...>>(new SignalSlot(signal, id));
+			}
+
+			SignalSlot(std::shared_ptr<Signal<T...>> signal, const unsigned int id) :
+				_signal(signal),
+				_id(id)
+			{
+			}
+		};
+
 	};
 }

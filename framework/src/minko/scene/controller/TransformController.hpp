@@ -36,10 +36,10 @@ namespace minko
 				std::shared_ptr<Matrix4x4>					_worldToModel;
 				std::shared_ptr<DataProvider>				_data;
 
-				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd 			_targetRemovedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd 		_addedCd;
-				Signal<NodePtr, NodePtr, NodePtr>::cd 		_removedCd;
+				Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetRemovedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
 			public:
 				inline static
@@ -92,7 +92,7 @@ namespace minko
 
 				private:
 					typedef std::shared_ptr<RenderingController>	RenderingCtrlPtr;
-					typedef Signal<RenderingCtrlPtr>::cd 			EnterFrameCallback;
+					typedef Signal<RenderingCtrlPtr>::Slot 			EnterFrameCallback;
 
 				public:
 					inline static
@@ -118,8 +118,8 @@ namespace minko
 					std::vector<unsigned int>						_numChildren;
 					bool											_invalidLists;
 
-					std::list<Any>									_targetCds;
-					std::map<RenderingCtrlPtr, EnterFrameCallback>	_enterFrameCds;
+					std::list<Any>									_targetSlots;
+					std::map<RenderingCtrlPtr, EnterFrameCallback>	_enterFrameSlots;
 
 				private:
 					void

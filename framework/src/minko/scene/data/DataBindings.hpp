@@ -19,15 +19,15 @@ namespace minko
 			private:
 				typedef std::shared_ptr<DataProvider>									DataProviderPtr;
 				typedef std::shared_ptr<Signal<ptr, const std::string&>>				PropertyChangedSignalPtr;
-				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::cd	DataProviderPropertyChangedCd;
+				typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::Slot	DataProviderPropertyChangedSlot;
 
 				std::list<DataProviderPtr>											_providers;
 				std::unordered_map<std::string, DataProviderPtr>					_propertyNameToProvider;
 
 				std::unordered_map<std::string, PropertyChangedSignalPtr>			_propertyChanged;
 
-				std::unordered_map<DataProviderPtr, std::list<Any>>					_propertyAddedOrRemovedCds;
-				std::unordered_map<DataProviderPtr, DataProviderPropertyChangedCd>	_dataProviderPropertyChangedCd;
+				std::unordered_map<DataProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
+				std::unordered_map<DataProviderPtr, DataProviderPropertyChangedSlot>	_dataProviderPropertyChangedSlot;
 
 			public:
 				static

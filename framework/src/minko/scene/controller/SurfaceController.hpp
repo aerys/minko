@@ -36,8 +36,8 @@ namespace minko
 
 				std::list<DrawCallPtr>			_drawCalls;
 
-				Signal<AbsCtrlPtr, NodePtr>::cd	_targetAddedCd;
-				Signal<AbsCtrlPtr, NodePtr>::cd	_targetRemovedCd;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetRemovedSlot;
 
 			public:
 				static
