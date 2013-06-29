@@ -21,14 +21,14 @@ SurfaceController::SurfaceController(std::shared_ptr<Geometry> 		geometry,
 void
 SurfaceController::initialize()
 {
-	_targetAddedCd = targetAdded()->add(std::bind(
+	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&SurfaceController::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
-	_targetRemovedCd = targetRemoved()->add(std::bind(
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&SurfaceController::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,

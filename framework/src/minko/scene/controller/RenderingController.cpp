@@ -9,14 +9,14 @@ using namespace minko::scene::controller;
 void
 RenderingController::initialize()
 {
-	_targetAddedCd = targetAdded()->add(std::bind(
+	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&RenderingController::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
-	_targetRemovedCd = targetRemoved()->add(std::bind(
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&RenderingController::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -31,7 +31,7 @@ RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 	if (target->controllers<RenderingController>().size() > 1)
 		throw std::logic_error("There cannot be two RenderingController on the same node.");
 
-	_addedCd = target->added()->add(std::bind(
+	_addedSlot = target->added()->connect(std::bind(
 		&RenderingController::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -39,7 +39,7 @@ RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 		std::placeholders::_3
 	));
 
-	_removedCd = target->removed()->add(std::bind(
+	_removedSlot = target->removed()->connect(std::bind(
 		&RenderingController::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -54,8 +54,8 @@ void
 RenderingController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
 										  std::shared_ptr<Node> 				target)
 {
-	_addedCd = nullptr;
-	_removedCd = nullptr;
+	_addedSlot = nullptr;
+	_removedSlot = nullptr;
 
 	removedHandler(target->root(), target, target->parent());
 }
@@ -65,7 +65,7 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 								  std::shared_ptr<Node> target,
 								  std::shared_ptr<Node> parent)
 {
-	_rootDescendantAddedCd = target->root()->added()->add(std::bind(
+	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
 		&RenderingController::rootDescendantAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -73,7 +73,7 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_rootDescendantRemovedCd = target->root()->removed()->add(std::bind(
+	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
 		&RenderingController::rootDescendantRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -81,7 +81,7 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_controllerAddedCd = target->root()->controllerAdded()->add(std::bind(
+	_controllerAddedSlot = target->root()->controllerAdded()->connect(std::bind(
 		&RenderingController::controllerAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -89,7 +89,7 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_controllerRemovedCd = target->root()->controllerRemoved()->add(std::bind(
+	_controllerRemovedSlot = target->root()->controllerRemoved()->connect(std::bind(
 		&RenderingController::controllerRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -105,10 +105,10 @@ RenderingController::removedHandler(std::shared_ptr<Node> node,
 									std::shared_ptr<Node> target,
 									std::shared_ptr<Node> parent)
 {
-	_rootDescendantAddedCd = nullptr;
-	_rootDescendantRemovedCd = nullptr;
-	_controllerAddedCd = nullptr;
-	_controllerRemovedCd = nullptr;
+	_rootDescendantAddedSlot = nullptr;
+	_rootDescendantRemovedSlot = nullptr;
+	_controllerAddedSlot = nullptr;
+	_controllerRemovedSlot = nullptr;
 
 	rootDescendantRemovedHandler(target->root(), target, target->parent());
 }

@@ -46,10 +46,10 @@ EffectParser::parse(std::shared_ptr<Options>	options,
 		{
 			auto loader = Loader::create();
 
-			_loaderCompleteCds[loader] = loader->complete()->add(std::bind(
+			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
 				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
 			));
-			_loaderErrorCds[loader] = loader->error()->add(std::bind(
+			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
 			));
 
