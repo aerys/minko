@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
-using namespace minko::scene::controller;
+using namespace minko::controller;
 using namespace minko::data;
 
 TransformController::TransformController() :
-	minko::scene::controller::AbstractController(),
+	minko::controller::AbstractController(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_data(DataProvider::create())

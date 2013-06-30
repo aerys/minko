@@ -19,11 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "RenderingController.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/scene/controller/SurfaceController.hpp"
+#include "minko/controller/SurfaceController.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/context/AbstractContext.hpp"
 
-using namespace minko::scene::controller;
+using namespace minko::controller;
 
 void
 RenderingController::initialize()
