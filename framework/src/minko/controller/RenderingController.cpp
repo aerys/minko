@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/controller/SurfaceController.hpp"
 #include "minko/render/DrawCall.hpp"
-#include "minko/render/context/AbstractContext.hpp"
+#include "minko/render/AbstractContext.hpp"
 
 using namespace minko::controller;
 

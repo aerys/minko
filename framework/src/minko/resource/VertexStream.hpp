@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace
 {
-	using namespace minko::render::context;
+	using namespace minko::render;
 }
 
 namespace minko
@@ -126,11 +126,11 @@ namespace minko
 			VertexStream(std::shared_ptr<AbstractContext> context);
 
 			VertexStream(std::shared_ptr<AbstractContext>	context,
-							float*								data,
-							const unsigned int					size,
-							const unsigned int					offset);
+							float*							data,
+							const unsigned int				size,
+							const unsigned int				offset);
 
-			VertexStream(std::shared_ptr<AbstractContext>	context,
+			VertexStream(std::shared_ptr<AbstractContext>		context,
 							std::vector<float>::const_iterator	begin,
 							std::vector<float>::const_iterator	end);
 
