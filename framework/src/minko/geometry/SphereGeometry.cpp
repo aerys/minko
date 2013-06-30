@@ -18,11 +18,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "SphereGeometry.hpp"
-#include "minko/render/stream/VertexStream.hpp"
-#include "minko/render/stream/IndexStream.hpp"
+#include "minko/resource/VertexStream.hpp"
+#include "minko/resource/IndexStream.hpp"
 
 using namespace minko::geometry;
-using namespace minko::render::stream;
+using namespace minko::resource;
 
 SphereGeometry::SphereGeometry(std::shared_ptr<AbstractContext>	context,
 							   unsigned int						numParallels,

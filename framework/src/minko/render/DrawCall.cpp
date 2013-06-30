@@ -20,16 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "DrawCall.hpp"
 
 #include "minko/render/context/AbstractContext.hpp"
-#include "minko/render/stream/VertexStream.hpp"
-#include "minko/render/stream/IndexStream.hpp"
+#include "minko/resource/VertexStream.hpp"
+#include "minko/resource/IndexStream.hpp"
 #include "minko/render/GLSLProgram.hpp"
 #include "minko/data/DataBindings.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/render/stream/VertexAttribute.hpp"
+#include "minko/resource/VertexAttribute.hpp"
 
 using namespace minko::math;
 using namespace minko::render;
-using namespace minko::render::stream;
+using namespace minko::resource;
 
 DrawCall::DrawCall(std::shared_ptr<DataBindings> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName) :
 	_bindings(bindings),
