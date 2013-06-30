@@ -20,27 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Node.hpp"
 #include "minko/controller/AbstractController.hpp"
 
-using namespace minko::scene;
+using namespace minko::controller;
 
-unsigned int Node::_id = 0;
+unsigned int scene::Node::_id = 0;
 
-Node::Node() :
+scene::Node::Node() :
 	enable_shared_from_this(),
-	_name("Node_" + std::to_string(Node::_id++)),
+	_name("Node_" + std::to_string(scene::Node::_id++)),
 	_tags(1),
 	_root(nullptr),
 	_parent(nullptr),
-	_container(Container::create()),
+	_container(data::Container::create()),
 	_added(Signal<Ptr, Ptr, Ptr>::create()),
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
-	_controllerAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_controllerRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
+	_controllerAdded(Signal<Ptr, Ptr, scene::Node::AbsCtrlPtr>::create()),
+	_controllerRemoved(Signal<Ptr, Ptr, scene::Node::AbsCtrlPtr>::create()),
 	_tagsChanged(Signal<Ptr, Ptr>::create())
 {
 }
 
-Node::Ptr
-Node::addChild(Node::Ptr child)
+scene::Node::Ptr
+scene::Node::addChild(scene::Node::Ptr child)
 {
 	if (child->_parent)
 		child->_parent->removeChild(child);
@@ -63,10 +63,10 @@ Node::addChild(Node::Ptr child)
 	return shared_from_this();
 }
 
-Node::Ptr
-Node::removeChild(Node::Ptr child)
+scene::Node::Ptr
+scene::Node::removeChild(scene::Node::Ptr child)
 {
-	std::list<Node::Ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
+	std::list<scene::Node::Ptr>::iterator it = std::find(_children.begin(), _children.end(), child);
 
 	if (it == _children.end())
 		throw std::invalid_argument("child");
@@ -90,13 +90,13 @@ Node::removeChild(Node::Ptr child)
 }
 
 bool
-Node::contains(Node::Ptr node)
+scene::Node::contains(scene::Node::Ptr node)
 {
 	return std::find(_children.begin(), _children.end(), node) != _children.end();
 }
 
-Node::Ptr
-Node::addController(std::shared_ptr<AbstractController> controller)
+scene::Node::Ptr
+scene::Node::addController(std::shared_ptr<AbstractController> controller)
 {
 	if (hasController(controller))
 		throw std::logic_error("The same controller cannot be added twice.");
@@ -119,8 +119,8 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 	return shared_from_this();
 }
 
-Node::Ptr
-Node::removeController(std::shared_ptr<AbstractController> controller)
+scene::Node::Ptr
+scene::Node::removeController(std::shared_ptr<AbstractController> controller)
 {
 	std::list<AbstractController::Ptr>::iterator it = std::find(
 		_controllers.begin(), _controllers.end(), controller
@@ -150,13 +150,13 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 }
 
 bool
-Node::hasController(std::shared_ptr<AbstractController> controller)
+scene::Node::hasController(std::shared_ptr<AbstractController> controller)
 {
 	return std::find(_controllers.begin(), _controllers.end(), controller) != _controllers.end();
 }
 
 void
-Node::updateRoot()
+scene::Node::updateRoot()
 {
 	_root = _parent ? (_parent->_root ? _parent->_root : _parent) : shared_from_this();
 

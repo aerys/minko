@@ -24,12 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/VertexAttribute.hpp"
 
-namespace
-{
-	using namespace minko::data;
-	using namespace minko::resource;
-}
-
 namespace minko
 {
 	namespace geometry
@@ -40,12 +34,12 @@ namespace minko
 			typedef std::shared_ptr<Geometry> Ptr;
 
 		private:
-			std::shared_ptr<Provider>	_data;
+			std::shared_ptr<data::Provider>	_data;
 			unsigned int					_vertexSize;
 
 		public:
 			inline
-			std::shared_ptr<Provider>
+			std::shared_ptr<data::Provider>
 			data()
 			{
 				return _data;
@@ -59,7 +53,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Provider>
+			std::shared_ptr<data::Provider>
 			vertices()
 			{
 				return _data;
@@ -67,21 +61,21 @@ namespace minko
 
 			inline
 			void
-			indices(std::shared_ptr<IndexStream> indices)
+			indices(std::shared_ptr<resource::IndexStream> indices)
 			{
 				_data->set("geometry/indices", indices);
 			}
 
 			inline
-			std::shared_ptr<IndexStream>
+			std::shared_ptr<resource::IndexStream>
 			indices()
 			{
-				return _data->get<std::shared_ptr<IndexStream>>("geometry/indices");
+				return _data->get<std::shared_ptr<resource::IndexStream>>("geometry/indices");
 			}
 
 			inline
 			void
-			addVertexStream(std::shared_ptr<VertexStream> vertexStream)
+			addVertexStream(std::shared_ptr<resource::VertexStream> vertexStream)
 			{
 				for (auto attribute : vertexStream->attributes())
 				{
@@ -94,7 +88,7 @@ namespace minko
 
 		protected:
 			Geometry() :
-				_data(Provider::create()),
+				_data(data::Provider::create()),
 				_vertexSize(0)
 			{
 			}

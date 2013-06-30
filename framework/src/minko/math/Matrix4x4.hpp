@@ -24,18 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 
-namespace
-{
-	using namespace minko::data;
-}
-
 namespace minko
 {
 	namespace math
 	{
 		class Matrix4x4 :
 			public std::enable_shared_from_this<Matrix4x4>,
-			public Value
+			public data::Value
 		{
 		private:
 			std::vector<float> _m;

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::geometry;
 using namespace minko::resource;
+using namespace minko::render;
 
 SphereGeometry::SphereGeometry(std::shared_ptr<AbstractContext>	context,
 							   unsigned int						numParallels,

@@ -21,12 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 
 using namespace minko::controller;
+using namespace minko::math;
+using namespace minko::scene;
 
 PerspectiveCameraController::PerspectiveCameraController(float fov, float aspectRatio, float zNear, float zFar) :
-	_view(Matrix4x4::create()),
-	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
-	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
-	_data(Provider::create())
+	_view(math::Matrix4x4::create()),
+	_projection(math::Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
+	_viewProjection(math::Matrix4x4::create()->copyFrom(_projection)),
+	_data(data::Provider::create())
 {
 	_data
 		->set("transform/viewMatrix",			_view)
@@ -68,11 +70,12 @@ PerspectiveCameraController::targetRemovedHandler(std::shared_ptr<AbstractContro
 }
 
 void
-PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName)
+PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<data::Container>	data,
+														const std::string&					propertyName)
 {
 	std::cout << "PerspectiveCameraController::localToWorldChangedHandler()" << std::endl;
 
-	_view->copyFrom(bindings->get<Matrix4x4::Ptr>("transform/modelToWorldMatrix"))->invert();
+	_view->copyFrom(data->get<Matrix4x4::Ptr>("transform/modelToWorldMatrix"))->invert();
 	_viewProjection->copyFrom(_view)->append(_projection);
 }
 

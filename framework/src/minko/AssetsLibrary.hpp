@@ -23,27 +23,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 
-namespace
-{
-	using namespace minko::geometry;
-	using namespace minko::render;
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	class AssetsLibrary :
 		public std::enable_shared_from_this<AssetsLibrary>
 	{
 	public:
-		typedef std::shared_ptr<AssetsLibrary>			Ptr;
+		typedef std::shared_ptr<AssetsLibrary>				Ptr;
 
 	private:
-		typedef std::shared_ptr<AbstractContext>		AbsContextPtr;
-		typedef std::shared_ptr<Effect>					EffectPtr;
-		typedef std::shared_ptr<Geometry>				GeometryPtr;
-		typedef std::shared_ptr<file::AbstractParser>	AbsParserPtr;
-		typedef std::function<AbsParserPtr(void)>		Handler;
+		typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+		typedef std::shared_ptr<render::Effect>				EffectPtr;
+		typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
+		typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
+		typedef std::function<AbsParserPtr(void)>			Handler;
 
 	private:
 		AbsContextPtr													_context;
@@ -94,13 +87,13 @@ namespace minko
 		geometry(const std::string& name);
 
 		Ptr
-		geometry(const std::string& name, std::shared_ptr<Geometry> geometry);
+		geometry(const std::string& name, GeometryPtr geometry);
 
 		EffectPtr
 		effect(const std::string& name);
 
 		Ptr
-		effect(const std::string& name, std::shared_ptr<Effect> effect);
+		effect(const std::string& name, EffectPtr effect);
 
 		const std::vector<char>&
 		blob(const std::string& name);

@@ -36,13 +36,13 @@ namespace minko
 
 			static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context)
+			create(std::shared_ptr<render::AbstractContext> context)
 			{
 				return std::shared_ptr<CubeGeometry>(new CubeGeometry(context));
 			}
 
 		protected:
-			CubeGeometry(std::shared_ptr<AbstractContext> context);
+			CubeGeometry(std::shared_ptr<render::AbstractContext> context);
 		};			
 	}
 }

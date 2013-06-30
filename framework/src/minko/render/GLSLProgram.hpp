@@ -26,10 +26,6 @@ namespace minko
 {
 	namespace render
 	{
-		using namespace minko::render;
-		using namespace minko::render;
-		using namespace minko::data;
-
 		class GLSLProgram :
 			public std::enable_shared_from_this<GLSLProgram>
 		{

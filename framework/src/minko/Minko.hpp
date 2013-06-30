@@ -53,12 +53,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 
-class Minko
+namespace minko
 {
-public:
-	static
-	void log(const std::string& message)
+	class Minko
 	{
-		std::cout << message << std::endl;
-	}
-};
+	public:
+		static
+		void log(const std::string& message)
+		{
+			std::cout << message << std::endl;
+		}
+	};
+}
