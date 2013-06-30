@@ -66,15 +66,15 @@ namespace minko
 	{
 		class Node;
 		class NodeSet;
+	}
 
-		namespace controller
-		{
-			class AbstractController;
-			class TransformController;
-			class SurfaceController;
-			class RenderingController;
-			class PerspectiveCameraController;
-		}
+	namespace controller
+	{
+		class AbstractController;
+		class TransformController;
+		class SurfaceController;
+		class RenderingController;
+		class PerspectiveCameraController;
 	}
 
 	namespace data
