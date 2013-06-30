@@ -25,10 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/GLSLProgram.hpp"
 
 using namespace minko::controller;
+using namespace minko::geometry;
+using namespace minko::render;
+using namespace minko::data;
+using namespace minko::scene;
 
-SurfaceController::SurfaceController(std::shared_ptr<Geometry> 		geometry,
+SurfaceController::SurfaceController(std::shared_ptr<Geometry> 	geometry,
 									 std::shared_ptr<Provider> 	material,
-									 std::shared_ptr<Effect>		effect) :
+									 std::shared_ptr<Effect>	effect) :
 	AbstractController(),
 	_geometry(geometry),
 	_material(material),

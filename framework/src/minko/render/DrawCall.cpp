@@ -31,15 +31,16 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::resource;
 
-DrawCall::DrawCall(std::shared_ptr<Container> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName) :
-	_bindings(bindings),
+DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
+				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName) :
+	_data(bindings),
 	_inputNameToBindingName(inputNameToBindingName)
 {
 	bind(bindings);
 }
 
 void
-DrawCall::bind(std::shared_ptr<Container> bindings)
+DrawCall::bind(std::shared_ptr<data::Container> bindings)
 {
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
@@ -59,14 +60,14 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 				? _inputNameToBindingName.find(inputName)->second
 				: inputName;
 
-			if (!_bindings->hasProperty(name))
+			if (!_data->hasProperty(name))
 				continue;
 
 			if (type == ShaderProgramInputs::attribute)
 			{
-				auto vertexStream	= _bindings->get<VertexStream::Ptr>(name);
+				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
-				auto vertexSize		= _bindings->get<unsigned int>("geometry/vertex/size");
+				auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
 
 				_func.push_back([location, vertexStream, attribute, vertexSize](std::shared_ptr<AbstractContext> context)
 				{
@@ -81,7 +82,7 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float1)
 			{
-				auto floatValue = _bindings->get<float>(name);
+				auto floatValue = _data->get<float>(name);
 
 				_func.push_back([location, floatValue](std::shared_ptr<AbstractContext> context)
 				{
@@ -90,7 +91,7 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float2)
 			{
-				auto float2Value = _bindings->get<std::shared_ptr<Vector2>>(name);
+				auto float2Value = _data->get<std::shared_ptr<Vector2>>(name);
 
 				_func.push_back([location, float2Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -99,7 +100,7 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float3)
 			{
-				auto float3Value = _bindings->get<std::shared_ptr<Vector3>>(name);
+				auto float3Value = _data->get<std::shared_ptr<Vector3>>(name);
 
 				_func.push_back([location, float3Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -108,7 +109,7 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float4)
 			{
-				auto float4Value = _bindings->get<std::shared_ptr<Vector4>>(name);
+				auto float4Value = _data->get<std::shared_ptr<Vector4>>(name);
 
 				_func.push_back([location, float4Value](std::shared_ptr<AbstractContext> context)
 				{
@@ -117,7 +118,7 @@ DrawCall::bind(std::shared_ptr<Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float16)
 			{
-				auto float16Ptr = &(_bindings->get<Matrix4x4::Ptr>(name)->data()[0]);
+				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
 
 				_func.push_back([location, float16Ptr](std::shared_ptr<AbstractContext> context)
 				{

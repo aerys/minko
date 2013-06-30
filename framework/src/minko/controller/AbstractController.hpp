@@ -22,32 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
-namespace
-{
-	using namespace minko::scene;
-}
-
 namespace minko
 {
 	namespace controller
 	{
 		class AbstractController
 		{
-			friend class minko::scene::Node;
+			friend class scene::Node;
 
 		public:
 			typedef std::shared_ptr<AbstractController>	Ptr;
 
 		private:
-			std::vector<std::shared_ptr<Node>>					_targets;
+			std::vector<std::shared_ptr<scene::Node>>					_targets;
 
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<Node>>>	_targetAdded;
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<Node>>>	_targetRemoved;
+			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
+			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
 
 		public:
 			AbstractController() :
-				_targetAdded(Signal<Ptr, std::shared_ptr<Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<Node>>::create())
+				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
 			{
 			}
 
@@ -57,21 +52,21 @@ namespace minko
 			}
 
 			inline
-			const std::vector<std::shared_ptr<Node>>&
+			const std::vector<std::shared_ptr<scene::Node>>&
 			targets()
 			{
 				return _targets;
 			}
 
 			inline
-			Signal<Ptr, std::shared_ptr<Node>>::Ptr
+			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
 			targetAdded()
 			{
 				return _targetAdded;
 			}
 
 			inline
-			Signal<Ptr, std::shared_ptr<Node>>::Ptr
+			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
 			targetRemoved()
 			{
 				return _targetRemoved;
