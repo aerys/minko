@@ -47,19 +47,19 @@ namespace minko
 			class OpenGLES2Context;			
 		}
 
-		namespace stream
-		{
-			class VertexFormat;
-			class VertexStream;
-			class VertexAttribute;
-			class IndexStream;
-		}
-
 		class DrawCall;
 
 		class Effect;
 		class GLSLProgram;
 		class ShaderProgramInputs;
+	}
+
+	namespace resource
+	{
+		class VertexFormat;
+		class VertexStream;
+		class VertexAttribute;
+		class IndexStream;
 	}
 
 	namespace scene
