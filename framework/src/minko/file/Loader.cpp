@@ -27,6 +27,7 @@ using namespace minko::file;
 
 Loader::Loader() :
 	_complete(Signal<Loader::Ptr>::create()),
+	_progress(Signal<Loader::Ptr>::create()),
 	_error(Signal<Loader::Ptr>::create())
 {
 }
@@ -36,6 +37,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
 	auto flags = std::ios::in | std::ios::ate;
 
+	_filename = filename;
 	_options = options;
 	
 	std::fstream file(filename, flags);
@@ -47,11 +49,17 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	{
 		unsigned int size = (unsigned int)file.tellg();
 
+		// FIXME: use fixed size buffers and call _progress accordingly
+
+		_progress->execute(shared_from_this());
+
 		_data.resize(size);
 
 		file.seekg(0, std::ios::beg);
 		file.read(&_data[0], size);
 		file.close();
+
+		_progress->execute(shared_from_this());
 	
 		_complete->execute(shared_from_this());
 	}
