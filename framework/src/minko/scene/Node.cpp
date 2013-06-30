@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Node.hpp"
-#include "minko/scene/controller/AbstractController.hpp"
+#include "minko/controller/AbstractController.hpp"
 
 using namespace minko::scene;
 
