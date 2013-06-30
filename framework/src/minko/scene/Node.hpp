@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/scene/data/DataBindings.hpp"
+#include "minko/data/DataBindings.hpp"
 
 namespace
 {
-	using namespace minko::scene::data;
+	using namespace minko::data;
 	using namespace minko::scene::controller;
 }
 
