@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/VertexAttribute.hpp"
 
 using namespace minko::resource;
+using namespace minko::render;
 
 void
 VertexStream::upload()

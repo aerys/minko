@@ -22,12 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/controller/AbstractController.hpp"
 
-namespace
-{
-	using namespace minko::scene;
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace controller
@@ -37,17 +31,18 @@ namespace minko
 			public std::enable_shared_from_this<RenderingController>
 		{
 		public:
-			typedef std::shared_ptr<RenderingController>	Ptr;
+			typedef std::shared_ptr<RenderingController>		Ptr;
 
 		private:
-			typedef std::shared_ptr<Node>				NodePtr;
-			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
-			typedef std::shared_ptr<SurfaceController>	SurfaceCtrlPtr;
-			typedef std::shared_ptr<DrawCall>			DrawCallPtr;
+			typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<AbstractController>			AbsCtrlPtr;
+			typedef std::shared_ptr<SurfaceController>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
+			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 		private:
-			std::shared_ptr<AbstractContext>			_context;
-			std::list<std::shared_ptr<DrawCall>>		_drawCalls;
+			std::shared_ptr<render::AbstractContext>	_context;
+			std::list<DrawCallPtr>						_drawCalls;
 
 			Signal<Ptr>::Ptr							_enterFrame;
 			Signal<Ptr>::Ptr							_exitFrame;
@@ -64,7 +59,7 @@ namespace minko
 		public:
 			static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context)
+			create(AbsContextPtr context)
 			{
 				auto ctrl = std::shared_ptr<RenderingController>(new RenderingController(context));
 
@@ -91,7 +86,7 @@ namespace minko
 			}
 
 		private:
-			RenderingController(std::shared_ptr<AbstractContext> context) :
+			RenderingController(AbsContextPtr context) :
 				AbstractController(),
 				_context(context),
 				_enterFrame(Signal<Ptr>::create()),
@@ -103,10 +98,10 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(std::shared_ptr<AbstractController>, NodePtr target);
+			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 			void
-			targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, NodePtr target);
+			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
@@ -115,35 +110,27 @@ namespace minko
 			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
-			rootDescendantAddedHandler(NodePtr	node,
-										NodePtr	target,
-										NodePtr	parent);
+			rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
-			rootDescendantRemovedHandler(NodePtr	node,
-											NodePtr	target,
-											NodePtr	parent);
+			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 			void
-			controllerAddedHandler(NodePtr								node,
-									NodePtr								target,
-									std::shared_ptr<AbstractController>	ctrl);
+			controllerAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
 			void
-			controllerRemovedHandler(NodePtr								node,
-										NodePtr								target,
-										std::shared_ptr<AbstractController>	ctrl);
+			controllerRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
-			addSurfaceController(std::shared_ptr<SurfaceController> ctrl);
+			addSurfaceController(SurfaceCtrlPtr ctrl);
 
 			void
-			removeSurfaceController(std::shared_ptr<SurfaceController> ctrl);
+			removeSurfaceController(SurfaceCtrlPtr ctrl);
 
 			void
-			geometryChanged(std::shared_ptr<SurfaceController>);
+			geometryChanged(SurfaceCtrlPtr ctrl);
 
 			void
-			materialChanged(std::shared_ptr<SurfaceController>);
+			materialChanged(SurfaceCtrlPtr ctrl);
 		};
 	}
 }

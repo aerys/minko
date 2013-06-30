@@ -35,7 +35,10 @@ namespace minko
 			public std::enable_shared_from_this<FrameController>
 		{
 		public:
-			typedef std::shared_ptr<FrameController> Ptr;
+			typedef std::shared_ptr<FrameController>	Ptr;
+
+		private:
+			typedef std::shared_ptr<scene::Node>		NodePtr;
 
 		private:
 			std::shared_ptr<Signal<Ptr>>	_app;
@@ -79,16 +82,14 @@ namespace minko
 
 			void
 			targetAddedHandler(std::shared_ptr<AbstractController>	controller,
-							   std::shared_ptr<Node>				target);
+							   NodePtr								target);
 
 			void
-			addedHandler(std::shared_ptr<Node>	node,
-						 std::shared_ptr<Node>	target,
-						 std::shared_ptr<Node>	parent);
+			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
-			controllerAddedHandler(std::shared_ptr<Node>				node,
-								   std::shared_ptr<Node>				target,
+			controllerAddedHandler(NodePtr								node,
+								   NodePtr								target,
 								   std::shared_ptr<AbstractController>	controller);
 		};
 	}

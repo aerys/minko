@@ -37,9 +37,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext>	context,
-					unsigned int						numParallels	= 10,
-					unsigned int						numMeridians	= 0)
+			create(std::shared_ptr<render::AbstractContext>	context,
+					unsigned int							numParallels	= 10,
+					unsigned int							numMeridians	= 0)
 			{
 				return std::shared_ptr<SphereGeometry>(new SphereGeometry(
 					context,
@@ -49,19 +49,19 @@ namespace minko
 			}
 
 		private:
-			SphereGeometry(std::shared_ptr<AbstractContext>	context,
-							unsigned int						numParallels,
-							unsigned int						numMeridians);
+			SphereGeometry(std::shared_ptr<render::AbstractContext>	context,
+							unsigned int							numParallels,
+							unsigned int							numMeridians);
 
 			void
-			initializeVertices(std::shared_ptr<AbstractContext>	context,
-								unsigned int						numParallels,
-								unsigned int						numMeridians);
+			initializeVertices(std::shared_ptr<render::AbstractContext>	context,
+								unsigned int							numParallels,
+								unsigned int							numMeridians);
 
 			void
-			initializeIndices(std::shared_ptr<AbstractContext>	context,
-								unsigned int						numParallels,
-								unsigned int						numMeridians);
+			initializeIndices(std::shared_ptr<render::AbstractContext>	context,
+								unsigned int							numParallels,
+								unsigned int							numMeridians);
 		};
 	}
 }

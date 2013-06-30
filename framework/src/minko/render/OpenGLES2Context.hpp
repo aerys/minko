@@ -33,11 +33,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"
 
-namespace
-{
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace render
