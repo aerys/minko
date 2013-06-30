@@ -169,3 +169,5 @@ namespace std
 		return to_string(*value);
 	}
 }
+
+using namespace minko;

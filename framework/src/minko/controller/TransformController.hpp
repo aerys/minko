@@ -24,13 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/RenderingController.hpp"
 #include "minko/Any.hpp"
 
-namespace
-{
-	using namespace minko::scene;
-	using namespace minko::data;
-	using namespace minko::math;
-}
-
 namespace minko
 {
 	namespace controller
@@ -44,19 +37,19 @@ namespace minko
 			typedef std::shared_ptr<TransformController>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Node>					NodePtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
 			typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
 
 		private:
-			std::shared_ptr<Matrix4x4>					_transform;
-			std::shared_ptr<Matrix4x4>					_modelToWorld;
-			std::shared_ptr<Matrix4x4>					_worldToModel;
-			std::shared_ptr<Provider>				_data;
+			std::shared_ptr<math::Matrix4x4>			_transform;
+			std::shared_ptr<math::Matrix4x4>			_modelToWorld;
+			std::shared_ptr<math::Matrix4x4>			_worldToModel;
+			std::shared_ptr<data::Provider>				_data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_removedSlot;
 
 		public:
 			inline static
@@ -71,14 +64,14 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Matrix4x4>
+			std::shared_ptr<math::Matrix4x4>
 			transform()
 			{
 				return _transform;
 			}
 
 			inline
-			std::shared_ptr<Matrix4x4>
+			std::shared_ptr<math::Matrix4x4>
 			modelToWorldMatrix()
 			{
 				return _modelToWorld;
@@ -124,8 +117,8 @@ namespace minko
 				}
 
 			private:
-				std::vector<std::shared_ptr<Matrix4x4>>			_transform;
-				std::vector<std::shared_ptr<Matrix4x4>>			_modelToWorld;
+				std::vector<std::shared_ptr<math::Matrix4x4>>	_transform;
+				std::vector<std::shared_ptr<math::Matrix4x4>>	_modelToWorld;
 				//std::vector<std::shared_ptr<Matrix4x4>>		_worldToModel;
 
 				std::map<NodePtr, unsigned int>					_nodeToId;

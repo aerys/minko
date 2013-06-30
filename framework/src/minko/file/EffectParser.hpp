@@ -23,12 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 
-namespace
-{
-	using namespace minko::render;
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace file
@@ -44,13 +38,13 @@ namespace minko
 			typedef std::shared_ptr<Loader> LoaderPtr;
 
 		private:
-			std::shared_ptr<Effect>									_effect;
+			std::shared_ptr<render::Effect>							_effect;
 			std::string												_effectName;
 			
 			unsigned int											_numDependencies;
 			unsigned int											_numLoadedDependencies;
 
-			std::shared_ptr<AbstractContext>						_context;
+			std::shared_ptr<render::AbstractContext>				_context;
 			std::vector<std::pair<std::string, std::string>>		_programs;
 			std::unordered_map<std::string, std::string>			_bindings;
 			std::string												_dependenciesCode;
@@ -67,7 +61,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Effect>
+			std::shared_ptr<render::Effect>
 			effect()
 			{
 				return _effect;

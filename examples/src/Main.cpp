@@ -2,11 +2,12 @@
 
 #include "minko/Minko.hpp"
 
-using namespace minko;
+using namespace minko::controller;
+using namespace minko::math;
 
 RenderingController::Ptr renderingController;
-auto mesh = Node::create("mesh");
-auto group = Node::create("group");
+auto mesh = scene::Node::create("mesh");
+auto group = scene::Node::create("group");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -52,11 +53,11 @@ int main(int argc, char** argv)
 #endif
 	// !glut/glew init
 
-	auto context = OpenGLES2Context::create();
+	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
-		->geometry("cube", CubeGeometry::create(context))
-		->geometry("sphere", SphereGeometry::create(context))
+		->geometry("cube", geometry::CubeGeometry::create(context))
+		->geometry("sphere", geometry::SphereGeometry::create(context))
 		->queue("DirectionalLight.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect");
@@ -65,8 +66,8 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		auto camera	= Node::create("camera");
-		auto root   = Node::create("root");
+		auto camera	= scene::Node::create("camera");
+		auto root   = scene::Node::create("root");
 
 		root->addChild(group)->addChild(camera);
 
