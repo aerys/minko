@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
 #include "minko/render/GLSLProgram.hpp"
-#include "minko/data/DataBindings.hpp"
+#include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/resource/VertexAttribute.hpp"
 
@@ -31,7 +31,7 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::resource;
 
-DrawCall::DrawCall(std::shared_ptr<DataBindings> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName) :
+DrawCall::DrawCall(std::shared_ptr<Container> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName) :
 	_bindings(bindings),
 	_inputNameToBindingName(inputNameToBindingName)
 {
@@ -39,7 +39,7 @@ DrawCall::DrawCall(std::shared_ptr<DataBindings> bindings, const std::unordered_
 }
 
 void
-DrawCall::bind(std::shared_ptr<DataBindings> bindings)
+DrawCall::bind(std::shared_ptr<Container> bindings)
 {
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{

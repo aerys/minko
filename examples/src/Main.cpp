@@ -2,9 +2,7 @@
 
 #include "minko/Minko.hpp"
 
-using namespace minko::scene;
-using namespace minko::math;
-using namespace minko::render;
+using namespace minko;
 
 RenderingController::Ptr renderingController;
 auto mesh = Node::create("mesh");
@@ -31,7 +29,7 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	mesh->controller<TransformController>()->transform()->prependRotationY(.001f);
+	//mesh->controller<TransformController>()->transform()->prependRotationY(.001f);
 
 	renderingController->render();
 
@@ -74,19 +72,36 @@ int main(int argc, char** argv)
 
 		camera->addController(renderingController = RenderingController::create(assets->context()));
 
+		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
+		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
+
 		mesh->addController(TransformController::create());
 		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(SurfaceController::create(
 			assets->geometry("cube"),
-			data::DataProvider::create()
-				->set("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("transform/worldToScreenMatrix",	Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f))
-				->set("light/direction",				Vector3::create(0.f, -1.f, -1.f)),
-			assets->effect("basic")
+			data::Provider::create()
+				->set("material/diffuse/rgba",			color)
+				->set("transform/worldToScreenMatrix",	view)
+				->set("light/direction",				lightDirection),
+			assets->effect("directional light")
 		));
 
 		group->addChild(mesh);
 
+		/*
+		for (auto i = 0; i < 50000; ++i)
+		{
+			group->addChild(Node::create()->addController(SurfaceController::create(
+				assets->geometry("cube"),
+				data::Provider::create()
+					->set("material/diffuse/rgba",			color)
+					->set("transform/worldToScreenMatrix",	view)
+					->set("light/direction",				lightDirection),
+				assets->effect("directional light")
+			)));
+		}
+		*/
 	});
 
 	assets->load();

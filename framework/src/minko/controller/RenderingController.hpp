@@ -26,7 +26,6 @@ namespace
 {
 	using namespace minko::scene;
 	using namespace minko::render;
-	using namespace minko::render;
 }
 
 namespace minko

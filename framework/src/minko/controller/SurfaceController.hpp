@@ -48,7 +48,7 @@ namespace minko
 
 		private:
 			std::shared_ptr<Geometry>		_geometry;
-			std::shared_ptr<DataProvider>	_material;
+			std::shared_ptr<Provider>	_material;
 			std::shared_ptr<Effect>			_effect;
 
 			std::list<DrawCallPtr>			_drawCalls;
@@ -60,7 +60,7 @@ namespace minko
 			static
 			Ptr
 			create(std::shared_ptr<Geometry> 		geometry,
-					std::shared_ptr<DataProvider> 	material,
+					std::shared_ptr<Provider> 	material,
 					std::shared_ptr<Effect>			effect)
 			{
 				Ptr surface(new SurfaceController(geometry, material, effect));
@@ -78,7 +78,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<DataProvider>
+			std::shared_ptr<Provider>
 			material()
 			{
 				return _material;
@@ -93,7 +93,7 @@ namespace minko
 
 		private:
 			SurfaceController(std::shared_ptr<Geometry> 	geometry,
-								std::shared_ptr<DataProvider> material,
+								std::shared_ptr<Provider> material,
 								std::shared_ptr<Effect>		effect);
 
 			void

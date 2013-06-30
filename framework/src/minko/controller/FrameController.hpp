@@ -20,84 +20,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/Provider.hpp"
-#include "minko/resource/VertexStream.hpp"
-#include "minko/resource/VertexAttribute.hpp"
+#include "minko/controller/AbstractController.hpp"
 
 namespace
 {
-	using namespace minko::data;
-	using namespace minko::resource;
 }
 
 namespace minko
 {
-	namespace geometry
+	namespace controller
 	{
-		class Geometry
+		class FrameController :
+			public AbstractController,
+			public std::enable_shared_from_this<FrameController>
 		{
 		public:
-			typedef std::shared_ptr<Geometry> Ptr;
+			typedef std::shared_ptr<FrameController> Ptr;
 
 		private:
-			std::shared_ptr<Provider>	_data;
-			unsigned int					_vertexSize;
+			std::shared_ptr<Signal<Ptr>>	_app;
+			std::shared_ptr<Signal<Ptr>>	_cull;
+			std::shared_ptr<Signal<Ptr>>	_draw;
 
 		public:
-			inline
-			std::shared_ptr<Provider>
-			data()
-			{
-				return _data;
-			}
-
-			static
+			inline static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<Geometry>(new Geometry());
+				return std::shared_ptr<FrameController>(new FrameController());
 			}
 
 			inline
-			std::shared_ptr<Provider>
-			vertices()
+			std::shared_ptr<Signal<Ptr>>
+			app()
 			{
-				return _data;
+				return _app;
 			}
 
 			inline
+			std::shared_ptr<Signal<Ptr>>
+			cull()
+			{
+				return _cull;
+			}
+
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			draw()
+			{
+				return _draw;
+			}
+
 			void
-			indices(std::shared_ptr<IndexStream> indices)
-			{
-				_data->set("geometry/indices", indices);
-			}
+			nextFrame();
 
-			inline
-			std::shared_ptr<IndexStream>
-			indices()
-			{
-				return _data->get<std::shared_ptr<IndexStream>>("geometry/indices");
-			}
+		private:
+			FrameController();
 
-			inline
 			void
-			addVertexStream(std::shared_ptr<VertexStream> vertexStream)
-			{
-				for (auto attribute : vertexStream->attributes())
-				{
-					_data->set("geometry/vertex/attribute/" + attribute->name(), vertexStream);
-					_vertexSize += attribute->size();
-				}
+			targetAddedHandler(std::shared_ptr<AbstractController>	controller,
+							   std::shared_ptr<Node>				target);
 
-				_data->set("geometry/vertex/size", _vertexSize);
-			}
+			void
+			addedHandler(std::shared_ptr<Node>	node,
+						 std::shared_ptr<Node>	target,
+						 std::shared_ptr<Node>	parent);
 
-		protected:
-			Geometry() :
-				_data(Provider::create()),
-				_vertexSize(0)
-			{
-			}
+			void
+			controllerAddedHandler(std::shared_ptr<Node>				node,
+								   std::shared_ptr<Node>				target,
+								   std::shared_ptr<AbstractController>	controller);
 		};
 	}
 }
