@@ -21,11 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-namespace
-{
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace file
@@ -36,19 +31,19 @@ namespace minko
 			typedef std::shared_ptr<Options> Ptr;
 
 		private:
-			std::shared_ptr<AbstractContext>	_context;
-			std::string							_includePath;
+			std::shared_ptr<render::AbstractContext>	_context;
+			std::string									_includePath;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context)
+			create(std::shared_ptr<render::AbstractContext> context)
 			{
 				return std::shared_ptr<Options>(new Options(context));
 			}
 
 			inline
-			std::shared_ptr<AbstractContext>
+			std::shared_ptr<render::AbstractContext>
 			context()
 			{
 				return _context;
@@ -69,7 +64,7 @@ namespace minko
 			}
 
 		private:
-			Options(std::shared_ptr<AbstractContext> context) :
+			Options(std::shared_ptr<render::AbstractContext> context) :
 				_context(context)
 			{
 			}

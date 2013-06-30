@@ -25,12 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/Container.hpp"
 
-namespace
-{
-	using namespace minko::math;
-	using namespace minko::data;
-}
-
 namespace minko
 {
 	namespace controller
@@ -44,18 +38,18 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
-			typedef std::shared_ptr<Node>				NodePtr;
+			typedef std::shared_ptr<scene::Node>		NodePtr;
 
 		private:
-			std::shared_ptr<Matrix4x4>				_view;
-			std::shared_ptr<Matrix4x4>				_projection;
-			std::shared_ptr<Matrix4x4>				_viewProjection;
+			std::shared_ptr<math::Matrix4x4>				_view;
+			std::shared_ptr<math::Matrix4x4>				_projection;
+			std::shared_ptr<math::Matrix4x4>				_viewProjection;
 
-			std::shared_ptr<Provider>			_data;
+			std::shared_ptr<data::Provider>					_data;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+			data::Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static
@@ -78,13 +72,14 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> node);
+			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr node);
 
 			void
-			targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> node);
+			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr node);
 
 			void
-			localToWorldChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName);
+			localToWorldChangedHandler(std::shared_ptr<data::Container> data,
+									   const std::string&				propertyName);
 		};
 	}
 }

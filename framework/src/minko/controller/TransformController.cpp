@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::controller;
 using namespace minko::data;
+using namespace minko::math;
+using namespace minko::scene;
 
 TransformController::TransformController() :
 	minko::controller::AbstractController(),

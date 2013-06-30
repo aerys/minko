@@ -21,10 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 
-using namespace minko::scene;
-
-NodeSet::Ptr
-NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::Ptr result)
+scene::NodeSet::Ptr
+scene::NodeSet::descendants(bool andSelf, bool depthFirst, scene::NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -55,8 +53,8 @@ NodeSet::descendants(bool andSelf, bool depthFirst, NodeSet::Ptr result)
 	return result;
 }
 
-NodeSet::Ptr
-NodeSet::ancestors(bool andSelf, NodeSet::Ptr result)
+scene::NodeSet::Ptr
+scene::NodeSet::ancestors(bool andSelf, scene::NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -77,8 +75,8 @@ NodeSet::ancestors(bool andSelf, NodeSet::Ptr result)
 	return result;
 }
 
-NodeSet::Ptr
-NodeSet::children(bool andSelf, NodeSet::Ptr result)
+scene::NodeSet::Ptr
+scene::NodeSet::children(bool andSelf, scene::NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();
@@ -94,8 +92,8 @@ NodeSet::children(bool andSelf, NodeSet::Ptr result)
 	return result;
 }
 
-NodeSet::Ptr
-NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, NodeSet::Ptr result)
+scene::NodeSet::Ptr
+scene::NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, scene::NodeSet::Ptr result)
 {
 	if (result == nullptr)
 		result = create();

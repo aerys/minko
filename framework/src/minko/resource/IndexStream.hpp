@@ -21,11 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-namespace
-{
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace resource
@@ -36,21 +31,21 @@ namespace minko
 			typedef std::shared_ptr<IndexStream>	Ptr;
 
 		private:
-			std::vector<unsigned short>			_data;
-			std::shared_ptr<AbstractContext>	_context;
-			int									_buffer;
+			std::vector<unsigned short>					_data;
+			std::shared_ptr<render::AbstractContext>	_context;
+			int											_buffer;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context, std::vector<unsigned short>& data)
+			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
 			{
 				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
 			}
 
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context, unsigned short* begin, unsigned short* end)
+			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
 			{
 				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
 			}
@@ -70,7 +65,7 @@ namespace minko
 			}
 
 		private:
-			IndexStream(std::shared_ptr<AbstractContext>	context,
+			IndexStream(std::shared_ptr<render::AbstractContext>	context,
 						std::vector<unsigned short>			data) :
 				_data(data),
 				_context(context),
@@ -79,7 +74,7 @@ namespace minko
 				upload();
 			}
 
-			IndexStream(std::shared_ptr<AbstractContext>	context,
+			IndexStream(std::shared_ptr<render::AbstractContext>	context,
 						unsigned short*						begin,
 						unsigned short*						end) :
 				_data(begin, end),

@@ -21,12 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-namespace
-{
-	using namespace minko::scene;
-	using namespace minko::data;
-}
-
 namespace minko
 {
 	namespace render
@@ -43,7 +37,7 @@ namespace minko
 
 		private:
 			std::vector<GLSLProgramPtr>						_shaders;
-			std::shared_ptr<Provider>					_data;
+			std::shared_ptr<data::Provider>					_data;
 			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
 
 		public:
@@ -55,7 +49,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Provider>
+			std::shared_ptr<data::Provider>
 			data()
 			{
 				return _data;
@@ -82,7 +76,7 @@ namespace minko
 			Effect(std::vector<GLSLProgramPtr> shaders);
 
 			void
-			propertyChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName);
+			propertyChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName);
 		};		
 	}
 }
