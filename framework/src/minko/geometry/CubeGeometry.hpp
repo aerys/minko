@@ -20,50 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
-
-namespace
-{
-}
+#include "Geometry.hpp"
+#include "minko/render/stream/VertexStream.hpp"
+#include "minko/render/stream/IndexStream.hpp"
 
 namespace minko
 {
-	namespace scene
+	namespace geometry
 	{
-		namespace data
+		class CubeGeometry :
+			public Geometry
 		{
-			class Value
+		public:
+			typedef std::shared_ptr<Geometry> Ptr;
+
+			static
+			Ptr
+			create(std::shared_ptr<AbstractContext> context)
 			{
-			public:
-				typedef std::shared_ptr<Value> Ptr;
+				return std::shared_ptr<CubeGeometry>(new CubeGeometry(context));
+			}
 
-			protected:
-				std::shared_ptr<Signal<Ptr>>	_changed;
-
-			public:
-				inline
-				std::shared_ptr<Signal<Ptr>>
-				changed()
-				{
-					return _changed;
-				}
-
-				virtual
-				~Value()
-				{
-				}
-
-			protected:
-				Value() :
-					_changed(Signal<Ptr>::create())
-				{
-				}
-
-				Value(std::shared_ptr<Signal<Ptr>> changed) :
-					_changed(changed)
-				{
-				}
-			};
-		}
+		protected:
+			CubeGeometry(std::shared_ptr<AbstractContext> context);
+		};			
 	}
 }

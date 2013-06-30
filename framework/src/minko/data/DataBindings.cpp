@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "DataBindings.hpp"
 
-using namespace minko::scene::data;
+using namespace minko::data;
 
 DataBindings::DataBindings() :
 	std::enable_shared_from_this<DataBindings>()

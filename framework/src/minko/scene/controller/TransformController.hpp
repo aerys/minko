@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace
 {
 	using namespace minko::scene;
-	using namespace minko::scene::data;
+	using namespace minko::data;
 	using namespace minko::math;
 }
 

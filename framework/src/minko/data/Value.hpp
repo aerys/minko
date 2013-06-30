@@ -20,54 +20,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "Geometry.hpp"
+#include "minko/Signal.hpp"
+
+namespace
+{
+}
 
 namespace minko
 {
-	namespace scene
+	namespace data
 	{
-		namespace data
+		class Value
 		{
-			namespace geometry
+		public:
+			typedef std::shared_ptr<Value> Ptr;
+
+		protected:
+			std::shared_ptr<Signal<Ptr>>	_changed;
+
+		public:
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			changed()
 			{
-				class SphereGeometry :
-					public Geometry
-				{
-				public:
-					typedef std::shared_ptr<SphereGeometry>	Ptr;
-
-				private:
-
-				public:
-					inline static
-					Ptr
-					create(std::shared_ptr<AbstractContext>	context,
-						   unsigned int						numParallels	= 10,
-						   unsigned int						numMeridians	= 0)
-					{
-						return std::shared_ptr<SphereGeometry>(new SphereGeometry(
-							context,
-							numParallels,
-							numMeridians != 0 ? numMeridians : numParallels
-						));
-					}
-
-				private:
-					SphereGeometry(std::shared_ptr<AbstractContext>	context,
-								   unsigned int						numParallels,
-								   unsigned int						numMeridians);
-
-					void
-					initializeVertices(std::shared_ptr<AbstractContext>	context,
-									   unsigned int						numParallels,
-									   unsigned int						numMeridians);
-
-					void
-					initializeIndices(std::shared_ptr<AbstractContext>	context,
-									  unsigned int						numParallels,
-									  unsigned int						numMeridians);
-				};
+				return _changed;
 			}
-		}
+
+			virtual
+			~Value()
+			{
+			}
+
+		protected:
+			Value() :
+				_changed(Signal<Ptr>::create())
+			{
+			}
+
+			Value(std::shared_ptr<Signal<Ptr>> changed) :
+				_changed(changed)
+			{
+			}
+		};
 	}
 }

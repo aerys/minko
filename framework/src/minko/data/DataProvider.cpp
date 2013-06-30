@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "DataProvider.hpp"
 
-using namespace minko::scene::data;
+using namespace minko::data;
 
 void
 DataProvider::unset(const std::string& propertyName)
