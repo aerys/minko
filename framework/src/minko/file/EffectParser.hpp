@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/file/AbstractParser.hpp"
 
 namespace
 {
@@ -33,7 +34,8 @@ namespace minko
 	namespace file
 	{
 		class EffectParser :
-			public std::enable_shared_from_this<EffectParser>
+			public std::enable_shared_from_this<EffectParser>,
+			public AbstractParser
 		{
 		public:
 			typedef std::shared_ptr<EffectParser>	Ptr;
@@ -43,6 +45,7 @@ namespace minko
 
 		private:
 			std::shared_ptr<Effect>									_effect;
+			std::string												_effectName;
 			
 			unsigned int											_numDependencies;
 			unsigned int											_numLoadedDependencies;
@@ -54,8 +57,6 @@ namespace minko
 
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
-
-			std::shared_ptr<Signal<Ptr>>							_complete;
 
 		public:
 			inline static
@@ -73,14 +74,15 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr>>
-			complete()
+			const std::string&
+			effectName()
 			{
-				return _complete;
+				return _effectName;
 			}
 
 			void
-			parse(std::shared_ptr<Options>	options,
+			parse(const std::string&		filename,
+				  std::shared_ptr<Options>	options,
 				  const std::vector<char>&	data);
 
 			void

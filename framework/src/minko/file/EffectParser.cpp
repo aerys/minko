@@ -29,13 +29,13 @@ using namespace minko::render;
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
-	_numLoadedDependencies(0),
-	_complete(Signal<EffectParser::Ptr>::create())
+	_numLoadedDependencies(0)
 {
 }
 
 void
-EffectParser::parse(std::shared_ptr<Options>	options,
+EffectParser::parse(const std::string&			filename,
+					std::shared_ptr<Options>	options,
 					const std::vector<char>&	data)
 {
 	Json::Value root;
@@ -45,6 +45,8 @@ EffectParser::parse(std::shared_ptr<Options>	options,
 	
 	if (!reader.parse(&data[0], &data[data.size() - 1],	root, false))
 		throw std::invalid_argument("data");
+
+	_effectName = root.get("name", filename).asString();
 	
 	for (auto pass : root.get("passes", 0))
 		_programs.push_back(std::pair<std::string, std::string>(
