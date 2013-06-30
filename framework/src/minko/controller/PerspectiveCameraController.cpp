@@ -26,7 +26,7 @@ PerspectiveCameraController::PerspectiveCameraController(float fov, float aspect
 	_view(Matrix4x4::create()),
 	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
 	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
-	_data(DataProvider::create())
+	_data(Provider::create())
 {
 	_data
 		->set("transform/viewMatrix",			_view)
@@ -52,8 +52,8 @@ PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractControll
 	if (targets().size() > 1)
 		throw std::logic_error("PerspectiveCameraController cannot have more than 1 target.");
 
-	target->bindings()->addProvider(_data);
-	target->bindings()->propertyChanged("transform/modelToWorldMatrix")->connect(std::bind(
+	target->data()->addProvider(_data);
+	target->data()->propertyChanged("transform/modelToWorldMatrix")->connect(std::bind(
 		&PerspectiveCameraController::localToWorldChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -64,11 +64,11 @@ PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractControll
 void
 PerspectiveCameraController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
 {
-	target->bindings()->addProvider(_data);
+	target->data()->addProvider(_data);
 }
 
 void
-PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName)
+PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName)
 {
 	std::cout << "PerspectiveCameraController::localToWorldChangedHandler()" << std::endl;
 

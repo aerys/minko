@@ -29,7 +29,7 @@ TransformController::TransformController() :
 	minko::controller::AbstractController(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
-	_data(DataProvider::create())
+	_data(Provider::create())
 {
 }
 
@@ -63,7 +63,7 @@ TransformController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 	if (target->controller<TransformController>(1) != nullptr)
 		throw std::logic_error("A node cannot have more than one TransformController.");
 
-	target->bindings()->addProvider(_data);
+	target->data()->addProvider(_data);
 
 	auto callback = std::bind(
 		&TransformController::addedOrRemovedHandler,
@@ -93,7 +93,7 @@ void
 TransformController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
 										  std::shared_ptr<Node> 				target)
 {
-	target->bindings()->removeProvider(_data);
+	target->data()->removeProvider(_data);
 
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;

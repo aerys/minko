@@ -43,7 +43,7 @@ namespace minko
 
 		private:
 			std::vector<GLSLProgramPtr>						_shaders;
-			std::shared_ptr<DataProvider>					_data;
+			std::shared_ptr<Provider>					_data;
 			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
 
 		public:
@@ -55,7 +55,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<DataProvider>
+			std::shared_ptr<Provider>
 			data()
 			{
 				return _data;
@@ -82,7 +82,7 @@ namespace minko
 			Effect(std::vector<GLSLProgramPtr> shaders);
 
 			void
-			propertyChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName);
+			propertyChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName);
 		};		
 	}
 }
