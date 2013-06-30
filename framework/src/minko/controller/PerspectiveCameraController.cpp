@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PerspectiveCameraController.hpp"
 #include "minko/scene/Node.hpp"
 
-using namespace minko::scene::controller;
+using namespace minko::controller;
 
 PerspectiveCameraController::PerspectiveCameraController(float fov, float aspectRatio, float zNear, float zFar) :
 	_view(Matrix4x4::create()),
