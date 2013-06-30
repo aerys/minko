@@ -28,7 +28,7 @@ namespace minko
 	{
 		using namespace minko::render;
 		using namespace minko::render::context;
-		using namespace minko::scene::data;
+		using namespace minko::data;
 
 		class GLSLProgram :
 			public std::enable_shared_from_this<GLSLProgram>

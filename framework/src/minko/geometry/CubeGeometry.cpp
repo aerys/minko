@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "CubeGeometry.hpp"
 
-using namespace minko::scene::data::geometry;
+using namespace minko::geometry;
 
 CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
 {

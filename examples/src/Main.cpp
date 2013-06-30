@@ -7,8 +7,7 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::render::context;
 
-RenderingController::ptr renderingController;
-unsigned int numFrames = 0;
+RenderingController::Ptr renderingController;
 auto mesh = Node::create("mesh");
 auto group = Node::create("group");
 
@@ -16,6 +15,7 @@ void
 printFramerate(const unsigned int delay = 1)
 {
 	static auto start = clock();
+	static auto numFrames = 0;
 
 	auto time = clock();
 	auto deltaT = (float)(clock() - start) / CLOCKS_PER_SEC;
@@ -32,107 +32,68 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	/*auto mesh = NodeSet::create(group)
-		->descendants()
-		->where([](Node::ptr node)
-			{
-				return node->hasController<TransformController>()
-					&& node->hasController<SurfaceController>();
-			});*/
+	mesh->controller<TransformController>()->transform()->prependRotationY(.001f);
 
-	mesh->controller<TransformController>()->transform()->prependRotationY(.001);
-	//mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, .1f);
+	renderingController->render();
 
-	//group->controller<TransformController>()->transform()->prependRotationY(.1);
+	printFramerate();
 
-  renderingController->render();
-
-  printFramerate();
-
-  glutSwapBuffers();
-  glutPostRedisplay();
+	glutSwapBuffers();
+	glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
 {
-	srand(clock());
-
-  glutInit(&argc, argv);
-//	glutInitDisplayMode(GLUT_SINGLE);
-
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(800, 600);
-  glutCreateWindow("Minko Examples");
+	// glut/glew init
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Minko Examples");
 
 #ifdef _WIN32
-  glewInit();
+	glewInit();
 #endif
+	// !glut/glew init
 
+	auto glContext = OpenGLES2Context::create();
+	auto assets	= AssetsLibrary::create(glContext)
+		->registerParser<file::EffectParser>("effect")
+		->geometry("cube", CubeGeometry::create(glContext))
+		->geometry("sphere", SphereGeometry::create(glContext))
+		->queue("DirectionalLight.effect")
+		->queue("Red.effect")
+		->queue("Basic.effect");
 
-  auto oglContext   = OpenGLES2Context::create();
-  auto camera       = Node::create("camera");
-  auto root         = Node::create("root");
+	assets->defaultOptions()->includePath("effects");
 
-  root->addChild(group)->addChild(camera);
+	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
+	{
+		auto camera	= Node::create("camera");
+		auto root   = Node::create("root");
 
-  camera->addController(renderingController = RenderingController::create(oglContext));
+		root->addChild(group)->addChild(camera);
 
-  file::FileLoader loader;
-  file::EffectParser parser;
+		camera->addController(renderingController = RenderingController::create(assets->context()));
 
-  parser.parse(oglContext, loader.load("effects/DirectionalLight.effect"));
+		mesh->addController(TransformController::create());
+		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->addController(SurfaceController::create(
+			assets->geometry("cube"),
+			data::DataProvider::create()
+				->set("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
+				->set("transform/worldToScreenMatrix",	Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f))
+				->set("light/direction",				Vector3::create(0.f, -1.f, -1.f)),
+			assets->effect("basic")
+		));
 
-  auto fx = parser.effect();
+		group->addChild(mesh);
 
-  std::cout << "== vertex shader compilation logs ==" << std::endl;
-  std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-  std::cout << "== fragment shader compilation logs ==" << std::endl;
-  std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-  std::cout << "== program info logs ==" << std::endl;
-  std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+	});
 
-  auto viewMatrix = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-  auto cubeGeometry = CubeGeometry::create(oglContext);
+	assets->load();
 
-  mesh->addController(TransformController::create());
-  mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-  mesh->addController(SurfaceController::create(
-    cubeGeometry,
-    data::DataProvider::create()
-		->set("material/diffuse/rgba",			Vector4::create(0.f, 0.f, 1.f, 1.f))
-		->set("transform/worldToScreenMatrix",	viewMatrix)
-		->set("light/direction",				Vector3::create(0.f, -1.f, -1.f)),
-    fx
-  ));
+	glutDisplayFunc(renderScene);
+	glutMainLoop();
 
-  group->addChild(mesh);
-
-  /*for (auto i = 0; i < 10000; ++i)
-  {
-	  auto cube = Node::create("cube" + std::to_string(i));
-
-	  cube->addController(TransformController::create());
-	  cube->controller<TransformController>()->transform()->appendTranslation(
-	    -10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
-		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f,
-		-10.f + (((float)rand() / RAND_MAX) - .5f) * 40.f
-	  );
-
-	  cube->addController(SurfaceController::create(
-		cubeGeometry,
-		data::DataProvider::create()
-			->setProperty("material/diffuse/rgba",			Vector4::create(1.f, 0.f, 0.f, 1.f))
-			->setProperty("transform/worldToScreenMatrix",	viewMatrix),
-		fx
-	  ));
-
-	  group->addChild(cube);
-  }*/
-
-  group->addController(TransformController::create());
-
-  glutDisplayFunc(renderScene);
-  glutMainLoop();
-
-  return 0;
+	return 0;
 }

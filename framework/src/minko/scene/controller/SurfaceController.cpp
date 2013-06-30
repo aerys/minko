@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SurfaceController.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/scene/data/geometry/Geometry.hpp"
+#include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/GLSLProgram.hpp"

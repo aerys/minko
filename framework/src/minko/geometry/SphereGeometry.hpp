@@ -21,34 +21,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "Geometry.hpp"
-#include "minko/render/stream/VertexStream.hpp"
-#include "minko/render/stream/IndexStream.hpp"
 
 namespace minko
 {
-	namespace scene
+	namespace geometry
 	{
-		namespace data
+		class SphereGeometry :
+			public Geometry
 		{
-			namespace geometry
+		public:
+			typedef std::shared_ptr<SphereGeometry>	Ptr;
+
+		private:
+
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractContext>	context,
+					unsigned int						numParallels	= 10,
+					unsigned int						numMeridians	= 0)
 			{
-				class CubeGeometry :
-					public Geometry
-				{
-				public:
-					typedef std::shared_ptr<Geometry> Ptr;
-
-					static
-					Ptr
-					create(std::shared_ptr<AbstractContext> context)
-					{
-						return std::shared_ptr<CubeGeometry>(new CubeGeometry(context));
-					}
-
-				protected:
-					CubeGeometry(std::shared_ptr<AbstractContext> context);
-				};			
+				return std::shared_ptr<SphereGeometry>(new SphereGeometry(
+					context,
+					numParallels,
+					numMeridians != 0 ? numMeridians : numParallels
+				));
 			}
-		}
+
+		private:
+			SphereGeometry(std::shared_ptr<AbstractContext>	context,
+							unsigned int						numParallels,
+							unsigned int						numMeridians);
+
+			void
+			initializeVertices(std::shared_ptr<AbstractContext>	context,
+								unsigned int						numParallels,
+								unsigned int						numMeridians);
+
+			void
+			initializeIndices(std::shared_ptr<AbstractContext>	context,
+								unsigned int						numParallels,
+								unsigned int						numMeridians);
+		};
 	}
 }

@@ -21,14 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/scene/controller/AbstractController.hpp"
-#include "minko/scene/data/DataProvider.hpp"
+#include "minko/data/DataProvider.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/scene/data/DataBindings.hpp"
+#include "minko/data/DataBindings.hpp"
 
 namespace
 {
 	using namespace minko::math;
-	using namespace minko::scene::data;
+	using namespace minko::data;
 }
 
 namespace minko
