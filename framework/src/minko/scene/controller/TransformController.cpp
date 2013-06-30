@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 
 using namespace minko::scene::controller;
-using namespace minko::scene::data;
+using namespace minko::data;
 
 TransformController::TransformController() :
 	minko::scene::controller::AbstractController(),

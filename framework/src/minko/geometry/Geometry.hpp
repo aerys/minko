@@ -20,40 +20,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/data/DataProvider.hpp"
+#include "minko/render/stream/VertexStream.hpp"
+#include "minko/render/stream/VertexAttribute.hpp"
 
 namespace
 {
-	using namespace minko::scene;
 	using namespace minko::data;
+	using namespace minko::render::stream;
 }
 
 namespace minko
 {
-	namespace render
+	namespace geometry
 	{
-
-		class Effect :
-			public std::enable_shared_from_this<Effect>
+		class Geometry
 		{
 		public:
-			typedef std::shared_ptr<Effect>	Ptr;
+			typedef std::shared_ptr<Geometry> Ptr;
 
 		private:
-			typedef std::shared_ptr<GLSLProgram>		GLSLProgramPtr;
-
-		private:
-			std::vector<GLSLProgramPtr>						_shaders;
-			std::shared_ptr<DataProvider>					_data;
-			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
+			std::shared_ptr<DataProvider>	_data;
+			unsigned int					_vertexSize;
 
 		public:
-			inline static
-			Ptr
-			create(std::vector<GLSLProgramPtr> shaders)
-			{
-				return std::shared_ptr<Effect>(new Effect(shaders));
-			}
-
 			inline
 			std::shared_ptr<DataProvider>
 			data()
@@ -61,28 +51,53 @@ namespace minko
 				return _data;
 			}
 
-			inline
-			const std::vector<GLSLProgramPtr>&
-			shaders()
-			{
-				return _shaders;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			inputNameToBindingName()
-			{
-				return _inputNameToBindingName;
-			}
-
+			static
 			Ptr
-			bindInput(const std::string& bindingName, const std::string& programInputName);
+			create()
+			{
+				return std::shared_ptr<Geometry>(new Geometry());
+			}
 
-		private:
-			Effect(std::vector<GLSLProgramPtr> shaders);
+			inline
+			std::shared_ptr<DataProvider>
+			vertices()
+			{
+				return _data;
+			}
 
+			inline
 			void
-			propertyChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName);
-		};		
+			indices(std::shared_ptr<IndexStream> indices)
+			{
+				_data->set("geometry/indices", indices);
+			}
+
+			inline
+			std::shared_ptr<IndexStream>
+			indices()
+			{
+				return _data->get<std::shared_ptr<IndexStream>>("geometry/indices");
+			}
+
+			inline
+			void
+			addVertexStream(std::shared_ptr<VertexStream> vertexStream)
+			{
+				for (auto attribute : vertexStream->attributes())
+				{
+					_data->set("geometry/vertex/attribute/" + attribute->name(), vertexStream);
+					_vertexSize += attribute->size();
+				}
+
+				_data->set("geometry/vertex/size", _vertexSize);
+			}
+
+		protected:
+			Geometry() :
+				_data(DataProvider::create()),
+				_vertexSize(0)
+			{
+			}
+		};
 	}
 }
