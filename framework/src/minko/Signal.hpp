@@ -31,7 +31,7 @@ namespace minko
 		typedef std::function<void(A...)>				Callback;
 		typedef typename std::list<Callback>::iterator	CallbackIterator;
 
-		template <typename... A>
+		template <typename... B>
 		class SignalSlot;
 
 	public:
