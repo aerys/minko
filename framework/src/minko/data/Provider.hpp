@@ -28,11 +28,11 @@ namespace minko
 {
 	namespace data
 	{			
-		class DataProvider :
-			public std::enable_shared_from_this<DataProvider>
+		class Provider :
+			public std::enable_shared_from_this<Provider>
 		{
 		public:
-			typedef std::shared_ptr<DataProvider> Ptr;
+			typedef std::shared_ptr<Provider> Ptr;
 
 		private:
 			template <typename P>
@@ -55,7 +55,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				return std::shared_ptr<DataProvider>(new DataProvider());
+				return std::shared_ptr<Provider>(new Provider());
 			}
 
 			inline
@@ -127,7 +127,7 @@ namespace minko
 			unset(const std::string& propertyName);
 
 		private:
-			DataProvider() :
+			Provider() :
 				enable_shared_from_this(),
 				_propertyChanged(Signal<Ptr, const std::string&>::create()),
 				_propertyAdded(Signal<Ptr, const std::string&>::create()),

@@ -17,34 +17,51 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Effect.hpp"
-#include "minko/data/Container.hpp"
+#include "FrameController.hpp"
 
-using namespace minko::render;
-using namespace minko::data;
+#include "minko/Signal.hpp"
 
-Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
-	std::enable_shared_from_this<Effect>(),
-	_shaders(shaders),
-	_data(Provider::create())
+using namespace minko::controller;
+
+FrameController::FrameController() :
+	_app(Signal<FrameController::Ptr>::create()),
+	_cull(Signal<FrameController::Ptr>::create()),
+	_draw(Signal<FrameController::Ptr>::create())
 {
-	auto i = 0;
-
-	for (auto shader : shaders)
-		_data->set<Effect::GLSLProgramPtr>("effect/pass" + std::to_string(i++), shader);
 }
 
 void
-Effect::propertyChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName)
+FrameController::nextFrame()
 {
-	std::cout << "Effect::propertyChangedHandler: " << propertyName << std::endl;
-	// FIXME: fork?
+	// TODO: run each signal in a separate thread?
+
+	_app->execute(shared_from_this());
+
+	_cull->execute(shared_from_this());
+
+	_draw->execute(shared_from_this());
 }
 
-Effect::Ptr
-Effect::bindInput(const std::string& bindingName, const std::string& programInputName)
+void
+FrameController::targetAddedHandler(std::shared_ptr<AbstractController>	controller,
+									std::shared_ptr<Node>				target)
 {
-	_inputNameToBindingName[programInputName] = bindingName;
+	// FIXME
+}
 
-	return shared_from_this();
+void
+FrameController::addedHandler(std::shared_ptr<Node>	node,
+							  std::shared_ptr<Node> target,
+							  std::shared_ptr<Node> parent)
+{
+	// FIXME
+}
+
+void
+FrameController::controllerAddedHandler(std::shared_ptr<Node>				node,
+					 				    std::shared_ptr<Node>				target,
+									    std::shared_ptr<AbstractController>	controller)
+{
+	if (std::dynamic_pointer_cast<FrameController>(controller))
+		throw;
 }

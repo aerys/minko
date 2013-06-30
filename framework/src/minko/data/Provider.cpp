@@ -17,12 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DataProvider.hpp"
+#include "Provider.hpp"
 
 using namespace minko::data;
 
 void
-DataProvider::unset(const std::string& propertyName)
+Provider::unset(const std::string& propertyName)
 {
 	_values.erase(propertyName);
 	_changedSignalSlots.erase(propertyName);
@@ -35,13 +35,13 @@ DataProvider::unset(const std::string& propertyName)
 }
 
 void
-DataProvider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
+Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
 	bool isNewValue = _values.count(propertyName) == 0;
 
 	_values[propertyName] = value;
 	_changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
-		&Signal<DataProvider::Ptr, const std::string&>::execute,
+		&Signal<Provider::Ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),
 		propertyName
@@ -58,7 +58,7 @@ DataProvider::registerProperty(const std::string& propertyName, std::shared_ptr<
 
 
 void
-DataProvider::propertyWrapperInitHandler(const std::string& propertyName)
+Provider::propertyWrapperInitHandler(const std::string& propertyName)
 {
 	_propertyAdded->execute(shared_from_this(), propertyName);
 

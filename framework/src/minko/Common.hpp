@@ -76,10 +76,10 @@ namespace minko
 
 	namespace data
 	{
-		class DataProvider;
+		class Provider;
 		class ValueBase;
 		class Value;
-		class DataBindings;
+		class Container;
 	}
 
 	namespace geometry

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/data/DataBindings.hpp"
+#include "minko/data/Container.hpp"
 
 namespace
 {
@@ -53,7 +53,7 @@ namespace minko
 			unsigned int									_tags;
 			Ptr 											_root;
 			Ptr												_parent;
-			std::shared_ptr<DataBindings>					_bindings;
+			std::shared_ptr<Container>						_container;
 			std::list<AbsCtrlPtr>							_controllers;
 
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
@@ -172,10 +172,10 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<DataBindings>
-			bindings()
+			std::shared_ptr<Container>
+			data()
 			{
-				return _bindings;
+				return _container;
 			}
 
 			inline

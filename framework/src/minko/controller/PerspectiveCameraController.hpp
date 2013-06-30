@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/controller/AbstractController.hpp"
-#include "minko/data/DataProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/data/DataBindings.hpp"
+#include "minko/data/Container.hpp"
 
 namespace
 {
@@ -51,11 +51,11 @@ namespace minko
 			std::shared_ptr<Matrix4x4>				_projection;
 			std::shared_ptr<Matrix4x4>				_viewProjection;
 
-			std::shared_ptr<DataProvider>			_data;
+			std::shared_ptr<Provider>			_data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			DataBindings::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
+			Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static
@@ -84,7 +84,7 @@ namespace minko
 			targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> node);
 
 			void
-			localToWorldChangedHandler(std::shared_ptr<DataBindings> bindings, const std::string& propertyName);
+			localToWorldChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName);
 		};
 	}
 }
