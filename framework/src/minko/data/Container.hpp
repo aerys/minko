@@ -20,48 +20,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/DataProvider.hpp"
+#include "minko/data/Provider.hpp"
 
 namespace minko
 {
 	namespace data
 	{
-		class DataBindings :
-			public std::enable_shared_from_this<DataBindings>
+		class Container :
+			public std::enable_shared_from_this<Container>
 		{
 		public:
-			typedef std::shared_ptr<DataBindings>	Ptr;
+			typedef std::shared_ptr<Container>	Ptr;
 			typedef Signal<Ptr, const std::string&>	PropertyChangedSignal;
 
 		private:
-			typedef std::shared_ptr<DataProvider>									DataProviderPtr;
+			typedef std::shared_ptr<Provider>									ProviderPtr;
 			typedef std::shared_ptr<Signal<Ptr, const std::string&>>				PropertyChangedSignalPtr;
-			typedef Signal<std::shared_ptr<DataProvider>, const std::string&>::Slot	DataProviderPropertyChangedSlot;
+			typedef Signal<std::shared_ptr<Provider>, const std::string&>::Slot	ProviderPropertyChangedSlot;
 
-			std::list<DataProviderPtr>											_providers;
-			std::unordered_map<std::string, DataProviderPtr>					_propertyNameToProvider;
+			std::list<ProviderPtr>											_providers;
+			std::unordered_map<std::string, ProviderPtr>					_propertyNameToProvider;
 
 			std::unordered_map<std::string, PropertyChangedSignalPtr>			_propertyChanged;
 
-			std::unordered_map<DataProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
-			std::unordered_map<DataProviderPtr, DataProviderPropertyChangedSlot>	_dataProviderPropertyChangedSlot;
+			std::unordered_map<ProviderPtr, std::list<Any>>					_propertyAddedOrRemovedSlots;
+			std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>	_ProviderPropertyChangedSlot;
 
 		public:
 			static
 			Ptr
 			create()
 			{
-				return std::shared_ptr<DataBindings>(new DataBindings());
+				return std::shared_ptr<Container>(new Container());
 			}
 
 			void
-			addProvider(std::shared_ptr<DataProvider> provider);
+			addProvider(std::shared_ptr<Provider> provider);
 
 			void
-			removeProvider(std::shared_ptr<DataProvider> provider);
+			removeProvider(std::shared_ptr<Provider> provider);
 
 			bool
-			hasProvider(std::shared_ptr<DataProvider> provider);
+			hasProvider(std::shared_ptr<Provider> provider);
 
 			bool
 			hasProperty(const std::string& propertyName);
@@ -88,28 +88,28 @@ namespace minko
 			propertyChanged(const std::string& propertyName);
 
 			inline
-			const std::list<DataProviderPtr>&
+			const std::list<ProviderPtr>&
 			providers()
 			{
 				return _providers;
 			}
 
 		private:
-			DataBindings();
+			Container();
 
 			void
 			assertPropertyExists(const std::string& propertyName);
 
 			void 
-			dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> 	provider,
+			ProviderPropertyChangedHandler(std::shared_ptr<Provider> 	provider,
 												const std::string& 				propertyName);
 
 			void
-			dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> 	provider,
+			ProviderPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 												const std::string& 			propertyName);
 
 			void
-			dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	provider,
+			ProviderPropertyRemovedHandler(std::shared_ptr<Provider> 	provider,
 												const std::string& 				propertyName);
 		};
 	}

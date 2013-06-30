@@ -51,7 +51,7 @@ namespace minko
 			std::shared_ptr<Matrix4x4>					_transform;
 			std::shared_ptr<Matrix4x4>					_modelToWorld;
 			std::shared_ptr<Matrix4x4>					_worldToModel;
-			std::shared_ptr<DataProvider>				_data;
+			std::shared_ptr<Provider>				_data;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot 			_targetRemovedSlot;
