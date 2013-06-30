@@ -30,7 +30,7 @@ Node::Node() :
 	_tags(1),
 	_root(nullptr),
 	_parent(nullptr),
-	_bindings(DataBindings::create()),
+	_container(Container::create()),
 	_added(Signal<Ptr, Ptr, Ptr>::create()),
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_controllerAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),

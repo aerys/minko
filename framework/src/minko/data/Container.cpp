@@ -17,19 +17,19 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DataBindings.hpp"
+#include "Container.hpp"
 
 using namespace minko::data;
 
-DataBindings::DataBindings() :
-	std::enable_shared_from_this<DataBindings>()
+Container::Container() :
+	std::enable_shared_from_this<Container>()
 {
 }
 
 void
-DataBindings::addProvider(std::shared_ptr<DataProvider> provider)
+Container::addProvider(std::shared_ptr<Provider> provider)
 {
-	std::list<std::shared_ptr<DataProvider>>::iterator it = std::find(
+	std::list<std::shared_ptr<Provider>>::iterator it = std::find(
 		_providers.begin(), _providers.end(), provider
 	);
 
@@ -39,27 +39,27 @@ DataBindings::addProvider(std::shared_ptr<DataProvider> provider)
 	_providers.push_back(provider);
 
 	_propertyAddedOrRemovedSlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
-		&DataBindings::dataProviderPropertyAddedHandler,
+		&Container::ProviderPropertyAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	)));
 	
 	_propertyAddedOrRemovedSlots[provider].push_back(provider->propertyRemoved()->connect(std::bind(
-		&DataBindings::dataProviderPropertyRemovedHandler,
+		&Container::ProviderPropertyRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	)));
 
 	for (auto property : provider->values())
-		dataProviderPropertyAddedHandler(provider, property.first);
+		ProviderPropertyAddedHandler(provider, property.first);
 }
 
 void
-DataBindings::removeProvider(std::shared_ptr<DataProvider> provider)
+Container::removeProvider(std::shared_ptr<Provider> provider)
 {
-	std::list<std::shared_ptr<DataProvider>>::iterator it = std::find(
+	std::list<std::shared_ptr<Provider>>::iterator it = std::find(
 		_providers.begin(), _providers.end(), provider
 	);
 
@@ -72,40 +72,40 @@ DataBindings::removeProvider(std::shared_ptr<DataProvider> provider)
 	for (auto property : provider->values())
 		_propertyNameToProvider.erase(property.first);
 
-	if (_dataProviderPropertyChangedSlot.count(provider) != 0)
-		_dataProviderPropertyChangedSlot.erase(provider);
+	if (_ProviderPropertyChangedSlot.count(provider) != 0)
+		_ProviderPropertyChangedSlot.erase(provider);
 
-	_dataProviderPropertyChangedSlot.erase(provider);
+	_ProviderPropertyChangedSlot.erase(provider);
 }
 
 bool
-DataBindings::hasProvider(std::shared_ptr<DataProvider> provider)
+Container::hasProvider(std::shared_ptr<Provider> provider)
 {
 	return std::find(_providers.begin(), _providers.end(), provider) != _providers.end();
 }
 
 bool
-DataBindings::hasProperty(const std::string& propertyName)
+Container::hasProperty(const std::string& propertyName)
 {
 	return _propertyNameToProvider.count(propertyName) != 0;
 }
 
-DataBindings::PropertyChangedSignalPtr
-DataBindings::propertyChanged(const std::string& propertyName)
+Container::PropertyChangedSignalPtr
+Container::propertyChanged(const std::string& propertyName)
 {
 	//assertPropertyExists(propertyName);
 
 	if (_propertyChanged.count(propertyName) == 0)
 	{
-		_propertyChanged[propertyName] = Signal<std::shared_ptr<DataBindings>, const std::string&>::create();
+		_propertyChanged[propertyName] = Signal<std::shared_ptr<Container>, const std::string&>::create();
 
 		if (_propertyNameToProvider.count(propertyName) != 0)
 		{
-			std::shared_ptr<DataProvider> provider = _propertyNameToProvider[propertyName];
+			std::shared_ptr<Provider> provider = _propertyNameToProvider[propertyName];
 
-			if (_dataProviderPropertyChangedSlot.count(provider) == 0)
-				_dataProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
-					&DataBindings::dataProviderPropertyChangedHandler,
+			if (_ProviderPropertyChangedSlot.count(provider) == 0)
+				_ProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
+					&Container::ProviderPropertyChangedHandler,
 					shared_from_this(),
 					std::placeholders::_1,
 					std::placeholders::_2
@@ -117,14 +117,14 @@ DataBindings::propertyChanged(const std::string& propertyName)
 }
 
 void
-DataBindings::assertPropertyExists(const std::string& propertyName)
+Container::assertPropertyExists(const std::string& propertyName)
 {
 	if (!hasProperty(propertyName))
 		throw std::invalid_argument(propertyName);	
 }
 
 void
-DataBindings::dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> 	provider,
+Container::ProviderPropertyChangedHandler(std::shared_ptr<Provider> 	provider,
 												 const std::string& 			propertyName)
 {
 	if (_propertyChanged.count(propertyName) != 0)
@@ -132,7 +132,7 @@ DataBindings::dataProviderPropertyChangedHandler(std::shared_ptr<DataProvider> 	
 }
 
 void
-DataBindings::dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> provider,
+Container::ProviderPropertyAddedHandler(std::shared_ptr<Provider> provider,
 											   const std::string& 			 propertyName)
 {
 	if (_propertyNameToProvider.count(propertyName) != 0)
@@ -141,28 +141,28 @@ DataBindings::dataProviderPropertyAddedHandler(std::shared_ptr<DataProvider> pro
 	_propertyNameToProvider[propertyName] = provider;
 
 	if (_propertyChanged.count(propertyName) != 0)
-		_dataProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
-			&DataBindings::dataProviderPropertyChangedHandler,
+		_ProviderPropertyChangedSlot[provider] = provider->propertyChanged()->connect(std::bind(
+			&Container::ProviderPropertyChangedHandler,
 			shared_from_this(),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
-	dataProviderPropertyChangedHandler(provider, propertyName);	
+	ProviderPropertyChangedHandler(provider, propertyName);	
 }
 
 void
-DataBindings::dataProviderPropertyRemovedHandler(std::shared_ptr<DataProvider> 	provider,
+Container::ProviderPropertyRemovedHandler(std::shared_ptr<Provider> 	provider,
 												 const std::string&				propertyName)
 {
 	_propertyNameToProvider.erase(propertyName);
 
-	if (_dataProviderPropertyChangedSlot.count(provider) != 0)
+	if (_ProviderPropertyChangedSlot.count(provider) != 0)
 		for (auto property : provider->values())
 			if (_propertyChanged.count(property.first) != 0)
 				return;
 
-	_dataProviderPropertyChangedSlot.erase(provider);
+	_ProviderPropertyChangedSlot.erase(provider);
 
-	dataProviderPropertyChangedHandler(provider, propertyName);
+	ProviderPropertyChangedHandler(provider, propertyName);
 }
