@@ -25,7 +25,7 @@ namespace minko
 {
 	namespace render
 	{
-		using namespace minko::render::context;
+		using namespace minko::render;
 
 		class ShaderProgramInputs :
 			public std::enable_shared_from_this<ShaderProgramInputs>
