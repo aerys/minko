@@ -40,8 +40,8 @@ namespace minko
 
 	private:
 		std::list<Callback>								_callbacks;
-		std::list<unsigned int>							_connectionIds;
-		unsigned int 									_nextConnectId;
+		std::list<unsigned int>							_slotIds;
+		unsigned int 									_nextSlotId;
 
 		bool											_locked;
 		std::list<std::pair<Callback, unsigned int>>	_toAdd;
@@ -57,11 +57,11 @@ namespace minko
 		void
 		removeConnectionById(const unsigned int connectionId)
 		{
-			auto connectionIdIt = _connectionIds.begin();
+			auto connectionIdIt = _slotIds.begin();
 			auto callbackIt 	= _callbacks.begin();
 			auto id 			= 0;
 
-			while (connectionIdIt != _connectionIds.end() && *connectionIdIt != connectionId)
+			while (connectionIdIt != _slotIds.end() && *connectionIdIt != connectionId)
 			{
 				connectionIdIt++;
 				callbackIt++;
@@ -74,7 +74,7 @@ namespace minko
 		removeConnectionByIterator(std::list<unsigned int>::iterator connectionIdIt,
 								   CallbackIterator				 	 callbackIt)
 		{
-			_connectionIds.erase(connectionIdIt);
+			_slotIds.erase(connectionIdIt);
 
 			if (_locked)
 				_toRemove.push_back(callbackIt);
@@ -94,7 +94,7 @@ namespace minko
 		connect(Callback callback)
 		{
 			auto connection = SignalSlot<A...>::create(
-				Signal<A...>::shared_from_this(), _nextConnectId++
+				Signal<A...>::shared_from_this(), _nextSlotId++
 			);
 
 			if (_locked)
@@ -102,13 +102,12 @@ namespace minko
 			else
 			{
 				_callbacks.push_back(callback);
-				_connectionIds.push_back(connection->_id);
+				_slotIds.push_back(connection->_id);
 			}
 
 			return connection;
 		}
 
-		inline
 		void
 		execute(A... arguments)
 		{
@@ -120,7 +119,7 @@ namespace minko
 			for (auto callbackAndConnectionId : _toAdd)
 			{
 				_callbacks.push_back(callbackAndConnectionId.first);
-				_connectionIds.push_back(callbackAndConnectionId.second);
+				_slotIds.push_back(callbackAndConnectionId.second);
 			}
 			_toAdd.clear();
 
