@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
 #include "minko/render/GLSLProgram.hpp"
-#include "minko/scene/data/DataBindings.hpp"
+#include "minko/data/DataBindings.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/render/stream/VertexAttribute.hpp"
 

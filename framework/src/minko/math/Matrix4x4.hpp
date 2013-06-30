@@ -20,13 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/scene/data/Value.hpp"
+#include "minko/data/Value.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 
 namespace
 {
-	using namespace minko::scene::data;
+	using namespace minko::data;
 }
 
 namespace minko

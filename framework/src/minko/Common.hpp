@@ -75,22 +75,23 @@ namespace minko
 			class RenderingController;
 			class PerspectiveCameraController;
 		}
-
-		namespace data
-		{
-			class DataProvider;
-			class ValueBase;
-			class Value;
-			class DataBindings;
-
-			namespace geometry
-			{
-				class Geometry;
-				class CubeGeometry;
-				class SphereGeometry;
-			}
-		}
 	}
+
+	namespace data
+	{
+		class DataProvider;
+		class ValueBase;
+		class Value;
+		class DataBindings;
+	}
+
+	namespace geometry
+	{
+		class Geometry;
+		class CubeGeometry;
+		class SphereGeometry;
+	}
+
 
 	namespace math
 	{
