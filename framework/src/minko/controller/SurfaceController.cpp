@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/GLSLProgram.hpp"
 
-using namespace minko::scene::controller;
+using namespace minko::controller;
 
 SurfaceController::SurfaceController(std::shared_ptr<Geometry> 		geometry,
 									 std::shared_ptr<DataProvider> 	material,
