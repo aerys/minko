@@ -18,10 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Effect.hpp"
-#include "minko/scene/data/DataBindings.hpp"
+#include "minko/data/DataBindings.hpp"
 
 using namespace minko::render;
-using namespace minko::scene::data;
+using namespace minko::data;
 
 Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
 	std::enable_shared_from_this<Effect>(),

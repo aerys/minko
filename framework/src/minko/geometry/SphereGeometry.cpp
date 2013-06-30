@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/stream/VertexStream.hpp"
 #include "minko/render/stream/IndexStream.hpp"
 
-using namespace minko::scene::data::geometry;
+using namespace minko::geometry;
 using namespace minko::render::stream;
 
 SphereGeometry::SphereGeometry(std::shared_ptr<AbstractContext>	context,

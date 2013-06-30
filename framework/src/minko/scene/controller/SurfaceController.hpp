@@ -26,8 +26,8 @@ namespace
 {
 	using namespace minko;
 	using namespace minko::render;
-	using namespace minko::scene::data::geometry;
-	using namespace minko::scene::data;
+	using namespace minko::geometry;
+	using namespace minko::data;
 }
 
 namespace minko
