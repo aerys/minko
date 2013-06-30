@@ -41,11 +41,8 @@ namespace minko
 {
 	namespace render
 	{
-		namespace context
-		{
-			class AbstractContext;
-			class OpenGLES2Context;			
-		}
+		class AbstractContext;
+		class OpenGLES2Context;
 
 		class DrawCall;
 

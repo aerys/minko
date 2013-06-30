@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "GLSLProgram.hpp"
-#include "minko/render/context/AbstractContext.hpp"
+#include "minko/render/AbstractContext.hpp"
 
 using namespace minko::render;
 

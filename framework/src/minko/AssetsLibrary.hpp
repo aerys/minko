@@ -27,7 +27,7 @@ namespace
 {
 	using namespace minko::geometry;
 	using namespace minko::render;
-	using namespace minko::render::context;
+	using namespace minko::render;
 }
 
 namespace minko
