@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 namespace
 {
@@ -29,50 +30,14 @@ namespace minko
 {
 	namespace file
 	{
-		class Loader :
-			public std::enable_shared_from_this<Loader>
+		class AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<Loader>	Ptr;
-
-		private:
-			std::vector<char>				_data;
-			std::shared_ptr<Options>		_options;
-			std::string						_filename;
+			typedef std::shared_ptr<AbstractParser> Ptr;
 
 			std::shared_ptr<Signal<Ptr>>	_complete;
-			std::shared_ptr<Signal<Ptr>>	_progress;
-			std::shared_ptr<Signal<Ptr>>	_error;
 
 		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<Loader>(new Loader());
-			}
-
-			inline
-			const std::vector<char>&
-			data()
-			{
-				return _data;
-			}
-
-			inline
-			std::shared_ptr<Options>
-			options()
-			{
-				return _options;
-			}
-
-			inline
-			const std::string&
-			filename()
-			{
-				return _filename;
-			}
-
 			inline
 			std::shared_ptr<Signal<Ptr>>
 			complete()
@@ -80,25 +45,17 @@ namespace minko
 				return _complete;
 			}
 
-			inline
-			std::shared_ptr<Signal<Ptr>>
-			progress()
-			{
-				return _progress;
-			}
-
-			inline
-			std::shared_ptr<Signal<Ptr>>
-			error()
-			{
-				return _error;
-			}
-
+			virtual
 			void
-			load(const std::string& filename, std::shared_ptr<Options> options);
+			parse(const std::string&		filename,
+				  std::shared_ptr<Options>	options,
+				  const std::vector<char>&	data) = 0;
 
-		private:
-			Loader();
+		protected:
+			AbstractParser() :
+				_complete(Signal<Ptr>::create())
+			{
+			}
 		};
 	}
 }

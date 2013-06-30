@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
+#include "minko/AssetsLibrary.hpp"
 #include "minko/render/context/AbstractContext.hpp"
 #include "minko/render/context/OpenGLES2Context.hpp"
 #include "minko/render/GLSLProgram.hpp"
@@ -49,6 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/data/geometry/SphereGeometry.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
+#include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 
 class Minko
