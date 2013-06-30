@@ -5,7 +5,6 @@
 using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::render;
-using namespace minko::render::context;
 
 RenderingController::Ptr renderingController;
 auto mesh = Node::create("mesh");
@@ -55,11 +54,11 @@ int main(int argc, char** argv)
 #endif
 	// !glut/glew init
 
-	auto glContext = OpenGLES2Context::create();
-	auto assets	= AssetsLibrary::create(glContext)
+	auto context = OpenGLES2Context::create();
+	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
-		->geometry("cube", CubeGeometry::create(glContext))
-		->geometry("sphere", SphereGeometry::create(glContext))
+		->geometry("cube", CubeGeometry::create(context))
+		->geometry("sphere", SphereGeometry::create(context))
 		->queue("DirectionalLight.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect");

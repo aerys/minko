@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "OpenGLES2Context.hpp"
 
-using namespace minko::render::context;
+using namespace minko::render;
 
 OpenGLES2Context::OpenGLES2Context()
 {
