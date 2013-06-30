@@ -27,7 +27,7 @@ namespace minko
 	namespace render
 	{
 		using namespace minko::render;
-		using namespace minko::render::context;
+		using namespace minko::render;
 		using namespace minko::data;
 
 		class GLSLProgram :

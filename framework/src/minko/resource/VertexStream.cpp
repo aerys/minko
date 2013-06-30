@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "VertexStream.hpp"
-#include "minko/render/context/AbstractContext.hpp"
+#include "minko/render/AbstractContext.hpp"
 #include "minko/resource/VertexAttribute.hpp"
 
 using namespace minko::resource;
