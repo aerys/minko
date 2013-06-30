@@ -104,6 +104,7 @@ namespace minko
 	{
 		class Options;
 		class Loader;
+		class AbstractParser;
 		class EffectParser;
 	}
 
