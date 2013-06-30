@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "DrawCall.hpp"
 
-#include "minko/render/context/AbstractContext.hpp"
+#include "minko/render/AbstractContext.hpp"
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
 #include "minko/render/GLSLProgram.hpp"
