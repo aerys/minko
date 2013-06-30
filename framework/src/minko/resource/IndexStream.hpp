@@ -20,84 +20,77 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/DataProvider.hpp"
-#include "minko/resource/VertexStream.hpp"
-#include "minko/resource/VertexAttribute.hpp"
 
 namespace
 {
-	using namespace minko::data;
-	using namespace minko::resource;
+	using namespace minko::render::context;
 }
 
 namespace minko
 {
-	namespace geometry
+	namespace resource
 	{
-		class Geometry
+		class IndexStream
 		{
 		public:
-			typedef std::shared_ptr<Geometry> Ptr;
+			typedef std::shared_ptr<IndexStream>	Ptr;
 
 		private:
-			std::shared_ptr<DataProvider>	_data;
-			unsigned int					_vertexSize;
+			std::vector<unsigned short>			_data;
+			std::shared_ptr<AbstractContext>	_context;
+			int									_buffer;
 
 		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractContext> context, std::vector<unsigned short>& data)
+			{
+				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
+			}
+
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractContext> context, unsigned short* begin, unsigned short* end)
+			{
+				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
+			}
+
 			inline
-			std::shared_ptr<DataProvider>
+			const std::vector<unsigned short>
 			data()
 			{
 				return _data;
 			}
 
-			static
-			Ptr
-			create()
+			inline
+			const int
+			buffer()
 			{
-				return std::shared_ptr<Geometry>(new Geometry());
+				return _buffer;
 			}
 
-			inline
-			std::shared_ptr<DataProvider>
-			vertices()
+		private:
+			IndexStream(std::shared_ptr<AbstractContext>	context,
+						std::vector<unsigned short>			data) :
+				_data(data),
+				_context(context),
+				_buffer(-1)
 			{
-				return _data;
+				upload();
 			}
 
-			inline
+			IndexStream(std::shared_ptr<AbstractContext>	context,
+						unsigned short*						begin,
+						unsigned short*						end) :
+				_data(begin, end),
+				_context(context),
+				_buffer(-1)
+			{
+				upload();
+			}
+
 			void
-			indices(std::shared_ptr<IndexStream> indices)
-			{
-				_data->set("geometry/indices", indices);
-			}
-
-			inline
-			std::shared_ptr<IndexStream>
-			indices()
-			{
-				return _data->get<std::shared_ptr<IndexStream>>("geometry/indices");
-			}
-
-			inline
-			void
-			addVertexStream(std::shared_ptr<VertexStream> vertexStream)
-			{
-				for (auto attribute : vertexStream->attributes())
-				{
-					_data->set("geometry/vertex/attribute/" + attribute->name(), vertexStream);
-					_vertexSize += attribute->size();
-				}
-
-				_data->set("geometry/vertex/size", _vertexSize);
-			}
-
-		protected:
-			Geometry() :
-				_data(DataProvider::create()),
-				_vertexSize(0)
-			{
-			}
+			upload();
 		};
 	}
 }
