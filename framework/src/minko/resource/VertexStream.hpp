@@ -21,11 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-namespace
-{
-	using namespace minko::render;
-}
-
 namespace minko
 {
 	namespace resource
@@ -39,41 +34,43 @@ namespace minko
 			typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
 
 		private:
-			std::shared_ptr<AbstractContext>	_context;
-			std::vector<float>					_data;
-			int									_buffer;
-			std::list<VxAttrPtr>				_attributes;
+			std::shared_ptr<render::AbstractContext>	_context;
+			std::vector<float>							_data;
+			int											_buffer;
+			std::list<VxAttrPtr>						_attributes;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext> context)
+			create(std::shared_ptr<render::AbstractContext> context)
 			{
 				return std::shared_ptr<VertexStream>(new VertexStream(context));
 			}
 
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext>	context,
-					float*							data,
-					const unsigned int				size,
-					const unsigned int				offset = 0)
+			create(std::shared_ptr<render::AbstractContext>	context,
+					float*									data,
+					const unsigned int						size,
+					const unsigned int						offset = 0)
 			{
-				return std::shared_ptr<VertexStream>(new VertexStream(context, data, offset, size));
+				return std::shared_ptr<VertexStream>(new VertexStream(
+					context, data, offset, size
+				));
 			}
 
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext>		context,
-					std::vector<float>::const_iterator	begin,
-					std::vector<float>::const_iterator	end)
+			create(std::shared_ptr<render::AbstractContext>	context,
+					std::vector<float>::const_iterator		begin,
+					std::vector<float>::const_iterator		end)
 			{
 				return std::shared_ptr<VertexStream>(new VertexStream(context, begin, end));
 			}
 				
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext>	context, float* begin, float* end)
+			create(std::shared_ptr<render::AbstractContext>	context, float* begin, float* end)
 			{
 				return std::shared_ptr<VertexStream>(new VertexStream(
 					context, 
@@ -84,7 +81,8 @@ namespace minko
 				
 			inline static
 			Ptr
-			create(std::shared_ptr<AbstractContext>	context, const std::vector<float>& data)
+			create(std::shared_ptr<render::AbstractContext>	context, 
+				   const std::vector<float>&				data)
 			{
 				return create(context, data.begin(), data.end());
 			}
@@ -123,18 +121,20 @@ namespace minko
 			attribute(const std::string& attributeName);
 
 		private:
-			VertexStream(std::shared_ptr<AbstractContext> context);
+			VertexStream(std::shared_ptr<render::AbstractContext> context);
 
-			VertexStream(std::shared_ptr<AbstractContext>	context,
-							float*							data,
-							const unsigned int				size,
-							const unsigned int				offset);
+			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+							float*									data,
+							const unsigned int						size,
+							const unsigned int						offset);
 
-			VertexStream(std::shared_ptr<AbstractContext>		context,
-							std::vector<float>::const_iterator	begin,
-							std::vector<float>::const_iterator	end);
+			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+							std::vector<float>::const_iterator		begin,
+							std::vector<float>::const_iterator		end);
 
-			VertexStream(std::shared_ptr<AbstractContext> context, float* begin, float* end);
+			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+						 float*										begin,
+						 float*										end);
 		};
 	}
 }

@@ -21,12 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-namespace
-{
-	using namespace minko::render;
-	using namespace minko::data;
-}
-
 namespace minko
 {
 	namespace render
@@ -40,7 +34,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
 
 		private:
-			std::shared_ptr<Container>						_bindings;
+			std::shared_ptr<data::Container>					_data;
 			const std::unordered_map<std::string, std::string>&	_inputNameToBindingName;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			_func;
@@ -48,7 +42,8 @@ namespace minko
 		public:
 			static inline
 			Ptr
-			create(std::shared_ptr<Container> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName)
+			create(std::shared_ptr<data::Container>						bindings,
+				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName)
 			{
 				return std::shared_ptr<DrawCall>(new DrawCall(bindings, inputNameToBindingName));
 			}
@@ -57,13 +52,15 @@ namespace minko
 			render(std::shared_ptr<AbstractContext> context);
 
 			void
-			initialize(std::shared_ptr<Container> bindings, const std::map<std::string, std::string>& inputNameToBindingName);
+			initialize(std::shared_ptr<data::Container>				bindings,
+					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
 		private:
-			DrawCall(std::shared_ptr<Container> bindings, const std::unordered_map<std::string, std::string>& inputNameToBindingName);
+			DrawCall(std::shared_ptr<data::Container>						bindings,
+					 const std::unordered_map<std::string, std::string>&	inputNameToBindingName);
 
 			void
-			bind(std::shared_ptr<Container> bindings);
+			bind(std::shared_ptr<data::Container> bindings);
 		};		
 	}
 }

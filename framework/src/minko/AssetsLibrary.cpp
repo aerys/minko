@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/EffectParser.hpp"
 #include "minko/Signal.hpp"
 
-using namespace minko;
+using namespace minko::render;
+using namespace minko::geometry;
 
 AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),

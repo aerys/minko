@@ -24,12 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
 
-namespace
-{
-	using namespace minko::data;
-	using namespace minko::controller;
-}
-
 namespace minko
 {
 	namespace scene
@@ -41,7 +35,7 @@ namespace minko
 			typedef std::shared_ptr<Node>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
+			typedef std::shared_ptr<controller::AbstractController>	AbsCtrlPtr;
 
 		protected:
 			std::string 									_name;
@@ -53,7 +47,7 @@ namespace minko
 			unsigned int									_tags;
 			Ptr 											_root;
 			Ptr												_parent;
-			std::shared_ptr<Container>						_container;
+			std::shared_ptr<data::Container>				_container;
 			std::list<AbsCtrlPtr>							_controllers;
 
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
@@ -172,7 +166,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Container>
+			std::shared_ptr<data::Container>
 			data()
 			{
 				return _container;
@@ -223,13 +217,13 @@ namespace minko
 			contains(Ptr Node);
 
 			Ptr
-			addController(std::shared_ptr<AbstractController> controller);
+			addController(AbsCtrlPtr controller);
 
 			Ptr
-			removeController(std::shared_ptr<AbstractController> controller);
+			removeController(AbsCtrlPtr controller);
 
 			bool
-			hasController(std::shared_ptr<AbstractController> controller);
+			hasController(AbsCtrlPtr controller);
 
 			template <typename T>
 			inline

@@ -25,8 +25,6 @@ namespace minko
 {
 	namespace scene
 	{
-		using namespace minko::scene;
-
 		class NodeSet
 		{
 		public:
