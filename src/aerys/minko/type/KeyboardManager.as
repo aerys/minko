@@ -13,11 +13,7 @@ package aerys.minko.type
 		private var _upSignals		: Array		= [];
 		private var _keyDown		: Signal	= new Signal('KeyboardManager.keyDown');
 		private var _keyUp			: Signal	= new Signal('KeyboardManager.keyDown');
-		
-		public function KeyboardManager()
-		{
-		}
-		
+				
 		public function bind(dispatcher : IEventDispatcher) : void
 		{
 			dispatcher.addEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
@@ -55,6 +51,8 @@ package aerys.minko.type
 			
 			if (signal != null)
 				signal.execute(this, keyCode);
+			
+			_keyDown.execute(this, keyCode);
 		}
 		
 		private function keyUpHandler(event : KeyboardEvent) : void
@@ -66,6 +64,8 @@ package aerys.minko.type
 			
 			if (signal != null)
 				signal.execute(this, keyCode);
+			
+			_keyUp.execute(this, keyCode);
 		}
 		
 		public function keyIsDown(keyCode : uint) : Boolean
