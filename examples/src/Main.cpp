@@ -43,8 +43,37 @@ renderScene()
 
 void timerFunc(int)
 {
-        glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-        glutPostRedisplay();
+	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	glutPostRedisplay();
+}
+
+void screenshotFunc(int)
+{
+	const int width = 800, height = 600;
+
+	char* pixels = new char[3 * width * height];
+
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	int i, j;
+	FILE *fp = fopen("screenshot.ppm", "wb"); /* b - binary mode */
+	fprintf(fp, "P6\n%d %d\n255\n", width, height);
+
+	for (j = 0; j < height; ++j)
+	{
+		for (i = 0; i < width; ++i)
+		{
+			static unsigned char color[3];
+			color[0] = pixels[(width * j + i) * 3 + 0];  /* red */
+			color[1] = pixels[(width * j + i) * 3 + 1];  /* green */
+			color[2] = pixels[(width * j + i) * 3 + 2];  /* blue */
+			(void) fwrite(color, 1, 3, fp);
+		}
+	}
+
+	fclose(fp);
+
+	delete[] pixels;
 }
 
 int main(int argc, char** argv)
@@ -114,17 +143,19 @@ int main(int argc, char** argv)
 
 	assets->load();
 
-        auto oglContext = context;
-        auto fx = assets->effect("directional light");
+	// auto oglContext = context;
+	// auto fx = assets->effect("directional light");
 
-        std::cout << "== vertex shader compilation logs ==" << std::endl;
-        std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-        std::cout << "== fragment shader compilation logs ==" << std::endl;
-        std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-        std::cout << "== program info logs ==" << std::endl;
-        std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+	// std::cout << "== vertex shader compilation logs ==" << std::endl;
+	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
+	// std::cout << "== fragment shader compilation logs ==" << std::endl;
+	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
+	// std::cout << "== program info logs ==" << std::endl;
+	// std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
 
-        glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	glutTimerFunc(1000, screenshotFunc, 0);
+
 	glutDisplayFunc(renderScene);
 	glutMainLoop();
 
