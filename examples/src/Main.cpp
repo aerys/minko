@@ -2,6 +2,8 @@
 
 #include "minko/Minko.hpp"
 
+#define FRAMERATE 60
+
 using namespace minko::controller;
 using namespace minko::math;
 
@@ -30,14 +32,19 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	//mesh->controller<TransformController>()->transform()->prependRotationY(.001f);
+	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
 
 	renderingController->render();
 
 	printFramerate();
 
 	glutSwapBuffers();
-	glutPostRedisplay();
+}
+
+void timerFunc(int)
+{
+        glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+        glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
@@ -85,7 +92,7 @@ int main(int argc, char** argv)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection),
-			assets->effect("directional light")
+			assets->effect("basic")
 		));
 
 		group->addChild(mesh);
@@ -107,6 +114,17 @@ int main(int argc, char** argv)
 
 	assets->load();
 
+        auto oglContext = context;
+        auto fx = assets->effect("directional light");
+
+        std::cout << "== vertex shader compilation logs ==" << std::endl;
+        std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
+        std::cout << "== fragment shader compilation logs ==" << std::endl;
+        std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
+        std::cout << "== program info logs ==" << std::endl;
+        std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+
+        glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	glutDisplayFunc(renderScene);
 	glutMainLoop();
 
