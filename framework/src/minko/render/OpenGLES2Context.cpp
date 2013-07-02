@@ -209,10 +209,10 @@ OpenGLES2Context::deleteVertexBuffer(const unsigned int vertexBuffer)
 
 void
 OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
-								   const unsigned int	vertexBuffer,
-								   const unsigned int	size,
-								   const unsigned int	stride,
-								   const unsigned int	offset)
+								    const unsigned int	vertexBuffer,
+								    const unsigned int	size,
+								    const unsigned int	stride,
+								    const unsigned int	offset)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -344,6 +344,19 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
+}
+
+void
+OpenGLES2Context::setTextureAt(const unsigned int	position,
+							   const int			texture,
+							   const int			location)
+{
+	glActiveTexture(GL_TEXTURE0 + position);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	if (location >= 0)
+		glUniform1i(location, position);
 }
 
 const unsigned int
@@ -499,14 +512,19 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 		    	break;
 	    	case GL_FLOAT_MAT4:
 	    		inputType = ShaderProgramInputs::Type::float16;
-	    		break ;
+	    		break;
+			case GL_SAMPLER_2D:
+				inputType = ShaderProgramInputs::Type::sampler2d;
+				break;
+			default:
+				throw std::logic_error("unsupported type");
 	    }
 
 	    int location = glGetUniformLocation(program, &name[0]);
 
 	    if (location >= 0 && type != ShaderProgramInputs::Type::unknown)
 	    {
-		    names.push_back(std::string(&name[0]));
+		    names.push_back(std::string(&name[0], nameLength));
 		    types.push_back(inputType);
 		    locations.push_back(location);
 		}
