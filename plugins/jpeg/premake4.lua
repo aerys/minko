@@ -1,17 +1,12 @@
--- A project defines one build target
-project "minko-examples"
-  kind "ConsoleApp"
+project "minko-jpeg"
+  kind "StaticLib"
   language "C++"
-  links {
-	"minko-framework",
-	"minko-jpeg"
-  }
-  files { "**.hpp", "**.h", "**.cpp" }
+  files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
-    "src",
-    "../framework/src",
-	"../plugins/jpeg/src"
+	"src",
+	"../../framework/src"
   }
+  links { "minko-framework" }
 
   configuration { "debug"}
     defines { "DEBUG" }
@@ -25,20 +20,15 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "glut", "m" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
-    links { "freeglut", "glew32" }
-    libdirs { "../framework/lib/gl/win32/bin" }
-    includedirs { "../framework/lib/gl/win32/includes" }
 
   -- macos
   configuration { "debug", "macosx" }
     buildoptions { "-std=c++11", "-stdlib=libc++" }
     linkoptions { "-std=c++11", "-stdlib=libc++" }
     libdirs { "/opt/local/lib/" }
-    links { "GL", "GLU", "glut", "m" }
     includedirs { "/opt/local/include/" }
