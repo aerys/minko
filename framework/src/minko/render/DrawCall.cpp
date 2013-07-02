@@ -74,17 +74,17 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 
 			if (type == ShaderProgramInputs::attribute)
 			{
-				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
-				auto attribute		= vertexStream->attribute(inputName);
+				auto vertexStream					= _data->get<VertexStream::Ptr>(name);
+				VertexStream::Attribute& attribute	= vertexStream->attribute(inputName);
 				
-				_func.push_back([location, vertexStream, attribute, vertexSize](AbstractContext::Ptr context)
+				_func.push_back([=, &attribute](AbstractContext::Ptr context)
 				{
 					context->setVertexBufferAt(
 						location,
 						vertexStream->id(),
-						attribute->size(),
+						std::get<1>(attribute),
 						vertexSize,
-						attribute->offset()
+						std::get<2>(attribute)
 					);
 				});
 			}
@@ -92,7 +92,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto floatValue = _data->get<float>(name);
 
-				_func.push_back([location, floatValue](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, floatValue);
 				});
@@ -101,7 +101,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float2Value = _data->get<std::shared_ptr<Vector2>>(name);
 
-				_func.push_back([location, float2Value](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, float2Value->x(), float2Value->y());
 				});
@@ -110,25 +110,36 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float3Value = _data->get<std::shared_ptr<Vector3>>(name);
 
-				_func.push_back([location, float3Value](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, float3Value->x(), float3Value->y(), float3Value->z());
+					context->setUniform(
+						location,
+						float3Value->x(),
+						float3Value->y(),
+						float3Value->z()
+					);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float4)
 			{
 				auto float4Value = _data->get<std::shared_ptr<Vector4>>(name);
 
-				_func.push_back([location, float4Value](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, float4Value->x(), float4Value->y(), float4Value->z(), float4Value->w());
+					context->setUniform(
+						location,
+						float4Value->x(),
+						float4Value->y(),
+						float4Value->z(),
+						float4Value->w()
+					);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float16)
 			{
 				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
 
-				_func.push_back([location, float16Ptr](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
 				});
@@ -137,7 +148,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto texture = _data->get<Texture::Ptr>(name)->id();
 
-				_func.push_back([location, numTextures, texture](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setTextureAt(numTextures, texture, location);
 				});
@@ -163,6 +174,6 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 void
 DrawCall::render(AbstractContext::Ptr context)
 {
-	for (auto f : _func)
+	for (auto& f : _func)
 		f(context);
 }

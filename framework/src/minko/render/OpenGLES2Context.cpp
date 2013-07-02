@@ -28,22 +28,22 @@ OpenGLES2Context::OpenGLES2Context()
 
 OpenGLES2Context::~OpenGLES2Context()
 {
-	for (auto vertexBuffer : _vertexBuffers)
+	for (auto& vertexBuffer : _vertexBuffers)
 		glDeleteBuffers(1, &vertexBuffer);
 
-	for (auto indexBuffer : _indexBuffers)
+	for (auto& indexBuffer : _indexBuffers)
 		glDeleteBuffers(1, &indexBuffer);
 
-	for (auto texture : _textures)
+	for (auto& texture : _textures)
 		glDeleteTextures(1, &texture);
 
-	for (auto program : _programs)
+	for (auto& program : _programs)
 		glDeleteProgram(program);
 
-	for (auto vertexShader : _vertexShaders)
+	for (auto& vertexShader : _vertexShaders)
 		glDeleteShader(vertexShader);
 
-	for (auto fragmentShader : _fragmentShaders)
+	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
 }
 
