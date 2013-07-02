@@ -33,13 +33,14 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	//mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
 
 	renderingController->render();
 
 	printFramerate();
-
+	
 	glutSwapBuffers();
+	glutPostRedisplay();
 }
 
 void timerFunc(int)
@@ -95,13 +96,13 @@ int main(int argc, char** argv)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		//->geometry("cube", geometry::CubeGeometry::create(context))
-		//->geometry("sphere", geometry::SphereGeometry::create(context))
-		->queue("textures/collage.jpg");
-		//->queue("DirectionalLight.effect")
+		->geometry("sphere", geometry::SphereGeometry::create(context))
+		->queue("textures/collage.jpg")
+		->queue("effects/Texture.effect");
 		//->queue("Red.effect")
 		//->queue("Basic.effect");
 
-	/*assets->defaultOptions()->includePath("effects");
+	/*assets->defaultOptions()->includePath("effects");*/
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -119,17 +120,18 @@ int main(int argc, char** argv)
 		mesh->addController(TransformController::create());
 		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(SurfaceController::create(
-			assets->geometry("cube"),
+			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection),
-			assets->effect("basic")
+				->set("light/direction",				lightDirection)
+				->set("material/diffuse/map",			assets->texture("textures/collage.jpg")),
+			assets->effect("texture")
 		));
 
 		group->addChild(mesh);
 
-	});*/
+	});
 
 	assets->load();
 
@@ -146,7 +148,7 @@ int main(int argc, char** argv)
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
 
-	//glutDisplayFunc(renderScene);
+	glutDisplayFunc(renderScene);
 	glutMainLoop();
 
 	return 0;

@@ -101,20 +101,26 @@ namespace minko
 			virtual
 			const unsigned int
 			createTexture(unsigned int width,
-							unsigned int height,
-							bool		   mipMapping) = 0;
+						  unsigned int height,
+						  bool		   mipMapping) = 0;
 
 			virtual
 			void
 			uploadTextureData(const unsigned int texture,
-								unsigned int 		 width,
-								unsigned int 		 height,
-								unsigned int 		 mipLevel,
-								void*				 data) = 0;
+							  unsigned int 		 width,
+							  unsigned int 		 height,
+							  unsigned int 		 mipLevel,
+							  void*				 data) = 0;
 
 			virtual
 			void
 			deleteTexture(const unsigned int texture) = 0;
+
+			virtual
+			void
+			setTextureAt(const unsigned int	position,
+						 const int			texture		= -1,
+						 const int			location	= -1) = 0;
 
 			virtual
 			const unsigned int

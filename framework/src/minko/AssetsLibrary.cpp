@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/file/AbstractTextureParser.hpp"
+#include "minko/resource/Texture.hpp"
 #include "minko/Signal.hpp"
 
 using namespace minko::render;
@@ -45,6 +47,20 @@ AssetsLibrary::Ptr
 AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geometry)
 {
 	_geometries[name] = geometry;
+
+	return shared_from_this();
+}
+
+resource::Texture::Ptr
+AssetsLibrary::texture(const std::string& name)
+{
+	return _textures[name];
+}
+
+AssetsLibrary::Ptr
+AssetsLibrary::texture(const std::string& name, resource::Texture::Ptr texture)
+{
+	_textures[name] = texture;
 
 	return shared_from_this();
 }
@@ -135,7 +151,9 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 		if (fxParser)
 			effect(fxParser->effectName(), fxParser->effect());
 		
-		// FIXME: handle other resource type parsers
+		auto textureParser = std::dynamic_pointer_cast<file::AbstractTextureParser>(parser);
+		if (textureParser)
+			texture(filename, textureParser->texture());
 	}
 	else
 		blob(filename, loader->data());

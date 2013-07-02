@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko;
 using namespace minko::resource;
 
 Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
@@ -34,19 +33,24 @@ Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 }
 
 void
-Texture::data(char* data, DataFormat format)
+Texture::data(unsigned char* data, DataFormat format)
 {
 	auto size = _width * _height * sizeof(int);
 
 	_data.resize(size);
+	
 	if (format == DataFormat::RGBA)
 	{
 		std::memcpy(&_data[0], data, size);
 	}
 	else if (format == DataFormat::RGB)
 	{
-		for (auto i = 0, j = 0; j < size; i += 3, j += 4)
+		for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
 		{
+			unsigned char r = data[i];
+			unsigned char g = data[i + 1];
+			unsigned char b = data[i + 2];
+
 			_data[j] = data[i];
 			_data[j + 1] = data[i + 1];
 			_data[j + 2] = data[i + 2];
