@@ -21,9 +21,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::render;
 
+OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
+
+OpenGLES2Context::BlendFactorsMap
+OpenGLES2Context::initializeBlendFactorsMap()
+{
+    BlendFactorsMap m;
+
+    m[(uint)Blending::Source::ZERO]                       = GL_ZERO;
+    m[(uint)Blending::Source::ONE]                        = GL_ONE;
+    m[(uint)Blending::Source::SRC_COLOR]                  = GL_SRC_COLOR;
+    m[(uint)Blending::Source::ONE_MINUS_SRC_COLOR]        = GL_ONE_MINUS_SRC_COLOR;
+    m[(uint)Blending::Source::SRC_ALPHA]                  = GL_SRC_ALPHA;
+    m[(uint)Blending::Source::ONE_MINUS_SRC_ALPHA]        = GL_ONE_MINUS_SRC_ALPHA;
+    m[(uint)Blending::Source::DST_ALPHA]                  = GL_DST_ALPHA;
+    m[(uint)Blending::Source::ONE_MINUS_DST_ALPHA]        = GL_ONE_MINUS_DST_ALPHA;
+
+    m[(uint)Blending::Destination::ZERO]                  = GL_ZERO;
+    m[(uint)Blending::Destination::ONE]                   = GL_ONE;
+    m[(uint)Blending::Destination::DST_COLOR]             = GL_DST_COLOR;
+    m[(uint)Blending::Destination::ONE_MINUS_DST_COLOR]   = GL_ONE_MINUS_DST_COLOR;
+    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
+    m[(uint)Blending::Destination::ONE_MINUS_SRC_ALPHA]   = GL_ONE_MINUS_SRC_ALPHA;
+    m[(uint)Blending::Destination::DST_ALPHA]             = GL_DST_ALPHA;
+    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
+
+    return m;
+}
+
 OpenGLES2Context::OpenGLES2Context()
 {
 	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -642,4 +671,22 @@ void
 OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
 	glUniformMatrix4fv(location, size, transpose, values);
+}
+
+void
+OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination destination)
+{
+    glBlendFunc(
+        _blendingFactors[(uint)source & 0x00ff],
+        _blendingFactors[(uint)destination & 0xff00]
+    );
+}
+
+void
+OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
+{
+    glBlendFunc(
+        _blendingFactors[(uint)blendMode & 0x00ff],
+        _blendingFactors[(uint)blendMode & 0xff00]
+    );
 }

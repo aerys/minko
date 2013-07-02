@@ -39,10 +39,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
+    typedef unsigned int uint;
+
 	namespace render
 	{
 		class AbstractContext;
 		class OpenGLES2Context;
+        class Blending;
 
 		class DrawCall;
 
