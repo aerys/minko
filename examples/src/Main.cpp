@@ -92,15 +92,18 @@ int main(int argc, char** argv)
 	// !glut/glew init
 
 	auto context = render::OpenGLES2Context::create();
+
+    context->setBlendMode(render::Blending::Mode::ALPHA);
+
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
-		//->geometry("cube", geometry::CubeGeometry::create(context))
-		->geometry("sphere", geometry::SphereGeometry::create(context))
+		->geometry("cube", geometry::CubeGeometry::create(context))
+		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("textures/collage.jpg")
-		->queue("effects/Texture.effect");
-		//->queue("Red.effect")
-		//->queue("Basic.effect");
+		->queue("effects/Texture.effect")
+		//->queue("effects/Red.effect")
+		->queue("effects/Basic.effect");
 
 	/*assets->defaultOptions()->includePath("effects");*/
 
@@ -114,19 +117,19 @@ int main(int argc, char** argv)
 		camera->addController(renderingController = RenderingController::create(assets->context()));
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
+		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(TransformController::create());
 		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(SurfaceController::create(
-			assets->geometry("sphere"),
+			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("textures/collage.jpg")),
-			assets->effect("texture")
+			assets->effect("basic")
 		));
 
 		group->addChild(mesh);
