@@ -26,6 +26,12 @@ using namespace minko::resource;
 void
 IndexStream::upload()
 {
-	_buffer = _context->createIndexBuffer(_data.size());
-	_context->uploaderIndexBufferData(_buffer, 0, _data.size(), &_data[0]);
+	_id = _context->createIndexBuffer(_data.size());
+	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+}
+
+void
+IndexStream::dispose()
+{
+	_context->deleteIndexBuffer(_id);
 }
