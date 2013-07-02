@@ -35,7 +35,7 @@ Loader::Loader() :
 void
 Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 {
-	auto flags = std::ios::in | std::ios::ate;
+	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
 	_filename = filename;
 	_options = options;
