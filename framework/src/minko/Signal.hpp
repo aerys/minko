@@ -112,18 +112,18 @@ namespace minko
 		execute(A... arguments)
 		{
 			_locked = true;
-			for (auto callback : _callbacks)
+			for (auto& callback : _callbacks)
 				callback(arguments...);
 			_locked = false;
 
-			for (auto callbackAndConnectionId : _toAdd)
+			for (auto& callbackAndConnectionId : _toAdd)
 			{
 				_callbacks.push_back(callbackAndConnectionId.first);
 				_slotIds.push_back(callbackAndConnectionId.second);
 			}
 			_toAdd.clear();
 
-			for (auto callbackIt : _toRemove)
+			for (auto& callbackIt : _toRemove)
 				_callbacks.erase(callbackIt);
 			_toRemove.clear();
 		}

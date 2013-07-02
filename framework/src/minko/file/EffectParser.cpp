@@ -104,14 +104,14 @@ EffectParser::finalize()
 {
 	std::vector<std::shared_ptr<GLSLProgram>> programs;
 
-	for (auto program : _programs)
+	for (auto& program : _programs)
 		programs.push_back(GLSLProgram::create(
 			_context, _dependenciesCode + program.first, _dependenciesCode + program.second
 		));
 
 	_effect = Effect::create(programs);
 
-	for (auto binding : _bindings)
+	for (auto& binding : _bindings)
 		_effect->bindInput(binding.first, binding.second);
 
 	_complete->execute(shared_from_this());
