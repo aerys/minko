@@ -210,12 +210,15 @@ RenderingController::render()
 {
 	_enterFrame->execute(shared_from_this());
 
-	_context->clear(.5f, .5f, .5f, 1.f);
+	_context->clear(
+		((_backgroundColor >> 24) & 0xff) / 255.f,
+		((_backgroundColor >> 16) & 0xff) / 255.f,
+		((_backgroundColor >> 8) & 0xff) / 255.f,
+		(_backgroundColor & 0xff) / 255.f
+	);
 
 	for (auto drawCall : _drawCalls)
 		drawCall->render(_context);
 
 	_context->present();
-
-	_exitFrame->execute(shared_from_this());
 }
