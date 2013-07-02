@@ -21,11 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/resource/AbstractResource.hpp"
+
 namespace minko
 {
 	namespace resource
 	{
-		class Texture
+		class Texture :
+			public AbstractResource
 		{
 		public:
 			typedef std::shared_ptr<Texture> Ptr;
@@ -37,11 +40,9 @@ namespace minko
 			};
 
 		private:
-			std::shared_ptr<render::AbstractContext>	_context;
-			const unsigned int							_width;
-			const unsigned int							_height;
-			std::vector<unsigned char>					_data;
-			int											_texture;
+			const unsigned int			_width;
+			const unsigned int			_height;
+			std::vector<unsigned char>	_data;
 
 		public:
 			inline static
@@ -51,13 +52,6 @@ namespace minko
 				   const unsigned int						height)
 			{
 				return std::shared_ptr<Texture>(new Texture(context, width, height));
-			}
-
-			inline
-			std::shared_ptr<render::AbstractContext>
-			context()
-			{
-				return _context;
 			}
 
 			inline
@@ -74,15 +68,11 @@ namespace minko
 				return _height;
 			}
 
-			inline
-			const int
-			texture()
-			{
-				return _texture;
-			}
-
 			void
 			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
+
+			void
+			dispose();
 
 			void
 			upload();

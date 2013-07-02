@@ -21,65 +21,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/resource/AbstractResource.hpp"
-
 namespace minko
 {
 	namespace resource
 	{
-		class IndexStream :
-			public AbstractResource
+		class AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
+			typedef std::shared_ptr<AbstractResource> Ptr;
 
-		private:
-			std::vector<unsigned short>	_data;
+		protected:
+			std::shared_ptr<render::AbstractContext>	_context;
+			int											_id;
 
 		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
+			inline
+			std::shared_ptr<render::AbstractContext>
+			context()
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
-			}
-
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
+				return _context;
 			}
 
 			inline
-			const std::vector<unsigned short>
-			data()
+			const int
+			id()
 			{
-				return _data;
+				if (_id == -1)
+					throw;
+
+				return _id;
 			}
 
+			virtual
 			void
-			upload();
-			
+			dispose() = 0;
+
+			virtual
 			void
-			dispose();
+			upload() = 0;
 
-		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>					data) :
-				AbstractResource(context),
-				_data(data)
+		protected:
+			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
+				_context(context),
+				_id(-1)
 			{
-				upload();
-			}
-
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*								begin,
-						unsigned short*								end) :
-				AbstractResource(context),
-				_data(begin, end)
-			{
-				upload();
 			}
 		};
 	}
