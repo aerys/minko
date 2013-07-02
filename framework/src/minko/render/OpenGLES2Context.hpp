@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"
+#include "minko/render/Blending.hpp"
 
 namespace minko
 {
@@ -44,7 +45,12 @@ namespace minko
 		public:
 			typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
+        private:
+            typedef std::unordered_map<unsigned int, unsigned int> BlendFactorsMap;
+
 		private:
+            static BlendFactorsMap  _blendingFactors;
+
 			std::list<unsigned int>	_vertexBuffers;
 			std::list<unsigned int>	_indexBuffers;
 			std::list<unsigned int>	_textures;
@@ -64,18 +70,18 @@ namespace minko
 
 			void
 			configureViewport(const unsigned int x,
-								const unsigned int y,
-								const unsigned int with,
-								const unsigned int height);
+							  const unsigned int y,
+							  const unsigned int with,
+							  const unsigned int height);
 
 			void
 			clear(float red 			= 0.f,
-					float green			= 0.f,
-					float blue			= 0.f,
-					float alpha			= 0.f,
-					float depth			= 1.f,
-					unsigned int stencil	= 0,
-					unsigned int mask		= 0xffffffff);
+				  float green			= 0.f,
+				  float blue			= 0.f,
+				  float alpha			= 0.f,
+				  float depth			= 1.f,
+				  unsigned int stencil	= 0,
+				  unsigned int mask		= 0xffffffff);
 
 			void
 			present();
@@ -88,15 +94,15 @@ namespace minko
 
 			void
 			setVertexBufferAt(const unsigned int	position,
-								const unsigned int	vertexBuffer,
-								const unsigned int	size,
-								const unsigned int	stride,
-								const unsigned int	offset);
+							  const unsigned int	vertexBuffer,
+							  const unsigned int	size,
+							  const unsigned int	stride,
+							  const unsigned int	offset);
 			void
 			uploadVertexBufferData(const unsigned int 	vertexBuffer,
-									const unsigned int 	offset,
-									const unsigned int 	size,
-									void* 				data);
+								   const unsigned int 	offset,
+								   const unsigned int 	size,
+								   void* 				data);
 
 			void
 			deleteVertexBuffer(const unsigned int vertexBuffer);
@@ -115,15 +121,15 @@ namespace minko
 
 			const unsigned int
 			createTexture(unsigned int width,
-							unsigned int height,
-							bool		   mipMapping);
+						  unsigned int height,
+						  bool		   mipMapping);
 
 			void
 			uploadTextureData(const unsigned int texture,
-								unsigned int 		 width,
-								unsigned int 		 height,
-								unsigned int 		 mipLevel,
-								void*				 data);
+							  unsigned int 		 width,
+							  unsigned int 		 height,
+							  unsigned int 		 mipLevel,
+							  void*				 data);
 
 			void
 			deleteTexture(const unsigned int texture);
@@ -190,20 +196,31 @@ namespace minko
 			void
 			setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values);
 
+            void
+            setBlendMode(Blending::Source source, Blending::Destination destination);
+
+            void
+            setBlendMode(Blending::Mode blendMode);
+
 		private:
 			OpenGLES2Context();
 
 			void
 			fillUniformInputs(const unsigned int						program,
-								std::vector<std::string>&					names,
-								std::vector<ShaderProgramInputs::Type>&	types,
-								std::vector<unsigned int>&				locations);
+							  std::vector<std::string>&					names,
+							  std::vector<ShaderProgramInputs::Type>&	types,
+							  std::vector<unsigned int>&				locations);
 
 			void
 			fillAttributeInputs(const unsigned int						program,
 								std::vector<std::string>&				names,
 								std::vector<ShaderProgramInputs::Type>&	types,
 								std::vector<unsigned int>&				locations);
+
+            static
+            BlendFactorsMap
+            initializeBlendFactorsMap();
+            
 		};
 	}
 }
