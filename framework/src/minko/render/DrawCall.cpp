@@ -76,15 +76,17 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto vertexStream					= _data->get<VertexStream::Ptr>(name);
 				VertexStream::Attribute& attribute	= vertexStream->attribute(inputName);
+				auto size							= std::get<1>(attribute);
+				auto offset							= std::get<2>(attribute);
 				
 				_func.push_back([=, &attribute](AbstractContext::Ptr context)
 				{
 					context->setVertexBufferAt(
 						location,
 						vertexStream->id(),
-						std::get<1>(attribute),
+						size,
 						vertexSize,
-						std::get<2>(attribute)
+						offset
 					);
 				});
 			}
