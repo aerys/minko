@@ -1,8 +1,14 @@
 solution "minko"
    configurations { "Debug", "Release" }
 
+-- examples
 include 'examples'
+   
+-- core framework
 include 'framework'
+
+-- plugins
+include 'plugins/jpeg'
 
 newaction {
 	trigger = "copyDLLs",

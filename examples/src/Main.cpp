@@ -1,6 +1,7 @@
 #include <time.h>
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 #define FRAMERATE 60
 
@@ -32,7 +33,7 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	//mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
 
 	renderingController->render();
 
@@ -47,7 +48,7 @@ void timerFunc(int)
 	glutPostRedisplay();
 }
 
-void screenshotFunc(int)
+/*void screenshotFunc(int)
 {
 	const int width = 800, height = 600;
 
@@ -56,7 +57,7 @@ void screenshotFunc(int)
 	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
 	int i, j;
-	FILE *fp = fopen("screenshot.ppm", "wb"); /* b - binary mode */
+	FILE *fp = fopen("screenshot.ppm", "wb");
 	fprintf(fp, "P6\n%d %d\n255\n", width, height);
 
 	for (j = 0; j < height; ++j)
@@ -64,9 +65,9 @@ void screenshotFunc(int)
 		for (i = 0; i < width; ++i)
 		{
 			static unsigned char color[3];
-			color[0] = pixels[(width * j + i) * 3 + 0];  /* red */
-			color[1] = pixels[(width * j + i) * 3 + 1];  /* green */
-			color[2] = pixels[(width * j + i) * 3 + 2];  /* blue */
+			color[0] = pixels[(width * j + i) * 3 + 0];
+			color[1] = pixels[(width * j + i) * 3 + 1];
+			color[2] = pixels[(width * j + i) * 3 + 2];
 			(void) fwrite(color, 1, 3, fp);
 		}
 	}
@@ -74,7 +75,7 @@ void screenshotFunc(int)
 	fclose(fp);
 
 	delete[] pixels;
-}
+}*/
 
 int main(int argc, char** argv)
 {
@@ -92,13 +93,15 @@ int main(int argc, char** argv)
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
-		->geometry("cube", geometry::CubeGeometry::create(context))
-		->geometry("sphere", geometry::SphereGeometry::create(context))
-		->queue("DirectionalLight.effect")
-		->queue("Red.effect")
-		->queue("Basic.effect");
+		->registerParser<file::JPEGParser>("jpg")
+		//->geometry("cube", geometry::CubeGeometry::create(context))
+		//->geometry("sphere", geometry::SphereGeometry::create(context))
+		->queue("textures/collage.jpg");
+		//->queue("DirectionalLight.effect")
+		//->queue("Red.effect")
+		//->queue("Basic.effect");
 
-	assets->defaultOptions()->includePath("effects");
+	/*assets->defaultOptions()->includePath("effects");
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -126,20 +129,7 @@ int main(int argc, char** argv)
 
 		group->addChild(mesh);
 
-		/*
-		for (auto i = 0; i < 50000; ++i)
-		{
-			group->addChild(Node::create()->addController(SurfaceController::create(
-				assets->geometry("cube"),
-				data::Provider::create()
-					->set("material/diffuse/rgba",			color)
-					->set("transform/worldToScreenMatrix",	view)
-					->set("light/direction",				lightDirection),
-				assets->effect("directional light")
-			)));
-		}
-		*/
-	});
+	});*/
 
 	assets->load();
 
@@ -153,10 +143,10 @@ int main(int argc, char** argv)
 	// std::cout << "== program info logs ==" << std::endl;
 	// std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
 
-	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	glutTimerFunc(1000, screenshotFunc, 0);
+	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	//glutTimerFunc(1000, screenshotFunc, 0);
 
-	glutDisplayFunc(renderScene);
+	//glutDisplayFunc(renderScene);
 	glutMainLoop();
 
 	return 0;
