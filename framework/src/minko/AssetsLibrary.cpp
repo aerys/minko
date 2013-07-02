@@ -115,7 +115,7 @@ AssetsLibrary::load()
 {
 	std::list<std::string> queue = _filesQueue;
 
-	for (auto filename : queue)
+	for (auto& filename : queue)
 	{
 		if (_filenameToLoader.count(filename) == 0)
 		{
