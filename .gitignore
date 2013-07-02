@@ -5,7 +5,10 @@ framework/bin
 framework/obj
 examples/bin
 examples/obj
+plugins/jpeg/bin
+plugins/jpeg/obj
 *.opensdf
 *.sdf
 *.sln
 *.suo
+*.vcxproj*
