@@ -26,7 +26,7 @@ using namespace minko::resource;
 Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 				 const unsigned int							width,
 				 const unsigned int							height) :
-	_context(context),
+	AbstractResource(context),
 	_width(width),
 	_height(height)
 {
@@ -62,6 +62,13 @@ Texture::data(unsigned char* data, DataFormat format)
 void
 Texture::upload()
 {
-	_texture = _context->createTexture(_width, _height, false);
-	_context->uploadTextureData(_texture, _width, _height, 0, &_data[0]);
+	_id = _context->createTexture(_width, _height, false);
+	_context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
+}
+
+void
+Texture::dispose()
+{
+	_context->deleteTexture(_id);
+	_id = -1;
 }

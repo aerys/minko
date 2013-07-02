@@ -53,6 +53,7 @@ namespace minko
 
 	namespace resource
 	{
+		class AbstractResource;
 		class VertexFormat;
 		class VertexStream;
 		class VertexAttribute;
