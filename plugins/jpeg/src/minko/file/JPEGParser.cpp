@@ -41,16 +41,15 @@ JPEGParser::parse(const std::string&		filename,
 	// On return, width/height will be set to the image's dimensions, and actual_comps will be set 
 	// to either 1 (grayscale) or 3 (RGB).
 	auto bmpData = jpgd::decompress_jpeg_image_from_memory(
-		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 4
+		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
 	);
+	auto format = comps == 3
+		? resource::Texture::DataFormat::RGB
+		: resource::Texture::DataFormat::RGBA;
 
-	_texture = resource::Texture::create(
-		options->context(),
-		width,
-		height,
-		data,
-		comps == 3 ? resource::Texture::DataFormat::RGB : resource::Texture::DataFormat::RGBA
-	);
+	_texture = resource::Texture::create(options->context(), width, height);
+	_texture->data(bmpData, format);
+	_texture->upload();
 
 	delete bmpData;
 }

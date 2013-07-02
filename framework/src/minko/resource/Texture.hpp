@@ -40,7 +40,7 @@ namespace minko
 			std::shared_ptr<render::AbstractContext>	_context;
 			const unsigned int							_width;
 			const unsigned int							_height;
-			std::vector<char>							_data;
+			std::vector<unsigned char>					_data;
 			int											_texture;
 
 		public:
@@ -51,22 +51,6 @@ namespace minko
 				   const unsigned int						height)
 			{
 				return std::shared_ptr<Texture>(new Texture(context, width, height));
-			}
-
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context,
-				   const unsigned int						width,
-				   const unsigned int						height,
-				   char*									data,
-				   DataFormat								format = DataFormat::RGBA)
-			{
-				auto texture = std::shared_ptr<Texture>(new Texture(context, width, height));
-
-				texture->data(data, format);
-				texture->upload();
-
-				return texture;
 			}
 
 			inline
@@ -90,8 +74,15 @@ namespace minko
 				return _height;
 			}
 
+			inline
+			const int
+			texture()
+			{
+				return _texture;
+			}
+
 			void
-			data(char* data, DataFormat format = DataFormat::RGBA);
+			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
 
 			void
 			upload();
