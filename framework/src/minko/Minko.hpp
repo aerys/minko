@@ -45,6 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/VertexAttribute.hpp"
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
+#include "minko/resource/Texture.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
