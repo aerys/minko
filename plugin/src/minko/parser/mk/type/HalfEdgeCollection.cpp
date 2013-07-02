@@ -2,7 +2,7 @@
 
 using namespace minko::parser::mk;
 
-HalfEdgeCollection::HalfEdgeCollection(std::shared_ptr<IndexStream> indexStream)
+HalfEdgeCollection::HalfEdgeCollection(std::shared_ptr<minko::resource::IndexStream> indexStream)
 {
 	_indexStream = indexStream;
 
@@ -58,6 +58,45 @@ HalfEdgeCollection::initialize()
 			halfEdges[edgeId]->adjacent(adjacents[edgeId]->second);
 			adjacents[edgeId]->second->adjacent(halfEdges[edgeId]);
 		}
+	}
+
+	std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer> unmarked(map.begin(), map.end());
+	std::queue<HalfEdgePtr> queue;
+
+	while (map.begin() != map.end())
+	{
+		queue.push(map.begin()->second);
+		_subMeshesList.push_front(queue.front());
+
+		do
+		{
+			HalfEdgePtr he = queue.front();
+			queue.pop();
+		
+			std::cout << "pouet" << std::endl;
+
+			if (he->adjacent() != NULL && he->adjacent()->marked() == false)
+			{
+				std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator adjIt = unmarked.find(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
+				unmarked.erase(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
+				he->adjacent()->marked(false);
+				queue.push(he->adjacent());
+			}
+
+			std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator neighbors [2] = {
+				unmarked.find(std::make_pair(he->next()->startNodeId(), he->next()->endNodeId())),
+				unmarked.find(std::make_pair(he->prec()->startNodeId(), he->prec()->endNodeId()))};
+
+			for (int edgeId = 0; edgeId < 2; ++edgeId)
+			{
+				if (neighbors[edgeId]->second->marked() == false)
+				{
+					unmarked.erase(std::make_pair(neighbors[edgeId]->second->startNodeId(), neighbors[edgeId]->second->endNodeId()));
+					neighbors[edgeId]->second->marked(false);
+					queue.push(neighbors[edgeId]->second);
+				}
+			}
+		} while (queue.size() > 0);
 	}
 
 	for (std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator it = map.begin(); it != map.end(); it++)
