@@ -9,6 +9,10 @@ HalfEdge::HalfEdge(unsigned int startNodeId,
 	_startNodeId	= startNodeId;
 	_endNodeId		= endNodeId;
 	_edgeId			= edgeId;
+	_marked			= false;
+	_adjacent		= NULL;
+	_next			= NULL;
+	_prec			= NULL;
 }
 
 bool

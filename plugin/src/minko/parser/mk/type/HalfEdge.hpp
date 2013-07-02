@@ -35,6 +35,7 @@ namespace minko
 				std::vector<HalfEdgePtr>	_face;
 				std::vector<HalfEdgePtr>	_firstReverseFace;
 				std::vector<HalfEdgePtr>	_secondReverseFace;
+				BOOLEAN						_marked;
 
 			private :
 				HalfEdge(unsigned int startNodeId,
@@ -45,10 +46,20 @@ namespace minko
 				bool			indiceInEdge(unsigned int indice);
 				bool			indiceInFace(unsigned int indice);
 				unsigned int	getThirdVertex();
+	
+				inline BOOLEAN marked() const
+				{
+					return _marked;
+				}
 
 				inline unsigned int startNodeId() const
 				{
 					return _startNodeId;
+				}
+
+				inline void marked(BOOLEAN value)
+				{
+					_marked = value;
 				}
 
 				inline unsigned int endNodeId() const
