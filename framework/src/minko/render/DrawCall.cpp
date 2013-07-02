@@ -43,10 +43,11 @@ DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
 void
 DrawCall::bind(std::shared_ptr<data::Container> bindings)
 {
+	auto vertexSize	= _data->get<unsigned int>("geometry/vertex/size");
 	auto indexStream = bindings->get<IndexStream::Ptr>("geometry/indices");
 	auto drawTriangles = [indexStream](AbstractContext::Ptr context)
 	{
-		context->drawTriangles(indexStream->buffer(), indexStream->data().size());
+		context->drawTriangles(indexStream->id(), indexStream->data().size());
 	};
 	
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
@@ -75,13 +76,12 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
-				auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
-
+				
 				_func.push_back([location, vertexStream, attribute, vertexSize](AbstractContext::Ptr context)
 				{
 					context->setVertexBufferAt(
 						location,
-						vertexStream->buffer(),
+						vertexStream->id(),
 						attribute->size(),
 						vertexSize,
 						attribute->offset()
@@ -135,7 +135,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::sampler2d)
 			{
-				auto texture = _data->get<Texture::Ptr>(name)->texture();
+				auto texture = _data->get<Texture::Ptr>(name)->id();
 
 				_func.push_back([location, numTextures, texture](AbstractContext::Ptr context)
 				{
