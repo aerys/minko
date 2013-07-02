@@ -3,8 +3,8 @@ project "minko-examples"
   kind "ConsoleApp"
   language "C++"
   links {
-	"minko-framework",
-	"minko-jpeg"
+	"minko-jpeg",
+	"minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
