@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/render/Blending.hpp"
+
 namespace minko
 {
 	namespace render
@@ -38,19 +40,19 @@ namespace minko
 			virtual
 			void
 			configureViewport(const unsigned int x,
-								const unsigned int y,
-								const unsigned int with,
-								const unsigned int height) = 0;
+							  const unsigned int y,
+							  const unsigned int with,
+							  const unsigned int height) = 0;
 
 			virtual
 			void
 			clear(float red 			= 0.f,
-					float green			= 0.f,
-					float blue			= 0.f,
-					float alpha			= 0.f,
-					float depth			= 1.f,
-					unsigned int stencil	= 0,
-					unsigned int mask		= 0xffffffff) = 0;
+				  float green			= 0.f,
+				  float blue			= 0.f,
+				  float alpha			= 0.f,
+				  float depth			= 1.f,
+				  unsigned int stencil	= 0,
+				  unsigned int mask		= 0xffffffff) = 0;
 
 			virtual
 			void
@@ -67,17 +69,17 @@ namespace minko
 			virtual
 			void
 			setVertexBufferAt(const unsigned int	position,
-								const unsigned int	vertexBuffer,
-								const unsigned int	size,
-								const unsigned int	stride,
-								const unsigned int	offset) = 0;
+						      const unsigned int	vertexBuffer,
+							  const unsigned int	size,
+							  const unsigned int	stride,
+							  const unsigned int	offset) = 0;
 
 			virtual
 			void
 			uploadVertexBufferData(const unsigned int 	vertexBuffer,
-									const unsigned int 	offset,
-									const unsigned int 	size,
-									void* 				data) = 0;
+								   const unsigned int 	offset,
+								   const unsigned int 	size,
+								   void* 				data) = 0;
 
 			virtual	
 			void
@@ -184,11 +186,26 @@ namespace minko
 
 			virtual
 			void
-			setUniform(unsigned int location, float value1, float value2, float value3, float value4) = 0;
+			setUniform(unsigned int location,
+                       float        value1,
+                       float        value2,
+                       float        value3,
+                       float        value4) = 0;
 
 			virtual
 			void
-			setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values) = 0;
+			setUniformMatrix4x4(unsigned int    location,
+                                unsigned int    size,
+                                bool            transpose,
+                                const float*    values) = 0;
+
+            virtual
+            void
+            setBlendMode(Blending::Source source, Blending::Destination destination) = 0;
+
+            virtual
+            void
+            setBlendMode(Blending::Mode blendMode) = 0;
 
 		};
 	}	
