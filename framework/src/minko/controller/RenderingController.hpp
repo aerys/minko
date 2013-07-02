@@ -44,6 +44,8 @@ namespace minko
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::list<DrawCallPtr>						_drawCalls;
 
+			unsigned int								_backgroundColor;
+
 			Signal<Ptr>::Ptr							_enterFrame;
 			Signal<Ptr>::Ptr							_exitFrame;
 
@@ -66,6 +68,20 @@ namespace minko
 				ctrl->initialize();
 
 				return ctrl;
+			}
+
+			inline
+			unsigned int
+			backgroundColor()
+			{
+				return _backgroundColor;
+			}
+
+			inline
+			void
+			backgroundColor(const unsigned int backgroundColor)
+			{
+				_backgroundColor = backgroundColor;
 			}
 
 			void
