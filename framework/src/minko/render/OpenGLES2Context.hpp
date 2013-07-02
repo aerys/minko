@@ -128,6 +128,11 @@ namespace minko
 			void
 			deleteTexture(const unsigned int texture);
 
+			void
+			setTextureAt(const unsigned int	position,
+						 const int			texture		= -1,
+						 const int			location	= -1);
+
 			const unsigned int
 			createProgram();
 

@@ -66,7 +66,7 @@ namespace minko
 
 		private:
 			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>			data) :
+						std::vector<unsigned short>					data) :
 				_data(data),
 				_context(context),
 				_buffer(-1)
@@ -75,8 +75,8 @@ namespace minko
 			}
 
 			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*						begin,
-						unsigned short*						end) :
+						unsigned short*								begin,
+						unsigned short*								end) :
 				_data(begin, end),
 				_context(context),
 				_buffer(-1)
