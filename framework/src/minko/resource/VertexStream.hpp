@@ -21,23 +21,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/resource/AbstractResource.hpp"
+
 namespace minko
 {
 	namespace resource
 	{
-		class VertexStream
+		class VertexStream :
+			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<VertexStream>	Ptr;
+			typedef std::shared_ptr<VertexStream>		Ptr;
 
 		private:
 			typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
 
 		private:
-			std::shared_ptr<render::AbstractContext>	_context;
-			std::vector<float>							_data;
-			int											_buffer;
-			std::list<VxAttrPtr>						_attributes;
+			std::vector<float>		_data;
+			std::list<VxAttrPtr>	_attributes;
 
 		public:
 			inline static
@@ -95,13 +96,6 @@ namespace minko
 			}
 
 			inline
-			const int
-			buffer()
-			{
-				return _buffer;
-			}
-
-			inline
 			const std::list<VxAttrPtr>&
 			attributes()
 			{
@@ -110,6 +104,9 @@ namespace minko
 
 			void
 			upload();
+
+			void
+			dispose();
 
 			void
 			addAttribute(VxAttrPtr attribute);
