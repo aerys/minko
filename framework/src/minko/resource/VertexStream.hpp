@@ -31,14 +31,15 @@ namespace minko
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<VertexStream>		Ptr;
+			typedef std::shared_ptr<VertexStream>								Ptr;
+			typedef const std::tuple<std::string, unsigned int, unsigned int>	Attribute;
 
 		private:
 			typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
 
 		private:
 			std::vector<float>		_data;
-			std::list<VxAttrPtr>	_attributes;
+			std::list<Attribute>	_attributes;
 
 		public:
 			inline static
@@ -96,7 +97,7 @@ namespace minko
 			}
 
 			inline
-			const std::list<VxAttrPtr>&
+			const std::list<Attribute>&
 			attributes()
 			{
 				return _attributes;
@@ -109,12 +110,12 @@ namespace minko
 			dispose();
 
 			void
-			addAttribute(VxAttrPtr attribute);
+			addAttribute(Attribute attribute);
 
 			bool
-			hasAttribute(VxAttrPtr attribute);
+			hasAttribute(const std::string& attributeName);
 
-			VxAttrPtr
+			const Attribute&
 			attribute(const std::string& attributeName);
 
 		private:
