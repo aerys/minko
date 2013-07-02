@@ -35,14 +35,14 @@ namespace minko
 				typedef std::shared_ptr<HalfEdge>					HalfEdgePtr;
 
 			private :
-				std::shared_ptr<IndexStream>	_indexStream;
-				std::list<HalfEdge>				_subMeshesList;
+				std::shared_ptr<minko::resource::IndexStream>	_indexStream;
+				std::list<HalfEdgePtr>							_subMeshesList;
 
 			public:
-				HalfEdgeCollection (std::shared_ptr<IndexStream> indexStream);
+				HalfEdgeCollection (std::shared_ptr<minko::resource::IndexStream> indexStream);
 				~HalfEdgeCollection ();
 
-				inline std::list<HalfEdge> subMeshesList() const
+				inline std::list<HalfEdgePtr> subMeshesList() const
 				{
 					return _subMeshesList;
 				};
