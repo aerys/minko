@@ -59,8 +59,8 @@ CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
 		context, std::begin(xyzData), std::end(xyzData)
 	);
 
-	vstream->addAttribute(VertexAttribute::create("position", 3, 0));
-	vstream->addAttribute(VertexAttribute::create("normal", 3, 3));
+	vstream->addAttribute(VertexStream::Attribute("position", 3, 0));
+	vstream->addAttribute(VertexStream::Attribute("normal", 3, 3));
 	addVertexStream(vstream);
 
 	indices(IndexStream::create(context, std::begin(i), std::end(i)));
