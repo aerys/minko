@@ -93,15 +93,15 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 
-    context->setBlendMode(render::Blending::Mode::ALPHA);
+    context->setBlendMode(render::Blending::Mode::DEFAULT);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		->queue("textures/collage.jpg")
-		->queue("effects/Texture.effect")
+		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
+		//->queue("textures/collage.jpg")
+		//->queue("effects/Texture.effect")
 		//->queue("effects/Red.effect")
 		->queue("effects/Basic.effect");
 
@@ -114,7 +114,9 @@ int main(int argc, char** argv)
 
 		root->addChild(group)->addChild(camera);
 
-		camera->addController(renderingController = RenderingController::create(assets->context()));
+        renderingController = RenderingController::create(assets->context());
+        renderingController->backgroundColor(0x7F7F7FFF);
+		camera->addController(renderingController);
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
