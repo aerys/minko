@@ -105,6 +105,7 @@ namespace minko
 			RenderingController(AbsContextPtr context) :
 				AbstractController(),
 				_context(context),
+                _backgroundColor(0),
 				_enterFrame(Signal<Ptr>::create()),
 				_exitFrame(Signal<Ptr>::create())
 			{
