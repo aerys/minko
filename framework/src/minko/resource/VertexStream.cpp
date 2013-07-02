@@ -75,26 +75,30 @@ VertexStream::dispose()
 }
 
 void
-VertexStream::addAttribute(std::shared_ptr<VertexAttribute> attribute)
+VertexStream::addAttribute(VertexStream::Attribute attribute)
 {
-	if (hasAttribute(attribute))
+	if (hasAttribute(std::get<0>(attribute)))
 		throw std::invalid_argument("attribute");
 
 	_attributes.push_back(attribute);
 }
 
 bool
-VertexStream::hasAttribute(std::shared_ptr<VertexAttribute> attribute)
+VertexStream::hasAttribute(const std::string& attributeName)
 {
-	return std::find(_attributes.begin(), _attributes.end(), attribute) != _attributes.end();
+	for (auto& attr : _attributes)
+		if (std::get<0>(attr) == attributeName)
+			return true;
+
+	return false;
 }
 
-std::shared_ptr<VertexAttribute>
+VertexStream::Attribute&
 VertexStream::attribute(const std::string& attributeName)
 {
-	for (auto attr : _attributes)
-		if (attr->name() == attributeName)
+	for (auto& attr : _attributes)
+		if (std::get<0>(attr) == attributeName)
 			return attr;
 
-	return nullptr;
+	throw std::invalid_argument("attributeName");
 }
