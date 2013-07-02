@@ -24,22 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::resource;
 using namespace minko::render;
 
-void
-VertexStream::upload()
-{
-	if (_buffer != -1)
-		_context->deleteVertexBuffer(_buffer);
-
-	_buffer = _context->createVertexBuffer(_data.size());
-	if (_buffer < 0)
-		throw;
-
-	_context->uploadVertexBufferData(_buffer, 0, _data.size(), &_data[0]);
-}
-
 VertexStream::VertexStream(std::shared_ptr<AbstractContext> context) :
-	_context(context),
-	_buffer(-1)
+	AbstractResource(context)
 {
 }
 
@@ -47,9 +33,8 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext>	context,
 						   float*							data,
 						   const unsigned int				size,
 						   const unsigned int				offset) :
-	_context(context),
-	_data(data + offset, data + offset + size),
-	_buffer(-1)
+	AbstractResource(context),
+	_data(data + offset, data + offset + size)
 {
 	upload();
 }
@@ -57,19 +42,36 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext>	context,
 VertexStream::VertexStream(std::shared_ptr<AbstractContext>		context,
 						   std::vector<float>::const_iterator	begin,
 						   std::vector<float>::const_iterator	end) :
-	_context(context),
-	_data(begin, end),
-	_buffer(-1)
+	AbstractResource(context),
+	_data(begin, end)
 {
 	upload();
 }
 
 VertexStream::VertexStream(std::shared_ptr<AbstractContext> context, float* begin, float* end) :
-	_context(context),
-	_data(begin, end),
-	_buffer(-1)
+	AbstractResource(context),
+	_data(begin, end)
 {
 	upload();
+}
+
+void
+VertexStream::upload()
+{
+	if (_id != -1)
+		_context->deleteVertexBuffer(_id);
+
+	_id = _context->createVertexBuffer(_data.size());
+	if (_id < 0)
+		throw;
+
+	_context->uploadVertexBufferData(_id, 0, _data.size(), &_data[0]);
+}
+
+void
+VertexStream::dispose()
+{
+	_context->deleteVertexBuffer(_id);
 }
 
 void
