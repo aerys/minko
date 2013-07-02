@@ -57,6 +57,7 @@ namespace minko
 		class VertexStream;
 		class VertexAttribute;
 		class IndexStream;
+		class Texture;
 	}
 
 	namespace scene
@@ -103,6 +104,7 @@ namespace minko
 		class Options;
 		class Loader;
 		class AbstractParser;
+		class AbstractTextureParser;
 		class EffectParser;
 	}
 
