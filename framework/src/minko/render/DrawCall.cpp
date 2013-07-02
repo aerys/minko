@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
+#include "minko/resource/Texture.hpp"
 #include "minko/render/GLSLProgram.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
@@ -42,11 +43,18 @@ DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
 void
 DrawCall::bind(std::shared_ptr<data::Container> bindings)
 {
+	auto indexStream = bindings->get<IndexStream::Ptr>("geometry/indices");
+	auto drawTriangles = [indexStream](AbstractContext::Ptr context)
+	{
+		context->drawTriangles(indexStream->buffer(), indexStream->data().size());
+	};
+	
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
 		auto program = bindings->get<GLSLProgram::Ptr>("effect/pass" + std::to_string(passId));
+		auto numTextures = 0;
 
-		_func.push_back([program](std::shared_ptr<AbstractContext> context)
+		_func.push_back([program](AbstractContext::Ptr context)
 		{
 			context->setProgram(program->program());
 		});
@@ -69,7 +77,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 				auto attribute		= vertexStream->attribute(inputName);
 				auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
 
-				_func.push_back([location, vertexStream, attribute, vertexSize](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, vertexStream, attribute, vertexSize](AbstractContext::Ptr context)
 				{
 					context->setVertexBufferAt(
 						location,
@@ -84,7 +92,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto floatValue = _data->get<float>(name);
 
-				_func.push_back([location, floatValue](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, floatValue](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, floatValue);
 				});
@@ -93,7 +101,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float2Value = _data->get<std::shared_ptr<Vector2>>(name);
 
-				_func.push_back([location, float2Value](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, float2Value](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, float2Value->x(), float2Value->y());
 				});
@@ -102,7 +110,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float3Value = _data->get<std::shared_ptr<Vector3>>(name);
 
-				_func.push_back([location, float3Value](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, float3Value](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, float3Value->x(), float3Value->y(), float3Value->z());
 				});
@@ -111,7 +119,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float4Value = _data->get<std::shared_ptr<Vector4>>(name);
 
-				_func.push_back([location, float4Value](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, float4Value](AbstractContext::Ptr context)
 				{
 					context->setUniform(location, float4Value->x(), float4Value->y(), float4Value->z(), float4Value->w());
 				});
@@ -120,24 +128,40 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			{
 				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
 
-				_func.push_back([location, float16Ptr](std::shared_ptr<AbstractContext> context)
+				_func.push_back([location, float16Ptr](AbstractContext::Ptr context)
 				{
 					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
 				});
 			}
+			else if (type == ShaderProgramInputs::Type::sampler2d)
+			{
+				auto texture = _data->get<Texture::Ptr>(name)->texture();
+
+				_func.push_back([location, numTextures, texture](AbstractContext::Ptr context)
+				{
+					context->setTextureAt(numTextures, texture, location);
+				});
+
+				++numTextures;
+			}
 		}
+
+		_func.push_back([numTextures](AbstractContext::Ptr context)
+		{
+			auto count = numTextures;
+
+			while (count < 8)
+				context->setTextureAt(count++);
+		});
+
+		_func.push_back(drawTriangles);
 	}
 
-	auto indexStream = bindings->get<IndexStream::Ptr>("geometry/indices");
-
-	_func.push_back([indexStream](std::shared_ptr<AbstractContext> context)
-	{
-		context->drawTriangles(indexStream->buffer(), indexStream->data().size());
-	});
+	
 }
 
 void
-DrawCall::render(std::shared_ptr<AbstractContext> context)
+DrawCall::render(AbstractContext::Ptr context)
 {
 	for (auto f : _func)
 		f(context);

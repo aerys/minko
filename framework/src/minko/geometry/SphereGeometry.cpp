@@ -107,7 +107,8 @@ SphereGeometry::initializeIndices(std::shared_ptr<AbstractContext>	context,
 								  unsigned int						numParallels,
 								  unsigned int						numMeridians)
 {
-	std::vector<unsigned short>	data(numParallels * numMeridians * 6);
+	//std::vector<unsigned short>	data(numParallels * numMeridians * 6);
+	std::vector<unsigned short>	data((numParallels - 2) * numMeridians * 6);
 	unsigned int c = 0;
 
 	numMeridians++;
