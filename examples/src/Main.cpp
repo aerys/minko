@@ -2,6 +2,9 @@
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoDevIL.hpp"
+
+#include "GL/glut.h"
 
 #define FRAMERATE 60
 
@@ -98,10 +101,12 @@ int main(int argc, char** argv)
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
+        ->registerParser<file::DevILPNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		//->queue("textures/collage.jpg")
-		//->queue("effects/Texture.effect")
+		->queue("textures/collage.jpg")
+        ->queue("textures/box3.png")
+		->queue("effects/Texture.effect")
 		//->queue("effects/Red.effect")
 		->queue("effects/Basic.effect");
 
@@ -130,8 +135,8 @@ int main(int argc, char** argv)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("textures/collage.jpg")),
-			assets->effect("basic")
+				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
+			assets->effect("texture")
 		));
 
 		group->addChild(mesh);

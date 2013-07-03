@@ -1,12 +1,8 @@
 *.sublime-workspace
 *.sublime-project
 Makefile
-framework/bin
-framework/obj
-examples/bin
-examples/obj
-plugins/jpeg/bin
-plugins/jpeg/obj
+bin
+obj
 *.opensdf
 *.sdf
 *.sln
