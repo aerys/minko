@@ -123,50 +123,63 @@ package aerys.minko.type
 			return _callbacks && _callbacks.indexOf(callback) >= 0;
 		}
 		
-		public function execute(...p) : void
+		public function execute(p0:* = undefined, p1:* = undefined, p2:* = undefined, p3:* = undefined, p4:* = undefined, p5:* = undefined, p6:* = undefined, p7:* = undefined, p8:* = undefined, p9:* = undefined) : void
 		{
+            var i:uint;
 			if (_numCallbacks && _enabled)
 			{
-				_executed = true;
-				for (var i : uint = 0; i < _numCallbacks; ++i)
+                _executed = true;
                 {
-                    switch (p.length)
-                    {
-    					case 0:
-                            _callbacks[i]();
-                            break ;
-                        case 1:
-                            _callbacks[i](p[0]);
-                            break ;
-                        case 2:
-                            _callbacks[i](p[0], p[1]);
-                            break ;
-                        case 3:
-                            _callbacks[i](p[0], p[1], p[2]);
-                            break ;
-                        case 4:
-                            _callbacks[i](p[0], p[1], p[2], p[3]);
-                            break ;
-                        case 5:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4]);
-                            break ;
-                        case 6:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5]);
-                            break ;
-                        case 7:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6]);
-                            break ;
-                        case 8:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
-                            break ;
-                        case 9:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]);
-                            break ;
-                        case 10:
-                            _callbacks[i](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
-                            break ;
+                    if (p5 === undefined) {
+                        if (p2 === undefined) {
+                            if (p1 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1);
+                            } else if (p0 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0);
+                            } else {
+                            //if (p0 === undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i]();
+                            }
+                        } else {
+                            if (p4 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4);
+                            } else if (p3 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3);
+                            } else {
+//                            if (p2 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2);
+                            }
+                        }
+                    } else {
+                        if (p7 === undefined) {
+                            if (p6 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4, p5, p6);
+                            } else if (p5 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4, p5);
+                            } else {
+//                                if (p7 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4, p5, p6, p7);
+                            }
+                            
+                        } else {
+                            if (p9 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+                            } else if (p8 !== undefined) {
+                                for (i = 0; i < _numCallbacks; ++i)
+                                    _callbacks[i](p0, p1, p2, p3, p4, p5, p6, p7, p8);
+                            }
+                        }
                     }
-//                   _callbacks[i].apply(null, params);
                 }
 				_executed = false;
 				
