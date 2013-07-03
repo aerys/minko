@@ -10,6 +10,7 @@ project "minko-examples"
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
     "src",
+	"lib/glfw/include",
     "../framework/src",
 	"../plugins/jpeg/src",
 	"../plugins/devil/src"
@@ -27,23 +28,23 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "glut", "m" }
+    links { "GL", "GLU", "GLEW", "m" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
-    links { "freeglut", "glew32", "DevIL", "ILU", "ILUT" }
+    links { "OpenGL32", "glfw3", "glew32", "DevIL", "ILU", "ILUT" }
     libdirs {
-		"../framework/lib/gl/bin/win32",
+		"lib/glfw/bin/win32",
+		"../framework/lib/glew/bin/win32",
 		"../plugins/devil/lib/il/bin/win32"
 	}
-    includedirs { "../framework/lib/gl/include" }
 
   -- macos
   configuration { "debug", "macosx" }
     buildoptions { "-std=c++11", "-stdlib=libc++" }
     linkoptions { "-std=c++11", "-stdlib=libc++" }
     libdirs { "/opt/local/lib/" }
-    links { "GL", "GLU", "glut", "m" }
+    links { "GL", "GLU", "GLEW", "m" }
     includedirs { "/opt/local/include/" }
