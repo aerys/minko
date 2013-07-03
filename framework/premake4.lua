@@ -23,13 +23,13 @@ project "minko-framework"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "glut" }
+    links { "GL", "GLU" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
-    includedirs { "lib/gl/include" }
+    includedirs { "lib/glew/include" }
 
   -- macos
   configuration { "macosx" }

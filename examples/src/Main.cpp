@@ -4,7 +4,7 @@
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoDevIL.hpp"
 
-#include "GL/glut.h"
+#include "GLFW/glfw3.h"
 
 #define FRAMERATE 60
 
@@ -31,25 +31,6 @@ printFramerate(const unsigned int delay = 1)
 		start = time;
 		numFrames = 0;
 	}
-}
-
-void
-renderScene()
-{
-	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
-
-	renderingController->render();
-
-	printFramerate();
-	
-	glutSwapBuffers();
-	glutPostRedisplay();
-}
-
-void timerFunc(int)
-{
-	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	glutPostRedisplay();
 }
 
 /*void screenshotFunc(int)
@@ -83,16 +64,9 @@ void timerFunc(int)
 
 int main(int argc, char** argv)
 {
-	// glut/glew init
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 600);
-	glutCreateWindow("Minko Examples");
-
-#ifdef _WIN32
-	glewInit();
-#endif
-	// !glut/glew init
+    glfwInit();
+    auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
+    glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
 
@@ -158,8 +132,21 @@ int main(int argc, char** argv)
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
 
-	glutDisplayFunc(renderScene);
-	glutMainLoop();
+	while(!glfwWindowShouldClose(window))
+    {
+        mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
 
-	return 0;
+	    renderingController->render();
+
+	    printFramerate();
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(window);
+ 
+    glfwTerminate();
+
+    exit(EXIT_SUCCESS);
 }
