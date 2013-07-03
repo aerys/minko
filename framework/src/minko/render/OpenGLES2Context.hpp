@@ -19,17 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
-# include <GL/glut.h>
-#elif _WIN32
-# include "GL/glew.h"
-//# include "GL/glut.h"
-#include "GL/gl.h"
-#else
-# include <GL/glut.h>
-#endif
-
 #include "minko/Common.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"

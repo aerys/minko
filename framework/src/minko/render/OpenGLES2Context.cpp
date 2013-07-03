@@ -19,6 +19,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "OpenGLES2Context.hpp"
 
+#define GL_GLEXT_PROTOTYPES
+#ifdef __APPLE__
+# include <GL/glut.h>
+#elif _WIN32
+# include "GL/glew.h"
+#else
+# include <GL/glut.h>
+#endif
+
 using namespace minko::render;
 
 OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
@@ -51,6 +60,10 @@ OpenGLES2Context::initializeBlendFactorsMap()
 
 OpenGLES2Context::OpenGLES2Context()
 {
+#ifdef _WIN32
+    glewInit();
+#endif
+
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 }
