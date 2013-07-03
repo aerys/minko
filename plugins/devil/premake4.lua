@@ -1,16 +1,14 @@
--- A project defines one build target
-project "minko-framework"
+project "minko-devil"
   kind "StaticLib"
   language "C++"
   files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
-    "src",
-    "lib/jsoncpp/src"
+	"src",
+	"../../framework/src",
+	"lib/il/include"
   }
-  defines {
-    "JSON_IS_AMALGAMATION"
-  }
-  
+  links { "minko-framework" }
+
   configuration { "debug"}
     defines { "DEBUG" }
     flags { "Symbols" }
@@ -23,16 +21,14 @@ project "minko-framework"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "glut" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
-    includedirs { "lib/gl/include" }
 
   -- macos
-  configuration { "macosx" }
+  configuration { "debug", "macosx" }
     buildoptions { "-std=c++11", "-stdlib=libc++" }
     linkoptions { "-std=c++11", "-stdlib=libc++" }
     libdirs { "/opt/local/lib/" }

@@ -9,6 +9,7 @@ include 'framework'
 
 -- plugins
 include 'plugins/jpeg'
+include 'plugins/devil'
 
 newaction {
 	trigger = "copyDLLs",
@@ -17,7 +18,7 @@ newaction {
 	  os.mkdir(project(1).basedir .. "/bin/release")
 	  os.mkdir(project(1).basedir .. "/bin/debug")
 
-	  for _, file in ipairs(os.matchfiles(project(2).basedir .. "/lib/gl/win32/bin/*.dll")) do
+	  for _, file in ipairs(os.matchfiles("**.dll")) do
 		os.copyfile(
 			file,
 			project(1).basedir .. "/bin/release/" .. path.getname(file)
