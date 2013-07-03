@@ -24,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glut.h>
 #elif _WIN32
 # include "GL/glew.h"
-# include "GL/glut.h"
+//# include "GL/glut.h"
+#include "GL/gl.h"
 #else
 # include <GL/glut.h>
 #endif

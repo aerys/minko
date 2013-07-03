@@ -4,13 +4,15 @@ project "minko-examples"
   language "C++"
   links {
 	"minko-jpeg",
+	"minko-devil",
 	"minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
     "src",
     "../framework/src",
-	"../plugins/jpeg/src"
+	"../plugins/jpeg/src",
+	"../plugins/devil/src"
   }
 
   configuration { "debug"}
@@ -31,9 +33,12 @@ project "minko-examples"
 
   -- windows
   configuration { "windows", "x32" }
-    links { "freeglut", "glew32" }
-    libdirs { "../framework/lib/gl/win32/bin" }
-    includedirs { "../framework/lib/gl/win32/includes" }
+    links { "freeglut", "glew32", "DevIL", "ILU", "ILUT" }
+    libdirs {
+		"../framework/lib/gl/bin/win32",
+		"../plugins/devil/lib/il/bin/win32"
+	}
+    includedirs { "../framework/lib/gl/include" }
 
   -- macos
   configuration { "debug", "macosx" }
