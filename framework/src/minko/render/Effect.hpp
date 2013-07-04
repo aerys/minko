@@ -33,17 +33,17 @@ namespace minko
 			typedef std::shared_ptr<Effect>	Ptr;
 
 		private:
-			typedef std::shared_ptr<GLSLProgram>		GLSLProgramPtr;
+			typedef std::shared_ptr<resource::Program>		ProgramPtr;
 
 		private:
-			std::vector<GLSLProgramPtr>						_shaders;
+			std::vector<ProgramPtr>							_shaders;
 			std::shared_ptr<data::Provider>					_data;
 			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
 
 		public:
 			inline static
 			Ptr
-			create(std::vector<GLSLProgramPtr> shaders)
+			create(std::vector<ProgramPtr> shaders)
 			{
 				return std::shared_ptr<Effect>(new Effect(shaders));
 			}
@@ -56,7 +56,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<GLSLProgramPtr>&
+			const std::vector<ProgramPtr>&
 			shaders()
 			{
 				return _shaders;
@@ -73,7 +73,7 @@ namespace minko
 			bindInput(const std::string& bindingName, const std::string& programInputName);
 
 		private:
-			Effect(std::vector<GLSLProgramPtr> shaders);
+			Effect(std::vector<ProgramPtr> shaders);
 
 			void
 			propertyChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName);
