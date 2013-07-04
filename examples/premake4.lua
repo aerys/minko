@@ -30,7 +30,7 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "glfw3", "m" }
+    links { "GL", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
@@ -46,6 +46,6 @@ project "minko-examples"
   configuration { "debug", "macosx" }
     buildoptions { "-std=c++11", "-stdlib=libc++" }
     linkoptions { "-std=c++11", "-stdlib=libc++" }
-    links { "GL", "glfw3", "m" }
+    links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
     libdirs { "/opt/local/lib/" }
     includedirs { "/opt/local/include/" }
