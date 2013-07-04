@@ -121,7 +121,7 @@ namespace minko
 			virtual
 			void
 			setTextureAt(const unsigned int	position,
-						 const int			texture		= -1,
+						 const int			texture		= 0,
 						 const int			location	= -1) = 0;
 
 			virtual
