@@ -48,6 +48,14 @@ namespace minko
 			std::list<unsigned int> _vertexShaders;
 			std::list<unsigned int> _fragmentShaders;
 
+			int						_currentIndexBuffer;
+			std::vector<int>		_currentVertexBuffer;
+			std::vector<int>		_currentVertexSize;
+			std::vector<int>		_currentVertexStride;
+			std::vector<int>		_currentVertexOffset;
+			std::vector<int>		_currentTexture;
+			int						_currentProgram;
+
 		public:
 			~OpenGLES2Context();
 
@@ -126,7 +134,7 @@ namespace minko
 
 			void
 			setTextureAt(const unsigned int	position,
-						 const int			texture		= -1,
+						 const int			texture		= 0,
 						 const int			location	= -1);
 
 			const unsigned int
