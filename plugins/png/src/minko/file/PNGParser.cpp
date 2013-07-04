@@ -17,27 +17,29 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DevILPNGParser.hpp"
+#include "PNGParser.hpp"
 
-#include "minko/resource/Texture.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/resource/Texture.hpp"
 
-#include "il.h"
+#include "lodepng.h"
 
 using namespace minko::file;
 
 void
-DevILPNGParser::parse(const std::string&		filename,
-				      std::shared_ptr<Options>	options,
-				      const std::vector<char>&	data)
+PNGParser::parse(const std::string&					filename,
+				 std::shared_ptr<Options>			options,
+				 const std::vector<unsigned char>&	data)
 {
-    ilInit();
-    ilLoadL(IL_PNG, &data[0], data.size());
-    ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+	std::vector<unsigned char> out;
+	unsigned int width;
+	unsigned int height;
 
-    _texture = resource::Texture::create(
-        options->context(), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT)
-    );
-    _texture->data(ilGetData());
-    _texture->upload();
+	lodepng::decode(out, width, height, &data[0], data.size());
+
+	_texture = resource::Texture::create(options->context(), width, height);
+	_texture->data(&out[0]);
+	_texture->upload();
 }
+
+

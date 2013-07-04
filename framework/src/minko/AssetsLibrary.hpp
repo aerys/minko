@@ -47,7 +47,7 @@ namespace minko
 		std::unordered_map<std::string, GeometryPtr>					_geometries;
 		std::unordered_map<std::string, EffectPtr>						_effects;
 		std::unordered_map<std::string, TexturePtr>						_textures;
-		std::unordered_map<std::string, std::vector<char>>				_blobs;
+		std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
 
 		std::list<std::string>											_filesQueue;
 		std::unordered_map<std::string, std::shared_ptr<file::Loader>>	_filenameToLoader;
@@ -103,11 +103,11 @@ namespace minko
 		Ptr
 		effect(const std::string& name, EffectPtr effect);
 
-		const std::vector<char>&
+		const std::vector<unsigned char>&
 		blob(const std::string& name);
 
 		Ptr
-		blob(const std::string& name, const std::vector<char>& blob);
+		blob(const std::string& name, const std::vector<unsigned char>& blob);
 
 		template <typename T>
 		typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type

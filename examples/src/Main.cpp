@@ -2,7 +2,7 @@
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
-#include "minko/MinkoDevIL.hpp"
+#include "minko/MinkoPNG.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
-        ->registerParser<file::DevILPNGParser>("png")
+		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("textures/collage.jpg")
