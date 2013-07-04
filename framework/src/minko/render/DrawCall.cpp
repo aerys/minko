@@ -75,7 +75,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			if (!_data->hasProperty(name))
 				continue;
 
-			if (type == ShaderProgramInputs::attribute)
+			if (type == ProgramInputs::attribute)
 			{
 				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
@@ -94,7 +94,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::float1)
+			else if (type == ProgramInputs::Type::float1)
 			{
 				auto floatValue = _data->get<float>(name);
 
@@ -103,7 +103,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					context->setUniform(location, floatValue);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::float2)
+			else if (type == ProgramInputs::Type::float2)
 			{
 				auto float2Value	= _data->get<std::shared_ptr<Vector2>>(name);
 				auto x				= float2Value->x();
@@ -114,7 +114,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					context->setUniform(location, x, y);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::float3)
+			else if (type == ProgramInputs::Type::float3)
 			{
 				auto float3Value	= _data->get<std::shared_ptr<Vector3>>(name);
 				auto x				= float3Value->x();
@@ -126,7 +126,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					context->setUniform(location, x, y, z);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::float4)
+			else if (type == ProgramInputs::Type::float4)
 			{
 				auto float4Value	= _data->get<std::shared_ptr<Vector4>>(name);
 				auto x				= float4Value->x();
@@ -139,7 +139,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					context->setUniform(location, x, y, z, w);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::float16)
+			else if (type == ProgramInputs::Type::float16)
 			{
 				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
 
@@ -148,7 +148,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
 				});
 			}
-			else if (type == ShaderProgramInputs::Type::sampler2d)
+			else if (type == ProgramInputs::Type::sampler2d)
 			{
 				auto texture = _data->get<Texture::Ptr>(name)->id();
 

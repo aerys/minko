@@ -25,11 +25,10 @@ namespace minko
 {
 	namespace render
 	{
-		class ShaderProgramInputs :
-			public std::enable_shared_from_this<ShaderProgramInputs>
+		class ProgramInputs
 		{
 		public:
-			typedef std::shared_ptr<ShaderProgramInputs>	Ptr;
+			typedef std::shared_ptr<ProgramInputs>	Ptr;
 
 			enum Type
 			{
@@ -57,7 +56,7 @@ namespace minko
 				   std::vector<Type> 				types,
 				   std::vector<unsigned int> 		locations)
 			{
-				return std::shared_ptr<ShaderProgramInputs>(new ShaderProgramInputs(
+				return std::shared_ptr<ProgramInputs>(new ProgramInputs(
 					context,
 					program,
 					names,
@@ -129,12 +128,11 @@ namespace minko
 			std::vector<unsigned int>			_locations;
 
 		private:
-			ShaderProgramInputs(std::shared_ptr<AbstractContext>	context,
+			ProgramInputs(std::shared_ptr<AbstractContext>	context,
 								const unsigned int 					program,
 								std::vector<std::string> 			names,
 						 		std::vector<Type> 					types,
 						 		std::vector<unsigned int> 			locations) :
-				std::enable_shared_from_this<ShaderProgramInputs>(),
 				_context(context),
 				_program(program),
 				_names(names),
