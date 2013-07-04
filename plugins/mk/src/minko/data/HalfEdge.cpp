@@ -58,7 +58,7 @@ HalfEdge::getThirdVertex()
 	return 0;
 }
 
-void 
+void
 HalfEdge::setFace(HalfEdgePtr he1,
 				  HalfEdgePtr he2,
 				  HalfEdgePtr he3)
@@ -79,7 +79,7 @@ namespace minko
 			flux << "  triangle : " << halfEdge.face()[0]->startNodeId() << ", " << halfEdge.face()[1]->startNodeId() << ", " << halfEdge.face()[2]->startNodeId() << std::endl;
 			flux <<	"  next     : " << halfEdge.next()->startNodeId() << " - " << halfEdge.next()->endNodeId() << std::endl;
 			flux <<	"  prec     : " << halfEdge.prec()->startNodeId() << " - " << halfEdge.prec()->endNodeId() << std::endl;
-			if (halfEdge.adjacent() != NULL)
+			if (halfEdge.adjacent() != nullptr)
 				flux << "  adjacent : " << halfEdge.adjacent()->startNodeId() << " - " << halfEdge.adjacent()->endNodeId() << std::endl;
 
 			return flux;
