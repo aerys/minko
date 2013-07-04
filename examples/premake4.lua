@@ -3,21 +3,19 @@ project "minko-examples"
   kind "ConsoleApp"
   language "C++"
   links {
-	"minko-jpeg",
-	"minko-png",
-	"minko-bullet",
-	"minko-framework"
-	--"minko-mk"
+  "minko-jpeg",
+  "minko-png",
+  "minko-mk",
+  "minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
     "src",
-	"lib/glfw/include",
+  "lib/glfw/include",
     "../framework/src",
-	"../plugins/jpeg/src",
-	"../plugins/png/src",
-	"../plugins/bullet/src"
-    --"../plugins/mk/src"
+    "../plugins/jpeg/src",
+    "../plugins/png/src",
+    "../plugins/mk/src"
   }
 
   configuration { "debug"}
