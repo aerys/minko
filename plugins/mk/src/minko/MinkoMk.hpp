@@ -4,17 +4,6 @@
 #include "minko/data/HalfEdge.hpp"
 #include "minko/data/HalfEdgeCollection.hpp"
 
-namespace minko
-{
-	namespace data
-	{
-		class HalfEdge;
-		class HalfEdgeCollection;
-	}
-
-	class Qark;
-}
-
 class MinkoMk
 {
 public:
