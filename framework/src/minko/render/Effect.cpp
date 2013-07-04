@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::render;
 using namespace minko::data;
 
-Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
+Effect::Effect(std::vector<Effect::ProgramPtr> shaders) :
 	std::enable_shared_from_this<Effect>(),
 	_shaders(shaders),
 	_data(Provider::create())
@@ -31,7 +31,7 @@ Effect::Effect(std::vector<Effect::GLSLProgramPtr> shaders) :
 	auto i = 0;
 
 	for (auto shader : shaders)
-		_data->set<Effect::GLSLProgramPtr>("effect/pass" + std::to_string(i++), shader);
+		_data->set<Effect::ProgramPtr>("effect/pass" + std::to_string(i++), shader);
 }
 
 void
