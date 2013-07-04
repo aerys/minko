@@ -7,6 +7,7 @@ project "minko-examples"
 	"minko-png",
 	"minko-bullet",
 	"minko-framework"
+	"minko-mk"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
@@ -16,6 +17,7 @@ project "minko-examples"
 	"../plugins/jpeg/src",
 	"../plugins/png/src",
 	"../plugins/bullet/src"
+    "../plugins/mk/src"
   }
 
   configuration { "debug"}
@@ -30,17 +32,17 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "m", "glfw" }
+    links { "GL", "GLU", "GLEW", "m" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
     links { "OpenGL32", "glfw3dll", "glew32" }
-	libdirs {
-		"lib/glfw/bin/win32",
-		"../framework/lib/glew/bin/win32"
-	}
+  libdirs {
+    "lib/glfw/bin/win32",
+    "../framework/lib/glew/bin/win32"
+  }
 
   -- macos
   configuration { "debug", "macosx" }
