@@ -52,6 +52,7 @@ namespace minko
 				return _id;
 			}
 
+			virtual
 			void
 			dispose()
 			{
