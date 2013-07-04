@@ -523,23 +523,23 @@ OpenGLES2Context::deleteFragmentShader(const unsigned int fragmentShader)
 	glDeleteShader(fragmentShader);
 }
 
-std::shared_ptr<ShaderProgramInputs>
+std::shared_ptr<ProgramInputs>
 OpenGLES2Context::getProgramInputs(const unsigned int program)
 {
 	std::vector<std::string> names;
-	std::vector<ShaderProgramInputs::Type> types;
+	std::vector<ProgramInputs::Type> types;
 	std::vector<unsigned int> locations;
 
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
-	return ShaderProgramInputs::create(shared_from_this(), program, names, types, locations);
+	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
 
 void
 OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 								   std::vector<std::string>&				names,
-								   std::vector<ShaderProgramInputs::Type>&	types,
+								   std::vector<ProgramInputs::Type>&	types,
 								   std::vector<unsigned int>&				locations)
 {
 	int total = -1;
@@ -560,42 +560,42 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 
 	    name[nameLength] = 0;
 
-	    ShaderProgramInputs::Type inputType = ShaderProgramInputs::Type::unknown;
+	    ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
 
 	    switch (type)
 	    {
 	    	case GL_FLOAT:
-	    		inputType = ShaderProgramInputs::Type::float1;
+	    		inputType = ProgramInputs::Type::float1;
 	    		break;
 	    	case GL_INT:
-	    		inputType = ShaderProgramInputs::Type::int1;
+	    		inputType = ProgramInputs::Type::int1;
 	    		break;
 	    	case GL_FLOAT_VEC2:
-	    		inputType = ShaderProgramInputs::Type::float2;
+	    		inputType = ProgramInputs::Type::float2;
 	    		break;
 	    	case GL_INT_VEC2:
-	    		inputType = ShaderProgramInputs::Type::int2;
+	    		inputType = ProgramInputs::Type::int2;
 		    	break;
 	    	case GL_FLOAT_VEC3:
-	    		inputType = ShaderProgramInputs::Type::float3;
+	    		inputType = ProgramInputs::Type::float3;
 	    		break;
 	    	case GL_INT_VEC3:
-	    		inputType = ShaderProgramInputs::Type::int3;
+	    		inputType = ProgramInputs::Type::int3;
 	    		break;
 	    	case GL_FLOAT_VEC4:
-	    		inputType = ShaderProgramInputs::Type::float4;
+	    		inputType = ProgramInputs::Type::float4;
 	    		break;
 	    	case GL_INT_VEC4:
-	    		inputType = ShaderProgramInputs::Type::int4;
+	    		inputType = ProgramInputs::Type::int4;
 	    		break;
 	    	case GL_FLOAT_MAT3:
-	    		inputType = ShaderProgramInputs::Type::float9;
+	    		inputType = ProgramInputs::Type::float9;
 		    	break;
 	    	case GL_FLOAT_MAT4:
-	    		inputType = ShaderProgramInputs::Type::float16;
+	    		inputType = ProgramInputs::Type::float16;
 	    		break;
 			case GL_SAMPLER_2D:
-				inputType = ShaderProgramInputs::Type::sampler2d;
+				inputType = ProgramInputs::Type::sampler2d;
 				break;
 			default:
 				throw std::logic_error("unsupported type");
@@ -603,7 +603,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 
 	    int location = glGetUniformLocation(program, &name[0]);
 
-	    if (location >= 0 && type != ShaderProgramInputs::Type::unknown)
+	    if (location >= 0 && type != ProgramInputs::Type::unknown)
 	    {
 		    names.push_back(std::string(&name[0], nameLength));
 		    types.push_back(inputType);
@@ -615,7 +615,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 void
 OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
 									 std::vector<std::string>&					names,
-								     std::vector<ShaderProgramInputs::Type>&	types,
+								     std::vector<ProgramInputs::Type>&	types,
 								     std::vector<unsigned int>&					locations)
 {
 	int total = -1;
@@ -636,7 +636,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
 	
 	    name[nameLength] = 0;
 
-	    ShaderProgramInputs::Type inputType = ShaderProgramInputs::Type::attribute;
+	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
 
 		int location = glGetAttribLocation(program, &name[0]);
 
