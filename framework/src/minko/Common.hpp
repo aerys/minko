@@ -50,7 +50,7 @@ namespace minko
 		class DrawCall;
 
 		class Effect;
-		class ShaderProgramInputs;
+		class ProgramInputs;
 	}
 
 	namespace resource
