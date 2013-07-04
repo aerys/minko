@@ -1,7 +1,7 @@
 #pragma once
 
 #include "minko/MkCommon.hpp"
-#include "minko/parser/mk/type/HalfEdge.hpp"
+#include "minko/mk/type/HalfEdge.hpp"
 
 namespace minko
 {
@@ -31,25 +31,27 @@ namespace minko
 			class HalfEdgeCollection 
 			{
 			private:
-				typedef std::pair<unsigned short, unsigned short>	PairOfShort;
-				typedef std::shared_ptr<HalfEdge>					HalfEdgePtr;
+				typedef std::pair<unsigned short, unsigned short>								PairOfShort;
+				typedef std::shared_ptr<HalfEdge>												HalfEdgePtr;
+				typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>	HalfEdgeMap;
+				typedef std::list<HalfEdgePtr>													HalfEdgeList;
 
 			private :
 				std::shared_ptr<minko::resource::IndexStream>	_indexStream;
-				std::list<HalfEdgePtr>							_subMeshesList;
+				std::list<HalfEdgeList>							_subMeshesList;
 
 			public:
 				HalfEdgeCollection (std::shared_ptr<minko::resource::IndexStream> indexStream);
 				~HalfEdgeCollection ();
 
-				inline std::list<HalfEdgePtr> subMeshesList() const
+				inline std::list<HalfEdgeList> subMeshesList() const
 				{
 					return _subMeshesList;
 				};
 
 			private:
 				void initialize();
-				void computeList();
+				void computeList(std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer> unmarked);
 			};
 		}
 	}
