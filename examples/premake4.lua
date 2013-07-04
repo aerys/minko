@@ -30,7 +30,7 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "GLU", "m" }
+    links { "GL", "GLU", "m", "glfw" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
