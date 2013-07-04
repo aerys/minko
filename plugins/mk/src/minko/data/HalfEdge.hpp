@@ -33,9 +33,9 @@ namespace minko
 
 		public:
 			inline static
-				HalfEdgePtr	create(unsigned int startNodeId,
-				unsigned int endNodeId,
-				unsigned int edgeId)
+			HalfEdgePtr	create(unsigned int startNodeId,
+							   unsigned int endNodeId,
+							   unsigned int edgeId)
 			{
 				auto he = std::shared_ptr<HalfEdge>(new HalfEdge(startNodeId, endNodeId, edgeId));
 
@@ -193,7 +193,6 @@ namespace minko
 				return _firstReverseFace;
 			}
 		};
-
 
 		// debug
 
