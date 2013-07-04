@@ -33,13 +33,14 @@ namespace minko
 		public:
 			typedef std::shared_ptr<VertexStream>								Ptr;
 			typedef const std::tuple<std::string, unsigned int, unsigned int>	Attribute;
+			typedef std::shared_ptr<Attribute>									AttributePtr;
 
 		private:
 			typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
 
 		private:
 			std::vector<float>		_data;
-			std::list<Attribute>	_attributes;
+			std::list<AttributePtr>	_attributes;
 
 		public:
 			inline static
@@ -52,9 +53,9 @@ namespace minko
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext>	context,
-					float*									data,
-					const unsigned int						size,
-					const unsigned int						offset = 0)
+				   float*									data,
+				   const unsigned int						size,
+				   const unsigned int						offset = 0)
 			{
 				return std::shared_ptr<VertexStream>(new VertexStream(
 					context, data, offset, size
@@ -97,7 +98,7 @@ namespace minko
 			}
 
 			inline
-			const std::list<Attribute>&
+			const std::list<AttributePtr>&
 			attributes()
 			{
 				return _attributes;
@@ -110,12 +111,14 @@ namespace minko
 			dispose();
 
 			void
-			addAttribute(Attribute attribute);
+			addAttribute(const std::string& name,
+						 const unsigned int	size,
+						 const unsigned int offset);
 
 			bool
 			hasAttribute(const std::string& attributeName);
 
-			const Attribute&
+			AttributePtr
 			attribute(const std::string& attributeName);
 
 		private:

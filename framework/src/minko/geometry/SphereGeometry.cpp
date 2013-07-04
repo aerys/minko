@@ -95,9 +95,9 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 
 	auto stream = VertexStream::create(context, data);
 
-	stream->addAttribute(VertexStream::Attribute("position", 3, 0));
-	stream->addAttribute(VertexStream::Attribute("uv", 2, 3));
-	stream->addAttribute(VertexStream::Attribute("normal", 3, 5));
+	stream->addAttribute("position", 3, 0);
+	stream->addAttribute("uv", 2, 3);
+	stream->addAttribute("normal", 3, 5);
 
 	addVertexStream(stream);
 }
