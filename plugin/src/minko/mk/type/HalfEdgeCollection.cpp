@@ -7,7 +7,6 @@ HalfEdgeCollection::HalfEdgeCollection(std::shared_ptr<minko::resource::IndexStr
 	_indexStream = indexStream;
 
 	initialize();
-	computeList();
 }
 
 HalfEdgeCollection::~HalfEdgeCollection()
@@ -20,7 +19,7 @@ HalfEdgeCollection::initialize()
 	unsigned int					id		= 0;
 	std::vector<unsigned short>		data	= _indexStream->data();
 
-	std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer> map;
+	HalfEdgeMap map;
 
 	for (unsigned int i = 0; i < data.size(); i += 3)
 	{
@@ -45,7 +44,7 @@ HalfEdgeCollection::initialize()
 		map[std::make_pair(t2, t3)] = he2;
 		map[std::make_pair(t3, t1)] = he3;
 		
-		std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator adjacents [3] = {
+		HalfEdgeMap::iterator adjacents [3] = {
 			map.find(std::make_pair(t2, t1)),
 			map.find(std::make_pair(t3, t2)),
 			map.find(std::make_pair(t1, t3))};
@@ -60,53 +59,56 @@ HalfEdgeCollection::initialize()
 		}
 	}
 
-	std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer> unmarked(map.begin(), map.end());
-	std::queue<HalfEdgePtr> queue;
-
-	while (map.begin() != map.end())
-	{
-		queue.push(map.begin()->second);
-		_subMeshesList.push_front(queue.front());
-
-		do
-		{
-			HalfEdgePtr he = queue.front();
-			queue.pop();
-		
-			std::cout << "pouet" << std::endl;
-
-			if (he->adjacent() != NULL && he->adjacent()->marked() == false)
-			{
-				std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator adjIt = unmarked.find(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
-				unmarked.erase(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
-				he->adjacent()->marked(false);
-				queue.push(he->adjacent());
-			}
-
-			std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator neighbors [2] = {
-				unmarked.find(std::make_pair(he->next()->startNodeId(), he->next()->endNodeId())),
-				unmarked.find(std::make_pair(he->prec()->startNodeId(), he->prec()->endNodeId()))};
-
-			for (int edgeId = 0; edgeId < 2; ++edgeId)
-			{
-				if (neighbors[edgeId]->second->marked() == false)
-				{
-					unmarked.erase(std::make_pair(neighbors[edgeId]->second->startNodeId(), neighbors[edgeId]->second->endNodeId()));
-					neighbors[edgeId]->second->marked(false);
-					queue.push(neighbors[edgeId]->second);
-				}
-			}
-		} while (queue.size() > 0);
-	}
-
-	for (std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>::iterator it = map.begin(); it != map.end(); it++)
+	for (HalfEdgeMap::iterator it = map.begin(); it != map.end(); it++)
 	{
 		std::cout << it->first.first << "  " << it->first.second << std::endl;
 		std::cout << it->second << std::endl;
 	}
+
+	HalfEdgeMap unmarked(map.begin(), map.end());
+	computeList(unmarked);
 }
 
 void
-HalfEdgeCollection::computeList()
+HalfEdgeCollection::computeList(HalfEdgeMap unmarked)
 {
+	std::queue<HalfEdgePtr> queue;
+
+	while (unmarked.begin() != unmarked.end())
+	{
+		HalfEdgeList currentList;
+		_subMeshesList.push_back(currentList);
+		queue.push(unmarked.begin()->second);
+		
+		do
+		{
+			HalfEdgePtr he = queue.front();
+			queue.pop();
+			currentList.push_back(he);
+
+			he->marked(true);		
+			unmarked.erase(std::make_pair(he->startNodeId(), he->endNodeId()));
+
+			if (he->adjacent() != nullptr && he->adjacent()->marked() == false)
+			{
+				HalfEdgeMap::iterator adjIt = unmarked.find(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
+				unmarked.erase(std::make_pair(he->adjacent()->startNodeId(), he->adjacent()->endNodeId()));
+				queue.push(he->adjacent());
+			}
+			if (he->next() != nullptr && he->next()->marked() == false)
+			{
+				HalfEdgeMap::iterator adjIt = unmarked.find(std::make_pair(he->next()->startNodeId(), he->next()->endNodeId()));
+				unmarked.erase(std::make_pair(he->next()->startNodeId(), he->next()->endNodeId()));
+				queue.push(he->next());
+			}
+			if (he->prec() != nullptr && he->prec()->marked() == false)
+			{
+				HalfEdgeMap::iterator adjIt = unmarked.find(std::make_pair(he->prec()->startNodeId(), he->prec()->endNodeId()));
+				unmarked.erase(std::make_pair(he->prec()->startNodeId(), he->prec()->endNodeId()));
+				queue.push(he->prec());
+			}
+		} while (queue.size() > 0);
+	}
+
+	std::cout << "Submeshes : " << _subMeshesList.size() << std::endl;
 }
