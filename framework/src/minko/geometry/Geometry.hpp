@@ -77,10 +77,10 @@ namespace minko
 			void
 			addVertexStream(std::shared_ptr<resource::VertexStream> vertexStream)
 			{
-				for (auto& attribute : vertexStream->attributes())
+				for (auto attribute : vertexStream->attributes())
 				{
-					_data->set("geometry/vertex/attribute/" + std::get<0>(attribute), vertexStream);
-					_vertexSize += std::get<1>(attribute);
+					_data->set("geometry/vertex/attribute/" + std::get<0>(*attribute), vertexStream);
+					_vertexSize += std::get<1>(*attribute);
 				}
 
 				_data->set("geometry/vertex/size", _vertexSize);
