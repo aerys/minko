@@ -17,31 +17,43 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "GLSLProgram.hpp"
+#include "Program.hpp"
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko::render;
+using namespace minko::resource;
 
-GLSLProgram::GLSLProgram(GLSLProgram::AbstractContextPtr	context,
-						 const std::string& 				vertexShaderSource,
-						 const std::string &				fragmentShaderSource) :
-	std::enable_shared_from_this<GLSLProgram>(),
-	_context(context),
-	_program(context->createProgram()),
-	_vertexShader(context->createVertexShader()),
-	_fragmentShader(context->createFragmentShader()),
+Program::Program(Program::AbstractContextPtr	context,
+				 const std::string& 			vertexShaderSource,
+				 const std::string &			fragmentShaderSource) :
+	AbstractResource(context),	
 	_vertexShaderSource(vertexShaderSource),
 	_fragmentShaderSource(fragmentShaderSource)
 {
-	_context->setShaderSource(_vertexShader, vertexShaderSource);
+}
+
+void
+Program::upload()
+{
+	_vertexShader = context()->createVertexShader();
+	_context->setShaderSource(_vertexShader, _vertexShaderSource);
 	_context->compileShader(_vertexShader);
 
-	_context->setShaderSource(_fragmentShader, fragmentShaderSource);
+	_fragmentShader = context()->createFragmentShader();
+	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
 	_context->compileShader(_fragmentShader);
 
-	_context->attachShader(_program, _vertexShader);
-	_context->attachShader(_program, _fragmentShader);
-	_context->linkProgram(_program);
+	_id = context()->createProgram();
+	_context->attachShader(_id, _vertexShader);
+	_context->attachShader(_id, _fragmentShader);
+	_context->linkProgram(_id);
 
-	_inputs = _context->getProgramInputs(_program);
+	_inputs = _context->getProgramInputs(_id);
+}
+
+void
+Program::dispose()
+{
+	_context->deleteVertexShader(_vertexShader);
+	_context->deleteFragmentShader(_fragmentShader);
+	_context->deleteProgram(_id);
 }

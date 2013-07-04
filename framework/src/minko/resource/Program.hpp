@@ -20,27 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
+#include "minko/resource/AbstractResource.hpp"
 #include "minko/render/ShaderProgramInputs.hpp"
 
 namespace minko
 {
-	namespace render
+	namespace resource
 	{
-		class GLSLProgram :
-			public std::enable_shared_from_this<GLSLProgram>
+		class Program :
+			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<GLSLProgram>	Ptr;
+			typedef std::shared_ptr<Program>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<ShaderProgramInputs>	ShaderProgramInputsPtr;
+			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
+			typedef std::shared_ptr<render::ShaderProgramInputs>	ShaderProgramInputsPtr;
 
 		private:
-			AbstractContextPtr		_context;
-			const unsigned int		_program;
-			const unsigned int		_vertexShader;
-			const unsigned int		_fragmentShader;
+			unsigned int			_vertexShader;
+			unsigned int			_fragmentShader;
 			const std::string 		_vertexShaderSource;
 			const std::string		_fragmentShaderSource;
 			ShaderProgramInputsPtr	_inputs;
@@ -52,18 +52,11 @@ namespace minko
 				   const std::string& 	vertexShaderSource,
 				   const std::string& 	fragmentShaderSource)
 			{
-				return std::shared_ptr<GLSLProgram>(new GLSLProgram(
+				return std::shared_ptr<Program>(new Program(
 					context,
 					vertexShaderSource,
 					fragmentShaderSource
 				));
-			}
-
-			inline
-			const unsigned int
-			program()
-			{
-				return _program;
 			}
 
 			inline
@@ -87,10 +80,16 @@ namespace minko
 				return _inputs;
 			}
 
+			void
+			upload();
+
+			void
+			dispose();
+
 		private:
-			GLSLProgram(AbstractContextPtr context,
-					    const std::string& vertexShaderSource,
-					    const std::string& fragmentShaderSource);
+			Program(AbstractContextPtr context,
+					const std::string& vertexShaderSource,
+					const std::string& fragmentShaderSource);
 		};
 	}
 }

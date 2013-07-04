@@ -50,13 +50,13 @@ namespace minko
 		class DrawCall;
 
 		class Effect;
-		class GLSLProgram;
 		class ShaderProgramInputs;
 	}
 
 	namespace resource
 	{
 		class AbstractResource;
+		class Program;
 		class VertexFormat;
 		class VertexStream;
 		class VertexAttribute;
@@ -93,7 +93,6 @@ namespace minko
 		class CubeGeometry;
 		class SphereGeometry;
 	}
-
 
 	namespace math
 	{
