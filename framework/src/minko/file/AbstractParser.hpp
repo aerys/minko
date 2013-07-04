@@ -43,9 +43,9 @@ namespace minko
 
 			virtual
 			void
-			parse(const std::string&		filename,
-				  std::shared_ptr<Options>	options,
-				  const std::vector<char>&	data) = 0;
+			parse(const std::string&				filename,
+				  std::shared_ptr<Options>			options,
+				  const std::vector<unsigned char>&	data) = 0;
 
 		protected:
 			AbstractParser() :
