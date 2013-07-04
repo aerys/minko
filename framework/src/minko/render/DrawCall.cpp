@@ -74,16 +74,16 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 
 			if (type == ShaderProgramInputs::attribute)
 			{
-				auto vertexStream					= _data->get<VertexStream::Ptr>(name);
-				VertexStream::Attribute& attribute	= vertexStream->attribute(inputName);
-				auto size							= std::get<1>(attribute);
-				auto offset							= std::get<2>(attribute);
+				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
+				auto attribute		= vertexStream->attribute(inputName);
+				auto size			= std::get<1>(*attribute);
+				auto offset			= std::get<2>(*attribute);
+				auto vertexBuffer	= vertexStream->id();
 				
-				_func.push_back([=, &attribute](AbstractContext::Ptr context)
+				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setVertexBufferAt(
 						location,
-						vertexStream->id(),
 						size,
 						vertexSize,
 						offset
