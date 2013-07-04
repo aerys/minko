@@ -4,7 +4,7 @@ project "minko-examples"
   language "C++"
   links {
 	"minko-jpeg",
-	"minko-devil",
+	"minko-png",
 	"minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
@@ -13,7 +13,7 @@ project "minko-examples"
 	"lib/glfw/include",
     "../framework/src",
 	"../plugins/jpeg/src",
-	"../plugins/devil/src"
+	"../plugins/png/src"
   }
 
   configuration { "debug"}
@@ -34,11 +34,10 @@ project "minko-examples"
 
   -- windows
   configuration { "windows", "x32" }
-    links { "OpenGL32", "glfw3", "glew32", "DevIL", "ILU", "ILUT" }
-    libdirs {
+    links { "OpenGL32", "glfw3dll", "glew32" }
+	libdirs {
 		"lib/glfw/bin/win32",
-		"../framework/lib/glew/bin/win32",
-		"../plugins/devil/lib/il/bin/win32"
+		"../framework/lib/glew/bin/win32"
 	}
 
   -- macos

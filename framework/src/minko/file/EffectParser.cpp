@@ -34,16 +34,16 @@ EffectParser::EffectParser() :
 }
 
 void
-EffectParser::parse(const std::string&			filename,
-					std::shared_ptr<Options>	options,
-					const std::vector<char>&	data)
+EffectParser::parse(const std::string&					filename,
+					std::shared_ptr<Options>			options,
+					const std::vector<unsigned char>&	data)
 {
 	Json::Value root;
 	Json::Reader reader;
 
 	_context = options->context();
 	
-	if (!reader.parse(&data[0], &data[data.size() - 1],	root, false))
+	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
 		throw std::invalid_argument("data");
 
 	_effectName = root.get("name", filename).asString();
@@ -87,7 +87,7 @@ EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
 {
 	++_numLoadedDependencies;
 
-	_dependenciesCode += std::string(&loader->data()[0], loader->data().size()) + "\r\n";
+	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();

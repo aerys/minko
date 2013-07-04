@@ -79,14 +79,14 @@ AssetsLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 	return shared_from_this();
 }
 
-const std::vector<char>&
+const std::vector<unsigned char>&
 AssetsLibrary::blob(const std::string& name)
 {
 	return _blobs[name];
 }
 
 AssetsLibrary::Ptr
-AssetsLibrary::blob(const std::string& name, const std::vector<char>& blob)
+AssetsLibrary::blob(const std::string& name, const std::vector<unsigned char>& blob)
 {
 	_blobs[name] = blob;
 
