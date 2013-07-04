@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/resource/Texture.hpp"
 
-#include "jpgd/jpgd.h"
+#include "jpgd.h"
 
 using namespace minko;
 using namespace minko::file;
 
 void
-JPEGParser::parse(const std::string&		filename,
-				  std::shared_ptr<Options>	options,
-				  const std::vector<char>&	data)
+JPEGParser::parse(const std::string&				filename,
+				  std::shared_ptr<Options>			options,
+				  const std::vector<unsigned char>&	data)
 {
 	int width;
 	int height;

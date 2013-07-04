@@ -42,9 +42,9 @@ namespace minko
 			}
 
 			void
-			parse(const std::string&		filename,
-				  std::shared_ptr<Options>	options,
-				  const std::vector<char>&	data);
+			parse(const std::string&				filename,
+				  std::shared_ptr<Options>			options,
+				  const std::vector<unsigned char>&	data);
 
 		private:
 			JPEGParser()

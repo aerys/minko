@@ -25,31 +25,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace file
-    {
-	    class DevILPNGParser :
-            public AbstractTextureParser
-	    {
-	    public:
-		    typedef std::shared_ptr<DevILPNGParser> Ptr;
+	namespace file
+	{
+		class PNGParser :
+			public AbstractTextureParser
+		{
+		public:
+			typedef std::shared_ptr<PNGParser> Ptr;
 
-	    public:
-		    inline static
-		    Ptr
-		    create()
-		    {
-			    return std::shared_ptr<DevILPNGParser>(new DevILPNGParser());
-		    }
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<PNGParser>(new PNGParser());
+			}
 
-            void
-			parse(const std::string&		filename,
-				  std::shared_ptr<Options>	options,
-				  const std::vector<char>&	data);
+			void
+			parse(const std::string&				filename,
+				  std::shared_ptr<Options>			options,
+				  const std::vector<unsigned char>&	data);
 
-	    private:
-		    DevILPNGParser()
-		    {
-		    }
-	    };
-    }
+		private:
+			PNGParser()
+			{
+			}
+		};
+	}
 }
