@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "EffectParser.hpp"
-#include "minko/render/GLSLProgram.hpp"
+#include "minko/resource/Program.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::file;
 using namespace minko::render;
+using namespace minko::resource;
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
@@ -102,10 +103,10 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
 void
 EffectParser::finalize()
 {
-	std::vector<std::shared_ptr<GLSLProgram>> programs;
+	std::vector<std::shared_ptr<Program>> programs;
 
 	for (auto& program : _programs)
-		programs.push_back(GLSLProgram::create(
+		programs.push_back(Program::create(
 			_context, _dependenciesCode + program.first, _dependenciesCode + program.second
 		));
 
