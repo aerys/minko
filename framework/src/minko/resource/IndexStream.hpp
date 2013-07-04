@@ -52,7 +52,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<unsigned short>
+			const std::vector<unsigned short>&
 			data()
 			{
 				return _data;
