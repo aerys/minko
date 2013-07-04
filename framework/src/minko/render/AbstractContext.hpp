@@ -169,7 +169,7 @@ namespace minko
 			deleteFragmentShader(const unsigned int fragmentShader) = 0;
 
 			virtual
-			std::shared_ptr<ShaderProgramInputs>
+			std::shared_ptr<ProgramInputs>
 			getProgramInputs(const unsigned int program) = 0;
 
 			virtual
