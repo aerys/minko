@@ -43,17 +43,19 @@ DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
 void
 DrawCall::bind(std::shared_ptr<data::Container> bindings)
 {
-	auto vertexSize	= _data->get<unsigned int>("geometry/vertex/size");
-	auto indexStream = bindings->get<IndexStream::Ptr>("geometry/indices");
-	auto drawTriangles = [indexStream](AbstractContext::Ptr context)
+	auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
+	auto indexStream	= bindings->get<IndexStream::Ptr>("geometry/indices");
+	auto indexBuffer	= indexStream->id();
+	auto numIndices		= indexStream->data().size();
+	auto drawTriangles	= [=](AbstractContext::Ptr context)
 	{
-		context->drawTriangles(indexStream->id(), indexStream->data().size());
+		context->drawTriangles(indexBuffer, numIndices);
 	};
 	
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program = bindings->get<GLSLProgram::Ptr>("effect/pass" + std::to_string(passId));
-		auto numTextures = 0;
+		auto program		= bindings->get<GLSLProgram::Ptr>("effect/pass" + std::to_string(passId));
+		auto numTextures	= 0;
 
 		_func.push_back([program](AbstractContext::Ptr context)
 		{
@@ -102,40 +104,38 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ShaderProgramInputs::Type::float2)
 			{
-				auto float2Value = _data->get<std::shared_ptr<Vector2>>(name);
+				auto float2Value	= _data->get<std::shared_ptr<Vector2>>(name);
+				auto x				= float2Value->x();
+				auto y				= float2Value->y();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, float2Value->x(), float2Value->y());
+					context->setUniform(location, x, y);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float3)
 			{
-				auto float3Value = _data->get<std::shared_ptr<Vector3>>(name);
+				auto float3Value	= _data->get<std::shared_ptr<Vector3>>(name);
+				auto x				= float3Value->x();
+				auto y				= float3Value->y();
+				auto z				= float3Value->z();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(
-						location,
-						float3Value->x(),
-						float3Value->y(),
-						float3Value->z()
-					);
+					context->setUniform(location, x, y, z);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float4)
 			{
-				auto float4Value = _data->get<std::shared_ptr<Vector4>>(name);
+				auto float4Value	= _data->get<std::shared_ptr<Vector4>>(name);
+				auto x				= float4Value->x();
+				auto y				= float4Value->y();
+				auto z				= float4Value->z();
+				auto w				= float4Value->w();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(
-						location,
-						float4Value->x(),
-						float4Value->y(),
-						float4Value->z(),
-						float4Value->w()
-					);
+					context->setUniform(location, x, y, z, w);
 				});
 			}
 			else if (type == ShaderProgramInputs::Type::float16)
@@ -160,7 +160,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 		}
 
-		_func.push_back([numTextures](AbstractContext::Ptr context)
+		_func.push_back([=](AbstractContext::Ptr context)
 		{
 			auto count = numTextures;
 
