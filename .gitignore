@@ -19,3 +19,5 @@ plugins/mk/obj
 *.log
 *.d
 *.o
+*.vsp
+*.psess
