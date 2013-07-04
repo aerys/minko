@@ -58,7 +58,14 @@ OpenGLES2Context::initializeBlendFactorsMap()
     return m;
 }
 
-OpenGLES2Context::OpenGLES2Context()
+OpenGLES2Context::OpenGLES2Context() :
+	_currentIndexBuffer(-1),
+	_currentVertexBuffer(8, -1),
+	_currentVertexSize(8, -1),
+	_currentVertexStride(8, -1),
+	_currentVertexOffset(8, -1),
+	_currentTexture(8, -1),
+	_currentProgram(-1)
 {
 #ifdef _WIN32
     glewInit();
@@ -156,7 +163,12 @@ OpenGLES2Context::present()
 void
 OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
 {
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	if (_currentIndexBuffer != indexBuffer)
+	{
+		_currentIndexBuffer = indexBuffer;
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	}
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDrawElements.xml
 	//
@@ -256,6 +268,19 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 								    const unsigned int	stride,
 								    const unsigned int	offset)
 {
+	auto currentVertexBuffer = _currentVertexBuffer[position];
+
+	if (currentVertexBuffer == vertexBuffer
+		&& _currentVertexSize[position] == size
+		&& _currentVertexStride[position] == stride
+		&& _currentVertexOffset[position] == position)
+		return ;
+
+	_currentVertexBuffer[position] = vertexBuffer;
+	_currentVertexSize[position] = size;
+	_currentVertexStride[position] = stride;
+	_currentVertexOffset[position] = offset;
+
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
 	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
@@ -268,7 +293,8 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 		(void*)(sizeof(GL_FLOAT) * offset)
 	);
 
-	glEnableVertexAttribArray(position);
+	if (currentVertexBuffer < 0)
+		glEnableVertexAttribArray(position);
 }
 
 const unsigned int
@@ -393,11 +419,19 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 							   const int			texture,
 							   const int			location)
 {
-	glActiveTexture(GL_TEXTURE0 + position);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	auto textureIsValid = texture > 0;
 
-	if (location >= 0)
+	if (_currentTexture[position] != texture)
+	{
+		_currentTexture[position] = texture;
+
+		glActiveTexture(GL_TEXTURE0 + position);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		if (texture > 0)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+
+	if (textureIsValid && location >= 0)
 		glUniform1i(location, position);
 }
 
@@ -436,6 +470,11 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 void
 OpenGLES2Context::setProgram(const unsigned int program)
 {
+	if (_currentProgram == program)
+		return;
+
+	_currentProgram = program;
+
 	glUseProgram(program);
 }
 
