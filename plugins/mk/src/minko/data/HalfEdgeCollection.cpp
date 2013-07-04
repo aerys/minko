@@ -27,6 +27,10 @@ HalfEdgeCollection::HalfEdgeCollection(IndexStreamPtr indexStream) :
 	initialize();
 }
 
+HalfEdgeCollection::~HalfEdgeCollection()
+{
+}
+
 void
 HalfEdgeCollection::initialize()
 {
