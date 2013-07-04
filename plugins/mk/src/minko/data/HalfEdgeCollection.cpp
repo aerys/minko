@@ -1,11 +1,29 @@
+/*
+Copyright (c) 2013 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 #include "HalfEdgeCollection.hpp"
 
-using namespace minko::parser::mk;
+using namespace minko::data;
 
-HalfEdgeCollection::HalfEdgeCollection(std::shared_ptr<minko::resource::IndexStream> indexStream)
+HalfEdgeCollection::HalfEdgeCollection(IndexStreamPtr indexStream) :
+	_indexStream(indexStream)
 {
-	_indexStream = indexStream;
-
 	initialize();
 }
 
@@ -44,10 +62,12 @@ HalfEdgeCollection::initialize()
 		map[std::make_pair(t2, t3)] = he2;
 		map[std::make_pair(t3, t1)] = he3;
 		
-		HalfEdgeMap::iterator adjacents [3] = {
+		HalfEdgeMap::iterator adjacents [3] = 
+		{
 			map.find(std::make_pair(t2, t1)),
 			map.find(std::make_pair(t3, t2)),
-			map.find(std::make_pair(t1, t3))};
+			map.find(std::make_pair(t1, t3))
+		};
 
 		for (int edgeId = 0; edgeId < 3; ++edgeId)
 		{
@@ -59,6 +79,7 @@ HalfEdgeCollection::initialize()
 		}
 	}
 
+	// debug
 	for (HalfEdgeMap::iterator it = map.begin(); it != map.end(); it++)
 	{
 		std::cout << it->first.first << "  " << it->first.second << std::endl;
@@ -110,5 +131,6 @@ HalfEdgeCollection::computeList(HalfEdgeMap unmarked)
 		} while (queue.size() > 0);
 	}
 
+	// debug
 	std::cout << "Submeshes : " << _subMeshesList.size() << std::endl;
 }
