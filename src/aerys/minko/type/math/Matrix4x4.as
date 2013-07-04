@@ -1,14 +1,14 @@
 package aerys.minko.type.math
 {
-	import aerys.minko.ns.minko_math;
-	import aerys.minko.type.Factory;
-	import aerys.minko.type.Signal;
-	import aerys.minko.type.binding.IWatchable;
-	
 	import flash.geom.Matrix3D;
 	import flash.geom.Orientation3D;
 	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
+	
+	import aerys.minko.ns.minko_math;
+	import aerys.minko.type.Factory;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.binding.IWatchable;
 
 	use namespace minko_math;
 		
@@ -50,8 +50,11 @@ package aerys.minko.type.math
 			
 			return _translation.x;
 		}
+		
         final public function set translationX(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
 			setTranslation(value, _translation.y, _translation.z);
 		}
 		
@@ -64,6 +67,8 @@ package aerys.minko.type.math
 		}
         final public function set translationY(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
 			setTranslation(_translation.x, value, _translation.z);
 		}
 		
@@ -76,6 +81,8 @@ package aerys.minko.type.math
 		}
         final public function set translationZ(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_TRANSLATION);
 			setTranslation(_translation.x, _translation.y, value);
 		}
 		
@@ -88,6 +95,8 @@ package aerys.minko.type.math
 		}
         final public function set rotationX(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
 			setRotation(value, _rotation.y, _rotation.z);
 		}
 		
@@ -100,6 +109,8 @@ package aerys.minko.type.math
 		}
         final public function set rotationY(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
 			setRotation(_rotation.x, value, _rotation.z);
 		}
 		
@@ -112,6 +123,8 @@ package aerys.minko.type.math
 		}
         final public function set rotationZ(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_ROTATION);
 			setRotation(_rotation.x, _rotation.y, value);
 		}
 		
@@ -124,6 +137,8 @@ package aerys.minko.type.math
 		}
         final public function set scaleX(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
 			setScale(value, _scale.y, _scale.z);
 		}
 		
@@ -136,6 +151,8 @@ package aerys.minko.type.math
 		}
         final public function set scaleY(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
 			setScale(_scale.x, value, _scale.z);
 		}
 		
@@ -148,6 +165,8 @@ package aerys.minko.type.math
 		}
         final public function set scaleZ(value : Number) : void
 		{
+			if (_invalidComponents)
+				updateComponents(COMPONENT_SCALE);
 			setScale(_scale.x, _scale.y, value);
 		}
 		
@@ -329,6 +348,8 @@ package aerys.minko.type.math
                                                 z : Number = 0.) : Matrix4x4
 		{
 			_matrix.appendTranslation(x, y, z);
+			
+			TMP_VECTOR4.set(x, y, z);
 			
 			_hasChanged = true;
 			if (!_locked)
