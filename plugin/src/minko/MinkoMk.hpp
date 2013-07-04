@@ -1,8 +1,8 @@
 #pragma once
 
 #include "minko/MkCommon.hpp"
-#include "minko/parser/mk/type/HalfEdge.hpp"
-#include "minko/parser/mk/type/HalfEdgeCollection.hpp"
+#include "minko/mk/type/HalfEdge.hpp"
+#include "minko/mk/type/HalfEdgeCollection.hpp"
 
 class MinkoMk
 {
