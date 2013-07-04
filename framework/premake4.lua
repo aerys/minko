@@ -29,7 +29,9 @@ project "minko-framework"
 
   -- windows
   configuration { "windows", "x32" }
+	links { "glew32" }
     includedirs { "lib/glew/include" }
+	libdirs { "lib/glew/bin/win32" }
 
   -- macos
   configuration { "macosx" }
