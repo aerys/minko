@@ -84,6 +84,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 				{
 					context->setVertexBufferAt(
 						location,
+						vertexBuffer,
 						size,
 						vertexSize,
 						offset
