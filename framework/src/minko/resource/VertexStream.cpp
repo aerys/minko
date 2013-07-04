@@ -75,29 +75,33 @@ VertexStream::dispose()
 }
 
 void
-VertexStream::addAttribute(VertexStream::Attribute attribute)
+VertexStream::addAttribute(const std::string& 	name,
+						   const unsigned int	size,
+						   const unsigned int	offset)
 {
-	if (hasAttribute(std::get<0>(attribute)))
+	if (hasAttribute(name))
 		throw std::invalid_argument("attribute");
 
-	_attributes.push_back(attribute);
+	_attributes.push_back(VertexStream::AttributePtr(
+		new VertexStream::Attribute(name, size, offset)
+	));
 }
 
 bool
 VertexStream::hasAttribute(const std::string& attributeName)
 {
 	for (auto& attr : _attributes)
-		if (std::get<0>(attr) == attributeName)
+		if (std::get<0>(*attr) == attributeName)
 			return true;
 
 	return false;
 }
 
-VertexStream::Attribute&
+VertexStream::AttributePtr
 VertexStream::attribute(const std::string& attributeName)
 {
 	for (auto& attr : _attributes)
-		if (std::get<0>(attr) == attributeName)
+		if (std::get<0>(*attr) == attributeName)
 			return attr;
 
 	throw std::invalid_argument("attributeName");
