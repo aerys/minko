@@ -3,10 +3,9 @@ solution "minko"
 
 -- examples
 include 'examples'
-   
+
 -- core framework
 include 'framework'
-include 'plugin'
 
 -- plugins
 include 'plugins/jpeg'
