@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
 #include "minko/resource/Texture.hpp"
-#include "minko/render/GLSLProgram.hpp"
+#include "minko/resource/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/resource/VertexAttribute.hpp"
@@ -54,12 +54,13 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 	
 	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program		= bindings->get<GLSLProgram::Ptr>("effect/pass" + std::to_string(passId));
+		auto program		= bindings->get<Program::Ptr>("effect/pass" + std::to_string(passId));
 		auto numTextures	= 0;
+		auto programId		= program->id();
 
-		_func.push_back([program](AbstractContext::Ptr context)
+		_func.push_back([=](AbstractContext::Ptr context)
 		{
-			context->setProgram(program->program());
+			context->setProgram(programId);
 		});
 
 		for (unsigned int inputId = 0; inputId < program->inputs()->locations().size(); ++inputId)
