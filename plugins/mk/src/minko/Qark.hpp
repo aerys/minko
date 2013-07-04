@@ -5,13 +5,7 @@
 
 #pragma once
 
-#include <iostream>
-#include <list>
-#include <map>
-#include <typeinfo>
-#include <vector>
-#include <sstream>
-
+#include "minko/Common.hpp"
 #include "minko/Any.hpp"
 
 
