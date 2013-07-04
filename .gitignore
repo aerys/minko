@@ -9,8 +9,13 @@ plugins/jpeg/bin
 plugins/jpeg/obj
 plugins/png/bin
 plugins/png/obj
+plugins/mk/bin
+plugins/mk/obj
 *.opensdf
 *.sdf
 *.sln
 *.suo
 *.vcxproj*
+*.log
+*.d
+*.o
