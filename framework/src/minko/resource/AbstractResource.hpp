@@ -52,13 +52,20 @@ namespace minko
 				return _id;
 			}
 
-			virtual
 			void
-			dispose() = 0;
+			dispose()
+			{
+				// nothing
+			}
 
 			virtual
 			void
 			upload() = 0;
+
+			~AbstractResource()
+			{
+				dispose();
+			}
 
 		protected:
 			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
