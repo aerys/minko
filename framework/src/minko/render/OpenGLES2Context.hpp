@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/ShaderProgramInputs.hpp"
+#include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
 
 namespace minko
@@ -170,7 +170,7 @@ namespace minko
 			void
 			deleteFragmentShader(const unsigned int fragmentShader);
 
-			std::shared_ptr<ShaderProgramInputs>
+			std::shared_ptr<ProgramInputs>
 			getProgramInputs(const unsigned int program);
 
 			std::string
@@ -206,13 +206,13 @@ namespace minko
 			void
 			fillUniformInputs(const unsigned int						program,
 							  std::vector<std::string>&					names,
-							  std::vector<ShaderProgramInputs::Type>&	types,
+							  std::vector<ProgramInputs::Type>&	types,
 							  std::vector<unsigned int>&				locations);
 
 			void
 			fillAttributeInputs(const unsigned int						program,
 								std::vector<std::string>&				names,
-								std::vector<ShaderProgramInputs::Type>&	types,
+								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&				locations);
 
             static

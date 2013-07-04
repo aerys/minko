@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/resource/AbstractResource.hpp"
-#include "minko/render/ShaderProgramInputs.hpp"
+#include "minko/render/ProgramInputs.hpp"
 
 namespace minko
 {
@@ -36,14 +36,14 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<render::ShaderProgramInputs>	ShaderProgramInputsPtr;
+			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
 
 		private:
 			unsigned int			_vertexShader;
 			unsigned int			_fragmentShader;
 			const std::string 		_vertexShaderSource;
 			const std::string		_fragmentShaderSource;
-			ShaderProgramInputsPtr	_inputs;
+			ProgramInputsPtr	_inputs;
 
 		public:
 			inline static
@@ -74,7 +74,7 @@ namespace minko
 			}
 
 			inline
-			ShaderProgramInputsPtr
+			ProgramInputsPtr
 			inputs()
 			{
 				return _inputs;
