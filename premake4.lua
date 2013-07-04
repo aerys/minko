@@ -3,15 +3,15 @@ solution "minko"
 
 -- examples
 include 'examples'
-
+   
 -- core framework
 include 'framework'
+include 'plugin'
 
 -- plugins
 include 'plugins/jpeg'
 include 'plugins/png'
-include 'plugins/bullet'
---include 'plugins/mk'
+include 'plugins/mk'
 
 newaction {
 	trigger = "copyDLLs",
