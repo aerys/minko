@@ -56,7 +56,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 		_data.resize(size);
 
 		file.seekg(0, std::ios::beg);
-		file.read(&_data[0], size);
+		file.read((char*)&_data[0], size);
 		file.close();
 
 		_progress->execute(shared_from_this());

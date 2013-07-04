@@ -4,10 +4,11 @@ project "minko-jpeg"
   files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
 	"src",
+	"lib/jpeg-compressor/src",
 	"../../framework/src"
   }
   links { "minko-framework" }
-
+  
   configuration { "debug"}
     defines { "DEBUG" }
     flags { "Symbols" }

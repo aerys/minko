@@ -36,7 +36,7 @@ namespace minko
 			typedef std::shared_ptr<Loader>	Ptr;
 
 		private:
-			std::vector<char>				_data;
+			std::vector<unsigned char>		_data;
 			std::shared_ptr<Options>		_options;
 			std::string						_filename;
 
@@ -53,7 +53,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<char>&
+			const std::vector<unsigned char>&
 			data()
 			{
 				return _data;
