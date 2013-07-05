@@ -106,9 +106,14 @@ EffectParser::finalize()
 	std::vector<std::shared_ptr<Program>> programs;
 
 	for (auto& program : _programs)
-		programs.push_back(Program::create(
+    {
+        auto p = Program::create(
 			_context, _dependenciesCode + program.first, _dependenciesCode + program.second
-		));
+		);
+
+        p->upload();
+		programs.push_back(p);
+    }
 
 	_effect = Effect::create(programs);
 
