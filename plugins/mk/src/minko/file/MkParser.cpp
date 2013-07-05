@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "MkParser.hpp"
 
 using namespace minko::file;
+using namespace minko::math;
 
 MkParser::MkParser()
 {
@@ -30,5 +31,15 @@ MkParser::parse(const std::string&					filename,
 				std::shared_ptr<Options>			options,
 				const std::vector<unsigned char>&	data)
 {
+	_node = scene::Node::create();
 
+	_node->addController(
+		controller::SurfaceController::create(
+			options->assets()->geometry("cube"),
+			data::Provider::create()
+					->set("material/diffuse/rgba",	Vector4::create(0.f, 0.f, 1.f, .1f)),
+			options->assets()->effect("texture")));
+	_node->addController(controller::TransformController::create());
+	_node->controller<controller::TransformController>()->transform()->appendTranslation(0.f, 2.f, -3.f);
+	std::cout << "parse MK" << std::endl << std::flush;
 }
