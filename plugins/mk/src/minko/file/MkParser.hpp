@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/math/Matrix4x4.hpp"
+#include "minko/AssetsLibrary.hpp"
 
 
 namespace minko
