@@ -33,13 +33,14 @@ namespace minko
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::string									_includePath;
+			std::shared_ptr<AssetsLibrary>				_assets;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
+			create(std::shared_ptr<render::AbstractContext> context, std::shared_ptr<AssetsLibrary> assets)
 			{
-				return std::shared_ptr<Options>(new Options(context));
+				return std::shared_ptr<Options>(new Options(context, assets));
 			}
 
 			inline
@@ -49,6 +50,13 @@ namespace minko
 				return _context;
 			}
 			
+			inline
+			std::shared_ptr<AssetsLibrary>
+			assets()
+			{
+				return _assets;
+			}
+
 			inline
 			const std::string&
 			includePath()
@@ -64,8 +72,10 @@ namespace minko
 			}
 
 		private:
-			Options(std::shared_ptr<render::AbstractContext> context) :
-				_context(context)
+			Options(std::shared_ptr<render::AbstractContext>	context, 
+					std::shared_ptr<AssetsLibrary>				assets) :
+				_context(context),
+				_assets(assets)
 			{
 			}
 		};
