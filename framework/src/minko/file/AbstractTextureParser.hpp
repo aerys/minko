@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/render/AbstractContext.hpp"
 
 namespace minko
 {
@@ -30,7 +31,7 @@ namespace minko
 			public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<AbstractTextureParser> Ptr;
+			typedef std::shared_ptr<AbstractTextureParser>		Ptr;
 
 		protected:
 			std::shared_ptr<resource::Texture>	_texture;
