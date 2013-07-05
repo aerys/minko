@@ -38,6 +38,7 @@ namespace minko
 		typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 		typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 		typedef std::function<AbsParserPtr(void)>			Handler;
+		typedef std::shared_ptr<scene::Node>				NodePtr;
 
 	private:
 		AbsContextPtr													_context;
@@ -47,6 +48,7 @@ namespace minko
 		std::unordered_map<std::string, GeometryPtr>					_geometries;
 		std::unordered_map<std::string, EffectPtr>						_effects;
 		std::unordered_map<std::string, TexturePtr>						_textures;
+		std::unordered_map<std::string, NodePtr>						_nodes;
 		std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
 
 		std::list<std::string>											_filesQueue;
@@ -96,6 +98,12 @@ namespace minko
 
 		Ptr
 		texture(const std::string& name, TexturePtr texture);
+
+		NodePtr
+		node(const std::string& name);
+
+		Ptr
+		node(const std::string& name, NodePtr node);
 
 		EffectPtr
 		effect(const std::string& name);
