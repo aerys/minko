@@ -33,9 +33,9 @@ using namespace minko::geometry;
 
 AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_complete(Signal<Ptr>::create())
+	_complete(Signal<Ptr>::create()),
+	_defaultOptions(file::Options::create(context))
 {
-	_defaultOptions = file::Options::create(context, shared_from_this());
 }
 
 AssetsLibrary::GeometryPtr
@@ -130,6 +130,8 @@ AssetsLibrary::load()
 {
 	std::list<std::string> queue = _filesQueue;
 
+	_defaultOptions->assets(shared_from_this());
+
 	for (auto& filename : queue)
 	{
 		if (_filenameToLoader.count(filename) == 0)
@@ -152,6 +154,8 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
+	
+	std::cout << loader->filename() << std::endl << std::flush;
 
 	_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
 	_filenameToLoader.erase(filename);
