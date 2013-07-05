@@ -20,38 +20,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
+#include "minko/file/AbstractParser.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/render/AbstractContext.hpp"
+
 
 namespace minko
 {
 	namespace file
 	{
-		class AbstractParser
+		class AbstractModelParser 
+			: public AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<AbstractParser>				Ptr;
+			typedef std::shared_ptr<AbstractModelParser>		Ptr;
 
-			std::shared_ptr<Signal<Ptr>>	_complete;
+		protected:
+			std::shared_ptr<scene::Node>	_node;
 
 		public:
 			inline
-			std::shared_ptr<Signal<Ptr>>
-			complete()
+			std::shared_ptr<scene::Node>
+			node()
 			{
-				return _complete;
+				return _node;
 			}
 
-			virtual
-			void
-			parse(const std::string&				filename,
-				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data) = 0;
-
 		protected:
-			AbstractParser() :
-				_complete(Signal<Ptr>::create())
+			AbstractModelParser()
 			{
-
 			}
 		};
 	}

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AbstractTextureParser.hpp"
+#include "minko/file/AbstractModelParser.hpp"
 #include "minko/resource/Texture.hpp"
 #include "minko/Signal.hpp"
 
@@ -32,9 +33,9 @@ using namespace minko::geometry;
 
 AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_defaultOptions(file::Options::create(context)),
 	_complete(Signal<Ptr>::create())
 {
+	_defaultOptions = file::Options::create(context, shared_from_this());
 }
 
 AssetsLibrary::GeometryPtr
@@ -61,6 +62,20 @@ AssetsLibrary::Ptr
 AssetsLibrary::texture(const std::string& name, resource::Texture::Ptr texture)
 {
 	_textures[name] = texture;
+
+	return shared_from_this();
+}
+
+scene::Node::Ptr
+AssetsLibrary::node(const std::string& name)
+{
+	return _nodes[name];
+}
+
+AssetsLibrary::Ptr
+AssetsLibrary::node(const std::string& name, scene::Node::Ptr node)
+{
+	_nodes[name] = node;
 
 	return shared_from_this();
 }
@@ -154,6 +169,10 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 		auto textureParser = std::dynamic_pointer_cast<file::AbstractTextureParser>(parser);
 		if (textureParser)
 			texture(filename, textureParser->texture());
+
+		auto modelParser = std::dynamic_pointer_cast<file::AbstractModelParser>(parser);
+		if (modelParser)
+			node(filename, modelParser->node());
 	}
 	else
 		blob(filename, loader->data());

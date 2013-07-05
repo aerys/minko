@@ -110,13 +110,15 @@ int main(int argc, char** argv)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
+		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("textures/collage.jpg")
         ->queue("textures/box3.png")
 		->queue("effects/Texture.effect")
 		//->queue("effects/Red.effect")
-		->queue("effects/Basic.effect");
+		->queue("effects/Basic.effect")
+		->queue("models/model.mk");
 
 	/*assets->defaultOptions()->includePath("effects");*/
 
@@ -146,6 +148,8 @@ int main(int argc, char** argv)
 				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
 			assets->effect("texture")
 		));
+
+		group->addChild(assets->node("models/model.mk"));
 
 		group->addChild(mesh);
 		testMk(assets);
