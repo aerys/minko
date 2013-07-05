@@ -12,7 +12,6 @@ project "minko-examples"
 =======
     "minko-jpeg",
     "minko-png",
-    "minko-mk",
     "minko-framework"
 >>>>>>> 21ff4ee... Add glfw3 dependency on Linux and Mac OS X.
   }
@@ -25,10 +24,15 @@ project "minko-examples"
     "lib/glfw/include",
 >>>>>>> 21ff4ee... Add glfw3 dependency on Linux and Mac OS X.
     "../framework/src",
+<<<<<<< HEAD
 	"../plugins/jpeg/src",
 	"../plugins/png/src",
 	"../plugins/bullet/src"
     "../plugins/mk/src"
+=======
+    "../plugins/jpeg/src",
+    "../plugins/png/src"
+>>>>>>> 8476c1b... Remove mk from premake file in master branch
   }
 
   configuration { "debug"}
