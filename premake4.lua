@@ -1,16 +1,16 @@
 solution "minko"
    configurations { "Debug", "Release" }
-  
--- examples
-include 'examples/cube'
-include 'examples/light'
 
+-- examples
+include 'examples'
+   
 -- core framework
 include 'framework'
 
 -- plugins
-include 'plugins/jpeg'
-include 'plugins/png'
+ include 'plugins/jpeg'
+ include 'plugins/png'
+ include 'plugins/webgl'
 
 newaction {
 	trigger = "copyDLLs",
@@ -44,9 +44,9 @@ newaction {
 	trigger = "cleanVS",
 	description = "Remove additional files added by VS",
 	execute = function()
-		os.remove("minko.sdf")
-		os.remove("minko.v11.suo")
-		os.remove("minko.suo")
+		os.rmdir("minko.sdf")
+		os.rmdir("minko.v11.suo")
+		os.rmdir("minko.suo")
 	end
 }
 
