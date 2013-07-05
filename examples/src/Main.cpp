@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 		group->addChild(assets->node("models/model.mk"));
 
 		group->addChild(mesh);
-		testMk(assets);
+		//testMk(assets);
 	});
 
 	assets->load();
