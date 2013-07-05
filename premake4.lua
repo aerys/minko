@@ -3,13 +3,14 @@ solution "minko"
 
 -- examples
 include 'examples'
-
+   
 -- core framework
 include 'framework'
 
 -- plugins
-include 'plugins/jpeg'
-include 'plugins/png'
+ include 'plugins/jpeg'
+ include 'plugins/png'
+ include 'plugins/webgl'
 
 newaction {
 	trigger = "copyDLLs",

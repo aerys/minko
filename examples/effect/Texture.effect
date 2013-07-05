@@ -36,6 +36,8 @@
 			}
 		",
 		"fragmentShader"	: "
+			precision highp float;
+
 			uniform sampler2D diffuseMap;
 			
 			varying vec2 vertexUV;
