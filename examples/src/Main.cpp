@@ -1,10 +1,18 @@
 #include <time.h>
+#include <exception>
+#include <iostream>
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoWebGL.hpp"
 
-#include "GLFW/glfw3.h"
+
+#ifdef EMSCRIPTEN
+	#include "GL/glut.h"
+#else
+	#include "GLFW/glfw3.h"
+#endif
 
 #define FRAMERATE 60
 
@@ -33,6 +41,27 @@ printFramerate(const unsigned int delay = 1)
 		numFrames = 0;
 	}
 }
+
+#ifdef EMSCRIPTEN
+void
+renderScene()
+{
+	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	renderingController->render();
+
+	//printFramerate();
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+
+}
+
+void timerFunc(int)
+{
+	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	glutPostRedisplay();
+}
+#endif
 
 /*void screenshotFunc(int)
 {
@@ -65,14 +94,27 @@ printFramerate(const unsigned int delay = 1)
 
 int main(int argc, char** argv)
 {
+std::cout << "Starting example" << std::endl;
+#ifdef EMSCRIPTEN
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Minko Examples");
+
+	auto context = render::WebGLContext::create();
+#else
     glfwInit();
     auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
+#endif
+	
+    context->setBlendMode(render::Blending::Mode::DEFAULT);
+
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
-		->registerParser<file::PNGParser>("png")
+        	->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
@@ -93,8 +135,10 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+		std::cout << "load complete" << std::endl;
+		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
-
+		
 		root->addChild(group)->addChild(camera);
 
         renderingComponent = Rendering::create(assets->context());
@@ -120,12 +164,13 @@ int main(int argc, char** argv)
 			assets->effect("directional light")
 		));
 	});
-
 	assets->load();
 
-	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	//glutTimerFunc(1000, screenshotFunc, 0);
-
+#ifdef EMSCRIPTEN
+	glutDisplayFunc(renderScene);
+	glutMainLoop();
+	return 0;
+#else
 	while(!glfwWindowShouldClose(window))
     {
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
@@ -154,4 +199,5 @@ int main(int argc, char** argv)
     glfwTerminate();
 
     exit(EXIT_SUCCESS);
+#endif
 }
