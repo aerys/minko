@@ -3,7 +3,6 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
-#include "minko/MinkoMk.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -63,39 +62,6 @@ printFramerate(const unsigned int delay = 1)
 	delete[] pixels;
 }*/
 
-void
-testMk(AssetsLibrary::Ptr assets)
-{
-	std::shared_ptr<data::HalfEdgeCollection> halfEdgeCollection = data::HalfEdgeCollection::create(assets->geometry("cube")->indices());
-
-	std::map<std::string, Any> qarkData;
-
-	int myints[] = {3, 4, 5, 6};
-	std::vector<Any> toto(myints, myints + sizeof(myints) / sizeof(int));
-
-	std::string myStrings[] = {"a", "b", "c", "d"};
-	std::vector<Any> strings(myStrings, myStrings + sizeof(myStrings) / sizeof(std::string));
-
-	qarkData["plop"] = 42;
-	qarkData["plip"] = std::string("sali");
-	qarkData["plup"] = toto;
-
-	std::map<std::string, Any> plap;
-
-	plap["youhou"] = 4;
-	plap["yahaa"]  = strings;
-	
-
-	qarkData["plap"] = plap;
-
-
-	minko::Qark::ByteArray compressedData = minko::Qark::encode(qarkData);
-	std::cout << std::endl << std::endl << "-----------------" << std::endl << std::endl <<std::flush;
-	minko::Qark::Object    obj 			= minko::Qark::decode(compressedData);
-
-	std::map<std::string, Any> decodedMap = minko::Any::cast<std::map<std::string, Any>>(obj);
-}
-
 int main(int argc, char** argv)
 {
     glfwInit();
@@ -148,7 +114,6 @@ int main(int argc, char** argv)
 		));
 
 		group->addChild(mesh);
-		//testMk(assets);
 	});
 
 	assets->load();
