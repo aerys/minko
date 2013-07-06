@@ -183,7 +183,7 @@ namespace minko
             operatorLayer(Nodes& input, const unsigned int layer);
 
             void
-            operatorHasController(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult);
+            operatorHasControllerReference(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult);
 
             template <typename T>
             void

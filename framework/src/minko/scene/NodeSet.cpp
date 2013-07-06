@@ -160,11 +160,11 @@ NodeSet::hasController(AbsCtrlPtr ctrl, bool expectedResult)
     watchControllers();
 
      _output.clear();
-    operatorHasController(_input, ctrl, expectedResult);
+    operatorHasControllerReference(_input, ctrl, expectedResult);
     std::swap(_input, _output);
 
     _operators.push_back(std::bind(
-        &NodeSet::operatorHasController,
+        &NodeSet::operatorHasControllerReference,
         shared_from_this(),
         std::placeholders::_1,
         ctrl,
@@ -242,7 +242,7 @@ NodeSet::operatorLayer(Nodes& input, const unsigned int layer)
 }
 
 void
-NodeSet::operatorHasController(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult)
+NodeSet::operatorHasControllerReference(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult)
 {
     for (auto in : input)
         if (in->hasController(ctrl) == expectedResult)
