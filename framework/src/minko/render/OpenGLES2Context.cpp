@@ -23,11 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
-# include <GL/glut.h>
+# include <GL/gl.h>
 #elif _WIN32
 # include "GL/glew.h"
 #else
-# include <GL/glut.h>
+# include <GL/gl.h>
 #endif
 
 using namespace minko::render;
