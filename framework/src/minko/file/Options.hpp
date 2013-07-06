@@ -32,7 +32,7 @@ namespace minko
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
-			std::string									_includePath;
+			std::vector<std::string>					_includePaths;
 
 		public:
 			inline static
@@ -50,17 +50,10 @@ namespace minko
 			}
 			
 			inline
-			const std::string&
-			includePath()
+			std::vector<std::string>&
+			includePaths()
 			{
-				return _includePath;
-			}
-
-			inline
-			void
-			includePath(const std::string& includePath)
-			{
-				_includePath = includePath;
+				return _includePaths;
 			}
 
 		private:

@@ -94,17 +94,18 @@ AssetsLibrary::blob(const std::string& name, const std::vector<unsigned char>& b
 }
 
 AssetsLibrary::Ptr
-AssetsLibrary::queue(const std::string& filename)
+AssetsLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
 {
 	_filesQueue.push_back(filename);
+	_filenameToOptions[filename] = options ? options : _defaultOptions;
 
 	return shared_from_this();
 }
 
 AssetsLibrary::Ptr
-AssetsLibrary::load(const std::string& filename)
+AssetsLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
 {
-	queue(filename);
+	queue(filename, options);
 	load();
 
 	return shared_from_this();
@@ -122,7 +123,10 @@ AssetsLibrary::load()
 			auto loader = file::Loader::create();
 
 			_filenameToLoader[filename] = loader;
-			_loaderCompleteSlots.push_back(loader->complete()->connect(std::bind(
+			_loaderSlots.push_back(loader->error()->connect(std::bind(
+				&AssetsLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+			)));
+			_loaderSlots.push_back(loader->complete()->connect(std::bind(
 				&AssetsLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
 			)));
 			loader->load(filename, _defaultOptions);
@@ -130,6 +134,12 @@ AssetsLibrary::load()
 	}
 
 	return shared_from_this();
+}
+
+void
+AssetsLibrary::loaderErrorHandler(std::shared_ptr<file::Loader> loader)
+{
+	throw std::invalid_argument(loader->filename());
 }
 
 void
@@ -145,7 +155,7 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 	{
 		auto parser = _parsers[extension]();
 		
-		parser->parse(loader->filename(), loader->options(), loader->data());
+		parser->parse(loader->filename(), _filenameToOptions[filename], loader->data());
 
 		auto fxParser = std::dynamic_pointer_cast<file::EffectParser>(parser);
 		if (fxParser)
@@ -160,7 +170,9 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 
 	if (_filesQueue.size() == 0)
 	{
-		_loaderCompleteSlots.clear();
+		_loaderSlots.clear();
+		_filenameToLoader.clear();
+		_filenameToOptions.clear();
 
 		_complete->execute(shared_from_this());
 	}
