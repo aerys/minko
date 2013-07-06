@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "OpenGLES2Context.hpp"
 
+#include "minko/render/CompareMode.hpp"
+
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
 # include <GL/glut.h>
@@ -31,7 +33,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::render;
 
 OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
-
 OpenGLES2Context::BlendFactorsMap
 OpenGLES2Context::initializeBlendFactorsMap()
 {
@@ -58,6 +59,24 @@ OpenGLES2Context::initializeBlendFactorsMap()
     return m;
 }
 
+OpenGLES2Context::DepthFuncsMap OpenGLES2Context::_depthFuncs = OpenGLES2Context::initializeDepthFuncsMap();
+OpenGLES2Context::DepthFuncsMap
+OpenGLES2Context::initializeDepthFuncsMap()
+{
+	DepthFuncsMap m;
+
+	m[CompareMode::ALWAYS]			= GL_ALWAYS;
+	m[CompareMode::EQUAL]			= GL_EQUAL;
+	m[CompareMode::GREATER]			= GL_GREATER;
+	m[CompareMode::GREATER_EQUAL]	= GL_GREATER | GL_EQUAL;
+	m[CompareMode::LESS]			= GL_LESS;
+	m[CompareMode::LESS_EQUAL]		= GL_LESS | GL_EQUAL;
+	m[CompareMode::NEVER]			= GL_NEVER;
+	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
+	
+	return m;
+}
+
 OpenGLES2Context::OpenGLES2Context() :
 	_currentIndexBuffer(-1),
 	_currentVertexBuffer(8, -1),
@@ -73,6 +92,8 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+
+	setDepthTest(true, CompareMode::LESS);
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -98,9 +119,9 @@ OpenGLES2Context::~OpenGLES2Context()
 
 void
 OpenGLES2Context::configureViewport(const unsigned int x,
-				  				   const unsigned int y,
-				  				   const unsigned int width,
-				  				   const unsigned int height)
+				  				    const unsigned int y,
+				  				    const unsigned int width,
+				  				    const unsigned int height)
 {
 	glViewport(x, y, width, height);
 }
@@ -179,7 +200,7 @@ OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTri
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, (void*)0);
 }
 
 const unsigned int
@@ -728,17 +749,40 @@ OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, 
 void
 OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination destination)
 {
-    glBlendFunc(
-        _blendingFactors[(uint)source & 0x00ff],
-        _blendingFactors[(uint)destination & 0xff00]
-    );
+	if (((uint)source | (uint)destination) != (uint)_currentBlendMode)
+	{
+		_currentBlendMode = (Blending::Mode)((uint)source | (uint)destination);
+
+		glBlendFunc(
+			_blendingFactors[(uint)source & 0x00ff],
+			_blendingFactors[(uint)destination & 0xff00]
+		);
+	}
 }
 
 void
 OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
 {
-    glBlendFunc(
-        _blendingFactors[(uint)blendMode & 0x00ff],
-        _blendingFactors[(uint)blendMode & 0xff00]
-    );
+	if (blendMode != _currentBlendMode)
+	{
+		_currentBlendMode = blendMode;
+
+		glBlendFunc(
+			_blendingFactors[(uint)blendMode & 0x00ff],
+			_blendingFactors[(uint)blendMode & 0xff00]
+		);
+	}
+}
+
+void
+OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
+{
+	if (depthMask != _currentDepthMask || depthFunc != _currentDepthFunc)
+	{
+		_currentDepthMask = depthMask;
+		_currentDepthFunc = depthFunc;
+
+		glDepthMask(depthMask);
+		glDepthFunc(_depthFuncs[depthFunc]);
+	}
 }
