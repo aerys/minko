@@ -50,6 +50,7 @@ namespace minko
 	private:
 		Signal() :
 			std::enable_shared_from_this<Signal<A...>>(),
+            _nextSlotId(0),
 			_locked(false)
 		{
 		}
@@ -129,7 +130,6 @@ namespace minko
 		}
 
 	private:
-
 		template <typename... T>
 		class SignalSlot :
 			public std::enable_shared_from_this<SignalSlot<T...>>
