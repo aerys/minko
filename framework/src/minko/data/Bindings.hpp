@@ -29,7 +29,10 @@ namespace minko
 		typedef std::shared_ptr<Bindings> Ptr;
 
     private:
-        std::vector<unsigned char>  _memory;
+        //std::vector<unsigned char>						_memory;
+		std::list<std::string>							_bindings;
+		std::unordered_map<std::string, std::string>	_attributeBindings;
+		std::unordered_map<std::string, std::string>	_uniformBindings;
 
 	public:
 		inline static
@@ -39,22 +42,61 @@ namespace minko
 			return std::shared_ptr<Bindings>(new Bindings());
 		}
 
-        void
-        add(const std::string& bindingName,
-            const std::string& propertyName,
-            const unsigned int size)
-        {
+		bool
+		hasBinding(const std::string& bindingName)
+		{
+			return std::find(_bindings.begin(), _bindings.end(), bindingName) != _bindings.end();
+		}
 
+		bool
+		hasVertexAttribute(const std::string& attributeName)
+		{
+			return _attributeBindings.count(attributeName);
+		}
+
+        void
+        addVertexAttribute(const std::string& bindingName,
+						   const std::string& attributeName)
+        {
+			_bindings.push_back(bindingName);
+			_attributeBindings[attributeName] = bindingName;
         }
+
+		/*
+		void
+        removeVertexAttribute(const std::string& bindingName)
+        {
+			_attributeBindings.erase(bindingName);
+        }
+		*/
+
+		bool
+		hasUniform(const std::string& uniformName)
+		{
+			return _uniformBindings.count(uniformName);
+		}
+
+		void
+		addUniform(const std::string& bindingName,
+				   const std::string& uniformName)
+		{
+			_bindings.push_back(bindingName);
+			_attributeBindings[uniformName] = bindingName;
+		}
+
+		/*
+		void
+		removeUniform(const std::string& bindingName)
+		{
+			_attributeBindings.erase(bindingName);
+		}
+		*/
 
         void
         clear()
         {
-        }
-
-        void
-        remove()
-        {
+			_attributeBindings.clear();
+			_uniformBindings.clear();
         }
 
 	private:

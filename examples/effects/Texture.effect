@@ -1,12 +1,17 @@
 // texture effect
 {
-	"name"		: "texture",
-	"bindings"	: {
+	"name"				: "texture",
+	"attributeBindings"	: {
 		"position"				: "geometry/vertex/attribute/position",
-		"uv"					: "geometry/vertex/attribute/uv",
+		"uv"					: "geometry/vertex/attribute/uv"
+	},
+	"uniformBindings"	: {
 		"diffuseMap"			: "material/diffuse/map",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+	},
+	"stateBindings"		: {
+		// nothing
 	},
 	"passes"	: [{
 		"vertexShader"	: "
