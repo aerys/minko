@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/scene/NodeSet.hpp"
-#include "minko/data/Container.hpp"
 
 namespace minko
 {
@@ -124,25 +122,9 @@ namespace minko
 			{
 				return _tags;
 			}
-			inline
+			
 			void
-			tags(unsigned int tags)
-			{
-				if (_tags != tags)
-				{
-					_tags = tags;
-
-					// bubble down
-					auto descendants = NodeSet::create(shared_from_this())->descendants(true);
-					for (auto descendant : descendants->nodes())
-						descendant->_tagsChanged->execute(descendant, shared_from_this());
-
-					// bubble up
-					auto ancestors = NodeSet::create(shared_from_this())->ancestors();
-					for (auto ancestor : ancestors->nodes())
-						ancestor->_tagsChanged->execute(ancestor, shared_from_this());
-				}
-			}
+			tags(unsigned int tags);
 
 			inline
 			Ptr
