@@ -13,7 +13,8 @@
 	},
 	
 	"stateBindings"	: {
-		"blending"	: "material/blending"
+		"blending"	: "material/blending",
+		"depthTest"	: "material/depthTest"
 	},
 	
 	"passes"	: [{

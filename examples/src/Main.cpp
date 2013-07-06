@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 		camera->addController(renderingController);
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
+		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(TransformController::create());
@@ -106,11 +106,13 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material/blending",				render::Blending::Mode::ALPHA)
+				->set("material/depthFunc",				render::CompareMode::LESS)
+				->set("material/depthMask",				true)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("basic")
+			assets->effect("directional light")
 		));
 
 		group->addChild(mesh);
@@ -131,7 +133,6 @@ int main(int argc, char** argv)
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
-
 
 	while(!glfwWindowShouldClose(window))
     {
