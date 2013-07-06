@@ -207,6 +207,10 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode) = 0;
 
+			virtual
+			void
+			setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
+
 		};
 	}	
 }
