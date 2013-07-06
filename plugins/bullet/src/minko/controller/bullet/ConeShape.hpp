@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
+#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
 
 namespace minko
 {
@@ -28,68 +28,64 @@ namespace minko
 	{
 		namespace bullet
 		{
-			class AbstractPhysicsShape:
-				public std::enable_shared_from_this<AbstractPhysicsShape>
+			class ConeShape:
+				public AbstractPhysicsShape
 			{
 			public:
-				typedef std::shared_ptr<AbstractPhysicsShape> Ptr;
-
-				enum Type
-				{
-					SPHERE,
-					BOX,
-					CONE
-				};
-
-			protected:
-				Type	_type;
-				float	_margin;
+				typedef std::shared_ptr<ConeShape> Ptr;
 
 			private:
-				std::shared_ptr<Signal<Ptr>> _shapeChanged;
+				float	_radius;
+				float	_height;
 
 			public:
-				AbstractPhysicsShape(Type type):
-					_type(type),
-					_margin(0.0f),
-					_shapeChanged(Signal<Ptr>::create())
+				inline static
+					Ptr
+					create(float radius, float height)
 				{
-				}
-
-				virtual
-					~AbstractPhysicsShape()
-				{
-				}
-
-				inline
-					Type
-					type() const
-				{
-					return _type;
+					return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
 				}
 
 				inline
 					float
-					margin() const
+					radius() const
 				{
-					return _margin;
+					return _radius;
+				}
+
+				inline
+					float
+					height() const
+				{
+					return _height;
 				}
 
 				inline
 					void
-					setMargin(float margin)
+					setRadius(float radius)
 				{
-					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
-					_margin	= margin;
+					const bool needsUpdate	= fabsf(radius - _radius) > 1e-6f;
+					_radius	= radius;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
 				}
 
 				inline
-					Signal<Ptr>::Ptr
-					shapeChanged()
+					void
+					setHeight(float height)
 				{
-					return _shapeChanged;
+					const bool needsUpdate	= fabsf(height - _height) > 1e-6f;
+					_height	= height;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
+				}
+
+			private:
+				ConeShape(float radius, float height):
+					AbstractPhysicsShape(CONE),
+					_radius(radius),
+					_height(height)
+				{
 				}
 			};
 		}

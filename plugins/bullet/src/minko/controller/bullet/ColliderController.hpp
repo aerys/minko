@@ -48,12 +48,14 @@ namespace minko
 
 			private:
 				ColliderPtr		_collider;
+				NodePtr			_target;
 				PhysicsWorldPtr	_physicsWorld;
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
+				Signal<ColliderPtr>::Slot				_transformChangedSlot;
 
 			public:
 				inline static
@@ -80,6 +82,8 @@ namespace minko
 					addedHandler(NodePtr, NodePtr, NodePtr);
 				void
 					removedHandler(NodePtr, NodePtr, NodePtr);
+				void
+					transformChangedHandler(ColliderPtr);
 
 				static
 				PhysicsWorldPtr

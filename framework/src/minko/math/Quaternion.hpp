@@ -20,78 +20,82 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace math
 	{
-		namespace bullet
+		class Quaternion:
+			public std::enable_shared_from_this<Quaternion>
 		{
-			class AbstractPhysicsShape:
-				public std::enable_shared_from_this<AbstractPhysicsShape>
+		public:
+			typedef std::shared_ptr<Quaternion> Ptr;
+
+			typedef std::shared_ptr<Vector3>	Vector3Ptr;
+			typedef std::shared_ptr<Matrix4x4>	Matrix4x4Ptr;
+		private:
+			float _i;
+			float _j;
+			float _k;
+			float _r;
+
+		public:
+			inline static
+				Ptr
+				create(
+				float i = 1.0f, 
+				float j = 0.0f, 
+				float k = 0.0f, 
+				float r = 0.0f)
 			{
-			public:
-				typedef std::shared_ptr<AbstractPhysicsShape> Ptr;
+				return std::shared_ptr<Quaternion>(new Quaternion(i, j, k, r));
+			}
 
-				enum Type
-				{
-					SPHERE,
-					BOX,
-					CONE
-				};
+			inline
+				Ptr
+				setTo(float i, float j, float k, float r)
+			{
+				_i	= i;
+				_j	= j;
+				_k	= k;
+				_r	= r;
 
-			protected:
-				Type	_type;
-				float	_margin;
+				return std::static_pointer_cast<Quaternion>(shared_from_this());
+			}
 
-			private:
-				std::shared_ptr<Signal<Ptr>> _shapeChanged;
+			inline
+				float
+				x() const
+			{
+				return _i;
+			}
 
-			public:
-				AbstractPhysicsShape(Type type):
-					_type(type),
-					_margin(0.0f),
-					_shapeChanged(Signal<Ptr>::create())
-				{
-				}
+			inline 
+				float
+				y() const
+			{
+				return _j;
+			}
 
-				virtual
-					~AbstractPhysicsShape()
-				{
-				}
+			inline
+				float
+				z() const
+			{
+				return _k;
+			}
 
-				inline
-					Type
-					type() const
-				{
-					return _type;
-				}
+			inline
+				float
+				w() const
+			{
+				return _r;
+			}
 
-				inline
-					float
-					margin() const
-				{
-					return _margin;
-				}
-
-				inline
-					void
-					setMargin(float margin)
-				{
-					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
-					_margin	= margin;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
-				inline
-					Signal<Ptr>::Ptr
-					shapeChanged()
-				{
-					return _shapeChanged;
-				}
-			};
-		}
+		private:
+			Quaternion(float i = 1.0f, float j = 0.0f, float k = 0.0f, float r = 0.0f)
+				: _i(i), _j(j), _k(k), _r(r)
+			{
+			}
+		};
 	}
 }
