@@ -24,3 +24,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/bullet/ColliderController.hpp"
 #include "minko/controller/bullet/AbstractPhysicsShape.hpp"
 #include "minko/controller/bullet/SphereShape.hpp"
+#include "minko/controller/bullet/BoxShape.hpp"
+#include "minko/controller/bullet/ConeShape.hpp"
