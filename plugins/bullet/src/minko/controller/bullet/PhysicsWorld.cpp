@@ -19,12 +19,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "PhysicsWorld.hpp"
 #include <btBulletDynamicsCommon.h>
+#include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
 #include <minko/controller/RenderingController.hpp>
 #include <minko/controller/bullet/Collider.hpp>
+#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::controller;
 
@@ -103,7 +106,7 @@ void
 	BulletColliderPtr btCollider = BulletCollider::create(collider);
 	_colliderMap.insert(std::pair<ColliderPtr, BulletColliderPtr>(collider, btCollider));
 
-	_btDynamicsWorld->addCollisionObject(btCollider->collisionObject.get());
+	_btDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
 }
 
 void
@@ -113,7 +116,7 @@ void
 	if (it == _colliderMap.end())
 		throw std::invalid_argument("collider");
 
-	_btDynamicsWorld->removeCollisionObject(it->second->collisionObject.get());
+	_btDynamicsWorld->removeCollisionObject(it->second->collisionObject().get());
 
 	_colliderMap.erase(it);
 }
@@ -135,6 +138,30 @@ void
 {
 	//std::cout << "update physics" << std::endl;
 	_btDynamicsWorld->stepSimulation(timeStep);
+
+	updateColliders();
+}
+
+void
+	bullet::PhysicsWorld::updateColliders()
+{
+	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
+	{
+		auto bulletTransform	= it->second->collisionObject()->getWorldTransform();
+		auto bulletBasis		= bulletTransform.getBasis();
+		auto bulletTranslation	= bulletTransform.getOrigin();
+
+		std::shared_ptr<Matrix4x4>	transform = Matrix4x4::create();
+		transform->initialize(
+			bulletBasis[0][0], bulletBasis[0][1], bulletBasis[0][2], bulletTranslation[0],
+			bulletBasis[1][0], bulletBasis[1][1], bulletBasis[1][2], bulletTranslation[1],
+			bulletBasis[2][0], bulletBasis[2][1], bulletBasis[2][2], bulletTranslation[2],
+			0.0f, 0.0f, 0.0f, 1.0f
+			);
+
+		auto collider	= it->first;
+		collider->setTransform(transform);
+	}
 }
 
 /*static*/
@@ -164,30 +191,4 @@ std::shared_ptr<RenderingController>
 		throw std::logic_error("PhysicsWorld requires exactly one RenderingController among the descendants of its target node.");
 
 	return nodeSet->nodes()[0]->controllers<RenderingController>()[0];
-}
-
-/*static*/
-bullet::PhysicsWorld::BulletColliderPtr
-	bullet::PhysicsWorld::BulletCollider::create(bullet::PhysicsWorld::ColliderPtr collider)
-{
-	BulletColliderPtr	btCollider(new BulletCollider());
-
-	// bad initialization right now
-	auto shape	= collider->shape();
-
-	btCollider->collisionShape	= std::shared_ptr<btCollisionShape>(new btSphereShape(1.0f));
-	btCollider->motionState		= std::shared_ptr<btMotionState>(new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,-1,0))));
-
-	btScalar	mass	= 1.0f;
-	btVector3	inertia	 (0.0, 0.0, 0.0);
-	btCollider->collisionShape->calculateLocalInertia(mass, inertia);
-
-	btCollider->collisionObject	= std::shared_ptr<btCollisionObject>(new btRigidBody(
-		mass,
-		btCollider->motionState.get(),
-		btCollider->collisionShape.get(),
-		inertia
-		));
-
-	return btCollider;
 }

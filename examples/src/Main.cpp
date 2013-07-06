@@ -123,8 +123,8 @@ int main(int argc, char** argv)
 			assets->effect("texture")
 			));
 
-		auto shape		= bullet::SphereShape::create(1.0f);
-		auto collider	= bullet::Collider::create(shape);
+		auto shape		= bullet::BoxShape::create(1.0f,50.0f,30.0f);
+		auto collider	= bullet::Collider::create(10.0f, shape);
 		mesh->addController(bullet::ColliderController::create(collider));
 
 		group->addChild(mesh);
