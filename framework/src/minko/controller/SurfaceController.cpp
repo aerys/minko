@@ -72,7 +72,8 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 		_drawCalls.push_back(DrawCall::create(
 			target->data(),
 			_effect->attributeBindings(),
-			_effect->uniformBindings()
+			_effect->uniformBindings(),
+			_effect->stateBindings()
 		));
 }
 
