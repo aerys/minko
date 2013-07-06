@@ -29,6 +29,7 @@ using namespace minko::controller;
 bullet::ColliderController::ColliderController(ColliderPtr collider):
 	AbstractController(),
 	_collider(collider),
+	_target(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
@@ -54,6 +55,12 @@ void
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
+
+	_transformChangedSlot	= _collider->transformChanged()->connect(std::bind(
+		&bullet::ColliderController::transformChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1
+		));
 }
 
 void
@@ -61,7 +68,11 @@ void
 	std::shared_ptr<AbstractController> controller, 
 	std::shared_ptr<Node> target)
 {
-	_addedSlot	= target->added()->connect(std::bind(
+	if (_target)
+		throw std::logic_error("A collider controller can currently target only one node.");
+	_target		= target;
+
+	_addedSlot	= _target->added()->connect(std::bind(
 		&bullet::ColliderController::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -69,7 +80,7 @@ void
 		std::placeholders::_3
 		));
 
-	_removedSlot	= target->removed()->connect(std::bind(
+	_removedSlot	= _target->removed()->connect(std::bind(
 		&bullet::ColliderController::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -83,8 +94,10 @@ void
 	std::shared_ptr<AbstractController> controller, 
 	std::shared_ptr<Node> target)
 {
-	_addedSlot		= nullptr;
-	_removedSlot	= nullptr;
+	_addedSlot				= nullptr;
+	_removedSlot			= nullptr;
+	_transformChangedSlot	= nullptr;
+	_target					= nullptr;
 }
 
 void 
@@ -109,6 +122,13 @@ void
 {
 	_physicsWorld->removeChild(_collider);
 	_physicsWorld	= nullptr;
+}
+
+void 
+	bullet::ColliderController::transformChangedHandler(ColliderPtr collider)
+{
+	auto transform	= collider->transform();
+	std::cout << "update transform of collider's target in ColliderController::transformChangedHandler" << std::endl;
 }
 
 /*static*/
