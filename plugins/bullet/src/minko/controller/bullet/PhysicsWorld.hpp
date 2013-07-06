@@ -37,6 +37,10 @@ namespace minko
 	{
 		namespace bullet
 		{
+			class AbstractPhysicsShape;
+			class SphereShape;
+			class BoxShape;
+			class ConeShape;
 			class Collider;
 
 			class PhysicsWorld:
@@ -51,23 +55,23 @@ namespace minko
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<Collider>					ColliderPtr; 
 				typedef std::shared_ptr<RenderingController>		RenderingControllerPtr;
+				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 
 				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
 				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
 				typedef std::shared_ptr<btConstraintSolver>			btConstraintSolverPtr;
 				typedef std::shared_ptr<btDispatcher>				btDispatcherPtr;
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
-				typedef std::shared_ptr<btCollisionShape>			btCollisionShapePtr;
-				typedef std::shared_ptr<btMotionState>				btMotionStatePtr;
-				typedef std::shared_ptr<btCollisionObject>			btCollisionObjectPtr;
 
-				struct BulletCollider;
+
+				class BulletCollider;
 				typedef std::shared_ptr<BulletCollider>				BulletColliderPtr;
 
 				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>	ColliderMap;
 
 			private:
 				ColliderMap					_colliderMap;
+				Vector3Ptr					_gravityVector;
 
 				btBroadphasePtr				_btBroadphase;
 				btCollisionConfigurationPtr	_btCollisionConfiguration;
@@ -113,20 +117,77 @@ namespace minko
 				void
 					exitFrameHandler(RenderingControllerPtr);
 
+				void
+					updateColliders();
+
 				static
 					RenderingControllerPtr
 					getRootRenderingController(NodePtr);
 
 			private:
-				struct BulletCollider
+				class BulletCollider
 				{
-					btCollisionShapePtr		collisionShape;
-					btMotionStatePtr		motionState;
-					btCollisionObjectPtr	collisionObject;
+				public:
+					typedef std::shared_ptr<PhysicsWorld> Ptr;
 
+				private:
+					typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
+					typedef std::shared_ptr<SphereShape>			SphereShapePtr;
+					typedef std::shared_ptr<BoxShape>				BoxShapePtr;
+					typedef std::shared_ptr<ConeShape>				ConeShapePtr;
+
+					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
+					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
+					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
+
+				private:
+					btCollisionShapePtr		_btCollisionShape;
+					btMotionStatePtr		_btMotionState;
+					btCollisionObjectPtr	_btCollisionObject;
+
+				public:
 					static
 						BulletColliderPtr
 						create(ColliderPtr);
+
+					inline
+						btCollisionShapePtr
+						collisionShape() const
+					{
+						return _btCollisionShape;
+					}
+
+					inline
+						btMotionStatePtr
+						motionState() const
+					{
+						return _btMotionState;
+					}
+
+					inline 
+						btCollisionObjectPtr
+						collisionObject() const
+					{
+						return _btCollisionObject;
+					}
+
+				private:
+					BulletCollider();
+
+					void
+						initialize(ColliderPtr);
+					void
+						initializeCollisionShape(AbsShapePtr);
+					void
+						initializeSphereShape(SphereShapePtr);
+					void
+						initializeBoxShape(BoxShapePtr);
+					void
+						initializeConeShape(ConeShapePtr);
+					void
+						initializeMotionState(ColliderPtr);
+					void
+						initializeCollisionObject(ColliderPtr);
 				};
 			};
 		}

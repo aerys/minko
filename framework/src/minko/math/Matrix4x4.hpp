@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Value.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/math/Quaternion.hpp"
 
 namespace minko
 {
@@ -202,6 +203,9 @@ namespace minko
 
 			Ptr
 			lerp(Matrix4x4::Ptr target, float ratio);
+
+			Quaternion::Ptr
+			rotation(Quaternion::Ptr output = 0) const;
 
 			Vector3::Ptr
 			translation(Vector3::Ptr output = 0);

@@ -453,6 +453,63 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 	return shared_from_this();
 }
 
+Quaternion::Ptr
+Matrix4x4::rotation(Quaternion::Ptr output) const
+{
+	float quaternion[4]	= { 1.0f, 0.0f, 0.0f, 0.0f }; // { i, j, k, r }
+
+	// "From Quaternion to Matrix and Back" by JMP van Warenen
+	uint k0		= 2;
+	uint k1		= 3;
+	uint k2		= 0;
+	uint k3		= 1;
+	float s0	= -1.0f;
+	float s1	= -1.0f;
+	float s2	=  1.0f;
+
+	if (_m[0] + _m[5] + _m[10] > 0.0f)
+	{ 
+		k0	= 3; 
+		k1	= 2; 
+		k2	= 1; 
+		k3	= 0; 
+		s0	= 1.0f; 
+		s1	= 1.0f; 
+		s2	= 1.0f; 
+	} 
+	else if (_m[0] > _m[5] && _m[0] > _m[10]) 
+	{ 
+		k0	= 0; 
+		k1	= 1; 
+		k2	= 2; 
+		k3	= 3; 
+		s0	=  1.0f; 
+		s1	= -1.0f; 
+		s2	= -1.0f; 
+	} 
+	else if (_m[5] > _m[10]) 
+	{ 
+		k0	= 1; 
+		k1	= 0; 
+		k2	= 3; 
+		k3	= 2; 
+		s0	= -1.0f; 
+		s1	=  1.0f; 
+		s2	= -1.0f; 
+	}
+
+	float t	= s0*_m[0] + s1*_m[5] + s2*_m[10] + 1.0f;
+	float s	= 0.5 / sqrtf(t);
+	quaternion[k0]	= s * t;
+	quaternion[k1]	= s * (_m[1] - s2*_m[4]);
+	quaternion[k2]	= s * (_m[8] - s1*_m[2]);
+	quaternion[k3]	= s * (_m[6] - s0*_m[9]);
+
+	return output == 0
+		? Quaternion::create(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
+		: output->setTo(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+}
+
 Vector3::Ptr
 Matrix4x4::translation(Vector3::Ptr output)
 {
