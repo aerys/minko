@@ -25,11 +25,13 @@ using namespace minko::data;
 
 Effect::Effect(std::vector<Effect::ProgramPtr>&					shaders,
 			   std::unordered_map<std::string, std::string>&	attributeBindings,
-			   std::unordered_map<std::string, std::string>&	uniformBindings) :
+			   std::unordered_map<std::string, std::string>&	uniformBindings,
+			   std::unordered_map<std::string, std::string>&	stateBindings) :
 	std::enable_shared_from_this<Effect>(),
 	_shaders(shaders),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
+	_stateBindings(stateBindings),
 	_data(Provider::create())
 {
 	auto i = 0;

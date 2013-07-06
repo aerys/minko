@@ -42,6 +42,7 @@ namespace minko
 			std::shared_ptr<data::Container>					        _data;
 			const std::unordered_map<std::string, std::string>&	        _attributeBindings;
 			const std::unordered_map<std::string, std::string>&	        _uniformBindings;
+			const std::unordered_map<std::string, std::string>&	        _stateBindings;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
 
@@ -52,9 +53,12 @@ namespace minko
 			Ptr
 			create(ContainerPtr						                    data,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
-				   const std::unordered_map<std::string, std::string>&	uniformBindings)
+				   const std::unordered_map<std::string, std::string>&	uniformBindings,
+				   const std::unordered_map<std::string, std::string>&	stateBindings)
 			{
-                auto dc = std::shared_ptr<DrawCall>(new DrawCall(data, attributeBindings, uniformBindings));
+                auto dc = std::shared_ptr<DrawCall>(new DrawCall(
+					data, attributeBindings, uniformBindings, stateBindings
+				));
 
                 dc->bind();
 
@@ -71,10 +75,14 @@ namespace minko
 		private:
 			DrawCall(ContainerPtr                   						data,
 				     const std::unordered_map<std::string, std::string>&	attributeBindings,
-				     const std::unordered_map<std::string, std::string>&	uniformBindings);
+				     const std::unordered_map<std::string, std::string>&	uniformBindings,
+					 const std::unordered_map<std::string, std::string>&	stateBindings);
 
 			void
 			bind();
+
+			void
+			bindStates();
 
             template <typename T>
             T
@@ -83,6 +91,16 @@ namespace minko
                 watchProperty(propertyName);
 
                 return _data->get<T>(propertyName);
+            }
+
+			template <typename T>
+            T
+            getDataProperty(const std::string& propertyName, T defaultValue)
+            {
+				if (dataHasProperty(propertyName))
+					return _data->get<T>(propertyName);
+
+				return defaultValue;
             }
 
             bool
