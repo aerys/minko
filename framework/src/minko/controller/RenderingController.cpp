@@ -18,7 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "RenderingController.hpp"
+
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/controller/SurfaceController.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/AbstractContext.hpp"
@@ -138,12 +140,10 @@ RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 												std::shared_ptr<Node> target,
 												std::shared_ptr<Node> parent)
 {
-	auto surfaceNodes = NodeSet::create(target)
+    auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
+        ->select(target)
 		->descendants(true)
-		->where([](std::shared_ptr<Node>	 node)
-		{
-			return node->hasController<SurfaceController>();
-		});
+		->hasController<SurfaceController>();
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->controllers<SurfaceController>())
@@ -155,12 +155,10 @@ RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 												  std::shared_ptr<Node> target,
 												  std::shared_ptr<Node> parent)
 {
-	auto surfaceNodes = NodeSet::create(target)
+	auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
+        ->select(target)
 		->descendants(true)
-		->where([](std::shared_ptr<Node>	 node)
-		{
-			return node->hasController<SurfaceController>();
-		});
+        ->hasController<SurfaceController>();
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->controllers<SurfaceController>())

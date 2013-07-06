@@ -39,26 +39,33 @@ namespace minko
 		private:
 			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
 			typedef std::shared_ptr<scene::Node>		NodePtr;
+            typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
 		private:
+            bool                                            _enabled;
+
 			std::shared_ptr<math::Matrix4x4>				_view;
 			std::shared_ptr<math::Matrix4x4>				_projection;
 			std::shared_ptr<math::Matrix4x4>				_viewProjection;
 
 			std::shared_ptr<data::Provider>					_data;
 
+            std::shared_ptr<scene::NodeSet>                 _surfaces;
+
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
 			data::Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
+            Signal<NodeSetPtr, NodePtr>::Slot               _surfaceAddedSlot;
+            Signal<NodeSetPtr, NodePtr>::Slot               _surfaceRemovedSlot;
 
 		public:
 			inline static
 			Ptr
 			create(float fov, float aspectRatio, float zNear, float zFar)
 			{
-				auto ctrl  = std::shared_ptr<PerspectiveCameraController>(new PerspectiveCameraController(
-					fov, aspectRatio, zNear, zFar
-				));
+				auto ctrl  = std::shared_ptr<PerspectiveCameraController>(
+                    new PerspectiveCameraController(fov, aspectRatio, zNear, zFar)
+                );
 
 				ctrl->initialize();
 
@@ -80,6 +87,12 @@ namespace minko
 			void
 			localToWorldChangedHandler(std::shared_ptr<data::Container> data,
 									   const std::string&				propertyName);
+
+            void
+            surfaceAdded(std::shared_ptr<scene::NodeSet> set, NodePtr node);
+
+            void
+            surfaceRemoved(std::shared_ptr<scene::NodeSet> set, NodePtr node);
 		};
 	}
 }
