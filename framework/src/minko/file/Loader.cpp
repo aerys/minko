@@ -43,7 +43,12 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	std::fstream file(filename, flags);
 
 	if (!file.is_open())
-		file.open(_options->includePath() + "/" + filename, flags);
+		for (auto path : _options->includePaths())
+		{
+			file.open(path + "/" + filename, flags);
+			if (file.is_open())
+				break;
+		}
 
 	if (file.is_open())
 	{
