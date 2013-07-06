@@ -78,13 +78,15 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		->queue("textures/collage.jpg")
-        ->queue("textures/box3.png")
-		->queue("effects/Texture.effect")
-		//->queue("effects/Red.effect")
-		->queue("effects/Basic.effect");
+		->queue("collage.jpg")
+        ->queue("box3.png")
+		->queue("DirectionalLight.effect")
+		->queue("Texture.effect")
+		->queue("Red.effect")
+		->queue("Basic.effect");
 
-	/*assets->defaultOptions()->includePath("effects");*/
+	assets->defaultOptions()->includePaths().push_back("effects");
+	assets->defaultOptions()->includePaths().push_back("textures");
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -109,8 +111,8 @@ int main(int argc, char** argv)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
-			assets->effect("texture")
+				->set("material/diffuse/map",			assets->texture("box3.png")),
+			assets->effect("directional light")
 		));
 
 		group->addChild(mesh);
@@ -118,15 +120,16 @@ int main(int argc, char** argv)
 
 	assets->load();
 
-	// auto oglContext = context;
-	// auto fx = assets->effect("directional light");
+	/*
+	auto fx = assets->effect("directional light");
 
-	// std::cout << "== vertex shader compilation logs ==" << std::endl;
-	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-	// std::cout << "== fragment shader compilation logs ==" << std::endl;
-	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-	// std::cout << "== program info logs ==" << std::endl;
-	// std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+	std::cout << "== vertex shader compilation logs ==" << std::endl;
+	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
+	std::cout << "== fragment shader compilation logs ==" << std::endl;
+	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
+	std::cout << "== program info logs ==" << std::endl;
+	std::cout << context->getProgramInfoLogs(fx->shaders()[0]->id()) << std::endl;
+	*/
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);

@@ -1,9 +1,11 @@
 // directional light effect
 {
 	"name"		: "directional light",
-	"bindings"	: {
+	"attributeBindings"	: {
 		"position"				: "geometry/vertex/attribute/position",
-		"normal"				: "geometry/vertex/attribute/normal",
+		"normal"				: "geometry/vertex/attribute/normal"
+	},
+	"uniformBindings"	: {
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
