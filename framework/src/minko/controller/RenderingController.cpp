@@ -221,4 +221,6 @@ RenderingController::render()
 		drawCall->render(_context);
 
 	_context->present();
+
+	_exitFrame->execute(shared_from_this());
 }
