@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/Container.hpp"
 
 using namespace minko::controller;
 using namespace minko::geometry;
