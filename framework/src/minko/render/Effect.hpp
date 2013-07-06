@@ -39,6 +39,7 @@ namespace minko
 			std::vector<ProgramPtr>							_shaders;
 			std::unordered_map<std::string, std::string>	_attributeBindings;
 			std::unordered_map<std::string, std::string>	_uniformBindings;
+			std::unordered_map<std::string, std::string>	_stateBindings;
 
 			std::shared_ptr<data::Provider>					_data;
 
@@ -47,10 +48,11 @@ namespace minko
 			Ptr
 			create(std::vector<ProgramPtr>							shaders,
 				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings)
+				   std::unordered_map<std::string, std::string>&	uniformBindings,
+				   std::unordered_map<std::string, std::string>&	stateBindings)
 			{
 				return std::shared_ptr<Effect>(new Effect(
-					shaders, attributeBindings, uniformBindings
+					shaders, attributeBindings, uniformBindings, stateBindings
 				));
 			}
 
@@ -82,10 +84,18 @@ namespace minko
 				return _uniformBindings;
 			}
 
+			inline
+			const std::unordered_map<std::string, std::string>&
+			stateBindings()
+			{
+				return _stateBindings;
+			}
+
 		private:
 			Effect(std::vector<ProgramPtr>&							shaders,
 				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings);
+				   std::unordered_map<std::string, std::string>&	uniformBindings,
+				   std::unordered_map<std::string, std::string>&	stateBindings);
 
 			void
 			propertyChangedHandler(std::shared_ptr<data::Container> data,
