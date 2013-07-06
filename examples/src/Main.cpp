@@ -74,10 +74,11 @@ int main(int argc, char** argv)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
+		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
 		->queue("DirectionalLight.effect")
+		->queue("VertexNormal.effect")
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect");
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
 		mesh->addController(TransformController::create());
 		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(SurfaceController::create(
-			assets->geometry("cube"),
+			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/blending",				render::Blending::Mode::ALPHA)
 				->set("material/depthFunc",				render::CompareMode::LESS)
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("directional light")
+			assets->effect("vertex normal")
 		));
 
 		group->addChild(mesh);
