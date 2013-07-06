@@ -1,8 +1,10 @@
 // basic effect
 {
 	"name"		: "basic",
-	"bindings"	: {
-		"position"				: "geometry/vertex/attribute/position",
+	"attributeBindings"	: {
+		"position"				: "geometry/vertex/attribute/position"
+	},
+	"uniformBindings"	: {
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
