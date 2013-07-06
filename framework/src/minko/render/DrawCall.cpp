@@ -32,19 +32,21 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::resource;
 
-DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
+DrawCall::DrawCall(std::shared_ptr<data::Container>						data,
 				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName) :
-	_data(bindings),
+	_data(data),
 	_inputNameToBindingName(inputNameToBindingName)
 {
-	bind(bindings);
 }
 
 void
-DrawCall::bind(std::shared_ptr<data::Container> bindings)
+DrawCall::bind()
 {
-	auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
-	auto indexStream	= bindings->get<IndexStream::Ptr>("geometry/indices");
+    _func.clear();
+    _propertyChangedSlots.clear();
+
+	auto vertexSize		= getDataProperty<unsigned int>("geometry/vertex/size");
+	auto indexStream	= getDataProperty<IndexStream::Ptr>("geometry/indices");
 	auto indexBuffer	= indexStream->id();
 	auto numIndices		= indexStream->data().size();
 	auto drawTriangles	= [=](AbstractContext::Ptr context)
@@ -52,9 +54,9 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 		context->drawTriangles(indexBuffer, numIndices);
 	};
 	
-	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
+	for (auto passId = 0; dataHasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program		= bindings->get<Program::Ptr>("effect/pass" + std::to_string(passId));
+		auto program		= getDataProperty<Program::Ptr>("effect/pass" + std::to_string(passId));
 		auto numTextures	= 0;
 		auto programId		= program->id();
 
@@ -72,12 +74,12 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 				? _inputNameToBindingName.find(inputName)->second
 				: inputName;
 
-			if (!_data->hasProperty(name))
+			if (!dataHasProperty(name))
 				continue;
 
 			if (type == ProgramInputs::attribute)
 			{
-				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
+				auto vertexStream	= getDataProperty<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
 				auto size			= std::get<1>(*attribute);
 				auto offset			= std::get<2>(*attribute);
@@ -96,7 +98,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::float1)
 			{
-				auto floatValue = _data->get<float>(name);
+				auto floatValue = getDataProperty<float>(name);
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
@@ -105,7 +107,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::float2)
 			{
-				auto float2Value	= _data->get<std::shared_ptr<Vector2>>(name);
+				auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
 				auto x				= float2Value->x();
 				auto y				= float2Value->y();
 
@@ -116,7 +118,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::float3)
 			{
-				auto float3Value	= _data->get<std::shared_ptr<Vector3>>(name);
+				auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
 				auto x				= float3Value->x();
 				auto y				= float3Value->y();
 				auto z				= float3Value->z();
@@ -128,7 +130,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::float4)
 			{
-				auto float4Value	= _data->get<std::shared_ptr<Vector4>>(name);
+				auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
 				auto x				= float4Value->x();
 				auto y				= float4Value->y();
 				auto z				= float4Value->z();
@@ -141,7 +143,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::float16)
 			{
-				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
+				auto float16Ptr = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
@@ -150,7 +152,7 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			}
 			else if (type == ProgramInputs::Type::sampler2d)
 			{
-				auto texture = _data->get<Texture::Ptr>(name)->id();
+				auto texture = getDataProperty<Texture::Ptr>(name)->id();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
@@ -180,4 +182,32 @@ DrawCall::render(AbstractContext::Ptr context)
 {
 	for (auto& f : _func)
 		f(context);
+}
+
+void
+DrawCall::watchProperty(const std::string& propertyName)
+{
+    /*
+    _propertyChangedSlots.push_back(_data->propertyChanged(propertyName)->connect(std::bind(
+        &DrawCall::boundPropertyChangedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
+    )));
+    */
+}
+
+void
+DrawCall::boundPropertyChangedHandler(std::shared_ptr<data::Container>  data,
+                                      const std::string&                propertyName)
+{
+    bind();
+}
+
+bool
+DrawCall::dataHasProperty(const std::string& propertyName)
+{
+    watchProperty(propertyName);
+
+    return _data->hasProperty(propertyName);
 }

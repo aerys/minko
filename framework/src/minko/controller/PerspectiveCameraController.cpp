@@ -18,18 +18,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "PerspectiveCameraController.hpp"
+
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
+#include "minko/controller/SurfaceController.hpp"
 
 using namespace minko::controller;
 using namespace minko::math;
 using namespace minko::scene;
 
-PerspectiveCameraController::PerspectiveCameraController(float fov, float aspectRatio, float zNear, float zFar) :
+PerspectiveCameraController::PerspectiveCameraController(float fov,
+                                                         float aspectRatio,
+                                                         float zNear,
+                                                         float zFar) :
+    _enabled(true),
 	_view(math::Matrix4x4::create()),
 	_projection(math::Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
 	_viewProjection(math::Matrix4x4::create()->copyFrom(_projection)),
-	_data(data::Provider::create())
+	_data(data::Provider::create()),
+    _surfaces(NodeSet::create(NodeSet::Mode::AUTO))
 {
+    _surfaces
+        ->root()
+        ->descendants(true)
+        ->hasController<SurfaceController>();
+
 	_data
 		->set("transform/viewMatrix",			_view)
 		->set("transform/projectionMatrix",		_projection)
@@ -40,16 +53,35 @@ void
 PerspectiveCameraController::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&PerspectiveCameraController::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
+		&PerspectiveCameraController::targetAddedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
+	));
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&PerspectiveCameraController::targetAddedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
 	));
 
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&PerspectiveCameraController::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
-	));
+    _surfaceAddedSlot = _surfaces->nodeAdded()->connect(std::bind(
+        &PerspectiveCameraController::surfaceAdded,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
+    _surfaceRemovedSlot = _surfaces->nodeRemoved()->connect(std::bind(
+        &PerspectiveCameraController::surfaceRemoved,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
 }
 
 void
-PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+PerspectiveCameraController::targetAddedHandler(AbstractController::Ptr ctrl,
+                                                Node::Ptr               target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("PerspectiveCameraController cannot have more than 1 target.");
@@ -61,17 +93,22 @@ PerspectiveCameraController::targetAddedHandler(std::shared_ptr<AbstractControll
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+    _surfaces->select(targets().begin(), targets().end())->update();
 }
 
 void
-PerspectiveCameraController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+PerspectiveCameraController::targetRemovedHandler(AbstractController::Ptr   ctrl,
+                                                  Node::Ptr                 target)
 {
 	target->data()->addProvider(_data);
+
+    _surfaces->select(targets().begin(), targets().end())->update();
 }
 
 void
-PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<data::Container>	data,
-														const std::string&					propertyName)
+PerspectiveCameraController::localToWorldChangedHandler(data::Container::Ptr	data,
+														const std::string&		propertyName)
 {
 	std::cout << "PerspectiveCameraController::localToWorldChangedHandler()" << std::endl;
 
@@ -79,3 +116,18 @@ PerspectiveCameraController::localToWorldChangedHandler(std::shared_ptr<data::Co
 	_viewProjection->copyFrom(_view)->append(_projection);
 }
 
+void
+PerspectiveCameraController::surfaceAdded(std::shared_ptr<scene::NodeSet> set, NodePtr node)
+{
+    std::cout << "surface added: " << node->name() << std::endl;
+
+    node->data()->addProvider(_data);
+}
+
+void
+PerspectiveCameraController::surfaceRemoved(std::shared_ptr<scene::NodeSet> set, NodePtr node)
+{
+    std::cout << "surface removed: " << node->name() << std::endl;
+
+    node->data()->removeProvider(_data);
+}
