@@ -10,6 +10,7 @@ include 'framework'
 -- plugins
 include 'plugins/jpeg'
 include 'plugins/png'
+include 'plugins/bullet'
 
 newaction {
 	trigger = "copyDLLs",
