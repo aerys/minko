@@ -11,6 +11,11 @@
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
 		"lightDirection"		: "light/direction"
 	},
+	"stateBindings"	: {
+		"blending"	: "material/blending",
+		"depthMask"	: "material/depthMask",
+		"depthFunc"	: "material/depthFunc"
+	},
 	"includes"	: [ "Phong.glsl" ],
 	"passes"	: [{
 		"vertexShader"	: "
