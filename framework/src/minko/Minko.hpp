@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
 #include "minko/math/Vector2.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
