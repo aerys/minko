@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "DrawCall.hpp"
 
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/Blending.hpp"
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
 #include "minko/resource/Texture.hpp"
@@ -192,12 +194,25 @@ void
 DrawCall::bindStates()
 {
 	// blending state
-	auto blending = _stateBindings.count("blending")
-		? getDataProperty<Blending::Mode>(_stateBindings.at("blending"))
-		: Blending::Mode::DEFAULT;
+	auto blending = getDataProperty<Blending::Mode>(
+		_stateBindings.count("blending") ? _stateBindings.at("blending") : "blending",
+		Blending::Mode::DEFAULT
+	);
+	auto depthMask = getDataProperty<bool>(
+		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
+		true
+	);
+	auto depthFunc = getDataProperty<CompareMode>(
+		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
+		CompareMode::LESS
+	);
+	
+	// FIXME: bind stencil test
+
 	_func.push_back([=](AbstractContext::Ptr context)
 	{
 		context->setBlendMode(blending);
+		context->setDepthTest(depthMask, depthFunc);
 	});
 }
 
