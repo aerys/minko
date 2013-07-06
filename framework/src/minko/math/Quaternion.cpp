@@ -17,31 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Collider.hpp"
-#include <minko/math/Matrix4x4.hpp>
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include "Quaternion.hpp"
 
 using namespace minko;
 using namespace minko::math;
-using namespace minko::controller;
-
-bullet::Collider::Collider(float		mass,
-						   AbsShapePtr	shape,
-						   Vector3Ptr	inertia,
-						   Matrix4x4Ptr centerOfMassOffset):
-_mass(mass),
-	_transform(Matrix4x4::create()),
-	_centerOfMassOffset(centerOfMassOffset),
-	_shape(shape),
-	_inertia(inertia),
-	_transformChanged(Signal<Ptr>::create())
-{
-	_transform->identity();
-}
-
-void
-	bullet::Collider::setTransform(Matrix4x4Ptr transform)
-{
-	_transform->copyFrom(transform);
-	transformChanged()->execute(shared_from_this());
-}

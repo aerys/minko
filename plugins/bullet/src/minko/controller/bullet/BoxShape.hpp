@@ -28,44 +28,85 @@ namespace minko
 	{
 		namespace bullet
 		{
-			class SphereShape:
+			class BoxShape:
 				public AbstractPhysicsShape
 			{
 			public:
-				typedef std::shared_ptr<SphereShape> Ptr;
+				typedef std::shared_ptr<BoxShape> Ptr;
 
 			private:
-				float _radius;
+				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+
+			private:
+				float	_halfExtentX;
+				float	_halfExtentY;
+				float	_halfExtentZ;
 
 			public:
 				inline static
 					Ptr
-					create(float radius)
+					create(float halfExtentX, float halfExtentY, float halfExtentZ)
 				{
-					return std::shared_ptr<SphereShape>(new SphereShape(radius));
+					return std::shared_ptr<BoxShape>(new BoxShape(halfExtentX, halfExtentY, halfExtentZ));
 				}
 
-				inline
-					float
-					radius() const
+				inline 
+					float 
+					halfExtentX() const
 				{
-					return _radius;
+					return _halfExtentX;
+				}
+
+				inline 
+					float 
+					halfExtentY() const
+				{
+					return _halfExtentY;
+				}
+
+				inline 
+					float 
+					halfExtentZ() const
+				{
+					return _halfExtentZ;
 				}
 
 				inline
 					void
-					setRadius(float radius)
+					setHalfExtentX(float halfExtentX)
 				{
-					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
-					_radius	= radius;
+					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
+					_halfExtentX	= halfExtentX;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
+				}
+
+				inline
+					void
+					setHalfExtentY(float halfExtentY)
+				{
+					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
+					_halfExtentY	= halfExtentY;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
+				}
+
+				inline
+					void
+					setHalfExtentZ(float halfExtentZ)
+				{
+					const bool needsUpdate	= fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
+					_halfExtentZ	= halfExtentZ;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
 				}
 
 			private:
-				SphereShape(float radius):
-					AbstractPhysicsShape(SPHERE),
-					_radius(radius)
+				BoxShape(float halfExtentX, float halfExtentY, float halfExtentZ):
+					AbstractPhysicsShape(BOX),
+					_halfExtentX(halfExtentX),
+					_halfExtentY(halfExtentY),
+					_halfExtentZ(halfExtentZ)
 				{
 				}
 			};

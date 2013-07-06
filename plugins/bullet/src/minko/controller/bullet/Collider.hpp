@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
@@ -28,23 +29,36 @@ namespace minko
 		namespace bullet
 		{
 			class AbstractPhysicsShape;
+			class DynamicsProperties;
 
-			class Collider
+			class Collider:
+				public std::enable_shared_from_this<Collider>
 			{
 			public:
 				typedef std::shared_ptr<Collider> Ptr;
 
-				typedef std::shared_ptr<AbstractPhysicsShape> AbsShapePtr;
+				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
+				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
+				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
 			private:
-				AbsShapePtr	_shape;
+				float			_mass;
+				Matrix4x4Ptr	_transform;
+				Matrix4x4Ptr	_centerOfMassOffset;
+				AbsShapePtr		_shape;
+				Vector3Ptr		_inertia;
+
+				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 
 			public:
 				inline static
 					Ptr
-					create(AbsShapePtr shape)
+					create(float	mass, 					
+					AbsShapePtr		shape, 
+					Vector3Ptr		inertia = nullptr,
+					Matrix4x4Ptr	centerOfMassOffset = nullptr)
 				{
-					return std::shared_ptr<Collider>(new Collider(shape));
+					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia, centerOfMassOffset));
 				}
 
 				inline
@@ -54,8 +68,51 @@ namespace minko
 					return _shape;
 				}
 
+				inline
+					float
+					mass() const
+				{
+					return _mass;
+				}
+
+				inline
+					Vector3Ptr
+					inertia() const
+				{
+					return _inertia;
+				}
+
+				inline
+					Matrix4x4Ptr
+					centerOfMassOffset() const
+				{
+					return _centerOfMassOffset;
+				}
+
+				inline
+					Matrix4x4Ptr
+					transform() const
+				{
+					return _transform;
+				}
+
+				void
+					setTransform(Matrix4x4Ptr);
+
+				inline
+					Signal<Ptr>::Ptr
+					transformChanged()
+				{
+					return _transformChanged;
+				}
+
 			private:
-				Collider(AbsShapePtr);
+				Collider(float,
+					AbsShapePtr, 
+					Vector3Ptr		inertia				= nullptr,
+					Matrix4x4Ptr	centerOfMassOffset	= nullptr);
+
+
 			};
 		}
 	}
