@@ -60,7 +60,8 @@ SurfaceController::initialize()
 }
 
 void
-SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
+									  std::shared_ptr<Node>					target)
 {
 	target->data()->addProvider(_material);
 	target->data()->addProvider(_geometry->data());
@@ -68,15 +69,16 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, 
 
 	_drawCalls.clear();
 	for (auto shader : _effect->shaders())
-	{
-		auto drawCall = DrawCall::create(target->data(), _effect->inputNameToBindingName());
-
-		_drawCalls.push_back(drawCall);
-	}
+		_drawCalls.push_back(DrawCall::create(
+			target->data(),
+			_effect->attributeBindings(),
+			_effect->uniformBindings()
+		));
 }
 
 void
-SurfaceController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+SurfaceController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl,
+										std::shared_ptr<Node>				target)
 {
 	target->data()->removeProvider(_material);
 	target->data()->removeProvider(_geometry->data());
