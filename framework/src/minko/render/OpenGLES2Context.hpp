@@ -226,7 +226,7 @@ namespace minko
             static
             BlendFactorsMap
             initializeBlendFactorsMap();
-            
+
 			static
             DepthFuncsMap
             initializeDepthFuncsMap();
