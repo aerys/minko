@@ -34,10 +34,12 @@ using namespace minko::resource;
 
 DrawCall::DrawCall(std::shared_ptr<data::Container>						data,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
-				   const std::unordered_map<std::string, std::string>&	uniformBindings) :
+				   const std::unordered_map<std::string, std::string>&	uniformBindings,
+				   const std::unordered_map<std::string, std::string>&	stateBindings) :
 	_data(data),
 	_attributeBindings(attributeBindings),
-	_uniformBindings(uniformBindings)
+	_uniformBindings(uniformBindings),
+	_stateBindings(stateBindings)
 {
 }
 
@@ -178,10 +180,25 @@ DrawCall::bind()
 				context->setTextureAt(count++);
 		});
 
+		bindStates();
+
 		_func.push_back(drawTriangles);
 	}
 
 	
+}
+
+void
+DrawCall::bindStates()
+{
+	// blending state
+	auto blending = _stateBindings.count("blending")
+		? getDataProperty<Blending::Mode>(_stateBindings.at("blending"))
+		: Blending::Mode::DEFAULT;
+	_func.push_back([=](AbstractContext::Ptr context)
+	{
+		context->setBlendMode(blending);
+	});
 }
 
 void

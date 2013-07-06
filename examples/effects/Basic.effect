@@ -1,14 +1,21 @@
 // basic effect
 {
-	"name"		: "basic",
+	"name"	: "basic",
+	
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position"
+		"position"	: "geometry/vertex/attribute/position"
 	},
+	
 	"uniformBindings"	: {
 		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
+	
+	"stateBindings"	: {
+		"blending"	: "material/blending"
+	},
+	
 	"passes"	: [{
 		"vertexShader"	: "
 			attribute vec3 position;

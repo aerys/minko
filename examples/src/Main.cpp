@@ -69,9 +69,6 @@ int main(int argc, char** argv)
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
-
-    context->setBlendMode(render::Blending::Mode::DEFAULT);
-
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
@@ -108,11 +105,12 @@ int main(int argc, char** argv)
 		mesh->addController(SurfaceController::create(
 			assets->geometry("cube"),
 			data::Provider::create()
+				->set("material/blending",				render::Blending::Mode::ALPHA)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("directional light")
+			assets->effect("basic")
 		));
 
 		group->addChild(mesh);
