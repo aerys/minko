@@ -73,7 +73,7 @@ OpenGLES2Context::initializeDepthFuncsMap()
 	m[CompareMode::LESS_EQUAL]		= GL_LESS | GL_EQUAL;
 	m[CompareMode::NEVER]			= GL_NEVER;
 	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
-	
+
 	return m;
 }
 
@@ -646,7 +646,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttributeNameLength);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
 
-	for (int i = 0; i < total; ++i) 
+	for (int i = 0; i < total; ++i)
 	{
     	int nameLength = -1;
     	int size = -1;
@@ -654,7 +654,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
     	std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
-	
+
 	    name[nameLength] = 0;
 
 	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
