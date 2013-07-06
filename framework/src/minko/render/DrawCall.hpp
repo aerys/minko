@@ -21,46 +21,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/Signal.hpp"
+
 namespace minko
 {
 	namespace render
 	{
-		class DrawCall
+		class DrawCall :
+            public std::enable_shared_from_this<DrawCall>
 		{
 		public:
 			typedef std::shared_ptr<DrawCall> Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
+            typedef std::shared_ptr<data::Container>    ContainerPtr;
 
 		private:
-			std::shared_ptr<data::Container>					_data;
-			const std::unordered_map<std::string, std::string>&	_inputNameToBindingName;
+			std::shared_ptr<data::Container>					        _data;
+			const std::unordered_map<std::string, std::string>&	        _inputNameToBindingName;
 
-			std::vector<std::function<void(AbsCtxPtr)>>			_func;
+			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
+
+            std::list<Signal<ContainerPtr, const std::string&>::Slot>   _propertyChangedSlots;
 
 		public:
 			static inline
 			Ptr
-			create(std::shared_ptr<data::Container>						bindings,
+			create(ContainerPtr						                    data,
 				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName)
 			{
-				return std::shared_ptr<DrawCall>(new DrawCall(bindings, inputNameToBindingName));
+                auto dc = std::shared_ptr<DrawCall>(new DrawCall(data, inputNameToBindingName));
+
+                dc->bind();
+
+				return dc;
 			}
 
 			void
 			render(std::shared_ptr<AbstractContext> context);
 
 			void
-			initialize(std::shared_ptr<data::Container>				bindings,
+			initialize(ContainerPtr				                    data,
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
 		private:
-			DrawCall(std::shared_ptr<data::Container>						bindings,
+			DrawCall(ContainerPtr                   						data,
 					 const std::unordered_map<std::string, std::string>&	inputNameToBindingName);
 
 			void
-			bind(std::shared_ptr<data::Container> bindings);
+			bind();
+
+            template <typename T>
+            T
+            getDataProperty(const std::string& propertyName)
+            {
+                watchProperty(propertyName);
+
+                return _data->get<T>(propertyName);
+            }
+
+            bool
+            dataHasProperty(const std::string& propertyName);
+
+            void
+            watchProperty(const std::string& propertyName);
+
+            void
+            boundPropertyChangedHandler(ContainerPtr        data,
+                                        const std::string&  propertyName);
 		};		
 	}
 }
