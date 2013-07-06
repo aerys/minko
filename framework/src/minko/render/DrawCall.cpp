@@ -33,9 +33,11 @@ using namespace minko::render;
 using namespace minko::resource;
 
 DrawCall::DrawCall(std::shared_ptr<data::Container>						data,
-				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName) :
+				   const std::unordered_map<std::string, std::string>&	attributeBindings,
+				   const std::unordered_map<std::string, std::string>&	uniformBindings) :
 	_data(data),
-	_inputNameToBindingName(inputNameToBindingName)
+	_attributeBindings(attributeBindings),
+	_uniformBindings(uniformBindings)
 {
 }
 
@@ -70,15 +72,16 @@ DrawCall::bind()
 			auto type		= program->inputs()->types()[inputId];
 			auto location	= program->inputs()->locations()[inputId];
 			auto inputName	= program->inputs()->names()[inputId];
-			auto name		= _inputNameToBindingName.count(inputName)
-				? _inputNameToBindingName.find(inputName)->second
-				: inputName;
-
-			if (!dataHasProperty(name))
-				continue;
 
 			if (type == ProgramInputs::attribute)
 			{
+				auto name	= _attributeBindings.count(inputName)
+					? _attributeBindings.at(inputName)
+					: inputName;
+
+				if (!dataHasProperty(name))
+					continue;
+
 				auto vertexStream	= getDataProperty<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
 				auto size			= std::get<1>(*attribute);
@@ -87,79 +90,83 @@ DrawCall::bind()
 				
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setVertexBufferAt(
-						location,
-						vertexBuffer,
-						size,
-						vertexSize,
-						offset
-					);
+					context->setVertexBufferAt(location, vertexBuffer, size, vertexSize, offset);
 				});
 			}
-			else if (type == ProgramInputs::Type::float1)
+			else
 			{
-				auto floatValue = getDataProperty<float>(name);
+				auto name	= _uniformBindings.count(inputName)
+					? _uniformBindings.at(inputName)
+					: inputName;
 
-				_func.push_back([=](AbstractContext::Ptr context)
+				if (!dataHasProperty(name))
+					continue;
+
+				if (type == ProgramInputs::Type::float1)
 				{
-					context->setUniform(location, floatValue);
-				});
-			}
-			else if (type == ProgramInputs::Type::float2)
-			{
-				auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
-				auto x				= float2Value->x();
-				auto y				= float2Value->y();
+					auto floatValue = getDataProperty<float>(name);
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, floatValue);
+					});
+				}
+				else if (type == ProgramInputs::Type::float2)
 				{
-					context->setUniform(location, x, y);
-				});
-			}
-			else if (type == ProgramInputs::Type::float3)
-			{
-				auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
-				auto x				= float3Value->x();
-				auto y				= float3Value->y();
-				auto z				= float3Value->z();
+					auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
+					auto x				= float2Value->x();
+					auto y				= float2Value->y();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y);
+					});
+				}
+				else if (type == ProgramInputs::Type::float3)
 				{
-					context->setUniform(location, x, y, z);
-				});
-			}
-			else if (type == ProgramInputs::Type::float4)
-			{
-				auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
-				auto x				= float4Value->x();
-				auto y				= float4Value->y();
-				auto z				= float4Value->z();
-				auto w				= float4Value->w();
+					auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
+					auto x				= float3Value->x();
+					auto y				= float3Value->y();
+					auto z				= float3Value->z();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y, z);
+					});
+				}
+				else if (type == ProgramInputs::Type::float4)
 				{
-					context->setUniform(location, x, y, z, w);
-				});
-			}
-			else if (type == ProgramInputs::Type::float16)
-			{
-				auto float16Ptr = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
+					auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
+					auto x				= float4Value->x();
+					auto y				= float4Value->y();
+					auto z				= float4Value->z();
+					auto w				= float4Value->w();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y, z, w);
+					});
+				}
+				else if (type == ProgramInputs::Type::float16)
 				{
-					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
-				});
-			}
-			else if (type == ProgramInputs::Type::sampler2d)
-			{
-				auto texture = getDataProperty<Texture::Ptr>(name)->id();
+					auto float16Ptr = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniformMatrix4x4(location, 1, true, float16Ptr);
+					});
+				}
+				else if (type == ProgramInputs::Type::sampler2d)
 				{
-					context->setTextureAt(numTextures, texture, location);
-				});
+					auto texture = getDataProperty<Texture::Ptr>(name)->id();
 
-				++numTextures;
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setTextureAt(numTextures, texture, location);
+					});
+
+					++numTextures;
+				}
 			}
 		}
 
