@@ -38,3 +38,16 @@ namespace minko
 		};
 	}
 }
+
+namespace std
+{
+	// Hash function to allow CompareMode to be an index in a map.
+	template <>
+	struct hash<minko::render::CompareMode>
+	{
+		size_t operator()(const minko::render::CompareMode& v) const
+		{
+			return hash<uint>()(static_cast<uint>(v));
+		}
+	};
+}
