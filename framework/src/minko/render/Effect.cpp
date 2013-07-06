@@ -23,9 +23,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::render;
 using namespace minko::data;
 
-Effect::Effect(std::vector<Effect::ProgramPtr> shaders) :
+Effect::Effect(std::vector<Effect::ProgramPtr>&					shaders,
+			   std::unordered_map<std::string, std::string>&	attributeBindings,
+			   std::unordered_map<std::string, std::string>&	uniformBindings) :
 	std::enable_shared_from_this<Effect>(),
 	_shaders(shaders),
+	_attributeBindings(attributeBindings),
+	_uniformBindings(uniformBindings),
 	_data(Provider::create())
 {
 	auto i = 0;
@@ -39,12 +43,4 @@ Effect::propertyChangedHandler(std::shared_ptr<Container> bindings, const std::s
 {
 	std::cout << "Effect::propertyChangedHandler: " << propertyName << std::endl;
 	// FIXME: fork?
-}
-
-Effect::Ptr
-Effect::bindInput(const std::string& bindingName, const std::string& programInputName)
-{
-	_inputNameToBindingName[programInputName] = bindingName;
-
-	return shared_from_this();
 }
