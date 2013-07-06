@@ -40,7 +40,8 @@ namespace minko
 
 		private:
 			std::shared_ptr<data::Container>					        _data;
-			const std::unordered_map<std::string, std::string>&	        _inputNameToBindingName;
+			const std::unordered_map<std::string, std::string>&	        _attributeBindings;
+			const std::unordered_map<std::string, std::string>&	        _uniformBindings;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
 
@@ -50,9 +51,10 @@ namespace minko
 			static inline
 			Ptr
 			create(ContainerPtr						                    data,
-				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName)
+				   const std::unordered_map<std::string, std::string>&	attributeBindings,
+				   const std::unordered_map<std::string, std::string>&	uniformBindings)
 			{
-                auto dc = std::shared_ptr<DrawCall>(new DrawCall(data, inputNameToBindingName));
+                auto dc = std::shared_ptr<DrawCall>(new DrawCall(data, attributeBindings, uniformBindings));
 
                 dc->bind();
 
@@ -68,7 +70,8 @@ namespace minko
 
 		private:
 			DrawCall(ContainerPtr                   						data,
-					 const std::unordered_map<std::string, std::string>&	inputNameToBindingName);
+				     const std::unordered_map<std::string, std::string>&	attributeBindings,
+				     const std::unordered_map<std::string, std::string>&	uniformBindings);
 
 			void
 			bind();
