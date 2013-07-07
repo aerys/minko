@@ -20,8 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/render/Blending.hpp"
+
+namespace Json
+{
+	class Value;
+}
 
 namespace minko
 {
@@ -35,7 +42,7 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Loader> LoaderPtr;
+			typedef std::shared_ptr<Loader>			LoaderPtr;
 
 		private:
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
@@ -44,6 +51,15 @@ namespace minko
 			std::shared_ptr<render::Effect>								_effect;
 			std::string													_effectName;
 			
+			float														_defaultPriority;
+			render::Blending::Source									_defaultBlendSrcFactor;
+			render::Blending::Destination								_defaultBlendDstFactor;
+			bool														_defaultDepthMask;
+			render::CompareMode											_defaultDepthFunc;
+			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
+			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
+			std::unordered_map<std::string, std::string>				_defaultStateBindings;
+
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
 
@@ -80,16 +96,41 @@ namespace minko
 				  const std::vector<unsigned char>&	data);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
-
-			void
-			dependencyErrorHandler(std::shared_ptr<Loader> loader);
-
-			void
 			finalize();
 
 		private:
 			EffectParser();
+
+			void
+			parseDefaultValues(Json::Value& root);
+
+			void
+			parsePasses(Json::Value& root, std::shared_ptr<file::Options> options);
+
+			void
+			parseBindings(Json::Value&									contextNode,
+						  std::unordered_map<std::string, std::string>&	attributeBindings,
+						  std::unordered_map<std::string, std::string>&	uniformBindings,
+						  std::unordered_map<std::string, std::string>&	stateBindings);
+
+			void
+			parseBlendMode(Json::Value&						contextNode,
+						   render::Blending::Source&		srcFactor,
+						   render::Blending::Destination&	dstFactor);
+
+			void
+			parseDepthTest(Json::Value&			contextNode,
+						   bool&				depthMask,
+						   render::CompareMode&	depthFunc);
+
+			void
+			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
+
+			void
+			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
+
+			void
+			dependencyErrorHandler(std::shared_ptr<Loader> loader);
 
 			static
 			std::unordered_map<std::string, unsigned int>
