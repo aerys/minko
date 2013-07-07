@@ -350,19 +350,31 @@ package aerys.minko.type.math
 			return out;
 		}
 
+		public static function fromVector3D(vector : Vector3D, out : Vector4 = null) : Vector4
+		{
+			out ||= FACTORY.create() as Vector4;
+			
+			out.x = vector.x;
+			out.y = vector.y;
+			out.z = vector.z;
+			out.w = vector.w;
+			
+			return out;
+		}
+		
 		public function toVector3D(out : Vector3D = null) : Vector3D
 		{
 			if (!out)
 				return _vector.clone();
-
+			
 			out.x = _vector.x;
 			out.y = _vector.y;
 			out.z = _vector.z;
 			out.w = _vector.w;
-
+			
 			return out;
 		}
-
+		
 		public function lock() : void
 		{
 			_locked = true;
