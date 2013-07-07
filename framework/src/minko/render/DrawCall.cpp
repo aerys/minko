@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "DrawCall.hpp"
 
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/Blending.hpp"
 #include "minko/resource/VertexStream.hpp"
 #include "minko/resource/IndexStream.hpp"
 #include "minko/resource/Texture.hpp"
@@ -32,19 +34,25 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::resource;
 
-DrawCall::DrawCall(std::shared_ptr<data::Container>						bindings,
-				   const std::unordered_map<std::string, std::string>&	inputNameToBindingName) :
-	_data(bindings),
-	_inputNameToBindingName(inputNameToBindingName)
+DrawCall::DrawCall(std::shared_ptr<data::Container>						data,
+				   const std::unordered_map<std::string, std::string>&	attributeBindings,
+				   const std::unordered_map<std::string, std::string>&	uniformBindings,
+				   const std::unordered_map<std::string, std::string>&	stateBindings) :
+	_data(data),
+	_attributeBindings(attributeBindings),
+	_uniformBindings(uniformBindings),
+	_stateBindings(stateBindings)
 {
-	bind(bindings);
 }
 
 void
-DrawCall::bind(std::shared_ptr<data::Container> bindings)
+DrawCall::bind()
 {
-	auto vertexSize		= _data->get<unsigned int>("geometry/vertex/size");
-	auto indexStream	= bindings->get<IndexStream::Ptr>("geometry/indices");
+    _func.clear();
+    _propertyChangedSlots.clear();
+
+	auto vertexSize		= getDataProperty<unsigned int>("geometry/vertex/size");
+	auto indexStream	= getDataProperty<IndexStream::Ptr>("geometry/indices");
 	auto indexBuffer	= indexStream->id();
 	auto numIndices		= indexStream->data().size();
 	auto drawTriangles	= [=](AbstractContext::Ptr context)
@@ -52,9 +60,9 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 		context->drawTriangles(indexBuffer, numIndices);
 	};
 	
-	for (auto passId = 0; bindings->hasProperty("effect/pass" + std::to_string(passId)); ++passId)
+	for (auto passId = 0; dataHasProperty("effect/pass" + std::to_string(passId)); ++passId)
 	{
-		auto program		= bindings->get<Program::Ptr>("effect/pass" + std::to_string(passId));
+		auto program		= getDataProperty<Program::Ptr>("effect/pass" + std::to_string(passId));
 		auto numTextures	= 0;
 		auto programId		= program->id();
 
@@ -68,16 +76,17 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 			auto type		= program->inputs()->types()[inputId];
 			auto location	= program->inputs()->locations()[inputId];
 			auto inputName	= program->inputs()->names()[inputId];
-			auto name		= _inputNameToBindingName.count(inputName)
-				? _inputNameToBindingName.find(inputName)->second
-				: inputName;
-
-			if (!_data->hasProperty(name))
-				continue;
 
 			if (type == ProgramInputs::attribute)
 			{
-				auto vertexStream	= _data->get<VertexStream::Ptr>(name);
+				auto name	= _attributeBindings.count(inputName)
+					? _attributeBindings.at(inputName)
+					: inputName;
+
+				if (!dataHasProperty(name))
+					continue;
+
+				auto vertexStream	= getDataProperty<VertexStream::Ptr>(name);
 				auto attribute		= vertexStream->attribute(inputName);
 				auto size			= std::get<1>(*attribute);
 				auto offset			= std::get<2>(*attribute);
@@ -85,79 +94,83 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 				
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setVertexBufferAt(
-						location,
-						vertexBuffer,
-						size,
-						vertexSize,
-						offset
-					);
+					context->setVertexBufferAt(location, vertexBuffer, size, vertexSize, offset);
 				});
 			}
-			else if (type == ProgramInputs::Type::float1)
+			else
 			{
-				auto floatValue = _data->get<float>(name);
+				auto name	= _uniformBindings.count(inputName)
+					? _uniformBindings.at(inputName)
+					: inputName;
 
-				_func.push_back([=](AbstractContext::Ptr context)
+				if (!dataHasProperty(name))
+					continue;
+
+				if (type == ProgramInputs::Type::float1)
 				{
-					context->setUniform(location, floatValue);
-				});
-			}
-			else if (type == ProgramInputs::Type::float2)
-			{
-				auto float2Value	= _data->get<std::shared_ptr<Vector2>>(name);
-				auto x				= float2Value->x();
-				auto y				= float2Value->y();
+					auto floatValue = getDataProperty<float>(name);
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, floatValue);
+					});
+				}
+				else if (type == ProgramInputs::Type::float2)
 				{
-					context->setUniform(location, x, y);
-				});
-			}
-			else if (type == ProgramInputs::Type::float3)
-			{
-				auto float3Value	= _data->get<std::shared_ptr<Vector3>>(name);
-				auto x				= float3Value->x();
-				auto y				= float3Value->y();
-				auto z				= float3Value->z();
+					auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
+					auto x				= float2Value->x();
+					auto y				= float2Value->y();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y);
+					});
+				}
+				else if (type == ProgramInputs::Type::float3)
 				{
-					context->setUniform(location, x, y, z);
-				});
-			}
-			else if (type == ProgramInputs::Type::float4)
-			{
-				auto float4Value	= _data->get<std::shared_ptr<Vector4>>(name);
-				auto x				= float4Value->x();
-				auto y				= float4Value->y();
-				auto z				= float4Value->z();
-				auto w				= float4Value->w();
+					auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
+					auto x				= float3Value->x();
+					auto y				= float3Value->y();
+					auto z				= float3Value->z();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y, z);
+					});
+				}
+				else if (type == ProgramInputs::Type::float4)
 				{
-					context->setUniform(location, x, y, z, w);
-				});
-			}
-			else if (type == ProgramInputs::Type::float16)
-			{
-				auto float16Ptr = &(_data->get<Matrix4x4::Ptr>(name)->data()[0]);
+					auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
+					auto x				= float4Value->x();
+					auto y				= float4Value->y();
+					auto z				= float4Value->z();
+					auto w				= float4Value->w();
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniform(location, x, y, z, w);
+					});
+				}
+				else if (type == ProgramInputs::Type::float16)
 				{
-					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
-				});
-			}
-			else if (type == ProgramInputs::Type::sampler2d)
-			{
-				auto texture = _data->get<Texture::Ptr>(name)->id();
+					auto float16Ptr = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
 
-				_func.push_back([=](AbstractContext::Ptr context)
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setUniformMatrix4x4(location, 1, true, float16Ptr);
+					});
+				}
+				else if (type == ProgramInputs::Type::sampler2d)
 				{
-					context->setTextureAt(numTextures, texture, location);
-				});
+					auto texture = getDataProperty<Texture::Ptr>(name)->id();
 
-				++numTextures;
+					_func.push_back([=](AbstractContext::Ptr context)
+					{
+						context->setTextureAt(numTextures, texture, location);
+					});
+
+					++numTextures;
+				}
 			}
 		}
 
@@ -169,6 +182,8 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 				context->setTextureAt(count++);
 		});
 
+		bindStates();
+
 		_func.push_back(drawTriangles);
 	}
 
@@ -176,8 +191,62 @@ DrawCall::bind(std::shared_ptr<data::Container> bindings)
 }
 
 void
+DrawCall::bindStates()
+{
+	// blending state
+	auto blending = getDataProperty<Blending::Mode>(
+		_stateBindings.count("blending") ? _stateBindings.at("blending") : "blending",
+		Blending::Mode::DEFAULT
+	);
+	auto depthMask = getDataProperty<bool>(
+		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
+		true
+	);
+	auto depthFunc = getDataProperty<CompareMode>(
+		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
+		CompareMode::LESS
+	);
+	
+	// FIXME: bind stencil test
+
+	_func.push_back([=](AbstractContext::Ptr context)
+	{
+		context->setBlendMode(blending);
+		context->setDepthTest(depthMask, depthFunc);
+	});
+}
+
+void
 DrawCall::render(AbstractContext::Ptr context)
 {
 	for (auto& f : _func)
 		f(context);
+}
+
+void
+DrawCall::watchProperty(const std::string& propertyName)
+{
+    /*
+    _propertyChangedSlots.push_back(_data->propertyChanged(propertyName)->connect(std::bind(
+        &DrawCall::boundPropertyChangedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2
+    )));
+    */
+}
+
+void
+DrawCall::boundPropertyChangedHandler(std::shared_ptr<data::Container>  data,
+                                      const std::string&                propertyName)
+{
+    bind();
+}
+
+bool
+DrawCall::dataHasProperty(const std::string& propertyName)
+{
+    watchProperty(propertyName);
+
+    return _data->hasProperty(propertyName);
 }

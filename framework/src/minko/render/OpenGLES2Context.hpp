@@ -36,10 +36,12 @@ namespace minko
 			typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int> BlendFactorsMap;
+            typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
+			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
 
 		private:
             static BlendFactorsMap  _blendingFactors;
+			static DepthFuncsMap	_depthFuncs;
 
 			std::list<unsigned int>	_vertexBuffers;
 			std::list<unsigned int>	_indexBuffers;
@@ -55,6 +57,9 @@ namespace minko
 			std::vector<int>		_currentVertexOffset;
 			std::vector<int>		_currentTexture;
 			int						_currentProgram;
+			Blending::Mode			_currentBlendMode;
+			bool					_currentDepthMask;
+			CompareMode				_currentDepthFunc;
 
 		public:
 			~OpenGLES2Context();
@@ -200,6 +205,9 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode);
 
+			void
+			setDepthTest(bool depthMask, CompareMode depthFunc);
+
 		private:
 			OpenGLES2Context();
 
@@ -210,15 +218,19 @@ namespace minko
 							  std::vector<unsigned int>&				locations);
 
 			void
-			fillAttributeInputs(const unsigned int						program,
-								std::vector<std::string>&				names,
+			fillAttributeInputs(const unsigned int					program,
+								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
-								std::vector<unsigned int>&				locations);
+								std::vector<unsigned int>&			locations);
 
             static
             BlendFactorsMap
             initializeBlendFactorsMap();
-            
+
+			static
+            DepthFuncsMap
+            initializeDepthFuncsMap();
+
 		};
 	}
 }
