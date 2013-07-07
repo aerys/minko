@@ -17,32 +17,43 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PNGParser.hpp"
+#pragma once
 
+#include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/resource/Texture.hpp"
 
-#include "lodepng.h"
-
-using namespace minko::file;
-
-void
-PNGParser::parse(const std::string&					filename,
-				 std::shared_ptr<Options>			options,
-				 const std::vector<unsigned char>&	data,
-				 std::shared_ptr<AssetsLibrary>		assetsLibrary)
+namespace minko
 {
-	std::vector<unsigned char> out;
-	unsigned int width;
-	unsigned int height;
+	namespace file
+	{
+	class MkOptions : public Options
+	{
+	public:
+		typedef std::shared_ptr<MkOptions> Ptr;
 
-	lodepng::decode(out, width, height, &data[0], data.size());
+	private:
+		std::shared_ptr<AssetsLibrary> _assetsLibary;
 
-	_texture = resource::Texture::create(options->context(), width, height);
-	_texture->data(&out[0]);
-	_texture->upload();
+	public:
+		inline static
+		Ptr
+		create(std::shared_ptr<render::AbstractContext>	context)
+		{
+			return std::shared_ptr<MkOptions>(new MkOptions(context));
+		}
 
-	assetsLibrary->texture(filename, _texture);
+		inline
+		std::shared_ptr<AssetsLibrary>
+		assetsLibrary()
+		{
+			return _assetsLibary;
+		}
+
+	private:
+		MkOptions(std::shared_ptr<render::AbstractContext>	context)
+		{
+			this->Options::Options(context);
+		}
+	};
+	}
 }
-
-
