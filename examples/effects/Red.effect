@@ -1,9 +1,10 @@
 // red effect
 {
 	"name"		: "red",
-	"bindings"	: {
-		"position"				: "geometry/vertex/attribute/position",
-		"diffuseColor"			: "material/diffuse/rgba",
+	"attributeBindings"	: {
+		"position"				: "geometry/vertex/attribute/position"
+	},
+	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
