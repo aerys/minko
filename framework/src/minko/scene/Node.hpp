@@ -42,7 +42,7 @@ namespace minko
 		private:
 			static unsigned int								_id;
 
-			unsigned int									_tags;
+			unsigned int									_layers;
 			Ptr 											_root;
 			Ptr												_parent;
 			std::shared_ptr<data::Container>				_container;
@@ -50,7 +50,7 @@ namespace minko
 
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
-			std::shared_ptr<Signal<Ptr, Ptr>>				_tagsChanged;
+			std::shared_ptr<Signal<Ptr, Ptr>>				_layersChanged;
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerAdded;
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerRemoved;
 
@@ -118,13 +118,13 @@ namespace minko
 
 			inline
 			unsigned int
-			tags()
+			layers()
 			{
-				return _tags;
+				return _layers;
 			}
 			
 			void
-			tags(unsigned int tags);
+			layers(unsigned int layers);
 
 			inline
 			Ptr
@@ -170,9 +170,9 @@ namespace minko
 
 			inline
 			Signal<Ptr, Ptr>::Ptr
-			tagsChanged()
+			layersChanged()
 			{
-				return _tagsChanged;
+				return _layersChanged;
 			}
 
 			inline
