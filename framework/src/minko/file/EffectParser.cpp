@@ -37,7 +37,8 @@ EffectParser::EffectParser() :
 void
 EffectParser::parse(const std::string&					filename,
 					std::shared_ptr<Options>			options,
-					const std::vector<unsigned char>&	data)
+					const std::vector<unsigned char>&	data,
+					std::shared_ptr<AssetsLibrary>		assetsLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -80,7 +81,7 @@ EffectParser::parse(const std::string&					filename,
 			auto loader = Loader::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
+				&EffectParser::dependencyCompleteHandler, shared_from_this(), assetsLibrary, std::placeholders::_1, std::placeholders::_2
 			));
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
@@ -91,18 +92,18 @@ EffectParser::parse(const std::string&					filename,
 	}
 	
 	if (_numDependencies == 0)
-		finalize();
+		finalize(assetsLibrary);
 }
 
 void
-EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
+	EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader, std::shared_ptr<AssetsLibrary> assetsLibrary)
 {
 	++_numLoadedDependencies;
 
 	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
 
 	if (_numDependencies == _numLoadedDependencies)
-		finalize();
+		finalize(assetsLibrary);
 }
 
 void
@@ -112,7 +113,7 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
 }
 
 void
-EffectParser::finalize()
+EffectParser::finalize(std::shared_ptr<AssetsLibrary> assetsLibary)
 {
 	std::vector<std::shared_ptr<Program>> programs;
 
@@ -128,5 +129,6 @@ EffectParser::finalize()
 
 	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
+	assetsLibary->effect(_effectName, _effect);
 	_complete->execute(shared_from_this());
 }
