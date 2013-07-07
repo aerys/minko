@@ -89,11 +89,11 @@ testMk(AssetsLibrary::Ptr assets)
 	qarkData["plap"] = plap;
 
 
-	minko::Qark::ByteArray compressedData = minko::Qark::encode(qarkData);
+	minko::Qark::ByteArray compressedData = minko::Qark::encode(0);
 	std::cout << std::endl << std::endl << "-----------------" << std::endl << std::endl <<std::flush;
 	minko::Qark::Object    obj 			= minko::Qark::decode(compressedData);
 
-	std::map<std::string, Any> decodedMap = minko::Any::cast<std::map<std::string, Any>>(obj);
+	//std::map<std::string, Any> decodedMap = minko::Any::cast<std::map<std::string, Any>>(obj);
 }
 
 int main(int argc, char** argv)
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
         renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
-		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+		/*auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
@@ -147,11 +147,11 @@ int main(int argc, char** argv)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
 			assets->effect("texture")
-		));
+		));*/
 
 		group->addChild(assets->node("models/model.mk"));
 
-		group->addChild(mesh);
+		//group->addChild(mesh);
 		//testMk(assets);
 	});
 
@@ -173,8 +173,8 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
-
+        //mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+		//group->children().front()->controller<TransformController>()->transform()->prependRotationY(.01f);
 	    renderingController->render();
 
 	    printFramerate();

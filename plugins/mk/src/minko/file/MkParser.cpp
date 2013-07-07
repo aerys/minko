@@ -27,23 +27,22 @@ MkParser::parse(const std::string&					filename,
 				std::shared_ptr<Options>			options,
 				const std::vector<unsigned char>&	data)
 {
-	auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-	auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
-	auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
+	std::vector<char> dataCopy(data.begin(), data.end());
 
-	_node = scene::Node::create();
+	minko::Qark::Object    obj 			= minko::Qark::decode(dataCopy);
 
-	_node->addController(controller::TransformController::create());
-	_node->controller<controller::TransformController>()->transform()->appendTranslation(0.f, 2.f, -3.f);
-	_node->addController(
-		controller::SurfaceController::create(
-			options->assets()->geometry("cube"),
-			data::Provider::create()
-				->set("material/diffuse/rgba",			color)
-				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			options->assets()->texture("textures/box3.png")),
-			options->assets()->effect("basic")));
+
+	std::map<std::string, Any> qarkData = minko::Any::cast<std::map<std::string, Any>>(obj);
+
+	std::cout << "-------------------------------" << std::endl <<std::endl;
+
+	std::cout << "Magic number   : " << minko::Any::cast<int>(qarkData["magicNumber"]) << std::endl;
+	std::cout << "Version        : " << minko::Any::cast<std::string>(qarkData["version"]) << std::endl;
+	std::cout << std::flush;
+
+	std::shared_ptr<deserialize::SceneDeserializer> sceneDeserializer = deserialize::SceneDeserializer::create(options->context());
+
+	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], options, _controllerMap, _nodeMap);
 	
 	std::cout << "parse MK" << std::endl << std::flush;
 }
