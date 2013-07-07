@@ -78,10 +78,11 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetAddedHandler(std::shared_ptr<AbstractController> controller, std::shared_ptr<scene::Node> target)
+	bullet::PhysicsWorld::targetAddedHandler(AbstractController::Ptr controller, 
+	Node::Ptr target)
 {
-	if (target != target->root())
-		throw std::logic_error("A PhysicsWorld instance can only affect a root scene node.");
+	if (target->controllers<PhysicsWorld>().size() > 1)
+		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
 
 	auto renderingController	= getRootRenderingController(target->root());
 	_exitFrameSlot				= renderingController->exitFrame()->connect(std::bind(
@@ -92,25 +93,28 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetRemovedHandler(std::shared_ptr<AbstractController> controller, std::shared_ptr<scene::Node> target)
+	bullet::PhysicsWorld::targetRemovedHandler(AbstractController::Ptr controller, 
+	Node::Ptr target)
 {
 	std::cout << "bullet::PhysicsWorld::targetRemovedHandler" << std::endl;
 }
 
 void
-	bullet::PhysicsWorld::addChild(ColliderPtr collider)
+	bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 {
 	if (hasCollider(collider))
 		throw std::logic_error("The same collider cannot be added twice.");
 
-	BulletColliderPtr btCollider = BulletCollider::create(collider);
-	_colliderMap.insert(std::pair<ColliderPtr, BulletColliderPtr>(collider, btCollider));
+	BulletCollider::Ptr btCollider = BulletCollider::create(collider);
+	_colliderMap.insert(std::pair<Collider::Ptr, BulletCollider::Ptr>(collider, btCollider));
 
-	_btDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
+	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_btDynamicsWorld)
+		->addRigidBody(std::dynamic_pointer_cast<btRigidBody>(btCollider->collisionObject()).get());
+	//_btDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
 }
 
 void
-	bullet::PhysicsWorld::removeChild(ColliderPtr collider)
+	bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 {
 	ColliderMap::const_iterator	it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -122,23 +126,29 @@ void
 }
 
 bool
-	bullet::PhysicsWorld::hasCollider(ColliderPtr collider) const
+	bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
 {
 	return _colliderMap.find(collider) != _colliderMap.end();
 }
 
+
 void
-	bullet::PhysicsWorld::exitFrameHandler(std::shared_ptr<RenderingController> controller)
+	bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
+{
+	_btDynamicsWorld->setGravity(btVector3(gravity->x(), gravity->y(), gravity->z()));
+}
+
+void
+	bullet::PhysicsWorld::exitFrameHandler(RenderingController::Ptr controller)
 {
 	update();
 }
 
+
 void
 	bullet::PhysicsWorld::update(float timeStep)
 {
-	//std::cout << "update physics" << std::endl;
 	_btDynamicsWorld->stepSimulation(timeStep);
-
 	updateColliders();
 }
 
@@ -147,26 +157,17 @@ void
 {
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
-		auto bulletTransform	= it->second->collisionObject()->getWorldTransform();
-		auto bulletBasis		= bulletTransform.getBasis();
-		auto bulletTranslation	= bulletTransform.getOrigin();
+		Collider::Ptr		collider(it->first);
+		BulletCollider::Ptr	btCollider(it->second);
 
-		std::shared_ptr<Matrix4x4>	transform = Matrix4x4::create();
-		transform->initialize(
-			bulletBasis[0][0], bulletBasis[0][1], bulletBasis[0][2], bulletTranslation[0],
-			bulletBasis[1][0], bulletBasis[1][1], bulletBasis[1][2], bulletTranslation[1],
-			bulletBasis[2][0], bulletBasis[2][1], bulletBasis[2][2], bulletTranslation[2],
-			0.0f, 0.0f, 0.0f, 1.0f
-			);
-
-		auto collider	= it->first;
-		collider->setTransform(transform);
+		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());		
+		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
 }
 
 /*static*/
-std::shared_ptr<RenderingController>
-	bullet::PhysicsWorld::getRootRenderingController(NodePtr target)
+RenderingController::Ptr
+	bullet::PhysicsWorld::getRootRenderingController(Node::Ptr target)
 {
 	if (target == nullptr)
 		throw std::invalid_argument("target");
@@ -179,16 +180,44 @@ std::shared_ptr<RenderingController>
 		return node->hasController<RenderingController>();
 	});
 
-	uint numControllers	= 0;
-	for (auto node: nodeSet->nodes())
-		numControllers	+= node->controllers<RenderingController>().size();
-
 #ifdef DEBUG
-	std::cout << numControllers << " rendering controllers" << std::endl;
+	std::cout << nodeSet->nodes().size() << " rendering controllers" << std::endl;
 #endif // DEBUG
-
-	if (numControllers != 1)
+	if (nodeSet->nodes().size() != 1)
 		throw std::logic_error("PhysicsWorld requires exactly one RenderingController among the descendants of its target node.");
 
-	return nodeSet->nodes()[0]->controllers<RenderingController>()[0];
+	return nodeSet->nodes().front()->controllers<RenderingController>().front();
+}
+
+/*static*/
+Matrix4x4::Ptr
+	bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
+{
+	auto basis			= transform.getBasis();
+	auto translation	= transform.getOrigin();
+
+	Matrix4x4::Ptr	output = Matrix4x4::create();
+	output->initialize(
+		basis[0][0], basis[0][1], basis[0][2], translation[0],
+		basis[1][0], basis[1][1], basis[1][2], translation[1],
+		basis[2][0], basis[2][1], basis[2][2], translation[2],
+		0.0f, 0.0f, 0.0f, 1.0f
+		);
+	return output;
+}
+
+/*static*/
+void
+	bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
+	btTransform& output)
+{
+	auto translation	= transform->translation();
+	auto rotation		= transform->transpose()->rotation();
+	transform->transpose();
+
+	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
+	btQuaternion	btRotation(rotation->x(), rotation->y(), rotation->z(), rotation->w());
+
+	output.setOrigin(btOrigin);
+	output.setRotation(btRotation);
 }

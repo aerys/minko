@@ -18,23 +18,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "ColliderController.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/controller/bullet/Collider.hpp"
-#include "minko/controller/bullet/PhysicsWorld.hpp"
+#include <minko/math/Matrix4x4.hpp>
+#include <minko/scene/Node.hpp>
+#include <minko/controller/TransformController.hpp>
+#include <minko/controller/bullet/Collider.hpp>
+#include <minko/controller/bullet/PhysicsWorld.hpp>
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::controller;
 
-bullet::ColliderController::ColliderController(ColliderPtr collider):
+bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	AbstractController(),
 	_collider(collider),
-	_target(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_physicsWorld(nullptr)
+	_physicsWorld(nullptr),
+	_targetTrfCtrl(nullptr),
+	_parentTrfCtrl(nullptr)
 {
 
 }
@@ -65,14 +69,13 @@ void
 
 void
 	bullet::ColliderController::targetAddedHandler(
-	std::shared_ptr<AbstractController> controller, 
-	std::shared_ptr<Node> target)
+	AbstractController::Ptr controller, 
+	Node::Ptr target)
 {
-	if (_target)
-		throw std::logic_error("A collider controller can currently target only one node.");
-	_target		= target;
+	if (targets().size() > 1)
+		throw std::logic_error("ColliderController cannot have more than one target.");
 
-	_addedSlot	= _target->added()->connect(std::bind(
+	_addedSlot	= targets().front()->added()->connect(std::bind(
 		&bullet::ColliderController::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -80,7 +83,7 @@ void
 		std::placeholders::_3
 		));
 
-	_removedSlot	= _target->removed()->connect(std::bind(
+	_removedSlot	= targets().front()->removed()->connect(std::bind(
 		&bullet::ColliderController::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
@@ -91,21 +94,42 @@ void
 
 void
 	bullet::ColliderController::targetRemovedHandler(
-	std::shared_ptr<AbstractController> controller, 
-	std::shared_ptr<Node> target)
+	AbstractController::Ptr controller, 
+	Node::Ptr target)
 {
 	_addedSlot				= nullptr;
 	_removedSlot			= nullptr;
 	_transformChangedSlot	= nullptr;
-	_target					= nullptr;
 }
 
 void 
 	bullet::ColliderController::addedHandler(
-	std::shared_ptr<Node> node, 
-	std::shared_ptr<Node> target, 
-	std::shared_ptr<Node> parent)
+	Node::Ptr node, 
+	Node::Ptr target, 
+	Node::Ptr parent)
 {
+	if (!target->hasController<TransformController>())
+		throw std::logic_error("A ColliderController's target must have TransformController.");
+
+	_targetTrfCtrl	= target->controllers<TransformController>().front();
+
+	_parentTrfCtrl	= nullptr;
+	Node::Ptr current	= target->parent();
+	do
+	{
+		if (current == nullptr)
+			break;
+		if (current->hasController<TransformController>())
+		{
+			_parentTrfCtrl	= current->controllers<TransformController>().front();
+			break;
+		}
+		current	= current->parent();
+	}
+	while(current != nullptr && current != current->parent());
+
+	_collider->initializeWorldTransform(_targetTrfCtrl->transform());
+
 #ifdef DEBUG
 	std::cout << "collider controller's target has been added\tto be added to physics world." << std::endl;
 #endif // DEBUG
@@ -116,24 +140,35 @@ void
 
 void
 	bullet::ColliderController::removedHandler(
-	std::shared_ptr<Node> node, 
-	std::shared_ptr<Node> target, 
-	std::shared_ptr<Node> parent)
+	Node::Ptr node, 
+	Node::Ptr target, 
+	Node::Ptr parent)
 {
 	_physicsWorld->removeChild(_collider);
 	_physicsWorld	= nullptr;
+	_targetTrfCtrl	= nullptr;
+	_parentTrfCtrl	= nullptr;
 }
 
 void 
-	bullet::ColliderController::transformChangedHandler(ColliderPtr collider)
+	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
 {
-	auto transform	= collider->transform();
-	std::cout << "update transform of collider's target in ColliderController::transformChangedHandler" << std::endl;
+	auto targetTransform	= Matrix4x4::create();
+	if (_parentTrfCtrl != nullptr)
+		targetTransform
+			->copyFrom(_parentTrfCtrl->modelToWorldMatrix())
+			->invert()
+			->append(_collider->worldTransform());
+	else
+		targetTransform
+			->copyFrom(collider->worldTransform());
+
+	_targetTrfCtrl->transform()->copyFrom(targetTransform);
 }
 
 /*static*/
 std::shared_ptr<bullet::PhysicsWorld>
-	bullet::ColliderController::getRootPhysicsWorld(NodePtr target)
+	bullet::ColliderController::getRootPhysicsWorld(Node::Ptr target)
 {
 	if (target == nullptr)
 		throw std::invalid_argument("target");
@@ -146,16 +181,11 @@ std::shared_ptr<bullet::PhysicsWorld>
 		return node->hasController<bullet::PhysicsWorld>();
 	});
 
-	uint numControllers	= 0;
-	for (auto node: nodeSet->nodes())
-		numControllers	+= node->controllers<bullet::PhysicsWorld>().size();
-
 #ifdef DEBUG
-	std::cout << numControllers << " rendering controllers" << std::endl;
+	std::cout << nodeSet->nodes().size() << " rendering controllers" << std::endl;
 #endif // DEBUG
-
-	if (numControllers != 1)
+	if (nodeSet->nodes().size() != 1)
 		throw std::logic_error("ColliderController requires exactly one PhysicsWorld controller among the descendants of its target node.");
 
-	return nodeSet->nodes()[0]->controllers<bullet::PhysicsWorld>()[0];
+	return nodeSet->nodes().front()->controllers<bullet::PhysicsWorld>().front();
 }

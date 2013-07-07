@@ -23,47 +23,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::math;
 
 Matrix4x4::Ptr
-Matrix4x4::translation(float x, float y, float z)
+	Matrix4x4::translation(float x, float y, float z)
 {
 	return initialize(
 		1., 0., 0., x,
 		0., 1., 0., y,
 		0., 0., 1., z,
 		0., 0., 0., 1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::rotationX(float radians)
+	Matrix4x4::rotationX(float radians)
 {
 	return initialize(
 		1., 0., 			0.,				0.,
 		0., cosf(radians),	-sinf(radians), 0.,
 		0.,	sinf(radians),	cosf(radians),	0.,
 		0.,	0.,				0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::rotationY(float radians)
+	Matrix4x4::rotationY(float radians)
 {
 	return initialize(
 		cosf(radians),	0.,	sinf(radians),	0.,
 		0.,				1.,	0.,				0.,
 		-sinf(radians),	0.,	cosf(radians),	0.,
 		0.,				0.,	0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::rotationZ(float radians)
+	Matrix4x4::rotationZ(float radians)
 {
 	return initialize(
 		cosf(radians),	-sinf(radians),	0.,	0.,
 		sinf(radians),	cosf(radians),	0.,	0.,
 		0.,				0.,				1.,	0.,
 		0.,				0.,				0.,	1.
-	);
+		);
 }
 
 Matrix4x4::Matrix4x4() :
@@ -77,10 +77,10 @@ Matrix4x4::Matrix4x4(Matrix4x4::Ptr value) :
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prepend(float m00, float m01, float m02, float m03,
-			 	   float m10, float m11, float m12, float m13,
-			 	   float m20, float m21, float m22, float m23,
-			 	   float m30, float m31, float m32, float m33)
+	Matrix4x4::prepend(float m00, float m01, float m02, float m03,
+	float m10, float m11, float m12, float m13,
+	float m20, float m21, float m22, float m23,
+	float m30, float m31, float m32, float m33)
 {
 	return initialize(
 		_m[0] * m00 + _m[1] * m10 + _m[2] * m20 + _m[3] * m30,
@@ -99,14 +99,14 @@ Matrix4x4::prepend(float m00, float m01, float m02, float m03,
 		_m[12] * m01 + _m[13] * m11 + _m[14] * m21 + _m[15] * m31,
 		_m[12] * m02 + _m[13] * m12 + _m[14] * m22 + _m[15] * m32,
 		_m[12] * m03 + _m[13] * m13 + _m[14] * m23 + _m[15] * m33
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::append(float m00, float m01, float m02, float m03,
-			 	  float m10, float m11, float m12, float m13,
-			 	  float m20, float m21, float m22, float m23,
-			 	  float m30, float m31, float m32, float m33)
+	Matrix4x4::append(float m00, float m01, float m02, float m03,
+	float m10, float m11, float m12, float m13,
+	float m20, float m21, float m22, float m23,
+	float m30, float m31, float m32, float m33)
 {
 	return initialize(
 		m00 * _m[0] + m01 * _m[4] + m02 * _m[8] + m03 * _m[12],
@@ -129,10 +129,10 @@ Matrix4x4::append(float m00, float m01, float m02, float m03,
 }
 
 Matrix4x4::Ptr
-Matrix4x4::initialize(float m00, float m01, float m02, float m03,
-			  		  float m10, float m11, float m12, float m13,
-			  		  float m20, float m21, float m22, float m23,
-			  		  float m30, float m31, float m32, float m33)
+	Matrix4x4::initialize(float m00, float m01, float m02, float m03,
+	float m10, float m11, float m12, float m13,
+	float m20, float m21, float m22, float m23,
+	float m30, float m31, float m32, float m33)
 {
 	_m[0] = m00;	_m[1] = m01; 	_m[2] = m02; 	_m[3] = m03;
 	_m[4] = m10;	_m[5] = m11; 	_m[6] = m12; 	_m[7] = m13;
@@ -145,50 +145,50 @@ Matrix4x4::initialize(float m00, float m01, float m02, float m03,
 }
 
 Matrix4x4::Ptr
-Matrix4x4::identity()
+	Matrix4x4::identity()
 {
 	return initialize(
 		1.f, 0.f, 0.f, 0.f,
 		0.f, 1.f, 0.f, 0.f,
 		0.f, 0.f, 1.f, 0.f,
 		0.f, 0.f, 0.f, 1.f
-	);
+		);
 }
 
 float
-Matrix4x4::determinant()
+	Matrix4x4::determinant()
 {
-    return _m[0] * _m[5] - _m[4] * _m[1] * _m[10] * _m[15] - _m[14] * _m[11]
-    	- _m[0] * _m[6] - _m[4] * _m[2] * _m[9] * _m[15] - _m[13] * _m[11]
-    	+ _m[0] * _m[7] - _m[4] * _m[3] * _m[9] * _m[14] - _m[13] * _m[10]
-    	+ _m[1] * _m[6] - _m[5] * _m[2] * _m[8] * _m[15] - _m[12] * _m[11]
-    	- _m[1] * _m[7] - _m[5] * _m[3] * _m[8] * _m[14] - _m[12] * _m[10]
-    	+ _m[2] * _m[7] - _m[6] * _m[3] * _m[8] * _m[13] - _m[12] * _m[9];
+	return _m[0] * _m[5] - _m[4] * _m[1] * _m[10] * _m[15] - _m[14] * _m[11]
+	- _m[0] * _m[6] - _m[4] * _m[2] * _m[9] * _m[15] - _m[13] * _m[11]
+	+ _m[0] * _m[7] - _m[4] * _m[3] * _m[9] * _m[14] - _m[13] * _m[10]
+	+ _m[1] * _m[6] - _m[5] * _m[2] * _m[8] * _m[15] - _m[12] * _m[11]
+	- _m[1] * _m[7] - _m[5] * _m[3] * _m[8] * _m[14] - _m[12] * _m[10]
+	+ _m[2] * _m[7] - _m[6] * _m[3] * _m[8] * _m[13] - _m[12] * _m[9];
 }
 
 Matrix4x4::Ptr
-Matrix4x4::invert()
+	Matrix4x4::invert()
 {
 	float s0 =_m[0] * _m[5] - _m[4] * _m[1];
-    float s1 =_m[0] * _m[6] - _m[4] * _m[2];
-    float s2 =_m[0] * _m[7] - _m[4] * _m[3];
-    float s3 =_m[1] * _m[6] - _m[5] * _m[2];
-    float s4 =_m[1] * _m[7] - _m[5] * _m[3];
-    float s5 =_m[2] * _m[7] - _m[6] * _m[3];
+	float s1 =_m[0] * _m[6] - _m[4] * _m[2];
+	float s2 =_m[0] * _m[7] - _m[4] * _m[3];
+	float s3 =_m[1] * _m[6] - _m[5] * _m[2];
+	float s4 =_m[1] * _m[7] - _m[5] * _m[3];
+	float s5 =_m[2] * _m[7] - _m[6] * _m[3];
 
-    float c5 =_m[10] * _m[15] - _m[14] * _m[11];
-    float c4 =_m[9] * _m[15] - _m[13] * _m[11];
-    float c3 =_m[9] * _m[14] - _m[13] * _m[10];
-    float c2 =_m[8] * _m[15] - _m[12] * _m[11];
-    float c1 =_m[8] * _m[14] - _m[12] * _m[10];
-    float c0 =_m[8] * _m[13] - _m[12] * _m[9];
+	float c5 =_m[10] * _m[15] - _m[14] * _m[11];
+	float c4 =_m[9] * _m[15] - _m[13] * _m[11];
+	float c3 =_m[9] * _m[14] - _m[13] * _m[10];
+	float c2 =_m[8] * _m[15] - _m[12] * _m[11];
+	float c1 =_m[8] * _m[14] - _m[12] * _m[10];
+	float c0 =_m[8] * _m[13] - _m[12] * _m[9];
 
-    float det = s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
+	float det = s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
 
 	if (det == 0.)
 		throw;
 
-    float invdet = 1.f / det;
+	float invdet = 1.f / det;
 
 	return initialize(
 		(_m[5] * c5 - _m[6] * c4 + _m[7] * c3) * invdet,
@@ -207,11 +207,11 @@ Matrix4x4::invert()
 		(_m[0] * c3 - _m[1] * c1 + _m[2] * c0) * invdet,
 		(-_m[12] * s3 + _m[13] * s1 - _m[14] * s0) * invdet,
 		(_m[8] * s3 - _m[9] * s1 + _m[10] * s0) * invdet
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::transpose()
+	Matrix4x4::transpose()
 {
 	return initialize(
 		_m[0],	_m[4], 	_m[8], 	_m[12],
@@ -222,7 +222,7 @@ Matrix4x4::transpose()
 }
 
 Matrix4x4::Ptr
-Matrix4x4::append(Matrix4x4::Ptr matrix)
+	Matrix4x4::append(Matrix4x4::Ptr matrix)
 {
 	std::vector<float>& mv = matrix->_m;
 
@@ -235,7 +235,7 @@ Matrix4x4::append(Matrix4x4::Ptr matrix)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prepend(Matrix4x4::Ptr matrix)
+	Matrix4x4::prepend(Matrix4x4::Ptr matrix)
 {
 	std::vector<float>& mv = matrix->_m;
 
@@ -248,95 +248,95 @@ Matrix4x4::prepend(Matrix4x4::Ptr matrix)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendTranslation(float x, float y, float z)
+	Matrix4x4::appendTranslation(float x, float y, float z)
 {
 	return append(
 		1.,	0.,	0., x,
 		0.,	1.,	0., y,
 		0.,	0.,	1., z,
 		0.,	0.,	0., 1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependTranslation(float x, float y, float z)
+	Matrix4x4::prependTranslation(float x, float y, float z)
 {
 	return prepend(
 		1.,	0.,	0., x,
 		0.,	1.,	0., y,
 		0.,	0.,	1., z,
 		0.,	0.,	0., 1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendRotationX(float radians)
+	Matrix4x4::appendRotationX(float radians)
 {
 	return append(
 		1., 0., 			0.,				0.,
 		0., cosf(radians),	-sinf(radians), 0.,
 		0.,	sinf(radians),	cosf(radians),	0.,
 		0.,	0.,				0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependRotationX(float radians)
+	Matrix4x4::prependRotationX(float radians)
 {
 	return prepend(
 		1., 0., 			0.,				0.,
 		0., cosf(radians),	-sinf(radians), 0.,
 		0.,	sinf(radians),	cosf(radians),	0.,
 		0.,	0.,				0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendRotationY(float radians)
+	Matrix4x4::appendRotationY(float radians)
 {
 	return append(
 		cosf(radians),	0.,	sinf(radians),	0.,
 		0.,				1.,	0.,				0.,
 		-sinf(radians),	0.,	cosf(radians),	0.,
 		0.,				0.,	0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependRotationY(float radians)
+	Matrix4x4::prependRotationY(float radians)
 {
 	return prepend(
 		cosf(radians),	0.,	sinf(radians),	0.,
 		0.,				1.,	0.,				0.,
 		-sinf(radians),	0.,	cosf(radians),	0.,
 		0.,				0.,	0.,				1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendRotationZ(float radians)
+	Matrix4x4::appendRotationZ(float radians)
 {
 	return append(
 		cosf(radians),	-sinf(radians),	0.,	0.,
 		sinf(radians),	cosf(radians),	0.,	0.,
 		0.,				0.,				1.,	0.,
 		0.,				0.,				0.,	1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependRotationZ(float radians)
+	Matrix4x4::prependRotationZ(float radians)
 {
 	return prepend(
 		cosf(radians),	-sinf(radians),	0.,	0.,
 		sinf(radians),	cosf(radians),	0.,	0.,
 		0.,				0.,				1.,	0.,
 		0.,				0.,				0.,	1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::appendRotation(float radians, Vector3::Ptr axis)
+	Matrix4x4::appendRotation(float radians, Vector3::Ptr axis)
 {
 	float xy2 	= 2.f * axis->x() * axis->y();
 	float xz2 	= 2.f * axis->x() * axis->z();
@@ -354,11 +354,11 @@ Matrix4x4::appendRotation(float radians, Vector3::Ptr axis)
 		xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
 		xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
 		0.,					0.,					0.,					1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
+	Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
 {
 	float xy2 	= 2.f * axis->x() * axis->y();
 	float xz2 	= 2.f * axis->x() * axis->z();
@@ -376,14 +376,14 @@ Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
 		xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
 		xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
 		0.,					0.,					0.,					1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::perspective(float fov,
-                       float ratio,
-                       float zNear,
-                       float zFar)
+	Matrix4x4::perspective(float fov,
+	float ratio,
+	float zNear,
+	float zFar)
 {
 	float fd = 1.f / tanf(fov * .5f);
 
@@ -392,11 +392,11 @@ Matrix4x4::perspective(float fov,
 		0.f,		fd,		0.f,								0.f,
 		0.f,		0.f,	(zFar + zNear) / (zNear - zFar),	2.f * zNear * zFar / (zNear- zFar),
 		0.f,		0.f,	-1.f,								0.f
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
+	Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 {
 	Vector3::Ptr	zAxis = lookAt - eye;
 
@@ -418,7 +418,7 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	{
 		throw std::invalid_argument(
 			"the eye direction (look at - eye position) and the up vector appear to be the same"
-		);
+			);
 	}
 
 	float m41 = -(xAxis->dot(eye));
@@ -430,11 +430,11 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 		xAxis->y(),	yAxis->y(),	zAxis->y(),	0.,
 		xAxis->z(),	yAxis->z(),	zAxis->z(),	0.,
 		m41,		m42,		m43,		1.
-	);
+		);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::lookAt(Vector3::Ptr lookAt, Vector3::Ptr	position, Vector3::Ptr up)
+	Matrix4x4::lookAt(Vector3::Ptr lookAt, Vector3::Ptr	position, Vector3::Ptr up)
 {
 	if (position == 0)
 		position = Vector3::create(_m[3], _m[7], _m[11]);
@@ -443,7 +443,7 @@ Matrix4x4::lookAt(Vector3::Ptr lookAt, Vector3::Ptr	position, Vector3::Ptr up)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
+	Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 {
 	for (auto i = 0; i < 16; ++i)
 		_m[i] = _m[i] + (target->_m[i] - _m[i]) * ratio;
@@ -454,7 +454,7 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 }
 
 Quaternion::Ptr
-Matrix4x4::rotation(Quaternion::Ptr output) const
+	Matrix4x4::rotation(Quaternion::Ptr output) const
 {
 	float quaternion[4]	= { 1.0f, 0.0f, 0.0f, 0.0f }; // { i, j, k, r }
 
@@ -499,7 +499,7 @@ Matrix4x4::rotation(Quaternion::Ptr output) const
 	}
 
 	float t	= s0*_m[0] + s1*_m[5] + s2*_m[10] + 1.0f;
-	float s	= 0.5 / sqrtf(t);
+	float s	= 0.5f / sqrtf(t);
 	quaternion[k0]	= s * t;
 	quaternion[k1]	= s * (_m[1] - s2*_m[4]);
 	quaternion[k2]	= s * (_m[8] - s1*_m[2]);
@@ -511,17 +511,55 @@ Matrix4x4::rotation(Quaternion::Ptr output) const
 }
 
 Vector3::Ptr
-Matrix4x4::translation(Vector3::Ptr output)
+	Matrix4x4::translation(Vector3::Ptr output) const
 {
 	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
 }
 
 Matrix4x4::Ptr
-Matrix4x4::copyFrom(Matrix4x4::Ptr source)
+	Matrix4x4::initialize(Quaternion::Ptr rotation, Vector3::Ptr translation)
+{
+	float qx	= rotation->x();
+	float qy	= rotation->y();
+	float qz	= rotation->z();
+	float qw	= rotation->w();
+	float qxx2	= qx*qx*2.0f;
+	float qxy2	= qx*qy*2.0f;
+	float qxz2	= qx*qz*2.0f;
+	float qxw2	= qx*qw*2.0f;
+	float qyy2	= qy*qy*2.0f;
+	float qyz2	= qy*qz*2.0f;
+	float qyw2	= qy*qw*2.0f;
+	float qzz2	= qz*qz*2.0f;
+	float qzw2	= qz*qw*2.0f;
+	float qww2	= qw*qw*2.0f;
+
+	return initialize(
+		1.0f - qyy2 - qzz2,	qxy2 + qzw2,		qxz2 - qyw2,		translation->x(),
+		qxy2 - qzw2,		1.0f - qxx2 - qzz2,	qyz2 + qxw2,		translation->y(),
+		qxz2 + qyw2,		qyz2 - qxw2,		1.0f - qxx2 - qyy2,	translation->z(),
+		0.0f,				0.0f,				0.0f,				1.0f
+		);
+}
+
+Matrix4x4::Ptr
+	Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 {
 	std::copy(source->_m.begin(), source->_m.end(), _m.begin());
 
 	changed()->execute(shared_from_this());
 
 	return shared_from_this();
+}
+
+Vector3::Ptr
+	Matrix4x4::project(Vector3::Ptr value, Vector3::Ptr output) const
+{
+	float x	= _m[0]*value->x() + _m[1]*value->y() + _m[2]*value->z() + _m[3];
+	float y	= _m[4]*value->x() + _m[5]*value->y() + _m[6]*value->z() + _m[7];
+	float z	= _m[8]*value->x() + _m[9]*value->y() + _m[10]*value->z() + _m[11];
+
+	return output == 0
+		? Vector3::create(x, y, z)
+		: output->setTo(x, y, z);
 }

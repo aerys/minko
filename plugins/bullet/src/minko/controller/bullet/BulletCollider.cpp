@@ -41,7 +41,7 @@ bullet::PhysicsWorld::BulletCollider::BulletCollider():
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initialize(ColliderPtr collider)
+	bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 {
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
@@ -52,7 +52,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbsShapePtr shape)
+	bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsShape::Ptr shape)
 {
 	if (shape == nullptr)
 		throw std::invalid_argument("shape");
@@ -79,7 +79,7 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShapePtr sphere)
+	bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
 {
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btSphereShape(sphere->radius()));
 #ifdef DEBUG
@@ -88,7 +88,7 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShapePtr box)
+	bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box)
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btBoxShape(halfExtents));
@@ -98,7 +98,7 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShapePtr cone)
+	bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
 {
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btConeShape(cone->radius(), cone->height()));
 #ifdef DEBUG
@@ -107,28 +107,26 @@ void
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderPtr collider)
+	bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
 {
-	auto startTransform		= collider->transform();
-	auto startRotation		= startTransform->rotation();
-	auto startTranslation	= startTransform->translation();
-	btTransform btStartTransform(
-		btQuaternion(startRotation->x(), startRotation->y(), startRotation->z(), startRotation->w()),
-		btVector3(startTranslation->x(), startTranslation->y(), startTranslation->z())
-		);
+	btTransform btStartTransform;
+	toBulletTransform(collider->worldTransform(), btStartTransform);
 
-	btTransform btOffsetTransform (btQuaternion(1.0f, 0.0f, 0.0, 0.0f), btVector3(0.0f, 0.0f, 0.0f));
+
+
+
+	btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
 	auto centerOfMassOffset	= collider->centerOfMassOffset();
 	if (centerOfMassOffset == nullptr)
 	{
-	//auto offsetRotation		= centerOfMassOffset->rotation();
-	//auto offsetTranslation	= centerOfMassOffset->translation();
-	//btOffsetTransform.setBasis(btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()).);
+		//auto offsetRotation		= centerOfMassOffset->rotation();
+		//auto offsetTranslation	= centerOfMassOffset->translation();
+		//btOffsetTransform.setBasis(btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()).);
 
-	//btTransform btOffsetTransform(
-	//	btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
-	//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
-	//	);
+		//btTransform btOffsetTransform(
+		//	btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
+		//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
+		//	);
 	}
 
 	_btMotionState	= std::shared_ptr<btMotionState>(new btDefaultMotionState(
@@ -138,7 +136,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderPtr collider)
+	bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider)
 {
 	btVector3	inertia	 (0.0, 0.0, 0.0);
 	if (collider->inertia() == nullptr)
@@ -158,8 +156,8 @@ void
 		));
 }
 
-bullet::PhysicsWorld::BulletColliderPtr
-	bullet::PhysicsWorld::BulletCollider::create(bullet::PhysicsWorld::ColliderPtr collider)
+bullet::PhysicsWorld::BulletCollider::Ptr
+	bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
 {
 	BulletColliderPtr	btCollider(new BulletCollider());
 
