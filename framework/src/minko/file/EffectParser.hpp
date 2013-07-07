@@ -38,21 +38,19 @@ namespace minko
 			typedef std::shared_ptr<Loader> LoaderPtr;
 
 		private:
-			std::shared_ptr<render::Effect>							_effect;
-			std::string												_effectName;
+			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
+			static std::unordered_map<std::string, render::CompareMode>	_depthFuncMap;
+
+			std::shared_ptr<render::Effect>								_effect;
+			std::string													_effectName;
 			
-			unsigned int											_numDependencies;
-			unsigned int											_numLoadedDependencies;
+			unsigned int												_numDependencies;
+			unsigned int												_numLoadedDependencies;
 
-			std::shared_ptr<render::AbstractContext>				_context;
-			std::vector<std::pair<std::string, std::string>>		_programs;
-			std::unordered_map<std::string, std::string>			_attributeBindings;
-			std::unordered_map<std::string, std::string>			_uniformBindings;
-			std::unordered_map<std::string, std::string>			_stateBindings;
-			std::string												_dependenciesCode;
+			std::string													_dependenciesCode;
 
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
 
 		public:
 			inline static
@@ -92,6 +90,14 @@ namespace minko
 
 		private:
 			EffectParser();
+
+			static
+			std::unordered_map<std::string, unsigned int>
+			initializeBlendFactorMap();
+
+			static
+			std::unordered_map<std::string, render::CompareMode>
+			initializeDepthFuncMap();
 		};
 	}
 }

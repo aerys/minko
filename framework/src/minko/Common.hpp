@@ -50,6 +50,7 @@ namespace minko
 
 		class DrawCall;
 
+		class Pass;
 		class Effect;
 		class ProgramInputs;
 	}
