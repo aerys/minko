@@ -26,15 +26,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 
 using namespace minko::controller;
-using namespace minko::data;
 using namespace minko::math;
-using namespace minko::scene;
 
 Transform::Transform() :
 	minko::controller::AbstractController(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
-	_data(Provider::create())
+	_data(data::Provider::create())
 {
 }
 
@@ -60,8 +58,8 @@ Transform::initialize()
 }
 
 void
-Transform::targetAddedHandler(std::shared_ptr<AbstractController> ctrl,
-										std::shared_ptr<Node> 				target)
+Transform::targetAddedHandler(AbstractController::Ptr	ctrl,
+							  scene::Node::Ptr			target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("Transform cannot have more than one target.");
@@ -85,9 +83,9 @@ Transform::targetAddedHandler(std::shared_ptr<AbstractController> ctrl,
 }
 
 void
-Transform::addedOrRemovedHandler(std::shared_ptr<Node> node,
-										   std::shared_ptr<Node> target,
-										   std::shared_ptr<Node> parent)
+Transform::addedOrRemovedHandler(scene::Node::Ptr node,
+								 scene::Node::Ptr target,
+								 scene::Node::Ptr parent)
 {
 	if (target == targets()[0] && !target->root()->controller<RootTransform>()
 		&& (target != target->root() || target->children().size() != 0))
@@ -95,8 +93,8 @@ Transform::addedOrRemovedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Transform::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
-										  std::shared_ptr<Node> 				target)
+Transform::targetRemovedHandler(AbstractController::Ptr ctrl,
+								scene::Node::Ptr 		target)
 {
 	target->data()->removeProvider(_data);
 
@@ -123,8 +121,8 @@ Transform::RootTransform::initialize()
 }
 
 void
-Transform::RootTransform::targetAddedHandler(std::shared_ptr<AbstractController> 	ctrl,
-																 std::shared_ptr<Node>					target)
+Transform::RootTransform::targetAddedHandler(AbstractController::Ptr 	ctrl,
+											 scene::Node::Ptr			target)
 {
 	_targetSlots.push_back(target->added()->connect(std::bind(
 		&Transform::RootTransform::addedHandler,
@@ -159,17 +157,17 @@ Transform::RootTransform::targetAddedHandler(std::shared_ptr<AbstractController>
 }
 
 void
-Transform::RootTransform::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
-																   std::shared_ptr<Node>				target)
+Transform::RootTransform::targetRemovedHandler(AbstractController::Ptr 	ctrl,
+											   scene::Node::Ptr			target)
 {
 	_targetSlots.clear();
 	_enterFrameSlots.clear();
 }
 
 void
-Transform::RootTransform::controllerAddedHandler(std::shared_ptr<Node>					node,
-																	 std::shared_ptr<Node> 					target,
-														 			 std::shared_ptr<AbstractController>	ctrl)
+Transform::RootTransform::controllerAddedHandler(scene::Node::Ptr			node,
+												 scene::Node::Ptr 			target,
+												 AbstractController::Ptr	ctrl)
 {
 	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
 
@@ -184,9 +182,9 @@ Transform::RootTransform::controllerAddedHandler(std::shared_ptr<Node>					node,
 }
 
 void
-Transform::RootTransform::controllerRemovedHandler(std::shared_ptr<Node>				node,
-																	   std::shared_ptr<Node> 				target,
-																	   std::shared_ptr<AbstractController>	ctrl)
+Transform::RootTransform::controllerRemovedHandler(scene::Node::Ptr			node,
+												   scene::Node::Ptr 		target,
+												   AbstractController::Ptr	ctrl)
 {
 	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
 
@@ -197,9 +195,9 @@ Transform::RootTransform::controllerRemovedHandler(std::shared_ptr<Node>				node
 }
 
 void
-Transform::RootTransform::addedHandler(std::shared_ptr<Node> node,
-												  		   std::shared_ptr<Node> target,
-														   std::shared_ptr<Node> parent)
+Transform::RootTransform::addedHandler(scene::Node::Ptr node,
+									   scene::Node::Ptr target,
+									   scene::Node::Ptr parent)
 {
 	auto enterFrameCallback = std::bind(
 		&Transform::RootTransform::enterFrameHandler,
@@ -207,7 +205,7 @@ Transform::RootTransform::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1
 	);
 
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
         ->select(target)
         ->descendants(true);
 
@@ -226,11 +224,11 @@ Transform::RootTransform::addedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Transform::RootTransform::removedHandler(std::shared_ptr<Node> node,
-														     std::shared_ptr<Node> target,
-															 std::shared_ptr<Node> parent)
+Transform::RootTransform::removedHandler(scene::Node::Ptr node,
+									     scene::Node::Ptr target,
+										 scene::Node::Ptr parent)
 {
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
         ->select(target)
         ->descendants(true);
 
@@ -250,7 +248,7 @@ Transform::RootTransform::updateTransformsList()
 	_modelToWorld.clear();
 	//_worldToModel.clear();
 
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
         ->select(targets().begin(), targets().end())
 		->descendants(true, false)
         ->hasController<Transform>();

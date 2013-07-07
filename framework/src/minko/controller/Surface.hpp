@@ -34,19 +34,18 @@ namespace minko
 			typedef std::shared_ptr<Surface>	Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 
 		private:
-			std::shared_ptr<geometry::Geometry>	_geometry;
-			std::shared_ptr<data::Provider>		_material;
-			std::shared_ptr<render::Effect>		_effect;
+			std::shared_ptr<geometry::Geometry>				_geometry;
+			std::shared_ptr<data::Provider>					_material;
+			std::shared_ptr<render::Effect>					_effect;
 
-			std::list<DrawCallPtr>				_drawCalls;
+			std::list<DrawCallPtr>							_drawCalls;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot	_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<AbstractController::Ptr, NodePtr>::Slot	_targetAddedSlot;
+			Signal<AbstractController::Ptr, NodePtr>::Slot	_targetRemovedSlot;
 
 		public:
 			static
@@ -91,18 +90,18 @@ namespace minko
 			}
 
 		private:
-			Surface(std::shared_ptr<geometry::Geometry> 	geometry,
-								std::shared_ptr<data::Provider>		material,
-								std::shared_ptr<render::Effect>		effect);
+			Surface(std::shared_ptr<geometry::Geometry> geometry,
+					std::shared_ptr<data::Provider>		material,
+					std::shared_ptr<render::Effect>		effect);
 
 			void
 			initialize();
 
 			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetAddedHandler(AbstractController::Ptr ctrl, NodePtr target);
 
 			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetRemovedHandler(AbstractController::Ptr ctrl, NodePtr target);
 		};
 	}
 }
