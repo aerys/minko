@@ -20,13 +20,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "EffectParser.hpp"
 #include "minko/resource/Program.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "json/json.h"
 
 using namespace minko::file;
-using namespace minko::render;
 using namespace minko::resource;
+
+std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
+std::unordered_map<std::string, unsigned int>
+EffectParser::initializeBlendFactorMap()
+{
+	std::unordered_map<std::string, unsigned int> m;
+
+	m["src_zero"]					= static_cast<uint>(render::Blending::Source::ZERO);
+    m["src_one"]					= static_cast<uint>(render::Blending::Source::ONE);
+    m["src_color"]					= static_cast<uint>(render::Blending::Source::SRC_COLOR);
+    m["src_one_minus_src_color"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR);
+    m["src_src_alpha"]				= static_cast<uint>(render::Blending::Source::SRC_ALPHA);
+    m["src_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA);
+    m["src_dst_alpha"]				= static_cast<uint>(render::Blending::Source::DST_ALPHA);
+    m["src_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA);
+
+    m["dst_zero"]					= static_cast<uint>(render::Blending::Destination::ZERO);
+    m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
+	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
+    m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
+    m["dst_one_minus_alpha"]		= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+    m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
+    m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
+    m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+
+	m["default"]					= static_cast<uint>(render::Blending::Mode::DEFAULT);
+	m["alpha"]						= static_cast<uint>(render::Blending::Mode::ALPHA);
+	m["additive"]					= static_cast<uint>(render::Blending::Mode::ADDITIVE);
+
+	return m;
+}
+
+std::unordered_map<std::string, render::CompareMode> EffectParser::_depthFuncMap = EffectParser::initializeDepthFuncMap();
+std::unordered_map<std::string, render::CompareMode>
+EffectParser::initializeDepthFuncMap()
+{
+	std::unordered_map<std::string, render::CompareMode> m;
+
+	m["always"]			= render::CompareMode::ALWAYS;
+	m["equal"]			= render::CompareMode::EQUAL;
+	m["greater"]		= render::CompareMode::GREATER;
+	m["greater_equal"]	= render::CompareMode::GREATER_EQUAL;
+	m["less"]			= render::CompareMode::LESS;
+	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
+	m["never"]			= render::CompareMode::NEVER;
+	m["not_equal"]		= render::CompareMode::NOT_EQUAL;
+
+	return m;
+}
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
@@ -42,33 +93,81 @@ EffectParser::parse(const std::string&					filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	_context = options->context();
-	
-	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		throw std::invalid_argument("data");
 
 	_effectName = root.get("name", filename).asString();
 	
+	std::unordered_map<std::string, std::string> attributeBindings;
+	std::unordered_map<std::string, std::string> uniformBindings;
+	std::unordered_map<std::string, std::string> stateBindings;
+
+	auto attributeBindingsValue = root.get("attributeBindings", 0);
+	if (attributeBindingsValue.isObject())
+		for (auto propertyName : attributeBindingsValue.getMemberNames())
+			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+
+	auto uniformBindingsValue = root.get("uniformBindings", 0);
+	if (uniformBindingsValue.isObject())
+		for (auto propertyName : uniformBindingsValue.getMemberNames())
+			uniformBindings[propertyName] = uniformBindingsValue.get(propertyName, 0).asString();
+
+	auto stateBindingsValue = root.get("stateBindings", 0);
+	if (stateBindingsValue.isObject())
+		for (auto propertyName : stateBindingsValue.getMemberNames())
+			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
+
+	std::vector<std::shared_ptr<render::Pass>> passes;
+
 	for (auto pass : root.get("passes", 0))
-		_programs.push_back(std::pair<std::string, std::string>(
-			pass.get("vertexShader", 0).asString(),
-			pass.get("fragmentShader", 0).asString()
+	{
+		// priority
+		auto priority = pass.get("priority", 0.f).asFloat();
+
+		// blendMode
+		auto blendModeArray	= pass.get("blendMode", 0);
+		auto blendSrcFactor	= render::Blending::Source::ONE;
+		auto blendDstFactor	= render::Blending::Destination::ZERO;
+
+		if (blendModeArray.isArray())
+		{
+			blendSrcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendModeArray[0].asString()]);
+			blendDstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendModeArray[1].asString()]);
+		}
+		else if (blendModeArray.isString())
+		{
+			auto blendMode = _blendFactorMap[blendModeArray.asString()];
+
+			blendSrcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
+			blendDstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+		}
+
+		// depthTest
+		auto depthTest	= pass.get("depthTest", 0);
+		auto depthMask	= true;
+		auto depthFunc	= render::CompareMode::LESS;
+
+		if (depthTest.isArray())
+		{
+			depthMask = depthTest[0].asBool();
+			depthFunc = _depthFuncMap[depthTest[1].asString()];
+		}
+
+		// program
+		auto vertexShaderSource		= pass.get("vertexShader", 0).asString();
+		auto fragmentShaderSource	= pass.get("fragmentShader", 0).asString();
+
+		passes.push_back(render::Pass::create(
+			Program::create(options->context(), vertexShaderSource, fragmentShaderSource),
+			priority,
+			blendSrcFactor,
+			blendDstFactor,
+			depthMask,
+			depthFunc
 		));
 
-	auto attributeBindings = root.get("attributeBindings", 0);
-	if (attributeBindings.isObject())
-		for (auto propertyName : attributeBindings.getMemberNames())
-			_attributeBindings[propertyName] = attributeBindings.get(propertyName, 0).asString();
-
-	auto uniformBindings = root.get("uniformBindings", 0);
-	if (uniformBindings.isObject())
-		for (auto propertyName : uniformBindings.getMemberNames())
-			_uniformBindings[propertyName] = uniformBindings.get(propertyName, 0).asString();
-
-	auto stateBindings = root.get("stateBindings", 0);
-	if (stateBindings.isObject())
-		for (auto propertyName : stateBindings.getMemberNames())
-			_stateBindings[propertyName] = stateBindings.get(propertyName, 0).asString();
+		_effect = render::Effect::create(passes, attributeBindings, uniformBindings, stateBindings);
+	}
 
 	auto require = root.get("includes", 0);
 	if (require.isArray())
@@ -114,19 +213,14 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
 void
 EffectParser::finalize()
 {
-	std::vector<std::shared_ptr<Program>> programs;
-
-	for (auto& program : _programs)
+	for (auto& pass : _effect->passes())
     {
-        auto p = Program::create(
-			_context, _dependenciesCode + program.first, _dependenciesCode + program.second
-		);
+		auto program = pass->program();
 
-        p->upload();
-		programs.push_back(p);
+		program->vertexShaderSource(_dependenciesCode + program->vertexShaderSource());
+		program->fragmentShaderSource(_dependenciesCode + program->fragmentShaderSource());
+        program->upload();
     }
-
-	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
 	_complete->execute(shared_from_this());
 }
