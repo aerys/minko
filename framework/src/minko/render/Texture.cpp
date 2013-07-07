@@ -17,63 +17,58 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "Texture.hpp"
 
-#include "minko/Common.hpp"
+#include "minko/render/AbstractContext.hpp"
 
-namespace minko
+using namespace minko::render;
+
+Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
+				 const unsigned int							width,
+				 const unsigned int							height) :
+	AbstractResource(context),
+	_width(width),
+	_height(height)
 {
-	namespace resource
+}
+
+void
+Texture::data(unsigned char* data, DataFormat format)
+{
+	auto size = _width * _height * sizeof(int);
+
+	_data.resize(size);
+	
+	if (format == DataFormat::RGBA)
 	{
-		class AbstractResource
-		{
-		public:
-			typedef std::shared_ptr<AbstractResource> Ptr;
-
-		protected:
-			std::shared_ptr<render::AbstractContext>	_context;
-			int											_id;
-
-		public:
-			inline
-			std::shared_ptr<render::AbstractContext>
-			context()
-			{
-				return _context;
-			}
-
-			inline
-			const int
-			id()
-			{
-				if (_id == -1)
-					throw;
-
-				return _id;
-			}
-
-			virtual
-			void
-			dispose()
-			{
-				// nothing
-			}
-
-			virtual
-			void
-			upload() = 0;
-
-			~AbstractResource()
-			{
-				dispose();
-			}
-
-		protected:
-			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
-				_context(context),
-				_id(-1)
-			{
-			}
-		};
+		std::memcpy(&_data[0], data, size);
 	}
+	else if (format == DataFormat::RGB)
+	{
+		for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
+		{
+			unsigned char r = data[i];
+			unsigned char g = data[i + 1];
+			unsigned char b = data[i + 2];
+
+			_data[j] = data[i];
+			_data[j + 1] = data[i + 1];
+			_data[j + 2] = data[i + 2];
+			_data[j + 3] = 0;
+		}
+	}
+}
+
+void
+Texture::upload()
+{
+	_id = _context->createTexture(_width, _height, false);
+	_context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
+}
+
+void
+Texture::dispose()
+{
+	_context->deleteTexture(_id);
+	_id = -1;
 }
