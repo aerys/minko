@@ -30,7 +30,7 @@ unsigned int Node::_id = 0;
 
 Node::Node() :
 	_name("Node_" + std::to_string(Node::_id++)),
-	_tags(1),
+	_layers(1),
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
