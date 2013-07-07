@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AbstractTextureParser.hpp"
-#include "minko/resource/Texture.hpp"
+#include "minko/render/Texture.hpp"
 #include "minko/Signal.hpp"
 
 using namespace minko::render;
@@ -35,7 +35,6 @@ AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_defaultOptions(file::Options::create(context)),
 	_complete(Signal<Ptr>::create())
 {
-	registerParser<file::EffectParser>("effect");
 }
 
 AssetsLibrary::GeometryPtr
@@ -52,14 +51,14 @@ AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geome
 	return shared_from_this();
 }
 
-resource::Texture::Ptr
+render::Texture::Ptr
 AssetsLibrary::texture(const std::string& name)
 {
 	return _textures[name];
 }
 
 AssetsLibrary::Ptr
-AssetsLibrary::texture(const std::string& name, resource::Texture::Ptr texture)
+AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
 
