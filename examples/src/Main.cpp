@@ -116,8 +116,8 @@ int main(int argc, char** argv)
 		->queue("VertexNormal.effect")
 		->queue("Texture.effect")
 		->queue("Red.effect")
-		->queue("Basic.effect")
-		->queue("models/model.mk");
+		->queue("Basic.effect");
+		//->queue("models/model.mk");
 
 	assets->defaultOptions()->includePaths().push_back("effects");
 	assets->defaultOptions()->includePaths().push_back("textures");
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 			assets->effect("vertex normal")
 		));
 
-		group->addChild(assets->node("models/model.mk"));
+		//group->addChild(assets->node("models/model.mk"));
 
 		//group->addChild(mesh);
 		//testMk(assets);

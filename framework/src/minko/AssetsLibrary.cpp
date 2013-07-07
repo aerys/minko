@@ -131,8 +131,6 @@ AssetsLibrary::load()
 {
 	std::list<std::string> queue = _filesQueue;
 
-	_defaultOptions->assets(shared_from_this());
-
 	for (auto& filename : queue)
 	{
 		if (_filenameToLoader.count(filename) == 0)
@@ -174,9 +172,9 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 	{
 		auto parser = _parsers[extension]();
 		
-		parser->parse(loader->filename(), _filenameToOptions[filename], loader->data());
+		parser->parse(loader->filename(), _filenameToOptions[filename], loader->data(), shared_from_this());
 
-		auto fxParser = std::dynamic_pointer_cast<file::EffectParser>(parser);
+		/*auto fxParser = std::dynamic_pointer_cast<file::EffectParser>(parser);
 		if (fxParser)
 			effect(fxParser->effectName(), fxParser->effect());
 		
@@ -186,7 +184,7 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 
 		auto modelParser = std::dynamic_pointer_cast<file::AbstractModelParser>(parser);
 		if (modelParser)
-			node(filename, modelParser->node());
+			node(filename, modelParser->node());*/
 	}
 	else
 		blob(filename, loader->data());
