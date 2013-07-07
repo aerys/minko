@@ -30,7 +30,8 @@ using namespace minko::file;
 void
 JPEGParser::parse(const std::string&				filename,
 				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data)
+				  const std::vector<unsigned char>&	data,
+				  std::shared_ptr<AssetsLibrary>	assetsLibrary)
 {
 	int width;
 	int height;
@@ -50,6 +51,8 @@ JPEGParser::parse(const std::string&				filename,
 	_texture = resource::Texture::create(options->context(), width, height);
 	_texture->data(bmpData, format);
 	_texture->upload();
+
+	assetsLibrary->texture(filename, _texture);
 
 	delete bmpData;
 }

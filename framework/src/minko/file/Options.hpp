@@ -32,7 +32,6 @@ namespace minko
 
 		private:
 			std::shared_ptr<render::AbstractContext>	_context;
-			std::shared_ptr<AssetsLibrary>				_assets;
 			std::vector<std::string>					_includePaths;
 
 		public:
@@ -49,20 +48,6 @@ namespace minko
 			{
 				return _context;
 			}
-			
-			inline
-			std::shared_ptr<AssetsLibrary>
-			assets()
-			{
-				return _assets;
-			}
-
-			inline
-			void
-			assets(std::shared_ptr<AssetsLibrary> value)
-			{
-				_assets = value;
-			}
 
 			std::vector<std::string>&
 			includePaths()
@@ -70,7 +55,7 @@ namespace minko
 				return _includePaths;
 			}
 
-		private:
+		protected:
 			Options(std::shared_ptr<render::AbstractContext>	context) :
 				_context(context)
 			{
