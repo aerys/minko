@@ -104,6 +104,18 @@ namespace minko
 							ControllerMap	controllerMap,
 							NodeMap			nodeMap);
 
+			std::shared_ptr<scene::Node>
+			deserializeCamera(NodeInfo		nodeInfo,
+							  OptionsPtr	options,
+							  ControllerMap	controllerMap,
+							  NodeMap		nodeMap);
+
+			std::shared_ptr<scene::Node>
+			deserializeLight(NodeInfo		nodeInfo,
+							 OptionsPtr		options,
+							 ControllerMap	controllerMap,
+							 NodeMap		nodeMap);
+
 			void
 			initializeNodeDeserializer();
 
