@@ -43,7 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/TransformController.hpp"
 #include "minko/controller/SurfaceController.hpp"
 #include "minko/controller/RenderingController.hpp"
-#include "minko/controller/PerspectiveCameraController.hpp"
+#include "minko/controller/PerspectiveCamera.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexStream.hpp"
