@@ -237,7 +237,7 @@ void
 NodeSet::operatorLayer(Nodes& input, const unsigned int layer)
 {
     for (auto in : input)
-        if (in->tags() & layer)
+        if (in->layers() & layer)
             output(in);
 }
 
