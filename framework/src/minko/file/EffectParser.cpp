@@ -98,74 +98,52 @@ EffectParser::parse(const std::string&					filename,
 		throw std::invalid_argument("data");
 
 	_effectName = root.get("name", filename).asString();
+
+	_defaultPriority = root.get("priority", 0.f).asFloat();
+	parseDefaultValues(root);
+	parseDependencies(root, options);
+	parsePasses(root, options);
 	
-	std::unordered_map<std::string, std::string> attributeBindings;
-	std::unordered_map<std::string, std::string> uniformBindings;
-	std::unordered_map<std::string, std::string> stateBindings;
+	if (_numDependencies == 0)
+		finalize();
+}
 
-	auto attributeBindingsValue = root.get("attributeBindings", 0);
-	if (attributeBindingsValue.isObject())
-		for (auto propertyName : attributeBindingsValue.getMemberNames())
-			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+void
+EffectParser::parseDefaultValues(Json::Value& root)
+{
+	parseBindings(root, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings);
+	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
+	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
+}
 
-	auto uniformBindingsValue = root.get("uniformBindings", 0);
-	if (uniformBindingsValue.isObject())
-		for (auto propertyName : uniformBindingsValue.getMemberNames())
-			uniformBindings[propertyName] = uniformBindingsValue.get(propertyName, 0).asString();
-
-	auto stateBindingsValue = root.get("stateBindings", 0);
-	if (stateBindingsValue.isObject())
-		for (auto propertyName : stateBindingsValue.getMemberNames())
-			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
-
+void
+EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
+{
 	std::vector<std::shared_ptr<render::Pass>> passes;
 
 	for (auto pass : root.get("passes", 0))
 	{
-		// priority
-		auto priority = pass.get("priority", 0.f).asFloat();
+		// pass bindings
+		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
+		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
+		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
+
+		parseBindings(pass, attributeBindings, uniformBindings, stateBindings);
+
+		// pass priority
+		auto priority = pass.get("priority", _defaultPriority).asFloat();
 
 		// blendMode
-		auto blendModeArray	= pass.get("blendMode", 0);
-		auto blendSrcFactor	= render::Blending::Source::ONE;
-		auto blendDstFactor	= render::Blending::Destination::ZERO;
+		auto blendSrcFactor	= _defaultBlendSrcFactor;
+		auto blendDstFactor	= _defaultBlendDstFactor;
 
-		if (blendModeArray.isArray())
-		{
-			auto blendSrcFactorString = blendModeArray[0].asString();
-			if (_blendFactorMap.count(blendSrcFactorString))
-				blendSrcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
-
-			auto blendDstFactorString = blendModeArray[1].asString();
-			if (_blendFactorMap.count(blendDstFactorString))
-				blendDstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
-		}
-		else if (blendModeArray.isString())
-		{
-			auto blendModeString = blendModeArray.asString();
-
-			if (_blendFactorMap.count(blendModeString))
-			{
-				auto blendMode = _blendFactorMap[blendModeString];
-
-				blendSrcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
-				blendDstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
-			}
-		}
+		parseBlendMode(pass, blendSrcFactor, blendDstFactor);
 
 		// depthTest
-		auto depthTest	= pass.get("depthTest", 0);
-		auto depthMask	= true;
-		auto depthFunc	= render::CompareMode::LESS;
+		auto depthMask	= _defaultDepthMask;
+		auto depthFunc	= _defaultDepthFunc;
 
-		if (depthTest.isArray())
-		{
-			auto depthFuncString = depthTest[1].asString();
-
-			depthMask = depthTest[0].asBool();
-			if (_depthFuncMap.count(depthFuncString))
-				depthFunc = _depthFuncMap[depthFuncString];
-		}
+		parseDepthTest(pass, depthMask, depthFunc);
 
 		// program
 		auto vertexShaderSource		= pass.get("vertexShader", 0).asString();
@@ -173,6 +151,9 @@ EffectParser::parse(const std::string&					filename,
 
 		passes.push_back(render::Pass::create(
 			Program::create(options->context(), vertexShaderSource, fragmentShaderSource),
+			attributeBindings,
+			uniformBindings,
+			stateBindings,
 			priority,
 			blendSrcFactor,
 			blendDstFactor,
@@ -180,9 +161,83 @@ EffectParser::parse(const std::string&					filename,
 			depthFunc
 		));
 
-		_effect = render::Effect::create(passes, attributeBindings, uniformBindings, stateBindings);
+		_effect = render::Effect::create(passes);
 	}
+}
 
+void
+EffectParser::parseBlendMode(Json::Value&					contextNode,
+						     render::Blending::Source&		srcFactor,
+						     render::Blending::Destination&	dstFactor)
+{
+	auto blendModeArray	= contextNode.get("blendMode", 0);
+	
+	if (blendModeArray.isArray())
+	{
+		auto blendSrcFactorString = "src_" + blendModeArray[0].asString();
+		if (_blendFactorMap.count(blendSrcFactorString))
+			srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
+
+		auto blendDstFactorString = "dst_" + blendModeArray[1].asString();
+		if (_blendFactorMap.count(blendDstFactorString))
+			dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
+	}
+	else if (blendModeArray.isString())
+	{
+		auto blendModeString = blendModeArray.asString();
+
+		if (_blendFactorMap.count(blendModeString))
+		{
+			auto blendMode = _blendFactorMap[blendModeString];
+
+			srcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
+			dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+		}
+	}
+}
+
+void
+EffectParser::parseDepthTest(Json::Value&			contextNode,
+							 bool&					depthMask,
+							 render::CompareMode&	depthFunc)
+{
+	auto depthTest	= contextNode.get("depthTest", 0);
+	
+	if (depthTest.isArray())
+	{
+		auto depthFuncString = depthTest[1].asString();
+
+		depthMask = depthTest[0].asBool();
+		if (_depthFuncMap.count(depthFuncString))
+			depthFunc = _depthFuncMap[depthFuncString];
+	}
+}
+
+void
+EffectParser::parseBindings(Json::Value&									contextNode,
+						    std::unordered_map<std::string, std::string>&	attributeBindings,
+						    std::unordered_map<std::string, std::string>&	uniformBindings,
+						    std::unordered_map<std::string, std::string>&	stateBindings)
+{
+	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
+	if (attributeBindingsValue.isObject())
+		for (auto propertyName : attributeBindingsValue.getMemberNames())
+			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+
+	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
+	if (uniformBindingsValue.isObject())
+		for (auto propertyName : uniformBindingsValue.getMemberNames())
+			uniformBindings[propertyName] = uniformBindingsValue.get(propertyName, 0).asString();
+
+	auto stateBindingsValue = contextNode.get("stateBindings", 0);
+	if (stateBindingsValue.isObject())
+		for (auto propertyName : stateBindingsValue.getMemberNames())
+			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
+}
+
+void
+EffectParser::parseDependencies(Json::Value& root, file::Options::Ptr options)
+{
 	auto require = root.get("includes", 0);
 	if (require.isArray())
 	{
@@ -202,9 +257,6 @@ EffectParser::parse(const std::string&					filename,
 			loader->load(require[requireId].asString(), options);
 		}
 	}
-	
-	if (_numDependencies == 0)
-		finalize();
 }
 
 void
