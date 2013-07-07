@@ -38,23 +38,23 @@ OpenGLES2Context::initializeBlendFactorsMap()
 {
     BlendFactorsMap m;
 
-    m[(uint)Blending::Source::ZERO]                       = GL_ZERO;
-    m[(uint)Blending::Source::ONE]                        = GL_ONE;
-    m[(uint)Blending::Source::SRC_COLOR]                  = GL_SRC_COLOR;
-    m[(uint)Blending::Source::ONE_MINUS_SRC_COLOR]        = GL_ONE_MINUS_SRC_COLOR;
-    m[(uint)Blending::Source::SRC_ALPHA]                  = GL_SRC_ALPHA;
-    m[(uint)Blending::Source::ONE_MINUS_SRC_ALPHA]        = GL_ONE_MINUS_SRC_ALPHA;
-    m[(uint)Blending::Source::DST_ALPHA]                  = GL_DST_ALPHA;
-    m[(uint)Blending::Source::ONE_MINUS_DST_ALPHA]        = GL_ONE_MINUS_DST_ALPHA;
+    m[static_cast<uint>(Blending::Source::ZERO)]                       = GL_ZERO;
+    m[static_cast<uint>(Blending::Source::ONE)]                        = GL_ONE;
+    m[static_cast<uint>(Blending::Source::SRC_COLOR)]                  = GL_SRC_COLOR;
+    m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_COLOR)]        = GL_ONE_MINUS_SRC_COLOR;
+    m[static_cast<uint>(Blending::Source::SRC_ALPHA)]                  = GL_SRC_ALPHA;
+    m[static_cast<uint>(Blending::Source::ONE_MINUS_SRC_ALPHA)]        = GL_ONE_MINUS_SRC_ALPHA;
+    m[static_cast<uint>(Blending::Source::DST_ALPHA)]                  = GL_DST_ALPHA;
+    m[static_cast<uint>(Blending::Source::ONE_MINUS_DST_ALPHA)]        = GL_ONE_MINUS_DST_ALPHA;
 
-    m[(uint)Blending::Destination::ZERO]                  = GL_ZERO;
-    m[(uint)Blending::Destination::ONE]                   = GL_ONE;
-    m[(uint)Blending::Destination::DST_COLOR]             = GL_DST_COLOR;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_COLOR]   = GL_ONE_MINUS_DST_COLOR;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
-    m[(uint)Blending::Destination::ONE_MINUS_SRC_ALPHA]   = GL_ONE_MINUS_SRC_ALPHA;
-    m[(uint)Blending::Destination::DST_ALPHA]             = GL_DST_ALPHA;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
+    m[static_cast<uint>(Blending::Destination::ZERO)]                  = GL_ZERO;
+    m[static_cast<uint>(Blending::Destination::ONE)]                   = GL_ONE;
+    m[static_cast<uint>(Blending::Destination::DST_COLOR)]             = GL_DST_COLOR;
+    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_COLOR)]   = GL_ONE_MINUS_DST_COLOR;
+    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
+    m[static_cast<uint>(Blending::Destination::ONE_MINUS_SRC_ALPHA)]   = GL_ONE_MINUS_SRC_ALPHA;
+    m[static_cast<uint>(Blending::Destination::DST_ALPHA)]             = GL_DST_ALPHA;
+    m[static_cast<uint>(Blending::Destination::ONE_MINUS_DST_ALPHA)]   = GL_ONE_MINUS_DST_ALPHA;
 
     return m;
 }
@@ -769,13 +769,13 @@ OpenGLES2Context::setUniformMatrix4x4(unsigned int location, unsigned int size, 
 void
 OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination destination)
 {
-	if (((uint)source | (uint)destination) != (uint)_currentBlendMode)
+	if ((static_cast<uint>(source) | static_cast<uint>(destination)) != static_cast<uint>(_currentBlendMode))
 	{
 		_currentBlendMode = (Blending::Mode)((uint)source | (uint)destination);
 
 		glBlendFunc(
-			_blendingFactors[(uint)source & 0x00ff],
-			_blendingFactors[(uint)destination & 0xff00]
+			_blendingFactors[static_cast<uint>(source) & 0x00ff],
+			_blendingFactors[static_cast<uint>(destination) & 0xff00]
 		);
 	}
 }
@@ -788,8 +788,8 @@ OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
 		_currentBlendMode = blendMode;
 
 		glBlendFunc(
-			_blendingFactors[(uint)blendMode & 0x00ff],
-			_blendingFactors[(uint)blendMode & 0xff00]
+			_blendingFactors[static_cast<uint>(blendMode) & 0x00ff],
+			_blendingFactors[static_cast<uint>(blendMode) & 0xff00]
 		);
 	}
 }
