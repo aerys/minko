@@ -3,7 +3,7 @@
 	"name"	: "basic",
 	
 	"attributeBindings"	: {
-		"position"	: "geometry/vertex/attribute/position"
+		"position"				: "geometry/vertex/attribute/position"
 	},
 	
 	"uniformBindings"	: {
@@ -13,11 +13,14 @@
 	},
 	
 	"stateBindings"	: {
-		"blending"	: "material/blending",
-		"depthTest"	: "material/depthTest"
+		"blending"				: "material/blending",
+		"depthTest"				: "material/depthTest"
 	},
 	
 	"passes"	: [{
+		"priority"		: 0,
+		"blendMode"		: ["one", "zero"],
+		"depthTest"		: [true, "less"],
 		"vertexShader"	: "
 			attribute vec3 position;
 

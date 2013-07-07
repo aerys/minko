@@ -70,7 +70,6 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
-		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))

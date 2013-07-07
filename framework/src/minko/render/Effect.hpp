@@ -30,44 +30,36 @@ namespace minko
 			public std::enable_shared_from_this<Effect>
 		{
 		public:
-			typedef std::shared_ptr<Effect>	Ptr;
+			typedef std::shared_ptr<Effect>		Ptr;
 
 		private:
-			typedef std::shared_ptr<resource::Program>		ProgramPtr;
+			typedef std::shared_ptr<Pass>	PassPtr;
 
 		private:
-			std::vector<ProgramPtr>							_shaders;
+			std::vector<PassPtr>						_passes;
+
 			std::unordered_map<std::string, std::string>	_attributeBindings;
 			std::unordered_map<std::string, std::string>	_uniformBindings;
 			std::unordered_map<std::string, std::string>	_stateBindings;
 
-			std::shared_ptr<data::Provider>					_data;
-
 		public:
 			inline static
 			Ptr
-			create(std::vector<ProgramPtr>							shaders,
+			create(std::vector<PassPtr>&						passes,
 				   std::unordered_map<std::string, std::string>&	attributeBindings,
 				   std::unordered_map<std::string, std::string>&	uniformBindings,
 				   std::unordered_map<std::string, std::string>&	stateBindings)
 			{
 				return std::shared_ptr<Effect>(new Effect(
-					shaders, attributeBindings, uniformBindings, stateBindings
+					passes, attributeBindings, uniformBindings, stateBindings
 				));
 			}
 
 			inline
-			std::shared_ptr<data::Provider>
-			data()
+			const std::vector<PassPtr>&
+			passes()
 			{
-				return _data;
-			}
-
-			inline
-			const std::vector<ProgramPtr>&
-			shaders()
-			{
-				return _shaders;
+				return _passes;
 			}
 
 			inline
@@ -92,14 +84,10 @@ namespace minko
 			}
 
 		private:
-			Effect(std::vector<ProgramPtr>&							shaders,
+			Effect(std::vector<PassPtr>&						passes,
 				   std::unordered_map<std::string, std::string>&	attributeBindings,
 				   std::unordered_map<std::string, std::string>&	uniformBindings,
 				   std::unordered_map<std::string, std::string>&	stateBindings);
-
-			void
-			propertyChangedHandler(std::shared_ptr<data::Container> data,
-								   const std::string&				propertyName);
 		};		
 	}
 }
