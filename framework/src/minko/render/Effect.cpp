@@ -18,17 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Effect.hpp"
+
 #include "minko/data/Container.hpp"
 
 using namespace minko::render;
 
-Effect::Effect(std::vector<PassPtr>&						passes,
-			   std::unordered_map<std::string, std::string>&	attributeBindings,
-			   std::unordered_map<std::string, std::string>&	uniformBindings,
-			   std::unordered_map<std::string, std::string>&	stateBindings) :
-	_passes(passes),
-	_attributeBindings(attributeBindings),
-	_uniformBindings(uniformBindings),
-	_stateBindings(stateBindings)
+Effect::Effect(std::vector<PassPtr>&	passes) :
+	_passes(passes)
 {
 }
