@@ -116,8 +116,8 @@ int main(int argc, char** argv)
 		->queue("VertexNormal.effect")
 		->queue("Texture.effect")
 		->queue("Red.effect")
-		->queue("Basic.effect");
-		//->queue("models/model.mk");
+		->queue("Basic.effect")
+		->queue("models/model.mk");
 
 	assets->defaultOptions()->includePaths().push_back("effects");
 	assets->defaultOptions()->includePaths().push_back("textures");
@@ -133,12 +133,16 @@ int main(int argc, char** argv)
         renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
-		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+		group->addController(TransformController::create());
+		group->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -25.f);
+		group->controller<TransformController>()->transform()->prependRotationY(3.14/4);
+
+		/*auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(TransformController::create());
-		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -10.f);
 		mesh->addController(SurfaceController::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
@@ -150,9 +154,9 @@ int main(int argc, char** argv)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
 			assets->effect("vertex normal")
-		));
+		));*/
 
-		//group->addChild(assets->node("models/model.mk"));
+		group->addChild(assets->node("models/model.mk"));
 
 		//group->addChild(mesh);
 		//testMk(assets);
@@ -177,10 +181,10 @@ int main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
     {
         //mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
-		//group->children().front()->controller<TransformController>()->transform()->prependRotationY(.01f);
+		//group->controller<TransformController>()->transform()->prependRotationY(.01f);
 	    renderingController->render();
 
-	    printFramerate();
+	    //printFramerate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

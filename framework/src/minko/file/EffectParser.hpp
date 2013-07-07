@@ -54,6 +54,8 @@ namespace minko
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
 
+			std::shared_ptr<AssetsLibrary>							_assetsLibrary;
+
 		public:
 			inline static
 			Ptr
@@ -83,14 +85,13 @@ namespace minko
 				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<Loader>			loader,
-									  std::shared_ptr<AssetsLibrary>	assetsLibrary);
+			dependencyCompleteHandler(std::shared_ptr<Loader>			loader);
 
 			void
 			dependencyErrorHandler(std::shared_ptr<Loader> loader);
 
 			void
-			finalize(std::shared_ptr<AssetsLibrary>);
+			finalize();
 
 		private:
 			EffectParser();
