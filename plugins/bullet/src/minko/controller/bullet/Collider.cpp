@@ -25,23 +25,47 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::controller;
 
-bullet::Collider::Collider(float		mass,
-						   AbsShapePtr	shape,
-						   Vector3Ptr	inertia,
-						   Matrix4x4Ptr centerOfMassOffset):
+bullet::Collider::Collider(float						mass,
+						   AbstractPhysicsShape::Ptr	shape,
+						   Vector3::Ptr					inertia,
+						   Matrix4x4::Ptr				centerOfMassOffset):
 _mass(mass),
-	_transform(Matrix4x4::create()),
+	_worldTransform(Matrix4x4::create()),
 	_centerOfMassOffset(centerOfMassOffset),
+	_startScaleShearCorrection(Matrix4x4::create()),
 	_shape(shape),
 	_inertia(inertia),
 	_transformChanged(Signal<Ptr>::create())
 {
-	_transform->identity();
+	_worldTransform->identity();
+	_startScaleShearCorrection->identity();
 }
 
 void
-	bullet::Collider::setTransform(Matrix4x4Ptr transform)
+	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr transform)
 {
-	_transform->copyFrom(transform);
+	_worldTransform
+		->copyFrom(_startScaleShearCorrection)
+		->append(transform);
+
 	transformChanged()->execute(shared_from_this());
+}
+
+void
+	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr transform)
+{
+	// decompose the specified transform into its rotational and translational components
+	// (Bullet requires this)
+	auto rotation		= transform->rotation();
+	auto translation	= transform->translation();
+	_worldTransform->initialize(rotation, translation);
+
+	// record the starting scale/shear corrective term
+	auto invColliderTransform	= Matrix4x4::create()
+		->copyFrom(_worldTransform)
+		->invert();
+
+	_startScaleShearCorrection
+		->copyFrom(transform)
+		->append(invColliderTransform);
 }

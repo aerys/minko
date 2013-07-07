@@ -30,6 +30,7 @@ class btDispatcher;
 class btCollisionShape;
 class btMotionState;
 class btCollisionObject;
+class btTransform;
 
 namespace minko
 {
@@ -56,13 +57,13 @@ namespace minko
 				typedef std::shared_ptr<Collider>					ColliderPtr; 
 				typedef std::shared_ptr<RenderingController>		RenderingControllerPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
+				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 
 				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
 				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
 				typedef std::shared_ptr<btConstraintSolver>			btConstraintSolverPtr;
 				typedef std::shared_ptr<btDispatcher>				btDispatcherPtr;
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
-
 
 				class BulletCollider;
 				typedef std::shared_ptr<BulletCollider>				BulletColliderPtr;
@@ -100,10 +101,15 @@ namespace minko
 
 				void
 					addChild(ColliderPtr);
+
 				void
 					removeChild(ColliderPtr);
 
-				void update(float timeStep = 1.0f/60.0f);
+				void
+					setGravity(Vector3Ptr);
+
+				void 
+					update(float timeStep = 1.0f/60.0f);
 
 			private:
 				PhysicsWorld();
@@ -123,12 +129,18 @@ namespace minko
 				static
 					RenderingControllerPtr
 					getRootRenderingController(NodePtr);
+				static
+					Matrix4x4Ptr
+					fromBulletTransform(const btTransform&);
+				static
+					void
+					toBulletTransform(Matrix4x4Ptr, btTransform&);
 
 			private:
 				class BulletCollider
 				{
 				public:
-					typedef std::shared_ptr<PhysicsWorld> Ptr;
+					typedef std::shared_ptr<BulletCollider> Ptr;
 
 				private:
 					typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
@@ -136,9 +148,11 @@ namespace minko
 					typedef std::shared_ptr<BoxShape>				BoxShapePtr;
 					typedef std::shared_ptr<ConeShape>				ConeShapePtr;
 
+
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
 					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
+
 
 				private:
 					btCollisionShapePtr		_btCollisionShape;
