@@ -50,6 +50,11 @@ namespace minko
 			std::list<unsigned int> _vertexShaders;
 			std::list<unsigned int> _fragmentShaders;
 
+			unsigned int			_viewportX;
+			unsigned int			_viewportY;
+			unsigned int			_viewportWidth;
+			unsigned int			_viewportHeight;
+
 			int						_currentIndexBuffer;
 			std::vector<int>		_currentVertexBuffer;
 			std::vector<int>		_currentVertexSize;
@@ -208,14 +213,17 @@ namespace minko
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc);
 
+			void
+			readPixels(unsigned char* pixels);
+
 		private:
 			OpenGLES2Context();
 
 			void
-			fillUniformInputs(const unsigned int						program,
-							  std::vector<std::string>&					names,
+			fillUniformInputs(const unsigned int				program,
+							  std::vector<std::string>&			names,
 							  std::vector<ProgramInputs::Type>&	types,
-							  std::vector<unsigned int>&				locations);
+							  std::vector<unsigned int>&		locations);
 
 			void
 			fillAttributeInputs(const unsigned int					program,
