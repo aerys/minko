@@ -18,6 +18,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "SceneDeserializer.hpp"
+#include "minko/Any.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/AssetsLibrary.hpp"
+#include "minko/render/AbstractContext.hpp"
+#include "minko/controller/AbstractController.hpp"
+#include "minko/deserialize/MkTypes.hpp"
+#include "minko/deserialize/NodeDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -68,16 +75,13 @@ namespace minko
 											ControllerMap	controllerMap,
 											NodeMap			nodeMap)
 		{
-			std::shared_ptr<scene::Node> node = scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
-
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeGroup(nodeInfo, options, controllerMap, nodeMap);
 
 			std::vector<Any> children = Any::cast<std::vector<Any>>(nodeInfo["children"]);
 
-			for (int i = 0; i < children.size(); ++i)
+			for (unsigned int i = 0; i < children.size(); ++i)
 				node->addChild(deserializeNode(children[i], options, controllerMap, nodeMap));
 			
-			std::cout << "Group " << node->name() << std::endl << std::flush;
-
 			return node;
 		}
 
@@ -87,24 +91,7 @@ namespace minko
 										   ControllerMap	controllerMap,
 										   NodeMap			nodeMap)
 		{
-			auto view			= Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-			auto color			= Vector4::create(0.f, 0.f, 1.f, .1f);
-			auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
-
-			std::shared_ptr<scene::Node> node = scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
-
-			node->addController(controller::TransformController::create());
-			node->controller<controller::TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-			node->addController(
-				controller::SurfaceController::create(
-					options->assets()->geometry("cube"),
-					data::Provider::create()
-						->set("material/diffuse/rgba",			color)
-						->set("transform/worldToScreenMatrix",	view)
-						->set("light/direction",				lightDirection)
-						->set("material/diffuse/map",			options->assets()->texture("textures/box3.png")),
-					options->assets()->effect("texture")));
-			std::cout << "Mesh " << node->name() << std::endl << std::flush;
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, controllerMap, nodeMap);
 
 			return node;
 		}
@@ -115,7 +102,9 @@ namespace minko
 											 ControllerMap	controllerMap,
 											 NodeMap		nodeMap)
 		{
-			return scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeCamera(nodeInfo, options, controllerMap, nodeMap);
+
+			return node;
 		}
 
 		std::shared_ptr<scene::Node>
@@ -124,7 +113,9 @@ namespace minko
 											ControllerMap	controllerMap,
 											NodeMap			nodeMap)
 		{
-			return scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
+			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeLight(nodeInfo, options, controllerMap, nodeMap);
+
+			return node;
 		}
 	}
 }
