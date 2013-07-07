@@ -17,39 +17,63 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Program.hpp"
-#include "minko/render/AbstractContext.hpp"
+#pragma once
 
-using namespace minko::resource;
+#include "minko/Common.hpp"
 
-Program::Program(Program::AbstractContextPtr context) :
-	AbstractResource(context)
+namespace minko
 {
-}
+	namespace render
+	{
+		class AbstractResource
+		{
+		public:
+			typedef std::shared_ptr<AbstractResource> Ptr;
 
-void
-Program::upload()
-{
-	_vertexShader = context()->createVertexShader();
-	_context->setShaderSource(_vertexShader, _vertexShaderSource);
-	_context->compileShader(_vertexShader);
+		protected:
+			std::shared_ptr<render::AbstractContext>	_context;
+			int											_id;
 
-	_fragmentShader = context()->createFragmentShader();
-	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
-	_context->compileShader(_fragmentShader);
+		public:
+			inline
+			std::shared_ptr<render::AbstractContext>
+			context()
+			{
+				return _context;
+			}
 
-	_id = context()->createProgram();
-	_context->attachShader(_id, _vertexShader);
-	_context->attachShader(_id, _fragmentShader);
-	_context->linkProgram(_id);
+			inline
+			const int
+			id()
+			{
+				if (_id == -1)
+					throw;
 
-	_inputs = _context->getProgramInputs(_id);
-}
+				return _id;
+			}
 
-void
-Program::dispose()
-{
-	_context->deleteVertexShader(_vertexShader);
-	_context->deleteFragmentShader(_fragmentShader);
-	_context->deleteProgram(_id);
+			virtual
+			void
+			dispose()
+			{
+				// nothing
+			}
+
+			virtual
+			void
+			upload() = 0;
+
+			~AbstractResource()
+			{
+				dispose();
+			}
+
+		protected:
+			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
+				_context(context),
+				_id(-1)
+			{
+			}
+		};
+	}
 }

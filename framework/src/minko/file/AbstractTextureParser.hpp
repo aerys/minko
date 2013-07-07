@@ -33,11 +33,11 @@ namespace minko
 			typedef std::shared_ptr<AbstractTextureParser> Ptr;
 
 		protected:
-			std::shared_ptr<resource::Texture>	_texture;
+			std::shared_ptr<render::Texture>	_texture;
 
 		public:
 			inline
-			std::shared_ptr<resource::Texture>
+			std::shared_ptr<render::Texture>
 			texture()
 			{
 				return _texture;

@@ -17,21 +17,39 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexStream.hpp"
-
+#include "Program.hpp"
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko::resource;
+using namespace minko::render;
 
-void
-IndexStream::upload()
+Program::Program(Program::AbstractContextPtr context) :
+	AbstractResource(context)
 {
-	_id = _context->createIndexBuffer(_data.size());
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
 }
 
 void
-IndexStream::dispose()
+Program::upload()
 {
-	_context->deleteIndexBuffer(_id);
+	_vertexShader = context()->createVertexShader();
+	_context->setShaderSource(_vertexShader, _vertexShaderSource);
+	_context->compileShader(_vertexShader);
+
+	_fragmentShader = context()->createFragmentShader();
+	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
+	_context->compileShader(_fragmentShader);
+
+	_id = context()->createProgram();
+	_context->attachShader(_id, _vertexShader);
+	_context->attachShader(_id, _fragmentShader);
+	_context->linkProgram(_id);
+
+	_inputs = _context->getProgramInputs(_id);
+}
+
+void
+Program::dispose()
+{
+	_context->deleteVertexShader(_vertexShader);
+	_context->deleteFragmentShader(_fragmentShader);
+	_context->deleteProgram(_id);
 }

@@ -845,7 +845,7 @@ typedef struct
  *
  *  This function initializes the GLFW library.  Before most GLFW functions can
  *  be used, GLFW must be initialized, and before a program terminates GLFW
- *  should be terminated in order to free any resources allocated during or
+ *  should be terminated in order to free any renders allocated during or
  *  after initialization.
  *
  *  If this function fails, it calls @ref glfwTerminate before returning.  If it
@@ -876,7 +876,7 @@ GLFWAPI int glfwInit(void);
 
 /*! @brief Terminates the GLFW library.
  *
- *  This function destroys all remaining windows, frees any allocated resources
+ *  This function destroys all remaining windows, frees any allocated renders
  *  and sets the library to an uninitialized state.  Once this is called, you
  *  must again call @ref glfwInit successfully before you will be able to use
  *  most GLFW functions.
@@ -1220,11 +1220,11 @@ GLFWAPI void glfwWindowHint(int target, int hint);
  *  @param[in] title The initial, UTF-8 encoded window title.
  *  @param[in] monitor The monitor to use for full screen mode, or `NULL` to use
  *  windowed mode.
- *  @param[in] share The window whose context to share resources with, or `NULL`
- *  to not share resources.
+ *  @param[in] share The window whose context to share renders with, or `NULL`
+ *  to not share renders.
  *  @return The handle of the created window, or `NULL` if an error occurred.
  *
- *  @remarks **Windows:** If the executable has an icon resource named
+ *  @remarks **Windows:** If the executable has an icon render named
  *  `GLFW_ICON,` it will be set as the icon for the window.  If no such icon is
  *  present, the `IDI_WINLOGO` icon will be used instead.
  *

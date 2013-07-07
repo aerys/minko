@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::geometry;
 using namespace minko::render;
-using namespace minko::resource;
+using namespace minko::render;
 
 CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
 {
