@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "JPEGParser.hpp"
 
 #include "minko/file/Options.hpp"
-#include "minko/resource/Texture.hpp"
+#include "minko/render/Texture.hpp"
 
 #include "jpgd.h"
 
@@ -44,10 +44,10 @@ JPEGParser::parse(const std::string&				filename,
 		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
 	);
 	auto format = comps == 3
-		? resource::Texture::DataFormat::RGB
-		: resource::Texture::DataFormat::RGBA;
+		? render::Texture::DataFormat::RGB
+		: render::Texture::DataFormat::RGBA;
 
-	_texture = resource::Texture::create(options->context(), width, height);
+	_texture = render::Texture::create(options->context(), width, height);
 	_texture->data(bmpData, format);
 	_texture->upload();
 

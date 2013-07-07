@@ -22,16 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/Blending.hpp"
-#include "minko/resource/VertexStream.hpp"
-#include "minko/resource/IndexStream.hpp"
-#include "minko/resource/Texture.hpp"
-#include "minko/resource/Program.hpp"
+#include "minko/render/VertexStream.hpp"
+#include "minko/render/IndexStream.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
 using namespace minko::math;
 using namespace minko::render;
-using namespace minko::resource;
+using namespace minko::render;
 
 DrawCall::DrawCall(std::shared_ptr<data::Container>						data,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
