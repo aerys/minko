@@ -41,7 +41,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/controller/AbstractController.hpp"
 #include "minko/controller/TransformController.hpp"
-#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/Surface.hpp"
 #include "minko/controller/RenderingController.hpp"
 #include "minko/controller/PerspectiveCamera.hpp"
 #include "minko/render/AbstractResource.hpp"
