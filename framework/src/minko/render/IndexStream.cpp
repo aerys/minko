@@ -34,4 +34,5 @@ void
 IndexStream::dispose()
 {
 	_context->deleteIndexBuffer(_id);
+	_id = -1;
 }
