@@ -21,8 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/file/MkOptions.hpp"
+#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/TransformController.hpp"
+#include "minko/geometry/CubeGeometry.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/deserialize/SceneDeserializer.hpp"
 
 namespace minko
 {
@@ -32,52 +36,74 @@ namespace minko
 		{
 
 		private:
+			typedef	std::map<std::string, Any>															NodeInfo;
+			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>	ControllerMap;
+			typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
+			typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
+
+
+		private:
 			inline static
 			std::string
-			extractName(SceneDeserializer::NodeInfo nodeInfo)
+			extractName(NodeInfo nodeInfo)
 			{
 				return Any::cast<std::string>(nodeInfo["name"]);
-			}
-
-			inline static
-			std::shared_ptr<math::Matrix4x4>
-			extractTransform(SceneDeserializer::NodeInfo nodeInfo)
-			{
-				return math::Matrix4x4::create();
 			}
 
 		public:
 			
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeGroup(SceneDeserializer::NodeInfo		nodeInfo,
-							 SceneDeserializer::OptionsPtr		options,
-							 SceneDeserializer::ControllerMap	controllerMap,
-							 SceneDeserializer::NodeMap			nodeMap)
+			deserializeGroup(NodeInfo		nodeInfo,
+							 OptionsPtr		options,
+							 ControllerMap	controllerMap,
+							 NodeMap			nodeMap)
 			{
-				std::shared_ptr<scene::Node> group = scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
+
+				group->addController(controller::TransformController::create());
+				group->controller<controller::TransformController>()->transform()->copyFrom(transformMatrix);
 
 				return group;
 			}
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeMesh(SceneDeserializer::NodeInfo			nodeInfo,
-							SceneDeserializer::OptionsPtr		options,
-							SceneDeserializer::ControllerMap	controllerMap,
-							SceneDeserializer::NodeMap			nodeMap)
+			deserializeMesh(NodeInfo			nodeInfo,
+							OptionsPtr		options,
+							ControllerMap	controllerMap,
+							NodeMap			nodeMap)
 			{
-				std::shared_ptr<scene::Node> mesh = scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
+
+				mesh->addController(controller::TransformController::create());
+				mesh->controller<controller::TransformController>()->transform()->copyFrom(transformMatrix);
+				// temp
+				auto view			= math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+				auto color			= math::Vector4::create(0.f, 0.f, 1.f, 1.f);
+				auto lightDirection = math::Vector3::create(0.f, -1.f, -1.f);
+
+				mesh->addController(
+					controller::SurfaceController::create(
+					options->assetsLibrary()->geometry("cube"),
+					data::Provider::create()
+					->set("material/diffuse/rgba",			color)
+					->set("transform/worldToScreenMatrix",	view)
+					->set("light/direction",				lightDirection)
+					->set("material/diffuse/map",			options->assetsLibrary()->texture("box3.png")),
+					options->assetsLibrary()->effect("texture")));
 
 				return mesh;
 			}
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeLight(SceneDeserializer::NodeInfo		nodeInfo,
-							 SceneDeserializer::OptionsPtr		options,
-							 SceneDeserializer::ControllerMap	controllerMap,
-							 SceneDeserializer::NodeMap			nodeMap)
+			deserializeLight(NodeInfo		nodeInfo,
+							 OptionsPtr		options,
+							 ControllerMap	controllerMap,
+							 NodeMap		nodeMap)
 			{
 				std::shared_ptr<scene::Node> light = scene::Node::create(extractName(nodeInfo));
 
@@ -86,10 +112,10 @@ namespace minko
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeCamera(SceneDeserializer::NodeInfo		nodeInfo,
-							  SceneDeserializer::OptionsPtr		options,
-							  SceneDeserializer::ControllerMap	controllerMap,
-							  SceneDeserializer::NodeMap		nodeMap)
+			deserializeCamera(NodeInfo		nodeInfo,
+							  OptionsPtr	options,
+							  ControllerMap	controllerMap,
+							  NodeMap		nodeMap)
 			{
 				std::shared_ptr<scene::Node> camera = scene::Node::create(extractName(nodeInfo));
 
