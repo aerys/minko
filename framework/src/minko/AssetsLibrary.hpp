@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/file/EffectParser.hpp"
 
 namespace minko
 {
