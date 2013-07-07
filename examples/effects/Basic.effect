@@ -13,14 +13,16 @@
 	},
 	
 	"stateBindings"	: {
-		"blending"				: "material/blending",
+		"blendMode"				: "material/blending",
 		"depthTest"				: "material/depthTest"
 	},
 	
-	"passes"	: [{
-		"priority"		: 0,
-		"blendMode"		: ["one", "zero"],
-		"depthTest"		: [true, "less"],
+	"priority"		: 42,
+	"blendMode"		: ["one", "zero"],
+	"depthTest"		: [true, "less"],
+	
+	"passes"	: [
+	{	
 		"vertexShader"	: "
 			attribute vec3 position;
 
