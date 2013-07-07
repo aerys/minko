@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/AssetsLibrary.hpp"
 
 namespace minko
 {
@@ -45,7 +46,8 @@ namespace minko
 			void
 			parse(const std::string&				filename,
 				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data) = 0;
+				  const std::vector<unsigned char>&	data,
+				  std::shared_ptr<AssetsLibrary>	assetsLibrary) = 0;
 
 		protected:
 			AbstractParser() :

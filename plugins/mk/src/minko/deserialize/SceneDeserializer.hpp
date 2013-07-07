@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AssetsLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/controller/AbstractController.hpp"
-#include "minko/file/Options.hpp"
+#include "minko/file/MkOptions.hpp"
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/controller/SurfaceController.hpp"
 #include "minko/controller/TransformController.hpp"
@@ -46,10 +46,10 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractContext>							ContextPtr;
 			typedef std::map<scene::Node, std::vector<controller::AbstractController>>	ControllerMap;
 			typedef std::map<scene::Node, uint>											NodeMap;
-			typedef std::shared_ptr<file::Options>										OptionsPtr;
+			typedef std::shared_ptr<file::MkOptions>									OptionsPtr;
+			typedef	 std::map<std::string, Any>											NodeInfo;
 		
 		private:
-			typedef	 std::map<std::string, Any> NodeInfo;
 			typedef  std::shared_ptr<scene::Node> (SceneDeserializer::*NodeDeserializer)(NodeInfo		nodeInfo,
 																						 OptionsPtr		options,
 																						 ControllerMap	controllerMap,
