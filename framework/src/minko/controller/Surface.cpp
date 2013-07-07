@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Surface.hpp"
+
 #include "minko/scene/Node.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
@@ -27,12 +28,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::controller;
 using namespace minko::geometry;
 using namespace minko::render;
-using namespace minko::data;
 using namespace minko::scene;
 
-Surface::Surface(std::shared_ptr<Geometry> 	geometry,
-									 std::shared_ptr<Provider> 	material,
-									 std::shared_ptr<Effect>	effect) :
+Surface::Surface(Geometry::Ptr 			geometry,
+				 data::Provider::Ptr 	material,
+				 Effect::Ptr			effect) :
 	AbstractController(),
 	_geometry(geometry),
 	_material(material),
@@ -60,8 +60,8 @@ Surface::initialize()
 }
 
 void
-Surface::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
-									  std::shared_ptr<Node>					target)
+Surface::targetAddedHandler(AbstractController::Ptr	ctrl,
+							std::shared_ptr<Node>	target)
 {
 	target->data()->addProvider(_material);
 	target->data()->addProvider(_geometry->data());
@@ -85,8 +85,8 @@ Surface::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 }
 
 void
-Surface::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl,
-										std::shared_ptr<Node>				target)
+Surface::targetRemovedHandler(AbstractController::Ptr	ctrl,
+							  std::shared_ptr<Node>		target)
 {
 	target->data()->removeProvider(_material);
 	target->data()->removeProvider(_geometry->data());
