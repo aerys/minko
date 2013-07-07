@@ -7,6 +7,7 @@
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
+//#include "miniz.c"
 
 
 namespace minko
@@ -16,9 +17,9 @@ namespace minko
 	public:
 		static const int                  MAGIC                   = 0x3121322b;
 
-		static const int                  FLAG_NONE               = 0;
-		static const int                  FLAG_GZIP               = 1;
-		static const int                  FLAG_DEFLATE            = 2;
+		static const unsigned char        FLAG_NONE               = 0;
+		static const unsigned char        FLAG_GZIP               = 1;
+		static const unsigned char        FLAG_DEFLATE            = 2;
 
 		static const int                  TYPE_CUSTOM             = 0;
 		static const int                  TYPE_OBJECT             = 1;
@@ -31,11 +32,12 @@ namespace minko
 		static const int                  TYPE_BOOLEAN            = 8;
 		static const int                  TYPE_BITMAP_DATA        = 9;
 
-		typedef std::vector<char>         ByteArray;
-		typedef minko::Any								Object;
-		typedef std::string               String;
-		typedef std::vector<Object>       Array;
-		typedef std::map<String, Object>  Map;
+		typedef std::vector<char>			ByteArray;
+		typedef minko::Any					Object;
+		typedef std::string					String;
+		typedef std::vector<Object>			Array;
+		typedef std::map<String, Object>	Map;
+		typedef unsigned char				uint8;
 
 		typedef void (*Encoder)(std::stringstream&, const Object&);
 		typedef void (*Decoder)(std::stringstream&, Object&);
@@ -49,6 +51,8 @@ namespace minko
 
 			int magic = MAGIC;
 			write(stream, magic);
+
+			write(stream, FLAG_NONE);
 			encodeRecursive(stream, source);
 
 			std::string buffer = stream.str();
@@ -63,11 +67,42 @@ namespace minko
 		decode(const ByteArray& source)
 		{
 			std::stringstream stream;
-
 			stream.write(&*source.begin(), source.size());
 
 			int magic = 0;
 			read(stream, magic);
+			unsigned char compression_flag = 0;
+
+			read(stream, compression_flag);
+			int compression_flagint = compression_flag;
+
+			if (compression_flag == FLAG_GZIP)
+			{
+				std::cout << "zlib method detected " << std::endl << std::flush;
+				/*uint step = 0;
+				int	cmpStatus;
+				
+				unsigned long srcLen			= (unsigned long)(source.size() - 5);
+				unsigned long compressLen		= compressBound(srcLen);
+				unsigned long unCompressLength	= srcLen;
+
+				uint8 *pCmp, *pUncomp;
+
+				pCmp = &(*(source.begin() + 5));
+
+				uint total_succeeded = 0;
+
+				cmpStatus = uncompress(pUncomp, &unCompressLength, pCmp, srcLen);*/
+
+			}
+			else if (compression_flag == FLAG_DEFLATE)
+			{
+				std::cout << "inflate method detected " << std::endl << std::flush;
+			}
+			else
+			{
+				std::cout << "no compression method detected " << std::endl << std::flush;
+			}
 
 			if (magic != MAGIC)
 				return Object();
@@ -117,6 +152,7 @@ namespace minko
 				encoders[TYPE_STRING]		= &Qark::encodeString;
 				encoders[TYPE_OBJECT]		= &Qark::encodeMap;
 				encoders[TYPE_ARRAY]		= &Qark::encodeArray;
+				encoders[TYPE_BYTES]		= &Qark::encodeBytes;
 			}
 
 			return encoders[flag];
@@ -133,10 +169,11 @@ namespace minko
 				decoders[TYPE_INT]			= &Qark::decodeTrivial<int>;
 				decoders[TYPE_UINT]			= &Qark::decodeTrivial<unsigned int>;
 				decoders[TYPE_FLOAT]		= &Qark::decodeTrivial<float>;
-				decoders[TYPE_BOOLEAN]	= &Qark::decodeTrivial<bool>;
+				decoders[TYPE_BOOLEAN]		= &Qark::decodeTrivial<bool>;
 				decoders[TYPE_STRING]		= &Qark::decodeString;
 				decoders[TYPE_OBJECT]		= &Qark::decodeMap;
 				decoders[TYPE_ARRAY]		= &Qark::decodeArray;
+				decoders[TYPE_BYTES]		= &Qark::decodeBytes;
 			}
 
 			return decoders[flag];
@@ -147,9 +184,8 @@ namespace minko
 		encodeRecursive(std::stringstream& target, const Object& source)
 		{
 			char flag = getType(source);
-			std::cout << "encoded flag : " << flag << std::endl << std::flush;
+			
 			write(target, flag);
-
 			Encoder f = getEncoder(flag);
 			f(target, source);
 		}
@@ -161,7 +197,6 @@ namespace minko
 			char flag = 0;
 			read(source, flag);
 
-			std::cout << "decoded flag : " << flag << std::endl << std::flush;
 			Decoder f = getDecoder(flag);
 			f(source, target);
 		}
@@ -184,8 +219,6 @@ namespace minko
 		static void
 		encodeTrivial(std::stringstream& stream, const Object& value)
 		{
-			std::cout << "   encode trivial " << std::endl << std::flush;
-
 			write(stream, minko::Any::cast<T>(value));
 		}
 
@@ -193,8 +226,6 @@ namespace minko
 		static void
 		decodeTrivial(std::stringstream& stream, Object& value)
 		{
-			std::cout << "   decode trivial " << std::endl << std::flush;
-
 			value = T();
 			read(stream, minko::Any::cast<T&>(value));
 		}
@@ -203,8 +234,6 @@ namespace minko
 		void
 		encodeString(std::stringstream& stream, const Object& value)
 		{
-			std::cout << "   encode string Object " << std::endl << std::flush;
-
 			const String& str = minko::Any::cast<const String&>(value);
 
 			encodeString(stream, str);
@@ -214,11 +243,7 @@ namespace minko
 		void 
 		encodeString(std::stringstream& stream, const String& value)
 		{
-			std::cout << "   encode string " << value << std::endl << std::flush;
-
 			unsigned short size = value.size();
-
-			std::cout << "    size " << size << std::endl << std::flush;
 
 			write(stream, size);
 			stream.write(value.c_str(), size);
@@ -229,30 +254,26 @@ namespace minko
 		void
 		decodeString(std::stringstream& stream, Object& value)
 		{
-			std::cout << "   decode string Object " << std::endl << std::flush;
 
 			value = std::string();
 			String& str = minko::Any::cast<String&>(value);
 
 			decodeString(stream, str);
+
+			value = std::string(str);
 		}
 
 		static 
 		void
 		decodeString(std::stringstream& stream, String& value)
 		{
-			std::cout << "   decode string " << std::endl << std::flush;
 			unsigned short size = 0;
 			read(stream, size);
-
-			std::cout << "    size " << size << std::endl << std::flush;
 
 			char* data = new char[size];
 
 			stream.read(data, size);
 			value.assign(data, size);
-
-			std::cout << "      result : " << value << std::endl << std::flush;
 
 			delete[] data;
 		}
@@ -262,15 +283,13 @@ namespace minko
 		void 
 		encodeMap(std::stringstream& stream, const Object& value)
 		{
-			std::map<std::string, Object> map = minko::Any::cast<std::map<std::string, Object>>(value);
-
-			unsigned short size = map.size();
+			std::map<std::string, Object> map	= minko::Any::cast<std::map<std::string, Object>>(value);
+			unsigned short				  size	= map.size();
 
 			write(stream, size);
 
 			for (std::map<std::string, Object>::iterator it = map.begin(); it != map.end(); ++it)
 			{
-				std::cout <<  "key : " << it->first << std::endl << std::flush;
 				encodeString(stream, it->first);
 				encodeRecursive(stream, it->second);
 			}
@@ -280,9 +299,9 @@ namespace minko
 		void
 		decodeMap(std::stringstream& stream, Object& value)
 		{
-			value = std::map<String, Any>();
+			std::map<String, Any>	map;
+			unsigned short			size = 0;
 
-			unsigned short size = 0;
 			read(stream, size);
 
 			unsigned short copy = size;
@@ -293,16 +312,12 @@ namespace minko
 				Any			mappedValue = 0;
 
 				decodeString(stream, key);
-
-				std::cout << "key : " << key << std::endl << std::flush;
-
 				decodeRecursive(stream, mappedValue);
-
-				std::map<String, Any> map = minko::Any::cast<std::map<String, Any>>(value);
 
 				map[key] = mappedValue;
 				size--;
 			}
+			value = map;
 		}
 
 		static
@@ -316,35 +331,67 @@ namespace minko
 			write(stream, size);
 
 			for (unsigned int i = 0; i < list.size(); ++i)
-			{
-				std::cout << "    element : " << i << std::endl << std::flush;
 				encodeRecursive(stream, list[i]);
-			}
-
-			std::cout << "    end list" << std::endl << std::flush;
 		}
 
 		static
 		void
 		decodeArray(std::stringstream& stream, Object& value)
 		{
-			value = Array();
+			Array			list;
+			unsigned short	size = 0;
 
-			short size = 0;
 			read(stream, size);
 
 			for (short i = 0; i < size; ++i)
 			{
-				Array list = minko::Any::cast<Array>(value);
 				Any  newElement = 0;
-				std::cout << "    element : " << i << std::endl << std::flush;
-
-				list.push_back(newElement);
 				decodeRecursive(stream, newElement);
+				list.push_back(newElement);
 			}
 
-			std::cout << "    end list" << std::endl << std::flush;
+			value = list;
+		}
 
+		static
+		void
+		encodeBytes(std::stringstream& stream, const Object& value)
+		{
+			ByteArray bytes = minko::Any::cast<ByteArray>(value);
+
+			write(stream, true);
+			write(stream, bytes.size());
+
+			for (int i = 0; i < bytes.size(); ++i)
+			{
+				char byte = bytes[i];
+
+				write(stream, byte);
+			}
+		}
+
+		static
+		void
+		decodeBytes(std::stringstream& stream, Object& value)
+		{
+			bool endian = false;
+			int  length = 0;
+
+			read(stream, endian);
+			read(stream, length);
+
+			ByteArray	bytes;
+
+			while (length > 0)
+			{
+				char		newByte = 0;
+
+				read(stream, newByte);
+				bytes.push_back(newByte);
+				length--;
+			}
+
+			value = bytes;
 		}
 
 	};

@@ -4,6 +4,7 @@ project "minko-mk"
   files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
 	"src",
+  "lib/miniz/src",
 	"../../framework/src"
   }
   links { "minko-framework" }
