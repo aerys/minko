@@ -78,7 +78,7 @@ namespace minko
 		class TransformController;
 		class SurfaceController;
 		class RenderingController;
-		class PerspectiveCameraController;
+		class PerspectiveCamera;
 	}
 
 	namespace data
