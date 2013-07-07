@@ -34,7 +34,7 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
-			std::shared_ptr<resource::Program>	_program;
+			std::shared_ptr<render::Program>	_program;
 			const float							_priority;
 			Blending::Source					_blendingSourceFactor;
 			Blending::Destination				_blendingDestinationFactor;
@@ -44,7 +44,7 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<resource::Program>	program,
+			create(std::shared_ptr<render::Program>	program,
 				   const float							priority					= 0.f,
 				   Blending::Source						blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination				blendingDestinationFactor	= Blending::Destination::ZERO,
@@ -57,7 +57,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<resource::Program>
+			std::shared_ptr<render::Program>
 			program()
 			{
 				return _program;
@@ -99,7 +99,7 @@ namespace minko
 			}
 
 		private:
-			Pass(std::shared_ptr<resource::Program>	program,
+			Pass(std::shared_ptr<render::Program>	program,
 					   const float					priority,
 					   Blending::Source				blendingSourceFactor,
 				       Blending::Destination		blendingDestinationFactor,
