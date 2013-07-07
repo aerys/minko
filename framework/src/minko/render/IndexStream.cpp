@@ -17,58 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Texture.hpp"
+#include "IndexStream.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko::resource;
+using namespace minko::render;
 
-Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
-				 const unsigned int							width,
-				 const unsigned int							height) :
-	AbstractResource(context),
-	_width(width),
-	_height(height)
+void
+IndexStream::upload()
 {
+	_id = _context->createIndexBuffer(_data.size());
+	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
 }
 
 void
-Texture::data(unsigned char* data, DataFormat format)
+IndexStream::dispose()
 {
-	auto size = _width * _height * sizeof(int);
-
-	_data.resize(size);
-	
-	if (format == DataFormat::RGBA)
-	{
-		std::memcpy(&_data[0], data, size);
-	}
-	else if (format == DataFormat::RGB)
-	{
-		for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
-		{
-			unsigned char r = data[i];
-			unsigned char g = data[i + 1];
-			unsigned char b = data[i + 2];
-
-			_data[j] = data[i];
-			_data[j + 1] = data[i + 1];
-			_data[j + 2] = data[i + 2];
-			_data[j + 3] = 0;
-		}
-	}
-}
-
-void
-Texture::upload()
-{
-	_id = _context->createTexture(_width, _height, false);
-	_context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
-}
-
-void
-Texture::dispose()
-{
-	_context->deleteTexture(_id);
-	_id = -1;
+	_context->deleteIndexBuffer(_id);
 }

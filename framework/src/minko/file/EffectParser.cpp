@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "EffectParser.hpp"
-#include "minko/resource/Program.hpp"
+#include "minko/render/Program.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "json/json.h"
 
 using namespace minko::file;
-using namespace minko::resource;
+using namespace minko::render;
 
 std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
 std::unordered_map<std::string, unsigned int>
