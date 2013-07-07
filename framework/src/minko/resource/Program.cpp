@@ -22,12 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::resource;
 
-Program::Program(Program::AbstractContextPtr	context,
-				 const std::string& 			vertexShaderSource,
-				 const std::string &			fragmentShaderSource) :
-	AbstractResource(context),	
-	_vertexShaderSource(vertexShaderSource),
-	_fragmentShaderSource(fragmentShaderSource)
+Program::Program(Program::AbstractContextPtr context) :
+	AbstractResource(context)
 {
 }
 
