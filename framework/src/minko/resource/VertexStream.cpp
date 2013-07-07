@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "VertexStream.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/resource/VertexAttribute.hpp"
 
 using namespace minko::resource;
 using namespace minko::render;
@@ -80,7 +79,7 @@ VertexStream::addAttribute(const std::string& 	name,
 						   const unsigned int	offset)
 {
 	if (hasAttribute(name))
-		throw std::invalid_argument("attribute");
+		throw std::invalid_argument("name");
 
 	_attributes.push_back(VertexStream::AttributePtr(
 		new VertexStream::Attribute(name, size, offset)
