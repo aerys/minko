@@ -43,7 +43,8 @@ EffectParser::parse(const std::string&					filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	_context = options->context();
+	_assetsLibrary	= assetsLibrary;
+	_context		= options->context();
 	
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
 		throw std::invalid_argument("data");
@@ -81,7 +82,7 @@ EffectParser::parse(const std::string&					filename,
 			auto loader = Loader::create();
 
 			_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				&EffectParser::dependencyCompleteHandler, shared_from_this(), assetsLibrary, std::placeholders::_1, std::placeholders::_2
+				&EffectParser::dependencyCompleteHandler, shared_from_this(), std::placeholders::_1
 			));
 			_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
 				&EffectParser::dependencyErrorHandler, shared_from_this(), std::placeholders::_1
@@ -92,18 +93,18 @@ EffectParser::parse(const std::string&					filename,
 	}
 	
 	if (_numDependencies == 0)
-		finalize(assetsLibrary);
+		finalize();
 }
 
 void
-	EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader, std::shared_ptr<AssetsLibrary> assetsLibrary)
+EffectParser::dependencyCompleteHandler(std::shared_ptr<Loader> loader)
 {
 	++_numLoadedDependencies;
 
 	_dependenciesCode += std::string((char*)&loader->data()[0], loader->data().size()) + "\r\n";
 
 	if (_numDependencies == _numLoadedDependencies)
-		finalize(assetsLibrary);
+		finalize();
 }
 
 void
@@ -113,7 +114,7 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
 }
 
 void
-EffectParser::finalize(std::shared_ptr<AssetsLibrary> assetsLibary)
+EffectParser::finalize()
 {
 	std::vector<std::shared_ptr<Program>> programs;
 
@@ -129,6 +130,6 @@ EffectParser::finalize(std::shared_ptr<AssetsLibrary> assetsLibary)
 
 	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
-	assetsLibary->effect(_effectName, _effect);
+	_assetsLibrary->effect(_effectName, _effect);
 	_complete->execute(shared_from_this());
 }

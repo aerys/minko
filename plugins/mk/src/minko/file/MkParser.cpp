@@ -43,7 +43,7 @@ MkParser::parse(const std::string&					filename,
 
 	std::shared_ptr<deserialize::SceneDeserializer> sceneDeserializer = deserialize::SceneDeserializer::create(options->context());
 
-	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], options, _controllerMap, _nodeMap);
+	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], file::MkOptions::create(options, assetsLibrary), _controllerMap, _nodeMap);
 	
 	assetsLibrary->node(filename, _node);
 

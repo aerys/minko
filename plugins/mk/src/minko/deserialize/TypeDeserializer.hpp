@@ -21,49 +21,65 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
-#include "minko/file/AbstractModelParser.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/AssetsLibrary.hpp"
 #include "minko/Qark.hpp"
-#include "minko/deserialize/SceneDeserializer.hpp"
-#include "minko/controller/AbstractController.hpp"
-
+#include "minko/math/Matrix4x4.hpp"
 
 namespace minko
 {
-	namespace file
+	namespace deserialize
 	{
-		class MkParser : 
-			public AbstractModelParser
+		class TypeDeserializer
 		{
 		public:
-			typedef std::shared_ptr<MkParser> Ptr;
-
-		private:
-			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>		ControllerMap;
-			typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
-
-		private:
-			ControllerMap	_controllerMap;
-			NodeMap			_nodeMap;
-
-		public:
-			inline static
-			Ptr
-			create()
+			
+			template <typename T>
+			static void
+			read(std::stringstream& stream, T& value)
 			{
-				return std::shared_ptr<MkParser>(new MkParser());
+				stream.read(reinterpret_cast<char*>(&value), sizeof (T));
 			}
 
-			void
-			parse(const std::string&				filename,
-				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
-
-		private:
-			MkParser()
+			template <typename T>
+			static
+			T swap_endian(T u)
 			{
+				union
+				{
+					T u;
+					unsigned char u8[sizeof(T)];
+				} source, dest;
+
+				source.u = u;
+
+				for (size_t k = 0; k < sizeof(T); k++)
+					dest.u8[k] = source.u8[sizeof(T) - k - 1];
+
+				return dest.u;
+			}
+
+			static
+			std::shared_ptr<math::Matrix4x4>
+			matrix4x4(Any matrixObject)
+			{
+				Qark::ByteArray						matrixData = Any::cast<Qark::ByteArray>(matrixObject);
+				std::stringstream					stream;
+				std::shared_ptr<math::Matrix4x4>	matrix = math::Matrix4x4::create();
+				std::vector<float>					datas;
+
+				stream.write(&*matrixData.begin(), matrixData.size());
+
+				for (int i = 0; i < 16; ++i)
+				{
+					float value;
+
+					read(stream, value);
+					
+					value = swap_endian(value);
+					
+					datas.push_back(value);
+				}
+
+				return matrix->initialize(datas)->transpose();
 			}
 		};
 	}
