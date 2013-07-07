@@ -37,15 +37,23 @@ namespace minko
 
 		private:
 			std::vector<ProgramPtr>							_shaders;
+			std::unordered_map<std::string, std::string>	_attributeBindings;
+			std::unordered_map<std::string, std::string>	_uniformBindings;
+			std::unordered_map<std::string, std::string>	_stateBindings;
+
 			std::shared_ptr<data::Provider>					_data;
-			std::unordered_map<std::string, std::string>	_inputNameToBindingName;
 
 		public:
 			inline static
 			Ptr
-			create(std::vector<ProgramPtr> shaders)
+			create(std::vector<ProgramPtr>							shaders,
+				   std::unordered_map<std::string, std::string>&	attributeBindings,
+				   std::unordered_map<std::string, std::string>&	uniformBindings,
+				   std::unordered_map<std::string, std::string>&	stateBindings)
 			{
-				return std::shared_ptr<Effect>(new Effect(shaders));
+				return std::shared_ptr<Effect>(new Effect(
+					shaders, attributeBindings, uniformBindings, stateBindings
+				));
 			}
 
 			inline
@@ -64,19 +72,34 @@ namespace minko
 
 			inline
 			const std::unordered_map<std::string, std::string>&
-			inputNameToBindingName()
+			attributeBindings()
 			{
-				return _inputNameToBindingName;
+				return _attributeBindings;
 			}
 
-			Ptr
-			bindInput(const std::string& bindingName, const std::string& programInputName);
+			inline
+			const std::unordered_map<std::string, std::string>&
+			uniformBindings()
+			{
+				return _uniformBindings;
+			}
+
+			inline
+			const std::unordered_map<std::string, std::string>&
+			stateBindings()
+			{
+				return _stateBindings;
+			}
 
 		private:
-			Effect(std::vector<ProgramPtr> shaders);
+			Effect(std::vector<ProgramPtr>&							shaders,
+				   std::unordered_map<std::string, std::string>&	attributeBindings,
+				   std::unordered_map<std::string, std::string>&	uniformBindings,
+				   std::unordered_map<std::string, std::string>&	stateBindings);
 
 			void
-			propertyChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName);
+			propertyChangedHandler(std::shared_ptr<data::Container> data,
+								   const std::string&				propertyName);
 		};		
 	}
 }
