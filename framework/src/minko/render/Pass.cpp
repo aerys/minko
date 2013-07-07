@@ -17,18 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Effect.hpp"
-#include "minko/data/Container.hpp"
+#include "Pass.hpp"
 
 using namespace minko::render;
 
-Effect::Effect(std::vector<PassPtr>&						passes,
-			   std::unordered_map<std::string, std::string>&	attributeBindings,
-			   std::unordered_map<std::string, std::string>&	uniformBindings,
-			   std::unordered_map<std::string, std::string>&	stateBindings) :
-	_passes(passes),
-	_attributeBindings(attributeBindings),
-	_uniformBindings(uniformBindings),
-	_stateBindings(stateBindings)
+Pass::Pass(std::shared_ptr<resource::Program>	program,
+					   const float				priority,
+					   Blending::Source			blendingSourceFactor,
+				       Blending::Destination	blendingDestinationFactor,
+					   bool						depthMask,
+					   CompareMode				depthFunc) :
+	_program(program),
+	_priority(priority),
+	_blendingSourceFactor(blendingSourceFactor),
+	_blendingDestinationFactor(blendingDestinationFactor),
+	_depthMask(depthMask),
+	_depthFunc(depthFunc)
 {
 }
