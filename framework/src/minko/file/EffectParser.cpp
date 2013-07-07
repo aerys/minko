@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "EffectParser.hpp"
+
 #include "minko/render/Program.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
@@ -131,15 +132,25 @@ EffectParser::parse(const std::string&					filename,
 
 		if (blendModeArray.isArray())
 		{
-			blendSrcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendModeArray[0].asString()]);
-			blendDstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendModeArray[1].asString()]);
+			auto blendSrcFactorString = blendModeArray[0].asString();
+			if (_blendFactorMap.count(blendSrcFactorString))
+				blendSrcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
+
+			auto blendDstFactorString = blendModeArray[1].asString();
+			if (_blendFactorMap.count(blendDstFactorString))
+				blendDstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
 		}
 		else if (blendModeArray.isString())
 		{
-			auto blendMode = _blendFactorMap[blendModeArray.asString()];
+			auto blendModeString = blendModeArray.asString();
 
-			blendSrcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
-			blendDstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+			if (_blendFactorMap.count(blendModeString))
+			{
+				auto blendMode = _blendFactorMap[blendModeString];
+
+				blendSrcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
+				blendDstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+			}
 		}
 
 		// depthTest
@@ -149,8 +160,11 @@ EffectParser::parse(const std::string&					filename,
 
 		if (depthTest.isArray())
 		{
+			auto depthFuncString = depthTest[1].asString();
+
 			depthMask = depthTest[0].asBool();
-			depthFunc = _depthFuncMap[depthTest[1].asString()];
+			if (_depthFuncMap.count(depthFuncString))
+				depthFunc = _depthFuncMap[depthFuncString];
 		}
 
 		// program
