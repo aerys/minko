@@ -78,6 +78,10 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
+	_viewportX(0),
+	_viewportY(0),
+	_viewportWidth(0),
+	_viewportHeight(0),
 	_currentIndexBuffer(-1),
 	_currentVertexBuffer(8, -1),
 	_currentVertexSize(8, -1),
@@ -92,6 +96,14 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+
+	// init. viewport x, y, width and height
+	std::vector<int> viewportSettings(4);
+	glGetIntegerv(GL_VIEWPORT, &viewportSettings[0]);
+	_viewportX = viewportSettings[0];
+	_viewportY = viewportSettings[1];
+	_viewportWidth = viewportSettings[2];
+	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
 }
@@ -123,7 +135,15 @@ OpenGLES2Context::configureViewport(const unsigned int x,
 				  				    const unsigned int width,
 				  				    const unsigned int height)
 {
-	glViewport(x, y, width, height);
+	if (x != _viewportX || y != _viewportY || width != _viewportWidth || height != _viewportHeight)
+	{
+		_viewportX = x;
+		_viewportY = y;
+		_viewportWidth = width;
+		_viewportHeight = height;
+
+		glViewport(x, y, width, height);
+	}
 }
 
 void
@@ -785,4 +805,10 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 		glDepthMask(depthMask);
 		glDepthFunc(_depthFuncs[depthFunc]);
 	}
+}
+
+void
+OpenGLES2Context::readPixels(unsigned char* pixels)
+{
+	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
