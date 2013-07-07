@@ -29,12 +29,12 @@ namespace minko
 {
 	namespace controller
 	{
-		class PerspectiveCameraController :
+		class PerspectiveCamera :
 			public AbstractController,
-			public std::enable_shared_from_this<PerspectiveCameraController>
+			public std::enable_shared_from_this<PerspectiveCamera>
 		{
 		public:
-			typedef std::shared_ptr<PerspectiveCameraController> Ptr;
+			typedef std::shared_ptr<PerspectiveCamera> Ptr;
 
 		private:
 			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
@@ -63,8 +63,8 @@ namespace minko
 			Ptr
 			create(float fov, float aspectRatio, float zNear, float zFar)
 			{
-				auto ctrl  = std::shared_ptr<PerspectiveCameraController>(
-                    new PerspectiveCameraController(fov, aspectRatio, zNear, zFar)
+				auto ctrl  = std::shared_ptr<PerspectiveCamera>(
+                    new PerspectiveCamera(fov, aspectRatio, zNear, zFar)
                 );
 
 				ctrl->initialize();
@@ -73,7 +73,7 @@ namespace minko
 			}
 
 		private:
-			PerspectiveCameraController(float fov, float aspectRatio, float zNear, float zFar);
+			PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
 
 			void
 			initialize();
