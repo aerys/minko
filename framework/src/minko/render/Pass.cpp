@@ -21,13 +21,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::render;
 
-Pass::Pass(std::shared_ptr<render::Program>	program,
-					   const float				priority,
-					   Blending::Source			blendingSourceFactor,
-				       Blending::Destination	blendingDestinationFactor,
-					   bool						depthMask,
-					   CompareMode				depthFunc) :
+Pass::Pass(const std::string&				name,
+		   std::shared_ptr<render::Program>	program,
+		   BindingMap&						attributeBindings,
+		   BindingMap&						uniformBindings,
+		   BindingMap&						stateBindings,
+		   const float						priority,
+		   Blending::Source					blendingSourceFactor,
+		   Blending::Destination			blendingDestinationFactor,
+		   bool								depthMask,
+		   CompareMode						depthFunc) :
+	_name(name),
 	_program(program),
+	_attributeBindings(attributeBindings),
+	_uniformBindings(uniformBindings),
+	_stateBindings(stateBindings),
 	_priority(priority),
 	_blendingSourceFactor(blendingSourceFactor),
 	_blendingDestinationFactor(blendingDestinationFactor),

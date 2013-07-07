@@ -52,4 +52,8 @@ Program::dispose()
 	_context->deleteVertexShader(_vertexShader);
 	_context->deleteFragmentShader(_fragmentShader);
 	_context->deleteProgram(_id);
+
+	_vertexShader = -1;
+	_fragmentShader = -1;
+	_id = -1;
 }
