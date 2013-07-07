@@ -120,9 +120,14 @@ void
 EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 {
 	std::vector<std::shared_ptr<render::Pass>> passes;
+	auto passId = 0;
 
 	for (auto pass : root.get("passes", 0))
 	{
+		auto name = pass.get("name", passId).asString();
+
+		++passId;
+
 		// pass bindings
 		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
 		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
@@ -150,6 +155,7 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		auto fragmentShaderSource	= pass.get("fragmentShader", 0).asString();
 
 		passes.push_back(render::Pass::create(
+			name,
 			Program::create(options->context(), vertexShaderSource, fragmentShaderSource),
 			attributeBindings,
 			uniformBindings,
