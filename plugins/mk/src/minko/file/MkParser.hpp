@@ -20,14 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Any.hpp"
 #include "minko/file/AbstractModelParser.hpp"
-#include "minko/controller/SurfaceController.hpp"
-#include "minko/controller/TransformController.hpp"
-#include "minko/geometry/CubeGeometry.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/AssetsLibrary.hpp"
+#include "minko/Qark.hpp"
+#include "minko/deserialize/SceneDeserializer.hpp"
 
 
 namespace minko
@@ -39,6 +37,14 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<MkParser> Ptr;
+
+		private:
+			typedef std::map<scene::Node, std::vector<controller::AbstractController>>	ControllerMap;
+			typedef std::map<scene::Node, uint>											NodeMap;
+
+		private:
+			ControllerMap	_controllerMap;
+			NodeMap			_nodeMap;
 
 		public:
 			inline static
