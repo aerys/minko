@@ -44,8 +44,8 @@ namespace minko
 		{
 			_nodeDeserializer[MkTypes::GROUP]	= &SceneDeserializer::deserializeGroup;
 			_nodeDeserializer[MkTypes::MESH]	= &SceneDeserializer::deserializeMesh;
-			_nodeDeserializer[MkTypes::LIGHT]	= &SceneDeserializer::deserializeMesh;
-			_nodeDeserializer[MkTypes::CAMERA]	= &SceneDeserializer::deserializeMesh;
+			_nodeDeserializer[MkTypes::LIGHT]	= &SceneDeserializer::deserializeLight;
+			_nodeDeserializer[MkTypes::CAMERA]	= &SceneDeserializer::deserializeCamera;
 		}
 
 		std::shared_ptr<scene::Node>
@@ -109,5 +109,22 @@ namespace minko
 			return node;
 		}
 
+		std::shared_ptr<scene::Node>
+		SceneDeserializer::deserializeCamera(NodeInfo		nodeInfo,
+										     OptionsPtr		options,
+											 ControllerMap	controllerMap,
+											 NodeMap		nodeMap)
+		{
+			return scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
+		}
+
+		std::shared_ptr<scene::Node>
+		SceneDeserializer::deserializeLight(NodeInfo		nodeInfo,
+										    OptionsPtr		options,
+											ControllerMap	controllerMap,
+											NodeMap			nodeMap)
+		{
+			return scene::Node::create(Any::cast<std::string>(nodeInfo["name"]));
+		}
 	}
 }
