@@ -43,8 +43,9 @@ namespace minko
 
 			private:
 				float			_mass;
-				Matrix4x4Ptr	_transform;
+				Matrix4x4Ptr	_worldTransform;
 				Matrix4x4Ptr	_centerOfMassOffset;
+				Matrix4x4Ptr	_startScaleShearCorrection; 
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
@@ -91,13 +92,15 @@ namespace minko
 
 				inline
 					Matrix4x4Ptr
-					transform() const
+					worldTransform() const
 				{
-					return _transform;
+					return _worldTransform;
 				}
 
 				void
-					setTransform(Matrix4x4Ptr);
+					initializeWorldTransform(Matrix4x4Ptr);
+				void
+					updateColliderWorldTransform(Matrix4x4Ptr);
 
 				inline
 					Signal<Ptr>::Ptr
