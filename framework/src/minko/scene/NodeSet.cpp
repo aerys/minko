@@ -19,88 +19,325 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "NodeSet.hpp"
 
-#include "minko/scene/Node.hpp"
+#include "minko/Any.hpp"
 
-scene::NodeSet::Ptr
-scene::NodeSet::descendants(bool andSelf, bool depthFirst, scene::NodeSet::Ptr result)
+using namespace minko::scene;
+
+NodeSet::NodeSet(Mode mode) :
+    _mode(mode),
+    _watchingNodes(false),
+    _watchingControllers(false),
+    _nodeAdded(Signal<Ptr, NodePtr>::create()),
+    _nodeRemoved(Signal<Ptr, NodePtr>::create())
 {
-	if (result == nullptr)
-		result = create();
-
-	std::list<std::shared_ptr<Node>> nodesStack;
-
-	for (auto node : _nodes)
-	{
-		nodesStack.push_front(node);
-
-		while (nodesStack.size() != 0)
-		{
-			auto descendant = nodesStack.front();
-
-			nodesStack.pop_front();
-
-			if (descendant != node || andSelf)
-				result->_nodes.push_back(descendant);
-
-			nodesStack.insert(
-				depthFirst ? nodesStack.begin() : nodesStack.end(),
-				descendant->children().begin(),
-				descendant->children().end()
-			);
-		}
-	}
-
-	return result;
 }
 
-scene::NodeSet::Ptr
-scene::NodeSet::ancestors(bool andSelf, scene::NodeSet::Ptr result)
+void
+NodeSet::update()
 {
-	if (result == nullptr)
-		result = create();
+    _input = _nodes;
+    for (auto& op : _operators)
+    {
+        _output.clear();
+        op(_input);
+        std::swap(_input, _output);
 
-	for (auto node : _nodes)
-	{
-		if (andSelf)
-			result->_nodes.push_back(node);
+        if (_input.size() == 0)
+            break ;
+    }
+
+    executeSignals();   
+}
+
+NodeSet::Ptr
+NodeSet::select(NodePtr node)
+{
+    auto watchingNodes          = _watchingNodes;
+    auto watchingControllers    = _watchingControllers;
+
+    unwatchNodesAndControllers();
+
+    _nodes.clear();
+    _nodes.push_back(node);
+    _input = _nodes;
+
+    if (watchingNodes)
+        watchNodes();
+    if (watchingControllers)
+        watchControllers();
+
+    executeSignals();
+
+    return shared_from_this();
+}
+
+NodeSet::Ptr
+NodeSet::root()
+{
+    watchNodes();
+
+    _output.clear();
+    operatorRoot(_input);
+    std::swap(_input, _output);
+
+    _operators.push_back(std::bind(
+        &NodeSet::operatorRoot,
+        shared_from_this(),
+        std::placeholders::_1
+    ));
+
+    executeSignals();
+
+    return shared_from_this();
+}
+
+NodeSet::Ptr
+NodeSet::parent()
+{
+    watchNodes();
+
+    _output.clear();
+    operatorParent(_input);
+    std::swap(_input, _output);
+
+    _operators.push_back(std::bind(
+        &NodeSet::operatorParent,
+        shared_from_this(),
+        std::placeholders::_1
+    ));
+
+    executeSignals();
+            
+    return shared_from_this();
+}
+
+NodeSet::Ptr
+NodeSet::ancestors(bool andSelf)
+{
+    watchNodes();
+
+    _output.clear();
+    operatorAncestors(_input, andSelf);
+    std::swap(_input, _output);
+
+    _operators.push_back(std::bind(
+        &NodeSet::operatorAncestors,
+        shared_from_this(),
+        std::placeholders::_1,
+        andSelf
+    ));
+
+    executeSignals();
+            
+    return shared_from_this();
+}
+
+NodeSet::Ptr
+NodeSet::descendants(bool andSelf, bool depthFirst)
+{
+    watchNodes();
+
+    _output.clear();
+    operatorDescendants(_input, andSelf, depthFirst);
+    std::swap(_input, _output);
+
+    _operators.push_back(std::bind(
+        &NodeSet::operatorDescendants,
+        shared_from_this(),
+        std::placeholders::_1,
+        andSelf,
+        depthFirst
+    ));
+
+    executeSignals();
+            
+    return shared_from_this();
+}
+
+NodeSet::Ptr
+NodeSet::hasController(AbsCtrlPtr ctrl, bool expectedResult)
+{
+    watchControllers();
+
+     _output.clear();
+    operatorHasControllerReference(_input, ctrl, expectedResult);
+    std::swap(_input, _output);
+
+    _operators.push_back(std::bind(
+        &NodeSet::operatorHasControllerReference,
+        shared_from_this(),
+        std::placeholders::_1,
+        ctrl,
+        expectedResult
+    ));
+
+    executeSignals();
+
+    return shared_from_this();
+}
+
+void
+NodeSet::operatorRoot(Nodes& input)
+{
+    for (auto in : input)
+        output(in->root());
+}
+
+void
+NodeSet::operatorParent(Nodes& input)
+{
+    for (auto in : input)
+        output(in->parent());
+}
+
+void
+NodeSet::operatorAncestors(Nodes& input, bool andSelf)
+{
+    for (auto in : input)
+    {
+        if (andSelf)
+			output(in);
 		
-		while (node != nullptr)
+		while (in != nullptr)
 		{
-			if (node->parent() != nullptr)
-				result->_nodes.push_back(node->parent());
-			node = node->parent();
+			if (in->parent() != nullptr)
+				output(in->parent());
+			in = in->parent();
 		}
-	}
-
-	return result;
+    }
 }
 
-scene::NodeSet::Ptr
-scene::NodeSet::children(bool andSelf, scene::NodeSet::Ptr result)
+void
+NodeSet::operatorDescendants(Nodes& input, bool andSelf, bool depthFirst)
 {
-	if (result == nullptr)
-		result = create();
+    for (auto in : input)
+    {
+        std::list<NodePtr> stack;
 
-	for (auto node : _nodes)
-	{
-		if (andSelf)
-			result->_nodes.push_back(node);
+        stack.push_front(in);
+        while (!stack.empty())
+        {
+            auto node = stack.front();
 
-		result->_nodes.insert(result->_nodes.end(), node->children().begin(), node->children().end());
-	}
+            stack.pop_front();
 
-	return result;
+            if (node != in || andSelf)
+				output(node);
+
+			stack.insert(
+				depthFirst ? stack.begin() : stack.end(),
+				node->children().begin(),
+				node->children().end()
+			);
+        }
+    }
 }
 
-scene::NodeSet::Ptr
-scene::NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, scene::NodeSet::Ptr result)
+void
+NodeSet::operatorLayer(Nodes& input, const unsigned int layer)
 {
-	if (result == nullptr)
-		result = create();
+    for (auto in : input)
+        if (in->tags() & layer)
+            output(in);
+}
 
-	for (auto node : _nodes)
-		if (filter(node))
-			result->_nodes.push_back(node);
+void
+NodeSet::operatorHasControllerReference(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult)
+{
+    for (auto in : input)
+        if (in->hasController(ctrl) == expectedResult)
+            output(in);
+}
 
-	return result;
+void
+NodeSet::watchNodes()
+{
+    if (_watchingNodes || _mode == Mode::MANUAL)
+        return;
+
+    _watchingNodes = true;
+
+    auto addedOrRemoved = std::bind(
+        &NodeSet::addedOrRemovedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    );
+                
+    for (auto node : _nodes)
+    {
+        auto root = node->root();
+
+        _slots.push_back(Any(root->added()->connect(addedOrRemoved)));
+        _slots.push_back(Any(root->removed()->connect(addedOrRemoved)));
+    }
+}
+
+void
+NodeSet::watchControllers()
+{
+    if (_watchingControllers || _mode == Mode::MANUAL)
+        return;
+
+    _watchingControllers = true;
+
+    auto controllerAddedOrRemoved = std::bind(
+        &NodeSet::controllerAddedOrRemovedHandler,
+        shared_from_this(),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    );
+
+    for (auto node : _nodes)
+    {
+        auto root = node->root();
+
+        _slots.push_back(Any(root->controllerAdded()->connect(controllerAddedOrRemoved)));
+        _slots.push_back(Any(root->controllerRemoved()->connect(controllerAddedOrRemoved)));
+    }
+}
+
+void
+NodeSet::unwatchNodesAndControllers()
+{
+    if (_mode == Mode::MANUAL)
+        return;
+
+    _slots.clear();
+    _watchingNodes = false;
+    _watchingControllers = false;
+}
+
+void
+NodeSet::controllerAddedOrRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl)
+{
+    update();
+}
+
+void
+NodeSet::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+{
+    update();
+}
+
+void
+NodeSet::output(NodePtr node)
+{
+    if (std::find(_output.begin(), _output.end(), node) == _output.end())
+        _output.push_back(node);
+}
+
+void
+NodeSet::executeSignals()
+{
+    for (auto in : _input)
+        if (std::find(_result.begin(), _result.end(), in) == _result.end())
+            _nodeAdded->execute(shared_from_this(), in);
+    for (auto res : _result)
+        if (std::find(_input.begin(), _input.end(), res) == _input.end())
+            _nodeRemoved->execute(shared_from_this(), res);
+
+    _result = _input;
 }

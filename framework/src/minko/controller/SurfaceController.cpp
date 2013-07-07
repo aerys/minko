@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/Container.hpp"
 
 using namespace minko::controller;
 using namespace minko::geometry;
@@ -59,7 +60,8 @@ SurfaceController::initialize()
 }
 
 void
-SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
+									  std::shared_ptr<Node>					target)
 {
 	target->data()->addProvider(_material);
 	target->data()->addProvider(_geometry->data());
@@ -67,15 +69,17 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl, 
 
 	_drawCalls.clear();
 	for (auto shader : _effect->shaders())
-	{
-		auto drawCall = DrawCall::create(target->data(), _effect->inputNameToBindingName());
-
-		_drawCalls.push_back(drawCall);
-	}
+		_drawCalls.push_back(DrawCall::create(
+			target->data(),
+			_effect->attributeBindings(),
+			_effect->uniformBindings(),
+			_effect->stateBindings()
+		));
 }
 
 void
-SurfaceController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl, std::shared_ptr<Node> target)
+SurfaceController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl,
+										std::shared_ptr<Node>				target)
 {
 	target->data()->removeProvider(_material);
 	target->data()->removeProvider(_geometry->data());

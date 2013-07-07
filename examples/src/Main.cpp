@@ -103,24 +103,24 @@ int main(int argc, char** argv)
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
-
-    context->setBlendMode(render::Blending::Mode::DEFAULT);
-
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		->queue("textures/collage.jpg")
-        ->queue("textures/box3.png")
-		->queue("effects/Texture.effect")
-		//->queue("effects/Red.effect")
-		->queue("effects/Basic.effect")
+		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
+		->queue("collage.jpg")
+        ->queue("box3.png")
+		->queue("DirectionalLight.effect")
+		->queue("VertexNormal.effect")
+		->queue("Texture.effect")
+		->queue("Red.effect")
+		->queue("Basic.effect")
 		->queue("models/model.mk");
 
-	/*assets->defaultOptions()->includePath("effects");*/
+	assets->defaultOptions()->includePaths().push_back("effects");
+	assets->defaultOptions()->includePaths().push_back("textures");
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -133,21 +133,24 @@ int main(int argc, char** argv)
         renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
-		/*auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
+		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(TransformController::create());
 		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(SurfaceController::create(
-			assets->geometry("cube"),
+			assets->geometry("sphere"),
 			data::Provider::create()
+				->set("material/blending",				render::Blending::Mode::ALPHA)
+				->set("material/depthFunc",				render::CompareMode::LESS)
+				->set("material/depthMask",				true)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
-			assets->effect("texture")
-		));*/
+				->set("material/diffuse/map",			assets->texture("box3.png")),
+			assets->effect("vertex normal")
+		));
 
 		group->addChild(assets->node("models/model.mk"));
 
@@ -157,19 +160,19 @@ int main(int argc, char** argv)
 
 	assets->load();
 
-	// auto oglContext = context;
-	// auto fx = assets->effect("directional light");
+	/*
+	auto fx = assets->effect("directional light");
 
-	// std::cout << "== vertex shader compilation logs ==" << std::endl;
-	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-	// std::cout << "== fragment shader compilation logs ==" << std::endl;
-	// std::cout << oglContext->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-	// std::cout << "== program info logs ==" << std::endl;
-	// std::cout << oglContext->getProgramInfoLogs(fx->shaders()[0]->program()) << std::endl;
+	std::cout << "== vertex shader compilation logs ==" << std::endl;
+	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
+	std::cout << "== fragment shader compilation logs ==" << std::endl;
+	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
+	std::cout << "== program info logs ==" << std::endl;
+	std::cout << context->getProgramInfoLogs(fx->shaders()[0]->id()) << std::endl;
+	*/
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
-
 
 	while(!glfwWindowShouldClose(window))
     {

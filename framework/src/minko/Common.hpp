@@ -48,6 +48,7 @@ namespace minko
 		class AbstractContext;
 		class OpenGLES2Context;
         class Blending;
+		enum class CompareMode;
 
 		class DrawCall;
 

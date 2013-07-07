@@ -52,9 +52,10 @@ namespace minko
 		std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
 
 		std::list<std::string>											_filesQueue;
+		std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
 		std::unordered_map<std::string, std::shared_ptr<file::Loader>>	_filenameToLoader;
 
-		std::vector<Signal<std::shared_ptr<file::Loader>>::Slot>		_loaderCompleteSlots;
+		std::vector<Signal<std::shared_ptr<file::Loader>>::Slot>		_loaderSlots;
 
 		std::shared_ptr<Signal<Ptr>>									_complete;
 
@@ -127,16 +128,19 @@ namespace minko
 		}
 
 		Ptr
-		queue(const std::string& filename);
+			queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
 		Ptr
-		load(const std::string& filename);
+		load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
 		Ptr
 		load();
 
 	private:
 		AssetsLibrary(AbsContextPtr context);
+
+		void
+		loaderErrorHandler(std::shared_ptr<file::Loader> loader);
 
 		void
 		loaderCompleteHandler(std::shared_ptr<file::Loader> loader);
