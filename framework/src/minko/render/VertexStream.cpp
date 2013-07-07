@@ -71,6 +71,7 @@ void
 VertexStream::dispose()
 {
 	_context->deleteVertexBuffer(_id);
+	_id = -1;
 }
 
 void
