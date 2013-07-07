@@ -46,7 +46,9 @@ namespace minko
 
 			std::shared_ptr<render::AbstractContext>				_context;
 			std::vector<std::pair<std::string, std::string>>		_programs;
-			std::unordered_map<std::string, std::string>			_bindings;
+			std::unordered_map<std::string, std::string>			_attributeBindings;
+			std::unordered_map<std::string, std::string>			_uniformBindings;
+			std::unordered_map<std::string, std::string>			_stateBindings;
 			std::string												_dependenciesCode;
 
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;

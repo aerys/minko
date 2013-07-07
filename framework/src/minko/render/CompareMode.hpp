@@ -23,58 +23,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
+	namespace render
 	{
-		class Options
+		enum class CompareMode
 		{
-		public:
-			typedef std::shared_ptr<Options> Ptr;
-
-		private:
-			std::shared_ptr<render::AbstractContext>	_context;
-			std::shared_ptr<AssetsLibrary>				_assets;
-			std::vector<std::string>					_includePaths;
-
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				return std::shared_ptr<Options>(new Options(context));
-			}
-
-			inline
-			std::shared_ptr<render::AbstractContext>
-			context()
-			{
-				return _context;
-			}
-			
-			inline
-			std::shared_ptr<AssetsLibrary>
-			assets()
-			{
-				return _assets;
-			}
-
-			inline
-			void
-			assets(std::shared_ptr<AssetsLibrary> value)
-			{
-				_assets = value;
-			}
-
-			std::vector<std::string>&
-			includePaths()
-			{
-				return _includePaths;
-			}
-
-		private:
-			Options(std::shared_ptr<render::AbstractContext>	context) :
-				_context(context)
-			{
-			}
+			ALWAYS,
+			EQUAL,
+			GREATER,
+			GREATER_EQUAL,
+			LESS,
+			LESS_EQUAL,
+			NEVER,
+			NOT_EQUAL
 		};
 	}
+}
+
+namespace std
+{
+	// Hash function to allow CompareMode to be an index in a map.
+	template <>
+	struct hash<minko::render::CompareMode>
+	{
+		size_t operator()(const minko::render::CompareMode& v) const
+		{
+			return hash<uint>()(static_cast<uint>(v));
+		}
+	};
 }
