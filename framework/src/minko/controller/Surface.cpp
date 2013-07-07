@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "SurfaceController.hpp"
+#include "Surface.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
@@ -30,7 +30,7 @@ using namespace minko::render;
 using namespace minko::data;
 using namespace minko::scene;
 
-SurfaceController::SurfaceController(std::shared_ptr<Geometry> 	geometry,
+Surface::Surface(std::shared_ptr<Geometry> 	geometry,
 									 std::shared_ptr<Provider> 	material,
 									 std::shared_ptr<Effect>	effect) :
 	AbstractController(),
@@ -42,17 +42,17 @@ SurfaceController::SurfaceController(std::shared_ptr<Geometry> 	geometry,
 }
 
 void
-SurfaceController::initialize()
+Surface::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&SurfaceController::targetAddedHandler,
+		&Surface::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&SurfaceController::targetRemovedHandler,
+		&Surface::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -60,7 +60,7 @@ SurfaceController::initialize()
 }
 
 void
-SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
+Surface::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 									  std::shared_ptr<Node>					target)
 {
 	target->data()->addProvider(_material);
@@ -85,7 +85,7 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 }
 
 void
-SurfaceController::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl,
+Surface::targetRemovedHandler(std::shared_ptr<AbstractController> ctrl,
 										std::shared_ptr<Node>				target)
 {
 	target->data()->removeProvider(_material);
