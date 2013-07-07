@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/resource/Program.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/resource/VertexAttribute.hpp"
 
 using namespace minko::math;
 using namespace minko::render;
