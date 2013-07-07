@@ -211,6 +211,10 @@ namespace minko
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
 
+			virtual
+			void
+			readPixels(unsigned char* pixels) = 0;
+
 		};
 	}	
 }
