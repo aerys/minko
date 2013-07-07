@@ -39,24 +39,32 @@ namespace minko
 			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
 
 		private:
-			unsigned int			_vertexShader;
-			unsigned int			_fragmentShader;
-			const std::string 		_vertexShaderSource;
-			const std::string		_fragmentShaderSource;
+			unsigned int		_vertexShader;
+			unsigned int		_fragmentShader;
+			std::string 		_vertexShaderSource;
+			std::string			_fragmentShaderSource;
 			ProgramInputsPtr	_inputs;
 
 		public:
+			inline static
+			Ptr
+			create(AbstractContextPtr	context)
+			{
+				return std::shared_ptr<Program>(new Program(context));
+			}
+
 			inline static
 			Ptr
 			create(AbstractContextPtr	context,
 				   const std::string& 	vertexShaderSource,
 				   const std::string& 	fragmentShaderSource)
 			{
-				return std::shared_ptr<Program>(new Program(
-					context,
-					vertexShaderSource,
-					fragmentShaderSource
-				));
+				auto p = create(context);
+
+				p->vertexShaderSource(vertexShaderSource);
+				p->fragmentShaderSource(fragmentShaderSource);
+
+				return p;
 			}
 
 			inline
@@ -74,6 +82,34 @@ namespace minko
 			}
 
 			inline
+			const std::string&
+			vertexShaderSource()
+			{
+				return _vertexShaderSource;
+			}
+
+			inline
+			void
+			vertexShaderSource(const std::string& source)
+			{
+				_vertexShaderSource	= source;
+			}
+
+			inline
+			const std::string&
+			fragmentShaderSource()
+			{
+				return _fragmentShaderSource;
+			}
+
+			inline
+			void
+			fragmentShaderSource(const std::string& source)
+			{
+				_fragmentShaderSource = source;
+			}
+
+			inline
 			ProgramInputsPtr
 			inputs()
 			{
@@ -87,9 +123,7 @@ namespace minko
 			dispose();
 
 		private:
-			Program(AbstractContextPtr context,
-					const std::string& vertexShaderSource,
-					const std::string& fragmentShaderSource);
+			Program(AbstractContextPtr context);
 		};
 	}
 }
