@@ -76,10 +76,10 @@ int main(int argc, char** argv)
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
-		->queue("DirectionalLight.effect")
-		->queue("VertexNormal.effect")
-		->queue("Texture.effect")
-		->queue("Red.effect")
+		//->queue("DirectionalLight.effect")
+		//->queue("VertexNormal.effect")
+		//->queue("Texture.effect")
+		//->queue("Red.effect")
 		->queue("Basic.effect");
 
 	assets->defaultOptions()->includePaths().push_back("effects");
@@ -100,9 +100,9 @@ int main(int argc, char** argv)
 		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
-		mesh->addController(TransformController::create());
-		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-		mesh->addController(SurfaceController::create(
+		mesh->addController(Transform::create());
+		mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->addController(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/blending",				render::Blending::Mode::ALPHA)
@@ -112,9 +112,9 @@ int main(int argc, char** argv)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("vertex normal")
+			assets->effect("basic")
 		));
-
+		
 		group->addChild(mesh);
 	});
 
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+        mesh->controller<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingController->render();
 

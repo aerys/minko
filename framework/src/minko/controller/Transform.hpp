@@ -28,13 +28,13 @@ namespace minko
 {
 	namespace controller
 	{
-		class TransformController :
+		class Transform :
 			public AbstractController,
-			public std::enable_shared_from_this<TransformController>
+			public std::enable_shared_from_this<Transform>
 		{
 
 		public:
-			typedef std::shared_ptr<TransformController>	Ptr;
+			typedef std::shared_ptr<Transform>	Ptr;
 
 		private:
 			typedef std::shared_ptr<scene::Node>			NodePtr;
@@ -56,7 +56,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr ctrl = std::shared_ptr<TransformController>(new TransformController());
+				Ptr ctrl = std::shared_ptr<Transform>(new Transform());
 
 				ctrl->initialize();
 
@@ -78,7 +78,7 @@ namespace minko
 			}
 
 		private:
-			TransformController();
+			Transform();
 
 			void
 			initialize();
@@ -93,12 +93,12 @@ namespace minko
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 		private:
-			class RootTransformController :
-				public std::enable_shared_from_this<RootTransformController>,
+			class RootTransform :
+				public std::enable_shared_from_this<RootTransform>,
 				public AbstractController
 			{
 			public:
-				typedef std::shared_ptr<RootTransformController> Ptr;
+				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
 				typedef std::shared_ptr<RenderingController>	RenderingCtrlPtr;
@@ -109,7 +109,7 @@ namespace minko
 				Ptr
 				create()
 				{
-					auto ctrl = std::shared_ptr<RootTransformController>(new RootTransformController());
+					auto ctrl = std::shared_ptr<RootTransform>(new RootTransform());
 
 					ctrl->initialize();
 
