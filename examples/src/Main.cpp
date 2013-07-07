@@ -104,6 +104,7 @@ int main(int argc, char** argv)
 
 
 		physicsWorld	= bullet::PhysicsWorld::create();
+		physicsWorld->setGravity(Vector3::create(0.0f, -9.81f, 0.0f));
 		root->addController(physicsWorld);
 
 

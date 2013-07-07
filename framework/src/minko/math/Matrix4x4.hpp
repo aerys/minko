@@ -38,6 +38,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Matrix4x4>	Ptr;
+			typedef std::shared_ptr<Vector3>	Vector3Ptr;
 
 		public:
 			inline static
@@ -159,6 +160,9 @@ namespace minko
 				return shared_from_this();
 			}
 
+			Vector3Ptr
+			project(Vector3Ptr, Vector3Ptr output = 0) const;
+
 			inline
 			bool
 			operator==(Matrix4x4& value)
@@ -208,7 +212,10 @@ namespace minko
 			rotation(Quaternion::Ptr output = 0) const;
 
 			Vector3::Ptr
-			translation(Vector3::Ptr output = 0);
+			translation(Vector3::Ptr output = 0) const;
+
+			Ptr
+			initialize(Quaternion::Ptr rotation, Vector3::Ptr translation);
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);

@@ -42,14 +42,15 @@ namespace minko
 				typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>			NodePtr;
 				typedef std::shared_ptr<Collider>				ColliderPtr;
-
+				typedef std::shared_ptr<TransformController>	TransformControllerPtr;
 				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
 				
 
 			private:
-				ColliderPtr		_collider;
-				NodePtr			_target;
-				PhysicsWorldPtr	_physicsWorld;
+				ColliderPtr				_collider;
+				PhysicsWorldPtr			_physicsWorld;
+				TransformControllerPtr	_targetTrfCtrl;
+				TransformControllerPtr	_parentTrfCtrl;
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
