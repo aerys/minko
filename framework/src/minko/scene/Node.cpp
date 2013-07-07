@@ -38,30 +38,30 @@ Node::Node() :
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_controllerAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_controllerRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_tagsChanged(Signal<Ptr, Ptr>::create())
+	_layersChanged(Signal<Ptr, Ptr>::create())
 {
 }
 
 void
-Node::tags(unsigned int tags)
+Node::layers(unsigned int layers)
 {
-	if (_tags != tags)
+	if (_layers != layers)
 	{
-		_tags = tags;
+		_layers = layers;
 
 		// bubble down
         auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
             ->select(shared_from_this())
             ->descendants(true);
 		for (auto descendant : descendants->nodes())
-			descendant->_tagsChanged->execute(descendant, shared_from_this());
+			descendant->_layersChanged->execute(descendant, shared_from_this());
 
 		// bubble up
 		auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
             ->select(shared_from_this())
             ->ancestors();
 		for (auto ancestor : ancestors->nodes())
-			ancestor->_tagsChanged->execute(ancestor, shared_from_this());
+			ancestor->_layersChanged->execute(ancestor, shared_from_this());
 	}
 }
 
