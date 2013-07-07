@@ -77,6 +77,11 @@ SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 			_effect->stateBindings()
 		));
 	*/
+
+	for (auto pass : _effect->passes())
+	{
+
+	}
 }
 
 void

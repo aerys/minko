@@ -13,8 +13,7 @@
 	},
 	
 	"stateBindings"	: {
-		"blendMode"				: "material/blending",
-		"depthTest"				: "material/depthTest"
+		"blendMode"				: "material/blendMode"
 	},
 	
 	"priority"		: 42,
