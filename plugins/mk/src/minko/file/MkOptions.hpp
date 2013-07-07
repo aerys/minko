@@ -21,25 +21,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/AssetsLibrary.hpp"
 
 namespace minko
 {
 	namespace file
 	{
-	class MkOptions : public Options
+	class MkOptions
 	{
 	public:
 		typedef std::shared_ptr<MkOptions> Ptr;
 
 	private:
-		std::shared_ptr<AssetsLibrary> _assetsLibary;
+		std::shared_ptr<AssetsLibrary>	_assetsLibary;
+		std::shared_ptr<Options>		_options;
 
 	public:
 		inline static
 		Ptr
-		create(std::shared_ptr<render::AbstractContext>	context)
+		create(std::shared_ptr<file::Options>		options,
+			   std::shared_ptr<AssetsLibrary>		assetLibrary)
 		{
-			return std::shared_ptr<MkOptions>(new MkOptions(context));
+			return std::shared_ptr<MkOptions>(new MkOptions(options, assetLibrary));
 		}
 
 		inline
@@ -49,10 +52,19 @@ namespace minko
 			return _assetsLibary;
 		}
 
-	private:
-		MkOptions(std::shared_ptr<render::AbstractContext>	context)
+		inline
+		std::shared_ptr<Options>
+		parseOptions()
 		{
-			this->Options::Options(context);
+			return _options;
+		}
+
+	protected:
+		MkOptions(std::shared_ptr<file::Options>	options,
+			   std::shared_ptr<AssetsLibrary>		assetLibrary):
+			_options(options),
+			_assetsLibary(assetLibrary)
+		{
 		}
 	};
 	}

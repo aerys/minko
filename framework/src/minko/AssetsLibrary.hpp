@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/file/AbstractParser.hpp"
 
 namespace minko
 {
@@ -128,7 +127,7 @@ namespace minko
 		}
 
 		Ptr
-			queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+		queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
 		Ptr
 		load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);

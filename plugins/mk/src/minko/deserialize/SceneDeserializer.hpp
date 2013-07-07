@@ -20,19 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Any.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/Qark.hpp"
-#include "minko/AssetsLibrary.hpp"
-#include "minko/render/AbstractContext.hpp"
-#include "minko/controller/AbstractController.hpp"
 #include "minko/file/MkOptions.hpp"
-#include "minko/deserialize/MkTypes.hpp"
-#include "minko/controller/SurfaceController.hpp"
-#include "minko/controller/TransformController.hpp"
-#include "minko/geometry/CubeGeometry.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
+#include "minko/Qark.hpp"
 
 namespace minko
 {
@@ -42,12 +31,12 @@ namespace minko
 		{
 			// typedef
 		public:
-			typedef std::shared_ptr<SceneDeserializer>									Ptr;
-			typedef std::shared_ptr<render::AbstractContext>							ContextPtr;
-			typedef std::map<scene::Node, std::vector<controller::AbstractController>>	ControllerMap;
-			typedef std::map<scene::Node, uint>											NodeMap;
-			typedef std::shared_ptr<file::MkOptions>									OptionsPtr;
-			typedef	 std::map<std::string, Any>											NodeInfo;
+			typedef std::shared_ptr<SceneDeserializer>													Ptr;
+			typedef std::shared_ptr<render::AbstractContext>											ContextPtr;
+			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>	ControllerMap;
+			typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
+			typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
+			typedef	std::map<std::string, Any>															NodeInfo;
 		
 		private:
 			typedef  std::shared_ptr<scene::Node> (SceneDeserializer::*NodeDeserializer)(NodeInfo		nodeInfo,

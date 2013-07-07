@@ -362,7 +362,7 @@ namespace minko
 			write(stream, true);
 			write(stream, bytes.size());
 
-			for (int i = 0; i < bytes.size(); ++i)
+			for (unsigned int i = 0; i < bytes.size(); ++i)
 			{
 				char byte = bytes[i];
 
