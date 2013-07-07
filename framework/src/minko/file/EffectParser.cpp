@@ -124,7 +124,7 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 
 	for (auto pass : root.get("passes", 0))
 	{
-		auto name = pass.get("name", passId).asString();
+		auto name = pass.get("name", std::to_string(passId)).asString();
 
 		++passId;
 
