@@ -55,7 +55,7 @@ namespace minko
 		class ProgramInputs;
 	}
 
-	namespace resource
+	namespace render
 	{
 		class AbstractResource;
 		class Program;

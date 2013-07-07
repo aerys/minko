@@ -21,66 +21,66 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/resource/AbstractResource.hpp"
+#include "minko/render/AbstractResource.hpp"
 
 namespace minko
 {
-	namespace resource
+	namespace render
 	{
-		class IndexStream :
+		class Texture :
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
+			typedef std::shared_ptr<Texture> Ptr;
+
+			enum DataFormat
+			{
+				RGB,
+				RGBA
+			};
 
 		private:
-			std::vector<unsigned short>	_data;
+			const unsigned int			_width;
+			const unsigned int			_height;
+			std::vector<unsigned char>	_data;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
+			create(std::shared_ptr<render::AbstractContext> context,
+				   const unsigned int						width,
+				   const unsigned int						height)
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
-			}
-
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
+				return std::shared_ptr<Texture>(new Texture(context, width, height));
 			}
 
 			inline
-			const std::vector<unsigned short>&
-			data()
+			const unsigned int
+			width()
 			{
-				return _data;
+				return _width;
+			}
+
+			inline
+			const unsigned int
+			height()
+			{
+				return _height;
 			}
 
 			void
-			upload();
-			
+			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
+
 			void
 			dispose();
 
-		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>					data) :
-				AbstractResource(context),
-				_data(data)
-			{
-				upload();
-			}
+			void
+			upload();
 
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*								begin,
-						unsigned short*								end) :
-				AbstractResource(context),
-				_data(begin, end)
-			{
-				upload();
-			}
+		private:
+			Texture(std::shared_ptr<render::AbstractContext>	context,
+					const unsigned int							width,
+					const unsigned int							height);
 		};
 	}
 }
