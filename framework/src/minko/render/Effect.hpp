@@ -33,10 +33,10 @@ namespace minko
 			typedef std::shared_ptr<Effect>		Ptr;
 
 		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
+			typedef std::shared_ptr<Pass>		PassPtr;
 
 		private:
-			std::vector<PassPtr>						_passes;
+			std::vector<PassPtr>							_passes;
 
 			std::unordered_map<std::string, std::string>	_attributeBindings;
 			std::unordered_map<std::string, std::string>	_uniformBindings;
