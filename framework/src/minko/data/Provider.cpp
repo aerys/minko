@@ -40,7 +40,7 @@ Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Valu
 	bool isNewValue = _values.count(propertyName) == 0;
 
 	_values[propertyName] = value;
-	_changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
+    _changedSignalSlots[propertyName] = value->changed()->connect(std::bind(
 		&Signal<Provider::Ptr, const std::string&>::execute,
 		_propertyChanged,
 		shared_from_this(),

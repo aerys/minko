@@ -18,9 +18,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "TransformController.hpp"
+
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
+#include "minko/data/Container.hpp"
+#include "minko/data/Provider.hpp"
 
 using namespace minko::controller;
 using namespace minko::data;
@@ -204,7 +207,10 @@ TransformController::RootTransformController::addedHandler(std::shared_ptr<Node>
 		std::placeholders::_1
 	);
 
-	auto descendants = NodeSet::create(target)->descendants(true);
+	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+        ->select(target)
+        ->descendants(true);
+
 	for (auto descendant : descendants->nodes())
 	{
 		auto rootTransformCtrl = descendant->controller<RootTransformController>();
@@ -224,7 +230,10 @@ TransformController::RootTransformController::removedHandler(std::shared_ptr<Nod
 														     std::shared_ptr<Node> target,
 															 std::shared_ptr<Node> parent)
 {
-	auto descendants = NodeSet::create(target)->descendants(true);
+	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+        ->select(target)
+        ->descendants(true);
+
 	for (auto descendant : descendants->nodes())
 		for (auto renderingCtrl : descendant->controllers<RenderingController>())
 			_enterFrameSlots.erase(renderingCtrl);
@@ -241,12 +250,10 @@ TransformController::RootTransformController::updateTransformsList()
 	_modelToWorld.clear();
 	//_worldToModel.clear();
 
-	auto descendants = NodeSet::create(targets())
+	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
+        ->select(targets().begin(), targets().end())
 		->descendants(true, false)
-		->where([](std::shared_ptr<Node> node)
-			{
-				return node->controller<TransformController>() != nullptr;
-			});
+        ->hasController<TransformController>();
 
 	for (auto node : descendants->nodes())
 	{

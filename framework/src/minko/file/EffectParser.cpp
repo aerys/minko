@@ -55,9 +55,20 @@ EffectParser::parse(const std::string&					filename,
 			pass.get("fragmentShader", 0).asString()
 		));
 
-	auto bindings = root.get("bindings", 0);
-	for (auto propertyName : bindings.getMemberNames())
-		_bindings[bindings.get(propertyName, 0).asString()] = propertyName;
+	auto attributeBindings = root.get("attributeBindings", 0);
+	if (attributeBindings.isObject())
+		for (auto propertyName : attributeBindings.getMemberNames())
+			_attributeBindings[propertyName] = attributeBindings.get(propertyName, 0).asString();
+
+	auto uniformBindings = root.get("uniformBindings", 0);
+	if (uniformBindings.isObject())
+		for (auto propertyName : uniformBindings.getMemberNames())
+			_uniformBindings[propertyName] = uniformBindings.get(propertyName, 0).asString();
+
+	auto stateBindings = root.get("stateBindings", 0);
+	if (stateBindings.isObject())
+		for (auto propertyName : stateBindings.getMemberNames())
+			_stateBindings[propertyName] = stateBindings.get(propertyName, 0).asString();
 
 	auto require = root.get("includes", 0);
 	if (require.isArray())
@@ -115,10 +126,7 @@ EffectParser::finalize()
 		programs.push_back(p);
     }
 
-	_effect = Effect::create(programs);
-
-	for (auto& binding : _bindings)
-		_effect->bindInput(binding.first, binding.second);
+	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
 	_complete->execute(shared_from_this());
 }

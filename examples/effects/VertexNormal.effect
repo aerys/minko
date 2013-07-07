@@ -1,20 +1,13 @@
 // directional light effect
 {
-	"name"		: "directional light",
+	"name"		: "vertex normal",
 	"attributeBindings"	: {
 		"position"				: "geometry/vertex/attribute/position",
 		"normal"				: "geometry/vertex/attribute/normal"
 	},
 	"uniformBindings"	: {
-		"diffuseColor"			: "material/diffuse/rgba",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
-		"lightDirection"		: "light/direction"
-	},
-	"stateBindings"	: {
-		"blending"	: "material/blending",
-		"depthMask"	: "material/depthMask",
-		"depthFunc"	: "material/depthFunc"
+		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
 	"includes"	: [ "Phong.glsl" ],
 	"passes"	: [{
@@ -35,14 +28,11 @@
 			}
 		",
 		"fragmentShader"	: "
-			uniform vec4 diffuseColor	= vec4(0, 0, 0, 1);
-			uniform vec3 lightDirection	= vec3(0., 0., -1.);
-
 			varying vec3 worldNormal;
 
 			void main(void)
 			{
-				gl_FragColor = vec4(diffuseColor.rgb * lambert(worldNormal, lightDirection), diffuseColor.a);
+				gl_FragColor = vec4((worldNormal.rgb + 1) * .5, 1);
 			}
 		"
 	}]
