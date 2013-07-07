@@ -34,6 +34,10 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
+			typedef std::unordered_map<std::string, std::string>	BindingMap;
+
+		private:
+			const std::string					_name;
 			std::shared_ptr<render::Program>	_program;
 			const float							_priority;
 			Blending::Source					_blendingSourceFactor;
@@ -41,19 +45,43 @@ namespace minko
 			bool								_depthMask;
 			CompareMode							_depthFunc;
 
+			BindingMap							_attributeBindings;
+			BindingMap							_uniformBindings;
+			BindingMap							_stateBindings;
+
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::Program>	program,
-				   const float							priority					= 0.f,
-				   Blending::Source						blendingSourceFactor		= Blending::Source::ONE,
-				   Blending::Destination				blendingDestinationFactor	= Blending::Destination::ZERO,
-				   bool									depthMask					= true,
-				   CompareMode							depthFunc					= CompareMode::LESS)
+			create(const std::string&				name,
+				   std::shared_ptr<render::Program>	program,
+				   BindingMap&						attributeBindings,
+				   BindingMap&						uniformBindings,
+				   BindingMap&						stateBindings,
+				   const float						priority					= 0.f,
+				   Blending::Source					blendingSourceFactor		= Blending::Source::ONE,
+				   Blending::Destination			blendingDestinationFactor	= Blending::Destination::ZERO,
+				   bool								depthMask					= true,
+				   CompareMode						depthFunc					= CompareMode::LESS)
 			{
 				return std::shared_ptr<Pass>(new Pass(
-					program, priority, blendingSourceFactor, blendingDestinationFactor, depthMask, depthFunc
+					name,
+					program,
+					attributeBindings,
+					uniformBindings,
+					stateBindings,
+					priority,
+					blendingSourceFactor,
+					blendingDestinationFactor,
+					depthMask,
+					depthFunc
 				));
+			}
+
+			inline
+			const std::string&
+			name()
+			{
+				return _name;
 			}
 
 			inline
@@ -61,6 +89,27 @@ namespace minko
 			program()
 			{
 				return _program;
+			}
+
+			inline
+			const BindingMap&
+			attributeBindings()
+			{
+				return _attributeBindings;
+			}
+
+			inline
+			const BindingMap&
+			uniformBindings()
+			{
+				return _attributeBindings;
+			}
+
+			inline
+			const BindingMap&
+			stateBindings()
+			{
+				return _attributeBindings;
 			}
 
 			inline
@@ -99,12 +148,16 @@ namespace minko
 			}
 
 		private:
-			Pass(std::shared_ptr<render::Program>	program,
-					   const float					priority,
-					   Blending::Source				blendingSourceFactor,
-				       Blending::Destination		blendingDestinationFactor,
-					   bool							depthMask,
-					   CompareMode					depthFunc);
+			Pass(const std::string&					name,
+				 std::shared_ptr<render::Program>	program,
+				 BindingMap&						attributeBindings,
+				 BindingMap&						uniformBindings,
+				 BindingMap&						stateBindings,
+				 const float						priority,
+				 Blending::Source					blendingSourceFactor,
+				 Blending::Destination				blendingDestinationFactor,
+				 bool								depthMask,
+				 CompareMode						depthFunc);
 		};
 	}
 }

@@ -30,29 +30,20 @@ namespace minko
 			public std::enable_shared_from_this<Effect>
 		{
 		public:
-			typedef std::shared_ptr<Effect>		Ptr;
+			typedef std::shared_ptr<Effect>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Pass>		PassPtr;
+			typedef std::shared_ptr<Pass>	PassPtr;
 
 		private:
-			std::vector<PassPtr>							_passes;
-
-			std::unordered_map<std::string, std::string>	_attributeBindings;
-			std::unordered_map<std::string, std::string>	_uniformBindings;
-			std::unordered_map<std::string, std::string>	_stateBindings;
+			std::vector<PassPtr>	_passes;
 
 		public:
 			inline static
 			Ptr
-			create(std::vector<PassPtr>&						passes,
-				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings,
-				   std::unordered_map<std::string, std::string>&	stateBindings)
+			create(std::vector<PassPtr>&	passes)
 			{
-				return std::shared_ptr<Effect>(new Effect(
-					passes, attributeBindings, uniformBindings, stateBindings
-				));
+				return std::shared_ptr<Effect>(new Effect(passes));
 			}
 
 			inline
@@ -62,32 +53,8 @@ namespace minko
 				return _passes;
 			}
 
-			inline
-			const std::unordered_map<std::string, std::string>&
-			attributeBindings()
-			{
-				return _attributeBindings;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			uniformBindings()
-			{
-				return _uniformBindings;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			stateBindings()
-			{
-				return _stateBindings;
-			}
-
 		private:
-			Effect(std::vector<PassPtr>&						passes,
-				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings,
-				   std::unordered_map<std::string, std::string>&	stateBindings);
+			Effect(std::vector<PassPtr>&	passes);
 		};		
 	}
 }
