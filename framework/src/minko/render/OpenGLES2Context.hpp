@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
