@@ -21,12 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/resource/AbstractResource.hpp"
+#include "minko/render/AbstractResource.hpp"
 #include "minko/render/ProgramInputs.hpp"
 
 namespace minko
 {
-	namespace resource
+	namespace render
 	{
 		class Program :
 			public AbstractResource

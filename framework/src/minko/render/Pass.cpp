@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::render;
 
-Pass::Pass(std::shared_ptr<resource::Program>	program,
+Pass::Pass(std::shared_ptr<render::Program>	program,
 					   const float				priority,
 					   Blending::Source			blendingSourceFactor,
 				       Blending::Destination	blendingDestinationFactor,

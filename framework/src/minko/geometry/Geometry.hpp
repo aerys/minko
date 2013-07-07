@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/resource/VertexStream.hpp"
+#include "minko/render/VertexStream.hpp"
 
 namespace minko
 {
@@ -60,21 +60,21 @@ namespace minko
 
 			inline
 			void
-			indices(std::shared_ptr<resource::IndexStream> indices)
+			indices(std::shared_ptr<render::IndexStream> indices)
 			{
 				_data->set("geometry/indices", indices);
 			}
 
 			inline
-			std::shared_ptr<resource::IndexStream>
+			std::shared_ptr<render::IndexStream>
 			indices()
 			{
-				return _data->get<std::shared_ptr<resource::IndexStream>>("geometry/indices");
+				return _data->get<std::shared_ptr<render::IndexStream>>("geometry/indices");
 			}
 
 			inline
 			void
-			addVertexStream(std::shared_ptr<resource::VertexStream> vertexStream)
+			addVertexStream(std::shared_ptr<render::VertexStream> vertexStream)
 			{
 				for (auto attribute : vertexStream->attributes())
 				{
