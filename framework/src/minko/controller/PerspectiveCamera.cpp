@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/Surface.hpp"
 
 using namespace minko::controller;
 using namespace minko::math;
@@ -41,7 +41,7 @@ PerspectiveCamera::PerspectiveCamera(float fov,
     _surfaces
         ->root()
         ->descendants(true)
-        ->hasController<SurfaceController>();
+        ->hasController<Surface>();
 
 	_data
 		->set("transform/viewMatrix",			_view)
