@@ -25,7 +25,8 @@ using namespace minko::math;
 void
 MkParser::parse(const std::string&					filename,
 				std::shared_ptr<Options>			options,
-				const std::vector<unsigned char>&	data)
+				const std::vector<unsigned char>&	data,
+				std::shared_ptr<AssetsLibrary>		assetsLibrary)
 {
 	std::vector<char> dataCopy(data.begin(), data.end());
 
@@ -44,5 +45,7 @@ MkParser::parse(const std::string&					filename,
 
 	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], options, _controllerMap, _nodeMap);
 	
+	assetsLibrary->node(filename, _node);
+
 	std::cout << "parse MK" << std::endl << std::flush;
 }

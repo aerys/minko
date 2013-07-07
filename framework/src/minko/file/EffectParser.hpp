@@ -79,16 +79,18 @@ namespace minko
 			void
 			parse(const std::string&				filename,
 				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data);
+				  const std::vector<unsigned char>&	data,
+				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
+			dependencyCompleteHandler(std::shared_ptr<Loader>			loader,
+									  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 			void
 			dependencyErrorHandler(std::shared_ptr<Loader> loader);
 
 			void
-			finalize();
+			finalize(std::shared_ptr<AssetsLibrary>);
 
 		private:
 			EffectParser();
