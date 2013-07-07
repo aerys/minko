@@ -76,7 +76,7 @@ namespace minko
 	{
 		class AbstractController;
 		class TransformController;
-		class SurfaceController;
+		class Surface;
 		class RenderingController;
 		class PerspectiveCamera;
 	}

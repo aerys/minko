@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/Surface.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/AbstractContext.hpp"
 
@@ -56,7 +56,7 @@ RenderingController::initialize()
 
 	_surfaces->root()
 		->descendants(true)
-		->hasController<SurfaceController>();
+		->hasController<Surface>();
 	_surfaceAddedSlot = _surfaces->nodeAdded()->connect(std::bind(
 		&RenderingController::surfaceAddedHandler,
 		shared_from_this(),
@@ -92,7 +92,7 @@ void
 RenderingController::surfaceAddedHandler(NodeSet::Ptr	surfaces,
 										 Node::Ptr		surfaceNode)
 {
-	for (auto surface : surfaceNode->controllers<SurfaceController>())
+	for (auto surface : surfaceNode->controllers<Surface>())
 		_drawCalls.insert(_drawCalls.end(), surface->drawCalls().begin(), surface->drawCalls().end());
 }
 
@@ -100,7 +100,7 @@ void
 RenderingController::surfaceRemovedHandler(NodeSet::Ptr	surfaces,
 										   Node::Ptr	surfaceNode)
 {
-	for (auto surface : surfaceNode->controllers<SurfaceController>())
+	for (auto surface : surfaceNode->controllers<Surface>())
 		for (auto drawCall : surface->drawCalls())
 			_drawCalls.remove(drawCall);
 }
