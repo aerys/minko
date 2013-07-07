@@ -25,18 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::controller;
 using namespace minko::math;
-using namespace minko::scene;
 
 PerspectiveCamera::PerspectiveCamera(float fov,
-                                                         float aspectRatio,
-                                                         float zNear,
-                                                         float zFar) :
+                                     float aspectRatio,
+                                     float zNear,
+                                     float zFar) :
     _enabled(true),
 	_view(math::Matrix4x4::create()),
 	_projection(math::Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
 	_viewProjection(math::Matrix4x4::create()->copyFrom(_projection)),
 	_data(data::Provider::create()),
-    _surfaces(NodeSet::create(NodeSet::Mode::AUTO))
+    _surfaces(scene::NodeSet::create(scene::NodeSet::Mode::AUTO))
 {
     _surfaces
         ->root()
@@ -81,7 +80,7 @@ PerspectiveCamera::initialize()
 
 void
 PerspectiveCamera::targetAddedHandler(AbstractController::Ptr ctrl,
-                                                Node::Ptr               target)
+                                      scene::Node::Ptr        target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("PerspectiveCamera cannot have more than 1 target.");
@@ -99,7 +98,7 @@ PerspectiveCamera::targetAddedHandler(AbstractController::Ptr ctrl,
 
 void
 PerspectiveCamera::targetRemovedHandler(AbstractController::Ptr   ctrl,
-                                                  Node::Ptr                 target)
+                                        scene::Node::Ptr          target)
 {
 	target->data()->addProvider(_data);
 
@@ -108,7 +107,7 @@ PerspectiveCamera::targetRemovedHandler(AbstractController::Ptr   ctrl,
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
-														const std::string&		propertyName)
+											  const std::string&	propertyName)
 {
 	std::cout << "PerspectiveCamera::localToWorldChangedHandler()" << std::endl;
 
@@ -117,7 +116,7 @@ PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 }
 
 void
-PerspectiveCamera::surfaceAdded(std::shared_ptr<scene::NodeSet> set, NodePtr node)
+PerspectiveCamera::surfaceAdded(scene::NodeSet::Ptr set, scene::Node::Ptr node)
 {
     std::cout << "surface added: " << node->name() << std::endl;
 
@@ -125,7 +124,7 @@ PerspectiveCamera::surfaceAdded(std::shared_ptr<scene::NodeSet> set, NodePtr nod
 }
 
 void
-PerspectiveCamera::surfaceRemoved(std::shared_ptr<scene::NodeSet> set, NodePtr node)
+PerspectiveCamera::surfaceRemoved(scene::NodeSet::Ptr set, scene::Node::Ptr node)
 {
     std::cout << "surface removed: " << node->name() << std::endl;
 
