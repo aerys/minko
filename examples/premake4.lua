@@ -5,6 +5,7 @@ project "minko-examples"
   links {
     "minko-jpeg",
     "minko-png",
+    "minko-mk",
     "minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
@@ -13,7 +14,8 @@ project "minko-examples"
     "lib/glfw/include",
     "../framework/src",
     "../plugins/jpeg/src",
-    "../plugins/png/src"
+    "../plugins/png/src",
+    "../plugins/mk/src"
   }
 
   configuration { "debug"}
