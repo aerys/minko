@@ -35,6 +35,7 @@ AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_defaultOptions(file::Options::create(context)),
 	_complete(Signal<Ptr>::create())
 {
+	registerParser<file::EffectParser>("effect");
 }
 
 AssetsLibrary::GeometryPtr
