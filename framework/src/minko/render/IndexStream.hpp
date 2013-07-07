@@ -21,66 +21,66 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/resource/AbstractResource.hpp"
+#include "minko/render/AbstractResource.hpp"
 
 namespace minko
 {
-	namespace resource
+	namespace render
 	{
-		class Texture :
+		class IndexStream :
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<Texture> Ptr;
-
-			enum DataFormat
-			{
-				RGB,
-				RGBA
-			};
+			typedef std::shared_ptr<IndexStream>	Ptr;
 
 		private:
-			const unsigned int			_width;
-			const unsigned int			_height;
-			std::vector<unsigned char>	_data;
+			std::vector<unsigned short>	_data;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context,
-				   const unsigned int						width,
-				   const unsigned int						height)
+			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height));
+				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
+			}
+
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
+			{
+				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
 			}
 
 			inline
-			const unsigned int
-			width()
+			const std::vector<unsigned short>&
+			data()
 			{
-				return _width;
+				return _data;
 			}
-
-			inline
-			const unsigned int
-			height()
-			{
-				return _height;
-			}
-
-			void
-			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
-
-			void
-			dispose();
 
 			void
 			upload();
+			
+			void
+			dispose();
 
 		private:
-			Texture(std::shared_ptr<render::AbstractContext>	context,
-					const unsigned int							width,
-					const unsigned int							height);
+			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+						std::vector<unsigned short>					data) :
+				AbstractResource(context),
+				_data(data)
+			{
+				upload();
+			}
+
+			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+						unsigned short*								begin,
+						unsigned short*								end) :
+				AbstractResource(context),
+				_data(begin, end)
+			{
+				upload();
+			}
 		};
 	}
 }
