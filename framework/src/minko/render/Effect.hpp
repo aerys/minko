@@ -36,7 +36,8 @@ namespace minko
 			typedef std::shared_ptr<Pass>	PassPtr;
 
 		private:
-			std::vector<PassPtr>	_passes;
+			std::vector<PassPtr>			_passes;
+			std::shared_ptr<data::Provider>	_data;
 
 		public:
 			inline static
@@ -51,6 +52,13 @@ namespace minko
 			passes()
 			{
 				return _passes;
+			}
+
+			inline
+			std::shared_ptr<data::Provider>
+			data()
+			{
+				return _data;
 			}
 
 		private:
