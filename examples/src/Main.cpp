@@ -138,6 +138,7 @@ int main(int argc, char** argv)
 			));
 
 		auto shape		= bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
+
 		auto collider	= bullet::Collider::create(10.0f, shape);
 		mesh->addController(bullet::ColliderController::create(collider));
 
