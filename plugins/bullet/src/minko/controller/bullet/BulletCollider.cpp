@@ -140,7 +140,10 @@ void
 {
 	btVector3	inertia	 (0.0, 0.0, 0.0);
 	if (collider->inertia() == nullptr)
-		_btCollisionShape->calculateLocalInertia(collider->mass(), inertia);
+	{
+		if (collider->mass() > 0.0f)
+			_btCollisionShape->calculateLocalInertia(collider->mass(), inertia);
+	}
 	else
 	{
 		inertia.setX(collider->inertia()->x());
