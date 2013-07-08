@@ -33,8 +33,11 @@ namespace minko
 			public std::enable_shared_from_this<Matrix4x4>,
 			public data::Value
 		{
+			friend controller::Transform;
+
 		private:
-			std::vector<float> _m;
+			std::vector<float>	_m;
+			bool				_hasChanged;
 
 		public:
 			typedef std::shared_ptr<Matrix4x4>	Ptr;

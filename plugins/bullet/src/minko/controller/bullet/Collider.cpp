@@ -42,12 +42,12 @@ _mass(mass),
 }
 
 void
-	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr transform)
+	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
-	auto rotation		= transform->rotation();
-	auto translation	= transform->translation();
+	auto rotation		= modelToWorldMatrix->rotation();
+	auto translation	= modelToWorldMatrix->translation();
 	_worldTransform->initialize(rotation, translation);
 
 	// record the corrective term that keeps the
@@ -55,14 +55,14 @@ void
 	_startScaleShearCorrection	= Matrix4x4::create()
 		->copyFrom(_worldTransform)
 		->invert()
-		->append(transform);
+		->append(modelToWorldMatrix);
 }
 
 void
-	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr transform)
+	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
 {
 	_worldTransform
-		->copyFrom(transform)
+		->copyFrom(colliderWorldTransform)
 		->append(_startScaleShearCorrection);
 
 	transformChanged()->execute(shared_from_this());
