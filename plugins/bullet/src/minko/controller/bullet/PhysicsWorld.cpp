@@ -84,8 +84,16 @@ void
 	if (target->controllers<PhysicsWorld>().size() > 1)
 		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
 
-	auto renderingController	= getRootRenderingController(target->root());
-	_exitFrameSlot				= renderingController->exitFrame()->connect(std::bind(
+	auto nodeSet		= NodeSet::create(NodeSet::AUTO)
+		->select(target->root())
+		->descendants(true)
+		->hasController<RenderingController>();
+	if (nodeSet->nodes().size() != 1)
+		throw std::logic_error("PhysicsWorld requires exactly one RenderingController among the descendants of its target node.");
+
+	auto renderingCtrl	= nodeSet->nodes().front()->controller<RenderingController>();
+
+	_exitFrameSlot		= renderingCtrl->exitFrame()->connect(std::bind(
 		&bullet::PhysicsWorld::exitFrameHandler,
 		shared_from_this(),
 		std::placeholders::_1
@@ -163,30 +171,6 @@ void
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());		
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
-}
-
-/*static*/
-RenderingController::Ptr
-	bullet::PhysicsWorld::getRootRenderingController(Node::Ptr target)
-{
-	if (target == nullptr)
-		throw std::invalid_argument("target");
-
-	// get and count all RenderingController controllers in the descendants of the target's root
-	auto nodeSet	= NodeSet::create(target->root())
-		->descendants(true)
-		->where([](NodePtr node)
-	{
-		return node->hasController<RenderingController>();
-	});
-
-#ifdef DEBUG
-	std::cout << nodeSet->nodes().size() << " rendering controllers" << std::endl;
-#endif // DEBUG
-	if (nodeSet->nodes().size() != 1)
-		throw std::logic_error("PhysicsWorld requires exactly one RenderingController among the descendants of its target node.");
-
-	return nodeSet->nodes().front()->controllers<RenderingController>().front();
 }
 
 /*static*/
