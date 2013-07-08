@@ -128,7 +128,11 @@ void
 	}
 	while(current != nullptr && current != current->parent());
 
-	_collider->initializeWorldTransform(_targetTrfCtrl->transform());
+	auto targetLocalToWorldMatrix = Matrix4x4::create()
+		->copyFrom(_targetTrfCtrl->transform())
+		->append(_targetTrfCtrl->modelToWorldMatrix());
+
+	_collider->initializeWorldTransform(targetLocalToWorldMatrix);
 
 #ifdef DEBUG
 	std::cout << "collider controller's target has been added\tto be added to physics world." << std::endl;
@@ -153,12 +157,18 @@ void
 void 
 	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
 {
-	auto targetTransform	= Matrix4x4::create();
+	auto targetTransform	= Matrix4x4::create(); // local-to-parent
 	if (_parentTrfCtrl != nullptr)
+	{
+		auto parentToWorldInvTrf	= Matrix4x4::create()
+			->append(_parentTrfCtrl->transform())
+			->append(_parentTrfCtrl->modelToWorldMatrix())
+			->invert(); // parent's world-to-local
+
 		targetTransform
-			->copyFrom(_parentTrfCtrl->modelToWorldMatrix())
-			->invert()
-			->append(_collider->worldTransform());
+			->copyFrom(_collider->worldTransform())
+			->append(parentToWorldInvTrf);
+	}
 	else
 		targetTransform
 			->copyFrom(collider->worldTransform());
