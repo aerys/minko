@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/scene/Node.hpp"
 #include "minko/controller/AbstractController.hpp"
 #include "minko/controller/RenderingController.hpp"
 #include "minko/Any.hpp"
@@ -73,8 +74,16 @@ namespace minko
 
 			inline
 			std::shared_ptr<math::Matrix4x4>
-			modelToWorldMatrix()
+			modelToWorldMatrix(bool forceUpdate = false)
 			{
+				if (forceUpdate)
+				{
+					auto node		= targets()[0];
+					auto rootCtrl	= node->root()->controller<RootTransform>();
+
+					rootCtrl->forceUpdate(node);
+				}
+
 				return _modelToWorld;
 			}
 
@@ -116,6 +125,9 @@ namespace minko
 
 					return ctrl;
 				}
+
+				void
+				forceUpdate(NodePtr node);
 
 			private:
 				std::vector<std::shared_ptr<math::Matrix4x4>>	_transform;
@@ -159,6 +171,9 @@ namespace minko
 
 				void
 				updateTransforms();
+
+				void
+				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
 				enterFrameHandler(RenderingCtrlPtr ctrl);

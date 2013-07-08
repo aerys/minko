@@ -139,15 +139,7 @@ void
 
 	updateParentTransform(_parents);
 
-	auto targetLocalToWorldMatrix = Matrix4x4::create()
-		->copyFrom(_targetTransform->transform())
-		->append(_targetTransform->modelToWorldMatrix());
-
-	_collider->initializeWorldTransform(targetLocalToWorldMatrix);
-
-#ifdef DEBUG
-	std::cout << "collider controller's target has been added\tto be added to physics world." << std::endl;
-#endif // DEBUG
+	_collider->initializeWorldTransform(_targetTransform->modelToWorldMatrix(true));
 
 	auto nodeSet	= NodeSet::create(NodeSet::AUTO);
 	nodeSet->select(target->root())
@@ -155,8 +147,8 @@ void
 		->hasController<bullet::PhysicsWorld>();
 	if (nodeSet->nodes().size() != 1)
 		throw std::logic_error("ColliderController requires exactly one PhysicsWorld controller among the descendants of its target node.");
-
 	_physicsWorld	= nodeSet->nodes().front()->controller<bullet::PhysicsWorld>();
+
 	_physicsWorld->addChild(_collider);
 }
 
@@ -193,21 +185,15 @@ void
 void 
 	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
 {
-	auto targetTransform	= Matrix4x4::create(); // local-to-parent
-	if (_parentTransform != nullptr)
-	{
-		auto parentToWorldInvTrf	= Matrix4x4::create()
-			->append(_parentTransform->transform())
-			->append(_parentTransform->modelToWorldMatrix())
-			->invert(); // parent's world-to-local
 
-		targetTransform
-			->copyFrom(_collider->worldTransform())
-			->append(parentToWorldInvTrf);
-	}
-	else
-		targetTransform
-			->copyFrom(collider->worldTransform());
+	auto worldToParentMatrix	= _parentTransform == nullptr
+		? Matrix4x4::create()->identity()
+		: Matrix4x4::create()->copyFrom(_parentTransform->modelToWorldMatrix(true))->invert();
 
-	_targetTransform->transform()->copyFrom(targetTransform);
+	// compute the target-to-parent transform
+	auto transform		= Matrix4x4::create()
+		->copyFrom(_targetTransform->modelToWorldMatrix(true))
+		->append(worldToParentMatrix);
+
+	_targetTransform->transform()->copyFrom(transform);
 }
