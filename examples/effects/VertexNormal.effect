@@ -9,7 +9,11 @@
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
-	"includes"	: [ "Phong.glsl" ],
+	
+	"priority"		: 0,
+	"blendMode"		: ["one", "zero"],
+	"depthTest"		: [true, "less"],
+	
 	"passes"	: [{
 		"vertexShader"	: "
 			attribute vec3 position;
