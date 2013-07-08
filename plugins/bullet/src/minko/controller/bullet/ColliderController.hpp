@@ -41,6 +41,7 @@ namespace minko
 			private:
 				typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>			NodePtr;
+				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
 				typedef std::shared_ptr<Collider>				ColliderPtr;
 				typedef std::shared_ptr<Transform>				TransformPtr;
 				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
@@ -51,12 +52,15 @@ namespace minko
 				PhysicsWorldPtr	_physicsWorld;
 				TransformPtr	_targetTransform;
 				TransformPtr	_parentTransform;
+				NodeSetPtr		_parents;
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
 				Signal<ColliderPtr>::Slot				_transformChangedSlot;
+				Signal<NodeSetPtr, NodePtr>::Slot		_parentAddedSlot;
+				Signal<NodeSetPtr, NodePtr>::Slot		_parentRemovedSlot;
 
 			public:
 				inline static
@@ -85,6 +89,8 @@ namespace minko
 					removedHandler(NodePtr, NodePtr, NodePtr);
 				void
 					transformChangedHandler(ColliderPtr);
+				void
+					updateParentTransform(NodeSetPtr, NodePtr node = nullptr);
 			};
 		}
 	}
