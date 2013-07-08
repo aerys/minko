@@ -19,6 +19,7 @@ auto mesh = scene::Node::create("mesh");
 auto staticMesh = scene::Node::create("staticMesh");
 auto group = scene::Node::create("group");
 
+
 void
 	printFramerate(const unsigned int delay = 1)
 {
@@ -96,6 +97,8 @@ int main(int argc, char** argv)
 		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
+		//group->addController(Transform::create());
+		//group->controller<Transform>()->transform()->appendRotationY(0.1f);
 
 		root->addChild(group)->addChild(camera);
 

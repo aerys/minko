@@ -192,7 +192,7 @@ void
 
 	// compute the target-to-parent transform
 	auto transform		= Matrix4x4::create()
-		->copyFrom(_targetTransform->modelToWorldMatrix(true))
+		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
 
 	_targetTransform->transform()->copyFrom(transform);
