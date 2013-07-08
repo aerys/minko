@@ -23,12 +23,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 
 using namespace minko::controller;
 using namespace minko::geometry;
 using namespace minko::render;
-using namespace minko::scene;
 
 Surface::Surface(Geometry::Ptr 			geometry,
 				 data::Provider::Ptr 	material,
@@ -61,36 +61,30 @@ Surface::initialize()
 
 void
 Surface::targetAddedHandler(AbstractController::Ptr	ctrl,
-							std::shared_ptr<Node>	target)
+							scene::Node::Ptr		target)
 {
-	target->data()->addProvider(_material);
-	target->data()->addProvider(_geometry->data());
-	//target->data()->addProvider(_effect->data());
+	auto data = target->data();
 
-	/*
+	data->addProvider(_material);
+	data->addProvider(_geometry->data());
+	data->addProvider(_effect->data());
+
 	_drawCalls.clear();
-	for (auto shader : _effect->shaders())
-		_drawCalls.push_back(DrawCall::create(
-			target->data(),
-			_effect->attributeBindings(),
-			_effect->uniformBindings(),
-			_effect->stateBindings()
-		));
-	*/
-
 	for (auto pass : _effect->passes())
-	{
-
-	}
+		_drawCalls.push_back(DrawCall::create(
+			data, pass->attributeBindings(), pass->uniformBindings(), pass->stateBindings()
+		));
 }
 
 void
 Surface::targetRemovedHandler(AbstractController::Ptr	ctrl,
-							  std::shared_ptr<Node>		target)
+							  scene::Node::Ptr			target)
 {
-	target->data()->removeProvider(_material);
-	target->data()->removeProvider(_geometry->data());
-	//target->data()->removeProvider(_effect->data());
+	auto data = target->data();
+
+	data->removeProvider(_material);
+	data->removeProvider(_geometry->data());
+	data->removeProvider(_effect->data());
 
 	_drawCalls.clear();
 }
