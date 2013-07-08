@@ -168,7 +168,11 @@ void
 		Collider::Ptr		collider(it->first);
 		BulletCollider::Ptr	btCollider(it->second);
 
-		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());		
+		if (collider->isStatic())
+			continue;
+
+		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
+
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
 }
