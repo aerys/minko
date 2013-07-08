@@ -127,9 +127,6 @@ namespace minko
 					updateColliders();
 
 				static
-					RenderingControllerPtr
-					getRootRenderingController(NodePtr);
-				static
 					Matrix4x4Ptr
 					fromBulletTransform(const btTransform&);
 				static
