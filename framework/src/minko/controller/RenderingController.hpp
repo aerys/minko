@@ -55,15 +55,6 @@ namespace minko
 			Signal<NodeSetPtr, NodePtr>::Slot			_surfaceAddedSlot;
 			Signal<NodeSetPtr, NodePtr>::Slot			_surfaceRemovedSlot;
 
-			/*
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerRemovedSlot;
-			*/
-
 		public:
 			static
 			Ptr
