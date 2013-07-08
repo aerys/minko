@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Pass.hpp"
 
+#include "minko/data/Container.hpp"
+
 using namespace minko::render;
 
 Pass::Pass(const std::string&				name,
