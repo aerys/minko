@@ -102,14 +102,14 @@ namespace minko
 			const BindingMap&
 			uniformBindings()
 			{
-				return _attributeBindings;
+				return _uniformBindings;
 			}
 
 			inline
 			const BindingMap&
 			stateBindings()
 			{
-				return _attributeBindings;
+				return _stateBindings;
 			}
 
 			inline
