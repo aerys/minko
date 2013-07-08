@@ -101,8 +101,8 @@ EffectParser::parse(const std::string&					filename,
 
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
-	parseDependencies(root, options);
 	parsePasses(root, options);
+	parseDependencies(root, options);
 	
 	if (_numDependencies == 0)
 		finalize();
@@ -245,6 +245,7 @@ void
 EffectParser::parseDependencies(Json::Value& root, file::Options::Ptr options)
 {
 	auto require = root.get("includes", 0);
+
 	if (require.isArray())
 	{
 		_numDependencies = require.size();
