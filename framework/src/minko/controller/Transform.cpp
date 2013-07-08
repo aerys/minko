@@ -302,12 +302,53 @@ Transform::RootTransform::updateTransforms()
 		auto parentId 					= _parentId[nodeId];
 
 		if (parentId == -1)
+		{
 			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
+			parentModelToWorldMatrix->_hasChanged = false;
+		}
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
-			_modelToWorld[childId]->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
+		{
+			auto modelToWorld = _modelToWorld[childId];
+
+			modelToWorld->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
+			modelToWorld->_hasChanged = false;
+		}
 
 		++nodeId;
+	}
+}
+
+void
+Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
+{
+	auto				targetNodeId	= _nodeToId[node];
+	auto				nodeId			= targetNodeId;
+	auto				dirtyRoot		= -1;
+	std::vector<uint>	path;
+
+	// find the "dirty" root and build the path to get back to the target node
+	while (nodeId >= 0)
+	{
+		if ((_transform[nodeId]->_hasChanged)
+			|| (nodeId != targetNodeId && _modelToWorld[nodeId]->_hasChanged))
+			dirtyRoot = nodeId;
+
+		path.push_back(nodeId);
+
+		nodeId = _parentId[nodeId];
+	}
+
+	// update that path starting from the dirty root
+	for (auto dirtyNodeId : path)
+	{
+		auto parentId		= _parentId[dirtyNodeId];
+		auto modelToWorld	= _modelToWorld[dirtyNodeId];
+
+		modelToWorld->copyFrom(_transform[dirtyNodeId]);
+		if (parentId != -1)
+			modelToWorld->append(_modelToWorld[parentId]);
+		modelToWorld->_hasChanged = false;
 	}
 }
 
