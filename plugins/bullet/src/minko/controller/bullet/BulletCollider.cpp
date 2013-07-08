@@ -37,7 +37,6 @@ bullet::PhysicsWorld::BulletCollider::BulletCollider():
 	_btMotionState(nullptr),
 	_btCollisionObject(nullptr)
 {
-
 }
 
 void
@@ -111,9 +110,6 @@ void
 {
 	btTransform btStartTransform;
 	toBulletTransform(collider->worldTransform(), btStartTransform);
-
-
-
 
 	btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
 	auto centerOfMassOffset	= collider->centerOfMassOffset();
