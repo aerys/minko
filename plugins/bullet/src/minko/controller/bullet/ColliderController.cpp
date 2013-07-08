@@ -20,7 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "ColliderController.hpp"
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
-#include <minko/controller/TransformController.hpp>
+#include <minko/scene/NodeSet.hpp>
+#include <minko/controller/Transform.hpp>
 #include <minko/controller/bullet/Collider.hpp>
 #include <minko/controller/bullet/PhysicsWorld.hpp>
 
@@ -37,8 +38,8 @@ bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
 	_physicsWorld(nullptr),
-	_targetTrfCtrl(nullptr),
-	_parentTrfCtrl(nullptr)
+	_targetTransform(nullptr),
+	_parentTransform(nullptr)
 {
 
 }
@@ -108,20 +109,20 @@ void
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
-	if (!target->hasController<TransformController>())
-		throw std::logic_error("A ColliderController's target must have TransformController.");
+	if (!target->hasController<Transform>())
+		throw std::logic_error("A ColliderController's target must have a Transform.");
 
-	_targetTrfCtrl	= target->controllers<TransformController>().front();
+	_targetTransform	= target->controller<Transform>();
 
-	_parentTrfCtrl	= nullptr;
+	_parentTransform	= nullptr;
 	Node::Ptr current	= target->parent();
 	do
 	{
 		if (current == nullptr)
 			break;
-		if (current->hasController<TransformController>())
+		if (current->hasController<Transform>())
 		{
-			_parentTrfCtrl	= current->controllers<TransformController>().front();
+			_parentTransform	= current->controller<Transform>();
 			break;
 		}
 		current	= current->parent();
@@ -129,8 +130,8 @@ void
 	while(current != nullptr && current != current->parent());
 
 	auto targetLocalToWorldMatrix = Matrix4x4::create()
-		->copyFrom(_targetTrfCtrl->transform())
-		->append(_targetTrfCtrl->modelToWorldMatrix());
+		->copyFrom(_targetTransform->transform())
+		->append(_targetTransform->modelToWorldMatrix());
 
 	_collider->initializeWorldTransform(targetLocalToWorldMatrix);
 
@@ -138,7 +139,14 @@ void
 	std::cout << "collider controller's target has been added\tto be added to physics world." << std::endl;
 #endif // DEBUG
 
-	_physicsWorld	= getRootPhysicsWorld(target->root());  
+	auto nodeSet	= NodeSet::create(NodeSet::AUTO);
+	nodeSet->select(target->root())
+		->descendants(true)
+		->hasController<bullet::PhysicsWorld>();
+	if (nodeSet->nodes().size() != 1)
+		throw std::logic_error("ColliderController requires exactly one PhysicsWorld controller among the descendants of its target node.");
+
+	_physicsWorld	= nodeSet->nodes().front()->controller<bullet::PhysicsWorld>();
 	_physicsWorld->addChild(_collider);
 }
 
@@ -150,19 +158,19 @@ void
 {
 	_physicsWorld->removeChild(_collider);
 	_physicsWorld	= nullptr;
-	_targetTrfCtrl	= nullptr;
-	_parentTrfCtrl	= nullptr;
+	_targetTransform	= nullptr;
+	_parentTransform	= nullptr;
 }
 
 void 
 	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
 {
 	auto targetTransform	= Matrix4x4::create(); // local-to-parent
-	if (_parentTrfCtrl != nullptr)
+	if (_parentTransform != nullptr)
 	{
 		auto parentToWorldInvTrf	= Matrix4x4::create()
-			->append(_parentTrfCtrl->transform())
-			->append(_parentTrfCtrl->modelToWorldMatrix())
+			->append(_parentTransform->transform())
+			->append(_parentTransform->modelToWorldMatrix())
 			->invert(); // parent's world-to-local
 
 		targetTransform
@@ -173,29 +181,5 @@ void
 		targetTransform
 			->copyFrom(collider->worldTransform());
 
-	_targetTrfCtrl->transform()->copyFrom(targetTransform);
-}
-
-/*static*/
-std::shared_ptr<bullet::PhysicsWorld>
-	bullet::ColliderController::getRootPhysicsWorld(Node::Ptr target)
-{
-	if (target == nullptr)
-		throw std::invalid_argument("target");
-
-	// get and count all PhysicsWorld controllers in the descendants of the target's root
-	auto nodeSet	= NodeSet::create(target->root())
-		->descendants(true)
-		->where([](NodePtr node)
-	{
-		return node->hasController<bullet::PhysicsWorld>();
-	});
-
-#ifdef DEBUG
-	std::cout << nodeSet->nodes().size() << " rendering controllers" << std::endl;
-#endif // DEBUG
-	if (nodeSet->nodes().size() != 1)
-		throw std::logic_error("ColliderController requires exactly one PhysicsWorld controller among the descendants of its target node.");
-
-	return nodeSet->nodes().front()->controllers<bullet::PhysicsWorld>().front();
+	_targetTransform->transform()->copyFrom(targetTransform);
 }
