@@ -11,8 +11,13 @@
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
 	"stateBindings"		: {
-		// nothing
+		"blendMode"				: "material/blendMode"
 	},
+	
+	"priority"		: 0,
+	"blendMode"		: ["one", "zero"],
+	"depthTest"		: [true, "less"],
+	
 	"passes"	: [{
 		"vertexShader"	: "
 			attribute vec3 position;
