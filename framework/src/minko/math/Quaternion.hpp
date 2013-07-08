@@ -33,6 +33,7 @@ namespace minko
 
 			typedef std::shared_ptr<Vector3>	Vector3Ptr;
 			typedef std::shared_ptr<Matrix4x4>	Matrix4x4Ptr;
+
 		private:
 			float _i;
 			float _j;
@@ -49,6 +50,13 @@ namespace minko
 				float r = 0.0f)
 			{
 				return std::shared_ptr<Quaternion>(new Quaternion(i, j, k, r));
+			}
+
+			inline
+				Ptr
+				copyFrom(Ptr value)
+			{
+				return setTo(value->x(), value->y(), value->z(), value->w());
 			}
 
 			inline
