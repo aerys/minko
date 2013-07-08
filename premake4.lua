@@ -10,11 +10,8 @@ include 'framework'
 -- plugins
 include 'plugins/jpeg'
 include 'plugins/png'
-<<<<<<< HEAD
 include 'plugins/bullet'
-include 'plugins/mk'
-=======
->>>>>>> 8476c1b... Remove mk from premake file in master branch
+--include 'plugins/mk'
 
 newaction {
 	trigger = "copyDLLs",

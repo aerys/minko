@@ -33,13 +33,17 @@ using namespace minko::controller;
 bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	AbstractController(),
 	_collider(collider),
+	_physicsWorld(nullptr),
+	_targetTransform(nullptr),
+	_parentTransform(nullptr),
+	_parents(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_physicsWorld(nullptr),
-	_targetTransform(nullptr),
-	_parentTransform(nullptr)
+	_transformChangedSlot(nullptr),
+	_parentAddedSlot(nullptr),
+	_parentRemovedSlot(nullptr)
 {
 
 }
@@ -114,20 +118,26 @@ void
 
 	_targetTransform	= target->controller<Transform>();
 
-	_parentTransform	= nullptr;
-	Node::Ptr current	= target->parent();
-	do
-	{
-		if (current == nullptr)
-			break;
-		if (current->hasController<Transform>())
-		{
-			_parentTransform	= current->controller<Transform>();
-			break;
-		}
-		current	= current->parent();
-	}
-	while(current != nullptr && current != current->parent());
+	_parents			= NodeSet::create(NodeSet::AUTO)
+		->select(target)
+		->ancestors(false)
+		->hasController<Transform>();
+
+	_parentAddedSlot	= _parents->nodeAdded()->connect(std::bind(
+		&bullet::ColliderController::updateParentTransform,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
+
+	_parentRemovedSlot	= _parents->nodeAdded()->connect(std::bind(
+		&bullet::ColliderController::updateParentTransform,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
+
+	updateParentTransform(_parents);
 
 	auto targetLocalToWorldMatrix = Matrix4x4::create()
 		->copyFrom(_targetTransform->transform())
@@ -157,9 +167,27 @@ void
 	Node::Ptr parent)
 {
 	_physicsWorld->removeChild(_collider);
-	_physicsWorld	= nullptr;
+	_physicsWorld		= nullptr;
 	_targetTransform	= nullptr;
 	_parentTransform	= nullptr;
+	_parents			= nullptr;
+
+	_parentAddedSlot	= nullptr;
+	_parentRemovedSlot	= nullptr;
+}
+
+void
+	bullet::ColliderController::updateParentTransform(NodeSet::Ptr parents, Node::Ptr)
+{
+	_parentTransform	= nullptr;
+	if (parents == nullptr || parents->nodes().empty())
+		return;
+
+	auto firstParent	= parents->nodes().front();
+	if (!firstParent->hasController<Transform>())
+		throw std::logic_error("All target's parents are expected to have a Transform.");
+
+	_parentTransform	= firstParent->controller<Transform>();
 }
 
 void 
