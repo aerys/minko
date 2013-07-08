@@ -84,6 +84,13 @@ namespace minko
 				}
 
 				inline
+					bool
+					isStatic() const
+				{
+					return _mass < 1e-6f;
+				}
+
+				inline
 					Matrix4x4Ptr
 					centerOfMassOffset() const
 				{
