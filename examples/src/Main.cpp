@@ -16,6 +16,7 @@ RenderingController::Ptr	renderingController;
 bullet::PhysicsWorld::Ptr	physicsWorld;
 
 auto mesh = scene::Node::create("mesh");
+auto staticMesh = scene::Node::create("staticMesh");
 auto group = scene::Node::create("group");
 
 void
@@ -113,7 +114,7 @@ int main(int argc, char** argv)
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(TransformController::create());
-		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.8f, -3.f);
 		mesh->addController(SurfaceController::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -124,12 +125,27 @@ int main(int argc, char** argv)
 			assets->effect("texture")
 			));
 
-		auto shape		= bullet::BoxShape::create(1.0f,50.0f,30.0f);
+		staticMesh->addController(TransformController::create());
+		staticMesh->controller<TransformController>()->transform()->appendTranslation(0.7f, -0.8f, -3.f);
+				staticMesh->addController(SurfaceController::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+			->set("material/diffuse/rgba",			color)
+			->set("transform/worldToScreenMatrix",	view)
+			->set("light/direction",				lightDirection)
+			->set("material/diffuse/map",			assets->texture("textures/box3.png")),
+			assets->effect("texture")
+			));
+
+		auto shape		= bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
 		auto collider	= bullet::Collider::create(10.0f, shape);
 		mesh->addController(bullet::ColliderController::create(collider));
 
-		group->addChild(mesh);
+		auto staticCollider	= bullet::Collider::create(0.0f, shape);
+		staticMesh->addController(bullet::ColliderController::create(staticCollider));
 
+		group->addChild(mesh);
+		group->addChild(staticMesh);
 	});
 
 	try
