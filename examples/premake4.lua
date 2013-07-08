@@ -3,36 +3,21 @@ project "minko-examples"
   kind "ConsoleApp"
   language "C++"
   links {
-<<<<<<< HEAD
 	"minko-jpeg",
 	"minko-png",
 	"minko-bullet",
 	"minko-framework"
-	"minko-mk"
-=======
-    "minko-jpeg",
-    "minko-png",
-    "minko-framework"
->>>>>>> 21ff4ee... Add glfw3 dependency on Linux and Mac OS X.
+	--"minko-mk"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
     "src",
-<<<<<<< HEAD
 	"lib/glfw/include",
-=======
-    "lib/glfw/include",
->>>>>>> 21ff4ee... Add glfw3 dependency on Linux and Mac OS X.
     "../framework/src",
-<<<<<<< HEAD
 	"../plugins/jpeg/src",
 	"../plugins/png/src",
 	"../plugins/bullet/src"
-    "../plugins/mk/src"
-=======
-    "../plugins/jpeg/src",
-    "../plugins/png/src"
->>>>>>> 8476c1b... Remove mk from premake file in master branch
+    --"../plugins/mk/src"
   }
 
   configuration { "debug"}
@@ -47,22 +32,22 @@ project "minko-examples"
 
   -- linux
   configuration { "linux" }
-    links { "GL", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+    links { "GL", "GLU", "GLEW", "m" }
     buildoptions "-std=c++0x"
     linkoptions "-std=c++0x"
 
   -- windows
   configuration { "windows", "x32" }
     links { "OpenGL32", "glfw3dll", "glew32" }
-    libdirs {
-      "lib/glfw/bin/win32",
-      "../framework/lib/glew/bin/win32"
-    }
+  libdirs {
+    "lib/glfw/bin/win32",
+    "../framework/lib/glew/bin/win32"
+  }
 
   -- macos
   configuration { "debug", "macosx" }
     buildoptions { "-std=c++11", "-stdlib=libc++" }
     linkoptions { "-std=c++11", "-stdlib=libc++" }
-    links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
     libdirs { "/opt/local/lib/" }
+    links { "GL", "GLU", "GLEW", "m" }
     includedirs { "/opt/local/include/" }
