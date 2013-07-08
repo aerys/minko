@@ -12,7 +12,7 @@
 		"lightDirection"		: "light/direction"
 	},
 	"stateBindings"	: {
-		"blendMode"				: "material/blendMode",
+		"blendMode"				: "material/blendMode"
 	},
 	
 	"priority"		: 0,
