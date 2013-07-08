@@ -1,6 +1,6 @@
 // directional light effect
 {
-	"name"		: "directional light",
+	"name"				: "directional light",
 	"attributeBindings"	: {
 		"position"				: "geometry/vertex/attribute/position",
 		"normal"				: "geometry/vertex/attribute/normal"
@@ -12,12 +12,16 @@
 		"lightDirection"		: "light/direction"
 	},
 	"stateBindings"	: {
-		"blending"	: "material/blending",
-		"depthMask"	: "material/depthMask",
-		"depthFunc"	: "material/depthFunc"
+		"blendMode"				: "material/blendMode",
 	},
-	"includes"	: [ "Phong.glsl" ],
-	"passes"	: [{
+	
+	"priority"		: 0,
+	"blendMode"		: ["one", "zero"],
+	"depthTest"		: [true, "less"],
+	
+	"includes"		: [ "Phong.glsl" ],
+	
+	"passes"		: [{
 		"vertexShader"	: "
 			attribute vec3 position;
 			attribute vec3 normal;
