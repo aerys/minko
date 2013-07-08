@@ -16,12 +16,11 @@
 		"blendMode"				: "material/blendMode"
 	},
 	
-	"priority"		: 42,
+	"priority"		: 0,
 	"blendMode"		: ["one", "zero"],
 	"depthTest"		: [true, "less"],
 	
-	"passes"	: [
-	{	
+	"passes"	: [{	
 		"vertexShader"	: "
 			attribute vec3 position;
 
