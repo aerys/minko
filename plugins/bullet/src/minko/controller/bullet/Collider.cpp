@@ -42,16 +42,6 @@ _mass(mass),
 }
 
 void
-	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr transform)
-{
-	_worldTransform
-		->copyFrom(_startScaleShearCorrection)
-		->append(transform);
-
-	transformChanged()->execute(shared_from_this());
-}
-
-void
 	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr transform)
 {
 	// decompose the specified transform into its rotational and translational components
@@ -60,12 +50,20 @@ void
 	auto translation	= transform->translation();
 	_worldTransform->initialize(rotation, translation);
 
-	// record the starting scale/shear corrective term
-	auto invColliderTransform	= Matrix4x4::create()
+	// record the corrective term that keeps the
+	// scale/shear lost by the collider's world transform
+	_startScaleShearCorrection	= Matrix4x4::create()
 		->copyFrom(_worldTransform)
-		->invert();
+		->invert()
+		->append(transform);
+}
 
-	_startScaleShearCorrection
+void
+	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr transform)
+{
+	_worldTransform
 		->copyFrom(transform)
-		->append(invColliderTransform);
+		->append(_startScaleShearCorrection);
+
+	transformChanged()->execute(shared_from_this());
 }
