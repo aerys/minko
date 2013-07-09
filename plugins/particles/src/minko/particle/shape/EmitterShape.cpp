@@ -4,7 +4,6 @@
 using namespace minko::particle;
 using namespace minko::particle::shape;
 
-inline
 void
 EmitterShape::initPositionAndDirection(ParticleData& particle) const
 {
@@ -12,7 +11,6 @@ EmitterShape::initPositionAndDirection(ParticleData& particle) const
 	initDirection(particle);
 }
 
-inline
 void
 EmitterShape::initDirection(ParticleData& particle) const
 {
