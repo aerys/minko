@@ -346,6 +346,9 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 		nodeId = _parentId[nodeId];
 	}
 
+	for (uint i=0; i<_transform.size(); ++i)
+		std::cout << "det3x3[" << i << "] = " << _transform[i]->determinant3x3() << std::endl;
+
 	// update that path starting from the dirty root
 	for (int i = path.size()-1; i >= 0; --i)
 	//for (auto dirtyNodeId : path)
