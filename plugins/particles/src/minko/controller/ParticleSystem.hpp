@@ -36,10 +36,15 @@ namespace minko
 			typedef std::shared_ptr<ParticleSystem>	Ptr;
 
 		private:
+			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
 			typedef std::shared_ptr<AbstractController>							AbsCtrlPtr;
 			typedef std::shared_ptr<RenderingController>						RenderingCtrlPtr;
-			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
+			
+			typedef std::shared_ptr<Surface>									SurfacePtr;
+			typedef std::shared_ptr<geometry::Geometry>							GeometryPtr;
+			typedef std::shared_ptr<data::Provider>								ProviderPtr;
+			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
 			typedef std::shared_ptr<particle::shape::EmitterShape>				ShapePtr;
 			typedef std::shared_ptr<particle::sampler::Sampler<float> >			FloatSamplerPtr;
@@ -63,42 +68,41 @@ namespace minko
 			};	
 
 		private:
-			Signal<Ptr>::Slot							_enterFrameSlot;
-			Signal<Ptr>::Slot							_exitFrameSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot			_rendererAddedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot			_rendererRemovedSlot;
+			std::map<RenderingCtrlPtr, Signal<RenderingCtrlPtr>::Slot>	_enterFrameSlots;
+			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodeSetPtr, NodePtr>::Slot							_rendererAddedSlot;
+			Signal<NodeSetPtr, NodePtr>::Slot							_rendererRemovedSlot;
 			
-			NodeSetPtr									_renderers;
+			NodeSetPtr													_renderers;
 
-			unsigned int 								_particlesCountLimit;
-			unsigned int								_maxParticlesCount;
-			unsigned int								_liveParticlesCount;
-			std::vector<IInitializerPtr> 				_initializers;
-			std::vector<IUpdaterPtr> 					_updaters;	
-			std::vector<particle::ParticleData>			_particles;
-			std::vector<unsigned int>					_particleOrder;
-			std::vector<float>							_particleDistanceToCamera;
+			unsigned int 												_particlesCountLimit;
+			unsigned int												_maxParticlesCount;
+			unsigned int												_liveParticlesCount;
+			std::vector<IInitializerPtr> 								_initializers;
+			std::vector<IUpdaterPtr> 									_updaters;	
+			std::vector<particle::ParticleData>							_particles;
+			std::vector<unsigned int>									_particleOrder;
+			std::vector<float>											_particleDistanceToCamera;
 
-			bool										_isInWorldSpace;
-			float 										_localToWorld[16];
-			bool										_isZSorted;
-			float 										_cameraCoords[3];
-			ParticleDistanceToCameraComparison			_comparisonObject;
-			bool										_useOldPosition;
+			bool														_isInWorldSpace;
+			float 														_localToWorld[16];
+			bool														_isZSorted;
+			float 														_cameraCoords[3];
+			ParticleDistanceToCameraComparison							_comparisonObject;
+			bool														_useOldPosition;
 
-			float										_rate;
-			FloatSamplerPtr								_lifetime;
-			ShapePtr									_shape;
-			particle::StartDirection					_startDirection;
-			FloatSamplerPtr 							_startVelocity;
+			float														_rate;
+			FloatSamplerPtr												_lifetime;
+			ShapePtr													_shape;
+			particle::StartDirection									_startDirection;
+			FloatSamplerPtr 											_startVelocity;
+			
+			float														_createTimer;
 
-			float										_createTimer;
-
-			int											_format;
-			unsigned int								_floatsPerVertex;
-			std::vector<float>							_vertexStream;
+			int															_format;
+			unsigned int												_floatsPerVertex;
+			std::vector<float>											_vertexStream;
 			
 		public:
 			static
@@ -333,6 +337,9 @@ namespace minko
 
 			void
 			rendererRemovedHandler(NodeSetPtr renderers, NodePtr rendererNode);
+
+			void
+			enterFrameHandler(RenderingCtrlPtr renderer);
 		};
 	}
 }
