@@ -19,6 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ParticleSystem.hpp"
 
+#include "minko/controller/RenderingController.hpp"
+
+#include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
+
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/StartDirection.hpp"
 
@@ -42,7 +47,8 @@ ParticleSystem::ParticleSystem(float			rate,
 							   ShapePtr			shape,
 							   StartDirection	startDirection,
 							   FloatSamplerPtr	startVelocity)
-	: _particlesCountLimit	(16000),
+	: _renderers			(scene::NodeSet::create(scene::NodeSet::Mode::AUTO)),
+	  _particlesCountLimit	(16000),
 	  _maxParticlesCount	(0),
 	  _liveParticlesCount	(0),
 	  _particles			(),
@@ -65,6 +71,76 @@ ParticleSystem::ParticleSystem(float			rate,
 
 	updateMaxParticlesCount();
 }
+
+void
+ParticleSystem::initialize()
+{
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&ParticleSystem::targetAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));	
+
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&ParticleSystem::targetRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+	
+	_renderers->root()
+		->descendants(true)
+		->hasController<RenderingController>();
+	_rendererAddedSlot = _renderers->nodeAdded()->connect(std::bind(
+		&ParticleSystem::rendererAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+	_rendererRemovedSlot = _renderers->nodeRemoved()->connect(std::bind(
+		&ParticleSystem::rendererRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+}
+
+void
+ParticleSystem::targetAddedHandler(AbsCtrlPtr	ctrl,
+								   NodePtr 		target)
+{
+	std::cout << "Particle system added to node" << std::endl;
+}
+
+void
+ParticleSystem::targetRemovedHandler(AbsCtrlPtr ctrl,
+									 NodePtr	target)
+{
+	std::cout << "Particle system removed from node" << std::endl;
+}
+
+
+void
+ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
+									 NodePtr		rendererNode)
+{
+	for (auto renderer : rendererNode->controllers<RenderingController>())
+	{
+	std::cout << "Particle system linked to renderer" << std::endl;
+	}
+}
+
+void
+ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
+									   NodePtr	rendererNode)
+{
+	for (auto renderer : rendererNode->controllers<RenderingController>())
+	{
+	std::cout << "Particle system unlinked from renderer" << std::endl;
+	}
+}
+
 
 void
 ParticleSystem::add(ModifierPtr	modifier)

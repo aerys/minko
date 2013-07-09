@@ -29,17 +29,23 @@ namespace minko
 	namespace controller
 	{
 		class ParticleSystem :
-			public AbstractController
+			public AbstractController,
+			public std::enable_shared_from_this<ParticleSystem>
 		{
 		public:
 			typedef std::shared_ptr<ParticleSystem>	Ptr;
 
 		private:
-			typedef std::shared_ptr<particle::shape::EmitterShape>							ShapePtr;
-			typedef std::shared_ptr<particle::sampler::Sampler<float> >						FloatSamplerPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleInitializer>				IInitializerPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleUpdater>					IUpdaterPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleModifier>					ModifierPtr;	
+			typedef std::shared_ptr<scene::Node>								NodePtr;
+			typedef std::shared_ptr<AbstractController>							AbsCtrlPtr;
+			typedef std::shared_ptr<RenderingController>						RenderingCtrlPtr;
+			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
+
+			typedef std::shared_ptr<particle::shape::EmitterShape>				ShapePtr;
+			typedef std::shared_ptr<particle::sampler::Sampler<float> >			FloatSamplerPtr;
+			typedef std::shared_ptr<particle::modifier::IParticleInitializer>	IInitializerPtr;
+			typedef std::shared_ptr<particle::modifier::IParticleUpdater>		IUpdaterPtr;
+			typedef std::shared_ptr<particle::modifier::IParticleModifier>		ModifierPtr;	
 
 		private:
 			class ParticleDistanceToCameraComparison
@@ -51,39 +57,49 @@ namespace minko
 				bool
 				operator() (unsigned int p1Index, unsigned int p2Index)
 				{
-					return system->getParticleSquaredDistanceToCamera(p1Index) > system->getParticleSquaredDistanceToCamera(p2Index);
+					return system->getParticleSquaredDistanceToCamera(p1Index)
+						 > system->getParticleSquaredDistanceToCamera(p2Index);
 				};
 			};	
 
 		private:
-			unsigned int 													_particlesCountLimit;
-			unsigned int													_maxParticlesCount;
-			unsigned int													_liveParticlesCount;
-			std::vector<IInitializerPtr> 									_initializers;
-			std::vector<IUpdaterPtr> 										_updaters;	
-			std::vector<particle::ParticleData>								_particles;
-			std::vector<unsigned int>										_particleOrder;
-			std::vector<float>												_particleDistanceToCamera;
+			Signal<Ptr>::Slot							_enterFrameSlot;
+			Signal<Ptr>::Slot							_exitFrameSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
+			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
+			Signal<NodeSetPtr, NodePtr>::Slot			_rendererAddedSlot;
+			Signal<NodeSetPtr, NodePtr>::Slot			_rendererRemovedSlot;
+			
+			NodeSetPtr									_renderers;
 
-			bool															_isInWorldSpace;
-			float 															_localToWorld[16];
-			bool															_isZSorted;
-			float 															_cameraCoords[3];
-			ParticleDistanceToCameraComparison								_comparisonObject;
-			bool															_useOldPosition;
+			unsigned int 								_particlesCountLimit;
+			unsigned int								_maxParticlesCount;
+			unsigned int								_liveParticlesCount;
+			std::vector<IInitializerPtr> 				_initializers;
+			std::vector<IUpdaterPtr> 					_updaters;	
+			std::vector<particle::ParticleData>			_particles;
+			std::vector<unsigned int>					_particleOrder;
+			std::vector<float>							_particleDistanceToCamera;
 
-			float															_rate;
-			FloatSamplerPtr													_lifetime;
-			ShapePtr														_shape;
-			particle::StartDirection										_startDirection;
-			FloatSamplerPtr 												_startVelocity;
+			bool										_isInWorldSpace;
+			float 										_localToWorld[16];
+			bool										_isZSorted;
+			float 										_cameraCoords[3];
+			ParticleDistanceToCameraComparison			_comparisonObject;
+			bool										_useOldPosition;
 
-			float															_createTimer;
+			float										_rate;
+			FloatSamplerPtr								_lifetime;
+			ShapePtr									_shape;
+			particle::StartDirection					_startDirection;
+			FloatSamplerPtr 							_startVelocity;
 
-			int																_format;
-			unsigned int													_floatsPerVertex;
-			std::vector<float>												_vertexStream;
+			float										_createTimer;
 
+			int											_format;
+			unsigned int								_floatsPerVertex;
+			std::vector<float>							_vertexStream;
+			
 		public:
 			static
 			Ptr
@@ -99,9 +115,11 @@ namespace minko
 																				 startDirection,
 																				 startVelocity));
 
+				system->initialize();
+
 				return system;
 			};
-
+			
 			inline
 			void 
 			rate(float value)
@@ -300,6 +318,21 @@ namespace minko
 						   ShapePtr					shape,
 						   particle::StartDirection	startDirection,
 						   FloatSamplerPtr 			startVelocity);
+
+			void
+			initialize();
+
+			void
+			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+
+			void
+			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			
+			void
+			rendererAddedHandler(NodeSetPtr renderers, NodePtr rendererNode);
+
+			void
+			rendererRemovedHandler(NodeSetPtr renderers, NodePtr rendererNode);
 		};
 	}
 }
