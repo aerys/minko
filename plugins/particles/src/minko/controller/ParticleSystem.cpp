@@ -111,6 +111,8 @@ ParticleSystem::targetAddedHandler(AbsCtrlPtr	ctrl,
 								   NodePtr 		target)
 {
 	std::cout << "Particle system added to node" << std::endl;
+
+	_renderers->select(targets().begin(), targets().end())->update();
 }
 
 void
@@ -118,29 +120,44 @@ ParticleSystem::targetRemovedHandler(AbsCtrlPtr ctrl,
 									 NodePtr	target)
 {
 	std::cout << "Particle system removed from node" << std::endl;
+
+	_renderers->select(targets().begin(), targets().end())->update();
 }
 
 
 void
 ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
-									 NodePtr		rendererNode)
+									 NodePtr	rendererNode)
 {
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
-	std::cout << "Particle system linked to renderer" << std::endl;
+		std::cout << "Particle system linked to renderer" << std::endl;
+
+		_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
+			&ParticleSystem::enterFrameHandler,
+			shared_from_this(),
+			std::placeholders::_1));
 	}
 }
 
 void
 ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
-									   NodePtr	rendererNode)
+									   NodePtr		rendererNode)
 {
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
-	std::cout << "Particle system unlinked from renderer" << std::endl;
+		std::cout << "Particle system unlinked from renderer" << std::endl;
+
+		_enterFrameSlots.erase(renderer); 
 	}
 }
 
+
+void
+ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
+{
+	std::cout << "Enter frame : update particle system" << std::endl;
+}
 
 void
 ParticleSystem::add(ModifierPtr	modifier)
