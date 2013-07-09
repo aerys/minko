@@ -49,6 +49,10 @@ namespace minko
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
+				Vector3Ptr		_linearVelocity;
+				Vector3Ptr		_angularVelocity;
+				float			_restitution;
+
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 
 			public:
@@ -106,8 +110,49 @@ namespace minko
 
 				void
 					initializeWorldTransform(Matrix4x4Ptr);
+
 				void
 					updateColliderWorldTransform(Matrix4x4Ptr);
+				
+				inline
+					Vector3Ptr
+					linearVelocity() const
+				{
+					return _linearVelocity;
+				}
+
+				inline
+					Vector3Ptr
+					angularVelocity() const
+				{
+					return _angularVelocity;
+				}
+
+				inline
+					float
+					restitution() const
+				{
+					return _restitution;
+				}
+
+				void
+					setLinearVelocity(Vector3Ptr);
+
+				void
+					setAngularVelocity(Vector3Ptr);
+
+				inline
+				void
+					setRestitution(float value)
+				{
+					_restitution	= value;
+				}
+
+				void
+					setLinearFactor(Vector3Ptr);
+
+				void
+					setAngularFactor(Vector3Ptr);
 
 				inline
 					Signal<Ptr>::Ptr
@@ -121,8 +166,6 @@ namespace minko
 					AbsShapePtr, 
 					Vector3Ptr		inertia				= nullptr,
 					Matrix4x4Ptr	centerOfMassOffset	= nullptr);
-
-
 			};
 		}
 	}
