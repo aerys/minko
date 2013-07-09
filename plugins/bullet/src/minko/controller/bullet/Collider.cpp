@@ -35,6 +35,9 @@ _mass(mass),
 	_startScaleShearCorrection(Matrix4x4::create()),
 	_shape(shape),
 	_inertia(inertia),
+	_linearVelocity(nullptr),
+	_angularVelocity(nullptr),
+	_restitution(-1.0f),
 	_transformChanged(Signal<Ptr>::create())
 {
 	_worldTransform->identity();
@@ -44,6 +47,8 @@ _mass(mass),
 void
 	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
+	std::cout << "initializeWorldTransform with\n\t" << std::to_string(modelToWorldMatrix) << std::endl;
+
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
 	auto rotation		= modelToWorldMatrix->rotation();
@@ -66,4 +71,32 @@ void
 		->append(_startScaleShearCorrection);
 
 	transformChanged()->execute(shared_from_this());
+}
+
+void
+	bullet::Collider::setLinearVelocity(Vector3::Ptr value)
+{
+	if (_linearVelocity == nullptr)
+		_linearVelocity	= Vector3::create()->copyFrom(value);
+	else
+		_linearVelocity->copyFrom(value);
+}
+
+void
+	bullet::Collider::setAngularVelocity(Vector3::Ptr value)
+{
+	if (_angularVelocity == nullptr)
+		_angularVelocity	= Vector3::create()->copyFrom(value);
+	else
+		_angularVelocity->copyFrom(value);
+}
+
+void
+	bullet::Collider::setLinearFactor(Vector3::Ptr value)
+{
+}
+
+void
+	bullet::Collider::setAngularFactor(Vector3::Ptr value)
+{
 }
