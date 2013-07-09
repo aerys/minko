@@ -3,6 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoParticles.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -11,6 +12,7 @@
 using namespace minko::controller;
 using namespace minko::math;
 
+ParticleSystem::Ptr particleSystem;
 RenderingController::Ptr renderingController;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
@@ -103,7 +105,7 @@ int main(int argc, char** argv)
 		mesh->addController(Transform::create());
 		mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(Surface::create(
-			assets->geometry("sphere"),
+			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material/blending",				render::Blending::Mode::ALPHA)
 				->set("material/depthFunc",				render::CompareMode::LESS)
@@ -115,6 +117,14 @@ int main(int argc, char** argv)
 			assets->effect("basic")
 		));
 		
+		particleSystem = ParticleSystem::create(100,
+			particle::sampler::Constant<float>::create(2.),
+			particle::shape::Sphere::create(5.),
+			particle::StartDirection::UP,
+			particle::sampler::Constant<float>::create(2.));
+
+		mesh->addController(particleSystem);
+
 		group->addChild(mesh);
 	});
 
