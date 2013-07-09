@@ -146,6 +146,12 @@ Matrix4x4::Ptr
 }
 
 Matrix4x4::Ptr
+	Matrix4x4::initialize(Quaternion::Ptr rotation, Vector3::Ptr translation)
+{
+	return copyFrom(rotation->toMatrix())->appendTranslation(translation->x(), translation->y(), translation->z());
+}
+
+Matrix4x4::Ptr
 	Matrix4x4::identity()
 {
 	return initialize(
@@ -359,6 +365,18 @@ Matrix4x4::Ptr
 }
 
 Matrix4x4::Ptr
+	Matrix4x4::prepend(Quaternion::Ptr rotation)
+{
+	return prepend(rotation->toMatrix());
+}
+
+Matrix4x4::Ptr
+	Matrix4x4::append(Quaternion::Ptr rotation)
+{
+	return append(rotation->toMatrix());
+}
+
+Matrix4x4::Ptr
 	Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
 {
 	float xy2 	= 2.f * axis->x() * axis->y();
@@ -458,90 +476,13 @@ Matrix4x4::Ptr
 Quaternion::Ptr
 	Matrix4x4::rotation(Quaternion::Ptr output) const
 {
-	float quaternion[4]	= { 1.0f, 0.0f, 0.0f, 0.0f }; // { i, j, k, r }
-
-	// "From Quaternion to Matrix and Back" by JMP van Warenen
-	uint k0		= 2;
-	uint k1		= 3;
-	uint k2		= 0;
-	uint k3		= 1;
-	float s0	= -1.0f;
-	float s1	= -1.0f;
-	float s2	=  1.0f;
-
-	if (_m[0] + _m[5] + _m[10] > 0.0f)
-	{ 
-		k0	= 3; 
-		k1	= 2; 
-		k2	= 1; 
-		k3	= 0; 
-		s0	= 1.0f; 
-		s1	= 1.0f; 
-		s2	= 1.0f; 
-	} 
-	else if (_m[0] > _m[5] && _m[0] > _m[10]) 
-	{ 
-		k0	= 0; 
-		k1	= 1; 
-		k2	= 2; 
-		k3	= 3; 
-		s0	=  1.0f; 
-		s1	= -1.0f; 
-		s2	= -1.0f; 
-	} 
-	else if (_m[5] > _m[10]) 
-	{ 
-		k0	= 1; 
-		k1	= 0; 
-		k2	= 3; 
-		k3	= 2; 
-		s0	= -1.0f; 
-		s1	=  1.0f; 
-		s2	= -1.0f; 
-	}
-
-	float t	= s0*_m[0] + s1*_m[5] + s2*_m[10] + 1.0f;
-	float s	= 0.5f / sqrtf(t);
-	quaternion[k0]	= s * t;
-	quaternion[k1]	= s * (_m[1] - s2*_m[4]);
-	quaternion[k2]	= s * (_m[8] - s1*_m[2]);
-	quaternion[k3]	= s * (_m[6] - s0*_m[9]);
-
-	return output == 0
-		? Quaternion::create(quaternion[0], quaternion[1], quaternion[2], quaternion[3])
-		: output->setTo(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+	return Quaternion::create()->fromMatrix(shared_from_this());
 }
 
 Vector3::Ptr
 	Matrix4x4::translation(Vector3::Ptr output) const
 {
 	return output == 0 ? Vector3::create(_m[3], _m[7], _m[11]) : output->setTo(_m[3], _m[7], _m[11]);
-}
-
-Matrix4x4::Ptr
-	Matrix4x4::initialize(Quaternion::Ptr rotation, Vector3::Ptr translation)
-{
-	float qx	= rotation->x();
-	float qy	= rotation->y();
-	float qz	= rotation->z();
-	float qw	= rotation->w();
-	float qxx2	= qx*qx*2.0f;
-	float qxy2	= qx*qy*2.0f;
-	float qxz2	= qx*qz*2.0f;
-	float qxw2	= qx*qw*2.0f;
-	float qyy2	= qy*qy*2.0f;
-	float qyz2	= qy*qz*2.0f;
-	float qyw2	= qy*qw*2.0f;
-	float qzz2	= qz*qz*2.0f;
-	float qzw2	= qz*qw*2.0f;
-	float qww2	= qw*qw*2.0f;
-
-	return initialize(
-		1.0f - qyy2 - qzz2,	qxy2 + qzw2,		qxz2 - qyw2,		translation->x(),
-		qxy2 - qzw2,		1.0f - qxx2 - qzz2,	qyz2 + qxw2,		translation->y(),
-		qxz2 + qyw2,		qyz2 - qxw2,		1.0f - qxx2 - qyy2,	translation->z(),
-		0.0f,				0.0f,				0.0f,				1.0f
-		);
 }
 
 Matrix4x4::Ptr

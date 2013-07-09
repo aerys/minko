@@ -67,11 +67,89 @@ fclose(fp);
 delete[] pixels;
 }*/
 
+bool testQuaternion(uint ax, float ang)
+{
+	Vector3::Ptr	axis		= nullptr;
+	Matrix4x4::Ptr	refMatrix	= Matrix4x4::create()->identity();
+	switch(ax)
+	{
+	case 0:
+		axis = Vector3::xAxis();
+		refMatrix->appendRotationX(ang);
+		break;
+
+	case 1:
+		axis = Vector3::yAxis();
+		refMatrix->appendRotationY(ang);
+		break;
+
+	default:
+		axis = Vector3::zAxis();
+		refMatrix->appendRotationZ(ang);
+		break;
+	}
+
+	if (ax > 2)
+	{
+		axis = Vector3::create(rand(), rand(), rand())->normalize();
+	}
+
+	Quaternion::Ptr	quat		= Quaternion::create()->initialize(axis, ang);
+	Matrix4x4::Ptr	quatMatrix	= quat->toMatrix();
+	Quaternion::Ptr	quat2		= quatMatrix->rotation();
+	Matrix4x4::Ptr	quatMatrix2	= quat2->toMatrix();
+
+	std::cout << "axis = " << axis->x() << ", " << axis->y() << ", " << axis->z() << "\tang = " << ang 
+		<< "\n\t- from quat\t= " << std::to_string(quatMatrix) << "\n\t- rot\t= " << std::to_string(refMatrix)
+		<< std::endl;
+
+
+
+	std::cout << "\t-- quat  = " << quat->i() << ", " << quat->j() << ", " << quat->k() << " | " << quat->r() << std::endl;
+	std::cout << "\t-- quat2 = " << quat2->i() << ", " << quat2->j() << ", " << quat2->k() << " | " << quat2->r() << std::endl;
+
+	if (ax > 2)
+	{
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix->values()[i] - quatMatrix2->values()[i]) > 1e-6f)
+				return false;
+	}
+	else
+	{
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix->values()[i] - refMatrix->values()[i]) > 1e-6f)
+				return false;
+
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix2->values()[i] - refMatrix->values()[i]) > 1e-6f)
+				return false;
+	}
+	/*
+	if (fabsf(quat->i() - quatFromMat->i()) > 1e-6f 
+	|| fabsf(quat->j() - quatFromMat->j()) > 1e-6f
+	|| fabsf(quat->k() - quatFromMat->k()) > 1e-6f )
+	return false;
+	*/
+
+	return true;
+}
+
 int main(int argc, char** argv)
 {
 	glfwInit();
 	auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
 	glfwMakeContextCurrent(window);
+
+	/*
+	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
+	{
+		for (uint axis = 0; axis <= 3; ++axis)
+		{
+			if (!testQuaternion(axis, ang))
+				throw std::logic_error("ouch");
+		}
+	}
+	*/
 
 	auto context = render::OpenGLES2Context::create();
 
@@ -97,8 +175,8 @@ int main(int argc, char** argv)
 		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
-		//group->addController(Transform::create());
-		//group->controller<Transform>()->transform()->appendRotationY(0.1f);
+		group->addController(Transform::create());
+		group->controller<Transform>()->transform()->appendRotationY(10.0f*PI/180.0f);
 
 		root->addChild(group)->addChild(camera);
 
@@ -130,7 +208,7 @@ int main(int argc, char** argv)
 
 		staticMesh->addController(Transform::create());
 		staticMesh->controller<Transform>()->transform()->appendTranslation(0.7f, -0.8f, -3.f);
-				staticMesh->addController(Surface::create(
+		staticMesh->addController(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
 			->set("material/diffuse/rgba",			color)
@@ -177,7 +255,7 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
 	{
-		mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+		//mesh->controller<Transform>()->transform()->prependRotationY(.01f);
 
 		renderingController->render();
 

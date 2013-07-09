@@ -347,8 +347,10 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	}
 
 	// update that path starting from the dirty root
-	for (auto dirtyNodeId : path)
+	for (int i = path.size()-1; i >= 0; --i)
+	//for (auto dirtyNodeId : path)
 	{
+		auto dirtyNodeId	= path[i];
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 

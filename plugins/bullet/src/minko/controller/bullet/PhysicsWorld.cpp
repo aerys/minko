@@ -49,6 +49,39 @@ bullet::PhysicsWorld::PhysicsWorld():
 void 
 	bullet::PhysicsWorld::initialize()
 {
+	/*
+	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
+	{
+		for (uint iter = 0; iter < 20; ++iter)
+		{
+			Vector3::Ptr axis = Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
+			float angRad = ang * (float)PI / 180.0f;
+			Quaternion::Ptr quat = Quaternion::create()->initialize(axis, angRad);
+			Matrix4x4::Ptr	mat	= quat->toMatrix();
+			btTransform btTransf;
+			toBulletTransform(mat, btTransf);
+			Matrix4x4::Ptr fromBt = fromBulletTransform(btTransf);
+
+			Vector3::Ptr vec	= Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
+			btVector3 btVec(vec->x(), vec->y(), vec->z());
+
+			vec = mat->project(vec);
+			btVec = btTransf(btVec);
+			if (fabsf(vec->x() - btVec.x()) > 1e-6f
+				|| fabsf(vec->y() - btVec.y()) > 1e-6f
+				|| fabsf(vec->z() - btVec.z()) > 1e-6f)
+				throw std::logic_error("aie X2");
+
+			for (uint i = 0; i < 16; ++i)
+			{
+				if (fabsf(mat->values()[i] - fromBt->values()[i]) > 1e-6f)
+					throw std::logic_error("aie");
+			}
+			
+		}
+	}
+	*/
+
 	// straightforward physics world initialization for the time being
 	_btBroadphase				= std::shared_ptr<btDbvtBroadphase>(new btDbvtBroadphase());
 	_btCollisionConfiguration	= std::shared_ptr<btDefaultCollisionConfiguration>(new btDefaultCollisionConfiguration());
@@ -168,11 +201,12 @@ void
 		Collider::Ptr		collider(it->first);
 		BulletCollider::Ptr	btCollider(it->second);
 
-		if (collider->isStatic())
-			continue;
+		//if (collider->isStatic())
+		//	continue;
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
+		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
 }
@@ -200,11 +234,10 @@ void
 	btTransform& output)
 {
 	auto translation	= transform->translation();
-	auto rotation		= transform->transpose()->rotation();
-	transform->transpose();
+	auto rotation		= transform->rotation();
 
 	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
-	btQuaternion	btRotation(rotation->x(), rotation->y(), rotation->z(), rotation->w());
+	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
 
 	output.setOrigin(btOrigin);
 	output.setRotation(btRotation);
