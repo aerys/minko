@@ -47,13 +47,15 @@ _mass(mass),
 void
 	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	std::cout << "initializeWorldTransform with\n\t" << std::to_string(modelToWorldMatrix) << std::endl;
-
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
 	auto rotation		= modelToWorldMatrix->rotation();
 	auto translation	= modelToWorldMatrix->translation();
 	_worldTransform->initialize(rotation, translation);
+
+	std::cout << "bullet::Collider::initializeWorldTransform\n\t- modelToWorldMatrix = " << std::to_string(modelToWorldMatrix)
+	<< "\n\t- determinant = " << modelToWorldMatrix->determinant3x3()
+	<< "\n\t-> _worldTransform = " << std::to_string(_worldTransform) << std::endl;
 
 	// record the corrective term that keeps the
 	// scale/shear lost by the collider's world transform
