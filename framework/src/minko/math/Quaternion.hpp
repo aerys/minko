@@ -73,7 +73,7 @@ namespace minko
 			}
 
 			Ptr
-				initialize(Vector3Ptr axis, float angRadians);
+				initialize(float radians, Vector3Ptr axis);
 
 			inline
 				float
@@ -110,13 +110,22 @@ namespace minko
 				fromMatrix(Matrix4x4ConstPtr);
 
 			Matrix4x4Ptr
-				toMatrix(Matrix4x4Ptr output = nullptr)const;
+				toMatrix(Matrix4x4Ptr output = nullptr) const;
+
+			Ptr
+				normalize();
+
+			float 
+				length() const;
 
 		private:
 			Quaternion(float i = 1.0f, float j = 0.0f, float k = 0.0f, float r = 0.0f)
 				: _i(i), _j(j), _k(k), _r(r)
 			{
 			}
+			float 
+				lengthSquared() const;
+
 		};
 	}
 }
