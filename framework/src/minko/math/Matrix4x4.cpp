@@ -173,6 +173,14 @@ float
 	+ _m[2] * _m[7] - _m[6] * _m[3] * _m[8] * _m[13] - _m[12] * _m[9];
 }
 
+float
+Matrix4x4::determinant3x3() const
+{
+	return _m[0] * (_m[5]*_m[10] - _m[9]*_m[6])
+		- _m[1] * (_m[4]*_m[10] - _m[8]*_m[6])
+		+ _m[2] * (_m[4]*_m[9] - _m[8]*_m[5]);
+}
+
 Matrix4x4::Ptr
 	Matrix4x4::invert()
 {
@@ -345,23 +353,53 @@ Matrix4x4::Ptr
 Matrix4x4::Ptr
 	Matrix4x4::appendRotation(float radians, Vector3::Ptr axis)
 {
-	float xy2 	= 2.f * axis->x() * axis->y();
-	float xz2 	= 2.f * axis->x() * axis->z();
-	float xw2 	= 2.f * axis->x() * radians;
-	float yz2 	= 2.f * axis->y() * axis->z();
-	float yw2 	= 2.f * axis->y() * radians;
-	float zw2 	= 2.f * axis->z() * radians;
-	float xx 	= axis->x() * axis->x();
-	float yy 	= axis->y() * axis->y();
-	float zz 	= axis->z() * axis->z();
-	float ww 	= radians * radians;
+	return append(Quaternion::create()->initialize(radians, axis));
 
-	return append(
-		xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
-		xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
-		xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
-		0.,					0.,					0.,					1.
-		);
+	// this piece of code is buggy -> does not always return a 3x3 rotation matrix (|det| != 1)
+	//float xy2 	= 2.f * axis->x() * axis->y();
+	//float xz2 	= 2.f * axis->x() * axis->z();
+	//float xw2 	= 2.f * axis->x() * radians;
+	//float yz2 	= 2.f * axis->y() * axis->z();
+	//float yw2 	= 2.f * axis->y() * radians;
+	//float zw2 	= 2.f * axis->z() * radians;
+	//float xx 	= axis->x() * axis->x();
+	//float yy 	= axis->y() * axis->y();
+	//float zz 	= axis->z() * axis->z();
+	//float ww 	= radians * radians;
+
+	//return append(
+	//	xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
+	//	xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
+	//	xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
+	//	0.,					0.,					0.,					1.
+	//	);
+}
+
+
+
+Matrix4x4::Ptr
+	Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
+{
+	return prepend(Quaternion::create()->initialize(radians, axis));
+	
+	// this piece of code is buggy -> does not always return a 3x3 rotation matrix (|det| != 1)
+	//float xy2 	= 2.f * axis->x() * axis->y();
+	//float xz2 	= 2.f * axis->x() * axis->z();
+	//float xw2 	= 2.f * axis->x() * radians;
+	//float yz2 	= 2.f * axis->y() * axis->z();
+	//float yw2 	= 2.f * axis->y() * radians;
+	//float zw2 	= 2.f * axis->z() * radians;
+	//float xx 	= axis->x() * axis->x();
+	//float yy 	= axis->y() * axis->y();
+	//float zz 	= axis->z() * axis->z();
+	//float ww 	= radians * radians;
+
+	//return prepend(
+	//	xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
+	//	xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
+	//	xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
+	//	0.,					0.,					0.,					1.
+	//	);
 }
 
 Matrix4x4::Ptr
@@ -374,28 +412,6 @@ Matrix4x4::Ptr
 	Matrix4x4::append(Quaternion::Ptr rotation)
 {
 	return append(rotation->toMatrix());
-}
-
-Matrix4x4::Ptr
-	Matrix4x4::prependRotation(float radians, Vector3::Ptr axis)
-{
-	float xy2 	= 2.f * axis->x() * axis->y();
-	float xz2 	= 2.f * axis->x() * axis->z();
-	float xw2 	= 2.f * axis->x() * radians;
-	float yz2 	= 2.f * axis->y() * axis->z();
-	float yw2 	= 2.f * axis->y() * radians;
-	float zw2 	= 2.f * axis->z() * radians;
-	float xx 	= axis->x() * axis->x();
-	float yy 	= axis->y() * axis->y();
-	float zz 	= axis->z() * axis->z();
-	float ww 	= radians * radians;
-
-	return prepend(
-		xx - yy - zz + ww, 	xy2 + zw2, 			xz2 - yw2, 			0.,
-		xy2 - zw2,			-xx + yy - zz + ww,	yz2 + xw2,			0.,
-		xz2 + yw2,			yz2 - xw2,			-xx - yy + zz + ww, 0.,
-		0.,					0.,					0.,					1.
-		);
 }
 
 Matrix4x4::Ptr

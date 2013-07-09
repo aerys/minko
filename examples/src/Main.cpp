@@ -15,9 +15,10 @@ using namespace minko::math;
 RenderingController::Ptr	renderingController;
 bullet::PhysicsWorld::Ptr	physicsWorld;
 
-auto mesh = scene::Node::create("mesh");
-auto staticMesh = scene::Node::create("staticMesh");
-auto group = scene::Node::create("group");
+auto mesh		= scene::Node::create("mesh");
+auto mesh2		= scene::Node::create("mesh2");
+auto staticMesh	= scene::Node::create("staticMesh");
+auto group		= scene::Node::create("group");
 
 
 void
@@ -94,7 +95,7 @@ bool testQuaternion(uint ax, float ang)
 		axis = Vector3::create(rand(), rand(), rand())->normalize();
 	}
 
-	Quaternion::Ptr	quat		= Quaternion::create()->initialize(axis, ang);
+	Quaternion::Ptr	quat		= Quaternion::create()->initialize(ang, axis);
 	Matrix4x4::Ptr	quatMatrix	= quat->toMatrix();
 	Quaternion::Ptr	quat2		= quatMatrix->rotation();
 	Matrix4x4::Ptr	quatMatrix2	= quat2->toMatrix();
@@ -124,13 +125,6 @@ bool testQuaternion(uint ax, float ang)
 			if (fabsf(quatMatrix2->values()[i] - refMatrix->values()[i]) > 1e-6f)
 				return false;
 	}
-	/*
-	if (fabsf(quat->i() - quatFromMat->i()) > 1e-6f 
-	|| fabsf(quat->j() - quatFromMat->j()) > 1e-6f
-	|| fabsf(quat->k() - quatFromMat->k()) > 1e-6f )
-	return false;
-	*/
-
 	return true;
 }
 
@@ -143,11 +137,11 @@ int main(int argc, char** argv)
 	/*
 	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
 	{
-		for (uint axis = 0; axis <= 3; ++axis)
-		{
-			if (!testQuaternion(axis, ang))
-				throw std::logic_error("ouch");
-		}
+	for (uint axis = 0; axis <= 3; ++axis)
+	{
+	if (!testQuaternion(axis, ang))
+	throw std::logic_error("ouch");
+	}
 	}
 	*/
 
@@ -206,6 +200,33 @@ int main(int argc, char** argv)
 			assets->effect("texture")
 			));
 
+		Quaternion::Ptr quat = Quaternion::create()
+			->initialize(45.0f*PI/180.0f, Vector3::create(rand(), rand(), rand()));
+		std::cout << "quat.norm = " << quat->length() << std::endl;
+
+		Matrix4x4::Ptr quatMatrix = quat->toMatrix();
+		std::cout << "determinant = " << quatMatrix->determinant3x3() << std::endl;
+
+		mesh2->addController(Transform::create());
+		mesh2->controller<Transform>()->transform()
+			->identity()
+			->append(quat)
+			->appendTranslation(0.95f, 1.8f, -3.f);
+			//->appendRotation(45.0f*PI/180.0f, Vector3::create(rand(), rand(), rand())->normalize());
+			//->appendTranslation(0.8f, 1.5f, -3.f);
+
+		std::cout << "determinant mesh 2 = " << mesh2->controller<Transform>()->transform()->determinant3x3() << std::endl; 
+
+		mesh2->addController(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+			->set("material/diffuse/rgba",			color)
+			->set("transform/worldToScreenMatrix",	view)
+			->set("light/direction",				lightDirection)
+			->set("material/diffuse/map",			assets->texture("textures/box3.png")),
+			assets->effect("texture")
+			));
+
 		staticMesh->addController(Transform::create());
 		staticMesh->controller<Transform>()->transform()->appendTranslation(0.7f, -0.8f, -3.f);
 		staticMesh->addController(Surface::create(
@@ -219,14 +240,17 @@ int main(int argc, char** argv)
 			));
 
 		auto shape		= bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
-
 		auto collider	= bullet::Collider::create(10.0f, shape);
-		mesh->addController(bullet::ColliderController::create(collider));
+		auto collider2	= bullet::Collider::create(0.1f, shape);
 
 		auto staticCollider	= bullet::Collider::create(0.0f, shape);
+
+		mesh->addController(bullet::ColliderController::create(collider));
+		mesh2->addController(bullet::ColliderController::create(collider2));
 		staticMesh->addController(bullet::ColliderController::create(staticCollider));
 
 		group->addChild(mesh);
+		group->addChild(mesh2);
 		group->addChild(staticMesh);
 	});
 

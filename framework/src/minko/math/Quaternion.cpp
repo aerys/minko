@@ -34,17 +34,48 @@ Quaternion::Ptr
 
 
 Quaternion::Ptr
-	Quaternion::initialize(Vector3::Ptr axis, float angRadians)
+	Quaternion::initialize(float radians, Vector3::Ptr axis)
 {
-	Vector3::Ptr normalized = Vector3::create()->copyFrom(axis)->normalize();
-	float sinHalf = sinf(angRadians * 0.5f);
+	const float x		= axis->x();
+	const float y		= axis->y();
+	const float z		= axis->z();
+	const float length	= sqrtf(x*x + y*y + z*z);
+	if (length > 0.0f)
+	{
+		float sinHalf = sinf(radians*0.5f) / length;
 
-	return setTo(
-		normalized->x() * sinHalf,
-		normalized->y() * sinHalf,
-		normalized->z() * sinHalf,
-		cosf(angRadians * 0.5f)
-		);
+		return setTo(x*sinHalf, y*sinHalf, z*sinHalf, cosf(radians*0.5f));
+	}
+	else
+		return identity();
+}
+
+float
+	Quaternion::lengthSquared() const
+{
+	return _i*_i + _j*_j + _k*_k + _r*_r;
+}
+
+float 
+	Quaternion::length() const
+{
+	return sqrtf(lengthSquared());
+}
+
+Quaternion::Ptr
+	Quaternion::normalize()
+{
+	const float l = length();
+	if (l > 0.0f)
+	{
+		const float invLength = 1.0f/l;
+		_i *= invLength;
+		_j *= invLength;
+		_k *= invLength;
+		_r *= invLength;
+	}
+
+	return shared_from_this();
 }
 
 Quaternion::Ptr
@@ -93,8 +124,8 @@ Quaternion::Ptr
 	}
 
 	float t	= s0*m[0] + s1*m[5] + s2*m[10] + 1.0f;
-	if (fabsf(t) < 1e-6f)
-		throw std::logic_error("failed to convert matrix to quaternion");
+	if (fabsf(t) < std::numeric_limits<float>::epsilon())
+		throw std::invalid_argument("impossible to convert rotation matrix to quaternion");
 
 	float s	= 0.5f / sqrtf(t);
 
@@ -116,6 +147,9 @@ Quaternion::Ptr
 Matrix4x4::Ptr
 	Quaternion::toMatrix(Matrix4x4::Ptr output)const
 {
+	if (fabsf(length() - 1.0f) > std::numeric_limits<float>::epsilon())
+		throw std::logic_error("Quaternion must be normalized prior to its conversion to a rotation matrix.");
+
 	float qx	= _i;
 	float qy	= _j;
 	float qz	= _k;
@@ -140,13 +174,4 @@ Matrix4x4::Ptr
 		qxz2 - qyw2,		qyz2 + qxw2,		1.0f - qxx2 - qyy2,	0.0f,
 		0.0f,				0.0f,				0.0f,				1.0f
 		);
-
-	/*
-	return output->initialize(
-		1.0f - qyy2 - qzz2,	qxy2 + qzw2,		qxz2 - qyw2,		0.0f,
-		qxy2 - qzw2,		1.0f - qxx2 - qzz2,	qyz2 + qxw2,		0.0f,
-		qxz2 + qyw2,		qyz2 - qxw2,		1.0f - qxx2 - qyy2,	0.0f,
-		0.0f,				0.0f,				0.0f,				1.0f
-		);
-		*/
 }
