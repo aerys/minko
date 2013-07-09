@@ -5,6 +5,7 @@ project "minko-examples"
   links {
     "minko-jpeg",
     "minko-png",
+    "minko-particles",
     "minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
@@ -14,6 +15,7 @@ project "minko-examples"
     "../framework/src",
     "../plugins/jpeg/src",
     "../plugins/png/src"
+    "../plugins/particles/src",
   }
 
   configuration { "debug"}
