@@ -38,22 +38,41 @@ namespace minko
 			public:
 				virtual
 				T
-				value(float time) const;
+				value(float time) const
+				{
+					return _value;
+				};
 				
 				virtual
 				T*
-				set(T* target, float time) const;
+				set(T* target, float time) const
+				{
+					if (target == 0)
+						target = new T();
+
+					*target = _value;
+
+					return target;
+				};
 
 				virtual 
 				T
-				max() const;
+				max() const
+				{
+					return _value;
+				};
 				
 				virtual
 				T
-				min() const;
+				min() const
+				{
+					return _value;
+				};
 
 			protected:
-				Constant(T value);
+				Constant(T value)
+					: _value (value)
+				{};
 			};
 		}
 	}
