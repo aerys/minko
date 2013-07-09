@@ -45,22 +45,43 @@ namespace minko
 
 			public:
 				virtual
-				T value(float time) const;
+				T value(float time) const
+				{
+					return _min + _delta * rand01();
+				};
 				
 				virtual
 				T*
-				set(T* value, float time) const;
+				set(T* value, float time) const
+				{
+					if (target == 0)
+						target = new T();
+
+					*target = _min + _delta * rand01();
+
+					return target;
+				};
 
 				virtual
 				T
-				max() const;
+				max() const
+				{
+					return _min + _delta;
+				};
 				
 				virtual
 				T
-				min() const;
+				min() const
+				{
+					return _min;
+				};
 
 			protected:
-				RandomValue(T min, T max);
+				RandomValue(T min, T max)
+	: _min (min),
+	  _delta(max - min)
+{}
+;
 			};
 		}
 	}
