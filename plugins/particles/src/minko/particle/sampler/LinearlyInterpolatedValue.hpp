@@ -44,22 +44,42 @@ namespace minko
 			public:
 				virtual
 				T
-				value(float time) const;
+				value(float time) const
+				{
+					return _start + _delta * time;
+				};
 
 				virtual
 				T*
-				set(T* target, float time) const;
+				set(T* target, float time) const
+				{
+					if (target == 0)
+						target = new T();
+
+					*target = _start + _delta * time;
+
+					return target;
+				};
 
 				virtual
 				T
-				max() const;
+				max() const
+				{
+					return _start + _delta;
+				};
 
 				virtual
 				T
-				min() const;
+				min() const
+				{
+					return _start;
+				};
 
 			protected:
-				LinearlyInterpolatedValue(T start, T end);
+				LinearlyInterpolatedValue(T start, T end)
+					: _start (start),
+					 _delta(end - start)
+				{};
 			};
 		}
 	}
