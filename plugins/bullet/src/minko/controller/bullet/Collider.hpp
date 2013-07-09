@@ -91,7 +91,7 @@ namespace minko
 					bool
 					isStatic() const
 				{
-					return _mass < 1e-6f;
+					return _mass < std::numeric_limits<float>::epsilon();
 				}
 
 				inline

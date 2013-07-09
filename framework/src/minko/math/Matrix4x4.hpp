@@ -145,6 +145,9 @@ namespace minko
 			float
 			determinant();
 
+			float
+			determinant3x3() const;
+
 			Ptr
 			invert();
 
