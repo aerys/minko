@@ -81,9 +81,6 @@ void
 	bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
 {
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btSphereShape(sphere->radius()));
-#ifdef DEBUG
-	std::cout << "new physics sphere" << std::endl;
-#endif // DEBUG
 }
 
 void 
@@ -91,18 +88,12 @@ void
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btBoxShape(halfExtents));
-#ifdef DEBUG
-	std::cout << "new physics box" << std::endl;
-#endif // DEBUG
 }
 
 void 
 	bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
 {
 	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btConeShape(cone->radius(), cone->height()));
-#ifdef DEBUG
-	std::cout << "new physics cone" << std::endl;
-#endif // DEBUG
 }
 
 void
@@ -134,6 +125,8 @@ void
 void
 	bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider)
 {
+	// only rigid objects are considerered for the moment
+
 	btVector3	inertia	 (0.0, 0.0, 0.0);
 	if (collider->inertia() == nullptr)
 	{
@@ -147,7 +140,7 @@ void
 		inertia.setZ(collider->inertia()->z());
 	}
 
-	_btCollisionObject	= std::shared_ptr<btCollisionObject>(new btRigidBody(
+	_btCollisionObject	= std::shared_ptr<btRigidBody>(new btRigidBody(
 		collider->mass(),
 		_btMotionState.get(),
 		_btCollisionShape.get(),

@@ -41,7 +41,6 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Matrix4x4>	Ptr;
-			typedef std::shared_ptr<Vector3>	Vector3Ptr;
 
 		public:
 			inline static
@@ -77,6 +76,9 @@ namespace minko
 				       float m30, float m31, float m32, float m33);
 
 			Ptr
+			initialize(Quaternion::Ptr, Vector3::Ptr);
+
+			Ptr
 			translation(float x, float y, float z);
 
 			Ptr
@@ -89,8 +91,8 @@ namespace minko
 			rotationZ(float radians);
 
 			inline
-			const std::vector<float>
-			values()
+			const std::vector<float>&
+			values() const
 			{
 				return _m;
 			}
@@ -134,6 +136,12 @@ namespace minko
 			Ptr
 			prependRotation(float radians, Vector3::Ptr axis);
 
+			Ptr
+			append(Quaternion::Ptr);
+
+			Ptr
+			prepend(Quaternion::Ptr);
+
 			float
 			determinant();
 
@@ -163,8 +171,8 @@ namespace minko
 				return shared_from_this();
 			}
 
-			Vector3Ptr
-			project(Vector3Ptr, Vector3Ptr output = 0) const;
+			Vector3::Ptr
+			project(Vector3::Ptr, Vector3::Ptr output = 0) const;
 
 			inline
 			bool
@@ -216,9 +224,6 @@ namespace minko
 
 			Vector3::Ptr
 			translation(Vector3::Ptr output = 0) const;
-
-			Ptr
-			initialize(Quaternion::Ptr rotation, Vector3::Ptr translation);
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
