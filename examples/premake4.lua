@@ -14,8 +14,8 @@ project "minko-examples"
     "lib/glfw/include",
     "../framework/src",
     "../plugins/jpeg/src",
-    "../plugins/png/src"
-    "../plugins/particles/src",
+    "../plugins/png/src",
+    "../plugins/particles/src"
   }
 
   configuration { "debug"}
