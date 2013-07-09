@@ -78,9 +78,9 @@ namespace minko
 
 			protected:
 				RandomValue(T min, T max)
-	: _min (min),
-	  _delta(max - min)
-{}
+					: _min (min),
+					_delta(max - min)
+				{}
 ;
 			};
 		}
