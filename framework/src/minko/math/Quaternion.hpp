@@ -31,8 +31,9 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Quaternion> Ptr;
 
-			typedef std::shared_ptr<Vector3>	Vector3Ptr;
-			typedef std::shared_ptr<Matrix4x4>	Matrix4x4Ptr;
+			typedef std::shared_ptr<Matrix4x4>			Matrix4x4Ptr;
+			typedef std::shared_ptr<const Matrix4x4>	Matrix4x4ConstPtr;
+			typedef std::shared_ptr<Vector3>			Vector3Ptr;
 
 		private:
 			float _i;
@@ -44,10 +45,10 @@ namespace minko
 			inline static
 				Ptr
 				create(
-				float i = 1.0f, 
+				float i = 0.0f, 
 				float j = 0.0f, 
 				float k = 0.0f, 
-				float r = 0.0f)
+				float r = 1.0f)
 			{
 				return std::shared_ptr<Quaternion>(new Quaternion(i, j, k, r));
 			}
@@ -56,7 +57,7 @@ namespace minko
 				Ptr
 				copyFrom(Ptr value)
 			{
-				return setTo(value->x(), value->y(), value->z(), value->w());
+				return setTo(value->i(), value->j(), value->k(), value->r());
 			}
 
 			inline
@@ -71,33 +72,45 @@ namespace minko
 				return std::static_pointer_cast<Quaternion>(shared_from_this());
 			}
 
+			Ptr
+				initialize(Vector3Ptr axis, float angRadians);
+
 			inline
 				float
-				x() const
+				i() const
 			{
 				return _i;
 			}
 
 			inline 
 				float
-				y() const
+				j() const
 			{
 				return _j;
 			}
 
 			inline
 				float
-				z() const
+				k() const
 			{
 				return _k;
 			}
 
 			inline
 				float
-				w() const
+				r() const
 			{
 				return _r;
 			}
+
+			Ptr
+				identity();
+
+			Ptr
+				fromMatrix(Matrix4x4ConstPtr);
+
+			Matrix4x4Ptr
+				toMatrix(Matrix4x4Ptr output = nullptr)const;
 
 		private:
 			Quaternion(float i = 1.0f, float j = 0.0f, float k = 0.0f, float r = 0.0f)
