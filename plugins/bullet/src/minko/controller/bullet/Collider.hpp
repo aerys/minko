@@ -50,7 +50,11 @@ namespace minko
 				Vector3Ptr		_inertia;
 
 				Vector3Ptr		_linearVelocity;
+				Vector3Ptr		_linearFactor;
+				float			_linearDamping;
 				Vector3Ptr		_angularVelocity;
+				Vector3Ptr		_angularFactor;
+				float			_angularDamping;
 				float			_restitution;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
@@ -113,12 +117,26 @@ namespace minko
 
 				void
 					updateColliderWorldTransform(Matrix4x4Ptr);
-				
+
 				inline
 					Vector3Ptr
 					linearVelocity() const
 				{
 					return _linearVelocity;
+				}
+
+				inline
+					Vector3Ptr
+					linearFactor() const
+				{
+					return _linearFactor;
+				}
+
+				inline
+					float
+					linearDamping() const
+				{
+					return _linearDamping;
 				}
 
 				inline
@@ -129,6 +147,20 @@ namespace minko
 				}
 
 				inline
+					Vector3Ptr
+					angularFactor() const
+				{
+					return _angularFactor;
+				}
+
+				inline
+					float
+					angularDamping() const
+				{
+					return _angularDamping;
+				}
+
+				inline
 					float
 					restitution() const
 				{
@@ -136,23 +168,36 @@ namespace minko
 				}
 
 				void
-					setLinearVelocity(Vector3Ptr);
+					setLinearVelocity(float, float, float);
 
 				void
-					setAngularVelocity(Vector3Ptr);
+					setLinearFactor(float, float, float);
 
 				inline
+					void 
+					setLinearDamping(float value)
+				{
+					_linearDamping	= value;
+				}
+
 				void
+					setAngularVelocity(float, float, float);
+
+				void
+					setAngularFactor(float, float, float);
+
+				inline
+					void 
+					setAngularDamping(float value)
+				{
+					_angularDamping	= value;
+				}
+				inline
+					void
 					setRestitution(float value)
 				{
 					_restitution	= value;
 				}
-
-				void
-					setLinearFactor(Vector3Ptr);
-
-				void
-					setAngularFactor(Vector3Ptr);
 
 				inline
 					Signal<Ptr>::Ptr

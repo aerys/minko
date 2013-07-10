@@ -19,7 +19,7 @@ auto mesh		= scene::Node::create("mesh");
 auto mesh2		= scene::Node::create("mesh2");
 auto staticMesh	= scene::Node::create("staticMesh");
 auto group		= scene::Node::create("group");
-
+auto subgroup	= scene::Node::create("subgroup");
 
 void
 	printFramerate(const unsigned int delay = 1)
@@ -172,6 +172,9 @@ int main(int argc, char** argv)
 		group->addController(Transform::create());
 		group->controller<Transform>()->transform()->appendRotationY(10.0f*PI/180.0f);
 
+		subgroup->addController(Transform::create());
+		subgroup->controller<Transform>()->transform()->appendTranslation(-0.1, -0.2, -0.3);
+
 		root->addChild(group)->addChild(camera);
 
 		renderingController = RenderingController::create(assets->context());
@@ -244,14 +247,17 @@ int main(int argc, char** argv)
 		auto collider2	= bullet::Collider::create(0.1f, shape);
 
 		auto staticCollider	= bullet::Collider::create(0.0f, shape);
-
+		
 		mesh->addController(bullet::ColliderController::create(collider));
 		mesh2->addController(bullet::ColliderController::create(collider2));
 		staticMesh->addController(bullet::ColliderController::create(staticCollider));
+		
+		group->addChild(subgroup);
 
-		group->addChild(mesh);
-		group->addChild(mesh2);
-		group->addChild(staticMesh);
+		subgroup->addChild(mesh);
+		subgroup->addChild(mesh2);
+		subgroup->addChild(staticMesh);
+
 	});
 
 	try
