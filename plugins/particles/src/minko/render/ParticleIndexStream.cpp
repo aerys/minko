@@ -17,45 +17,49 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Program.hpp"
+#include "ParticleIndexStream.hpp"
+
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/OpenGLES2Context.hpp"
 
-using namespace minko::render;
+using namespace render;
 
-Program::Program(Program::AbstractContextPtr context) :
-	AbstractResource(context)
-{
+void 
+ParticleIndexStream::upload(unsigned int nParticles)
+{	
+	// should be "nParticles * 6", but didn't work... why ?
+	unsigned int size = nParticles * 3;
+	
+	_context->uploaderIndexBufferData(_id, 0, size, &data()[0]);
+	
+	if(size < data().size())
+		_context->uploaderIndexBufferData(_id, size, data().size() - size, &_padding[0]);
 }
 
-void
-Program::upload()
-{
-	_vertexShader = context()->createVertexShader();
-	_context->setShaderSource(_vertexShader, _vertexShaderSource);
-	_context->compileShader(_vertexShader);
+void 
+ParticleIndexStream::resize(unsigned int nParticles)
+{	
+	std::vector<unsigned short>& isData = data();
+	unsigned int oldSize = isData.size();
+	unsigned int size = nParticles * 6;
+
+	if (oldSize != size)
+	{
+		dispose();
+		_id = _context->createIndexBuffer(size);
 	
-
-	_fragmentShader = context()->createFragmentShader();
-	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
-	_context->compileShader(_fragmentShader);
-	
-	_id = context()->createProgram();
-	_context->attachShader(_id, _vertexShader);
-	_context->attachShader(_id, _fragmentShader);
-	_context->linkProgram(_id);
-
-	_inputs = _context->getProgramInputs(_id);
-}
-
-void
-Program::dispose()
-{
-	_context->deleteVertexShader(_vertexShader);
-	_context->deleteFragmentShader(_fragmentShader);
-	_context->deleteProgram(_id);
-
-	_vertexShader = -1;
-	_fragmentShader = -1;
-	_id = -1;
+		isData.resize(size);
+		_padding.resize(size, 0);
+		if (oldSize < size)
+		{
+			for (unsigned int i = 0; i < nParticles; ++i)
+			{
+				isData[i * 6] = i * 4;
+				isData[i * 6 + 1] = i * 4 + 2;
+				isData[i * 6 + 2] = i * 4 + 1;
+				isData[i * 6 + 3] = i * 4 + 1;
+				isData[i * 6 + 4] = i * 4 + 2; 
+				isData[i * 6 + 5] = i * 4 + 3;
+			}
+		}
+	}
 }

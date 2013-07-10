@@ -32,12 +32,6 @@ IndexStream::upload()
 }
 
 void
-IndexStream::upload(unsigned int size)
-{	
-	_context->uploaderIndexBufferData(_id, 0, size, &_data[0]);
-}
-
-void
 IndexStream::dispose()
 {
 	_context->deleteIndexBuffer(_id);

@@ -1,7 +1,7 @@
 #include "ParticlesGeometry.hpp"
 
 #include "minko/render/VertexStream.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/ParticleIndexStream.hpp"
 
 using namespace minko::geometry;
 
@@ -9,7 +9,7 @@ ParticlesGeometry::ParticlesGeometry(std::shared_ptr<render::AbstractContext> co
 	: Geometry ()
 {
 	_vertices = render::VertexStream::create(context);
-	_indices = render::IndexStream::create(context, std::vector<unsigned short> (6));
+	_indices = render::ParticleIndexStream::create(context);
 	
 	_vertices->addAttribute("offset", 2, 0);
 	_vertices->addAttribute("position", 3, 2);
@@ -56,26 +56,6 @@ ParticlesGeometry::initStreams(unsigned int maxParticles)
 	}
 	
 	_vertices->upload();
-	
-	std::vector<unsigned short>& isData = _indices->data();
-	if (isData.size() != maxParticles * 6)
-	{
-		if (isData.size() < maxParticles * 6)
-		{
-			isData.resize(maxParticles * 6);
-			for (unsigned int i = 0; i < maxParticles; ++i)
-			{
-				isData[i * 6] = i * 4;
-				isData[i * 6 + 1] = i * 4 + 2;
-				isData[i * 6 + 2] = i * 4 + 1;
-				isData[i * 6 + 3] = i * 4 + 1;
-				isData[i * 6 + 4] = i * 4 + 2; 
-				isData[i * 6 + 5] = i * 4 + 3;
-			}
-		}
-		else
-			isData.resize(maxParticles * 6);
 
-		_indices->upload();
-	}
+	_indices->resize(maxParticles);
 }
