@@ -215,8 +215,8 @@ int main(int argc, char** argv)
 			->identity()
 			->append(quat)
 			->appendTranslation(0.95f, 1.8f, -3.f);
-			//->appendRotation(45.0f*PI/180.0f, Vector3::create(rand(), rand(), rand())->normalize());
-			//->appendTranslation(0.8f, 1.5f, -3.f);
+		//->appendRotation(45.0f*PI/180.0f, Vector3::create(rand(), rand(), rand())->normalize());
+		//->appendTranslation(0.8f, 1.5f, -3.f);
 
 		std::cout << "determinant mesh 2 = " << mesh2->controller<Transform>()->transform()->determinant3x3() << std::endl; 
 
@@ -247,17 +247,16 @@ int main(int argc, char** argv)
 		auto collider2	= bullet::Collider::create(0.1f, shape);
 
 		auto staticCollider	= bullet::Collider::create(0.0f, shape);
-		
+
 		mesh->addController(bullet::ColliderController::create(collider));
 		mesh2->addController(bullet::ColliderController::create(collider2));
 		staticMesh->addController(bullet::ColliderController::create(staticCollider));
-		
+
 		group->addChild(subgroup);
 
 		subgroup->addChild(mesh);
 		subgroup->addChild(mesh2);
 		subgroup->addChild(staticMesh);
-
 	});
 
 	try

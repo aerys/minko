@@ -91,6 +91,8 @@ namespace minko
 					transformChangedHandler(ColliderPtr);
 				void
 					updateParentTransform(NodeSetPtr, NodePtr node = nullptr);
+				void 
+					updateColliderWorldTransform();
 			};
 		}
 	}
