@@ -19,68 +19,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/ParticlesCommon.hpp"
 
-#include "minko/render/AbstractResource.hpp"
+#include "minko/render/IndexStream.hpp"
 
 namespace minko
 {
 	namespace render
 	{
-		class IndexStream :
-			public AbstractResource
+		class ParticleIndexStream :
+			public IndexStream
 		{
 		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
-
+			typedef std::shared_ptr<ParticleIndexStream>	Ptr;
+			
 		private:
-			std::vector<unsigned short>	_data;
+			std::vector<unsigned short> _padding;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
+			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
+				return std::shared_ptr<ParticleIndexStream>(new ParticleIndexStream(context));
 			}
-
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
-			}
-
-			inline
-			std::vector<unsigned short>&
-			data()
-			{
-				return _data;
-			}
+			
+			
+			void
+			upload(unsigned int nParticles);
 
 			void
-			upload();
+			resize(unsigned int nParticles);
 
-			void
-			dispose();
-
-		protected:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>					data) :
-				AbstractResource(context),
-				_data(data)
+		private:
+			ParticleIndexStream(std::shared_ptr<render::AbstractContext>	context) :
+				IndexStream(context, std::vector<unsigned short> (6)),
+				_padding (6, 0)
 			{
-				upload();
-			}
-
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*								begin,
-						unsigned short*								end) :
-				AbstractResource(context),
-				_data(begin, end)
-			{
-				upload();
 			}
 		};
 	}
-}
+};

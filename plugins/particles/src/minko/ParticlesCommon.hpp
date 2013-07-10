@@ -32,6 +32,10 @@ namespace minko
 	{
 		class ParticlesGeometry;
 	}
+	namespace render
+	{
+		class ParticleIndexStream;
+	}
 
 	namespace particle
 	{
