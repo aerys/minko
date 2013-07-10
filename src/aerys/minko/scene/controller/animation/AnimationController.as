@@ -163,6 +163,9 @@ package aerys.minko.scene.controller.animation
 			var clone : AnimationController = new AnimationController(_timelines.slice(), _looping);
 			clone._isTimelineUpdateLocked	= _isTimelineUpdateLocked.slice();
 			
+			clone._labelNames	= _labelNames.concat();
+			clone._labelTimes	= _labelTimes.concat();
+			
 			return clone;
 		}
 		
