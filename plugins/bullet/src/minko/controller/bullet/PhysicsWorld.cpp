@@ -122,7 +122,11 @@ void
 		->descendants(true)
 		->hasController<RenderingController>();
 	if (nodeSet->nodes().size() != 1)
-		throw std::logic_error("PhysicsWorld requires exactly one RenderingController among the descendants of its target node.");
+	{
+		std::stringstream stream;
+		stream << "PhysicsWorld requires exactly one RenderingController among the descendants of its target node. Found " << nodeSet->nodes().size();
+		throw std::logic_error(stream.str());
+	}
 
 	auto renderingCtrl	= nodeSet->nodes().front()->controller<RenderingController>();
 
@@ -209,6 +213,16 @@ void
 		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
+}
+
+void
+	bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->setWorldTransform(collider->worldTransform());
 }
 
 /*static*/
