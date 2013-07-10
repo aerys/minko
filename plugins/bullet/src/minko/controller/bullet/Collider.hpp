@@ -45,7 +45,7 @@ namespace minko
 				float			_mass;
 				Matrix4x4Ptr	_worldTransform;
 				Matrix4x4Ptr	_centerOfMassOffset;
-				Matrix4x4Ptr	_startScaleShearCorrection; 
+				Matrix4x4Ptr	_scaleCorrectionMatrix; 
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
@@ -113,7 +113,7 @@ namespace minko
 				}
 
 				void
-					initializeWorldTransform(Matrix4x4Ptr);
+					setWorldTransform(Matrix4x4Ptr);
 
 				void
 					updateColliderWorldTransform(Matrix4x4Ptr);

@@ -175,6 +175,13 @@ void
 	_btCollisionObject	= btRigidCollisionObject;
 }
 
+void bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
+{
+	btTransform btWorldTransform;
+	toBulletTransform(worldTransform, btWorldTransform);
+	_btMotionState->setWorldTransform(btWorldTransform);
+}
+
 bullet::PhysicsWorld::BulletCollider::Ptr
 	bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
 {
