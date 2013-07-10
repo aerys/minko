@@ -91,7 +91,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<float>&
+			std::vector<float>&
 			data()
 			{
 				return _data;

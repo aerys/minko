@@ -19,71 +19,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-
-#include "minko/render/AbstractResource.hpp"
+#include "minko/ParticlesCommon.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 namespace minko
 {
-	namespace render
+	namespace geometry
 	{
-		class IndexStream :
-			public AbstractResource
+		class ParticlesGeometry :
+			public Geometry
 		{
 		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
+			typedef std::shared_ptr<ParticlesGeometry>		Ptr;
 
+			typedef std::shared_ptr<render::VertexStream>	VertexStreamPtr;
+			typedef std::shared_ptr<render::IndexStream>	IndexStreamPtr;
+		
 		private:
-			std::vector<unsigned short>	_data;
+			VertexStreamPtr						_vertices;
+			IndexStreamPtr						_indices;
 
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
+			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
-			}
+				return std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry(context));
+			};
 
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
-			}
+			void
+			initStreams(unsigned int maxParticles);
 
 			inline
-			std::vector<unsigned short>&
-			data()
+			VertexStreamPtr
+			vertices()
 			{
-				return _data;
+				return _vertices;
 			}
 
-			void
-			upload();
-			
-			void
-			upload(unsigned int size);
-
-			void
-			dispose();
-
-		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>					data) :
-				AbstractResource(context),
-				_data(data)
-			{
-				upload();
-			}
-
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*								begin,
-						unsigned short*								end) :
-				AbstractResource(context),
-				_data(begin, end)
-			{
-				upload();
-			}
+		protected:
+			ParticlesGeometry(std::shared_ptr<render::AbstractContext> context);
 		};
 	}
 }

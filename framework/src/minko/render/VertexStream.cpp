@@ -57,13 +57,14 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext> context, float* begi
 void
 VertexStream::upload()
 {
-	if (_id != -1)
-		_context->deleteVertexBuffer(_id);
+	//if (_id != -1)
+	//	_context->deleteVertexBuffer(_id);
 
-	_id = _context->createVertexBuffer(_data.size());
+	if (_id < 0)
+		_id = _context->createVertexBuffer(_data.size());
 	if (_id < 0)
 		throw;
-
+	
 	_context->uploadVertexBufferData(_id, 0, _data.size(), &_data[0]);
 }
 

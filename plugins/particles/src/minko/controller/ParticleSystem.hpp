@@ -19,13 +19,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include <vector>
-
 #include "minko/ParticlesCommon.hpp"
 #include "minko/controller/AbstractController.hpp"
 
+#include "minko/geometry/ParticlesGeometry.hpp"
+
 namespace minko
 {
+	class AssetsLibrary;
+
 	namespace controller
 	{
 		class ParticleSystem :
@@ -36,13 +38,18 @@ namespace minko
 			typedef std::shared_ptr<ParticleSystem>	Ptr;
 
 		private:
+			typedef std::shared_ptr<render::AbstractContext>					AbstractContextPtr;
+			typedef std::shared_ptr<AssetsLibrary>								AssetsLibraryPtr;
+
 			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
 			typedef std::shared_ptr<AbstractController>							AbsCtrlPtr;
 			typedef std::shared_ptr<RenderingController>						RenderingCtrlPtr;
 			
 			typedef std::shared_ptr<Surface>									SurfacePtr;
-			typedef std::shared_ptr<geometry::Geometry>							GeometryPtr;
+			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
+			typedef std::shared_ptr<render::VertexStream>						VertexStreamPtr;
+			typedef std::shared_ptr<render::IndexStream>						IndexStreamPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
 			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
@@ -68,6 +75,11 @@ namespace minko
 			};	
 
 		private:
+			SurfacePtr													_surface;
+			GeometryPtr													_geometry;
+			ProviderPtr													_material;
+			EffectPtr													_effect;
+
 			std::map<RenderingCtrlPtr, Signal<RenderingCtrlPtr>::Slot>	_enterFrameSlots;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
@@ -76,9 +88,10 @@ namespace minko
 			
 			NodeSetPtr													_renderers;
 
-			unsigned int 												_particlesCountLimit;
-			unsigned int												_maxParticlesCount;
-			unsigned int												_liveParticlesCount;
+			unsigned int 												_countLimit;
+			unsigned int												_maxCount;
+			unsigned int												_liveCount;
+			unsigned int												_previousLiveCount;
 			std::vector<IInitializerPtr> 								_initializers;
 			std::vector<IUpdaterPtr> 									_updaters;	
 			std::vector<particle::ParticleData>							_particles;
@@ -101,19 +114,21 @@ namespace minko
 			float														_createTimer;
 
 			int															_format;
-			unsigned int												_floatsPerVertex;
-			std::vector<float>											_vertexStream;
 			
 		public:
 			static
 			Ptr
-			create(float					rate,
+			create(AbstractContextPtr		context,
+				   AssetsLibraryPtr			assets,
+				   float					rate,
 				   FloatSamplerPtr			lifetime,
 				   ShapePtr					shape,
 				   particle::StartDirection	startDirection,
 				   FloatSamplerPtr 			startVelocity)
 			{
-				Ptr system = std::shared_ptr<ParticleSystem> (new ParticleSystem(rate,
+				Ptr system = std::shared_ptr<ParticleSystem> (new ParticleSystem(context,
+																				 assets,
+																				 rate,
 																				 lifetime,
 																				 shape,
 																				 startDirection,
@@ -237,7 +252,7 @@ namespace minko
 			unsigned int
 			maxParticlesCount() const
 			{
-				return _maxParticlesCount;
+				return _maxCount;
 			};
 			
 			void
@@ -247,14 +262,14 @@ namespace minko
 			unsigned int
 			liveParticlesCount() const
 			{
-				return _liveParticlesCount;
+				return _liveCount;
 			};
 			
 			inline
 			void
 			particlesCountLimit(unsigned int value)
 			{
-				_particlesCountLimit = value;
+				_countLimit = value;
 
 				updateMaxParticlesCount();
 			};
@@ -281,14 +296,6 @@ namespace minko
 			{
 				return _format;
 			};
-
-			inline
-			std::vector<float>&
-			getVertexStream()
-			{
-				updateVertexStream();
-				return _vertexStream;
-			};
 			
 			unsigned int
 			updateVertexFormat();
@@ -299,25 +306,24 @@ namespace minko
 			
 			void
 			addComponents(unsigned int components, bool blockVSInit = false);
-
-			void
-			initVertexStream();
-			
+						
 			inline
 			void
 			setInVertexStream(float* ptr, unsigned int offset, float value)
 			{
 				*(ptr + offset) = value;
-				*(ptr + offset + _floatsPerVertex) = value;
-				*(ptr + offset + _floatsPerVertex * 2) = value;
-				*(ptr + offset + _floatsPerVertex * 3) = value;
+				*(ptr + offset + _geometry->vertexSize()) = value;
+				*(ptr + offset + _geometry->vertexSize() * 2) = value;
+				*(ptr + offset + _geometry->vertexSize() * 3) = value;
 			};
 			
 			void
 			updateVertexStream();
 
 		protected:
-			ParticleSystem(float					rate,
+			ParticleSystem(AbstractContextPtr		context,
+						   AssetsLibraryPtr			assets,
+						   float					rate,
 						   FloatSamplerPtr			lifetime,
 						   ShapePtr					shape,
 						   particle::StartDirection	startDirection,
