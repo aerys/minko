@@ -171,6 +171,7 @@ void
 void
 	bullet::ColliderController::updateParentTransform(NodeSet::Ptr parents, Node::Ptr)
 {
+	std::cout << "updateParentTransform" << std::endl;
 	_parentTransform	= nullptr;
 	if (parents == nullptr || parents->nodes().empty())
 		return;
