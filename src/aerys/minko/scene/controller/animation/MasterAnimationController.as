@@ -164,10 +164,10 @@ package aerys.minko.scene.controller.animation
 		}
 		
 		override public function clone():AbstractController
-		{			
+		{
 			var newController : MasterAnimationController = new MasterAnimationController(_animations);
-			newController._labelNames = _labelNames;
-			newController._labelTimes = _labelTimes;
+			newController._labelNames = _labelNames.concat();
+			newController._labelTimes = _labelTimes.concat();
 			
 			return newController;
 		}
