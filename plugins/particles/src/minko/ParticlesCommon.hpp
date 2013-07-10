@@ -27,6 +27,11 @@ namespace minko
 	{
 		class ParticleSystem;
 	}
+	
+	namespace geometry
+	{
+		class ParticlesGeometry;
+	}
 
 	namespace particle
 	{

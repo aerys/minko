@@ -19,10 +19,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ParticleSystem.hpp"
 
+#include "minko/AssetsLibrary.hpp"
+
 #include "minko/controller/RenderingController.hpp"
+#include "minko/controller/Surface.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
+
+#include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/VertexStream.hpp"
+#include "minko/render/IndexStream.hpp"
 
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/StartDirection.hpp"
@@ -37,22 +45,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/particle/tools/VertexComponentFlags.hpp"
 
+#include "minko/math/Matrix4x4.hpp"
+
 using namespace minko::controller;
 using namespace minko::particle;
 
 #define EPSILON 0.001
 
-ParticleSystem::ParticleSystem(float			rate,
-							   FloatSamplerPtr	lifetime,
-							   ShapePtr			shape,
-							   StartDirection	startDirection,
-							   FloatSamplerPtr	startVelocity)
+ParticleSystem::ParticleSystem(AbstractContextPtr	context,
+							   AssetsLibraryPtr		assets,
+							   float				rate,
+							   FloatSamplerPtr		lifetime,
+							   ShapePtr				shape,
+							   StartDirection		startDirection,
+							   FloatSamplerPtr		startVelocity)
 	: _renderers			(scene::NodeSet::create(scene::NodeSet::Mode::AUTO)),
-	  _particlesCountLimit	(16000),
-	  _maxParticlesCount	(0),
-	  _liveParticlesCount	(0),
+	  _countLimit			(16000),
+	  _maxCount				(0),
+	  _liveCount			(0),
+	  _previousLiveCount	(0),
 	  _particles			(),
 	  _isInWorldSpace		(false),
+	  _isZSorted			(false),
 	  _useOldPosition		(false),
 	  _rate					(1 / rate),
 	  _lifetime				(lifetime),
@@ -60,10 +74,24 @@ ParticleSystem::ParticleSystem(float			rate,
 	  _startDirection		(startDirection),
 	  _startVelocity		(startVelocity),
 	  _createTimer			(0),
-	  _format				(VertexComponentFlags::DEFAULT),
-	  _floatsPerVertex		(5),
-	  _vertexStream			(0)
+	  _format				(VertexComponentFlags::DEFAULT)
 {
+	_geometry = geometry::ParticlesGeometry::create(context);
+	_material = data::Provider::create();
+	
+	auto view = math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+
+	_material->set("material/blending",		render::Blending::Mode::ALPHA)
+			 ->set("material/depthFunc",	render::CompareMode::LESS)
+			 ->set("transform/worldToScreenMatrix",	view);
+	
+
+	_effect = assets->effect("particles");
+
+	_surface = Surface::create(_geometry, 
+							   _material,
+							   _effect);
+
 	if (_shape == 0)
 		_shape = shape::Sphere::create(10);
 
@@ -75,6 +103,7 @@ ParticleSystem::ParticleSystem(float			rate,
 void
 ParticleSystem::initialize()
 {
+
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&ParticleSystem::targetAddedHandler,
 		shared_from_this(),
@@ -109,9 +138,8 @@ ParticleSystem::initialize()
 void
 ParticleSystem::targetAddedHandler(AbsCtrlPtr	ctrl,
 								   NodePtr 		target)
-{
-	std::cout << "Particle system added to node" << std::endl;
-
+{	
+	target->addController(_surface);
 	_renderers->select(targets().begin(), targets().end())->update();
 }
 
@@ -119,8 +147,7 @@ void
 ParticleSystem::targetRemovedHandler(AbsCtrlPtr ctrl,
 									 NodePtr	target)
 {
-	std::cout << "Particle system removed from node" << std::endl;
-
+	target->removeController(_surface);
 	_renderers->select(targets().begin(), targets().end())->update();
 }
 
@@ -131,12 +158,13 @@ ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
 {
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
-		std::cout << "Particle system linked to renderer" << std::endl;
-
-		_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
-			&ParticleSystem::enterFrameHandler,
-			shared_from_this(),
-			std::placeholders::_1));
+		if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
+		{
+			_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
+				&ParticleSystem::enterFrameHandler,
+				shared_from_this(),
+				std::placeholders::_1));
+		}
 	}
 }
 
@@ -146,8 +174,6 @@ ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
 {
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
-		std::cout << "Particle system unlinked from renderer" << std::endl;
-
 		_enterFrameSlots.erase(renderer); 
 	}
 }
@@ -155,8 +181,9 @@ ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
 
 void
 ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
-{
-	std::cout << "Enter frame : update particle system" << std::endl;
+{	
+	updateSystem(.03, true);
+	updateVertexStream();
 }
 
 void
@@ -404,7 +431,7 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 			
 	particle.alive 		= true;
 	
-	++_liveParticlesCount;
+	++_liveCount;
 
 	for (unsigned int i = 0; i < _initializers.size(); ++i)
 		_initializers[i]->initialize(particle, timeLived);
@@ -415,48 +442,48 @@ ParticleSystem::killParticle(unsigned int	particleIndex)
 {
 	_particles[particleIndex].alive = false;
 	
-	--_liveParticlesCount;
+	--_liveCount;
 }
 
 void
 ParticleSystem::updateMaxParticlesCount()
 {
 	unsigned int value = ceilf(_lifetime->max() / _rate - EPSILON);
-	value = value > _particlesCountLimit ? _particlesCountLimit : value;
+	value = value > _countLimit ? _countLimit : value;
 	
-	if (_maxParticlesCount == value)
+	if (_maxCount == value)
 		return;
 
-	_maxParticlesCount = value;
+	_maxCount = value;
 
-	_liveParticlesCount = 0;
+	_liveCount = 0;
 	for (unsigned int i = 0; i < _particles.size(); ++i)
 	{
 		if (_particles[i].alive)
 		{
-			if (_liveParticlesCount == _maxParticlesCount
+			if (_liveCount == _maxCount
 				|| _particles[i].timeLived >= _lifetime->max())
 				_particles[i].alive = false;
 			else
 			{
-				++_liveParticlesCount;
+				++_liveCount;
 				if (_particles[i].lifetime > _lifetime->max() || _particles[i].lifetime < _lifetime->min())
 					_particles[i].lifetime = _lifetime->value();
 			}
 		}
 	}
 	resizeParticlesVector();
-	initVertexStream();
+	_geometry->initStreams(_maxCount);
 }
 
 void
 ParticleSystem::resizeParticlesVector()
 {
-	_particles.resize(_maxParticlesCount);
+	_particles.resize(_maxCount);
 	if (_isZSorted)
 	{
-		_particleDistanceToCamera.resize(_maxParticlesCount);
-		_particleOrder.resize(_maxParticlesCount);
+		_particleDistanceToCamera.resize(_maxCount);
+		_particleOrder.resize(_maxCount);
 		for (unsigned int i = 0; i < _particleOrder.size(); ++i)
 			_particleOrder[i] = i;
 	}
@@ -496,7 +523,7 @@ ParticleSystem::updateParticleDistancesToCamera()
 void
 ParticleSystem::reset()
 {
-	_liveParticlesCount = 0;
+	_liveCount = 0;
 
 	for (unsigned particleIndex = 0; particleIndex < _particles.size(); ++particleIndex)
 	{
@@ -504,26 +531,6 @@ ParticleSystem::reset()
 	}
 }
 
-void
-ParticleSystem::initVertexStream()
-{
-	_vertexStream.resize(_floatsPerVertex * 4 * _maxParticlesCount);
-
-	for (unsigned int i = 0; i < _maxParticlesCount; ++i)
-	{
-		_vertexStream[i * _floatsPerVertex * 4] = -0.5;
-		_vertexStream[i * _floatsPerVertex * 4 + 1] = -0.5;
-
-		_vertexStream[_floatsPerVertex + i * _floatsPerVertex * 4] = 0.5;
-		_vertexStream[_floatsPerVertex + i * _floatsPerVertex * 4 + 1] = -0.5;
-
-		_vertexStream[2 * _floatsPerVertex + i * _floatsPerVertex * 4] = -0.5;
-		_vertexStream[2 * _floatsPerVertex + i * _floatsPerVertex * 4 + 1] = 0.5;
-
-		_vertexStream[3 * _floatsPerVertex + i * _floatsPerVertex * 4] = 0.5;
-		_vertexStream[3 * _floatsPerVertex + i * _floatsPerVertex * 4 + 1] = 0.5;
-	}
-}
 
 void
 ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
@@ -533,33 +540,56 @@ ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 
 	_format |= components;
 
+	VertexStreamPtr vs = _geometry->vertices();
+	unsigned int vertexSize = 5;
+
 	if (components & VertexComponentFlags::SIZE)
-		_floatsPerVertex += 1;
+	{
+		vs->addAttribute ("size", 1, vertexSize);
+		vertexSize += 1;
+	}
 
 	if (components & VertexComponentFlags::COLOR)
-		_floatsPerVertex += 3;
+	{
+		vs->addAttribute ("color", 3, vertexSize);
+		vertexSize += 3;
+	}
 
 	if (components & VertexComponentFlags::TIME)
-		_floatsPerVertex += 1;
+	{
+		vs->addAttribute ("time", 1, vertexSize);
+		vertexSize += 1;
+	}
 
 	if (components & VertexComponentFlags::OLD_POSITION)
-		_floatsPerVertex += 3;
+	{
+		vs->addAttribute ("old_Position", 3, vertexSize);
+		vertexSize += 3;
+	}
 
 	if (components & VertexComponentFlags::ROTATION)
-		_floatsPerVertex += 1;
+	{
+		vs->addAttribute ("rotation", 1, vertexSize);
+		vertexSize += 1;
+	}
 
 	if (components & VertexComponentFlags::SPRITEINDEX)
-		_floatsPerVertex += 1;
+	{
+		vs->addAttribute ("spriteIndex", 1, vertexSize);
+		vertexSize += 1;
+	}
 
 	if (!blockVSInit)
-		initVertexStream();
+		_geometry->initStreams(_maxCount);
 }
 
 unsigned int
 ParticleSystem::updateVertexFormat()
 {
 	_format = VertexComponentFlags::DEFAULT;
-	_floatsPerVertex = 5;
+	
+	_geometry->vertices()->addAttribute("offset", 2, 0);
+	_geometry->vertices()->addAttribute("position", 3, 2);
 
 	for (auto it = _initializers.begin();
 		 it != _initializers.end();
@@ -577,23 +607,27 @@ ParticleSystem::updateVertexFormat()
 
 	if (_useOldPosition)
 		addComponents(VertexComponentFlags::OLD_POSITION, true);
-
-	initVertexStream();
+	
+	_geometry->initStreams(_maxCount);
 	return _format;
 }
 
 void
 ParticleSystem::updateVertexStream()
 {
+	if (_liveCount == 0)
+		return;
+
 	if (_isZSorted)
 	{
 		updateParticleDistancesToCamera();
 		std::sort(_particleOrder.begin(), _particleOrder.end(), _comparisonObject);
 	}
+	
+	std::vector<float>& vsData = _geometry->vertices()->data();
+	float* vertexIterator	= &(*vsData.begin());
 
-	float* vertexIterator	= &(*_vertexStream.begin());
-
-	for (unsigned int particleIndex = 0; particleIndex < _maxParticlesCount; ++particleIndex)
+	for (unsigned int particleIndex = 0; particleIndex < _maxCount; ++particleIndex)
 	{
 		ParticleData* particle;
 
@@ -636,7 +670,15 @@ ParticleSystem::updateVertexStream()
 			if (_format & VertexComponentFlags::SPRITEINDEX)
 				setInVertexStream(vertexIterator, i++, particle->spriteIndex);
 
-			vertexIterator += 4 * _floatsPerVertex;
+			vertexIterator += 4 * _geometry->vertexSize();
 		}
+	}
+	_geometry->vertices()->upload();
+
+	if (_liveCount != _previousLiveCount)
+	{
+		std::cout << _liveCount << std::endl;
+		_geometry->indices()->upload(6 * _liveCount);
+		_previousLiveCount = _liveCount;
 	}
 }

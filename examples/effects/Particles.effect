@@ -1,0 +1,46 @@
+// particles effect
+{
+	"name"	: "particles",
+	
+	"attributeBindings"	: {
+		"offset"				: "geometry/vertex/attribute/offset",
+		"position"				: "geometry/vertex/attribute/position"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material/diffuse/rgba",
+		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
+		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+	},
+	
+	"stateBindings"	: {
+		"blendMode"				: "material/blendMode"
+	},
+	
+	"priority"		: 0,
+	"blendMode"		: ["one", "zero"],
+	"depthTest"		: [true, "less"],
+	
+	"passes"	: [{	
+		"vertexShader"	: "
+			attribute vec2 offset;
+			attribute vec3 position;
+
+			uniform mat4 modelToWorldMatrix;
+			uniform mat4 worldToScreenMatrix;
+
+			void main(void)
+			{
+				gl_Position =  (worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0) + vec4(offset, 0, 0));
+			}
+		",
+		"fragmentShader"	: "
+			uniform vec4 diffuseColor;
+
+			void main(void)
+			{
+				gl_FragColor = vec4(1, 1, 0, 1);
+			}
+		"
+	}]
+}
