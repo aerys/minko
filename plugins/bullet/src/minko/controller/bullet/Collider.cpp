@@ -32,7 +32,7 @@ bullet::Collider::Collider(float						mass,
 _mass(mass),
 	_worldTransform(Matrix4x4::create()),
 	_centerOfMassOffset(centerOfMassOffset),
-	_startScaleShearCorrection(Matrix4x4::create()),
+	_scaleCorrectionMatrix(Matrix4x4::create()),
 	_shape(shape),
 	_inertia(inertia),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
@@ -45,11 +45,11 @@ _mass(mass),
 	_transformChanged(Signal<Ptr>::create())
 {
 	_worldTransform->identity();
-	_startScaleShearCorrection->identity();
+	_scaleCorrectionMatrix->identity();
 }
 
 void
-	bullet::Collider::initializeWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
+	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
 	if (fabsf(fabsf(modelToWorldMatrix->determinant3x3()) - 1.0f) > std::numeric_limits<float>::epsilon())
 		throw std::invalid_argument("Colliders are currently incompatible with Transforms with scaling and shear.");
@@ -62,7 +62,8 @@ void
 
 	// record the corrective term that keeps the
 	// scale/shear lost by the collider's world transform
-	_startScaleShearCorrection	= Matrix4x4::create()
+	// @todo currently, scale/shear are not properly handled, the scale correction matrix always end up being the identity matrix...
+	_scaleCorrectionMatrix	= Matrix4x4::create()
 		->copyFrom(_worldTransform)
 		->invert()
 		->append(modelToWorldMatrix);
@@ -73,7 +74,7 @@ void
 {
 	_worldTransform
 		->copyFrom(colliderWorldTransform)
-		->append(_startScaleShearCorrection);
+		->append(_scaleCorrectionMatrix);
 
 	transformChanged()->execute(shared_from_this());
 }

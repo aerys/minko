@@ -45,7 +45,8 @@ bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	_parentAddedSlot(nullptr),
 	_parentRemovedSlot(nullptr)
 {
-
+	if (collider == nullptr)
+		throw std::invalid_argument("collider");
 }
 
 void
@@ -139,17 +140,35 @@ void
 
 	updateParentTransform(_parents);
 
-	_collider->initializeWorldTransform(_targetTransform->modelToWorldMatrix(true));
+	updateColliderWorldTransform();
 
 	auto nodeSet	= NodeSet::create(NodeSet::AUTO);
 	nodeSet->select(target->root())
 		->descendants(true)
 		->hasController<bullet::PhysicsWorld>();
 	if (nodeSet->nodes().size() != 1)
-		throw std::logic_error("ColliderController requires exactly one PhysicsWorld controller among the descendants of its target node.");
+	{
+		std::stringstream stream;
+		stream << "ColliderController requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
+		throw std::logic_error(stream.str());
+	}
 	_physicsWorld	= nodeSet->nodes().front()->controller<bullet::PhysicsWorld>();
 
 	_physicsWorld->addChild(_collider);
+}
+
+void 
+	bullet::ColliderController::updateColliderWorldTransform()
+{
+	if (_targetTransform == nullptr)
+		throw std::logic_error("The Transform of the ColliderController's target is invalid.");
+
+	// update the collider's world transform, and scale correction matrix
+	_collider->setWorldTransform(_targetTransform->modelToWorldMatrix(true));
+
+	// inject the new collider's world transform into the physics world's simulation
+	if (_physicsWorld)
+		_physicsWorld->setWorldTransformFromCollider(_collider);
 }
 
 void
@@ -171,7 +190,6 @@ void
 void
 	bullet::ColliderController::updateParentTransform(NodeSet::Ptr parents, Node::Ptr)
 {
-	std::cout << "updateParentTransform" << std::endl;
 	_parentTransform	= nullptr;
 	if (parents == nullptr || parents->nodes().empty())
 		return;
@@ -181,12 +199,13 @@ void
 		throw std::logic_error("All target's parents are expected to have a Transform.");
 
 	_parentTransform	= firstParent->controller<Transform>();
+
+	updateColliderWorldTransform();
 }
 
 void 
 	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
 {
-
 	auto worldToParentMatrix	= _parentTransform == nullptr
 		? Matrix4x4::create()->identity()
 		: Matrix4x4::create()->copyFrom(_parentTransform->modelToWorldMatrix(true))->invert();

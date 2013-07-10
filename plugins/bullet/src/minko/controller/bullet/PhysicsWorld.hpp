@@ -111,6 +111,9 @@ namespace minko
 				void 
 					update(float timeStep = 1.0f/60.0f);
 
+				void
+					setWorldTransformFromCollider(ColliderPtr);
+
 			private:
 				PhysicsWorld();
 
@@ -181,6 +184,8 @@ namespace minko
 					{
 						return _btCollisionObject;
 					}
+
+					void setWorldTransform(Matrix4x4Ptr);
 
 				private:
 					BulletCollider();
