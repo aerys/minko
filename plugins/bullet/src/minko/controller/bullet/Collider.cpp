@@ -35,9 +35,13 @@ _mass(mass),
 	_startScaleShearCorrection(Matrix4x4::create()),
 	_shape(shape),
 	_inertia(inertia),
-	_linearVelocity(nullptr),
-	_angularVelocity(nullptr),
-	_restitution(-1.0f),
+	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_linearDamping(0.0f),
+	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_angularDamping(0.0f),
+	_restitution(0.0f),
 	_transformChanged(Signal<Ptr>::create())
 {
 	_worldTransform->identity();
@@ -55,10 +59,6 @@ void
 	auto rotation		= modelToWorldMatrix->rotation();
 	auto translation	= modelToWorldMatrix->translation();
 	_worldTransform->initialize(rotation, translation);
-
-	//std::cout << "bullet::Collider::initializeWorldTransform\n\t- modelToWorldMatrix = " << std::to_string(modelToWorldMatrix)
-	//<< "\n\t- determinant = " << modelToWorldMatrix->determinant3x3()
-	//<< "\n\t-> _worldTransform = " << std::to_string(_worldTransform) << std::endl;
 
 	// record the corrective term that keeps the
 	// scale/shear lost by the collider's world transform
@@ -79,29 +79,25 @@ void
 }
 
 void
-	bullet::Collider::setLinearVelocity(Vector3::Ptr value)
+	bullet::Collider::setLinearVelocity(float x, float y, float z)
 {
-	if (_linearVelocity == nullptr)
-		_linearVelocity	= Vector3::create()->copyFrom(value);
-	else
-		_linearVelocity->copyFrom(value);
+	_linearVelocity->setTo(x, y, z);
 }
 
 void
-	bullet::Collider::setAngularVelocity(Vector3::Ptr value)
+	bullet::Collider::setAngularVelocity(float x, float y, float z)
 {
-	if (_angularVelocity == nullptr)
-		_angularVelocity	= Vector3::create()->copyFrom(value);
-	else
-		_angularVelocity->copyFrom(value);
+	_angularVelocity->setTo(x, y, z);
 }
 
 void
-	bullet::Collider::setLinearFactor(Vector3::Ptr value)
+	bullet::Collider::setLinearFactor(float x, float y, float z)
 {
+	_linearFactor->setTo(x, y, z);
 }
 
 void
-	bullet::Collider::setAngularFactor(Vector3::Ptr value)
+	bullet::Collider::setAngularFactor(float x, float y, float z)
 {
+	_angularFactor->setTo(x, y, z);
 }

@@ -201,8 +201,8 @@ void
 		Collider::Ptr		collider(it->first);
 		BulletCollider::Ptr	btCollider(it->second);
 
-		//if (collider->isStatic())
-		//	continue;
+		if (collider->isStatic())
+			continue;
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
