@@ -84,6 +84,13 @@ namespace minko
 
 				_data->set("geometry/vertex/size", _vertexSize);
 			}
+			
+			inline
+			unsigned int
+			vertexSize()
+			{
+				return _vertexSize;
+			};
 
 		protected:
 			Geometry() :
@@ -91,6 +98,13 @@ namespace minko
 				_vertexSize(0)
 			{
 			}
+
+			inline
+			void
+			vertexSize(unsigned int value)
+			{
+				_vertexSize = value;
+			};
 		};
 	}
 }

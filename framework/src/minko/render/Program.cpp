@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Program.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
 
 using namespace minko::render;
 
@@ -33,10 +34,13 @@ Program::upload()
 	_vertexShader = context()->createVertexShader();
 	_context->setShaderSource(_vertexShader, _vertexShaderSource);
 	_context->compileShader(_vertexShader);
+	std::cout << std::dynamic_pointer_cast<OpenGLES2Context> (_context)->getShaderCompilationLogs(_vertexShader) << std::endl << std::endl;
+
 
 	_fragmentShader = context()->createFragmentShader();
 	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
 	_context->compileShader(_fragmentShader);
+	std::cout << std::dynamic_pointer_cast<OpenGLES2Context> (_context)->getShaderCompilationLogs(_fragmentShader) << std::endl << std::endl;
 
 	_id = context()->createProgram();
 	_context->attachShader(_id, _vertexShader);
