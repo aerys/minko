@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/VertexStream.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/ParticleIndexStream.hpp"
 
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/StartDirection.hpp"
@@ -81,8 +81,8 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	
 	auto view = math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 
-	_material->set("material/blending",		render::Blending::Mode::ALPHA)
-			 ->set("material/depthFunc",	render::CompareMode::LESS)
+	_material->set("material/blending",		render::Blending::Mode::ADDITIVE)
+		->set("material/depthFunc",	render::CompareMode::ALWAYS)
 			 ->set("transform/worldToScreenMatrix",	view);
 	
 
@@ -677,8 +677,7 @@ ParticleSystem::updateVertexStream()
 
 	if (_liveCount != _previousLiveCount)
 	{
-		std::cout << _liveCount << std::endl;
-		_geometry->indices()->upload(6 * _liveCount);
+		std::static_pointer_cast<render::ParticleIndexStream>(_geometry->indices())->upload(_liveCount);
 		_previousLiveCount = _liveCount;
 	}
 }
