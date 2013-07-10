@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 		root->addChild(group)->addChild(camera);
 
         renderingController = RenderingController::create(assets->context());
-        renderingController->backgroundColor(0x7F7F7FFF);
+        renderingController->backgroundColor(0x000000FF);
 		camera->addController(renderingController);
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
