@@ -27,7 +27,14 @@ void
 IndexStream::upload()
 {
 	_id = _context->createIndexBuffer(_data.size());
+	
 	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+}
+
+void
+IndexStream::upload(unsigned int size)
+{	
+	_context->uploaderIndexBufferData(_id, 0, size, &_data[0]);
 }
 
 void
