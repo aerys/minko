@@ -182,8 +182,25 @@ ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
 void
 ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 {	
-	updateSystem(.03, true);
-	updateVertexStream();
+	static clock_t  previous = clock();
+	static float	time = 0;
+
+	clock_t now	= clock();
+	float deltaT = (float)(clock() - previous) / CLOCKS_PER_SEC;
+	
+	bool changed = false;
+
+	previous = now;
+	time += deltaT;
+
+	while (time > .016)
+	{
+		updateSystem(.016, true);
+		changed = true;
+		time -= .016;
+	}
+	if (changed)
+		updateVertexStream();
 }
 
 void
