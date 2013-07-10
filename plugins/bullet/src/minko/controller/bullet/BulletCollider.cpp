@@ -140,12 +140,39 @@ void
 		inertia.setZ(collider->inertia()->z());
 	}
 
-	_btCollisionObject	= std::shared_ptr<btRigidBody>(new btRigidBody(
+	// only rigid objects are considerered for the moment
+	auto btRigidCollisionObject	= std::shared_ptr<btRigidBody>(new btRigidBody(
 		collider->mass(),
 		_btMotionState.get(),
 		_btCollisionShape.get(),
 		inertia
 		));
+
+	// communicate several properties of the rigid object
+	btRigidCollisionObject->setLinearVelocity(btVector3(
+		collider->linearVelocity()->x(), 
+		collider->linearVelocity()->y(), 
+		collider->linearVelocity()->z()
+		));
+	btRigidCollisionObject->setLinearFactor(btVector3(
+		collider->linearFactor()->x(), 
+		collider->linearFactor()->y(), 
+		collider->linearFactor()->z()
+		));
+	btRigidCollisionObject->setAngularVelocity(btVector3(
+		collider->angularVelocity()->x(), 
+		collider->angularVelocity()->y(), 
+		collider->angularVelocity()->z()
+		));
+	btRigidCollisionObject->setAngularFactor(btVector3(
+		collider->angularFactor()->x(), 
+		collider->angularFactor()->y(), 
+		collider->angularFactor()->z()
+		));
+	btRigidCollisionObject->setDamping(collider->linearDamping(), collider->angularDamping());
+	btRigidCollisionObject->setRestitution(collider->restitution());
+
+	_btCollisionObject	= btRigidCollisionObject;
 }
 
 bullet::PhysicsWorld::BulletCollider::Ptr

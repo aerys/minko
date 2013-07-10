@@ -81,6 +81,9 @@ Quaternion::Ptr
 Quaternion::Ptr
 	Quaternion::fromMatrix(Matrix4x4ConstPtr matrix)
 {
+	if (fabsf(fabsf(matrix->determinant3x3()) - 1.0f) > 1e-6f)
+		throw std::invalid_argument("Specified matrix does not represent a rotation matrix.");
+		
 	const std::vector<float>& m(matrix->values());
 
 	// "From Quaternion to Matrix and Back" by JMP van Warenen
@@ -134,12 +137,6 @@ Quaternion::Ptr
 	quaternion[k1]	= s * (m[4] - s2*m[1]);
 	quaternion[k2]	= s * (m[2] - s1*m[8]);
 	quaternion[k3]	= s * (m[9] - s0*m[6]);
-
-	/*
-	quaternion[k1]	= s * (m[1] - s2*m[4]);
-	quaternion[k2]	= s * (m[8] - s1*m[2]);
-	quaternion[k3]	= s * (m[6] - s0*m[9]);
-	*/
 
 	return setTo(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
 }
