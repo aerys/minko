@@ -127,6 +127,12 @@ int main(int argc, char** argv)
 			particle::StartDirection::UP,
 			particle::sampler::Constant<float>::create(2.));
 
+		particleSystem->add(particle::modifier::StartForce::create(
+			particle::sampler::Constant<float>::create(0.),
+			particle::sampler::Constant<float>::create(-1.),
+			particle::sampler::Constant<float>::create(0.)
+			));
+
 		mesh->addController(particleSystem);
 
 		group->addChild(mesh);
