@@ -32,7 +32,7 @@ ParticleIndexStream::upload(unsigned int nParticles)
 	_context->uploaderIndexBufferData(_id, 0, size, &data()[0]);
 	
 	if(size < data().size())
-		_context->uploaderIndexBufferData(_id, size, data().size() - size, &_padding[0]);
+		_context->uploaderIndexBufferData(_id, size, data().size()/2 - size, &_padding[0]);
 }
 
 void 
