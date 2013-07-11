@@ -8,6 +8,8 @@ include 'examples'
 include 'framework'
 
 -- plugins
+include 'plugins/webgl'
+--include 'plugins/mk'
 include 'plugins/jpeg'
 include 'plugins/png'
 include 'plugins/bullet'
