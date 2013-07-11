@@ -74,7 +74,11 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	  _startDirection		(startDirection),
 	  _startVelocity		(startVelocity),
 	  _createTimer			(0),
-	  _format				(VertexComponentFlags::DEFAULT)
+	  _format				(VertexComponentFlags::DEFAULT),
+	  _updateStep			(1. / 60.),
+	  _playing				(false),
+	  _emitting				(true),
+	  _time					(0)
 {
 	_geometry = geometry::ParticlesGeometry::create(context);
 	_material = data::Provider::create();
@@ -156,6 +160,7 @@ void
 ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
 									 NodePtr	rendererNode)
 {
+	_previousClock = clock();
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
 		if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
@@ -182,22 +187,22 @@ ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
 void
 ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 {	
-	static clock_t  previous = clock();
-	static float	time = 0;
+	if(!_playing)
+		return;
 
 	clock_t now	= clock();
-	float deltaT = (float)(clock() - previous) / CLOCKS_PER_SEC;
+	float deltaT = (float)(clock() - _previousClock) / CLOCKS_PER_SEC;
 	
 	bool changed = false;
 
-	previous = now;
-	time += deltaT;
+	_previousClock = now;
+	_time += deltaT;
 
-	while (time > .016)
+	while (_time > _updateStep)
 	{
-		updateSystem(.016, true);
+		updateSystem(_updateStep, _emitting);
 		changed = true;
-		time -= .016;
+		_time -= _updateStep;
 	}
 	if (changed)
 		updateVertexStream();
@@ -540,6 +545,9 @@ ParticleSystem::updateParticleDistancesToCamera()
 void
 ParticleSystem::reset()
 {
+	if(_liveCount == 0)
+		return;
+
 	_liveCount = 0;
 
 	for (unsigned particleIndex = 0; particleIndex < _particles.size(); ++particleIndex)
