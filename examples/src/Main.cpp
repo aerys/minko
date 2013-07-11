@@ -121,9 +121,9 @@ int main(int argc, char** argv)
 		particleSystem = ParticleSystem::create(
 			context,
 			assets,
-			50,
-			particle::sampler::Constant<float>::create(10.),
-			particle::shape::Sphere::create(0.1),
+			5,
+			particle::sampler::Constant<float>::create(2.),
+			particle::shape::Sphere::create(2.),
 			particle::StartDirection::OUTWARD,
 			particle::sampler::Constant<float>::create(3.));
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 			));
 
 		mesh->addController(particleSystem);
-
+		particleSystem->play();
 		group->addChild(mesh);
 	});
 

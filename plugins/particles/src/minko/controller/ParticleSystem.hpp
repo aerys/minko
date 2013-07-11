@@ -247,6 +247,10 @@ namespace minko
 			void
 			updateSystem(float		timeStep,
 					     bool		emit);
+
+			void
+			fastForward(float time,
+						unsigned int updatesPerSecond = 0);
 			
 			void
 			reset();
