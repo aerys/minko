@@ -258,7 +258,7 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 	// usage Specifies the expected usage pattern of the data store.
 	//
 	// glBufferData creates and initializes a buffer object's data store
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GL_FLOAT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
 
 	_vertexBuffers.push_back(vertexBuffer);
 
@@ -282,7 +282,7 @@ OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 	// data Specifies a pointer to the new data that will be copied into the data store.
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
-	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GL_FLOAT), size * sizeof(GL_FLOAT), data);
+	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
 }
 
 void
@@ -330,8 +330,8 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 		size,
 		GL_FLOAT,
 		GL_FALSE,
-		sizeof(GL_FLOAT) * stride,
-		(void*)(sizeof(GL_FLOAT) * offset)
+		sizeof(GLfloat) * stride,
+		(void*)(sizeof(GLfloat) * offset)
 	);
 
 	if (currentVertexBuffer < 0)
@@ -345,7 +345,7 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GL_UNSIGNED_SHORT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
@@ -359,7 +359,7 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GL_UNSIGNED_SHORT), size * sizeof(GL_UNSIGNED_SHORT), data);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 }
 
 void
