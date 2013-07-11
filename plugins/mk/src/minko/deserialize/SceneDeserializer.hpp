@@ -39,10 +39,10 @@ namespace minko
 			typedef	std::map<std::string, Any>															NodeInfo;
 		
 		private:
-			typedef  std::shared_ptr<scene::Node> (SceneDeserializer::*NodeDeserializer)(NodeInfo		nodeInfo,
+			typedef  std::shared_ptr<scene::Node> (SceneDeserializer::*NodeDeserializer)(NodeInfo&		nodeInfo,
 																						 OptionsPtr		options,
-																						 ControllerMap	controllerMap,
-																						 NodeMap		nodeMap);
+																						 ControllerMap&	controllerMap,
+																						 NodeMap&		nodeMap);
 
 			// attributes
 		private:
@@ -67,43 +67,43 @@ namespace minko
 			}
 
 			std::shared_ptr<scene::Node>
-			deserializeScene(Qark::Object	sceneObject,
-							 Qark::Object	assetsObject,
+			deserializeScene(Qark::Object&	sceneObject,
+							 Qark::Object&	assetsObject,
 							 OptionsPtr		options,
-							 ControllerMap	controllerMap,
-							 NodeMap		nodeMap);
+							 ControllerMap&	controllerMap,
+							 NodeMap&		nodeMap);
 
 		private:
 			std::shared_ptr<scene::Node>
-			deserializeNode(Qark::Object	nodeObject,
+			deserializeNode(Qark::Object&	nodeObject,
 							OptionsPtr		options,
-							ControllerMap	controllerMap,
-							NodeMap			nodeMap);
+							ControllerMap&	controllerMap,
+							NodeMap&		nodeMap);
 
 
 			std::shared_ptr<scene::Node>
-			deserializeGroup(NodeInfo		nodeInfo,
-							OptionsPtr		options,
-							ControllerMap	controllerMap,
-							NodeMap			nodeMap);
-
-			std::shared_ptr<scene::Node>
-			deserializeMesh(NodeInfo		nodeInfo,
-							OptionsPtr		options,
-							ControllerMap	controllerMap,
-							NodeMap			nodeMap);
-
-			std::shared_ptr<scene::Node>
-			deserializeCamera(NodeInfo		nodeInfo,
-							  OptionsPtr	options,
-							  ControllerMap	controllerMap,
-							  NodeMap		nodeMap);
-
-			std::shared_ptr<scene::Node>
-			deserializeLight(NodeInfo		nodeInfo,
+			deserializeGroup(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap	controllerMap,
-							 NodeMap		nodeMap);
+							 ControllerMap&	controllerMap,
+							 NodeMap&		nodeMap);
+
+			std::shared_ptr<scene::Node>
+			deserializeMesh(NodeInfo&		nodeInfo,
+							OptionsPtr		options,
+							ControllerMap&	controllerMap,
+							NodeMap&			nodeMap);
+
+			std::shared_ptr<scene::Node>
+			deserializeCamera(NodeInfo&			nodeInfo,
+							  OptionsPtr		options,
+							  ControllerMap&	controllerMap,
+							  NodeMap&			nodeMap);
+
+			std::shared_ptr<scene::Node>
+			deserializeLight(NodeInfo&		nodeInfo,
+							 OptionsPtr		options,
+							 ControllerMap&	controllerMap,
+							 NodeMap&		nodeMap);
 
 			void
 			initializeNodeDeserializer();

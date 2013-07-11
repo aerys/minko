@@ -135,6 +135,9 @@ namespace minko
 		Ptr
 		load();
 
+		AbsParserPtr
+		parser(std::string extension);
+
 	private:
 		AssetsLibrary(AbsContextPtr context);
 
