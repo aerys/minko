@@ -23,6 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Any.hpp"
 #include "minko/Qark.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/deserialize/MkTypes.hpp"
+#include "minko/deserialize/NameConverter.hpp"
 
 namespace minko
 {
@@ -30,6 +33,7 @@ namespace minko
 	{
 		class TypeDeserializer
 		{
+
 		public:
 			
 			template <typename T>
@@ -61,7 +65,7 @@ namespace minko
 			std::shared_ptr<math::Matrix4x4>
 			matrix4x4(Any matrixObject)
 			{
-				Qark::ByteArray						matrixData = Any::cast<Qark::ByteArray>(matrixObject);
+				Qark::ByteArray&					matrixData = Any::cast<Qark::ByteArray&>(matrixObject);
 				std::stringstream					stream;
 				std::shared_ptr<math::Matrix4x4>	matrix = math::Matrix4x4::create();
 				std::vector<float>					datas;
@@ -80,6 +84,51 @@ namespace minko
 				}
 
 				return matrix->initialize(datas)->transpose();
+			}
+
+			static
+			std::shared_ptr<data::Provider>
+			provider(std::vector<Any>&									properties,
+					 std::map<int, std::shared_ptr<resource::Texture>>	idToTexture,
+					 std::shared_ptr<NameConverter>						nameConverter)
+			{
+				// temp
+				auto view			= math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+				auto lightDirection = math::Vector3::create(0.f, -1.f, -1.f);
+
+				std::shared_ptr<data::Provider> material = data::Provider::create();
+
+				for (unsigned int propertyId = 0; propertyId < properties.size(); ++propertyId)
+				{
+					Qark::Map		property		= Any::cast<Qark::Map&>(properties[propertyId]);
+					Qark::Map		propertyValue	= Any::cast<Qark::Map&>(property["value"]);
+					std::string		propertyName	= Any::cast<std::string&>(property["name"]);
+					int				type			= Any::cast<int>(propertyValue["type"]);
+
+					if (type == MkTypes::TEXTURE_RESOURCE && propertyName != "")
+						material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(propertyValue["id"])]);
+					if (type == MkTypes::NUMBER && propertyName == "diffuseColor")
+					{
+						unsigned int color = 0;
+						if (typeid(unsigned int) == propertyValue["value"].type())
+							color = Any::cast<unsigned int>(propertyValue["value"]);
+						else 
+							color = Any::cast<int>(propertyValue["value"]);
+
+
+						unsigned int red	= (color & 0xFF000000) >> 24;
+						unsigned int blue	= (color & 0x00FF0000) >> 16;
+						unsigned int green	= (color & 0x0000FF00) >> 8;
+						unsigned int alpha	= (color & 0x000000FF);
+
+						material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0, float(blue) / 255.0, float(green) / 255.0, float(alpha) / 255.0));
+					}
+				}
+
+				material->set("transform/worldToScreenMatrix",	view);
+				material->set("light/direction",				lightDirection);
+
+				return material;
 			}
 		};
 	}

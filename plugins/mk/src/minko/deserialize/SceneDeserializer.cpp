@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/AbstractController.hpp"
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/deserialize/NodeDeserializer.hpp"
+#include "minko/deserialize/AssetsDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -35,13 +36,18 @@ namespace minko
 	namespace deserialize
 	{
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeScene(Qark::Object		sceneObject,
-										    Qark::Object		assetsObject,
+		SceneDeserializer::deserializeScene(Qark::Object&		sceneObject,
+										    Qark::Object&		assetsObject,
 										    OptionsPtr			options,
-										    ControllerMap		controllerMap,
-										    NodeMap				nodeMap)
+										    ControllerMap&		controllerMap,
+										    NodeMap&			nodeMap)
 		{
 			initializeNodeDeserializer();
+
+			std::shared_ptr<AssetsDeserializer> assetsDeserializer = AssetsDeserializer::create(assetsObject, options->assetsLibrary());
+
+			assetsDeserializer->extract(options->parseOptions(), options->nameConverter());
+			options->deserializedAssets(assetsDeserializer);
 
 			return deserializeNode(sceneObject, options, controllerMap, nodeMap);
 		}
@@ -56,51 +62,56 @@ namespace minko
 		}
 
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeNode(Qark::Object		nodeObject,
-										   OptionsPtr		options,
-										   ControllerMap	controllerMap,
-										   NodeMap			nodeMap)
+		SceneDeserializer::deserializeNode(Qark::Object&		nodeObject,
+										   OptionsPtr			options,
+										   ControllerMap&		controllerMap,
+										   NodeMap&				nodeMap)
 		{
-			NodeInfo nodeInformation = Any::cast<NodeInfo>(nodeObject);
+			NodeInfo& nodeInformation = Any::cast<NodeInfo&>(nodeObject);
 
-			int type			= Any::cast<int>(nodeInformation["type"]);
+			int& type			= Any::cast<int&>(nodeInformation["type"]);
 			NodeDeserializer f	= _nodeDeserializer[type];
 
 			return (this->*f)(nodeInformation, options, controllerMap, nodeMap);
 		}
 
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeGroup(NodeInfo		nodeInfo,
+		SceneDeserializer::deserializeGroup(NodeInfo&		nodeInfo,
 											OptionsPtr		options,
-											ControllerMap	controllerMap,
-											NodeMap			nodeMap)
+											ControllerMap&	controllerMap,
+											NodeMap&		nodeMap)
 		{
+			std::cout << "start deserializer group" << std::endl << std::flush;
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeGroup(nodeInfo, options, controllerMap, nodeMap);
-
-			std::vector<Any> children = Any::cast<std::vector<Any>>(nodeInfo["children"]);
+			std::cout << "end deserializer group" << std::endl << std::flush;
+			
+			std::vector<Any>& children = Any::cast<std::vector<Any>&>(nodeInfo["children"]);
+			std::cout << "start deserializer children" << std::endl << std::flush;
 
 			for (unsigned int i = 0; i < children.size(); ++i)
 				node->addChild(deserializeNode(children[i], options, controllerMap, nodeMap));
-			
+			std::cout << "end deserializer children" << std::endl << std::flush;
+
 			return node;
 		}
 
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeMesh(NodeInfo			nodeInfo,
+		SceneDeserializer::deserializeMesh(NodeInfo&		nodeInfo,
 										   OptionsPtr		options,
-										   ControllerMap	controllerMap,
-										   NodeMap			nodeMap)
+										   ControllerMap&	controllerMap,
+										   NodeMap&			nodeMap)
 		{
+			std::cout << "start deserializer mesh" << std::endl << std::flush;
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, controllerMap, nodeMap);
-
+			std::cout << "end deserializer mesh" << std::endl << std::flush;
 			return node;
 		}
 
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeCamera(NodeInfo		nodeInfo,
+		SceneDeserializer::deserializeCamera(NodeInfo&		nodeInfo,
 										     OptionsPtr		options,
-											 ControllerMap	controllerMap,
-											 NodeMap		nodeMap)
+											 ControllerMap&	controllerMap,
+											 NodeMap&		nodeMap)
 		{
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeCamera(nodeInfo, options, controllerMap, nodeMap);
 
@@ -108,10 +119,10 @@ namespace minko
 		}
 
 		std::shared_ptr<scene::Node>
-		SceneDeserializer::deserializeLight(NodeInfo		nodeInfo,
+		SceneDeserializer::deserializeLight(NodeInfo&		nodeInfo,
 										    OptionsPtr		options,
-											ControllerMap	controllerMap,
-											NodeMap			nodeMap)
+											ControllerMap&	controllerMap,
+											NodeMap&		nodeMap)
 		{
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeLight(nodeInfo, options, controllerMap, nodeMap);
 

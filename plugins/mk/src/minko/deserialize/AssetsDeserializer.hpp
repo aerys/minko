@@ -20,71 +20,58 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
+#include "minko/Any.hpp"
+#include "minko/AssetsLibrary.hpp"
+#include "minko/deserialize/NameConverter.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace deserialize
 	{
-		class AbstractController
+		class AssetsDeserializer
 		{
-			friend class scene::Node;
-
 		public:
-			typedef std::shared_ptr<AbstractController>	Ptr;
+			typedef std::shared_ptr<AssetsDeserializer> Ptr;
 
 		private:
-			std::vector<std::shared_ptr<scene::Node>>					_targets;
+			typedef std::map<int, std::shared_ptr<resource::Texture>>	TextureMap;
+			typedef std::map<int, std::shared_ptr<data::Provider>>		MaterialMap;
 
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
+		private:
+			TextureMap							_idToTexture;
+			MaterialMap							_idToMaterial;
+			Any									_assetsData;
+			std::shared_ptr<AssetsLibrary>		_library;
 
 		public:
-			AbstractController() :
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
+			inline static
+			Ptr
+			create(Any								assetsData, 
+				   std::shared_ptr<AssetsLibrary>	library)
 			{
-			}
-
-			virtual
-			~AbstractController()
-			{
+				return std::shared_ptr<AssetsDeserializer>(new AssetsDeserializer(assetsData, library));
 			}
 
 			inline
-			const std::vector<std::shared_ptr<scene::Node>>&
-			targets()
+			std::shared_ptr<data::Provider>
+			material(int id)
 			{
-				return _targets;
+				return _idToMaterial[id];
 			}
 
 			inline
-			const unsigned int
-			numTargets()
+			std::shared_ptr<resource::Texture>
+			texture(int id)
 			{
-				return _targets.size();
+				return _idToTexture[id];
 			}
 
-			inline
-			std::shared_ptr<scene::Node>
-			getTarget(unsigned int index)
-			{
-				return _targets[index];
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetAdded()
-			{
-				return _targetAdded;
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetRemoved()
-			{
-				return _targetRemoved;
-			}
+			void
+			extract(std::shared_ptr<file::Options>				options,
+					std::shared_ptr<deserialize::NameConverter> nameConverter);
+		private:
+			AssetsDeserializer(Any								assetsData,
+							   std::shared_ptr<AssetsLibrary>	library);
 		};
 	}
 }

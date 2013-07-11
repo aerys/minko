@@ -20,71 +20,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace deserialize
 	{
-		class AbstractController
+		class NameConverter
 		{
-			friend class scene::Node;
-
 		public:
-			typedef std::shared_ptr<AbstractController>	Ptr;
+			typedef std::shared_ptr<NameConverter> Ptr;
 
 		private:
-			std::vector<std::shared_ptr<scene::Node>>					_targets;
-
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
+			std::map<std::string, std::string> _asNameToCppName;
 
 		public:
-			AbstractController() :
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
+			inline static
+			Ptr
+			create()
 			{
+				return std::shared_ptr<NameConverter>(new NameConverter());
 			}
 
-			virtual
-			~AbstractController()
-			{
-			}
+			std::string
+			convertString(std::string original);
 
-			inline
-			const std::vector<std::shared_ptr<scene::Node>>&
-			targets()
-			{
-				return _targets;
-			}
+			void
+			initialize();
 
-			inline
-			const unsigned int
-			numTargets()
-			{
-				return _targets.size();
-			}
-
-			inline
-			std::shared_ptr<scene::Node>
-			getTarget(unsigned int index)
-			{
-				return _targets[index];
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetAdded()
-			{
-				return _targetAdded;
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetRemoved()
-			{
-				return _targetRemoved;
-			}
+		private:
+			NameConverter();
 		};
 	}
 }
