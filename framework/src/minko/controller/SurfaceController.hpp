@@ -69,6 +69,9 @@ namespace minko
 				return _geometry;
 			}
 
+			void
+			geometry(std::shared_ptr<geometry::Geometry> geometry);
+
 			inline
 			std::shared_ptr<data::Provider>
 			material()

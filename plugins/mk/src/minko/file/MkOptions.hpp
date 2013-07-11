@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/AssetsLibrary.hpp"
+#include "minko/deserialize/AssetsDeserializer.hpp"
+#include "minko/deserialize/NameConverter.hpp"
 
 namespace minko
 {
@@ -33,14 +35,19 @@ namespace minko
 		typedef std::shared_ptr<MkOptions> Ptr;
 
 	private:
-		std::shared_ptr<AssetsLibrary>	_assetsLibary;
-		std::shared_ptr<Options>		_options;
+		std::shared_ptr<AssetsLibrary>						_assetsLibary;
+		std::shared_ptr<Options>							_options;
+		std::shared_ptr<deserialize::AssetsDeserializer>	_deserilizeAssets;
+		std::shared_ptr<deserialize::NameConverter>			_nameConverter;
+
+	public:
+			unsigned int									_numMesh;
 
 	public:
 		inline static
 		Ptr
-		create(std::shared_ptr<file::Options>		options,
-			   std::shared_ptr<AssetsLibrary>		assetLibrary)
+		create(std::shared_ptr<file::Options>					options,
+			   std::shared_ptr<AssetsLibrary>					assetLibrary)
 		{
 			return std::shared_ptr<MkOptions>(new MkOptions(options, assetLibrary));
 		}
@@ -53,18 +60,41 @@ namespace minko
 		}
 
 		inline
+		std::shared_ptr<deserialize::AssetsDeserializer>
+		deserializedAssets()
+		{
+			return _deserilizeAssets;
+		}
+
+		inline
+		void
+		deserializedAssets(std::shared_ptr<deserialize::AssetsDeserializer> assets)
+		{
+			_deserilizeAssets = assets;
+		}
+
+		inline
 		std::shared_ptr<Options>
 		parseOptions()
 		{
 			return _options;
 		}
 
-	protected:
-		MkOptions(std::shared_ptr<file::Options>	options,
-			   std::shared_ptr<AssetsLibrary>		assetLibrary):
-			_options(options),
-			_assetsLibary(assetLibrary)
+		inline
+		std::shared_ptr<deserialize::NameConverter>
+		nameConverter()
 		{
+			return _nameConverter;
+		}
+
+	protected:
+		MkOptions(std::shared_ptr<file::Options>				options,
+			   std::shared_ptr<AssetsLibrary>					assetLibrary):
+			_options(options),
+			_assetsLibary(assetLibrary),
+			_numMesh(0)
+		{
+			_nameConverter = deserialize::NameConverter::create();
 		}
 	};
 	}

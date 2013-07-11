@@ -29,6 +29,17 @@ namespace minko
 		class MkTypes
 		{
 		public:
+
+			static const unsigned BOOLEAN					= 0;
+			static const unsigned NUMBER 					= 1;
+			static const unsigned POINT						= 2;
+			static const unsigned VECTOR4					= 3;
+			static const unsigned MATRIX4X4 				= 4;
+			static const unsigned VECTORN					= 5;
+			static const unsigned VECTORV4					= 6;
+			static const unsigned VECTORM4X4				= 7;
+			static const unsigned TEXTURE_RESOURCE			= 8;
+
 			static const unsigned int GROUP					= 0;
 			static const unsigned int MESH					= 1;
 			static const unsigned int SYMBOL				= 2;

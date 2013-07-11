@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/TransformController.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/deserialize/GeometryDeserializer.hpp"
 
 namespace minko
 {
@@ -40,7 +41,6 @@ namespace minko
 			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>	ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
 			typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
-
 
 		private:
 			inline static
@@ -70,7 +70,7 @@ namespace minko
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeMesh(NodeInfo			nodeInfo,
+			deserializeMesh(NodeInfo		nodeInfo,
 							OptionsPtr		options,
 							ControllerMap	controllerMap,
 							NodeMap			nodeMap)
@@ -80,20 +80,41 @@ namespace minko
 
 				mesh->addController(controller::TransformController::create());
 				mesh->controller<controller::TransformController>()->transform()->copyFrom(transformMatrix);
-				// temp
-				auto view			= math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-				auto color			= math::Vector4::create(0.f, 0.f, 1.f, 1.f);
-				auto lightDirection = math::Vector3::create(0.f, -1.f, -1.f);
+
+				Qark::ByteArray		geometryObject;
+				int					copyId			= -1;
+				std::string			geometryName	= "";
+				bool				technique		= false;
+				bool				iscopy			= false;
+
+				if (nodeInfo.find("technique") != nodeInfo.end())
+					technique = Any::cast<bool&>(nodeInfo["technique"]);
+
+				if (nodeInfo.find("copyId") != nodeInfo.end())
+				{
+					iscopy = true;
+					copyId = Any::cast<int&>(nodeInfo["copyId"]);
+				}
+				else
+				{
+					geometryObject	= Any::cast<Qark::ByteArray&>(nodeInfo["geometry"]);
+					copyId			= Any::cast<int&>(nodeInfo["geometryId"]);
+				}
+				if (nodeInfo.find("geometryName") != nodeInfo.end())
+					geometryName = Any::cast<std::string&>(nodeInfo["geometryName"]);
+
+
+				std::vector<Any>&	bindingsId	= Any::cast<std::vector<Any>&>(nodeInfo["bindingsIds"]);
+				int					materialId	= Any::cast<int&>(bindingsId[0]);	
 
 				mesh->addController(
 					controller::SurfaceController::create(
 					options->assetsLibrary()->geometry("cube"),
-					data::Provider::create()
-					->set("material/diffuse/rgba",			color)
-					->set("transform/worldToScreenMatrix",	view)
-					->set("light/direction",				lightDirection)
-					->set("material/diffuse/map",			options->assetsLibrary()->texture("box3.png")),
+					options->deserializedAssets()->material(materialId),
 					options->assetsLibrary()->effect("texture")));
+
+				//if (options->_numMesh++ < 120)
+					GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
 
 				return mesh;
 			}

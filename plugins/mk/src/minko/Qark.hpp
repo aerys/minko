@@ -299,8 +299,10 @@ namespace minko
 		void
 		decodeMap(std::stringstream& stream, Object& value)
 		{
-			std::map<String, Any>	map;
 			unsigned short			size = 0;
+
+			value = Map();
+			Map& map = Any::cast<Map&>(value);
 
 			read(stream, size);
 
@@ -310,14 +312,20 @@ namespace minko
 			{
 				std::string key;
 				Any			mappedValue = 0;
-
+				
 				decodeString(stream, key);
-				decodeRecursive(stream, mappedValue);
 
-				map[key] = mappedValue;
+				map[key] = 0;
+				decodeRecursive(stream, map[key]);
+
+				//map.insert(std::pair<String, Any>(key, mappedValue));
 				size--;
 			}
-			value = map;
+			//value = map;
+
+
+
+			//value = &map;
 		}
 
 		static
@@ -338,19 +346,28 @@ namespace minko
 		void
 		decodeArray(std::stringstream& stream, Object& value)
 		{
-			Array			list;
 			unsigned short	size = 0;
+
+			value = Array();
+			Array& list = Any::cast<Array&>(value);
 
 			read(stream, size);
 
 			for (short i = 0; i < size; ++i)
 			{
-				Any  newElement = 0;
-				decodeRecursive(stream, newElement);
-				list.push_back(newElement);
+				//Any  newElement = 0;
+				list.push_back(0);
+				decodeRecursive(stream, list[i]);
+				//list.push_back(newElement);
 			}
 
-			value = list;
+			//value = &list;
+
+			//value = list;
+
+			//Any tmp(list);
+
+			//value.swap(tmp);
 		}
 
 		static
@@ -376,22 +393,29 @@ namespace minko
 		{
 			bool endian = false;
 			int  length = 0;
-
 			read(stream, endian);
 			read(stream, length);
 
-			ByteArray	bytes;
+			//value = ByteArray();
+			//ByteArray& bytes = Any::cast<ByteArray&>(value);
 
-			while (length > 0)
-			{
-				char		newByte = 0;
+			char* data = new char[length];
 
-				read(stream, newByte);
-				bytes.push_back(newByte);
-				length--;
-			}
+			stream.read(data, length);
 
-			value = bytes;
+			//bytes.assign(data, data+length);
+			value = ByteArray(data, data + length);
+			//ByteArray bytes(data, data+length);
+
+			//Any tmp(bytes);
+
+			//value.swap(tmp);
+
+			//value
+
+			//value = &bytes;
+
+			delete[] data;
 		}
 
 	};
