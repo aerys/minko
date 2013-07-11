@@ -172,18 +172,6 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 		auto parser = _parsers[extension]();
 		
 		parser->parse(loader->filename(), _filenameToOptions[filename], loader->data(), shared_from_this());
-
-		/*auto fxParser = std::dynamic_pointer_cast<file::EffectParser>(parser);
-		if (fxParser)
-			effect(fxParser->effectName(), fxParser->effect());
-		
-		auto textureParser = std::dynamic_pointer_cast<file::AbstractTextureParser>(parser);
-		if (textureParser)
-			texture(filename, textureParser->texture());
-
-		auto modelParser = std::dynamic_pointer_cast<file::AbstractModelParser>(parser);
-		if (modelParser)
-			node(filename, modelParser->node());*/
 	}
 	else
 		blob(filename, loader->data());
@@ -196,4 +184,10 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 
 		_complete->execute(shared_from_this());
 	}
+}
+
+AssetsLibrary::AbsParserPtr
+AssetsLibrary::parser(std::string extension)
+{
+	return _parsers[extension]();
 }

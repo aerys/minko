@@ -13,8 +13,8 @@ using namespace minko::controller;
 using namespace minko::math;
 
 RenderingController::Ptr renderingController;
-auto mesh = scene::Node::create("mesh");
-auto group = scene::Node::create("group");
+auto mesh	= scene::Node::create("mesh");
+auto group	= scene::Node::create("group");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -99,7 +99,7 @@ testMk(AssetsLibrary::Ptr assets)
 int main(int argc, char** argv)
 {
     glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
@@ -117,10 +117,13 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/model.mk");
+		->queue("models/sponza.mk");
 
 	assets->defaultOptions()->includePaths().push_back("effects");
 	assets->defaultOptions()->includePaths().push_back("textures");
+
+	std::vector<unsigned short> t(42);
+	auto ib = resource::IndexStream::create(context, t);
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -134,7 +137,7 @@ int main(int argc, char** argv)
 		camera->addController(renderingController);
 
 		group->addController(TransformController::create());
-		group->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -25.f);
+		group->controller<TransformController>()->transform()->appendTranslation(0.f, -4.f, -5.f);
 		group->controller<TransformController>()->transform()->prependRotationY(3.14/4);
 
 		/*auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
@@ -156,7 +159,7 @@ int main(int argc, char** argv)
 			assets->effect("vertex normal")
 		));*/
 
-		group->addChild(assets->node("models/model.mk"));
+		group->addChild(assets->node("models/sponza.mk"));
 
 		//group->addChild(mesh);
 		//testMk(assets);
@@ -181,10 +184,10 @@ int main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
     {
         //mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
-		//group->controller<TransformController>()->transform()->prependRotationY(.01f);
+		group->controller<TransformController>()->transform()->prependRotationY(.01f);
 	    renderingController->render();
 
-	    //printFramerate();
+	    printFramerate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
