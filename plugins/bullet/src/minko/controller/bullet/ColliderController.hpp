@@ -58,7 +58,7 @@ namespace minko
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
-				Signal<ColliderPtr>::Slot				_transformChangedSlot;
+				Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
 				Signal<NodeSetPtr, NodePtr>::Slot		_parentAddedSlot;
 				Signal<NodeSetPtr, NodePtr>::Slot		_parentRemovedSlot;
 
@@ -88,7 +88,7 @@ namespace minko
 				void
 					removedHandler(NodePtr, NodePtr, NodePtr);
 				void
-					transformChangedHandler(ColliderPtr);
+					colliderTransformChangedHandler(ColliderPtr);
 				void
 					updateParentTransform(NodeSetPtr, NodePtr node = nullptr);
 				void 
