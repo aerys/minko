@@ -19,14 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "WebGLContext.hpp"
 
-#define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
-# include <GL/glut.h>
-#elif _WIN32
-# include "GL/glew.h"
-#else
-# include <GL/glew.h>
-#endif
+#ifdef EMSCRIPTEN
+#include <GLES2/gl2.h>
+#include <EGL/egl.h>
+#else // EMSCRIPTEN
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
 
 #include <minko/render/CompareMode.hpp>
 
@@ -80,10 +78,6 @@ WebGLContext::initializeDepthFuncsMap()
 
 WebGLContext::WebGLContext()
 {
-#ifdef _WIN32
-    glewInit();
-#endif
-glewInit();
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 }
@@ -136,6 +130,7 @@ WebGLContext::clear(float 			red,
 	// glClearColor specify clear values for the color buffers
 	glClearColor(red, green, blue, alpha);
 
+
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml
 	//
 	// void glClearDepth(GLdouble depth);
@@ -143,7 +138,11 @@ WebGLContext::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+	#ifdef EMSCRIPTEN
+	glClearDepthf(depth);
+#else // EMSCRIPTEN
 	glClearDepth(depth);
+#endif // EMSCRIPTEN
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -750,21 +749,10 @@ void
 WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
 {
 	//throw std::logic_error("WebGLContext::setDepthTest is not reimplemented yet");
-	/*
-	if (depthMask != _currentDepthMask || depthFunc != _currentDepthFunc)
-	{
-		_currentDepthMask = depthMask;
-		_currentDepthFunc = depthFunc;
-
-		glDepthMask(depthMask);
-		glDepthFunc(_depthFuncs[depthFunc]);
-	}
-	*/
 }
 
 void
 WebGLContext::readPixels(unsigned char* pixels)
 {
 	//throw std::logic_error("WebGLContext::readPixels is not reimplemented yet");
-	//glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
