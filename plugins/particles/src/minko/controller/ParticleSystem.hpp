@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include <time.h>
+
 #include "minko/ParticlesCommon.hpp"
 #include "minko/controller/AbstractController.hpp"
 
@@ -114,7 +116,13 @@ namespace minko
 			float														_createTimer;
 
 			int															_format;
-			
+
+			float														_updateStep;
+			bool														_playing;
+			bool														_emitting;
+			clock_t														_previousClock;
+			float														_time;
+
 		public:
 			static
 			Ptr
@@ -176,6 +184,63 @@ namespace minko
 			startVelocity(FloatSamplerPtr value)
 			{
 				_startVelocity = value;
+			};
+
+			inline
+			void
+			updateRate(unsigned int updatesPerSecond)
+			{
+				_updateStep = 1. / updatesPerSecond;
+			};
+			
+			inline
+			void 
+			playing(bool value)
+			{
+				if (value != _playing)
+				{
+					_playing = value;
+					if (_playing)
+						_previousClock = clock();
+				}
+			};
+			
+			inline
+			void 
+			emitting(bool value)
+			{
+					_emitting = value;
+			};
+
+			inline
+			void
+			play()
+			{
+				reset();
+				playing(true);
+			};
+
+			inline
+			void
+			stop()
+			{
+				reset();
+				playing(false);
+				updateVertexStream();
+			};
+
+			inline
+			void
+			pause()
+			{
+				playing(false);
+			};
+
+			inline
+			void
+			resume()
+			{
+				playing(true);
 			};
 
 		public:
