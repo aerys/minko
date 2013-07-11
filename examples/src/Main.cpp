@@ -4,8 +4,13 @@
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoBullet.hpp"
+#include "minko/MinkoWebGL.hpp"
 
+#ifdef EMSCRIPTEN
+#include "GL/glut.h"
+#else
 #include "GLFW/glfw3.h"
+#endif // EMSCRIPTEN
 
 #define FRAMERATE 60
 
@@ -38,6 +43,21 @@ void
 		numFrames = 0;
 	}
 }
+
+#ifdef EMSCRIPTEN
+void
+	glutRenderScene()
+{
+	//mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	renderingController->render();
+
+	//printFramerate();
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+
+}
+#endif // EMSCRIPTEN
 
 /*void screenshotFunc(int)
 {
@@ -130,9 +150,20 @@ bool testQuaternion(uint ax, float ang)
 
 int main(int argc, char** argv)
 {
+#ifdef EMSCRIPTEN
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Minko Examples");
+
+	auto context = render::WebGLContext::create();
+#else
 	glfwInit();
 	auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
 	glfwMakeContextCurrent(window);
+
+	auto context = render::OpenGLES2Context::create();
+#endif // EMSCRIPTEN
 
 	/*
 	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
@@ -144,8 +175,6 @@ int main(int argc, char** argv)
 	}
 	}
 	*/
-
-	auto context = render::OpenGLES2Context::create();
 
 	context->setBlendMode(render::Blending::Mode::DEFAULT);
 
@@ -282,6 +311,11 @@ int main(int argc, char** argv)
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
 
+#ifdef EMSCRIPTEN
+	glutDisplayFunc(glutRenderScene);
+	glutMainLoop();
+	return 0;
+#else
 	while(!glfwWindowShouldClose(window))
 	{
 		//mesh->controller<Transform>()->transform()->prependRotationY(.01f);
@@ -299,4 +333,5 @@ int main(int argc, char** argv)
 	glfwTerminate();
 
 	exit(EXIT_SUCCESS);
+#endif // EMSCRIPTEN
 }
