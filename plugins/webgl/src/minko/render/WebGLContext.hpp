@@ -36,10 +36,12 @@ namespace minko
 			typedef std::shared_ptr<WebGLContext> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int> BlendFactorsMap;
+            typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
+			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
 
 		private:
             static BlendFactorsMap  _blendingFactors;
+			static DepthFuncsMap	_depthFuncs;
 
 			std::list<unsigned int>	_vertexBuffers;
 			std::list<unsigned int>	_indexBuffers;
@@ -47,6 +49,11 @@ namespace minko
 			std::list<unsigned int> _programs;
 			std::list<unsigned int> _vertexShaders;
 			std::list<unsigned int> _fragmentShaders;
+			
+			unsigned int			_viewportX;
+			unsigned int			_viewportY;
+			unsigned int			_viewportWidth;
+			unsigned int			_viewportHeight;
 
 		public:
 			~WebGLContext();
@@ -192,6 +199,12 @@ namespace minko
             void
             setBlendMode(Blending::Mode blendMode);
 
+			void
+			setDepthTest(bool depthMask, CompareMode depthFunc);
+
+			void
+			readPixels(unsigned char* pixels);
+
 		private:
 			WebGLContext();
 
@@ -210,7 +223,10 @@ namespace minko
             static
             BlendFactorsMap
             initializeBlendFactorsMap();
-            
+          
+			static
+            DepthFuncsMap
+            initializeDepthFuncsMap();
 		};
 	}
 }

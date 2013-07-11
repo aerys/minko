@@ -28,6 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glew.h>
 #endif
 
+#include <minko/render/CompareMode.hpp>
+
 using namespace minko::render;
 
 WebGLContext::BlendFactorsMap WebGLContext::_blendingFactors = WebGLContext::initializeBlendFactorsMap();
@@ -56,6 +58,24 @@ WebGLContext::initializeBlendFactorsMap()
     m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
 
     return m;
+}
+
+WebGLContext::DepthFuncsMap WebGLContext::_depthFuncs = WebGLContext::initializeDepthFuncsMap();
+WebGLContext::DepthFuncsMap
+WebGLContext::initializeDepthFuncsMap()
+{
+	DepthFuncsMap m;
+
+	m[CompareMode::ALWAYS]			= GL_ALWAYS;
+	m[CompareMode::EQUAL]			= GL_EQUAL;
+	m[CompareMode::GREATER]			= GL_GREATER;
+	m[CompareMode::GREATER_EQUAL]	= GL_GREATER | GL_EQUAL;
+	m[CompareMode::LESS]			= GL_LESS;
+	m[CompareMode::LESS_EQUAL]		= GL_LESS | GL_EQUAL;
+	m[CompareMode::NEVER]			= GL_NEVER;
+	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
+
+	return m;
 }
 
 WebGLContext::WebGLContext()
@@ -724,4 +744,27 @@ WebGLContext::setBlendMode(Blending::Mode blendMode)
         _blendingFactors[(uint)blendMode & 0x00ff],
         _blendingFactors[(uint)blendMode & 0xff00]
     );
+}
+
+void
+WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
+{
+	//throw std::logic_error("WebGLContext::setDepthTest is not reimplemented yet");
+	/*
+	if (depthMask != _currentDepthMask || depthFunc != _currentDepthFunc)
+	{
+		_currentDepthMask = depthMask;
+		_currentDepthFunc = depthFunc;
+
+		glDepthMask(depthMask);
+		glDepthFunc(_depthFuncs[depthFunc]);
+	}
+	*/
+}
+
+void
+WebGLContext::readPixels(unsigned char* pixels)
+{
+	//throw std::logic_error("WebGLContext::readPixels is not reimplemented yet");
+	//glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
