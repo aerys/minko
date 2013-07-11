@@ -60,7 +60,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 							   StartDirection		startDirection,
 							   FloatSamplerPtr		startVelocity)
 	: _renderers			(scene::NodeSet::create(scene::NodeSet::Mode::AUTO)),
-	  _countLimit			(16000),
+	  _countLimit			(1000000),
 	  _maxCount				(0),
 	  _liveCount			(0),
 	  _previousLiveCount	(0),
@@ -75,7 +75,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	  _startVelocity		(startVelocity),
 	  _createTimer			(0),
 	  _format				(VertexComponentFlags::DEFAULT),
-	  _updateStep			(1. / 60.),
+	  _updateStep			(0),
 	  _playing				(false),
 	  _emitting				(true),
 	  _time					(0)
@@ -160,7 +160,9 @@ void
 ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
 									 NodePtr	rendererNode)
 {
-	_previousClock = clock();
+	if (_playing)
+		_previousClock = clock();
+	
 	for (auto renderer : rendererNode->controllers<RenderingController>())
 	{
 		if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
@@ -191,21 +193,29 @@ ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 		return;
 
 	clock_t now	= clock();
-	float deltaT = (float)(clock() - _previousClock) / CLOCKS_PER_SEC;
-	
-	bool changed = false;
-
+	float deltaT = (float)(now - _previousClock) / CLOCKS_PER_SEC;
 	_previousClock = now;
-	_time += deltaT;
 
-	while (_time > _updateStep)
+	if (_updateStep == 0)
 	{
-		updateSystem(_updateStep, _emitting);
-		changed = true;
-		_time -= _updateStep;
+			updateSystem(deltaT, _emitting);
+			updateVertexStream();
 	}
-	if (changed)
-		updateVertexStream();
+	else
+	{
+		bool changed = false;
+
+		_time += deltaT;
+
+		while (_time > _updateStep)
+		{
+			updateSystem(_updateStep, _emitting);
+			changed = true;
+			_time -= _updateStep;
+		}
+		if (changed)
+			updateVertexStream();
+	}
 }
 
 void
@@ -301,6 +311,21 @@ ParticleSystem::has(ModifierPtr 	modifier)
 	}
 
 	return false;
+}
+
+void
+ParticleSystem::fastForward(float time, unsigned int updatesPerSecond)
+{
+	float updateStep = _updateStep;
+
+	if (updatesPerSecond != 0)
+		updateStep = 1. / updatesPerSecond;
+
+	while(time > updateStep)
+	{
+		updateSystem(updateStep, _emitting);
+		time -= updateStep;
+	}
 }
 
 void
