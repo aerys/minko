@@ -41,7 +41,7 @@ bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_transformChangedSlot(nullptr),
+	_colliderTrfChangedSlot(nullptr),
 	_parentAddedSlot(nullptr),
 	_parentRemovedSlot(nullptr)
 {
@@ -66,8 +66,8 @@ void
 		std::placeholders::_2
 		));
 
-	_transformChangedSlot	= _collider->transformChanged()->connect(std::bind(
-		&bullet::ColliderController::transformChangedHandler,
+	_colliderTrfChangedSlot	= _collider->transformChanged()->connect(std::bind(
+		&bullet::ColliderController::updateColliderWorldTransform,
 		shared_from_this(),
 		std::placeholders::_1
 		));
@@ -105,7 +105,7 @@ void
 {
 	_addedSlot				= nullptr;
 	_removedSlot			= nullptr;
-	_transformChangedSlot	= nullptr;
+	_colliderTrfChangedSlot	= nullptr;
 }
 
 void 
