@@ -30,10 +30,10 @@ MkParser::parse(const std::string&					filename,
 {
 	std::vector<char> dataCopy(data.begin(), data.end());
 
-	minko::Qark::Object    obj 			= minko::Qark::decode(dataCopy);
+	minko::Qark::Object&    obj 			= minko::Qark::decode(dataCopy);
 
 
-	std::map<std::string, Any> qarkData = minko::Any::cast<std::map<std::string, Any>>(obj);
+	std::map<std::string, Any>& qarkData = minko::Any::cast<std::map<std::string, Any>&>(obj);
 
 	std::cout << "-------------------------------" << std::endl <<std::endl;
 
