@@ -60,6 +60,29 @@ SurfaceController::initialize()
 }
 
 void
+SurfaceController::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
+{
+	for (unsigned int i = 0; i < numTargets(); ++i)
+	{
+		std::shared_ptr<scene::Node> target = getTarget(i);
+
+		target->data()->removeProvider(_geometry->data());
+		target->data()->addProvider(newGeometry->data());
+
+		_drawCalls.clear();
+		for (auto shader : _effect->shaders())
+		_drawCalls.push_back(DrawCall::create(
+			target->data(),
+			_effect->attributeBindings(),
+			_effect->uniformBindings(),
+			_effect->stateBindings()
+		));
+	}
+
+	_geometry = newGeometry;
+}
+
+void
 SurfaceController::targetAddedHandler(std::shared_ptr<AbstractController>	ctrl,
 									  std::shared_ptr<Node>					target)
 {

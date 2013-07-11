@@ -20,70 +20,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-#include "minko/resource/AbstractResource.hpp"
+#include "minko/Qark.hpp"
+#include "minko/AssetsLibrary.hpp"
+#include "minko/file/Options.hpp"
 
 namespace minko
 {
-	namespace resource
+	namespace deserialize
 	{
-		class IndexStream :
-			public AbstractResource
+		class GeometryDeserializer
 		{
-		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
+		private:
+			typedef std::vector<std::shared_ptr<scene::Node>> NodeList;
 
 		private:
-			std::vector<unsigned short>	_data;
+			static std::map<int, std::string>	_geometryIdToName;
+			static std::map<int, NodeList>		_waitForGeometryNodes;
 
 		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context,
-				   const std::vector<unsigned short>&		data)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
-			}
 
 			template <typename T>
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, T* begin, T* end)
-			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
-			}
+			static void
+			read(std::stringstream& stream, T& value);
 
-			inline
-			const std::vector<unsigned short>&
-			data()
-			{
-				return _data;
-			}
-
+			static
 			void
-			upload();
-			
-			void
-			dispose();
+			deserializeGeometry(bool							isCopy,
+								std::string						geometryName,
+								int								copyId,
+								Qark::ByteArray&				geometryData,
+								std::shared_ptr<AssetsLibrary>	library,
+								std::shared_ptr<scene::Node>	mesh,
+								std::shared_ptr<file::Options>	options);
 
-		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						const std::vector<unsigned short>&			data) :
-				AbstractResource(context),
-				_data(data)
-			{
-				upload();
-			}
+			static
+			std::shared_ptr<resource::IndexStream>
+			readIndexStream(std::stringstream&				stream,
+							std::shared_ptr<file::Options>	options);
 
-			template <typename T>
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
-						T*											begin,
-						T*											end) :
-				AbstractResource(context),
-				_data(begin, end)
-			{
-				upload();
-			}
+			static
+			std::shared_ptr<resource::VertexStream>
+			readVertexStream(std::stringstream&				stream,
+							 std::shared_ptr<file::Options>	options);
+
+			static
+			std::vector<std::shared_ptr<resource::VertexAttribute>>
+			readVertexFormat(std::stringstream&				stream,
+							 std::shared_ptr<file::Options> options);
 		};
 	}
 }
