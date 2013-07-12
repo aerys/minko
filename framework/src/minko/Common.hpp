@@ -51,11 +51,10 @@ namespace minko
 		class DrawCall;
 
 		class Pass;
+		//class PassInstance;
 		class Effect;
 		class EffectInstance;
 		class ProgramInputs;
-
-		class GLSLPreProcessor;
 	}
 
 	namespace render

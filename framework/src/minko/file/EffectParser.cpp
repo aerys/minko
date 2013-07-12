@@ -112,8 +112,16 @@ EffectParser::parse(const std::string&					filename,
 void
 EffectParser::parseDefaultValues(Json::Value& root)
 {
-	parseBindings(root, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings);
+	parseBindings(
+		root,
+		_defaultAttributeBindings,
+		_defaultUniformBindings,
+		_defaultStateBindings,
+		_defaultMacroBindings
+	);
+
 	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
+
 	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
 }
 
@@ -133,8 +141,9 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
 		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
 		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
+		std::unordered_map<std::string, std::string>	macroBindings(_defaultMacroBindings);
 
-		parseBindings(pass, attributeBindings, uniformBindings, stateBindings);
+		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
 		// pass priority
 		auto priority = pass.get("priority", _defaultPriority).asFloat();
@@ -159,15 +168,13 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
 		);
 
-		vertexShader->upload();
-		fragmentShader->upload();
-		
 		passes.push_back(render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
 			uniformBindings,
 			stateBindings,
+			macroBindings,
 			priority,
 			blendSrcFactor,
 			blendDstFactor,
@@ -231,7 +238,8 @@ void
 EffectParser::parseBindings(Json::Value&									contextNode,
 						    std::unordered_map<std::string, std::string>&	attributeBindings,
 						    std::unordered_map<std::string, std::string>&	uniformBindings,
-						    std::unordered_map<std::string, std::string>&	stateBindings)
+						    std::unordered_map<std::string, std::string>&	stateBindings,
+							std::unordered_map<std::string, std::string>&	macroBindings)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -247,6 +255,11 @@ EffectParser::parseBindings(Json::Value&									contextNode,
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
+
+	auto macroBindingsValue = contextNode.get("macroBindings", 0);
+	if (macroBindingsValue.isObject())
+		for (auto propertyName : macroBindingsValue.getMemberNames())
+			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
 }
 
 void
@@ -296,11 +309,13 @@ EffectParser::finalize()
 {
 	for (auto& pass : _effect->passes())
     {
+		/*
 		auto program = pass->program();
 
 		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
-        program->upload();
+		program->upload();
+		*/
     }
 
 	_complete->execute(shared_from_this());
