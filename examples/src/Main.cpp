@@ -4,9 +4,9 @@
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoBullet.hpp"
-#include "minko/MinkoWebGL.hpp"
 
 #ifdef EMSCRIPTEN
+#include "minko/MinkoWebGL.hpp"
 #include "GL/glut.h"
 #else
 #include "GLFW/glfw3.h"
