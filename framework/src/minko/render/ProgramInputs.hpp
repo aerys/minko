@@ -30,7 +30,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<ProgramInputs>	Ptr;
 
-			enum Type
+			enum class Type
 			{
 				unknown,
 				int1,
@@ -44,7 +44,8 @@ namespace minko
 				float9,
 				float16,
 				sampler2d,
-				attribute
+				attribute,
+				constant
 			};
 
 		public:
