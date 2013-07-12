@@ -21,199 +21,83 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/Signal.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/Any.hpp"
-
 namespace minko
 {
-    namespace scene
-    {
-	    class NodeSet :
-            public std::enable_shared_from_this<NodeSet>
-	    {
-	    public:
-		    typedef std::shared_ptr<NodeSet> Ptr;
+	namespace scene
+	{
+		class NodeSet
+		{
+		public:
+			typedef std::shared_ptr<NodeSet> Ptr;
 
-            enum Mode
-            {
-                AUTO,
-                MANUAL
-            };
+		private:
+			std::vector<std::shared_ptr<Node>> _nodes;
 
-        private:
-            typedef std::shared_ptr<Node>                           NodePtr;
-            typedef std::shared_ptr<controller::AbstractController> AbsCtrlPtr;
-            typedef std::vector<NodePtr>                            Nodes;
-            typedef std::function<void(Nodes&)>                     Operator;
+		public:
+			inline static
+			Ptr
+			create(const std::list<std::shared_ptr<Node>>& nodes)
+			{
+				Ptr set = create();
 
-        private:
-            const Mode                              _mode;
-            Nodes                                   _nodes;
-            Nodes                                   _input;
-            Nodes                                   _output;
-            Nodes                                   _result;
-            std::list<Operator>                     _operators;
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
-            std::vector<Any>                        _slots;
-            bool                                    _watchingNodes;
-            bool                                    _watchingControllers;
+				return set;
+			}
 
-            std::shared_ptr<Signal<Ptr, NodePtr>>   _nodeAdded;
-            std::shared_ptr<Signal<Ptr, NodePtr>>   _nodeRemoved;
+			inline static
+			Ptr
+			create(const std::vector<std::shared_ptr<Node>>& nodes)
+			{
+				Ptr set = create();
 
-	    public:
-		    inline static
-		    Ptr
-		    create(Mode mode)
-		    {
-			    return std::shared_ptr<NodeSet>(new NodeSet(mode));
-		    }
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
-            inline
-            Mode
-            mode()
-            {
-                return _mode;
-            }
+				return set;
+			}
 
-            inline
-            Nodes&
-            nodes()
-            {
-                return _result;
-            }
+			inline static
+			Ptr
+			create(std::shared_ptr<Node> node)
+			{
+				Ptr set = create();
 
-            inline
-            std::shared_ptr<Signal<Ptr, NodePtr>>
-            nodeAdded()
-            {
-                return _nodeAdded;
-            }
+				set->_nodes.push_back(node);
 
-            inline
-            std::shared_ptr<Signal<Ptr, NodePtr>>
-            nodeRemoved()
-            {
-                return _nodeRemoved;
-            }
+				return set;
+			}
 
-            void
-            update();
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<NodeSet>(new NodeSet());
+			}
 
-            template <typename T>
-            Ptr
-            select(T begin, T end)
-            {
-                auto watchingNodes          = _watchingNodes;
-                auto watchingControllers    = _watchingControllers;
+			inline
+			const std::vector<std::shared_ptr<Node>>&
+			nodes()
+			{
+				return _nodes;
+			}
 
-                unwatchNodesAndControllers();
+			Ptr
+			descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);
 
-                _nodes.clear();
-                _nodes.insert(_nodes.begin(), begin, end);
-                _input = _nodes;
+			Ptr
+			ancestors(bool andSelf = false, Ptr result = nullptr);
 
-                if (watchingNodes)
-                    watchNodes();
-                if (watchingControllers)
-                    watchControllers();
+			Ptr
+			children(bool andSelf = false, Ptr result = nullptr);
 
-                return shared_from_this();
-            }
+			Ptr
+			where(std::function<bool(std::shared_ptr<Node>)> filter, Ptr result = nullptr);
 
-            Ptr
-            select(NodePtr node);
-
-            Ptr
-            root();
-
-            Ptr
-            parent();
-
-            Ptr
-            ancestors(bool andSelf = false);
-
-            Ptr
-            descendants(bool andSelf = false, bool depthFirst = true);
-
-            Ptr
-            hasController(AbsCtrlPtr ctrl, bool expectedResult = true);
-
-            template <typename T>
-            Ptr
-            hasController(bool expectedResult = true)
-            {
-                watchControllers();
-
-                _output.clear();
-                operatorHasController<T>(_input, expectedResult);
-                std::swap(_input, _output);
-
-                _operators.push_back(std::bind(
-                    &NodeSet::operatorHasController<T>,
-                    shared_from_this(),
-                    std::placeholders::_1,
-                    expectedResult
-                ));
-
-                executeSignals();
-
-                return shared_from_this();
-            }
-
-         private:
-            NodeSet(Mode mode);
-
-            void
-            operatorRoot(Nodes& input);
-
-            void
-            operatorParent(Nodes& input);
-
-            void
-            operatorAncestors(Nodes& input, bool andSelf);
-
-            void
-            operatorDescendants(Nodes&    input,
-                                bool      andSelf,
-                                bool      depthFirst);
-
-            void
-            operatorLayer(Nodes& input, const unsigned int layer);
-
-            void
-            operatorHasControllerReference(Nodes& input, AbsCtrlPtr ctrl, bool expectedResult);
-
-            template <typename T>
-            void
-            operatorHasController(Nodes& input, bool expectedResult)
-            {
-                for (auto in : input)
-                    if (in->hasController<T>() == expectedResult)
-                        output(in);
-            }
-
-            void
-            watchNodes();
-
-            void
-            watchControllers();
-
-            void
-            unwatchNodesAndControllers();
-
-            void
-            controllerAddedOrRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
-
-            void
-            addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
-
-            void
-            output(NodePtr node);
-
-            void
-            executeSignals();
-	    };
-    }
+		private:
+			NodeSet() :
+				_nodes()
+			{
+			}
+		};		
+	}
 }
