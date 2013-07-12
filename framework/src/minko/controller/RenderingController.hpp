@@ -36,15 +36,14 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>				NodePtr;
 			typedef std::shared_ptr<AbstractController>			AbsCtrlPtr;
-			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<Surface>					SurfaceCtrlPtr;
 			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
-			typedef std::shared_ptr<scene::NodeSet>				NodeSetPtr;
 
 		private:
-			AbsContextPtr								_context;
+			std::shared_ptr<render::AbstractContext>	_context;
 			std::list<DrawCallPtr>						_drawCalls;
-			NodeSetPtr									_surfaces;
+
 			unsigned int								_backgroundColor;
 
 			Signal<Ptr>::Ptr							_enterFrame;
@@ -52,8 +51,12 @@ namespace minko
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot			_surfaceAddedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot			_surfaceRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerRemovedSlot;
 
 		public:
 			static
@@ -99,7 +102,14 @@ namespace minko
 			}
 
 		private:
-			RenderingController(AbsContextPtr context);
+			RenderingController(AbsContextPtr context) :
+				AbstractController(),
+				_context(context),
+                _backgroundColor(0),
+				_enterFrame(Signal<Ptr>::create()),
+				_exitFrame(Signal<Ptr>::create())
+			{
+			}
 
 			void
 			initialize();
@@ -111,10 +121,27 @@ namespace minko
 			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 			void
-			surfaceAddedHandler(NodeSetPtr surfaces, NodePtr surfaceNode);
+			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
-			surfaceRemovedHandler(NodeSetPtr surfaces, NodePtr surfaceNode);
+			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+			void
+			controllerAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
+
+			void
+			controllerRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
+
+			void
+			addSurfaceController(SurfaceCtrlPtr ctrl);
+
+			void
+			removeSurfaceController(SurfaceCtrlPtr ctrl);
 
 			void
 			geometryChanged(SurfaceCtrlPtr ctrl);
