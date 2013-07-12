@@ -34,6 +34,7 @@ namespace minko
 	}
 	namespace render
 	{
+		class ParticleVertexStream;
 		class ParticleIndexStream;
 	}
 

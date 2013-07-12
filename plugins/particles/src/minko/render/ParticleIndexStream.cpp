@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace render;
 
 void 
-ParticleIndexStream::upload(unsigned int nParticles)
+ParticleIndexStream::update(unsigned int nParticles)
 {	
 	unsigned int size = nParticles * 6;
 	
@@ -42,15 +42,12 @@ ParticleIndexStream::resize(unsigned int nParticles)
 	unsigned int size = nParticles * 6;
 
 	if (oldSize != size)
-	{
-		dispose();
-		_id = _context->createIndexBuffer(size);
-	
+	{	
 		isData.resize(size);
 		_padding.resize(size, 0);
 		if (oldSize < size)
 		{
-			for (unsigned int i = 0; i < nParticles; ++i)
+			for (unsigned int i = oldSize / 6; i < nParticles; ++i)
 			{
 				isData[i * 6] = i * 4;
 				isData[i * 6 + 1] = i * 4 + 2;
@@ -60,5 +57,7 @@ ParticleIndexStream::resize(unsigned int nParticles)
 				isData[i * 6 + 5] = i * 4 + 3;
 			}
 		}
+	
+		upload();
 	}
 }
