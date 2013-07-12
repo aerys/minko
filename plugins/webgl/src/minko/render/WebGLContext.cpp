@@ -19,14 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "WebGLContext.hpp"
 
-#define GL_GLEXT_PROTOTYPES
-#ifdef __APPLE__
-# include <GL/glut.h>
-#elif _WIN32
-# include "GL/glew.h"
-#else
-# include <GL/glew.h>
-#endif
+#ifdef EMSCRIPTEN
+#include <GLES2/gl2.h>
+#include <EGL/egl.h>
+#else // EMSCRIPTEN
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
+#include <minko/render/CompareMode.hpp>
 
 using namespace minko::render;
 
@@ -58,12 +58,26 @@ WebGLContext::initializeBlendFactorsMap()
     return m;
 }
 
+WebGLContext::DepthFuncsMap WebGLContext::_depthFuncs = WebGLContext::initializeDepthFuncsMap();
+WebGLContext::DepthFuncsMap
+WebGLContext::initializeDepthFuncsMap()
+{
+	DepthFuncsMap m;
+
+	m[CompareMode::ALWAYS]			= GL_ALWAYS;
+	m[CompareMode::EQUAL]			= GL_EQUAL;
+	m[CompareMode::GREATER]			= GL_GREATER;
+	m[CompareMode::GREATER_EQUAL]	= GL_GREATER | GL_EQUAL;
+	m[CompareMode::LESS]			= GL_LESS;
+	m[CompareMode::LESS_EQUAL]		= GL_LESS | GL_EQUAL;
+	m[CompareMode::NEVER]			= GL_NEVER;
+	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
+
+	return m;
+}
+
 WebGLContext::WebGLContext()
 {
-#ifdef _WIN32
-    glewInit();
-#endif
-glewInit();
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 }
@@ -116,6 +130,7 @@ WebGLContext::clear(float 			red,
 	// glClearColor specify clear values for the color buffers
 	glClearColor(red, green, blue, alpha);
 
+
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml
 	//
 	// void glClearDepth(GLdouble depth);
@@ -123,7 +138,11 @@ WebGLContext::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+	#ifdef EMSCRIPTEN
+	glClearDepthf(depth);
+#else // EMSCRIPTEN
 	glClearDepth(depth);
+#endif // EMSCRIPTEN
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -205,7 +224,7 @@ WebGLContext::createVertexBuffer(const unsigned int size)
 	// usage Specifies the expected usage pattern of the data store.
 	//
 	// glBufferData creates and initializes a buffer object's data store
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GL_FLOAT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
 
 	_vertexBuffers.push_back(vertexBuffer);
 
@@ -229,7 +248,7 @@ WebGLContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 	// data Specifies a pointer to the new data that will be copied into the data store.
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
-	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GL_FLOAT), size * sizeof(GL_FLOAT), data);
+	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
 }
 
 void
@@ -278,7 +297,7 @@ WebGLContext::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GL_UNSIGNED_SHORT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
@@ -292,7 +311,7 @@ WebGLContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GL_UNSIGNED_SHORT), size * sizeof(GL_UNSIGNED_SHORT), data);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 }
 
 void
@@ -724,4 +743,16 @@ WebGLContext::setBlendMode(Blending::Mode blendMode)
         _blendingFactors[(uint)blendMode & 0x00ff],
         _blendingFactors[(uint)blendMode & 0xff00]
     );
+}
+
+void
+WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
+{
+	// throw std::logic_error("WebGLContext::setDepthTest is not implemented yet");
+}
+
+void
+WebGLContext::readPixels(unsigned char* pixels)
+{
+	// throw std::logic_error("WebGLContext::readPixels is not implemented yet");
 }
