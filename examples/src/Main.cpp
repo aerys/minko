@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
-		//->queue("DirectionalLight.effect")
+		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		//->queue("Texture.effect")
 		//->queue("Red.effect")
@@ -112,9 +112,9 @@ int main(int argc, char** argv)
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection),
-				//->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("basic")
+				->set("light/direction",				lightDirection)
+				->set("material/diffuse/map",			assets->texture("box3.png")),
+			assets->effect("directional light")
 		));
 
 		group->addChild(mesh);
