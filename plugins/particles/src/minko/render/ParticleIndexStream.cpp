@@ -26,13 +26,12 @@ using namespace render;
 void 
 ParticleIndexStream::upload(unsigned int nParticles)
 {	
-	// should be "nParticles * 6", but didn't work... why ?
-	unsigned int size = nParticles * 3;
+	unsigned int size = nParticles * 6;
 	
 	_context->uploaderIndexBufferData(_id, 0, size, &data()[0]);
 	
 	if(size < data().size())
-		_context->uploaderIndexBufferData(_id, size, data().size()/2 - size, &_padding[0]);
+		_context->uploaderIndexBufferData(_id, size, data().size() - size, &_padding[0]);
 }
 
 void 
