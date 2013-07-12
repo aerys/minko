@@ -20,8 +20,8 @@ namespace minko
 				value(float time = 0) const	= 0;
 				
 				virtual
-				T*
-				set(T* target, float time = 0) const	= 0;
+				void
+				set(T& target, float time = 0) const	= 0;
 
 				virtual
 				T

@@ -44,15 +44,10 @@ namespace minko
 				};
 				
 				virtual
-				T*
-				set(T* target, float time) const
+				void
+				set(T& value, float time) const
 				{
-					if (target == 0)
-						target = new T();
-
-					*target = _value;
-
-					return target;
+					value = _value;
 				};
 
 				virtual 
