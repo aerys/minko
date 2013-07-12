@@ -17,21 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexStream.hpp"
+#include "IndexBuffer.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko::render;
 
 void
-IndexStream::upload()
+IndexBuffer::upload()
 {
 	_id = _context->createIndexBuffer(_data.size());
 	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
 }
 
 void
-IndexStream::dispose()
+IndexBuffer::dispose()
 {
 	_context->deleteIndexBuffer(_id);
 	_id = -1;

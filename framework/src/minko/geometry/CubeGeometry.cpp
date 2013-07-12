@@ -88,5 +88,5 @@ CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
 	vstream->addAttribute("uv", 2, 6);
 	addVertexBuffer(vstream);
 
-	indices(IndexStream::create(context, std::begin(i), std::end(i)));
+	indices(IndexBuffer::create(context, std::begin(i), std::end(i)));
 }
