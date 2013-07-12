@@ -65,7 +65,7 @@ namespace minko
 		class VertexFormat;
 		class VertexBuffer;
 		class VertexAttribute;
-		class IndexStream;
+		class IndexBuffer;
 		class Texture;
 	}
 
