@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/VertexStream.hpp"
+#include "minko/render/ParticleVertexStream.hpp"
 #include "minko/render/ParticleIndexStream.hpp"
 
 #include "minko/particle/ParticleData.hpp"
@@ -60,7 +60,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 							   StartDirection		startDirection,
 							   FloatSamplerPtr		startVelocity)
 	: _renderers			(scene::NodeSet::create(scene::NodeSet::Mode::AUTO)),
-	  _countLimit			(1000000),
+	  _countLimit			(16384),
 	  _maxCount				(0),
 	  _liveCount			(0),
 	  _previousLiveCount	(0),
@@ -589,7 +589,7 @@ ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 
 	_format |= components;
 
-	VertexStreamPtr vs = _geometry->vertices();
+	render::ParticleVertexStream::Ptr vs = _geometry->vertices();
 	unsigned int vertexSize = 5;
 
 	if (components & VertexComponentFlags::SIZE)
@@ -722,11 +722,11 @@ ParticleSystem::updateVertexStream()
 			vertexIterator += 4 * _geometry->vertexSize();
 		}
 	}
-	_geometry->vertices()->upload();
+	std::static_pointer_cast<render::ParticleVertexStream>(_geometry->vertices())->update(_liveCount, _geometry->vertexSize());
 
 	if (_liveCount != _previousLiveCount)
 	{
-		std::static_pointer_cast<render::ParticleIndexStream>(_geometry->indices())->upload(_liveCount);
+		std::static_pointer_cast<render::ParticleIndexStream>(_geometry->indices())->update(_liveCount);
 		_previousLiveCount = _liveCount;
 	}
 }

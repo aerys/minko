@@ -121,11 +121,11 @@ int main(int argc, char** argv)
 		particleSystem = ParticleSystem::create(
 			context,
 			assets,
-			5,
-			particle::sampler::Constant<float>::create(2.),
-			particle::shape::Sphere::create(2.),
+			500,
+			particle::sampler::Constant<float>::create(16),
+			particle::shape::Sphere::create(5.),
 			particle::StartDirection::OUTWARD,
-			particle::sampler::Constant<float>::create(3.));
+			particle::sampler::RandomValue<float>::create(5., 10.));
 
 		particleSystem->add(particle::modifier::StartForce::create(
 			particle::sampler::Constant<float>::create(0.),
