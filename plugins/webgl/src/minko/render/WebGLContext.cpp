@@ -748,11 +748,11 @@ WebGLContext::setBlendMode(Blending::Mode blendMode)
 void
 WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
 {
-	//throw std::logic_error("WebGLContext::setDepthTest is not reimplemented yet");
+	throw std::logic_error("WebGLContext::setDepthTest is not implemented yet");
 }
 
 void
 WebGLContext::readPixels(unsigned char* pixels)
 {
-	//throw std::logic_error("WebGLContext::readPixels is not reimplemented yet");
+	throw std::logic_error("WebGLContext::readPixels is not implemented yet");
 }

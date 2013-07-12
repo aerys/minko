@@ -67,7 +67,7 @@ void
 		));
 
 	_colliderTrfChangedSlot	= _collider->transformChanged()->connect(std::bind(
-		&bullet::ColliderController::updateColliderWorldTransform,
+		&bullet::ColliderController::colliderTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1
 		));
@@ -204,16 +204,15 @@ void
 }
 
 void 
-	bullet::ColliderController::transformChangedHandler(Collider::Ptr collider)
+	bullet::ColliderController::colliderTransformChangedHandler(Collider::Ptr collider)
 {
-	auto worldToParentMatrix	= _parentTransform == nullptr
-		? Matrix4x4::create()->identity()
-		: Matrix4x4::create()->copyFrom(_parentTransform->modelToWorldMatrix(true))->invert();
+	// get the world-to-parent matrix in order to update the target's Transform
+	auto worldToParentMatrix	= Matrix4x4::create()
+		->copyFrom(_targetTransform->modelToWorldMatrix(true))
+		->invert()
+		->append(_targetTransform->transform());
 
-	// compute the target-to-parent transform
-	auto transform		= Matrix4x4::create()
+	_targetTransform->transform()
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
-
-	_targetTransform->transform()->copyFrom(transform);
 }
