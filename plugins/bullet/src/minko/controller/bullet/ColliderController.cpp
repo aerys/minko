@@ -35,15 +35,11 @@ bullet::ColliderController::ColliderController(Collider::Ptr collider):
 	_collider(collider),
 	_physicsWorld(nullptr),
 	_targetTransform(nullptr),
-	_parentTransform(nullptr),
-	_parents(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_colliderTrfChangedSlot(nullptr),
-	_parentAddedSlot(nullptr),
-	_parentRemovedSlot(nullptr)
+	_colliderTrfChangedSlot(nullptr)
 {
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
@@ -119,27 +115,6 @@ void
 
 	_targetTransform	= target->controller<Transform>();
 
-	_parents			= NodeSet::create(NodeSet::AUTO)
-		->select(target)
-		->ancestors(false)
-		->hasController<Transform>();
-
-	_parentAddedSlot	= _parents->nodeAdded()->connect(std::bind(
-		&bullet::ColliderController::updateParentTransform,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	_parentRemovedSlot	= _parents->nodeAdded()->connect(std::bind(
-		&bullet::ColliderController::updateParentTransform,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	updateParentTransform(_parents);
-
 	updateColliderWorldTransform();
 
 	auto nodeSet	= NodeSet::create(NodeSet::AUTO);
@@ -180,27 +155,6 @@ void
 	_physicsWorld->removeChild(_collider);
 	_physicsWorld		= nullptr;
 	_targetTransform	= nullptr;
-	_parentTransform	= nullptr;
-	_parents			= nullptr;
-
-	_parentAddedSlot	= nullptr;
-	_parentRemovedSlot	= nullptr;
-}
-
-void
-	bullet::ColliderController::updateParentTransform(NodeSet::Ptr parents, Node::Ptr)
-{
-	_parentTransform	= nullptr;
-	if (parents == nullptr || parents->nodes().empty())
-		return;
-
-	auto firstParent	= parents->nodes().front();
-	if (!firstParent->hasController<Transform>())
-		throw std::logic_error("All target's parents are expected to have a Transform.");
-
-	_parentTransform	= firstParent->controller<Transform>();
-
-	updateColliderWorldTransform();
 }
 
 void 
