@@ -67,13 +67,11 @@ Surface::targetAddedHandler(AbstractController::Ptr	ctrl,
 
 	data->addProvider(_material);
 	data->addProvider(_geometry->data());
-	data->addProvider(_effect->data());
 
 	_drawCalls.clear();
+
 	for (auto pass : _effect->passes())
-		_drawCalls.push_back(DrawCall::create(
-			data, pass->attributeBindings(), pass->uniformBindings(), pass->stateBindings()
-		));
+		_drawCalls.push_back(pass->createDrawCall(data));
 }
 
 void
@@ -84,7 +82,6 @@ Surface::targetRemovedHandler(AbstractController::Ptr	ctrl,
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
-	data->removeProvider(_effect->data());
 
 	_drawCalls.clear();
 }
