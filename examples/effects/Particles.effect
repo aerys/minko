@@ -4,7 +4,8 @@
 	
 	"attributeBindings"	: {
 		"offset"				: "geometry/vertex/attribute/offset",
-		"position"				: "geometry/vertex/attribute/position"
+		"position"				: "geometry/vertex/attribute/position",
+		"size"					: "geometry/vertex/attribute/size"
 	},
 	
 	"uniformBindings"	: {
@@ -25,13 +26,14 @@
 		"vertexShader"	: "
 			attribute vec2 offset;
 			attribute vec3 position;
+			attribute float size;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
 			void main(void)
 			{
-				gl_Position =  (worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0) + vec4(offset, 0, 0));
+				gl_Position =  (worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0)) + (vec4(offset, 0, 0));
 			}
 		",
 		"fragmentShader"	: "
