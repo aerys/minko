@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->controller<Transform>()->transform()->appendTranslation(-.75f, 0.f, -3.f);
 		mesh->addController(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
@@ -114,6 +114,20 @@ int main(int argc, char** argv)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
+			assets->effect("directional light")
+		));
+
+		group->addChild(mesh);
+
+		mesh = scene::Node::create();
+		mesh->addController(Transform::create());
+		mesh->controller<Transform>()->transform()->appendTranslation(.75f, 0.f, -3.f);
+		mesh->addController(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+				->set("material/diffuse/rgba",			color)
+				->set("transform/worldToScreenMatrix",	view)
+				->set("light/direction",				lightDirection),
 			assets->effect("directional light")
 		));
 
