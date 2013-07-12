@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/render/VertexStream.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 namespace minko
 {
@@ -74,11 +74,11 @@ namespace minko
 
 			inline
 			void
-			addVertexStream(std::shared_ptr<render::VertexStream> vertexStream)
+			addVertexBuffer(std::shared_ptr<render::VertexBuffer> VertexBuffer)
 			{
-				for (auto attribute : vertexStream->attributes())
+				for (auto attribute : VertexBuffer->attributes())
 				{
-					_data->set("geometry/vertex/attribute/" + std::get<0>(*attribute), vertexStream);
+					_data->set("geometry/vertex/attribute/" + std::get<0>(*attribute), VertexBuffer);
 					_vertexSize += std::get<1>(*attribute);
 				}
 
