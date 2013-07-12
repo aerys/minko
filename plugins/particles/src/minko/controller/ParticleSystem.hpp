@@ -50,8 +50,6 @@ namespace minko
 			
 			typedef std::shared_ptr<Surface>									SurfacePtr;
 			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
-			typedef std::shared_ptr<render::VertexStream>						VertexStreamPtr;
-			typedef std::shared_ptr<render::IndexStream>						IndexStreamPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
 			typedef std::shared_ptr<render::Effect>								EffectPtr;
 
@@ -336,8 +334,11 @@ namespace minko
 			
 			inline
 			void
-			particlesCountLimit(unsigned int value)
+			countLimit(unsigned int value)
 			{
+				if (value > 16384)
+					throw std::length_error("A particle system can have a maximum of 16384 particles.");
+
 				_countLimit = value;
 
 				updateMaxParticlesCount();

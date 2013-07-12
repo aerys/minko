@@ -121,7 +121,7 @@ namespace minko
 			AttributePtr
 			attribute(const std::string& attributeName);
 
-		private:
+		protected:
 			VertexStream(std::shared_ptr<render::AbstractContext> context);
 
 			VertexStream(std::shared_ptr<render::AbstractContext>	context,
