@@ -3,21 +3,30 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
-#include "minko/MinkoMk.hpp"
+#include "minko/MinkoBullet.hpp"
 
+#ifdef EMSCRIPTEN
+#include "minko/MinkoWebGL.hpp"
+#include "GL/glut.h"
+#else
 #include "GLFW/glfw3.h"
+#endif // EMSCRIPTEN
 
 #define FRAMERATE 60
 
 using namespace minko::controller;
 using namespace minko::math;
 
-RenderingController::Ptr renderingController;
-auto mesh = scene::Node::create("mesh");
-auto group = scene::Node::create("group");
+RenderingController::Ptr	renderingController;
+bullet::PhysicsWorld::Ptr	physicsWorld;
+
+std::vector<scene::Node::Ptr> boxes(50);
+auto staticBox	= scene::Node::create("staticBox");
+auto group		= scene::Node::create("group");
+auto subgroup	= scene::Node::create("subgroup");
 
 void
-printFramerate(const unsigned int delay = 1)
+	printFramerate(const unsigned int delay = 1)
 {
 	static auto start = clock();
 	static auto numFrames = 0;
@@ -34,77 +43,139 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
+#ifdef EMSCRIPTEN
+void
+	glutRenderScene()
+{
+	//mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	renderingController->render();
+
+	//printFramerate();
+
+	glutSwapBuffers();
+	glutPostRedisplay();
+
+}
+#endif // EMSCRIPTEN
+
 /*void screenshotFunc(int)
 {
-	const int width = 800, height = 600;
+const int width = 800, height = 600;
 
-	char* pixels = new char[3 * width * height];
+char* pixels = new char[3 * width * height];
 
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
-	int i, j;
-	FILE *fp = fopen("screenshot.ppm", "wb");
-	fprintf(fp, "P6\n%d %d\n255\n", width, height);
+int i, j;
+FILE *fp = fopen("screenshot.ppm", "wb");
+fprintf(fp, "P6\n%d %d\n255\n", width, height);
 
-	for (j = 0; j < height; ++j)
-	{
-		for (i = 0; i < width; ++i)
-		{
-			static unsigned char color[3];
-			color[0] = pixels[(width * j + i) * 3 + 0];
-			color[1] = pixels[(width * j + i) * 3 + 1];
-			color[2] = pixels[(width * j + i) * 3 + 2];
-			(void) fwrite(color, 1, 3, fp);
-		}
-	}
+for (j = 0; j < height; ++j)
+{
+for (i = 0; i < width; ++i)
+{
+static unsigned char color[3];
+color[0] = pixels[(width * j + i) * 3 + 0];
+color[1] = pixels[(width * j + i) * 3 + 1];
+color[2] = pixels[(width * j + i) * 3 + 2];
+(void) fwrite(color, 1, 3, fp);
+}
+}
 
-	fclose(fp);
+fclose(fp);
 
-	delete[] pixels;
+delete[] pixels;
 }*/
 
-void
-testMk(AssetsLibrary::Ptr assets)
+bool testQuaternion(uint ax, float ang)
 {
-	std::shared_ptr<data::HalfEdgeCollection> halfEdgeCollection = data::HalfEdgeCollection::create(assets->geometry("cube")->indices());
+	Vector3::Ptr	axis		= nullptr;
+	Matrix4x4::Ptr	refMatrix	= Matrix4x4::create()->identity();
+	switch(ax)
+	{
+	case 0:
+		axis = Vector3::xAxis();
+		refMatrix->appendRotationX(ang);
+		break;
 
-	std::map<std::string, Any> qarkData;
+	case 1:
+		axis = Vector3::yAxis();
+		refMatrix->appendRotationY(ang);
+		break;
 
-	int myints[] = {3, 4, 5, 6};
-	std::vector<Any> toto(myints, myints + sizeof(myints) / sizeof(int));
+	default:
+		axis = Vector3::zAxis();
+		refMatrix->appendRotationZ(ang);
+		break;
+	}
 
-	std::string myStrings[] = {"a", "b", "c", "d"};
-	std::vector<Any> strings(myStrings, myStrings + sizeof(myStrings) / sizeof(std::string));
+	if (ax > 2)
+	{
+		axis = Vector3::create(rand(), rand(), rand())->normalize();
+	}
 
-	qarkData["plop"] = 42;
-	qarkData["plip"] = std::string("sali");
-	qarkData["plup"] = toto;
+	Quaternion::Ptr	quat		= Quaternion::create()->initialize(ang, axis);
+	Matrix4x4::Ptr	quatMatrix	= quat->toMatrix();
+	Quaternion::Ptr	quat2		= quatMatrix->rotation();
+	Matrix4x4::Ptr	quatMatrix2	= quat2->toMatrix();
 
-	std::map<std::string, Any> plap;
-
-	plap["youhou"] = 4;
-	plap["yahaa"]  = strings;
-	
-
-	qarkData["plap"] = plap;
+	std::cout << "axis = " << axis->x() << ", " << axis->y() << ", " << axis->z() << "\tang = " << ang 
+		<< "\n\t- from quat\t= " << std::to_string(quatMatrix) << "\n\t- rot\t= " << std::to_string(refMatrix)
+		<< std::endl;
 
 
-	minko::Qark::ByteArray compressedData = minko::Qark::encode(qarkData);
-	std::cout << std::endl << std::endl << "-----------------" << std::endl << std::endl <<std::flush;
-	minko::Qark::Object    obj 			= minko::Qark::decode(compressedData);
 
-	std::map<std::string, Any> decodedMap = minko::Any::cast<std::map<std::string, Any>>(obj);
+	std::cout << "\t-- quat  = " << quat->i() << ", " << quat->j() << ", " << quat->k() << " | " << quat->r() << std::endl;
+	std::cout << "\t-- quat2 = " << quat2->i() << ", " << quat2->j() << ", " << quat2->k() << " | " << quat2->r() << std::endl;
+
+	if (ax > 2)
+	{
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix->values()[i] - quatMatrix2->values()[i]) > 1e-6f)
+				return false;
+	}
+	else
+	{
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix->values()[i] - refMatrix->values()[i]) > 1e-6f)
+				return false;
+
+		for (uint i=0; i<16; ++i)
+			if (fabsf(quatMatrix2->values()[i] - refMatrix->values()[i]) > 1e-6f)
+				return false;
+	}
+	return true;
 }
 
 int main(int argc, char** argv)
 {
-    glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
-    glfwMakeContextCurrent(window);
+#ifdef EMSCRIPTEN
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(800, 600);
+	glutCreateWindow("Minko Examples");
+
+	auto context = render::WebGLContext::create();
+#else
+	glfwInit();
+	auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
+	glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
+#endif // EMSCRIPTEN
 
-    context->setBlendMode(render::Blending::Mode::DEFAULT);
+	/*
+	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
+	{
+	for (uint axis = 0; axis <= 3; ++axis)
+	{
+	if (!testQuaternion(axis, ang))
+	throw std::logic_error("ouch");
+	}
+	}
+	*/
+
+	context->setBlendMode(render::Blending::Mode::DEFAULT);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::EffectParser>("effect")
@@ -113,45 +184,111 @@ int main(int argc, char** argv)
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("textures/collage.jpg")
-        ->queue("textures/box3.png")
+		->queue("textures/box3.png")
 		->queue("effects/Texture.effect")
 		//->queue("effects/Red.effect")
 		->queue("effects/Basic.effect");
 
 	/*assets->defaultOptions()->includePath("effects");*/
 
+
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+		const float ZTRANSL = -10.0f;
+
 		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
+		group->addController(Transform::create());
+		group->controller<Transform>()->transform()->appendRotationY(0.5f*PI/180.0f);
+
+		subgroup->addController(Transform::create());
+		subgroup->controller<Transform>()->transform()->appendTranslation(-0.1, 0.1, 0.0);
+
 		root->addChild(group)->addChild(camera);
 
-        renderingController = RenderingController::create(assets->context());
-        renderingController->backgroundColor(0x7F7F7FFF);
+		renderingController = RenderingController::create(assets->context());
+		renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
+
+
+		physicsWorld	= bullet::PhysicsWorld::create();
+		physicsWorld->setGravity(Vector3::create(0.0f, -9.81f, 0.0f));
+		root->addController(physicsWorld);
+
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
-		mesh->addController(TransformController::create());
-		mesh->controller<TransformController>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-		mesh->addController(SurfaceController::create(
-			assets->geometry("cube"),
-			data::Provider::create()
+		group->addChild(subgroup);
+
+
+		auto shape = bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
+
+		for (unsigned int i=0; i<boxes.size(); ++i)
+		{
+			std::stringstream stream;
+			stream << "box_" << i;
+
+			float	ang		= (2.0f*(rand()/(float)RAND_MAX) - 1.0f)*PI;
+			auto	axis	= Vector3::create(rand(), rand(), rand())->normalize();
+			auto	transl	= Vector3::create(i%2==0 ? 0.55f : -0.55f, i*1.1f, ZTRANSL);
+
+			boxes[i] = scene::Node::create(stream.str());
+
+			boxes[i]->addController(Transform::create());
+			boxes[i]->controller<Transform>()->transform()
+				->appendRotation(ang, axis)
+				->appendTranslation(transl->x(), transl->y(), transl->z());
+
+			boxes[i]->addController(Surface::create(
+				assets->geometry("cube"),
+				data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("textures/box3.png")),
-			assets->effect("texture")
-		));
+				assets->effect("texture")
+				));
 
-		group->addChild(mesh);
-		//testMk(assets);
+			boxes[i]->addController(bullet::ColliderController::create(
+				bullet::Collider::create(0.1f + (rand()/(float)RAND_MAX)*10.0f, shape)
+				));
+
+			subgroup->addChild(boxes[i]);
+		}
+
+		staticBox->addController(Transform::create());
+		staticBox->controller<Transform>()->transform()
+			->appendTranslation(0.0f, -0.5f, ZTRANSL);
+
+		staticBox->addController(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+			->set("material/diffuse/rgba",			color)
+			->set("transform/worldToScreenMatrix",	view)
+			->set("light/direction",				lightDirection)
+			->set("material/diffuse/map",			assets->texture("textures/box3.png")),
+			assets->effect("texture")
+			));
+
+		staticBox->addController(bullet::ColliderController::create(
+			bullet::Collider::create(0.0f, shape)
+			));
+
+		subgroup->addChild(staticBox);
 	});
 
-	assets->load();
+	try
+	{
+		assets->load();
+	}
+	catch(std::exception e)
+	{
+		std::cerr << "exception\n\t" << e.what() << std::endl;
+	}
+
 
 	// auto oglContext = context;
 	// auto fx = assets->effect("directional light");
@@ -166,22 +303,27 @@ int main(int argc, char** argv)
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
 
-
+#ifdef EMSCRIPTEN
+	glutDisplayFunc(glutRenderScene);
+	glutMainLoop();
+	return 0;
+#else
 	while(!glfwWindowShouldClose(window))
-    {
-        mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
+	{
+		//mesh->controller<Transform>()->transform()->prependRotationY(.01f);
 
-	    renderingController->render();
+		renderingController->render();
 
-	    printFramerate();
+		printFramerate();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 
-    glfwDestroyWindow(window);
- 
-    glfwTerminate();
+	glfwDestroyWindow(window);
 
-    exit(EXIT_SUCCESS);
+	glfwTerminate();
+
+	exit(EXIT_SUCCESS);
+#endif // EMSCRIPTEN
 }
