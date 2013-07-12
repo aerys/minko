@@ -309,13 +309,10 @@ EffectParser::finalize()
 {
 	for (auto& pass : _effect->passes())
     {
-		/*
-		auto program = pass->program();
+		auto program = pass->programTemplate();
 
 		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
-		program->upload();
-		*/
     }
 
 	_complete->execute(shared_from_this());
