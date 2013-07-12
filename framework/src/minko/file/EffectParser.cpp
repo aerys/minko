@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "EffectParser.hpp"
 
+#include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
@@ -151,12 +152,19 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		parseDepthTest(pass, depthMask, depthFunc);
 
 		// program
-		auto vertexShaderSource		= pass.get("vertexShader", 0).asString();
-		auto fragmentShaderSource	= pass.get("fragmentShader", 0).asString();
+		auto vertexShader	= Shader::create(
+			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", 0).asString()
+		);
+		auto fragmentShader	= Shader::create(
+			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
+		);
 
+		vertexShader->upload();
+		fragmentShader->upload();
+		
 		passes.push_back(render::Pass::create(
 			name,
-			Program::create(options->context(), vertexShaderSource, fragmentShaderSource),
+			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
 			uniformBindings,
 			stateBindings,
@@ -290,8 +298,8 @@ EffectParser::finalize()
     {
 		auto program = pass->program();
 
-		program->vertexShaderSource(_dependenciesCode + program->vertexShaderSource());
-		program->fragmentShaderSource(_dependenciesCode + program->fragmentShaderSource());
+		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
+		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
         program->upload();
     }
 
