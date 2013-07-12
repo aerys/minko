@@ -21,79 +21,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/render/AbstractResource.hpp"
-#include "minko/render/ProgramInputs.hpp"
-
 namespace minko
 {
 	namespace render
 	{
-		class Program :
-			public AbstractResource
+		class GLSLPreProcessor
 		{
 		public:
-			typedef std::shared_ptr<Program>	Ptr;
+			typedef std::shared_ptr<GLSLPreProcessor> Ptr;
 
 		private:
-			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
-
-		private:
-			std::shared_ptr<Shader>	_vertexShader;
-			std::shared_ptr<Shader>	_fragmentShader;
-			ProgramInputsPtr		_inputs;
+			std::vector<std::string>		_constants;
 
 		public:
 			inline static
 			Ptr
-			create(AbstractContextPtr	context)
+			create()
 			{
-				return std::shared_ptr<Program>(new Program(context));
-			}
-
-			inline static
-			Ptr
-			create(AbstractContextPtr		context,
-				   std::shared_ptr<Shader>	vertexShader,
-				   std::shared_ptr<Shader>	fragmentShader)
-			{
-				auto p = create(context);
-
-				p->_vertexShader  = vertexShader;
-				p->_fragmentShader = fragmentShader;
-
-				return p;
+				return std::shared_ptr<GLSLPreProcessor>(new GLSLPreProcessor());
 			}
 
 			inline
-			std::shared_ptr<Shader>
-			vertexShader()
+			const std::vector<std::string>&
+			constants()
 			{
-				return _vertexShader;
-			}
-
-			inline
-			std::shared_ptr<Shader>
-			fragmentShader()
-			{
-				return _fragmentShader;
-			}
-
-			inline
-			ProgramInputsPtr
-			inputs()
-			{
-				return _inputs;
+				return _constants;
 			}
 
 			void
-			upload();
-
-			void
-			dispose();
+			process(const std::string& glslCode);
 
 		private:
-			Program(AbstractContextPtr context);
+			GLSLPreProcessor()
+			{
+			}
+
+			std::string
+			trim(const std::string& str, const std::string& whitespace = " \t\n\r");
+
+			std::string
+			reduce(const std::string& str, const std::string& fill = " ", const std::string& whitespace = " \r\n\t");
 		};
 	}
 }

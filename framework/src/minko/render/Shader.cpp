@@ -17,35 +17,26 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Program.hpp"
+#include "Shader.hpp"
 
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/Shader.hpp"
 
 using namespace minko::render;
 
-Program::Program(Program::AbstractContextPtr context) :
-	AbstractResource(context)
-{
-}
-
 void
-Program::upload()
+Shader::dispose()
 {
-	_id = context()->createProgram();
-	_context->attachShader(_id, _vertexShader->id());
-	_context->attachShader(_id, _fragmentShader->id());
-	_context->linkProgram(_id);
+	if (_type == Type::VERTEX_SHADER)
+		_context->deleteVertexShader(_id);
+	else if (_type == Type::FRAGMENT_SHADER)
+		_context->deleteFragmentShader(_id);
 
-	_inputs = _context->getProgramInputs(_id);
-}
-
-void
-Program::dispose()
-{
-	_context->deleteProgram(_id);
 	_id = -1;
+}
 
-	_vertexShader = nullptr;
-	_fragmentShader = nullptr;
+void
+Shader::upload()
+{
+	_id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
+	_context->setShaderSource(_id, _source);
 }

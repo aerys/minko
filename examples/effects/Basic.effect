@@ -22,6 +22,10 @@
 	
 	"passes"	: [{	
 		"vertexShader"	: "
+			
+			#define TECHNIQUE_DIFFUSE_MAP
+			#define TEST vec2(1, 1)
+
 			attribute vec3 position;
 
 			uniform mat4 modelToWorldMatrix;
