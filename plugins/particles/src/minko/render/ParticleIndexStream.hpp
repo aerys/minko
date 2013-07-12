@@ -46,7 +46,7 @@ namespace minko
 			
 			
 			void
-			upload(unsigned int nParticles);
+			update(unsigned int nParticles);
 
 			void
 			resize(unsigned int nParticles);
