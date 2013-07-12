@@ -6,8 +6,8 @@ project "minko-examples"
   "minko-jpeg",
   "minko-png",
   "minko-bullet",
-  "minko-framework",
-  "minko-webgl"
+  "minko-webgl",
+  "minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
