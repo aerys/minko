@@ -51,16 +51,12 @@ namespace minko
 				ColliderPtr		_collider;
 				PhysicsWorldPtr	_physicsWorld;
 				TransformPtr	_targetTransform;
-				TransformPtr	_parentTransform;
-				NodeSetPtr		_parents;
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
 				Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
-				Signal<NodeSetPtr, NodePtr>::Slot		_parentAddedSlot;
-				Signal<NodeSetPtr, NodePtr>::Slot		_parentRemovedSlot;
 
 			public:
 				inline static
@@ -89,8 +85,6 @@ namespace minko
 					removedHandler(NodePtr, NodePtr, NodePtr);
 				void
 					colliderTransformChangedHandler(ColliderPtr);
-				void
-					updateParentTransform(NodeSetPtr, NodePtr node = nullptr);
 				void 
 					updateColliderWorldTransform();
 			};
