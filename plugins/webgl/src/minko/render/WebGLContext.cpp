@@ -32,35 +32,37 @@ using namespace minko::render;
 
 WebGLContext::BlendFactorsMap WebGLContext::_blendingFactors = WebGLContext::initializeBlendFactorsMap();
 
+inline static void getGlError();
+
 WebGLContext::BlendFactorsMap
-WebGLContext::initializeBlendFactorsMap()
+	WebGLContext::initializeBlendFactorsMap()
 {
-    BlendFactorsMap m;
+	BlendFactorsMap m;
 
-    m[(uint)Blending::Source::ZERO]                       = GL_ZERO;
-    m[(uint)Blending::Source::ONE]                        = GL_ONE;
-    m[(uint)Blending::Source::SRC_COLOR]                  = GL_SRC_COLOR;
-    m[(uint)Blending::Source::ONE_MINUS_SRC_COLOR]        = GL_ONE_MINUS_SRC_COLOR;
-    m[(uint)Blending::Source::SRC_ALPHA]                  = GL_SRC_ALPHA;
-    m[(uint)Blending::Source::ONE_MINUS_SRC_ALPHA]        = GL_ONE_MINUS_SRC_ALPHA;
-    m[(uint)Blending::Source::DST_ALPHA]                  = GL_DST_ALPHA;
-    m[(uint)Blending::Source::ONE_MINUS_DST_ALPHA]        = GL_ONE_MINUS_DST_ALPHA;
+	m[(uint)Blending::Source::ZERO]                       = GL_ZERO;
+	m[(uint)Blending::Source::ONE]                        = GL_ONE;
+	m[(uint)Blending::Source::SRC_COLOR]                  = GL_SRC_COLOR;
+	m[(uint)Blending::Source::ONE_MINUS_SRC_COLOR]        = GL_ONE_MINUS_SRC_COLOR;
+	m[(uint)Blending::Source::SRC_ALPHA]                  = GL_SRC_ALPHA;
+	m[(uint)Blending::Source::ONE_MINUS_SRC_ALPHA]        = GL_ONE_MINUS_SRC_ALPHA;
+	m[(uint)Blending::Source::DST_ALPHA]                  = GL_DST_ALPHA;
+	m[(uint)Blending::Source::ONE_MINUS_DST_ALPHA]        = GL_ONE_MINUS_DST_ALPHA;
 
-    m[(uint)Blending::Destination::ZERO]                  = GL_ZERO;
-    m[(uint)Blending::Destination::ONE]                   = GL_ONE;
-    m[(uint)Blending::Destination::DST_COLOR]             = GL_DST_COLOR;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_COLOR]   = GL_ONE_MINUS_DST_COLOR;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
-    m[(uint)Blending::Destination::ONE_MINUS_SRC_ALPHA]   = GL_ONE_MINUS_SRC_ALPHA;
-    m[(uint)Blending::Destination::DST_ALPHA]             = GL_DST_ALPHA;
-    m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
+	m[(uint)Blending::Destination::ZERO]                  = GL_ZERO;
+	m[(uint)Blending::Destination::ONE]                   = GL_ONE;
+	m[(uint)Blending::Destination::DST_COLOR]             = GL_DST_COLOR;
+	m[(uint)Blending::Destination::ONE_MINUS_DST_COLOR]   = GL_ONE_MINUS_DST_COLOR;
+	m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
+	m[(uint)Blending::Destination::ONE_MINUS_SRC_ALPHA]   = GL_ONE_MINUS_SRC_ALPHA;
+	m[(uint)Blending::Destination::DST_ALPHA]             = GL_DST_ALPHA;
+	m[(uint)Blending::Destination::ONE_MINUS_DST_ALPHA]   = GL_ONE_MINUS_DST_ALPHA;
 
-    return m;
+	return m;
 }
 
 WebGLContext::DepthFuncsMap WebGLContext::_depthFuncs = WebGLContext::initializeDepthFuncsMap();
 WebGLContext::DepthFuncsMap
-WebGLContext::initializeDepthFuncsMap()
+	WebGLContext::initializeDepthFuncsMap()
 {
 	DepthFuncsMap m;
 
@@ -79,7 +81,7 @@ WebGLContext::initializeDepthFuncsMap()
 WebGLContext::WebGLContext()
 {
 	glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
+	glEnable(GL_BLEND);
 }
 
 WebGLContext::~WebGLContext()
@@ -104,22 +106,22 @@ WebGLContext::~WebGLContext()
 }
 
 void
-WebGLContext::configureViewport(const unsigned int x,
-				  				   const unsigned int y,
-				  				   const unsigned int width,
-				  				   const unsigned int height)
+	WebGLContext::configureViewport(const unsigned int x,
+	const unsigned int y,
+	const unsigned int width,
+	const unsigned int height)
 {
 	glViewport(x, y, width, height);
 }
 
 void
-WebGLContext::clear(float 			red,
-					   float 			green,
-					   float 			blue,
-					   float 			alpha,
-					   float 			depth,
-					   unsigned int 	stencil,
-					   unsigned int 	mask)
+	WebGLContext::clear(float 			red,
+	float 			green,
+	float 			blue,
+	float 			alpha,
+	float 			depth,
+	unsigned int 	stencil,
+	unsigned int 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -138,7 +140,7 @@ WebGLContext::clear(float 			red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
-	#ifdef EMSCRIPTEN
+#ifdef EMSCRIPTEN
 	glClearDepthf(depth);
 #else // EMSCRIPTEN
 	glClearDepth(depth);
@@ -164,7 +166,7 @@ WebGLContext::clear(float 			red,
 }
 
 void
-WebGLContext::present()
+	WebGLContext::present()
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glFlush.xml
 	//
@@ -173,7 +175,7 @@ WebGLContext::present()
 }
 
 void
-WebGLContext::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
+	WebGLContext::drawTriangles(const unsigned int indexBuffer, const int numTriangles)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
@@ -190,7 +192,7 @@ WebGLContext::drawTriangles(const unsigned int indexBuffer, const int numTriangl
 }
 
 const unsigned int
-WebGLContext::createVertexBuffer(const unsigned int size)
+	WebGLContext::createVertexBuffer(const unsigned int size)
 {
 	unsigned int vertexBuffer;
 
@@ -232,10 +234,10 @@ WebGLContext::createVertexBuffer(const unsigned int size)
 }
 
 void
-WebGLContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
-									    const unsigned int 	offset,
-									    const unsigned int 	size,
-									    void* 				data)
+	WebGLContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
+	const unsigned int 	offset,
+	const unsigned int 	size,
+	void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -252,7 +254,7 @@ WebGLContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 }
 
 void
-WebGLContext::deleteVertexBuffer(const unsigned int vertexBuffer)
+	WebGLContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 {
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
@@ -269,11 +271,11 @@ WebGLContext::deleteVertexBuffer(const unsigned int vertexBuffer)
 }
 
 void
-WebGLContext::setVertexBufferAt(const unsigned int	position,
-								    const unsigned int	vertexBuffer,
-								    const unsigned int	size,
-								    const unsigned int	stride,
-								    const unsigned int	offset)
+	WebGLContext::setVertexBufferAt(const unsigned int	position,
+	const unsigned int	vertexBuffer,
+	const unsigned int	size,
+	const unsigned int	stride,
+	const unsigned int	offset)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -285,13 +287,13 @@ WebGLContext::setVertexBufferAt(const unsigned int	position,
 		GL_FALSE,
 		sizeof(GL_FLOAT) * stride,
 		(void*)(sizeof(GL_FLOAT) * offset)
-	);
+		);
 
 	glEnableVertexAttribArray(position);
 }
 
 const unsigned int
-WebGLContext::createIndexBuffer(const unsigned int size)
+	WebGLContext::createIndexBuffer(const unsigned int size)
 {
 	unsigned int indexBuffer;
 
@@ -305,17 +307,17 @@ WebGLContext::createIndexBuffer(const unsigned int size)
 }
 
 void
-WebGLContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
-										  const unsigned int 	offset,
-										  const unsigned int 	size,
-										  void*					data)
+	WebGLContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
+	const unsigned int 	offset,
+	const unsigned int 	size,
+	void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 }
 
 void
-WebGLContext::deleteIndexBuffer(const unsigned int indexBuffer)
+	WebGLContext::deleteIndexBuffer(const unsigned int indexBuffer)
 {
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
@@ -323,9 +325,9 @@ WebGLContext::deleteIndexBuffer(const unsigned int indexBuffer)
 }
 
 const unsigned int
-WebGLContext::createTexture(unsigned int 	width,
-							    unsigned int 	height,
-							    bool			mipMapping)
+	WebGLContext::createTexture(unsigned int 	width,
+	unsigned int 	height,
+	bool			mipMapping)
 {
 	unsigned int texture;
 
@@ -375,8 +377,8 @@ WebGLContext::createTexture(unsigned int 	width,
 	// glTexImage2D specify a two-dimensional texture image
 	if (mipMapping)
 		for (unsigned int size = width > height ? width : height;
-			 size > 0;
-			 size = size >> 1, width = width >> 1, height = height >> 1)
+			size > 0;
+			size = size >> 1, width = width >> 1, height = height >> 1)
 		{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		}
@@ -389,18 +391,18 @@ WebGLContext::createTexture(unsigned int 	width,
 }
 
 void
-WebGLContext::uploadTextureData(const unsigned int 	texture,
-								    unsigned int 		width,
-								    unsigned int 		height,
-								    unsigned int 		mipLevel,
-								    void*				data)
+	WebGLContext::uploadTextureData(const unsigned int 	texture,
+	unsigned int 		width,
+	unsigned int 		height,
+	unsigned int 		mipLevel,
+	void*				data)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
 void
-WebGLContext::deleteTexture(const unsigned int texture)
+	WebGLContext::deleteTexture(const unsigned int texture)
 {
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
@@ -408,9 +410,9 @@ WebGLContext::deleteTexture(const unsigned int texture)
 }
 
 void
-WebGLContext::setTextureAt(const unsigned int	position,
-							   const int			texture,
-							   const int			location)
+	WebGLContext::setTextureAt(const unsigned int	position,
+	const int			texture,
+	const int			location)
 {
 	glActiveTexture(GL_TEXTURE0 + position);
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -421,25 +423,25 @@ WebGLContext::setTextureAt(const unsigned int	position,
 }
 
 const unsigned int
-WebGLContext::createProgram()
+	WebGLContext::createProgram()
 {
 	return glCreateProgram();
 }
 
 void
-WebGLContext::attachShader(const unsigned int program, const unsigned int shader)
+	WebGLContext::attachShader(const unsigned int program, const unsigned int shader)
 {
 	glAttachShader(program, shader);
 }
 
 void
-WebGLContext::linkProgram(const unsigned int program)
+	WebGLContext::linkProgram(const unsigned int program)
 {
 	glLinkProgram(program);
 }
 
 void
-WebGLContext::deleteProgram(const unsigned int program)
+	WebGLContext::deleteProgram(const unsigned int program)
 {
 	_programs.erase(std::find(_programs.begin(), _programs.end(), program));
 
@@ -447,20 +449,20 @@ WebGLContext::deleteProgram(const unsigned int program)
 }
 
 void
-WebGLContext::compileShader(const unsigned int shader)
+	WebGLContext::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
 }
 
 void
-WebGLContext::setProgram(const unsigned int program)
+	WebGLContext::setProgram(const unsigned int program)
 {
 	glUseProgram(program);
 }
 
 void
-WebGLContext::setShaderSource(const unsigned int shader,
-							     const std::string& source)
+	WebGLContext::setShaderSource(const unsigned int shader,
+	const std::string& source)
 {
 	const char* sourceString = source.c_str();
 
@@ -468,7 +470,7 @@ WebGLContext::setShaderSource(const unsigned int shader,
 }
 
 const unsigned int
-WebGLContext::createVertexShader()
+	WebGLContext::createVertexShader()
 {
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -478,7 +480,7 @@ WebGLContext::createVertexShader()
 }
 
 void
-WebGLContext::deleteVertexShader(const unsigned int vertexShader)
+	WebGLContext::deleteVertexShader(const unsigned int vertexShader)
 {
 	_vertexShaders.erase(std::find(_vertexShaders.begin(), _vertexShaders.end(), vertexShader));
 
@@ -486,7 +488,7 @@ WebGLContext::deleteVertexShader(const unsigned int vertexShader)
 }
 
 const unsigned int
-WebGLContext::createFragmentShader()
+	WebGLContext::createFragmentShader()
 {
 	unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -496,7 +498,7 @@ WebGLContext::createFragmentShader()
 }
 
 void
-WebGLContext::deleteFragmentShader(const unsigned int fragmentShader)
+	WebGLContext::deleteFragmentShader(const unsigned int fragmentShader)
 {
 	_fragmentShaders.erase(std::find(_fragmentShaders.begin(), _fragmentShaders.end(), fragmentShader));
 
@@ -504,7 +506,7 @@ WebGLContext::deleteFragmentShader(const unsigned int fragmentShader)
 }
 
 std::shared_ptr<ProgramInputs>
-WebGLContext::getProgramInputs(const unsigned int program)
+	WebGLContext::getProgramInputs(const unsigned int program)
 {
 	std::vector<std::string> names;
 	std::vector<ProgramInputs::Type> types;
@@ -517,10 +519,10 @@ WebGLContext::getProgramInputs(const unsigned int program)
 }
 
 void
-WebGLContext::fillUniformInputs(const unsigned int						program,
-								   std::vector<std::string>&				names,
-								   std::vector<ProgramInputs::Type>&	types,
-								   std::vector<unsigned int>&				locations)
+	WebGLContext::fillUniformInputs(const unsigned int						program,
+	std::vector<std::string>&				names,
+	std::vector<ProgramInputs::Type>&	types,
+	std::vector<unsigned int>&				locations)
 {
 	int total = -1;
 	int maxUniformNameLength = 128;
@@ -530,72 +532,72 @@ WebGLContext::fillUniformInputs(const unsigned int						program,
 
 	for (int i = 0; i < total; ++i)
 	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxUniformNameLength);
+		int nameLength = -1;
+		int size = -1;
+		GLenum type = GL_ZERO;
+		std::vector<char> name(maxUniformNameLength);
 
-    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+		glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
 
-	    name[nameLength] = 0;
+		name[nameLength] = 0;
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
+		ProgramInputs::Type inputType = ProgramInputs::Type::unknown;
 
-	    switch (type)
-	    {
-	    	case GL_FLOAT:
-	    		inputType = ProgramInputs::Type::float1;
-	    		break;
-	    	case GL_INT:
-	    		inputType = ProgramInputs::Type::int1;
-	    		break;
-	    	case GL_FLOAT_VEC2:
-	    		inputType = ProgramInputs::Type::float2;
-	    		break;
-	    	case GL_INT_VEC2:
-	    		inputType = ProgramInputs::Type::int2;
-		    	break;
-	    	case GL_FLOAT_VEC3:
-	    		inputType = ProgramInputs::Type::float3;
-	    		break;
-	    	case GL_INT_VEC3:
-	    		inputType = ProgramInputs::Type::int3;
-	    		break;
-	    	case GL_FLOAT_VEC4:
-	    		inputType = ProgramInputs::Type::float4;
-	    		break;
-	    	case GL_INT_VEC4:
-	    		inputType = ProgramInputs::Type::int4;
-	    		break;
-	    	case GL_FLOAT_MAT3:
-	    		inputType = ProgramInputs::Type::float9;
-		    	break;
-	    	case GL_FLOAT_MAT4:
-	    		inputType = ProgramInputs::Type::float16;
-	    		break;
-			case GL_SAMPLER_2D:
-				inputType = ProgramInputs::Type::sampler2d;
-				break;
-			default:
-				throw std::logic_error("unsupported type");
-	    }
+		switch (type)
+		{
+		case GL_FLOAT:
+			inputType = ProgramInputs::Type::float1;
+			break;
+		case GL_INT:
+			inputType = ProgramInputs::Type::int1;
+			break;
+		case GL_FLOAT_VEC2:
+			inputType = ProgramInputs::Type::float2;
+			break;
+		case GL_INT_VEC2:
+			inputType = ProgramInputs::Type::int2;
+			break;
+		case GL_FLOAT_VEC3:
+			inputType = ProgramInputs::Type::float3;
+			break;
+		case GL_INT_VEC3:
+			inputType = ProgramInputs::Type::int3;
+			break;
+		case GL_FLOAT_VEC4:
+			inputType = ProgramInputs::Type::float4;
+			break;
+		case GL_INT_VEC4:
+			inputType = ProgramInputs::Type::int4;
+			break;
+		case GL_FLOAT_MAT3:
+			inputType = ProgramInputs::Type::float9;
+			break;
+		case GL_FLOAT_MAT4:
+			inputType = ProgramInputs::Type::float16;
+			break;
+		case GL_SAMPLER_2D:
+			inputType = ProgramInputs::Type::sampler2d;
+			break;
+		default:
+			throw std::logic_error("unsupported type");
+		}
 
-	    int location = glGetUniformLocation(program, &name[0]);
+		int location = glGetUniformLocation(program, &name[0]);
 
-	    if (location >= 0 && type != ProgramInputs::Type::unknown)
-	    {
-		    names.push_back(std::string(&name[0], nameLength));
-		    types.push_back(inputType);
-		    locations.push_back(location);
+		if (location >= 0 && type != ProgramInputs::Type::unknown)
+		{
+			names.push_back(std::string(&name[0], nameLength));
+			types.push_back(inputType);
+			locations.push_back(location);
 		}
 	}
 }
 
 void
-WebGLContext::fillAttributeInputs(const unsigned int							program,
-									 std::vector<std::string>&					names,
-								     std::vector<ProgramInputs::Type>&	types,
-								     std::vector<unsigned int>&					locations)
+	WebGLContext::fillAttributeInputs(const unsigned int							program,
+	std::vector<std::string>&					names,
+	std::vector<ProgramInputs::Type>&	types,
+	std::vector<unsigned int>&					locations)
 {
 	int total = -1;
 	int maxAttributeNameLength = 128;
@@ -605,30 +607,30 @@ WebGLContext::fillAttributeInputs(const unsigned int							program,
 
 	for (int i = 0; i < total; ++i) 
 	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxAttributeNameLength);
+		int nameLength = -1;
+		int size = -1;
+		GLenum type = GL_ZERO;
+		std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
-	
-	    name[nameLength] = 0;
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
+		name[nameLength] = 0;
+
+		ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
 
 		int location = glGetAttribLocation(program, &name[0]);
 
-	    if (location >= 0)
-	    {
-		    names.push_back(std::string(&name[0]));
-		    types.push_back(inputType);
-		    locations.push_back(location);
+		if (location >= 0)
+		{
+			names.push_back(std::string(&name[0]));
+			types.push_back(inputType);
+			locations.push_back(location);
 		}
 	}
 }
 
 std::string
-WebGLContext::getShaderCompilationLogs(const unsigned int shader)
+	WebGLContext::getShaderCompilationLogs(const unsigned int shader)
 {
 	int compileStatus = -1;
 
@@ -659,7 +661,7 @@ WebGLContext::getShaderCompilationLogs(const unsigned int shader)
 }
 
 std::string
-WebGLContext::getProgramInfoLogs(const unsigned int program)
+	WebGLContext::getProgramInfoLogs(const unsigned int program)
 {
 	int programInfoMaxLength = -1;
 	int programInfoLength = -1;
@@ -674,36 +676,36 @@ WebGLContext::getProgramInfoLogs(const unsigned int program)
 }
 
 void
-WebGLContext::setUniform(unsigned int location, float value)
+	WebGLContext::setUniform(unsigned int location, float value)
 {
 	glUniform1f(location, value);
 }
 
 void
-WebGLContext::setUniform(unsigned int location, float value1, float value2)
+	WebGLContext::setUniform(unsigned int location, float value1, float value2)
 {
 	glUniform2f(location, value1, value2);
 }
 
 void
-WebGLContext::setUniform(unsigned int location, float value1, float value2, float value3)
+	WebGLContext::setUniform(unsigned int location, float value1, float value2, float value3)
 {
 	glUniform3f(location, value1, value2, value3);
 }
 
 void
-WebGLContext::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
+	WebGLContext::setUniform(unsigned int location, float value1, float value2, float value3, float value4)
 {
 	glUniform4f(location, value1, value2, value3, value4);
 }
 
 void
-WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
+	WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
 {
 	if (transpose)
 	{
 		static float	transposedValues[16];
-		
+
 		transposedValues[0] = values[0];
 		transposedValues[1] = values[4];
 		transposedValues[2] = values[8];
@@ -728,31 +730,67 @@ WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool
 }
 
 void
-WebGLContext::setBlendMode(Blending::Source source, Blending::Destination destination)
+	WebGLContext::setBlendMode(Blending::Source source, Blending::Destination destination)
 {
-    glBlendFunc(
-        _blendingFactors[(uint)source & 0x00ff],
-        _blendingFactors[(uint)destination & 0xff00]
-    );
+	glBlendFunc(
+		_blendingFactors[(uint)source & 0x00ff],
+		_blendingFactors[(uint)destination & 0xff00]
+	);
 }
 
 void
-WebGLContext::setBlendMode(Blending::Mode blendMode)
+	WebGLContext::setBlendMode(Blending::Mode blendMode)
 {
-    glBlendFunc(
-        _blendingFactors[(uint)blendMode & 0x00ff],
-        _blendingFactors[(uint)blendMode & 0xff00]
-    );
+	glBlendFunc(
+		_blendingFactors[(uint)blendMode & 0x00ff],
+		_blendingFactors[(uint)blendMode & 0xff00]
+	);
 }
 
 void
-WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
+	WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
 {
 	// throw std::logic_error("WebGLContext::setDepthTest is not implemented yet");
 }
 
 void
-WebGLContext::readPixels(unsigned char* pixels)
+	WebGLContext::readPixels(unsigned char* pixels)
 {
 	// throw std::logic_error("WebGLContext::readPixels is not implemented yet");
+}
+
+inline static std::ostream& printGetError(std::ostream& out)
+{
+	const GLenum err = glGetError();
+	switch(err)
+	{
+	default:
+		out << "unknown error";
+		break;
+	case GL_NO_ERROR:
+		out << "no error";
+		break;
+	case GL_INVALID_ENUM:
+		out << "invalid enum";
+		break;
+	case GL_INVALID_VALUE:
+		out << "invalid value";
+		break;
+	case GL_INVALID_OPERATION:
+		out << "invalid operation";
+		break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		out << "invalid framebuffer operation";
+		break;
+	case GL_OUT_OF_MEMORY:
+		out << "out of memory";
+		break;
+	case GL_STACK_UNDERFLOW:
+		out  << "stack underflow";
+		break;
+	case GL_STACK_OVERFLOW:
+		out << "stack overflow";
+		break;
+	}
+	return out;
 }
