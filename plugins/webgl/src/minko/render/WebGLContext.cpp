@@ -224,7 +224,7 @@ WebGLContext::createVertexBuffer(const unsigned int size)
 	// usage Specifies the expected usage pattern of the data store.
 	//
 	// glBufferData creates and initializes a buffer object's data store
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GL_FLOAT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
 
 	_vertexBuffers.push_back(vertexBuffer);
 
@@ -248,7 +248,7 @@ WebGLContext::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 	// data Specifies a pointer to the new data that will be copied into the data store.
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
-	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GL_FLOAT), size * sizeof(GL_FLOAT), data);
+	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
 }
 
 void
@@ -297,7 +297,7 @@ WebGLContext::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GL_UNSIGNED_SHORT), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
@@ -311,7 +311,7 @@ WebGLContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GL_UNSIGNED_SHORT), size * sizeof(GL_UNSIGNED_SHORT), data);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 }
 
 void
@@ -748,11 +748,11 @@ WebGLContext::setBlendMode(Blending::Mode blendMode)
 void
 WebGLContext::setDepthTest(bool depthMask, CompareMode depthFunc)
 {
-	throw std::logic_error("WebGLContext::setDepthTest is not implemented yet");
+	// throw std::logic_error("WebGLContext::setDepthTest is not implemented yet");
 }
 
 void
 WebGLContext::readPixels(unsigned char* pixels)
 {
-	throw std::logic_error("WebGLContext::readPixels is not implemented yet");
+	// throw std::logic_error("WebGLContext::readPixels is not implemented yet");
 }
