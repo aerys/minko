@@ -3,17 +3,23 @@
 	"name"	: "basic",
 	
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position"
+		"position"				: "geometry/vertex/attribute/position",
+		"uv"					: "geometry/vertex/attribute/uv"
 	},
 	
 	"uniformBindings"	: {
 		"diffuseColor"			: "material/diffuse/rgba",
+		"diffuseMap"			: "material/diffuse/map",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
 	},
 	
 	"stateBindings"	: {
 		"blendMode"				: "material/blendMode"
+	},
+
+	"macroBindings"	: {
+		"TECHNIQUE_DIFFUSE_MAP"	: "material/diffuse/map"
 	},
 	
 	"priority"		: 0,
@@ -22,26 +28,36 @@
 	
 	"passes"	: [{	
 		"vertexShader"	: "
-			
-			#define TECHNIQUE_DIFFUSE_MAP
-			#define TEST vec2(1, 1)
-
 			attribute vec3 position;
+			attribute vec3 uv;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
 
+			varying vec2 vertexUV;
+
 			void main(void)
 			{
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					vertexUV = uv;
+				#endif
+
 				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0);
 			}
 		",
 		"fragmentShader"	: "
 			uniform vec4 diffuseColor;
+			uniform sampler2D diffuseMap;
+			
+			varying vec2 vertexUV;
 
 			void main(void)
 			{
-				gl_FragColor = diffuseColor;
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					gl_FragColor = texture2D(diffuseMap, vertexUV);
+				#else
+					gl_FragColor = diffuseColor;
+				#endif
 			}
 		"
 	}]

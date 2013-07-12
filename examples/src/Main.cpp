@@ -112,8 +112,8 @@ int main(int argc, char** argv)
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("box3.png")),
+				->set("light/direction",				lightDirection),
+				//->set("material/diffuse/map",			assets->texture("box3.png")),
 			assets->effect("basic")
 		));
 
