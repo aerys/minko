@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SphereGeometry.hpp"
 #include "minko/render/VertexBuffer.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/IndexBuffer.hpp"
 
 using namespace minko::geometry;
 using namespace minko::render;
@@ -137,5 +137,5 @@ SphereGeometry::initializeIndices(std::shared_ptr<AbstractContext>	context,
 		data[c++] = (numParallels - 3) * numMeridians + i + 1;
 	}
 
-	indices(IndexStream::create(context, data));
+	indices(IndexBuffer::create(context, data));
 }
