@@ -107,7 +107,6 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 void
 ParticleSystem::initialize()
 {
-
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&ParticleSystem::targetAddedHandler,
 		shared_from_this(),

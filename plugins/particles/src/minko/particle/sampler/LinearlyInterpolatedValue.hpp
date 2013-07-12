@@ -50,15 +50,10 @@ namespace minko
 				};
 
 				virtual
-				T*
-				set(T* target, float time) const
+				void
+				set(T& target, float time) const
 				{
-					if (target == 0)
-						target = new T();
-
-					*target = _start + _delta * time;
-
-					return target;
+					value = _start + _delta * time;
 				};
 
 				virtual
