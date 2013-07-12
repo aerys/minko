@@ -46,7 +46,7 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(AbstractContextPtr	context)
+			create(AbstractContextPtr context)
 			{
 				return std::shared_ptr<Program>(new Program(context));
 			}

@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "OpenGLES2Context.hpp"
 
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/GLSLPreProcessor.hpp"
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -522,7 +521,7 @@ OpenGLES2Context::setProgram(const unsigned int program)
 
 void
 OpenGLES2Context::setShaderSource(const unsigned int shader,
-							     const std::string& source)
+							      const std::string& source)
 {
 	const char* sourceString = source.c_str();
 
@@ -574,7 +573,6 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
-	fillConstantsInputs(program, names, types, locations);
 
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
@@ -689,37 +687,6 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
 		    types.push_back(inputType);
 		    locations.push_back(location);
 		}
-	}
-}
-
-void
-OpenGLES2Context::fillConstantsInputs(const unsigned int				program,
-									  std::vector<std::string>&			names,
-								      std::vector<ProgramInputs::Type>&	types,
-								      std::vector<unsigned int>&		locations)
-{
-	int maxSourceLength = -1;
-	auto pp = GLSLPreProcessor::create();
-	std::vector<uint> shaders(2);
-	auto numAttachedShaders = -1;
-
-	glGetAttachedShaders(program, 2, &numAttachedShaders, &shaders[0]);
-
-	for (auto shader : shaders)
-	{
-		glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, &maxSourceLength);
-		std::vector<char> source(maxSourceLength);
-		auto actualSourceSize = -1;
-		glGetShaderSource(shader, maxSourceLength, &actualSourceSize, &source[0]);
-	
-		pp->process(std::string(&source[0], actualSourceSize));
-	}
-
-	for (auto constantName : pp->constants())
-	{
-		names.push_back(constantName);
-		types.push_back(ProgramInputs::Type::constant);
-		locations.push_back(-1);
 	}
 }
 
