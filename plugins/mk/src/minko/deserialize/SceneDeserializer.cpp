@@ -81,16 +81,11 @@ namespace minko
 											ControllerMap&	controllerMap,
 											NodeMap&		nodeMap)
 		{
-			std::cout << "start deserializer group" << std::endl << std::flush;
-			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeGroup(nodeInfo, options, controllerMap, nodeMap);
-			std::cout << "end deserializer group" << std::endl << std::flush;
-			
-			std::vector<Any>& children = Any::cast<std::vector<Any>&>(nodeInfo["children"]);
-			std::cout << "start deserializer children" << std::endl << std::flush;
+			std::shared_ptr<scene::Node>	node		= NodeDeserializer::deserializeGroup(nodeInfo, options, controllerMap, nodeMap);
+			std::vector<Any>&				children	= Any::cast<std::vector<Any>&>(nodeInfo["children"]);
 
 			for (unsigned int i = 0; i < children.size(); ++i)
 				node->addChild(deserializeNode(children[i], options, controllerMap, nodeMap));
-			std::cout << "end deserializer children" << std::endl << std::flush;
 
 			return node;
 		}
@@ -101,9 +96,8 @@ namespace minko
 										   ControllerMap&	controllerMap,
 										   NodeMap&			nodeMap)
 		{
-			std::cout << "start deserializer mesh" << std::endl << std::flush;
 			std::shared_ptr<scene::Node> node = NodeDeserializer::deserializeMesh(nodeInfo, options, controllerMap, nodeMap);
-			std::cout << "end deserializer mesh" << std::endl << std::flush;
+			
 			return node;
 		}
 

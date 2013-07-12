@@ -63,7 +63,7 @@ namespace minko
 
 			static
 			std::shared_ptr<math::Matrix4x4>
-			matrix4x4(Any matrixObject)
+			matrix4x4(Any& matrixObject)
 			{
 				Qark::ByteArray&					matrixData = Any::cast<Qark::ByteArray&>(matrixObject);
 				std::stringstream					stream;
@@ -89,7 +89,7 @@ namespace minko
 			static
 			std::shared_ptr<data::Provider>
 			provider(std::vector<Any>&									properties,
-					 std::map<int, std::shared_ptr<resource::Texture>>	idToTexture,
+					 std::map<int, std::shared_ptr<resource::Texture>>&	idToTexture,
 					 std::shared_ptr<NameConverter>						nameConverter)
 			{
 				// temp
