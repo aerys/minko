@@ -59,6 +59,7 @@ namespace minko
 			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
 			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
 			std::unordered_map<std::string, std::string>				_defaultStateBindings;
+			std::unordered_map<std::string, std::string>				_defaultMacroBindings;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -111,7 +112,8 @@ namespace minko
 			parseBindings(Json::Value&									contextNode,
 						  std::unordered_map<std::string, std::string>&	attributeBindings,
 						  std::unordered_map<std::string, std::string>&	uniformBindings,
-						  std::unordered_map<std::string, std::string>&	stateBindings);
+						  std::unordered_map<std::string, std::string>&	stateBindings,
+						  std::unordered_map<std::string, std::string>&	macroBindings);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,

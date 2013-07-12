@@ -232,12 +232,6 @@ namespace minko
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
 
-			void
-			fillConstantsInputs(const unsigned int					program,
-								std::vector<std::string>&			names,
-								std::vector<ProgramInputs::Type>&	types,
-								std::vector<unsigned int>&			locations);
-
             static
             BlendFactorsMap
             initializeBlendFactorsMap();
