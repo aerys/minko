@@ -82,8 +82,13 @@ int main(int argc, char** argv)
 		//->queue("Red.effect")
 		->queue("Basic.effect");
 
+#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effects");
 	assets->defaultOptions()->includePaths().push_back("textures");
+#else
+	assets->defaultOptions()->includePaths().push_back("../../effects");
+	assets->defaultOptions()->includePaths().push_back("../../textures");
+#endif
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -105,17 +110,33 @@ int main(int argc, char** argv)
 		mesh->addController(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
-				->set("material/blending",				render::Blending::Mode::ALPHA)
-				->set("material/depthFunc",				render::CompareMode::LESS)
-				->set("material/depthMask",				true)
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
 				->set("light/direction",				lightDirection)
 				->set("material/diffuse/map",			assets->texture("box3.png")),
 			assets->effect("basic")
 		));
-		
+
 		group->addChild(mesh);
+
+		/*
+		for (auto i = 0; i < 10000; ++i)
+		{
+			mesh = scene::Node::create();
+			mesh->addController(Transform::create());
+			mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+			mesh->addController(Surface::create(
+				assets->geometry("sphere"),
+				data::Provider::create()
+					->set("material/diffuse/rgba",			color)
+					->set("transform/worldToScreenMatrix",	view)
+					->set("light/direction",				lightDirection)
+					->set("material/diffuse/map",			assets->texture("box3.png")),
+				assets->effect("texture")
+			));
+			group->addChild(mesh);
+		}
+		*/
 	});
 
 	assets->load();
