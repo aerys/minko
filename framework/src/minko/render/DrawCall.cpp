@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/VertexBuffer.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/data/Container.hpp"
@@ -53,9 +53,9 @@ DrawCall::bind()
     _propertyChangedSlots.clear();
 
 	auto vertexSize		= getDataProperty<unsigned int>("geometry/vertex/size");
-	auto indexStream	= getDataProperty<IndexStream::Ptr>("geometry/indices");
-	auto indexBuffer	= indexStream->id();
-	auto numIndices		= indexStream->data().size();
+	auto IndexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry/indices");
+	auto indexBuffer	= IndexBuffer->id();
+	auto numIndices		= IndexBuffer->data().size();
 	auto drawTriangles	= [=](AbstractContext::Ptr context)
 	{
 		context->drawTriangles(indexBuffer, numIndices);
