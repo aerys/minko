@@ -6,12 +6,12 @@ include 'examples'
    
 -- core framework
 include 'framework'
-include 'plugin'
 
 -- plugins
 include 'plugins/jpeg'
 include 'plugins/png'
-include 'plugins/mk'
+include 'plugins/bullet'
+include 'plugins/webgl'
 
 newaction {
 	trigger = "copyDLLs",
