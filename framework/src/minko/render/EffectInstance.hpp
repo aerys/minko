@@ -21,79 +21,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/render/AbstractResource.hpp"
-#include "minko/render/ProgramInputs.hpp"
-
 namespace minko
 {
 	namespace render
 	{
-		class Program :
-			public AbstractResource
+		class EffectInstance
 		{
 		public:
-			typedef std::shared_ptr<Program>	Ptr;
+			typedef std::shared_ptr<EffectInstance> Ptr;
 
 		private:
-			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
-
-		private:
-			std::shared_ptr<Shader>	_vertexShader;
-			std::shared_ptr<Shader>	_fragmentShader;
-			ProgramInputsPtr		_inputs;
+			std::vector<Pass>	_passes;
 
 		public:
 			inline static
 			Ptr
-			create(AbstractContextPtr	context)
+			create()
 			{
-				return std::shared_ptr<Program>(new Program(context));
-			}
-
-			inline static
-			Ptr
-			create(AbstractContextPtr		context,
-				   std::shared_ptr<Shader>	vertexShader,
-				   std::shared_ptr<Shader>	fragmentShader)
-			{
-				auto p = create(context);
-
-				p->_vertexShader  = vertexShader;
-				p->_fragmentShader = fragmentShader;
-
-				return p;
+				return std::shared_ptr<EffectInstance>(new EffectInstance());
 			}
 
 			inline
-			std::shared_ptr<Shader>
-			vertexShader()
+			const std::vector<Pass>&
+			passes()
 			{
-				return _vertexShader;
+				return _passes;
 			}
-
-			inline
-			std::shared_ptr<Shader>
-			fragmentShader()
-			{
-				return _fragmentShader;
-			}
-
-			inline
-			ProgramInputsPtr
-			inputs()
-			{
-				return _inputs;
-			}
-
-			void
-			upload();
-
-			void
-			dispose();
 
 		private:
-			Program(AbstractContextPtr context);
+			EffectInstance()
+			{
+			}
 		};
 	}
 }

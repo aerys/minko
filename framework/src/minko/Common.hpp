@@ -53,11 +53,14 @@ namespace minko
 		class Pass;
 		class Effect;
 		class ProgramInputs;
+
+		class GLSLPreProcessor;
 	}
 
 	namespace render
 	{
 		class AbstractResource;
+		class Shader;
 		class Program;
 		class VertexFormat;
 		class VertexStream;
