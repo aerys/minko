@@ -6,16 +6,18 @@ project "minko-examples"
   "minko-jpeg",
   "minko-png",
   "minko-bullet",
-  "minko-framework"
+  "minko-framework",
+  "minko-webgl"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
     "src",
-  "lib/glfw/include",
+	"lib/glfw/include",
     "../framework/src",
     "../plugins/jpeg/src",
     "../plugins/png/src",
-    "../plugins/bullet/src"
+    "../plugins/bullet/src",
+	"../plugins/webgl/src"
   }
 
   configuration { "debug"}
