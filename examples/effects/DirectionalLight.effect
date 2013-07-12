@@ -11,7 +11,8 @@
 		"diffuseMap"			: "material/diffuse/map",
 		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
 		"worldToScreenMatrix"	: "transform/worldToScreenMatrix",
-		"lightDirection"		: "light/direction"
+		"lightDirection"		: "light/direction",
+		"ambientColor"			: "light/ambient/rgba"
 	},
 	"stateBindings"	: {
 		"blendMode"				: "material/blendMode"
@@ -51,6 +52,7 @@
 		",
 		"fragmentShader"	: "
 			uniform vec4 diffuseColor;
+			uniform vec3 ambientColor;
 			uniform vec3 lightDirection;
 			uniform sampler2D diffuseMap;
 
@@ -65,7 +67,9 @@
 					vec4 diffuse = diffuseColor;
 				#endif;
 
-				gl_FragColor = vec4(diffuse.rgb * lambert(worldNormal, lightDirection), diffuse.a);
+				vec3 light = ambientColor + lambert(worldNormal, lightDirection);
+
+				gl_FragColor = vec4(diffuse * light.rgb, diffuse.a);
 			}
 		"
 	}]
