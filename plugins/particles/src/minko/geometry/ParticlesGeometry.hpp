@@ -32,7 +32,7 @@ namespace minko
 		public:
 			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
 
-			typedef std::shared_ptr<render::VertexStream>			VertexStreamPtr;
+			typedef std::shared_ptr<render::ParticleVertexStream>	VertexStreamPtr;
 			typedef std::shared_ptr<render::ParticleIndexStream>	IndexStreamPtr;
 		
 		private:
