@@ -36,8 +36,9 @@ namespace minko
 			typedef std::shared_ptr<Pass>	PassPtr;
 
 		private:
-			std::vector<PassPtr>			_passes;
-			std::shared_ptr<data::Provider>	_data;
+			std::vector<PassPtr>						_passes;
+			std::shared_ptr<data::Provider>				_data;
+			std::list<std::shared_ptr<EffectInstance>>	_instances;
 
 		public:
 			inline static
@@ -60,6 +61,9 @@ namespace minko
 			{
 				return _data;
 			}
+
+			std::shared_ptr<EffectInstance>
+			instanciate(std::shared_ptr<data::Container> data);
 
 		private:
 			Effect(std::vector<PassPtr>&	passes);
