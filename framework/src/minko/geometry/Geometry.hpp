@@ -60,16 +60,16 @@ namespace minko
 
 			inline
 			void
-			indices(std::shared_ptr<render::IndexStream> indices)
+			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
 				_data->set("geometry/indices", indices);
 			}
 
 			inline
-			std::shared_ptr<render::IndexStream>
+			std::shared_ptr<render::IndexBuffer>
 			indices()
 			{
-				return _data->get<std::shared_ptr<render::IndexStream>>("geometry/indices");
+				return _data->get<std::shared_ptr<render::IndexBuffer>>("geometry/indices");
 			}
 
 			inline
