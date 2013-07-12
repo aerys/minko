@@ -101,19 +101,19 @@ int main(int argc, char** argv)
         renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
-		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
+		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f)->prependTranslation(0.f, 0.f, -3.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
-		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
+		auto lightDirection = Vector3::create(0.f, -1.f, -.5f);
 
 		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(-.75f, 0.f, -3.f);
+		mesh->controller<Transform>()->transform()->appendTranslation(.75f, 0.f, 0.f);
 		mesh->addController(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("box3.png")),
+				->set("light/ambient/rgba",				Vector3::create(.25f, .25f, .25f))
+				->set("light/direction",				lightDirection),
 			assets->effect("directional light")
 		));
 
@@ -121,17 +121,21 @@ int main(int argc, char** argv)
 
 		mesh = scene::Node::create();
 		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(.75f, 0.f, -3.f);
+		mesh->controller<Transform>()->transform()->appendTranslation(-.75f, 0.f, 0.f);
 		mesh->addController(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
 				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection),
+				->set("light/direction",				lightDirection)
+				->set("light/ambient/rgba",				Vector3::create(.25f, .25f, .25f))
+				->set("material/diffuse/map",			assets->texture("box3.png")),
 			assets->effect("directional light")
 		));
 
 		group->addChild(mesh);
+
+		group->addController(Transform::create());
 
 		/*
 		for (auto i = 0; i < 10000; ++i)
@@ -171,7 +175,7 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+        group->controller<Transform>()->transform()->appendRotationY(.01f);
 
 	    renderingController->render();
 
