@@ -44,10 +44,10 @@ namespace minko
 
 		private:
 			inline static
-			std::string
-			extractName(NodeInfo nodeInfo)
+			std::string&
+			extractName(NodeInfo& nodeInfo)
 			{
-				return Any::cast<std::string>(nodeInfo["name"]);
+				return Any::cast<std::string&>(nodeInfo["name"]);
 			}
 
 		public:
