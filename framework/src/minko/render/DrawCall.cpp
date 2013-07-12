@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/Blending.hpp"
-#include "minko/render/VertexStream.hpp"
+#include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexStream.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Program.hpp"
@@ -84,11 +84,11 @@ DrawCall::bind()
 			if (!dataHasProperty(name))
 				continue;
 
-			auto vertexStream	= getDataProperty<VertexStream::Ptr>(name);
-			auto attribute		= vertexStream->attribute(inputName);
+			auto VertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
+			auto attribute		= VertexBuffer->attribute(inputName);
 			auto size			= std::get<1>(*attribute);
 			auto offset			= std::get<2>(*attribute);
-			auto vertexBuffer	= vertexStream->id();
+			auto vertexBuffer	= VertexBuffer->id();
 				
 			_func.push_back([=](AbstractContext::Ptr context)
 			{
