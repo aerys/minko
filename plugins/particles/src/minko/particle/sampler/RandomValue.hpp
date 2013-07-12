@@ -51,15 +51,10 @@ namespace minko
 				};
 				
 				virtual
-				T*
-				set(T* value, float time) const
+				void
+				set(T& value, float time) const
 				{
-					if (target == 0)
-						target = new T();
-
-					*target = _min + _delta * rand01();
-
-					return target;
+					value = _min + _delta * rand01();
 				};
 
 				virtual
