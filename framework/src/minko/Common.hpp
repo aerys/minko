@@ -52,6 +52,7 @@ namespace minko
 
 		class Pass;
 		class Effect;
+		class EffectInstance;
 		class ProgramInputs;
 
 		class GLSLPreProcessor;
