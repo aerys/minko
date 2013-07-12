@@ -79,14 +79,14 @@ CubeGeometry::CubeGeometry(std::shared_ptr<AbstractContext> context)
 		30, 31, 32, 33, 34, 35
 	};
 
-	auto vstream = VertexStream::create(
+	auto vstream = VertexBuffer::create(
 		context, std::begin(xyzData), std::end(xyzData)
 	);
 
 	vstream->addAttribute("position", 3, 0);
 	vstream->addAttribute("normal", 3, 3);
 	vstream->addAttribute("uv", 2, 6);
-	addVertexStream(vstream);
+	addVertexBuffer(vstream);
 
 	indices(IndexStream::create(context, std::begin(i), std::end(i)));
 }

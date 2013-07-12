@@ -63,7 +63,7 @@ namespace minko
 		class Shader;
 		class Program;
 		class VertexFormat;
-		class VertexStream;
+		class VertexBuffer;
 		class VertexAttribute;
 		class IndexStream;
 		class Texture;
