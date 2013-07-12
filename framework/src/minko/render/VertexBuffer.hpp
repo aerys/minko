@@ -27,11 +27,11 @@ namespace minko
 {
 	namespace render
 	{
-		class VertexStream :
+		class VertexBuffer :
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<VertexStream>								Ptr;
+			typedef std::shared_ptr<VertexBuffer>								Ptr;
 			typedef const std::tuple<std::string, unsigned int, unsigned int>	Attribute;
 			typedef std::shared_ptr<Attribute>									AttributePtr;
 
@@ -47,7 +47,7 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context)
 			{
-				return std::shared_ptr<VertexStream>(new VertexStream(context));
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(context));
 			}
 
 			inline static
@@ -57,7 +57,7 @@ namespace minko
 				   const unsigned int						size,
 				   const unsigned int						offset = 0)
 			{
-				return std::shared_ptr<VertexStream>(new VertexStream(
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
 					context, data, offset, size
 				));
 			}
@@ -68,14 +68,14 @@ namespace minko
 					std::vector<float>::const_iterator		begin,
 					std::vector<float>::const_iterator		end)
 			{
-				return std::shared_ptr<VertexStream>(new VertexStream(context, begin, end));
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(context, begin, end));
 			}
 				
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext>	context, float* begin, float* end)
 			{
-				return std::shared_ptr<VertexStream>(new VertexStream(
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
 					context, 
 					begin,
 					end
@@ -122,18 +122,18 @@ namespace minko
 			attribute(const std::string& attributeName);
 
 		private:
-			VertexStream(std::shared_ptr<render::AbstractContext> context);
+			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 
-			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
 							float*									data,
 							const unsigned int						size,
 							const unsigned int						offset);
 
-			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
 							std::vector<float>::const_iterator		begin,
 							std::vector<float>::const_iterator		end);
 
-			VertexStream(std::shared_ptr<render::AbstractContext>	context,
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						 float*										begin,
 						 float*										end);
 		};

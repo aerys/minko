@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "Geometry.hpp"
-#include "minko/render/VertexStream.hpp"
+#include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexStream.hpp"
 
 namespace minko
