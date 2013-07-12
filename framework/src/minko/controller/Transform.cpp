@@ -205,10 +205,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 		std::placeholders::_1
 	);
 
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(target)
-        ->descendants(true);
-
+	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
 		auto rootTransformCtrl = descendant->controller<RootTransform>();
@@ -228,9 +225,7 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
 									     scene::Node::Ptr target,
 										 scene::Node::Ptr parent)
 {
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(target)
-        ->descendants(true);
+	auto descendants = scene::NodeSet::create(target)->descendants(true);
 
 	for (auto descendant : descendants->nodes())
 		for (auto renderingCtrl : descendant->controllers<RenderingController>())
@@ -252,10 +247,12 @@ Transform::RootTransform::updateTransformsList()
 	_firstChildId.clear();
 	//_worldToModel.clear();
 
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(targets().begin(), targets().end())
+	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
-        ->hasController<Transform>();
+		->where([](scene::Node::Ptr node)
+		{
+			return node->hasController<Transform>();
+		});
 
 	for (auto node : descendants->nodes())
 	{
