@@ -76,7 +76,7 @@ DrawCall::bind()
 			auto location	= program->inputs()->locations()[inputId];
 			auto inputName	= program->inputs()->names()[inputId];
 
-			if (type == ProgramInputs::attribute)
+			if (type == ProgramInputs::Type::attribute)
 			{
 				auto name	= _attributeBindings.count(inputName)
 					? _attributeBindings.at(inputName)
@@ -185,8 +185,6 @@ DrawCall::bind()
 
 		_func.push_back(drawTriangles);
 	}
-
-	
 }
 
 void
