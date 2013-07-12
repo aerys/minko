@@ -149,8 +149,7 @@ namespace minko
 
 			virtual
 			void
-			setShaderSource(const unsigned int shader,
-							const std::string& source) = 0;
+			setShaderSource(const unsigned int shader, const std::string& source) = 0;
 
 			virtual
 			const unsigned int

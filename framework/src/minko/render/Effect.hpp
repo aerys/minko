@@ -37,7 +37,6 @@ namespace minko
 
 		private:
 			std::vector<PassPtr>						_passes;
-			std::shared_ptr<data::Provider>				_data;
 			std::list<std::shared_ptr<EffectInstance>>	_instances;
 
 		public:
@@ -53,13 +52,6 @@ namespace minko
 			passes()
 			{
 				return _passes;
-			}
-
-			inline
-			std::shared_ptr<data::Provider>
-			data()
-			{
-				return _data;
 			}
 
 			std::shared_ptr<EffectInstance>
