@@ -51,8 +51,13 @@ _mass(mass),
 void
 	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	if (fabsf(fabsf(modelToWorldMatrix->determinant3x3()) - 1.0f) > std::numeric_limits<float>::epsilon())
-		throw std::invalid_argument("Colliders are currently incompatible with Transforms with scaling and shear.");
+	const float det3x3	= modelToWorldMatrix->determinant3x3();
+	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
+	{
+		std::stringstream stream;
+		stream << "Colliders are currently incompatible with Transforms with scaling and shear (3x3 determinant = " << det3x3 << ").";
+		throw std::invalid_argument(stream.str());
+	}
 
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)

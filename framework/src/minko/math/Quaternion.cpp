@@ -81,8 +81,13 @@ Quaternion::Ptr
 Quaternion::Ptr
 	Quaternion::fromMatrix(Matrix4x4ConstPtr matrix)
 {
-	if (fabsf(fabsf(matrix->determinant3x3()) - 1.0f) > 1e-6f)
-		throw std::invalid_argument("Specified matrix does not represent a rotation matrix.");
+	const float det3x3	= matrix->determinant3x3();
+	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
+	{
+		std::stringstream stream;
+		stream << "Quaternion::fromMatrix:\tSpecified matrix does not represent a rotation matrix (3x3 determinant = " << det3x3 << ").";
+		throw std::invalid_argument(stream.str());
+	}
 		
 	const std::vector<float>& m(matrix->values());
 
