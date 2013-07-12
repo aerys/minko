@@ -47,7 +47,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/controller/PerspectiveCamera.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
-#include "minko/render/VertexStream.hpp"
+#include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexStream.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/geometry/Geometry.hpp"
