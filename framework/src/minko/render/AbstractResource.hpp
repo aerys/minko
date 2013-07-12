@@ -52,6 +52,13 @@ namespace minko
 				return _id;
 			}
 
+			inline
+			const bool
+			isValid()
+			{
+				return _id != -1;
+			}
+
 			virtual
 			void
 			dispose()
