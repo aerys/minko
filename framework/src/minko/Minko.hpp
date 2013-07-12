@@ -48,7 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/CubeGeometry.hpp"

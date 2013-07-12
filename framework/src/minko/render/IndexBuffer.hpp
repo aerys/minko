@@ -27,11 +27,11 @@ namespace minko
 {
 	namespace render
 	{
-		class IndexStream :
+		class IndexBuffer :
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<IndexStream>	Ptr;
+			typedef std::shared_ptr<IndexBuffer>	Ptr;
 
 		private:
 			std::vector<unsigned short>	_data;
@@ -41,14 +41,14 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, data));
+				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
 			}
 
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
 			{
-				return std::shared_ptr<IndexStream>(new IndexStream(context, begin, end));
+				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, begin, end));
 			}
 
 			inline
@@ -65,7 +65,7 @@ namespace minko
 			dispose();
 
 		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						std::vector<unsigned short>					data) :
 				AbstractResource(context),
 				_data(data)
@@ -73,7 +73,7 @@ namespace minko
 				upload();
 			}
 
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						unsigned short*								begin,
 						unsigned short*								end) :
 				AbstractResource(context),
