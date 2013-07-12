@@ -46,7 +46,7 @@ namespace minko
 
 			for (unsigned int assetIndex = 0; assetIndex < assetList.size(); ++assetIndex)
 			{
-				Any assetBlob							= assetList[assetIndex];
+				Any& assetBlob							= assetList[assetIndex];
 				std::map<std::string, Any>& assetData	= Any::cast<std::map<std::string, Any>&>(assetBlob);
 
 				int&			assetType	= Any::cast<int&>(assetData["type"]);
@@ -57,7 +57,7 @@ namespace minko
 				{
 					Qark::ByteArray&						textureData		= Any::cast<Qark::ByteArray&>(assetData["data"]);
 					std::shared_ptr<file::AbstractParser>	pngParser		= _library->parser("png");
-					std::vector<unsigned char>				uTextureData	= reinterpret_cast<std::vector<unsigned char>&>(*&textureData);
+					std::vector<unsigned char>&				uTextureData	= reinterpret_cast<std::vector<unsigned char>&>(*&textureData);
 
 					pngParser->parse(assetName, options, uTextureData, _library);
 

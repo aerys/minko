@@ -85,8 +85,6 @@ int main(int argc, char** argv)
 		group->controller<TransformController>()->transform()->prependRotationY(3.14/4);
 
 		group->addChild(assets->node("models/sponza.mk"));
-
-		//testMk(assets);
 	});
 
 	assets->load();
