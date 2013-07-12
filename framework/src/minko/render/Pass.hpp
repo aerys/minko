@@ -90,6 +90,13 @@ namespace minko
 			}
 
 			inline
+			std::shared_ptr<Program>
+			programTemplate()
+			{
+				return _programTemplate;
+			}
+
+			inline
 			const BindingMap&
 			attributeBindings()
 			{
