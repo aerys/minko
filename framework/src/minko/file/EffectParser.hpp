@@ -60,6 +60,7 @@ namespace minko
 			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
 			std::unordered_map<std::string, std::string>				_defaultStateBindings;
 			std::unordered_map<std::string, std::string>				_defaultMacroBindings;
+            std::unordered_map<std::string, render::SamplerState>       _defaultSamplerStates;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -124,6 +125,10 @@ namespace minko
 			parseDepthTest(Json::Value&			contextNode,
 						   bool&				depthMask,
 						   render::CompareMode&	depthFunc);
+
+            void
+            parseSamplerStates(Json::Value&                                             contextNode,
+                               std::unordered_map<std::string, render::SamplerState>&   samplerStates);
 
 			void
 			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
