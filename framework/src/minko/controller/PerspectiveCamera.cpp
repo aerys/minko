@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/scene/NodeSet.hpp"
 #include "minko/controller/Surface.hpp"
 
 using namespace minko::controller;
@@ -34,14 +33,8 @@ PerspectiveCamera::PerspectiveCamera(float fov,
 	_view(math::Matrix4x4::create()),
 	_projection(math::Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
 	_viewProjection(math::Matrix4x4::create()->copyFrom(_projection)),
-	_data(data::Provider::create()),
-    _surfaces(scene::NodeSet::create(scene::NodeSet::Mode::AUTO))
+	_data(data::Provider::create())
 {
-    _surfaces
-        ->root()
-        ->descendants(true)
-        ->hasController<Surface>();
-
 	_data
 		->set("transform/viewMatrix",			_view)
 		->set("transform/projectionMatrix",		_projection)
@@ -63,19 +56,6 @@ PerspectiveCamera::initialize()
         std::placeholders::_1,
         std::placeholders::_2
 	));
-
-    _surfaceAddedSlot = _surfaces->nodeAdded()->connect(std::bind(
-        &PerspectiveCamera::surfaceAdded,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
-    _surfaceRemovedSlot = _surfaces->nodeRemoved()->connect(std::bind(
-        &PerspectiveCamera::surfaceRemoved,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
 }
 
 void
@@ -92,8 +72,6 @@ PerspectiveCamera::targetAddedHandler(AbstractController::Ptr ctrl,
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-
-    _surfaces->select(targets().begin(), targets().end())->update();
 }
 
 void
@@ -101,8 +79,6 @@ PerspectiveCamera::targetRemovedHandler(AbstractController::Ptr   ctrl,
                                         scene::Node::Ptr          target)
 {
 	target->data()->addProvider(_data);
-
-    _surfaces->select(targets().begin(), targets().end())->update();
 }
 
 void
@@ -113,20 +89,4 @@ PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 
 	_view->copyFrom(data->get<Matrix4x4::Ptr>("transform/modelToWorldMatrix"))->invert();
 	_viewProjection->copyFrom(_view)->append(_projection);
-}
-
-void
-PerspectiveCamera::surfaceAdded(scene::NodeSet::Ptr set, scene::Node::Ptr node)
-{
-    std::cout << "surface added: " << node->name() << std::endl;
-
-    node->data()->addProvider(_data);
-}
-
-void
-PerspectiveCamera::surfaceRemoved(scene::NodeSet::Ptr set, scene::Node::Ptr node)
-{
-    std::cout << "surface removed: " << node->name() << std::endl;
-
-    node->data()->removeProvider(_data);
 }
