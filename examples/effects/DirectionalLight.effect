@@ -25,8 +25,12 @@
 	"blendMode"		: ["one", "zero"],
 	"depthTest"		: [true, "less"],
 	
+	"samplerStates"	: {
+		"diffuseMap"	: ["repeat", "linear", "none"]
+	},
+
 	"includes"		: [ "Phong.glsl" ],
-	
+
 	"passes"		: [{
 		"vertexShader"	: "
 			attribute vec3 position;

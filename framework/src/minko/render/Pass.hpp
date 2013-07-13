@@ -34,21 +34,23 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
-			typedef const std::unordered_map<std::string, std::string>	BindingMap;
-			typedef std::shared_ptr<Program>							ProgramPtr;
+			typedef const std::unordered_map<std::string, std::string>	    BindingMap;
+			typedef std::shared_ptr<Program>							    ProgramPtr;
+            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
 
 		private:
-			const std::string					_name;
-			ProgramPtr							_programTemplate;
-			BindingMap							_attributeBindings;
-			BindingMap							_uniformBindings;
-			BindingMap							_stateBindings;
-			BindingMap							_macroBindings;
-			const float							_priority;
-			Blending::Source					_blendingSourceFactor;
-			Blending::Destination				_blendingDestinationFactor;
-			bool								_depthMask;
-			CompareMode							_depthFunc;
+			const std::string		_name;
+			ProgramPtr				_programTemplate;
+			BindingMap				_attributeBindings;
+			BindingMap				_uniformBindings;
+			BindingMap				_stateBindings;
+			BindingMap				_macroBindings;
+			const float				_priority;
+			Blending::Source		_blendingSourceFactor;
+			Blending::Destination	_blendingDestinationFactor;
+			bool					_depthMask;
+			CompareMode				_depthFunc;
+            SamplerStatesMap        _samplerStates;
 
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
@@ -61,6 +63,7 @@ namespace minko
 				   BindingMap&						uniformBindings,
 				   BindingMap&						stateBindings,
 				   BindingMap&						macroBindings,
+                   SamplerStatesMap                 samplerSates,
 				   const float						priority					= 0.f,
 				   Blending::Source					blendingSourceFactor		= Blending::Source::ONE,
 				   Blending::Destination			blendingDestinationFactor	= Blending::Destination::ZERO,
@@ -74,6 +77,7 @@ namespace minko
 					uniformBindings,
 					stateBindings,
 					macroBindings,
+                    samplerSates,
 					priority,
 					blendingSourceFactor,
 					blendingDestinationFactor,
@@ -127,6 +131,7 @@ namespace minko
 				 BindingMap&						uniformBindings,
 				 BindingMap&						stateBindings,
 				 BindingMap&						macroBindings,
+                 SamplerStatesMap                   samplerSates,
 				 const float						priority,
 				 Blending::Source					blendingSourceFactor,
 				 Blending::Destination				blendingDestinationFactor,

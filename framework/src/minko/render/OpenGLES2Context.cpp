@@ -20,6 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "OpenGLES2Context.hpp"
 
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -96,6 +99,9 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+
+    for (auto i = 0; i < 0; ++i)
+        setSamplerStateAt(i, WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -468,12 +474,65 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 
 		glActiveTexture(GL_TEXTURE0 + position);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		if (texture > 0)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
 	if (textureIsValid && location >= 0)
 		glUniform1i(location, position);
+}
+
+void
+OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
+{
+    glActiveTexture(GL_TEXTURE0 + position);
+
+    switch (wrapping)
+    {
+    case WrapMode::CLAMP :
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        break;
+    case WrapMode::REPEAT :
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        break;
+    }
+
+    switch (filtering)
+    {
+    case TextureFilter::NEAREST :
+        switch (mipFiltering)
+        {
+        case MipFilter::NONE :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            break;
+        case MipFilter::NEAREST :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            break;
+        case MipFilter::LINEAR :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            break;
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        break;
+    case TextureFilter::LINEAR :
+        switch (mipFiltering)
+        {
+        case MipFilter::NONE :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            break;
+        case MipFilter::NEAREST :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            break;
+        case MipFilter::LINEAR :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            break;
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        break;
+    }
 }
 
 const unsigned int
