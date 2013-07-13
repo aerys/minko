@@ -48,17 +48,18 @@ namespace minko
         class Blending;
 		enum class CompareMode;
 
+        enum class WrapMode;
+        enum class TextureFilter;
+        enum class MipFilter;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter> SamplerState;
+
 		class DrawCall;
 
 		class Pass;
-		//class PassInstance;
 		class Effect;
 		class EffectInstance;
 		class ProgramInputs;
-	}
 
-	namespace render
-	{
 		class AbstractResource;
 		class Shader;
 		class Program;
