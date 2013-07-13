@@ -124,6 +124,10 @@ namespace minko
 						 const int			texture		= 0,
 						 const int			location	= -1) = 0;
 
+            virtual
+            void
+            setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering) = 0;
+
 			virtual
 			const unsigned int
 			createProgram() = 0;
