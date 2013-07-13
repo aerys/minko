@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -33,16 +36,20 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::render;
 
+SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
+
 DrawCall::DrawCall(Program::Ptr											program,
 				   data::Container::Ptr									data,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
-				   const std::unordered_map<std::string, std::string>&	stateBindings) :
+				   const std::unordered_map<std::string, std::string>&	stateBindings,
+                   const std::unordered_map<std::string, SamplerState>& samplerStates) :
 	_program(program),
 	_data(data),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
-	_stateBindings(stateBindings)
+	_stateBindings(stateBindings),
+    _samplerStates(samplerStates)
 {
 }
 
@@ -160,11 +167,16 @@ DrawCall::bind()
 			}
 			else if (type == ProgramInputs::Type::sampler2d)
 			{
-				auto texture = getDataProperty<Texture::Ptr>(name)->id();
+				auto texture        = getDataProperty<Texture::Ptr>(name)->id();
+                auto& samplerState  = _samplerStates.count(inputName) ? _samplerStates.at(inputName) : _defaultSamplerState;
+                auto wrap           = std::get<0>(samplerState);
+                auto textureFilter  = std::get<1>(samplerState);
+                auto mipFilter      = std::get<2>(samplerState);
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
 					context->setTextureAt(numTextures, texture, location);
+                    context->setSamplerStateAt(numTextures, wrap, textureFilter, mipFilter);
 				});
 
 				++numTextures;

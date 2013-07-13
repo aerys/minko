@@ -24,6 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -123,6 +126,8 @@ EffectParser::parseDefaultValues(Json::Value& root)
 	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
 
 	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
+
+    parseSamplerStates(root, _defaultSamplerStates);
 }
 
 void
@@ -142,7 +147,7 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
 		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
 		std::unordered_map<std::string, std::string>	macroBindings(_defaultMacroBindings);
-
+        
 		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
 		// pass priority
@@ -160,6 +165,11 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 
 		parseDepthTest(pass, depthMask, depthFunc);
 
+        // sampler states
+        std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
+
+        parseSamplerStates(pass, samplerStates);
+
 		// program
 		auto vertexShader	= Shader::create(
 			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", 0).asString()
@@ -175,6 +185,7 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 			uniformBindings,
 			stateBindings,
 			macroBindings,
+            samplerStates,
 			priority,
 			blendSrcFactor,
 			blendDstFactor,
@@ -260,6 +271,34 @@ EffectParser::parseBindings(Json::Value&									contextNode,
 	if (macroBindingsValue.isObject())
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
+}
+
+void
+EffectParser::parseSamplerStates(Json::Value&                                           contextNode,
+                                 std::unordered_map<std::string, render::SamplerState>& samplerStates)
+{
+    auto samplerStatesValue = contextNode.get("samplerStates", 0);
+
+    if (samplerStatesValue.isObject())
+        for (auto propertyName : samplerStatesValue.getMemberNames())
+        {
+            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
+
+            if (samplerStateValue.isArray())
+            {
+                auto wrapModeStr = samplerStateValue[0].asString();
+                auto textureFilterStr = samplerStateValue[1].asString();
+                auto mipFilterStr = samplerStateValue[2].asString();
+
+                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
+                auto mipFilter = mipFilterStr == "linear"
+                    ? MipFilter::LINEAR
+                    : (mipFilterStr == "NEAREST" ? MipFilter::NEAREST : MipFilter::NONE);
+
+                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
+            }
+        }
 }
 
 void
