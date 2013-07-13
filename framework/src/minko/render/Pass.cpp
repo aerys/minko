@@ -32,6 +32,7 @@ Pass::Pass(const std::string&				name,
 		   BindingMap&						uniformBindings,
 		   BindingMap&						stateBindings,
 		   BindingMap&						macroBindings,
+           SamplerStatesMap                 samplerSates,
 		   const float						priority,
 		   Blending::Source					blendingSourceFactor,
 		   Blending::Destination			blendingDestinationFactor,
@@ -43,6 +44,7 @@ Pass::Pass(const std::string&				name,
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
+    _samplerStates(samplerSates),
 	_priority(priority),
 	_blendingSourceFactor(blendingSourceFactor),
 	_blendingDestinationFactor(blendingDestinationFactor),
@@ -54,7 +56,7 @@ Pass::Pass(const std::string&				name,
 std::shared_ptr<DrawCall>
 Pass::createDrawCall(std::shared_ptr<data::Container> data)
 {
-	return DrawCall::create(selectProgram(data), data, _attributeBindings, _uniformBindings, _stateBindings);
+	return DrawCall::create(selectProgram(data), data, _attributeBindings, _uniformBindings, _stateBindings, _samplerStates);
 }
 
 std::shared_ptr<Program>
