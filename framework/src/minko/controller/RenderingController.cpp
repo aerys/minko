@@ -140,10 +140,12 @@ RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 												std::shared_ptr<Node> target,
 												std::shared_ptr<Node> parent)
 {
-    auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(target)
+    auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
-		->hasController<Surface>();
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasController<Surface>();
+        });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->controllers<Surface>())
@@ -155,10 +157,12 @@ RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 												  std::shared_ptr<Node> target,
 												  std::shared_ptr<Node> parent)
 {
-	auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(target)
+	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
-        ->hasController<Surface>();
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasController<Surface>();
+        });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->controllers<Surface>())

@@ -51,13 +51,9 @@ namespace minko
 
 			std::shared_ptr<data::Provider>					_data;
 
-            std::shared_ptr<scene::NodeSet>                 _surfaces;
-
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
 			data::Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
-            Signal<NodeSetPtr, NodePtr>::Slot               _surfaceAddedSlot;
-            Signal<NodeSetPtr, NodePtr>::Slot               _surfaceRemovedSlot;
 
 		public:
 			inline static
@@ -88,12 +84,6 @@ namespace minko
 			void
 			localToWorldChangedHandler(std::shared_ptr<data::Container> data,
 									   const std::string&				propertyName);
-
-            void
-            surfaceAdded(std::shared_ptr<scene::NodeSet> set, NodePtr node);
-
-            void
-            surfaceRemoved(std::shared_ptr<scene::NodeSet> set, NodePtr node);
 		};
 	}
 }
