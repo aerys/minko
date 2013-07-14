@@ -2,11 +2,11 @@
 {
 	"name"		: "red",
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position"
+		"position"				: "geometry.vertex.attribute.position"
 	},
 	"uniformBindings"	: {
-		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
 	},
 	"passes"	: [{
 		"vertexShader"	: "
