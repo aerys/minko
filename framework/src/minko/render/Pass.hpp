@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -45,12 +46,7 @@ namespace minko
 			BindingMap				_uniformBindings;
 			BindingMap				_stateBindings;
 			BindingMap				_macroBindings;
-			const float				_priority;
-			Blending::Source		_blendingSourceFactor;
-			Blending::Destination	_blendingDestinationFactor;
-			bool					_depthMask;
-			CompareMode				_depthFunc;
-            SamplerStatesMap        _samplerStates;
+            std::shared_ptr<States> _states;
 
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
@@ -63,12 +59,7 @@ namespace minko
 				   BindingMap&						uniformBindings,
 				   BindingMap&						stateBindings,
 				   BindingMap&						macroBindings,
-                   SamplerStatesMap                 samplerSates,
-				   const float						priority					= 0.f,
-				   Blending::Source					blendingSourceFactor		= Blending::Source::ONE,
-				   Blending::Destination			blendingDestinationFactor	= Blending::Destination::ZERO,
-				   bool								depthMask					= true,
-				   CompareMode						depthFunc					= CompareMode::LESS)
+                   std::shared_ptr<States>          states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -77,12 +68,7 @@ namespace minko
 					uniformBindings,
 					stateBindings,
 					macroBindings,
-                    samplerSates,
-					priority,
-					blendingSourceFactor,
-					blendingDestinationFactor,
-					depthMask,
-					depthFunc
+                    states
 				));
 			}
 
@@ -131,12 +117,7 @@ namespace minko
 				 BindingMap&						uniformBindings,
 				 BindingMap&						stateBindings,
 				 BindingMap&						macroBindings,
-                 SamplerStatesMap                   samplerSates,
-				 const float						priority,
-				 Blending::Source					blendingSourceFactor,
-				 Blending::Destination				blendingDestinationFactor,
-				 bool								depthMask,
-				 CompareMode						depthFunc);
+                 std::shared_ptr<States>            states);
 
 			const unsigned int
 			buildSignature(std::shared_ptr<data::Container> data);
