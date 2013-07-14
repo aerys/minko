@@ -23,35 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class EffectInstance
-		{
-		public:
-			typedef std::shared_ptr<EffectInstance> Ptr;
-
-		private:
-			std::vector<Pass>	_passes;
-
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<EffectInstance>(new EffectInstance());
-			}
-
-			inline
-			const std::vector<Pass>&
-			passes()
-			{
-				return _passes;
-			}
-
-		private:
-			EffectInstance()
-			{
-			}
-		};
-	}
+    namespace render
+    {
+        enum class TriangleCulling
+        {
+            NONE,
+            FRONT,
+            BACK,
+            BOTH
+        };
+    }
 }

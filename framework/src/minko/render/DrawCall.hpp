@@ -46,7 +46,7 @@ namespace minko
 			const std::unordered_map<std::string, std::string>&	        _attributeBindings;
 			const std::unordered_map<std::string, std::string>&	        _uniformBindings;
 			const std::unordered_map<std::string, std::string>&	        _stateBindings;
-            const std::unordered_map<std::string, SamplerState>&        _samplerStates;
+            std::shared_ptr<States>                                     _states;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
 
@@ -60,10 +60,10 @@ namespace minko
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
-                   const std::unordered_map<std::string, SamplerState>& samplerSates)
+                   std::shared_ptr<States>                              states)
 			{
                 auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					program, data, attributeBindings, uniformBindings, stateBindings, samplerSates
+					program, data, attributeBindings, uniformBindings, stateBindings, states
 				));
 
                 dc->bind();
@@ -84,7 +84,7 @@ namespace minko
 				     const std::unordered_map<std::string, std::string>&	attributeBindings,
 				     const std::unordered_map<std::string, std::string>&	uniformBindings,
 					 const std::unordered_map<std::string, std::string>&	stateBindings,
-                     const std::unordered_map<std::string, SamplerState>&   samplerSates);
+                     std::shared_ptr<States>                                states);
 
 			void
 			bind();
