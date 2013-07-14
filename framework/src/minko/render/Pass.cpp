@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/render/States.hpp"
 
 using namespace minko::render;
 
@@ -32,31 +33,28 @@ Pass::Pass(const std::string&				name,
 		   BindingMap&						uniformBindings,
 		   BindingMap&						stateBindings,
 		   BindingMap&						macroBindings,
-           SamplerStatesMap                 samplerSates,
-		   const float						priority,
-		   Blending::Source					blendingSourceFactor,
-		   Blending::Destination			blendingDestinationFactor,
-		   bool								depthMask,
-		   CompareMode						depthFunc) :
+           std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
 	_macroBindings(macroBindings),
-    _samplerStates(samplerSates),
-	_priority(priority),
-	_blendingSourceFactor(blendingSourceFactor),
-	_blendingDestinationFactor(blendingDestinationFactor),
-	_depthMask(depthMask),
-	_depthFunc(depthFunc)
+    _states(states)
 {
 }
 
 std::shared_ptr<DrawCall>
 Pass::createDrawCall(std::shared_ptr<data::Container> data)
 {
-	return DrawCall::create(selectProgram(data), data, _attributeBindings, _uniformBindings, _stateBindings, _samplerStates);
+	return DrawCall::create(
+        selectProgram(data),
+        data,
+        _attributeBindings,
+        _uniformBindings,
+        _stateBindings,
+        _states
+    );
 }
 
 std::shared_ptr<Program>
