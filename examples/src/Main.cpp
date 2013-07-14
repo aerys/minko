@@ -110,10 +110,13 @@ int main(int argc, char** argv)
 		mesh->addController(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuse.rgba",			color)
-				->set("transform.worldToScreenMatrix",	view)
-				->set("light.ambient.rgba",				Vector3::create(.25f, .25f, .25f))
-				->set("light.direction",				lightDirection),
+				->set("material.diffuse.rgba",			    color)
+                ->set("material.specular.rgb",	            Vector3::create(.8f, .8f, .8f))
+                ->set("material.shininess",	                10.f)
+				->set("transform.worldToScreenMatrix",	    view)
+				->set("light.ambient.rgba",				    Vector3::create(.25f, .25f, .25f))
+				->set("light.direction",				    lightDirection)
+                ->set("camera.position",				    Vector3::create(0., 0., 3.f)),
 			assets->effect("directional light")
 		));
 
@@ -161,17 +164,6 @@ int main(int argc, char** argv)
 	});
 
 	assets->load();
-
-	/*
-	auto fx = assets->effect("directional light");
-
-	std::cout << "== vertex shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-	std::cout << "== fragment shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-	std::cout << "== program info logs ==" << std::endl;
-	std::cout << context->getProgramInfoLogs(fx->shaders()[0]->id()) << std::endl;
-	*/
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
