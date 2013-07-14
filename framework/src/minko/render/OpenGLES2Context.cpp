@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -91,7 +92,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
-	_currentProgram(-1)
+	_currentProgram(-1),
+    _currentTriangleCulling(TriangleCulling::BACK)
 {
 #ifdef _WIN32
     glewInit();
@@ -99,9 +101,9 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-
-    for (auto i = 0; i < 0; ++i)
-        setSamplerStateAt(i, WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -870,4 +872,31 @@ void
 OpenGLES2Context::readPixels(unsigned char* pixels)
 {
 	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+}
+
+void
+OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
+{
+    if (triangleCulling == _currentTriangleCulling)
+        return;
+
+    if (_currentTriangleCulling == TriangleCulling::NONE)
+        glEnable(GL_CULL_FACE);
+    _currentTriangleCulling = triangleCulling;
+
+    switch (triangleCulling)
+    {
+    case TriangleCulling::NONE:
+        glDisable(GL_CULL_FACE);
+        break;
+    case TriangleCulling::BACK :
+        glCullFace(GL_BACK);
+        break;
+    case TriangleCulling::FRONT :
+        glCullFace(GL_FRONT);
+        break;
+    case TriangleCulling::BOTH :
+        glCullFace(GL_FRONT_AND_BACK);
+        break;
+    }
 }
