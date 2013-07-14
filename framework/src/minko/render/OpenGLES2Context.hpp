@@ -66,6 +66,7 @@ namespace minko
 			Blending::Mode			_currentBlendMode;
 			bool					_currentDepthMask;
 			CompareMode				_currentDepthFunc;
+            TriangleCulling         _currentTriangleCulling;
 
 		public:
 			~OpenGLES2Context();
@@ -219,6 +220,9 @@ namespace minko
 
 			void
 			readPixels(unsigned char* pixels);
+
+            void
+            setTriangleCulling(TriangleCulling triangleCulling);
 
 		private:
 			OpenGLES2Context();
