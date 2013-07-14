@@ -25,10 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/render/TriangleCulling.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
@@ -43,13 +45,13 @@ DrawCall::DrawCall(Program::Ptr											program,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
-                   const std::unordered_map<std::string, SamplerState>& samplerStates) :
+                   States::Ptr                                          states) :
 	_program(program),
 	_data(data),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
-    _samplerStates(samplerStates)
+    _states(states)
 {
 }
 
@@ -59,8 +61,8 @@ DrawCall::bind()
     _func.clear();
     _propertyChangedSlots.clear();
 
-	auto vertexSize		= getDataProperty<unsigned int>("geometry/vertex/size");
-	auto IndexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry/indices");
+	auto vertexSize		= getDataProperty<unsigned int>("geometry.vertex.size");
+	auto IndexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 	auto indexBuffer	= IndexBuffer->id();
 	auto numIndices		= IndexBuffer->data().size();
 	auto drawTriangles	= [=](AbstractContext::Ptr context)
@@ -168,7 +170,9 @@ DrawCall::bind()
 			else if (type == ProgramInputs::Type::sampler2d)
 			{
 				auto texture        = getDataProperty<Texture::Ptr>(name)->id();
-                auto& samplerState  = _samplerStates.count(inputName) ? _samplerStates.at(inputName) : _defaultSamplerState;
+                auto& samplerState  = _states->samplers().count(inputName)
+                    ? _states->samplers().at(inputName)
+                    : _defaultSamplerState;
                 auto wrap           = std::get<0>(samplerState);
                 auto textureFilter  = std::get<1>(samplerState);
                 auto mipFilter      = std::get<2>(samplerState);
@@ -200,26 +204,33 @@ DrawCall::bind()
 void
 DrawCall::bindStates()
 {
-	// blending state
-	auto blending = getDataProperty<Blending::Mode>(
-		_stateBindings.count("blending") ? _stateBindings.at("blending") : "blending",
-		Blending::Mode::DEFAULT
-	);
+	auto blendMode = getDataProperty<Blending::Mode>(
+        _stateBindings.count("blendMode") ? _stateBindings.at("blendMode") : "blendMode",
+        _states->blendingSourceFactor() | _states->blendingDestinationFactor()
+    );
+
 	auto depthMask = getDataProperty<bool>(
 		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
-		true
+        _states->depthMask()
 	);
 	auto depthFunc = getDataProperty<CompareMode>(
 		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
-		CompareMode::LESS
+        _states->depthFun()
+	);
+
+    auto triangleCulling = getDataProperty<TriangleCulling>(
+		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
+        _states->triangleCulling()
 	);
 	
+    // FIXME: bind render target
 	// FIXME: bind stencil test
 
 	_func.push_back([=](AbstractContext::Ptr context)
 	{
-		context->setBlendMode(blending);
+		context->setBlendMode(blendMode);
 		context->setDepthTest(depthMask, depthFunc);
+        context->setTriangleCulling(triangleCulling);
 	});
 }
 
