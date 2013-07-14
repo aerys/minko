@@ -56,6 +56,7 @@ namespace minko
 			render::Blending::Destination								_defaultBlendDstFactor;
 			bool														_defaultDepthMask;
 			render::CompareMode											_defaultDepthFunc;
+            render::TriangleCulling                                     _defaultTriangleCulling;
 			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
 			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
 			std::unordered_map<std::string, std::string>				_defaultStateBindings;
@@ -125,6 +126,10 @@ namespace minko
 			parseDepthTest(Json::Value&			contextNode,
 						   bool&				depthMask,
 						   render::CompareMode&	depthFunc);
+
+            void
+            parseTriangleCulling(Json::Value&               contextNode,
+                                 render::TriangleCulling&   triangleCulling);
 
             void
             parseSamplerStates(Json::Value&                                             contextNode,
