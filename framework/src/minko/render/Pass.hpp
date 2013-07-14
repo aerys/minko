@@ -81,7 +81,7 @@ namespace minko
 
 			inline
 			std::shared_ptr<Program>
-			programTemplate()
+			program()
 			{
 				return _programTemplate;
 			}
