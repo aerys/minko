@@ -21,12 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -86,7 +88,13 @@ EffectParser::initializeDepthFuncMap()
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+    _defaultPriority(0.f),
+    _defaultBlendSrcFactor(Blending::Source::ONE),
+    _defaultBlendDstFactor(Blending::Destination::ZERO),
+    _defaultDepthMask(true),
+    _defaultDepthFunc(CompareMode::LESS),
+    _defaultTriangleCulling(TriangleCulling::BACK)
 {
 }
 
@@ -127,6 +135,8 @@ EffectParser::parseDefaultValues(Json::Value& root)
 
 	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
 
+    parseTriangleCulling(root, _defaultTriangleCulling);
+
     parseSamplerStates(root, _defaultSamplerStates);
 }
 
@@ -165,6 +175,11 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 
 		parseDepthTest(pass, depthMask, depthFunc);
 
+        // triangle culling
+        auto triangleCulling  = _defaultTriangleCulling;
+
+        parseTriangleCulling(pass, triangleCulling);
+
         // sampler states
         std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
 
@@ -185,12 +200,15 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 			uniformBindings,
 			stateBindings,
 			macroBindings,
-            samplerStates,
-			priority,
-			blendSrcFactor,
-			blendDstFactor,
-			depthMask,
-			depthFunc
+            States::create(
+                samplerStates,
+			    priority,
+			    blendSrcFactor,
+			    blendDstFactor,
+			    depthMask,
+			    depthFunc,
+                triangleCulling
+            )
 		));
 
 		_effect = render::Effect::create(passes);
@@ -229,20 +247,46 @@ EffectParser::parseBlendMode(Json::Value&					contextNode,
 }
 
 void
-EffectParser::parseDepthTest(Json::Value&			contextNode,
-							 bool&					depthMask,
-							 render::CompareMode&	depthFunc)
+EffectParser::parseDepthTest(Json::Value& contextNode, bool& depthMask, render::CompareMode& depthFunc)
 {
 	auto depthTest	= contextNode.get("depthTest", 0);
 	
-	if (depthTest.isArray())
+	if (depthTest.isObject())
 	{
-		auto depthFuncString = depthTest[1].asString();
+        auto depthMaskValue = depthTest.get("depthMask", 0);
+        auto depthFuncValue = depthTest.get("depthFunc", 0);
 
-		depthMask = depthTest[0].asBool();
-		if (_depthFuncMap.count(depthFuncString))
-			depthFunc = _depthFuncMap[depthFuncString];
+        if (depthMaskValue.isBool())
+            depthMask = depthMaskValue.asBool();
+
+        if (depthFuncValue.isString())
+    		depthFunc = _depthFuncMap[depthFuncValue.asString()];
 	}
+    else if (depthTest.isArray())
+    {
+        depthMask = depthTest[0].asBool();
+		depthFunc = _depthFuncMap[depthTest[1].asString()];
+    }
+}
+
+void
+EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& triangleCulling)
+{
+    auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
+
+    if (triangleCullingValue.isString())
+    {
+        auto triangleCullingString = triangleCullingValue.asString();
+
+        if (triangleCullingString == "back")
+            triangleCulling = TriangleCulling::BACK;
+        else if (triangleCullingString == "front")
+            triangleCulling = TriangleCulling::FRONT;
+        else if (triangleCullingString == "both")
+            triangleCulling = TriangleCulling::BOTH;
+        else if (triangleCullingString == "none")
+            triangleCulling = TriangleCulling::NONE;
+    }
 }
 
 void
@@ -284,17 +328,17 @@ EffectParser::parseSamplerStates(Json::Value&                                   
         {
             auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
 
-            if (samplerStateValue.isArray())
+            if (samplerStateValue.isObject())
             {
-                auto wrapModeStr = samplerStateValue[0].asString();
-                auto textureFilterStr = samplerStateValue[1].asString();
-                auto mipFilterStr = samplerStateValue[2].asString();
+                auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
+                auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
+                auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
 
                 auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
                 auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
                 auto mipFilter = mipFilterStr == "linear"
                     ? MipFilter::LINEAR
-                    : (mipFilterStr == "NEAREST" ? MipFilter::NEAREST : MipFilter::NONE);
+                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
 
                 samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
             }
