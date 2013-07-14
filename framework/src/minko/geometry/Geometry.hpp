@@ -62,14 +62,14 @@ namespace minko
 			void
 			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
-				_data->set("geometry/indices", indices);
+				_data->set("geometry.indices", indices);
 			}
 
 			inline
 			std::shared_ptr<render::IndexBuffer>
 			indices()
 			{
-				return _data->get<std::shared_ptr<render::IndexBuffer>>("geometry/indices");
+				return _data->get<std::shared_ptr<render::IndexBuffer>>("geometry.indices");
 			}
 
 			inline
@@ -78,11 +78,11 @@ namespace minko
 			{
 				for (auto attribute : VertexBuffer->attributes())
 				{
-					_data->set("geometry/vertex/attribute/" + std::get<0>(*attribute), VertexBuffer);
+					_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), VertexBuffer);
 					_vertexSize += std::get<1>(*attribute);
 				}
 
-				_data->set("geometry/vertex/size", _vertexSize);
+				_data->set("geometry.vertex.size", _vertexSize);
 			}
 
 		protected:
