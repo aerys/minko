@@ -116,14 +116,17 @@ Pass::buildSignature(std::shared_ptr<data::Container> data)
 	unsigned int signature = 0;
 	unsigned int i = 0;
 	for (auto macroBinding : _macroBindings)
+    {
 		if (data->hasProperty(macroBinding.second))
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == 32)
 				throw;
 
-			signature |= 1 << i++;
+			signature |= 1 << i;
 		}
+        ++i;
+    }
 
 	return signature;
 }
