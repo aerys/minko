@@ -392,7 +392,7 @@ EffectParser::finalize()
 {
 	for (auto& pass : _effect->passes())
     {
-		auto program = pass->programTemplate();
+		auto program = pass->program();
 
 		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
