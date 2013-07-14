@@ -2,12 +2,12 @@
 {
 	"name"		: "vertex normal",
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position",
-		"normal"				: "geometry/vertex/attribute/normal"
+		"position"				: "geometry.vertex.attribute.position",
+		"normal"				: "geometry.vertex.attribute.normal"
 	},
 	"uniformBindings"	: {
-		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
 	},
 	
 	"priority"		: 0,
@@ -36,7 +36,8 @@
 
 			void main(void)
 			{
-				gl_FragColor = vec4((worldNormal.rgb + 1) * .5, 1);
+				gl_FragColor = vec4(worldNormal.rgb, 1);
+				//gl_FragColor = vec4((worldNormal.rgb + 1) * .5, 1);
 			}
 		"
 	}]

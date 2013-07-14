@@ -213,6 +213,7 @@ int main(int argc, char** argv)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
+<<<<<<< HEAD
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("textures/collage.jpg")
 		->queue("textures/box3.png")
@@ -222,6 +223,24 @@ int main(int argc, char** argv)
 
 	/*assets->defaultOptions()->includePath("effects");*/
 
+=======
+		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
+		->queue("collage.jpg")
+        ->queue("box3.png")
+		->queue("DirectionalLight.effect");
+		//->queue("VertexNormal.effect")
+		//->queue("Texture.effect")
+		//->queue("Red.effect")
+		//->queue("Basic.effect");
+
+#ifdef DEBUG
+	assets->defaultOptions()->includePaths().push_back("effect");
+	assets->defaultOptions()->includePaths().push_back("texture");
+#else
+	assets->defaultOptions()->includePaths().push_back("../../effect");
+	assets->defaultOptions()->includePaths().push_back("../../texture");
+#endif
+>>>>>>> 443a09b... minor fixes and add triangle culling render state
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -242,11 +261,50 @@ int main(int argc, char** argv)
 		renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
+<<<<<<< HEAD
 
 		physicsWorld	= bullet::PhysicsWorld::create();
 		physicsWorld->setGravity(Vector3::create(0.0f, -9.81f, 0.0f));
 		root->addController(physicsWorld);
 
+=======
+        auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f)->prependTranslation(0.f, 0.f, -3.f);
+		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
+		auto lightDirection = Vector3::create(-1.f, 0.f, 0.f);
+
+		mesh->addController(Transform::create());
+		//mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->addController(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+				->set("material.diffuse.rgba",			color)
+				->set("transform.worldToScreenMatrix",	view)
+				->set("light.ambient.rgba",				Vector3::create(.25f, .25f, .25f))
+				->set("light.direction",				lightDirection),
+			assets->effect("directional light")
+		));
+
+		group->addChild(mesh);
+
+        /*
+		mesh = scene::Node::create();
+		mesh->addController(Transform::create());
+		mesh->controller<Transform>()->transform()->appendTranslation(-.75f, 0.f, 0.f);
+		mesh->addController(Surface::create(
+			assets->geometry("sphere"),
+			data::Provider::create()
+				->set("material/diffuse/rgba",			color)
+                ->set("material/phong/exponent",        50.f)
+				->set("transform/worldToScreenMatrix",	view)
+				->set("light/direction",				lightDirection)
+				->set("light/ambient/rgba",				Vector3::create(.25f, .25f, .25f))
+				->set("material/diffuse/map",			assets->texture("box3.png")),
+			assets->effect("directional light")
+		));
+        */
+
+		//group->addChild(mesh);
+>>>>>>> 443a09b... minor fixes and add triangle culling render state
 
 		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, .1f);
@@ -340,10 +398,16 @@ int main(int argc, char** argv)
 	return 0;
 #else
 	while(!glfwWindowShouldClose(window))
+<<<<<<< HEAD
 	{
 		//mesh->controller<Transform>()->transform()->prependRotationY(.01f);
 
 		renderingController->render();
+=======
+    {
+        //group->controller<Transform>()->transform()->appendRotationY(.01f);
+        mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+>>>>>>> 443a09b... minor fixes and add triangle culling render state
 
 		printFramerate();
 

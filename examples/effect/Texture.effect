@@ -2,16 +2,16 @@
 {
 	"name"				: "texture",
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position",
-		"uv"					: "geometry/vertex/attribute/uv"
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv"
 	},
 	"uniformBindings"	: {
-		"diffuseMap"			: "material/diffuse/map",
-		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+		"diffuseMap"			: "material.diffuse.map",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
 	},
 	"stateBindings"		: {
-		"blendMode"				: "material/blendMode"
+		"blendMode"				: "material.blendMode"
 	},
 	
 	"priority"		: 0,

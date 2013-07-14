@@ -47,14 +47,15 @@ namespace minko
 		class OpenGLES2Context;
         class Blending;
 		enum class CompareMode;
+        enum class TriangleCulling;
 
         enum class WrapMode;
         enum class TextureFilter;
         enum class MipFilter;
         typedef std::tuple<WrapMode, TextureFilter, MipFilter> SamplerState;
 
+        class States;
 		class DrawCall;
-
 		class Pass;
 		class Effect;
 		class EffectInstance;
