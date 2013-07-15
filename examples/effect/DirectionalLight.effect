@@ -8,10 +8,7 @@
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform.worldToScreenMatrix",
-		"lightDirection"		: "light.direction",
-		"ambientColor"			: "light.ambient.rgba",
-		"lightColor"			: "light.diffuse.rgba",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
 		"cameraPosition"		: "camera.position"
 	},
 	"stateBindings"	: {
