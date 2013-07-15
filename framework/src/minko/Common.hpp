@@ -77,13 +77,15 @@ namespace minko
 		class NodeSet;
 	}
 
-	namespace controller
+	namespace component
 	{
-		class AbstractController;
+		class AbstractComponent;
+        class AbstractRootDataComponent;
 		class Transform;
 		class Surface;
-		class RenderingController;
+		class Rendering;
 		class PerspectiveCamera;
+        class DirectionalLight;
 	}
 
 	namespace data
