@@ -6,7 +6,7 @@
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
 	"passes"	: [{
 		"vertexShader"	: "
