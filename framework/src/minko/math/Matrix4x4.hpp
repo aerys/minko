@@ -160,7 +160,7 @@ namespace minko
 			{
 				auto m1 = Matrix4x4::create(shared_from_this());
 
-				m1->append(value);
+				m1->prepend(value);
 
 				return m1;
 			}
@@ -169,7 +169,7 @@ namespace minko
 			Ptr
 			operator*=(Matrix4x4::Ptr value)
 			{
-				append(value);
+				prepend(value);
 
 				return shared_from_this();
 			}
