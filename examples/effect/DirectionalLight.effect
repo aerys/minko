@@ -19,7 +19,9 @@
 	},
 	"macroBindings"	: {
 		"DIFFUSE_MAP"			: "material.diffuseMap",
-		"SPECULAR"				: "material.shininess"
+		"SPECULAR"				: "material.shininess",
+		"SPECULAR_MAP"			: "material.specularMap",
+		"NORMAL_MAP"			: "material.normalMap"
 	},
 
 	"priority"			: 0,
@@ -28,7 +30,9 @@
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
 
 	"includes"		: [ "Phong.glsl" ],
@@ -71,6 +75,8 @@
 				vec4		diffuseColor;
 				vec3		specular;
 				float		shininess;
+				sampler2D	specularMap;
+				sampler2D	normalMap;
 			};
 
 			struct DirectionalLight {
@@ -111,7 +117,25 @@
 						material.specular * light.specular,
 						material.shininess
 					);
-				#endif
+				#endif // SPECULAR
+
+				#ifdef SPECULAR_MAP
+					vec4 specular	= texture2D(material.specularMap, vertexUV);
+					diffuse.rgb += phong_specularReflection(
+						worldNormal,
+						light.direction,
+						normalize(cameraPosition - worldPosition),
+						specular * light.specular,
+						material.shininess
+					);
+				#endif // SPECULAR_MAP
+				
+				#ifdef NORMAL_MAP
+					/*
+					vec4 normal	= texture2D(material.normalMap, vertexUV);
+					diffuse.rgb = normal.rgb;
+					*/
+				#endif // NORMAL_MAP
 				
 				gl_FragColor = diffuse;
 			}
