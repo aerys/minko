@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::component;
 
 AbstractRootDataComponent::AbstractRootDataComponent() :
-    _data(data::Provider::create())
+    _data(data::Provider::create()),
+    _enabled(true)
 {
 }
 
@@ -50,6 +51,9 @@ AbstractRootDataComponent::initialize()
 void
 AbstractRootDataComponent::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
+  	if (targets().size() > 1)
+		throw std::logic_error("This component cannot have more than 1 target.");
+
     auto cb = std::bind(
         &AbstractRootDataComponent::addedOrRemovedHandler,
         shared_from_this(),
