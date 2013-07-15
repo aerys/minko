@@ -30,7 +30,7 @@ unsigned int Node::_id = 0;
 
 Node::Node() :
 	_name("Node_" + std::to_string(Node::_id++)),
-	_tags(1),
+	_layers(1),
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
@@ -38,30 +38,26 @@ Node::Node() :
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_controllerAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
 	_controllerRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_tagsChanged(Signal<Ptr, Ptr>::create())
+	_layersChanged(Signal<Ptr, Ptr>::create())
 {
 }
 
 void
-Node::tags(unsigned int tags)
+Node::layers(unsigned int layers)
 {
-	if (_tags != tags)
+	if (_layers != layers)
 	{
-		_tags = tags;
+		_layers = layers;
 
 		// bubble down
-        auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
-            ->select(shared_from_this())
-            ->descendants(true);
+        auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 		for (auto descendant : descendants->nodes())
-			descendant->_tagsChanged->execute(descendant, shared_from_this());
+			descendant->_layersChanged->execute(descendant, shared_from_this());
 
 		// bubble up
-		auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
-            ->select(shared_from_this())
-            ->ancestors();
+		auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 		for (auto ancestor : ancestors->nodes())
-			ancestor->_tagsChanged->execute(ancestor, shared_from_this());
+			ancestor->_layersChanged->execute(ancestor, shared_from_this());
 	}
 }
 
@@ -77,16 +73,12 @@ Node::addChild(Node::Ptr child)
 	child->updateRoot();
 
 	// bubble down
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(child)
-        ->descendants(true);
+	auto descendants = NodeSet::create(child)->descendants(true);
 	for (auto descendant : descendants->nodes())
 		descendant->_added->execute(descendant, child, shared_from_this());
 
 	// bubble up
-	auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->ancestors(true);
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
 	for (auto ancestor : ancestors->nodes())
 		ancestor->_added->execute(ancestor, child, shared_from_this());
 
@@ -107,16 +99,12 @@ Node::removeChild(Node::Ptr child)
 	child->updateRoot();
 
 	// bubble down
-    auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(child)
-        ->descendants(true);
+    auto descendants = NodeSet::create(child)->descendants(true);
 	for (auto descendant : descendants->nodes())
 		descendant->_removed->execute(descendant, child, shared_from_this());
 
 	// bubble up
-	auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->ancestors(true);
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
 	for (auto ancestor : ancestors->nodes())
 		ancestor->_removed->execute(ancestor, child, shared_from_this());
 
@@ -139,16 +127,12 @@ Node::addController(std::shared_ptr<AbstractController> controller)
 	controller->_targets.push_back(shared_from_this());
 
 	// bubble down
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->descendants(true);
+	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 	for (auto descendant : descendants->nodes())
 		descendant->_controllerAdded->execute(descendant, shared_from_this(), controller);
 
 	// bubble up
-	auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->ancestors();
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 	for (auto ancestor : ancestors->nodes())
 		ancestor->_controllerAdded->execute(ancestor, shared_from_this(), controller);
 
@@ -173,16 +157,12 @@ Node::removeController(std::shared_ptr<AbstractController> controller)
 	);
 
 	// bubble down
-	auto descendants = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->descendants(true);
+	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 	for (auto descendant : descendants->nodes())
 		descendant->_controllerRemoved->execute(descendant, shared_from_this(), controller);
 
 	// bubble up
-	auto ancestors = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(shared_from_this())
-        ->ancestors();
+	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 	for (auto ancestor : ancestors->nodes())
 		ancestor->_controllerRemoved->execute(ancestor, shared_from_this(), controller);
 

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PNGParser.hpp"
 
 #include "minko/file/Options.hpp"
-#include "minko/resource/Texture.hpp"
+#include "minko/render/Texture.hpp"
 
 #include "lodepng.h"
 
@@ -38,7 +38,7 @@ PNGParser::parse(const std::string&					filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	_texture = resource::Texture::create(options->context(), width, height);
+	_texture = render::Texture::create(options->context(), width, height);
 	_texture->data(&out[0]);
 	_texture->upload();
 

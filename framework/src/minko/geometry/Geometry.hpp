@@ -21,8 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/resource/VertexStream.hpp"
-#include "minko/resource/VertexAttribute.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 namespace minko
 {
@@ -61,29 +60,29 @@ namespace minko
 
 			inline
 			void
-			indices(std::shared_ptr<resource::IndexStream> indices)
+			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
-				_data->set("geometry/indices", indices);
+				_data->set("geometry.indices", indices);
 			}
 
 			inline
-			std::shared_ptr<resource::IndexStream>
+			std::shared_ptr<render::IndexBuffer>
 			indices()
 			{
-				return _data->get<std::shared_ptr<resource::IndexStream>>("geometry/indices");
+				return _data->get<std::shared_ptr<render::IndexBuffer>>("geometry.indices");
 			}
 
 			inline
 			void
-			addVertexStream(std::shared_ptr<resource::VertexStream> vertexStream)
+			addVertexBuffer(std::shared_ptr<render::VertexBuffer> VertexBuffer)
 			{
-				for (auto attribute : vertexStream->attributes())
+				for (auto attribute : VertexBuffer->attributes())
 				{
-					_data->set("geometry/vertex/attribute/" + std::get<0>(*attribute), vertexStream);
+					_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), VertexBuffer);
 					_vertexSize += std::get<1>(*attribute);
 				}
 
-				_data->set("geometry/vertex/size", _vertexSize);
+				_data->set("geometry.vertex.size", _vertexSize);
 			}
 
 		protected:
