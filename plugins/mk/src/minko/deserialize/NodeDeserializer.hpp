@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/MkOptions.hpp"
-#include "minko/controller/SurfaceController.hpp"
-#include "minko/controller/TransformController.hpp"
+#include "minko/controller/Surface.hpp"
+#include "minko/controller/Transform.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/deserialize/GeometryDeserializer.hpp"
@@ -62,8 +62,8 @@ namespace minko
 				std::shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
 
-				group->addController(controller::TransformController::create());
-				group->controller<controller::TransformController>()->transform()->copyFrom(transformMatrix);
+				group->addController(controller::Transform::create());
+				group->controller<controller::Transform>()->transform()->copyFrom(transformMatrix);
 
 				return group;
 			}
@@ -78,8 +78,8 @@ namespace minko
 				std::shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
-				mesh->addController(controller::TransformController::create());
-				mesh->controller<controller::TransformController>()->transform()->copyFrom(transformMatrix);
+				mesh->addController(controller::Transform::create());
+				mesh->controller<controller::Transform>()->transform()->copyFrom(transformMatrix);
 
 				Qark::ByteArray		geometryObject;
 				int					copyId			= -1;
@@ -108,13 +108,12 @@ namespace minko
 				int					materialId	= Any::cast<int&>(bindingsId[0]);	
 
 				mesh->addController(
-					controller::SurfaceController::create(
+					controller::Surface::create(
 					options->assetsLibrary()->geometry("cube"),
 					options->deserializedAssets()->material(materialId),
-					options->assetsLibrary()->effect("texture")));
+					options->assetsLibrary()->effect("directional light")));
 
-				//if (options->_numMesh++ < 120)
-					GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
+				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
 
 				return mesh;
 			}

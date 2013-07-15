@@ -36,9 +36,6 @@ namespace minko
 			typedef std::shared_ptr<Attribute>									AttributePtr;
 
 		private:
-			typedef std::shared_ptr<VertexAttribute>	VxAttrPtr;
-
-		private:
 			std::vector<float>		_data;
 			std::list<AttributePtr>	_attributes;
 

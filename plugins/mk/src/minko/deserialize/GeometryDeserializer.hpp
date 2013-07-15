@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Qark.hpp"
 #include "minko/AssetsLibrary.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/render/VertexBuffer.hpp"
 
 namespace minko
 {
@@ -54,17 +55,17 @@ namespace minko
 								std::shared_ptr<file::Options>	options);
 
 			static
-			std::shared_ptr<resource::IndexStream>
+			std::shared_ptr<render::IndexBuffer>
 			readIndexStream(std::stringstream&				stream,
 							std::shared_ptr<file::Options>	options);
 
 			static
-			std::shared_ptr<resource::VertexStream>
+			std::shared_ptr<render::VertexBuffer>
 			readVertexStream(std::stringstream&				stream,
 							 std::shared_ptr<file::Options>	options);
 
 			static
-			std::vector<std::shared_ptr<resource::VertexAttribute>>
+			std::vector<render::VertexBuffer::AttributePtr>
 			readVertexFormat(std::stringstream&				stream,
 							 std::shared_ptr<file::Options> options);
 		};
