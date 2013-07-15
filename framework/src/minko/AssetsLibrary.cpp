@@ -25,11 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AbstractTextureParser.hpp"
 #include "minko/file/AbstractModelParser.hpp"
-#include "minko/resource/Texture.hpp"
+#include "minko/render/Texture.hpp"
 
 
 using namespace minko::render;
 using namespace minko::geometry;
+
+AssetsLibrary::Ptr
+AssetsLibrary::create(AbsContextPtr context)
+{
+	auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
+
+	al->registerParser<file::EffectParser>("effect");
+
+	return al;
+}
 
 AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
