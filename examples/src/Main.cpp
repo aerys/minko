@@ -286,6 +286,7 @@ int main(int argc, char** argv)
 
 		group->addChild(mesh);
 
+<<<<<<< HEAD
         /*
 		mesh = scene::Node::create();
 		mesh->addController(Transform::create());
@@ -353,6 +354,14 @@ int main(int argc, char** argv)
 			->appendTranslation(0.0f, -0.5f, ZTRANSL);
 
 		staticBox->addController(Surface::create(
+=======
+        root->addComponent(DirectionalLight::create());
+
+        group->addChild(mesh);
+
+		mesh->addComponent(Transform::create());
+		mesh->addComponent(Surface::create(
+>>>>>>> 7695b92... fix broken reference to the "transform.worldToScreenMatrix" property
 			assets->geometry("cube"),
 			data::Provider::create()
 			->set("material/diffuse/rgba",			color)
