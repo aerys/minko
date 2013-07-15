@@ -32,7 +32,7 @@ using namespace minko::render;
 
 WebGLContext::BlendFactorsMap WebGLContext::_blendingFactors = WebGLContext::initializeBlendFactorsMap();
 
-inline static void getGlError();
+inline static std::ostream& printGetError(std::ostream&);
 
 WebGLContext::BlendFactorsMap
 	WebGLContext::initializeBlendFactorsMap()
@@ -785,12 +785,12 @@ inline static std::ostream& printGetError(std::ostream& out)
 	case GL_OUT_OF_MEMORY:
 		out << "out of memory";
 		break;
-	case GL_STACK_UNDERFLOW:
-		out  << "stack underflow";
-		break;
-	case GL_STACK_OVERFLOW:
-		out << "stack overflow";
-		break;
+	//case GL_STACK_UNDERFLOW:
+	//	out  << "stack underflow";
+	//	break;
+	//case GL_STACK_OVERFLOW:
+	//	out << "stack overflow";
+	//	break;
 	}
 	return out;
 }
