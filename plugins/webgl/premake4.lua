@@ -4,6 +4,7 @@ project "minko-webgl"
   files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
 	"src",
+	"lib",
 	"../../framework/src",
 	"../../framework/lib/glew/include"
   }

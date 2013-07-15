@@ -38,7 +38,8 @@ namespace minko
 				{
 					SPHERE,
 					BOX,
-					CONE
+					CONE,
+					CYLINDER
 				};
 
 			protected:
