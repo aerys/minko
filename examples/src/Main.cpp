@@ -123,6 +123,10 @@ int main(int argc, char** argv)
 			assets->effect("directional light")
 		));
 
+		//mesh->controller<Surface>()->geometry()->computeNormals();
+		mesh->controller<Surface>()->geometry()->data()->unset("geometry.vertex.attribute.normal");
+		mesh->controller<Surface>()->geometry()->computeTangentSpace(true);
+
 		group->addChild(mesh);
 
         /*
