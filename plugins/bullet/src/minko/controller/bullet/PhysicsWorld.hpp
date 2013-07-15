@@ -42,6 +42,7 @@ namespace minko
 			class SphereShape;
 			class BoxShape;
 			class ConeShape;
+			class CylinderShape;
 			class Collider;
 
 			class PhysicsWorld:
@@ -147,7 +148,7 @@ namespace minko
 					typedef std::shared_ptr<SphereShape>			SphereShapePtr;
 					typedef std::shared_ptr<BoxShape>				BoxShapePtr;
 					typedef std::shared_ptr<ConeShape>				ConeShapePtr;
-
+					typedef std::shared_ptr<CylinderShape>			CylinderShapePtr;
 
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
@@ -200,6 +201,8 @@ namespace minko
 						initializeBoxShape(BoxShapePtr);
 					void
 						initializeConeShape(ConeShapePtr);
+					void
+						initializeCylinderShape(CylinderShapePtr);
 					void
 						initializeMotionState(ColliderPtr);
 					void
