@@ -3,8 +3,8 @@ package aerys.minko.render.shader.part.phong.attenuation
 	import aerys.minko.render.material.phong.PhongProperties;
 	import aerys.minko.render.shader.SFloat;
 	import aerys.minko.render.shader.Shader;
-	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.render.shader.part.phong.LightAwareShaderPart;
+	import aerys.minko.render.shader.part.phong.depth.LinearDepthFromLightShaderPart;
 	import aerys.minko.scene.node.light.PointLight;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
@@ -117,7 +117,10 @@ package aerys.minko.render.shader.part.phong.attenuation
 				noShadows.scaleBy(1 / (2 * numSamples + 1));
 			}
 			
-			return noShadows.x;
+			var insideShadow 	: SFloat = and(and(lessEqual(uv.x, 1), greaterThan(uv.x, 0)), and(lessEqual(uv.y, 1), greaterThan(uv.y, 0)));
+			var outsideShadow	: SFloat = subtract(1, insideShadow);
+			
+			return add(multiply(noShadows.x, insideShadow), multiply(1, outsideShadow));
 		}
 	}
 }
