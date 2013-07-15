@@ -87,6 +87,35 @@ fclose(fp);
 delete[] pixels;
 }*/
 
+void testMatrixProduct()
+{
+	std::vector<float> values1(16);
+	std::vector<float> values2(16);
+	for (unsigned int i=0; i<16; ++i)
+	{
+		values1[i] = (float)(rand() % 20);
+		values2[i] = (float)(rand() % 20);
+	}
+
+	auto mat1	= math::Matrix4x4::create()
+		->initialize(
+		values1[0], values1[1], values1[2], values1[3],
+		values1[4], values1[5], values1[6], values1[7],
+		values1[8], values1[9], values1[10], values1[11],
+		values1[12], values1[13], values1[14], values1[15]
+	);
+	auto mat2	= math::Matrix4x4::create()
+		->initialize(
+		values2[0], values2[1], values2[2], values2[3],
+		values2[4], values2[5], values2[6], values2[7],
+		values2[8], values2[9], values2[10], values2[11],
+		values2[12], values2[13], values2[14], values2[15]
+	);
+
+	auto matP	= mat1 * mat2;
+	std::cout << "M1 = " << std::to_string(mat1) << "\nM2 = " << std::to_string(mat2) << "\nM1*M2 = " << std::to_string(matP) << std::endl;
+}
+
 bool testQuaternion(uint ax, float ang)
 {
 	Vector3::Ptr	axis		= nullptr;
@@ -163,6 +192,8 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 #endif // EMSCRIPTEN
+
+	//testMatrixProduct();
 
 	/*
 	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
