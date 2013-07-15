@@ -103,20 +103,23 @@ int main(int argc, char** argv)
 
         auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f)->prependTranslation(0.f, 0.f, -3.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
-		auto lightDirection = Vector3::create(-1.f, 0.f, 0.f);
+		auto lightDirection = Vector3::create(-1.f, 0.f, -1.f);
 
 		mesh->addController(Transform::create());
 		//mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addController(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuse.rgba",			    color)
-                ->set("material.specular.rgb",	            Vector3::create(.8f, .8f, .8f))
-                ->set("material.shininess",	                10.f)
-				->set("transform.worldToScreenMatrix",	    view)
-				->set("light.ambient.rgba",				    Vector3::create(.25f, .25f, .25f))
-				->set("light.direction",				    lightDirection)
-                ->set("camera.position",				    Vector3::create(0., 0., 3.f)),
+				->set("material.diffuseColor",			color)
+                ->set("material.diffuseMap",			assets->texture("box3.png"))
+                ->set("material.specular",	            Vector3::create(.25f, .25f, .25f))
+                ->set("material.shininess",	            30.f)
+				->set("transform.worldToScreenMatrix",  view)
+				->set("light.ambient",				    Vector3::create(.25f, .25f, .25f))
+				->set("light.direction",				lightDirection)
+                ->set("light.diffuse",				    Vector3::create(1.f, 1.f, 1.f))
+                ->set("light.specular",				    Vector3::create(1.f, 1.f, 1.f))
+                ->set("camera.position",				Vector3::create(0., 0., 3.f)),
 			assets->effect("directional light")
 		));
 
