@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/deserialize/NameConverter.hpp"
+#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -89,7 +90,7 @@ namespace minko
 			static
 			std::shared_ptr<data::Provider>
 			provider(std::vector<Any>&									properties,
-					 std::map<int, std::shared_ptr<resource::Texture>>&	idToTexture,
+					 std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
 					 std::shared_ptr<NameConverter>						nameConverter)
 			{
 				// temp
@@ -125,8 +126,12 @@ namespace minko
 					}
 				}
 
-				material->set("transform/worldToScreenMatrix",	view);
-				material->set("light/direction",				lightDirection);
+				material->set("transform.worldToScreenMatrix",	view);
+				material->set("light.direction",				lightDirection);
+				material->set("light.ambient.rgba",				math::Vector3::create(.25f, .25f, .25f));
+				material->set("camera.position",				math::Vector3::create(0., 0., 0.f));
+				material->set("material.specular.rgb",			math::Vector3::create(.8f, .8f, .8f));
+                material->set("material.shininess",				10.f);
 
 				return material;
 			}

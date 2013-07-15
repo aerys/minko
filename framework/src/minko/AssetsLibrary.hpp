@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/file/EffectParser.hpp"
 
 
 namespace minko
@@ -62,16 +63,10 @@ namespace minko
 		std::shared_ptr<Signal<Ptr>>									_complete;
 
 	public:
-		inline static
+		// fixme cyclic reference
+		static
 		Ptr
-		create(AbsContextPtr context)
-		{
-			auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
-
-			al->registerParser<file::EffectParser>("effect");
-
-			return al;
-		}
+		create(AbsContextPtr context);
 
 		inline
 		AbsContextPtr

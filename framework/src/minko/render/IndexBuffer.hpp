@@ -67,7 +67,7 @@ namespace minko
 			dispose();
 
 		private:
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						const std::vector<unsigned short>&			data) :
 
 				AbstractResource(context),
@@ -77,10 +77,9 @@ namespace minko
 			}
 
 			template <typename T>
-			IndexStream(std::shared_ptr<render::AbstractContext>	context,
+			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						T*											begin,
 						T*											end) :
-
 				AbstractResource(context),
 				_data(begin, end)
 			{

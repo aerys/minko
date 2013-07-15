@@ -60,7 +60,7 @@ Surface::initialize()
 }
 
 void
-SurfaceController::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
+Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 {
 	for (unsigned int i = 0; i < numTargets(); ++i)
 	{
@@ -70,13 +70,9 @@ SurfaceController::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 		target->data()->addProvider(newGeometry->data());
 
 		_drawCalls.clear();
-		for (auto shader : _effect->shaders())
-		_drawCalls.push_back(DrawCall::create(
-			target->data(),
-			_effect->attributeBindings(),
-			_effect->uniformBindings(),
-			_effect->stateBindings()
-		));
+
+		for (auto pass : _effect->passes())
+			_drawCalls.push_back(pass->createDrawCall(target->data()));
 	}
 
 	_geometry = newGeometry;

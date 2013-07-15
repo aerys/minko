@@ -48,13 +48,11 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
-		->registerParser<file::EffectParser>("effect")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		->queue("collage.jpg")
         ->queue("box3.png")
 		->queue("DirectionalLight.effect")
 		->queue("VertexNormal.effect")
@@ -63,11 +61,16 @@ int main(int argc, char** argv)
 		->queue("Basic.effect")
 		->queue("models/sponza.mk");
 
-	assets->defaultOptions()->includePaths().push_back("effects");
-	assets->defaultOptions()->includePaths().push_back("textures");
+	//#ifdef DEBUG
+	assets->defaultOptions()->includePaths().push_back("effect");
+	assets->defaultOptions()->includePaths().push_back("texture");
+	//#else
+	//assets->defaultOptions()->includePaths().push_back("../../effect");
+	//assets->defaultOptions()->includePaths().push_back("../../texture");
+	//#endif
 
 	std::vector<unsigned short> t(42);
-	auto ib = resource::IndexStream::create(context, t);
+	auto ib = render::IndexBuffer::create(context, t);
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -80,9 +83,9 @@ int main(int argc, char** argv)
         renderingController->backgroundColor(0x7F7F7FFF);
 		camera->addController(renderingController);
 
-		group->addController(TransformController::create());
-		group->controller<TransformController>()->transform()->appendTranslation(0.f, -4.f, -0.f);
-		group->controller<TransformController>()->transform()->prependRotationY(3.14/4);
+		group->addController(Transform::create());
+		group->controller<Transform>()->transform()->appendTranslation(0.f, -5.f, -5.f);
+		//group->controller<Transform>()->transform()->prependRotationY(3.14/4);
 
 		group->addChild(assets->node("models/sponza.mk"));
 	});
@@ -91,7 +94,7 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-		group->controller<TransformController>()->transform()->prependRotationY(.01f);
+		group->controller<Transform>()->transform()->prependRotationY(.01f);
 	    renderingController->render();
 
 	    printFramerate();

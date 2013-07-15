@@ -20,10 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "GeometryDeserializer.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
-#include "minko/resource/IndexStream.hpp"
-#include "minko/resource/VertexAttribute.hpp"
+#include "minko/render/IndexBuffer.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/Surface.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -53,7 +52,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 		std::map<int, GeometryDeserializer::NodeList>&	_waitGorGeometryNodeCopye = _waitForGeometryNodes;
 		
 		if (_geometryIdToName.find(copyId) != _geometryIdToName.end())
-			mesh->controller<controller::SurfaceController>()->geometry(library->geometry(_geometryIdToName[copyId]));
+			mesh->controller<controller::Surface>()->geometry(library->geometry(_geometryIdToName[copyId]));
 		else
 			_waitForGeometryNodes[copyId].push_back(mesh);
 	}
@@ -66,15 +65,15 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 
 		read(stream, meshType);
 
-		std::shared_ptr<resource::IndexStream> indexStream = readIndexStream(stream, options);
-		std::shared_ptr<resource::VertexStream> vertexStream = readVertexStream(stream, options);
+		std::shared_ptr<render::IndexBuffer> indexStream = readIndexStream(stream, options);
+		std::shared_ptr<render::VertexBuffer> vertexStream = readVertexStream(stream, options);
 
 		std::shared_ptr<geometry::Geometry> geometry = geometry::Geometry::create();
 
 		geometry->indices(indexStream);
-		geometry->addVertexStream(vertexStream);
+		geometry->addVertexBuffer(vertexStream);
 
-		mesh->controller<controller::SurfaceController>()->geometry(geometry);
+		mesh->controller<controller::Surface>()->geometry(geometry);
 
 		GeometryDeserializer::_geometryIdToName[copyId] = geometryName;
 		library->geometry(geometryName, geometry);
@@ -85,7 +84,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 			{
 				std::shared_ptr<scene::Node> m = _waitForGeometryNodes[copyId][meshId];
 
-				mesh->controller<controller::SurfaceController>()->geometry(geometry);
+				mesh->controller<controller::Surface>()->geometry(geometry);
 			}
 		}
 
@@ -93,7 +92,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 	}
 }
 
-std::shared_ptr<resource::IndexStream>
+std::shared_ptr<render::IndexBuffer>
 GeometryDeserializer::readIndexStream(std::stringstream&				stream,
 									  std::shared_ptr<file::Options>	options)
 {
@@ -106,10 +105,10 @@ GeometryDeserializer::readIndexStream(std::stringstream&				stream,
 
 	stream.read(reinterpret_cast<char*>(&*data.begin()), numIndices * 2);
 
-	return resource::IndexStream::create(options->context(), data);
+	return render::IndexBuffer::create(options->context(), data);
 }
 
-std::shared_ptr<resource::VertexStream>
+std::shared_ptr<render::VertexBuffer>
 GeometryDeserializer::readVertexStream(std::stringstream&				stream,
 									   std::shared_ptr<file::Options>	options)
 {
@@ -122,10 +121,10 @@ GeometryDeserializer::readVertexStream(std::stringstream&				stream,
 	read(stream, numVertices);
 	read(stream, lossy);
 
-	std::vector<std::shared_ptr<resource::VertexAttribute>> vertexAttributes = readVertexFormat(stream, options);
+	std::vector<render::VertexBuffer::AttributePtr> vertexAttributes = readVertexFormat(stream, options);
 
 	for (unsigned int attributeId = 0; attributeId < vertexAttributes.size(); ++attributeId)
-		vertexSize += vertexAttributes[attributeId]->size();
+		vertexSize += std::get<1>(*vertexAttributes[attributeId]);
 
 	numComponentsPerVertex = numVertices * vertexSize;
 
@@ -133,30 +132,24 @@ GeometryDeserializer::readVertexStream(std::stringstream&				stream,
 
 	stream.read(reinterpret_cast<char*>(&*data.begin()), numComponentsPerVertex * sizeof(float));
 
-	/*while (numBytes > 0)
-	{
-		float newValue = 0;
-		read(stream, newValue);
-
-		data.push_back(newValue);
-		numBytes--;
-	}*/
-
-	std::shared_ptr<resource::VertexStream> vstream = resource::VertexStream::create(
+	std::shared_ptr<render::VertexBuffer> vstream = render::VertexBuffer::create(
 		options->context(), data/*std::begin(data), std::end(data)*/
 	);
 	
 	for (unsigned int attributeId = 0; attributeId < vertexAttributes.size(); ++attributeId)
-		vstream->addAttribute(vertexAttributes[attributeId]->name(), vertexAttributes[attributeId]->size(), vertexAttributes[attributeId]->offset());
+		vstream->addAttribute(
+		std::get<0>(*vertexAttributes[attributeId]), 
+		std::get<1>(*vertexAttributes[attributeId]), 
+		std::get<2>(*vertexAttributes[attributeId]));
 
 	return vstream;
 }
 
-std::vector<std::shared_ptr<resource::VertexAttribute>>
+std::vector<render::VertexBuffer::AttributePtr>
 GeometryDeserializer::readVertexFormat(std::stringstream&				stream,
 									   std::shared_ptr<file::Options>	options)
 {
-	std::vector<std::shared_ptr<resource::VertexAttribute>> attributes;
+	std::vector<render::VertexBuffer::AttributePtr> attributes;
 
 	unsigned char numComponents = 0;
 	unsigned int  offset		= 0;
@@ -186,14 +179,16 @@ GeometryDeserializer::readVertexFormat(std::stringstream&				stream,
 			properties.push_back(propertyName);
 		}
 		
+		unsigned int numPropertiesInt = numProperties;
+
 		if (properties[0] == "x")
-			attributes.push_back(resource::VertexAttribute::create("position", numProperties, offset));
+			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("position", numPropertiesInt, offset)));
 		else if (properties[0] == "nx")
-			attributes.push_back(resource::VertexAttribute::create("normal", numProperties, offset));
+			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("normal", numPropertiesInt, offset)));
 		else if (properties[0] == "u")
-			attributes.push_back(resource::VertexAttribute::create("uv", numProperties, offset));
+			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("uv", numPropertiesInt, offset)));
 		else 
-			attributes.push_back(resource::VertexAttribute::create(properties[0], numProperties, offset));
+			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute(properties[0], numPropertiesInt, offset)));
 
 		offset += numProperties;
 		--numComponents;
