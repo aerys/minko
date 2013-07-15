@@ -7,7 +7,7 @@
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
 	
 	"priority"		: 0,
