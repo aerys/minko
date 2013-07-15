@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
@@ -65,6 +66,7 @@ namespace minko
 			Blending::Mode			_currentBlendMode;
 			bool					_currentDepthMask;
 			CompareMode				_currentDepthFunc;
+            TriangleCulling         _currentTriangleCulling;
 
 		public:
 			~OpenGLES2Context();
@@ -147,6 +149,9 @@ namespace minko
 						 const int			texture		= 0,
 						 const int			location	= -1);
 
+            void
+            setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering);
+
 			const unsigned int
 			createProgram();
 
@@ -215,6 +220,9 @@ namespace minko
 
 			void
 			readPixels(unsigned char* pixels);
+
+            void
+            setTriangleCulling(TriangleCulling triangleCulling);
 
 		private:
 			OpenGLES2Context();

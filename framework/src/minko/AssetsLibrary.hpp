@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
+#include "minko/file/AbstractParser.hpp"
+
 
 namespace minko
 {
@@ -33,7 +36,7 @@ namespace minko
 	private:
 		typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 		typedef std::shared_ptr<render::Effect>				EffectPtr;
-		typedef std::shared_ptr<resource::Texture>			TexturePtr;
+		typedef std::shared_ptr<render::Texture>			TexturePtr;
 		typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 		typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 		typedef std::function<AbsParserPtr(void)>			Handler;
@@ -63,7 +66,11 @@ namespace minko
 		Ptr
 		create(AbsContextPtr context)
 		{
-			return std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
+			auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
+
+			al->registerParser<file::EffectParser>("effect");
+
+			return al;
 		}
 
 		inline

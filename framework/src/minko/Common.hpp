@@ -49,21 +49,27 @@ namespace minko
 		class OpenGLES2Context;
         class Blending;
 		enum class CompareMode;
+        enum class TriangleCulling;
 
+        enum class WrapMode;
+        enum class TextureFilter;
+        enum class MipFilter;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter> SamplerState;
+
+        class States;
 		class DrawCall;
-
+		class Pass;
 		class Effect;
+		class EffectInstance;
 		class ProgramInputs;
-	}
 
-	namespace resource
-	{
 		class AbstractResource;
+		class Shader;
 		class Program;
 		class VertexFormat;
-		class VertexStream;
+		class VertexBuffer;
 		class VertexAttribute;
-		class IndexStream;
+		class IndexBuffer;
 		class Texture;
 	}
 
@@ -76,10 +82,10 @@ namespace minko
 	namespace controller
 	{
 		class AbstractController;
-		class TransformController;
-		class SurfaceController;
+		class Transform;
+		class Surface;
 		class RenderingController;
-		class PerspectiveCameraController;
+		class PerspectiveCamera;
 	}
 
 	namespace data

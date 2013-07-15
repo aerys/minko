@@ -36,7 +36,7 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>				NodePtr;
 			typedef std::shared_ptr<AbstractController>			AbsCtrlPtr;
-			typedef std::shared_ptr<SurfaceController>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<Surface>					SurfaceCtrlPtr;
 			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 

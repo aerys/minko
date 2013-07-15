@@ -33,73 +33,32 @@ namespace minko
 			typedef std::shared_ptr<Effect>	Ptr;
 
 		private:
-			typedef std::shared_ptr<resource::Program>		ProgramPtr;
+			typedef std::shared_ptr<Pass>	PassPtr;
 
 		private:
-			std::vector<ProgramPtr>							_shaders;
-			std::unordered_map<std::string, std::string>	_attributeBindings;
-			std::unordered_map<std::string, std::string>	_uniformBindings;
-			std::unordered_map<std::string, std::string>	_stateBindings;
-
-			std::shared_ptr<data::Provider>					_data;
+			std::vector<PassPtr>						_passes;
+			std::list<std::shared_ptr<EffectInstance>>	_instances;
 
 		public:
 			inline static
 			Ptr
-			create(std::vector<ProgramPtr>							shaders,
-				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings,
-				   std::unordered_map<std::string, std::string>&	stateBindings)
+			create(std::vector<PassPtr>&	passes)
 			{
-				return std::shared_ptr<Effect>(new Effect(
-					shaders, attributeBindings, uniformBindings, stateBindings
-				));
+				return std::shared_ptr<Effect>(new Effect(passes));
 			}
 
 			inline
-			std::shared_ptr<data::Provider>
-			data()
+			const std::vector<PassPtr>&
+			passes()
 			{
-				return _data;
+				return _passes;
 			}
 
-			inline
-			const std::vector<ProgramPtr>&
-			shaders()
-			{
-				return _shaders;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			attributeBindings()
-			{
-				return _attributeBindings;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			uniformBindings()
-			{
-				return _uniformBindings;
-			}
-
-			inline
-			const std::unordered_map<std::string, std::string>&
-			stateBindings()
-			{
-				return _stateBindings;
-			}
+			std::shared_ptr<EffectInstance>
+			instanciate(std::shared_ptr<data::Container> data);
 
 		private:
-			Effect(std::vector<ProgramPtr>&							shaders,
-				   std::unordered_map<std::string, std::string>&	attributeBindings,
-				   std::unordered_map<std::string, std::string>&	uniformBindings,
-				   std::unordered_map<std::string, std::string>&	stateBindings);
-
-			void
-			propertyChangedHandler(std::shared_ptr<data::Container> data,
-								   const std::string&				propertyName);
+			Effect(std::vector<PassPtr>&	passes);
 		};		
 	}
 }

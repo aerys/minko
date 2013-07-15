@@ -20,8 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/render/Blending.hpp"
+
+namespace Json
+{
+	class Value;
+}
 
 namespace minko
 {
@@ -35,24 +42,34 @@ namespace minko
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Loader> LoaderPtr;
+			typedef std::shared_ptr<Loader>			LoaderPtr;
 
 		private:
-			std::shared_ptr<render::Effect>							_effect;
-			std::string												_effectName;
+			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
+			static std::unordered_map<std::string, render::CompareMode>	_depthFuncMap;
+
+			std::shared_ptr<render::Effect>								_effect;
+			std::string													_effectName;
 			
-			unsigned int											_numDependencies;
-			unsigned int											_numLoadedDependencies;
+			float														_defaultPriority;
+			render::Blending::Source									_defaultBlendSrcFactor;
+			render::Blending::Destination								_defaultBlendDstFactor;
+			bool														_defaultDepthMask;
+			render::CompareMode											_defaultDepthFunc;
+            render::TriangleCulling                                     _defaultTriangleCulling;
+			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
+			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
+			std::unordered_map<std::string, std::string>				_defaultStateBindings;
+			std::unordered_map<std::string, std::string>				_defaultMacroBindings;
+            std::unordered_map<std::string, render::SamplerState>       _defaultSamplerStates;
 
-			std::shared_ptr<render::AbstractContext>				_context;
-			std::vector<std::pair<std::string, std::string>>		_programs;
-			std::unordered_map<std::string, std::string>			_attributeBindings;
-			std::unordered_map<std::string, std::string>			_uniformBindings;
-			std::unordered_map<std::string, std::string>			_stateBindings;
-			std::string												_dependenciesCode;
+			unsigned int												_numDependencies;
+			unsigned int												_numLoadedDependencies;
 
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>	_loaderErrorSlots;
+			std::string													_dependenciesCode;
+
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
+			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
 
 			std::shared_ptr<AssetsLibrary>							_assetsLibrary;
 
@@ -85,16 +102,59 @@ namespace minko
 				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 			void
-			dependencyCompleteHandler(std::shared_ptr<Loader>			loader);
-
-			void
-			dependencyErrorHandler(std::shared_ptr<Loader> loader);
-
-			void
 			finalize();
 
 		private:
 			EffectParser();
+
+			void
+			parseDefaultValues(Json::Value& root);
+
+			void
+			parsePasses(Json::Value& root, std::shared_ptr<file::Options> options);
+
+			void
+			parseBindings(Json::Value&									contextNode,
+						  std::unordered_map<std::string, std::string>&	attributeBindings,
+						  std::unordered_map<std::string, std::string>&	uniformBindings,
+						  std::unordered_map<std::string, std::string>&	stateBindings,
+						  std::unordered_map<std::string, std::string>&	macroBindings);
+
+			void
+			parseBlendMode(Json::Value&						contextNode,
+						   render::Blending::Source&		srcFactor,
+						   render::Blending::Destination&	dstFactor);
+
+			void
+			parseDepthTest(Json::Value&			contextNode,
+						   bool&				depthMask,
+						   render::CompareMode&	depthFunc);
+
+            void
+            parseTriangleCulling(Json::Value&               contextNode,
+                                 render::TriangleCulling&   triangleCulling);
+
+            void
+            parseSamplerStates(Json::Value&                                             contextNode,
+                               std::unordered_map<std::string, render::SamplerState>&   samplerStates);
+
+			void
+			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
+
+			void
+			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
+
+
+			void
+			dependencyErrorHandler(std::shared_ptr<Loader> loader);
+
+			static
+			std::unordered_map<std::string, unsigned int>
+			initializeBlendFactorMap();
+
+			static
+			std::unordered_map<std::string, render::CompareMode>
+			initializeDepthFuncMap();
 		};
 	}
 }
