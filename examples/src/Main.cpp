@@ -104,23 +104,11 @@ int main(int argc, char** argv)
         camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 3.f);
         camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-        //auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f)->prependTranslation(0.f, 0.f, -3.f);
-		//auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
-        
-        /*
-        auto cameraData = data::Provider::create()
-            ->set("camera.position",	         Vector3::create(0., 0., 3.f))
-            ->set("camera.worldToScreenMatrix",  view);
-        */
-
         root->addComponent(DirectionalLight::create());
-
-        //root->data()->addProvider(cameraData);
 
         group->addChild(mesh);
 
 		mesh->addComponent(Transform::create());
-	    mesh->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
