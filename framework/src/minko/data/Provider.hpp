@@ -65,6 +65,9 @@ namespace minko
 				return _names;
 			}
 
+			bool 
+			hasProperty(const std::string&) const;
+
 			inline
 			const std::unordered_map<std::string, std::shared_ptr<Value>>&
 			values()
