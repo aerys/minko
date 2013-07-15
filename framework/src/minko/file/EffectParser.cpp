@@ -18,19 +18,83 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "EffectParser.hpp"
-#include "minko/resource/Program.hpp"
+
+#include "minko/render/Shader.hpp"
+#include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/render/Blending.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
+#include "minko/render/TriangleCulling.hpp"
+#include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "json/json.h"
 
 using namespace minko::file;
 using namespace minko::render;
-using namespace minko::resource;
+
+std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
+std::unordered_map<std::string, unsigned int>
+EffectParser::initializeBlendFactorMap()
+{
+	std::unordered_map<std::string, unsigned int> m;
+
+	m["src_zero"]					= static_cast<uint>(render::Blending::Source::ZERO);
+    m["src_one"]					= static_cast<uint>(render::Blending::Source::ONE);
+    m["src_color"]					= static_cast<uint>(render::Blending::Source::SRC_COLOR);
+    m["src_one_minus_src_color"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR);
+    m["src_src_alpha"]				= static_cast<uint>(render::Blending::Source::SRC_ALPHA);
+    m["src_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA);
+    m["src_dst_alpha"]				= static_cast<uint>(render::Blending::Source::DST_ALPHA);
+    m["src_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA);
+
+    m["dst_zero"]					= static_cast<uint>(render::Blending::Destination::ZERO);
+    m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
+	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
+    m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
+    m["dst_one_minus_alpha"]		= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+    m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
+    m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
+    m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+
+	m["default"]					= static_cast<uint>(render::Blending::Mode::DEFAULT);
+	m["alpha"]						= static_cast<uint>(render::Blending::Mode::ALPHA);
+	m["additive"]					= static_cast<uint>(render::Blending::Mode::ADDITIVE);
+
+	return m;
+}
+
+std::unordered_map<std::string, render::CompareMode> EffectParser::_depthFuncMap = EffectParser::initializeDepthFuncMap();
+std::unordered_map<std::string, render::CompareMode>
+EffectParser::initializeDepthFuncMap()
+{
+	std::unordered_map<std::string, render::CompareMode> m;
+
+	m["always"]			= render::CompareMode::ALWAYS;
+	m["equal"]			= render::CompareMode::EQUAL;
+	m["greater"]		= render::CompareMode::GREATER;
+	m["greater_equal"]	= render::CompareMode::GREATER_EQUAL;
+	m["less"]			= render::CompareMode::LESS;
+	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
+	m["never"]			= render::CompareMode::NEVER;
+	m["not_equal"]		= render::CompareMode::NOT_EQUAL;
+
+	return m;
+}
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+    _defaultPriority(0.f),
+    _defaultBlendSrcFactor(Blending::Source::ONE),
+    _defaultBlendDstFactor(Blending::Destination::ZERO),
+    _defaultDepthMask(true),
+    _defaultDepthFunc(CompareMode::LESS),
+    _defaultTriangleCulling(TriangleCulling::BACK)
 {
 }
 
@@ -47,32 +111,250 @@ EffectParser::parse(const std::string&					filename,
 	_context		= options->context();
 	
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+
 		throw std::invalid_argument("data");
 
 	_effectName = root.get("name", filename).asString();
+
+	_defaultPriority = root.get("priority", 0.f).asFloat();
+	parseDefaultValues(root);
+	parsePasses(root, options);
+	parseDependencies(root, options);
 	
+	if (_numDependencies == 0)
+		finalize();
+}
+
+void
+EffectParser::parseDefaultValues(Json::Value& root)
+{
+	parseBindings(
+		root,
+		_defaultAttributeBindings,
+		_defaultUniformBindings,
+		_defaultStateBindings,
+		_defaultMacroBindings
+	);
+
+	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
+
+	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
+
+    parseTriangleCulling(root, _defaultTriangleCulling);
+
+    parseSamplerStates(root, _defaultSamplerStates);
+}
+
+void
+EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
+{
+	std::vector<std::shared_ptr<render::Pass>> passes;
+	auto passId = 0;
+
 	for (auto pass : root.get("passes", 0))
-		_programs.push_back(std::pair<std::string, std::string>(
-			pass.get("vertexShader", 0).asString(),
-			pass.get("fragmentShader", 0).asString()
+	{
+		auto name = pass.get("name", std::to_string(passId)).asString();
+
+		++passId;
+
+		// pass bindings
+		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
+		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
+		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
+		std::unordered_map<std::string, std::string>	macroBindings(_defaultMacroBindings);
+        
+		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
+
+		// pass priority
+		auto priority = pass.get("priority", _defaultPriority).asFloat();
+
+		// blendMode
+		auto blendSrcFactor	= _defaultBlendSrcFactor;
+		auto blendDstFactor	= _defaultBlendDstFactor;
+
+		parseBlendMode(pass, blendSrcFactor, blendDstFactor);
+
+		// depthTest
+		auto depthMask	= _defaultDepthMask;
+		auto depthFunc	= _defaultDepthFunc;
+
+		parseDepthTest(pass, depthMask, depthFunc);
+
+        // triangle culling
+        auto triangleCulling  = _defaultTriangleCulling;
+
+        parseTriangleCulling(pass, triangleCulling);
+
+        // sampler states
+        std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
+
+        parseSamplerStates(pass, samplerStates);
+
+		// program
+		auto vertexShader	= Shader::create(
+			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", 0).asString()
+		);
+		auto fragmentShader	= Shader::create(
+			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
+		);
+
+		passes.push_back(render::Pass::create(
+			name,
+			Program::create(options->context(), vertexShader, fragmentShader),
+			attributeBindings,
+			uniformBindings,
+			stateBindings,
+			macroBindings,
+            States::create(
+                samplerStates,
+			    priority,
+			    blendSrcFactor,
+			    blendDstFactor,
+			    depthMask,
+			    depthFunc,
+                triangleCulling
+            )
 		));
 
-	auto attributeBindings = root.get("attributeBindings", 0);
-	if (attributeBindings.isObject())
-		for (auto propertyName : attributeBindings.getMemberNames())
-			_attributeBindings[propertyName] = attributeBindings.get(propertyName, 0).asString();
+		_effect = render::Effect::create(passes);
+	}
+}
 
-	auto uniformBindings = root.get("uniformBindings", 0);
-	if (uniformBindings.isObject())
-		for (auto propertyName : uniformBindings.getMemberNames())
-			_uniformBindings[propertyName] = uniformBindings.get(propertyName, 0).asString();
+void
+EffectParser::parseBlendMode(Json::Value&					contextNode,
+						     render::Blending::Source&		srcFactor,
+						     render::Blending::Destination&	dstFactor)
+{
+	auto blendModeArray	= contextNode.get("blendMode", 0);
+	
+	if (blendModeArray.isArray())
+	{
+		auto blendSrcFactorString = "src_" + blendModeArray[0].asString();
+		if (_blendFactorMap.count(blendSrcFactorString))
+			srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
 
-	auto stateBindings = root.get("stateBindings", 0);
-	if (stateBindings.isObject())
-		for (auto propertyName : stateBindings.getMemberNames())
-			_stateBindings[propertyName] = stateBindings.get(propertyName, 0).asString();
+		auto blendDstFactorString = "dst_" + blendModeArray[1].asString();
+		if (_blendFactorMap.count(blendDstFactorString))
+			dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
+	}
+	else if (blendModeArray.isString())
+	{
+		auto blendModeString = blendModeArray.asString();
 
+		if (_blendFactorMap.count(blendModeString))
+		{
+			auto blendMode = _blendFactorMap[blendModeString];
+
+			srcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
+			dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+		}
+	}
+}
+
+void
+EffectParser::parseDepthTest(Json::Value& contextNode, bool& depthMask, render::CompareMode& depthFunc)
+{
+	auto depthTest	= contextNode.get("depthTest", 0);
+	
+	if (depthTest.isObject())
+	{
+        auto depthMaskValue = depthTest.get("depthMask", 0);
+        auto depthFuncValue = depthTest.get("depthFunc", 0);
+
+        if (depthMaskValue.isBool())
+            depthMask = depthMaskValue.asBool();
+
+        if (depthFuncValue.isString())
+    		depthFunc = _depthFuncMap[depthFuncValue.asString()];
+	}
+    else if (depthTest.isArray())
+    {
+        depthMask = depthTest[0].asBool();
+		depthFunc = _depthFuncMap[depthTest[1].asString()];
+    }
+}
+
+void
+EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& triangleCulling)
+{
+    auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
+
+    if (triangleCullingValue.isString())
+    {
+        auto triangleCullingString = triangleCullingValue.asString();
+
+        if (triangleCullingString == "back")
+            triangleCulling = TriangleCulling::BACK;
+        else if (triangleCullingString == "front")
+            triangleCulling = TriangleCulling::FRONT;
+        else if (triangleCullingString == "both")
+            triangleCulling = TriangleCulling::BOTH;
+        else if (triangleCullingString == "none")
+            triangleCulling = TriangleCulling::NONE;
+    }
+}
+
+void
+EffectParser::parseBindings(Json::Value&									contextNode,
+						    std::unordered_map<std::string, std::string>&	attributeBindings,
+						    std::unordered_map<std::string, std::string>&	uniformBindings,
+						    std::unordered_map<std::string, std::string>&	stateBindings,
+							std::unordered_map<std::string, std::string>&	macroBindings)
+{
+	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
+	if (attributeBindingsValue.isObject())
+		for (auto propertyName : attributeBindingsValue.getMemberNames())
+			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
+
+	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
+	if (uniformBindingsValue.isObject())
+		for (auto propertyName : uniformBindingsValue.getMemberNames())
+			uniformBindings[propertyName] = uniformBindingsValue.get(propertyName, 0).asString();
+
+	auto stateBindingsValue = contextNode.get("stateBindings", 0);
+	if (stateBindingsValue.isObject())
+		for (auto propertyName : stateBindingsValue.getMemberNames())
+			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
+
+	auto macroBindingsValue = contextNode.get("macroBindings", 0);
+	if (macroBindingsValue.isObject())
+		for (auto propertyName : macroBindingsValue.getMemberNames())
+			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
+}
+
+void
+EffectParser::parseSamplerStates(Json::Value&                                           contextNode,
+                                 std::unordered_map<std::string, render::SamplerState>& samplerStates)
+{
+    auto samplerStatesValue = contextNode.get("samplerStates", 0);
+
+    if (samplerStatesValue.isObject())
+        for (auto propertyName : samplerStatesValue.getMemberNames())
+        {
+            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
+
+            if (samplerStateValue.isObject())
+            {
+                auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
+                auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
+                auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
+
+                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
+                auto mipFilter = mipFilterStr == "linear"
+                    ? MipFilter::LINEAR
+                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+
+                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
+            }
+        }
+}
+
+void
+EffectParser::parseDependencies(Json::Value& root, file::Options::Ptr options)
+{
 	auto require = root.get("includes", 0);
+
 	if (require.isArray())
 	{
 		_numDependencies = require.size();
@@ -91,9 +373,6 @@ EffectParser::parse(const std::string&					filename,
 			loader->load(require[requireId].asString(), options);
 		}
 	}
-	
-	if (_numDependencies == 0)
-		finalize();
 }
 
 void
@@ -116,20 +395,17 @@ EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader)
 void
 EffectParser::finalize()
 {
-	std::vector<std::shared_ptr<Program>> programs;
-
-	for (auto& program : _programs)
+	for (auto& pass : _effect->passes())
     {
-        auto p = Program::create(
-			_context, _dependenciesCode + program.first, _dependenciesCode + program.second
-		);
+		auto program = pass->program();
 
-        p->upload();
-		programs.push_back(p);
+		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
+		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
     }
 
 	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
 	_assetsLibrary->effect(_effectName, _effect);
+
 	_complete->execute(shared_from_this());
 }
