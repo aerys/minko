@@ -17,29 +17,29 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "RenderingController.hpp"
+#include "Rendering.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/controller/Surface.hpp"
+#include "minko/component/Surface.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::scene;
 
 void
-RenderingController::initialize()
+Rendering::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&RenderingController::targetAddedHandler,
+		&Rendering::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&RenderingController::targetRemovedHandler,
+		&Rendering::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -47,14 +47,14 @@ RenderingController::initialize()
 }
 
 void
-RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl,
+Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 										std::shared_ptr<Node> 				target)
 {
-	if (target->controllers<RenderingController>().size() > 1)
-		throw std::logic_error("There cannot be two RenderingController on the same node.");
+	if (target->components<Rendering>().size() > 1)
+		throw std::logic_error("There cannot be two Rendering on the same node.");
 
 	_addedSlot = target->added()->connect(std::bind(
-		&RenderingController::addedHandler,
+		&Rendering::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -62,7 +62,7 @@ RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 	));
 
 	_removedSlot = target->removed()->connect(std::bind(
-		&RenderingController::removedHandler,
+		&Rendering::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -73,7 +73,7 @@ RenderingController::targetAddedHandler(std::shared_ptr<AbstractController> ctrl
 }
 
 void
-RenderingController::targetRemovedHandler(std::shared_ptr<AbstractController> 	ctrl,
+Rendering::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
 										  std::shared_ptr<Node> 				target)
 {
 	_addedSlot = nullptr;
@@ -83,12 +83,12 @@ RenderingController::targetRemovedHandler(std::shared_ptr<AbstractController> 	c
 }
 
 void
-RenderingController::addedHandler(std::shared_ptr<Node> node,
+Rendering::addedHandler(std::shared_ptr<Node> node,
 								  std::shared_ptr<Node> target,
 								  std::shared_ptr<Node> parent)
 {
 	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
-		&RenderingController::rootDescendantAddedHandler,
+		&Rendering::rootDescendantAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -96,23 +96,23 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 	));
 
 	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
-		&RenderingController::rootDescendantRemovedHandler,
+		&Rendering::rootDescendantRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
 
-	_controllerAddedSlot = target->root()->controllerAdded()->connect(std::bind(
-		&RenderingController::controllerAddedHandler,
+	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
+		&Rendering::componentAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
 
-	_controllerRemovedSlot = target->root()->controllerRemoved()->connect(std::bind(
-		&RenderingController::controllerRemovedHandler,
+	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
+		&Rendering::componentRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -123,20 +123,20 @@ RenderingController::addedHandler(std::shared_ptr<Node> node,
 }
 
 void
-RenderingController::removedHandler(std::shared_ptr<Node> node,
+Rendering::removedHandler(std::shared_ptr<Node> node,
 									std::shared_ptr<Node> target,
 									std::shared_ptr<Node> parent)
 {
 	_rootDescendantAddedSlot = nullptr;
 	_rootDescendantRemovedSlot = nullptr;
-	_controllerAddedSlot = nullptr;
-	_controllerRemovedSlot = nullptr;
+	_componentAddedSlot = nullptr;
+	_componentRemovedSlot = nullptr;
 
 	rootDescendantRemovedHandler(target->root(), target, target->parent());
 }
 
 void
-RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
+Rendering::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 												std::shared_ptr<Node> target,
 												std::shared_ptr<Node> parent)
 {
@@ -144,16 +144,16 @@ RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 		->descendants(true)
         ->where([](scene::Node::Ptr node)
         {
-            return node->hasController<Surface>();
+            return node->hasComponent<Surface>();
         });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
-		for (auto surface : surfaceNode->controllers<Surface>())
-			addSurfaceController(surface);
+		for (auto surface : surfaceNode->components<Surface>())
+			addSurfaceComponent(surface);
 }
 
 void
-RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
+Rendering::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 												  std::shared_ptr<Node> target,
 												  std::shared_ptr<Node> parent)
 {
@@ -161,44 +161,44 @@ RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 		->descendants(true)
         ->where([](scene::Node::Ptr node)
         {
-            return node->hasController<Surface>();
+            return node->hasComponent<Surface>();
         });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
-		for (auto surface : surfaceNode->controllers<Surface>())
-			removeSurfaceController(surface);
+		for (auto surface : surfaceNode->components<Surface>())
+			removeSurfaceComponent(surface);
 }
 
 void
-RenderingController::controllerAddedHandler(std::shared_ptr<Node>				node,
+Rendering::componentAddedHandler(std::shared_ptr<Node>				node,
 											std::shared_ptr<Node>				target,
-											std::shared_ptr<AbstractController>	ctrl)
+											std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	
 	if (surfaceCtrl)
-		addSurfaceController(surfaceCtrl);
+		addSurfaceComponent(surfaceCtrl);
 }
 
 void
-RenderingController::controllerRemovedHandler(std::shared_ptr<Node>					node,
+Rendering::componentRemovedHandler(std::shared_ptr<Node>					node,
 											  std::shared_ptr<Node>					target,
-											  std::shared_ptr<AbstractController>	ctrl)
+											  std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 
 	if (surfaceCtrl)
-		removeSurfaceController(surfaceCtrl);
+		removeSurfaceComponent(surfaceCtrl);
 }
 
 void
-RenderingController::addSurfaceController(std::shared_ptr<Surface> ctrl)
+Rendering::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
 	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 }
 
 void
-RenderingController::removeSurfaceController(std::shared_ptr<Surface> ctrl)
+Rendering::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
@@ -208,7 +208,7 @@ RenderingController::removeSurfaceController(std::shared_ptr<Surface> ctrl)
 }
 
 void
-RenderingController::render()
+Rendering::render()
 {
 	_enterFrame->execute(shared_from_this());
 
