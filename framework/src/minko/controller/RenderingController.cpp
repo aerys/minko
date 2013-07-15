@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/controller/SurfaceController.hpp"
+#include "minko/controller/Surface.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/AbstractContext.hpp"
 
@@ -140,13 +140,15 @@ RenderingController::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 												std::shared_ptr<Node> target,
 												std::shared_ptr<Node> parent)
 {
-    auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(target)
+    auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
-		->hasController<SurfaceController>();
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasController<Surface>();
+        });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
-		for (auto surface : surfaceNode->controllers<SurfaceController>())
+		for (auto surface : surfaceNode->controllers<Surface>())
 			addSurfaceController(surface);
 }
 
@@ -155,13 +157,15 @@ RenderingController::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 												  std::shared_ptr<Node> target,
 												  std::shared_ptr<Node> parent)
 {
-	auto surfaceNodes = NodeSet::create(NodeSet::Mode::MANUAL)
-        ->select(target)
+	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
-        ->hasController<SurfaceController>();
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasController<Surface>();
+        });
 
 	for (auto surfaceNode : surfaceNodes->nodes())
-		for (auto surface : surfaceNode->controllers<SurfaceController>())
+		for (auto surface : surfaceNode->controllers<Surface>())
 			removeSurfaceController(surface);
 }
 
@@ -170,7 +174,7 @@ RenderingController::controllerAddedHandler(std::shared_ptr<Node>				node,
 											std::shared_ptr<Node>				target,
 											std::shared_ptr<AbstractController>	ctrl)
 {
-	auto surfaceCtrl = std::dynamic_pointer_cast<SurfaceController>(ctrl);
+	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	
 	if (surfaceCtrl)
 		addSurfaceController(surfaceCtrl);
@@ -181,20 +185,20 @@ RenderingController::controllerRemovedHandler(std::shared_ptr<Node>					node,
 											  std::shared_ptr<Node>					target,
 											  std::shared_ptr<AbstractController>	ctrl)
 {
-	auto surfaceCtrl = std::dynamic_pointer_cast<SurfaceController>(ctrl);
+	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 
 	if (surfaceCtrl)
 		removeSurfaceController(surfaceCtrl);
 }
 
 void
-RenderingController::addSurfaceController(std::shared_ptr<SurfaceController> ctrl)
+RenderingController::addSurfaceController(std::shared_ptr<Surface> ctrl)
 {
 	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 }
 
 void
-RenderingController::removeSurfaceController(std::shared_ptr<SurfaceController> ctrl)
+RenderingController::removeSurfaceController(std::shared_ptr<Surface> ctrl)
 {
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html

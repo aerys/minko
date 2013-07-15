@@ -1,0 +1,122 @@
+// directional light effect
+{
+	"name"				: "directional light",
+	"attributeBindings"	: {
+		"position"					: "geometry.vertex.attribute.position",
+		"normal"					: "geometry.vertex.attribute.normal",
+		"uv"						: "geometry.vertex.attribute.uv"
+	},
+	"uniformBindings"	: {
+		"diffuseColor"				: "material.diffuse.rgba",
+		"diffuseMap"				: "material.diffuse.map",
+		"shininess"					: "material.shininess",
+		"specularColor"				: "material.specular.rgb",
+		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"		: "transform.worldToScreenMatrix",
+		"lightDirection"			: "light.direction",
+		"ambientColor"				: "light.ambient.rgba",
+		"lightColor"				: "light.diffuse.rgba",
+		"cameraPosition"			: "camera.position"
+	},
+	"stateBindings"	: {
+		"blendMode"					: "material.blendMode"
+	},
+	"macroBindings"	: {
+		"TECHNIQUE_DIFFUSE_MAP"		: "material.diffuse.map",
+		"TECHNIQUE_PHONG_SPECULAR"	: "material.shininess"
+	},
+
+	"priority"			: 0,
+	"blendMode"			: ["one", "zero"],
+	"depthTest"			: [ true, "less" ],
+	"triangleCulling"	: "none",
+	
+	"samplerStates"	: {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+	},
+
+	"includes"		: [ "Phong.glsl" ],
+
+	"passes"		: [{
+		"vertexShader"	: "
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec3 uv;
+
+			varying vec3 worldPosition;
+			varying vec3 worldNormal;
+			varying vec2 vertexUV;
+			varying vec3 eyeVec;
+
+			uniform mat4 modelToWorldMatrix;
+			uniform mat4 worldToScreenMatrix;
+
+			void main(void)
+			{
+				vec4 pos = modelToWorldMatrix * vec4(position, 1.0);
+
+				#ifdef TECHNIQUE_PHONG_SPECULAR
+					worldPosition = pos.xyz;
+				#endif
+
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					vertexUV = uv;
+				#endif
+
+				worldNormal = normalize(mat3(modelToWorldMatrix) * normal);
+				
+				gl_Position =  worldToScreenMatrix * pos;
+			}
+		",
+		"fragmentShader"	: "
+			// diffuse properties
+			uniform vec4 diffuseColor;
+			uniform sampler2D diffuseMap;
+			uniform vec3 cameraPosition;
+
+			// light properties
+			uniform vec3 lightDirection;
+			uniform vec3 ambientColor		= vec3(0, 0, 0);
+			uniform vec3 lightColor			= vec3(1, 1, 1);
+
+			// material properties
+			uniform float shininess;
+			uniform vec3 specularColor		= vec3(1, 1, 1);
+
+			varying vec3 worldPosition;
+			varying vec3 worldNormal;
+			varying vec2 vertexUV;
+
+			void main(void)
+			{
+				#ifdef TECHNIQUE_DIFFUSE_MAP
+					vec4 diffuse = texture2D(diffuseMap, vertexUV);
+				#else
+					vec4 diffuse = diffuseColor;
+				#endif;
+
+				lightDirection = normalize(-lightDirection);
+				worldNormal = normalize(worldNormal);
+
+				// diffuse lighting
+				float lambert = phong_lambert(worldNormal, lightDirection);
+				vec3 light = ambientColor + lambert;
+				vec3 rgb = diffuse * light.rgb;
+
+				// specular lighting
+				#ifdef TECHNIQUE_PHONG_SPECULAR
+					vec3 r = reflect(-lightDirection, worldNormal);
+
+					r = 2 * dot(worldNormal, lightDirection) * worldNormal - lightDirection;
+
+					float specular = pow(max(dot(r, normalize(cameraPosition - worldPosition)), 0.), shininess)
+						* specularColor;
+
+					rgb += specular.xxx;
+				#endif
+				
+				gl_FragColor = vec4(rgb, diffuse.a);
+			}
+		"
+	}]
+}

@@ -18,31 +18,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Effect.hpp"
-#include "minko/data/Container.hpp"
+
+#include "minko/render/Pass.hpp"
 
 using namespace minko::render;
-using namespace minko::data;
 
-Effect::Effect(std::vector<Effect::ProgramPtr>&					shaders,
-			   std::unordered_map<std::string, std::string>&	attributeBindings,
-			   std::unordered_map<std::string, std::string>&	uniformBindings,
-			   std::unordered_map<std::string, std::string>&	stateBindings) :
-	std::enable_shared_from_this<Effect>(),
-	_shaders(shaders),
-	_attributeBindings(attributeBindings),
-	_uniformBindings(uniformBindings),
-	_stateBindings(stateBindings),
-	_data(Provider::create())
+Effect::Effect(std::vector<PassPtr>& passes) :
+	_passes(passes)
 {
-	auto i = 0;
-
-	for (auto shader : shaders)
-		_data->set<Effect::ProgramPtr>("effect/pass" + std::to_string(i++), shader);
 }
 
-void
-Effect::propertyChangedHandler(std::shared_ptr<Container> bindings, const std::string& propertyName)
+/*
+std::shared_ptr<EffectInstance>
+Effect::instanciate(data::Container::Ptr data)
 {
-	std::cout << "Effect::propertyChangedHandler: " << propertyName << std::endl;
-	// FIXME: fork?
+
+
+	return nullptr;
 }
+*/
