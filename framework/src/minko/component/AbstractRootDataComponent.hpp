@@ -42,6 +42,7 @@ namespace minko
             std::shared_ptr<data::Provider>                 _data;
 
         private:
+            bool                                            _enabled;
             NodePtr                                         _root;
 
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
@@ -67,13 +68,15 @@ namespace minko
             void
             initialize();
 
-        private:
+            virtual
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
+            virtual
             void
             targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
+        private:
             void
             addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 	    };
