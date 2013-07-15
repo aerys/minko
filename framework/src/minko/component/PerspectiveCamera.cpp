@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 using namespace minko::component;
 using namespace minko::math;
@@ -30,63 +31,47 @@ PerspectiveCamera::PerspectiveCamera(float fov,
                                      float zNear,
                                      float zFar) :
     _enabled(true),
-	_view(math::Matrix4x4::create()),
-	_projection(math::Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
-	_viewProjection(math::Matrix4x4::create()->copyFrom(_projection)),
-	_data(data::Provider::create())
+	_view(Matrix4x4::create()),
+	_projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
+	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
+    _position(Vector3::create())
 {
 	_data
-		->set("transform/viewMatrix",			_view)
-		->set("transform/projectionMatrix",		_projection)
-		->set("transform/worldToScreenMatrix",	_viewProjection);
+        ->set("camera.position",            _position)
+		->set("camera.viewMatrix",			_view)
+		->set("camera.projectionMatrix",	_projection)
+		->set("camera.worldToScreenMatrix",	_viewProjection);
 }
 
 void
-PerspectiveCamera::initialize()
+PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&PerspectiveCamera::targetAddedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-	));
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&PerspectiveCamera::targetAddedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-	));
-}
+    AbstractRootDataComponent::targetAddedHandler(ctrl, target);
 
-void
-PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl,
-                                      scene::Node::Ptr        target)
-{
-	if (targets().size() > 1)
-		throw std::logic_error("PerspectiveCamera cannot have more than 1 target.");
-
-	target->data()->addProvider(_data);
-	target->data()->propertyChanged("transform/modelToWorldMatrix")->connect(std::bind(
+	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
 		&PerspectiveCamera::localToWorldChangedHandler,
-		shared_from_this(),
+        std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-}
 
-void
-PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr   ctrl,
-                                        scene::Node::Ptr          target)
-{
-	target->data()->addProvider(_data);
+    if (target->data()->hasProperty("transform.modelToWorldMatrix"))
+        updateMatrices(target->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
 
 void
 PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr	data,
 											  const std::string&	propertyName)
 {
-	std::cout << "PerspectiveCamera::localToWorldChangedHandler()" << std::endl;
+    updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+}
 
-	_view->copyFrom(data->get<Matrix4x4::Ptr>("transform/modelToWorldMatrix"))->invert();
-	_viewProjection->copyFrom(_view)->append(_projection);
+void
+PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
+{
+  	_view->copyFrom(modelToWorldMatrix);
+    _view->transform(_position, _position);
+    _view->invert();
+
+    _viewProjection->copyFrom(_view)->append(_projection);
 }
