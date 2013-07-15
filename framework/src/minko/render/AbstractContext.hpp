@@ -124,6 +124,10 @@ namespace minko
 						 const int			texture		= 0,
 						 const int			location	= -1) = 0;
 
+            virtual
+            void
+            setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering) = 0;
+
 			virtual
 			const unsigned int
 			createProgram() = 0;
@@ -149,8 +153,7 @@ namespace minko
 
 			virtual
 			void
-			setShaderSource(const unsigned int shader,
-							const std::string& source) = 0;
+			setShaderSource(const unsigned int shader, const std::string& source) = 0;
 
 			virtual
 			const unsigned int
@@ -215,6 +218,9 @@ namespace minko
 			void
 			readPixels(unsigned char* pixels) = 0;
 
+            virtual
+            void
+            setTriangleCulling(TriangleCulling triangleCulling) = 0;
 		};
 	}	
 }
