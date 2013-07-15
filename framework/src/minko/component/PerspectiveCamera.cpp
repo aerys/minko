@@ -20,9 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/controller/Surface.hpp"
+#include "minko/component/Surface.hpp"
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
 PerspectiveCamera::PerspectiveCamera(float fov,
@@ -59,7 +59,7 @@ PerspectiveCamera::initialize()
 }
 
 void
-PerspectiveCamera::targetAddedHandler(AbstractController::Ptr ctrl,
+PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl,
                                       scene::Node::Ptr        target)
 {
 	if (targets().size() > 1)
@@ -75,7 +75,7 @@ PerspectiveCamera::targetAddedHandler(AbstractController::Ptr ctrl,
 }
 
 void
-PerspectiveCamera::targetRemovedHandler(AbstractController::Ptr   ctrl,
+PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr   ctrl,
                                         scene::Node::Ptr          target)
 {
 	target->data()->addProvider(_data);

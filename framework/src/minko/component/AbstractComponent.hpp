@@ -24,14 +24,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
-		class AbstractController
+		class AbstractComponent
 		{
 			friend class scene::Node;
 
 		public:
-			typedef std::shared_ptr<AbstractController>	Ptr;
+			typedef std::shared_ptr<AbstractComponent>	Ptr;
 
 		private:
 			std::vector<std::shared_ptr<scene::Node>>					_targets;
@@ -40,14 +40,14 @@ namespace minko
 			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
 
 		public:
-			AbstractController() :
+			AbstractComponent() :
 				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
 				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
 			{
 			}
 
 			virtual
-			~AbstractController()
+			~AbstractComponent()
 			{
 			}
 
