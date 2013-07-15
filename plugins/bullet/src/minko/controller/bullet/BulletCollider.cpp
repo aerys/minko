@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/controller/bullet/SphereShape.hpp>
 #include <minko/controller/bullet/BoxShape.hpp>
 #include <minko/controller/bullet/ConeShape.hpp>
+#include <minko/controller/bullet/CylinderShape.hpp>
 
 using namespace minko;
 using namespace minko::math;
@@ -70,6 +71,10 @@ void
 		initializeConeShape(std::dynamic_pointer_cast<ConeShape>(shape));
 		break;
 
+	case AbstractPhysicsShape::CYLINDER:
+		initializeCylinderShape(std::dynamic_pointer_cast<CylinderShape>(shape));
+		break;
+
 	default:
 		throw std::logic_error("Unsupported physics shape");
 	}
@@ -80,20 +85,27 @@ void
 void 
 	bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
 {
-	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btSphereShape(sphere->radius()));
+	_btCollisionShape	= std::shared_ptr<btSphereShape>(new btSphereShape(sphere->radius()));
 }
 
 void 
 	bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box)
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
-	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btBoxShape(halfExtents));
+	_btCollisionShape	= std::shared_ptr<btBoxShape>(new btBoxShape(halfExtents));
 }
 
 void 
 	bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
 {
-	_btCollisionShape	= std::shared_ptr<btCollisionShape>(new btConeShape(cone->radius(), cone->height()));
+	_btCollisionShape	= std::shared_ptr<btConeShape>(new btConeShape(cone->radius(), cone->height()));
+}
+
+void
+	bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder)
+{
+	btVector3 halfExtents (cylinder->halfExtentX(), cylinder->halfExtentY(), cylinder->halfExtentZ());
+	_btCollisionShape	= std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
 }
 
 void
