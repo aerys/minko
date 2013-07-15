@@ -21,24 +21,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/data/Container.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		class PerspectiveCamera :
-			public AbstractController,
+			public AbstractComponent,
 			public std::enable_shared_from_this<PerspectiveCamera>
 		{
 		public:
 			typedef std::shared_ptr<PerspectiveCamera> Ptr;
 
 		private:
-			typedef std::shared_ptr<AbstractController>	AbsCtrlPtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 			typedef std::shared_ptr<scene::Node>		NodePtr;
             typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
