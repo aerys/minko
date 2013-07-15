@@ -14,6 +14,7 @@ using namespace minko::math;
 Rendering::Ptr renderingComponent;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
+auto camera	= scene::Node::create("camera");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -92,7 +93,6 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
 		root->addChild(group)->addChild(camera);
@@ -128,6 +128,7 @@ int main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
     {
         //group->component<Transform>()->transform()->appendRotationY(.01f);
+        camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
         mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
