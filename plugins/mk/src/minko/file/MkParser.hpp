@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Any.hpp"
 #include "minko/file/AbstractModelParser.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/AssetsLibrary.hpp"
 #include "minko/Qark.hpp"
 #include "minko/deserialize/SceneDeserializer.hpp"
 #include "minko/controller/AbstractController.hpp"

@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/AssetsLibrary.hpp"
 #include "json/json.h"
 
 using namespace minko::file;
@@ -108,7 +109,6 @@ EffectParser::parse(const std::string&					filename,
 	Json::Reader reader;
 
 	_assetsLibrary	= assetsLibrary;
-	_context		= options->context();
 	
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
 
@@ -402,8 +402,6 @@ EffectParser::finalize()
 		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
     }
-
-	_effect = Effect::create(programs, _attributeBindings, _uniformBindings, _stateBindings);
 
 	_assetsLibrary->effect(_effectName, _effect);
 

@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/resource/IndexStream.hpp"
+#include "minko/render/IndexBuffer.hpp"
 #include "minko/data/HalfEdge.hpp"
 #include <queue>
 
@@ -51,7 +51,7 @@ namespace minko
 		class HalfEdgeCollection 
 		{
 		private:
-			typedef std::shared_ptr<minko::resource::IndexStream>							IndexStreamPtr;
+			typedef std::shared_ptr<minko::render::IndexBuffer>							IndexStreamPtr;
 			typedef std::pair<unsigned short, unsigned short>								PairOfShort;
 			typedef std::shared_ptr<HalfEdge>												HalfEdgePtr;
 			typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>	HalfEdgeMap;
@@ -65,7 +65,7 @@ namespace minko
 
 			inline static
 			std::shared_ptr<HalfEdgeCollection> 
-			create(std::shared_ptr<minko::resource::IndexStream> indexStream)
+			create(std::shared_ptr<minko::render::IndexBuffer> indexStream)
 			{
 				return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indexStream));
 			}
@@ -78,7 +78,7 @@ namespace minko
 			};
 
 		private:
-			HalfEdgeCollection (std::shared_ptr<minko::resource::IndexStream> indexStream);
+			HalfEdgeCollection (std::shared_ptr<minko::render::IndexBuffer> indexStream);
 
 			void 
 			initialize();
