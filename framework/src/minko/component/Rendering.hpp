@@ -20,22 +20,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
-		class RenderingController :
-			public AbstractController,
-			public std::enable_shared_from_this<RenderingController>
+		class Rendering :
+			public AbstractComponent,
+			public std::enable_shared_from_this<Rendering>
 		{
 		public:
-			typedef std::shared_ptr<RenderingController>		Ptr;
+			typedef std::shared_ptr<Rendering>		Ptr;
 
 		private:
 			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<AbstractController>			AbsCtrlPtr;
+			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 			typedef std::shared_ptr<Surface>					SurfaceCtrlPtr;
 			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
@@ -55,15 +55,15 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantAddedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_controllerRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
 
 		public:
 			static
 			Ptr
 			create(AbsContextPtr context)
 			{
-				auto ctrl = std::shared_ptr<RenderingController>(new RenderingController(context));
+				auto ctrl = std::shared_ptr<Rendering>(new Rendering(context));
 
 				ctrl->initialize();
 
@@ -102,8 +102,8 @@ namespace minko
 			}
 
 		private:
-			RenderingController(AbsContextPtr context) :
-				AbstractController(),
+			Rendering(AbsContextPtr context) :
+				AbstractComponent(),
 				_context(context),
                 _backgroundColor(0),
 				_enterFrame(Signal<Ptr>::create()),
@@ -132,16 +132,16 @@ namespace minko
 			void
 			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 			void
-			controllerAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
+			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
 			void
-			controllerRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
+			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 			void
-			addSurfaceController(SurfaceCtrlPtr ctrl);
+			addSurfaceComponent(SurfaceCtrlPtr ctrl);
 
 			void
-			removeSurfaceController(SurfaceCtrlPtr ctrl);
+			removeSurfaceComponent(SurfaceCtrlPtr ctrl);
 
 			void
 			geometryChanged(SurfaceCtrlPtr ctrl);
