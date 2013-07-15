@@ -154,6 +154,9 @@ namespace minko
 			Ptr
 			transpose();
 
+            std::shared_ptr<Vector3>
+            transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output = nullptr);
+
 			inline
 			Ptr
 			operator*(Ptr value)
@@ -191,10 +194,7 @@ namespace minko
 			}
 
 			Ptr
-			perspective(float fov,
-		                float ratio,
-		                float zNear,
-		                float zFar);
+			perspective(float fov, float ratio, float zNear, float zFar);
 
 			/**
 			 * Builds a (left-handed) view transform.
