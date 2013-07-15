@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/AssetsLibrary.hpp"
 
 #include "jpgd.h"
 
