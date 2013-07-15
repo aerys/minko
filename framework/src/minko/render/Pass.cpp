@@ -45,11 +45,12 @@ Pass::Pass(const std::string&				name,
 }
 
 std::shared_ptr<DrawCall>
-Pass::createDrawCall(std::shared_ptr<data::Container> data)
+Pass::createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
 {
 	return DrawCall::create(
         selectProgram(data),
         data,
+        rootData,
         _attributeBindings,
         _uniformBindings,
         _stateBindings,
