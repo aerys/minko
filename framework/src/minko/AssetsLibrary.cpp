@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractModelParser.hpp"
 #include "minko/resource/Texture.hpp"
 
+
 using namespace minko::render;
 using namespace minko::geometry;
 
@@ -40,6 +41,9 @@ AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 AssetsLibrary::GeometryPtr
 AssetsLibrary::geometry(const std::string& name)
 {
+	if (!_geometries.count(name))
+		throw std::invalid_argument("name");
+
 	return _geometries[name];
 }
 
@@ -51,14 +55,17 @@ AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geome
 	return shared_from_this();
 }
 
-resource::Texture::Ptr
+render::Texture::Ptr
 AssetsLibrary::texture(const std::string& name)
 {
+	if (!_textures.count(name))
+		throw std::invalid_argument("name");
+
 	return _textures[name];
 }
 
 AssetsLibrary::Ptr
-AssetsLibrary::texture(const std::string& name, resource::Texture::Ptr texture)
+AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
 
@@ -82,6 +89,9 @@ AssetsLibrary::node(const std::string& name, scene::Node::Ptr node)
 AssetsLibrary::EffectPtr
 AssetsLibrary::effect(const std::string& name)
 {
+	if (!_effects.count(name))
+		throw std::invalid_argument("name");
+
 	return _effects[name];
 }
 
@@ -96,6 +106,9 @@ AssetsLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 const std::vector<unsigned char>&
 AssetsLibrary::blob(const std::string& name)
 {
+	if (!_blobs.count(name))
+		throw std::invalid_argument("name");
+
 	return _blobs[name];
 }
 
