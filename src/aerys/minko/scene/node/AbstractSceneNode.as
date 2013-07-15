@@ -260,12 +260,12 @@ package aerys.minko.scene.node
 		
 		private function addedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-           _root = _parent ? _parent.root : this;
+           _root = _parent ? _parent.root : this as ISceneNode;
 		}
         
 		private function removedHandler(child : ISceneNode, ancestor : Group) : void
 		{
-			_root = _parent ? _parent.root : this;
+			_root = _parent ? _parent.root : this as ISceneNode;
 		}
 		
 		public function addController(controller : AbstractController) : ISceneNode
