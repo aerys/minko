@@ -207,6 +207,13 @@ OpenGLES2Context::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
+
+#ifdef DEBUG
+    if (glGetError() != 0)
+        throw;
+#endif
+
+    setRenderToBackBuffer();
 }
 
 void
@@ -381,7 +388,8 @@ OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
 const unsigned int
 OpenGLES2Context::createTexture(unsigned int 	width,
 							    unsigned int 	height,
-							    bool			mipMapping)
+							    bool			mipMapping,
+                                bool            optimizeForRenderToTexture)
 {
 	unsigned int texture;
 
@@ -440,6 +448,12 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
 	_textures.push_back(texture);
+
+    if (optimizeForRenderToTexture)
+    {
+        
+
+    }
 
 	return texture;
 }
@@ -899,4 +913,54 @@ OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
         glCullFace(GL_FRONT_AND_BACK);
         break;
     }
+}
+
+void
+OpenGLES2Context::setRenderToBackBuffer()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+void
+OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndStencil)
+{
+    if (_frameBuffers.count(texture) == 0)
+        throw std::logic_error("this texture cannot be used for RTT");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
+    glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+}
+
+unsigned int
+OpenGLES2Context::createFrameBuffer(unsigned int texture, unsigned int width, unsigned int height)
+{
+    unsigned int frameBuffer = -1;
+
+    // create a framebuffer object 
+    glGenFramebuffers(1, &frameBuffer);
+    // bind the framebuffer object 
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    // attach a texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    unsigned int renderBuffer = -1;
+
+    // gen renderbuffer
+    glGenRenderbuffers(1, &renderBuffer);
+    // bind renderbuffer
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+    // init as a depth buffer
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    // attach to the FBO for depth
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+
+    // unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    _frameBuffers[texture] = frameBuffer;
+    _renderBuffers[texture] = renderBuffer;
+
+    return frameBuffer;
 }
