@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Value.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
+#include "minko/math/Quaternion.hpp"
 
 namespace minko
 {
@@ -77,6 +78,10 @@ namespace minko
 			initialize(std::vector<float> m);
 
 			Ptr
+			initialize(Quaternion::Ptr, Vector3::Ptr);
+
+
+			Ptr
 			translation(float x, float y, float z);
 
 			Ptr
@@ -89,8 +94,8 @@ namespace minko
 			rotationZ(float radians);
 
 			inline
-			const std::vector<float>
-			values()
+			const std::vector<float>&
+			values() const
 			{
 				return _m;
 			}
@@ -134,8 +139,17 @@ namespace minko
 			Ptr
 			prependRotation(float radians, Vector3::Ptr axis);
 
+			Ptr
+			append(Quaternion::Ptr);
+
+			Ptr
+			prepend(Quaternion::Ptr);
+
 			float
 			determinant();
+
+			float
+			determinant3x3() const;
 
 			Ptr
 			invert();
@@ -152,7 +166,7 @@ namespace minko
 			{
 				auto m1 = Matrix4x4::create(shared_from_this());
 
-				m1->append(value);
+				m1->prepend(value);
 
 				return m1;
 			}
@@ -161,10 +175,13 @@ namespace minko
 			Ptr
 			operator*=(Matrix4x4::Ptr value)
 			{
-				append(value);
+				prepend(value);
 
 				return shared_from_this();
 			}
+
+			Vector3::Ptr
+			project(Vector3::Ptr, Vector3::Ptr output = 0) const;
 
 			inline
 			bool
@@ -208,8 +225,11 @@ namespace minko
 			Ptr
 			lerp(Matrix4x4::Ptr target, float ratio);
 
+			Quaternion::Ptr
+			rotation(Quaternion::Ptr output = 0) const;
+
 			Vector3::Ptr
-			translation(Vector3::Ptr output = 0);
+			translationVector(Vector3::Ptr output = 0) const;
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);

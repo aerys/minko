@@ -3,8 +3,7 @@ project "minko-mk"
   language "C++"
   files { "**.hpp", "**.h", "**.cpp", "**.c" }
   includedirs {
-	"src",
-  "lib/miniz/src",
+	"src"
 	"../../framework/src"
   }
   links { "minko-framework" }
