@@ -39,6 +39,7 @@ namespace minko
         private:
             typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
 			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
+            typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
 
 		private:
             static BlendFactorsMap  _blendingFactors;
@@ -50,6 +51,9 @@ namespace minko
 			std::list<unsigned int> _programs;
 			std::list<unsigned int> _vertexShaders;
 			std::list<unsigned int> _fragmentShaders;
+
+            TextureToBufferMap      _frameBuffers;
+            TextureToBufferMap      _renderBuffers;
 
 			unsigned int			_viewportX;
 			unsigned int			_viewportY;
@@ -130,9 +134,10 @@ namespace minko
 			deleteIndexBuffer(const unsigned int indexBuffer);
 
 			const unsigned int
-			createTexture(unsigned int width,
-						  unsigned int height,
-						  bool		   mipMapping);
+			createTexture(unsigned int  width,
+						  unsigned int  height,
+						  bool		    mipMapping,
+                          bool          optimizeForRenderToTexture = false);
 
 			void
 			uploadTextureData(const unsigned int texture,
@@ -150,7 +155,10 @@ namespace minko
 						 const int			location	= -1);
 
             void
-            setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering);
+            setSamplerStateAt(const unsigned int    position,
+                              WrapMode              wrapping,
+                              TextureFilter         filtering,
+                              MipFilter             mipFiltering);
 
 			const unsigned int
 			createProgram();
@@ -224,6 +232,12 @@ namespace minko
             void
             setTriangleCulling(TriangleCulling triangleCulling);
 
+            void
+            setRenderToBackBuffer();
+
+            void
+            setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false);
+
 		private:
 			OpenGLES2Context();
 
@@ -247,6 +261,8 @@ namespace minko
             DepthFuncsMap
             initializeDepthFuncsMap();
 
+            unsigned int
+            createFrameBuffer(unsigned int texture, unsigned int width, unsigned int height);
 		};
 	}
 }
