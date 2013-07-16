@@ -4,7 +4,8 @@
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
 		"normal"				: "geometry.vertex.attribute.normal",
-		"uv"					: "geometry.vertex.attribute.uv"
+		"uv"					: "geometry.vertex.attribute.uv",
+		"tangent"				: "geometry.vertex.attribute.tangent"
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
@@ -42,15 +43,18 @@
 			attribute vec3	position;
 			attribute vec3	normal;
 			attribute vec3	uv;
-
+			attribute vec3	tangent;
+			
 			varying vec3	worldPosition;
 			varying vec3	worldNormal;
+			varying vec3	worldTangent;
+			
 			varying vec2	vertexUV;
 			varying vec3	eyeVec;
 
 			uniform mat4	modelToWorldMatrix;
 			uniform mat4	worldToScreenMatrix;
-
+			
 			void main(void)
 			{
 				vec4 pos = modelToWorldMatrix * vec4(position, 1.0);
@@ -63,7 +67,8 @@
 					vertexUV = uv;
 				#endif
 
-				worldNormal = normalize(mat3(modelToWorldMatrix) * normal);
+				worldNormal		= normalize(mat3(modelToWorldMatrix) * normal);
+				worldTangent	= mat3(modelToWorldMatrix) * tangent;
 				
 				gl_Position =  worldToScreenMatrix * pos;
 			}
@@ -92,8 +97,9 @@
 
 			varying vec3		worldPosition;
 			varying vec3		worldNormal;
+			varying vec3		worldTangent;
 			varying vec2		vertexUV;
-
+			
 			void main(void)
 			{
 				#ifdef DIFFUSE_MAP
@@ -104,40 +110,55 @@
 
 				light.direction = normalize(-light.direction);
 				worldNormal = normalize(worldNormal);
-
-				// ambient + diffuse lighting
-				diffuse.rgb *= light.ambient + phong_diffuseReflection(worldNormal, light.direction, light.diffuse);
-
-				// specular lighting
-				#ifdef SPECULAR
-					diffuse.rgb += phong_specularReflection(
-						worldNormal,
-						light.direction,
-						normalize(cameraPosition - worldPosition),
-						material.specular * light.specular,
-						material.shininess
-					);
-				#endif // SPECULAR
-
-				#ifdef SPECULAR_MAP
-					vec4 specular	= texture2D(material.specularMap, vertexUV);
-					diffuse.rgb += phong_specularReflection(
-						worldNormal,
-						light.direction,
-						normalize(cameraPosition - worldPosition),
-						specular * light.specular,
-						material.shininess
-					);
-				#endif // SPECULAR_MAP
+				
+				vec3 wsEyeVector	= normalize(cameraPosition - worldPosition);
+				
+				// by default, everything is in world space
+				vec3 fNormal		= worldNormal;
+				vec3 fLightVector	= light.direction;
+				vec3 fEyeVector		= wsEyeVector;
 				
 				#ifdef NORMAL_MAP
-					/*
-					vec4 normal	= texture2D(material.normalMap, vertexUV);
-					diffuse.rgb = normal.rgb;
-					*/
+					// compute the world space to tangent space matrix using the model's normal and tangent
+					worldTangent				= normalize(worldTangent);
+					vec3 worldBitangent			= cross(worldNormal, worldTangent);
+					mat3 worldToTangentMatrix	= transpose(mat3(
+						worldTangent,
+						worldBitangent,
+						worldNormal
+					));
+					
+					// map all world-space vectors to tangent-space
+					fNormal			= normalize(2.0 * texture2D(material.normalMap, vertexUV).xyz - 1.0);
+					fLightVector	= normalize(worldToTangentMatrix * light.direction);
+					fEyeVector		= normalize(worldToTangentMatrix * wsEyeVector);
 				#endif // NORMAL_MAP
 				
-				gl_FragColor = diffuse;
+				// ambient + diffuse lighting
+				diffuse.rgb *= light.ambient + phong_diffuseReflection(
+					fNormal, 
+					fLightVector, 
+					light.diffuse
+				);
+				
+				// specular lighting
+				#ifdef SPECULAR || SPECULAR_MAP
+					#ifdef SPECULAR_MAP
+						vec3 specular	= texture2D(material.specularMap, vertexUV).rgb;
+					#else // SPECULAR_MAP
+						vec3 specular	= material.specular;
+					#endif // SPECULAR_MAP
+				
+					diffuse.rgb += phong_specularReflection(
+						fNormal,
+						fLightVector,
+						fEyeVector,
+						specular * light.specular,
+						material.shininess
+					);					
+				#endif // SPECULAR || SPECULAR_MAP
+								
+				gl_FragColor = saturate(diffuse);
 			}
 		"
 	}]
