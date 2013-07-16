@@ -19,11 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "MkParser.hpp"
 #include "minko/AssetsLibrary.hpp"
+#include "minko/file/Options.hpp"
 
 using namespace minko::file;
 using namespace minko::math;
 
-std::map<std::string, MkParser::DeserializeFunction>	MkParser::_pluginEntryToFunction;
+std::map<std::string, MkOptions::DeserializeFunction>	MkParser::_pluginEntryToFunction;
 
 void
 MkParser::parse(const std::string&					filename,
@@ -43,9 +44,13 @@ MkParser::parse(const std::string&					filename,
 	std::cout << "Version        : " << minko::Any::cast<std::string>(qarkData["version"]) << std::endl;
 	std::cout << std::flush;
 
+	std::shared_ptr<file::MkOptions> mkOptions = file::MkOptions::create(options, assetsLibrary);
+
+	mkOptions->pluginEntryToFunction(std::make_shared<std::map<std::string, file::MkOptions::DeserializeFunction>>(_pluginEntryToFunction));
+
 	std::shared_ptr<deserialize::SceneDeserializer> sceneDeserializer = deserialize::SceneDeserializer::create(options->context());
 
-	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], file::MkOptions::create(options, assetsLibrary), _controllerMap, _nodeMap);
+	_node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _controllerMap, _nodeMap);
 	
 	assetsLibrary->node(filename, _node);
 
