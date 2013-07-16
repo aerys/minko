@@ -172,6 +172,4 @@ void
 	_targetTransform->transform()
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
-
-	std::cout << "target transform = " << std::to_string(_targetTransform->transform()) << std::endl;
 }
