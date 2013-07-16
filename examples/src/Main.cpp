@@ -83,7 +83,8 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("Particles.effect");
+		->queue("Particles.effect")
+		->queue("WorldSpaceParticles.effect");
 
 	assets->defaultOptions()->includePaths().push_back("effects");
 	assets->defaultOptions()->includePaths().push_back("textures");
@@ -104,7 +105,9 @@ int main(int argc, char** argv)
 		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
 		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -30.f);
+		mesh->controller<Transform>()->transform()
+			->appendRotationZ(15)
+			->appendTranslation(0.f, 0.f, -30.f);
 		/*mesh->addController(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -121,19 +124,29 @@ int main(int argc, char** argv)
 		particleSystem = ParticleSystem::create(
 			context,
 			assets,
-			500,
-			particle::sampler::Constant<float>::create(16),
-			particle::shape::Sphere::create(5.),
-			particle::StartDirection::OUTWARD,
-			particle::sampler::RandomValue<float>::create(5., 10.));
+			3000,
+			particle::sampler::RandomValue<float>::create(0.2, 0.8),
+			particle::shape::Cylinder::create(1., 5., 5.),
+			particle::StartDirection::NONE,
+			0);
+		particleSystem->isInWorldSpace(true);
 
 		particleSystem->add(particle::modifier::StartForce::create(
-			particle::sampler::Constant<float>::create(0.),
-			particle::sampler::Constant<float>::create(-1.),
-			particle::sampler::Constant<float>::create(0.)
+			particle::sampler::RandomValue<float>::create(-2., 2.),
+			particle::sampler::RandomValue<float>::create(8., 10.),
+			particle::sampler::RandomValue<float>::create(-2., 2.)
+			));
+		
+		particleSystem->add(particle::modifier::StartAngularVelocity::create(
+			particle::sampler::RandomValue<float>::create(1., 5.)
+			));
+
+		particleSystem->add(particle::modifier::StartSize::create(
+			particle::sampler::RandomValue<float>::create(0.1, 1.)
 			));
 
 		mesh->addController(particleSystem);
+		particleSystem->updateRate(60);
 		particleSystem->play();
 		group->addChild(mesh);
 	});
@@ -156,7 +169,7 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        //mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+        mesh->controller<Transform>()->transform()->prependRotationX(.01f);
 
 	    renderingController->render();
 

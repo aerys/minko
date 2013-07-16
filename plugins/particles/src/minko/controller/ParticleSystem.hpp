@@ -42,6 +42,8 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>					AbstractContextPtr;
 			typedef std::shared_ptr<AssetsLibrary>								AssetsLibraryPtr;
+			
+			typedef std::shared_ptr<Transform>									TransformPtr;
 
 			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
@@ -79,6 +81,8 @@ namespace minko
 			GeometryPtr													_geometry;
 			ProviderPtr													_material;
 			EffectPtr													_effect;
+
+			TransformPtr												_toWorld;
 
 			std::map<RenderingCtrlPtr, Signal<RenderingCtrlPtr>::Slot>	_enterFrameSlots;
 			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
