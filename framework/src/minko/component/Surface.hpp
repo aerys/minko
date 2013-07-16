@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		class Surface :
-			public AbstractController,
+			public AbstractComponent,
 			public std::enable_shared_from_this<Surface>
 		{
 		public:
@@ -44,8 +44,8 @@ namespace minko
 
 			std::list<DrawCallPtr>							_drawCalls;
 
-			Signal<AbstractController::Ptr, NodePtr>::Slot	_targetAddedSlot;
-			Signal<AbstractController::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
 
 		public:
 			static
@@ -101,10 +101,10 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(AbstractController::Ptr ctrl, NodePtr target);
+			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
 			void
-			targetRemovedHandler(AbstractController::Ptr ctrl, NodePtr target);
+			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 		};
 	}
 }
