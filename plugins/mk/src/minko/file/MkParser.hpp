@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/file/AbstractModelParser.hpp"
-#include "minko/file/Options.hpp"
 #include "minko/Qark.hpp"
 #include "minko/deserialize/SceneDeserializer.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/file/MkOptions.hpp"
 
 
 namespace minko
@@ -39,10 +39,10 @@ namespace minko
 			typedef std::shared_ptr<MkParser>																Ptr;
 			typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>		ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
-			typedef std::shared_ptr<component::AbstractComponent> (*DeserializeFunction)(minko::Qark::Map&				nodeInfo,
-																						   std::shared_ptr<file::MkOptions>	options,
-																						   ControllerMap&					controllerMap,
-																						   NodeMap&							nodeMap);
+			typedef std::shared_ptr<component::AbstractComponent> (*DeserializeFunction)(minko::Qark::Map&					nodeInfo,
+																						 std::shared_ptr<file::MkOptions>	options,
+																						 ControllerMap&						controllerMap,
+																						 NodeMap&							nodeMap);
 
 		private:
 			static std::map<std::string, DeserializeFunction>	_pluginEntryToFunction;

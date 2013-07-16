@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AssetsLibrary.hpp"
 #include "minko/deserialize/AssetsDeserializer.hpp"
 #include "minko/deserialize/NameConverter.hpp"
+#include "minko/Qark.hpp"
 
 namespace minko
 {
@@ -33,13 +34,18 @@ namespace minko
 	{
 	public:
 		typedef std::shared_ptr<MkOptions> Ptr;
-
+		typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>		ControllerMap;
+		typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
+		typedef std::shared_ptr<component::AbstractComponent> (*DeserializeFunction)(minko::Qark::Map&					nodeInfo,
+																					 std::shared_ptr<file::MkOptions>	options,
+																					 ControllerMap&						controllerMap,
+																					 NodeMap&							nodeMap);
 	private:
-		std::shared_ptr<AssetsLibrary>								_assetsLibary;
-		std::shared_ptr<Options>									_options;
-		std::shared_ptr<deserialize::AssetsDeserializer>			_deserilizeAssets;
-		std::shared_ptr<deserialize::NameConverter>					_nameConverter;
-		//std::shared_ptr<std::map<std::string, MkParser::DeserializeFunction>>		_pluginEntryToFunction;
+		std::shared_ptr<AssetsLibrary>									_assetsLibary;
+		std::shared_ptr<Options>										_options;
+		std::shared_ptr<deserialize::AssetsDeserializer>				_deserilizeAssets;
+		std::shared_ptr<deserialize::NameConverter>						_nameConverter;
+		std::shared_ptr<std::map<std::string, DeserializeFunction>>		_pluginEntryToFunction;
 
 	public:
 			unsigned int									_numMesh;
@@ -59,13 +65,20 @@ namespace minko
 		{
 			return _assetsLibary;
 		}
-		/*
+		
 		inline
 		void
-		pluginEntryToFunction(std::shared_ptr<std::map<std::string, MkParser::DeserializeFunction>> functionMap)
+		pluginEntryToFunction(std::shared_ptr<std::map<std::string, DeserializeFunction>> functionMap)
 		{
 			_pluginEntryToFunction = functionMap;
-		}*/
+		}
+
+		inline
+		std::shared_ptr<std::map<std::string, DeserializeFunction>>
+		pluginEntryToFunction(void)
+		{
+			return _pluginEntryToFunction;
+		}
 
 		inline
 		std::shared_ptr<deserialize::AssetsDeserializer>
