@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/sponza.mk");
+		->queue("models/sponza-lite.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -84,10 +84,9 @@ int main(int argc, char** argv)
 		camera->addController(renderingController);
 
 		group->addController(Transform::create());
-		group->controller<Transform>()->transform()->appendTranslation(0.f, -5.f, -5.f);
-		//group->controller<Transform>()->transform()->prependRotationY(3.14/4);
+		group->controller<Transform>()->transform()->appendTranslation(0.f, -1.f, -1.f);
 
-		group->addChild(assets->node("models/sponza.mk"));
+		group->addChild(assets->node("models/sponza-lite.mk"));
 	});
 
 	assets->load();

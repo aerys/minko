@@ -36,13 +36,16 @@ namespace minko
 			public AbstractModelParser
 		{
 		public:
-			typedef std::shared_ptr<MkParser> Ptr;
-
-		private:
+			typedef std::shared_ptr<MkParser>																Ptr;
 			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>		ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
+			typedef std::shared_ptr<controller::AbstractController> (*DeserializeFunction)(minko::Qark::Map&				nodeInfo,
+																						   std::shared_ptr<file::MkOptions>	options,
+																						   ControllerMap&					controllerMap,
+																						   NodeMap&							nodeMap);
 
 		private:
+			static std::map<std::string, DeserializeFunction>	_pluginEntryToFunction;
 			ControllerMap	_controllerMap;
 			NodeMap			_nodeMap;
 
@@ -53,6 +56,10 @@ namespace minko
 			{
 				return std::shared_ptr<MkParser>(new MkParser());
 			}
+
+			static
+			void
+			registerController(std::string mkEntry, DeserializeFunction deserializeFunction);
 
 			void
 			parse(const std::string&				filename,
