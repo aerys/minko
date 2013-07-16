@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 class btDynamicsWorld;
 class btBroadphaseInterface;
@@ -34,7 +34,7 @@ class btTransform;
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		namespace bullet
 		{
@@ -46,17 +46,17 @@ namespace minko
 			class Collider;
 
 			class PhysicsWorld:
-				public AbstractController,
+				public AbstractComponent,
 				public std::enable_shared_from_this<PhysicsWorld>
 			{
 			public:
 				typedef std::shared_ptr<PhysicsWorld> Ptr;
 
 			private:
-				typedef std::shared_ptr<AbstractController>			AbsCtrlPtr;
+				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<Collider>					ColliderPtr; 
-				typedef std::shared_ptr<RenderingController>		RenderingControllerPtr;
+				typedef std::shared_ptr<Rendering>					RenderingPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 
@@ -83,7 +83,7 @@ namespace minko
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
-				Signal<RenderingControllerPtr>::Slot	_exitFrameSlot;
+				Signal<RenderingPtr>::Slot	_exitFrameSlot;
 
 			public:
 				static
@@ -125,7 +125,7 @@ namespace minko
 				void 
 					targetRemovedHandler(AbsCtrlPtr, NodePtr);
 				void
-					exitFrameHandler(RenderingControllerPtr);
+					exitFrameHandler(RenderingPtr);
 
 				void
 					updateColliders();
