@@ -22,7 +22,7 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "none",
+	"triangleCulling"	: "back",
 	
 	"samplerStates"	: {
 		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
@@ -81,9 +81,9 @@
 			uniform DirectionalLight	light;
 			uniform vec3				cameraPosition;
 
-			varying vec3		worldPosition;
-			varying vec3		worldNormal;
-			varying vec2		vertexUV;
+			varying vec3				worldPosition;
+			varying vec3				worldNormal;
+			varying vec2				vertexUV;
 
 			void main(void)
 			{
