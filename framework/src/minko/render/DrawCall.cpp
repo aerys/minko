@@ -41,15 +41,11 @@ using namespace minko::render;
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 
 DrawCall::DrawCall(Program::Ptr											program,
-				   data::Container::Ptr									data,
-                   data::Container::Ptr									rootData,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
                    States::Ptr                                          states) :
 	_program(program),
-	_data(data),
-    _rootData(rootData),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
@@ -58,8 +54,10 @@ DrawCall::DrawCall(Program::Ptr											program,
 }
 
 void
-DrawCall::bind()
+DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 {
+	_data = data;
+	_rootData = rootData;
     _func.clear();
     _propertyChangedSlots.clear();
 
@@ -260,7 +258,7 @@ void
 DrawCall::boundPropertyChangedHandler(std::shared_ptr<data::Container>  data,
                                       const std::string&                propertyName)
 {
-    bind();
+    //bind();
 }
 
 bool
