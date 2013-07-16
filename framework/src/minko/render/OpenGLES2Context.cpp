@@ -450,10 +450,7 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	_textures.push_back(texture);
 
     if (optimizeForRenderToTexture)
-    {
-        
-
-    }
+        createRTTBuffers(texture, width, height);
 
 	return texture;
 }
@@ -942,8 +939,8 @@ OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndSt
         glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
 }
 
-unsigned int
-OpenGLES2Context::createFrameBuffer(unsigned int texture, unsigned int width, unsigned int height)
+void
+OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height)
 {
     unsigned int frameBuffer = -1;
 

@@ -261,8 +261,8 @@ namespace minko
             DepthFuncsMap
             initializeDepthFuncsMap();
 
-            unsigned int
-            createFrameBuffer(unsigned int texture, unsigned int width, unsigned int height);
+            void
+            createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
 		};
 	}
 }
