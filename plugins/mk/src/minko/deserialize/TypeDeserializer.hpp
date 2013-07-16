@@ -93,10 +93,6 @@ namespace minko
 					 std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
 					 std::shared_ptr<NameConverter>						nameConverter)
 			{
-				// temp
-				auto view			= math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-				auto lightDirection = math::Vector3::create(0.f, -1.f, -1.f);
-
 				std::shared_ptr<data::Provider> material = data::Provider::create();
 
 				for (unsigned int propertyId = 0; propertyId < properties.size(); ++propertyId)
@@ -122,16 +118,12 @@ namespace minko
 						unsigned int green	= (color & 0x0000FF00) >> 8;
 						unsigned int alpha	= (color & 0x000000FF);
 
-						material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0, float(blue) / 255.0, float(green) / 255.0, float(alpha) / 255.0));
+						material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f));
 					}
 				}
 
-				material->set("transform.worldToScreenMatrix",	view);
-				material->set("light.direction",				lightDirection);
-				material->set("light.ambient.rgba",				math::Vector3::create(.25f, .25f, .25f));
-				material->set("camera.position",				math::Vector3::create(0., 0., 0.f));
-				material->set("material.specular.rgb",			math::Vector3::create(.8f, .8f, .8f));
-                material->set("material.shininess",				10.f);
+				material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
+                material->set("material.shininess",			10.f);
 
 				return material;
 			}
