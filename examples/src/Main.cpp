@@ -9,12 +9,13 @@
 
 #define FRAMERATE 60
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
-RenderingController::Ptr renderingController;
-auto mesh	= scene::Node::create("mesh");
-auto group	= scene::Node::create("group");
+Rendering::Ptr renderingComponent;
+auto mesh = scene::Node::create("mesh");
+auto group = scene::Node::create("group");
+auto camera	= scene::Node::create("camera");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -59,7 +60,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/sponza-lite.mk");
+		->queue("models/model.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -69,32 +70,42 @@ int main(int argc, char** argv)
 	//assets->defaultOptions()->includePaths().push_back("../../texture");
 	//#endif
 
-	std::vector<unsigned short> t(42);
-	auto ib = render::IndexBuffer::create(context, t);
-
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
 		root->addChild(group)->addChild(camera);
+		
+		renderingComponent = Rendering::create(assets->context());
+        renderingComponent->backgroundColor(0x7F7F7FFF);
+		camera->addComponent(renderingComponent);
+        camera->addComponent(Transform::create());
+        camera->component<Transform>()->transform()->appendTranslation(0.f, 2.f, 0.75);
+        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-        renderingController = RenderingController::create(assets->context());
-        renderingController->backgroundColor(0x7F7F7FFF);
-		camera->addController(renderingController);
+        root->addComponent(DirectionalLight::create());
+		group->addComponent(Transform::create());
+		group->addChild(mesh);
+//		mesh->addComponent(Transform::create());
+//		mesh->addComponent(Surface::create(
+//			assets->geometry("cube"),
+//			data::Provider::create()
+//				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+//                ->set("material.diffuseMap",	assets->texture("box3.png"))
+//               ->set("material.specular",	    Vector3::create(.25f, .25f, .25f))
+//               ->set("material.shininess",	    30.f),
+//			assets->effect("directional light")));
 
-		group->addController(Transform::create());
-		group->controller<Transform>()->transform()->appendTranslation(0.f, -1.f, -1.f);
-
-		group->addChild(assets->node("models/sponza-lite.mk"));
+		group->addChild(assets->node("models/model.mk"));
 	});
 
 	assets->load();
 
 	while(!glfwWindowShouldClose(window))
     {
-		group->controller<Transform>()->transform()->prependRotationY(.01f);
-	    renderingController->render();
+		//camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
+        group->component<Transform>()->transform()->prependRotationY(.01f);
+		renderingComponent->render();
 
 	    printFramerate();
 

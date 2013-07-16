@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/controller/Surface.hpp"
+#include "minko/component/Surface.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -52,7 +52,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 		std::map<int, GeometryDeserializer::NodeList>&	_waitGorGeometryNodeCopye = _waitForGeometryNodes;
 		
 		if (_geometryIdToName.find(copyId) != _geometryIdToName.end())
-			mesh->controller<controller::Surface>()->geometry(library->geometry(_geometryIdToName[copyId]));
+			mesh->component<component::Surface>()->geometry(library->geometry(_geometryIdToName[copyId]));
 		else
 			_waitForGeometryNodes[copyId].push_back(mesh);
 	}
@@ -73,7 +73,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 		geometry->indices(indexStream);
 		geometry->addVertexBuffer(vertexStream);
 
-		mesh->controller<controller::Surface>()->geometry(geometry);
+		mesh->component<component::Surface>()->geometry(geometry);
 
 		GeometryDeserializer::_geometryIdToName[copyId] = geometryName;
 		library->geometry(geometryName, geometry);
@@ -84,7 +84,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 			{
 				std::shared_ptr<scene::Node> m = _waitForGeometryNodes[copyId][meshId];
 
-				mesh->controller<controller::Surface>()->geometry(geometry);
+				mesh->component<component::Surface>()->geometry(geometry);
 			}
 		}
 
