@@ -14,6 +14,7 @@ using namespace minko::math;
 RenderingController::Ptr renderingController;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
+render::OpenGLES2Context::Ptr context = nullptr;
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
     auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
     glfwMakeContextCurrent(window);
 
-	auto context = render::OpenGLES2Context::create();
+	context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
@@ -95,6 +96,11 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+		context->compileShader(0);
+		std::cout << "compilation log[0]\n----------------\n" 
+			<< context->getShaderCompilationLogs(0) 
+			<< std::endl;
+			
 		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
