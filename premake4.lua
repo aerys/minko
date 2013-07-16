@@ -3,7 +3,7 @@ solution "minko"
 
 -- examples
 include 'examples'
-   
+
 -- core framework
 include 'framework'
 
