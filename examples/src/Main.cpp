@@ -8,10 +8,11 @@
 
 #define FRAMERATE 60
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
-RenderingController::Ptr renderingController;
+Rendering::Ptr renderingController;
+auto camera	= scene::Node::create("camera");
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
 render::OpenGLES2Context::Ptr context = nullptr;
@@ -80,11 +81,11 @@ int main(int argc, char** argv)
 		->queue("window-diffuse.png")
 		->queue("window-normal.png")
 		->queue("window-specular.png")
-		->queue("DirectionalLight.effect");
+		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		//->queue("Texture.effect")
 		//->queue("Red.effect")
-		//->queue("Basic.effect");
+		->queue("Basic.effect");
 
 #ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -96,55 +97,66 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+		/*
 		context->compileShader(0);
 		std::cout << "compilation log[0]\n----------------\n" 
 			<< context->getShaderCompilationLogs(0) 
 			<< std::endl;
+			*/
 			
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
 		root->addChild(group)->addChild(camera);
 
-        renderingController = RenderingController::create(assets->context());
+        renderingController = Rendering::create(assets->context());
         renderingController->backgroundColor(0x7F7F7FFF);
-		camera->addController(renderingController);
+		camera->addComponent(renderingController);
+        camera->addComponent(Transform::create());
+        camera->component<Transform>()->transform()
+            ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
+		root->addComponent(DirectionalLight::create());
+
+		/*
         auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f)->prependTranslation(0.f, 0.f, -3.f);
 		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
 		auto lightDirection = Vector3::create(-1.f, 0.f, -1.f);
+		*/
 
-		mesh->addController(Transform::create());
-		//mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-		mesh->addController(Surface::create(
+		mesh->addComponent(Transform::create());
+		//mesh->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuseColor",			color)
+				->set("material.diffuseColor",			Vector4::create(0.f, 0.f, 1.f, 1.f))
                 ->set("material.diffuseMap",			assets->texture("window-diffuse.png"))
 				->set("material.specularMap",			assets->texture("window-specular.png"))
 				->set("material.normalMap",				assets->texture("window-normal.png"))
                 ->set("material.specular",	            Vector3::create(.25f, .25f, .25f))
-                ->set("material.shininess",	            30.f)
-				->set("transform.worldToScreenMatrix",  view)
+                ->set("material.shininess",	            30.f),
+				/*->set("transform.worldToScreenMatrix",  view)
 				->set("light.ambient",				    Vector3::create(.25f, .25f, .25f))
 				->set("light.direction",				lightDirection)
                 ->set("light.diffuse",				    Vector3::create(1.f, 1.f, 1.f))
                 ->set("light.specular",				    Vector3::create(1.f, 1.f, 1.f))
                 ->set("camera.position",				Vector3::create(0., 0., 3.f)),
+				*/
+			//assets->effect("directional light")
 			assets->effect("directional light")
 		));
 
-		//mesh->controller<Surface>()->geometry()->computeNormals();
-		mesh->controller<Surface>()->geometry()->data()->unset("geometry.vertex.attribute.normal");
-		mesh->controller<Surface>()->geometry()->computeTangentSpace(true);
+		//mesh->component<Surface>()->geometry()->computeNormals();
+		//mesh->component<Surface>()->geometry()->data()->unset("geometry.vertex.attribute.normal");
+		//mesh->component<Surface>()->geometry()->computeTangentSpace(true);
 
 		group->addChild(mesh);
 
         /*
 		mesh = scene::Node::create();
-		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(-.75f, 0.f, 0.f);
-		mesh->addController(Surface::create(
+		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()->appendTranslation(-.75f, 0.f, 0.f);
+		mesh->addComponent(Surface::create(
 			assets->geometry("sphere"),
 			data::Provider::create()
 				->set("material/diffuse/rgba",			color)
@@ -159,15 +171,15 @@ int main(int argc, char** argv)
 
 		//group->addChild(mesh);
 
-		group->addController(Transform::create());
+		group->addComponent(Transform::create());
 
 		/*
 		for (auto i = 0; i < 10000; ++i)
 		{
 			mesh = scene::Node::create();
-			mesh->addController(Transform::create());
-			mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-			mesh->addController(Surface::create(
+			mesh->addComponent(Transform::create());
+			mesh->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
+			mesh->addComponent(Surface::create(
 				assets->geometry("sphere"),
 				data::Provider::create()
 					->set("material/diffuse/rgba",			color)
@@ -188,8 +200,8 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        //group->controller<Transform>()->transform()->appendRotationY(.01f);
-        mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+        //group->component<Transform>()->transform()->appendRotationY(.01f);
+        mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingController->render();
 
