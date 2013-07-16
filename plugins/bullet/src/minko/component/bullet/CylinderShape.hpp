@@ -20,11 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		namespace bullet
 		{

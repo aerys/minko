@@ -22,17 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
-#include <minko/controller/RenderingController.hpp>
-#include <minko/controller/bullet/Collider.hpp>
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/Rendering.hpp>
+#include <minko/component/bullet/Collider.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 using namespace minko;
 using namespace minko::math;
 using namespace minko::scene;
-using namespace minko::controller;
+using namespace minko::component;
 
 bullet::PhysicsWorld::PhysicsWorld():
-	AbstractController(),
+	AbstractComponent(),
 	_colliderMap(),
 	_btBroadphase(nullptr),
 	_btCollisionConfiguration(nullptr),
@@ -111,24 +111,26 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetAddedHandler(AbstractController::Ptr controller, 
+	bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
-	if (target->controllers<PhysicsWorld>().size() > 1)
+	if (target->components<PhysicsWorld>().size() > 1)
 		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
 
-	auto nodeSet		= NodeSet::create(NodeSet::AUTO)
-		->select(target->root())
+	auto nodeSet		= NodeSet::create(target->root())
 		->descendants(true)
-		->hasController<RenderingController>();
+		->where([](Node::Ptr node)
+		{
+			return node->hasComponent<Rendering>();
+	});
 	if (nodeSet->nodes().size() != 1)
 	{
 		std::stringstream stream;
-		stream << "PhysicsWorld requires exactly one RenderingController among the descendants of its target node. Found " << nodeSet->nodes().size();
+		stream << "PhysicsWorld requires exactly one Rendering among the descendants of its target node. Found " << nodeSet->nodes().size();
 		throw std::logic_error(stream.str());
 	}
 
-	auto renderingCtrl	= nodeSet->nodes().front()->controller<RenderingController>();
+	auto renderingCtrl	= nodeSet->nodes().front()->component<Rendering>();
 
 	_exitFrameSlot		= renderingCtrl->exitFrame()->connect(std::bind(
 		&bullet::PhysicsWorld::exitFrameHandler,
@@ -138,7 +140,7 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetRemovedHandler(AbstractController::Ptr controller, 
+	bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
 	std::cout << "bullet::PhysicsWorld::targetRemovedHandler" << std::endl;
@@ -184,7 +186,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::exitFrameHandler(RenderingController::Ptr controller)
+	bullet::PhysicsWorld::exitFrameHandler(Rendering::Ptr controller)
 {
 	update();
 }
@@ -247,7 +249,7 @@ void
 	bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
-	auto translation	= transform->translation();
+	auto translation	= transform->translationVector();
 	auto rotation		= transform->rotation();
 
 	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
