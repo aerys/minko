@@ -8,12 +8,13 @@
 
 #define FRAMERATE 60
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
-RenderingController::Ptr renderingController;
+Rendering::Ptr renderingComponent;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
+auto camera	= scene::Node::create("camera");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -76,69 +77,67 @@ int main(int argc, char** argv)
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
-		//->queue("DirectionalLight.effect")
+		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		//->queue("Texture.effect")
 		//->queue("Red.effect")
 		->queue("Basic.effect");
 
-	assets->defaultOptions()->includePaths().push_back("effects");
-	assets->defaultOptions()->includePaths().push_back("textures");
+#ifdef DEBUG
+	assets->defaultOptions()->includePaths().push_back("effect");
+	assets->defaultOptions()->includePaths().push_back("texture");
+#else
+	assets->defaultOptions()->includePaths().push_back("../../effect");
+	assets->defaultOptions()->includePaths().push_back("../../texture");
+#endif
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
 
 		root->addChild(group)->addChild(camera);
 
-        renderingController = RenderingController::create(assets->context());
-        renderingController->backgroundColor(0x7F7F7FFF);
-		camera->addController(renderingController);
+        renderingComponent = Rendering::create(assets->context());
+        renderingComponent->backgroundColor(0x7F7F7FFF);
+		camera->addComponent(renderingComponent);
+        camera->addComponent(Transform::create());
+        camera->component<Transform>()->transform()
+            ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
-		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
+        root->addComponent(DirectionalLight::create());
 
-		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()->appendTranslation(0.f, 0.f, -3.f);
-		mesh->addController(Surface::create(
-			assets->geometry("sphere"),
+        group->addChild(mesh);
+
+		mesh->addComponent(Transform::create());
+		mesh->addComponent(Surface::create(
+			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material/blending",				render::Blending::Mode::ALPHA)
-				->set("material/depthFunc",				render::CompareMode::LESS)
-				->set("material/depthMask",				true)
-				->set("material/diffuse/rgba",			color)
-				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("basic")
+				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
+                ->set("material.diffuseMap",	assets->texture("box3.png"))
+                ->set("material.specular",	    Vector3::create(.25f, .25f, .25f))
+                ->set("material.shininess",	    30.f),
+			assets->effect("directional light")
 		));
-		
-		group->addChild(mesh);
 	});
 
 	assets->load();
-
-	/*
-	auto fx = assets->effect("directional light");
-
-	std::cout << "== vertex shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-	std::cout << "== fragment shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-	std::cout << "== program info logs ==" << std::endl;
-	std::cout << context->getProgramInfoLogs(fx->shaders()[0]->id()) << std::endl;
-	*/
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
 
 	while(!glfwWindowShouldClose(window))
     {
-        mesh->controller<Transform>()->transform()->prependRotationY(.01f);
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
+        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
 
-	    renderingController->render();
+        //group->component<Transform>()->transform()->appendRotationY(.01f);
+        //camera->component<Transform>()->transform()->appendRotationY(0.01f);
+        mesh->component<Transform>()->transform()->prependRotationY(.01f);
+
+	    renderingComponent->render();
 
 	    printFramerate();
 

@@ -18,7 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Program.hpp"
+
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/Shader.hpp"
 
 using namespace minko::render;
 
@@ -30,17 +32,9 @@ Program::Program(Program::AbstractContextPtr context) :
 void
 Program::upload()
 {
-	_vertexShader = context()->createVertexShader();
-	_context->setShaderSource(_vertexShader, _vertexShaderSource);
-	_context->compileShader(_vertexShader);
-
-	_fragmentShader = context()->createFragmentShader();
-	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
-	_context->compileShader(_fragmentShader);
-
 	_id = context()->createProgram();
-	_context->attachShader(_id, _vertexShader);
-	_context->attachShader(_id, _fragmentShader);
+	_context->attachShader(_id, _vertexShader->id());
+	_context->attachShader(_id, _fragmentShader->id());
 	_context->linkProgram(_id);
 
 	_inputs = _context->getProgramInputs(_id);
@@ -49,11 +43,9 @@ Program::upload()
 void
 Program::dispose()
 {
-	_context->deleteVertexShader(_vertexShader);
-	_context->deleteFragmentShader(_fragmentShader);
 	_context->deleteProgram(_id);
-
-	_vertexShader = -1;
-	_fragmentShader = -1;
 	_id = -1;
+
+	_vertexShader = nullptr;
+	_fragmentShader = nullptr;
 }

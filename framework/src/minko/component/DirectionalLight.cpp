@@ -17,48 +17,19 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "DirectionalLight.hpp"
 
-#include "minko/Common.hpp"
+#include "minko/math/Vector3.hpp"
 
-namespace minko
+using namespace minko::component;
+using namespace minko::math;
+
+DirectionalLight::DirectionalLight()
 {
-	namespace render
-	{
-
-		class Effect :
-			public std::enable_shared_from_this<Effect>
-		{
-		public:
-			typedef std::shared_ptr<Effect>	Ptr;
-
-		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
-
-		private:
-			std::vector<PassPtr>						_passes;
-			std::list<std::shared_ptr<EffectInstance>>	_instances;
-
-		public:
-			inline static
-			Ptr
-			create(std::vector<PassPtr>&	passes)
-			{
-				return std::shared_ptr<Effect>(new Effect(passes));
-			}
-
-			inline
-			const std::vector<PassPtr>&
-			passes()
-			{
-				return _passes;
-			}
-
-			std::shared_ptr<EffectInstance>
-			instanciate(std::shared_ptr<data::Container> data);
-
-		private:
-			Effect(std::vector<PassPtr>&	passes);
-		};		
-	}
+    _data
+        ->set("light.ambient",      Vector3::create(.25f, .25f, .25f))
+		->set("light.direction",    Vector3::create(-1.f, 0.f, -1.f))
+        ->set("light.diffuse",		Vector3::create(1.f, 1.f, 1.f))
+        ->set("light.specular",		Vector3::create(1.f, 1.f, 1.f));
 }
+
