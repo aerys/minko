@@ -34,11 +34,16 @@ Program::upload()
 	_vertexShader = context()->createVertexShader();
 	_context->setShaderSource(_vertexShader, _vertexShaderSource);
 	_context->compileShader(_vertexShader);
-	
+	std::cout << "VS" << std::endl <<
+	std::static_pointer_cast<OpenGLES2Context>(_context)->getShaderCompilationLogs(_vertexShader)
+	<< std::endl << "/VS" << std::endl << std::endl;
 
 	_fragmentShader = context()->createFragmentShader();
 	_context->setShaderSource(_fragmentShader, _fragmentShaderSource);
 	_context->compileShader(_fragmentShader);
+	std::cout << "FS" << std::endl <<
+	std::static_pointer_cast<OpenGLES2Context>(_context)->getShaderCompilationLogs(_fragmentShader)
+	<< std::endl << "/FS" << std::endl << std::endl;
 	
 	_id = context()->createProgram();
 	_context->attachShader(_id, _vertexShader);
