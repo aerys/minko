@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/MkOptions.hpp"
 #include "minko/Qark.hpp"
+#include "minko/file/MkOptions.hpp"
 
 namespace minko
 {
@@ -39,16 +39,13 @@ namespace minko
 			typedef	std::map<std::string, Any>															NodeInfo;
 		
 		private:
-			typedef  std::shared_ptr<scene::Node> (SceneDeserializer::*NodeDeserializer)(NodeInfo&		nodeInfo,
-																						 OptionsPtr		options,
-																						 ControllerMap&	controllerMap,
-																						 NodeMap&		nodeMap);
+			typedef	std::function<std::shared_ptr<scene::Node>(NodeInfo&, OptionsPtr, ControllerMap&, NodeMap&)> NodeDeserializerFunc;
 
 			// attributes
 		private:
 			std::shared_ptr<AssetsLibrary>		_deserializedAssets;
 			ContextPtr							_context; 
-			std::map<int, NodeDeserializer>		_nodeDeserializer;
+			std::map<int, NodeDeserializerFunc>	_nodeDeserializer;
 
 			// method
 		public:
