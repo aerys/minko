@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/MkOptions.hpp"
-#include "minko/controller/Surface.hpp"
-#include "minko/controller/Transform.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/deserialize/GeometryDeserializer.hpp"
@@ -38,7 +38,7 @@ namespace minko
 
 		private:
 			typedef	std::map<std::string, Any>															NodeInfo;
-			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>	ControllerMap;
+			typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>	ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
 			typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
 
@@ -62,8 +62,8 @@ namespace minko
 				std::shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
 
-				group->addController(controller::Transform::create());
-				group->controller<controller::Transform>()->transform()->copyFrom(transformMatrix);
+				group->addComponent(component::Transform::create());
+				group->component<component::Transform>()->transform()->copyFrom(transformMatrix);
 
 				return group;
 			}
@@ -78,8 +78,8 @@ namespace minko
 				std::shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
-				mesh->addController(controller::Transform::create());
-				mesh->controller<controller::Transform>()->transform()->copyFrom(transformMatrix);
+				mesh->addComponent(component::Transform::create());
+				mesh->component<component::Transform>()->transform()->copyFrom(transformMatrix);
 
 				Qark::ByteArray		geometryObject;
 				int					copyId			= -1;
@@ -107,8 +107,8 @@ namespace minko
 				std::vector<Any>&	bindingsId	= Any::cast<std::vector<Any>&>(nodeInfo["bindingsIds"]);
 				int					materialId	= Any::cast<int&>(bindingsId[0]);	
 
-				mesh->addController(
-					controller::Surface::create(
+				mesh->addComponent(
+					component::Surface::create(
 					options->assetsLibrary()->geometry("cube"),
 					options->deserializedAssets()->material(materialId),
 					options->assetsLibrary()->effect("directional light")));
