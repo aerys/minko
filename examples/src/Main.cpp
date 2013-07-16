@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 		camera->addComponent(renderingComponent);
         camera->addComponent(Transform::create());
         camera->component<Transform>()->transform()
-            ->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, 3.f));
+            ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
         camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
         root->addComponent(DirectionalLight::create());
@@ -128,8 +128,13 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
+        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
+
         //group->component<Transform>()->transform()->appendRotationY(.01f);
-        //camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
+        //camera->component<Transform>()->transform()->appendRotationY(0.01f);
         mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
