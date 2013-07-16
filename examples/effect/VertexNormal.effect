@@ -2,12 +2,12 @@
 {
 	"name"		: "vertex normal",
 	"attributeBindings"	: {
-		"position"				: "geometry/vertex/attribute/position",
-		"normal"				: "geometry/vertex/attribute/normal"
+		"position"				: "geometry.vertex.attribute.position",
+		"normal"				: "geometry.vertex.attribute.normal"
 	},
 	"uniformBindings"	: {
-		"modelToWorldMatrix"	: "transform/modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform/worldToScreenMatrix"
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
 	
 	"priority"		: 0,

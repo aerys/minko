@@ -21,44 +21,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/data/Provider.hpp"
+
 namespace minko
 {
-	namespace render
-	{
+    namespace component
+    {
+	    class DirectionalLight :
+            public AbstractRootDataComponent
+	    {
+	    public:
+		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
-		class Effect :
-			public std::enable_shared_from_this<Effect>
-		{
-		public:
-			typedef std::shared_ptr<Effect>	Ptr;
+	    public:
+		    inline static
+		    Ptr
+		    create()
+		    {
+                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight());
 
-		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
+                light->initialize();
 
-		private:
-			std::vector<PassPtr>						_passes;
-			std::list<std::shared_ptr<EffectInstance>>	_instances;
+			    return light;
+		    }
 
-		public:
-			inline static
-			Ptr
-			create(std::vector<PassPtr>&	passes)
-			{
-				return std::shared_ptr<Effect>(new Effect(passes));
-			}
-
-			inline
-			const std::vector<PassPtr>&
-			passes()
-			{
-				return _passes;
-			}
-
-			std::shared_ptr<EffectInstance>
-			instanciate(std::shared_ptr<data::Container> data);
-
-		private:
-			Effect(std::vector<PassPtr>&	passes);
-		};		
-	}
+	    private:
+		    DirectionalLight();
+	    };
+    }
 }

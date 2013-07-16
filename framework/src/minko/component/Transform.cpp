@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/data/Provider.hpp"
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
 Transform::Transform() :
-	minko::controller::AbstractController(),
+	minko::component::AbstractComponent(),
 	_transform(Matrix4x4::create()),
 	_modelToWorld(Matrix4x4::create()),
 	_data(data::Provider::create())
@@ -53,17 +53,17 @@ Transform::initialize()
 		std::placeholders::_2
 	));
 
-	_data->set<Matrix4x4::Ptr>("transform/modelToWorldMatrix", _modelToWorld);
+	_data->set<Matrix4x4::Ptr>("transform.modelToWorldMatrix", _modelToWorld);
 	//_data->set("transform/worldToModelMatrix", _worldToModel);
 }
 
 void
-Transform::targetAddedHandler(AbstractController::Ptr	ctrl,
+Transform::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							  scene::Node::Ptr			target)
 {
 	if (targets().size() > 1)
 		throw std::logic_error("Transform cannot have more than one target.");
-	if (target->controller<Transform>(1) != nullptr)
+	if (target->component<Transform>(1) != nullptr)
 		throw std::logic_error("A node cannot have more than one Transform.");
 
 	target->data()->addProvider(_data);
@@ -87,13 +87,13 @@ Transform::addedOrRemovedHandler(scene::Node::Ptr node,
 								 scene::Node::Ptr target,
 								 scene::Node::Ptr parent)
 {
-	if (target == targets()[0] && !target->root()->controller<RootTransform>()
+	if (target == targets()[0] && !target->root()->component<RootTransform>()
 		&& (target != target->root() || target->children().size() != 0))
-		target->root()->addController(RootTransform::create());
+		target->root()->addComponent(RootTransform::create());
 }
 
 void
-Transform::targetRemovedHandler(AbstractController::Ptr ctrl,
+Transform::targetRemovedHandler(AbstractComponent::Ptr ctrl,
 								scene::Node::Ptr 		target)
 {
 	target->data()->removeProvider(_data);
@@ -121,7 +121,7 @@ Transform::RootTransform::initialize()
 }
 
 void
-Transform::RootTransform::targetAddedHandler(AbstractController::Ptr 	ctrl,
+Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 											 scene::Node::Ptr			target)
 {
 	_targetSlots.push_back(target->added()->connect(std::bind(
@@ -138,15 +138,15 @@ Transform::RootTransform::targetAddedHandler(AbstractController::Ptr 	ctrl,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
-	_targetSlots.push_back(target->controllerAdded()->connect(std::bind(
-		&Transform::RootTransform::controllerAddedHandler,
+	_targetSlots.push_back(target->componentAdded()->connect(std::bind(
+		&Transform::RootTransform::componentAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
-	_targetSlots.push_back(target->controllerRemoved()->connect(std::bind(
-		&Transform::RootTransform::controllerRemovedHandler,
+	_targetSlots.push_back(target->componentRemoved()->connect(std::bind(
+		&Transform::RootTransform::componentRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -157,7 +157,7 @@ Transform::RootTransform::targetAddedHandler(AbstractController::Ptr 	ctrl,
 }
 
 void
-Transform::RootTransform::targetRemovedHandler(AbstractController::Ptr 	ctrl,
+Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr 	ctrl,
 											   scene::Node::Ptr			target)
 {
 	_targetSlots.clear();
@@ -165,11 +165,11 @@ Transform::RootTransform::targetRemovedHandler(AbstractController::Ptr 	ctrl,
 }
 
 void
-Transform::RootTransform::controllerAddedHandler(scene::Node::Ptr			node,
+Transform::RootTransform::componentAddedHandler(scene::Node::Ptr			node,
 												 scene::Node::Ptr 			target,
-												 AbstractController::Ptr	ctrl)
+												 AbstractComponent::Ptr	ctrl)
 {
-	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
+	auto renderingCtrl = std::dynamic_pointer_cast<Rendering>(ctrl);
 
 	if (renderingCtrl != nullptr)
 		_enterFrameSlots[renderingCtrl] = renderingCtrl->enterFrame()->connect(std::bind(
@@ -182,11 +182,11 @@ Transform::RootTransform::controllerAddedHandler(scene::Node::Ptr			node,
 }
 
 void
-Transform::RootTransform::controllerRemovedHandler(scene::Node::Ptr			node,
+Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 												   scene::Node::Ptr 		target,
-												   AbstractController::Ptr	ctrl)
+												   AbstractComponent::Ptr	ctrl)
 {
-	auto renderingCtrl = std::dynamic_pointer_cast<RenderingController>(ctrl);
+	auto renderingCtrl = std::dynamic_pointer_cast<Rendering>(ctrl);
 
 	if (renderingCtrl != nullptr)
 		_enterFrameSlots.erase(renderingCtrl);
@@ -205,18 +205,15 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 		std::placeholders::_1
 	);
 
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(target)
-        ->descendants(true);
-
+	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
-		auto rootTransformCtrl = descendant->controller<RootTransform>();
+		auto rootTransformCtrl = descendant->component<RootTransform>();
 
 		if (rootTransformCtrl && rootTransformCtrl != shared_from_this())
-			descendant->removeController(rootTransformCtrl);
+			descendant->removeComponent(rootTransformCtrl);
 
-		for (auto renderingCtrl : descendant->controllers<RenderingController>())
+		for (auto renderingCtrl : descendant->components<Rendering>())
 			_enterFrameSlots[renderingCtrl] = renderingCtrl->enterFrame()->connect(enterFrameCallback);
 	}
 
@@ -228,12 +225,10 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
 									     scene::Node::Ptr target,
 										 scene::Node::Ptr parent)
 {
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(target)
-        ->descendants(true);
+	auto descendants = scene::NodeSet::create(target)->descendants(true);
 
 	for (auto descendant : descendants->nodes())
-		for (auto renderingCtrl : descendant->controllers<RenderingController>())
+		for (auto renderingCtrl : descendant->components<Rendering>())
 			_enterFrameSlots.erase(renderingCtrl);
 
 	_invalidLists = true;
@@ -248,14 +243,16 @@ Transform::RootTransform::updateTransformsList()
 	_modelToWorld.clear();
 	//_worldToModel.clear();
 
-	auto descendants = scene::NodeSet::create(scene::NodeSet::Mode::MANUAL)
-        ->select(targets().begin(), targets().end())
+	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
-        ->hasController<Transform>();
+		->where([](scene::Node::Ptr node)
+		{
+			return node->hasComponent<Transform>();
+		});
 
 	for (auto node : descendants->nodes())
 	{
-		auto transformCtrl  = node->controller<Transform>();
+		auto transformCtrl  = node->component<Transform>();
 
 		_nodeToId[node] = nodeId;
 
@@ -300,19 +297,33 @@ Transform::RootTransform::updateTransforms()
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
 		auto parentId 					= _parentId[nodeId];
+        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+
+        parentModelToWorldMatrix->_hasChanged = false;
 
 		if (parentId == -1)
 		{
-			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
-			parentModelToWorldMatrix->_hasChanged = false;
+            auto parentTransform = _transform[nodeId];
+
+            if (parentTransform->_hasChanged)
+            {
+                parentTransformChanged = true;
+
+			    parentModelToWorldMatrix->copyFrom(parentTransform);
+                parentTransform->_hasChanged = false;
+            }
 		}
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto modelToWorld = _modelToWorld[childId];
+			auto modelToWorld   = _modelToWorld[childId];
+            auto transform      = _transform[childId];
 
-			modelToWorld->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
-			modelToWorld->_hasChanged = false;
+            if (transform->_hasChanged || parentTransformChanged)
+            {
+			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
+			    transform->_hasChanged = false;
+            }
 		}
 
 		++nodeId;
@@ -353,7 +364,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 }
 
 void
-Transform::RootTransform::enterFrameHandler(std::shared_ptr<RenderingController> ctrl)
+Transform::RootTransform::enterFrameHandler(std::shared_ptr<Rendering> ctrl)
 {
 	if (_invalidLists)
 		updateTransformsList();

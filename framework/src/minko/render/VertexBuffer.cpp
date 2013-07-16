@@ -17,18 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "VertexStream.hpp"
+#include "VertexBuffer.hpp"
+
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko::render;
-using namespace minko::render;
 
-VertexStream::VertexStream(std::shared_ptr<AbstractContext> context) :
+VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
 	AbstractResource(context)
 {
 }
 
-VertexStream::VertexStream(std::shared_ptr<AbstractContext>	context,
+VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>	context,
 						   float*							data,
 						   const unsigned int				size,
 						   const unsigned int				offset) :
@@ -38,7 +38,7 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext>	context,
 	upload();
 }
 
-VertexStream::VertexStream(std::shared_ptr<AbstractContext>		context,
+VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>		context,
 						   std::vector<float>::const_iterator	begin,
 						   std::vector<float>::const_iterator	end) :
 	AbstractResource(context),
@@ -47,7 +47,7 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext>		context,
 	upload();
 }
 
-VertexStream::VertexStream(std::shared_ptr<AbstractContext> context, float* begin, float* end) :
+VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begin, float* end) :
 	AbstractResource(context),
 	_data(begin, end)
 {
@@ -55,7 +55,7 @@ VertexStream::VertexStream(std::shared_ptr<AbstractContext> context, float* begi
 }
 
 void
-VertexStream::upload()
+VertexBuffer::upload()
 {
 	if (_id != -1)
 		_context->deleteVertexBuffer(_id);
@@ -68,27 +68,27 @@ VertexStream::upload()
 }
 
 void
-VertexStream::dispose()
+VertexBuffer::dispose()
 {
 	_context->deleteVertexBuffer(_id);
 	_id = -1;
 }
 
 void
-VertexStream::addAttribute(const std::string& 	name,
+VertexBuffer::addAttribute(const std::string& 	name,
 						   const unsigned int	size,
 						   const unsigned int	offset)
 {
 	if (hasAttribute(name))
 		throw std::invalid_argument("name");
 
-	_attributes.push_back(VertexStream::AttributePtr(
-		new VertexStream::Attribute(name, size, offset)
+	_attributes.push_back(VertexBuffer::AttributePtr(
+		new VertexBuffer::Attribute(name, size, offset)
 	));
 }
 
 bool
-VertexStream::hasAttribute(const std::string& attributeName)
+VertexBuffer::hasAttribute(const std::string& attributeName)
 {
 	for (auto& attr : _attributes)
 		if (std::get<0>(*attr) == attributeName)
@@ -97,8 +97,8 @@ VertexStream::hasAttribute(const std::string& attributeName)
 	return false;
 }
 
-VertexStream::AttributePtr
-VertexStream::attribute(const std::string& attributeName)
+VertexBuffer::AttributePtr
+VertexBuffer::attribute(const std::string& attributeName)
 {
 	for (auto& attr : _attributes)
 		if (std::get<0>(*attr) == attributeName)
