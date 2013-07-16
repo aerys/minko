@@ -26,14 +26,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
 
 Surface::Surface(Geometry::Ptr 			geometry,
 				 data::Provider::Ptr 	material,
 				 Effect::Ptr			effect) :
-	AbstractController(),
+	AbstractComponent(),
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
@@ -60,31 +60,28 @@ Surface::initialize()
 }
 
 void
-Surface::targetAddedHandler(AbstractController::Ptr	ctrl,
+Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							scene::Node::Ptr		target)
 {
 	auto data = target->data();
 
 	data->addProvider(_material);
 	data->addProvider(_geometry->data());
-	data->addProvider(_effect->data());
 
 	_drawCalls.clear();
+
 	for (auto pass : _effect->passes())
-		_drawCalls.push_back(DrawCall::create(
-			data, pass->attributeBindings(), pass->uniformBindings(), pass->stateBindings()
-		));
+		_drawCalls.push_back(pass->createDrawCall(data, target->root()->data()));
 }
 
 void
-Surface::targetRemovedHandler(AbstractController::Ptr	ctrl,
+Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 							  scene::Node::Ptr			target)
 {
 	auto data = target->data();
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
-	data->removeProvider(_effect->data());
 
 	_drawCalls.clear();
 }
