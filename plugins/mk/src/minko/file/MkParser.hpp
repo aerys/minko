@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/Qark.hpp"
 #include "minko/deserialize/SceneDeserializer.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 
 namespace minko
@@ -37,9 +37,9 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<MkParser>																Ptr;
-			typedef std::map<std::shared_ptr<scene::Node>, std::vector<controller::AbstractController>>		ControllerMap;
+			typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>		ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
-			typedef std::shared_ptr<controller::AbstractController> (*DeserializeFunction)(minko::Qark::Map&				nodeInfo,
+			typedef std::shared_ptr<component::AbstractComponent> (*DeserializeFunction)(minko::Qark::Map&				nodeInfo,
 																						   std::shared_ptr<file::MkOptions>	options,
 																						   ControllerMap&					controllerMap,
 																						   NodeMap&							nodeMap);
