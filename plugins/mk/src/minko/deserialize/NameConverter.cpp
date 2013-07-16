@@ -33,8 +33,8 @@ NameConverter::NameConverter()
 void
 NameConverter::initialize()
 {
-	_asNameToCppName["diffuseColor"]	= "material.diffuse.rgba";
-	_asNameToCppName["diffuseMap"]		= "material.diffuse.map";
+	_asNameToCppName["diffuseColor"]	= "material.diffuseColor";
+	_asNameToCppName["diffuseMap"]		= "material.diffuseMap";
 	_asNameToCppName["blending"]		= "material.blending";
 }
 
