@@ -9,13 +9,15 @@
 
 #define FRAMERATE 60
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::math;
 
 ParticleSystem::Ptr particleSystem;
-RenderingController::Ptr renderingController;
+Rendering::Ptr renderingComponent;
+
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
+auto camera	= scene::Node::create("camera");
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -85,42 +87,38 @@ int main(int argc, char** argv)
 		->queue("Basic.effect")
 		->queue("Particles.effect")
 		->queue("WorldSpaceParticles.effect");
-
-	assets->defaultOptions()->includePaths().push_back("effects");
-	assets->defaultOptions()->includePaths().push_back("textures");
+	
+#ifdef DEBUG
+	assets->defaultOptions()->includePaths().push_back("effect");
+	assets->defaultOptions()->includePaths().push_back("texture");
+#else
+	assets->defaultOptions()->includePaths().push_back("../../effect");
+	assets->defaultOptions()->includePaths().push_back("../../texture");
+#endif
 
 	auto _ = assets->complete()->connect([context](AssetsLibrary::Ptr assets)
 	{
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
+		
 
 		root->addChild(group)->addChild(camera);
 
-        renderingController = RenderingController::create(assets->context());
-        renderingController->backgroundColor(0x000000FF);
-		camera->addController(renderingController);
+        renderingComponent = Rendering::create(assets->context());
+        renderingComponent->backgroundColor(0x000000FF);
+		camera->addComponent(renderingComponent);
+        camera->addComponent(Transform::create());
+        camera->component<Transform>()->transform()
+            ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-		auto view = Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-		auto color = Vector4::create(0.f, 0.f, 1.f, 1.f);
-		auto lightDirection = Vector3::create(0.f, -1.f, -1.f);
 
-		mesh->addController(Transform::create());
-		mesh->controller<Transform>()->transform()
-			->appendRotationZ(15)
+		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()
+			//->appendRotationZ(15)
 			->appendTranslation(0.f, 0.f, -30.f);
-		/*mesh->addController(Surface::create(
-			assets->geometry("cube"),
-			data::Provider::create()
-				->set("material/blending",				render::Blending::Mode::ALPHA)
-				->set("material/depthFunc",				render::CompareMode::LESS)
-				->set("material/depthMask",				true)
-				->set("material/diffuse/rgba",			color)
-				->set("transform/worldToScreenMatrix",	view)
-				->set("light/direction",				lightDirection)
-				->set("material/diffuse/map",			assets->texture("box3.png")),
-			assets->effect("basic")
-		));*/
 		
+		group->addChild(mesh);
+
 		particleSystem = ParticleSystem::create(
 			context,
 			assets,
@@ -137,18 +135,17 @@ int main(int argc, char** argv)
 			particle::sampler::RandomValue<float>::create(-2., 2.)
 			));
 		
-		particleSystem->add(particle::modifier::StartAngularVelocity::create(
+		/*particleSystem->add(particle::modifier::StartAngularVelocity::create(
 			particle::sampler::RandomValue<float>::create(1., 5.)
-			));
+			));*/
 
 		particleSystem->add(particle::modifier::StartSize::create(
 			particle::sampler::RandomValue<float>::create(0.1, 1.)
 			));
 
-		mesh->addController(particleSystem);
+		mesh->addComponent(particleSystem);
 		particleSystem->updateRate(60);
 		particleSystem->play();
-		group->addChild(mesh);
 	});
 
 	assets->load();
@@ -169,9 +166,13 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-        mesh->controller<Transform>()->transform()->prependRotationX(.01f);
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
+        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
+		mesh->component<Transform>()->transform()->prependRotationX(.01f);
 
-	    renderingController->render();
+	    renderingComponent->render();
 
 	    printFramerate();
 

@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <unordered_map>
 #include <vector>
 
-#define PI 3.1415926535897932384626433832795;
+#define PI 3.1415926535897932384626433832795
 
 namespace minko
 {
@@ -47,22 +47,27 @@ namespace minko
 		class OpenGLES2Context;
         class Blending;
 		enum class CompareMode;
+        enum class TriangleCulling;
 
+        enum class WrapMode;
+        enum class TextureFilter;
+        enum class MipFilter;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter> SamplerState;
+
+        class States;
 		class DrawCall;
-
 		class Pass;
 		class Effect;
+		class EffectInstance;
 		class ProgramInputs;
-	}
 
-	namespace render
-	{
 		class AbstractResource;
+		class Shader;
 		class Program;
 		class VertexFormat;
-		class VertexStream;
+		class VertexBuffer;
 		class VertexAttribute;
-		class IndexStream;
+		class IndexBuffer;
 		class Texture;
 	}
 
@@ -72,13 +77,15 @@ namespace minko
 		class NodeSet;
 	}
 
-	namespace controller
+	namespace component
 	{
-		class AbstractController;
+		class AbstractComponent;
+        class AbstractRootDataComponent;
 		class Transform;
 		class Surface;
-		class RenderingController;
+		class Rendering;
 		class PerspectiveCamera;
+        class DirectionalLight;
 	}
 
 	namespace data
