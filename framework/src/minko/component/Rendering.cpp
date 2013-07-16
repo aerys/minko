@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/render/Effect.hpp"
+#include "minko/render/Pass.hpp"
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko::component;
@@ -137,8 +139,8 @@ Rendering::removedHandler(std::shared_ptr<Node> node,
 
 void
 Rendering::rootDescendantAddedHandler(std::shared_ptr<Node> node,
-												std::shared_ptr<Node> target,
-												std::shared_ptr<Node> parent)
+									  std::shared_ptr<Node> target,
+									  std::shared_ptr<Node> parent)
 {
     auto surfaceNodes = NodeSet::create(node)
 		->descendants(true)
@@ -154,8 +156,8 @@ Rendering::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 void
 Rendering::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
-												  std::shared_ptr<Node> target,
-												  std::shared_ptr<Node> parent)
+									    std::shared_ptr<Node> target,
+									    std::shared_ptr<Node> parent)
 {
 	auto surfaceNodes = NodeSet::create(node)
 		->descendants(true)
@@ -181,9 +183,9 @@ Rendering::componentAddedHandler(std::shared_ptr<Node>				node,
 }
 
 void
-Rendering::componentRemovedHandler(std::shared_ptr<Node>					node,
-											  std::shared_ptr<Node>					target,
-											  std::shared_ptr<AbstractComponent>	ctrl)
+Rendering::componentRemovedHandler(std::shared_ptr<Node>				node,
+								   std::shared_ptr<Node>				target,
+								   std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 
@@ -203,7 +205,7 @@ Rendering::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
 #else
-        _drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
+	_drawCalls.erase(ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 #endif
 }
 
