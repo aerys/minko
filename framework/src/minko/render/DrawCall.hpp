@@ -57,21 +57,24 @@ namespace minko
 			static inline
 			Ptr
 			create(std::shared_ptr<Program>								program,
-				   ContainerPtr						                    data,
-                   ContainerPtr						                    rootData,
+				   ContainerPtr											data,
+				   ContainerPtr											rootData,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
                    std::shared_ptr<States>                              states)
 			{
                 auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					program, data, rootData, attributeBindings, uniformBindings, stateBindings, states
+					program, attributeBindings, uniformBindings, stateBindings, states
 				));
 
-                dc->bind();
+                dc->bind(data, rootData);
 
 				return dc;
 			}
+
+			void
+			bind(ContainerPtr data, ContainerPtr rootData);
 
 			void
 			render(std::shared_ptr<AbstractContext> context);
@@ -82,15 +85,10 @@ namespace minko
 
 		private:
 			DrawCall(std::shared_ptr<Program>								program,
-					 ContainerPtr                   						data,
-                     ContainerPtr                   						rootData,
 				     const std::unordered_map<std::string, std::string>&	attributeBindings,
 				     const std::unordered_map<std::string, std::string>&	uniformBindings,
 					 const std::unordered_map<std::string, std::string>&	stateBindings,
                      std::shared_ptr<States>                                states);
-
-			void
-			bind();
 
 			void
 			bindStates();
