@@ -17,21 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ColliderController.hpp"
+#include "ColliderComponent.hpp"
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
-#include <minko/controller/Transform.hpp>
-#include <minko/controller/bullet/Collider.hpp>
-#include <minko/controller/bullet/PhysicsWorld.hpp>
+#include <minko/component/Transform.hpp>
+#include <minko/component/bullet/Collider.hpp>
+#include <minko/component/bullet/PhysicsWorld.hpp>
 
 using namespace minko;
 using namespace minko::math;
 using namespace minko::scene;
-using namespace minko::controller;
+using namespace minko::component;
 
-bullet::ColliderController::ColliderController(Collider::Ptr collider):
-	AbstractController(),
+bullet::ColliderComponent::ColliderComponent(Collider::Ptr collider):
+	AbstractComponent(),
 	_collider(collider),
 	_physicsWorld(nullptr),
 	_targetTransform(nullptr),
@@ -46,39 +46,39 @@ bullet::ColliderController::ColliderController(Collider::Ptr collider):
 }
 
 void
-	bullet::ColliderController::initialize()
+	bullet::ColliderComponent::initialize()
 {
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
-		&bullet::ColliderController::targetAddedHandler,
+		&bullet::ColliderComponent::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
-		&bullet::ColliderController::targetRemovedHandler,
+		&bullet::ColliderComponent::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
 
 	_colliderTrfChangedSlot	= _collider->transformChanged()->connect(std::bind(
-		&bullet::ColliderController::colliderTransformChangedHandler,
+		&bullet::ColliderComponent::colliderTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1
 		));
 }
 
 void
-	bullet::ColliderController::targetAddedHandler(
-	AbstractController::Ptr controller, 
+	bullet::ColliderComponent::targetAddedHandler(
+	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
 	if (targets().size() > 1)
-		throw std::logic_error("ColliderController cannot have more than one target.");
+		throw std::logic_error("ColliderComponent cannot have more than one target.");
 
 	_addedSlot	= targets().front()->added()->connect(std::bind(
-		&bullet::ColliderController::addedHandler,
+		&bullet::ColliderComponent::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -86,7 +86,7 @@ void
 		));
 
 	_removedSlot	= targets().front()->removed()->connect(std::bind(
-		&bullet::ColliderController::removedHandler,
+		&bullet::ColliderComponent::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -95,8 +95,8 @@ void
 }
 
 void
-	bullet::ColliderController::targetRemovedHandler(
-	AbstractController::Ptr controller, 
+	bullet::ColliderComponent::targetRemovedHandler(
+	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
 	_addedSlot				= nullptr;
@@ -105,41 +105,44 @@ void
 }
 
 void 
-	bullet::ColliderController::addedHandler(
+	bullet::ColliderComponent::addedHandler(
 	Node::Ptr node, 
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
-	if (!target->hasController<Transform>())
-		throw std::logic_error("A ColliderController's target must have a Transform.");
+	if (!target->hasComponent<Transform>())
+		throw std::logic_error("A ColliderComponent's target must have a Transform.");
 
-	_targetTransform	= target->controller<Transform>();
+	_targetTransform	= target->component<Transform>();
 
 	updateColliderWorldTransform();
 
-	auto nodeSet	= NodeSet::create(NodeSet::AUTO);
-	nodeSet->select(target->root())
-		->descendants(true)
-		->hasController<bullet::PhysicsWorld>();
+	auto nodeSet	= NodeSet::create(target)
+		->ancestors(true)
+		->where([](Node::Ptr node)
+		{
+			return node->hasComponent<bullet::PhysicsWorld>();
+		});
 	if (nodeSet->nodes().size() != 1)
 	{
 		std::stringstream stream;
-		stream << "ColliderController requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
+		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
 		throw std::logic_error(stream.str());
 	}
-	_physicsWorld	= nodeSet->nodes().front()->controller<bullet::PhysicsWorld>();
+	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 
 	_physicsWorld->addChild(_collider);
 }
 
 void 
-	bullet::ColliderController::updateColliderWorldTransform()
+	bullet::ColliderComponent::updateColliderWorldTransform()
 {
 	if (_targetTransform == nullptr)
-		throw std::logic_error("The Transform of the ColliderController's target is invalid.");
+		throw std::logic_error("The Transform of the ColliderComponent's target is invalid.");
 
 	// update the collider's world transform, and scale correction matrix
-	_collider->setWorldTransform(_targetTransform->modelToWorldMatrix(true));
+	auto worldTransform	= _targetTransform->modelToWorldMatrix(true);
+	_collider->setWorldTransform(worldTransform);
 
 	// inject the new collider's world transform into the physics world's simulation
 	if (_physicsWorld)
@@ -147,7 +150,7 @@ void
 }
 
 void
-	bullet::ColliderController::removedHandler(
+	bullet::ColliderComponent::removedHandler(
 	Node::Ptr node, 
 	Node::Ptr target, 
 	Node::Ptr parent)
@@ -158,7 +161,7 @@ void
 }
 
 void 
-	bullet::ColliderController::colliderTransformChangedHandler(Collider::Ptr collider)
+	bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collider)
 {
 	// get the world-to-parent matrix in order to update the target's Transform
 	auto worldToParentMatrix	= Matrix4x4::create()
@@ -169,4 +172,6 @@ void
 	_targetTransform->transform()
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
+
+	std::cout << "target transform = " << std::to_string(_targetTransform->transform()) << std::endl;
 }
