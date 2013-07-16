@@ -43,6 +43,7 @@ namespace minko
 
 			std::shared_ptr<Program>									_program;
 			std::shared_ptr<data::Container>					        _data;
+            std::shared_ptr<data::Container>					        _rootData;
 			const std::unordered_map<std::string, std::string>&	        _attributeBindings;
 			const std::unordered_map<std::string, std::string>&	        _uniformBindings;
 			const std::unordered_map<std::string, std::string>&	        _stateBindings;
@@ -57,13 +58,14 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<Program>								program,
 				   ContainerPtr						                    data,
+                   ContainerPtr						                    rootData,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
                    std::shared_ptr<States>                              states)
 			{
                 auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					program, data, attributeBindings, uniformBindings, stateBindings, states
+					program, data, rootData, attributeBindings, uniformBindings, stateBindings, states
 				));
 
                 dc->bind();
@@ -81,6 +83,7 @@ namespace minko
 		private:
 			DrawCall(std::shared_ptr<Program>								program,
 					 ContainerPtr                   						data,
+                     ContainerPtr                   						rootData,
 				     const std::unordered_map<std::string, std::string>&	attributeBindings,
 				     const std::unordered_map<std::string, std::string>&	uniformBindings,
 					 const std::unordered_map<std::string, std::string>&	stateBindings,
@@ -96,9 +99,15 @@ namespace minko
             T
             getDataProperty(const std::string& propertyName)
             {
-                watchProperty(propertyName);
+                //watchProperty(propertyName);
 
-                return _data->get<T>(propertyName);
+                if (_data->hasProperty(propertyName))
+                    return _data->get<T>(propertyName);
+
+                if (_rootData->hasProperty(propertyName))
+                    return _rootData->get<T>(propertyName);
+
+                throw;
             }
 
 			template <typename T>
