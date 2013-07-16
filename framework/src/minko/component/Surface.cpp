@@ -59,6 +59,7 @@ Surface::initialize()
 	));
 }
 
+/*
 void
 Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 {
@@ -77,6 +78,7 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 
 	_geometry = newGeometry;
 }
+*/
 
 void
 Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
