@@ -22,16 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Vector3.hpp>
 #include <minko/math/Quaternion.hpp>
 #include <minko/math/Matrix4x4.hpp>
-#include <minko/controller/bullet/Collider.hpp>
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
-#include <minko/controller/bullet/SphereShape.hpp>
-#include <minko/controller/bullet/BoxShape.hpp>
-#include <minko/controller/bullet/ConeShape.hpp>
-#include <minko/controller/bullet/CylinderShape.hpp>
+#include <minko/component/bullet/Collider.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/bullet/SphereShape.hpp>
+#include <minko/component/bullet/BoxShape.hpp>
+#include <minko/component/bullet/ConeShape.hpp>
+#include <minko/component/bullet/CylinderShape.hpp>
 
 using namespace minko;
 using namespace minko::math;
-using namespace minko::controller;
+using namespace minko::component;
 
 bullet::PhysicsWorld::BulletCollider::BulletCollider():
 	_btCollisionShape(nullptr),

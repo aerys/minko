@@ -205,6 +205,16 @@ namespace minko
 			void
 			readPixels(unsigned char* pixels);
 
+			void
+            setTriangleCulling(TriangleCulling triangleCulling)
+			{
+			}
+
+			void 
+			setSamplerStateAt(const unsigned int, minko::render::WrapMode, minko::render::TextureFilter, minko::render::MipFilter)
+			{
+			}
+
 		private:
 			WebGLContext();
 

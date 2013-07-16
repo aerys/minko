@@ -584,7 +584,7 @@ void
 
 		int location = glGetUniformLocation(program, &name[0]);
 
-		if (location >= 0 && type != ProgramInputs::Type::unknown)
+		if (location >= 0 && type != (GLenum)ProgramInputs::Type::unknown)
 		{
 			names.push_back(std::string(&name[0], nameLength));
 			types.push_back(inputType);

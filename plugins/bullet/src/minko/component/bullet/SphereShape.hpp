@@ -20,30 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		namespace bullet
 		{
-			class ConeShape:
+			class SphereShape:
 				public AbstractPhysicsShape
 			{
 			public:
-				typedef std::shared_ptr<ConeShape> Ptr;
+				typedef std::shared_ptr<SphereShape> Ptr;
 
 			private:
-				float	_radius;
-				float	_height;
+				float _radius;
 
 			public:
 				inline static
 					Ptr
-					create(float radius, float height)
+					create(float radius)
 				{
-					return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
+					return std::shared_ptr<SphereShape>(new SphereShape(radius));
 				}
 
 				inline
@@ -54,37 +53,19 @@ namespace minko
 				}
 
 				inline
-					float
-					height() const
-				{
-					return _height;
-				}
-
-				inline
 					void
 					setRadius(float radius)
 				{
-					const bool needsUpdate	= fabsf(radius - _radius) > 1e-6f;
+					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
 					_radius	= radius;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
 				}
 
-				inline
-					void
-					setHeight(float height)
-				{
-					const bool needsUpdate	= fabsf(height - _height) > 1e-6f;
-					_height	= height;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
 			private:
-				ConeShape(float radius, float height):
-					AbstractPhysicsShape(CONE),
-					_radius(radius),
-					_height(height)
+				SphereShape(float radius):
+					AbstractPhysicsShape(SPHERE),
+					_radius(radius)
 				{
 				}
 			};

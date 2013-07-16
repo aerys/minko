@@ -20,53 +20,77 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include "minko/Signal.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		namespace bullet
 		{
-			class SphereShape:
-				public AbstractPhysicsShape
+			class AbstractPhysicsShape:
+				public std::enable_shared_from_this<AbstractPhysicsShape>
 			{
 			public:
-				typedef std::shared_ptr<SphereShape> Ptr;
+				typedef std::shared_ptr<AbstractPhysicsShape> Ptr;
+
+				enum Type
+				{
+					SPHERE,
+					BOX,
+					CONE,
+					CYLINDER
+				};
+
+			protected:
+				Type	_type;
+				float	_margin;
 
 			private:
-				float _radius;
+				std::shared_ptr<Signal<Ptr>> _shapeChanged;
 
 			public:
-				inline static
-					Ptr
-					create(float radius)
+				AbstractPhysicsShape(Type type):
+					_type(type),
+					_margin(0.0f),
+					_shapeChanged(Signal<Ptr>::create())
 				{
-					return std::shared_ptr<SphereShape>(new SphereShape(radius));
+				}
+
+				virtual
+					~AbstractPhysicsShape()
+				{
+				}
+
+				inline
+					Type
+					type() const
+				{
+					return _type;
 				}
 
 				inline
 					float
-					radius() const
+					margin() const
 				{
-					return _radius;
+					return _margin;
 				}
 
 				inline
 					void
-					setRadius(float radius)
+					setMargin(float margin)
 				{
-					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
-					_radius	= radius;
+					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
+					_margin	= margin;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
 				}
 
-			private:
-				SphereShape(float radius):
-					AbstractPhysicsShape(SPHERE),
-					_radius(radius)
+				inline
+					Signal<Ptr>::Ptr
+					shapeChanged()
 				{
+					return _shapeChanged;
 				}
 			};
 		}
