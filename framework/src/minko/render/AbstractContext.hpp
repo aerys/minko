@@ -102,9 +102,10 @@ namespace minko
 
 			virtual
 			const unsigned int
-			createTexture(unsigned int width,
-						  unsigned int height,
-						  bool		   mipMapping) = 0;
+			createTexture(unsigned int  width,
+						  unsigned int  height,
+						  bool		    mipMapping,
+                          bool          optimizeForRenderToTexture = false) = 0;
 
 			virtual
 			void
@@ -126,7 +127,10 @@ namespace minko
 
             virtual
             void
-            setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering) = 0;
+            setSamplerStateAt(const unsigned int    position,
+                              WrapMode              wrapping,
+                              TextureFilter         filtering,
+                              MipFilter             mipFiltering) = 0;
 
 			virtual
 			const unsigned int
@@ -221,6 +225,14 @@ namespace minko
             virtual
             void
             setTriangleCulling(TriangleCulling triangleCulling) = 0;
+
+            virtual
+            void
+            setRenderToBackBuffer() = 0;
+
+            virtual
+            void
+            setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false) = 0;
 		};
 	}	
 }
