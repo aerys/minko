@@ -109,6 +109,7 @@ namespace minko
 		class Vector3;
 		class Vector4;
 		class Matrix4x4;
+		class Quaternion;
 	}
 
 	namespace file

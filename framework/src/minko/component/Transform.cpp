@@ -297,19 +297,33 @@ Transform::RootTransform::updateTransforms()
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
 		auto parentId 					= _parentId[nodeId];
+        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+
+        parentModelToWorldMatrix->_hasChanged = false;
 
 		if (parentId == -1)
 		{
-			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
-			parentModelToWorldMatrix->_hasChanged = false;
+            auto parentTransform = _transform[nodeId];
+
+            if (parentTransform->_hasChanged)
+            {
+                parentTransformChanged = true;
+
+			    parentModelToWorldMatrix->copyFrom(parentTransform);
+                parentTransform->_hasChanged = false;
+            }
 		}
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto modelToWorld = _modelToWorld[childId];
+			auto modelToWorld   = _modelToWorld[childId];
+            auto transform      = _transform[childId];
 
-			modelToWorld->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
-			modelToWorld->_hasChanged = false;
+            if (transform->_hasChanged || parentTransformChanged)
+            {
+			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
+			    transform->_hasChanged = false;
+            }
 		}
 
 		++nodeId;
@@ -319,8 +333,11 @@ Transform::RootTransform::updateTransforms()
 void
 Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 {
+	if (_invalidLists)
+		updateTransformsList();
+
 	auto				targetNodeId	= _nodeToId[node];
-	auto				nodeId			= targetNodeId;
+	int					nodeId			= targetNodeId;
 	auto				dirtyRoot		= -1;
 	std::vector<uint>	path;
 
@@ -337,8 +354,9 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	}
 
 	// update that path starting from the dirty root
-	for (auto dirtyNodeId : path)
+	for (int i = path.size() - 1; i >= 0; --i)
 	{
+		auto dirtyNodeId	= path[i];
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 

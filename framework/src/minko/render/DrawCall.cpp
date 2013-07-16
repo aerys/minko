@@ -125,37 +125,30 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 			else if (type == ProgramInputs::Type::float2)
 			{
 				auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
-				auto x				= float2Value->x();
-				auto y				= float2Value->y();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, x, y);
+					context->setUniform(location, float2Value->x(), float2Value->y());
 				});
 			}
 			else if (type == ProgramInputs::Type::float3)
 			{
 				auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
-				auto x				= float3Value->x();
-				auto y				= float3Value->y();
-				auto z				= float3Value->z();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, x, y, z);
+					context->setUniform(location, float3Value->x(), float3Value->y(), float3Value->z());
 				});
 			}
 			else if (type == ProgramInputs::Type::float4)
 			{
 				auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
-				auto x				= float4Value->x();
-				auto y				= float4Value->y();
-				auto z				= float4Value->z();
-				auto w				= float4Value->w();
 
 				_func.push_back([=](AbstractContext::Ptr context)
 				{
-					context->setUniform(location, x, y, z, w);
+					context->setUniform(
+                        location, float4Value->x(), float4Value->y(), float4Value->z(), float4Value->w()
+                    );
 				});
 			}
 			else if (type == ProgramInputs::Type::float16)
