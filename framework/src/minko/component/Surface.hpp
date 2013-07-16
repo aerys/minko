@@ -91,6 +91,7 @@ namespace minko
 				return _drawCalls;
 			}
 
+
 		private:
 			Surface(std::shared_ptr<geometry::Geometry> geometry,
 					std::shared_ptr<data::Provider>		material,
