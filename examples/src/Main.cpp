@@ -15,7 +15,9 @@ using namespace minko::math;
 Rendering::Ptr				renderingComponent;
 bullet::PhysicsWorld::Ptr	physicsWorld;
 
+
 auto mesh = scene::Node::create("mesh");
+auto subgroup = scene::Node::create("subgroup");
 auto group = scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
 
@@ -100,6 +102,10 @@ int main(int argc, char** argv)
 
 		root->addChild(group)->addChild(camera);
 
+		group->addComponent(Transform::create());
+		group->component<Transform>()->transform()
+			->appendTranslation(0.5,0.5,0.0);
+
         renderingComponent = Rendering::create(assets->context());
         renderingComponent->backgroundColor(0x7F7F7FFF);
 		camera->addComponent(renderingComponent);
@@ -115,8 +121,10 @@ int main(int argc, char** argv)
 		root->addComponent(physicsWorld);
 
 		auto shape		= bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
-		auto collider	= bullet::Collider::create(10.0f, shape);
-		mesh->addComponent(bullet::ColliderComponent::create(collider));
+
+		mesh->addComponent(bullet::ColliderComponent::create(
+			bullet::Collider::create(10.0f, shape)
+			));
 
 		mesh->addComponent(Transform::create());
         group->addChild(mesh);
