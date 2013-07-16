@@ -297,19 +297,33 @@ Transform::RootTransform::updateTransforms()
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
 		auto parentId 					= _parentId[nodeId];
+        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+
+        parentModelToWorldMatrix->_hasChanged = false;
 
 		if (parentId == -1)
 		{
-			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
-			parentModelToWorldMatrix->_hasChanged = false;
+            auto parentTransform = _transform[nodeId];
+
+            if (parentTransform->_hasChanged)
+            {
+                parentTransformChanged = true;
+
+			    parentModelToWorldMatrix->copyFrom(parentTransform);
+                parentTransform->_hasChanged = false;
+            }
 		}
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto modelToWorld = _modelToWorld[childId];
+			auto modelToWorld   = _modelToWorld[childId];
+            auto transform      = _transform[childId];
 
-			modelToWorld->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
-			modelToWorld->_hasChanged = false;
+            if (transform->_hasChanged || parentTransformChanged)
+            {
+			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
+			    transform->_hasChanged = false;
+            }
 		}
 
 		++nodeId;
