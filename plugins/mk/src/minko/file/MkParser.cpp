@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::file;
 using namespace minko::math;
 
+std::map<std::string, MkParser::DeserializeFunction>	MkParser::_pluginEntryToFunction;
+
 void
 MkParser::parse(const std::string&					filename,
 				std::shared_ptr<Options>			options,
@@ -32,7 +34,6 @@ MkParser::parse(const std::string&					filename,
 	std::vector<char> dataCopy(data.begin(), data.end());
 
 	minko::Qark::Object&    obj 			= minko::Qark::decode(dataCopy);
-
 
 	std::map<std::string, Any>& qarkData = minko::Any::cast<std::map<std::string, Any>&>(obj);
 
@@ -49,4 +50,10 @@ MkParser::parse(const std::string&					filename,
 	assetsLibrary->node(filename, _node);
 
 	std::cout << "parse MK" << std::endl << std::flush;
+}
+
+void
+MkParser::registerController(std::string entryName, DeserializeFunction deserializedFunction)
+{
+	MkParser::_pluginEntryToFunction[entryName] = deserializedFunction;
 }
