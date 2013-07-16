@@ -39,10 +39,15 @@ namespace minko
             typedef std::shared_ptr<data::Container>    ContainerPtr;
 
 		private:
+            static SamplerState                                         _defaultSamplerState;
+
+			std::shared_ptr<Program>									_program;
 			std::shared_ptr<data::Container>					        _data;
+            std::shared_ptr<data::Container>					        _rootData;
 			const std::unordered_map<std::string, std::string>&	        _attributeBindings;
 			const std::unordered_map<std::string, std::string>&	        _uniformBindings;
 			const std::unordered_map<std::string, std::string>&	        _stateBindings;
+            std::shared_ptr<States>                                     _states;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
 
@@ -51,13 +56,16 @@ namespace minko
 		public:
 			static inline
 			Ptr
-			create(ContainerPtr						                    data,
+			create(std::shared_ptr<Program>								program,
+				   ContainerPtr						                    data,
+                   ContainerPtr						                    rootData,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
-				   const std::unordered_map<std::string, std::string>&	stateBindings)
+				   const std::unordered_map<std::string, std::string>&	stateBindings,
+                   std::shared_ptr<States>                              states)
 			{
                 auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					data, attributeBindings, uniformBindings, stateBindings
+					program, data, rootData, attributeBindings, uniformBindings, stateBindings, states
 				));
 
                 dc->bind();
@@ -73,10 +81,13 @@ namespace minko
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
 		private:
-			DrawCall(ContainerPtr                   						data,
+			DrawCall(std::shared_ptr<Program>								program,
+					 ContainerPtr                   						data,
+                     ContainerPtr                   						rootData,
 				     const std::unordered_map<std::string, std::string>&	attributeBindings,
 				     const std::unordered_map<std::string, std::string>&	uniformBindings,
-					 const std::unordered_map<std::string, std::string>&	stateBindings);
+					 const std::unordered_map<std::string, std::string>&	stateBindings,
+                     std::shared_ptr<States>                                states);
 
 			void
 			bind();
@@ -88,9 +99,15 @@ namespace minko
             T
             getDataProperty(const std::string& propertyName)
             {
-                watchProperty(propertyName);
+                //watchProperty(propertyName);
 
-                return _data->get<T>(propertyName);
+                if (_data->hasProperty(propertyName))
+                    return _data->get<T>(propertyName);
+
+                if (_rootData->hasProperty(propertyName))
+                    return _rootData->get<T>(propertyName);
+
+                throw;
             }
 
 			template <typename T>

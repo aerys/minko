@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Loader.hpp"
+
 #include "Options.hpp"
 #include "minko/Signal.hpp"
 
