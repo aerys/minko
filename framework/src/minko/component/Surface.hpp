@@ -46,6 +46,8 @@ namespace minko
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
 
 		public:
 			static
@@ -105,6 +107,9 @@ namespace minko
 
 			void
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
+			void
+			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 		};
 	}
 }
