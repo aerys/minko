@@ -71,7 +71,7 @@ namespace minko
 				_y = y;
 			}
 
-			inline
+           	inline
 			Ptr
 			copyFrom(Ptr value)
 			{

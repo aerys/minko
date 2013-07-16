@@ -11,7 +11,7 @@
 		"diffuseColor"			: "material.diffuse.rgba",
 		"diffuseMap"			: "material.diffuse.map",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
 	
 	"stateBindings"	: {
