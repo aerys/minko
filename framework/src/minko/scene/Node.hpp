@@ -33,7 +33,7 @@ namespace minko
 			typedef std::shared_ptr<Node>	Ptr;
 
 		private:
-			typedef std::shared_ptr<controller::AbstractController>	AbsCtrlPtr;
+			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
 		protected:
 			std::string 									_name;
@@ -46,13 +46,13 @@ namespace minko
 			Ptr 											_root;
 			Ptr												_parent;
 			std::shared_ptr<data::Container>				_container;
-			std::list<AbsCtrlPtr>							_controllers;
+			std::list<AbsCtrlPtr>							_components;
 
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_added;
 			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>			_removed;
 			std::shared_ptr<Signal<Ptr, Ptr>>				_layersChanged;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerAdded;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_controllerRemoved;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentAdded;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>	_componentRemoved;
 
 		public:
 
@@ -177,16 +177,16 @@ namespace minko
 
 			inline
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			controllerAdded()
+			componentAdded()
 			{
-				return _controllerAdded;
+				return _componentAdded;
 			}
 
 			inline
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			controllerRemoved()
+			componentRemoved()
 			{
-				return _controllerRemoved;
+				return _componentRemoved;
 			}
 
 			Ptr
@@ -199,35 +199,35 @@ namespace minko
 			contains(Ptr Node);
 
 			Ptr
-			addController(AbsCtrlPtr controller);
+			addComponent(AbsCtrlPtr component);
 
 			Ptr
-			removeController(AbsCtrlPtr controller);
+			removeComponent(AbsCtrlPtr component);
 
 			bool
-			hasController(AbsCtrlPtr controller);
+			hasComponent(AbsCtrlPtr component);
 
 			template <typename T>
 			inline
 			bool
-			hasController()
+			hasComponent()
 			{
-				return controller<T>() != nullptr;
+				return component<T>() != nullptr;
 			}
 
 			template <typename T>
 			std::vector<std::shared_ptr<T>>
-			controllers()
+			components()
 			{
 				std::vector<std::shared_ptr<T>> result;
 				unsigned int counter = 0;
 
-				for (auto controller : _controllers)
+				for (auto component : _components)
 				{
-					std::shared_ptr<T> typedController = std::dynamic_pointer_cast<T>(controller);
+					std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
 
-					if (typedController != nullptr)
-						result.push_back(typedController);
+					if (typedComponent != nullptr)
+						result.push_back(typedComponent);
 				}
 
 				return result;
@@ -235,18 +235,18 @@ namespace minko
 
 			template <typename T>
 			std::shared_ptr<T>
-			controller(const unsigned int position = 0)
+			component(const unsigned int position = 0)
 			{
 				unsigned int counter = 0;
 
-				for (auto controller : _controllers)
+				for (auto component : _components)
 				{
-					std::shared_ptr<T> typedController = std::dynamic_pointer_cast<T>(controller);
+					std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
 
-					if (typedController != nullptr)
+					if (typedComponent != nullptr)
 					{
 						if (counter == position)
-							return typedController;
+							return typedComponent;
 						else
 							++counter;
 					}

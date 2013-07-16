@@ -7,7 +7,7 @@
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
 	
 	"priority"		: 0,
@@ -36,8 +36,7 @@
 
 			void main(void)
 			{
-				gl_FragColor = vec4(worldNormal.rgb, 1);
-				//gl_FragColor = vec4((worldNormal.rgb + 1) * .5, 1);
+				gl_FragColor = vec4((worldNormal.rgb + 1) * .5, 1);
 			}
 		"
 	}]

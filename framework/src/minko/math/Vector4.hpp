@@ -50,7 +50,7 @@ namespace minko
 				return _w;
 			}
 
-			inline
+            inline
 			void
 			w(float w)
 			{
