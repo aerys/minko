@@ -30,12 +30,12 @@ project "minko-framework"
 	-- windows
 	configuration { "windows", "x32" }
 	links { "glew32" }
-		includedirs { "lib/glew/include" }
+	includedirs { "lib/glew/include" }
 	libdirs { "lib/glew/bin/win32" }
 
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		linkoptions { }
 		libdirs { "/opt/local/lib/" }
 		includedirs { "/opt/local/include/" }
+    links { "OpenGL.framework", "GLUT.framework" }
