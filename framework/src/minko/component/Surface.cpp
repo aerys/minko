@@ -60,10 +60,39 @@ Surface::initialize()
 }
 
 void
+Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
+{
+	for (unsigned int i = 0; i < targets().size(); ++i)
+	{
+		std::shared_ptr<scene::Node> target = targets()[i];
+
+		target->data()->removeProvider(_geometry->data());
+		target->data()->addProvider(newGeometry->data());
+
+		_drawCalls.clear();
+
+		for (auto pass : _effect->passes())
+			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
+	}
+
+	_geometry = newGeometry;
+}
+
+void
 Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							scene::Node::Ptr		target)
 {
 	auto data = target->data();
+	auto addedOrRemovedHandler = std::bind(
+		&Surface::addedOrRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	);
+
+	_addedSlot = target->added()->connect(addedOrRemovedHandler);
+	_removedSlot = target->removed()->connect(addedOrRemovedHandler);
 
 	data->addProvider(_material);
 	data->addProvider(_geometry->data());
@@ -80,8 +109,18 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 {
 	auto data = target->data();
 
+	_addedSlot = nullptr;
+	_removedSlot = nullptr;
+
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
 
 	_drawCalls.clear();
+}
+
+void
+Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+{
+	for (auto dc : _drawCalls)
+		dc->bind(targets()[0]->data(), node->root()->data());
 }
