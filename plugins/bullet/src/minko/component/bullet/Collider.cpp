@@ -19,11 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Collider.hpp"
 #include <minko/math/Matrix4x4.hpp>
-#include <minko/controller/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 using namespace minko;
 using namespace minko::math;
-using namespace minko::controller;
+using namespace minko::component;
 
 bullet::Collider::Collider(float						mass,
 						   AbstractPhysicsShape::Ptr	shape,
@@ -62,7 +62,7 @@ void
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
 	auto rotation		= modelToWorldMatrix->rotation();
-	auto translation	= modelToWorldMatrix->translation();
+	auto translation	= modelToWorldMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
 
 	// record the corrective term that keeps the
