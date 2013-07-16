@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -34,20 +35,20 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
-			typedef std::unordered_map<std::string, std::string>	BindingMap;
+			typedef const std::unordered_map<std::string, std::string>	    BindingMap;
+			typedef std::shared_ptr<Program>							    ProgramPtr;
+            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
 
 		private:
-			const std::string					_name;
-			std::shared_ptr<render::Program>	_program;
-			const float							_priority;
-			Blending::Source					_blendingSourceFactor;
-			Blending::Destination				_blendingDestinationFactor;
-			bool								_depthMask;
-			CompareMode							_depthFunc;
+			const std::string		_name;
+			ProgramPtr				_programTemplate;
+			BindingMap				_attributeBindings;
+			BindingMap				_uniformBindings;
+			BindingMap				_stateBindings;
+			BindingMap				_macroBindings;
+            std::shared_ptr<States> _states;
 
-			BindingMap							_attributeBindings;
-			BindingMap							_uniformBindings;
-			BindingMap							_stateBindings;
+			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
 		public:
 			inline static
@@ -57,11 +58,8 @@ namespace minko
 				   BindingMap&						attributeBindings,
 				   BindingMap&						uniformBindings,
 				   BindingMap&						stateBindings,
-				   const float						priority					= 0.f,
-				   Blending::Source					blendingSourceFactor		= Blending::Source::ONE,
-				   Blending::Destination			blendingDestinationFactor	= Blending::Destination::ZERO,
-				   bool								depthMask					= true,
-				   CompareMode						depthFunc					= CompareMode::LESS)
+				   BindingMap&						macroBindings,
+                   std::shared_ptr<States>          states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -69,11 +67,8 @@ namespace minko
 					attributeBindings,
 					uniformBindings,
 					stateBindings,
-					priority,
-					blendingSourceFactor,
-					blendingDestinationFactor,
-					depthMask,
-					depthFunc
+					macroBindings,
+                    states
 				));
 			}
 
@@ -85,10 +80,10 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<render::Program>
+			std::shared_ptr<Program>
 			program()
 			{
-				return _program;
+				return _programTemplate;
 			}
 
 			inline
@@ -112,40 +107,8 @@ namespace minko
 				return _stateBindings;
 			}
 
-			inline
-			const float
-			priority()
-			{
-				return _priority;
-			}
-
-			inline
-			const Blending::Source
-			blendingSource()
-			{
-				return _blendingSourceFactor;
-			}
-
-			inline
-			const Blending::Destination
-			blendingDestination()
-			{
-				return _blendingDestinationFactor;
-			}
-
-			inline
-			bool
-			depthMask()
-			{
-				return _depthMask;
-			}
-
-			inline
-			const CompareMode
-			depthFunc()
-			{
-				return _depthFunc;
-			}
+			std::shared_ptr<DrawCall>
+			createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 
 		private:
 			Pass(const std::string&					name,
@@ -153,11 +116,14 @@ namespace minko
 				 BindingMap&						attributeBindings,
 				 BindingMap&						uniformBindings,
 				 BindingMap&						stateBindings,
-				 const float						priority,
-				 Blending::Source					blendingSourceFactor,
-				 Blending::Destination				blendingDestinationFactor,
-				 bool								depthMask,
-				 CompareMode						depthFunc);
+				 BindingMap&						macroBindings,
+                 std::shared_ptr<States>            states);
+
+			const unsigned int
+			buildSignature(std::shared_ptr<data::Container> data);
+
+			std::shared_ptr<Program>
+			selectProgram(std::shared_ptr<data::Container> data);
 		};
 	}
 }

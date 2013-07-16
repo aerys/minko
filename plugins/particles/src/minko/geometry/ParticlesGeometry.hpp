@@ -32,12 +32,12 @@ namespace minko
 		public:
 			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
 
-			typedef std::shared_ptr<render::ParticleVertexStream>	VertexStreamPtr;
-			typedef std::shared_ptr<render::ParticleIndexStream>	IndexStreamPtr;
+			typedef std::shared_ptr<render::ParticleVertexBuffer>	VertexBufferPtr;
+			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
 		
 		private:
-			VertexStreamPtr						_vertices;
-			IndexStreamPtr						_indices;
+			VertexBufferPtr						_vertices;
+			IndexBufferPtr						_indices;
 
 		public:
 			inline static
@@ -51,7 +51,7 @@ namespace minko
 			initStreams(unsigned int maxParticles);
 
 			inline
-			VertexStreamPtr
+			VertexBufferPtr
 			vertices()
 			{
 				return _vertices;

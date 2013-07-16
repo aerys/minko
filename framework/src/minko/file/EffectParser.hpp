@@ -56,9 +56,12 @@ namespace minko
 			render::Blending::Destination								_defaultBlendDstFactor;
 			bool														_defaultDepthMask;
 			render::CompareMode											_defaultDepthFunc;
+            render::TriangleCulling                                     _defaultTriangleCulling;
 			std::unordered_map<std::string, std::string>				_defaultAttributeBindings;
 			std::unordered_map<std::string, std::string>				_defaultUniformBindings;
 			std::unordered_map<std::string, std::string>				_defaultStateBindings;
+			std::unordered_map<std::string, std::string>				_defaultMacroBindings;
+            std::unordered_map<std::string, render::SamplerState>       _defaultSamplerStates;
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
@@ -111,7 +114,8 @@ namespace minko
 			parseBindings(Json::Value&									contextNode,
 						  std::unordered_map<std::string, std::string>&	attributeBindings,
 						  std::unordered_map<std::string, std::string>&	uniformBindings,
-						  std::unordered_map<std::string, std::string>&	stateBindings);
+						  std::unordered_map<std::string, std::string>&	stateBindings,
+						  std::unordered_map<std::string, std::string>&	macroBindings);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,
@@ -122,6 +126,14 @@ namespace minko
 			parseDepthTest(Json::Value&			contextNode,
 						   bool&				depthMask,
 						   render::CompareMode&	depthFunc);
+
+            void
+            parseTriangleCulling(Json::Value&               contextNode,
+                                 render::TriangleCulling&   triangleCulling);
+
+            void
+            parseSamplerStates(Json::Value&                                             contextNode,
+                               std::unordered_map<std::string, render::SamplerState>&   samplerStates);
 
 			void
 			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
