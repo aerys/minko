@@ -17,22 +17,60 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexStream.hpp"
+#pragma once
 
-#include "minko/render/AbstractContext.hpp"
+#include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
-using namespace minko::render;
-
-void
-IndexStream::upload()
+namespace minko
 {
-	_id = _context->createIndexBuffer(_data.size());
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
-}
+	namespace component
+	{
+		class AbstractComponent
+		{
+			friend class scene::Node;
 
-void
-IndexStream::dispose()
-{
-	_context->deleteIndexBuffer(_id);
-	_id = -1;
+		public:
+			typedef std::shared_ptr<AbstractComponent>	Ptr;
+
+		private:
+			std::vector<std::shared_ptr<scene::Node>>					_targets;
+
+			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
+			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
+
+		public:
+			AbstractComponent() :
+				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
+			{
+			}
+
+			virtual
+			~AbstractComponent()
+			{
+			}
+
+			inline
+			const std::vector<std::shared_ptr<scene::Node>>&
+			targets()
+			{
+				return _targets;
+			}
+
+			inline
+			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
+			targetAdded()
+			{
+				return _targetAdded;
+			}
+
+			inline
+			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
+			targetRemoved()
+			{
+				return _targetRemoved;
+			}
+		};
+	}
 }

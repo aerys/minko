@@ -22,78 +22,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
-#include "minko/render/ProgramInputs.hpp"
 
 namespace minko
 {
 	namespace render
 	{
-		class Program :
+		class Shader :
 			public AbstractResource
 		{
 		public:
-			typedef std::shared_ptr<Program>	Ptr;
+			typedef std::shared_ptr<Shader> Ptr;
+
+			enum class Type
+			{
+				VERTEX_SHADER,
+				FRAGMENT_SHADER
+			};
 
 		private:
-			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
-			typedef std::shared_ptr<render::ProgramInputs>	ProgramInputsPtr;
-
-		private:
-			std::shared_ptr<Shader>	_vertexShader;
-			std::shared_ptr<Shader>	_fragmentShader;
-			ProgramInputsPtr		_inputs;
+			Type		_type;
+			std::string _source;
 
 		public:
 			inline static
 			Ptr
-			create(AbstractContextPtr context)
+			create(std::shared_ptr<AbstractContext> context, Type type)
 			{
-				return std::shared_ptr<Program>(new Program(context));
+				return std::shared_ptr<Shader>(new Shader(context, type));
 			}
 
 			inline static
 			Ptr
-			create(AbstractContextPtr		context,
-				   std::shared_ptr<Shader>	vertexShader,
-				   std::shared_ptr<Shader>	fragmentShader)
+			create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
 			{
-				auto p = create(context);
+				auto s = create(context, type);
 
-				p->_vertexShader  = vertexShader;
-				p->_fragmentShader = fragmentShader;
+				s->_source = source;
 
-				return p;
+				return s;
 			}
 
 			inline
-			std::shared_ptr<Shader>
-			vertexShader()
+			const std::string&
+			source()
 			{
-				return _vertexShader;
+				return _source;
 			}
 
 			inline
-			std::shared_ptr<Shader>
-			fragmentShader()
-			{
-				return _fragmentShader;
-			}
-
-			inline
-			ProgramInputsPtr
-			inputs()
-			{
-				return _inputs;
-			}
-
 			void
-			upload();
+			source(const std::string& source)
+			{
+				_source = source;
+			}
 
 			void
 			dispose();
 
+			void
+			upload();
+
 		private:
-			Program(AbstractContextPtr context);
+			Shader(std::shared_ptr<AbstractContext> context,
+				   Type								type) :
+				AbstractResource(context),
+				_type(type)
+			{
+			}
 		};
 	}
 }

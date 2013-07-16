@@ -20,57 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
 namespace minko
 {
-	namespace controller
-	{
-		class AbstractController
-		{
-			friend class scene::Node;
-
-		public:
-			typedef std::shared_ptr<AbstractController>	Ptr;
-
-		private:
-			std::vector<std::shared_ptr<scene::Node>>					_targets;
-
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
-
-		public:
-			AbstractController() :
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create())
-			{
-			}
-
-			virtual
-			~AbstractController()
-			{
-			}
-
-			inline
-			const std::vector<std::shared_ptr<scene::Node>>&
-			targets()
-			{
-				return _targets;
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetAdded()
-			{
-				return _targetAdded;
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetRemoved()
-			{
-				return _targetRemoved;
-			}
-		};
-	}
+    namespace render
+    {
+	    enum class MipFilter
+	    {
+            NONE,
+	        NEAREST,
+            LINEAR
+	    };
+    }
 }

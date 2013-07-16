@@ -17,48 +17,26 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "Shader.hpp"
 
-#include "minko/Common.hpp"
+#include "minko/render/AbstractContext.hpp"
 
-namespace minko
+using namespace minko::render;
+
+void
+Shader::dispose()
 {
-	namespace render
-	{
+	if (_type == Type::VERTEX_SHADER)
+		_context->deleteVertexShader(_id);
+	else if (_type == Type::FRAGMENT_SHADER)
+		_context->deleteFragmentShader(_id);
 
-		class Effect :
-			public std::enable_shared_from_this<Effect>
-		{
-		public:
-			typedef std::shared_ptr<Effect>	Ptr;
+	_id = -1;
+}
 
-		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
-
-		private:
-			std::vector<PassPtr>						_passes;
-			std::list<std::shared_ptr<EffectInstance>>	_instances;
-
-		public:
-			inline static
-			Ptr
-			create(std::vector<PassPtr>&	passes)
-			{
-				return std::shared_ptr<Effect>(new Effect(passes));
-			}
-
-			inline
-			const std::vector<PassPtr>&
-			passes()
-			{
-				return _passes;
-			}
-
-			std::shared_ptr<EffectInstance>
-			instanciate(std::shared_ptr<data::Container> data);
-
-		private:
-			Effect(std::vector<PassPtr>&	passes);
-		};		
-	}
+void
+Shader::upload()
+{
+	_id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
+	_context->setShaderSource(_id, _source);
 }

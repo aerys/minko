@@ -40,6 +40,9 @@ AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 AssetsLibrary::GeometryPtr
 AssetsLibrary::geometry(const std::string& name)
 {
+	if (!_geometries.count(name))
+		throw std::invalid_argument("name");
+
 	return _geometries[name];
 }
 
@@ -54,6 +57,9 @@ AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geome
 render::Texture::Ptr
 AssetsLibrary::texture(const std::string& name)
 {
+	if (!_textures.count(name))
+		throw std::invalid_argument("name");
+
 	return _textures[name];
 }
 
@@ -68,6 +74,9 @@ AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 AssetsLibrary::EffectPtr
 AssetsLibrary::effect(const std::string& name)
 {
+	if (!_effects.count(name))
+		throw std::invalid_argument("name");
+
 	return _effects[name];
 }
 
@@ -82,6 +91,9 @@ AssetsLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 const std::vector<unsigned char>&
 AssetsLibrary::blob(const std::string& name)
 {
+	if (!_blobs.count(name))
+		throw std::invalid_argument("name");
+
 	return _blobs[name];
 }
 
