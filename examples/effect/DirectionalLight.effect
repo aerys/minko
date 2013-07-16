@@ -9,10 +9,7 @@
 	},
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform.worldToScreenMatrix",
-		"lightDirection"		: "light.direction",
-		"ambientColor"			: "light.ambient.rgba",
-		"lightColor"			: "light.diffuse.rgba",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
 		"cameraPosition"		: "camera.position"
 	},
 	"stateBindings"	: {
@@ -28,7 +25,7 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "none",
+	"triangleCulling"	: "back",
 	
 	"samplerStates"	: {
 		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
@@ -100,6 +97,7 @@
 			varying vec3		worldTangent;
 			varying vec2		vertexUV;
 			
+
 			void main(void)
 			{
 				#ifdef DIFFUSE_MAP

@@ -126,7 +126,7 @@ namespace minko
 		}
 
 		Ptr
-			queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
+		queue(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
 
 		Ptr
 		load(const std::string& filename, std::shared_ptr<file::Options> options = nullptr);
