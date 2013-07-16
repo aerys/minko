@@ -239,12 +239,8 @@ Transform::RootTransform::updateTransformsList()
 {
 	unsigned int nodeId = 0;
 
-	_idToNode.clear();
-	_parentId.clear();
 	_transform.clear();
 	_modelToWorld.clear();
-	_numChildren.clear();
-	_firstChildId.clear();
 	//_worldToModel.clear();
 
 	auto descendants = scene::NodeSet::create(targets())
@@ -301,19 +297,33 @@ Transform::RootTransform::updateTransforms()
 		auto firstChildId 				= _firstChildId[nodeId];
 		auto lastChildId 				= firstChildId + numChildren;
 		auto parentId 					= _parentId[nodeId];
+        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+
+        parentModelToWorldMatrix->_hasChanged = false;
 
 		if (parentId == -1)
 		{
-			parentModelToWorldMatrix->copyFrom(_transform[nodeId]);
-			parentModelToWorldMatrix->_hasChanged = false;
+            auto parentTransform = _transform[nodeId];
+
+            if (parentTransform->_hasChanged)
+            {
+                parentTransformChanged = true;
+
+			    parentModelToWorldMatrix->copyFrom(parentTransform);
+                parentTransform->_hasChanged = false;
+            }
 		}
 
 		for (auto childId = firstChildId; childId < lastChildId; ++childId)
 		{
-			auto modelToWorld = _modelToWorld[childId];
+			auto modelToWorld   = _modelToWorld[childId];
+            auto transform      = _transform[childId];
 
-			modelToWorld->copyFrom(_transform[childId])->append(parentModelToWorldMatrix);
-			modelToWorld->_hasChanged = false;
+            if (transform->_hasChanged || parentTransformChanged)
+            {
+			    modelToWorld->copyFrom(transform)->append(parentModelToWorldMatrix);
+			    transform->_hasChanged = false;
+            }
 		}
 
 		++nodeId;
@@ -323,11 +333,8 @@ Transform::RootTransform::updateTransforms()
 void
 Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 {
-	if (_invalidLists)
-		updateTransformsList();
-
 	auto				targetNodeId	= _nodeToId[node];
-	int					nodeId			= targetNodeId;
+	auto				nodeId			= targetNodeId;
 	auto				dirtyRoot		= -1;
 	std::vector<uint>	path;
 
@@ -344,10 +351,8 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	}
 
 	// update that path starting from the dirty root
-	for (int i = path.size()-1; i >= 0; --i)
-	//for (auto dirtyNodeId : path)
+	for (auto dirtyNodeId : path)
 	{
-		auto dirtyNodeId	= path[i];
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 

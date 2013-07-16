@@ -70,7 +70,7 @@ void
 PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
 {
   	_view->copyFrom(modelToWorldMatrix);
-    _view->transform(_position, _position);
+    _view->transform(Vector3::zero(), _position);
     _view->invert();
 
     _viewProjection->copyFrom(_view)->append(_projection);
