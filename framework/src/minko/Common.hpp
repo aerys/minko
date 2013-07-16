@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <unordered_map>
 #include <vector>
 
-#define PI 3.1415926535897932384626433832795;
+#define PI 3.1415926535897932384626433832795
 
 namespace minko
 {
@@ -77,13 +77,15 @@ namespace minko
 		class NodeSet;
 	}
 
-	namespace controller
+	namespace component
 	{
-		class AbstractController;
+		class AbstractComponent;
+        class AbstractRootDataComponent;
 		class Transform;
 		class Surface;
-		class RenderingController;
+		class Rendering;
 		class PerspectiveCamera;
+        class DirectionalLight;
 	}
 
 	namespace data

@@ -110,7 +110,7 @@ namespace minko
 				_z = z;
 			}
 
-			inline
+            inline
 			Ptr
 			copyFrom(Ptr value)
 			{
