@@ -10,6 +10,9 @@
 	"uniformBindings"	: {
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
+		"lightDirection"		: "light.direction",
+		"ambientColor"			: "light.ambient.rgba",
+		"lightColor"			: "light.diffuse.rgba",
 		"cameraPosition"		: "camera.position"
 	},
 	"stateBindings"	: {
@@ -25,12 +28,12 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "back",
+	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"material.specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"material.normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
 
 	"includes"		: [ "Phong.glsl" ],
@@ -38,6 +41,7 @@
 	"passes"		: [{
 		"vertexShader"	: "
 			attribute vec3	position;
+			
 			attribute vec3	normal;
 			attribute vec3	uv;
 			attribute vec3	tangent;
@@ -55,7 +59,8 @@
 			void main(void)
 			{
 				vec4 pos = modelToWorldMatrix * vec4(position, 1.0);
-
+				
+				
 				#ifdef SPECULAR
 					worldPosition = pos.xyz;
 				#endif
@@ -87,7 +92,8 @@
 				vec3 specular;
 				vec3 ambient;
 			};
-
+			
+			
 			uniform	Material			material;
 			uniform DirectionalLight	light;
 			uniform vec3				cameraPosition;
@@ -100,6 +106,8 @@
 
 			void main(void)
 			{
+				gl_FragColor	= vec4(1.0, 0.0, 0.0, 1.0);
+				
 				#ifdef DIFFUSE_MAP
 					vec4 diffuse = texture2D(material.diffuseMap, vertexUV);
 				#else
@@ -157,6 +165,7 @@
 				#endif // SPECULAR || SPECULAR_MAP
 								
 				gl_FragColor = saturate(diffuse);
+				
 			}
 		"
 	}]
