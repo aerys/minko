@@ -19,16 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Effect.hpp"
 
-#include "minko/data/Container.hpp"
 #include "minko/render/Pass.hpp"
 
 using namespace minko::render;
 
-Effect::Effect(std::vector<PassPtr>&	passes) :
-	_passes(passes),
-	_data(data::Provider::create())
+Effect::Effect(std::vector<PassPtr>& passes) :
+	_passes(passes)
 {
-	auto passId = 0;
-	for (auto pass : passes)
-		_data->set("effect/pass" + std::to_string(passId++), pass->program());
 }
+
+/*
+std::shared_ptr<EffectInstance>
+Effect::instanciate(data::Container::Ptr data)
+{
+
+
+	return nullptr;
+}
+*/
