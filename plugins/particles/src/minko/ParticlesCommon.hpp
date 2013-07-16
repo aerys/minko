@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		class ParticleSystem;
 	}
@@ -34,8 +34,8 @@ namespace minko
 	}
 	namespace render
 	{
-		class ParticleVertexStream;
-		class ParticleIndexStream;
+		class ParticleVertexBuffer;
+		class ParticleIndexBuffer;
 	}
 
 	namespace particle

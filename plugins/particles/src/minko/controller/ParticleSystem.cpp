@@ -21,17 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/AssetsLibrary.hpp"
 
-#include "minko/controller/RenderingController.hpp"
-#include "minko/controller/Surface.hpp"
-#include "minko/controller/Transform.hpp"
+#include "minko/component/Rendering.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/ParticleVertexStream.hpp"
-#include "minko/render/ParticleIndexStream.hpp"
+#include "minko/render/ParticleVertexBuffer.hpp"
+#include "minko/render/ParticleIndexBuffer.hpp"
 
 #include "minko/particle/ParticleData.hpp"
 #include "minko/particle/StartDirection.hpp"
@@ -48,7 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/math/Matrix4x4.hpp"
 
-using namespace minko::controller;
+using namespace minko::component;
 using namespace minko::particle;
 
 #define EPSILON 0.001
@@ -60,8 +60,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 							   ShapePtr				shape,
 							   StartDirection		startDirection,
 							   FloatSamplerPtr		startVelocity)
-	: _renderers			(scene::NodeSet::create(scene::NodeSet::Mode::AUTO)),
-	  _countLimit			(16384),
+	: _countLimit			(16384),
 	  _maxCount				(0),
 	  _liveCount			(0),
 	  _previousLiveCount	(0),
@@ -85,13 +84,8 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	_material = data::Provider::create();
 	
 	auto view = math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
-
-	_material->set("material/blending",		render::Blending::Mode::ADDITIVE)
-		->set("material/depthFunc",	render::CompareMode::ALWAYS)
-			 ->set("transform/worldToScreenMatrix",	view);
 	
-
-	_effect = assets->effect("wsparticles");
+	_effect = assets->effect("particles");
 
 	_surface = Surface::create(_geometry, 
 							   _material,
@@ -121,80 +115,181 @@ ParticleSystem::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-	
-	_renderers->root()
-		->descendants(true)
-		->hasController<RenderingController>();
-	_rendererAddedSlot = _renderers->nodeAdded()->connect(std::bind(
-		&ParticleSystem::rendererAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-	_rendererRemovedSlot = _renderers->nodeRemoved()->connect(std::bind(
-		&ParticleSystem::rendererRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
 }
 
 void
-ParticleSystem::targetAddedHandler(AbsCtrlPtr	ctrl,
+ParticleSystem::targetAddedHandler(AbsCompPtr	ctrl,
 								   NodePtr 		target)
 {	
-	target->addController(_surface);
-	_renderers->select(targets().begin(), targets().end())->update();
+	target->addComponent(_surface);
+
+	_addedSlot = target->added()->connect(std::bind(
+		&ParticleSystem::addedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	_removedSlot = target->removed()->connect(std::bind(
+		&ParticleSystem::removedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	addedHandler(target->root(), target, target->parent());
 }
 
 void
-ParticleSystem::targetRemovedHandler(AbsCtrlPtr ctrl,
+ParticleSystem::targetRemovedHandler(AbsCompPtr ctrl,
 									 NodePtr	target)
 {
-	target->removeController(_surface);
-	_renderers->select(targets().begin(), targets().end())->update();
+	target->addComponent(_surface);
+	_addedSlot = nullptr;
+	_removedSlot = nullptr;
+
+	removedHandler(target->root(), target, target->parent());
+}
+void
+ParticleSystem::addedHandler(NodePtr node,
+								  NodePtr target,
+								  NodePtr parent)
+{
+	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
+		&ParticleSystem::rootDescendantAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
+		&ParticleSystem::rootDescendantRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
+		&ParticleSystem::componentAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
+		&ParticleSystem::componentRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	));
+
+	rootDescendantAddedHandler(target->root(), target, target->parent());
 }
 
+void
+ParticleSystem::removedHandler(NodePtr node,
+									NodePtr target,
+									NodePtr parent)
+{
+	_rootDescendantAddedSlot = nullptr;
+	_rootDescendantRemovedSlot = nullptr;
+	_componentAddedSlot = nullptr;
+	_componentRemovedSlot = nullptr;
+
+	rootDescendantRemovedHandler(target->root(), target, target->parent());
+}
 
 void
-ParticleSystem::rendererAddedHandler(NodeSetPtr	renderers,
-									 NodePtr	rendererNode)
+ParticleSystem::rootDescendantAddedHandler(NodePtr node,
+												NodePtr target,
+												NodePtr parent)
+{
+	auto rendererNodes = scene::NodeSet::create(node)
+		->descendants(true)
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasComponent<Rendering>();
+        });
+
+	for (auto rendererNode : rendererNodes->nodes())
+		for (auto renderer: rendererNode->components<Rendering>())
+			addRenderer(renderer);
+}
+
+void
+ParticleSystem::rootDescendantRemovedHandler(NodePtr node,
+												  NodePtr target,
+												  NodePtr parent)
+{
+	auto rendererNodes = scene::NodeSet::create(node)
+		->descendants(true)
+        ->where([](scene::Node::Ptr node)
+        {
+            return node->hasComponent<Rendering>();
+        });
+
+	for (auto rendererNode : rendererNodes->nodes())
+		for (auto renderer: rendererNode->components<Rendering>())
+			removeRenderer(renderer);
+}
+
+void
+ParticleSystem::componentAddedHandler(NodePtr				node,
+											NodePtr				target,
+											AbsCompPtr	ctrl)
+{
+	auto renderer = std::dynamic_pointer_cast<Rendering>(ctrl);
+	
+	if (renderer)
+		addRenderer(renderer);
+}
+
+void
+ParticleSystem::componentRemovedHandler(NodePtr					node,
+											  NodePtr					target,
+											  AbsCompPtr	ctrl)
+{
+	auto renderer = std::dynamic_pointer_cast<Rendering>(ctrl);
+
+	if (renderer)
+		removeRenderer(renderer);
+}
+
+void
+ParticleSystem::addRenderer(RenderingPtr renderer)
 {
 	if (_playing)
 		_previousClock = clock();
-	
-	for (auto renderer : rendererNode->controllers<RenderingController>())
+
+	if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
 	{
-		if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
-		{
-			_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
+		_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
 				&ParticleSystem::enterFrameHandler,
 				shared_from_this(),
 				std::placeholders::_1));
-		}
 	}
 }
 
 void
-ParticleSystem::rendererRemovedHandler(NodeSetPtr	renderers,
-									   NodePtr		rendererNode)
+ParticleSystem::removeRenderer(RenderingPtr renderer)
 {
-	for (auto renderer : rendererNode->controllers<RenderingController>())
-	{
-		_enterFrameSlots.erase(renderer); 
-	}
+		removeRenderer(renderer);
 }
 
-
 void
-ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
+ParticleSystem::enterFrameHandler(RenderingPtr renderer)
 {	
 	if(!_playing)
 		return;
 
-
 	if (_isInWorldSpace)
-		_toWorld = targets()[0]->controllers<Transform>()[0];
+		_toWorld = targets()[0]->components<Transform>()[0];
 
 	clock_t now	= clock();
 	float deltaT = (float)(now - _previousClock) / CLOCKS_PER_SEC;
@@ -203,7 +298,7 @@ ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 	if (_updateStep == 0)
 	{
 			updateSystem(deltaT, _emitting);
-			updateVertexStream();
+			updateVertexBuffer();
 	}
 	else
 	{
@@ -218,7 +313,7 @@ ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 			_time -= _updateStep;
 		}
 		if (changed)
-			updateVertexStream();
+			updateVertexBuffer();
 	}
 }
 
@@ -595,7 +690,7 @@ ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 
 	_format |= components;
 
-	render::ParticleVertexStream::Ptr vs = _geometry->vertices();
+	render::ParticleVertexBuffer::Ptr vs = _geometry->vertices();
 	unsigned int vertexSize = 5;
 
 	if (components & VertexComponentFlags::SIZE)
@@ -668,7 +763,7 @@ ParticleSystem::updateVertexFormat()
 }
 
 void
-ParticleSystem::updateVertexStream()
+ParticleSystem::updateVertexBuffer()
 {
 	if (_liveCount == 0)
 		return;
@@ -695,44 +790,44 @@ ParticleSystem::updateVertexStream()
 
 		if (particle->alive)
 		{
-			setInVertexStream(vertexIterator, 2, particle->x);
-			setInVertexStream(vertexIterator, 3, particle->y);
-			setInVertexStream(vertexIterator, 4, particle->z);
+			setInVertexBuffer(vertexIterator, 2, particle->x);
+			setInVertexBuffer(vertexIterator, 3, particle->y);
+			setInVertexBuffer(vertexIterator, 4, particle->z);
 
 			if (_format & VertexComponentFlags::SIZE)
-				setInVertexStream(vertexIterator, i++, particle->size);
+				setInVertexBuffer(vertexIterator, i++, particle->size);
 
 			if (_format & VertexComponentFlags::COLOR)
 			{
-				setInVertexStream(vertexIterator, i++, particle->r);
-				setInVertexStream(vertexIterator, i++, particle->g);
-				setInVertexStream(vertexIterator, i++, particle->b);
+				setInVertexBuffer(vertexIterator, i++, particle->r);
+				setInVertexBuffer(vertexIterator, i++, particle->g);
+				setInVertexBuffer(vertexIterator, i++, particle->b);
 			}
 
 			if (_format & VertexComponentFlags::TIME)
-				setInVertexStream(vertexIterator, i++, particle->timeLived / particle->lifetime);
+				setInVertexBuffer(vertexIterator, i++, particle->timeLived / particle->lifetime);
 
 			if (_format & VertexComponentFlags::OLD_POSITION)
 			{
-				setInVertexStream(vertexIterator, i++, particle->oldx);
-				setInVertexStream(vertexIterator, i++, particle->oldy);
-				setInVertexStream(vertexIterator, i++, particle->oldz);
+				setInVertexBuffer(vertexIterator, i++, particle->oldx);
+				setInVertexBuffer(vertexIterator, i++, particle->oldy);
+				setInVertexBuffer(vertexIterator, i++, particle->oldz);
 			}
 
 			if (_format & VertexComponentFlags::ROTATION)
-				setInVertexStream(vertexIterator, i++, particle->rotation);
+				setInVertexBuffer(vertexIterator, i++, particle->rotation);
 
 			if (_format & VertexComponentFlags::SPRITEINDEX)
-				setInVertexStream(vertexIterator, i++, particle->spriteIndex);
+				setInVertexBuffer(vertexIterator, i++, particle->spriteIndex);
 
 			vertexIterator += 4 * _geometry->vertexSize();
 		}
 	}
-	std::static_pointer_cast<render::ParticleVertexStream>(_geometry->vertices())->update(_liveCount, _geometry->vertexSize());
+	std::static_pointer_cast<render::ParticleVertexBuffer>(_geometry->vertices())->update(_liveCount, _geometry->vertexSize());
 
 	if (_liveCount != _previousLiveCount)
 	{
-		std::static_pointer_cast<render::ParticleIndexStream>(_geometry->indices())->update(_liveCount);
+		std::static_pointer_cast<render::ParticleIndexBuffer>(_geometry->indices())->update(_liveCount);
 		_previousLiveCount = _liveCount;
 	}
 }

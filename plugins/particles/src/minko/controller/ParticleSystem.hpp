@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <time.h>
 
 #include "minko/ParticlesCommon.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 #include "minko/geometry/ParticlesGeometry.hpp"
 
@@ -30,10 +30,10 @@ namespace minko
 {
 	class AssetsLibrary;
 
-	namespace controller
+	namespace component
 	{
 		class ParticleSystem :
-			public AbstractController,
+			public AbstractComponent,
 			public std::enable_shared_from_this<ParticleSystem>
 		{
 		public:
@@ -47,8 +47,8 @@ namespace minko
 
 			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<AbstractController>							AbsCtrlPtr;
-			typedef std::shared_ptr<RenderingController>						RenderingCtrlPtr;
+			typedef std::shared_ptr<AbstractComponent>							AbsCompPtr;
+			typedef std::shared_ptr<Rendering>									RenderingPtr;
 			
 			typedef std::shared_ptr<Surface>									SurfacePtr;
 			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
@@ -65,7 +65,7 @@ namespace minko
 			class ParticleDistanceToCameraComparison
 			{
 			public:
-				controller::ParticleSystem*	system;
+				component::ParticleSystem*	system;
 
 				inline
 				bool
@@ -84,11 +84,15 @@ namespace minko
 
 			TransformPtr												_toWorld;
 
-			std::map<RenderingCtrlPtr, Signal<RenderingCtrlPtr>::Slot>	_enterFrameSlots;
-			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot							_rendererAddedSlot;
-			Signal<NodeSetPtr, NodePtr>::Slot							_rendererRemovedSlot;
+			std::map<RenderingPtr, Signal<RenderingPtr>::Slot>			_enterFrameSlots;
+			Signal<AbsCompPtr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbsCompPtr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentRemovedSlot;
 			
 			NodeSetPtr													_renderers;
 
@@ -228,7 +232,7 @@ namespace minko
 			{
 				reset();
 				playing(false);
-				updateVertexStream();
+				updateVertexBuffer();
 			};
 
 			inline
@@ -383,7 +387,7 @@ namespace minko
 						
 			inline
 			void
-			setInVertexStream(float* ptr, unsigned int offset, float value)
+			setInVertexBuffer(float* ptr, unsigned int offset, float value)
 			{
 				*(ptr + offset) = value;
 				*(ptr + offset + _geometry->vertexSize()) = value;
@@ -392,7 +396,7 @@ namespace minko
 			};
 			
 			void
-			updateVertexStream();
+			updateVertexBuffer();
 
 		protected:
 			ParticleSystem(AbstractContextPtr		context,
@@ -407,19 +411,37 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetAddedHandler(AbsCompPtr ctrl, NodePtr target);
 
 			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
+			targetRemovedHandler(AbsCompPtr ctrl, NodePtr target);
+	
+			void
+			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			componentAddedHandler(NodePtr node, NodePtr target, AbsCompPtr	ctrl);
+
+			void
+			componentRemovedHandler(NodePtr node, NodePtr target, AbsCompPtr ctrl);
+
+			void
+			addRenderer(RenderingPtr renderer);
 			
 			void
-			rendererAddedHandler(NodeSetPtr renderers, NodePtr rendererNode);
+			removeRenderer(RenderingPtr renderer);
 
 			void
-			rendererRemovedHandler(NodeSetPtr renderers, NodePtr rendererNode);
-
-			void
-			enterFrameHandler(RenderingCtrlPtr renderer);
+			enterFrameHandler(RenderingPtr renderer);
 		};
 	}
 }

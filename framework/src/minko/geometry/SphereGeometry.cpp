@@ -18,8 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "SphereGeometry.hpp"
-#include "minko/render/VertexStream.hpp"
-#include "minko/render/IndexStream.hpp"
+#include "minko/render/VertexBuffer.hpp"
+#include "minko/render/IndexBuffer.hpp"
 
 using namespace minko::geometry;
 using namespace minko::render;
@@ -93,13 +93,13 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 	data.push_back(-1.f);
 	data.push_back(0.f);
 
-	auto stream = VertexStream::create(context, data);
+	auto stream = VertexBuffer::create(context, data);
 
 	stream->addAttribute("position", 3, 0);
 	stream->addAttribute("uv", 2, 3);
 	stream->addAttribute("normal", 3, 5);
 
-	addVertexStream(stream);
+	addVertexBuffer(stream);
 }
 
 void
@@ -137,5 +137,5 @@ SphereGeometry::initializeIndices(std::shared_ptr<AbstractContext>	context,
 		data[c++] = (numParallels - 3) * numMeridians + i + 1;
 	}
 
-	indices(IndexStream::create(context, data));
+	indices(IndexBuffer::create(context, data));
 }
