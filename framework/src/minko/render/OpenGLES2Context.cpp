@@ -475,6 +475,15 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
+
+    if (_frameBuffers.count(texture))
+    {
+        glDeleteFramebuffers(1, &_frameBuffers[texture]);
+        _frameBuffers.erase(texture);
+
+        glDeleteRenderbuffers(1, &_renderBuffers[texture]);
+        _renderBuffers.erase(texture);
+    }
 }
 
 void
