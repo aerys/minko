@@ -1,6 +1,6 @@
 // particles effect
 {
-	"name"	: "particles",
+	"name"	: "wsparticles",
 	
 	"attributeBindings"	: {
 		"offset"				: "geometry/vertex/attribute/offset",
@@ -36,8 +36,8 @@
 			void main(void)
 			{
 				s = size;
-				  
-				gl_Position =  (worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0)) + (vec4(offset, 0, 0));
+				
+				gl_Position =  (worldToScreenMatrix * vec4(position, 1.0)) + (vec4(offset, 0, 0));
 			}
 		",
 		"fragmentShader"	: "
@@ -47,7 +47,7 @@
 				
 			void main(void)
 			{			
-				gl_FragColor = vec4(s, s, s, 1);
+				gl_FragColor = vec4(1., 1., 0.1, 1);
 			}
 		"
 	}]

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/controller/RenderingController.hpp"
 #include "minko/controller/Surface.hpp"
+#include "minko/controller/Transform.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -90,7 +91,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 			 ->set("transform/worldToScreenMatrix",	view);
 	
 
-	_effect = assets->effect("particles");
+	_effect = assets->effect("wsparticles");
 
 	_surface = Surface::create(_geometry, 
 							   _material,
@@ -190,6 +191,10 @@ ParticleSystem::enterFrameHandler(RenderingCtrlPtr renderer)
 {	
 	if(!_playing)
 		return;
+
+
+	if (_isInWorldSpace)
+		_toWorld = targets()[0]->controllers<Transform>()[0];
 
 	clock_t now	= clock();
 	float deltaT = (float)(now - _previousClock) / CLOCKS_PER_SEC;
@@ -436,14 +441,15 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 
 	if (_isInWorldSpace)
 	{
+		const std::vector<float>& transform = _toWorld->transform()->data();
+
 		float x = particle.x;
 		float y = particle.y;
 		float z = particle.z;
 
-		particle.x = _localToWorld[0] * x + _localToWorld[4] * y + _localToWorld[8] * z + _localToWorld[12];
-		particle.y = _localToWorld[1] * x + _localToWorld[5] * y + _localToWorld[9] * z + _localToWorld[13];
-		particle.z = _localToWorld[2] * x + _localToWorld[6] * y + _localToWorld[10] * z + _localToWorld[14];
-
+		particle.x = transform[0] * x + transform[1] * y + transform[2] * z + transform[3];
+		particle.y = transform[4] * x + transform[5] * y + transform[6] * z + transform[7];
+		particle.z = transform[8] * x + transform[9] * y + transform[10] * z + transform[11];
 
 		if (_startDirection != StartDirection::NONE)
 		{
@@ -451,9 +457,9 @@ ParticleSystem::createParticle(unsigned int 				particleIndex,
 			float vy = particle.startvy;
 			float vz = particle.startvz;
 
-			particle.startvx = _localToWorld[0] * vx + _localToWorld[4] * vy + _localToWorld[8] * vz;
-			particle.startvy = _localToWorld[1] * vx + _localToWorld[5] * vy + _localToWorld[9] * vz;
-			particle.startvz = _localToWorld[2] * vx + _localToWorld[6] * vy + _localToWorld[10] * vz;
+			particle.startvx = transform[0] * vx + transform[1] * vy + transform[2] * vz;
+			particle.startvy = transform[4] * vx + transform[5] * vy + transform[6] * vz;
+			particle.startvz = transform[8] * vx + transform[9] * vy + transform[10] * vz;
 		}
 	}
 
