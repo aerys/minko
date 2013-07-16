@@ -23,42 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-
-		class Effect :
-			public std::enable_shared_from_this<Effect>
-		{
-		public:
-			typedef std::shared_ptr<Effect>	Ptr;
-
-		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
-
-		private:
-			std::vector<PassPtr>						_passes;
-			std::list<std::shared_ptr<EffectInstance>>	_instances;
-
-		public:
-			inline static
-			Ptr
-			create(std::vector<PassPtr>&	passes)
-			{
-				return std::shared_ptr<Effect>(new Effect(passes));
-			}
-
-			inline
-			const std::vector<PassPtr>&
-			passes()
-			{
-				return _passes;
-			}
-
-			std::shared_ptr<EffectInstance>
-			instanciate(std::shared_ptr<data::Container> data);
-
-		private:
-			Effect(std::vector<PassPtr>&	passes);
-		};		
-	}
+    namespace render
+    {
+        enum class TriangleCulling
+        {
+            NONE,
+            FRONT,
+            BACK,
+            BOTH
+        };
+    }
 }

@@ -17,48 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "IndexBuffer.hpp"
 
-#include "minko/Common.hpp"
+#include "minko/render/AbstractContext.hpp"
 
-namespace minko
+using namespace minko::render;
+
+void
+IndexBuffer::upload()
 {
-	namespace render
-	{
+	_id = _context->createIndexBuffer(_data.size());
+	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+}
 
-		class Effect :
-			public std::enable_shared_from_this<Effect>
-		{
-		public:
-			typedef std::shared_ptr<Effect>	Ptr;
-
-		private:
-			typedef std::shared_ptr<Pass>	PassPtr;
-
-		private:
-			std::vector<PassPtr>						_passes;
-			std::list<std::shared_ptr<EffectInstance>>	_instances;
-
-		public:
-			inline static
-			Ptr
-			create(std::vector<PassPtr>&	passes)
-			{
-				return std::shared_ptr<Effect>(new Effect(passes));
-			}
-
-			inline
-			const std::vector<PassPtr>&
-			passes()
-			{
-				return _passes;
-			}
-
-			std::shared_ptr<EffectInstance>
-			instanciate(std::shared_ptr<data::Container> data);
-
-		private:
-			Effect(std::vector<PassPtr>&	passes);
-		};		
-	}
+void
+IndexBuffer::dispose()
+{
+	_context->deleteIndexBuffer(_id);
+	_id = -1;
 }
