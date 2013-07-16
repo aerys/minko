@@ -39,7 +39,7 @@ namespace minko
 		std::shared_ptr<Options>									_options;
 		std::shared_ptr<deserialize::AssetsDeserializer>			_deserilizeAssets;
 		std::shared_ptr<deserialize::NameConverter>					_nameConverter;
-		std::map<std::string, MkParser::DeserializeFunction>&		_pluginEntryToFunction;
+		//std::shared_ptr<std::map<std::string, MkParser::DeserializeFunction>>		_pluginEntryToFunction;
 
 	public:
 			unsigned int									_numMesh;
@@ -59,13 +59,13 @@ namespace minko
 		{
 			return _assetsLibary;
 		}
-
+		/*
 		inline
 		void
-		pluginEntryToFunction(std::map<std::string, MkParser::DeserializeFunction>& functionMap)
+		pluginEntryToFunction(std::shared_ptr<std::map<std::string, MkParser::DeserializeFunction>> functionMap)
 		{
 			_pluginEntryToFunction = functionMap;
-		}
+		}*/
 
 		inline
 		std::shared_ptr<deserialize::AssetsDeserializer>
