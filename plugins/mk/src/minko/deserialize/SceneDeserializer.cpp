@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/AssetsLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/deserialize/NodeDeserializer.hpp"
 #include "minko/deserialize/AssetsDeserializer.hpp"
