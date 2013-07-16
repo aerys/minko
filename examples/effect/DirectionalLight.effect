@@ -25,7 +25,7 @@
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
 
 	"includes"		: [ "Phong.glsl" ],
