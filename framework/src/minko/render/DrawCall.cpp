@@ -42,12 +42,14 @@ SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, Text
 
 DrawCall::DrawCall(Program::Ptr											program,
 				   data::Container::Ptr									data,
+                   data::Container::Ptr									rootData,
 				   const std::unordered_map<std::string, std::string>&	attributeBindings,
 				   const std::unordered_map<std::string, std::string>&	uniformBindings,
 				   const std::unordered_map<std::string, std::string>&	stateBindings,
                    States::Ptr                                          states) :
 	_program(program),
 	_data(data),
+    _rootData(rootData),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
@@ -264,7 +266,7 @@ DrawCall::boundPropertyChangedHandler(std::shared_ptr<data::Container>  data,
 bool
 DrawCall::dataHasProperty(const std::string& propertyName)
 {
-    watchProperty(propertyName);
+    //watchProperty(propertyName);
 
-    return _data->hasProperty(propertyName);
+    return _data->hasProperty(propertyName) || _rootData->hasProperty(propertyName);
 }

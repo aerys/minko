@@ -231,6 +231,21 @@ Matrix4x4::transpose()
 	);
 }
 
+std::shared_ptr<Vector3>
+Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output)
+{
+    if (!output)
+        output = Vector3::create();
+
+    output->setTo(
+        v->x() * _m[0] + v->y() * _m[4] + v->z() * _m[8] + _m[12],
+        v->x() * _m[1] + v->y() * _m[5] + v->z() * _m[9] + _m[13],
+        v->x() * _m[2] + v->y() * _m[6] + v->z() * _m[8] + _m[14]
+    );
+
+    return output;
+}
+
 Matrix4x4::Ptr
 Matrix4x4::append(Matrix4x4::Ptr matrix)
 {

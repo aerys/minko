@@ -22,16 +22,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/controller/AbstractController.hpp"
-#include "minko/controller/RenderingController.hpp"
+#include "minko/component/AbstractComponent.hpp"
+#include "minko/component/Rendering.hpp"
 #include "minko/Any.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		class Transform :
-			public AbstractController,
+			public AbstractComponent,
 			public std::enable_shared_from_this<Transform>
 		{
 
@@ -40,7 +40,7 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>			NodePtr;
-			typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
+			typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
 
 		private:
 			std::shared_ptr<math::Matrix4x4>			_transform;
@@ -79,7 +79,7 @@ namespace minko
 				if (forceUpdate)
 				{
 					auto node		= targets()[0];
-					auto rootCtrl	= node->root()->controller<RootTransform>();
+					auto rootCtrl	= node->root()->component<RootTransform>();
 
 					rootCtrl->forceUpdate(node);
 				}
@@ -105,13 +105,13 @@ namespace minko
 		private:
 			class RootTransform :
 				public std::enable_shared_from_this<RootTransform>,
-				public AbstractController
+				public AbstractComponent
 			{
 			public:
 				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
-				typedef std::shared_ptr<RenderingController>	RenderingCtrlPtr;
+				typedef std::shared_ptr<Rendering>	RenderingCtrlPtr;
 				typedef Signal<RenderingCtrlPtr>::Slot 			EnterFrameCallback;
 
 			public:
@@ -155,10 +155,10 @@ namespace minko
 				targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 				void
-				controllerRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
+				componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
 				void
-				controllerAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
+				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
 				void
 				removedHandler(NodePtr node, NodePtr target, NodePtr parent);
