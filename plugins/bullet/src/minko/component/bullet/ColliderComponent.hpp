@@ -20,26 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/controller/AbstractController.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 namespace minko
 {
-	namespace controller
+	namespace component
 	{
 		namespace bullet
 		{
 			class Collider;
 			class PhysicsWorld;
 
-			class ColliderController:
-				public AbstractController,
-				public std::enable_shared_from_this<ColliderController>
+			class ColliderComponent:
+				public AbstractComponent,
+				public std::enable_shared_from_this<ColliderComponent>
 			{
 			public:
-				typedef std::shared_ptr<ColliderController> Ptr;
+				typedef std::shared_ptr<ColliderComponent> Ptr;
 
 			private:
-				typedef std::shared_ptr<AbstractController>		AbsCtrlPtr;
+				typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>			NodePtr;
 				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
 				typedef std::shared_ptr<Collider>				ColliderPtr;
@@ -63,15 +63,15 @@ namespace minko
 					Ptr
 					create(ColliderPtr collider)
 				{
-					Ptr colliderController(new ColliderController(collider));
+					Ptr ColliderComponent(new ColliderComponent(collider));
 
-					colliderController->initialize();
+					ColliderComponent->initialize();
 
-					return colliderController;
+					return ColliderComponent;
 				}
 
 			private:
-				ColliderController(ColliderPtr);
+				ColliderComponent(ColliderPtr);
 
 				void
 					initialize();

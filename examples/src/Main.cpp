@@ -3,6 +3,7 @@
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoBullet.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -11,7 +12,9 @@
 using namespace minko::component;
 using namespace minko::math;
 
-Rendering::Ptr renderingComponent;
+Rendering::Ptr				renderingComponent;
+bullet::PhysicsWorld::Ptr	physicsWorld;
+
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
@@ -107,9 +110,17 @@ int main(int argc, char** argv)
 
         root->addComponent(DirectionalLight::create());
 
-        group->addChild(mesh);
+		physicsWorld	= bullet::PhysicsWorld::create();
+		physicsWorld->setGravity(Vector3::create(0.0f, -9.81f, 0.0f));
+		root->addComponent(physicsWorld);
+
+		auto shape		= bullet::BoxShape::create(0.5f, 0.5f, 0.5f);
+		auto collider	= bullet::Collider::create(10.0f, shape);
+		mesh->addComponent(bullet::ColliderComponent::create(collider));
 
 		mesh->addComponent(Transform::create());
+        group->addChild(mesh);
+
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -121,7 +132,14 @@ int main(int argc, char** argv)
 		));
 	});
 
-	assets->load();
+	try
+	{
+		assets->load();
+	}
+	catch(std::exception e)
+	{
+		std::cerr << "exception\n\t" << e.what() << std::endl;
+	}
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
@@ -130,7 +148,7 @@ int main(int argc, char** argv)
     {
         //group->component<Transform>()->transform()->appendRotationY(.01f);
         //camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
-        mesh->component<Transform>()->transform()->prependRotationY(.01f);
+        //mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
 

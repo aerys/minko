@@ -226,7 +226,7 @@ namespace minko
 			rotation(Quaternion::Ptr output = 0) const;
 
 			Vector3::Ptr
-			translation(Vector3::Ptr output = 0) const;
+			translationVector(Vector3::Ptr output = 0) const;
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
