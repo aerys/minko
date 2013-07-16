@@ -156,12 +156,12 @@ OpenGLES2Context::configureViewport(const unsigned int x,
 
 void
 OpenGLES2Context::clear(float 			red,
-					   float 			green,
-					   float 			blue,
-					   float 			alpha,
-					   float 			depth,
-					   unsigned int 	stencil,
-					   unsigned int 	mask)
+					    float 			green,
+					    float 			blue,
+					    float 			alpha,
+					    float 			depth,
+					    unsigned int 	stencil,
+					    unsigned int 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -938,7 +938,8 @@ OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndSt
         throw std::logic_error("this texture cannot be used for RTT");
 
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
-    glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+    if (enableDepthAndStencil)
+        glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
 }
 
 unsigned int
