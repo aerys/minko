@@ -8,8 +8,8 @@
 	},
 	
 	"uniformBindings"	: {
-		"diffuseColor"			: "material.diffuse.rgba",
-		"diffuseMap"			: "material.diffuse.map",
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
 	},
@@ -19,13 +19,13 @@
 	},
 
 	"macroBindings"	: {
-		"TECHNIQUE_DIFFUSE_MAP"	: "material.diffuse.map"
+		"TECHNIQUE_DIFFUSE_MAP"	: "material.diffuseMap"
 	},
 	
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [true, "less"],
-	"triangleCulling"	: "front",
+	"triangleCulling"	: "back",
 	
 	"passes"	: [{	
 		"vertexShader"	: "
