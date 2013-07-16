@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/component/AbstractComponent.hpp"
 
 namespace minko
@@ -46,6 +47,8 @@ namespace minko
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
 
 		public:
 			static
@@ -67,6 +70,9 @@ namespace minko
 			{
 				return _geometry;
 			}
+
+            void
+            geometry(std::shared_ptr<geometry::Geometry> newGeometry);
 
 			inline
 			std::shared_ptr<data::Provider>
@@ -102,6 +108,9 @@ namespace minko
 
 			void
 			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
+			void
+			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 		};
 	}
 }
