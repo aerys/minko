@@ -172,6 +172,7 @@ namespace minko
 				decoders[TYPE_BOOLEAN]		= &Qark::decodeTrivial<bool>;
 				decoders[TYPE_STRING]		= &Qark::decodeString;
 				decoders[TYPE_OBJECT]		= &Qark::decodeMap;
+				decoders[TYPE_CUSTOM]		= &Qark::decodeMap;
 				decoders[TYPE_ARRAY]		= &Qark::decodeArray;
 				decoders[TYPE_BYTES]		= &Qark::decodeBytes;
 			}
