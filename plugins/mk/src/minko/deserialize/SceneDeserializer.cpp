@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/deserialize/NodeDeserializer.hpp"
 #include "minko/deserialize/AssetsDeserializer.hpp"
+#include "minko/file/MkParser.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -55,10 +56,10 @@ namespace minko
 		void
 		SceneDeserializer::initializeNodeDeserializer()
 		{
-			_nodeDeserializer[MkTypes::GROUP]	= &SceneDeserializer::deserializeGroup;
-			_nodeDeserializer[MkTypes::MESH]	= &SceneDeserializer::deserializeMesh;
-			_nodeDeserializer[MkTypes::LIGHT]	= &SceneDeserializer::deserializeLight;
-			_nodeDeserializer[MkTypes::CAMERA]	= &SceneDeserializer::deserializeCamera;
+			_nodeDeserializer[MkTypes::GROUP]	= std::bind(&SceneDeserializer::deserializeGroup, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			_nodeDeserializer[MkTypes::MESH]	= std::bind(&SceneDeserializer::deserializeMesh, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			_nodeDeserializer[MkTypes::LIGHT]	= std::bind(&SceneDeserializer::deserializeLight, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			_nodeDeserializer[MkTypes::CAMERA]	= std::bind(&SceneDeserializer::deserializeCamera, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 		}
 
 		std::shared_ptr<scene::Node>
@@ -67,12 +68,22 @@ namespace minko
 										   ControllerMap&		controllerMap,
 										   NodeMap&				nodeMap)
 		{
-			NodeInfo& nodeInformation = Any::cast<NodeInfo&>(nodeObject);
+			NodeInfo&					nodeInformation = Any::cast<NodeInfo&>(nodeObject);
+			int&						type			= Any::cast<int&>(nodeInformation["type"]);
+			NodeDeserializerFunc		f				= _nodeDeserializer[type];
+			
+			std::shared_ptr<scene::Node> node			= f(nodeInformation, options, controllerMap, nodeMap);
 
-			int& type			= Any::cast<int&>(nodeInformation["type"]);
-			NodeDeserializer f	= _nodeDeserializer[type];
-
-			return (this->*f)(nodeInformation, options, controllerMap, nodeMap);
+			// iterate throw register plugin
+			for (std::map<std::string, file::MkOptions::DeserializeFunction>::iterator it = options->pluginEntryToFunction()->begin(); 
+				it != options->pluginEntryToFunction()->end(); 
+				++it)
+			{
+				if (nodeInformation.find(it->first) != nodeInformation.end())
+					node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), options, controllerMap, nodeMap));
+			}
+			
+			return node;
 		}
 
 		std::shared_ptr<scene::Node>
