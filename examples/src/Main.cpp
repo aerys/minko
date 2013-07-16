@@ -132,6 +132,10 @@ int main(int argc, char** argv)
             camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
         else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
 
         //group->component<Transform>()->transform()->appendRotationY(.01f);
         //camera->component<Transform>()->transform()->appendRotationY(0.01f);
