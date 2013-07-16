@@ -108,7 +108,7 @@ namespace minko
 			}
 
 			std::shared_ptr<DrawCall>
-			createDrawCall(std::shared_ptr<data::Container> data);
+			createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 
 		private:
 			Pass(const std::string&					name,
