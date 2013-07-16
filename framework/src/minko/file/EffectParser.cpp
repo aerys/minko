@@ -19,10 +19,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "EffectParser.hpp"
 
+#include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
+#include "minko/render/TriangleCulling.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -82,7 +88,13 @@ EffectParser::initializeDepthFuncMap()
 
 EffectParser::EffectParser() :
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+    _defaultPriority(0.f),
+    _defaultBlendSrcFactor(Blending::Source::ONE),
+    _defaultBlendDstFactor(Blending::Destination::ZERO),
+    _defaultDepthMask(true),
+    _defaultDepthFunc(CompareMode::LESS),
+    _defaultTriangleCulling(TriangleCulling::BACK)
 {
 }
 
@@ -111,9 +123,21 @@ EffectParser::parse(const std::string&					filename,
 void
 EffectParser::parseDefaultValues(Json::Value& root)
 {
-	parseBindings(root, _defaultAttributeBindings, _defaultUniformBindings, _defaultStateBindings);
+	parseBindings(
+		root,
+		_defaultAttributeBindings,
+		_defaultUniformBindings,
+		_defaultStateBindings,
+		_defaultMacroBindings
+	);
+
 	parseBlendMode(root, _defaultBlendSrcFactor, _defaultBlendDstFactor);
+
 	parseDepthTest(root, _defaultDepthMask, _defaultDepthFunc);
+
+    parseTriangleCulling(root, _defaultTriangleCulling);
+
+    parseSamplerStates(root, _defaultSamplerStates);
 }
 
 void
@@ -132,8 +156,9 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
 		std::unordered_map<std::string, std::string>	uniformBindings(_defaultUniformBindings);
 		std::unordered_map<std::string, std::string>	stateBindings(_defaultStateBindings);
-
-		parseBindings(pass, attributeBindings, uniformBindings, stateBindings);
+		std::unordered_map<std::string, std::string>	macroBindings(_defaultMacroBindings);
+        
+		parseBindings(pass, attributeBindings, uniformBindings, stateBindings, macroBindings);
 
 		// pass priority
 		auto priority = pass.get("priority", _defaultPriority).asFloat();
@@ -150,21 +175,40 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 
 		parseDepthTest(pass, depthMask, depthFunc);
 
+        // triangle culling
+        auto triangleCulling  = _defaultTriangleCulling;
+
+        parseTriangleCulling(pass, triangleCulling);
+
+        // sampler states
+        std::unordered_map<std::string, SamplerState>   samplerStates(_defaultSamplerStates);
+
+        parseSamplerStates(pass, samplerStates);
+
 		// program
-		auto vertexShaderSource		= pass.get("vertexShader", 0).asString();
-		auto fragmentShaderSource	= pass.get("fragmentShader", 0).asString();
+		auto vertexShader	= Shader::create(
+			options->context(), Shader::Type::VERTEX_SHADER, pass.get("vertexShader", 0).asString()
+		);
+		auto fragmentShader	= Shader::create(
+			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
+		);
 
 		passes.push_back(render::Pass::create(
 			name,
-			Program::create(options->context(), vertexShaderSource, fragmentShaderSource),
+			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
 			uniformBindings,
 			stateBindings,
-			priority,
-			blendSrcFactor,
-			blendDstFactor,
-			depthMask,
-			depthFunc
+			macroBindings,
+            States::create(
+                samplerStates,
+			    priority,
+			    blendSrcFactor,
+			    blendDstFactor,
+			    depthMask,
+			    depthFunc,
+                triangleCulling
+            )
 		));
 
 		_effect = render::Effect::create(passes);
@@ -203,27 +247,54 @@ EffectParser::parseBlendMode(Json::Value&					contextNode,
 }
 
 void
-EffectParser::parseDepthTest(Json::Value&			contextNode,
-							 bool&					depthMask,
-							 render::CompareMode&	depthFunc)
+EffectParser::parseDepthTest(Json::Value& contextNode, bool& depthMask, render::CompareMode& depthFunc)
 {
 	auto depthTest	= contextNode.get("depthTest", 0);
 	
-	if (depthTest.isArray())
+	if (depthTest.isObject())
 	{
-		auto depthFuncString = depthTest[1].asString();
+        auto depthMaskValue = depthTest.get("depthMask", 0);
+        auto depthFuncValue = depthTest.get("depthFunc", 0);
 
-		depthMask = depthTest[0].asBool();
-		if (_depthFuncMap.count(depthFuncString))
-			depthFunc = _depthFuncMap[depthFuncString];
+        if (depthMaskValue.isBool())
+            depthMask = depthMaskValue.asBool();
+
+        if (depthFuncValue.isString())
+    		depthFunc = _depthFuncMap[depthFuncValue.asString()];
 	}
+    else if (depthTest.isArray())
+    {
+        depthMask = depthTest[0].asBool();
+		depthFunc = _depthFuncMap[depthTest[1].asString()];
+    }
+}
+
+void
+EffectParser::parseTriangleCulling(Json::Value& contextNode, TriangleCulling& triangleCulling)
+{
+    auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
+
+    if (triangleCullingValue.isString())
+    {
+        auto triangleCullingString = triangleCullingValue.asString();
+
+        if (triangleCullingString == "back")
+            triangleCulling = TriangleCulling::BACK;
+        else if (triangleCullingString == "front")
+            triangleCulling = TriangleCulling::FRONT;
+        else if (triangleCullingString == "both")
+            triangleCulling = TriangleCulling::BOTH;
+        else if (triangleCullingString == "none")
+            triangleCulling = TriangleCulling::NONE;
+    }
 }
 
 void
 EffectParser::parseBindings(Json::Value&									contextNode,
 						    std::unordered_map<std::string, std::string>&	attributeBindings,
 						    std::unordered_map<std::string, std::string>&	uniformBindings,
-						    std::unordered_map<std::string, std::string>&	stateBindings)
+						    std::unordered_map<std::string, std::string>&	stateBindings,
+							std::unordered_map<std::string, std::string>&	macroBindings)
 {
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
@@ -239,6 +310,39 @@ EffectParser::parseBindings(Json::Value&									contextNode,
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
+
+	auto macroBindingsValue = contextNode.get("macroBindings", 0);
+	if (macroBindingsValue.isObject())
+		for (auto propertyName : macroBindingsValue.getMemberNames())
+			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
+}
+
+void
+EffectParser::parseSamplerStates(Json::Value&                                           contextNode,
+                                 std::unordered_map<std::string, render::SamplerState>& samplerStates)
+{
+    auto samplerStatesValue = contextNode.get("samplerStates", 0);
+
+    if (samplerStatesValue.isObject())
+        for (auto propertyName : samplerStatesValue.getMemberNames())
+        {
+            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
+
+            if (samplerStateValue.isObject())
+            {
+                auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
+                auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
+                auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
+
+                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
+                auto mipFilter = mipFilterStr == "linear"
+                    ? MipFilter::LINEAR
+                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+
+                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
+            }
+        }
 }
 
 void
@@ -290,9 +394,8 @@ EffectParser::finalize()
     {
 		auto program = pass->program();
 
-		program->vertexShaderSource(_dependenciesCode + program->vertexShaderSource());
-		program->fragmentShaderSource(_dependenciesCode + program->fragmentShaderSource());
-        program->upload();
+		program->vertexShader()->source(_dependenciesCode + program->vertexShader()->source());
+		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
     }
 
 	_complete->execute(shared_from_this());

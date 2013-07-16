@@ -59,5 +59,19 @@ namespace minko
                 ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE
             };
         };
+
+        inline
+        Blending::Mode
+        operator|(Blending::Source s, Blending::Destination d)
+        {
+            return static_cast<Blending::Mode>(static_cast<uint>(s) | static_cast<uint>(d));
+        }
+
+        inline
+        uint
+        operator&(Blending::Mode& mode, int mask)
+        {
+            return static_cast<uint>(mode) & mask;
+        }
     }
 }

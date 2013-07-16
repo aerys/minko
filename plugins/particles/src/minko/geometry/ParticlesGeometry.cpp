@@ -1,15 +1,15 @@
 #include "ParticlesGeometry.hpp"
 
-#include "minko/render/ParticleVertexStream.hpp"
-#include "minko/render/ParticleIndexStream.hpp"
+#include "minko/render/ParticleVertexBuffer.hpp"
+#include "minko/render/ParticleIndexBuffer.hpp"
 
 using namespace minko::geometry;
 
 ParticlesGeometry::ParticlesGeometry(std::shared_ptr<render::AbstractContext> context)
 	: Geometry ()
 {
-	_vertices = render::ParticleVertexStream::create(context);
-	_indices = render::ParticleIndexStream::create(context);
+	_vertices = render::ParticleVertexBuffer::create(context);
+	_indices = render::ParticleIndexBuffer::create(context);
 
 	indices(_indices);
 }
@@ -25,12 +25,12 @@ ParticlesGeometry::initStreams(unsigned int maxParticles)
 
 	for (auto attribute : _vertices->attributes())
 	{
-		data()->set("geometry/vertex/attribute/" + std::get<0>(*attribute),
-					std::static_pointer_cast<render::VertexStream>(_vertices));
+		data()->set("geometry.vertex.attribute." + std::get<0>(*attribute),
+					std::static_pointer_cast<render::VertexBuffer>(_vertices));
 		vertexSize(vertexSize() + std::get<1>(*attribute));
 	}
 
-	data()->set("geometry/vertex/size", vertexSize());
+	data()->set("geometry.vertex.size", vertexSize());
 	
 	_vertices->resize(maxParticles, vertexSize());
 	_indices->resize(maxParticles);

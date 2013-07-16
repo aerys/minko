@@ -20,6 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "OpenGLES2Context.hpp"
 
 #include "minko/render/CompareMode.hpp"
+#include "minko/render/WrapMode.hpp"
+#include "minko/render/TextureFilter.hpp"
+#include "minko/render/MipFilter.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -88,7 +92,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
-	_currentProgram(-1)
+	_currentProgram(-1),
+    _currentTriangleCulling(TriangleCulling::BACK)
 {
 #ifdef _WIN32
     glewInit();
@@ -96,6 +101,9 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -468,12 +476,65 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 
 		glActiveTexture(GL_TEXTURE0 + position);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		if (texture > 0)
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
 	if (textureIsValid && location >= 0)
 		glUniform1i(location, position);
+}
+
+void
+OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
+{
+    glActiveTexture(GL_TEXTURE0 + position);
+
+    switch (wrapping)
+    {
+    case WrapMode::CLAMP :
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        break;
+    case WrapMode::REPEAT :
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        break;
+    }
+
+    switch (filtering)
+    {
+    case TextureFilter::NEAREST :
+        switch (mipFiltering)
+        {
+        case MipFilter::NONE :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            break;
+        case MipFilter::NEAREST :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            break;
+        case MipFilter::LINEAR :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            break;
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        break;
+    case TextureFilter::LINEAR :
+        switch (mipFiltering)
+        {
+        case MipFilter::NONE :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            break;
+        case MipFilter::NEAREST :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            break;
+        case MipFilter::LINEAR :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            break;
+        }
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        break;
+    }
 }
 
 const unsigned int
@@ -521,7 +582,7 @@ OpenGLES2Context::setProgram(const unsigned int program)
 
 void
 OpenGLES2Context::setShaderSource(const unsigned int shader,
-							     const std::string& source)
+							      const std::string& source)
 {
 	const char* sourceString = source.c_str();
 
@@ -578,10 +639,10 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 }
 
 void
-OpenGLES2Context::fillUniformInputs(const unsigned int						program,
-								   std::vector<std::string>&				names,
-								   std::vector<ProgramInputs::Type>&	types,
-								   std::vector<unsigned int>&				locations)
+OpenGLES2Context::fillUniformInputs(const unsigned int					program,
+								    std::vector<std::string>&			names,
+								    std::vector<ProgramInputs::Type>&	types,
+								    std::vector<unsigned int>&			locations)
 {
 	int total = -1;
 	int maxUniformNameLength = -1;
@@ -644,7 +705,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 
 	    int location = glGetUniformLocation(program, &name[0]);
 
-	    if (location >= 0 && type != ProgramInputs::Type::unknown)
+	    if (location >= 0 && inputType != ProgramInputs::Type::unknown)
 	    {
 		    names.push_back(std::string(&name[0], nameLength));
 		    types.push_back(inputType);
@@ -654,10 +715,10 @@ OpenGLES2Context::fillUniformInputs(const unsigned int						program,
 }
 
 void
-OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
-									 std::vector<std::string>&					names,
+OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
+									 std::vector<std::string>&			names,
 								     std::vector<ProgramInputs::Type>&	types,
-								     std::vector<unsigned int>&					locations)
+								     std::vector<unsigned int>&			locations)
 {
 	int total = -1;
 	int maxAttributeNameLength = -1;
@@ -683,7 +744,7 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int							program,
 
 	    if (location >= 0)
 	    {
-		    names.push_back(std::string(&name[0]));
+		    names.push_back(std::string(&name[0], nameLength));
 		    types.push_back(inputType);
 		    locations.push_back(location);
 		}
@@ -811,4 +872,31 @@ void
 OpenGLES2Context::readPixels(unsigned char* pixels)
 {
 	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+}
+
+void
+OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
+{
+    if (triangleCulling == _currentTriangleCulling)
+        return;
+
+    if (_currentTriangleCulling == TriangleCulling::NONE)
+        glEnable(GL_CULL_FACE);
+    _currentTriangleCulling = triangleCulling;
+
+    switch (triangleCulling)
+    {
+    case TriangleCulling::NONE:
+        glDisable(GL_CULL_FACE);
+        break;
+    case TriangleCulling::BACK :
+        glCullFace(GL_BACK);
+        break;
+    case TriangleCulling::FRONT :
+        glCullFace(GL_FRONT);
+        break;
+    case TriangleCulling::BOTH :
+        glCullFace(GL_FRONT_AND_BACK);
+        break;
+    }
 }
