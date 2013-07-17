@@ -27,11 +27,9 @@ using namespace minko::component;
 
 bullet::Collider::Collider(float						mass,
 						   AbstractPhysicsShape::Ptr	shape,
-						   Vector3::Ptr					inertia,
-						   Matrix4x4::Ptr				centerOfMassOffset):
+						   Vector3::Ptr					inertia):
 _mass(mass),
 	_worldTransform(Matrix4x4::create()),
-	_centerOfMassOffset(centerOfMassOffset),
 	_scaleCorrectionMatrix(Matrix4x4::create()),
 	_shape(shape),
 	_inertia(inertia),
@@ -51,26 +49,25 @@ _mass(mass),
 void
 	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	const float det3x3	= modelToWorldMatrix->determinant3x3();
-	const float scaling = powf(det3x3, 1.0f/3.0f);
-	Matrix4x4::Ptr worldMatrix = Matrix4x4::create()->copyFrom(modelToWorldMatrix);
+	Matrix4x4::Ptr modelToWorld = Matrix4x4::create()
+		->copyFrom(modelToWorldMatrix);
 
-	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
-	{
-		std::stringstream stream;
-		stream << "Colliders are currently incompatible with Transforms with scaling and shear (3x3 determinant = " << det3x3 << ").";
-		
-		worldMatrix->appendScale(1.f/scaling, 1.f/scaling, 1.f/scaling);
+	std::cout << "modelToWorld = " << std::to_string(modelToWorld) << std::endl;
 
-		std::cout << "New Det : "<< worldMatrix->determinant3x3() << std::endl;
+	const float scaling = powf(modelToWorld->determinant3x3(), 1.0f/3.0f);
+	std::cout << "\tmodelToWorld scaling = " << scaling << std::endl;
+	if (fabsf(scaling) < 1e-6f)
+		throw std::logic_error("Physics simulation requires matrices with non-null uniform scaling (world transform matrix).");
 
-		//throw std::invalid_argument(stream.str());
-	}
+	const float invScaling = 1.0f / scaling;
+	modelToWorld->prependScaling(invScaling, invScaling, invScaling);
+
+	std::cout << "\tremove uniform scaling. det = " << modelToWorld->determinant3x3() << std::endl << std::endl;
 
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
-	auto rotation		= worldMatrix->rotation();
-	auto translation	= worldMatrix->translationVector();
+	auto rotation		= modelToWorld->rotation();
+	auto translation	= modelToWorld->translationVector();
 	_worldTransform->initialize(rotation, translation);
 
 	// record the corrective term that keeps the
@@ -80,7 +77,6 @@ void
 		->copyFrom(_worldTransform)
 		->invert()
 		->append(modelToWorldMatrix);
-	_scaleCorrectionMatrix->identity();
 }
 
 void

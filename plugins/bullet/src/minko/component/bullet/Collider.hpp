@@ -44,7 +44,6 @@ namespace minko
 			private:
 				float			_mass;
 				Matrix4x4Ptr	_worldTransform;
-				Matrix4x4Ptr	_centerOfMassOffset;
 				Matrix4x4Ptr	_scaleCorrectionMatrix; 
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
@@ -65,10 +64,9 @@ namespace minko
 					Ptr
 					create(float	mass, 					
 					AbsShapePtr		shape, 
-					Vector3Ptr		inertia = nullptr,
-					Matrix4x4Ptr	centerOfMassOffset = nullptr)
+					Vector3Ptr		inertia = nullptr)
 				{
-					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia, centerOfMassOffset));
+					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia));
 				}
 
 				inline
@@ -112,13 +110,6 @@ namespace minko
 					isStatic() const
 				{
 					return _mass < std::numeric_limits<float>::epsilon();
-				}
-
-				inline
-					Matrix4x4Ptr
-					centerOfMassOffset() const
-				{
-					return _centerOfMassOffset;
 				}
 
 				inline
@@ -225,8 +216,7 @@ namespace minko
 			private:
 				Collider(float,
 					AbsShapePtr, 
-					Vector3Ptr		inertia				= nullptr,
-					Matrix4x4Ptr	centerOfMassOffset	= nullptr);
+					Vector3Ptr		inertia				= nullptr);
 			};
 		}
 	}
