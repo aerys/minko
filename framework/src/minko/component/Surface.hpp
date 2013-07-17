@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/component/AbstractComponent.hpp"
 
 namespace minko
@@ -69,6 +70,9 @@ namespace minko
 			{
 				return _geometry;
 			}
+
+            void
+            geometry(std::shared_ptr<geometry::Geometry> newGeometry);
 
 			inline
 			std::shared_ptr<data::Provider>

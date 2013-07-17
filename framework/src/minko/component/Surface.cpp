@@ -60,6 +60,25 @@ Surface::initialize()
 }
 
 void
+Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
+{
+	for (unsigned int i = 0; i < targets().size(); ++i)
+	{
+		std::shared_ptr<scene::Node> target = targets()[i];
+
+		target->data()->removeProvider(_geometry->data());
+		target->data()->addProvider(newGeometry->data());
+
+		_drawCalls.clear();
+
+		for (auto pass : _effect->passes())
+			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
+	}
+
+	_geometry = newGeometry;
+}
+
+void
 Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							scene::Node::Ptr		target)
 
@@ -78,6 +97,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	data->addProvider(_material);
 	data->addProvider(_geometry->data());
+    data->addProvider(_effect->data());
 
 	_drawCalls.clear();
 
@@ -96,6 +116,7 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
+    data->removeProvider(_effect->data());
 
 	_drawCalls.clear();
 }

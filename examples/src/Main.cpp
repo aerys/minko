@@ -37,35 +37,6 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
-/*void screenshotFunc(int)
-{
-	const int width = 800, height = 600;
-
-	char* pixels = new char[3 * width * height];
-
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
-	int i, j;
-	FILE *fp = fopen("screenshot.ppm", "wb");
-	fprintf(fp, "P6\n%d %d\n255\n", width, height);
-
-	for (j = 0; j < height; ++j)
-	{
-		for (i = 0; i < width; ++i)
-		{
-			static unsigned char color[3];
-			color[0] = pixels[(width * j + i) * 3 + 0];
-			color[1] = pixels[(width * j + i) * 3 + 1];
-			color[2] = pixels[(width * j + i) * 3 + 2];
-			(void) fwrite(color, 1, 3, fp);
-		}
-	}
-
-	fclose(fp);
-
-	delete[] pixels;
-}*/
-
 int main(int argc, char** argv)
 {
     glfwInit();
@@ -85,8 +56,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("Particles.effect")
-		->queue("WorldSpaceParticles.effect");
+		->queue("Particles.effect");
 	
 #ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -104,7 +74,7 @@ int main(int argc, char** argv)
 		root->addChild(group)->addChild(camera);
 
         renderingComponent = Rendering::create(assets->context());
-        renderingComponent->backgroundColor(0x7f7f7fFF);
+        renderingComponent->backgroundColor(0x7F7F7FFF);
 		camera->addComponent(renderingComponent);
         camera->addComponent(Transform::create());
         camera->component<Transform>()->transform()
@@ -146,27 +116,16 @@ int main(int argc, char** argv)
 
 	assets->load();
 
-	/*
-	auto fx = assets->effect("directional light");
-
-	std::cout << "== vertex shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->vertexShader()) << std::endl;
-	std::cout << "== fragment shader compilation logs ==" << std::endl;
-	std::cout << context->getShaderCompilationLogs(fx->shaders()[0]->fragmentShader()) << std::endl;
-	std::cout << "== program info logs ==" << std::endl;
-	std::cout << context->getProgramInfoLogs(fx->shaders()[0]->id()) << std::endl;
-	*/
-
-	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	//glutTimerFunc(1000, screenshotFunc, 0);
-
 	while(!glfwWindowShouldClose(window))
     {
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
         else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
-		mesh->component<Transform>()->transform()->prependRotationX(.01f);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
 
 	    renderingComponent->render();
 
