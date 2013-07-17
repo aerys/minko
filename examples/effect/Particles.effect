@@ -92,7 +92,7 @@
 				offset = vec2(cosine * offset.x - sine * offset.y,
 							  sine * offset.x + cosine * offset.y);
 			
-				// "fake" SizeOverTime
+				// fake SizeOverTime
 				size *= 1.6 - 1.3 * pow(time, 2.5);
 			
 				pos += vec4(offset, 0, 0) * size;
@@ -121,7 +121,7 @@
 					c *= vec4(diffuseColor);
 				#endif
 				
-				// "fake" ColorOverTime
+				// fake ColorOverTime
 				c *= 1 - pow(particleTime, 4);
 				
 				gl_FragColor = c;
