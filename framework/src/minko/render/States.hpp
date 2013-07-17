@@ -36,13 +36,14 @@ namespace minko
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 
         private:
-            float				    _priority;
-		    Blending::Source		_blendingSourceFactor;
-		    Blending::Destination	_blendingDestinationFactor;
-		    bool					_depthMask;
-		    CompareMode				_depthFunc;
-            TriangleCulling         _triangleCulling;
-            SamplerStates           _samplerStates;
+            float				        _priority;
+		    Blending::Source		    _blendingSourceFactor;
+		    Blending::Destination	    _blendingDestinationFactor;
+		    bool					    _depthMask;
+		    CompareMode		    		_depthFunc;
+            TriangleCulling             _triangleCulling;
+            SamplerStates               _samplerStates;
+            std::shared_ptr<Texture>    _target;
 
 	    public:
 		    inline static
@@ -53,7 +54,8 @@ namespace minko
 				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
 				   bool						depthMask					= true,
 				   CompareMode				depthFunc					= CompareMode::LESS,
-                   TriangleCulling          triangleCulling             = TriangleCulling::BACK)
+                   TriangleCulling          triangleCulling             = TriangleCulling::BACK,
+                   std::shared_ptr<Texture> target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
                     samplerSates,
@@ -62,7 +64,8 @@ namespace minko
                     blendingDestinationFactor,
                     depthMask,
                     depthFunc,
-                    triangleCulling
+                    triangleCulling,
+                    target
                 ));
 		    }
 
@@ -115,6 +118,13 @@ namespace minko
                 return _samplerStates;
             }
 
+            inline
+            std::shared_ptr<Texture>
+            target()
+            {
+                return _target;
+            }
+
 	    private:
 		    States(const SamplerStates&     samplerSates,
 				   const float			    priority,
@@ -122,14 +132,16 @@ namespace minko
 				   Blending::Destination    blendingDestinationFactor,
 				   bool					    depthMask,
 				   CompareMode			    depthFunc,
-                   TriangleCulling          triangleCulling) :
+                   TriangleCulling          triangleCulling,
+                   std::shared_ptr<Texture> target) :
                 _samplerStates(samplerSates),
                 _priority(priority),
                 _blendingSourceFactor(blendingSourceFactor),
                 _blendingDestinationFactor(blendingDestinationFactor),
                 _depthMask(depthMask),
                 _depthFunc(depthFunc),
-                _triangleCulling(triangleCulling)
+                _triangleCulling(triangleCulling),
+                _target(target)
 		    {
 		    }
         };
