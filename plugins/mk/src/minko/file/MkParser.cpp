@@ -58,7 +58,7 @@ MkParser::parse(const std::string&					filename,
 }
 
 void
-MkParser::registerController(std::string entryName, DeserializeFunction deserializedFunction)
+MkParser::registerController(std::string entryName, DeserializeFunction2 deserializedFunction)
 {
 	MkParser::_pluginEntryToFunction[entryName] = deserializedFunction;
 }
