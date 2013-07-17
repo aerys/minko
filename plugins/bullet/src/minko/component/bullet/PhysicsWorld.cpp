@@ -212,8 +212,8 @@ void
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
-		//collider->updateColliderWorldTransform(it->first->worldTransform());
-		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
+		collider->updateColliderWorldTransform(it->first->worldTransform());
+		//collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
 
 }

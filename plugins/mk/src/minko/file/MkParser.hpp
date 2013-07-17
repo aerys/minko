@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/MkOptions.hpp"
 
 
+
 namespace minko
 {
 	namespace file
@@ -36,10 +37,11 @@ namespace minko
 			public AbstractModelParser
 		{
 		public:
+			typedef std::shared_ptr<scene::Node>															NodePtr;
 			typedef std::shared_ptr<MkParser>																Ptr;
 			typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>		ControllerMap;
 			typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
-			typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&, ControllerMap&, NodeMap&)> DeserializeFunction2;
+			typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&, ControllerMap&, NodeMap&, NodePtr&)> DeserializeFunction2;
 
 		private:
 			static std::map<std::string, DeserializeFunction2>	_pluginEntryToFunction;

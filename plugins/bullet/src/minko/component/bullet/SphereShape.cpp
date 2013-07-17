@@ -27,7 +27,7 @@ using namespace minko::component;
 void
 bullet::SphereShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
 {
-	_radius = matrix->values()[0] * 0.5f;
+	_radius = matrix->values()[0] * _radius;
 
 	std::cout << "bullet::SphereShape::apply\t-> radius = " << _radius << std::endl;
 
