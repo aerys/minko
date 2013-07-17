@@ -238,7 +238,7 @@ namespace minko
             void
             setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false);
 
-		private:
+		protected:
 			OpenGLES2Context();
 
 			void
