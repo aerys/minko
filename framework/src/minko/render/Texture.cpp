@@ -67,7 +67,8 @@ Texture::upload()
     if (_id == -1)
     	_id = _context->createTexture(_width, _height, false, _optimizeForRenderToTexture);
 	
-    _context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
+    if (_data.size())
+        _context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
 }
 
 void
