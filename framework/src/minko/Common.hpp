@@ -129,6 +129,13 @@ namespace minko
 
 template<typename T>
 std::shared_ptr<T>
+operator*(std::shared_ptr<T> a, float b)
+{
+	return *a * b;
+}
+
+template<typename T>
+std::shared_ptr<T>
 operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
 	return *a * b;
