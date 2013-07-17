@@ -215,6 +215,7 @@ void
 		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
+
 }
 
 void
