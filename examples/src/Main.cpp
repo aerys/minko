@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
+		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
 		->queue("window-diffuse.png")
@@ -146,9 +146,9 @@ int main(int argc, char** argv)
 			assets->effect("directional light")
 		));
 
-		//mesh->component<Surface>()->geometry()->computeNormals();
 		//mesh->component<Surface>()->geometry()->data()->unset("geometry.vertex.attribute.normal");
-		//mesh->component<Surface>()->geometry()->computeTangentSpace(true);
+		//mesh->component<Surface>()->geometry()->computeNormals();
+		mesh->component<Surface>()->geometry()->computeTangentSpace(false);
 
 		group->addChild(mesh);
 
@@ -193,7 +193,14 @@ int main(int argc, char** argv)
 		*/
 	});
 
+	try
+	{
 	assets->load();
+	}
+	catch(std::exception e)
+	{
+		std::cout << "exception = " << e.what() << std::endl;
+	}
 
 	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
 	//glutTimerFunc(1000, screenshotFunc, 0);
