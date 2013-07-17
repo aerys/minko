@@ -138,6 +138,8 @@ namespace minko
 							  NodeMap		nodeMap)
 			{
 				std::shared_ptr<scene::Node> camera = scene::Node::create(extractName(nodeInfo));
+				
+				camera->addComponent(component::Transform::create());
 
 				return camera;
 			}

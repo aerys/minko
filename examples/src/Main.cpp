@@ -55,7 +55,8 @@ readAndSwap(std::stringstream& stream)
 }
 
 bullet::AbstractPhysicsShape::Ptr
-deserializeShape(Qark::Map&							shapeData)
+deserializeShape(Qark::Map&							shapeData,
+				 scene::Node::Ptr&					node)
 {
 	int type = Any::cast<int>(shapeData["type"]);
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
@@ -70,7 +71,7 @@ deserializeShape(Qark::Map&							shapeData)
 	switch (type)
 	{
 		case 101: // multiprofile
-			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]));
+			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), node);
 			break;
 		case 2: // BOX
 			{
@@ -103,6 +104,8 @@ deserializeShape(Qark::Map&							shapeData)
 				r = readAndSwap<double>(stream);
 
 				deserializedShape = bullet::SphereShape::create(r);
+
+				std::cout << "radius : " << r << std::endl;
 			}
 			break;
 		case 7 : // CYLINDER
@@ -118,7 +121,7 @@ deserializeShape(Qark::Map&							shapeData)
 			break;
 		case 100 : // TRANSFORM
 			{
-				deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]));
+				deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
 				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
 				//deserializedShape->localScaleX(2.0);
 				//deserializedShape->localScaleY(2.0);
@@ -138,8 +141,11 @@ deserializeShape(Qark::Map&							shapeData)
 				*/
 
 				// fix : should be merged
-				deserializedShape->apply(offset);
-				deserializedShape->setCenterOfMassOffset(offset);
+
+				std::cout << node->name() << " : " << std::to_string(node->component<Transform>()->modelToWorldMatrix(true)) << std::endl;
+
+				deserializedShape->apply(node->component<Transform>()->modelToWorldMatrix(true));
+				//deserializedShape->setCenterOfMassOffset(offset);
 			}
 			break;
 		default:
@@ -152,12 +158,13 @@ deserializeShape(Qark::Map&							shapeData)
 std::shared_ptr<bullet::ColliderComponent>
 deserializeBullet(Qark::Map&						nodeInformation, 
 				  file::MkParser::ControllerMap&	controllerMap,
-				  file::MkParser::NodeMap&			nodeMap)
+				  file::MkParser::NodeMap&			nodeMap,
+				  scene::Node::Ptr&					node)
 {
 	Qark::Map& colliderData = Any::cast<Qark::Map&>(nodeInformation["defaultCollider"]);
 	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
 
-	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData);
+	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, node);
 	
 	float mass = 1;
 	
@@ -246,7 +253,7 @@ testMk(AssetsLibrary::Ptr assets)
 
 int main(int argc, char** argv)
 {
-	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
     glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
@@ -259,7 +266,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 30.0f)->appendRotationY(PI / 4);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 4.f, 50.0f)->appendRotationY(PI / 4);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
