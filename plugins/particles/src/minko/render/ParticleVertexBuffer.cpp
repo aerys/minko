@@ -28,8 +28,7 @@ using namespace minko::render;
 ParticleVertexBuffer::ParticleVertexBuffer(std::shared_ptr<AbstractContext> context) :
 	VertexBuffer(context)
 {
-	addAttribute("offset", 2, 0);
-	addAttribute("position", 3, 2);
+	resetAttributes();
 }
 
 void 
