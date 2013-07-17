@@ -221,7 +221,9 @@ DrawCall::bindStates()
         _states->target()
     );
 	
-    // FIXME: bind render target
+    if (target && !target->isValid())
+        target->upload();
+
 	// FIXME: bind stencil test
 
 	_func.push_back([=](AbstractContext::Ptr context)
