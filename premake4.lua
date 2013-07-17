@@ -110,9 +110,8 @@ newplatform {
 	gcc = {
 		cc = "emcc",
 		cxx = "em++",
-		ar = "emar",
-		cppflags = "-DEMSCRIPTEN"
-		-- premake.gcc.prebuildcommands = { 'scripts/fix-makefiles.sh' }
+		ar = path.getabsolute("scripts/emar.sh"),
+		cppflags = "-MMD -DEMSCRIPTEN"
 	}
 }
 
