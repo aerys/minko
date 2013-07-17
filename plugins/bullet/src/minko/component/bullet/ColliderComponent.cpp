@@ -111,8 +111,8 @@ void
 	Node::Ptr parent)
 {
 	if (!target->hasComponent<Transform>())
-		throw std::logic_error("A ColliderComponent's target must have a Transform.");
-
+		target->addComponent(Transform::create());
+	
 	_targetTransform	= node->component<Transform>();
 
 	auto nodeSet	= NodeSet::create(node)

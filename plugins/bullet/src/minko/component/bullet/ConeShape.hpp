@@ -46,6 +46,9 @@ namespace minko
 					return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
 				}
 
+				void
+				apply(std::shared_ptr<math::Matrix4x4> matrix);
+
 				inline
 					float
 					radius() const

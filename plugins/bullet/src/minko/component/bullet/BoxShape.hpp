@@ -50,6 +50,9 @@ namespace minko
 					return std::shared_ptr<BoxShape>(new BoxShape(halfExtentX, halfExtentY, halfExtentZ));
 				}
 
+				void
+				apply(std::shared_ptr<math::Matrix4x4> matrix);
+
 				inline 
 					float 
 					halfExtentX() const
