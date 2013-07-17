@@ -25,7 +25,7 @@ project "minko-examples"
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		flags { "OptimizeSpeed" }
+		-- flags { "OptimizeSpeed" }
 		targetdir "bin/release"
 
 	-- linux
@@ -51,4 +51,6 @@ project "minko-examples"
 		includedirs { "/opt/local/include/" }
 
 	configuration { "emscripten", "release" }
-		postbuildcommands { 'emcc-O1 -s ASM_JS=1 bin/release/minko-examples.bc -o bin/release/minko-examples.html --preload-dir ../framework/bin/release/' }
+		buildoptions { "-std=c++11" }
+		-- prebuildcommands { "grep '\\.bc' Makefile || sed -i Makefile -r -e 's/^\s*TARGET\s*=.*$/&.bc/'" }
+		postbuildcommands { 'emcc bin/release/minko-examples -o bin/release/minko-examples.html -O1 -s ASM_JS=1 --preload-dir ../framework/bin/release/' }
