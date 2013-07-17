@@ -22,7 +22,7 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "back",
+	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
 		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
