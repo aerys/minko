@@ -20,11 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Effect.hpp"
 
 #include "minko/render/Pass.hpp"
+#include "minko/data/Provider.hpp"
 
 using namespace minko::render;
 
 Effect::Effect(std::vector<PassPtr>& passes) :
-	_passes(passes)
+	_passes(passes),
+	_data(data::Provider::create())
 {
 }
 
