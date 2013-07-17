@@ -145,7 +145,7 @@ deserializeShape(Qark::Map&							shapeData,
 				std::cout << node->name() << " : " << std::to_string(node->component<Transform>()->modelToWorldMatrix(true)) << std::endl;
 
 				deserializedShape->apply(node->component<Transform>()->modelToWorldMatrix(true));
-				//deserializedShape->setCenterOfMassOffset(offset);
+				deserializedShape->setCenterOfMassOffset(offset);
 			}
 			break;
 		default:
@@ -266,7 +266,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 4.f, 50.0f)->appendRotationY(PI / 4);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.0f, 50.0f)->appendRotationY(0.0f);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
