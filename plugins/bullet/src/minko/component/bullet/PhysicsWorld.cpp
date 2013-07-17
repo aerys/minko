@@ -212,9 +212,12 @@ void
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
+		std::cout << "from bullet = " << btCollider->collisionObject()->getWorldTransform() << std::endl;
 		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
+	std::cout << std::endl;
+
 }
 
 void

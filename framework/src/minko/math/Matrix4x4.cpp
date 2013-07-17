@@ -437,6 +437,30 @@ Matrix4x4::append(Quaternion::Ptr rotation)
 	return append(rotation->toMatrix());
 }
 
+
+Matrix4x4::Ptr
+Matrix4x4::appendScale(float x, float y, float z)
+{
+	return append(
+		x,		0.0f,	0.f,	0.f,
+		0.f,	y,		0.f,	0.f,
+		0.f,	0.f,	z,		0.f,
+		0.f,	0.f,	0.f,	1.f
+	);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::prependScale(float x, float y, float z)
+{
+	return prepend(
+		x,		0.0f,	0.f,	0.f,
+		0.f,	y,		0.f,	0.f,
+		0.f,	0.f,	z,		0.f,
+		0.f,	0.f,	0.f,	1.f
+	);
+}
+
+
 Matrix4x4::Ptr
 Matrix4x4::perspective(float fov,
                        float ratio,
