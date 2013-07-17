@@ -35,6 +35,7 @@ namespace minko
 		private:
 			std::shared_ptr<data::Provider>	_data;
 			unsigned int					_vertexSize;
+			int								_numVertices;
 
 		public:
 			inline
@@ -74,21 +75,44 @@ namespace minko
 
 			inline
 			void
-			addVertexBuffer(std::shared_ptr<render::VertexBuffer> VertexBuffer)
+			addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 			{
-				for (auto attribute : VertexBuffer->attributes())
+				unsigned int bufferVertexSize	= 0;
+				for (auto attribute : vertexBuffer->attributes())
 				{
-					_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), VertexBuffer);
-					_vertexSize += std::get<1>(*attribute);
+					_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
+					bufferVertexSize	+= std::get<1>(*attribute);
 				}
-
+				_vertexSize				+= bufferVertexSize;
 				_data->set("geometry.vertex.size", _vertexSize);
+
+				const unsigned int bufferNumVertices	= vertexBuffer->data().size() / bufferVertexSize;
+				if (_numVertices == -1)
+					_numVertices	= bufferNumVertices;
+				else if (_numVertices != bufferNumVertices)
+					throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
+
+				std::cout << "num vertices = " << bufferVertexSize << std::endl;
 			}
+
+			inline 
+			unsigned int
+			numVertices() const
+			{
+				return _numVertices;
+			}
+
+			void
+			computeNormals();
+
+			void
+			computeTangentSpace(bool computeNormals);
 
 		protected:
 			Geometry() :
 				_data(data::Provider::create()),
-				_vertexSize(0)
+				_vertexSize(0),
+				_numVertices(-1)
 			{
 			}
 		};
