@@ -276,7 +276,15 @@ namespace minko
 			void
 			isInWorldSpace(bool value)
 			{
+				if (_isInWorldSpace == value)
+					return;
+
 				_isInWorldSpace = value;
+
+				if (_isInWorldSpace)
+					_material->set("particles.worldspace",	true);
+				else
+					_material->unset("particles.worldspace");
 			};
 			
 			inline
