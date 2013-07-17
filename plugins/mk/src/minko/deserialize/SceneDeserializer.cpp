@@ -50,7 +50,29 @@ namespace minko
 			assetsDeserializer->extract(options->parseOptions(), options->nameConverter());
 			options->deserializedAssets(assetsDeserializer);
 
-			return deserializeNode(sceneObject, options, controllerMap, nodeMap);
+			std::shared_ptr<scene::Node> root = deserializeNode(sceneObject, options, controllerMap, nodeMap);
+
+			for (std::map<std::shared_ptr<scene::Node>, NodeInfo&>::iterator controllersIt = _pluginControllers.begin(); 
+				controllersIt != _pluginControllers.end();
+				++controllersIt)
+			{
+				std::shared_ptr<scene::Node> node = controllersIt->first;
+				NodeInfo& nodeInformation = controllersIt->second;
+
+				for (std::map<std::string, file::MkOptions::DeserializeFunction>::iterator it = options->pluginEntryToFunction()->begin(); 
+					it != options->pluginEntryToFunction()->end(); 
+					++it)
+				{
+					if (nodeInformation.find(it->first) != nodeInformation.end())
+					{
+						//_pluginControllers[node] = nodeInformation;
+
+						node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), controllerMap, nodeMap, node));
+					}
+				}
+			}
+
+			return root;
 		}
 
 		void
@@ -80,7 +102,13 @@ namespace minko
 				++it)
 			{
 				if (nodeInformation.find(it->first) != nodeInformation.end())
-					node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), controllerMap, nodeMap));
+				{
+					auto p = std::pair<std::shared_ptr<scene::Node>, NodeInfo&>(node, nodeInformation);
+
+					_pluginControllers.insert(p);
+
+					//node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), controllerMap, nodeMap, node));
+				}
 			}
 			
 			return node;
