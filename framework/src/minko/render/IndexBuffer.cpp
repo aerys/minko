@@ -25,8 +25,9 @@ using namespace minko::render;
 
 void
 IndexBuffer::upload()
-{
-	_id = _context->createIndexBuffer(_data.size());
+{   
+	if (_id == -1)
+    	_id = _context->createIndexBuffer(_data.size());
 	
 	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
 }
@@ -34,6 +35,9 @@ IndexBuffer::upload()
 void
 IndexBuffer::dispose()
 {
-	_context->deleteIndexBuffer(_id);
-	_id = -1;
+    if (_id != -1)
+    {
+	    _context->deleteIndexBuffer(_id);
+	    _id = -1;
+    }
 }
