@@ -13,6 +13,18 @@ namespace minko
 			class SizeOverTime : public IParticleUpdater
 			{
 			public:
+				typedef std::shared_ptr<SizeOverTime>	Ptr;
+
+			public:
+				static
+				Ptr
+				create()
+				{
+					Ptr modifier = std::shared_ptr<SizeOverTime>(new SizeOverTime());
+
+					return modifier;
+				};
+
 				virtual
 				void
 				update(std::vector<ParticleData>& 	particles,
@@ -21,6 +33,9 @@ namespace minko
 				virtual
 				unsigned int
 				getNeededComponents() const;
+
+			protected:
+				SizeOverTime();
 			};
 		}
 	}
