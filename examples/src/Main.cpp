@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
+        ->queue("firefull.jpg")
 		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		->queue("Texture.effect")
@@ -92,12 +93,16 @@ int main(int argc, char** argv)
 		particleSystem = ParticleSystem::create(
 			context,
 			assets,
-			3000,
+			6000,
 			particle::sampler::RandomValue<float>::create(0.2, 0.8),
 			particle::shape::Cylinder::create(1., 5., 5.),
 			particle::StartDirection::NONE,
 			0);
+
 		particleSystem->isInWorldSpace(true);
+		particleSystem->material()
+				->set("material.diffuseColor",	Vector4::create(.8f, .3f, .1f, 1.f))
+                ->set("material.diffuseMap",	assets->texture("firefull.jpg"));
 
 		particleSystem->add(particle::modifier::StartForce::create(
 			particle::sampler::RandomValue<float>::create(-2., 2.),
@@ -107,6 +112,10 @@ int main(int argc, char** argv)
 
 		particleSystem->add(particle::modifier::StartSize::create(
 			particle::sampler::RandomValue<float>::create(0.1, .8)
+			));
+
+		particleSystem->add(particle::modifier::StartSprite::create(
+			particle::sampler::RandomValue<float>::create(0., 4.)
 			));
 
 		mesh->addComponent(particleSystem);
