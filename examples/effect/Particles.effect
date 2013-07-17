@@ -4,47 +4,55 @@
 	
 	"attributeBindings"	: {
 		"offset"				: "geometry.vertex.attribute.offset",
-		"position"				: "geometry.vertex.attribute.position",
-		"size"					: "geometry.vertex.attribute.size"
+		"position"				: "geometry.vertex.attribute.position"
 	},
 	
 	"uniformBindings"	: {
-		"diffuseColor"			: "material.diffuse.rgba",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "transform.worldToScreenMatrix"
+		"viewMatrix"			: "camera.viewMatrix",
+		"projectionMatrix"		: "camera.projectionMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
+	},
+
+	"macroBindings"	: {
+		"WORLDSPACE_PARTICLES"	: "particles.worldspace"
 	},
 	
-	
-	"priority"		: 0,
-	"blendMode"		: "additive",
-	"depthTest"		: [true, "less"],
+	"priority"			: 0,
+	"blendMode"			: "additive",
+	"depthTest"			: [true, "less"],
+	"triangleCulling"	: "front",
 	
 	"passes"	: [{	
 		"vertexShader"	: "
 			attribute vec2 offset;
 			attribute vec3 position;
-			attribute float size;
 
-			varying float s;
 			
 			uniform mat4 modelToWorldMatrix;
-			uniform mat4 worldToScreenMatrix;
+			uniform mat4 viewMatrix;
+			uniform mat4 projectionMatrix;
 
 			void main(void)
 			{
-				s = size;
-				  
-				gl_Position =  (worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0)) + (vec4(offset, 0, 0));
+				vec4 pos;
+				
+			#ifdef WORLDSPACE_PARTICLES	
+				pos = viewMatrix * vec4(position, 1.0);
+			#else
+				pos = viewMatrix * modelToWorldMatrix * vec4(position, 1.0);
+			#endif
+			
+				pos += vec4(offset, 0, 0);
+			
+				gl_Position = projectionMatrix * pos;
 			}
 		",
 		"fragmentShader"	: "
-			uniform vec4 diffuseColor;
-
-			varying float s;
 				
 			void main(void)
 			{			
-				gl_FragColor = vec4(.2, .2, .01, 1);
+				gl_FragColor = vec4(1, 1, .01, 1);
 			}
 		"
 	}]
