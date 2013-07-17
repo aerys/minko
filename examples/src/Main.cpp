@@ -119,13 +119,27 @@ deserializeShape(Qark::Map&							shapeData)
 		case 100 : // TRANSFORM
 			{
 				deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]));
-				Matrix4x4::Ptr offset = deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+				//deserializedShape->localScaleX(2.0);
+				//deserializedShape->localScaleY(2.0);
+				//deserializedShape->localScaleZ(2.0);
+				
+				
+				std::cout << "\n\ndelta matrix = " << std::to_string(offset) << std::endl;
+				/*
+				if (offset->data()[0] > 10.0f)
+				{
+					std::cout << "local scale !" << std::endl;
+					// i am the box
+					deserializedShape->localScaleX(offset->data()[0] * 0.5);
+					deserializedShape->localScaleY(offset->data()[5] * 0.5);
+					deserializedShape->localScaleZ(offset->data()[10] * 0.5);
+				}
+				*/
 
-				deserializedShape->localScaleX(offset->data()[0]);
-				deserializedShape->localScaleY(offset->data()[5]);
-				deserializedShape->localScaleZ(offset->data()[10]);
-
-				std::cout << std::to_string(offset) << std::endl;
+				// fix : should be merged
+				deserializedShape->apply(offset);
+				deserializedShape->setCenterOfMassOffset(offset);
 			}
 			break;
 		default:
@@ -245,7 +259,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 30.00f)->appendRotationY(PI/2);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 30.0f)->appendRotationY(PI / 4);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
@@ -265,7 +279,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/physic-scale-test.mk");
+		->queue("models/testphysics2.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -290,7 +304,7 @@ int main(int argc, char** argv)
 //               ->set("material.shininess",	    30.f),
 //			assets->effect("directional light")));
 
-		group->addChild(assets->node("models/physic-scale-test.mk"));
+		group->addChild(assets->node("models/testphysics2.mk"));
 	});
 
 	try
@@ -299,7 +313,7 @@ int main(int argc, char** argv)
 	}
 	catch(std::exception e)
 	{
-		std::cout << e.what() << std::endl;
+		std::cout << "exception: " << e.what() << std::endl;
 	}
 
 	while(!glfwWindowShouldClose(window))

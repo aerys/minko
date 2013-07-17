@@ -439,7 +439,7 @@ Matrix4x4::append(Quaternion::Ptr rotation)
 
 
 Matrix4x4::Ptr
-Matrix4x4::appendScale(float x, float y, float z)
+Matrix4x4::appendScaling(float x, float y, float z)
 {
 	return append(
 		x,		0.0f,	0.f,	0.f,
@@ -450,7 +450,7 @@ Matrix4x4::appendScale(float x, float y, float z)
 }
 
 Matrix4x4::Ptr
-Matrix4x4::prependScale(float x, float y, float z)
+Matrix4x4::prependScaling(float x, float y, float z)
 {
 	return prepend(
 		x,		0.0f,	0.f,	0.f,
@@ -459,7 +459,6 @@ Matrix4x4::prependScale(float x, float y, float z)
 		0.f,	0.f,	0.f,	1.f
 	);
 }
-
 
 Matrix4x4::Ptr
 Matrix4x4::perspective(float fov,
