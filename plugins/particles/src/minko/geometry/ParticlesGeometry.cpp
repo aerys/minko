@@ -10,7 +10,8 @@ ParticlesGeometry::ParticlesGeometry(std::shared_ptr<render::AbstractContext> co
 {
 	_vertices = render::ParticleVertexBuffer::create(context);
 	_indices = render::ParticleIndexBuffer::create(context);
-
+	
+	addVertexBuffer(_vertices);
 	indices(_indices);
 }
 

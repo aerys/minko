@@ -60,25 +60,6 @@ Surface::initialize()
 }
 
 void
-Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
-{
-	for (unsigned int i = 0; i < numTargets(); ++i)
-	{
-		std::shared_ptr<scene::Node> target = getTarget(i);
-
-		target->data()->removeProvider(_geometry->data());
-		target->data()->addProvider(newGeometry->data());
-
-		_drawCalls.clear();
-
-		for (auto pass : _effect->passes())
-			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
-	}
-
-	_geometry = newGeometry;
-}
-
-void
 Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 							scene::Node::Ptr		target)
 
