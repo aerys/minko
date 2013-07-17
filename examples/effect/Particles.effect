@@ -6,6 +6,7 @@
 		"offset"				: "geometry.vertex.attribute.offset",
 		"position"				: "geometry.vertex.attribute.position",
 		"size"					: "geometry.vertex.attribute.size",
+		"rotation"				: "geometry.vertex.attribute.rotation",
 		"spriteIndex"			: "geometry.vertex.attribute.spriteIndex"
 	},
 	
@@ -36,6 +37,7 @@
 			attribute vec2 offset;
 			attribute vec3 position;
 			attribute float size;
+			attribute float rotation;
 			attribute float spriteIndex;
 
 			uniform mat4 modelToWorldMatrix;
@@ -74,6 +76,12 @@
 				#else
 					pos = viewMatrix * modelToWorldMatrix * vec4(position, 1.0);
 				#endif
+				
+				float cosine = cos(rotation);
+				float sine = sin(rotation);
+				
+				offset = vec2(cosine * offset.x - sine * offset.y,
+							  sine * offset.x + cosine * offset.y);
 			
 				pos += vec4(offset, 0, 0) * size;
 			
