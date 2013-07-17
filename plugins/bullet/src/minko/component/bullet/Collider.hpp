@@ -44,7 +44,7 @@ namespace minko
 			private:
 				float			_mass;
 				Matrix4x4Ptr	_worldTransform;
-				Matrix4x4Ptr	_scaleCorrectionMatrix; 
+				float			_scaleCorrection;
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
@@ -217,6 +217,14 @@ namespace minko
 				Collider(float,
 					AbsShapePtr, 
 					Vector3Ptr		inertia				= nullptr);
+
+				static
+				Vector3Ptr
+				getScaleCorrection(Matrix4x4Ptr, Vector3Ptr output = nullptr);
+
+				static
+				Matrix4x4Ptr
+				applyScaleCorrection(Vector3Ptr, Matrix4x4Ptr);
 			};
 		}
 	}
