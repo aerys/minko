@@ -186,9 +186,6 @@ namespace minko
 				return shared_from_this();
 			}
 
-			Vector3::Ptr
-			project(Vector3::Ptr, Vector3::Ptr output = 0) const;
-
 			inline
 			bool
 			operator==(Matrix4x4& value)
