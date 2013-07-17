@@ -33,6 +33,14 @@ namespace minko
 				virtual
 				unsigned int
 				getNeededComponents() const;
+
+				virtual
+				void
+				setProperties(ProviderPtr provider);
+				
+				virtual
+				void
+				unsetProperties(ProviderPtr provider);
 			
 			protected:
 				StartSprite(SamplerPtr spriteIndex);

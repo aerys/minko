@@ -98,7 +98,7 @@ namespace minko
 			}
 
 			inline
-			const std::list<AttributePtr>&
+			std::list<AttributePtr>&
 			attributes()
 			{
 				return _attributes;
