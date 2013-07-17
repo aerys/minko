@@ -27,4 +27,15 @@ using namespace minko::component;
 void
 bullet::BoxShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
 {
+/*	
+	_localScaleX	= matrix->values()[0] * _halfExtentX;
+	_localScaleY	= matrix->values()[5] * _halfExtentY;
+	_localScaleZ	= matrix->values()[10] * _halfExtentZ;
+	*/
+
+	_halfExtentX	= matrix->values()[0]  * 0.5f;
+	_halfExtentY	= matrix->values()[5]  * 0.5f;
+	_halfExtentZ	= matrix->values()[10] * 0.5f;
+
+	std::cout << "bullet::BoxShape::apply\t-> half extents = " << _halfExtentX << ", " << _halfExtentY << ", " << _halfExtentZ << std::endl;
 }

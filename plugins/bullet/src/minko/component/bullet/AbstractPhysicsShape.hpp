@@ -27,7 +27,7 @@ namespace minko
 	namespace component
 	{
 		namespace bullet
-		{		
+		{
 			class AbstractPhysicsShape:
 				public std::enable_shared_from_this<AbstractPhysicsShape>
 			{
@@ -42,30 +42,48 @@ namespace minko
 					CYLINDER
 				};
 
+			private:
+				typedef std::shared_ptr<math::Matrix4x4>	Matrix4x4Ptr;
+
 			protected:
-				Type	_type;
-				float	_margin;
-				float	_localScaleX;
-				float	_localScaleY;
-				float	_localScaleZ;
+				Type			_type;
+				float			_margin;
+				// testing stuff
+				float			_localScaleX;
+				float			_localScaleY;
+				float			_localScaleZ;
+				Matrix4x4Ptr	_centerOfMassOffset;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
 
 			public:
-				AbstractPhysicsShape(Type type):
-					_type(type),
-					_margin(0.0f),
-					_localScaleX(1.f),
-					_localScaleY(1.f),
-					_localScaleZ(1.f),
-					_shapeChanged(Signal<Ptr>::create())
+				AbstractPhysicsShape(Type);
+
+				virtual
+				~AbstractPhysicsShape()
 				{
 				}
 
-				virtual
-					~AbstractPhysicsShape()
+				// testing stuff...
+				inline float localScaleX() const 
 				{
+					return _localScaleX;
+				}
+
+				inline void localScaleX(float value)
+				{
+					_localScaleX = value;
+				}
+
+				inline float localScaleY() const 
+				{
+					return _localScaleY;
+				}
+
+				inline void localScaleY(float value)
+				{
+					_localScaleY = value;
 				}
 
 				inline float localScaleZ() const 
@@ -78,30 +96,20 @@ namespace minko
 					_localScaleZ = value;
 				}
 
-
-				inline float localScaleY() const 
-				{
-					return _localScaleY;
-				}
-
-				inline void localScaleY(float value)
-				{
-					_localScaleY = value;
-				}
-
-				inline float localScaleX() const 
-				{
-					return _localScaleX;
-				}
-
-				inline void localScaleX(float value)
-				{
-					_localScaleX = value;
-				}
-
 				virtual
 				void
-				apply(std::shared_ptr<math::Matrix4x4> matrix) = 0;
+				apply(Matrix4x4Ptr) = 0;
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassOffset() const
+				{
+					return _centerOfMassOffset;
+				}
+
+				void
+				setCenterOfMassOffset(Matrix4x4Ptr);
+				// end of testing stuff...
 
 				inline
 				Type
