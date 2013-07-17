@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/AssetsLibrary.hpp"
 
 #include "lodepng.h"
 
@@ -29,7 +30,8 @@ using namespace minko::file;
 void
 PNGParser::parse(const std::string&					filename,
 				 std::shared_ptr<Options>			options,
-				 const std::vector<unsigned char>&	data)
+				 const std::vector<unsigned char>&	data,
+				 std::shared_ptr<AssetsLibrary>		assetsLibrary)
 {
 	std::vector<unsigned char> out;
 	unsigned int width;
@@ -40,6 +42,8 @@ PNGParser::parse(const std::string&					filename,
 	_texture = render::Texture::create(options->context(), width, height);
 	_texture->data(&out[0]);
 	_texture->upload();
+
+	assetsLibrary->texture(filename, _texture);
 }
 
 
