@@ -46,6 +46,7 @@ namespace minko
 			std::shared_ptr<AssetsLibrary>		_deserializedAssets;
 			ContextPtr							_context; 
 			std::map<int, NodeDeserializerFunc>	_nodeDeserializer;
+			std::map<std::shared_ptr<scene::Node>, NodeInfo&> _pluginControllers;
 
 			// method
 		public:
