@@ -56,6 +56,7 @@ namespace minko
 				Vector3Ptr		_angularFactor;
 				float			_angularDamping;
 				float			_restitution;
+				float			_friction;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 
@@ -69,6 +70,21 @@ namespace minko
 				{
 					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia, centerOfMassOffset));
 				}
+
+				inline
+				float
+				friction() const 
+				{
+					return _friction;
+				}
+
+				inline
+				void
+				setFriction(float value)
+				{
+					_friction = value;
+				}
+
 
 				inline
 					AbsShapePtr

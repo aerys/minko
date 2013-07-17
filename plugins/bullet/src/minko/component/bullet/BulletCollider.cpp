@@ -183,6 +183,7 @@ void
 		));
 	btRigidCollisionObject->setDamping(collider->linearDamping(), collider->angularDamping());
 	btRigidCollisionObject->setRestitution(collider->restitution());
+	btRigidCollisionObject->setFriction(collider->friction());
 
 	_btCollisionObject	= btRigidCollisionObject;
 }

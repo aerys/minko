@@ -55,9 +55,7 @@ readAndSwap(std::stringstream& stream)
 }
 
 bullet::AbstractPhysicsShape::Ptr
-deserializeShape(Qark::Map&							shapeData,
-				 file::MkParser::ControllerMap&		controllerMap,
-				 file::MkParser::NodeMap&			nodeMap)
+deserializeShape(Qark::Map&							shapeData)
 {
 	int type = Any::cast<int>(shapeData["type"]);
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
@@ -72,7 +70,7 @@ deserializeShape(Qark::Map&							shapeData,
 	switch (type)
 	{
 		case 101: // multiprofile
-			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), controllerMap, nodeMap);
+			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]));
 			break;
 		case 2: // BOX
 			{
@@ -119,7 +117,7 @@ deserializeShape(Qark::Map&							shapeData,
 			}
 			break;
 		case 100 : // TRANSFORM
-			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), controllerMap, nodeMap);
+			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]));
 			break;
 		default:
 			deserializedShape = nullptr;
@@ -136,9 +134,33 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	Qark::Map& colliderData = Any::cast<Qark::Map&>(nodeInformation["defaultCollider"]);
 	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
 
-	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, controllerMap, nodeMap);
+	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData);
 	
 	float mass = 1;
+	
+	double vx =  0;
+	double vy =  0;
+	double vz =  0;
+	double avx = 0;
+	double avy = 0;
+	double avz = 0;
+	bool sleep	= 0;
+	bool rotate = 0;
+
+	double density		= 0;
+	double friction		= 0;
+	double restitution	= 0;
+
+	if (shapeData.find("materialProfile") != shapeData.end())
+	{
+		Qark::ByteArray& materialProfileData = Any::cast<Qark::ByteArray&>(shapeData["materialProfile"]);
+		std::stringstream	stream;
+		stream.write(&*materialProfileData.begin(), materialProfileData.size());
+
+		density = readAndSwap<double>(stream);
+		friction = readAndSwap<double>(stream);
+		restitution = readAndSwap<double>(stream);
+	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
 		mass = 0;
@@ -148,25 +170,32 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		std::stringstream	stream;
 		stream.write(&*dynamicsData.begin(), dynamicsData.size());
 
-		double vx = readAndSwap<double>(stream);
-		double vy = readAndSwap<double>(stream);
-		double vz = readAndSwap<double>(stream);
+		vx = readAndSwap<double>(stream);
+		vy = readAndSwap<double>(stream);
+		vz = readAndSwap<double>(stream);
 
-		double avx = readAndSwap<double>(stream);
-		double avy = readAndSwap<double>(stream);
-		double avz = readAndSwap<double>(stream);
+		avx = readAndSwap<double>(stream);
+		avy = readAndSwap<double>(stream);
+		avz = readAndSwap<double>(stream);
 
-		bool sleep	= readAndSwap<bool>(stream);
-		bool rotate = readAndSwap<bool>(stream);
-
+		sleep	= readAndSwap<bool>(stream);
+		rotate = readAndSwap<bool>(stream);
 	}
 
-	bullet::ColliderComponent::Ptr collider = bullet::ColliderComponent::create(bullet::Collider::create(mass, shape));
+	bullet::Collider::Ptr collider = bullet::Collider::create(mass, shape);
 
-	return collider;
+	collider->setAngularVelocity(avx, avy, avz);
+	collider->setLinearVelocity(vx, vy, vz);
+	collider->setFriction(friction);
+	collider->setRestitution(restitution);
+
+	if (rotate == false)
+	{
+		collider->setAngularFactor(0, 0, 0);
+	}
+
+	return bullet::ColliderComponent::create(collider);
 }
-
-
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -207,7 +236,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-    camera->component<Transform>()->transform()->appendTranslation(0.f, 4.f, 30.0f);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 6.f, 30.0f)->appendRotationY(0.25);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
@@ -267,7 +296,7 @@ int main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
     {
 		//camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
-       // group->component<Transform>()->transform()->prependRotationY(.01f);
+       //group->component<Transform>()->transform()->prependRotationY(.01f);
 		renderingComponent->render();
 
 	    printFramerate();
