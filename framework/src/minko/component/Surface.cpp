@@ -96,6 +96,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 
 	data->addProvider(_material);
 	data->addProvider(_geometry->data());
+    data->addProvider(_effect->data());
 
 	_drawCalls.clear();
 
@@ -114,6 +115,7 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 
 	data->removeProvider(_material);
 	data->removeProvider(_geometry->data());
+    data->removeProvider(_effect->data());
 
 	_drawCalls.clear();
 }
