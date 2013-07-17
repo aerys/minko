@@ -290,6 +290,9 @@ OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 	// data Specifies a pointer to the new data that will be copied into the data store.
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
+
+	std::cout << "vertex buffer = " << vertexBuffer << std::endl;
+
 	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
 }
 
