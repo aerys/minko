@@ -154,6 +154,13 @@ namespace minko
 			};
 			
 			inline
+			ProviderPtr
+			material()
+			{
+				return _material;
+			};
+
+			inline
 			void 
 			rate(float value)
 			{

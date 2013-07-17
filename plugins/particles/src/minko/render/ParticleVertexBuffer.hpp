@@ -49,6 +49,15 @@ namespace minko
 			resize(unsigned int nParticles,
 				   unsigned int	vertexSize);
 
+			void
+			resetAttributes()
+			{
+				attributes().resize(0);
+				
+				addAttribute("offset", 2, 0);
+				addAttribute("position", 3, 2);
+			};
+
 		private:
 			ParticleVertexBuffer(std::shared_ptr<AbstractContext> context);
 		};
