@@ -16,6 +16,7 @@ ParticleSystem::Ptr particleSystem;
 Rendering::Ptr renderingComponent;
 
 auto mesh = scene::Node::create("mesh");
+auto mesh2 = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
 
@@ -86,9 +87,15 @@ int main(int argc, char** argv)
 		mesh->addComponent(Transform::create());
 		mesh->component<Transform>()->transform()
 			//->appendRotationZ(15)
-			->appendTranslation(0.f, 0.f, -30.f);
+			->appendTranslation(-10.f, 0.f, -30.f);
 		
+		mesh2->addComponent(Transform::create());
+		mesh2->component<Transform>()->transform()
+			//->appendRotationZ(15)
+			->appendTranslation(10.f, 0.f, -30.f);
+
 		group->addChild(mesh);
+		group->addChild(mesh2);
 
 		/*particleSystem = ParticleSystem::create(
 			context,
@@ -135,7 +142,9 @@ int main(int argc, char** argv)
 		particleSystem->add(particle::modifier::ColorOverTime::create());
 
 		mesh->addComponent(particleSystem);
+		mesh2->addComponent(particleSystem);
 		particleSystem->updateRate(60);
+		particleSystem->fastForward(2, 60);
 		particleSystem->play();
 	});
 
