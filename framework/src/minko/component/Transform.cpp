@@ -239,9 +239,11 @@ Transform::RootTransform::updateTransformsList()
 {
 	unsigned int nodeId = 0;
 
+	_idToNode.clear();
 	_transform.clear();
 	_modelToWorld.clear();
-	//_worldToModel.clear();
+	_numChildren.clear();
+	_firstChildId.clear();
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
