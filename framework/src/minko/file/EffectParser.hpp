@@ -135,6 +135,9 @@ namespace minko
             parseSamplerStates(Json::Value&                                             contextNode,
                                std::unordered_map<std::string, render::SamplerState>&   samplerStates);
 
+            std::shared_ptr<render::Texture>
+            parseTarget(Json::Value& contextNode, std::shared_ptr<render::AbstractContext> context, std::string& name);
+
 			void
 			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
 
