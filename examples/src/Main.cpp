@@ -117,7 +117,16 @@ deserializeShape(Qark::Map&							shapeData)
 			}
 			break;
 		case 100 : // TRANSFORM
-			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]));
+			{
+				deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]));
+				Matrix4x4::Ptr offset = deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+
+				deserializedShape->localScaleX(offset->data()[0]);
+				deserializedShape->localScaleY(offset->data()[5]);
+				deserializedShape->localScaleZ(offset->data()[10]);
+
+				std::cout << std::to_string(offset) << std::endl;
+			}
 			break;
 		default:
 			deserializedShape = nullptr;
@@ -236,12 +245,12 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 6.f, 30.0f)->appendRotationY(0.25);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 30.00f)->appendRotationY(PI/2);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
 
-	physicWorld->setGravity(math::Vector3::create(0, -9.8, 0));
+	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
 
 	auto assets	= AssetsLibrary::create(context)
@@ -256,7 +265,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/physicsTest.mk");
+		->queue("models/physic-scale-test.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -281,7 +290,7 @@ int main(int argc, char** argv)
 //               ->set("material.shininess",	    30.f),
 //			assets->effect("directional light")));
 
-		group->addChild(assets->node("models/physicsTest.mk"));
+		group->addChild(assets->node("models/physic-scale-test.mk"));
 	});
 
 	try
@@ -299,7 +308,7 @@ int main(int argc, char** argv)
        //group->component<Transform>()->transform()->prependRotationY(.01f);
 		renderingComponent->render();
 
-	    printFramerate();
+	   // printFramerate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
