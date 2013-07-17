@@ -215,12 +215,22 @@ DrawCall::bindStates()
 		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
         _states->triangleCulling()
 	);
+
+    auto target = getDataProperty<Texture::Ptr>(
+    	_stateBindings.count("target") ? _stateBindings.at("target") : "target",
+        _states->target()
+    );
 	
     // FIXME: bind render target
 	// FIXME: bind stencil test
 
 	_func.push_back([=](AbstractContext::Ptr context)
 	{
+        if (target)
+            context->setRenderToTexture(target->id(), true);
+        else
+            context->setRenderToBackBuffer();
+
 		context->setBlendMode(blendMode);
 		context->setDepthTest(depthMask, depthFunc);
         context->setTriangleCulling(triangleCulling);
