@@ -43,9 +43,12 @@ project "minko-examples"
 		}
 
 	-- macos
-	configuration { "debug", "macosx" }
+	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
 		libdirs { "/opt/local/lib/" }
 		includedirs { "/opt/local/include/" }
+
+	configuration { "emscripten", "release" }
+		postbuildcommands { 'emcc-O1 -s ASM_JS=1 bin/release/minko-examples.bc -o bin/release/minko-examples.html --preload-dir ../framework/bin/release/' }

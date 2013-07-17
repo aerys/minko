@@ -1,34 +1,34 @@
 solution "minko"
-   configurations { "Debug", "Release" }
+   configurations { "debug", "release" }
 
 -- examples
 include 'examples'
-   
+
 -- core framework
 include 'framework'
 
 -- plugins
- include 'plugins/jpeg'
- include 'plugins/png'
- include 'plugins/webgl'
+include 'plugins/jpeg'
+include 'plugins/png'
+include 'plugins/webgl'
 
 newaction {
 	trigger = "copyDLLs",
 	description = "Copy the required DLLs into the app. output folder",
 	execute = function()
-	  os.mkdir(project(1).basedir .. "/bin/release")
-	  os.mkdir(project(1).basedir .. "/bin/debug")
+		os.mkdir(project(1).basedir .. "/bin/release")
+		os.mkdir(project(1).basedir .. "/bin/debug")
 
-	  for _, file in ipairs(os.matchfiles("**.dll")) do
-		os.copyfile(
-			file,
-			project(1).basedir .. "/bin/release/" .. path.getname(file)
-		)
-		os.copyfile(
-			file,
-			project(1).basedir .. "/bin/debug/" .. path.getname(file)
-		)
-	  end
+		for _, file in ipairs(os.matchfiles("**.dll")) do
+			os.copyfile(
+				file,
+				project(1).basedir .. "/bin/release/" .. path.getname(file)
+			)
+			os.copyfile(
+				file,
+				project(1).basedir .. "/bin/debug/" .. path.getname(file)
+			)
+		end
 	end
 }
 
@@ -74,3 +74,62 @@ newaction {
 		end
 	end
 }
+
+newaction {
+	trigger = "fixMakefilesForEmscripten",
+	description = "Fix Makefiles for Emscripten compatibility.",
+	execute = function()
+		os.execute('scripts/fix-makefiles.sh')
+	end
+}
+-- FIXME: Move to scripts/ with dofile("scripts/toolchain.lua")
+
+function newplatform(platform)
+	local name = platform.name
+	local description = platform.description
+ 
+	-- Register new platform
+	premake.platforms[name] = {
+		cfgsuffix = "_"..name,
+		iscrosscompiler = true
+	}
+ 
+	-- Allow use of new platform in --platfroms
+	table.insert(premake.option.list["platform"].allowed, { name, description })
+	table.insert(premake.fields.platforms.allowed, name)
+ 
+	-- Add compiler support
+	-- gcc
+	premake.gcc.platforms[name] = platform.gcc
+	--other compilers (?)
+end
+ 
+newplatform {
+	name = "emscripten",
+	description = "Emscripten C++ to JS toolchain",
+	gcc = {
+		cc = "emcc",
+		cxx = "em++",
+		ar = "emar",
+		cppflags = "-DEMSCRIPTEN"
+		-- premake.gcc.prebuildcommands = { 'scripts/fix-makefiles.sh' }
+	}
+}
+
+newplatform {
+	name = "clang",
+	description = "Clang",
+	gcc = {
+		cc = "clang",
+		cxx = "clang++",
+		ar = "ar",
+		cppflags = "-MMD "
+	}
+}
+
+
+if _OPTIONS.platform then
+	print("Selected target platform: " .. _OPTIONS["platform"])
+    -- overwrite the native platform with the options::platform
+    premake.gcc.platforms['Native'] = premake.gcc.platforms[_OPTIONS.platform]
+end
