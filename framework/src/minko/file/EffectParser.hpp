@@ -65,6 +65,7 @@ namespace minko
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
+			std::shared_ptr<AssetsLibrary>								_assetsLibrary;
 
 			std::string													_dependenciesCode;
 
@@ -96,7 +97,8 @@ namespace minko
 			void
 			parse(const std::string&				filename,
 				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data);
+				  const std::vector<unsigned char>&	data,
+				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 			void
 			finalize();
