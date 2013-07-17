@@ -81,8 +81,6 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	if (hasAttribute(name))
 		throw std::invalid_argument("name");
 
-	std::cout << "add attribute " << name << " " << size << " " << offset << std::endl;
-
 	_attributes.push_back(VertexBuffer::AttributePtr(
 		new VertexBuffer::Attribute(name, size, offset)
 	));
