@@ -113,11 +113,9 @@ void
 	if (!target->hasComponent<Transform>())
 		throw std::logic_error("A ColliderComponent's target must have a Transform.");
 
-	_targetTransform	= target->component<Transform>();
+	_targetTransform	= node->component<Transform>();
 
-	updateColliderWorldTransform();
-
-	auto nodeSet	= NodeSet::create(target)
+	auto nodeSet	= NodeSet::create(node)
 		->ancestors(true)
 		->where([](Node::Ptr node)
 		{
@@ -127,11 +125,16 @@ void
 	{
 		std::stringstream stream;
 		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
-		throw std::logic_error(stream.str());
+		//throw std::logic_error(stream.str());
 	}
-	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+	else
+	{
+		updateColliderWorldTransform();
 
-	_physicsWorld->addChild(_collider);
+		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+
+		_physicsWorld->addChild(_collider);
+	}
 }
 
 void 
