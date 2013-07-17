@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "EffectParser.hpp"
 
+#include "minko/data/Provider.hpp"
+#include "minko/render/Effect.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
@@ -29,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/Texture.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -193,7 +196,10 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 			options->context(), Shader::Type::FRAGMENT_SHADER, pass.get("fragmentShader", 0).asString()
 		);
 
-		passes.push_back(render::Pass::create(
+        std::string targetName;
+        auto target = parseTarget(pass, options->context(), targetName);
+
+        passes.push_back(render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
 			attributeBindings,
@@ -207,11 +213,15 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 			    blendDstFactor,
 			    depthMask,
 			    depthFunc,
-                triangleCulling
+                triangleCulling,
+                target
             )
 		));
 
 		_effect = render::Effect::create(passes);
+
+        if (targetName != "")
+            _effect->data()->set(targetName, target);
 	}
 }
 
@@ -343,6 +353,33 @@ EffectParser::parseSamplerStates(Json::Value&                                   
                 samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
             }
         }
+}
+
+std::shared_ptr<render::Texture>
+EffectParser::parseTarget(Json::Value& contextNode, std::shared_ptr<AbstractContext> context, std::string& name)
+{
+    auto targetValue = contextNode.get("target", 0);
+
+    if (targetValue.isObject())
+    {
+        auto sizeValue  = targetValue.get("size", 0);
+        auto width      = 0;
+        auto height     = 0;
+
+        name = targetValue.get("name", 0).asString();
+
+        if (!sizeValue.empty())
+            width = height = sizeValue.asUInt();
+        else
+        {
+            width = targetValue.get("width", 0).asUInt();
+            height = targetValue.get("height", 0).asUInt();
+        }
+
+        return render::Texture::create(context, width, height, true);
+    }
+
+    return nullptr;
 }
 
 void
