@@ -64,13 +64,18 @@ Texture::data(unsigned char* data, DataFormat format)
 void
 Texture::upload()
 {
-	_id = _context->createTexture(_width, _height, false, _optimizeForRenderToTexture);
-	_context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
+    if (_id == -1)
+    	_id = _context->createTexture(_width, _height, false, _optimizeForRenderToTexture);
+	
+    _context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
 }
 
 void
 Texture::dispose()
 {
-	_context->deleteTexture(_id);
-	_id = -1;
+    if (_id != -1)
+    {
+	    _context->deleteTexture(_id);
+	    _id = -1;
+    }
 }
