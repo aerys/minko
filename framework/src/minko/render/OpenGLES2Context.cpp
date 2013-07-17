@@ -353,6 +353,9 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	
+	_currentIndexBuffer = indexBuffer;
+	
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
@@ -367,6 +370,9 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	
+	_currentIndexBuffer = indexBuffer;
+
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
 }
 
@@ -765,7 +771,6 @@ OpenGLES2Context::getShaderCompilationLogs(const unsigned int shader)
 		int bufferLength = -1;
 
 		glGetShaderSource(shader, 1024, &bufferLength, buffer);
-		std::cout << buffer << bufferLength << std::endl;
 
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logsLength);
 
