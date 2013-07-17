@@ -69,3 +69,10 @@ Provider::propertyWrapperInitHandler(const std::string& propertyName)
 		propertyName
 	));*/
 }
+
+			
+bool 
+	Provider::hasProperty(const std::string& name) const
+{
+	return std::find(_names.begin(), _names.end(), name) != _names.end();
+}
