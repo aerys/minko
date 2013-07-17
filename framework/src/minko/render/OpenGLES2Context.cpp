@@ -968,6 +968,4 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 
     _frameBuffers[texture] = frameBuffer;
     _renderBuffers[texture] = renderBuffer;
-
-    return frameBuffer;
 }
