@@ -41,6 +41,8 @@ namespace minko
 {
     typedef unsigned int uint;
 
+	class AssetsLibrary;
+
 	namespace render
 	{
 		class AbstractContext;
