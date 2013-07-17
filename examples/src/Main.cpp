@@ -1,6 +1,4 @@
 #include <time.h>
-#include <exception>
-#include <iostream>
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
@@ -46,8 +44,8 @@ printFramerate(const unsigned int delay = 1)
 void
 renderScene()
 {
-	mesh->controller<TransformController>()->transform()->prependRotationY(.01f);
-	renderingController->render();
+	mesh->component<Transform>()->transform()->prependRotationY(.01f);
+	renderingComponent->render();
 
 	//printFramerate();
 
@@ -62,7 +60,6 @@ void timerFunc(int)
 	glutPostRedisplay();
 }
 #endif
-
 /*void screenshotFunc(int)
 {
 	const int width = 800, height = 600;
@@ -94,7 +91,6 @@ void timerFunc(int)
 
 int main(int argc, char** argv)
 {
-std::cout << "Starting example" << std::endl;
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -109,12 +105,10 @@ std::cout << "Starting example" << std::endl;
 
 	auto context = render::OpenGLES2Context::create();
 #endif
-	
-    context->setBlendMode(render::Blending::Mode::DEFAULT);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
-        	->registerParser<file::PNGParser>("png")
+		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
@@ -135,10 +129,8 @@ std::cout << "Starting example" << std::endl;
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		std::cout << "load complete" << std::endl;
-		auto camera	= scene::Node::create("camera");
 		auto root   = scene::Node::create("root");
-		
+
 		root->addChild(group)->addChild(camera);
 
         renderingComponent = Rendering::create(assets->context());
@@ -164,7 +156,11 @@ std::cout << "Starting example" << std::endl;
 			assets->effect("directional light")
 		));
 	});
+
 	assets->load();
+
+	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+	//glutTimerFunc(1000, screenshotFunc, 0);
 
 #ifdef EMSCRIPTEN
 	glutDisplayFunc(renderScene);
@@ -201,3 +197,4 @@ std::cout << "Starting example" << std::endl;
     exit(EXIT_SUCCESS);
 #endif
 }
+
