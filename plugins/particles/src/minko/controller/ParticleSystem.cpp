@@ -319,6 +319,8 @@ void
 ParticleSystem::add(ModifierPtr	modifier)
 {
 	addComponents(modifier->getNeededComponents());
+
+	modifier->setProperties(_material);
 	
 	IInitializerPtr i = std::dynamic_pointer_cast<modifier::IParticleInitializer> (modifier);
 
@@ -346,6 +348,7 @@ ParticleSystem::remove(ModifierPtr	modifier)
 			if (*it == i)
 			{
 				_initializers.erase(it);
+				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
 				return;
@@ -364,6 +367,7 @@ ParticleSystem::remove(ModifierPtr	modifier)
 			if (*it == u)
 			{
 				_updaters.erase(it);
+				modifier->unsetProperties(_material);
 				updateVertexFormat();
 
 				return;
@@ -691,37 +695,39 @@ ParticleSystem::addComponents(unsigned int components, bool blockVSInit)
 	render::ParticleVertexBuffer::Ptr vs = _geometry->vertices();
 	unsigned int vertexSize = 5;
 
-	if (components & VertexComponentFlags::SIZE)
+	vs->resetAttributes();
+
+	if (_format & VertexComponentFlags::SIZE)
 	{
 		vs->addAttribute ("size", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (components & VertexComponentFlags::COLOR)
+	if (_format & VertexComponentFlags::COLOR)
 	{
 		vs->addAttribute ("color", 3, vertexSize);
 		vertexSize += 3;
 	}
 
-	if (components & VertexComponentFlags::TIME)
+	if (_format & VertexComponentFlags::TIME)
 	{
 		vs->addAttribute ("time", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (components & VertexComponentFlags::OLD_POSITION)
+	if (_format & VertexComponentFlags::OLD_POSITION)
 	{
 		vs->addAttribute ("old_Position", 3, vertexSize);
 		vertexSize += 3;
 	}
 
-	if (components & VertexComponentFlags::ROTATION)
+	if (_format & VertexComponentFlags::ROTATION)
 	{
 		vs->addAttribute ("rotation", 1, vertexSize);
 		vertexSize += 1;
 	}
 
-	if (components & VertexComponentFlags::SPRITEINDEX)
+	if (_format & VertexComponentFlags::SPRITEINDEX)
 	{
 		vs->addAttribute ("spriteIndex", 1, vertexSize);
 		vertexSize += 1;
