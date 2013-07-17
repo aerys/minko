@@ -36,6 +36,7 @@ project "minko-framework"
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
-    links { "OpenGL.framework", "GLUT.framework" }
+		-- libdirs { "/opt/local/lib/" }
+		-- includedirs { "/opt/local/include/" }
+		links { "OpenGL.framework", "GLUT.framework" }
+
