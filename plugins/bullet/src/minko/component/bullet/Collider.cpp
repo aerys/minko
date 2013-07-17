@@ -30,7 +30,7 @@ bullet::Collider::Collider(float						mass,
 						   Vector3::Ptr					inertia):
 _mass(mass),
 	_worldTransform(Matrix4x4::create()),
-	_scaleCorrectionMatrix(Matrix4x4::create()),
+	_scaleCorrection(1.0f),
 	_shape(shape),
 	_inertia(inertia),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
@@ -43,48 +43,56 @@ _mass(mass),
 	_transformChanged(Signal<Ptr>::create())
 {
 	_worldTransform->identity();
-	_scaleCorrectionMatrix->identity();
 }
 
 void
 	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	Matrix4x4::Ptr modelToWorld = Matrix4x4::create()
-		->copyFrom(modelToWorldMatrix);
+	// uniform scaling assumed
+	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
-	std::cout << "modelToWorld = " << std::to_string(modelToWorld) << std::endl;
-
-	const float scaling = powf(modelToWorld->determinant3x3(), 1.0f/3.0f);
-	std::cout << "\tmodelToWorld scaling = " << scaling << std::endl;
-	if (fabsf(scaling) < 1e-6f)
+	if (fabsf(_scaleCorrection) < 1e-6f)
 		throw std::logic_error("Physics simulation requires matrices with non-null uniform scaling (world transform matrix).");
 
-	const float invScaling = 1.0f / scaling;
-	modelToWorld->prependScaling(invScaling, invScaling, invScaling);
-
-	std::cout << "\tremove uniform scaling. det = " << modelToWorld->determinant3x3() << std::endl << std::endl;
+	// initialize collider's world transform from a scaling-free matrix
+	const float invScaling = 1.0f / _scaleCorrection;
+	auto scalingFreeMatrix = Matrix4x4::create()
+		->copyFrom(modelToWorldMatrix)
+		->prependScaling(invScaling, invScaling, invScaling);
 
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
-	auto rotation		= modelToWorld->rotation();
-	auto translation	= modelToWorld->translationVector();
+	auto rotation		= scalingFreeMatrix->rotation();
+	auto translation	= scalingFreeMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
 
 	// record the corrective term that keeps the
 	// scale/shear lost by the collider's world transform
 	// @todo currently, scale/shear are not properly handled, the scale correction matrix always end up being the identity matrix...
+	/*
 	_scaleCorrectionMatrix	= Matrix4x4::create()
 		->copyFrom(_worldTransform)
 		->invert()
 		->append(modelToWorldMatrix);
+		*/
+	//_scaleCorrectionMatrix->identity()->appendScaling(scaling, scaling, scaling);
 }
 
 void
 	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
 {
+	if (fabsf(fabsf(colliderWorldTransform->determinant3x3()) - 1.0f) > 1e-3f)
+		throw std::logic_error("Update of collider's world transform can only involve scaling-free matrices.");
+
+	// correct scaling lost at initialization of the collider's world transform
+	const std::vector<float>& m(colliderWorldTransform->values());
 	_worldTransform
-		->copyFrom(colliderWorldTransform)
-		->append(_scaleCorrectionMatrix);
+		->initialize(
+		m[0]*_scaleCorrection, m[1]*_scaleCorrection, m[2]*_scaleCorrection, m[3],
+		m[4]*_scaleCorrection, m[5]*_scaleCorrection, m[6]*_scaleCorrection, m[7],
+		m[8]*_scaleCorrection, m[9]*_scaleCorrection, m[10]*_scaleCorrection, m[11],
+		0.0f, 0.0f, 0.0f, 1.0f
+		);
 
 	transformChanged()->execute(shared_from_this());
 }
