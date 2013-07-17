@@ -39,4 +39,5 @@ Shader::upload()
 {
 	_id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
 	_context->setShaderSource(_id, _source);
+    _context->compileShader(_id);
 }
