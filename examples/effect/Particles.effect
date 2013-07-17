@@ -20,7 +20,7 @@
 	
 	"priority"			: 0,
 	"blendMode"			: "additive",
-	"depthTest"			: [true, "less"],
+	"depthTest"			: [false, "less"],
 	"triangleCulling"	: "front",
 	
 	"passes"	: [{	

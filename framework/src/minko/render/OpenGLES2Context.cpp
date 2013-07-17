@@ -156,12 +156,12 @@ OpenGLES2Context::configureViewport(const unsigned int x,
 
 void
 OpenGLES2Context::clear(float 			red,
-					   float 			green,
-					   float 			blue,
-					   float 			alpha,
-					   float 			depth,
-					   unsigned int 	stencil,
-					   unsigned int 	mask)
+					    float 			green,
+					    float 			blue,
+					    float 			alpha,
+					    float 			depth,
+					    unsigned int 	stencil,
+					    unsigned int 	mask)
 {
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearColor.xml
 	//
@@ -207,6 +207,13 @@ OpenGLES2Context::present()
 	//
 	// force execution of GL commands in finite time
 	//glFlush();
+
+#ifdef DEBUG
+    if (glGetError() != 0)
+        throw;
+#endif
+
+    setRenderToBackBuffer();
 }
 
 void
@@ -387,17 +394,18 @@ OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
 const unsigned int
 OpenGLES2Context::createTexture(unsigned int 	width,
 							    unsigned int 	height,
-							    bool			mipMapping)
+							    bool			mipMapping,
+                                bool            optimizeForRenderToTexture)
 {
 	unsigned int texture;
 
 	// make sure width is a power of 2
 	if (!((width != 0) && !(width & (width - 1))))
-		throw ;
+		throw std::invalid_argument("width");
 
 	// make sure height is a power of 2
 	if (!((height != 0) && !(height & (height - 1))))
-		throw ;
+		throw std::invalid_argument("height");
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
 	//
@@ -447,6 +455,9 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 
 	_textures.push_back(texture);
 
+    if (optimizeForRenderToTexture)
+        createRTTBuffers(texture, width, height);
+
 	return texture;
 }
 
@@ -467,6 +478,15 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
 	_textures.erase(std::find(_textures.begin(), _textures.end(), texture));
 
 	glDeleteTextures(1, &texture);
+
+    if (_frameBuffers.count(texture))
+    {
+        glDeleteFramebuffers(1, &_frameBuffers[texture]);
+        _frameBuffers.erase(texture);
+
+        glDeleteRenderbuffers(1, &_renderBuffers[texture]);
+        _renderBuffers.erase(texture);
+    }
 }
 
 void
@@ -904,4 +924,53 @@ OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
         glCullFace(GL_FRONT_AND_BACK);
         break;
     }
+}
+
+void
+OpenGLES2Context::setRenderToBackBuffer()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+void
+OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndStencil)
+{
+    if (_frameBuffers.count(texture) == 0)
+        throw std::logic_error("this texture cannot be used for RTT");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
+    if (enableDepthAndStencil)
+        glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+}
+
+void
+OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height)
+{
+    unsigned int frameBuffer = -1;
+
+    // create a framebuffer object 
+    glGenFramebuffers(1, &frameBuffer);
+    // bind the framebuffer object 
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    // attach a texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    unsigned int renderBuffer = -1;
+
+    // gen renderbuffer
+    glGenRenderbuffers(1, &renderBuffer);
+    // bind renderbuffer
+    glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+    // init as a depth buffer
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    // attach to the FBO for depth
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+
+    // unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    _frameBuffers[texture] = frameBuffer;
+    _renderBuffers[texture] = renderBuffer;
 }
