@@ -86,8 +86,7 @@ ParticleSystem::ParticleSystem(AbstractContextPtr	context,
 	auto view = math::Matrix4x4::create()->perspective(.785f, 800.f / 600.f, .1f, 1000.f);
 	
 	_effect = assets->effect("particles");
-
-	_surface = Surface::create(_geometry, 
+	_surface = Surface::create(_geometry,
 							   _material,
 							   _effect);
 
@@ -152,6 +151,7 @@ ParticleSystem::targetRemovedHandler(AbsCompPtr ctrl,
 
 	removedHandler(target->root(), target, target->parent());
 }
+
 void
 ParticleSystem::addedHandler(NodePtr node,
 								  NodePtr target,
