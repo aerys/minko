@@ -131,7 +131,6 @@ int main(int argc, char** argv)
 			particle::sampler::RandomValue<float>::create(0.1, 2.)
 			));
 		
-
 		particleSystem->add(particle::modifier::SizeOverTime::create());
 		particleSystem->add(particle::modifier::ColorOverTime::create());
 
