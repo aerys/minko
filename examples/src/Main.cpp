@@ -118,6 +118,10 @@ int main(int argc, char** argv)
 			particle::sampler::RandomValue<float>::create(0., 4.)
 			));
 
+		particleSystem->add(particle::modifier::StartAngularVelocity::create(
+			particle::sampler::RandomValue<float>::create(1., 5.)
+			));
+
 		mesh->addComponent(particleSystem);
 		particleSystem->updateRate(60);
 		particleSystem->play();
