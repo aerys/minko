@@ -47,7 +47,7 @@ ParticleIndexBuffer::resize(unsigned int nParticles)
 		_padding.resize(size, 0);
 		if (oldSize < size)
 		{
-			for (unsigned int i = oldSize / 6; i < nParticles; ++i)
+			for (unsigned int i = 0; i < nParticles; ++i)
 			{
 				isData[i * 6] = i * 4;
 				isData[i * 6 + 1] = i * 4 + 2;
@@ -58,6 +58,7 @@ ParticleIndexBuffer::resize(unsigned int nParticles)
 			}
 		}
 	
+		dispose();
 		upload();
 	}
 }

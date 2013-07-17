@@ -76,11 +76,11 @@ int main(int argc, char** argv)
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
-		//->geometry("cube", geometry::CubeGeometry::create(context))
+		->geometry("cube", geometry::CubeGeometry::create(context))
 		//->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
-		//->queue("DirectionalLight.effect")
+		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		->queue("Texture.effect")
 		->queue("Red.effect")
@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 		root->addChild(group)->addChild(camera);
 
         renderingComponent = Rendering::create(assets->context());
-        renderingComponent->backgroundColor(0x000000FF);
+        renderingComponent->backgroundColor(0x7f7f7fFF);
 		camera->addComponent(renderingComponent);
         camera->addComponent(Transform::create());
         camera->component<Transform>()->transform()
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 
 		mesh->addComponent(Transform::create());
 		mesh->component<Transform>()->transform()
-			//->appendRotationZ(15)
+			->appendRotationZ(15)
 			->appendTranslation(0.f, 0.f, -30.f);
 		
 		group->addChild(mesh);
@@ -134,10 +134,6 @@ int main(int argc, char** argv)
 			particle::sampler::RandomValue<float>::create(8., 10.),
 			particle::sampler::RandomValue<float>::create(-2., 2.)
 			));
-		
-		/*particleSystem->add(particle::modifier::StartAngularVelocity::create(
-			particle::sampler::RandomValue<float>::create(1., 5.)
-			));*/
 
 		particleSystem->add(particle::modifier::StartSize::create(
 			particle::sampler::RandomValue<float>::create(0.1, 1.)
