@@ -43,9 +43,10 @@ namespace minko
 																						 std::shared_ptr<file::MkOptions>	options,
 																						 ControllerMap&						controllerMap,
 																						 NodeMap&							nodeMap);
+			typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&, std::shared_ptr<file::MkOptions>, ControllerMap&, NodeMap&)> DeserializeFunction2;
 
 		private:
-			static std::map<std::string, DeserializeFunction>	_pluginEntryToFunction;
+			static std::map<std::string, DeserializeFunction2>	_pluginEntryToFunction;
 			ControllerMap	_controllerMap;
 			NodeMap			_nodeMap;
 
@@ -59,7 +60,7 @@ namespace minko
 
 			static
 			void
-			registerController(std::string mkEntry, DeserializeFunction deserializeFunction);
+			registerController(std::string mkEntry, DeserializeFunction2 deserializeFunction);
 
 			void
 			parse(const std::string&				filename,
