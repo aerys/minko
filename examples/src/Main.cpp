@@ -14,21 +14,158 @@ using namespace minko::component;
 using namespace minko::math;
 
 Rendering::Ptr renderingComponent;
-auto mesh = scene::Node::create("mesh");
-auto group = scene::Node::create("group");
+auto mesh	= scene::Node::create("mesh");
+auto group	= scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
 auto root   = scene::Node::create("root");
 
-std::shared_ptr<bullet::ColliderComponent>
-deserializeBullet(Qark::Map&							nodeInformation, 
-			std::shared_ptr<file::MkOptions>	options,
-			file::MkParser::ControllerMap&		controllerMap,
-			file::MkParser::NodeMap&			nodeMap)
+template <typename T>
+static void
+read(std::stringstream& stream, T& value)
 {
-	std::cout << "YOUHOUUU" << std::endl;
-
-	return Transform::create();
+	stream.read(reinterpret_cast<char*>(&value), sizeof (T));
 }
+
+template <typename T>
+static
+T swap_endian(T u)
+{
+	union
+	{
+		T u;
+		unsigned char u8[sizeof(T)];
+	} source, dest;
+
+	source.u = u;
+
+	for (size_t k = 0; k < sizeof(T); k++)
+		dest.u8[k] = source.u8[sizeof(T) - k - 1];
+
+	return dest.u;
+}
+
+template <typename T>
+T
+readAndSwap(std::stringstream& stream)
+{
+	T value;
+	stream.read(reinterpret_cast<char*>(&value), sizeof (T));
+
+	return swap_endian(value);
+}
+
+bullet::AbstractPhysicsShape::Ptr
+deserializeShape(Qark::Map&							shapeData,
+				 file::MkParser::ControllerMap&		controllerMap,
+				 file::MkParser::NodeMap&			nodeMap)
+{
+	int type = Any::cast<int>(shapeData["type"]);
+	bullet::AbstractPhysicsShape::Ptr deserializedShape;
+	std::stringstream	stream;
+
+	double rx	= 0;
+	double ry	= 0;
+	double rz	= 0;
+	double h	= 0;
+	double r	= 0;
+
+	switch (type)
+	{
+		case 101: // multiprofile
+			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), controllerMap, nodeMap);
+			break;
+		case 2: // BOX
+			{
+			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			stream.write(&*source.begin(), source.size());
+
+			rx = readAndSwap<double>(stream);
+			ry = readAndSwap<double>(stream);
+			rz = readAndSwap<double>(stream);
+
+			deserializedShape = bullet::BoxShape::create(rx, ry, rz);
+			}
+			break;
+		case 5 : // CONE
+			{
+				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+				stream.write(&*source.begin(), source.size());
+
+				r = readAndSwap<double>(stream);
+				h = readAndSwap<double>(stream);
+				
+				deserializedShape = bullet::ConeShape::create(r, h);
+			}
+			break;
+		case 6 : // BALL
+			{
+				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+				stream.write(&*source.begin(), source.size());
+
+				r = readAndSwap<double>(stream);
+
+				deserializedShape = bullet::SphereShape::create(r);
+			}
+			break;
+		case 7 : // CYLINDER
+			{
+				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+				stream.write(&*source.begin(), source.size());
+
+				r = readAndSwap<double>(stream);
+				h = readAndSwap<double>(stream);
+
+				deserializedShape = bullet::CylinderShape::create(r, h, r);
+			}
+			break;
+		case 100 : // TRANSFORM
+			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), controllerMap, nodeMap);
+			break;
+		default:
+			deserializedShape = nullptr;
+	}
+
+	return deserializedShape;		
+}
+
+std::shared_ptr<bullet::ColliderComponent>
+deserializeBullet(Qark::Map&						nodeInformation, 
+				  file::MkParser::ControllerMap&	controllerMap,
+				  file::MkParser::NodeMap&			nodeMap)
+{
+	Qark::Map& colliderData = Any::cast<Qark::Map&>(nodeInformation["defaultCollider"]);
+	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
+
+	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, controllerMap, nodeMap);
+	
+	float mass = 1;
+
+	if (colliderData.find("dynamics") == colliderData.end())
+		mass = 0;
+	else
+	{
+		Qark::ByteArray& dynamicsData = Any::cast<Qark::ByteArray&>(colliderData["dynamics"]);
+		std::stringstream	stream;
+		stream.write(&*dynamicsData.begin(), dynamicsData.size());
+
+		double vx = readAndSwap<double>(stream);
+		double vy = readAndSwap<double>(stream);
+		double vz = readAndSwap<double>(stream);
+
+		double avx = readAndSwap<double>(stream);
+		double avy = readAndSwap<double>(stream);
+		double avz = readAndSwap<double>(stream);
+
+		bool sleep	= readAndSwap<bool>(stream);
+		bool rotate = readAndSwap<bool>(stream);
+
+	}
+
+	bullet::ColliderComponent::Ptr collider = bullet::ColliderComponent::create(bullet::Collider::create(mass, shape));
+
+	return collider;
+}
+
 
 
 void
@@ -57,7 +194,7 @@ testMk(AssetsLibrary::Ptr assets)
 
 int main(int argc, char** argv)
 {
-	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
@@ -70,7 +207,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-    camera->component<Transform>()->transform()->appendTranslation(0.f, 2.f, 10.0f);
+    camera->component<Transform>()->transform()->appendTranslation(0.f, 4.f, 30.0f);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
