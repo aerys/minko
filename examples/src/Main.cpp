@@ -85,33 +85,42 @@ int main(int argc, char** argv)
 
 		mesh->addComponent(Transform::create());
 		mesh->component<Transform>()->transform()
-			->appendRotationZ(15)
+			//->appendRotationZ(15)
 			->appendTranslation(0.f, 0.f, -30.f);
 		
 		group->addChild(mesh);
 
-		particleSystem = ParticleSystem::create(
+		/*particleSystem = ParticleSystem::create(
 			context,
 			assets,
 			6000,
 			particle::sampler::RandomValue<float>::create(0.2, 0.8),
 			particle::shape::Cylinder::create(1., 5., 5.),
 			particle::StartDirection::NONE,
+			0);*/
+
+		particleSystem = ParticleSystem::create(
+			context,
+			assets,
+			300,
+			particle::sampler::RandomValue<float>::create(1.2, 1.8),
+			particle::shape::Sphere::create(2.),
+			particle::StartDirection::NONE,
 			0);
 
-		particleSystem->isInWorldSpace(true);
+		//particleSystem->isInWorldSpace(true);
 		particleSystem->material()
-				->set("material.diffuseColor",	Vector4::create(.8f, .3f, .1f, 1.f))
+				->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
                 ->set("material.diffuseMap",	assets->texture("firefull.jpg"));
 
 		particleSystem->add(particle::modifier::StartForce::create(
-			particle::sampler::RandomValue<float>::create(-2., 2.),
-			particle::sampler::RandomValue<float>::create(8., 10.),
-			particle::sampler::RandomValue<float>::create(-2., 2.)
+			particle::sampler::RandomValue<float>::create(-.2, .2),
+			particle::sampler::RandomValue<float>::create(6., 8.),
+			particle::sampler::RandomValue<float>::create(-.2, .2)
 			));
 
 		particleSystem->add(particle::modifier::StartSize::create(
-			particle::sampler::RandomValue<float>::create(0.1, .8)
+			particle::sampler::RandomValue<float>::create(1.3, 1.6)
 			));
 
 		particleSystem->add(particle::modifier::StartSprite::create(
@@ -119,8 +128,12 @@ int main(int argc, char** argv)
 			));
 
 		particleSystem->add(particle::modifier::StartAngularVelocity::create(
-			particle::sampler::RandomValue<float>::create(1., 5.)
+			particle::sampler::RandomValue<float>::create(0.1, 2.)
 			));
+		
+
+		particleSystem->add(particle::modifier::SizeOverTime::create());
+		particleSystem->add(particle::modifier::ColorOverTime::create());
 
 		mesh->addComponent(particleSystem);
 		particleSystem->updateRate(60);
@@ -140,7 +153,7 @@ int main(int argc, char** argv)
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
 		
-		mesh->component<Transform>()->transform()->prependRotationX(.01);
+		//mesh->component<Transform>()->transform()->prependRotationY(.01);
 
 	    renderingComponent->render();
 

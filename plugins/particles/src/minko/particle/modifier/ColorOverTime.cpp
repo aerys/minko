@@ -6,6 +6,9 @@
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
+ColorOverTime::ColorOverTime()
+{}
+
 void
 ColorOverTime::update(std::vector<ParticleData>& 	particles,
  					  float							timeStep) const
