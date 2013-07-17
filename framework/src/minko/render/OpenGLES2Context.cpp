@@ -395,11 +395,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 
 	// make sure width is a power of 2
 	if (!((width != 0) && !(width & (width - 1))))
-		throw ;
+		throw std::invalid_argument("width");
 
 	// make sure height is a power of 2
 	if (!((height != 0) && !(height & (height - 1))))
-		throw ;
+		throw std::invalid_argument("height");
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
 	//
