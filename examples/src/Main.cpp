@@ -4,6 +4,7 @@
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoMk.hpp"
+#include "minko/MinkoBullet.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -16,6 +17,19 @@ Rendering::Ptr renderingComponent;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
+auto root   = scene::Node::create("root");
+
+std::shared_ptr<bullet::ColliderComponent>
+deserializeBullet(Qark::Map&							nodeInformation, 
+			std::shared_ptr<file::MkOptions>	options,
+			file::MkParser::ControllerMap&		controllerMap,
+			file::MkParser::NodeMap&			nodeMap)
+{
+	std::cout << "YOUHOUUU" << std::endl;
+
+	return Transform::create();
+}
+
 
 void
 printFramerate(const unsigned int delay = 1)
@@ -43,11 +57,27 @@ testMk(AssetsLibrary::Ptr assets)
 
 int main(int argc, char** argv)
 {
+	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+
     glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
     glfwMakeContextCurrent(window);
-
 	auto context = render::OpenGLES2Context::create();
+
+	root->addChild(group)->addChild(camera);
+		
+	renderingComponent = Rendering::create(context);
+    renderingComponent->backgroundColor(0x7F7F7FFF);
+	camera->addComponent(renderingComponent);
+    camera->addComponent(Transform::create());
+    camera->component<Transform>()->transform()->appendTranslation(0.f, 2.f, 10.0f);
+    camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+
+	auto physicWorld = bullet::PhysicsWorld::create();
+
+	physicWorld->setGravity(math::Vector3::create(0, -9.8, 0));
+	root->addComponent(physicWorld);
+
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
@@ -60,7 +90,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/model.mk");
+		->queue("models/physicsTest.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -72,17 +102,6 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		auto root   = scene::Node::create("root");
-
-		root->addChild(group)->addChild(camera);
-		
-		renderingComponent = Rendering::create(assets->context());
-        renderingComponent->backgroundColor(0x7F7F7FFF);
-		camera->addComponent(renderingComponent);
-        camera->addComponent(Transform::create());
-        camera->component<Transform>()->transform()->appendTranslation(0.f, 2.f, 0.75);
-        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-
         root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
 		group->addChild(mesh);
@@ -96,15 +115,22 @@ int main(int argc, char** argv)
 //               ->set("material.shininess",	    30.f),
 //			assets->effect("directional light")));
 
-		group->addChild(assets->node("models/model.mk"));
+		group->addChild(assets->node("models/physicsTest.mk"));
 	});
 
-	assets->load();
+	try
+	{
+		assets->load();
+	}
+	catch(std::exception e)
+	{
+		std::cout << e.what() << std::endl;
+	}
 
 	while(!glfwWindowShouldClose(window))
     {
 		//camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
-        group->component<Transform>()->transform()->prependRotationY(.01f);
+       // group->component<Transform>()->transform()->prependRotationY(.01f);
 		renderingComponent->render();
 
 	    printFramerate();

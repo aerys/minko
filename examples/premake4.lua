@@ -6,8 +6,8 @@ project "minko-examples"
     "minko-jpeg",
     "minko-png",
     "minko-mk",
-    "minko-framework",
-      "minko-bullet"
+    "minko-bullet",
+    "minko-framework"
   }
   files { "**.hpp", "**.h", "**.cpp" }
   includedirs {
@@ -16,7 +16,7 @@ project "minko-examples"
     "../framework/src",
     "../plugins/jpeg/src",
     "../plugins/png/src",
-    "../plugins/mk/src"
+    "../plugins/mk/src",
     "../plugins/bullet/src"
     }
 
