@@ -65,5 +65,8 @@ ParticleVertexBuffer::resize(unsigned int	nParticles,
 		vsData[3 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
 	}
 	
+	if (oldSize != size)
+		dispose();
+	
 	upload();
 }
