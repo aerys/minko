@@ -6,6 +6,9 @@
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
+SizeOverTime::SizeOverTime()
+{}
+
 void
 SizeOverTime::update(std::vector<ParticleData>& 	particles,
  					 float							timeStep) const

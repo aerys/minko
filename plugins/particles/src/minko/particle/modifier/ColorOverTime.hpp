@@ -12,6 +12,18 @@ namespace minko
 			class ColorOverTime : public IParticleUpdater
 			{
 			public:
+				typedef std::shared_ptr<ColorOverTime>	Ptr;
+
+			public:
+				static
+				Ptr
+				create()
+				{
+					Ptr modifier = std::shared_ptr<ColorOverTime>(new ColorOverTime());
+
+					return modifier;
+				};
+
 				virtual
 				void
 				update(std::vector<ParticleData>& 	particles,
@@ -20,6 +32,9 @@ namespace minko
 				virtual
 				unsigned int
 				getNeededComponents() const;
+
+			protected:
+				ColorOverTime();
 			};
 		}
 	}
