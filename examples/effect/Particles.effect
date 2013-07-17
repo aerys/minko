@@ -4,7 +4,8 @@
 	
 	"attributeBindings"	: {
 		"offset"				: "geometry.vertex.attribute.offset",
-		"position"				: "geometry.vertex.attribute.position"
+		"position"				: "geometry.vertex.attribute.position",
+		"size"					: "geometry.vertex.attribute.size"
 	},
 	
 	"uniformBindings"	: {
@@ -27,6 +28,7 @@
 		"vertexShader"	: "
 			attribute vec2 offset;
 			attribute vec3 position;
+			attribute float size;
 
 			
 			uniform mat4 modelToWorldMatrix;
@@ -43,7 +45,7 @@
 				pos = viewMatrix * modelToWorldMatrix * vec4(position, 1.0);
 			#endif
 			
-				pos += vec4(offset, 0, 0);
+				pos += vec4(offset, 0, 0) * size;
 			
 				gl_Position = projectionMatrix * pos;
 			}
@@ -52,7 +54,7 @@
 				
 			void main(void)
 			{			
-				gl_FragColor = vec4(1, 1, .01, 1);
+				gl_FragColor = vec4(.5, .3, .1, 1);
 			}
 		"
 	}]
