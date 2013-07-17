@@ -11,6 +11,8 @@ plugins/png/bin
 plugins/png/obj
 plugins/mk/bin
 plugins/mk/obj
+plugins/webgl/bin
+plugins/webgl/obj
 *.opensdf
 *.sdf
 *.sln
