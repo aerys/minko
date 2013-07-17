@@ -112,22 +112,57 @@ void
 void
 	bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
 {
+	// collider's starting world transform
 	btTransform btStartTransform;
 	toBulletTransform(collider->worldTransform(), btStartTransform);
 
-	btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
-	auto centerOfMassOffset	= collider->centerOfMassOffset();
-	if (centerOfMassOffset == nullptr)
-	{
-		//auto offsetRotation		= centerOfMassOffset->rotation();
-		//auto offsetTranslation	= centerOfMassOffset->translation();
-		//btOffsetTransform.setBasis(btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()).);
+	// collider's center-of-mass offset transform
+	// - need to remove the 
+	Matrix4x4::Ptr centerOfMassOffset = Matrix4x4::create()
+		->copyFrom(collider->shape()->centerOfMassOffset());
+	std::cout << "center of mass offset = " << std::to_string(centerOfMassOffset) << std::endl;
 
-		//btTransform btOffsetTransform(
-		//	btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
-		//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
-		//	);
-	}
+	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
+	if (fabsf(offsetScaling) < 1e-6f)
+		throw std::logic_error("Physics simulation requires matrices with non-null uniform scaling (center of mass offset matrix).");
+
+	std::cout << "\toffsetScaling = " << offsetScaling << std::endl;
+
+	const float invOffsetScaling = 1.0f / offsetScaling;
+	centerOfMassOffset->prependScaling(invOffsetScaling, invOffsetScaling, invOffsetScaling);
+
+	std::cout << "\tremove scaling -> offsetScaling = " << powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f) << std::endl;
+
+	auto offsetRotation		= centerOfMassOffset->rotation();
+	auto offsetTranslation	= centerOfMassOffset->translationVector();
+
+	std::cout << "\toffset translation = " << offsetTranslation->x() << ", " << offsetTranslation->y() << ", " << offsetTranslation->z() << std::endl << std::endl;
+
+
+	btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
+	toBulletTransform(centerOfMassOffset, btOffsetTransform);
+	
+	//(
+	//	btQuaternion(offsetRotation->i(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
+	//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
+	//	);
+
+	//btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
+	//auto centerOfMassOffset	= collider->centerOfMassOffset();
+	//if (centerOfMassOffset == nullptr)
+	//{
+	//	const float offsetScaling = powf();
+
+
+	//	//auto offsetRotation		= centerOfMassOffset->rotation();
+	//	//auto offsetTranslation	= centerOfMassOffset->translation();
+	//	//btOffsetTransform.setBasis(btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()).);
+
+	//	//btTransform btOffsetTransform(
+	//	//	btQuaternion(offsetRotation->x(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
+	//	//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
+	//	//	);
+	//}
 
 	_btMotionState	= std::shared_ptr<btMotionState>(new btDefaultMotionState(
 		btStartTransform,
