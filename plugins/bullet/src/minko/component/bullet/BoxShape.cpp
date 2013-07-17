@@ -17,61 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "BoxShape.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
-#include "minko/Common.hpp"
-#include <minko/component/bullet/AbstractPhysicsShape.hpp>
+using namespace minko;
+using namespace minko::math;
+using namespace minko::component;
 
-namespace minko
+void
+bullet::BoxShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class SphereShape:
-				public AbstractPhysicsShape
-			{
-			public:
-				typedef std::shared_ptr<SphereShape> Ptr;
-
-			private:
-				float _radius;
-
-			public:
-				inline static
-					Ptr
-					create(float radius)
-				{
-					return std::shared_ptr<SphereShape>(new SphereShape(radius));
-				}
-
-				void
-				apply(std::shared_ptr<math::Matrix4x4> matrix);
-
-				inline
-					float
-					radius() const
-				{
-					return _radius;
-				}
-
-				inline
-					void
-					setRadius(float radius)
-				{
-					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
-					_radius	= radius;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
-			private:
-				SphereShape(float radius):
-					AbstractPhysicsShape(SPHERE),
-					_radius(radius)
-				{
-				}
-			};
-		}
-	}
 }

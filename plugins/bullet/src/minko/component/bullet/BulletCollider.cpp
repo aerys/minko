@@ -79,6 +79,7 @@ void
 		throw std::logic_error("Unsupported physics shape");
 	}
 
+	_btCollisionShape->setLocalScaling(btVector3(shape->localScaleX(), shape->localScaleY(), shape->localScaleZ()));
 	_btCollisionShape->setMargin(shape->margin());
 }
 

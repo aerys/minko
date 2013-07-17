@@ -27,7 +27,7 @@ namespace minko
 	namespace component
 	{
 		namespace bullet
-		{
+		{		
 			class AbstractPhysicsShape:
 				public std::enable_shared_from_this<AbstractPhysicsShape>
 			{
@@ -45,6 +45,9 @@ namespace minko
 			protected:
 				Type	_type;
 				float	_margin;
+				float	_localScaleX;
+				float	_localScaleY;
+				float	_localScaleZ;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -53,6 +56,9 @@ namespace minko
 				AbstractPhysicsShape(Type type):
 					_type(type),
 					_margin(0.0f),
+					_localScaleX(1.f),
+					_localScaleY(1.f),
+					_localScaleZ(1.f),
 					_shapeChanged(Signal<Ptr>::create())
 				{
 				}
@@ -62,23 +68,58 @@ namespace minko
 				{
 				}
 
+				inline float localScaleZ() const 
+				{
+					return _localScaleZ;
+				}
+
+				inline void localScaleZ(float value)
+				{
+					_localScaleZ = value;
+				}
+
+
+				inline float localScaleY() const 
+				{
+					return _localScaleY;
+				}
+
+				inline void localScaleY(float value)
+				{
+					_localScaleY = value;
+				}
+
+				inline float localScaleX() const 
+				{
+					return _localScaleX;
+				}
+
+				inline void localScaleX(float value)
+				{
+					_localScaleX = value;
+				}
+
+				virtual
+				void
+				apply(std::shared_ptr<math::Matrix4x4> matrix) = 0;
+
 				inline
-					Type
-					type() const
+				Type
+				type() const
 				{
 					return _type;
 				}
 
 				inline
-					float
-					margin() const
+				float
+				margin() const
 				{
 					return _margin;
 				}
 
 				inline
-					void
-					setMargin(float margin)
+				void
+				setMargin(float margin)
 				{
 					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
 					_margin	= margin;
@@ -87,8 +128,8 @@ namespace minko
 				}
 
 				inline
-					Signal<Ptr>::Ptr
-					shapeChanged()
+				Signal<Ptr>::Ptr
+				shapeChanged()
 				{
 					return _shapeChanged;
 				}

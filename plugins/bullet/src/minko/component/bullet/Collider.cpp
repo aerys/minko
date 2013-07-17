@@ -52,17 +52,25 @@ void
 	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
 	const float det3x3	= modelToWorldMatrix->determinant3x3();
+	const float scaling = powf(det3x3, 1.0f/3.0f);
+	Matrix4x4::Ptr worldMatrix = Matrix4x4::create()->copyFrom(modelToWorldMatrix);
+
 	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
 	{
 		std::stringstream stream;
 		stream << "Colliders are currently incompatible with Transforms with scaling and shear (3x3 determinant = " << det3x3 << ").";
-		throw std::invalid_argument(stream.str());
+		
+		worldMatrix->appendScale(1.f/scaling, 1.f/scaling, 1.f/scaling);
+
+		std::cout << "New Det : "<< worldMatrix->determinant3x3() << std::endl;
+
+		//throw std::invalid_argument(stream.str());
 	}
 
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
-	auto rotation		= modelToWorldMatrix->rotation();
-	auto translation	= modelToWorldMatrix->translationVector();
+	auto rotation		= worldMatrix->rotation();
+	auto translation	= worldMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
 
 	// record the corrective term that keeps the
@@ -72,6 +80,7 @@ void
 		->copyFrom(_worldTransform)
 		->invert()
 		->append(modelToWorldMatrix);
+	_scaleCorrectionMatrix->identity();
 }
 
 void
