@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 		root->addChild(group)->addChild(camera);
 
         renderingComponent = Rendering::create(assets->context());
-        renderingComponent->backgroundColor(0x7F7F7FFF);
+        renderingComponent->backgroundColor(0x000000FF);
 		camera->addComponent(renderingComponent);
         camera->addComponent(Transform::create());
         camera->component<Transform>()->transform()
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 			));
 
 		particleSystem->add(particle::modifier::StartSize::create(
-			particle::sampler::RandomValue<float>::create(0.1, 1.)
+			particle::sampler::RandomValue<float>::create(0.1, .8)
 			));
 
 		mesh->addComponent(particleSystem);
@@ -126,6 +126,8 @@ int main(int argc, char** argv)
             camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
+		
+		mesh->component<Transform>()->transform()->prependRotationX(.01);
 
 	    renderingComponent->render();
 
