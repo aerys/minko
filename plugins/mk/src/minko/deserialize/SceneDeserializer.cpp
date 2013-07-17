@@ -80,7 +80,7 @@ namespace minko
 				++it)
 			{
 				if (nodeInformation.find(it->first) != nodeInformation.end())
-					node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), options, controllerMap, nodeMap));
+					node->addComponent(it->second(Any::cast<NodeInfo&>(nodeInformation[it->first]), controllerMap, nodeMap));
 			}
 			
 			return node;

@@ -36,7 +36,7 @@ namespace minko
 		typedef std::shared_ptr<MkOptions> Ptr;
 		typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>		ControllerMap;
 		typedef std::map<std::shared_ptr<scene::Node>, uint>											NodeMap;
-		typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&, std::shared_ptr<MkOptions>, ControllerMap&, NodeMap&)> DeserializeFunction;
+		typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&,  ControllerMap&, NodeMap&)> DeserializeFunction;
 
 	private:
 		std::shared_ptr<AssetsLibrary>									_assetsLibary;
