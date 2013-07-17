@@ -42,6 +42,7 @@ namespace minko
 		private:
 			const unsigned int			_width;
 			const unsigned int			_height;
+            bool                        _optimizeForRenderToTexture;
 			std::vector<unsigned char>	_data;
 
 		public:
@@ -49,9 +50,10 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<render::AbstractContext> context,
 				   const unsigned int						width,
-				   const unsigned int						height)
+				   const unsigned int						height,
+                   bool                                     optimizeForRenderToTexture  = false)
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height));
+				return std::shared_ptr<Texture>(new Texture(context, width, height, optimizeForRenderToTexture));
 			}
 
 			inline
@@ -80,7 +82,8 @@ namespace minko
 		private:
 			Texture(std::shared_ptr<render::AbstractContext>	context,
 					const unsigned int							width,
-					const unsigned int							height);
+					const unsigned int							height,
+                    bool                                        optimizeForRenderToTexture);
 		};
 	}
 }
