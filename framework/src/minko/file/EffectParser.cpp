@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "json/json.h"
+#include "minko/AssetsLibrary.hpp"
 
 using namespace minko::file;
 using namespace minko::render;
@@ -104,7 +105,8 @@ EffectParser::EffectParser() :
 void
 EffectParser::parse(const std::string&					filename,
 					std::shared_ptr<Options>			options,
-					const std::vector<unsigned char>&	data)
+					const std::vector<unsigned char>&	data,
+					std::shared_ptr<AssetsLibrary>		assetsLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -112,6 +114,7 @@ EffectParser::parse(const std::string&					filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		throw std::invalid_argument("data");
 
+	_assetsLibrary = assetsLibrary;
 	_effectName = root.get("name", filename).asString();
 
 	_defaultPriority = root.get("priority", 0.f).asFloat();
@@ -435,5 +438,6 @@ EffectParser::finalize()
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
     }
 
+	_assetsLibrary->effect(_effectName, _effect);
 	_complete->execute(shared_from_this());
 }

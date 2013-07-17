@@ -44,7 +44,8 @@ namespace minko
 			void
 			parse(const std::string&				filename,
 				  std::shared_ptr<Options>			options,
-				  const std::vector<unsigned char>&	data);
+				  const std::vector<unsigned char>&	data,
+				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 
 		private:
 			PNGParser()
