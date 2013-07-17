@@ -146,10 +146,10 @@ namespace minko
 			prepend(Quaternion::Ptr);
 
 			Ptr
-			appendScale(float x, float y, float z);
+			appendScaling(float x, float y, float z);
 
 			Ptr
-			prependScale(float x, float y, float z);
+			prependScaling(float x, float y, float z);
 
 			float
 			determinant();
