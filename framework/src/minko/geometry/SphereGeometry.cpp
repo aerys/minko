@@ -27,16 +27,18 @@ using namespace minko::render;
 
 SphereGeometry::SphereGeometry(std::shared_ptr<AbstractContext>	context,
 							   unsigned int						numParallels,
-							   unsigned int						numMeridians)
+							   unsigned int						numMeridians,
+							   bool								withNormals)
 {
-	initializeVertices(context, numParallels, numMeridians);
+	initializeVertices(context, numParallels, numMeridians, withNormals);
 	initializeIndices(context, numParallels, numMeridians);
 }
 
 void
 SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 								   unsigned int						numParallels,
-								   unsigned int						numMeridians)
+								   unsigned int						numMeridians,
+								   bool								withNormals)
 {
 	unsigned int numVertices = (numParallels - 2) * (numMeridians + 1) + 2;
 	unsigned int c = 0;
@@ -63,9 +65,12 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 			data.push_back(j / ((float)numParallels - 1.f));
 
 			// normal
-			data.push_back(x * 2.f);
-			data.push_back(y * 2.f);
-			data.push_back(z * 2.f);
+			if (withNormals)
+			{
+				data.push_back(x * 2.f);
+				data.push_back(y * 2.f);
+				data.push_back(z * 2.f);
+			}
 		}
 	}
 
@@ -77,9 +82,12 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 	data.push_back(.5f);
 	data.push_back(0.f);
 
-	data.push_back(0.f);
-	data.push_back(1.f);
-	data.push_back(0.f);
+	if (withNormals)
+	{
+		data.push_back(0.f);
+		data.push_back(1.f);
+		data.push_back(0.f);
+	}
 
 	// south pole
 	data.push_back(0.f);
@@ -89,15 +97,19 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>	context,
 	data.push_back(.5f);
 	data.push_back(1.f);
 
-	data.push_back(0.f);
-	data.push_back(-1.f);
-	data.push_back(0.f);
+	if (withNormals)
+	{
+		data.push_back(0.f);
+		data.push_back(-1.f);
+		data.push_back(0.f);
+	}
 
 	auto stream = VertexBuffer::create(context, data);
 
 	stream->addAttribute("position", 3, 0);
 	stream->addAttribute("uv", 2, 3);
-	stream->addAttribute("normal", 3, 5);
+	if (withNormals)
+		stream->addAttribute("normal", 3, 5);
 
 	addVertexBuffer(stream);
 }
@@ -117,24 +129,25 @@ SphereGeometry::initializeIndices(std::shared_ptr<AbstractContext>	context,
 		for (unsigned int i = 0; i < numMeridians - 1; i++)
 		{
 			data[c++] = j * numMeridians + i;
-			data[c++] = j * numMeridians + i + 1;
 			data[c++] = (j + 1) * numMeridians + i + 1;
+			data[c++] = j * numMeridians + i + 1;
 					
 			data[c++] = j * numMeridians + i;
-			data[c++] = (j + 1) * numMeridians + i + 1;
 			data[c++] = (j + 1) * numMeridians + i;
+			data[c++] = (j + 1) * numMeridians + i + 1;
 		}
 	}
 			
 	for (unsigned int i = 0; i < numMeridians - 1; i++)
 	{
 		data[c++] = (numParallels - 2) * numMeridians;
-		data[c++] = i + 1;
 		data[c++] = i;
+		data[c++] = i + 1;
+		
 				
 		data[c++] = (numParallels - 2) * numMeridians + 1;
-		data[c++] = (numParallels - 3) * numMeridians + i;
 		data[c++] = (numParallels - 3) * numMeridians + i + 1;
+		data[c++] = (numParallels - 3) * numMeridians + i;
 	}
 
 	indices(IndexBuffer::create(context, data));

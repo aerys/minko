@@ -19,6 +19,7 @@
 		"blendMode"				: "material.blendMode"
 	},
 	"macroBindings"	: {
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"DIFFUSE_MAP"			: "material.diffuseMap",
 		"SPECULAR"				: "material.shininess",
 		"SPECULAR_MAP"			: "material.specularMap",
@@ -28,7 +29,7 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "none",
+	"triangleCulling"	: "back",
 	
 	"samplerStates"	: {
 		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
@@ -58,8 +59,16 @@
 			
 			void main(void)
 			{
-				vec4 pos = modelToWorldMatrix * vec4(position, 1.0);
-				
+				vec4 pos = vec4(position, 1.0);
+
+				worldNormal	= normal;
+
+				#ifdef MODEL_TO_WORLD
+					pos			= modelToWorldMatrix * pos;
+					worldNormal	= mat3(modelToWorldMatrix) * worldNormal;
+				#endif
+
+				worldNormal = normalize(worldNormal);
 				
 				#ifdef SPECULAR
 					worldPosition = pos.xyz;
@@ -68,9 +77,13 @@
 				#ifdef DIFFUSE_MAP
 					vertexUV = uv;
 				#endif
-
-				worldNormal		= normalize(mat3(modelToWorldMatrix) * normal);
-				worldTangent	= mat3(modelToWorldMatrix) * tangent;
+				
+				#ifdef NORMAL_MAP
+					worldTangent = tangent;
+					#ifdef MODEL_TO_WORLD
+						worldTangent = mat3(modelToWorldMatrix) * tangent;
+					#endif
+				#endif
 				
 				gl_Position =  worldToScreenMatrix * pos;
 			}
@@ -133,7 +146,7 @@
 						worldBitangent,
 						worldNormal
 					));
-					
+
 					// map all world-space vectors to tangent-space
 					fNormal			= normalize(2.0 * texture2D(material.normalMap, vertexUV).xyz - 1.0);
 					fLightVector	= normalize(worldToTangentMatrix * light.direction);
@@ -148,7 +161,7 @@
 				);
 				
 				// specular lighting
-				#ifdef SPECULAR || SPECULAR_MAP
+				#if defined(SPECULAR) || defined(SPECULAR_MAP)
 					#ifdef SPECULAR_MAP
 						vec3 specular	= texture2D(material.specularMap, vertexUV).rgb;
 					#else // SPECULAR_MAP
@@ -165,7 +178,6 @@
 				#endif // SPECULAR || SPECULAR_MAP
 								
 				gl_FragColor = saturate(diffuse);
-				
 			}
 		"
 	}]
