@@ -24,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::render;
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
-	AbstractResource(context)
+	AbstractResource(context),
+	_vertexSize(0)
 {
 }
 
@@ -33,7 +34,8 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>	context,
 						   const unsigned int				size,
 						   const unsigned int				offset) :
 	AbstractResource(context),
-	_data(data + offset, data + offset + size)
+	_data(data + offset, data + offset + size),
+	_vertexSize(0)
 {
 	upload();
 }
@@ -42,14 +44,16 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>		context,
 						   std::vector<float>::const_iterator	begin,
 						   std::vector<float>::const_iterator	end) :
 	AbstractResource(context),
-	_data(begin, end)
+	_data(begin, end),
+	_vertexSize(0)
 {
 	upload();
 }
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begin, float* end) :
 	AbstractResource(context),
-	_data(begin, end)
+	_data(begin, end),
+	_vertexSize(0)
 {
 	upload();
 }
@@ -83,6 +87,8 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	_attributes.push_back(VertexBuffer::AttributePtr(
 		new VertexBuffer::Attribute(name, size, offset)
 	));
+
+	_vertexSize += size;
 }
 
 bool
