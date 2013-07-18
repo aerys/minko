@@ -90,7 +90,6 @@
 		",
 		"fragmentShader"	: "
 
-			precision highp float;
 
 			struct Material {
 				sampler2D	diffuseMap;
