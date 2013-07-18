@@ -1,5 +1,5 @@
 -- A project defines one build target
-project "minko-examples"
+project "minko-example-cube"
 	kind "ConsoleApp"
 	language "C++"
 	links {
@@ -10,10 +10,13 @@ project "minko-examples"
 	files { "**.hpp", "**.h", "**.cpp" }
 	includedirs {
 		"src",
-		"lib/glfw/include",
-		"../framework/src",
-		"../plugins/jpeg/src",
-		"../plugins/png/src"
+		"../../lib/glfw/include",
+		"../../framework/src",
+		"../../plugins/jpeg/src",
+		"../../plugins/png/src"
+	}
+	defines {
+		"MINKO_FRAMEWORK_EFFECTS_PATH=\"" .. path.getabsolute("../../framework/effect" .. "\"")
 	}
 
 	configuration { "debug"}
@@ -36,8 +39,8 @@ project "minko-examples"
 	configuration { "windows", "x32" }
 		links { "OpenGL32", "glfw3dll", "glew32" }
 		libdirs {
-			"lib/glfw/bin/win32",
-			"../framework/lib/glew/bin/win32"
+			"../../lib/glfw/bin/win32",
+			"../../framework/lib/glew/bin/win32"
 		}
 
 	-- macos
