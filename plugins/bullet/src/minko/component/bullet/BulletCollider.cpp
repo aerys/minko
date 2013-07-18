@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "PhysicsWorld.hpp"
+
 #include <btBulletDynamicsCommon.h>
 #include <minko/math/Vector3.hpp>
 #include <minko/math/Quaternion.hpp>

@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "PhysicsWorld.hpp"
+
 #include <btBulletDynamicsCommon.h>
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
@@ -47,7 +48,7 @@ bullet::PhysicsWorld::PhysicsWorld():
 }
 
 void 
-	bullet::PhysicsWorld::initialize()
+bullet::PhysicsWorld::initialize()
 {
 	/*
 	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
@@ -111,7 +112,7 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
+bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
 	if (target->components<PhysicsWorld>().size() > 1)
@@ -140,14 +141,14 @@ void
 }
 
 void 
-	bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
+bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
 	std::cout << "bullet::PhysicsWorld::targetRemovedHandler" << std::endl;
 }
 
 void
-	bullet::PhysicsWorld::addChild(Collider::Ptr collider)
+bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 {
 	if (hasCollider(collider))
 		throw std::logic_error("The same collider cannot be added twice.");
@@ -161,7 +162,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
+bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 {
 	ColliderMap::const_iterator	it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -173,34 +174,34 @@ void
 }
 
 bool
-	bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
+bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
 {
 	return _colliderMap.find(collider) != _colliderMap.end();
 }
 
 
 void
-	bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
+bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
 {
 	_btDynamicsWorld->setGravity(btVector3(gravity->x(), gravity->y(), gravity->z()));
 }
 
 void
-	bullet::PhysicsWorld::exitFrameHandler(Rendering::Ptr controller)
+bullet::PhysicsWorld::exitFrameHandler(Rendering::Ptr controller)
 {
 	update();
 }
 
 
 void
-	bullet::PhysicsWorld::update(float timeStep)
+bullet::PhysicsWorld::update(float timeStep)
 {
 	_btDynamicsWorld->stepSimulation(timeStep);
 	updateColliders();
 }
 
 void
-	bullet::PhysicsWorld::updateColliders()
+bullet::PhysicsWorld::updateColliders()
 {
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
@@ -224,7 +225,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
+bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -235,7 +236,7 @@ void
 
 /*static*/
 Matrix4x4::Ptr
-	bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
+bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
 {
 	auto basis			= transform.getBasis();
 	auto translation	= transform.getOrigin();
@@ -252,7 +253,7 @@ Matrix4x4::Ptr
 
 /*static*/
 void
-	bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
+bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
 	auto translation	= transform->translationVector();
