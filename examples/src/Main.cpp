@@ -168,7 +168,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	double density		= 0;
 	double friction		= 0;
-	double restitution	= 0;
+	double restitution	= 1;
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -177,8 +177,8 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
 		density = readAndSwap<double>(stream);
-		friction = readAndSwap<double>(stream);
-		restitution = readAndSwap<double>(stream);
+		//friction = readAndSwap<double>(stream);
+		//restitution = readAndSwap<double>(stream);
 	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.5f, 0.75f)->appendRotationY(PI/2.f);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.5f, 07.5f)->appendRotationY(PI/2.f);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/sponza-lite-physics.mk");
+		->queue("models/testphysics5.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -290,17 +290,7 @@ int main(int argc, char** argv)
         root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
 		group->addChild(mesh);
-//		mesh->addComponent(Transform::create());
-//		mesh->addComponent(Surface::create(
-//			assets->geometry("cube"),
-//			data::Provider::create()
-//				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-//                ->set("material.diffuseMap",	assets->texture("box3.png"))
-//               ->set("material.specular",	    Vector3::create(.25f, .25f, .25f))
-//               ->set("material.shininess",	    30.f),
-//			assets->effect("directional light")));
-
-		group->addChild(assets->node("models/sponza-lite-physics.mk"));
+		group->addChild(assets->node("models/testphysics5.mk"));
 	});
 
 	try
@@ -314,13 +304,9 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
-		//camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, 0.01f);
-       //group->component<Transform>()->transform()->prependRotationY(.01f);
 		renderingComponent->render();
 
-	   // printFramerate();
-
-        glfwSwapBuffers(window);
+	    glfwSwapBuffers(window);
         glfwPollEvents();
     }
 

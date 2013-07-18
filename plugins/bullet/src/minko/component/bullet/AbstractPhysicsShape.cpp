@@ -38,8 +38,7 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 }
 
 void
-bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset,
-	float scaling)
+bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset, float scaling)
 {
 	_centerOfMassOffset->copyFrom(centerOfMassOffset); // TODO: should disappear soon
 	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
