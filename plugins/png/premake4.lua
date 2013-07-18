@@ -36,3 +36,6 @@ project "minko-png"
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		libdirs { "/opt/local/lib/" }
 		includedirs { "/opt/local/include/" }
+
+	configuration { "emscripten", "release" }
+		buildoptions { "-std=c++11" }

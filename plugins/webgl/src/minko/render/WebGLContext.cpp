@@ -143,7 +143,7 @@ WebGLContext::fillAttributeInputs(const unsigned int							program,
 	glUseProgram(program);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
 
-	for (int i = 0; i < total; ++i) 
+	for (int i = 0; i < total; ++i)
 	{
     	int nameLength = -1;
     	int size = -1;
@@ -151,7 +151,7 @@ WebGLContext::fillAttributeInputs(const unsigned int							program,
     	std::vector<char> name(maxAttributeNameLength);
 
 		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
-	
+
 	    name[nameLength] = 0;
 
 	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
@@ -243,7 +243,7 @@ WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool
 	if (transpose)
 	{
 		static float	transposedValues[16];
-		
+
 		transposedValues[0] = values[0];
 		transposedValues[1] = values[4];
 		transposedValues[2] = values[8];
@@ -261,7 +261,7 @@ WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool
 		transposedValues[14] = values[11];
 		transposedValues[15] = values[15];
 
-		glUniformMatrix4fv(location, size, false, transposedValues);	
+		glUniformMatrix4fv(location, size, false, transposedValues);
 	}
 	else
 		glUniformMatrix4fv(location, size, false, values);
