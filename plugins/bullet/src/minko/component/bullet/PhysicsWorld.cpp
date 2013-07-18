@@ -265,6 +265,16 @@ bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr vel
 }
 
 void
+bullet::PhysicsWorld::prependLocalTranslation(Collider::Ptr collider, Vector3::Ptr translation)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->prependLocalTranslation(translation);
+}
+
+void
 bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
 {
 	auto it	= _colliderMap.find(collider);

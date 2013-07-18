@@ -41,6 +41,7 @@ _mass(mass),
 	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_angularDamping(0.0f),
 	_restitution(0.0f),
+	_deactivationDisabled(false),
 	_transformChanged(Signal<Ptr>::create())
 {
 	_worldTransform->identity();

@@ -216,3 +216,24 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
 }
+
+void
+bullet::ColliderComponent::prependLocalTranslation(Vector3::Ptr localTranslation)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->prependLocalTranslation(_collider, localTranslation);
+}
+
+void
+bullet::ColliderComponent::prependRotationY(float radians)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->prependRotationY(_collider, radians);
+}
+
+void
+bullet::ColliderComponent::applyRelativeImpulse(Vector3::Ptr localImpulse)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->applyRelativeImpulse(_collider, localImpulse);
+}
