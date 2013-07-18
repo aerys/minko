@@ -41,6 +41,7 @@ namespace minko
 		private:
 			std::vector<float>		_data;
 			std::list<AttributePtr>	_attributes;
+			uint					_vertexSize;
 
 		public:
 			inline static
@@ -104,6 +105,13 @@ namespace minko
 				return _attributes;
 			}
 
+			inline
+			const uint
+			vertexSize()
+			{
+				return _vertexSize;
+			}
+
 			void
 			upload();
 
@@ -111,9 +119,7 @@ namespace minko
 			dispose();
 
 			void
-			addAttribute(const std::string& name,
-						 const unsigned int	size,
-						 const unsigned int offset);
+			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset);
 
 			bool
 			hasAttribute(const std::string& attributeName);
