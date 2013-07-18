@@ -35,7 +35,7 @@ printFramerate(const unsigned int delay = 1)
 int main(int argc, char** argv)
 {
     glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
+    auto window = glfwCreateWindow(800, 600, "Minko - Light Example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
@@ -43,8 +43,10 @@ int main(int argc, char** argv)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-        ->queue("texture/box.png")
-		->queue("Basic.effect");
+        ->queue("texture/window-diffuse.png")
+		->queue("texture/window-normal.png")
+		->queue("texture/window-specular.png")
+		->queue("DirectionalLight.effect");
 
 	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
 
@@ -62,6 +64,8 @@ int main(int argc, char** argv)
             ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
         camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
+        root->addComponent(DirectionalLight::create());
+
         group->addChild(mesh);
 
 		mesh->addComponent(Transform::create());
@@ -69,8 +73,11 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
-			assets->effect("basic")
+				->set("material.diffuseMap",	assets->texture("texture/window-diffuse.png"))
+				->set("material.normalMap",		assets->texture("texture/window-normal.png"))
+				->set("material.specularMap",	assets->texture("texture/window-specular.png"))
+				->set("material.shininess",		100.f),
+			assets->effect("directional light")
 		));
 	});
 

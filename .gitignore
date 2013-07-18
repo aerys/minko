@@ -1,8 +1,6 @@
 *.sublime-workspace
 *.sublime-project
 Makefile
-examples/cube/bin
-examples/cube/obj
 framework/bin
 framework/obj
 plugins/jpeg/bin
