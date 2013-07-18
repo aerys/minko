@@ -73,9 +73,9 @@ OpenGLES2Context::initializeDepthFuncsMap()
 	m[CompareMode::ALWAYS]			= GL_ALWAYS;
 	m[CompareMode::EQUAL]			= GL_EQUAL;
 	m[CompareMode::GREATER]			= GL_GREATER;
-	m[CompareMode::GREATER_EQUAL]	= GL_GREATER | GL_EQUAL;
+	m[CompareMode::GREATER_EQUAL]	= GL_GEQUAL;
 	m[CompareMode::LESS]			= GL_LESS;
-	m[CompareMode::LESS_EQUAL]		= GL_LESS | GL_EQUAL;
+	m[CompareMode::LESS_EQUAL]		= GL_LEQUAL;
 	m[CompareMode::NEVER]			= GL_NEVER;
 	m[CompareMode::NOT_EQUAL]		= GL_NOTEQUAL;
 
@@ -198,7 +198,10 @@ OpenGLES2Context::clear(float 			red,
 	// GL_DEPTH_BUFFER_BIT, and GL_STENCIL_BUFFER_BIT.
 	//
 	// glClear clear buffers to preset values
-	glClear((GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |GL_STENCIL_BUFFER_BIT) & mask);
+	mask = (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT) & mask;
+	if (mask & GL_DEPTH_BUFFER_BIT)
+		glDepthMask(_currentDepthMask = true);
+	glClear(mask);
 }
 
 void
