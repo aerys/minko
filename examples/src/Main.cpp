@@ -121,35 +121,20 @@ deserializeShape(Qark::Map&							shapeData,
 			break;
 		case 100 : // TRANSFORM
 			{
-				deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
+				deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
 				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
-				//deserializedShape->localScaleX(2.0);
-				//deserializedShape->localScaleY(2.0);
-				//deserializedShape->localScaleZ(2.0);
-				
-				
-				std::cout << "\n\ndelta matrix = " << std::to_string(offset) << std::endl;
-				/*
-				if (offset->data()[0] > 10.0f)
-				{
-					std::cout << "local scale !" << std::endl;
-					// i am the box
-					deserializedShape->localScaleX(offset->data()[0] * 0.5);
-					deserializedShape->localScaleY(offset->data()[5] * 0.5);
-					deserializedShape->localScaleZ(offset->data()[10] * 0.5);
-				}
-				*/
+				auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
+				const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
-				// fix : should be merged
+#ifdef DEBUG
+				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset) 
+					<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
+#endif // DEBUG
 
-				auto modelToWorldMatrix = node->component<Transform>()->modelToWorldMatrix(true);
-
-				std::cout << node->name() << " : " << std::to_string(modelToWorldMatrix) << std::endl;
-
-				const float scaling = powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 				deserializedShape->setLocalScaling(scaling);
 				//deserializedShape->apply(modelToWorldMatrix);
-				//deserializedShape->setCenterOfMassOffset(offset);
+
+				//deserializedShape->setCenterOfMassOffset(offset, scaling);
 			}
 			break;
 		default:

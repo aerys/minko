@@ -59,6 +59,7 @@ namespace minko
 				typedef std::shared_ptr<Rendering>					RenderingPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
+				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
 
 				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
 				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
@@ -141,6 +142,10 @@ namespace minko
 				void
 				toBulletTransform(Matrix4x4Ptr, btTransform&);
 
+				static
+				void
+				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
+
 			private:
 				class BulletCollider
 				{
@@ -167,25 +172,25 @@ namespace minko
 				public:
 					static
 					BulletColliderPtr
-						create(ColliderPtr);
+					create(ColliderPtr);
 
 					inline
 					btCollisionShapePtr
-						collisionShape() const
+					collisionShape() const
 					{
 						return _btCollisionShape;
 					}
 
 					inline
 					btMotionStatePtr
-						motionState() const
+					motionState() const
 					{
 						return _btMotionState;
 					}
 
 					inline 
 					btCollisionObjectPtr
-						collisionObject() const
+					collisionObject() const
 					{
 						return _btCollisionObject;
 					}
