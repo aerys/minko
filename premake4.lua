@@ -2,7 +2,7 @@ solution "minko"
    configurations { "debug", "release" }
 
 -- examples
-include 'examples'
+include 'examples/mk-example'
 
 -- core framework
 include 'framework'
