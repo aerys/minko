@@ -19,12 +19,13 @@
 	},
 
 	"macroBindings"	: {
-		"TECHNIQUE_DIFFUSE_MAP"	: "material.diffuseMap"
+		"TECHNIQUE_DIFFUSE_MAP"	: "material.diffuseMap",
+		"HAS_MODEL_TO_WORLD"	: "transform.modelToWorldMatrix"
 	},
 	
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
-	"depthTest"			: [true, "less"],
+	"depthTest"			: [true, "less_equal"],
 	"triangleCulling"	: "back",
 	
 	"passes"	: [{	
@@ -43,7 +44,13 @@
 					vertexUV = uv;
 				#endif
 
-				gl_Position =  worldToScreenMatrix * modelToWorldMatrix * vec4(position, 1.0);
+				vec4 pos = vec4(position, 1.0);
+				
+				#ifdef HAS_MODEL_TO_WORLD
+					pos = modelToWorldMatrix * pos;
+				#endif
+				
+				gl_Position =  worldToScreenMatrix * pos;
 			}
 		",
 		"fragmentShader"	: "
