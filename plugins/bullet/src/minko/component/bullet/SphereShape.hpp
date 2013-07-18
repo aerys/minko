@@ -39,25 +39,26 @@ namespace minko
 
 			public:
 				inline static
-					Ptr
-					create(float radius)
+				Ptr
+				create(float radius)
 				{
 					return std::shared_ptr<SphereShape>(new SphereShape(radius));
 				}
 
+				// TODO: should disappear soon
 				void
 				apply(std::shared_ptr<math::Matrix4x4> matrix);
 
 				inline
-					float
-					radius() const
+				float
+				radius() const
 				{
 					return _radius;
 				}
 
 				inline
-					void
-					setRadius(float radius)
+				void
+				setRadius(float radius)
 				{
 					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
 					_radius	= radius;
