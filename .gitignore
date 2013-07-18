@@ -1,8 +1,8 @@
 *.sublime-workspace
 *.sublime-project
 Makefile
-examples/bin
-examples/obj
+examples/cube/bin
+examples/cube/obj
 framework/bin
 framework/obj
 plugins/jpeg/bin
@@ -24,3 +24,6 @@ plugins/mk/obj
 *.tlog
 *.idb
 *.pdb
+*.obj
+*.ilk
+*.lastbuildstate
