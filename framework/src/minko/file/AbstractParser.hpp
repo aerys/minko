@@ -29,7 +29,7 @@ namespace minko
 		class AbstractParser
 		{
 		public:
-			typedef std::shared_ptr<AbstractParser> Ptr;
+			typedef std::shared_ptr<AbstractParser>				Ptr;
 
 			std::shared_ptr<Signal<Ptr>>	_complete;
 
@@ -52,6 +52,7 @@ namespace minko
 			AbstractParser() :
 				_complete(Signal<Ptr>::create())
 			{
+
 			}
 		};
 	}

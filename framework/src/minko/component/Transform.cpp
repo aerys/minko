@@ -239,9 +239,11 @@ Transform::RootTransform::updateTransformsList()
 {
 	unsigned int nodeId = 0;
 
+	_idToNode.clear();
 	_transform.clear();
 	_modelToWorld.clear();
-	//_worldToModel.clear();
+	_numChildren.clear();
+	_firstChildId.clear();
 
 	auto descendants = scene::NodeSet::create(targets())
 		->descendants(true, false)
@@ -333,8 +335,11 @@ Transform::RootTransform::updateTransforms()
 void
 Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 {
+	if (_invalidLists)
+		updateTransformsList();
+
 	auto				targetNodeId	= _nodeToId[node];
-	auto				nodeId			= targetNodeId;
+	int					nodeId			= targetNodeId;
 	auto				dirtyRoot		= -1;
 	std::vector<uint>	path;
 
@@ -351,8 +356,9 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 	}
 
 	// update that path starting from the dirty root
-	for (auto dirtyNodeId : path)
+	for (int i = path.size() - 1; i >= 0; --i)
 	{
+		auto dirtyNodeId	= path[i];
 		auto parentId		= _parentId[dirtyNodeId];
 		auto modelToWorld	= _modelToWorld[dirtyNodeId];
 
