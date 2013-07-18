@@ -123,6 +123,9 @@ namespace minko
 				setLinearVelocity(ColliderPtr, Vector3Ptr);
 
 				void
+				prependLocalTranslation(ColliderPtr, Vector3Ptr);
+
+				void
 				prependRotationY(ColliderPtr, float);
 
 				void
@@ -212,6 +215,9 @@ namespace minko
 
 					void
 					setLinearVelocity(Vector3Ptr);
+
+					void
+					prependLocalTranslation(Vector3Ptr);
 
 					void
 					prependRotationY(float);
