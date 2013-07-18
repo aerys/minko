@@ -47,6 +47,8 @@
 			}
 		",
 		"fragmentShader"	: "
+			precision highp float;
+
 			uniform vec4 diffuseColor;
 			uniform sampler2D diffuseMap;
 			
