@@ -11,6 +11,7 @@ plugins/mk/bin
 plugins/mk/obj
 plugins/webgl/bin
 plugins/webgl/obj
+*.xcodeproj
 *.opensdf
 *.sdf
 *.sln
