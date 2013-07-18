@@ -13,7 +13,13 @@
 using namespace minko::component;
 using namespace minko::math;
 
-Rendering::Ptr renderingComponent;
+	const float cameraLinearStep	= 0.1f;
+	const float cameraAngStep		= 0.025f;
+
+Rendering::Ptr				renderingComponent;
+bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
+bullet::Collider::Ptr		cameraCollider = nullptr;
+
 auto mesh	= scene::Node::create("mesh");
 auto group	= scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
@@ -124,7 +130,7 @@ deserializeShape(Qark::Map&							shapeData,
 				deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
 				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
 				auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
-				const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
+				const float scaling		= powf(fabsf(modelToWorldMatrix->determinant3x3()), 1.0f/3.0f);
 
 #ifdef DEBUG
 				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset) 
@@ -242,7 +248,12 @@ testMk(AssetsLibrary::Ptr assets)
 
 int main(int argc, char** argv)
 {
-	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+	file::MkParser::registerController(
+		"colliderController", 
+		std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+	);
+
+
 
     glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
@@ -254,14 +265,27 @@ int main(int argc, char** argv)
 	renderingComponent = Rendering::create(context);
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
+
+	// sponza-adapted camera
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.5f, 07.5f)->appendRotationY(PI/2.f);
+	/*
+	camera->component<Transform>()->transform()
+		->lookAt(
+			Vector3::create(1.0f, 0.6f, 0.0f),
+			Vector3::create(0.0f, 0.6f, 0.0f),
+			Vector3::yAxis()
+		);
+		*/
+
+	camera->component<Transform>()->transform()
+		->appendTranslation(0.0f, 2.75f, 5.0f)
+		->appendRotationY(PI*0.5);
+	
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-	auto physicWorld = bullet::PhysicsWorld::create();
-
-	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
-	root->addComponent(physicWorld);
+	physicsWorld = bullet::PhysicsWorld::create();
+	physicsWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+	root->addComponent(physicsWorld);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
@@ -275,7 +299,8 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/testphysics5.mk");
+		//->queue("models/sponza-lite-physics.mk");
+		->queue("models/test-ground.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -290,7 +315,14 @@ int main(int argc, char** argv)
         root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
 		group->addChild(mesh);
-		group->addChild(assets->node("models/testphysics5.mk"));
+		//group->addChild(assets->node("models/sponza-lite-physics.mk"));
+		group->addChild(assets->node("models/test-ground.mk"));
+
+		bullet::CylinderShape::Ptr	cameraShape	= bullet::CylinderShape::create(0.2f, 0.5f, 0.2f);
+		cameraCollider							= bullet::Collider::create(1.0f, cameraShape);
+		cameraCollider->setRestitution(0.5f);
+		cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
+		camera->addComponent(bullet::ColliderComponent::create(cameraCollider));
 	});
 
 	try
@@ -304,6 +336,32 @@ int main(int argc, char** argv)
 
 	while(!glfwWindowShouldClose(window))
     {
+		/*
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -cameraLinearStep);
+        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, cameraLinearStep);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->prependRotation(-cameraAngStep, Vector3::yAxis());
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->prependRotation(cameraAngStep, Vector3::yAxis());
+		*/
+
+		auto updCameraTransform = Matrix4x4::create()
+			->copyFrom(camera->component<Transform>()->transform());
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		{
+			updCameraTransform->prependTranslation(0.f, 0.f, cameraLinearStep);
+
+			Vector3::Ptr velocity = updCameraTransform->transform(Vector3::zAxis());
+			physicsWorld->applyImpulse(cameraCollider, velocity, Vector3::zero());
+
+
+			std::cout << "cam trf = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
+			std::cout << "new cam trf = " << std::to_string(updCameraTransform) << std::endl << std::endl;
+			//physicsWorld->forceColliderWorldTransform(cameraCollider, updCameraTransform);
+		}
+
 		renderingComponent->render();
 
 	    glfwSwapBuffers(window);

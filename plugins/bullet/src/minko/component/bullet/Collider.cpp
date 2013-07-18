@@ -85,22 +85,20 @@ bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 		->copyFrom(modelToWorldMatrix)
 		->prependScaling(invScaling, invScaling, invScaling);
 
+	const float newScaling = powf(scalingFreeMatrix->determinant3x3(), 1.0f/3.0f);
+	if (fabsf(newScaling - 1.0f) > 1e-3f)
+	{
+		std::stringstream stream;
+		stream << "Model to world matrix does not have a uniform scaling.\n\tmatrix = "
+			<< std::to_string(modelToWorldMatrix) << std::endl;
+		throw std::logic_error(stream.str());
+	}
+
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
 	auto rotation		= scalingFreeMatrix->rotation();
 	auto translation	= scalingFreeMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
-
-	// record the corrective term that keeps the
-	// scale/shear lost by the collider's world transform
-	// @todo currently, scale/shear are not properly handled, the scale correction matrix always end up being the identity matrix...
-	/*
-	_scaleCorrectionMatrix	= Matrix4x4::create()
-		->copyFrom(_worldTransform)
-		->invert()
-		->append(modelToWorldMatrix);
-		*/
-	//_scaleCorrectionMatrix->identity()->appendScaling(scaling, scaling, scaling);
 }
 
 void
@@ -115,8 +113,6 @@ bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTrans
 	const std::vector<float>& m(colliderWorldTransform->values());
 
 	Vector3Ptr offset = _shape->centerOfMassTranslation();
-
-	//offset->setTo(0, 0, 0);
 
 	_worldTransform
 		->initialize(

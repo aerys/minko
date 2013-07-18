@@ -78,6 +78,9 @@ bullet::ColliderComponent::targetAddedHandler(
 	if (targets().size() > 1)
 		throw std::logic_error("ColliderComponent cannot have more than one target.");
 
+	// initialize from node if possible (mostly for adding a controller to the camera)
+	initializeFromTarget(target);
+
 	_addedSlot	= targets().front()->added()->connect(std::bind(
 		&bullet::ColliderComponent::addedHandler,
 		shared_from_this(),
@@ -111,12 +114,48 @@ bullet::ColliderComponent::addedHandler(
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
+	initializeFromTarget(node);
+	/*
 	if (!target->hasComponent<Transform>())
 		target->addComponent(Transform::create());
 	
 	_targetTransform	= node->component<Transform>();
 
 	auto nodeSet	= NodeSet::create(node)
+		->ancestors(true)
+		->where([](Node::Ptr node)
+		{
+			return node->hasComponent<bullet::PhysicsWorld>();
+		});
+	if (nodeSet->nodes().size() != 1)
+	{
+		std::stringstream stream;
+		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
+		//throw std::logic_error(stream.str());
+	}
+	else
+	{
+		updateColliderWorldTransform();
+
+		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+
+		_physicsWorld->addChild(_collider);
+	}
+	*/
+}
+
+void
+bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
+{
+	if (_targetTransform != nullptr && _physicsWorld != nullptr)
+		return;
+
+	if (!node->hasComponent<Transform>())
+		node->addComponent(Transform::create());
+
+	_targetTransform = node->component<Transform>();
+
+	auto nodeSet = NodeSet::create(node)
 		->ancestors(true)
 		->where([](Node::Ptr node)
 		{
