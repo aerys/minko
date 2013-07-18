@@ -61,10 +61,8 @@ namespace minko
 
 			public:
 				inline static
-					Ptr
-					create(float	mass, 					
-					AbsShapePtr		shape, 
-					Vector3Ptr		inertia = nullptr)
+				Ptr
+				create(float mass, AbsShapePtr shape, Vector3Ptr inertia = nullptr)
 				{
 					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia));
 				}
@@ -85,138 +83,136 @@ namespace minko
 
 
 				inline
-					AbsShapePtr
-					shape() const
+				AbsShapePtr
+				shape() const
 				{
 					return _shape;
 				}
 
 				inline
-					float
-					mass() const
+				float
+				mass() const
 				{
 					return _mass;
 				}
 
 				inline
-					Vector3Ptr
-					inertia() const
+				Vector3Ptr
+				inertia() const
 				{
 					return _inertia;
 				}
 
 				inline
-					bool
-					isStatic() const
+				bool
+				isStatic() const
 				{
 					return _mass < std::numeric_limits<float>::epsilon();
 				}
 
 				inline
-					Matrix4x4Ptr
-					worldTransform() const
+				Matrix4x4Ptr
+				worldTransform() const
 				{
 					return _worldTransform;
 				}
 
 				void
-					setWorldTransform(Matrix4x4Ptr);
+				setWorldTransform(Matrix4x4Ptr);
 
 				void
-					updateColliderWorldTransform(Matrix4x4Ptr);
+				updateColliderWorldTransform(Matrix4x4Ptr);
 
 				inline
-					Vector3Ptr
-					linearVelocity() const
+				Vector3Ptr
+				linearVelocity() const
 				{
 					return _linearVelocity;
 				}
 
 				inline
-					Vector3Ptr
-					linearFactor() const
+				Vector3Ptr
+				linearFactor() const
 				{
 					return _linearFactor;
 				}
 
 				inline
-					float
-					linearDamping() const
+				float
+				linearDamping() const
 				{
 					return _linearDamping;
 				}
 
 				inline
-					Vector3Ptr
-					angularVelocity() const
+				Vector3Ptr
+				angularVelocity() const
 				{
 					return _angularVelocity;
 				}
 
 				inline
-					Vector3Ptr
-					angularFactor() const
+				Vector3Ptr
+				angularFactor() const
 				{
 					return _angularFactor;
 				}
 
 				inline
-					float
-					angularDamping() const
+				float
+				angularDamping() const
 				{
 					return _angularDamping;
 				}
 
 				inline
-					float
-					restitution() const
+				float
+				restitution() const
 				{
 					return _restitution;
 				}
 
 				void
-					setLinearVelocity(float, float, float);
+				setLinearVelocity(float, float, float);
 
 				void
-					setLinearFactor(float, float, float);
+				setLinearFactor(float, float, float);
 
 				inline
-					void 
-					setLinearDamping(float value)
+				void 
+				setLinearDamping(float value)
 				{
 					_linearDamping	= value;
 				}
 
 				void
-					setAngularVelocity(float, float, float);
+				setAngularVelocity(float, float, float);
 
 				void
-					setAngularFactor(float, float, float);
+				setAngularFactor(float, float, float);
 
 				inline
-					void 
-					setAngularDamping(float value)
+				void 
+				setAngularDamping(float value)
 				{
 					_angularDamping	= value;
 				}
 				inline
-					void
-					setRestitution(float value)
+				void
+				setRestitution(float value)
 				{
 					_restitution	= value;
 				}
 
 				inline
-					Signal<Ptr>::Ptr
-					transformChanged()
+				Signal<Ptr>::Ptr
+				transformChanged()
 				{
 					return _transformChanged;
 				}
 
 			private:
-				Collider(float,
-					AbsShapePtr, 
-					Vector3Ptr		inertia				= nullptr);
+				Collider(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
 
 				static
 				Vector3Ptr

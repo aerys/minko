@@ -60,8 +60,8 @@ namespace minko
 
 			public:
 				inline static
-					Ptr
-					create(ColliderPtr collider)
+				Ptr
+				create(ColliderPtr collider)
 				{
 					Ptr ColliderComponent(new ColliderComponent(collider));
 
@@ -74,19 +74,25 @@ namespace minko
 				ColliderComponent(ColliderPtr);
 
 				void
-					initialize();
+				initialize();
+
 				void
-					targetAddedHandler(AbsCtrlPtr, NodePtr);
+				targetAddedHandler(AbsCtrlPtr, NodePtr);
+
 				void
-					targetRemovedHandler(AbsCtrlPtr, NodePtr);
+				targetRemovedHandler(AbsCtrlPtr, NodePtr);
+
 				void 
-					addedHandler(NodePtr, NodePtr, NodePtr);
+				addedHandler(NodePtr, NodePtr, NodePtr);
+
 				void
-					removedHandler(NodePtr, NodePtr, NodePtr);
+				removedHandler(NodePtr, NodePtr, NodePtr);
+
 				void
-					colliderTransformChangedHandler(ColliderPtr);
+				colliderTransformChangedHandler(ColliderPtr);
+
 				void 
-					updateColliderWorldTransform();
+				updateColliderWorldTransform();
 			};
 		}
 	}

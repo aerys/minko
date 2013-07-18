@@ -46,7 +46,31 @@ _mass(mass),
 }
 
 void
-	bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
+bullet::Collider::setLinearVelocity(float x, float y, float z)
+{
+	_linearVelocity->setTo(x, y, z);
+}
+
+void
+bullet::Collider::setAngularVelocity(float x, float y, float z)
+{
+	_angularVelocity->setTo(x, y, z);
+}
+
+void
+bullet::Collider::setLinearFactor(float x, float y, float z)
+{
+	_linearFactor->setTo(x, y, z);
+}
+
+void
+bullet::Collider::setAngularFactor(float x, float y, float z)
+{
+	_angularFactor->setTo(x, y, z);
+}
+
+void
+bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
 	// uniform scaling assumed
 	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
@@ -79,7 +103,7 @@ void
 }
 
 void
-	bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
+bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
 {
 	if (fabsf(fabsf(colliderWorldTransform->determinant3x3()) - 1.0f) > 1e-3f)
 		throw std::logic_error("Update of collider's world transform can only involve scaling-free matrices.");
@@ -97,26 +121,3 @@ void
 	transformChanged()->execute(shared_from_this());
 }
 
-void
-	bullet::Collider::setLinearVelocity(float x, float y, float z)
-{
-	_linearVelocity->setTo(x, y, z);
-}
-
-void
-	bullet::Collider::setAngularVelocity(float x, float y, float z)
-{
-	_angularVelocity->setTo(x, y, z);
-}
-
-void
-	bullet::Collider::setLinearFactor(float x, float y, float z)
-{
-	_linearFactor->setTo(x, y, z);
-}
-
-void
-	bullet::Collider::setAngularFactor(float x, float y, float z)
-{
-	_angularFactor->setTo(x, y, z);
-}
