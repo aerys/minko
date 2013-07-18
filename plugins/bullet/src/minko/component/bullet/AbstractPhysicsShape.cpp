@@ -48,11 +48,12 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 	std::cout << "\tinitialize offset\tworld scaling = " << scaling << "\tdelta scaling = " << offsetScaling << std::endl;
 #endif // DEBUG
 
-	Vector3Ptr translation = centerOfMassOffset->translationVector();	
+	Vector3Ptr translation = centerOfMassOffset->translationVector();
+
 	_centerOfMassTranslation->setTo(
-		translation->x() * offsetScaling,
-		translation->y() * offsetScaling,
-		translation->z() * offsetScaling
+		translation->x(),
+		translation->y(),
+		translation->z()
 	);
 
 	_centerOfMassRotation->identity();
