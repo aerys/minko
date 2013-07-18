@@ -231,6 +231,20 @@ namespace minko
 				);
 			}
 
+			inline
+			float
+			lengthSquared() const
+			{
+				return _x*_x + _y*_y + _z*_z;
+			}
+
+			inline
+			float
+			length() const
+			{
+				return sqrtf(lengthSquared());
+			}
+
 		protected:
 			Vector3(float x, float y, float z) :
 				Vector2(x, y),
