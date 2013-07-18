@@ -83,6 +83,13 @@ namespace minko
 			{
 				return _numVertices;
 			}
+			
+			inline
+			unsigned int
+			vertexSize()
+			{
+				return _vertexSize;
+			};
 
 			Ptr
 			computeNormals();
@@ -97,6 +104,13 @@ namespace minko
 				_numVertices(-1)
 			{
 			}
+
+			inline
+			void
+			vertexSize(unsigned int value)
+			{
+				_vertexSize = value;
+			};
 		};
 	}
 }
