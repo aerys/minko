@@ -254,12 +254,29 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 	_btCollisionObject	= btRigidCollisionObject;
 }
 
+void
+bullet::PhysicsWorld::BulletCollider::setLinearVelocity(Vector3::Ptr velocity)
+{
+	std::shared_ptr<btRigidBody> btRigidCollisionObject = std::dynamic_pointer_cast<btRigidBody>(_btCollisionObject);
+	btRigidCollisionObject->setLinearVelocity(btVector3(velocity->x(), velocity->y(), velocity->z()));
+}
+
 void 
 bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
 {
 	btTransform btWorldTransform;
 	toBulletTransform(worldTransform, btWorldTransform);
 	_btMotionState->setWorldTransform(btWorldTransform);
+}
+
+void
+bullet::PhysicsWorld::BulletCollider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+{
+	btVector3 btImpulse(impulse->x(), impulse->y(), impulse->z());
+	btVector3 btRelPosition(relPosition->x(), relPosition->y(), relPosition->z());
+
+	std::shared_ptr<btRigidBody> btRigidCollisionObject = std::dynamic_pointer_cast<btRigidBody>(_btCollisionObject);
+	btRigidCollisionObject->applyImpulse(btImpulse, btRelPosition);
 }
 
 bullet::PhysicsWorld::BulletCollider::Ptr

@@ -77,6 +77,9 @@ namespace minko
 				initialize();
 
 				void
+				initializeFromTarget(NodePtr);
+
+				void
 				targetAddedHandler(AbsCtrlPtr, NodePtr);
 
 				void
