@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 
 #include "minko/geometry/ParticlesGeometry.hpp"
+#include "minko/particle/ParticleData.hpp"
 
 namespace minko
 {
@@ -42,14 +43,14 @@ namespace minko
 		private:
 			typedef std::shared_ptr<render::AbstractContext>					AbstractContextPtr;
 			typedef std::shared_ptr<AssetsLibrary>								AssetsLibraryPtr;
-			
+
 			typedef std::shared_ptr<Transform>									TransformPtr;
 
 			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
 			typedef std::shared_ptr<AbstractComponent>							AbsCompPtr;
 			typedef std::shared_ptr<Rendering>									RenderingPtr;
-			
+
 			typedef std::shared_ptr<Surface>									SurfacePtr;
 			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
 			typedef std::shared_ptr<data::Provider>								ProviderPtr;
@@ -59,7 +60,7 @@ namespace minko
 			typedef std::shared_ptr<particle::sampler::Sampler<float> >			FloatSamplerPtr;
 			typedef std::shared_ptr<particle::modifier::IParticleInitializer>	IInitializerPtr;
 			typedef std::shared_ptr<particle::modifier::IParticleUpdater>		IUpdaterPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleModifier>		ModifierPtr;	
+			typedef std::shared_ptr<particle::modifier::IParticleModifier>		ModifierPtr;
 
 		private:
 			class ParticleDistanceToCameraComparison
@@ -74,7 +75,7 @@ namespace minko
 					return system->getParticleSquaredDistanceToCamera(p1Index)
 						 > system->getParticleSquaredDistanceToCamera(p2Index);
 				};
-			};	
+			};
 
 		private:
 			SurfacePtr													_surface;
@@ -93,7 +94,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentRemovedSlot;
-			
+
 			NodeSetPtr													_renderers;
 
 			unsigned int 												_countLimit;
@@ -101,7 +102,7 @@ namespace minko
 			unsigned int												_liveCount;
 			unsigned int												_previousLiveCount;
 			std::vector<IInitializerPtr> 								_initializers;
-			std::vector<IUpdaterPtr> 									_updaters;	
+			std::vector<IUpdaterPtr> 									_updaters;
 			std::vector<particle::ParticleData>							_particles;
 			std::vector<unsigned int>									_particleOrder;
 			std::vector<float>											_particleDistanceToCamera;
@@ -118,7 +119,7 @@ namespace minko
 			ShapePtr													_shape;
 			particle::StartDirection									_startDirection;
 			FloatSamplerPtr 											_startVelocity;
-			
+
 			float														_createTimer;
 
 			int															_format;
@@ -152,7 +153,7 @@ namespace minko
 
 				return system;
 			};
-			
+
 			inline
 			ProviderPtr
 			material()
@@ -161,7 +162,7 @@ namespace minko
 			};
 
 			inline
-			void 
+			void
 			rate(float value)
 			{
 				_rate =  1 / value;
@@ -170,28 +171,28 @@ namespace minko
 			};
 
 			inline
-			void 
+			void
 			lifetime(FloatSamplerPtr value)
 			{
 				_lifetime = value;
 
 				updateMaxParticlesCount();
 			};
-			
+
 			inline
 			void
 				shape(ShapePtr value)
 			{
 				_shape = value;
 			};
-			
+
 			inline
 			void
 			startDirection(particle::StartDirection value)
 			{
 				_startDirection = value;
 			};
-			
+
 			inline
 			void
 			startVelocity(FloatSamplerPtr value)
@@ -205,9 +206,9 @@ namespace minko
 			{
 				_updateStep = 1. / updatesPerSecond;
 			};
-			
+
 			inline
-			void 
+			void
 			playing(bool value)
 			{
 				if (value != _playing)
@@ -217,9 +218,9 @@ namespace minko
 						_previousClock = clock();
 				}
 			};
-			
+
 			inline
-			void 
+			void
 			emitting(bool value)
 			{
 					_emitting = value;
@@ -264,17 +265,17 @@ namespace minko
 			void
 			fastForward(float time,
 						unsigned int updatesPerSecond = 0);
-			
+
 			void
 			reset();
 
 		public:
 			void
 			add(ModifierPtr 	modifier);
-			
+
 			void
 			remove(ModifierPtr 	modifier);
-			
+
 			bool
 			has(ModifierPtr 	modifier);
 
@@ -293,22 +294,22 @@ namespace minko
 				else
 					_material->unset("particles.worldspace");
 			};
-			
+
 			inline
 			float*
 			localToWorld()
 			{
 				return _localToWorld;
 			}
-			
+
 			inline
-			void  
+			void
 			iIsZSorted(bool value)
 			{
 				_isZSorted = value;
 				resizeParticlesVector();
 			};
-			
+
 			inline
 			float*
 			cameraPos()
@@ -333,7 +334,7 @@ namespace minko
 			{
 				return _particleDistanceToCamera[particleIndex];
 			};
-			
+
 			void
 			updateParticleDistancesToCamera();
 
@@ -344,17 +345,17 @@ namespace minko
 			{
 				return _maxCount;
 			};
-			
+
 			void
 			updateMaxParticlesCount();
-			
+
 			inline
 			unsigned int
 			liveParticlesCount() const
 			{
 				return _liveCount;
 			};
-			
+
 			inline
 			void
 			countLimit(unsigned int value)
@@ -366,7 +367,7 @@ namespace minko
 
 				updateMaxParticlesCount();
 			};
-			
+
 			inline
 			std::vector<particle::ParticleData>&
 			getParticles()
@@ -378,10 +379,10 @@ namespace minko
 			createParticle(unsigned int 						particleIndex,
 						   const particle::shape::EmitterShape&	emitter,
 						   float								timeLived);
-			
+
 			void
 			killParticle(unsigned int							particleIndex);
-			
+
 		public:
 			inline
 			unsigned int
@@ -389,17 +390,17 @@ namespace minko
 			{
 				return _format;
 			};
-			
+
 			unsigned int
 			updateVertexFormat();
 
 		private:
 			void
 			resizeParticlesVector();
-			
+
 			void
 			addComponents(unsigned int components, bool blockVSInit = false);
-						
+
 			inline
 			void
 			setInVertexBuffer(float* ptr, unsigned int offset, float value)
@@ -409,7 +410,7 @@ namespace minko
 				*(ptr + offset + _geometry->vertexSize() * 2) = value;
 				*(ptr + offset + _geometry->vertexSize() * 3) = value;
 			};
-			
+
 			void
 			updateVertexBuffer();
 
@@ -430,7 +431,7 @@ namespace minko
 
 			void
 			targetRemovedHandler(AbsCompPtr ctrl, NodePtr target);
-	
+
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
@@ -451,7 +452,7 @@ namespace minko
 
 			void
 			addRenderer(RenderingPtr renderer);
-			
+
 			void
 			removeRenderer(RenderingPtr renderer);
 
