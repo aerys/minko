@@ -24,6 +24,7 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
+// TODO: should disappear soon
 void
 bullet::CylinderShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
 {
