@@ -27,7 +27,8 @@ namespace minko
 {
 	namespace geometry
 	{
-		class Geometry
+		class Geometry :
+			public std::enable_shared_from_this<Geometry>
 		{
 		public:
 			typedef std::shared_ptr<Geometry> Ptr;
@@ -83,10 +84,10 @@ namespace minko
 				return _numVertices;
 			}
 
-			void
+			Ptr
 			computeNormals();
 
-			void
+			Ptr
 			computeTangentSpace(bool computeNormals);
 
 		protected:
