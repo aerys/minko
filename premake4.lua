@@ -43,9 +43,9 @@ newaction {
 	trigger = "cleanVS",
 	description = "Remove additional files added by VS",
 	execute = function()
-		os.rmdir("minko.sdf")
-		os.rmdir("minko.v11.suo")
-		os.rmdir("minko.suo")
+		os.remove("minko.sdf")
+		os.remove("minko.v11.suo")
+		os.remove("minko.suo")
 	end
 }
 
