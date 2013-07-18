@@ -18,14 +18,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "Geometry.hpp"
+
 #include <minko/math/Vector3.hpp>
 #include <minko/render/IndexBuffer.hpp>
 #include <minko/render/VertexBuffer.hpp>
 
-using namespace minko;
 using namespace minko::math;
 using namespace minko::geometry;
 using namespace minko::render;
+
+void
+Geometry::addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer)
+{
+	unsigned int bufferVertexSize	= 0;
+
+	for (auto attribute : vertexBuffer->attributes())
+	{
+		_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
+		bufferVertexSize += std::get<1>(*attribute);
+	}
+	_vertexSize	+= bufferVertexSize;
+	_data->set("geometry.vertex.size", _vertexSize);
+
+	const unsigned int bufferNumVertices	= vertexBuffer->data().size() / bufferVertexSize;
+	if (_numVertices == -1)
+		_numVertices	= bufferNumVertices;
+	else if (_numVertices != bufferNumVertices)
+		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
+
+}
 
 void
 Geometry::computeNormals()
@@ -76,7 +97,7 @@ Geometry::computeNormals()
 		}
 	}
 
-	for (unsigned int i=0, index=0; i<numVertices; ++i, index+=3)
+	for (unsigned int i = 0, index = 0; i < numVertices; ++i, index += 3)
 	{
 		const float x = normalsData[index];
 		const float y = normalsData[index+1];
@@ -90,7 +111,7 @@ Geometry::computeNormals()
 	}
 
 	VertexBuffer::Ptr normalsBuffer = VertexBuffer::create(xyzBuffer->context(), normalsData);
-	normalsBuffer->addAttribute("normal2", 3, 0);
+	normalsBuffer->addAttribute("normal", 3, 0);
 	addVertexBuffer(normalsBuffer);
 }
 

@@ -61,7 +61,6 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
     _func.clear();
     _propertyChangedSlots.clear();
 
-	auto vertexSize		= getDataProperty<unsigned int>("geometry.vertex.size");
 	auto IndexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
 	auto indexBuffer	= IndexBuffer->id();
 	auto numIndices		= IndexBuffer->data().size();
@@ -93,15 +92,15 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 			if (!dataHasProperty(name))
 				continue;
 
-			auto VertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
-			auto attribute		= VertexBuffer->attribute(inputName);
+			auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
+			auto vertexSize		= vertexBuffer->vertexSize();
+			auto attribute		= vertexBuffer->attribute(inputName);
 			auto size			= std::get<1>(*attribute);
 			auto offset			= std::get<2>(*attribute);
-			auto vertexBuffer	= VertexBuffer->id();
 				
 			_func.push_back([=](AbstractContext::Ptr context)
 			{
-				context->setVertexBufferAt(location, vertexBuffer, size, vertexSize, offset);
+				context->setVertexBufferAt(location, vertexBuffer->id(), size, vertexSize, offset);
 			});
 		}
 		else
