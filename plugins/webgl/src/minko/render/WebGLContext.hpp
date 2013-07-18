@@ -42,6 +42,11 @@ namespace minko
 			{
 				return std::shared_ptr<WebGLContext>(new WebGLContext());
 			}
+			
+			void
+			setShaderSource(const unsigned int shader,
+							const std::string& source);
+
 		protected:
 			WebGLContext();
 
