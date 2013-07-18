@@ -53,4 +53,4 @@ project "minko-examples"
 	configuration { "emscripten", "release" }
 		buildoptions { "-std=c++11" }
 		-- prebuildcommands { "grep '\\.bc' Makefile || sed -i Makefile -r -e 's/^\s*TARGET\s*=.*$/&.bc/'" }
-		postbuildcommands { 'emcc bin/release/minko-examples -o bin/release/minko-examples.html -O1 -s ASM_JS=1 --preload-dir ../framework/bin/release/' }
+		postbuildcommands { 'BIN=bin/release/minko-examples; cp ${BIN} ${BIN}.bc; emcc ${BIN} -o ${BIN}.html -O1 -s ASM_JS=1 --preload-dir ../framework/bin/release/' }
