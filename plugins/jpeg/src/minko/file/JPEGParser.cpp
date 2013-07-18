@@ -55,5 +55,6 @@ JPEGParser::parse(const std::string&				filename,
 	texture->upload();
 
 	assetsLibrary->texture(filename, texture);
+
 	delete bmpData;
 }
