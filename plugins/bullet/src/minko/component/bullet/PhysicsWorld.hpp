@@ -123,7 +123,10 @@ namespace minko
 				setLinearVelocity(ColliderPtr, Vector3Ptr);
 
 				void
-				applyImpulse(ColliderPtr, Vector3Ptr, Vector3Ptr);
+				prependRotationY(ColliderPtr, float);
+
+				void
+				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
 
 			private:
 				PhysicsWorld();
@@ -211,7 +214,10 @@ namespace minko
 					setLinearVelocity(Vector3Ptr);
 
 					void
-					applyImpulse(Vector3Ptr, Vector3Ptr);
+					prependRotationY(float);
+
+					void
+					applyRelativeImpulse(Vector3Ptr);
 
 				private:
 					BulletCollider();
