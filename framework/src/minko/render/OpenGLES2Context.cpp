@@ -213,8 +213,15 @@ OpenGLES2Context::present()
 	//glFlush();
 
 #ifdef DEBUG
-    if (glGetError() != 0)
+	GLenum errCode = glGetError();
+
+	if (errCode != GL_NO_ERROR)
+    {
+		const GLubyte* errString = gluErrorString(errCode);
+
+		std::cout << "error: " << errString << std::endl;
         throw;
+    }
 #endif
 
     setRenderToBackBuffer();
@@ -364,9 +371,9 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	
+
 	_currentIndexBuffer = indexBuffer;
-	
+
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
@@ -381,7 +388,7 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 										  void*					data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	
+
 	_currentIndexBuffer = indexBuffer;
 
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
@@ -583,6 +590,10 @@ void
 OpenGLES2Context::linkProgram(const unsigned int program)
 {
 	glLinkProgram(program);
+
+	#ifdef DEBUG
+		std::cout << "program info: " << getProgramInfoLogs(program) << std::endl;
+	#endif
 }
 
 void
@@ -597,6 +608,10 @@ void
 OpenGLES2Context::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
+
+	#ifdef DEBUG
+		std::cout << "error: " << getShaderCompilationLogs(shader) << std::endl;
+	#endif
 }
 
 void
@@ -819,6 +834,9 @@ OpenGLES2Context::getProgramInfoLogs(const unsigned int program)
 
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &programInfoMaxLength);
 
+	if (programInfoMaxLength <= 0)
+		return std::string();
+
 	std::vector<char> programInfo(programInfoMaxLength);
 
 	glGetProgramInfoLog(program, programInfoMaxLength, &programInfoLength, &programInfo[0]);
@@ -953,9 +971,9 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 {
     unsigned int frameBuffer = -1;
 
-    // create a framebuffer object 
+    // create a framebuffer object
     glGenFramebuffers(1, &frameBuffer);
-    // bind the framebuffer object 
+    // bind the framebuffer object
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     // attach a texture to the FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
