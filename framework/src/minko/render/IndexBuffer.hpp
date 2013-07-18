@@ -54,7 +54,7 @@ namespace minko
 			}
 
 			inline
-			const std::vector<unsigned short>&
+			std::vector<unsigned short>&
 			data()
 			{
 				return _data;
@@ -62,11 +62,11 @@ namespace minko
 
 			void
 			upload();
-			
+
 			void
 			dispose();
 
-		private:
+		protected:
 			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						const std::vector<unsigned short>&			data) :
 
