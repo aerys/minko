@@ -122,7 +122,24 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 	toBulletTransform(collider->worldTransform(), btStartTransform);
 
 	// collider's center-of-mass offset transform
-	// - need to remove the 
+	auto	offsetTranslation	= collider->shape()->centerOfMassTranslation();
+	auto	offsetRotation		= collider->shape()->centerOfMassRotation();
+
+	btTransform btOffsetTransform;
+	toBulletTransform(
+		collider->shape()->centerOfMassRotation(),
+		collider->shape()->centerOfMassTranslation(),
+		btOffsetTransform
+	);
+
+#ifdef DEBUG
+	std::cout << "\ninit motion state\n\t- translation = " 
+		<< btOffsetTransform.getOrigin()[0] << ", " << btOffsetTransform.getOrigin()[1]
+		<< ", " << btOffsetTransform.getOrigin()[2] << std::endl;
+#endif // DEBUG
+
+
+	/*
 	Matrix4x4::Ptr centerOfMassOffset = Matrix4x4::create()
 		->copyFrom(collider->shape()->centerOfMassOffset());
 	std::cout << "center of mass offset = " << std::to_string(centerOfMassOffset) << std::endl;
@@ -146,7 +163,9 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 
 	btTransform btOffsetTransform (btQuaternion(0.0f, 0.0f, 0.0, 1.0f), btVector3(0.0f, 0.0f, 0.0f));
 	toBulletTransform(centerOfMassOffset, btOffsetTransform);
-	
+	*/
+
+
 	//(
 	//	btQuaternion(offsetRotation->i(), offsetRotation->y(), offsetRotation->z(), offsetRotation->w()),
 	//	btVector3(offsetTranslation->x(), offsetTranslation->y(), offsetTranslation->z())
@@ -180,7 +199,7 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 {
 	// only rigid objects are considerered for the moment
 
-	btVector3	inertia	 (0.0, 0.0, 0.0);
+	btVector3 inertia (0.0, 0.0, 0.0);
 	if (collider->inertia() == nullptr)
 	{
 		if (collider->mass() > 0.0f)
