@@ -41,7 +41,6 @@ project "minko-example-mk-physic"
 	configuration { "linux" }
 		links { "GL", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
 		buildoptions "-std=c++11"
-		linkoptions "-std=c++11"
 
 	-- windows
 	configuration { "windows", "x32" }
@@ -52,9 +51,8 @@ project "minko-example-mk-physic"
 		}
 
 	-- macos
-	configuration { "debug", "macosx" }
+	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		linkoptions { "-std=c++11", "-stdlib=libc++" }
-		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
+		links { "m", "glfw3", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
 		libdirs { "/opt/local/lib/" }
 		includedirs { "/opt/local/include/" }

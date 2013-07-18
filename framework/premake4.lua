@@ -10,7 +10,7 @@ project "minko-framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
-	
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -25,7 +25,6 @@ project "minko-framework"
 	configuration { "linux" }
 		links { "GL", "GLU" }
 		buildoptions "-std=c++11"
-		linkoptions "-std=c++11"
 
 	-- windows
 	configuration { "windows", "x32" }
@@ -36,7 +35,4 @@ project "minko-framework"
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		-- libdirs { "/opt/local/lib/" }
-		-- includedirs { "/opt/local/include/" }
-		links { "OpenGL.framework", "GLUT.framework" }
 
