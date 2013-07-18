@@ -42,37 +42,38 @@ Geometry::addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 
 	const unsigned int bufferNumVertices	= vertexBuffer->data().size() / bufferVertexSize;
 	if (_numVertices == -1)
-		_numVertices	= bufferNumVertices;
+		_numVertices = bufferNumVertices;
 	else if (_numVertices != bufferNumVertices)
 		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
 
 }
 
-void
+Geometry::Ptr
 Geometry::computeNormals()
 {
 	const unsigned int numVertices = this->numVertices();
-	if (numVertices == 0)
-		return;
 
-	//if (_data->hasProperty("geometry.vertex.attribute.normal"))
-	//	throw std::logic_error("The geometry already stores precomputed normals.");
+	if (numVertices == 0)
+		return shared_from_this();
+
+	if (_data->hasProperty("geometry.vertex.attribute.normal"))
+		throw std::logic_error("The geometry already stores precomputed normals.");
 		
 	if (!_data->hasProperty("geometry.vertex.attribute.position"))
 		throw std::logic_error("Computation of normals requires positions.");
 
-	const std::vector<unsigned short>& indices (this->indices()->data());
-	const unsigned int numFaces = indices.size() / 3;
+	const std::vector<unsigned short>& indices	= this->indices()->data();
+	const unsigned int numFaces					= indices.size() / 3;
 
 	unsigned short vertexIds[3] = { 0, 0, 0 };
 	std::vector<Vector3::Ptr> xyz(3);
 
-	VertexBuffer::Ptr xyzBuffer		= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
-	const unsigned int xyzSize		= std::get<1>(*xyzBuffer->attribute("position"));
-	const unsigned int xyzOffset	= std::get<2>(*xyzBuffer->attribute("position"));
-	const std::vector<float>& xyzData (xyzBuffer->data());
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
+	const unsigned int xyzSize			= xyzBuffer->vertexSize();
+	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
+	const std::vector<float>& xyzData	= xyzBuffer->data();
 
-	std::vector<float> normalsData(3*numVertices, 0.0f);
+	std::vector<float> normalsData(3 * numVertices, 0.0f);
 
 	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
 	{
@@ -80,7 +81,7 @@ Geometry::computeNormals()
 		{
 			vertexIds[k] = indices[offset++];
 			const unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = Vector3::create(xyzData[index], xyzData[index+1], xyzData[index+2]);
+			xyz[k] = Vector3::create(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 		}
 
 		Vector3::Ptr faceNormal = Vector3::create()
@@ -89,38 +90,41 @@ Geometry::computeNormals()
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
-			const unsigned int index = 3*vertexIds[k];
+			const unsigned int index = 3 * vertexIds[k];
 
 			normalsData[index]		+= faceNormal->x();
-			normalsData[index+1]	+= faceNormal->y();
-			normalsData[index+2]	+= faceNormal->z();
+			normalsData[index + 1]	+= faceNormal->y();
+			normalsData[index + 2]	+= faceNormal->z();
 		}
 	}
 
 	for (unsigned int i = 0, index = 0; i < numVertices; ++i, index += 3)
 	{
-		const float x = normalsData[index];
-		const float y = normalsData[index+1];
-		const float z = normalsData[index+2];
-		const float lengthSquared = x*x + y*y + z*z;
-		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 0.0f;
+		const float x				= normalsData[index];
+		const float y				= normalsData[index + 1];
+		const float z				= normalsData[index + 2];
+		const float lengthSquared	= x * x + y * y + z * z;
+		const float invLength		= lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
 
 		normalsData[index]		*= invLength;
-		normalsData[index+1]	*= invLength;
-		normalsData[index+2]	*= invLength;
+		normalsData[index + 1]	*= invLength;
+		normalsData[index + 2]	*= invLength;
 	}
 
 	VertexBuffer::Ptr normalsBuffer = VertexBuffer::create(xyzBuffer->context(), normalsData);
 	normalsBuffer->addAttribute("normal", 3, 0);
 	addVertexBuffer(normalsBuffer);
+
+	return shared_from_this();
 }
 
-void
+Geometry::Ptr
 Geometry::computeTangentSpace(bool doNormals)
 {
 	const unsigned int numVertices = this->numVertices();
+
 	if (numVertices == 0)
-		return;
+		return shared_from_this();
 
 	if (!_data->hasProperty("geometry.vertex.attribute.position") 
 		|| !_data->hasProperty("geometry.vertex.attribute.uv"))
@@ -136,15 +140,15 @@ Geometry::computeTangentSpace(bool doNormals)
 	std::vector<Vector3::Ptr> xyz(3);
 	std::vector<Vector2::Ptr> uv(3);
 
-	VertexBuffer::Ptr xyzBuffer		= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
-	const unsigned int xyzSize		= std::get<1>(*xyzBuffer->attribute("position"));
-	const unsigned int xyzOffset	= std::get<2>(*xyzBuffer->attribute("position"));
-	const std::vector<float>& xyzData (xyzBuffer->data());
+	VertexBuffer::Ptr xyzBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.position");
+	const unsigned int xyzSize			= xyzBuffer->vertexSize();
+	const unsigned int xyzOffset		= std::get<2>(*xyzBuffer->attribute("position"));
+	const std::vector<float>& xyzData	= xyzBuffer->data();
 
-	VertexBuffer::Ptr uvBuffer		= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.uv");
-	const unsigned int uvSize		= std::get<1>(*uvBuffer->attribute("uv"));
-	const unsigned int uvOffset		= std::get<2>(*uvBuffer->attribute("uv"));
-	const std::vector<float>& uvData (uvBuffer->data());
+	VertexBuffer::Ptr uvBuffer			= _data->get<VertexBuffer::Ptr>("geometry.vertex.attribute.uv");
+	const unsigned int uvSize			= uvBuffer->vertexSize();
+	const unsigned int uvOffset			= std::get<2>(*uvBuffer->attribute("uv"));
+	const std::vector<float>& uvData	= uvBuffer->data();
 
 	std::vector<float> tangentsData(3 * numVertices, 0.0f);
 
@@ -154,15 +158,15 @@ Geometry::computeTangentSpace(bool doNormals)
 		{
 			vertexIds[k] = indices[offset++];
 			unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
-			xyz[k] = Vector3::create(xyzData[index], xyzData[index+1], xyzData[index+2]);
+			xyz[k] = Vector3::create(xyzData[index], xyzData[index + 1], xyzData[index + 2]);
 			index = uvOffset + vertexIds[k] * uvSize;
-			uv[k] = Vector3::create(uvData[index], uvData[index+1], uvData[index+2]);
+			uv[k] = Vector2::create(uvData[index], uvData[index + 1]);
 		}
 
-		Vector2::Ptr uv02 = uv[0] - uv[2];
-		Vector2::Ptr uv12 = uv[1] - uv[2];
-		const float denom = uv02->x() * uv12->y() - uv12->x() * uv02->y();
-		const float invDenom = fabsf(denom) > 1e-6f ? 1.0f/denom : 1.0f;
+		Vector2::Ptr uv02		= uv[0] - uv[2];
+		Vector2::Ptr uv12		= uv[1] - uv[2];
+		const float denom		= uv02->x() * uv12->y() - uv12->x() * uv02->y();
+		const float invDenom	= fabsf(denom) > 1e-6f ? 1.0f/denom : 1.0f;
 
 		Vector3::Ptr faceTangent = ((xyz[0]-xyz[2]) * uv12->y() - (xyz[1]-xyz[2]) * uv02->y()) * invDenom;
 
@@ -171,25 +175,27 @@ Geometry::computeTangentSpace(bool doNormals)
 			const unsigned int index = 3 * vertexIds[k];
 
 			tangentsData[index]		+= faceTangent->x();
-			tangentsData[index+1]	+= faceTangent->y();
-			tangentsData[index+2]	+= faceTangent->z();
+			tangentsData[index + 1]	+= faceTangent->y();
+			tangentsData[index + 2]	+= faceTangent->z();
 		}
 	}
 
 	for (unsigned int i = 0, index = 0; i < numVertices; ++i, index += 3)
 	{
-		const float x = tangentsData[index];
-		const float y = tangentsData[index + 1];
-		const float z = tangentsData[index + 2];
-		const float lengthSquared = x * x + y * y + z * z;
-		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 0.0f;
+		const float x				= tangentsData[index];
+		const float y				= tangentsData[index + 1];
+		const float z				= tangentsData[index + 2];
+		const float lengthSquared	= x * x + y * y + z * z;
+		const float invLength		= lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
 
 		tangentsData[index]		*= invLength;
-		tangentsData[index+1]	*= invLength;
-		tangentsData[index+2]	*= invLength;
+		tangentsData[index + 1]	*= invLength;
+		tangentsData[index + 2]	*= invLength;
 	}
 
 	VertexBuffer::Ptr tangentsBuffer = VertexBuffer::create(xyzBuffer->context(), tangentsData);
 	tangentsBuffer->addAttribute("tangent", 3, 0);
 	addVertexBuffer(tangentsBuffer);
+
+	return shared_from_this();
 }
