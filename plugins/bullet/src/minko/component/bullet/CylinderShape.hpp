@@ -52,29 +52,29 @@ namespace minko
 				apply(std::shared_ptr<math::Matrix4x4> matrix);
 
 				inline 
-					float 
-					halfExtentX() const
+				float 
+				halfExtentX() const
 				{
 					return _halfExtentX;
 				}
 
 				inline 
-					float 
-					halfExtentY() const
+				float 
+				halfExtentY() const
 				{
 					return _halfExtentY;
 				}
 
 				inline 
-					float 
-					halfExtentZ() const
+				float 
+				halfExtentZ() const
 				{
 					return _halfExtentZ;
 				}
 
 				inline
-					void
-					setHalfExtentX(float halfExtentX)
+				void
+				setHalfExtentX(float halfExtentX)
 				{
 					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
 					_halfExtentX	= halfExtentX;
@@ -83,8 +83,8 @@ namespace minko
 				}
 
 				inline
-					void
-					setHalfExtentY(float halfExtentY)
+				void
+				setHalfExtentY(float halfExtentY)
 				{
 					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
 					_halfExtentY	= halfExtentY;
@@ -93,8 +93,8 @@ namespace minko
 				}
 
 				inline
-					void
-					setHalfExtentZ(float halfExtentZ)
+				void
+				setHalfExtentZ(float halfExtentZ)
 				{
 					const bool needsUpdate	= fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
 					_halfExtentZ	= halfExtentZ;

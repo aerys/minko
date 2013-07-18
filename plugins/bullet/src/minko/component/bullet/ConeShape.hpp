@@ -40,8 +40,8 @@ namespace minko
 
 			public:
 				inline static
-					Ptr
-					create(float radius, float height)
+				Ptr
+				create(float radius, float height)
 				{
 					return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
 				}
@@ -50,22 +50,22 @@ namespace minko
 				apply(std::shared_ptr<math::Matrix4x4> matrix);
 
 				inline
-					float
-					radius() const
+				float
+				radius() const
 				{
 					return _radius;
 				}
 
 				inline
-					float
-					height() const
+				float
+				height() const
 				{
 					return _height;
 				}
 
 				inline
-					void
-					setRadius(float radius)
+				void
+				setRadius(float radius)
 				{
 					const bool needsUpdate	= fabsf(radius - _radius) > 1e-6f;
 					_radius	= radius;
@@ -74,8 +74,8 @@ namespace minko
 				}
 
 				inline
-					void
-					setHeight(float height)
+				void
+				setHeight(float height)
 				{
 					const bool needsUpdate	= fabsf(height - _height) > 1e-6f;
 					_height	= height;
