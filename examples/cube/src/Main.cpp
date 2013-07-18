@@ -6,8 +6,6 @@
 
 #include "GLFW/glfw3.h"
 
-#define FRAMERATE 60
-
 using namespace minko::component;
 using namespace minko::math;
 
@@ -34,65 +32,21 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
-/*void screenshotFunc(int)
-{
-	const int width = 800, height = 600;
-
-	char* pixels = new char[3 * width * height];
-
-	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
-
-	int i, j;
-	FILE *fp = fopen("screenshot.ppm", "wb");
-	fprintf(fp, "P6\n%d %d\n255\n", width, height);
-
-	for (j = 0; j < height; ++j)
-	{
-		for (i = 0; i < width; ++i)
-		{
-			static unsigned char color[3];
-			color[0] = pixels[(width * j + i) * 3 + 0];
-			color[1] = pixels[(width * j + i) * 3 + 1];
-			color[2] = pixels[(width * j + i) * 3 + 2];
-			(void) fwrite(color, 1, 3, fp);
-		}
-	}
-
-	fclose(fp);
-
-	delete[] pixels;
-}*/
-
 int main(int argc, char** argv)
 {
     glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
+    auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(context)->computeTangentSpace(false))
-		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-		->queue("collage.jpg")
-        ->queue("box3.png")
-		->queue("window-diffuse.png")
-		->queue("window-normal.png")
-		->queue("window-specular.png")
-		->queue("DirectionalLight.effect")
-		//->queue("VertexNormal.effect")
-		//->queue("Texture.effect")
-		//->queue("Red.effect")
+		->geometry("cube", geometry::CubeGeometry::create(context))
+        ->queue("texture/box.png")
 		->queue("Basic.effect");
 
-#ifdef DEBUG
-	assets->defaultOptions()->includePaths().push_back("effect");
-	assets->defaultOptions()->includePaths().push_back("texture");
-#else
-	assets->defaultOptions()->includePaths().push_back("../../effect");
-	assets->defaultOptions()->includePaths().push_back("../../texture");
-#endif
+	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -117,19 +71,12 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("window-diffuse.png"))
-                ->set("material.specular",	    Vector3::create(.25f, .25f, .25f))
-				->set("material.specularMap",   assets->texture("window-specular.png"))
-				->set("material.normalMap",		assets->texture("window-normal.png"))
-                ->set("material.shininess",	    30.f),
-			assets->effect("directional light")
+				->set("material.diffuseMap",	assets->texture("texture/box.png")),
+			assets->effect("basic")
 		));
 	});
 
 	assets->load();
-
-	//glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	//glutTimerFunc(1000, screenshotFunc, 0);
 
 	while(!glfwWindowShouldClose(window))
     {
@@ -141,14 +88,8 @@ int main(int argc, char** argv)
             camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
-		/*if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-			camera->component<Transform>()->transform()->appendRotationY(.01f);
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendRotationY(-.01f);*/
-
-        //group->component<Transform>()->transform()->appendRotationY(.01f);
-        //camera->component<Transform>()->transform()->appendRotationY(0.01f);
-        mesh->component<Transform>()->transform()->prependRotationY(.01f);
+        
+		mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
 
