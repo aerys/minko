@@ -120,7 +120,7 @@ EffectParser::parse(const std::string&					filename,
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
 	parsePasses(root, options);
-	parseDependencies(root, options);
+	parseDependencies(root, filename, options);
 	
 	if (_numDependencies == 0)
 		finalize();
@@ -386,9 +386,16 @@ EffectParser::parseTarget(Json::Value& contextNode, std::shared_ptr<AbstractCont
 }
 
 void
-EffectParser::parseDependencies(Json::Value& root, file::Options::Ptr options)
+EffectParser::parseDependencies(Json::Value& root, const std::string& filename, file::Options::Ptr options)
 {
-	auto require = root.get("includes", 0);
+	auto require	= root.get("includes", 0);
+	int pos			= filename.find_last_of("/");
+
+	if (pos > 0)
+	{
+		options = file::Options::create(options);
+		options->includePaths().insert(filename.substr(0, pos));
+	}
 
 	if (require.isArray())
 	{
