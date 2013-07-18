@@ -1,5 +1,6 @@
 *.sublime-workspace
 *.sublime-project
+.vagrant
 Makefile
 examples/bin
 examples/obj
