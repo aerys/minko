@@ -142,10 +142,14 @@ deserializeShape(Qark::Map&							shapeData,
 
 				// fix : should be merged
 
-				std::cout << node->name() << " : " << std::to_string(node->component<Transform>()->modelToWorldMatrix(true)) << std::endl;
+				auto modelToWorldMatrix = node->component<Transform>()->modelToWorldMatrix(true);
 
-				deserializedShape->apply(node->component<Transform>()->modelToWorldMatrix(true));
-				deserializedShape->setCenterOfMassOffset(offset);
+				std::cout << node->name() << " : " << std::to_string(modelToWorldMatrix) << std::endl;
+
+				const float scaling = powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
+				deserializedShape->setLocalScaling(scaling);
+				//deserializedShape->apply(modelToWorldMatrix);
+				//deserializedShape->setCenterOfMassOffset(offset);
 			}
 			break;
 		default:

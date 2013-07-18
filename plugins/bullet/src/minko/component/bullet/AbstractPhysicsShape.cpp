@@ -27,17 +27,35 @@ using namespace minko::component;
 bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_type(type),
 	_margin(0.0f),
-	_localScaleX(1.0f),
-	_localScaleY(1.0f),
-	_localScaleZ(1.0f),
-	_centerOfMassOffset(math::Matrix4x4::create()),
+	_localScaling(1.0f),
+	_centerOfMassOffset(Matrix4x4::create()),
+	_centerOfMassTranslation(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_centerOfMassRotation(Quaternion::create()->identity()),
 	_shapeChanged(Signal<Ptr>::create())
 {
 
 }
 
 void
-	bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset)
+bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset)
 {
-	_centerOfMassOffset->copyFrom(centerOfMassOffset);
+	_centerOfMassOffset->copyFrom(centerOfMassOffset); // TODO: should disappear soon
+
+	const float scaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
+
+	Vector3Ptr translation = centerOfMassOffset->translationVector();	
+	_centerOfMassTranslation->setTo(
+		translation->x() * scaling,
+		translation->y() * scaling,
+		translation->z() * scaling
+	);
+
+	_centerOfMassRotation->identity();
+	if (fabsf(scaling) < 1e-6f)
+		return;
+	const float invScaling = 1.0f/scaling;
+	_centerOfMassRotation = Matrix4x4::create()
+		->copyFrom(centerOfMassOffset)
+		->prependScaling(invScaling, invScaling, invScaling) // remove scaling effect
+		->rotation();
 }
