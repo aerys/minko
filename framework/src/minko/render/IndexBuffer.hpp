@@ -39,14 +39,16 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, std::vector<unsigned short>& data)
+			create(std::shared_ptr<render::AbstractContext> context,
+				   const std::vector<unsigned short>&		data)
 			{
 				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
 			}
 
+			template <typename T>
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, unsigned short* begin, unsigned short* end)
+			create(std::shared_ptr<render::AbstractContext> context, T* begin, T* end)
 			{
 				return std::shared_ptr<IndexBuffer>(new IndexBuffer(context, begin, end));
 			}
@@ -66,16 +68,18 @@ namespace minko
 
 		private:
 			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
-						std::vector<unsigned short>					data) :
+						const std::vector<unsigned short>&			data) :
+
 				AbstractResource(context),
 				_data(data)
 			{
 				upload();
 			}
 
+			template <typename T>
 			IndexBuffer(std::shared_ptr<render::AbstractContext>	context,
-						unsigned short*								begin,
-						unsigned short*								end) :
+						T*											begin,
+						T*											end) :
 				AbstractResource(context),
 				_data(begin, end)
 			{
