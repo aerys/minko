@@ -73,10 +73,13 @@ int main(int argc, char** argv)
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(context))
+		->geometry("cube", geometry::CubeGeometry::create(context)->computeTangentSpace(false))
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
 		->queue("collage.jpg")
         ->queue("box3.png")
+		->queue("window-diffuse.png")
+		->queue("window-normal.png")
+		->queue("window-specular.png")
 		->queue("DirectionalLight.effect")
 		//->queue("VertexNormal.effect")
 		//->queue("Texture.effect")
@@ -114,8 +117,10 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-                ->set("material.diffuseMap",	assets->texture("box3.png"))
+				->set("material.diffuseMap",	assets->texture("window-diffuse.png"))
                 ->set("material.specular",	    Vector3::create(.25f, .25f, .25f))
+				->set("material.specularMap",   assets->texture("window-specular.png"))
+				->set("material.normalMap",		assets->texture("window-normal.png"))
                 ->set("material.shininess",	    30.f),
 			assets->effect("directional light")
 		));
@@ -129,13 +134,17 @@ int main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
     {
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, -.1f);
+            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -.1f);
         else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(0.f, 0.f, .1f);
+            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, .1f);
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
+		/*if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->appendRotationY(.01f);
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            camera->component<Transform>()->transform()->appendRotationY(-.01f);*/
 
         //group->component<Transform>()->transform()->appendRotationY(.01f);
         //camera->component<Transform>()->transform()->appendRotationY(0.01f);
