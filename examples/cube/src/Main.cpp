@@ -1,7 +1,6 @@
 #include <time.h>
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
 
 #include "GLFW/glfw3.h"
@@ -40,7 +39,6 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
-		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
         ->queue("texture/box.png")
