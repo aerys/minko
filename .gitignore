@@ -1,5 +1,6 @@
 *.sublime-workspace
 *.sublime-project
+.vagrant
 Makefile
 framework/bin
 framework/obj

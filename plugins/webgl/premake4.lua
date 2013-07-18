@@ -22,7 +22,6 @@ project "minko-webgl"
 	-- linux
 	configuration { "linux" }
 		buildoptions "-std=c++0x"
-		-- linkoptions "-std=c++0x"
 
 	-- windows
 	configuration { "windows", "x32" }
@@ -30,6 +29,7 @@ project "minko-webgl"
 	-- macos
 	configuration { "debug", "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		-- linkoptions { "-std=c++11", "-stdlib=libc++" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
+
+	-- emscripten
+	configuration { "emscripten", "release" }
+		buildoptions { "-std=c++11" }

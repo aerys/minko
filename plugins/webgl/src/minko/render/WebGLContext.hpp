@@ -42,7 +42,7 @@ namespace minko
 			{
 				return std::shared_ptr<WebGLContext>(new WebGLContext());
 			}
-			
+
 			void
 			setShaderSource(const unsigned int shader,
 							const std::string& source);
@@ -61,13 +61,13 @@ namespace minko
 								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
-			
+
 			const unsigned int
 			createTexture(unsigned int 	width,
 						  unsigned int 	height,
 						  bool			mipMapping,
                           bool          optimizeForRenderToTexture);
-			
+
 			void
 			uploadTextureData(const unsigned int 	texture,
 			 			      unsigned int 		width,
