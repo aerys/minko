@@ -13,12 +13,15 @@
 using namespace minko::component;
 using namespace minko::math;
 
-const float cameraLinearSpeed	= 0.2f;
-const float cameraAngularSpeed	= PI * 1.0f / 180.0f;
+const float CAMERA_LIN_SPEED	= 0.1f;
+const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
+const float CAMERA_MASS			= 2.0f;
+//const float CAMERA_FRICTION		= 0.9f;
 
 Rendering::Ptr				renderingComponent;
-bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
-bullet::Collider::Ptr		cameraCollider = nullptr;
+//bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
+//bullet::Collider::Ptr		cameraCollider = nullptr;
+bullet::ColliderComponent::Ptr	cameraColliderComp = nullptr;
 
 auto mesh	= scene::Node::create("mesh");
 auto group	= scene::Node::create("group");
@@ -266,24 +269,24 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
 
-	// sponza-adapted camera
     camera->addComponent(Transform::create());
 	/*
+	// sponza-adapted camera
 	camera->component<Transform>()->transform()
 		->lookAt(
 			Vector3::create(1.0f, 0.6f, 0.0f),
 			Vector3::create(0.0f, 0.6f, 0.0f),
 			Vector3::yAxis()
 		);
-		*/
+	*/
 
 	camera->component<Transform>()->transform()
 		->appendTranslation(0.0f, 2.75f, 5.0f)
 		->appendRotationY(PI*0.5);
-	
+
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-	physicsWorld = bullet::PhysicsWorld::create();
+	auto physicsWorld = bullet::PhysicsWorld::create();
 	physicsWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicsWorld);
 
@@ -318,11 +321,16 @@ int main(int argc, char** argv)
 		//group->addChild(assets->node("models/sponza-lite-physics.mk"));
 		group->addChild(assets->node("models/test-ground.mk"));
 
-		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.5f, 0.2f);
-		cameraCollider						= bullet::Collider::create(1.0f, cameraShape);
+		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+		cameraShape->setMargin(0.3f);
+		auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
 		cameraCollider->setRestitution(0.5f);
 		cameraCollider->setAngularFactor(0.0f, 1.0f, 0.0f);
-		camera->addComponent(bullet::ColliderComponent::create(cameraCollider));
+		cameraCollider->disableDeactivation(true);
+		// cameraCollider->setFriction(CAMERA_FRICTION);
+
+		cameraColliderComp = bullet::ColliderComponent::create(cameraCollider);
+		camera->addComponent(cameraColliderComp);
 	});
 
 	try
@@ -350,31 +358,39 @@ int main(int argc, char** argv)
 		//std::cout << "GLFW_PRESS = " << GLFW_PRESS << std::endl;
 
 		
-		Vector3::Ptr localImpulse = Vector3::create(0.0f, 0.0f, 0.0f);
-		/*
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 			// go forward
-			localImpulse->setTo(0.0f, 0.0f, -cameraLinearSpeed);
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
 		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 			// go backward
-			localImpulse->setTo(0.0f, 0.0f, cameraLinearSpeed);
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+
+		/*
+		Vector3::Ptr localImpulse = Vector3::create(0.0f, 0.0f, 0.0f);
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			// go forward
+			localImpulse->setTo(0.0f, 0.0f, -CAMERA_LIN_SPEED);
+		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			// go backward
+			localImpulse->setTo(0.0f, 0.0f, CAMERA_LIN_SPEED);
+		
+		//if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		//	// go left
+		//	localImpulse->setTo(-CAMERA_LIN_SPEED, 0.0f, localImpulse->z());
+  //      else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		//	// go right
+		//	localImpulse->setTo(CAMERA_LIN_SPEED, 0.0f, localImpulse->z());
+			
+		if (localImpulse->lengthSquared() > 1e-6f)
+			cameraColliderComp->applyRelativeImpulse(localImpulse);
+		*/
 
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-			// go left
-			localImpulse->setTo(-cameraLinearSpeed, 0.0f, localImpulse->z());
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-			// go right
-			localImpulse->setTo(cameraLinearSpeed, 0.0f, localImpulse->z());
-			*/
-		//if (localImpulse)
-		physicsWorld->applyRelativeImpulse(cameraCollider, localImpulse);
-		
-
-		
-		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		{
-			physicsWorld->prependRotationY(cameraCollider, cameraAngularSpeed);
-		}
+			// look on the left
+			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+		else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			// look on the right
+			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
 		
 		renderingComponent->render();
 

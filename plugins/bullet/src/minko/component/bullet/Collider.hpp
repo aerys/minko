@@ -56,6 +56,7 @@ namespace minko
 				float			_angularDamping;
 				float			_restitution;
 				float			_friction;
+				bool			_deactivationDisabled;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 
@@ -170,6 +171,20 @@ namespace minko
 				restitution() const
 				{
 					return _restitution;
+				}
+
+				inline 
+				bool
+				deactivationDisabled() const
+				{
+					return _deactivationDisabled;
+				}
+
+				inline
+				void
+				disableDeactivation(bool value)
+				{
+					_deactivationDisabled = value;
 				}
 
 				void
