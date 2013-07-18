@@ -13,8 +13,8 @@
 using namespace minko::component;
 using namespace minko::math;
 
-	const float cameraLinearStep	= 0.1f;
-	const float cameraAngStep		= 0.025f;
+const float cameraLinearSpeed	= 0.2f;
+const float cameraAngularSpeed	= PI * 1.0f / 180.0f;
 
 Rendering::Ptr				renderingComponent;
 bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
@@ -318,10 +318,10 @@ int main(int argc, char** argv)
 		//group->addChild(assets->node("models/sponza-lite-physics.mk"));
 		group->addChild(assets->node("models/test-ground.mk"));
 
-		bullet::CylinderShape::Ptr	cameraShape	= bullet::CylinderShape::create(0.2f, 0.5f, 0.2f);
-		cameraCollider							= bullet::Collider::create(1.0f, cameraShape);
+		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.5f, 0.2f);
+		cameraCollider						= bullet::Collider::create(1.0f, cameraShape);
 		cameraCollider->setRestitution(0.5f);
-		cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
+		cameraCollider->setAngularFactor(0.0f, 1.0f, 0.0f);
 		camera->addComponent(bullet::ColliderComponent::create(cameraCollider));
 	});
 
@@ -347,21 +347,35 @@ int main(int argc, char** argv)
 			camera->component<Transform>()->transform()->prependRotation(cameraAngStep, Vector3::yAxis());
 		*/
 
-		auto updCameraTransform = Matrix4x4::create()
-			->copyFrom(camera->component<Transform>()->transform());
+		//std::cout << "GLFW_PRESS = " << GLFW_PRESS << std::endl;
+
+		
+		Vector3::Ptr localImpulse = Vector3::create(0.0f, 0.0f, 0.0f);
+		/*
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			// go forward
+			localImpulse->setTo(0.0f, 0.0f, -cameraLinearSpeed);
+		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			// go backward
+			localImpulse->setTo(0.0f, 0.0f, cameraLinearSpeed);
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			// go left
+			localImpulse->setTo(-cameraLinearSpeed, 0.0f, localImpulse->z());
+        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			// go right
+			localImpulse->setTo(cameraLinearSpeed, 0.0f, localImpulse->z());
+			*/
+		//if (localImpulse)
+		physicsWorld->applyRelativeImpulse(cameraCollider, localImpulse);
+		
+
+		
 		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		{
-			updCameraTransform->prependTranslation(0.f, 0.f, cameraLinearStep);
-
-			Vector3::Ptr velocity = updCameraTransform->transform(Vector3::zAxis());
-			physicsWorld->applyImpulse(cameraCollider, velocity, Vector3::zero());
-
-
-			std::cout << "cam trf = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
-			std::cout << "new cam trf = " << std::to_string(updCameraTransform) << std::endl << std::endl;
-			//physicsWorld->forceColliderWorldTransform(cameraCollider, updCameraTransform);
+			physicsWorld->prependRotationY(cameraCollider, cameraAngularSpeed);
 		}
-
+		
 		renderingComponent->render();
 
 	    glfwSwapBuffers(window);

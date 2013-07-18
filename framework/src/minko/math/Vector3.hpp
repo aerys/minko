@@ -211,6 +211,17 @@ namespace minko
 
 			inline
 			Ptr
+			operator*(float value)
+			{
+				_x *= value;
+				_y *= value;
+				_z *= value;
+
+				return std::static_pointer_cast<Vector3>(shared_from_this());
+			}
+
+			inline
+			Ptr
 			lerp(Ptr target, float ratio)
 			{
 				return setTo(
