@@ -24,7 +24,8 @@ project "minko-example-mk-physic"
 		"../../plugins/particles/src"
 	}
 	defines {
-		"MINKO_FRAMEWORK_EFFECTS_PATH='\"" .. path.getabsolute("../../framework/effect" .. "\"'")
+		-- "MINKO_FRAMEWORK_EFFECTS_PATH='\"" .. path.getabsolute("../../framework/effect" .. "\"'")
+		"MINKO_FRAMEWORK_EFFECTS_PATH=\"" .. path.getabsolute("../../framework/effect" .. "\"")
 	}
 
 	configuration { "debug"}
