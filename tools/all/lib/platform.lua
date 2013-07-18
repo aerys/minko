@@ -2,9 +2,9 @@ newplatform {
 	name = "emscripten",
 	description = "Emscripten C++ to JS toolchain",
 	gcc = {
-		cc = 'emcc',
-		cxx = 'em++',
-		ar = path.getabsolute("tools/unix/scripts/emar.sh"),
+		cc = path.getabsolute("../../lin/bin/emcc.sh"),
+		cxx = path.getabsolute("../../lin/bin/em++.sh"),
+		ar = path.getabsolute("../../lin/bin/emar.sh"),
 		cppflags = "-MMD -DEMSCRIPTEN"
 	}
 }

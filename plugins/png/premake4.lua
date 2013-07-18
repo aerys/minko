@@ -21,7 +21,7 @@ project "minko-png"
 
 	configuration { "release" }
 		defines { "NDEBUG" }
-		-- flags { "OptimizeSpeed" }
+		flags { "OptimizeSpeed" }
 		targetdir "bin/release"
 
 	-- linux
@@ -39,4 +39,3 @@ project "minko-png"
 
 	configuration { "emscripten", "release" }
 		buildoptions { "-std=c++11" }
-		-- prebuildcommands { "sed -i Makefile -r -e 's/-rcs/rk/g'" }
