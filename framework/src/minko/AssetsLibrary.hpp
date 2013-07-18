@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 
+
 namespace minko
 {
 	class AssetsLibrary :
@@ -40,6 +41,7 @@ namespace minko
 		typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 		typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
 		typedef std::function<AbsParserPtr(void)>			Handler;
+		typedef std::shared_ptr<scene::Node>				NodePtr;
 
 	private:
 		AbsContextPtr													_context;
@@ -49,6 +51,7 @@ namespace minko
 		std::unordered_map<std::string, GeometryPtr>					_geometries;
 		std::unordered_map<std::string, EffectPtr>						_effects;
 		std::unordered_map<std::string, TexturePtr>						_textures;
+		std::unordered_map<std::string, NodePtr>						_nodes;
 		std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
 
 		std::list<std::string>											_filesQueue;
@@ -60,16 +63,10 @@ namespace minko
 		std::shared_ptr<Signal<Ptr>>									_complete;
 
 	public:
-		inline static
+		// fixme cyclic reference
+		static
 		Ptr
-		create(AbsContextPtr context)
-		{
-			auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
-
-			al->registerParser<file::EffectParser>("effect");
-
-			return al;
-		}
+		create(AbsContextPtr context);
 
 		inline
 		AbsContextPtr
@@ -104,6 +101,12 @@ namespace minko
 		Ptr
 		texture(const std::string& name, TexturePtr texture);
 
+		NodePtr
+		node(const std::string& name);
+
+		Ptr
+		node(const std::string& name, NodePtr node);
+
 		EffectPtr
 		effect(const std::string& name);
 
@@ -133,6 +136,9 @@ namespace minko
 
 		Ptr
 		load();
+
+		AbsParserPtr
+		parser(std::string extension);
 
 	private:
 		AssetsLibrary(AbsContextPtr context);
