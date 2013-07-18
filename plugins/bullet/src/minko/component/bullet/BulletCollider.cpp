@@ -41,7 +41,7 @@ bullet::PhysicsWorld::BulletCollider::BulletCollider():
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 {
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
@@ -52,7 +52,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsShape::Ptr shape)
+bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsShape::Ptr shape)
 {
 	if (shape == nullptr)
 		throw std::invalid_argument("shape");
@@ -79,38 +79,42 @@ void
 		throw std::logic_error("Unsupported physics shape");
 	}
 
-	_btCollisionShape->setLocalScaling(btVector3(shape->localScaleX(), shape->localScaleY(), shape->localScaleZ()));
+	_btCollisionShape->setLocalScaling(btVector3(
+		shape->localScaling(), 
+		shape->localScaling(), 
+		shape->localScaling()
+	));
 	_btCollisionShape->setMargin(shape->margin());
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
+bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
 {
 	_btCollisionShape	= std::shared_ptr<btSphereShape>(new btSphereShape(sphere->radius()));
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box)
+bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box)
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
 	_btCollisionShape	= std::shared_ptr<btBoxShape>(new btBoxShape(halfExtents));
 }
 
 void 
-	bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
+bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
 {
 	_btCollisionShape	= std::shared_ptr<btConeShape>(new btConeShape(cone->radius(), cone->height()));
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder)
+bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder)
 {
 	btVector3 halfExtents (cylinder->halfExtentX(), cylinder->halfExtentY(), cylinder->halfExtentZ());
 	_btCollisionShape	= std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
 {
 	// collider's starting world transform
 	btTransform btStartTransform;
@@ -171,7 +175,7 @@ void
 }
 
 void
-	bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider)
 {
 	// only rigid objects are considerered for the moment
 
@@ -224,7 +228,8 @@ void
 	_btCollisionObject	= btRigidCollisionObject;
 }
 
-void bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
+void 
+bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
 {
 	btTransform btWorldTransform;
 	toBulletTransform(worldTransform, btWorldTransform);
@@ -232,7 +237,7 @@ void bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worl
 }
 
 bullet::PhysicsWorld::BulletCollider::Ptr
-	bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
 {
 	BulletColliderPtr	btCollider(new BulletCollider());
 
