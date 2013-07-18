@@ -234,6 +234,46 @@ bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
 	it->second->setWorldTransform(collider->worldTransform());
 }
 
+void
+bullet::PhysicsWorld::forceColliderWorldTransform(Collider::Ptr collider, Matrix4x4::Ptr worldTransform)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	const float scaling = powf(fabsf(worldTransform->determinant3x3()), 1.0f/3.0f);
+	if (scaling < 1e-6f)
+		throw std::logic_error("Failed to force collider's world transform (null scaling).");
+
+	const float invScaling = 1.0f/scaling;
+	auto scaleFreeMatrix = Matrix4x4::create()
+		->copyFrom(worldTransform)
+		->prependScaling(invScaling, invScaling, invScaling);
+
+	it->second->setWorldTransform(scaleFreeMatrix);
+	it->first->updateColliderWorldTransform(scaleFreeMatrix);
+}
+
+void
+bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr velocity)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->setLinearVelocity(velocity);
+}
+
+void
+	bullet::PhysicsWorld::applyImpulse(Collider::Ptr collider, Vector3::Ptr impulse, Vector3::Ptr relPosition)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->applyImpulse(impulse, relPosition);
+}
+
 /*static*/
 Matrix4x4::Ptr
 bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
@@ -256,7 +296,10 @@ void
 bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
-	toBulletTransform(transform->rotation(), transform->translationVector(), output);
+	toBulletTransform(
+		transform->rotation(), 
+		transform->translationVector(), output
+	);
 	/*
 	auto translation	= transform->translationVector();
 	auto rotation		= transform->rotation();
