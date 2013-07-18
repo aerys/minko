@@ -46,7 +46,7 @@ bullet::ColliderComponent::ColliderComponent(Collider::Ptr collider):
 }
 
 void
-	bullet::ColliderComponent::initialize()
+bullet::ColliderComponent::initialize()
 {
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::ColliderComponent::targetAddedHandler,
@@ -70,7 +70,7 @@ void
 }
 
 void
-	bullet::ColliderComponent::targetAddedHandler(
+bullet::ColliderComponent::targetAddedHandler(
 	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
@@ -95,7 +95,7 @@ void
 }
 
 void
-	bullet::ColliderComponent::targetRemovedHandler(
+bullet::ColliderComponent::targetRemovedHandler(
 	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
@@ -105,7 +105,7 @@ void
 }
 
 void 
-	bullet::ColliderComponent::addedHandler(
+bullet::ColliderComponent::addedHandler(
 	Node::Ptr node, 
 	Node::Ptr target, 
 	Node::Ptr parent)
@@ -138,7 +138,7 @@ void
 }
 
 void 
-	bullet::ColliderComponent::updateColliderWorldTransform()
+bullet::ColliderComponent::updateColliderWorldTransform()
 {
 	if (_targetTransform == nullptr)
 		throw std::logic_error("The Transform of the ColliderComponent's target is invalid.");
@@ -153,7 +153,7 @@ void
 }
 
 void
-	bullet::ColliderComponent::removedHandler(
+bullet::ColliderComponent::removedHandler(
 	Node::Ptr node, 
 	Node::Ptr target, 
 	Node::Ptr parent)
@@ -164,7 +164,7 @@ void
 }
 
 void 
-	bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collider)
+bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collider)
 {
 	// get the world-to-parent matrix in order to update the target's Transform
 	auto worldToParentMatrix	= Matrix4x4::create()
