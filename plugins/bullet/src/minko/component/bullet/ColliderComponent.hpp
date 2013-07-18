@@ -42,6 +42,7 @@ namespace minko
 				typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>			NodePtr;
 				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
+				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 				typedef std::shared_ptr<Collider>				ColliderPtr;
 				typedef std::shared_ptr<Transform>				TransformPtr;
 				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
@@ -69,6 +70,15 @@ namespace minko
 
 					return ColliderComponent;
 				}
+
+				void
+				prependLocalTranslation(Vector3Ptr);
+
+				void
+				prependRotationY(float);
+
+				void
+				applyRelativeImpulse(Vector3Ptr);
 
 			private:
 				ColliderComponent(ColliderPtr);
