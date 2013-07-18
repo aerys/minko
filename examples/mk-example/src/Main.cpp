@@ -2,12 +2,16 @@
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoMk.hpp"
 #include "minko/MinkoBullet.hpp"
+#include "minko/MinkoParticles.hpp"
 
 #ifdef EMSCRIPTEN
 	#include "minko/MinkoWebGL.hpp"
 	#include "GL/glut.h"
+
+	#define FRAMERATE 60
 #else
 	#include "GLFW/glfw3.h"
 #endif
@@ -16,6 +20,7 @@
 using namespace minko::component;
 using namespace minko::math;
 
+ParticleSystem::Ptr particleSystem;
 Rendering::Ptr renderingComponent;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
@@ -189,7 +194,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	double density		= 0;
 	double friction		= 0;
-	double restitution	= 1;
+	double restitution	= 0.5;
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -259,7 +264,6 @@ int main(int argc, char** argv)
 {
 	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
 
-	
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -281,7 +285,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.5f, 1.2f)->appendRotationY(PI/2.f);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 1.8f)->appendRotationY(PI/2.f);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
@@ -293,19 +297,81 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-        ->queue("texture/box.png")
 		->queue("Basic.effect")
 		->queue("DirectionalLight.effect")
 		->queue("models/sponza-lite-physics.mk");
-
+	
+#ifdef EMSCRIPTEN
+	assets->defaultOptions()->includePaths().insert("assets");
+#else
 	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
+#endif
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
 		root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
-		group->addChild(mesh);
+		//group->addChild(mesh);
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
+
+		/*particleSystem = ParticleSystem::create(
+			assets->context(),
+			assets,
+			300,
+			particle::sampler::RandomValue<float>::create(1.2, 1.8),
+			particle::shape::Sphere::create(1),
+			particle::StartDirection::NONE,
+			0);
+		particleSystem->material()
+				->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
+                ->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
+
+		particleSystem->add(particle::modifier::StartForce::create(
+			particle::sampler::RandomValue<float>::create(-.2, .2),
+			particle::sampler::RandomValue<float>::create(6., 8.),
+			particle::sampler::RandomValue<float>::create(-.2, .2)
+			));
+
+		particleSystem->add(particle::modifier::StartSize::create(
+			particle::sampler::RandomValue<float>::create(1, 1)
+			));
+
+		particleSystem->add(particle::modifier::StartSprite::create(
+			particle::sampler::RandomValue<float>::create(0., 4.)
+			));
+
+		particleSystem->add(particle::modifier::StartAngularVelocity::create(
+			particle::sampler::RandomValue<float>::create(0.1, 2.)
+			));
+		
+		particleSystem->add(particle::modifier::SizeOverTime::create());
+		particleSystem->add(particle::modifier::ColorOverTime::create());
+
+		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)->descendants(false)->where(
+			[](scene::Node::Ptr node)
+			{
+				return node->name() == "fire";
+			});
+
+		scene::Node::Ptr testNode = scene::Node::create();
+
+		//testNode->addComponent(particleSystem);
+		
+		root->addChild(testNode);*/
+		/*
+		for (unsigned int i = 0; i < fireNodes->nodes().size(); ++i)
+		{
+			scene::Node::Ptr currentNode = fireNodes->nodes()[i];
+
+			//component::Surface::Ptr currentSurface = currentNode->components<component::Surface>()[0];
+
+			//currentNode->removeComponent(currentSurface);
+
+			currentNode->addComponent(particleSystem);
+		}*/
+
+		//particleSystem->updateRate(60);
+		//particleSystem->play();
 	});
 
 	assets->load();
