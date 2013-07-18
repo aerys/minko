@@ -36,3 +36,6 @@ project "minko-framework"
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 
+	-- emscripten
+	configuration { "emscripten", "release" }
+		buildoptions { "-std=c++11" }
