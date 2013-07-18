@@ -134,7 +134,7 @@ deserializeShape(Qark::Map&							shapeData,
 				deserializedShape->setLocalScaling(scaling);
 				//deserializedShape->apply(modelToWorldMatrix);
 
-				//deserializedShape->setCenterOfMassOffset(offset, scaling);
+				deserializedShape->setCenterOfMassOffset(offset, scaling);
 			}
 			break;
 		default:
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
     camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 0.0f, 50.0f)->appendRotationY(0.0f);
+	camera->component<Transform>()->transform()->appendTranslation(0.f, 2.0f, 50.0f)->appendRotationY(0.0f);
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicWorld = bullet::PhysicsWorld::create();
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		->queue("models/testphysics2.mk");
+		->queue("models/testphysics3.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -300,7 +300,7 @@ int main(int argc, char** argv)
 //               ->set("material.shininess",	    30.f),
 //			assets->effect("directional light")));
 
-		group->addChild(assets->node("models/testphysics2.mk"));
+		group->addChild(assets->node("models/testphysics3.mk"));
 	});
 
 	try

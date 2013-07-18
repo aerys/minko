@@ -118,11 +118,17 @@ void
 bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
 {
 	// collider's starting world transform
+	Matrix4x4Ptr startWorld = Matrix4x4::create()
+		->copyFrom(collider->worldTransform());
+		//->appendTranslation(collider->shape()->centerOfMassTranslation()->x(),
+		//					collider->shape()->centerOfMassTranslation()->y(),
+		//					collider->shape()->centerOfMassTranslation()->z());
+
 	btTransform btStartTransform;
-	toBulletTransform(collider->worldTransform(), btStartTransform);
+	toBulletTransform(startWorld, btStartTransform);
 
 	// collider's center-of-mass offset transform
-	auto	offsetTranslation	= collider->shape()->centerOfMassTranslation();
+	auto	offsetTranslation	= Vector3::create(0.f, 0.f, 0.f);
 	auto	offsetRotation		= collider->shape()->centerOfMassRotation();
 
 	btTransform btOffsetTransform;
