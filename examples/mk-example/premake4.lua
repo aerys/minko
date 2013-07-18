@@ -54,6 +54,7 @@ project "minko-example-mk-physic"
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
+		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links { "m", "glfw3", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
 		libdirs { "/opt/local/lib/" }
 		includedirs { "/opt/local/include/" }
