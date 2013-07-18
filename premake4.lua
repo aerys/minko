@@ -13,6 +13,7 @@ include 'plugins/png'
 include 'plugins/webgl'
 include 'plugins/mk'
 include 'plugins/bullet'
+include 'plugins/particles'
 
 newaction {
 	trigger = "copyDLLs",

@@ -34,6 +34,18 @@ WebGLContext::WebGLContext() :
 
 
 void
+WebGLContext::setShaderSource(const unsigned int shader,
+							  const std::string& source)
+{
+	const std::string src = "precision highp float\n\n" + source;
+
+	const char* sourceString = src.c_str();
+
+	glShaderSource(shader, 1, &sourceString, 0);
+}
+
+
+void
 WebGLContext::uploadTextureData(const unsigned int 	texture,
 								    unsigned int 		width,
 								    unsigned int 		height,
