@@ -118,7 +118,7 @@ deserializeShape(Qark::Map&							shapeData,
 
 				r = readAndSwap<double>(stream);
 				h = readAndSwap<double>(stream);
-				
+
 				deserializedShape = bullet::ConeShape::create(r, h);
 			}
 			break;
@@ -153,7 +153,7 @@ deserializeShape(Qark::Map&							shapeData,
 				const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
 #ifdef DEBUG
-				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset) 
+				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset)
 					<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
 #endif // DEBUG
 
@@ -167,11 +167,11 @@ deserializeShape(Qark::Map&							shapeData,
 			deserializedShape = nullptr;
 	}
 
-	return deserializedShape;		
+	return deserializedShape;
 }
 
 std::shared_ptr<bullet::ColliderComponent>
-deserializeBullet(Qark::Map&						nodeInformation, 
+deserializeBullet(Qark::Map&						nodeInformation,
 				  file::MkParser::ControllerMap&	controllerMap,
 				  file::MkParser::NodeMap&			nodeMap,
 				  scene::Node::Ptr&					node)
@@ -180,9 +180,9 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
 
 	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, node);
-	
+
 	float mass = 1;
-	
+
 	double vx =  0;
 	double vy =  0;
 	double vz =  0;
@@ -278,9 +278,9 @@ int main(int argc, char** argv)
 
 	auto context = render::OpenGLES2Context::create();
 #endif
-	
+
 	root->addChild(group)->addChild(camera);
-		
+
 	renderingComponent = Rendering::create(context);
     renderingComponent->backgroundColor(0x7F7F7FFF);
 	camera->addComponent(renderingComponent);
@@ -292,7 +292,7 @@ int main(int argc, char** argv)
 
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
-		
+
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::MkParser>("mk")
@@ -300,7 +300,7 @@ int main(int argc, char** argv)
 		->queue("Basic.effect")
 		->queue("DirectionalLight.effect")
 		->queue("models/sponza-lite-physics.mk");
-	
+
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #else
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
 		particleSystem->add(particle::modifier::StartAngularVelocity::create(
 			particle::sampler::RandomValue<float>::create(0.1, 2.)
 			));
-		
+
 		particleSystem->add(particle::modifier::SizeOverTime::create());
 		particleSystem->add(particle::modifier::ColorOverTime::create());
 
@@ -356,7 +356,7 @@ int main(int argc, char** argv)
 		scene::Node::Ptr testNode = scene::Node::create();
 
 		//testNode->addComponent(particleSystem);
-		
+
 		root->addChild(testNode);*/
 		/*
 		for (unsigned int i = 0; i < fireNodes->nodes().size(); ++i)
@@ -375,7 +375,7 @@ int main(int argc, char** argv)
 	});
 
 	assets->load();
-	
+
 #ifdef EMSCRIPTEN
 	glutDisplayFunc(renderScene);
 	glutMainLoop();
@@ -391,7 +391,7 @@ int main(int argc, char** argv)
             camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
-        
+
 		//mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
@@ -403,7 +403,7 @@ int main(int argc, char** argv)
     }
 
     glfwDestroyWindow(window);
- 
+
     glfwTerminate();
 
     exit(EXIT_SUCCESS);
