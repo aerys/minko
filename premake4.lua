@@ -1,8 +1,8 @@
 solution "minko"
    configurations { "Debug", "Release" }
-
+  
 -- examples
-include 'examples'
+include 'examples/cube'
 
 -- core framework
 include 'framework'
