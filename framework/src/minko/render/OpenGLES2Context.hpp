@@ -41,13 +41,15 @@ namespace minko
 			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
             typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
 
+		protected:
+			std::list<unsigned int>	_textures;
+
 		private:
             static BlendFactorsMap  _blendingFactors;
 			static DepthFuncsMap	_depthFuncs;
 
 			std::list<unsigned int>	_vertexBuffers;
 			std::list<unsigned int>	_indexBuffers;
-			std::list<unsigned int>	_textures;
 			std::list<unsigned int> _programs;
 			std::list<unsigned int> _vertexShaders;
 			std::list<unsigned int> _fragmentShaders;
@@ -241,12 +243,14 @@ namespace minko
 		protected:
 			OpenGLES2Context();
 
+			virtual
 			void
 			fillUniformInputs(const unsigned int				program,
 							  std::vector<std::string>&			names,
 							  std::vector<ProgramInputs::Type>&	types,
 							  std::vector<unsigned int>&		locations);
 
+			virtual
 			void
 			fillAttributeInputs(const unsigned int					program,
 								std::vector<std::string>&			names,

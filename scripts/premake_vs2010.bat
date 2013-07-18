@@ -4,4 +4,6 @@ cd ..
 scripts\premake4.exe --os=windows --platform=x32 vs2010
 scripts\premake4.exe --os=windows --platform=x32 copyDLLs
 cd scripts
+
+timeout /t 30
  
