@@ -34,6 +34,17 @@ WebGLContext::WebGLContext() :
 
 
 void
+WebGLContext::uploadTextureData(const unsigned int 	texture,
+								    unsigned int 		width,
+								    unsigned int 		height,
+								    unsigned int 		mipLevel,
+								    void*				data)
+{
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+void
 WebGLContext::fillUniformInputs(const unsigned int						program,
 								   std::vector<std::string>&				names,
 								   std::vector<ProgramInputs::Type>&	types,
@@ -142,4 +153,104 @@ WebGLContext::fillAttributeInputs(const unsigned int							program,
 		    locations.push_back(location);
 		}
 	}
+}
+
+const unsigned int
+WebGLContext::createTexture(unsigned int 	width,
+							    unsigned int 	height,
+							    bool			mipMapping,
+                                bool            optimizeForRenderToTexture)
+{
+	unsigned int texture;
+
+	// make sure width is a power of 2
+	if (!((width != 0) && !(width & (width - 1))))
+		throw std::invalid_argument("width");
+
+	// make sure height is a power of 2
+	if (!((height != 0) && !(height & (height - 1))))
+		throw std::invalid_argument("height");
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
+	//
+	// void glGenTextures(GLsizei n, GLuint* textures)
+	// n Specifies the number of texture names to be generated.
+	// textures Specifies an array in which the generated texture names are stored.
+	//
+	// glGenTextures generate texture names
+	glGenTextures(1, &texture);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+	//
+	// void glBindTexture(GLenum target, GLuint texture);
+	// target Specifies the target to which the texture is bound.
+	// texture Specifies the name of a texture.
+	//
+	// glBindTexture bind a named texture to a texturing target
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
+	//
+	// void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border,
+	// GLenum format, GLenum type, const GLvoid* data);
+	// target Specifies the target texture.
+	// level Specifies the level-of-detail number. Level 0 is the base image level. Level n is the nth mipmap reduction
+	// image. If target is GL_TEXTURE_RECTANGLE or GL_PROXY_TEXTURE_RECTANGLE, level must be 0.
+	// internalFormat Specifies the number of color components in the texture. Must be one of base internal formats given in Table 1,
+	// one of the sized internal formats given in Table 2, or one of the compressed internal formats given in Table 3,
+	// below.
+	// width Specifies the width of the texture image.
+	// height Specifies the height of the texture image.
+	// border This value must be 0.
+	// format Specifies the format of the pixel data.
+	// type Specifies the data type of the pixel data
+	// data Specifies a pointer to the image data in memory.
+	//
+	// glTexImage2D specify a two-dimensional texture image
+	if (mipMapping)
+		for (unsigned int size = width > height ? width : height;
+			 size > 0;
+			 size = size >> 1, width = width >> 1, height = height >> 1)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		}
+	else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+	_textures.push_back(texture);
+
+    if (optimizeForRenderToTexture)
+        createRTTBuffers(texture, width, height);
+
+	return texture;
+}
+
+void
+WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool transpose, const float* values)
+{
+	if (transpose)
+	{
+		static float	transposedValues[16];
+		
+		transposedValues[0] = values[0];
+		transposedValues[1] = values[4];
+		transposedValues[2] = values[8];
+		transposedValues[3] = values[12];
+		transposedValues[4] = values[1];
+		transposedValues[5] = values[5];
+		transposedValues[6] = values[9];
+		transposedValues[7] = values[13];
+		transposedValues[8] = values[2];
+		transposedValues[9] = values[6];
+		transposedValues[10] = values[10];
+		transposedValues[11] = values[14];
+		transposedValues[12] = values[3];
+		transposedValues[13] = values[7];
+		transposedValues[14] = values[11];
+		transposedValues[15] = values[15];
+
+		glUniformMatrix4fv(location, size, false, transposedValues);	
+	}
+	else
+		glUniformMatrix4fv(location, size, false, values);
 }
