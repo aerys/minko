@@ -113,11 +113,16 @@ bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTrans
 
 	// correct scaling lost at initialization of the collider's world transform
 	const std::vector<float>& m(colliderWorldTransform->values());
+
+	Vector3Ptr offset = _shape->centerOfMassTranslation();
+
+	//offset->setTo(0, 0, 0);
+
 	_worldTransform
 		->initialize(
-		m[0]*_scaleCorrection, m[1]*_scaleCorrection, m[2]*_scaleCorrection, m[3],
-		m[4]*_scaleCorrection, m[5]*_scaleCorrection, m[6]*_scaleCorrection, m[7],
-		m[8]*_scaleCorrection, m[9]*_scaleCorrection, m[10]*_scaleCorrection, m[11],
+		m[0]*_scaleCorrection, m[1]*_scaleCorrection, m[2]*_scaleCorrection, m[3] + offset->x(),
+		m[4]*_scaleCorrection, m[5]*_scaleCorrection, m[6]*_scaleCorrection, m[7] + offset->y() ,
+		m[8]*_scaleCorrection, m[9]*_scaleCorrection, m[10]*_scaleCorrection, m[11] + offset->z(),
 		0.0f, 0.0f, 0.0f, 1.0f
 		);
 
