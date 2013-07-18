@@ -53,6 +53,7 @@ namespace minko
 			resetAttributes()
 			{
 				attributes().resize(0);
+				vertexSize(0);
 				
 				addAttribute("offset", 2, 0);
 				addAttribute("position", 3, 2);

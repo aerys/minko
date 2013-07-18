@@ -7,6 +7,8 @@ project "minko-example-mk-physic"
 		"minko-png",
 		"minko-mk",
 		"minko-bullet",
+		"minko-particles",
+		"minko-webgl",
 		"minko-framework"
 	}
 	files { "**.hpp", "**.h", "**.cpp" }
@@ -17,7 +19,9 @@ project "minko-example-mk-physic"
 		"../../plugins/mk/src",
 		"../../plugins/bullet/src",
 		"../../plugins/jpeg/src",
-		"../../plugins/png/src"
+		"../../plugins/webgl/src",
+		"../../plugins/png/src",
+		"../../plugins/particles/src"
 	}
 	defines {
 		"MINKO_FRAMEWORK_EFFECTS_PATH=\"" .. path.getabsolute("../../framework/effect" .. "\"")

@@ -139,6 +139,12 @@ namespace minko
 			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
 						 float*										begin,
 						 float*										end);
+
+			void
+			vertexSize(unsigned int value)
+			{
+				_vertexSize = value;
+			};
 		};
 	}
 }
