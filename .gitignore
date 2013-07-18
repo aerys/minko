@@ -21,3 +21,6 @@ plugins/mk/obj
 *.o
 *.vsp
 *.psess
+*.tlog
+*.idb
+*.pdb
