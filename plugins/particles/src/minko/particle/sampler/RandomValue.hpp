@@ -2,6 +2,7 @@
 
 #include "minko/ParticlesCommon.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
+#include "minko/particle/tools/random.hpp"
 
 namespace minko
 {
@@ -14,7 +15,7 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<RandomValue<T> > Ptr;
-				
+
 			private:
 				T _min;
 				T _delta;
@@ -28,14 +29,14 @@ namespace minko
 
 					return sampler;
 				};
-				
+
 				inline
-				void 
+				void
 				min(T value)
 				{
 					_min = value;
 				};
-				
+
 				inline
 				void
 				max(T value)
@@ -49,7 +50,7 @@ namespace minko
 				{
 					return _min + _delta * rand01();
 				};
-				
+
 				virtual
 				void
 				set(T& value, float time) const
@@ -63,7 +64,7 @@ namespace minko
 				{
 					return _min + _delta;
 				};
-				
+
 				virtual
 				T
 				min() const
