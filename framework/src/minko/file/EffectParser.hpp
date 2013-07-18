@@ -141,7 +141,7 @@ namespace minko
             parseTarget(Json::Value& contextNode, std::shared_ptr<render::AbstractContext> context, std::string& name);
 
 			void
-			parseDependencies(Json::Value&	root, std::shared_ptr<file::Options> options);
+			parseDependencies(Json::Value& root, const std::string& filename, std::shared_ptr<file::Options> options);
 
 			void
 			dependencyCompleteHandler(std::shared_ptr<Loader> loader);
