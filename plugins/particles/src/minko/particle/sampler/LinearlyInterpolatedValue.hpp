@@ -14,7 +14,7 @@ namespace minko
 			{
 			public:
 				typedef std::shared_ptr<LinearlyInterpolatedValue<T> > Ptr;
-				
+
 			private:
 				T _start;
 				T _delta;
@@ -30,13 +30,13 @@ namespace minko
 				};
 
 				void
-					start(T value)
+				start(T value)
 				{
 					_start = value;
 				};
 
 				void
-					end(T value)
+				end(T value)
 				{
 					_delta = value - _start;
 				};
@@ -53,7 +53,7 @@ namespace minko
 				void
 				set(T& target, float time) const
 				{
-					value = _start + _delta * time;
+					target = _start + _delta * time;
 				};
 
 				virtual
