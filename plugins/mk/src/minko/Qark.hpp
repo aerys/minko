@@ -63,8 +63,8 @@ namespace minko
 		}
 
 		static 
-		Object 
-		decode(const ByteArray& source)
+		void 
+		decode(const ByteArray& source, Object& obj)
 		{
 			std::stringstream stream;
 			stream.write(&*source.begin(), source.size());
@@ -105,11 +105,9 @@ namespace minko
 			}
 
 			if (magic != MAGIC)
-				return Object();
+				return;
 
-			Object result;
-			decodeRecursive(stream, result);
-			return result;
+			decodeRecursive(stream, obj);
 		}
 
 	private:

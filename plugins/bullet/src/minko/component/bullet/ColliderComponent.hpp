@@ -63,11 +63,11 @@ namespace minko
 				Ptr
 				create(ColliderPtr collider)
 				{
-					Ptr ColliderComponent(new ColliderComponent(collider));
+					Ptr colliderComponent(new ColliderComponent(collider));
 
-					ColliderComponent->initialize();
+					colliderComponent->initialize();
 
-					return ColliderComponent;
+					return colliderComponent;
 				}
 
 			private:

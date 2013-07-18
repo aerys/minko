@@ -1,10 +1,12 @@
 -- A project defines one build target
-project "minko-example-cube"
+project "minko-example-mk-physic"
 	kind "ConsoleApp"
 	language "C++"
 	links {
 		"minko-jpeg",
 		"minko-png",
+		"minko-mk",
+		"minko-bullet",
 		"minko-framework"
 	}
 	files { "**.hpp", "**.h", "**.cpp" }
@@ -12,6 +14,8 @@ project "minko-example-cube"
 		"src",
 		"../../lib/glfw/include",
 		"../../framework/src",
+		"../../plugins/mk/src",
+		"../../plugins/bullet/src",
 		"../../plugins/jpeg/src",
 		"../../plugins/png/src"
 	}

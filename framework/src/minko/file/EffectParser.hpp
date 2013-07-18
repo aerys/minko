@@ -72,8 +72,6 @@ namespace minko
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderCompleteSlots;
 			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>		_loaderErrorSlots;
 
-			std::shared_ptr<AssetsLibrary>							_assetsLibrary;
-
 		public:
 			inline static
 			Ptr
