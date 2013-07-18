@@ -106,8 +106,10 @@ bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 void
 bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
 {
+#ifdef DEBUG
 	if (fabsf(fabsf(colliderWorldTransform->determinant3x3()) - 1.0f) > 1e-3f)
 		throw std::logic_error("Update of collider's world transform can only involve scaling-free matrices.");
+#endif // DEBUG
 
 	// correct scaling lost at initialization of the collider's world transform
 	const std::vector<float>& m(colliderWorldTransform->values());
