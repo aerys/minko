@@ -1,14 +1,15 @@
-$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs"]
+$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs" ]
 $clang_version = "3.2"
-$clang_dir = "clang+llvm-${clang_version}-x86-linux-ubuntu-12.04.tar.gz"
-$clang_filename = "${clang_dir}"
+$clang_dir = "clang+llvm-${clang_version}-x86-linux-ubuntu-12.04"
+$clang_filename = "${clang_dir}.tar.gz"
 $clang_url = "http://llvm.org/releases/${clang_version}/${clang_filename}"
 
 Exec {
     user => "vagrant",
-    cwd => "/home/vagrant/src/emscripten",
+    cwd => "/vagrant",
     logoutput => on_failure,
-    environment => ["PWD=/home/vagrant/src/emscripten", "HOME=/home/vagrant"],
+    environment => ["PWD=/vagrant", "HOME=/home/vagrant"],
+    path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ],
     timeout => 0
 }
 
@@ -18,6 +19,13 @@ class emscripten {
         group => vagrant,
         mode => 664,
         source => "/vagrant/tools/lin/share/dot.emscripten"
+    }
+
+    file { "/home/vagrant/.bash_aliases":
+        owner => vagrant,
+        group => vagrant,
+        mode => 664,
+        source => "/vagrant/tools/lin/share/dot.bashrc"
     }
 
     file { "/home/vagrant/src":
@@ -52,6 +60,7 @@ class emscripten {
     }
 
     exec { "/usr/bin/git pull origin master":
+        cwd => "/home/vagrant/src/emscriptenm",
         alias => "git-pull-emscripten",
         require => Exec["git-clone-emscripten"]
     }
