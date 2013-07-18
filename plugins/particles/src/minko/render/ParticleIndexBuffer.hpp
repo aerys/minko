@@ -17,27 +17,46 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexBuffer.hpp"
+#pragma once
 
-#include "minko/render/AbstractContext.hpp"
+#include "minko/ParticlesCommon.hpp"
 
-using namespace minko::render;
+#include "minko/render/IndexBuffer.hpp"
 
-void
-IndexBuffer::upload()
-{   
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
-	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
-}
-
-void
-IndexBuffer::dispose()
+namespace minko
 {
-    if (_id != -1)
-    {
-	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
-}
+	namespace render
+	{
+		class ParticleIndexBuffer :
+			public IndexBuffer
+		{
+		public:
+			typedef std::shared_ptr<ParticleIndexBuffer>	Ptr;
+			
+		private:
+			std::vector<unsigned short> _padding;
+
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				return std::shared_ptr<ParticleIndexBuffer>(new ParticleIndexBuffer(context));
+			}
+			
+			
+			void
+			update(unsigned int nParticles);
+
+			void
+			resize(unsigned int nParticles);
+
+		private:
+			ParticleIndexBuffer(std::shared_ptr<render::AbstractContext>	context) :
+				IndexBuffer(context, std::vector<unsigned short> (6)),
+				_padding (6, 0)
+			{
+			}
+		};
+	}
+};
