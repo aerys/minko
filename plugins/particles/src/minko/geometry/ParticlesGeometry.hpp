@@ -17,27 +17,48 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexBuffer.hpp"
+#pragma once
 
-#include "minko/render/AbstractContext.hpp"
+#include "minko/ParticlesCommon.hpp"
+#include "minko/geometry/Geometry.hpp"
 
-using namespace minko::render;
-
-void
-IndexBuffer::upload()
-{   
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
-	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
-}
-
-void
-IndexBuffer::dispose()
+namespace minko
 {
-    if (_id != -1)
-    {
-	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
+	namespace geometry
+	{
+		class ParticlesGeometry :
+			public Geometry
+		{
+		public:
+			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
+
+			typedef std::shared_ptr<render::ParticleVertexBuffer>	VertexBufferPtr;
+			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
+		
+		private:
+			VertexBufferPtr						_vertices;
+			IndexBufferPtr						_indices;
+
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				return std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry(context));
+			};
+
+			void
+			initStreams(unsigned int maxParticles);
+
+			inline
+			VertexBufferPtr
+			vertices()
+			{
+				return _vertices;
+			}
+
+		protected:
+			ParticlesGeometry(std::shared_ptr<render::AbstractContext> context);
+		};
+	}
 }

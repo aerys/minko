@@ -17,27 +17,48 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexBuffer.hpp"
+#include "ParticleIndexBuffer.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 
-using namespace minko::render;
+using namespace render;
 
-void
-IndexBuffer::upload()
-{   
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
+void 
+ParticleIndexBuffer::update(unsigned int nParticles)
+{	
+	unsigned int size = nParticles * 6;
 	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+	_context->uploaderIndexBufferData(_id, 0, size, &data()[0]);
+	
+	if(size < data().size())
+		_context->uploaderIndexBufferData(_id, size, data().size() - size, &_padding[0]);
 }
 
-void
-IndexBuffer::dispose()
-{
-    if (_id != -1)
-    {
-	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
+void 
+ParticleIndexBuffer::resize(unsigned int nParticles)
+{	
+	std::vector<unsigned short>& isData = data();
+	unsigned int oldSize = isData.size();
+	unsigned int size = nParticles * 6;
+
+	if (oldSize != size)
+	{	
+		isData.resize(size);
+		_padding.resize(size, 0);
+		if (oldSize < size)
+		{
+			for (unsigned int i = 0; i < nParticles; ++i)
+			{
+				isData[i * 6] = i * 4;
+				isData[i * 6 + 1] = i * 4 + 2;
+				isData[i * 6 + 2] = i * 4 + 1;
+				isData[i * 6 + 3] = i * 4 + 1;
+				isData[i * 6 + 4] = i * 4 + 2; 
+				isData[i * 6 + 5] = i * 4 + 3;
+			}
+		}
+	
+		dispose();
+		upload();
+	}
 }
