@@ -53,9 +53,9 @@ Geometry::computeNormals()
 
 	std::vector<float> normalsData(3*numVertices, 0.0f);
 
-	for (unsigned int i=0, offset=0; i<numFaces; ++i)
+	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
 	{
-		for (unsigned int k=0; k<3; ++k)
+		for (unsigned int k = 0; k < 3; ++k)
 		{
 			vertexIds[k] = indices[offset++];
 			const unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
@@ -66,9 +66,10 @@ Geometry::computeNormals()
 			->copyFrom(xyz[0] - xyz[2])
 			->cross(xyz[0] - xyz[1]);
 
-		for (unsigned int k=0; k<3; ++k)
+ 		for (unsigned int k = 0; k < 3; ++k)
 		{
 			const unsigned int index = 3*vertexIds[k];
+
 			normalsData[index]		+= faceNormal->x();
 			normalsData[index+1]	+= faceNormal->y();
 			normalsData[index+2]	+= faceNormal->z();
@@ -81,16 +82,14 @@ Geometry::computeNormals()
 		const float y = normalsData[index+1];
 		const float z = normalsData[index+2];
 		const float lengthSquared = x*x + y*y + z*z;
-		const float invLength = lengthSquared > 1e-6f ? 1.0f/sqrtf(lengthSquared) : 0.0f;
+		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 0.0f;
+
 		normalsData[index]		*= invLength;
 		normalsData[index+1]	*= invLength;
 		normalsData[index+2]	*= invLength;
 	}
 
-	VertexBuffer::Ptr normalsBuffer = VertexBuffer::create(
-		xyzBuffer->context(),
-		normalsData
-		);
+	VertexBuffer::Ptr normalsBuffer = VertexBuffer::create(xyzBuffer->context(), normalsData);
 	normalsBuffer->addAttribute("normal2", 3, 0);
 	addVertexBuffer(normalsBuffer);
 }
@@ -126,11 +125,11 @@ Geometry::computeTangentSpace(bool doNormals)
 	const unsigned int uvOffset		= std::get<2>(*uvBuffer->attribute("uv"));
 	const std::vector<float>& uvData (uvBuffer->data());
 
-	std::vector<float> tangentsData(3*numVertices, 0.0f);
+	std::vector<float> tangentsData(3 * numVertices, 0.0f);
 
-	for (unsigned int i=0, offset=0; i<numFaces; ++i)
+	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
 	{
-		for (unsigned int k=0; k<3; ++k)
+		for (unsigned int k = 0; k < 3; ++k)
 		{
 			vertexIds[k] = indices[offset++];
 			unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
@@ -144,35 +143,32 @@ Geometry::computeTangentSpace(bool doNormals)
 		const float denom = uv02->x() * uv12->y() - uv12->x() * uv02->y();
 		const float invDenom = fabsf(denom) > 1e-6f ? 1.0f/denom : 1.0f;
 
-		Vector3::Ptr faceTangent = (
-			(xyz[0]-xyz[2]) * uv12->y() - (xyz[1]-xyz[2]) * uv02->y()
-			) * invDenom;
+		Vector3::Ptr faceTangent = ((xyz[0]-xyz[2]) * uv12->y() - (xyz[1]-xyz[2]) * uv02->y()) * invDenom;
 
 		for (unsigned int k=0; k<3; ++k)
 		{
-			const unsigned int index = 3*vertexIds[k];
+			const unsigned int index = 3 * vertexIds[k];
+
 			tangentsData[index]		+= faceTangent->x();
 			tangentsData[index+1]	+= faceTangent->y();
 			tangentsData[index+2]	+= faceTangent->z();
 		}
 	}
 
-	for (unsigned int i=0, index=0; i<numVertices; ++i, index+=3)
+	for (unsigned int i = 0, index = 0; i < numVertices; ++i, index += 3)
 	{
 		const float x = tangentsData[index];
-		const float y = tangentsData[index+1];
-		const float z = tangentsData[index+2];
-		const float lengthSquared = x*x + y*y + z*z;
-		const float invLength = lengthSquared > 1e-6f ? 1.0f/sqrtf(lengthSquared) : 0.0f;
+		const float y = tangentsData[index + 1];
+		const float z = tangentsData[index + 2];
+		const float lengthSquared = x * x + y * y + z * z;
+		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 0.0f;
+
 		tangentsData[index]		*= invLength;
 		tangentsData[index+1]	*= invLength;
 		tangentsData[index+2]	*= invLength;
 	}
 
-	VertexBuffer::Ptr tangentsBuffer = VertexBuffer::create(
-		xyzBuffer->context(),
-		tangentsData
-		);
+	VertexBuffer::Ptr tangentsBuffer = VertexBuffer::create(xyzBuffer->context(), tangentsData);
 	tangentsBuffer->addAttribute("tangent", 3, 0);
 	addVertexBuffer(tangentsBuffer);
 }
