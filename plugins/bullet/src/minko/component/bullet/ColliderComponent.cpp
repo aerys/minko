@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "ColliderComponent.hpp"
+
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
