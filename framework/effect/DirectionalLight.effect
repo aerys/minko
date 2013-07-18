@@ -29,7 +29,7 @@
 	"priority"			: 0,
 	"blendMode"			: ["one", "zero"],
 	"depthTest"			: [ true, "less" ],
-	"triangleCulling"	: "back",
+	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
 		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
@@ -44,7 +44,7 @@
 			attribute vec3	position;
 			
 			attribute vec3	normal;
-			attribute vec3	uv;
+			attribute vec2	uv;
 			attribute vec3	tangent;
 			
 			varying vec3	worldPosition;
@@ -90,6 +90,8 @@
 		",
 		"fragmentShader"	: "
 
+			precision highp float;
+
 			struct Material {
 				sampler2D	diffuseMap;
 				vec4		diffuseColor;
@@ -125,31 +127,31 @@
 					vec4 diffuse = texture2D(material.diffuseMap, vertexUV);
 				#else
 					vec4 diffuse = material.diffuseColor;
-				#endif;
+				#endif
 
-				light.direction = normalize(-light.direction);
-				worldNormal = normalize(worldNormal);
+				vec3 dir = normalize(-light.direction);
+				vec3 wNormal = normalize(worldNormal);
 				
 				vec3 wsEyeVector	= normalize(cameraPosition - worldPosition);
 				
 				// by default, everything is in world space
-				vec3 fNormal		= worldNormal;
-				vec3 fLightVector	= light.direction;
+				vec3 fNormal		= wNormal;
+				vec3 fLightVector	= dir;
 				vec3 fEyeVector		= wsEyeVector;
 				
 				#ifdef NORMAL_MAP
 					// compute the world space to tangent space matrix using the model's normal and tangent
 					worldTangent				= normalize(worldTangent);
-					vec3 worldBitangent			= cross(worldNormal, worldTangent);
+					vec3 worldBitangent			= cross(wNormal, worldTangent);
 					mat3 worldToTangentMatrix	= transpose(mat3(
 						worldTangent,
 						worldBitangent,
-						worldNormal
+						wNormal
 					));
 
 					// map all world-space vectors to tangent-space
 					fNormal			= normalize(2.0 * texture2D(material.normalMap, vertexUV).xyz - 1.0);
-					fLightVector	= normalize(worldToTangentMatrix * light.direction);
+					fLightVector	= normalize(worldToTangentMatrix * dir);
 					fEyeVector		= normalize(worldToTangentMatrix * wsEyeVector);
 				#endif // NORMAL_MAP
 				
@@ -177,7 +179,7 @@
 					);					
 				#endif // SPECULAR || SPECULAR_MAP
 								
-				gl_FragColor = saturate(diffuse);
+				gl_FragColor = clamp(diffuse, 0.0, 1.0);
 			}
 		"
 	}]

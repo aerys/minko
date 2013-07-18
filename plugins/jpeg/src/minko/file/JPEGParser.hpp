@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 
-#include "minko/file/AbstractTextureParser.hpp"
+#include "minko/file/AbstractParser.hpp"
 #include "minko/render/AbstractContext.hpp"
 
 
