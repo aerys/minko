@@ -13,7 +13,10 @@
 		"lightDirection"		: "light.direction",
 		"ambientColor"			: "light.ambient.rgba",
 		"lightColor"			: "light.diffuse.rgba",
-		"cameraPosition"		: "camera.position"
+		"cameraPosition"		: "camera.position",
+		"diffuseMap"			: "material.diffuseMap",
+		"specularMap"			: "material.specularMap",
+		"normalMap"			: "material.normalMap"
 	},
 	"stateBindings"	: {
 		"blendMode"				: "material.blendMode"
@@ -32,9 +35,9 @@
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
-		"material.diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"material.specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"material.normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
 
 	"includes"		: [ "Phong.glsl" ],
@@ -90,16 +93,15 @@
 		",
 		"fragmentShader"	: "
 
-
 			struct Material {
-				sampler2D	diffuseMap;
 				vec4		diffuseColor;
 				vec3		specular;
 				float		shininess;
-				sampler2D	specularMap;
-				sampler2D	normalMap;
 			};
-
+			uniform sampler2D	specularMap;
+			uniform sampler2D	normalMap;
+			uniform sampler2D	diffuseMap;
+	
 			struct DirectionalLight {
 				vec3 direction;
 				vec3 diffuse;
@@ -123,7 +125,7 @@
 				gl_FragColor	= vec4(1.0, 0.0, 0.0, 1.0);
 				
 				#ifdef DIFFUSE_MAP
-					vec4 diffuse = texture2D(material.diffuseMap, vertexUV);
+					vec4 diffuse = texture2D(diffuseMap, vertexUV);
 				#else
 					vec4 diffuse = material.diffuseColor;
 				#endif
@@ -149,7 +151,7 @@
 					));
 
 					// map all world-space vectors to tangent-space
-					fNormal			= normalize(2.0 * texture2D(material.normalMap, vertexUV).xyz - 1.0);
+					fNormal			= normalize(2.0 * texture2D(normalMap, vertexUV).xyz - 1.0);
 					fLightVector	= normalize(worldToTangentMatrix * dir);
 					fEyeVector		= normalize(worldToTangentMatrix * wsEyeVector);
 				#endif // NORMAL_MAP
@@ -164,7 +166,7 @@
 				// specular lighting
 				#if defined(SPECULAR) || defined(SPECULAR_MAP)
 					#ifdef SPECULAR_MAP
-						vec3 specular	= texture2D(material.specularMap, vertexUV).rgb;
+						vec3 specular	= texture2D(specularMap, vertexUV).rgb;
 					#else // SPECULAR_MAP
 						vec3 specular	= material.specular;
 					#endif // SPECULAR_MAP
