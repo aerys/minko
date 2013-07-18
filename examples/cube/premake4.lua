@@ -3,7 +3,6 @@ project "minko-example-cube"
 	kind "ConsoleApp"
 	language "C++"
 	links {
-		"minko-jpeg",
 		"minko-png",
 		"minko-framework"
 	}
@@ -12,7 +11,6 @@ project "minko-example-cube"
 		"src",
 		"../../lib/glfw/include",
 		"../../framework/src",
-		"../../plugins/jpeg/src",
 		"../../plugins/png/src"
 	}
 	defines {
