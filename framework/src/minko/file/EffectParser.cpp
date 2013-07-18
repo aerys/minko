@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/AssetsLibrary.hpp"
 #include "json/json.h"
 #include "minko/AssetsLibrary.hpp"
 
@@ -111,7 +112,10 @@ EffectParser::parse(const std::string&					filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
+	_assetsLibrary	= assetsLibrary;
+	
+	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+
 		throw std::invalid_argument("data");
 
 	_assetsLibrary = assetsLibrary;
@@ -446,5 +450,6 @@ EffectParser::finalize()
     }
 
 	_assetsLibrary->effect(_effectName, _effect);
+
 	_complete->execute(shared_from_this());
 }

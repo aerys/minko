@@ -59,6 +59,20 @@ namespace minko
 			}
 
 			inline
+			const unsigned int
+			numTargets()
+			{
+				return _targets.size();
+			}
+
+			inline
+			std::shared_ptr<scene::Node>
+			getTarget(unsigned int index)
+			{
+				return _targets[index];
+			}
+
+			inline
 			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
 			targetAdded()
 			{

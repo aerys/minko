@@ -111,6 +111,7 @@ namespace minko
 		class Vector3;
 		class Vector4;
 		class Matrix4x4;
+		class Quaternion;
 	}
 
 	namespace file
@@ -118,9 +119,12 @@ namespace minko
 		class Options;
 		class Loader;
 		class AbstractParser;
+		class AbstractModelParser;
 		class AbstractTextureParser;
 		class EffectParser;
 	}
+
+	class AssetsLibrary;
 
 	class Any;
 	template<typename... A>

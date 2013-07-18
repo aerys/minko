@@ -23,16 +23,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/file/AbstractTextureParser.hpp"
+#include "minko/file/AbstractModelParser.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/Signal.hpp"
+
 
 using namespace minko::render;
 using namespace minko::geometry;
 
+AssetsLibrary::Ptr
+AssetsLibrary::create(AbsContextPtr context)
+{
+	auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
+
+	al->registerParser<file::EffectParser>("effect");
+
+	return al;
+}
+
 AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
-	_defaultOptions(file::Options::create(context)),
-	_complete(Signal<Ptr>::create())
+	_complete(Signal<Ptr>::create()),
+	_defaultOptions(file::Options::create(context))
 {
 }
 
@@ -66,6 +78,20 @@ AssetsLibrary::Ptr
 AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
+
+	return shared_from_this();
+}
+
+scene::Node::Ptr
+AssetsLibrary::node(const std::string& name)
+{
+	return _nodes[name];
+}
+
+AssetsLibrary::Ptr
+AssetsLibrary::node(const std::string& name, scene::Node::Ptr node)
+{
+	_nodes[name] = node;
 
 	return shared_from_this();
 }
@@ -158,6 +184,8 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
+	
+	std::cout << loader->filename() << std::endl << std::flush;
 
 	_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
 	_filenameToLoader.erase(filename);
@@ -179,4 +207,10 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 
 		_complete->execute(shared_from_this());
 	}
+}
+
+AssetsLibrary::AbsParserPtr
+AssetsLibrary::parser(std::string extension)
+{
+	return _parsers[extension]();
 }
