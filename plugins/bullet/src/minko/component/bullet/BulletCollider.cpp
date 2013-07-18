@@ -270,13 +270,36 @@ bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTran
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+bullet::PhysicsWorld::BulletCollider::applyRelativeImpulse(Vector3::Ptr relativeForce)
 {
-	btVector3 btImpulse(impulse->x(), impulse->y(), impulse->z());
-	btVector3 btRelPosition(relPosition->x(), relPosition->y(), relPosition->z());
-
 	std::shared_ptr<btRigidBody> btRigidCollisionObject = std::dynamic_pointer_cast<btRigidBody>(_btCollisionObject);
-	btRigidCollisionObject->applyImpulse(btImpulse, btRelPosition);
+
+	btVector3 btRelForce(relativeForce->x(), relativeForce->y(), relativeForce->z());
+	btVector3 btForce = btRigidCollisionObject->getWorldTransform().getBasis() * btRelForce;
+
+	btRigidCollisionObject->applyImpulse(btForce, btVector3(0.0f, 0.0f, 0.0f));
+}
+
+void
+bullet::PhysicsWorld::BulletCollider::prependRotationY(float radians)
+{
+	std::shared_ptr<btRigidBody> btRigidCollisionObject = std::dynamic_pointer_cast<btRigidBody>(_btCollisionObject);
+
+	btMatrix3x3	btRotation (btQuaternion(btVector3(0.0f, 1.0f, 0.0f), radians));
+
+	btTransform btNewTransform;
+	btNewTransform.setBasis(btRigidCollisionObject->getWorldTransform().getBasis() * btRotation);
+	btNewTransform.setOrigin(btRigidCollisionObject->getWorldTransform().getOrigin());
+
+	const btMatrix3x3& btOldBasis = btRigidCollisionObject->getWorldTransform().getBasis();
+	std::cout << "rotate from\n" << btOldBasis[0][0] << " " << btOldBasis[0][1] << " " << btOldBasis[0][2] 
+	<< "\n\t" << btOldBasis[1][0] << " " << btOldBasis[1][1] << " " << btOldBasis[1][2] 
+	<< "\n\t" << btOldBasis[2][0] << " " << btOldBasis[2][1] << " " << btOldBasis[2][2] << std::endl;
+	std::cout << "to\n" << btNewTransform.getBasis()[0][0] << " " << btNewTransform.getBasis()[0][1] << " " << btNewTransform.getBasis()[0][2] 
+	<< "\n\t" << btNewTransform.getBasis()[1][0] << " " << btNewTransform.getBasis()[1][1] << " " << btNewTransform.getBasis()[1][2] 
+	<< "\n\t" << btNewTransform.getBasis()[2][0] << " " << btNewTransform.getBasis()[2][1] << " " << btNewTransform.getBasis()[2][2] << std::endl << std::endl;
+
+	btRigidCollisionObject->setWorldTransform(btNewTransform);// ->getMotionState()->setWorldTransform(btNewTransform);
 }
 
 bullet::PhysicsWorld::BulletCollider::Ptr

@@ -265,13 +265,23 @@ bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr vel
 }
 
 void
-	bullet::PhysicsWorld::applyImpulse(Collider::Ptr collider, Vector3::Ptr impulse, Vector3::Ptr relPosition)
+bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
 		return;
 
-	it->second->applyImpulse(impulse, relPosition);
+	it->second->prependRotationY(radians);
+}
+
+void
+bullet::PhysicsWorld::applyRelativeImpulse(Collider::Ptr collider, Vector3::Ptr relativeForce)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->applyRelativeImpulse(relativeForce);
 }
 
 /*static*/
