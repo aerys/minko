@@ -1,14 +1,14 @@
 #!/bin/bash
 
-AR="emar"
+CXX="em++"
 ARGS=""
 
 for arg in "$@"; do
-	if [ $arg == "-rcs" ]; then
-		ARGS="${ARGS} rk"
+	if [ $arg == "-s" ]; then
+		ARGS="${ARGS}"
 	else
 		ARGS="${ARGS} $arg"
 	fi
 done
 
-${AR} ${ARGS}
+${CXX} ${ARGS}
