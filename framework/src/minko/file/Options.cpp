@@ -17,60 +17,11 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "Options.hpp"
 
-#include "minko/Common.hpp"
+using namespace minko::file;
 
-namespace minko
+Options::Options(std::shared_ptr<render::AbstractContext> context) :
+	_context(context)
 {
-	namespace file
-	{
-		class Options
-		{
-		public:
-			typedef std::shared_ptr<Options> Ptr;
-
-		private:
-			std::shared_ptr<render::AbstractContext>	_context;
-			std::set<std::string>						_includePaths;
-
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				return std::shared_ptr<Options>(new Options(context));
-			}
-
-			inline static
-			Ptr
-			create(Ptr options)
-			{
-				auto opt = std::shared_ptr<Options>(new Options(
-					options->_context
-				));
-
-				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
-
-				return opt;
-			}
-
-			inline
-			std::shared_ptr<render::AbstractContext>
-			context()
-			{
-				return _context;
-			}
-			
-			inline
-			std::set<std::string>&
-			includePaths()
-			{
-				return _includePaths;
-			}
-
-		private:
-			Options(std::shared_ptr<render::AbstractContext> context);
-		};
-	}
 }
