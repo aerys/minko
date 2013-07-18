@@ -82,6 +82,8 @@ namespace minko
 				{
 					_data->set("geometry.vertex.attribute." + std::get<0>(*attribute), vertexBuffer);
 					bufferVertexSize	+= std::get<1>(*attribute);
+					std::cout << "attr = " << std::get<0>(*attribute) << std::endl;
+					std::cout << "num vertices = " << bufferVertexSize << std::endl;
 				}
 				_vertexSize				+= bufferVertexSize;
 				_data->set("geometry.vertex.size", _vertexSize);
@@ -92,7 +94,8 @@ namespace minko
 				else if (_numVertices != bufferNumVertices)
 					throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
 
-				std::cout << "num vertices = " << bufferVertexSize << std::endl;
+				std::cout << "vertex size = " << _vertexSize << std::endl << std::endl;
+
 			}
 
 			inline 
