@@ -256,11 +256,27 @@ void
 bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
+	toBulletTransform(transform->rotation(), transform->translationVector(), output);
+	/*
 	auto translation	= transform->translationVector();
 	auto rotation		= transform->rotation();
 
 	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
 	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
+
+	output.setOrigin(btOrigin);
+	output.setRotation(btRotation);
+	*/
+}
+
+/*static*/
+void
+bullet::PhysicsWorld::toBulletTransform(Quaternion::Ptr rotation, 
+	Vector3::Ptr translation, 
+	btTransform& output)
+{
+	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
+	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
 
 	output.setOrigin(btOrigin);
 	output.setRotation(btRotation);

@@ -95,7 +95,7 @@ namespace minko
 				}
 				// TODO: should disappear soon
 				void
-				setCenterOfMassOffset(Matrix4x4Ptr);
+				setCenterOfMassOffset(Matrix4x4Ptr, float scaling = 1.0f);
 				// end of testing stuff...
 
 				inline
