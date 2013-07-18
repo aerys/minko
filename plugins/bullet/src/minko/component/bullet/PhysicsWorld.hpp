@@ -116,6 +116,15 @@ namespace minko
 				void
 				setWorldTransformFromCollider(ColliderPtr);
 
+				void
+				forceColliderWorldTransform(ColliderPtr, Matrix4x4Ptr);
+
+				void
+				setLinearVelocity(ColliderPtr, Vector3Ptr);
+
+				void
+				applyImpulse(ColliderPtr, Vector3Ptr, Vector3Ptr);
+
 			private:
 				PhysicsWorld();
 
@@ -197,6 +206,12 @@ namespace minko
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
+
+					void
+					setLinearVelocity(Vector3Ptr);
+
+					void
+					applyImpulse(Vector3Ptr, Vector3Ptr);
 
 				private:
 					BulletCollider();
