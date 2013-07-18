@@ -17,27 +17,50 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexBuffer.hpp"
+#pragma once
 
-#include "minko/render/AbstractContext.hpp"
+#include "minko/ParticlesCommon.hpp"
 
-using namespace minko::render;
+#include "minko/render/VertexBuffer.hpp"
 
-void
-IndexBuffer::upload()
-{   
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
-	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
-}
-
-void
-IndexBuffer::dispose()
+namespace minko
 {
-    if (_id != -1)
-    {
-	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
+	namespace render
+	{
+		class ParticleVertexBuffer :
+			public VertexBuffer
+		{
+		public:
+			typedef std::shared_ptr<ParticleVertexBuffer>	Ptr;
+
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				return std::shared_ptr<ParticleVertexBuffer>(new ParticleVertexBuffer(context));
+			}
+			
+			void
+			update(unsigned int	nParticles,
+				   unsigned int	vertexSize);
+
+			void
+			resize(unsigned int nParticles,
+				   unsigned int	vertexSize);
+
+			void
+			resetAttributes()
+			{
+				attributes().resize(0);
+				
+				addAttribute("offset", 2, 0);
+				addAttribute("position", 3, 2);
+			};
+
+		private:
+			ParticleVertexBuffer(std::shared_ptr<AbstractContext> context);
+		};
+
+	}
 }

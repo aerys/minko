@@ -89,14 +89,14 @@ namespace minko
 			}
 
 			inline
-			const std::vector<float>&
+			std::vector<float>&
 			data()
 			{
 				return _data;
 			}
 
 			inline
-			const std::list<AttributePtr>&
+			std::list<AttributePtr>&
 			attributes()
 			{
 				return _attributes;
@@ -124,7 +124,7 @@ namespace minko
 			AttributePtr
 			attribute(const std::string& attributeName);
 
-		private:
+		protected:
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 
 			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,

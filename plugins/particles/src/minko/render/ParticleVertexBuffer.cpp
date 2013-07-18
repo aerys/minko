@@ -17,27 +17,55 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "IndexBuffer.hpp"
+#include "ParticleVertexBuffer.hpp"
 
 #include "minko/render/AbstractContext.hpp"
 
+
 using namespace minko::render;
 
-void
-IndexBuffer::upload()
-{   
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
-	
-	_context->uploaderIndexBufferData(_id, 0, _data.size(), &_data[0]);
+
+ParticleVertexBuffer::ParticleVertexBuffer(std::shared_ptr<AbstractContext> context) :
+	VertexBuffer(context)
+{
+	resetAttributes();
 }
 
-void
-IndexBuffer::dispose()
-{
-    if (_id != -1)
-    {
-	    _context->deleteIndexBuffer(_id);
-	    _id = -1;
-    }
+void 
+ParticleVertexBuffer::update(unsigned int	nParticles,
+							 unsigned int	vertexSize)
+{	
+	unsigned int size = nParticles * vertexSize * 4;
+	
+	_context->uploadVertexBufferData(_id, 0, size, &data()[0]);
+}
+
+void 
+ParticleVertexBuffer::resize(unsigned int	nParticles,
+							 unsigned int	vertexSize)
+{	
+	std::vector<float>& vsData = data();
+	unsigned int oldSize = vsData.size();
+	unsigned int size = nParticles * vertexSize * 4;
+
+	vsData.resize(size);
+	for (unsigned int i = 0; i < nParticles; ++i)
+	{
+		vsData[i * vertexSize * 4] = -0.5;
+		vsData[i * vertexSize * 4 + 1] = -0.5;
+
+		vsData[vertexSize + i * vertexSize * 4] = 0.5;
+		vsData[vertexSize + i * vertexSize * 4 + 1] = -0.5;
+
+		vsData[2 * vertexSize + i * vertexSize * 4] = -0.5;
+		vsData[2 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
+
+		vsData[3 * vertexSize + i * vertexSize * 4] = 0.5;
+		vsData[3 * vertexSize + i * vertexSize * 4 + 1] = 0.5;
+	}
+	
+	if (oldSize != size)
+		dispose();
+	
+	upload();
 }

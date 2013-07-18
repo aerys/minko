@@ -63,6 +63,7 @@ VertexBuffer::upload()
 {
     if (_id == -1)
     	_id = _context->createVertexBuffer(_data.size());
+
 	_context->uploadVertexBufferData(_id, 0, _data.size(), &_data[0]);
 }
 
