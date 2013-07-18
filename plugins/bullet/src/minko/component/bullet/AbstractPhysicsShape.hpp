@@ -43,16 +43,18 @@ namespace minko
 				};
 
 			private:
+				typedef std::shared_ptr<math::Vector3>		Vector3Ptr;
+				typedef std::shared_ptr<math::Quaternion>	QuaternionPtr;
 				typedef std::shared_ptr<math::Matrix4x4>	Matrix4x4Ptr;
 
 			protected:
 				Type			_type;
 				float			_margin;
-				// testing stuff
-				float			_localScaleX;
-				float			_localScaleY;
-				float			_localScaleZ;
-				Matrix4x4Ptr	_centerOfMassOffset;
+				float			_localScaling;
+				Matrix4x4Ptr	_centerOfMassOffset; // TODO: should disappear soon
+
+				Vector3Ptr		_centerOfMassTranslation;
+				QuaternionPtr	_centerOfMassRotation;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -65,48 +67,33 @@ namespace minko
 				{
 				}
 
-				// testing stuff...
-				inline float localScaleX() const 
+				inline 
+				float 
+				localScaling() const 
 				{
-					return _localScaleX;
+					return _localScaling;
 				}
 
-				inline void localScaleX(float value)
+				inline 
+				void 
+				setLocalScaling(float value)
 				{
-					_localScaleX = value;
+					_localScaling = value;
 				}
 
-				inline float localScaleY() const 
-				{
-					return _localScaleY;
-				}
-
-				inline void localScaleY(float value)
-				{
-					_localScaleY = value;
-				}
-
-				inline float localScaleZ() const 
-				{
-					return _localScaleZ;
-				}
-
-				inline void localScaleZ(float value)
-				{
-					_localScaleZ = value;
-				}
-
+				// testing stuff
+				// TODO: should disappear soon
 				virtual
 				void
 				apply(Matrix4x4Ptr) = 0;
-
+				// TODO: should disappear soon
 				inline
 				Matrix4x4Ptr
 				centerOfMassOffset() const
 				{
 					return _centerOfMassOffset;
 				}
-
+				// TODO: should disappear soon
 				void
 				setCenterOfMassOffset(Matrix4x4Ptr);
 				// end of testing stuff...
@@ -133,6 +120,20 @@ namespace minko
 					_margin	= margin;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
+				}
+
+				inline
+				Vector3Ptr
+				centerOfMassTranslation() const
+				{
+					return _centerOfMassTranslation;
+				}
+
+				inline
+				QuaternionPtr
+				centerOfMassRotation() const
+				{
+					return _centerOfMassRotation;
 				}
 
 				inline
