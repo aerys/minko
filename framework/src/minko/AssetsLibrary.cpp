@@ -183,8 +183,6 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
-	
-	std::cout << loader->filename() << std::endl << std::flush;
 
 	_filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
 	_filenameToLoader.erase(filename);
