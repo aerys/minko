@@ -39,11 +39,12 @@ PNGParser::parse(const std::string&					filename,
 
 	lodepng::decode(out, width, height, &data[0], data.size());
 
-	_texture = render::Texture::create(options->context(), width, height);
-	_texture->data(&out[0]);
-	_texture->upload();
+	auto texture = render::Texture::create(options->context(), width, height);
+	
+	texture->data(&out[0]);
+	texture->upload();
 
-	assetsLibrary->texture(filename, _texture);
+	assetsLibrary->texture(filename, texture);
 }
 
 
