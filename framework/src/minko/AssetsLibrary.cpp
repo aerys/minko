@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
-#include "minko/file/AbstractTextureParser.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/Signal.hpp"
 

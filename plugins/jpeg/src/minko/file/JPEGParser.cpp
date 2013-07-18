@@ -49,10 +49,11 @@ JPEGParser::parse(const std::string&				filename,
 		? render::Texture::DataFormat::RGB
 		: render::Texture::DataFormat::RGBA;
 
-	_texture = render::Texture::create(options->context(), width, height);
-	_texture->data(bmpData, format);
-	_texture->upload();
+	auto texture = render::Texture::create(options->context(), width, height);
 
-	assetsLibrary->texture(filename, _texture);
+	texture->data(bmpData, format);
+	texture->upload();
+
+	assetsLibrary->texture(filename, texture);
 	delete bmpData;
 }
