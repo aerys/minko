@@ -87,7 +87,7 @@ namespace minko
 
 			public:
 				static
-					Ptr
+				Ptr
 					create()
 				{
 					Ptr physicsWorld(new PhysicsWorld());
@@ -98,44 +98,48 @@ namespace minko
 				}
 
 				bool
-					hasCollider(ColliderPtr) const;
+				hasCollider(ColliderPtr) const;
 
 				void
-					addChild(ColliderPtr);
+				addChild(ColliderPtr);
 
 				void
-					removeChild(ColliderPtr);
+				removeChild(ColliderPtr);
 
 				void
-					setGravity(Vector3Ptr);
+				setGravity(Vector3Ptr);
 
 				void 
-					update(float timeStep = 1.0f/60.0f);
+				update(float timeStep = 1.0f/60.0f);
 
 				void
-					setWorldTransformFromCollider(ColliderPtr);
+				setWorldTransformFromCollider(ColliderPtr);
 
 			private:
 				PhysicsWorld();
 
-				void initialize();
+				void 
+				initialize();
 
 				void 
-					targetAddedHandler(AbsCtrlPtr, NodePtr);
+				targetAddedHandler(AbsCtrlPtr, NodePtr);
+
 				void 
-					targetRemovedHandler(AbsCtrlPtr, NodePtr);
-				void
-					exitFrameHandler(RenderingPtr);
+				targetRemovedHandler(AbsCtrlPtr, NodePtr);
 
 				void
-					updateColliders();
+				exitFrameHandler(RenderingPtr);
+
+				void
+				updateColliders();
 
 				static
-					Matrix4x4Ptr
-					fromBulletTransform(const btTransform&);
+				Matrix4x4Ptr
+				fromBulletTransform(const btTransform&);
+
 				static
-					void
-					toBulletTransform(Matrix4x4Ptr, btTransform&);
+				void
+				toBulletTransform(Matrix4x4Ptr, btTransform&);
 
 			private:
 				class BulletCollider
@@ -162,51 +166,59 @@ namespace minko
 
 				public:
 					static
-						BulletColliderPtr
+					BulletColliderPtr
 						create(ColliderPtr);
 
 					inline
-						btCollisionShapePtr
+					btCollisionShapePtr
 						collisionShape() const
 					{
 						return _btCollisionShape;
 					}
 
 					inline
-						btMotionStatePtr
+					btMotionStatePtr
 						motionState() const
 					{
 						return _btMotionState;
 					}
 
 					inline 
-						btCollisionObjectPtr
+					btCollisionObjectPtr
 						collisionObject() const
 					{
 						return _btCollisionObject;
 					}
 
-					void setWorldTransform(Matrix4x4Ptr);
+					void 
+					setWorldTransform(Matrix4x4Ptr);
 
 				private:
 					BulletCollider();
 
 					void
-						initialize(ColliderPtr);
+					initialize(ColliderPtr);
+
 					void
-						initializeCollisionShape(AbsShapePtr);
+					initializeCollisionShape(AbsShapePtr);
+
 					void
-						initializeSphereShape(SphereShapePtr);
+					initializeSphereShape(SphereShapePtr);
+
 					void
-						initializeBoxShape(BoxShapePtr);
+					initializeBoxShape(BoxShapePtr);
+
 					void
-						initializeConeShape(ConeShapePtr);
+					initializeConeShape(ConeShapePtr);
+
 					void
-						initializeCylinderShape(CylinderShapePtr);
+					initializeCylinderShape(CylinderShapePtr);
+
 					void
-						initializeMotionState(ColliderPtr);
+					initializeMotionState(ColliderPtr);
+
 					void
-						initializeCollisionObject(ColliderPtr);
+					initializeCollisionObject(ColliderPtr);
 				};
 			};
 		}
