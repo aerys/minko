@@ -51,9 +51,9 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 	Vector3Ptr translation = centerOfMassOffset->translationVector();
 
 	_centerOfMassTranslation->setTo(
-		translation->x(),
-		translation->y(),
-		translation->z()
+		-translation->x(),
+		-translation->y(),
+		-translation->z()
 	);
 
 	_centerOfMassRotation->identity();
