@@ -43,6 +43,7 @@ namespace minko
 				typedef std::shared_ptr<scene::Node>			NodePtr;
 				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
+				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
 				typedef std::shared_ptr<Collider>				ColliderPtr;
 				typedef std::shared_ptr<Transform>				TransformPtr;
 				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;

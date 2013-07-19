@@ -137,9 +137,11 @@ namespace minko
 							  ControllerMap	controllerMap,
 							  NodeMap		nodeMap)
 			{
-				std::shared_ptr<scene::Node> camera = scene::Node::create(extractName(nodeInfo));
-				
+				std::shared_ptr<scene::Node>		camera			= scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
+
 				camera->addComponent(component::Transform::create());
+				camera->component<component::Transform>()->transform()->copyFrom(transformMatrix);
 
 				return camera;
 			}
