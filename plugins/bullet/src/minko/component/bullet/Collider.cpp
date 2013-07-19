@@ -40,6 +40,7 @@ _mass(mass),
 	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
 	_angularDamping(0.0f),
+	_angularSleepingThreshold(1.0f),
 	_restitution(0.0f),
 	_deactivationDisabled(false),
 	_transformChanged(Signal<Ptr>::create())
