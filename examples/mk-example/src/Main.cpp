@@ -25,11 +25,12 @@
 using namespace minko::component;
 using namespace minko::math;
 
-Rendering::Ptr renderingComponent;
-auto mesh = scene::Node::create("mesh");
-auto group = scene::Node::create("group");
-auto camera	= scene::Node::create("camera");
-auto root   = scene::Node::create("root");
+Rendering::Ptr	renderingComponent;
+auto			sponzaLighting	= SponzaLighting::create();
+auto			mesh			= scene::Node::create("mesh");
+auto			group			= scene::Node::create("group");
+auto			camera			= scene::Node::create("camera");
+auto			root			= scene::Node::create("root");
 
 
 #ifdef EMSCRIPTEN
@@ -134,8 +135,6 @@ deserializeShape(Qark::Map&							shapeData,
 				r = readAndSwap<double>(stream);
 
 				deserializedShape = bullet::SphereShape::create(r);
-
-				std::cout << "radius : " << r << std::endl;
 			}
 			break;
 		case 7 : // CYLINDER
@@ -364,10 +363,7 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-#ifdef SPONZA
-		std::cout << "sponza !" << std::endl;
-#endif 
-		root->addComponent(SponzaLighting::create());
+		root->addComponent(sponzaLighting);
 		root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
@@ -391,8 +387,6 @@ int main(int argc, char** argv)
 				currentNode->component<Transform>()->transform()->appendTranslation(0., .06, 0.);
 
 			currentNode->addComponent(createFire(assets));
-
-			std::cout << "fire = " << std::to_string(currentNode->component<Transform>()->modelToWorldMatrix(true)) << std::endl;
 		}
 	});
 
@@ -423,6 +417,7 @@ int main(int argc, char** argv)
 
 	    renderingComponent->render();
 
+		sponzaLighting->step();
 	    //printFramerate();
 
         glfwSwapBuffers(window);
