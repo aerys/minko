@@ -142,7 +142,7 @@ namespace minko
 
 				camera->addComponent(component::Transform::create());
 				camera->component<component::Transform>()->transform()->copyFrom(transformMatrix);
-
+				camera->component<component::Transform>()->transform()->prependRotationY(PI); // otherwise the camera points the other way
 				return camera;
 			}
 
