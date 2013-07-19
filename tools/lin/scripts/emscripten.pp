@@ -60,7 +60,7 @@ class emscripten {
     }
 
     exec { "/usr/bin/git pull origin master":
-        cwd => "/home/vagrant/src/emscriptenm",
+        cwd => "/home/vagrant/src/emscripten",
         alias => "git-pull-emscripten",
         require => Exec["git-clone-emscripten"]
     }
