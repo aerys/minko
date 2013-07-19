@@ -168,13 +168,20 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 		inertia.setZ(collider->inertia()->z());
 	}
 
-	// only rigid objects are considerered for the moment
-	auto btRigidCollisionObject	= std::shared_ptr<btRigidBody>(new btRigidBody(
+	// construction of a new rigid collision object
+	auto info = btRigidBody::btRigidBodyConstructionInfo(
 		collider->mass(),
 		_btMotionState.get(),
 		_btCollisionShape.get(),
 		inertia
-		));
+	);
+	info.m_linearDamping			= collider->linearDamping();
+	info.m_angularDamping			= collider->angularDamping();
+	info.m_angularSleepingThreshold	= collider->angularSleepingThreshold();
+	info.m_friction					= collider->friction();
+	info.m_restitution				= collider->restitution();
+
+	auto btRigidCollisionObject = std::shared_ptr<btRigidBody>(new btRigidBody(info));
 
 	// communicate several properties of the rigid object
 	btRigidCollisionObject->setLinearVelocity(btVector3(
@@ -197,9 +204,9 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 		collider->angularFactor()->y(), 
 		collider->angularFactor()->z()
 		));
-	btRigidCollisionObject->setDamping(collider->linearDamping(), collider->angularDamping());
-	btRigidCollisionObject->setRestitution(collider->restitution());
-	btRigidCollisionObject->setFriction(collider->friction());
+	//btRigidCollisionObject->setDamping(collider->linearDamping(), collider->angularDamping());
+	//btRigidCollisionObject->setRestitution(collider->restitution());
+	//btRigidCollisionObject->setFriction(collider->friction());
 	btRigidCollisionObject->setActivationState(collider->deactivationDisabled() ? DISABLE_DEACTIVATION : ACTIVE_TAG);
 
 	_btCollisionObject	= btRigidCollisionObject;
