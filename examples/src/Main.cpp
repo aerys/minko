@@ -10,7 +10,7 @@
 
 #define FRAMERATE 60
 
-#define SHOW_SPONZA true
+//#define SHOW_SPONZA true
 
 using namespace minko::component;
 using namespace minko::math;
@@ -20,18 +20,19 @@ const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 
-Rendering::Ptr				renderingComponent;
+Rendering::Ptr	rendering = nullptr;
 //bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
 //bullet::Collider::Ptr		cameraCollider = nullptr;
 bullet::ColliderComponent::Ptr	cameraColliderComp = nullptr;
 
-auto mesh	= scene::Node::create("mesh");
-auto group	= scene::Node::create("group");
 auto camera	= scene::Node::create("camera");
 auto root   = scene::Node::create("root");
+auto mesh	= scene::Node::create("mesh");
+auto group	= scene::Node::create("group");
 
 template <typename T>
-static void
+static 
+void
 read(std::stringstream& stream, T& value)
 {
 	stream.read(reinterpret_cast<char*>(&value), sizeof (T));
@@ -39,7 +40,8 @@ read(std::stringstream& stream, T& value)
 
 template <typename T>
 static
-T swap_endian(T u)
+T 
+swap_endian(T u)
 {
 	union
 	{
@@ -56,6 +58,7 @@ T swap_endian(T u)
 }
 
 template <typename T>
+static
 T
 readAndSwap(std::stringstream& stream)
 {
@@ -66,19 +69,20 @@ readAndSwap(std::stringstream& stream)
 }
 
 bullet::AbstractPhysicsShape::Ptr
-deserializeShape(Qark::Map&							shapeData,
-				 scene::Node::Ptr&					node)
+deserializeShape(Qark::Map&			shapeData,
+				 scene::Node::Ptr&	node)
 {
-	int type = Any::cast<int>(shapeData["type"]);
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
-	std::stringstream	stream;
 
-	double rx	= 0;
-	double ry	= 0;
-	double rz	= 0;
-	double h	= 0;
-	double r	= 0;
+	int type = Any::cast<int>(shapeData["type"]);
 
+	double rx	= 0.0;
+	double ry	= 0.0;
+	double rz	= 0.0;
+	double h	= 0.0;
+	double r	= 0.0;
+
+	std::stringstream stream;
 	switch (type)
 	{
 		case 101: // multiprofile
@@ -86,14 +90,14 @@ deserializeShape(Qark::Map&							shapeData,
 			break;
 		case 2: // BOX
 			{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
-
-			rx = readAndSwap<double>(stream);
-			ry = readAndSwap<double>(stream);
-			rz = readAndSwap<double>(stream);
-
-			deserializedShape = bullet::BoxShape::create(rx, ry, rz);
+				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+				stream.write(&*source.begin(), source.size());
+	
+				rx = readAndSwap<double>(stream);
+				ry = readAndSwap<double>(stream);
+				rz = readAndSwap<double>(stream);
+	
+				deserializedShape = bullet::BoxShape::create(rx, ry, rz);
 			}
 			break;
 		case 5 : // CONE
@@ -165,21 +169,18 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
 
 	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, node);
-	
-	float mass = 1;
-	
-	double vx =  0;
-	double vy =  0;
-	double vz =  0;
-	double avx = 0;
-	double avy = 0;
-	double avz = 0;
-	bool sleep	= 0;
-	bool rotate = 0;
 
-	double density		= 0;
-	double friction		= 0;
-	double restitution	= 0.9;
+	float mass			= 1.0f;
+	double vx			= 0.0;
+	double vy			= 0.0;
+	double vz			= 0.0;
+	double avx			= 0.0;
+	double avy			= 0.0;
+	double avz			= 0.0;
+	bool sleep			= false;
+	bool rotate			= false;
+	double friction		= 0.5; // bullet's advices
+	double restitution	= 0.0; // bullet's advices
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -187,42 +188,39 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		std::stringstream	stream;
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
-		density = readAndSwap<double>(stream);
-		friction = readAndSwap<double>(stream);
-		//restitution = readAndSwap<double>(stream);
+		double density	= readAndSwap<double>(stream); // do not care about it at this point
+		friction		= readAndSwap<double>(stream);
+		restitution		= readAndSwap<double>(stream);
 	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
-		mass = 0;
+		mass = 0.0; // static object
 	else
 	{
 		Qark::ByteArray& dynamicsData = Any::cast<Qark::ByteArray&>(colliderData["dynamics"]);
 		std::stringstream	stream;
 		stream.write(&*dynamicsData.begin(), dynamicsData.size());
 
-		vx = readAndSwap<double>(stream);
-		vy = readAndSwap<double>(stream);
-		vz = readAndSwap<double>(stream);
-
-		avx = readAndSwap<double>(stream);
-		avy = readAndSwap<double>(stream);
-		avz = readAndSwap<double>(stream);
-
+		vx		= readAndSwap<double>(stream);
+		vy		= readAndSwap<double>(stream);
+		vz		= readAndSwap<double>(stream);
+		avx		= readAndSwap<double>(stream);
+		avy		= readAndSwap<double>(stream);
+		avz		= readAndSwap<double>(stream);
 		sleep	= readAndSwap<bool>(stream);
-		rotate = readAndSwap<bool>(stream);
+		rotate	= readAndSwap<bool>(stream);
 	}
 
 	bullet::Collider::Ptr collider = bullet::Collider::create(mass, shape);
 
-	collider->setAngularVelocity(avx, avy, avz);
 	collider->setLinearVelocity(vx, vy, vz);
+	collider->setAngularVelocity(avx, avy, avz);
 	collider->setFriction(friction);
 	collider->setRestitution(restitution);
 
-	if (rotate == false)
-	{
-		collider->setAngularFactor(0, 0, 0);
-	}
+	if (!rotate)
+		collider->setAngularFactor(0.0f, 0.0f, 0.0f);
+	collider->disableDeactivation(sleep == false);
 
 	return bullet::ColliderComponent::create(collider);
 }
@@ -258,40 +256,13 @@ int main(int argc, char** argv)
 		std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 	);
 
-
-
     glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
     glfwMakeContextCurrent(window);
 	auto context = render::OpenGLES2Context::create();
-
-	root->addChild(group)->addChild(camera);
-		
-	renderingComponent = Rendering::create(context);
-    renderingComponent->backgroundColor(0x7F7F7FFF);
-	camera->addComponent(renderingComponent);
-
-    camera->addComponent(Transform::create());
-
-#ifdef SHOW_SPONZA
-	// sponza-adapted camera
-	camera->component<Transform>()->transform()
-		->lookAt(
-			Vector3::create(1.0f, 0.6f, 0.0f),
-			Vector3::create(0.0f, 0.6f, 0.0f),
-			Vector3::yAxis()
-		);
-#else
-	camera->component<Transform>()->transform()
-		->appendTranslation(0.0f, 2.75f, 5.0f)
-		->appendRotationY(PI*0.5);
-#endif // SHOW_SPONZA
-
-    camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-
-	auto physicsWorld = bullet::PhysicsWorld::create();
-	physicsWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
-	root->addComponent(physicsWorld);
+	
+	rendering = Rendering::create(context);
+    rendering->backgroundColor(0x7F7F7FFF);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
@@ -319,11 +290,44 @@ int main(int argc, char** argv)
 	//assets->defaultOptions()->includePaths().push_back("../../texture");
 	//#endif
 
+
+	// initialization and addition of the PhysicsWorld must come first
+	auto physicsWorld = bullet::PhysicsWorld::create(rendering);
+	physicsWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+	root->addComponent(physicsWorld);
+
+
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-        root->addComponent(DirectionalLight::create());
+		root->addChild(group)
+			->addChild(camera);
+
+
+		camera->addComponent(rendering);
+
+		camera->addComponent(Transform::create());
+
+#ifdef SHOW_SPONZA
+		// sponza-adapted camera
+		camera->component<Transform>()->transform()
+			->lookAt(
+			Vector3::create(1.0f, 0.6f, 0.0f),
+			Vector3::create(0.0f, 0.6f, 0.0f),
+			Vector3::yAxis()
+			);
+#else
+		camera->component<Transform>()->transform()
+			->appendTranslation(0.0f, 2.75f, 5.0f)
+			->appendRotationY(PI*0.5);
+#endif // SHOW_SPONZA
+
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+
+
+
+
+		root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
-		group->addChild(mesh);
 
 #ifdef SHOW_SPONZA
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
@@ -332,7 +336,7 @@ int main(int argc, char** argv)
 #endif // SHOW_SPONZA
 
 		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
-		cameraShape->setMargin(0.3f);
+		//cameraShape->setMargin(0.3f);
 		auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
 		cameraCollider->setRestitution(0.5f);
 		cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
@@ -402,7 +406,7 @@ int main(int argc, char** argv)
 			// look on the right
 			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
 		
-		renderingComponent->render();
+		rendering->render();
 
 	    glfwSwapBuffers(window);
         glfwPollEvents();

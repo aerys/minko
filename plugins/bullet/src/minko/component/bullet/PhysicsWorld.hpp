@@ -74,7 +74,7 @@ namespace minko
 
 			private:
 				ColliderMap					_colliderMap;
-				Vector3Ptr					_gravityVector;
+				RenderingPtr				_rendering;
 
 				btBroadphasePtr				_btBroadphase;
 				btCollisionConfigurationPtr	_btCollisionConfiguration;
@@ -82,16 +82,16 @@ namespace minko
 				btDispatcherPtr				_btDispatcher;
 				btDynamicsWorldPtr			_btDynamicsWorld;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
-				Signal<RenderingPtr>::Slot	_exitFrameSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetRemovedSlot;
+				Signal<RenderingPtr>::Slot			_exitFrameSlot;
 
 			public:
 				static
 				Ptr
-					create()
+					create(RenderingPtr rendering)
 				{
-					Ptr physicsWorld(new PhysicsWorld());
+					Ptr physicsWorld(new PhysicsWorld(rendering));
 
 					physicsWorld->initialize();
 
@@ -132,7 +132,7 @@ namespace minko
 				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
 
 			private:
-				PhysicsWorld();
+				PhysicsWorld(RenderingPtr);
 
 				void 
 				initialize();
