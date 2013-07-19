@@ -177,9 +177,11 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 	);
 	info.m_linearDamping			= collider->linearDamping();
 	info.m_angularDamping			= collider->angularDamping();
-	info.m_angularSleepingThreshold	= collider->angularSleepingThreshold();
 	info.m_friction					= collider->friction();
+	info.m_rollingFriction			= collider->rollingFriction();
 	info.m_restitution				= collider->restitution();
+	info.m_linearSleepingThreshold	= collider->linearSleepingThreshold();
+	info.m_angularSleepingThreshold	= collider->angularSleepingThreshold();
 
 	auto btRigidCollisionObject = std::shared_ptr<btRigidBody>(new btRigidBody(info));
 
@@ -204,10 +206,11 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 		collider->angularFactor()->y(), 
 		collider->angularFactor()->z()
 		));
-	//btRigidCollisionObject->setDamping(collider->linearDamping(), collider->angularDamping());
-	//btRigidCollisionObject->setRestitution(collider->restitution());
-	//btRigidCollisionObject->setFriction(collider->friction());
-	btRigidCollisionObject->setActivationState(collider->deactivationDisabled() ? DISABLE_DEACTIVATION : ACTIVE_TAG);
+
+	btRigidCollisionObject->setActivationState(collider->deactivationDisabled() 
+		? DISABLE_DEACTIVATION 
+		: ACTIVE_TAG
+	);
 
 	_btCollisionObject	= btRigidCollisionObject;
 }
