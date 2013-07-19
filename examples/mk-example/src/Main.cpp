@@ -16,6 +16,7 @@
 	#include "GLFW/glfw3.h"
 #endif
 
+#include "minko/component/SponzaLighting.hpp"
 
 using namespace minko::component;
 using namespace minko::math;
@@ -344,6 +345,7 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->queue("Basic.effect")
+		->queue("SponzaLighting.effect")
 		->queue("DirectionalLight.effect")
 		->queue("texture/box.png")
 		->queue("texture/firefull.jpg")
@@ -358,11 +360,15 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+#ifdef SPONZA
+		std::cout << "sponza !" << std::endl;
+#endif 
+		root->addComponent(SponzaLighting::create());
 		root->addComponent(DirectionalLight::create());
+
 		group->addComponent(Transform::create());
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
 		
-
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)->descendants(false)->where(
 			[](scene::Node::Ptr node)
 			{
@@ -381,10 +387,19 @@ int main(int argc, char** argv)
 				currentNode->component<Transform>()->transform()->appendTranslation(0., .06, 0.);
 
 			currentNode->addComponent(createFire(assets));
+
+			std::cout << "fire = " << std::to_string(currentNode->component<Transform>()->modelToWorldMatrix(true)) << std::endl;
 		}
 	});
 
-	assets->load();
+	try
+	{
+		assets->load();
+	}
+	catch(std::exception e)
+	{
+		std::cerr << "exception: " << e.what() << std::endl;
+	}
 
 #ifdef EMSCRIPTEN
 	glutDisplayFunc(renderScene);
@@ -404,7 +419,7 @@ int main(int argc, char** argv)
 
 	    renderingComponent->render();
 
-	    printFramerate();
+	    //printFramerate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
