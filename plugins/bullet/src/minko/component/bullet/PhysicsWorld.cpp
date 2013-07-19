@@ -32,9 +32,10 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-bullet::PhysicsWorld::PhysicsWorld():
+bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
 	AbstractComponent(),
 	_colliderMap(),
+	_rendering(rendering),
 	_btBroadphase(nullptr),
 	_btCollisionConfiguration(nullptr),
 	_btConstraintSolver(nullptr),
@@ -44,45 +45,13 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_targetRemovedSlot(nullptr),
 	_exitFrameSlot(nullptr)
 {
-
+	if (_rendering == nullptr)
+		throw std::invalid_argument("rendering");
 }
 
 void 
 bullet::PhysicsWorld::initialize()
 {
-	/*
-	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
-	{
-		for (uint iter = 0; iter < 20; ++iter)
-		{
-			Vector3::Ptr axis = Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
-			float angRad = ang * (float)PI / 180.0f;
-			Quaternion::Ptr quat = Quaternion::create()->initialize(axis, angRad);
-			Matrix4x4::Ptr	mat	= quat->toMatrix();
-			btTransform btTransf;
-			toBulletTransform(mat, btTransf);
-			Matrix4x4::Ptr fromBt = fromBulletTransform(btTransf);
-
-			Vector3::Ptr vec	= Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
-			btVector3 btVec(vec->x(), vec->y(), vec->z());
-
-			vec = mat->project(vec);
-			btVec = btTransf(btVec);
-			if (fabsf(vec->x() - btVec.x()) > 1e-6f
-				|| fabsf(vec->y() - btVec.y()) > 1e-6f
-				|| fabsf(vec->z() - btVec.z()) > 1e-6f)
-				throw std::logic_error("aie X2");
-
-			for (uint i = 0; i < 16; ++i)
-			{
-				if (fabsf(mat->values()[i] - fromBt->values()[i]) > 1e-6f)
-					throw std::logic_error("aie");
-			}
-			
-		}
-	}
-	*/
-
 	// straightforward physics world initialization for the time being
 	_btBroadphase				= std::shared_ptr<btDbvtBroadphase>(new btDbvtBroadphase());
 	_btCollisionConfiguration	= std::shared_ptr<btDefaultCollisionConfiguration>(new btDefaultCollisionConfiguration());
@@ -113,11 +82,21 @@ bullet::PhysicsWorld::initialize()
 
 void 
 bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+										 Node::Ptr target)
 {
 	if (target->components<PhysicsWorld>().size() > 1)
 		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
 
+	// ugly solution to get rid of a cyclic dependency when one wants to add a collider to the camera.
+	// camera collider is lost because the PhysicsWorld is not initialized yet because the camera
+	// stores the Rendering.
+	_exitFrameSlot = _rendering->exitFrame()->connect(std::bind(
+		&bullet::PhysicsWorld::exitFrameHandler,
+		shared_from_this(),
+		std::placeholders::_1
+		));
+
+	/*
 	auto nodeSet		= NodeSet::create(target->root())
 		->descendants(true)
 		->where([](Node::Ptr node)
@@ -138,13 +117,14 @@ bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller,
 		shared_from_this(),
 		std::placeholders::_1
 		));
+		*/
 }
 
 void 
 bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+										   Node::Ptr target)
 {
-	std::cout << "bullet::PhysicsWorld::targetRemovedHandler" << std::endl;
+	_exitFrameSlot = nullptr;
 }
 
 void
