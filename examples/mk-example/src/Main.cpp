@@ -20,7 +20,6 @@
 using namespace minko::component;
 using namespace minko::math;
 
-ParticleSystem::Ptr particleSystem;
 Rendering::Ptr renderingComponent;
 auto mesh = scene::Node::create("mesh");
 auto group = scene::Node::create("group");
@@ -260,6 +259,52 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
+ParticleSystem::Ptr
+createFire(AssetsLibrary::Ptr assets)
+{
+	ParticleSystem::Ptr particleSystem;
+
+#define SCALE 0.05
+	particleSystem = ParticleSystem::create(
+		assets->context(),
+		assets,
+		200,
+		particle::sampler::RandomValue<float>::create(1, 1.3),
+		particle::shape::Sphere::create(1 * SCALE),
+		particle::StartDirection::NONE,
+		0);
+	particleSystem->material()
+		->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
+		->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
+
+
+	particleSystem->add(particle::modifier::StartForce::create(
+		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE),
+		particle::sampler::RandomValue<float>::create(6. * SCALE, 8. * SCALE),
+		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE)
+		));
+
+	particleSystem->add(particle::modifier::StartSize::create(
+		particle::sampler::RandomValue<float>::create(1.3 * SCALE, 1.6 * SCALE)
+		));
+
+	particleSystem->add(particle::modifier::StartSprite::create(
+		particle::sampler::RandomValue<float>::create(0. * SCALE, 4. * SCALE)
+		));
+
+	particleSystem->add(particle::modifier::StartAngularVelocity::create(
+		particle::sampler::RandomValue<float>::create(0.1 * SCALE, 2. * SCALE)
+		));
+
+	particleSystem->add(particle::modifier::SizeOverTime::create());
+	particleSystem->add(particle::modifier::ColorOverTime::create());
+
+	particleSystem->updateRate(30);
+	particleSystem->fastForward(2, 30);
+	particleSystem->play();
+	return particleSystem;
+}
+
 int main(int argc, char** argv)
 {
 	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
@@ -295,10 +340,14 @@ int main(int argc, char** argv)
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
+		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->queue("Basic.effect")
 		->queue("DirectionalLight.effect")
+		->queue("texture/box.png")
+		->queue("texture/firefull.jpg")
+		->queue("Particles.effect")
 		->queue("models/sponza-lite-physics.mk");
 
 #ifdef EMSCRIPTEN
@@ -311,41 +360,8 @@ int main(int argc, char** argv)
 	{
 		root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
-		//group->addChild(mesh);
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
-
-		/*particleSystem = ParticleSystem::create(
-			assets->context(),
-			assets,
-			300,
-			particle::sampler::RandomValue<float>::create(1.2, 1.8),
-			particle::shape::Sphere::create(1),
-			particle::StartDirection::NONE,
-			0);
-		particleSystem->material()
-				->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
-                ->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
-
-		particleSystem->add(particle::modifier::StartForce::create(
-			particle::sampler::RandomValue<float>::create(-.2, .2),
-			particle::sampler::RandomValue<float>::create(6., 8.),
-			particle::sampler::RandomValue<float>::create(-.2, .2)
-			));
-
-		particleSystem->add(particle::modifier::StartSize::create(
-			particle::sampler::RandomValue<float>::create(1, 1)
-			));
-
-		particleSystem->add(particle::modifier::StartSprite::create(
-			particle::sampler::RandomValue<float>::create(0., 4.)
-			));
-
-		particleSystem->add(particle::modifier::StartAngularVelocity::create(
-			particle::sampler::RandomValue<float>::create(0.1, 2.)
-			));
-
-		particleSystem->add(particle::modifier::SizeOverTime::create());
-		particleSystem->add(particle::modifier::ColorOverTime::create());
+		
 
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)->descendants(false)->where(
 			[](scene::Node::Ptr node)
@@ -353,25 +369,19 @@ int main(int argc, char** argv)
 				return node->name() == "fire";
 			});
 
-		scene::Node::Ptr testNode = scene::Node::create();
-
-		//testNode->addComponent(particleSystem);
-
-		root->addChild(testNode);*/
-		/*
 		for (unsigned int i = 0; i < fireNodes->nodes().size(); ++i)
 		{
 			scene::Node::Ptr currentNode = fireNodes->nodes()[i];
 
-			//component::Surface::Ptr currentSurface = currentNode->components<component::Surface>()[0];
+			/*component::Surface::Ptr currentSurface = currentNode->components<component::Surface>()[0];
 
-			//currentNode->removeComponent(currentSurface);
+			currentNode->removeComponent(currentSurface);*/
 
-			currentNode->addComponent(particleSystem);
-		}*/
+			if (i == 3)
+				currentNode->component<Transform>()->transform()->appendTranslation(0., .06, 0.);
 
-		//particleSystem->updateRate(60);
-		//particleSystem->play();
+			currentNode->addComponent(createFire(assets));
+		}
 	});
 
 	assets->load();
@@ -391,8 +401,6 @@ int main(int argc, char** argv)
             camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
-
-		//mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
 	    renderingComponent->render();
 
