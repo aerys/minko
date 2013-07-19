@@ -42,10 +42,6 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 {
 	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
 
-#ifdef DEBUG
-	std::cout << "\tinitialize offset\tworld scaling = " << scaling << "\tdelta scaling = " << offsetScaling << std::endl;
-#endif // DEBUG
-
 	Vector3Ptr translation = centerOfMassOffset->translationVector();
 	_centerOfMassTranslation->setTo(
 		-translation->x(),
@@ -62,4 +58,12 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 		->copyFrom(centerOfMassOffset)
 		->prependScaling(invScaling, invScaling, invScaling) // remove scaling effect
 		->rotation();
+
+#ifdef DEBUG
+	std::cout << "physics shape offset\n\t- translation = " << _centerOfMassTranslation->x() 
+		<< " " << _centerOfMassTranslation->y() << " " << _centerOfMassTranslation->z() 
+		<< "\n\t- rotation = " << std::to_string(_centerOfMassRotation->toMatrix()) 
+		<< "\n\tfrom delta matrix = " << std::to_string(centerOfMassOffset)
+		<< "\n\twith model->world = " << std::to_string(modelToWorld) << std::endl;
+#endif //DEBUG
 }
