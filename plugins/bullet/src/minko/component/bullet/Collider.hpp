@@ -54,8 +54,9 @@ namespace minko
 				Vector3Ptr		_angularVelocity;
 				Vector3Ptr		_angularFactor;
 				float			_angularDamping;
-				float			_restitution;
-				float			_friction;
+				float			_angularSleepingThreshold;
+				float			_restitution; // from bullet: best simulation results using zero restitution. 
+				float			_friction; // from bullet: best simulation results when friction is non-zero 
 				bool			_deactivationDisabled;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
@@ -212,11 +213,26 @@ namespace minko
 				{
 					_angularDamping	= value;
 				}
+
 				inline
 				void
 				setRestitution(float value)
 				{
 					_restitution	= value;
+				}
+
+				inline
+				float
+				angularSleepingThreshold() const
+				{
+					return _angularSleepingThreshold;
+				}
+
+				inline
+				void
+				setAngularSleepingThreshold(float value)
+				{
+					_angularSleepingThreshold = value;
 				}
 
 				inline
