@@ -15,9 +15,10 @@
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string cameraName	= "Camera_1";
-const std::string mkFilename	= "models/camera-collider.mk";
-//const std::string mkFilename = "models/sponza-lite-physics.mk";
+const std::string cameraName	= "camera";
+//const std::string cameraName	= "Camera_1";
+//const std::string mkFilename	= "models/camera-collider-bis.mk";
+const std::string mkFilename = "models/sponza-lite-physics-final.mk";
 
 const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
@@ -224,7 +225,8 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	if (!rotate)
 		collider->setAngularFactor(0.0f, 0.0f, 0.0f);
-	collider->disableDeactivation(sleep == false);
+	//collider->disableDeactivation(sleep == false);
+	collider->disableDeactivation(true);
 
 	return bullet::ColliderComponent::create(collider);
 }
@@ -397,13 +399,7 @@ main(int argc, char** argv)
 		group->addComponent(Transform::create());
 
 		if (!cameraInGroup)
-			root->addChild(camera);
-
-		//if (!cameraInGroup)
-		//	root->addChild(camera);
-
-		//if (!cameraInGroup)
-		//	root->addChild(camera); // root must have a Rendering before adding the group !
+			root->addChild(camera); // root must have a Rendering before adding the group !
 
 		/*
 		#ifdef SHOW_SPONZA
@@ -470,11 +466,13 @@ main(int argc, char** argv)
 		
 		rendering->render();
 
+		/*
 		if (cameraColliderComp != nullptr)
 		{
 			const std::vector<float>& m(camera->component<Transform>()->transform()->values());
 			std::cout << "camera.pos = " << m[3] << ", " << m[7] << ", " << m[11] << std::endl;
 		}
+		*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
