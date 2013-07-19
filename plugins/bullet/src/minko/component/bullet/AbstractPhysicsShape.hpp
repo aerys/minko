@@ -51,8 +51,6 @@ namespace minko
 				Type			_type;
 				float			_margin;
 				float			_localScaling;
-				Matrix4x4Ptr	_centerOfMassOffset; // TODO: should disappear soon
-
 				Vector3Ptr		_centerOfMassTranslation;
 				QuaternionPtr	_centerOfMassRotation;
 
@@ -81,22 +79,8 @@ namespace minko
 					_localScaling = value;
 				}
 
-				// testing stuff
-				// TODO: should disappear soon
-				virtual
 				void
-				apply(Matrix4x4Ptr) = 0;
-				// TODO: should disappear soon
-				inline
-				Matrix4x4Ptr
-				centerOfMassOffset() const
-				{
-					return _centerOfMassOffset;
-				}
-				// TODO: should disappear soon
-				void
-				setCenterOfMassOffset(Matrix4x4Ptr, float scaling = 1.0f);
-				// end of testing stuff...
+				setCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld = nullptr);
 
 				inline
 				Type
