@@ -10,11 +10,17 @@ float phong_lambert( vec3 normal,  vec3 lightDirection)
 
  vec3 phong_specularReflection( vec3 normal,  vec3 lightDirection,  vec3 viewVector,  vec3 specularColor,  float shininess)
 {
-	 vec3 r = reflect(-lightDirection, normal);
+	float NdotL = dot(normal, lightDirection);
+	if (NdotL < 0.0)
+	{
+		return 0.0;
+	}
+	else
+	{
+		vec3 reflected = 2.0 * NdotL * normal - lightDirection;
 
-	r = 2. * dot(normal, lightDirection) * normal - lightDirection;
+		float specular = pow(max(dot(reflected, viewVector), 0.0), shininess);
 
-	 float specular = pow(max(dot(r, viewVector), 0.), shininess);
-
-	return specular * specularColor;
+		return specular * specularColor;
+	}
 }
