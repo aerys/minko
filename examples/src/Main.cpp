@@ -15,6 +15,10 @@
 using namespace minko::component;
 using namespace minko::math;
 
+const std::string cameraName	= "Camera_1";
+const std::string mkFilename	= "models/camera-collider.mk";
+//const std::string mkFilename = "models/sponza-lite-physics.mk";
+
 const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
@@ -249,6 +253,21 @@ testMk(AssetsLibrary::Ptr assets)
 	std::shared_ptr<data::HalfEdgeCollection> halfEdgeCollection = data::HalfEdgeCollection::create(assets->geometry("cube")->indices());
 }
 
+static
+component::bullet::ColliderComponent::Ptr
+initializeDefaultCameraCollider()
+{
+	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+	//cameraShape->setMargin(0.3f);
+	auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
+	cameraCollider->setRestitution(0.5f);
+	cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
+	cameraCollider->setFriction(CAMERA_FRICTION);
+	cameraCollider->disableDeactivation(true);
+	
+	return bullet::ColliderComponent::create(cameraCollider);
+}
+
 int 
 main(int argc, char** argv)
 {
@@ -277,11 +296,7 @@ main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-#ifdef SHOW_SPONZA
-		->queue("models/sponza-lite-physics.mk");
-#else
-		->queue("models/test-ground.mk");
-#endif // SHOW_SPONZA
+		->queue(mkFilename);
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -300,52 +315,62 @@ main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-
+		group->addChild(assets->node(mkFilename));
+		/*
 #ifdef SHOW_SPONZA
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
 #else
 		group->addChild(assets->node("models/test-ground.mk"));
 #endif // SHOW_SPONZA
+		*/
 
 		auto cameras = scene::NodeSet::create(group)
 			->descendants(true)
 			->where([](scene::Node::Ptr node)
 		{ 
-			return node->name() == "camera"; 
+			return node->name() == cameraName; 
 		});
 
 		bool cameraInGroup = false;
 		if (cameras->nodes().empty())
 		{
+			std::cout << "MANUAL CAMERA" << std::endl;
+
 			// default camera
-			camera = scene::Node::create("camera");
+			camera = scene::Node::create(cameraName);
 
 			camera->addComponent(Transform::create());
 			camera->component<Transform>()->transform()
 				->appendTranslation(0.0f, 2.75f, 5.0f)
 				->appendRotationY(PI*0.5);
+
+			cameraColliderComp = initializeDefaultCameraCollider();
+			camera->addComponent(cameraColliderComp);
 		}
 		else 
 		{
+			// set-up camera from the mk file
 			camera = cameras->nodes().front();
 			cameraInGroup = true;
-		}
 
-		camera->addComponent(rendering);
-		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+			std::cout << "parsed camera's transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
+
+			if (camera->hasComponent<component::bullet::ColliderComponent>())
+			{
+				std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
+				cameraColliderComp = camera->component<component::bullet::ColliderComponent>();
+			}
+			else
+				std::cout << "PARSED CAMERA W/OUT COLLIDER" << std::endl;
+		}
 
 		if (!camera->hasComponent<Transform>())
 			throw std::logic_error("Camera (deserialized or created) must have a Transform.");
 
-		if (camera->hasComponent<component::bullet::ColliderComponent>())
-		{
-#ifdef DEBUG
-			std::cout << "camera has a collider component !" << std::endl;
-#endif // DEBUG
-			cameraColliderComp = camera->component<component::bullet::ColliderComponent>();
-		}
+		camera->addComponent(rendering);
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
-		std::cout << "camera\n\t- transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
+		//std::cout << "camera\n\t- transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
 
 		/*
 		camera->addComponent(rendering);
@@ -372,7 +397,13 @@ main(int argc, char** argv)
 		group->addComponent(Transform::create());
 
 		if (!cameraInGroup)
-			root->addChild(camera); // root must have a Rendering before adding the group !
+			root->addChild(camera);
+
+		//if (!cameraInGroup)
+		//	root->addChild(camera);
+
+		//if (!cameraInGroup)
+		//	root->addChild(camera); // root must have a Rendering before adding the group !
 
 		/*
 		#ifdef SHOW_SPONZA
@@ -411,7 +442,6 @@ main(int argc, char** argv)
 	{
 		if (cameraColliderComp == nullptr)
 		{
-
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
 			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
@@ -437,8 +467,14 @@ main(int argc, char** argv)
 				// look on the right
 				cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
 		}
-
+		
 		rendering->render();
+
+		if (cameraColliderComp != nullptr)
+		{
+			const std::vector<float>& m(camera->component<Transform>()->transform()->values());
+			std::cout << "camera.pos = " << m[3] << ", " << m[7] << ", " << m[11] << std::endl;
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

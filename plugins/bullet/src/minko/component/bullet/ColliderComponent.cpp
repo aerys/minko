@@ -78,9 +78,6 @@ bullet::ColliderComponent::targetAddedHandler(
 	if (targets().size() > 1)
 		throw std::logic_error("ColliderComponent cannot have more than one target.");
 
-	// initialize from node if possible (mostly for adding a controller to the camera)
-	initializeFromTarget(target);
-
 	_addedSlot	= targets().front()->added()->connect(std::bind(
 		&bullet::ColliderComponent::addedHandler,
 		shared_from_this(),
@@ -96,6 +93,9 @@ bullet::ColliderComponent::targetAddedHandler(
 		std::placeholders::_2,
 		std::placeholders::_3
 		));
+
+	// initialize from node if possible (mostly for adding a controller to the camera)
+	initializeFromTarget(target);
 }
 
 void
@@ -152,7 +152,7 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 
 	if (!node->hasComponent<Transform>())
 		node->addComponent(Transform::create());
-
+	
 	_targetTransform = node->component<Transform>();
 
 	auto nodeSet = NodeSet::create(node)
@@ -173,6 +173,7 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 
+		std::cout << node->name() << ": collider added to the world" << std::endl;
 		_physicsWorld->addChild(_collider);
 	}
 }
@@ -212,9 +213,11 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 		->invert()
 		->append(_targetTransform->transform());
 
-	_targetTransform->transform()
+	auto newTransform = Matrix4x4::create()
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
+
+	_targetTransform->transform()->copyFrom(newTransform);
 }
 
 void
