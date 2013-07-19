@@ -15,7 +15,7 @@ using namespace minko::math;
 
 const float CAMERA_LIN_SPEED	= 0.1f;
 const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
-const float CAMERA_MASS			= 2.0f;
+const float CAMERA_MASS			= 50.0f;
 //const float CAMERA_FRICTION		= 0.9f;
 
 Rendering::Ptr				renderingComponent;
@@ -177,7 +177,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	double density		= 0;
 	double friction		= 0;
-	double restitution	= 1;
+	double restitution	= 0.5;
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -186,7 +186,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
 		density = readAndSwap<double>(stream);
-		//friction = readAndSwap<double>(stream);
+		friction = readAndSwap<double>(stream);
 		//restitution = readAndSwap<double>(stream);
 	}
 
@@ -270,7 +270,7 @@ int main(int argc, char** argv)
 	camera->addComponent(renderingComponent);
 
     camera->addComponent(Transform::create());
-	/*
+	
 	// sponza-adapted camera
 	camera->component<Transform>()->transform()
 		->lookAt(
@@ -278,12 +278,12 @@ int main(int argc, char** argv)
 			Vector3::create(0.0f, 0.6f, 0.0f),
 			Vector3::yAxis()
 		);
-	*/
-
+	
+	/*
 	camera->component<Transform>()->transform()
 		->appendTranslation(0.0f, 2.75f, 5.0f)
 		->appendRotationY(PI*0.5);
-
+*/
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicsWorld = bullet::PhysicsWorld::create();
@@ -302,8 +302,9 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
-		//->queue("models/sponza-lite-physics.mk");
-		->queue("models/test-ground.mk");
+		->queue("models/sponza-lite-physics.mk");
+		//->queue("models/sponza-lite-physics_pe.mk");
+		//->queue("models/test-ground.mk");
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -318,14 +319,15 @@ int main(int argc, char** argv)
         root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
 		group->addChild(mesh);
-		//group->addChild(assets->node("models/sponza-lite-physics.mk"));
-		group->addChild(assets->node("models/test-ground.mk"));
+		//group->addChild(assets->node("models/sponza-lite-physics_pe.mk"));
+		group->addChild(assets->node("models/sponza-lite-physics.mk"));
+		//group->addChild(assets->node("models/test-ground.mk"));
 
 		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
 		cameraShape->setMargin(0.3f);
 		auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
 		cameraCollider->setRestitution(0.5f);
-		cameraCollider->setAngularFactor(0.0f, 1.0f, 0.0f);
+		cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
 		cameraCollider->disableDeactivation(true);
 		// cameraCollider->setFriction(CAMERA_FRICTION);
 
