@@ -29,7 +29,6 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_type(type),
 	_margin(0.0f),
 	_localScaling(1.0f),
-	_centerOfMassOffset(Matrix4x4::create()),
 	_centerOfMassTranslation(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_centerOfMassRotation(Quaternion::create()->identity()),
 	_shapeChanged(Signal<Ptr>::create())
@@ -38,9 +37,9 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 }
 
 void
-bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset, float scaling)
+bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset,
+													Matrix4x4::Ptr modelToWorld)
 {
-	_centerOfMassOffset->copyFrom(centerOfMassOffset); // TODO: should disappear soon
 	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
 
 #ifdef DEBUG
@@ -48,7 +47,6 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 #endif // DEBUG
 
 	Vector3Ptr translation = centerOfMassOffset->translationVector();
-
 	_centerOfMassTranslation->setTo(
 		-translation->x(),
 		-translation->y(),
@@ -56,11 +54,12 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 	);
 
 	_centerOfMassRotation->identity();
-	if (fabsf(offsetScaling) < 1e-6f)
+	const float scaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
+	if (fabsf(scaling) < 1e-6f)
 		return;
-	const float invOffsetScaling = 1.0f/offsetScaling;
+	const float invScaling = 1.0f/scaling;
 	_centerOfMassRotation = Matrix4x4::create()
 		->copyFrom(centerOfMassOffset)
-		->prependScaling(invOffsetScaling, invOffsetScaling, invOffsetScaling) // remove scaling effect
+		->prependScaling(invScaling, invScaling, invScaling) // remove scaling effect
 		->rotation();
 }
