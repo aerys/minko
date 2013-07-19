@@ -16,6 +16,10 @@
 	#include "GLFW/glfw3.h"
 #endif
 
+#ifndef SPONZA
+#error You should define the temporary SPONZA macro in the minko-example-mk-physic and minko-mk projects yourself in order to have the new shader
+#endif // SPONZA
+
 #include "minko/component/SponzaLighting.hpp"
 
 using namespace minko::component;
