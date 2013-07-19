@@ -32,7 +32,17 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<SponzaLighting> Ptr;
+
+		private:
+			typedef std::shared_ptr<math::Vector4>	Vector4Ptr;
 	
+		private:
+			int			_time;
+			Vector4Ptr	_offsets;
+			Vector4Ptr	_frequencies;
+			float		_minThr;
+			float		_maxThr;
+
 		public:
 			inline static
 			Ptr
@@ -44,9 +54,15 @@ namespace minko
 	
 				return lighting;
 			}
+
+			void
+			step();
 	
 		private:
 			SponzaLighting();
+
+			std::shared_ptr<math::Vector4> 
+			getDistanceThresholds(std::shared_ptr<math::Vector4> output = nullptr) const;
 		};
 	}
 }

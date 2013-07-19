@@ -119,7 +119,7 @@
 				vec3 lightAmbient4;
 				vec3 lightDiffuse4;
 				vec3 lightSpecular4;
-				
+				vec4 lightDistThres;
 			};
 			
 			struct DirectionalLight {
@@ -174,25 +174,25 @@
 				
 				vec3 worldEyeVector		= normalize(cameraPosition - worldPosition);
 				
-				vec3 worldLightVector1	= sponza.lightWorldPosition1 - worldPosition;
-				float distanceLight1	= length(worldLightVector1);
-				worldLightVector1		= worldLightVector1.xyz / distanceLight1;
-				float attenuation1		= max(1.0 - distanceLight1 / 2.5, 0.0); // should be animated
+				vec4 distanceLights		= vec4(1.0);
 				
+				vec3 worldLightVector1	= sponza.lightWorldPosition1 - worldPosition;
+				distanceLights.x		= length(worldLightVector1);
+				worldLightVector1		= worldLightVector1.xyz / distanceLights.x;
+								
 				vec3 worldLightVector2	= sponza.lightWorldPosition2 - worldPosition;
-				float distanceLight2	= length(worldLightVector2);
-				worldLightVector2		= worldLightVector2.xyz / distanceLight2;
-				float attenuation2		= max(1.0 - distanceLight2 / 2.5, 0.0); // should be animated
+				distanceLights.y		= length(worldLightVector2);
+				worldLightVector2		= worldLightVector2.xyz / distanceLights.y;
 				
 				vec3 worldLightVector3	= sponza.lightWorldPosition3 - worldPosition;
-				float distanceLight3	= length(worldLightVector3);
-				worldLightVector3		= worldLightVector3.xyz / distanceLight3;
-				float attenuation3		= max(1.0 - distanceLight3 / 2.5, 0.0); // should be animated
+				distanceLights.z		= length(worldLightVector3);
+				worldLightVector3		= worldLightVector3.xyz / distanceLights.z;
 				
 				vec3 worldLightVector4	= sponza.lightWorldPosition4 - worldPosition;
-				float distanceLight4	= length(worldLightVector4);
-				worldLightVector4		= worldLightVector4.xyz / distanceLight4;
-				float attenuation4		= max(1.0 - distanceLight4 / 2.5, 0.0); // should be animated
+				distanceLights.w		= length(worldLightVector4);
+				worldLightVector4		= worldLightVector4.xyz / distanceLights.w;
+				
+				vec4 attenuations		= max(1.0 - distanceLights / sponza.lightDistThres, 0.0);
 				
 				// by default, everything is in world space
 				vec3 normal			= worldNormal;
@@ -217,10 +217,10 @@
 				vec3 lightsAmbient = sponza.lightAmbient1;
 				
 				// diffuse lighting
-				vec3 lightsDiffuse 	= phong_diffuseReflection(normal, lightVector1, sponza.lightDiffuse1) * attenuation1;
-				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector2, sponza.lightDiffuse2) * attenuation2;
-				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector3, sponza.lightDiffuse3) * attenuation3;
-				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector4, sponza.lightDiffuse4) * attenuation4;
+				vec3 lightsDiffuse 	= phong_diffuseReflection(normal, lightVector1, sponza.lightDiffuse1) * attenuations.x;
+				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector2, sponza.lightDiffuse2) * attenuations.y;
+				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector3, sponza.lightDiffuse3) * attenuations.z;
+				lightsDiffuse 		+= phong_diffuseReflection(normal, lightVector4, sponza.lightDiffuse4) * attenuations.w;
 				
 				
 				// specular lighting
@@ -232,10 +232,10 @@
 						vec3 specular	= material.specular;
 					#endif // SPECULAR_MAP
 				
-					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, material.shininess) * attenuation1;
-					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, material.shininess) * attenuation2;
-					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, material.shininess) * attenuation3;
-					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, material.shininess) * attenuation4;
+					lightsSpecular += phong_specularReflection(normal, lightVector1, eyeVector, specular * sponza.lightSpecular1, material.shininess) * attenuations.x;
+					lightsSpecular += phong_specularReflection(normal, lightVector2, eyeVector, specular * sponza.lightSpecular2, material.shininess) * attenuations.y;
+					lightsSpecular += phong_specularReflection(normal, lightVector3, eyeVector, specular * sponza.lightSpecular3, material.shininess) * attenuations.z;
+					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, material.shininess) * attenuations.w;
 				#endif // SPECULAR || SPECULAR_MAP
 				
 				
