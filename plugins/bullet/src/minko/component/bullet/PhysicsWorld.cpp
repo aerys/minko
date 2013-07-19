@@ -193,15 +193,8 @@ bullet::PhysicsWorld::updateColliders()
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
-		auto matrix = Matrix4x4::create()
-			->copyFrom(it->first->worldTransform());
-		const float scaling = powf(matrix->determinant3x3(), 1.0f/3.0f);
-		//matrix->prepend
-
-		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
-
 }
 
 void
