@@ -24,8 +24,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
-
-void
-bullet::ConeShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
-{
-}
