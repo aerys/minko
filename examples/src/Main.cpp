@@ -10,7 +10,7 @@
 
 #define FRAMERATE 60
 
-//#define SHOW_SPONZA true
+#define SHOW_SPONZA true
 
 using namespace minko::component;
 using namespace minko::math;
@@ -25,7 +25,7 @@ Rendering::Ptr	rendering = nullptr;
 //bullet::Collider::Ptr		cameraCollider = nullptr;
 bullet::ColliderComponent::Ptr	cameraColliderComp = nullptr;
 
-auto camera	= scene::Node::create("camera");
+scene::Node::Ptr camera	= nullptr;
 auto root   = scene::Node::create("root");
 auto mesh	= scene::Node::create("mesh");
 auto group	= scene::Node::create("group");
@@ -70,7 +70,7 @@ readAndSwap(std::stringstream& stream)
 
 bullet::AbstractPhysicsShape::Ptr
 deserializeShape(Qark::Map&			shapeData,
-				 scene::Node::Ptr&	node)
+				scene::Node::Ptr&	node)
 {
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
 
@@ -85,75 +85,75 @@ deserializeShape(Qark::Map&			shapeData,
 	std::stringstream stream;
 	switch (type)
 	{
-		case 101: // multiprofile
-			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), node);
-			break;
-		case 2: // BOX
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
-	
-				rx = readAndSwap<double>(stream);
-				ry = readAndSwap<double>(stream);
-				rz = readAndSwap<double>(stream);
-	
-				deserializedShape = bullet::BoxShape::create(rx, ry, rz);
-			}
-			break;
-		case 5 : // CONE
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+	case 101: // multiprofile
+		deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), node);
+		break;
+	case 2: // BOX
+		{
+			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			stream.write(&*source.begin(), source.size());
 
-				r = readAndSwap<double>(stream);
-				h = readAndSwap<double>(stream);
-				
-				deserializedShape = bullet::ConeShape::create(r, h);
-			}
-			break;
-		case 6 : // BALL
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+			rx = readAndSwap<double>(stream);
+			ry = readAndSwap<double>(stream);
+			rz = readAndSwap<double>(stream);
 
-				r = readAndSwap<double>(stream);
+			deserializedShape = bullet::BoxShape::create(rx, ry, rz);
+		}
+		break;
+	case 5 : // CONE
+		{
+			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			stream.write(&*source.begin(), source.size());
 
-				deserializedShape = bullet::SphereShape::create(r);
+			r = readAndSwap<double>(stream);
+			h = readAndSwap<double>(stream);
 
-				std::cout << "radius : " << r << std::endl;
-			}
-			break;
-		case 7 : // CYLINDER
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+			deserializedShape = bullet::ConeShape::create(r, h);
+		}
+		break;
+	case 6 : // BALL
+		{
+			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			stream.write(&*source.begin(), source.size());
 
-				r = readAndSwap<double>(stream);
-				h = readAndSwap<double>(stream);
+			r = readAndSwap<double>(stream);
 
-				deserializedShape = bullet::CylinderShape::create(r, h, r);
-			}
-			break;
-		case 100 : // TRANSFORM
-			{
-				deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
-				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
-				auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
-				const float scaling		= powf(fabsf(modelToWorldMatrix->determinant3x3()), 1.0f/3.0f);
+			deserializedShape = bullet::SphereShape::create(r);
+
+			std::cout << "radius : " << r << std::endl;
+		}
+		break;
+	case 7 : // CYLINDER
+		{
+			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			stream.write(&*source.begin(), source.size());
+
+			r = readAndSwap<double>(stream);
+			h = readAndSwap<double>(stream);
+
+			deserializedShape = bullet::CylinderShape::create(r, h, r);
+		}
+		break;
+	case 100 : // TRANSFORM
+		{
+			deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
+			Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+			auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
+			const float scaling		= powf(fabsf(modelToWorldMatrix->determinant3x3()), 1.0f/3.0f);
 
 #ifdef DEBUG
-				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset) 
-					<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
+			std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset) 
+				<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
 #endif // DEBUG
 
-				deserializedShape->setLocalScaling(scaling);
-				//deserializedShape->apply(modelToWorldMatrix);
+			deserializedShape->setLocalScaling(scaling);
+			//deserializedShape->apply(modelToWorldMatrix);
 
-				deserializedShape->setCenterOfMassOffset(offset, modelToWorldMatrix);
-			}
-			break;
-		default:
-			deserializedShape = nullptr;
+			deserializedShape->setCenterOfMassOffset(offset, modelToWorldMatrix);
+		}
+		break;
+	default:
+		deserializedShape = nullptr;
 	}
 
 	return deserializedShape;		
@@ -249,20 +249,21 @@ testMk(AssetsLibrary::Ptr assets)
 	std::shared_ptr<data::HalfEdgeCollection> halfEdgeCollection = data::HalfEdgeCollection::create(assets->geometry("cube")->indices());
 }
 
-int main(int argc, char** argv)
+int 
+main(int argc, char** argv)
 {
 	file::MkParser::registerController(
 		"colliderController", 
 		std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-	);
+		);
 
-    glfwInit();
+	glfwInit();
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 	auto context = render::OpenGLES2Context::create();
-	
+
 	rendering = Rendering::create(context);
-    rendering->backgroundColor(0x7F7F7FFF);
+	rendering->backgroundColor(0x7F7F7FFF);
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::JPEGParser>("jpg")
@@ -270,7 +271,7 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->geometry("sphere", geometry::SphereGeometry::create(context, 40))
-        ->queue("box3.png")
+		->queue("box3.png")
 		->queue("DirectionalLight.effect")
 		->queue("VertexNormal.effect")
 		->queue("Texture.effect")
@@ -299,35 +300,6 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-		root->addChild(group)
-			->addChild(camera);
-
-
-		camera->addComponent(rendering);
-
-		camera->addComponent(Transform::create());
-
-#ifdef SHOW_SPONZA
-		// sponza-adapted camera
-		camera->component<Transform>()->transform()
-			->lookAt(
-			Vector3::create(1.0f, 0.6f, 0.0f),
-			Vector3::create(0.0f, 0.6f, 0.0f),
-			Vector3::yAxis()
-			);
-#else
-		camera->component<Transform>()->transform()
-			->appendTranslation(0.0f, 2.75f, 5.0f)
-			->appendRotationY(PI*0.5);
-#endif // SHOW_SPONZA
-
-		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-
-
-
-
-		root->addComponent(DirectionalLight::create());
-		group->addComponent(Transform::create());
 
 #ifdef SHOW_SPONZA
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
@@ -335,6 +307,84 @@ int main(int argc, char** argv)
 		group->addChild(assets->node("models/test-ground.mk"));
 #endif // SHOW_SPONZA
 
+		auto cameras = scene::NodeSet::create(group)
+			->descendants(true)
+			->where([](scene::Node::Ptr node)
+		{ 
+			return node->name() == "camera"; 
+		});
+
+		bool cameraInGroup = false;
+		if (cameras->nodes().empty())
+		{
+			// default camera
+			camera = scene::Node::create("camera");
+
+			camera->addComponent(Transform::create());
+			camera->component<Transform>()->transform()
+				->appendTranslation(0.0f, 2.75f, 5.0f)
+				->appendRotationY(PI*0.5);
+		}
+		else 
+		{
+			camera = cameras->nodes().front();
+			cameraInGroup = true;
+		}
+
+		camera->addComponent(rendering);
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+
+		if (!camera->hasComponent<Transform>())
+			throw std::logic_error("Camera (deserialized or created) must have a Transform.");
+
+		if (camera->hasComponent<component::bullet::ColliderComponent>())
+		{
+#ifdef DEBUG
+			std::cout << "camera has a collider component !" << std::endl;
+#endif // DEBUG
+			cameraColliderComp = camera->component<component::bullet::ColliderComponent>();
+		}
+
+		std::cout << "camera\n\t- transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
+
+		/*
+		camera->addComponent(rendering);
+		camera->addComponent(Transform::create());
+
+		#ifdef SHOW_SPONZA
+		// sponza-adapted camera
+		camera->component<Transform>()->transform()
+		->lookAt(
+		Vector3::create(1.0f, 0.6f, 0.0f),
+		Vector3::create(0.0f, 0.6f, 0.0f),
+		Vector3::yAxis()
+		);
+		#else
+		camera->component<Transform>()->transform()
+		->appendTranslation(0.0f, 2.75f, 5.0f)
+		->appendRotationY(PI*0.5);
+		#endif // SHOW_SPONZA
+
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+		*/
+
+		root->addComponent(DirectionalLight::create());
+		group->addComponent(Transform::create());
+
+		if (!cameraInGroup)
+			root->addChild(camera); // root must have a Rendering before adding the group !
+
+		/*
+		#ifdef SHOW_SPONZA
+		group->addChild(assets->node("models/sponza-lite-physics.mk"));
+		#else
+		group->addChild(assets->node("models/test-ground.mk"));
+		#endif // SHOW_SPONZA
+		*/
+
+		root->addChild(group);
+
+		/*
 		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
 		//cameraShape->setMargin(0.3f);
 		auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
@@ -345,6 +395,7 @@ int main(int argc, char** argv)
 
 		cameraColliderComp = bullet::ColliderComponent::create(cameraCollider);
 		camera->addComponent(cameraColliderComp);
+		*/
 	});
 
 	try
@@ -357,64 +408,45 @@ int main(int argc, char** argv)
 	}
 
 	while(!glfwWindowShouldClose(window))
-    {
-		/*
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -cameraLinearStep);
-        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, cameraLinearStep);
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-			camera->component<Transform>()->transform()->prependRotation(-cameraAngStep, Vector3::yAxis());
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-			camera->component<Transform>()->transform()->prependRotation(cameraAngStep, Vector3::yAxis());
-		*/
+	{
+		if (cameraColliderComp == nullptr)
+		{
 
-		//std::cout << "GLFW_PRESS = " << GLFW_PRESS << std::endl;
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+		}
+		else
+		{
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				// go forward
+					cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				// go backward
+				cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
 
-		
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-			// go forward
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-			// go backward
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				// look on the left
+					cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				// look on the right
+				cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+		}
 
-		/*
-		Vector3::Ptr localImpulse = Vector3::create(0.0f, 0.0f, 0.0f);
-		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-			// go forward
-			localImpulse->setTo(0.0f, 0.0f, -CAMERA_LIN_SPEED);
-		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-			// go backward
-			localImpulse->setTo(0.0f, 0.0f, CAMERA_LIN_SPEED);
-		
-		//if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		//	// go left
-		//	localImpulse->setTo(-CAMERA_LIN_SPEED, 0.0f, localImpulse->z());
-  //      else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		//	// go right
-		//	localImpulse->setTo(CAMERA_LIN_SPEED, 0.0f, localImpulse->z());
-			
-		if (localImpulse->lengthSquared() > 1e-6f)
-			cameraColliderComp->applyRelativeImpulse(localImpulse);
-		*/
-
-		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-			// look on the left
-			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
-		else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-			// look on the right
-			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
-		
 		rendering->render();
 
-	    glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 
-    glfwDestroyWindow(window);
- 
-    glfwTerminate();
+	glfwDestroyWindow(window);
 
-    exit(EXIT_SUCCESS);
+	glfwTerminate();
+
+	exit(EXIT_SUCCESS);
 }
