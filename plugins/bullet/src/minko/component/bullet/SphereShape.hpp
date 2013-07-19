@@ -45,10 +45,6 @@ namespace minko
 					return std::shared_ptr<SphereShape>(new SphereShape(radius));
 				}
 
-				// TODO: should disappear soon
-				void
-				apply(std::shared_ptr<math::Matrix4x4> matrix);
-
 				inline
 				float
 				radius() const

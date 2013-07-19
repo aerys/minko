@@ -10,6 +10,8 @@
 
 #define FRAMERATE 60
 
+#define SHOW_SPONZA true
+
 using namespace minko::component;
 using namespace minko::math;
 
@@ -143,7 +145,7 @@ deserializeShape(Qark::Map&							shapeData,
 				deserializedShape->setLocalScaling(scaling);
 				//deserializedShape->apply(modelToWorldMatrix);
 
-				deserializedShape->setCenterOfMassOffset(offset, scaling);
+				deserializedShape->setCenterOfMassOffset(offset, modelToWorldMatrix);
 			}
 			break;
 		default:
@@ -177,7 +179,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	double density		= 0;
 	double friction		= 0;
-	double restitution	= 0.5;
+	double restitution	= 0.9;
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -270,7 +272,8 @@ int main(int argc, char** argv)
 	camera->addComponent(renderingComponent);
 
     camera->addComponent(Transform::create());
-	
+
+#ifdef SHOW_SPONZA
 	// sponza-adapted camera
 	camera->component<Transform>()->transform()
 		->lookAt(
@@ -278,12 +281,12 @@ int main(int argc, char** argv)
 			Vector3::create(0.0f, 0.6f, 0.0f),
 			Vector3::yAxis()
 		);
-	
-	/*
+#else
 	camera->component<Transform>()->transform()
 		->appendTranslation(0.0f, 2.75f, 5.0f)
 		->appendRotationY(PI*0.5);
-*/
+#endif // SHOW_SPONZA
+
     camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
 
 	auto physicsWorld = bullet::PhysicsWorld::create();
@@ -302,9 +305,11 @@ int main(int argc, char** argv)
 		->queue("Texture.effect")
 		->queue("Red.effect")
 		->queue("Basic.effect")
+#ifdef SHOW_SPONZA
 		->queue("models/sponza-lite-physics.mk");
-		//->queue("models/sponza-lite-physics_pe.mk");
-		//->queue("models/test-ground.mk");
+#else
+		->queue("models/test-ground.mk");
+#endif // SHOW_SPONZA
 
 	//#ifdef DEBUG
 	assets->defaultOptions()->includePaths().push_back("effect");
@@ -319,9 +324,12 @@ int main(int argc, char** argv)
         root->addComponent(DirectionalLight::create());
 		group->addComponent(Transform::create());
 		group->addChild(mesh);
-		//group->addChild(assets->node("models/sponza-lite-physics_pe.mk"));
+
+#ifdef SHOW_SPONZA
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
-		//group->addChild(assets->node("models/test-ground.mk"));
+#else
+		group->addChild(assets->node("models/test-ground.mk"));
+#endif // SHOW_SPONZA
 
 		bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
 		cameraShape->setMargin(0.3f);
