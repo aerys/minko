@@ -111,7 +111,11 @@ namespace minko
 					component::Surface::create(
 					options->assetsLibrary()->geometry("cube"),
 					options->deserializedAssets()->material(materialId),
+#ifdef SPONZA
+					options->assetsLibrary()->effect("sponza lighting")));
+#else
 					options->assetsLibrary()->effect("directional light")));
+#endif // SPONZA
 
 				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
 
