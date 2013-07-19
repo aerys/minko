@@ -15,10 +15,10 @@
 using namespace minko::component;
 using namespace minko::math;
 
-const float CAMERA_LIN_SPEED	= 0.1f;
+const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
-//const float CAMERA_FRICTION		= 0.9f;
+const float CAMERA_FRICTION		= 0.6f;
 
 Rendering::Ptr				renderingComponent;
 //bullet::PhysicsWorld::Ptr	physicsWorld = nullptr;
@@ -336,8 +336,8 @@ int main(int argc, char** argv)
 		auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
 		cameraCollider->setRestitution(0.5f);
 		cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
+		cameraCollider->setFriction(CAMERA_FRICTION);
 		cameraCollider->disableDeactivation(true);
-		// cameraCollider->setFriction(CAMERA_FRICTION);
 
 		cameraColliderComp = bullet::ColliderComponent::create(cameraCollider);
 		camera->addComponent(cameraColliderComp);
