@@ -217,9 +217,11 @@ OpenGLES2Context::present()
 
 	if (errCode != GL_NO_ERROR)
     {
+        /*
 		const GLubyte* errString = gluErrorString(errCode);
 
 		std::cout << "error: " << errString << std::endl;
+        */
         throw;
     }
 #endif

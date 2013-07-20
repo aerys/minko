@@ -357,7 +357,12 @@ int main(int argc, char** argv)
 
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
-#else
+#endif
+#ifdef NDEBUG
+	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
+    assets->defaultOptions()->includePaths().insert("../..");
+#endif
+#ifdef DEBUG
 	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
 #endif
 
