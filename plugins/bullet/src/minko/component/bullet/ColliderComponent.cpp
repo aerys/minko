@@ -93,6 +93,9 @@ bullet::ColliderComponent::targetAddedHandler(
 		std::placeholders::_2,
 		std::placeholders::_3
 		));
+
+	// initialize from node if possible (mostly for adding a controller to the camera)
+	initializeFromTarget(target);
 }
 
 void
@@ -111,6 +114,8 @@ bullet::ColliderComponent::addedHandler(
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
+	initializeFromTarget(node);
+	/*
 	if (!target->hasComponent<Transform>())
 		target->addComponent(Transform::create());
 	
@@ -134,6 +139,41 @@ bullet::ColliderComponent::addedHandler(
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 
+		_physicsWorld->addChild(_collider);
+	}
+	*/
+}
+
+void
+bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
+{
+	if (_targetTransform != nullptr && _physicsWorld != nullptr)
+		return;
+
+	if (!node->hasComponent<Transform>())
+		node->addComponent(Transform::create());
+	
+	_targetTransform = node->component<Transform>();
+
+	auto nodeSet = NodeSet::create(node)
+		->ancestors(true)
+		->where([](Node::Ptr node)
+		{
+			return node->hasComponent<bullet::PhysicsWorld>();
+		});
+	if (nodeSet->nodes().size() != 1)
+	{
+		std::stringstream stream;
+		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
+		//throw std::logic_error(stream.str());
+	}
+	else
+	{
+		updateColliderWorldTransform();
+
+		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+
+		std::cout << node->name() << ": collider added to the world" << std::endl;
 		_physicsWorld->addChild(_collider);
 	}
 }
@@ -173,7 +213,30 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 		->invert()
 		->append(_targetTransform->transform());
 
-	_targetTransform->transform()
+	auto newTransform = Matrix4x4::create()
 		->copyFrom(collider->worldTransform())
 		->append(worldToParentMatrix);
+
+	_targetTransform->transform()->copyFrom(newTransform);
+}
+
+void
+bullet::ColliderComponent::prependLocalTranslation(Vector3::Ptr localTranslation)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->prependLocalTranslation(_collider, localTranslation);
+}
+
+void
+bullet::ColliderComponent::prependRotationY(float radians)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->prependRotationY(_collider, radians);
+}
+
+void
+bullet::ColliderComponent::applyRelativeImpulse(Vector3::Ptr localImpulse)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->applyRelativeImpulse(_collider, localImpulse);
 }

@@ -51,11 +51,16 @@ namespace minko
 				Vector3Ptr		_linearVelocity;
 				Vector3Ptr		_linearFactor;
 				float			_linearDamping;
+				float			_linearSleepingThreshold;
 				Vector3Ptr		_angularVelocity;
 				Vector3Ptr		_angularFactor;
 				float			_angularDamping;
-				float			_restitution;
-				float			_friction;
+				float			_angularSleepingThreshold;
+				float			_restitution; // from bullet: best simulation results using zero restitution. 
+				float			_friction; // from bullet: best simulation results when friction is non-zero 
+				float			_rollingFriction;
+
+				bool			_deactivationDisabled;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 
@@ -66,21 +71,6 @@ namespace minko
 				{
 					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia));
 				}
-
-				inline
-				float
-				friction() const 
-				{
-					return _friction;
-				}
-
-				inline
-				void
-				setFriction(float value)
-				{
-					_friction = value;
-				}
-
 
 				inline
 				AbsShapePtr
@@ -172,6 +162,20 @@ namespace minko
 					return _restitution;
 				}
 
+				inline 
+				bool
+				deactivationDisabled() const
+				{
+					return _deactivationDisabled;
+				}
+
+				inline
+				void
+				disableDeactivation(bool value)
+				{
+					_deactivationDisabled = value;
+				}
+
 				void
 				setLinearVelocity(float, float, float);
 
@@ -197,11 +201,68 @@ namespace minko
 				{
 					_angularDamping	= value;
 				}
+
 				inline
 				void
 				setRestitution(float value)
 				{
 					_restitution	= value;
+				}
+
+				inline
+				float
+				angularSleepingThreshold() const
+				{
+					return _angularSleepingThreshold;
+				}
+
+				inline
+				float
+				linearSleepingThreshold()
+				{
+					return _linearSleepingThreshold;
+				}
+
+				inline
+				void
+				setLinearSleepingThreshold(float value)
+				{
+					_linearSleepingThreshold = value;
+				}
+
+				inline
+				void
+				setAngularSleepingThreshold(float value)
+				{
+					_angularSleepingThreshold = value;
+				}
+
+								inline
+				float
+				friction() const 
+				{
+					return _friction;
+				}
+
+				inline
+				void
+				setFriction(float value)
+				{
+					_friction = value;
+				}
+
+				inline
+				float 
+				rollingFriction() const
+				{
+					return _rollingFriction;
+				}
+
+				inline
+				void
+				setRollingFriction(float value)
+				{
+					_rollingFriction = value;
 				}
 
 				inline
