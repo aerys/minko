@@ -107,15 +107,11 @@ namespace minko
 				std::vector<Any>&	bindingsId	= Any::cast<std::vector<Any>&>(nodeInfo["bindingsIds"]);
 				int					materialId	= Any::cast<int&>(bindingsId[0]);	
 
-				mesh->addComponent(
-					component::Surface::create(
+				mesh->addComponent(component::Surface::create(
 					options->assetsLibrary()->geometry("cube"),
 					options->deserializedAssets()->material(materialId),
-#ifdef SPONZA
-					options->assetsLibrary()->effect("sponza lighting")));
-#else
-					options->assetsLibrary()->effect("directional light")));
-#endif // SPONZA
+                    options->parseOptions()->effect()
+                ));
 
 				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
 
