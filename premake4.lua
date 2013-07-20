@@ -2,7 +2,7 @@ solution "minko"
    configurations { "debug", "release" }
 
 -- examples
-include 'examples/mk-example'
+include 'examples/sponza'
 include 'examples/cube'
 
 -- core framework
