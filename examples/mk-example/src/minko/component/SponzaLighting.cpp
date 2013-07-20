@@ -63,9 +63,8 @@ SponzaLighting::SponzaLighting():
 		->set("sponza.lightWorldPosition4",	Vector3::create(-3.14f, 0.65f, 0.7f))
         ->set("sponza.lightAmbient4",		Vector3::create(0.25f, 0.12f, 0.0f))
 		->set("sponza.lightDiffuse4",		Vector3::create(1.0f, 0.7f, 0.5f))
-		->set("sponza.lightSpecular4",		Vector3::create(1.0f, 0.95f, 0.8f));
-	_data
-		->set("sponza.lightDistThres",	getDistanceThresholds());
+		->set("sponza.lightSpecular4",		Vector3::create(1.0f, 0.95f, 0.8f))
+		->set("sponza.lightDistThres",	    getDistanceThresholds());
 }
 
 void
