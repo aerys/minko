@@ -74,7 +74,7 @@ namespace minko
 
 			private:
 				ColliderMap					_colliderMap;
-				Vector3Ptr					_gravityVector;
+				RenderingPtr				_rendering;
 
 				btBroadphasePtr				_btBroadphase;
 				btCollisionConfigurationPtr	_btCollisionConfiguration;
@@ -82,16 +82,16 @@ namespace minko
 				btDispatcherPtr				_btDispatcher;
 				btDynamicsWorldPtr			_btDynamicsWorld;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
-				Signal<RenderingPtr>::Slot	_exitFrameSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetRemovedSlot;
+				Signal<RenderingPtr>::Slot			_exitFrameSlot;
 
 			public:
 				static
 				Ptr
-					create()
+					create(RenderingPtr rendering)
 				{
-					Ptr physicsWorld(new PhysicsWorld());
+					Ptr physicsWorld(new PhysicsWorld(rendering));
 
 					physicsWorld->initialize();
 
@@ -116,8 +116,23 @@ namespace minko
 				void
 				setWorldTransformFromCollider(ColliderPtr);
 
+				void
+				forceColliderWorldTransform(ColliderPtr, Matrix4x4Ptr);
+
+				void
+				setLinearVelocity(ColliderPtr, Vector3Ptr);
+
+				void
+				prependLocalTranslation(ColliderPtr, Vector3Ptr);
+
+				void
+				prependRotationY(ColliderPtr, float);
+
+				void
+				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
+
 			private:
-				PhysicsWorld();
+				PhysicsWorld(RenderingPtr);
 
 				void 
 				initialize();
@@ -197,6 +212,18 @@ namespace minko
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
+
+					void
+					setLinearVelocity(Vector3Ptr);
+
+					void
+					prependLocalTranslation(Vector3Ptr);
+
+					void
+					prependRotationY(float);
+
+					void
+					applyRelativeImpulse(Vector3Ptr);
 
 				private:
 					BulletCollider();

@@ -21,7 +21,13 @@
 using namespace minko::component;
 using namespace minko::math;
 
-Rendering::Ptr	renderingComponent;
+const float CAMERA_LIN_SPEED	= 0.05f;
+const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
+const float CAMERA_MASS			= 50.0f;
+const float CAMERA_FRICTION		= 0.6f;
+const std::string CAMERA_NAME   = "camera";
+
+Rendering::Ptr	rendering;
 auto			sponzaLighting	= SponzaLighting::create();
 auto			mesh			= scene::Node::create("mesh");
 auto			group			= scene::Node::create("group");
@@ -305,9 +311,96 @@ createFire(AssetsLibrary::Ptr assets)
 	return particleSystem;
 }
 
+component::bullet::ColliderComponent::Ptr
+initializeDefaultCameraCollider()
+{
+	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+	//cameraShape->setMargin(0.3f);
+	auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
+
+	cameraCollider->setRestitution(0.5f);
+	cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
+	cameraCollider->setFriction(CAMERA_FRICTION);
+	cameraCollider->disableDeactivation(true);
+	
+	return bullet::ColliderComponent::create(cameraCollider);
+}
+
+void
+initializeCamera()
+{
+    bullet::ColliderComponent::Ptr	cameraColliderComp = nullptr;
+
+    auto cameras = scene::NodeSet::create(group)
+			->descendants(true)
+			->where([](scene::Node::Ptr node)
+	{ 
+		return node->name() == CAMERA_NAME; 
+	});
+
+	bool cameraInGroup = false;
+	if (cameras->nodes().empty())
+	{
+		std::cout << "MANUAL CAMERA" << std::endl;
+
+		// default camera
+		camera = scene::Node::create(CAMERA_NAME);
+
+		camera->addComponent(Transform::create());
+		camera->component<Transform>()->transform()
+			->appendTranslation(0.0f, 2.75f, 5.0f)
+			->appendRotationY(PI*0.5);
+
+		cameraColliderComp = initializeDefaultCameraCollider();
+		camera->addComponent(cameraColliderComp);
+	}
+	else 
+	{
+		// set-up camera from the mk file
+		camera = cameras->nodes().front();
+		cameraInGroup = true;
+
+		std::cout << "parsed camera's transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
+
+		if (camera->hasComponent<component::bullet::ColliderComponent>())
+		{
+			std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
+			cameraColliderComp = camera->component<component::bullet::ColliderComponent>();
+		}
+		else
+			std::cout << "PARSED CAMERA W/OUT COLLIDER" << std::endl;
+	}
+
+	if (!camera->hasComponent<Transform>())
+		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
+
+	camera->addComponent(rendering);
+	camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+
+    root->addChild(camera);
+}
+
+void
+initializePhysics()
+{
+    auto physicWorld = bullet::PhysicsWorld::create();
+
+	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
+	root->addComponent(physicWorld);
+}
+
 int main(int argc, char** argv)
 {
-	file::MkParser::registerController("colliderController", std::bind(deserializeBullet, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+	file::MkParser::registerController(
+        "colliderController",
+        std::bind(
+            deserializeBullet,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4
+        )
+    );
 
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
@@ -318,25 +411,13 @@ int main(int argc, char** argv)
 	auto context = render::WebGLContext::create();
 #else
     glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko Examples", NULL, NULL);
+    auto window = glfwCreateWindow(800, 600, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
 #endif
 
-	root->addChild(group)->addChild(camera);
-
-	renderingComponent = Rendering::create(context);
-    renderingComponent->backgroundColor(0x7F7F7FFF);
-	camera->addComponent(renderingComponent);
-    camera->addComponent(Transform::create());
-	camera->component<Transform>()->transform()->appendTranslation(0.f, 1.f, 1.8f)->appendRotationY(PI/2.f);
-    camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-
-	auto physicWorld = bullet::PhysicsWorld::create();
-
-	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
-	root->addComponent(physicWorld);
+    initializeCamera();
 
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
@@ -367,8 +448,9 @@ int main(int argc, char** argv)
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+       	root->addChild(group);
 		root->addComponent(sponzaLighting);
-		root->addComponent(DirectionalLight::create());
+		//root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
@@ -382,10 +464,6 @@ int main(int argc, char** argv)
 		for (unsigned int i = 0; i < fireNodes->nodes().size(); ++i)
 		{
 			scene::Node::Ptr currentNode = fireNodes->nodes()[i];
-
-			/*component::Surface::Ptr currentSurface = currentNode->components<component::Surface>()[0];
-
-			currentNode->removeComponent(currentSurface);*/
 
 			if (i == 3)
 				currentNode->component<Transform>()->transform()->appendTranslation(0., .06, 0.);
@@ -419,10 +497,10 @@ int main(int argc, char** argv)
         else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
 
-	    renderingComponent->render();
+	    rendering->render();
 
 		sponzaLighting->step();
-	    //printFramerate();
+	    printFramerate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
