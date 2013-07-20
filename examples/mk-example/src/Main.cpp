@@ -17,9 +17,13 @@
 #endif
 
 #include "minko/component/SponzaLighting.hpp"
+#include "minko/component/Fire.hpp"
 
 using namespace minko::component;
 using namespace minko::math;
+
+const float WINDOW_WIDTH        = 1024;
+const float WINDOW_HEIGHT       = 500;
 
 const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
@@ -261,52 +265,6 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
-ParticleSystem::Ptr
-createFire(AssetsLibrary::Ptr assets)
-{
-	ParticleSystem::Ptr particleSystem;
-
-#define SCALE 0.05
-
-	particleSystem = ParticleSystem::create(
-		assets->context(),
-		assets,
-		200,
-		particle::sampler::RandomValue<float>::create(1, 1.3),
-		particle::shape::Sphere::create(1 * SCALE),
-		particle::StartDirection::NONE,
-		0);
-	particleSystem->material()
-		->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
-		->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
-
-	particleSystem->add(particle::modifier::StartForce::create(
-		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE),
-		particle::sampler::RandomValue<float>::create(6. * SCALE, 8. * SCALE),
-		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE)
-	));
-
-	particleSystem->add(particle::modifier::StartSize::create(
-		particle::sampler::RandomValue<float>::create(1.3 * SCALE, 1.6 * SCALE)
-	));
-
-	particleSystem->add(particle::modifier::StartSprite::create(
-		particle::sampler::RandomValue<float>::create(0. * SCALE, 4. * SCALE)
-	));
-
-	particleSystem->add(particle::modifier::StartAngularVelocity::create(
-		particle::sampler::RandomValue<float>::create(0.1 * SCALE, 2. * SCALE)
-	));
-
-	particleSystem->add(particle::modifier::SizeOverTime::create());
-	particleSystem->add(particle::modifier::ColorOverTime::create());
-
-	particleSystem->updateRate(30);
-	particleSystem->fastForward(2, 30);
-	particleSystem->play();
-	return particleSystem;
-}
-
 component::bullet::ColliderComponent::Ptr
 initializeDefaultCameraCollider()
 {
@@ -326,11 +284,11 @@ void
 initializeCamera()
 {
     auto cameras = scene::NodeSet::create(group)
-			->descendants(true)
-			->where([](scene::Node::Ptr node)
-	{ 
-		return node->name() == CAMERA_NAME; 
-	});
+		->descendants(true)
+		->where([](scene::Node::Ptr node)
+        { 
+	        return node->name() == CAMERA_NAME; 
+        });
 
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
@@ -369,7 +327,7 @@ initializeCamera()
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
 
 	camera->addComponent(rendering);
-	camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+    camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
 
     root->addChild(camera);
 }
@@ -399,13 +357,13 @@ int main(int argc, char** argv)
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
 
 	auto context = render::WebGLContext::create();
 #else
     glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Sponza Example", NULL, NULL);
+    auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
@@ -453,21 +411,16 @@ int main(int argc, char** argv)
 		group->addComponent(Transform::create());
 		group->addChild(assets->node("models/sponza-lite-physics.mk"));
 		
-		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)->descendants(false)->where(
-			[](scene::Node::Ptr node)
+		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
+            ->descendants()
+            ->where([](scene::Node::Ptr node)
 			{
 				return node->name() == "fire";
 			});
 
-		for (unsigned int i = 0; i < fireNodes->nodes().size(); ++i)
-		{
-			scene::Node::Ptr currentNode = fireNodes->nodes()[i];
-
-			if (i == 3)
-				currentNode->component<Transform>()->transform()->appendTranslation(0., .06, 0.);
-
-			currentNode->addComponent(createFire(assets));
-		}
+        auto fire = Fire::create(assets);
+        for (auto fireNode : fireNodes->nodes())
+			fireNode->addComponent(fire);
 	});
 
 	try
