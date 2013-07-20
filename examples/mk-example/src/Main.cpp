@@ -27,12 +27,13 @@ const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME   = "camera";
 
-Rendering::Ptr	rendering;
-auto			sponzaLighting	= SponzaLighting::create();
-auto			mesh			= scene::Node::create("mesh");
-auto			group			= scene::Node::create("group");
-auto			camera			= scene::Node::create("camera");
-auto			root			= scene::Node::create("root");
+Rendering::Ptr	                rendering           = nullptr;
+bullet::ColliderComponent::Ptr	cameraColliderComp  = nullptr;
+auto			                sponzaLighting	    = SponzaLighting::create();
+auto			                mesh			    = scene::Node::create("mesh");
+auto			                group			    = scene::Node::create("group");
+auto			                camera			    = scene::Node::create("camera");
+auto			                root			    = scene::Node::create("root");
 
 
 #ifdef EMSCRIPTEN
@@ -165,7 +166,7 @@ deserializeShape(Qark::Map&							shapeData,
 		        deserializedShape->setLocalScaling(scaling);
 		        //deserializedShape->apply(modelToWorldMatrix);
 
-		        deserializedShape->setCenterOfMassOffset(offset, scaling);
+		        deserializedShape->setCenterOfMassOffset(offset, modelToWorldMatrix);
             }
 			break;
 		default:
@@ -176,7 +177,7 @@ deserializeShape(Qark::Map&							shapeData,
 }
 
 std::shared_ptr<bullet::ColliderComponent>
-deserializeBullet(Qark::Map&						nodeInformation,
+deserializeBullet(Qark::Map&						nodeInformation, 
 				  file::MkParser::ControllerMap&	controllerMap,
 				  file::MkParser::NodeMap&			nodeMap,
 				  scene::Node::Ptr&					node)
@@ -186,20 +187,17 @@ deserializeBullet(Qark::Map&						nodeInformation,
 
 	bullet::AbstractPhysicsShape::Ptr shape = deserializeShape(shapeData, node);
 
-	float mass = 1;
-
-	double vx =  0;
-	double vy =  0;
-	double vz =  0;
-	double avx = 0;
-	double avy = 0;
-	double avz = 0;
-	bool sleep	= 0;
-	bool rotate = 0;
-
-	double density		= 0;
-	double friction		= 0;
-	double restitution	= 0.5;
+	float mass			= 1.0f;
+	double vx			= 0.0;
+	double vy			= 0.0;
+	double vz			= 0.0;
+	double avx			= 0.0;
+	double avy			= 0.0;
+	double avz			= 0.0;
+	bool sleep			= false;
+	bool rotate			= false;
+	double friction		= 0.5; // bullet's advices
+	double restitution	= 0.0; // bullet's advices
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -207,42 +205,40 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		std::stringstream	stream;
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
-		density = readAndSwap<double>(stream);
-		//friction = readAndSwap<double>(stream);
-		//restitution = readAndSwap<double>(stream);
+		double density	= readAndSwap<double>(stream); // do not care about it at this point
+		friction		= readAndSwap<double>(stream);
+		restitution		= readAndSwap<double>(stream);
 	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
-		mass = 0;
+		mass = 0.0; // static object
 	else
 	{
 		Qark::ByteArray& dynamicsData = Any::cast<Qark::ByteArray&>(colliderData["dynamics"]);
 		std::stringstream	stream;
 		stream.write(&*dynamicsData.begin(), dynamicsData.size());
 
-		vx = readAndSwap<double>(stream);
-		vy = readAndSwap<double>(stream);
-		vz = readAndSwap<double>(stream);
-
-		avx = readAndSwap<double>(stream);
-		avy = readAndSwap<double>(stream);
-		avz = readAndSwap<double>(stream);
-
+		vx		= readAndSwap<double>(stream);
+		vy		= readAndSwap<double>(stream);
+		vz		= readAndSwap<double>(stream);
+		avx		= readAndSwap<double>(stream);
+		avy		= readAndSwap<double>(stream);
+		avz		= readAndSwap<double>(stream);
 		sleep	= readAndSwap<bool>(stream);
-		rotate = readAndSwap<bool>(stream);
+		rotate	= readAndSwap<bool>(stream);
 	}
 
 	bullet::Collider::Ptr collider = bullet::Collider::create(mass, shape);
 
-	collider->setAngularVelocity(avx, avy, avz);
 	collider->setLinearVelocity(vx, vy, vz);
+	collider->setAngularVelocity(avx, avy, avz);
 	collider->setFriction(friction);
 	collider->setRestitution(restitution);
 
-	if (rotate == false)
-	{
-		collider->setAngularFactor(0, 0, 0);
-	}
+	if (!rotate)
+		collider->setAngularFactor(0.0f, 0.0f, 0.0f);
+	//collider->disableDeactivation(sleep == false);
+	collider->disableDeactivation(true);
 
 	return bullet::ColliderComponent::create(collider);
 }
@@ -271,6 +267,7 @@ createFire(AssetsLibrary::Ptr assets)
 	ParticleSystem::Ptr particleSystem;
 
 #define SCALE 0.05
+
 	particleSystem = ParticleSystem::create(
 		assets->context(),
 		assets,
@@ -283,24 +280,23 @@ createFire(AssetsLibrary::Ptr assets)
 		->set("material.diffuseColor",	Vector4::create(.3f, .07f, .02f, 1.f))
 		->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
 
-
 	particleSystem->add(particle::modifier::StartForce::create(
 		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE),
 		particle::sampler::RandomValue<float>::create(6. * SCALE, 8. * SCALE),
 		particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE)
-		));
+	));
 
 	particleSystem->add(particle::modifier::StartSize::create(
 		particle::sampler::RandomValue<float>::create(1.3 * SCALE, 1.6 * SCALE)
-		));
+	));
 
 	particleSystem->add(particle::modifier::StartSprite::create(
 		particle::sampler::RandomValue<float>::create(0. * SCALE, 4. * SCALE)
-		));
+	));
 
 	particleSystem->add(particle::modifier::StartAngularVelocity::create(
 		particle::sampler::RandomValue<float>::create(0.1 * SCALE, 2. * SCALE)
-		));
+	));
 
 	particleSystem->add(particle::modifier::SizeOverTime::create());
 	particleSystem->add(particle::modifier::ColorOverTime::create());
@@ -329,8 +325,6 @@ initializeDefaultCameraCollider()
 void
 initializeCamera()
 {
-    bullet::ColliderComponent::Ptr	cameraColliderComp = nullptr;
-
     auto cameras = scene::NodeSet::create(group)
 			->descendants(true)
 			->where([](scene::Node::Ptr node)
@@ -349,7 +343,7 @@ initializeCamera()
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
 			->appendTranslation(0.0f, 2.75f, 5.0f)
-			->appendRotationY(PI*0.5);
+			->appendRotationY(PI * 0.5);
 
 		cameraColliderComp = initializeDefaultCameraCollider();
 		camera->addComponent(cameraColliderComp);
@@ -383,7 +377,7 @@ initializeCamera()
 void
 initializePhysics()
 {
-    auto physicWorld = bullet::PhysicsWorld::create();
+    auto physicWorld = bullet::PhysicsWorld::create(rendering);
 
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
@@ -417,9 +411,7 @@ int main(int argc, char** argv)
 	auto context = render::OpenGLES2Context::create();
 #endif
 
-    initializeCamera();
-
-	auto assets	= AssetsLibrary::create(context)
+    auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
@@ -446,8 +438,14 @@ int main(int argc, char** argv)
 		->queue("Particles.effect")
 		->queue("models/sponza-lite-physics.mk");
 
+    rendering = Rendering::create(context);
+
+    initializePhysics();
+
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
+        initializeCamera();
+
        	root->addChild(group);
 		root->addComponent(sponzaLighting);
 		//root->addComponent(DirectionalLight::create());
@@ -488,14 +486,28 @@ int main(int argc, char** argv)
 #else
 	while(!glfwWindowShouldClose(window))
     {
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -.1f);
-        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, .1f);
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
+        if (cameraColliderComp == nullptr)
+		{
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+		}
+		else
+		{
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+		}
 
 	    rendering->render();
 
