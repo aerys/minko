@@ -1,9 +1,8 @@
 -- A project defines one build target
-project "minko-example-mk-physic"
+project "minko-example-sponza"
 	kind "ConsoleApp"
 	language "C++"
 	links {
-		"minko-jpeg",
 		"minko-png",
 		"minko-mk",
 		"minko-bullet",
@@ -18,7 +17,6 @@ project "minko-example-mk-physic"
 		"../../framework/src",
 		"../../plugins/mk/src",
 		"../../plugins/bullet/src",
-		"../../plugins/jpeg/src",
 		"../../plugins/webgl/src",
 		"../../plugins/png/src",
 		"../../plugins/particles/src"
