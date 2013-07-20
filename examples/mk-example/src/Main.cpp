@@ -16,10 +16,6 @@
 	#include "GLFW/glfw3.h"
 #endif
 
-#ifndef SPONZA
-#error You should define the temporary SPONZA macro in the minko-example-mk-physic and minko-mk projects yourself in order to have the new shader
-#endif // SPONZA
-
 #include "minko/component/SponzaLighting.hpp"
 
 using namespace minko::component;
@@ -346,14 +342,7 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
-		->geometry("cube", geometry::CubeGeometry::create(context))
-		->queue("Basic.effect")
-		->queue("SponzaLighting.effect")
-		->queue("DirectionalLight.effect")
-		->queue("texture/box.png")
-		->queue("texture/firefull.jpg")
-		->queue("Particles.effect")
-		->queue("models/sponza-lite-physics.mk");
+		->geometry("cube", geometry::CubeGeometry::create(context));
 
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
@@ -365,6 +354,19 @@ int main(int argc, char** argv)
 #ifdef DEBUG
 	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
 #endif
+
+    // load sponza lighting effect and set it as the default effect
+    assets->load("effect/SponzaLighting.effect");
+    assets->defaultOptions()->effect(assets->effect("sponza lighting"));
+
+    // load other assets
+    assets
+		->queue("Basic.effect")
+		->queue("DirectionalLight.effect")
+		->queue("texture/box.png")
+		->queue("texture/firefull.jpg")
+		->queue("Particles.effect")
+		->queue("models/sponza-lite-physics.mk");
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
