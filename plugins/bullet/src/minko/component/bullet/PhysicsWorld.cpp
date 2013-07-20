@@ -32,9 +32,10 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-bullet::PhysicsWorld::PhysicsWorld():
+bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
 	AbstractComponent(),
 	_colliderMap(),
+	_rendering(rendering),
 	_btBroadphase(nullptr),
 	_btCollisionConfiguration(nullptr),
 	_btConstraintSolver(nullptr),
@@ -44,45 +45,13 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_targetRemovedSlot(nullptr),
 	_exitFrameSlot(nullptr)
 {
-
+	if (_rendering == nullptr)
+		throw std::invalid_argument("rendering");
 }
 
 void 
 bullet::PhysicsWorld::initialize()
 {
-	/*
-	for (float ang = -90.0f; ang < 90.0f; ang += 10.0f)
-	{
-		for (uint iter = 0; iter < 20; ++iter)
-		{
-			Vector3::Ptr axis = Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
-			float angRad = ang * (float)PI / 180.0f;
-			Quaternion::Ptr quat = Quaternion::create()->initialize(axis, angRad);
-			Matrix4x4::Ptr	mat	= quat->toMatrix();
-			btTransform btTransf;
-			toBulletTransform(mat, btTransf);
-			Matrix4x4::Ptr fromBt = fromBulletTransform(btTransf);
-
-			Vector3::Ptr vec	= Vector3::create((float)rand(), (float)rand(), (float)rand())->normalize();
-			btVector3 btVec(vec->x(), vec->y(), vec->z());
-
-			vec = mat->project(vec);
-			btVec = btTransf(btVec);
-			if (fabsf(vec->x() - btVec.x()) > 1e-6f
-				|| fabsf(vec->y() - btVec.y()) > 1e-6f
-				|| fabsf(vec->z() - btVec.z()) > 1e-6f)
-				throw std::logic_error("aie X2");
-
-			for (uint i = 0; i < 16; ++i)
-			{
-				if (fabsf(mat->values()[i] - fromBt->values()[i]) > 1e-6f)
-					throw std::logic_error("aie");
-			}
-			
-		}
-	}
-	*/
-
 	// straightforward physics world initialization for the time being
 	_btBroadphase				= std::shared_ptr<btDbvtBroadphase>(new btDbvtBroadphase());
 	_btCollisionConfiguration	= std::shared_ptr<btDefaultCollisionConfiguration>(new btDefaultCollisionConfiguration());
@@ -113,11 +82,21 @@ bullet::PhysicsWorld::initialize()
 
 void 
 bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+										 Node::Ptr target)
 {
 	if (target->components<PhysicsWorld>().size() > 1)
 		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
 
+	// ugly solution to get rid of a cyclic dependency when one wants to add a collider to the camera.
+	// camera collider is lost because the PhysicsWorld is not initialized yet because the camera
+	// stores the Rendering.
+	_exitFrameSlot = _rendering->exitFrame()->connect(std::bind(
+		&bullet::PhysicsWorld::exitFrameHandler,
+		shared_from_this(),
+		std::placeholders::_1
+		));
+
+	/*
 	auto nodeSet		= NodeSet::create(target->root())
 		->descendants(true)
 		->where([](Node::Ptr node)
@@ -138,13 +117,14 @@ bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller,
 		shared_from_this(),
 		std::placeholders::_1
 		));
+		*/
 }
 
 void 
 bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+										   Node::Ptr target)
 {
-	std::cout << "bullet::PhysicsWorld::targetRemovedHandler" << std::endl;
+	_exitFrameSlot = nullptr;
 }
 
 void
@@ -213,15 +193,8 @@ bullet::PhysicsWorld::updateColliders()
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
-		auto matrix = Matrix4x4::create()
-			->copyFrom(it->first->worldTransform());
-		const float scaling = powf(matrix->determinant3x3(), 1.0f/3.0f);
-		//matrix->prepend
-
-		//collider->updateColliderWorldTransform(it->first->worldTransform());
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
 	}
-
 }
 
 void
@@ -232,6 +205,66 @@ bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
 		return;
 
 	it->second->setWorldTransform(collider->worldTransform());
+}
+
+void
+bullet::PhysicsWorld::forceColliderWorldTransform(Collider::Ptr collider, Matrix4x4::Ptr worldTransform)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	const float scaling = powf(fabsf(worldTransform->determinant3x3()), 1.0f/3.0f);
+	if (scaling < 1e-6f)
+		throw std::logic_error("Failed to force collider's world transform (null scaling).");
+
+	const float invScaling = 1.0f/scaling;
+	auto scaleFreeMatrix = Matrix4x4::create()
+		->copyFrom(worldTransform)
+		->prependScaling(invScaling, invScaling, invScaling);
+
+	it->second->setWorldTransform(scaleFreeMatrix);
+	it->first->updateColliderWorldTransform(scaleFreeMatrix);
+}
+
+void
+bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr velocity)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->setLinearVelocity(velocity);
+}
+
+void
+bullet::PhysicsWorld::prependLocalTranslation(Collider::Ptr collider, Vector3::Ptr translation)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->prependLocalTranslation(translation);
+}
+
+void
+bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->prependRotationY(radians);
+}
+
+void
+bullet::PhysicsWorld::applyRelativeImpulse(Collider::Ptr collider, Vector3::Ptr relativeForce)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->applyRelativeImpulse(relativeForce);
 }
 
 /*static*/
@@ -256,7 +289,10 @@ void
 bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
-	toBulletTransform(transform->rotation(), transform->translationVector(), output);
+	toBulletTransform(
+		transform->rotation(), 
+		transform->translationVector(), output
+	);
 	/*
 	auto translation	= transform->translationVector();
 	auto rotation		= transform->rotation();
