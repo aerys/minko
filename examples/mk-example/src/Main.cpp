@@ -101,66 +101,66 @@ deserializeShape(Qark::Map&							shapeData,
 			deserializedShape = deserializeShape(Any::cast<Qark::Map&>(shapeData["shape"]), node);
 			break;
 		case 2: // BOX
-			{
-			Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-			stream.write(&*source.begin(), source.size());
+            {
+		        Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+		        stream.write(&*source.begin(), source.size());
 
-			rx = readAndSwap<double>(stream);
-			ry = readAndSwap<double>(stream);
-			rz = readAndSwap<double>(stream);
+		        rx = readAndSwap<double>(stream);
+		        ry = readAndSwap<double>(stream);
+		        rz = readAndSwap<double>(stream);
 
-			deserializedShape = bullet::BoxShape::create(rx, ry, rz);
-			}
+		        deserializedShape = bullet::BoxShape::create(rx, ry, rz);
+            }
 			break;
 		case 5 : // CONE
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+            {
+			    Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			    stream.write(&*source.begin(), source.size());
 
-				r = readAndSwap<double>(stream);
-				h = readAndSwap<double>(stream);
+			    r = readAndSwap<double>(stream);
+			    h = readAndSwap<double>(stream);
 
-				deserializedShape = bullet::ConeShape::create(r, h);
-			}
+			    deserializedShape = bullet::ConeShape::create(r, h);
+            }
 			break;
 		case 6 : // BALL
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+            {
+			    Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			    stream.write(&*source.begin(), source.size());
 
-				r = readAndSwap<double>(stream);
+			    r = readAndSwap<double>(stream);
 
-				deserializedShape = bullet::SphereShape::create(r);
-			}
+			    deserializedShape = bullet::SphereShape::create(r);
+            }
 			break;
 		case 7 : // CYLINDER
-			{
-				Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
-				stream.write(&*source.begin(), source.size());
+            {
+			    Qark::ByteArray& source = Any::cast<Qark::ByteArray&>(shapeData["data"]);
+			    stream.write(&*source.begin(), source.size());
 
-				r = readAndSwap<double>(stream);
-				h = readAndSwap<double>(stream);
+			    r = readAndSwap<double>(stream);
+			    h = readAndSwap<double>(stream);
 
-				deserializedShape = bullet::CylinderShape::create(r, h, r);
-			}
+			    deserializedShape = bullet::CylinderShape::create(r, h, r);
+            }
 			break;
 		case 100 : // TRANSFORM
-			{
-				deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
-				Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
-				auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
-				const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
+            {
+		        deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
+		        Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+		        auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
+		        const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
 #ifdef DEBUG
-				std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset)
-					<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
+		        std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset)
+			        << "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
 #endif // DEBUG
 
-				deserializedShape->setLocalScaling(scaling);
-				//deserializedShape->apply(modelToWorldMatrix);
+		        deserializedShape->setLocalScaling(scaling);
+		        //deserializedShape->apply(modelToWorldMatrix);
 
-				deserializedShape->setCenterOfMassOffset(offset, scaling);
-			}
+		        deserializedShape->setCenterOfMassOffset(offset, scaling);
+            }
 			break;
 		default:
 			deserializedShape = nullptr;
@@ -361,9 +361,6 @@ int main(int argc, char** argv)
 
     // load other assets
     assets
-		->queue("Basic.effect")
-		->queue("DirectionalLight.effect")
-		->queue("texture/box.png")
 		->queue("texture/firefull.jpg")
 		->queue("Particles.effect")
 		->queue("models/sponza-lite-physics.mk");
