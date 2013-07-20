@@ -2,7 +2,6 @@
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoPNG.hpp"
-#include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoMk.hpp"
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
@@ -371,7 +370,6 @@ int main(int argc, char** argv)
 
     auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
 
@@ -394,7 +392,7 @@ int main(int argc, char** argv)
     assets
 		->queue("texture/firefull.jpg")
 		->queue("Particles.effect")
-		->queue("models/sponza-lite-physics.mk");
+		->queue("models/Sponza_lite.mk");
 
     rendering = Rendering::create(context);
 
