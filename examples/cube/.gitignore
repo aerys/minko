@@ -2,3 +2,4 @@ bin
 bin/release/effect
 bin/debug/effect
 obj
+effect
