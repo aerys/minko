@@ -3,28 +3,13 @@ Minko (for HTML5)
 
 Getting started
 ---------------
-### Windows
-
+### Windows / OS X / Linux
+* **You need an internet connection**
 * Install [Vagrant](http://www.vagrantup.com/)
 * Open a command prompt
+* `cd <minko-cpp>`
 * `vagrant up`
 * `vagrant ssh`
-* `cd /vagrant`
 * `tools/lin/bin/premake4 --platform=emscripten gmake`
-* `make config=release verbose=1`
-* `exit`
-* `start examples\bin\release\minko-examples.html`
-
-### OS X
-
-* `cd /vagrant`
-* `tools/mac/bin/premake4 --platform=emscripten gmake`
-* `make config=release verbose=1`
-* `open examples/bin/release/minko-examples.html`
-
-### Linux
-
-* `cd /vagrant`
-* `tools/lin/bin/premake4 --platform=emscripten gmake`
-* `make config=release verbose=1`
-* `firefox examples/bin/release/minko-examples.html`
+* `make verbose=1 config=release`
+* Open `examples/bin/release/minko-examples.html` in Chrome or Firefox
