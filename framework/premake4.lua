@@ -24,18 +24,20 @@ project "minko-framework"
 	-- linux
 	configuration { "linux" }
 		links { "GL", "GLU" }
-		buildoptions "-std=c++11"
+		buildoptions { "-std=c++11" }
 
 	-- windows
 	configuration { "windows", "x32" }
-	links { "glew32" }
-	includedirs { "lib/glew/include" }
-	libdirs { "lib/glew/bin/win32" }
+		links { "glew32" }
+		includedirs { "../deps/win/include" }
+		libdirs { "../deps/win/lib" }
 
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
+		includedirs { "../deps/mac/include" }
+		libdirs { "../deps/mac/lib" }
 
 	-- emscripten
-	configuration { "emscripten", "release" }
-		buildoptions { "-std=c++11" }
+	configuration { "emscripten" }
+		flags { "Optimize" }
