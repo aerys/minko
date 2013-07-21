@@ -1,3 +1,5 @@
 /minko-framework.vcxproj
 /minko-framework.vcxproj.filters
 /minko-framework.vcxproj.user
+bin
+obj

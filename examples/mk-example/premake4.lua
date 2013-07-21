@@ -8,7 +8,6 @@ project "minko-example-mk-physic"
 		"minko-mk",
 		"minko-bullet",
 		"minko-particles",
-		"minko-webgl",
 		"minko-framework"
 	}
 	files { "**.hpp", "**.h", "**.cpp" }
@@ -23,10 +22,6 @@ project "minko-example-mk-physic"
 		"../../plugins/png/src",
 		"../../plugins/particles/src"
 	}
-	defines {
-		-- "MINKO_FRAMEWORK_EFFECTS_PATH='\"" .. path.getabsolute("../../framework/effect" .. "\"'")
-		"MINKO_FRAMEWORK_EFFECTS_PATH=\"" .. path.getabsolute("../../framework/effect" .. "\"")
-	}
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -40,21 +35,52 @@ project "minko-example-mk-physic"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		libdirs {
+			"../../deps/lin/lib"
+		}
+		includedirs {
+			"../../deps/lin/include"
+		}
 		buildoptions "-std=c++11"
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
+		}
 
 	-- windows
 	configuration { "windows", "x32" }
 		links { "OpenGL32", "glfw3dll", "glew32" }
 		libdirs {
-			"../../lib/glfw/bin/win32",
-			"../../framework/lib/glew/bin/win32"
+			"../../deps/win/lib"
+		}
+		includedirs {
+			"../../deps/win/include"
+		}
+		postbuildcommands {
+			'xcopy ..\\..\\framework\\effect . /E'
 		}
 
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
-		links { "m", "glfw3", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
+		links {
+			"m",
+			"glfw3",
+			"Cocoa.framework",
+			"OpenGL.framework",
+			"IOKit.framework"
+		}
+		libdirs {
+			"../../deps/mac/lib"
+		}
+		includedirs {
+			"../../deps/mac/include"
+		}
+
+	-- emscripten
+	configuration { "emscripten" }
+		flags { "Optimize" }
+		links {
+			"minko-webgl"
+		}

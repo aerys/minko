@@ -3,9 +3,9 @@ project "minko-jpeg"
 	language "C++"
 	files { "**.hpp", "**.h", "**.cpp", "**.c" }
 	includedirs {
-	"src",
-	"lib/jpeg-compressor/src",
-	"../../framework/src"
+		"src",
+		"lib/jpeg-compressor/src",
+		"../../framework/src"
 	}
 	links { "minko-framework" }
 	
@@ -21,16 +21,15 @@ project "minko-jpeg"
 
 	-- linux
 	configuration { "linux" }
-		buildoptions "-std=c++11"
+		buildoptions { "-std=c++11" }
 
 	-- windows
 	configuration { "windows", "x32" }
 
 	-- macos
-	configuration { "debug", "macosx" }
+	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
 
-	configuration { "emscripten", "release" }
-		buildoptions { "-std=c++11" }
+	-- emscripten
+	configuration { "emscripten" }
+		flags { "Optimize" }

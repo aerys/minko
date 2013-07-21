@@ -44,7 +44,13 @@ int main(int argc, char** argv)
         ->queue("texture/box.png")
 		->queue("Basic.effect");
 
-	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
+	if (argc > 1)
+	{
+		for (int i = 1; i < argc; ++i)
+			assets->defaultOptions()->includePaths().insert(std::string(argv[i]));
+	}
+	else
+		assets->defaultOptions()->includePaths().insert(".");
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{

@@ -45,10 +45,12 @@ project "minko-example-light"
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
+		includedirs { "../deps/mac/include" }
+		libdirs { "../deps/mac/lib" }
 
-	configuration { "emscripten", "release" }
+	-- emscripten
+	configuration { "emscripten" }
+		flags { "Optimize" }
 		buildoptions { "-std=c++11" }
 		local bin = "bin/release/minko-examples"
 		postbuildcommands {
