@@ -64,7 +64,8 @@ namespace minko
 					_idToTexture[assetId] = _library->texture(assetName);
 				}
 				else if (assetType == MkTypes::MATERIAL_ASSET)
-				{					std::vector<Any>& properties = Any::cast<std::vector<Any>&>(assetData["bindings"]);
+				{					
+					std::vector<Any>& properties = Any::cast<std::vector<Any>&>(assetData["bindings"]);
 
 					std::shared_ptr<data::Provider> material = TypeDeserializer::provider(properties, _idToTexture, nameConverter);
 
