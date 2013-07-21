@@ -28,7 +28,8 @@
 		"SPECULAR"				: "material.shininess",
 		"SPECULAR_MAP"			: "material.specularMap",
 		"NORMAL_MAP"			: "material.normalMap",
-		"ALPHA_MAP"				: "material.alphaMap"
+		"ALPHA_MAP"				: "material.alphaMap",
+		"ALPHA_THRESHOLD"		: "material.alphaThreshold"
 	},
 
 	"priority"			: 0,
@@ -40,7 +41,7 @@
 		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
 
 	"includes"		: [ "Phong.glsl" ],
@@ -100,6 +101,7 @@
 				vec4		diffuseColor;
 				vec3		specular;
 				float		shininess;
+				float		alphaThreshold;
 			};
 			uniform sampler2D	specularMap;
 			uniform sampler2D	normalMap;
@@ -138,10 +140,10 @@
 			uniform SponzaLighting		sponza;
 			uniform vec3				cameraPosition;
 
-			varying vec3		worldPosition;
-			varying vec3		worldNormal;
-			varying vec3		worldTangent;
-			varying vec2		vertexUV;
+			varying vec3				worldPosition;
+			varying vec3				worldNormal;
+			varying vec3				worldTangent;
+			varying vec2				vertexUV;
 			
 			// compute the world space to tangent space matrix using the model's normal and tangent
 			mat3 getWorldToTangentSpaceMatrix(vec3 wsNormal, vec3 wsTangent)
@@ -154,13 +156,6 @@
 					wsNormal
 				));
 			}
-			/*
-			float getLightContribution(vec3 normal, vec3 eyeVector, 
-									   vec3 lightVector, vec3 lightAmbient, vec3 lightDiffuse, vec3 lightSpecular)
-			{
-				vec3 rgb = 
-			}
-			*/
 			
 			void main(void)
 			{
@@ -256,10 +251,11 @@
 					0.0,
 					1.0
 				);
-				//gl_FragColor = clamp(diffuse, 0.0, 1.0);
 				
-				//gl_FragColor = vec4(sponza.lightWorldPosition2.xyz, 1.0);
-				
+				#ifdef ALPHA_THRESHOLD
+					if (gl_FragColor.a < material.alphaThreshold)
+						discard;
+				#endif
 			}
 		"
 	}]
