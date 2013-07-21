@@ -8,19 +8,23 @@ function path.joinall(...)
   return s
 end
 
-function printt(table)
-  if not #table then
-    io.write('{}')
-  else
-    io.write('{')
-    io.write(tostring(table[1]))
-    for i = 2, #table do
-      io.write(', ')
-      io.write(tostring(table[i]))
-    end
-    printf('}')
+--[[ prettyprint(struct, [limit], [indent])   Recursively print arbitrary data. 
+  Set limit (default 100) to stanch infinite loops.
+  Indents tables as [KEY] VALUE, nested tables as [KEY] [KEY]...[KEY] VALUE
+  Set indent ("") to prefix each line:    Mytable [KEY] [KEY]...[KEY] VALUE
+--]]
+function prettyprint(s, l, i) -- recursive print (structure, limit, indent)
+  l = (l) or 100; i = i or "";  -- default item limit, indent string
+  if (l<1) then print "ERROR: Item limit reached."; return l-1 end;
+  local ts = type(s);
+  if (ts ~= "table") then print (i,ts,s); return l-1 end
+  print (i,ts);           -- print "table"
+  for k,v in pairs(s) do  -- print "[KEY] VALUE"
+    l = prettyprint(v, l, i.."\t["..tostring(k).."]");
+    if (l < 0) then break end
   end
-end
+  return l
+end 
 
 function os.copyfiles(src, dst)
   assert(os.isdir(src), 'bad argument #1 to os.copyfiles (directory expected)')

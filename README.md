@@ -11,22 +11,36 @@ It provides a powerful editor on top of a robust, extensible and fully documente
 
 Get started
 ===========
-Linux
------
+### OS X / Linux 
+* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
+* Open a command prompt
+* `cd <minko-cpp>`
 * `premake4 gmake` or `premake4 --platform=clang gmake`
 * `make config=release`
 * `cd examples && bin/release/minko-example`
 
-OS X
-----
-* `premake4 gmake` or `premake4 --platform=clang gmake`
-* `make config=release`
-* `cd examples && bin/release/minko-example`
-
-Windows
--------
+### Windows
+* Open a command prompt
+* `cd <minko-cpp>`
 * `premake4 vs2012`
 * `start minko.sln`
+
+Or from the explorer:
+
+* Run `tools\win\scripts\premake_vs2010.bat`
+* Open `minko.sln`
+
+
+### Linux (under Vagrant)
+* **You need an internet connection**
+* Install [Vagrant](http://www.vagrantup.com/)
+* Open a command prompt
+* `cd <minko-cpp>`
+* `vagrant up`
+* `vagrant ssh`
+* `tools/lin/bin/premake4 gmake`
+* `make verbose=1 config=release`
+
 
 Contents
 ========

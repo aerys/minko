@@ -21,15 +21,15 @@ project "minko-webgl"
 
 	-- linux
 	configuration { "linux" }
-		buildoptions "-std=c++0x"
+		buildoptions { "-std=c++11" }
 
 	-- windows
 	configuration { "windows", "x32" }
 
 	-- macos
-	configuration { "debug", "macosx" }
+	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 
 	-- emscripten
-	configuration { "emscripten", "release" }
-		buildoptions { "-std=c++11" }
+	configuration { "emscripten" }
+		flags { "Optimize" }
