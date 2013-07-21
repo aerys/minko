@@ -102,8 +102,6 @@ namespace minko
 					std::string		propertyName	= Any::cast<std::string&>(property["name"]);
 					int				type			= Any::cast<int>(propertyValue["type"]);
 
-					std::cout << propertyName << std::endl;
-
 					if (type == MkTypes::TEXTURE_RESOURCE && propertyName != "")
 						material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(propertyValue["id"])]);
 					if (type == MkTypes::NUMBER && (propertyName == "diffuseColor" || propertyName == "specular"))
@@ -129,7 +127,9 @@ namespace minko
 
 				if (!material->hasProperty("material.specular"))
 					material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
-
+				
+				material->set("material.shininess", 10.0f);
+				
 				return material;
 			}
 		};
