@@ -7,7 +7,6 @@ dofile('tools/all/lib/vs.lua')
 dofile('tools/all/lib/platform.lua')
 
 -- examples
-include 'examples/mk-example'
 include 'examples/sponza'
 if _OPTIONS["platform"] ~= "emscripten" then
 	include 'examples/cube'
