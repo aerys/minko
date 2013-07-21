@@ -1,4 +1,4 @@
-$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs" ]
+$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs", "freeglut3-dev", "mesa-common-dev"] #, "xorg-dev", "libglu1-mesa-dev"]
 $clang_version = "3.2"
 $clang_dir = "clang+llvm-${clang_version}-x86-linux-ubuntu-12.04"
 $clang_filename = "${clang_dir}.tar.gz"
@@ -36,10 +36,17 @@ class emscripten {
         ensure => directory
     }
 
+    exec { "add-apt-repository ppa:ubuntu-toolchain-r/test":
+        alias => "add-gcc-ppa",
+        cwd => "/root",
+        user => "root"
+    }
+
     exec { "/usr/bin/apt-get update":
         alias => "apt-get-update",
         cwd => "/root",
         user => "root",
+        require => Exec["add-gcc-ppa"]
     }
 
     package {
@@ -48,9 +55,29 @@ class emscripten {
         require => Exec["apt-get-update"];
 
       "python-software-properties":
-        ensure => "latest";
+        ensure => "latest",
+        require => Exec["apt-get-update"];
+
+      ["gcc-4.8", "g++-4.8"]:
+        ensure => "latest",
+        require => Exec["apt-get-update"]
     }
 
+    exec { "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20":
+        alias => "install-gcc",
+        cwd => "/root",
+        user => "root",
+        require => Package["gcc-4.8"],
+        unless => "gcc --version | grep '4\\.8'"
+    }
+
+    exec { "update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 20":
+        alias => "install-g++",
+        cwd => "/root",
+        user => "root",
+        require => Package["g++-4.8"],
+        unless => "g++ --version | grep '4\\.8'"
+    }
 
     exec { "/usr/bin/git clone https://github.com/kripken/emscripten/":
         alias => "git-clone-emscripten",

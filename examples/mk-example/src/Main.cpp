@@ -304,7 +304,13 @@ int main(int argc, char** argv)
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #else
-	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
+	if (argc > 1)
+	{
+		for (int i = 1; i < argc; ++i)
+			assets->defaultOptions()->includePaths().insert(std::string(argv[i]));
+	}
+	else
+		assets->defaultOptions()->includePaths().insert(".");
 #endif
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)

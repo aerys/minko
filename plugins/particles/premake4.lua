@@ -20,15 +20,15 @@ project "minko-particles"
 
 	-- linux
 	configuration { "linux" }
-		buildoptions "-std=c++0x"
-		-- linkoptions "-std=c++0x"
+		buildoptions "-std=c++11"
 
 	-- windows
 	configuration { "windows", "x32" }
 
 	-- macos
-	configuration { "debug", "macosx" }
+	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		-- linkoptions { "-std=c++11", "-stdlib=libc++" }
-		libdirs { "/opt/local/lib/" }
-		includedirs { "/opt/local/include/" }
+
+	-- emscripten
+	configuration { "emscripten" }
+		flags { "Optimize" }
