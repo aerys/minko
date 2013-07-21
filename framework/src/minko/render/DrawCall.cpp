@@ -75,12 +75,13 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 
 	auto numTextures	    = 0;
     auto numVertexBuffers   = 0;
+    auto programInputs      = _program->inputs();
 
-	for (unsigned int inputId = 0; inputId < _program->inputs()->locations().size(); ++inputId)
+    for (unsigned int inputId = 0; inputId < programInputs->locations().size(); ++inputId)
 	{
-		auto type		= _program->inputs()->types()[inputId];
-		auto location	= _program->inputs()->locations()[inputId];
-		auto inputName	= _program->inputs()->names()[inputId];
+		auto type		= programInputs->types()[inputId];
+		auto location	= programInputs->locations()[inputId];
+		auto inputName	= programInputs->names()[inputId];
 
 		if (type == ProgramInputs::Type::attribute)
 		{
@@ -213,12 +214,12 @@ DrawCall::bindStates()
 void
 DrawCall::render(AbstractContext::Ptr context)
 {
-    context->setProgram(_program->id());
-
     if (_target)
         context->setRenderToTexture(_target->id(), true);
     else
         context->setRenderToBackBuffer();
+
+    context->setProgram(_program->id());
 
    	for (auto& f : _func)
 		f(context);
