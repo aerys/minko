@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "GL/glew.h"
 #else
 # include <GL/gl.h>
+# include <GL/glu.h>
 #endif
 
 using namespace minko::render;
