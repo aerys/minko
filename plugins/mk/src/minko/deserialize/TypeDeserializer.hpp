@@ -121,7 +121,7 @@ namespace minko
 						unsigned int alpha	= (color & 0x000000FF);
 
 						if (propertyName == "specular")
-							material->set(nameConverter->convertString(propertyName), math::Vector3::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f);
+							material->set(nameConverter->convertString(propertyName), math::Vector3::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f));
 						else
 							material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f));
 					}
