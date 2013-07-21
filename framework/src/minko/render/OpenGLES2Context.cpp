@@ -631,8 +631,9 @@ void
 OpenGLES2Context::setShaderSource(const unsigned int shader,
 							      const std::string& source)
 {
-	const char* sourceString = source.c_str();
-
+	std::string src = "#version 120\n\n" + source;
+	const char* sourceString = src.c_str();
+    
 	glShaderSource(shader, 1, &sourceString, 0);
 }
 
