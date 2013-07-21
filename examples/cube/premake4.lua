@@ -33,7 +33,7 @@ project "minko-example-cube"
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
+		buildoptions { "-std=c++11" }
 		postbuildcommands {
 			'cp -r ../../framework/effect .'
 		}
@@ -67,6 +67,9 @@ project "minko-example-cube"
 		}
 		includedirs {
 			"../../deps/mac/include"
+		}
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
 		}
 
 	-- emscripten
