@@ -132,7 +132,7 @@ Quaternion::Ptr
 	}
 
 	float t	= s0*m[0] + s1*m[5] + s2*m[10] + 1.0f;
-	if (fabsf(t) < std::numeric_limits<float>::epsilon())
+	if (fabsf(t) < 1e-6f)
 		throw std::invalid_argument("impossible to convert rotation matrix to quaternion");
 
 	float s	= 0.5f / sqrtf(t);
@@ -149,7 +149,7 @@ Quaternion::Ptr
 Matrix4x4::Ptr
 	Quaternion::toMatrix(Matrix4x4::Ptr output)const
 {
-	if (fabsf(length() - 1.0f) > std::numeric_limits<float>::epsilon())
+	if (fabsf(length() - 1.0f) > 1e-3f)
 		throw std::logic_error("Quaternion must be normalized prior to its conversion to a rotation matrix.");
 
 	float qx	= _i;

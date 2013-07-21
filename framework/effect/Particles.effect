@@ -28,7 +28,7 @@
 		"SPRITE_SHEET"				: "particles.spritesheet",
 		"TECHNIQUE_DIFFUSE_MAP"		: "material.diffuseMap",
 		"TECHNIQUE_DIFFUSE_COLOR"	: "material.diffuseColor",
-		"HAS_MODEL_TO_WORLD"		: "transform.modelToWorld"
+		"HAS_MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},
 	
 	"priority"			: 0,
@@ -73,7 +73,12 @@
 					
 						index = mod(floor(spriteIndex), spriteSheetRows * spriteSheetColumns);
 					
-						r = modf(index / spriteSheetRows, c);
+					//x - y * floor(x/y).
+					// r = modf(index/spriteSheetRows, c)
+
+						//r = floor(index / spriteSheetRows);
+						r = fract(index / spriteSheetRows);
+						c = index - spriteSheetRows * floor(index / spriteSheetRows);
 						c /= spriteSheetColumns;
 					
 						vertexUV /= vec2(spriteSheetRows, spriteSheetColumns);
@@ -96,16 +101,16 @@
 				float cosine = cos(rotation);
 				float sine = sin(rotation);
 				
-				offset = vec2(cosine * offset.x - sine * offset.y,
+				vec2 sinOffset = vec2(cosine * offset.x - sine * offset.y,
 							  sine * offset.x + cosine * offset.y);
 			
 				// fake SizeOverTime
-				size *= 1.6 - 1.3 * pow(time, 2.5);
+				float sizeOverTimer = size * (1.6 - 1.3 * pow(time, 2.5));
 			
 				// Sponza scale
 				//size *= 0.05;
 			
-				pos += vec4(offset, 0, 0) * size;
+				pos += vec4(sinOffset, 0, 0) * sizeOverTimer;
 			
 				gl_Position = projectionMatrix * pos;
 			}

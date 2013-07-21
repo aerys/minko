@@ -50,7 +50,7 @@ Rendering::initialize()
 
 void
 Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
-										std::shared_ptr<Node> 				target)
+							  std::shared_ptr<Node> 			 target)
 {
 	if (target->components<Rendering>().size() > 1)
 		throw std::logic_error("There cannot be two Rendering on the same node.");
@@ -76,7 +76,7 @@ Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 
 void
 Rendering::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
-										  std::shared_ptr<Node> 				target)
+							    std::shared_ptr<Node> 				target)
 {
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
@@ -86,8 +86,8 @@ Rendering::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
 
 void
 Rendering::addedHandler(std::shared_ptr<Node> node,
-								  std::shared_ptr<Node> target,
-								  std::shared_ptr<Node> parent)
+						std::shared_ptr<Node> target,
+						std::shared_ptr<Node> parent)
 {
 	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
 		&Rendering::rootDescendantAddedHandler,
@@ -121,20 +121,20 @@ Rendering::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	rootDescendantAddedHandler(target->root(), target, target->parent());
+	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
 
 void
 Rendering::removedHandler(std::shared_ptr<Node> node,
-									std::shared_ptr<Node> target,
-									std::shared_ptr<Node> parent)
+						  std::shared_ptr<Node> target,
+						  std::shared_ptr<Node> parent)
 {
 	_rootDescendantAddedSlot = nullptr;
 	_rootDescendantRemovedSlot = nullptr;
 	_componentAddedSlot = nullptr;
 	_componentRemovedSlot = nullptr;
 
-	rootDescendantRemovedHandler(target->root(), target, target->parent());
+	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
 }
 
 void
@@ -173,8 +173,8 @@ Rendering::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 
 void
 Rendering::componentAddedHandler(std::shared_ptr<Node>				node,
-											std::shared_ptr<Node>				target,
-											std::shared_ptr<AbstractComponent>	ctrl)
+								 std::shared_ptr<Node>				target,
+								 std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	
