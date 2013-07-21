@@ -4,6 +4,7 @@ project "minko-example-sponza"
 	language "C++"
 	links {
 		"minko-png",
+		"minko-jpeg",
 		"minko-mk",
 		"minko-bullet",
 		"minko-particles",
@@ -19,6 +20,7 @@ project "minko-example-sponza"
 		"../../plugins/bullet/src",
 		"../../plugins/webgl/src",
 		"../../plugins/png/src",
+		"../../plugins/jpeg/src",
 		"../../plugins/particles/src"
 	}
 	defines {
