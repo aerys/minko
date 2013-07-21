@@ -4,18 +4,14 @@ project "minko-example-light"
 	language "C++"
 	links {
 		"minko-png",
-		"minko-webgl",
 		"minko-framework"
 	}
 	files { "**.hpp", "**.h", "**.cpp" }
 	includedirs {
 		"src",
-		"../../lib/glfw/include",
 		"../../framework/src",
-		"../../plugins/png/src"
-	}
-	defines {
-		"MINKO_FRAMEWORK_EFFECTS_PATH=\"" .. path.getabsolute("../../framework/effect" .. "\"")
+		"../../plugins/png/src",
+		"../../deps/all/include"
 	}
 
 	configuration { "debug"}
@@ -30,29 +26,56 @@ project "minko-example-light"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		libdirs {
+			"../../deps/lin/lib"
+		}
+		includedirs {
+			"../../deps/lin/include"
+		}
 		buildoptions "-std=c++11"
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
+		}
 
 	-- windows
 	configuration { "windows", "x32" }
 		links { "OpenGL32", "glfw3dll", "glew32" }
 		libdirs {
-			"../../lib/glfw/bin/win32",
-			"../../framework/lib/glew/bin/win32"
+			"../../deps/win/lib"
+		}
+		includedirs {
+			"../../deps/win/include"
+		}
+		postbuildcommands {
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect'
 		}
 
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
-		includedirs { "../deps/mac/include" }
-		libdirs { "../deps/mac/lib" }
+		linkoptions { "-std=c++11", "-stdlib=libc++" }
+		links {
+			"m",
+			"glfw3",
+			"Cocoa.framework",
+			"OpenGL.framework",
+			"IOKit.framework"
+		}
+		libdirs {
+			"../../deps/mac/lib"
+		}
+		includedirs {
+			"../../deps/mac/include"
+		}
 
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+		links { "minko-webgl" }
+		includedirs { "../../plugins/webgl/src" }
 		buildoptions { "-std=c++11" }
-		local bin = "bin/release/minko-examples"
+		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
