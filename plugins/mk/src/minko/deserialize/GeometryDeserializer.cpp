@@ -44,7 +44,8 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 										  Qark::ByteArray&					geometryData,
 										  std::shared_ptr<AssetsLibrary>	library,
 										  std::shared_ptr<scene::Node>		mesh,
-										  std::shared_ptr<file::Options>	options)
+										  std::shared_ptr<file::Options>	options,
+										  bool								computeTangent)
 {
 	if (isCopy)
 	{
@@ -74,6 +75,9 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 		geometry->addVertexBuffer(vertexStream);
 
 		mesh->component<component::Surface>()->geometry(geometry);
+
+		if (computeTangent && !vertexStream->hasAttribute("tangent"))
+			geometry->computeTangentSpace(!vertexStream->hasAttribute("normal"));
 
 		GeometryDeserializer::_geometryIdToName[copyId] = geometryName;
 		library->geometry(geometryName, geometry);
@@ -185,6 +189,8 @@ GeometryDeserializer::readVertexFormat(std::stringstream&				stream,
 			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("position", numPropertiesInt, offset)));
 		else if (properties[0] == "nx")
 			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("normal", numPropertiesInt, offset)));
+		else if (properties[0] == "tx")
+			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("tangent", numPropertiesInt, offset)));
 		else if (properties[0] == "u")
 			attributes.push_back(render::VertexBuffer::AttributePtr(new render::VertexBuffer::Attribute("uv", numPropertiesInt, offset)));
 		else 
