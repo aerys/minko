@@ -44,7 +44,7 @@ auto			                root			    = scene::Node::create("root");
 void
 renderScene()
 {
-	renderingComponent->render();
+	rendering->render();
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -360,11 +360,15 @@ int main(int argc, char** argv)
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
 
+	std::cout << "WebGl context created" << std::endl;
+
 	auto context = render::WebGLContext::create();
 #else
     glfwInit();
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
+
+	std::cout << "OpenGl context created" << std::endl:
 
 	auto context = render::OpenGLES2Context::create();
 #endif
