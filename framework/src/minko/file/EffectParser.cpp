@@ -152,13 +152,12 @@ void
 EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
 {
 	std::vector<std::shared_ptr<render::Pass>> passes;
+    std::unordered_map<std::string, std::shared_ptr<Texture>> targets;
 	auto passId = 0;
 
 	for (auto pass : root.get("passes", 0))
 	{
-		auto name = pass.get("name", std::to_string(passId)).asString();
-
-		++passId;
+		auto name = pass.get("name", std::to_string(passId++)).asString();
 
 		// pass bindings
 		std::unordered_map<std::string, std::string>	attributeBindings(_defaultAttributeBindings);
@@ -204,6 +203,14 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
         std::string targetName;
         auto target = parseTarget(pass, options->context(), targetName);
 
+        if (target)
+        {
+            target->upload();
+    
+            if (targetName != "")
+                targets[targetName] = target;
+        }
+
         passes.push_back(render::Pass::create(
 			name,
 			Program::create(options->context(), vertexShader, fragmentShader),
@@ -222,12 +229,11 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
                 target
             )
 		));
-
-		_effect = render::Effect::create(passes);
-
-        if (targetName != "")
-            _effect->data()->set(targetName, target);
 	}
+
+	_effect = render::Effect::create(passes);
+    for (auto target : targets)
+        _effect->data()->set(target.first, target.second);
 }
 
 void
