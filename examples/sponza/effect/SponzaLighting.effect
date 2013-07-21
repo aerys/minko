@@ -16,7 +16,8 @@
 		"cameraPosition"		: "camera.position",
 		"diffuseMap"			: "material.diffuseMap",
 		"specularMap"			: "material.specularMap",
-		"normalMap"			: "material.normalMap"
+		"normalMap"				: "material.normalMap",
+		"alphaMap"				: "material.alphaMap"
 	},
 	"stateBindings"	: {
 		"blendMode"				: "material.blendMode"
@@ -26,15 +27,17 @@
 		"DIFFUSE_MAP"			: "material.diffuseMap",
 		"SPECULAR"				: "material.shininess",
 		"SPECULAR_MAP"			: "material.specularMap",
-		"NORMAL_MAP"			: "material.normalMap"
+		"NORMAL_MAP"			: "material.normalMap",
+		"ALPHA_MAP"				: "material.alphaMap"
 	},
 
 	"priority"			: 0,
-	"blendMode"			: ["one", "zero"],
+	"blendMode"			: "alpha",
 	"depthTest"			: [ true, "less" ],
 	"triangleCulling"	: "none",
 	
 	"samplerStates"	: {
+		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
@@ -101,6 +104,7 @@
 			uniform sampler2D	specularMap;
 			uniform sampler2D	normalMap;
 			uniform sampler2D	diffuseMap;
+			uniform sampler2D	alphaMap;
 	
 			struct SponzaLighting{
 				vec3 lightWorldPosition1;
@@ -238,10 +242,17 @@
 					lightsSpecular += phong_specularReflection(normal, lightVector4, eyeVector, specular * sponza.lightSpecular4, material.shininess) * attenuations.w;
 				#endif // SPECULAR || SPECULAR_MAP
 				
-				
+				#ifdef ALPHA_MAP
+					vec4 alphaMapColor = texture2D(alphaMap, vertexUV);
+
+					float alpha = alphaMapColor.x;
+				#else
+					float alpha = 1;
+				#endif
+
 				
 				gl_FragColor = clamp(
-					vec4((lightsAmbient + lightsDiffuse)*diffuse.xyz + lightsSpecular, 1.0),
+					vec4((lightsAmbient + lightsDiffuse)*diffuse.xyz + lightsSpecular, alpha),
 					0.0,
 					1.0
 				);
