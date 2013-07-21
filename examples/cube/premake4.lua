@@ -27,18 +27,13 @@ project "minko-example-cube"
 	-- linux
 	configuration { "linux" }
 		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
-<<<<<<< HEAD
-		buildoptions { "-std=c++11" }
-		linkoptions { "-std=c++11" }
-=======
 		libdirs {
 			"../../deps/lin/lib"
 		}
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
->>>>>>> ea431194a11202d0c169511b171b0923b49f9170
+		buildoptions { "-std=c++11" }
 		postbuildcommands {
 			'cp -r ../../framework/effect .'
 		}
@@ -60,13 +55,6 @@ project "minko-example-cube"
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
-<<<<<<< HEAD
-		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
-		includedirs { "../../deps/mac/include" }
-		libdirs { "../../deps/mac/lib" }
-		postbuildcommands {
-			'cp -r ../../framework/effect .'
-=======
 		links {
 			"m",
 			"glfw3",
@@ -79,7 +67,9 @@ project "minko-example-cube"
 		}
 		includedirs {
 			"../../deps/mac/include"
->>>>>>> ea431194a11202d0c169511b171b0923b49f9170
+		}
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
 		}
 
 	-- emscripten
