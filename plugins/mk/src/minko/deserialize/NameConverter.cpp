@@ -38,6 +38,7 @@ NameConverter::initialize()
 	_asNameToCppName["blending"]		= "material.blending";
 	_asNameToCppName["normalMap"]		= "material.normalMap";
 	_asNameToCppName["specular"]		= "material.specular";
+	_asNameToCppName["alphaMap"]		= "material.alphaMap";
 }
 
 std::string
