@@ -54,6 +54,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/CubeGeometry.hpp"
 #include "minko/geometry/SphereGeometry.hpp"
+#include "minko/geometry/QuadGeometry.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/AbstractParser.hpp"
