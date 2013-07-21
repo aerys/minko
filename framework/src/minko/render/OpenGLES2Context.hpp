@@ -65,6 +65,7 @@ namespace minko
 			unsigned int			_viewportWidth;
 			unsigned int			_viewportHeight;
 
+            unsigned int            _currentTarget;
 			int						_currentIndexBuffer;
 			std::vector<int>		_currentVertexBuffer;
 			std::vector<int>		_currentVertexSize;
