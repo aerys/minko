@@ -113,7 +113,11 @@ namespace minko
                     options->parseOptions()->effect()
                 ));
 
-				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
+				bool computeTangent = false;
+				if (options->deserializedAssets()->material(materialId)->hasProperty("material.normalMap"))
+					computeTangent = true;
+
+				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions(), computeTangent);
 
 				return mesh;
 			}
