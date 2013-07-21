@@ -34,6 +34,8 @@ namespace minko
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::set<std::string>						_includePaths;
 
+            std::shared_ptr<render::Effect>             _effect;
+
 		public:
 			inline static
 			Ptr
@@ -46,11 +48,10 @@ namespace minko
 			Ptr
 			create(Ptr options)
 			{
-				auto opt = std::shared_ptr<Options>(new Options(
-					options->_context
-				));
+				auto opt = std::shared_ptr<Options>(new Options(options->_context));
 
 				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
+                opt->_effect = options->_effect;
 
 				return opt;
 			}
@@ -68,6 +69,20 @@ namespace minko
 			{
 				return _includePaths;
 			}
+
+            inline
+            std::shared_ptr<render::Effect>
+            effect()
+            {
+                return _effect;
+            }
+
+            inline
+            void
+            effect(std::shared_ptr<render::Effect> effect)
+            {
+                _effect = effect;
+            }
 
 		private:
 			Options(std::shared_ptr<render::AbstractContext> context);

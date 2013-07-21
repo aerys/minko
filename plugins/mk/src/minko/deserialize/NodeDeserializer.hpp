@@ -107,13 +107,17 @@ namespace minko
 				std::vector<Any>&	bindingsId	= Any::cast<std::vector<Any>&>(nodeInfo["bindingsIds"]);
 				int					materialId	= Any::cast<int&>(bindingsId[0]);	
 
-				mesh->addComponent(
-					component::Surface::create(
+				mesh->addComponent(component::Surface::create(
 					options->assetsLibrary()->geometry("cube"),
 					options->deserializedAssets()->material(materialId),
-					options->assetsLibrary()->effect("directional light")));
+                    options->parseOptions()->effect()
+                ));
 
-				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions());
+				bool computeTangent = false;
+				if (options->deserializedAssets()->material(materialId)->hasProperty("material.normalMap"))
+					computeTangent = true;
+
+				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions(), computeTangent);
 
 				return mesh;
 			}
@@ -137,10 +141,12 @@ namespace minko
 							  ControllerMap	controllerMap,
 							  NodeMap		nodeMap)
 			{
-				std::shared_ptr<scene::Node> camera = scene::Node::create(extractName(nodeInfo));
-				
-				camera->addComponent(component::Transform::create());
+				std::shared_ptr<scene::Node>		camera			= scene::Node::create(extractName(nodeInfo));
+				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
+				camera->addComponent(component::Transform::create());
+				camera->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+				camera->component<component::Transform>()->transform()->prependRotationY(PI); // otherwise the camera points the other way
 				return camera;
 			}
 
