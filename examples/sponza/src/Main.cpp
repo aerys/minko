@@ -369,6 +369,8 @@ int main(int argc, char** argv)
 	auto context = render::OpenGLES2Context::create();
 #endif
 
+    std::cout << context->driverInfo() << std::endl;
+
     auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
@@ -379,11 +381,7 @@ int main(int argc, char** argv)
 	assets->defaultOptions()->includePaths().insert("assets");
 #endif
 #ifdef NDEBUG
-	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
     assets->defaultOptions()->includePaths().insert("../..");
-#endif
-#ifdef DEBUG
-	assets->defaultOptions()->includePaths().insert(MINKO_FRAMEWORK_EFFECTS_PATH);
 #endif
 
     // load sponza lighting effect and set it as the default effect
@@ -393,7 +391,7 @@ int main(int argc, char** argv)
     // load other assets
     assets
 		->queue("texture/firefull.jpg")
-		->queue("Particles.effect")
+		->queue("effect/Particles.effect")
 		->queue("models/Sponza_lite.mk");
 
     rendering = Rendering::create(context);
@@ -423,13 +421,13 @@ int main(int argc, char** argv)
 			fireNode->addComponent(fire);
 	});
 
-	//try
+	try
 	{
 		assets->load();
 	}
-	//catch(std::exception e)
+	catch(std::exception e)
 	{
-	//	std::cerr << "exception: " << e.what() << std::endl;
+		std::cerr << "exception: " << e.what() << std::endl;
 	}
 
 #ifdef EMSCRIPTEN
