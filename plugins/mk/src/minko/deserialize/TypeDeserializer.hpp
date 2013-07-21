@@ -102,9 +102,11 @@ namespace minko
 					std::string		propertyName	= Any::cast<std::string&>(property["name"]);
 					int				type			= Any::cast<int>(propertyValue["type"]);
 
+					std::cout << propertyName << std::endl;
+
 					if (type == MkTypes::TEXTURE_RESOURCE && propertyName != "")
 						material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(propertyValue["id"])]);
-					if (type == MkTypes::NUMBER && propertyName == "diffuseColor")
+					if (type == MkTypes::NUMBER && (propertyName == "diffuseColor" || propertyName == "specular"))
 					{
 						unsigned int color = 0;
 						if (typeid(unsigned int) == propertyValue["value"].type())
@@ -118,11 +120,16 @@ namespace minko
 						unsigned int green	= (color & 0x0000FF00) >> 8;
 						unsigned int alpha	= (color & 0x000000FF);
 
-						material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f));
+						if (propertyName == "specular")
+							material->set(nameConverter->convertString(propertyName), math::Vector3::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f);
+						else
+							material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f));
 					}
 				}
 
-				material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
+				// tmp, for sponza only
+				if (!material->hasProperty("material.specular"))
+					material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
                 material->set("material.shininess",			10.f);
 
 				return material;
