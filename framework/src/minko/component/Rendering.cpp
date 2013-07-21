@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/render/Texture.hpp"
 #include "minko/render/AbstractContext.hpp"
 
 using namespace minko::component;
@@ -221,10 +222,17 @@ Rendering::render()
 		(_backgroundColor & 0xff) / 255.f
 	);
 
+    _drawCalls.sort(&Rendering::compareDrawCalls);
 	for (auto drawCall : _drawCalls)
 		drawCall->render(_context);
 
 	_context->present();
 
 	_exitFrame->execute(shared_from_this());
+}
+
+bool
+Rendering::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
+{
+    return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 }
