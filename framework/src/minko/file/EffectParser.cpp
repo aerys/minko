@@ -349,9 +349,11 @@ EffectParser::parseSamplerStates(Json::Value&                                   
                 auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
                 auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
 
-                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
-                auto mipFilter = mipFilterStr == "linear"
+                auto wrapMode           = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter      = textureFilterStr == "linear"
+                    ? TextureFilter::LINEAR
+                    : TextureFilter::NEAREST;
+                auto mipFilter          = mipFilterStr == "linear"
                     ? MipFilter::LINEAR
                     : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
 
