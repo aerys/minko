@@ -101,32 +101,44 @@ namespace minko
 					Qark::Map		propertyValue	= Any::cast<Qark::Map&>(property["value"]);
 					std::string		propertyName	= Any::cast<std::string&>(property["name"]);
 					int				type			= Any::cast<int>(propertyValue["type"]);
-
-					if (type == MkTypes::TEXTURE_RESOURCE && propertyName != "")
+                   
+					if (type == MkTypes::TEXTURE_RESOURCE)
 						material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(propertyValue["id"])]);
-					if (type == MkTypes::NUMBER && (propertyName == "diffuseColor" || propertyName == "specular"))
+					if (type == MkTypes::NUMBER)
 					{
-						unsigned int color = 0;
-						if (typeid(unsigned int) == propertyValue["value"].type())
-							color = Any::cast<unsigned int>(propertyValue["value"]);
-						else 
-							color = Any::cast<int>(propertyValue["value"]);
+                        if (propertyName == "diffuseColor" || propertyName == "specular")
+                        {
+						    unsigned int color = 0;
+						    if (typeid(unsigned int) == propertyValue["value"].type())
+							    color = Any::cast<unsigned int>(propertyValue["value"]);
+						    else 
+							    color = Any::cast<int>(propertyValue["value"]);
 
+						    unsigned int red	= (color & 0xFF000000) >> 24;
+						    unsigned int blue	= (color & 0x00FF0000) >> 16;
+						    unsigned int green	= (color & 0x0000FF00) >> 8;
+						    unsigned int alpha	= (color & 0x000000FF);
 
-						unsigned int red	= (color & 0xFF000000) >> 24;
-						unsigned int blue	= (color & 0x00FF0000) >> 16;
-						unsigned int green	= (color & 0x0000FF00) >> 8;
-						unsigned int alpha	= (color & 0x000000FF);
-
-						if (propertyName == "specular")
-							material->set(nameConverter->convertString(propertyName), math::Vector3::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f));
-						else
-							material->set(nameConverter->convertString(propertyName), math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f));
+						    if (propertyName == "specular")
+							    material->set(
+                                    nameConverter->convertString(propertyName),
+                                    math::Vector3::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f)
+                                );
+						    else
+							    material->set(
+                                    nameConverter->convertString(propertyName),
+                                    math::Vector4::create(float(red) / 255.0f, float(blue) / 255.0f, float(green) / 255.0f, float(alpha) / 255.0f)
+                                );
+                        }
+                        else if (propertyName == "alphaThreshold")
+                        {
+                            material->set(nameConverter->convertString(propertyName), Any::cast<float>(propertyValue["value"]));
+                        }
 					}
 				}
 
 				if (!material->hasProperty("material.specular"))
-					material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
+					material->set("material.specular", math::Vector3::create(.8f, .8f, .8f));
 				
 				material->set("material.shininess", 10.0f);
 				
