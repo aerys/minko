@@ -77,7 +77,7 @@
 					worldPosition = pos.xyz;
 				#endif
 
-				#ifdef DIFFUSE_MAP
+				#if defined DIFFUSE_MAP || defined NORMAL_MAP
 					vertexUV = uv;
 				#endif
 				
@@ -168,8 +168,8 @@
 
 				vec3 worldNormal 		= normalize(worldNormal);
 				#ifdef NORMAL_MAP
-					worldTangent			= normalize(worldTangent);
-					worldToTangentMatrix 	= getWorldToTangentSpaceMatrix(worldNormal, worldTangent);
+					vec3 nWorldTangent			= normalize(worldTangent);
+					mat3 worldToTangentMatrix 	= getWorldToTangentSpaceMatrix(worldNormal, nWorldTangent);
 				#endif // NORMAL_MAP
 				
 				vec3 worldEyeVector		= normalize(cameraPosition - worldPosition);
