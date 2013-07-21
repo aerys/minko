@@ -78,9 +78,11 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 			uint i = 0;
 
 			// create shader header with #defines
-			for (auto macroBinding : _macroBindings)
+			for (auto& macroBinding : _macroBindings)
+            {
 				if (signature & (1 << i++))
 					defines += "#define " + macroBinding.first + "\n";
+            }
 
 			// for program template by adding #defines
 			auto vs = Shader::create(
@@ -95,17 +97,13 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 			);
 
 			program = Program::create(_programTemplate->context(), vs, fs);
+            program->vertexShader()->upload();
+		    program->fragmentShader()->upload();
+		    program->upload();
 
 			// register the program to this signature
 			_signatureToProgram[signature] = program;
 		}
-	}
-
-	if (!program->isValid())
-	{
-		program->vertexShader()->upload();
-		program->fragmentShader()->upload();
-		program->upload();
 	}
 
 	return program;
@@ -116,7 +114,8 @@ Pass::buildSignature(std::shared_ptr<data::Container> data)
 {
 	unsigned int signature = 0;
 	unsigned int i = 0;
-	for (auto macroBinding : _macroBindings)
+
+	for (auto& macroBinding : _macroBindings)
     {
 		if (data->hasProperty(macroBinding.second))
 		{
