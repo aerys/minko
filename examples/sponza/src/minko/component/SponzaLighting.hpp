@@ -17,15 +17,52 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ConeShape.hpp"
+#pragma once
 
-#include <minko/math/Matrix4x4.hpp>
+#include "minko/Common.hpp"
 
-using namespace minko;
-using namespace minko::math;
-using namespace minko::component;
+#include "minko/component/AbstractRootDataComponent.hpp"
 
-void
-bullet::ConeShape::apply(std::shared_ptr<math::Matrix4x4> matrix)
+namespace minko
 {
+	namespace component
+	{
+		class SponzaLighting:
+			public AbstractRootDataComponent
+		{
+		public:
+			typedef std::shared_ptr<SponzaLighting> Ptr;
+
+		private:
+			typedef std::shared_ptr<math::Vector4>	Vector4Ptr;
+	
+		private:
+			int			_time;
+			Vector4Ptr	_offsets;
+			Vector4Ptr	_frequencies;
+			float		_minThr;
+			float		_maxThr;
+
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto lighting = std::shared_ptr<SponzaLighting>(new SponzaLighting());
+	
+				lighting->initialize();
+	
+				return lighting;
+			}
+
+			void
+			step();
+	
+		private:
+			SponzaLighting();
+
+			std::shared_ptr<math::Vector4> 
+			getDistanceThresholds(std::shared_ptr<math::Vector4> output = nullptr) const;
+		};
+	}
 }

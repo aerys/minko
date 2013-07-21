@@ -31,7 +31,7 @@
 	"passes"	: [{	
 		"vertexShader"	: "
 			attribute vec3 position;
-			attribute vec3 uv;
+			attribute vec2 uv;
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
