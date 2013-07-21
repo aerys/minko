@@ -37,6 +37,10 @@ namespace minko
 			{
 			}
 
+            virtual
+            const std::string&
+            driverInfo() = 0;
+
 			virtual
 			void
 			configureViewport(const unsigned int x,
