@@ -68,7 +68,6 @@ namespace minko
 		class Program;
 		class VertexFormat;
 		class VertexBuffer;
-		class VertexAttribute;
 		class IndexBuffer;
 		class Texture;
 	}
@@ -103,6 +102,7 @@ namespace minko
 		class Geometry;
 		class CubeGeometry;
 		class SphereGeometry;
+        class QuadGeometry;
 	}
 
 	namespace math
