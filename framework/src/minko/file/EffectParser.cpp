@@ -112,12 +112,10 @@ EffectParser::parse(const std::string&					filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	_assetsLibrary	= assetsLibrary;
-	
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
-
 		throw std::invalid_argument("data");
 
+    _filename = filename;
 	_assetsLibrary = assetsLibrary;
 	_effectName = root.get("name", filename).asString();
 
@@ -351,9 +349,11 @@ EffectParser::parseSamplerStates(Json::Value&                                   
                 auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
                 auto mipFilterStr       = samplerStateValue.get("mipFilter", "linear").asString();
 
-                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                auto textureFilter = textureFilterStr == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
-                auto mipFilter = mipFilterStr == "linear"
+                auto wrapMode           = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter      = textureFilterStr == "linear"
+                    ? TextureFilter::LINEAR
+                    : TextureFilter::NEAREST;
+                auto mipFilter          = mipFilterStr == "linear"
                     ? MipFilter::LINEAR
                     : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
 
@@ -363,7 +363,9 @@ EffectParser::parseSamplerStates(Json::Value&                                   
 }
 
 std::shared_ptr<render::Texture>
-EffectParser::parseTarget(Json::Value& contextNode, std::shared_ptr<AbstractContext> context, std::string& name)
+EffectParser::parseTarget(Json::Value&                      contextNode,
+                          std::shared_ptr<AbstractContext>  context,
+                          std::string&                      name)
 {
     auto targetValue = contextNode.get("target", 0);
 
@@ -373,8 +375,6 @@ EffectParser::parseTarget(Json::Value& contextNode, std::shared_ptr<AbstractCont
         auto width      = 0;
         auto height     = 0;
 
-        name = targetValue.get("name", 0).asString();
-
         if (!sizeValue.empty())
             width = height = sizeValue.asUInt();
         else
@@ -383,7 +383,16 @@ EffectParser::parseTarget(Json::Value& contextNode, std::shared_ptr<AbstractCont
             height = targetValue.get("height", 0).asUInt();
         }
 
-        return render::Texture::create(context, width, height, true);
+        auto nameValue  = targetValue.get("name", 0);
+        auto target     = render::Texture::create(context, width, height, true);
+
+        if (nameValue.isString())
+        {
+            name = nameValue.asString();
+            _assetsLibrary->texture(name, target);
+        }
+
+        return target;
     }
 
     return nullptr;
@@ -450,6 +459,7 @@ EffectParser::finalize()
     }
 
 	_assetsLibrary->effect(_effectName, _effect);
+    _assetsLibrary->effect(_filename, _effect);
 
 	_complete->execute(shared_from_this());
 }

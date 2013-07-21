@@ -48,6 +48,7 @@ namespace minko
 			static std::unordered_map<std::string, unsigned int>		_blendFactorMap;
 			static std::unordered_map<std::string, render::CompareMode>	_depthFuncMap;
 
+            std::string                                                 _filename;
 			std::shared_ptr<render::Effect>								_effect;
 			std::string													_effectName;
 			
@@ -138,7 +139,9 @@ namespace minko
                                std::unordered_map<std::string, render::SamplerState>&   samplerStates);
 
             std::shared_ptr<render::Texture>
-            parseTarget(Json::Value& contextNode, std::shared_ptr<render::AbstractContext> context, std::string& name);
+            parseTarget(Json::Value&                                contextNode,
+                        std::shared_ptr<render::AbstractContext>    context,
+                        std::string&                                name);
 
 			void
 			parseDependencies(Json::Value& root, const std::string& filename, std::shared_ptr<file::Options> options);
