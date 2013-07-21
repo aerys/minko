@@ -34,6 +34,9 @@ project "minko-example-cube"
 		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
 		buildoptions { "-std=c++11" }
 		linkoptions { "-std=c++11" }
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
+		}
 
 	-- windows
 	configuration { "windows", "x32" }
@@ -50,6 +53,9 @@ project "minko-example-cube"
 		links { "glfw3", "m", "Cocoa.framework", "OpenGL.framework", "IOKit.framework" }
 		includedirs { "../../deps/mac/include" }
 		libdirs { "../../deps/mac/lib" }
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
+		}
 
 	-- emscripten
 	configuration { "emscripten" }
