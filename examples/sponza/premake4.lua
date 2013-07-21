@@ -77,6 +77,9 @@ project "minko-example-sponza"
 		includedirs {
 			"../../deps/mac/include"
 		}
+		postbuildcommands {
+			'cp -r ../../framework/effect .'
+		}
 
 	-- emscripten
 	configuration { "emscripten" }
