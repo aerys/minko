@@ -42,6 +42,9 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->queue("texture/box.png")
+		->queue("texture/box.png")
+		->queue("RTT.effect")
+		->queue("Sprite.effect")
 		->queue("Basic.effect");
 
 	if (argc > 1)
@@ -68,17 +71,38 @@ int main(int argc, char** argv)
 		camera->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-
+		
+		mesh = scene::Node::create();
+		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()->appendTranslation(1.f, 0.f, 0.f);
+		mesh->addComponent(Surface::create(
+			assets->geometry("cube"),
+			data::Provider::create()
+				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f)),
+				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
+			assets->effect("RTT.effect")
+		));
 		group->addChild(mesh);
-
+		
+		mesh = scene::Node::create();
 		mesh->addComponent(Transform::create());
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
-			assets->effect("Basic.effect")
+				->set("material.diffuseColor",	Vector4::create(1.f, 0.f, 0.f, 1.f)),
+				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
+			assets->effect("RTT.effect")
 		));
+		group->addChild(mesh);
+
+
+		/*
+		root->addChild(scene::Node::create()->addComponent(Surface::create(
+			geometry::QuadGeometry::create(assets->context()),
+			data::Provider::create()->set("material.diffuseMap", assets->texture("rtt")),
+			assets->effect("Sprite.effect")
+		)));
+		*/
 	});
 
 	assets->load();
