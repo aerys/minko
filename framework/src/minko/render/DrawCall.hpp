@@ -89,6 +89,13 @@ namespace minko
 				return dc;
 			}
 
+            inline
+            std::shared_ptr<Texture>
+            target()
+            {
+                return _target;
+            }
+
 			void
 			bind(ContainerPtr data, ContainerPtr rootData);
 
