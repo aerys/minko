@@ -13,7 +13,7 @@ project "minko-example-sponza"
 	files { "**.hpp", "**.h", "**.cpp" }
 	includedirs {
 		"src",
-		"../../lib/glfw/include",
+		"../../deps/all/include",
 		"../../framework/src",
 		"../../plugins/mk/src",
 		"../../plugins/bullet/src",
@@ -57,7 +57,7 @@ project "minko-example-sponza"
 			"../../deps/win/include"
 		}
 		postbuildcommands {
-			'xcopy ..\\..\\framework\\effect . /E'
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect'
 		}
 
 	-- macos
@@ -81,6 +81,11 @@ project "minko-example-sponza"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
-		links {
-			"minko-webgl"
+		links { "minko-webgl" }
+		includedirs { "../../plugins/webgl/src" }
+		buildoptions { "-std=c++11" }
+		local bin = "bin/release/" .. project().name
+		postbuildcommands {
+			'cp ' .. bin .. ' ' .. bin .. '.bc',
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
 		}
