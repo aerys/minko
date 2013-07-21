@@ -1015,14 +1015,21 @@ OpenGLES2Context::setRenderToBackBuffer()
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
 
+    _currentTarget = 0;
+
     checkForErrors();
 }
 
 void
 OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndStencil)
 {
+    if (texture == _currentTarget)
+        return;
+
     if (_frameBuffers.count(texture) == 0)
         throw std::logic_error("this texture cannot be used for RTT");
+
+    _currentTarget = texture;
 
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
     if (enableDepthAndStencil)
