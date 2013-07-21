@@ -148,6 +148,10 @@ namespace minko
 
 			void
 			materialChanged(SurfaceCtrlPtr ctrl);
+
+            static
+            bool
+            compareDrawCalls(DrawCallPtr a, DrawCallPtr b);
 		};
 	}
 }
