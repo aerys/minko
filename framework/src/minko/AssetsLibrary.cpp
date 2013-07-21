@@ -84,6 +84,9 @@ AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 scene::Node::Ptr
 AssetsLibrary::node(const std::string& name)
 {
+    if (!_nodes.count(name))
+		throw std::invalid_argument("name");
+
 	return _nodes[name];
 }
 
