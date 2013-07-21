@@ -212,20 +212,6 @@ OpenGLES2Context::present()
 	// force execution of GL commands in finite time
 	//glFlush();
 
-#ifdef DEBUG
-	GLenum errCode = glGetError();
-
-	if (errCode != GL_NO_ERROR)
-    {
-        /*
-		const GLubyte* errString = gluErrorString(errCode);
-
-		std::cout << "error: " << errString << std::endl;
-        */
-        throw;
-    }
-#endif
-
     setRenderToBackBuffer();
 }
 
@@ -248,7 +234,9 @@ OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTri
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles, GL_UNSIGNED_SHORT, (void*)0);
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -290,6 +278,8 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 
 	_vertexBuffers.push_back(vertexBuffer);
 
+    checkForErrors();
+
 	return vertexBuffer;
 }
 
@@ -311,6 +301,8 @@ OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
 	//
 	// glBufferSubData updates a subset of a buffer object's data store
 	glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(GLfloat), size * sizeof(GLfloat), data);
+
+    checkForErrors();
 }
 
 void
@@ -328,6 +320,8 @@ OpenGLES2Context::deleteVertexBuffer(const unsigned int vertexBuffer)
 	// deleted, it has no contents, and its name is free for reuse (for example by glGenBuffers). If a buffer object
 	// that is currently bound is deleted, the binding reverts to 0 (the absence of any buffer object).
 	glDeleteBuffers(1, &vertexBuffer);
+
+    checkForErrors();
 }
 
 void
@@ -364,6 +358,8 @@ OpenGLES2Context::setVertexBufferAt(const unsigned int	position,
 
 	if (currentVertexBuffer < 0)
 		glEnableVertexAttribArray(position);
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -380,6 +376,8 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 
 	_indexBuffers.push_back(indexBuffer);
 
+    checkForErrors();
+
 	return indexBuffer;
 }
 
@@ -394,6 +392,8 @@ OpenGLES2Context::uploaderIndexBufferData(const unsigned int 	indexBuffer,
 	_currentIndexBuffer = indexBuffer;
 
 	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(GLushort), size * sizeof(GLushort), data);
+
+    checkForErrors();
 }
 
 void
@@ -402,6 +402,8 @@ OpenGLES2Context::deleteIndexBuffer(const unsigned int indexBuffer)
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
 
 	glDeleteBuffers(1, &indexBuffer);
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -471,6 +473,8 @@ OpenGLES2Context::createTexture(unsigned int 	width,
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
 
+    checkForErrors();
+
 	return texture;
 }
 
@@ -483,6 +487,8 @@ OpenGLES2Context::uploadTextureData(const unsigned int 	texture,
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    checkForErrors();
 }
 
 void
@@ -500,6 +506,8 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
         glDeleteRenderbuffers(1, &_renderBuffers[texture]);
         _renderBuffers.erase(texture);
     }
+
+    checkForErrors();
 }
 
 void
@@ -520,6 +528,8 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 
 	if (textureIsValid && location >= 0)
 		glUniform1i(location, position);
+
+    checkForErrors();
 }
 
 void
@@ -574,6 +584,8 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         break;
     }
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -586,6 +598,8 @@ void
 OpenGLES2Context::attachShader(const unsigned int program, const unsigned int shader)
 {
 	glAttachShader(program, shader);
+
+    checkForErrors();
 }
 
 void
@@ -596,6 +610,7 @@ OpenGLES2Context::linkProgram(const unsigned int program)
 	#ifdef DEBUG
 		std::cout << "program info: " << getProgramInfoLogs(program) << std::endl;
 	#endif
+    checkForErrors();
 }
 
 void
@@ -604,6 +619,8 @@ OpenGLES2Context::deleteProgram(const unsigned int program)
 	_programs.erase(std::find(_programs.begin(), _programs.end(), program));
 
 	glDeleteProgram(program);
+
+    checkForErrors();
 }
 
 void
@@ -611,9 +628,11 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
 
-	#ifdef DEBUG
+	//#ifdef DEBUG
 		std::cout << "error: " << getShaderCompilationLogs(shader) << std::endl;
-	#endif
+	//#endif
+
+    checkForErrors();
 }
 
 void
@@ -625,6 +644,8 @@ OpenGLES2Context::setProgram(const unsigned int program)
 	_currentProgram = program;
 
 	glUseProgram(program);
+
+    checkForErrors();
 }
 
 void
@@ -635,6 +656,8 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 	const char* sourceString = src.c_str();
     
 	glShaderSource(shader, 1, &sourceString, 0);
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -653,6 +676,8 @@ OpenGLES2Context::deleteVertexShader(const unsigned int vertexShader)
 	_vertexShaders.erase(std::find(_vertexShaders.begin(), _vertexShaders.end(), vertexShader));
 
 	glDeleteShader(vertexShader);
+
+    checkForErrors();
 }
 
 const unsigned int
@@ -671,6 +696,8 @@ OpenGLES2Context::deleteFragmentShader(const unsigned int fragmentShader)
 	_fragmentShaders.erase(std::find(_fragmentShaders.begin(), _fragmentShaders.end(), fragmentShader));
 
 	glDeleteShader(fragmentShader);
+
+    checkForErrors();
 }
 
 std::shared_ptr<ProgramInputs>
@@ -682,6 +709,8 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
+
+    checkForErrors();
 
 	return ProgramInputs::create(shared_from_this(), program, names, types, locations);
 }
@@ -889,6 +918,8 @@ OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination de
 			_blendingFactors[static_cast<uint>(destination) & 0xff00]
 		);
 	}
+
+    checkForErrors();
 }
 
 void
@@ -903,6 +934,8 @@ OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
 			_blendingFactors[static_cast<uint>(blendMode) & 0xff00]
 		);
 	}
+
+    checkForErrors();
 }
 
 void
@@ -916,12 +949,16 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 		glDepthMask(depthMask);
 		glDepthFunc(_depthFuncs[depthFunc]);
 	}
+
+    checkForErrors();
 }
 
 void
 OpenGLES2Context::readPixels(unsigned char* pixels)
 {
 	glReadPixels(_viewportX, _viewportY, _viewportWidth, _viewportHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    checkForErrors();
 }
 
 void
@@ -949,6 +986,8 @@ OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
         glCullFace(GL_FRONT_AND_BACK);
         break;
     }
+
+    checkForErrors();
 }
 
 void
@@ -956,6 +995,8 @@ OpenGLES2Context::setRenderToBackBuffer()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    checkForErrors();
 }
 
 void
@@ -967,6 +1008,8 @@ OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndSt
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
     if (enableDepthAndStencil)
         glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+
+    checkForErrors();
 }
 
 void
@@ -998,4 +1041,12 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 
     _frameBuffers[texture] = frameBuffer;
     _renderBuffers[texture] = renderBuffer;
+
+    checkForErrors();
+}
+
+unsigned int
+OpenGLES2Context::getError()
+{
+    return glGetError();
 }
