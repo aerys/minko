@@ -268,7 +268,7 @@ printFramerate(const unsigned int delay = 1)
 component::bullet::ColliderComponent::Ptr
 initializeDefaultCameraCollider()
 {
-	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, .75f, 0.2f);
 	//cameraShape->setMargin(0.3f);
 	auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
 
@@ -300,7 +300,7 @@ initializeCamera()
 
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->appendTranslation(0.0f, 2.75f, 5.0f)
+			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
 
 		cameraColliderComp = initializeDefaultCameraCollider();
@@ -371,7 +371,7 @@ int main(int argc, char** argv)
 
     auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpg")
+        ->registerParser<file::JPEGParser>("jpg")
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
 
@@ -394,7 +394,7 @@ int main(int argc, char** argv)
     assets
 		->queue("texture/firefull.jpg")
 		->queue("Particles.effect")
-		->queue("models/sponza-lite-physics.mk");
+		->queue("models/Sponza_lite.mk");
 
     rendering = Rendering::create(context);
 
@@ -409,9 +409,9 @@ int main(int argc, char** argv)
 		//root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
-		group->addChild(assets->node("models/sponza-lite-physics.mk"));
-		
-		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
+		group->addChild(assets->node("models/Sponza_lite.mk"));
+
+        scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
             ->descendants()
             ->where([](scene::Node::Ptr node)
 			{
@@ -423,13 +423,13 @@ int main(int argc, char** argv)
 			fireNode->addComponent(fire);
 	});
 
-	try
+	//try
 	{
 		assets->load();
 	}
-	catch(std::exception e)
+	//catch(std::exception e)
 	{
-		std::cerr << "exception: " << e.what() << std::endl;
+	//	std::cerr << "exception: " << e.what() << std::endl;
 	}
 
 #ifdef EMSCRIPTEN

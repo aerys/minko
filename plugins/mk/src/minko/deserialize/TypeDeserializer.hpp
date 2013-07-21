@@ -127,10 +127,8 @@ namespace minko
 					}
 				}
 
-				// tmp, for sponza only
 				if (!material->hasProperty("material.specular"))
 					material->set("material.specular",			math::Vector3::create(.8f, .8f, .8f));
-                material->set("material.shininess",			10.f);
 
 				return material;
 			}
