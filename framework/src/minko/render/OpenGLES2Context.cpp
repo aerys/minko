@@ -107,6 +107,10 @@ OpenGLES2Context::OpenGLES2Context() :
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    _driverInfo = std::string(reinterpret_cast<const char*>(glGetString(GL_VENDOR)))
+        + " " + std::string(reinterpret_cast<const char*>(glGetString(GL_RENDERER)))
+        + " " + std::string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
 	glGetIntegerv(GL_VIEWPORT, &viewportSettings[0]);
@@ -127,7 +131,7 @@ OpenGLES2Context::~OpenGLES2Context()
 		glDeleteBuffers(1, &indexBuffer);
 
 	for (auto& texture : _textures)
-		glDeleteTextures(1, &texture);
+		deleteTexture(texture);
 
 	for (auto& program : _programs)
 		glDeleteProgram(program);
@@ -441,6 +445,14 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// glBindTexture bind a named texture to a texturing target
 	glBindTexture(GL_TEXTURE_2D, texture);
 
+    // default sampler states
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
 	// void glTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border,
@@ -459,17 +471,20 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	// data Specifies a pointer to the image data in memory.
 	//
 	// glTexImage2D specify a two-dimensional texture image
+    auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
+
 	if (mipMapping)
 		for (unsigned int size = width > height ? width : height;
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 		}
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 
 	_textures.push_back(texture);
+    _textureSizes[texture] = std::pair<uint, uint>(width, height);
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -508,6 +523,9 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
         _renderBuffers.erase(texture);
     }
 
+    if (_textureSizes.count(texture))
+        _textureSizes.erase(texture);
+
     checkForErrors();
 }
 
@@ -518,13 +536,12 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 {
 	auto textureIsValid = texture > 0;
 
-	if (_currentTexture[position] != texture)
+    if (_currentTexture[position] != texture)
 	{
 		_currentTexture[position] = texture;
 
 		glActiveTexture(GL_TEXTURE0 + position);
 		glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
 	if (textureIsValid && location >= 0)
@@ -996,6 +1013,7 @@ OpenGLES2Context::setRenderToBackBuffer()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
 
     checkForErrors();
 }
@@ -1009,6 +1027,11 @@ OpenGLES2Context::setRenderToTexture(unsigned int texture, bool enableDepthAndSt
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
     if (enableDepthAndStencil)
         glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
+
+    auto textureSize = _textureSizes[texture];
+
+    glViewport(0, 0, textureSize.first, textureSize.second);
+    clear();
 
     checkForErrors();
 }
@@ -1036,12 +1059,16 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
     // attach to the FBO for depth
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
-    // unbind
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+        throw;
 
     _frameBuffers[texture] = frameBuffer;
     _renderBuffers[texture] = renderBuffer;
+
+    // unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     checkForErrors();
 }

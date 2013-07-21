@@ -42,9 +42,12 @@ namespace minko
             typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
 
 		protected:
-			std::list<unsigned int>	_textures;
+			std::list<unsigned int>	                        _textures;
+            std::unordered_map<uint, std::pair<uint, uint>> _textureSizes;
 
 		private:
+            std::string             _driverInfo;
+
             static BlendFactorsMap  _blendingFactors;
 			static DepthFuncsMap	_depthFuncs;
 
@@ -83,6 +86,13 @@ namespace minko
 			{
 				return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
 			}
+
+            inline
+            const std::string&
+            driverInfo()
+            {
+                return _driverInfo;
+            }
 
 			void
 			configureViewport(const unsigned int x,
