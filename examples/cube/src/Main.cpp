@@ -33,17 +33,18 @@ printFramerate(const unsigned int delay = 1)
 
 int main(int argc, char** argv)
 {
-    glfwInit();
-    auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
-    glfwMakeContextCurrent(window);
+	glfwInit();
+	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
+	glfwMakeContextCurrent(window);
 
 	auto context = render::OpenGLES2Context::create();
 	auto assets	= AssetsLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
-        ->queue("texture/box.png")
-        ->queue("RTT.effect")
-        ->queue("Sprite.effect")
+		->queue("texture/box.png")
+		->queue("texture/box.png")
+		->queue("RTT.effect")
+		->queue("Sprite.effect")
 		->queue("Basic.effect");
 
 	if (argc > 1)
@@ -52,25 +53,28 @@ int main(int argc, char** argv)
 			assets->defaultOptions()->includePaths().insert(std::string(argv[i]));
 	}
 	else
-		assets->defaultOptions()->includePaths().insert(".");
+	{
+		assets->defaultOptions()->includePaths().insert("../../effect"); // Useful when starting from binary location.
+		assets->defaultOptions()->includePaths().insert("effect"); // Useful when starting from example root.
+	}
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
-  		auto root   = scene::Node::create("root");
+		auto root   = scene::Node::create("root");
 
-        root->addChild(group)->addChild(camera);
+		root->addChild(group)->addChild(camera);
 
-        renderingComponent = Rendering::create(assets->context());
-        renderingComponent->backgroundColor(0x7F7F7FFF);
+		renderingComponent = Rendering::create(assets->context());
+		renderingComponent->backgroundColor(0x7F7F7FFF);
 		camera->addComponent(renderingComponent);
-        camera->addComponent(Transform::create());
-        camera->component<Transform>()->transform()
-            ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
-        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
-        
-        mesh = scene::Node::create();
-        mesh->addComponent(Transform::create());
-        mesh->component<Transform>()->transform()->appendTranslation(1.f, 0.f, 0.f);
+		camera->addComponent(Transform::create());
+		camera->component<Transform>()->transform()
+			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+		
+		mesh = scene::Node::create();
+		mesh->addComponent(Transform::create());
+		mesh->component<Transform>()->transform()->appendTranslation(1.f, 0.f, 0.f);
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -78,10 +82,10 @@ int main(int argc, char** argv)
 				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
 			assets->effect("RTT.effect")
 		));
-        group->addChild(mesh);
-        
-        mesh = scene::Node::create();
-        mesh->addComponent(Transform::create());
+		group->addChild(mesh);
+		
+		mesh = scene::Node::create();
+		mesh->addComponent(Transform::create());
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
@@ -89,44 +93,44 @@ int main(int argc, char** argv)
 				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
 			assets->effect("RTT.effect")
 		));
-        group->addChild(mesh);
+		group->addChild(mesh);
 
 
-        /*
-        root->addChild(scene::Node::create()->addComponent(Surface::create(
-            geometry::QuadGeometry::create(assets->context()),
-            data::Provider::create()->set("material.diffuseMap", assets->texture("rtt")),
-            assets->effect("Sprite.effect")
-        )));
-        */
+		/*
+		root->addChild(scene::Node::create()->addComponent(Surface::create(
+			geometry::QuadGeometry::create(assets->context()),
+			data::Provider::create()->set("material.diffuseMap", assets->texture("rtt")),
+			assets->effect("Sprite.effect")
+		)));
+		*/
 	});
 
 	assets->load();
 
 	while(!glfwWindowShouldClose(window))
-    {
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -.1f);
-        else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, .1f);
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
-        else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
-        
+	{
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -.1f);
+		else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, .1f);
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->appendTranslation(-.1f, 0.f, 0.f);
+		else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			camera->component<Transform>()->transform()->appendTranslation(.1f, 0.f, 0.f);
+		
 		mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
-	    renderingComponent->render();
+		renderingComponent->render();
 
-	    printFramerate();
+		printFramerate();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 
-    glfwDestroyWindow(window);
+	glfwDestroyWindow(window);
  
-    glfwTerminate();
+	glfwTerminate();
 
-    exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }
