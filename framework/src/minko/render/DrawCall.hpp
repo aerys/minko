@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/Signal.hpp"
+#include "minko/render/Blending.hpp"
 #include "minko/data/Container.hpp"
 
 namespace minko
@@ -50,6 +51,21 @@ namespace minko
             std::shared_ptr<States>                                     _states;
 
 			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
+
+            std::vector<int>                                            _vertexBuffers;
+            std::vector<int>                                            _vertexBufferLocations;
+            std::vector<int>                                            _vertexSizes;
+            std::vector<int>                                            _vertexAttributeSizes;
+            std::vector<int>                                            _vertexAttributeOffsets;
+            std::vector<int>                                            _textures;
+            std::vector<int>                                            _textureLocations;
+            uint                                                        _numIndices;
+            uint                                                        _indexBuffer;
+            std::shared_ptr<render::Texture>                            _target;
+            render::Blending::Mode                                      _blendMode;
+            bool                                                        _depthMask;
+            render::CompareMode                                         _depthFunc;
+            render::TriangleCulling                                     _triangleCulling;
 
             std::list<Signal<ContainerPtr, const std::string&>::Slot>   _propertyChangedSlots;
 

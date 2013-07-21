@@ -49,7 +49,14 @@ DrawCall::DrawCall(Program::Ptr											program,
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
-    _states(states)
+    _states(states),
+    _textures(8, -1),
+    _textureLocations(8, -1),
+    _vertexBuffers(8, -1),
+    _vertexBufferLocations(8, -1),
+    _vertexSizes(8, -1),
+    _vertexAttributeSizes(8, -1),
+    _vertexAttributeOffsets(8, -1)
 {
 }
 
@@ -61,16 +68,14 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
     _func.clear();
     _propertyChangedSlots.clear();
 
-	auto IndexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
-	auto indexBuffer	= IndexBuffer->id();
-	auto numIndices		= IndexBuffer->data().size();
-	auto drawTriangles	= [=](AbstractContext::Ptr context)
-	{
-		context->drawTriangles(indexBuffer, numIndices);
-	};
-	
-	auto numTextures	= 0;
-	auto programId		= _program->id();
+	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
+
+    _indexBuffer = indexBuffer->id();
+    _numIndices = indexBuffer->data().size();
+
+	auto numTextures	    = 0;
+    auto numVertexBuffers   = 0;
+	auto programId		    = _program->id();
 
 	_func.push_back([=](AbstractContext::Ptr context)
 	{
@@ -93,15 +98,15 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 				continue;
 
 			auto vertexBuffer	= getDataProperty<VertexBuffer::Ptr>(name);
-			auto vertexSize		= vertexBuffer->vertexSize();
 			auto attribute		= vertexBuffer->attribute(inputName);
-			auto size			= std::get<1>(*attribute);
-			auto offset			= std::get<2>(*attribute);
-				
-			_func.push_back([=](AbstractContext::Ptr context)
-			{
-				context->setVertexBufferAt(location, vertexBuffer->id(), size, vertexSize, offset);
-			});
+
+            _vertexBuffers[numVertexBuffers] = vertexBuffer->id();
+            _vertexBufferLocations[numVertexBuffers] = location;
+            _vertexAttributeSizes[numVertexBuffers] = std::get<1>(*attribute);
+            _vertexSizes[numVertexBuffers] = vertexBuffer->vertexSize();
+            _vertexAttributeOffsets[numVertexBuffers] = std::get<2>(*attribute);
+			
+            ++numVertexBuffers;
 		}
 		else
 		{
@@ -169,73 +174,46 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
                 auto textureFilter  = std::get<1>(samplerState);
                 auto mipFilter      = std::get<2>(samplerState);
 
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setTextureAt(numTextures, texture, location);
-                    context->setSamplerStateAt(numTextures, wrap, textureFilter, mipFilter);
-				});
+                _textures[numTextures] = texture;
+                _textureLocations[numTextures] = location;
 
 				++numTextures;
 			}
 		}
 	}
 
-	_func.push_back([=](AbstractContext::Ptr context)
-	{
-		auto count = numTextures;
-
-		while (count < 8)
-			context->setTextureAt(count++);
-	});
-
 	bindStates();
-
-	_func.push_back(drawTriangles);
 }
 
 void
 DrawCall::bindStates()
 {
-	auto blendMode = getDataProperty<Blending::Mode>(
+	_blendMode = getDataProperty<Blending::Mode>(
         _stateBindings.count("blendMode") ? _stateBindings.at("blendMode") : "blendMode",
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
-	auto depthMask = getDataProperty<bool>(
+	_depthMask = getDataProperty<bool>(
 		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
         _states->depthMask()
 	);
-	auto depthFunc = getDataProperty<CompareMode>(
+	_depthFunc = getDataProperty<CompareMode>(
 		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
         _states->depthFun()
 	);
 
-    auto triangleCulling = getDataProperty<TriangleCulling>(
+    _triangleCulling = getDataProperty<TriangleCulling>(
 		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
         _states->triangleCulling()
 	);
 
-    auto target = getDataProperty<Texture::Ptr>(
+    _target = getDataProperty<Texture::Ptr>(
     	_stateBindings.count("target") ? _stateBindings.at("target") : "target",
         _states->target()
     );
 	
-    if (target && !target->isValid())
-        target->upload();
-
-	// FIXME: bind stencil test
-
-	_func.push_back([=](AbstractContext::Ptr context)
-	{
-        if (target)
-            context->setRenderToTexture(target->id(), true);
-        else
-            context->setRenderToBackBuffer();
-
-		context->setBlendMode(blendMode);
-		context->setDepthTest(depthMask, depthFunc);
-        context->setTriangleCulling(triangleCulling);
-	});
+    if (_target && !_target->isValid())
+        _target->upload();
 }
 
 void
@@ -243,6 +221,42 @@ DrawCall::render(AbstractContext::Ptr context)
 {
 	for (auto& f : _func)
 		f(context);
+
+    /*
+    if (_target)
+        context->setRenderToTexture(_target->id(), true);
+    else
+        context->setRenderToBackBuffer();
+    */
+    
+    for (uint textureId = 0; textureId < _textures.size(); ++textureId)
+    {
+        auto texture = _textures[textureId];
+
+        context->setTextureAt(textureId, _textures[textureId], _textureLocations[textureId]);
+        if (texture > 0)
+            context->setSamplerStateAt(textureId, WrapMode::REPEAT, TextureFilter::NEAREST, MipFilter::NONE);
+    }
+
+    for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)
+    {
+        auto vertexBuffer = _vertexBuffers[vertexBufferId];
+
+        if (vertexBuffer > 0)
+            context->setVertexBufferAt(
+                _vertexBufferLocations[vertexBufferId],
+                vertexBuffer,
+                _vertexAttributeSizes[vertexBufferId],
+                _vertexSizes[vertexBufferId],
+                _vertexAttributeOffsets[vertexBufferId]
+            );
+    }
+
+	context->setBlendMode(_blendMode);
+	context->setDepthTest(_depthMask, _depthFunc);
+    context->setTriangleCulling(_triangleCulling);
+
+    context->drawTriangles(_indexBuffer, _numIndices / 3);
 }
 
 void
