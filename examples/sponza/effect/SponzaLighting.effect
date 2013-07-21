@@ -16,7 +16,7 @@
 		"cameraPosition"		: "camera.position",
 		"diffuseMap"			: "material.diffuseMap",
 		"specularMap"			: "material.specularMap",
-		"normalMap"				: "material.normalMap"
+		"normalMap"			: "material.normalMap"
 	},
 	"stateBindings"	: {
 		"blendMode"				: "material.blendMode"
