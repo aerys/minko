@@ -300,7 +300,7 @@ initializeCamera()
 
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->appendTranslation(0.0f, 3.75f, 5.0f)
+			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
 
 		cameraColliderComp = initializeDefaultCameraCollider();
