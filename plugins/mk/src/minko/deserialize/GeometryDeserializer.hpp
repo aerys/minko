@@ -52,7 +52,8 @@ namespace minko
 								Qark::ByteArray&				geometryData,
 								std::shared_ptr<AssetsLibrary>	library,
 								std::shared_ptr<scene::Node>	mesh,
-								std::shared_ptr<file::Options>	options);
+								std::shared_ptr<file::Options>	options,
+								bool							computeTangent);
 
 			static
 			std::shared_ptr<render::IndexBuffer>

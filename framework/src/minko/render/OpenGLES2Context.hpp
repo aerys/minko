@@ -267,6 +267,20 @@ namespace minko
 
             void
             createRTTBuffers(unsigned int texture, unsigned int width, unsigned int height);
+
+            inline
+            void
+            checkForErrors()
+            {
+#ifdef DEBUG
+                auto error = getError();
+	            if (error != 0)
+                    throw;
+#endif
+            }
+
+            unsigned int
+            getError();
 		};
 	}
 }
