@@ -42,7 +42,7 @@ auto			                root			    = scene::Node::create("root");
 
 #ifdef EMSCRIPTEN
 void
-clavierHandler(unsigned char key, int x, int y)
+clavierHandler(int key, int x, int y)
 {	
     if (cameraColliderComp == nullptr)
 	{
