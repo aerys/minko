@@ -105,7 +105,7 @@
 							  sine * offset.x + cosine * offset.y);
 			
 				// fake SizeOverTime
-				float sizeOverTimer = size * (1.6 - 1.3 * time * time);
+				float sizeOverTimer = size * (1.6 - 1.3 * pow(time, 2.5));
 			
 				// Sponza scale
 				//size *= 0.05;
@@ -137,7 +137,7 @@
 				#endif
 				
 				// fake ColorOverTime
-				c *= 1.0 - particleTime * particleTime * particleTime * particleTime;
+				c *= 1.0 - pow(particleTime, 4.);
 				
 				gl_FragColor = c;
 			}
