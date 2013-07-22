@@ -94,6 +94,9 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
+    _currentWrapMode(8, WrapMode::CLAMP),
+    _currentTextureFilter(8, TextureFilter::NEAREST),
+    _currentMipFilter(8, MipFilter::NONE),
 	_currentProgram(-1),
     _currentTriangleCulling(TriangleCulling::BACK)
 {
@@ -555,6 +558,14 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 void
 OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
 {
+    if(_currentWrapMode[position] == wrapping && _currentTextureFilter[position] == filtering
+       && _currentMipFilter[position] == mipFiltering)
+       return ;
+
+    _currentWrapMode[position] = wrapping;
+    _currentTextureFilter[position] = filtering;
+    _currentMipFilter[position] = mipFiltering;
+
     glActiveTexture(GL_TEXTURE0 + position);
 
     // disable mip mapping if mip maps are not available
