@@ -396,7 +396,7 @@ int main(int argc, char** argv)
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
 
-	std::cout << "OpenGl context created" << std::endl:
+	std::cout << "OpenGl context created" << std::endl;
 
 	auto context = render::OpenGLES2Context::create();
 #endif
@@ -409,7 +409,7 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
 
-#ifdef EMSCRIPTEN
+#if EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #endif
 
