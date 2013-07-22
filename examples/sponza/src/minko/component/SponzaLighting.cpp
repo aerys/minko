@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 
+#include <climits>
+
 using namespace minko::component;
 using namespace minko::math;
 
@@ -84,7 +86,7 @@ SponzaLighting::getDistanceThresholds(Vector4::Ptr output) const
 	float thr2 = _minThr + range * (0.5f + 0.5f * cosf(_frequencies->y() * (_time + _offsets->y())));
 	float thr3 = _minThr + range * (0.5f + 0.5f * cosf(_frequencies->z() * (_time + _offsets->z())));
 	float thr4 = _minThr + range * (0.5f + 0.5f * cosf(_frequencies->w() * (_time + _offsets->w())));
-	
+
 	return output
 		? output->setTo(thr1, thr2, thr3, thr4)
 		: Vector4::create(thr1, thr2, thr3, thr4);
