@@ -1024,6 +1024,9 @@ OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
 void
 OpenGLES2Context::setRenderToBackBuffer()
 {
+    if (_currentTarget == 0)
+        return;
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
