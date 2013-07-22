@@ -7,9 +7,7 @@ project "minko-example-sponza"
 		"minko-jpeg",
 		"minko-mk",
 		"minko-bullet",
-		"minko-particles",
-		"minko-webgl",
-		"minko-framework"
+		"minko-particles"
 	}
 	files {
 		"**.hpp",
@@ -25,7 +23,6 @@ project "minko-example-sponza"
 		"../../plugins/webgl/src",
 		"../../plugins/png/src",
 		"../../plugins/jpeg/src",
-		"../../plugins/webgl/src",
 		"../../plugins/particles/src"
 	}
 
@@ -41,22 +38,37 @@ project "minko-example-sponza"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		buildoptions { "-std=c++11" }
+		links {
+			"minko-framework",
+			"GL",
+			"GLU",
+			"glfw3",
+			"m",
+			"Xrandr",
+			"Xxf86vm",
+			"Xi",
+			"rt"
+		}
 		libdirs {
 			"../../deps/lin/lib"
 		}
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
-			'cp -r asset/* .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links {
+			"minko-framework",
+			"OpenGL32",
+			"glfw3dll",
+			"glew32"
+		}
 		libdirs {
 			"../../deps/win/lib"
 		}
@@ -77,6 +89,7 @@ project "minko-example-sponza"
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
+			"minko-framework",
 			"m",
 			"glfw3",
 			"Cocoa.framework",
@@ -90,16 +103,21 @@ project "minko-example-sponza"
 			"../../deps/mac/include"
 		}
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
-			'cp -r asset/* .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
---		links { "minko-webgl" }
---		includedirs { "../../plugins/webgl/src" }
 		buildoptions { "-std=c++11" }
+		links {
+			"minko-webgl",
+			"minko-framework"
+		}
+		includedirs {
+			"../../plugins/webgl/src"
+		}
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
