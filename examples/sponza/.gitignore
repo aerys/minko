@@ -1,5 +1,5 @@
-bin
-obj
-effect
-texture
-model
+/bin
+/obj
+/effect
+/texture
+/model
