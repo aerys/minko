@@ -35,15 +35,14 @@ project "minko-bullet"
 	configuration { "release" }
 		defines { "NDEBUG" }
 		targetdir "bin/release"
-
+		flags { "OptimizeSpeed" }
+		
 	-- linux
 	configuration { "linux" }
 		buildoptions { "-std=c++11" }
-		flags { "OptimizeSpeed" }
 
 	-- windows
 	configuration { "windows", "x32" }
-		flags { "OptimizeSpeed" }
 
 	-- macos
 	configuration { "macosx" }
