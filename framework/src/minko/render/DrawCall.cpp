@@ -116,52 +116,15 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 				continue;
 
 			if (type == ProgramInputs::Type::float1)
-			{
-				auto floatValue = getDataProperty<float>(name);
-
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setUniform(location, floatValue);
-				});
-			}
+                _uniformFloat[location] = getDataProperty<float>(name);
 			else if (type == ProgramInputs::Type::float2)
-			{
-				auto float2Value	= getDataProperty<std::shared_ptr<Vector2>>(name);
-
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setUniform(location, float2Value->x(), float2Value->y());
-				});
-			}
+                _uniformFloat2[location] = getDataProperty<std::shared_ptr<Vector2>>(name);
 			else if (type == ProgramInputs::Type::float3)
-			{
-				auto float3Value	= getDataProperty<std::shared_ptr<Vector3>>(name);
-
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setUniform(location, float3Value->x(), float3Value->y(), float3Value->z());
-				});
-			}
+                _uniformFloat3[location] = getDataProperty<std::shared_ptr<Vector3>>(name);
 			else if (type == ProgramInputs::Type::float4)
-			{
-				auto float4Value	= getDataProperty<std::shared_ptr<Vector4>>(name);
-
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setUniform(
-                        location, float4Value->x(), float4Value->y(), float4Value->z(), float4Value->w()
-                    );
-				});
-			}
+                _uniformFloat4[location] = getDataProperty<std::shared_ptr<Vector4>>(name);
 			else if (type == ProgramInputs::Type::float16)
-			{
-				auto float16Ptr = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
-
-				_func.push_back([=](AbstractContext::Ptr context)
-				{
-					context->setUniformMatrix4x4(location, 1, true, float16Ptr);
-				});
-			}
+                _uniformFloat16[location] = &(getDataProperty<Matrix4x4::Ptr>(name)->data()[0]);
 			else if (type == ProgramInputs::Type::sampler2d)
 			{
 				auto texture        = getDataProperty<Texture::Ptr>(name)->id();
@@ -224,8 +187,28 @@ DrawCall::render(AbstractContext::Ptr context)
 
     context->setProgram(_program->id());
 
-   	for (auto& f : _func)
-		f(context);
+    for (auto uniformFloat : _uniformFloat)
+        context->setUniform(uniformFloat.first, uniformFloat.second);
+    for (auto uniformFloat2 : _uniformFloat2)
+    {
+        auto float2 = uniformFloat2.second;
+
+        context->setUniform(uniformFloat2.first, float2->x(), float2->y());
+    }
+    for (auto uniformFloat3 : _uniformFloat3)
+    {
+        auto float3 = uniformFloat3.second;
+
+        context->setUniform(uniformFloat3.first, float3->x(), float3->y(), float3->z());
+    }
+    for (auto uniformFloat4 : _uniformFloat4)
+    {
+        auto float4 = uniformFloat4.second;
+
+        context->setUniform(uniformFloat4.first, float4->x(), float4->y(), float4->z(), float4->w());
+    }
+    for (auto uniformFloat16 : _uniformFloat16)
+        context->setUniformMatrix4x4(uniformFloat16.first, 1, true, uniformFloat16.second);
 
     for (uint textureId = 0; textureId < _textures.size(); ++textureId)
     {
