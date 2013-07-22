@@ -59,7 +59,7 @@ namespace minko
 					std::shared_ptr<file::AbstractParser>	pngParser		= _library->parser("png");
 					std::vector<unsigned char>&				uTextureData	= reinterpret_cast<std::vector<unsigned char>&>(*&textureData);
 
-					pngParser->parse(assetName, options, uTextureData, _library);
+					pngParser->parse(assetName, assetName, options, uTextureData, _library);
 
 					_idToTexture[assetId] = _library->texture(assetName);
 				}
