@@ -10,7 +10,11 @@ project "minko-example-sponza"
 		"minko-particles",
 		"minko-framework"
 	}
-	files { "**.hpp", "**.h", "**.cpp" }
+	files {
+		"**.hpp",
+		"**.h",
+		"**.cpp"
+	}
 	includedirs {
 		"src",
 		"../../deps/all/include",
@@ -44,7 +48,8 @@ project "minko-example-sponza"
 		}
 		buildoptions "-std=c++11"
 		postbuildcommands {
-			'cp -r ../../framework/effect .'
+			'cp -r ../../framework/effect .',
+			'cp -r asset/* .'
 		}
 
 	-- windows
@@ -57,7 +62,12 @@ project "minko-example-sponza"
 			"../../deps/win/include"
 		}
 		postbuildcommands {
-			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect'
+			-- copy framework effects
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
+			-- copy assets
+			'xcopy /y /e /i asset\\* $(TargetDir)',
+			-- copy dlls
+			'for /r %%x in (..\\..\\deps\win\lib\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
 		}
 
 	-- macos
@@ -78,7 +88,8 @@ project "minko-example-sponza"
 			"../../deps/mac/include"
 		}
 		postbuildcommands {
-			'cp -r ../../framework/effect .'
+			'cp -r ../../framework/effect .',
+			'cp -r asset/* .'
 		}
 
 	-- emscripten
