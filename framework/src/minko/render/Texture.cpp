@@ -26,10 +26,12 @@ using namespace minko::render;
 Texture::Texture(std::shared_ptr<render::AbstractContext>	context,
 				 const unsigned int							width,
 				 const unsigned int							height,
+                 bool                                       mipMapping,
                  bool                                       optimizeForRenderToTexture) :
 	AbstractResource(context),
 	_width(width),
 	_height(height),
+    _mipMapping(mipMapping),
     _optimizeForRenderToTexture(optimizeForRenderToTexture)
 {
 }
@@ -65,10 +67,14 @@ void
 Texture::upload()
 {
     if (_id == -1)
-    	_id = _context->createTexture(_width, _height, false, _optimizeForRenderToTexture);
+    	_id = _context->createTexture(_width, _height, _mipMapping, _optimizeForRenderToTexture);
 	
     if (_data.size())
+    {
         _context->uploadTextureData(_id, _width, _height, 0, &_data[0]);
+        if (_mipMapping)
+            _context->generateMipmaps(_id);
+    }
 }
 
 void
@@ -79,10 +85,4 @@ Texture::dispose()
 	    _context->deleteTexture(_id);
 	    _id = -1;
     }
-}
-
-void
-Texture::generateMipmaps()
-{
-    _context->generateMipmaps(_id);
 }

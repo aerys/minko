@@ -409,19 +409,24 @@ int main(int argc, char** argv)
 		->registerParser<file::MkParser>("mk")
 		->geometry("cube", geometry::CubeGeometry::create(context));
 
-#if EMSCRIPTEN
+#ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
+#endif
+#ifdef DEBUG
+    assets->defaultOptions()->includePaths().insert("bin/debug");
 #endif
 
     // load sponza lighting effect and set it as the default effect
     assets->load("effect/SponzaLighting.effect");
-    assets->defaultOptions()->effect(assets->effect("sponza lighting"));
+    assets->defaultOptions()->effect(assets->effect("effect/SponzaLighting.effect"));
 
     // load other assets
     assets
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
 		->queue("model/Sponza_lite.mk");
+
+    assets->defaultOptions()->generateMipmaps(true);
 
     rendering = Rendering::create(context);
 

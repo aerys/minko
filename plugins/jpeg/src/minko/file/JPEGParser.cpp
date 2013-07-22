@@ -30,7 +30,8 @@ using namespace minko::file;
 
 void
 JPEGParser::parse(const std::string&				filename,
-				  std::shared_ptr<Options>			options,
+				  const std::string&                resolvedFilename,
+                  std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetsLibrary>	assetsLibrary)
 {
@@ -49,12 +50,10 @@ JPEGParser::parse(const std::string&				filename,
 		? render::Texture::DataFormat::RGB
 		: render::Texture::DataFormat::RGBA;
 
-	auto texture = render::Texture::create(options->context(), width, height);
+	auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
 
 	texture->data(bmpData, format);
 	texture->upload();
-    if (options->generateMipmaps())
-        texture->generateMipmaps();
 
 	assetsLibrary->texture(filename, texture);
 
