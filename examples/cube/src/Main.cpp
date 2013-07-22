@@ -42,16 +42,15 @@ int main(int argc, char** argv)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->queue("texture/box.png")
-		->queue("texture/box.png")
-		->queue("RTT.effect")
-		->queue("Sprite.effect")
-		->queue("Basic.effect");
+		->queue("effect/RTT.effect")
+		->queue("effect/Sprite.effect")
+		->queue("effect/Basic.effect");
 
 #ifdef DEBUG
-    assets->defaultOptions()->includePaths().insert("../../assets");
+    assets->defaultOptions()->includePaths().insert("bin/debug");
 #endif
 
-    assets->defaultOptions()->generateMipmaps(true);
+    //assets->defaultOptions()->generateMipmaps(true);
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
@@ -75,21 +74,20 @@ int main(int argc, char** argv)
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f)),
 				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
-			assets->effect("RTT.effect")
+			assets->effect("effect/RTT.effect")
 		));
 		group->addChild(mesh);
-		
+
 		mesh = scene::Node::create();
 		mesh->addComponent(Transform::create());
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
 			data::Provider::create()
-				->set("material.diffuseColor",	Vector4::create(1.f, 0.f, 0.f, 1.f)),
-				//->set("material.diffuseMap",	assets->texture("texture/box.png")),
-			assets->effect("RTT.effect")
+				->set("material.diffuseColor",	Vector4::create(1.f, 0.f, 0.f, 1.f))
+				->set("material.diffuseMap",	assets->texture("texture/box.png")),
+			assets->effect("effect/RTT.effect")
 		));
 		group->addChild(mesh);
-
 
 		/*
 		root->addChild(scene::Node::create()->addComponent(Surface::create(
