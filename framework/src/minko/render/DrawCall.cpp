@@ -68,7 +68,6 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 {
 	_data = data;
 	_rootData = rootData;
-    _func.clear();
     _propertyChangedSlots.clear();
 
 	auto indexBuffer	= getDataProperty<IndexBuffer::Ptr>("geometry.indices");
