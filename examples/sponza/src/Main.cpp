@@ -412,9 +412,6 @@ int main(int argc, char** argv)
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #endif
-#ifdef NDEBUG
-    assets->defaultOptions()->includePaths().insert("../..");
-#endif
 
     // load sponza lighting effect and set it as the default effect
     assets->load("effect/SponzaLighting.effect");
@@ -424,7 +421,7 @@ int main(int argc, char** argv)
     assets
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		->queue("models/Sponza_lite.mk");
+		->queue("model/Sponza_lite.mk");
 
     rendering = Rendering::create(context);
 
@@ -439,7 +436,7 @@ int main(int argc, char** argv)
 		//root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
-		group->addChild(assets->node("models/Sponza_lite.mk"));
+		group->addChild(assets->node("model/Sponza_lite.mk"));
 
         scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
             ->descendants()

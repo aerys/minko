@@ -1,11 +1,6 @@
 solution "minko"
    configurations { "debug", "release" }
 
--- support for new actions
-dofile('tools/all/lib/library.lua')
-dofile('tools/all/lib/vs.lua')
-dofile('tools/all/lib/platform.lua')
-
 -- examples
 include 'examples/sponza'
 if _OPTIONS["platform"] ~= "emscripten" then
@@ -24,3 +19,8 @@ end
 include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
+
+-- support for new actions
+dofile('tools/all/lib/library.lua')
+dofile('tools/all/lib/platform.lua')
+dofile('tools/all/lib/vs.lua')
