@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::file;
 
 Options::Options(std::shared_ptr<render::AbstractContext> context) :
-	_context(context)
+	_context(context),
+    _generateMipMaps(false)
 {
 }

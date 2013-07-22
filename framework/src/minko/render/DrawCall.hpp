@@ -59,6 +59,9 @@ namespace minko
             std::vector<int>                                            _vertexAttributeOffsets;
             std::vector<int>                                            _textures;
             std::vector<int>                                            _textureLocations;
+            std::vector<WrapMode>                                       _textureWrapMode;
+            std::vector<TextureFilter>                                  _textureFilters;
+            std::vector<MipFilter>                                      _textureMipFilters;
             uint                                                        _numIndices;
             uint                                                        _indexBuffer;
             std::shared_ptr<render::Texture>                            _target;

@@ -44,6 +44,7 @@ namespace minko
 		protected:
 			std::list<unsigned int>	                        _textures;
             std::unordered_map<uint, std::pair<uint, uint>> _textureSizes;
+            std::unordered_map<uint, bool>                  _textureHasMipmaps;
 
 		private:
             std::string             _driverInfo;
@@ -250,6 +251,9 @@ namespace minko
 
             void
             setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false);
+
+            void
+            generateMipmaps(unsigned int texture);
 
 		protected:
 			OpenGLES2Context();
