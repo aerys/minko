@@ -39,6 +39,7 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
 	_filename = filename;
+    _resolvedFilename = filename;
 	_options = options;
 	
 	std::fstream file(filename, flags);
@@ -48,7 +49,10 @@ Loader::load(const std::string& filename, std::shared_ptr<Options> options)
 		{
 			file.open(path + "/" + filename, flags);
 			if (file.is_open())
+            {
+                _resolvedFilename = path + "/" + filename;
 				break;
+            }
 		}
 
 	if (file.is_open())

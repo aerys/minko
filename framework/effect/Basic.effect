@@ -28,6 +28,10 @@
 	"depthTest"			: [true, "less_equal"],
 	"triangleCulling"	: "back",
 	
+	"samplerStates" : {
+		"diffuseMap"	: { "mipFilter" : "linear" }
+	},
+	
 	"passes"	: [{	
 		"vertexShader"	: "
 			attribute vec3 position;
@@ -54,8 +58,8 @@
 			}
 		",
 		"fragmentShader"	: "
-			uniform vec4 diffuseColor;
-			uniform sampler2D diffuseMap;
+			uniform vec4 		diffuseColor;
+			uniform sampler2D 	diffuseMap;
 			
 			varying vec2 vertexUV;
 
