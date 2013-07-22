@@ -67,7 +67,7 @@ project "minko-example-sponza"
 			-- copy assets
 			'xcopy /y /e /i asset\\* $(TargetDir)',
 			-- copy dlls
-			'for /r %%x in (..\\..\\deps\win\lib\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
+			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
 		}
 
 	-- macos
