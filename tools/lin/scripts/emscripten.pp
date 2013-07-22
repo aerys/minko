@@ -1,4 +1,4 @@
-$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs", "freeglut3-dev", "mesa-common-dev"] #, "xorg-dev", "libglu1-mesa-dev"]
+$emscripten_deps = ["git", "openjdk-6-jdk", "nodejs", "freeglut3-dev", "mesa-common-dev", "apache2"] #, "xorg-dev", "libglu1-mesa-dev"]
 $clang_version = "3.2"
 $clang_dir = "clang+llvm-${clang_version}-x86-linux-ubuntu-12.04"
 $clang_filename = "${clang_dir}.tar.gz"
@@ -9,7 +9,14 @@ Exec {
     cwd => "/vagrant",
     logoutput => on_failure,
     environment => ["PWD=/vagrant", "HOME=/home/vagrant"],
-    path => [ "/bin/", "/sbin/" , "/usr/bin/", "/usr/sbin/" ],
+    path => [
+        "/bin/",
+        "/sbin/",
+        "/usr/bin/",
+        "/usr/sbin/",
+        "/home/vagrant/src/emscripten",
+        "/home/vagrant/src/clang+llvm-3.2-x86-linux-ubuntu-12.04/bin"
+    ],
     timeout => 0
 }
 
@@ -105,6 +112,42 @@ class emscripten {
         environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"],
         creates => "/home/vagrant/src/${clang_dir}",
         require => Exec["wget-clang-llvm"]
+    }
+
+    exec { "/usr/bin/rsync -r --filter=':- .gitignore' /vagrant/ /home/vagrant/src/minko-cpp":
+        alias => "copy-repository",
+        cwd => "/home/vagrant/src",
+        environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"]
+    }
+
+    file { "/var/www/sponza":
+        alias => "link-apache",
+        ensure => 'link',
+        target => '/home/vagrant/src/minko-cpp/examples/sponza/bin/release/',
+        require => [
+            Package[$emscripten_deps],
+            Exec["copy-repository"]
+        ]
+    }
+
+    exec { "/home/vagrant/src/minko-cpp/tools/lin/bin/premake4 --platform=emscripten gmake":
+        alias => "configure",
+        cwd => "/home/vagrant/src/minko-cpp",
+        environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"],
+        require => [
+            File["link-apache"],
+            Exec["untar-clang-llvm"],
+            Exec["git-pull-emscripten"],
+            Exec["install-g++"],
+            Exec["install-gcc"]
+        ]
+    }
+
+    exec { "/usr/bin/make verbose=1 config=release":
+        alias => "compile",
+        cwd => "/home/vagrant/src/minko-cpp",
+        environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"],
+        require => Exec["configure"]
     }
 }
 

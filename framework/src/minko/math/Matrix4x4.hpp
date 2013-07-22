@@ -188,9 +188,9 @@ namespace minko
 
 			inline
 			bool
-			operator==(Matrix4x4& value)
+			equals(Ptr value)
 			{
-				std::vector<float> m = value._m;
+				std::vector<float> m = value->_m;
 
 				for (auto i = 0; i < 16; ++i)
 					if (_m[i] != m[i])
@@ -198,6 +198,16 @@ namespace minko
 
 				return true;
 			}
+
+            inline
+            bool
+            isIdentity()
+            {
+                return _m[0] == 1.f && _m[1] == 0.f && _m[2] == 0.f && _m[3] == 0.f
+                    && _m[4] == 0.f && _m[5] == 1.f && _m[6] == 0.f && _m[7] == 0.f
+                    && _m[8] == 0.f && _m[9] == 0.f && _m[10] == 1.f && _m[11] == 0.f
+                    && _m[12] == 0.f && _m[13] == 0.f && _m[14] == 0.f && _m[15] == 1.f;
+            }
 
 			Ptr
 			perspective(float fov, float ratio, float zNear, float zFar);

@@ -39,7 +39,7 @@
 	
 	"samplerStates"	: {
 		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
@@ -81,7 +81,7 @@
 					worldPosition = pos.xyz;
 				#endif
 
-				#if defined DIFFUSE_MAP || defined NORMAL_MAP
+				#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP 
 					vertexUV = uv;
 				#endif
 				
@@ -150,12 +150,19 @@
 			{
 				// both vectors are assumed to be normalized.
 				wsTangent	= normalize(wsTangent);
-				return transpose(mat3(
+
+				mat3 a = mat3(
 					wsTangent,	
 					cross(wsNormal, wsTangent),	
 					wsNormal
-				));
-			}
+				);
+
+				mat3 transpose = mat3(a[0][0], a[1][0], a[2][0],
+						      a[0][1], a[1][1], a[2][1],
+						      a[0][2], a[1][2], a[2][2]);
+
+				return transpose;
+			}	
 			
 			void main(void)
 			{
@@ -242,7 +249,7 @@
 
 					float alpha = alphaMapColor.x;
 				#else
-					float alpha = 1;
+					float alpha = 1.;
 				#endif
 
 				
