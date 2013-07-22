@@ -47,16 +47,11 @@ int main(int argc, char** argv)
 		->queue("Sprite.effect")
 		->queue("Basic.effect");
 
-	if (argc > 1)
-	{
-		for (int i = 1; i < argc; ++i)
-			assets->defaultOptions()->includePaths().insert(std::string(argv[i]));
-	}
-	else
-	{
-		assets->defaultOptions()->includePaths().insert("../../effect"); // Useful when starting from binary location.
-		assets->defaultOptions()->includePaths().insert("effect"); // Useful when starting from example root.
-	}
+#ifdef DEBUG
+    assets->defaultOptions()->includePaths().insert("../../assets");
+#endif
+
+    assets->defaultOptions()->generateMipmaps(true);
 
 	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
 	{
