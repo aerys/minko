@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
-#include "minko/file/AbstractModelParser.hpp"
 #include "minko/Qark.hpp"
 #include "minko/deserialize/SceneDeserializer.hpp"
 #include "minko/component/AbstractComponent.hpp"
@@ -33,8 +32,8 @@ namespace minko
 {
 	namespace file
 	{
-		class MkParser : 
-			public AbstractModelParser
+		class MkParser :
+            public AbstractParser
 		{
 		public:
 			typedef std::shared_ptr<scene::Node>															NodePtr;
@@ -62,7 +61,8 @@ namespace minko
 
 			void
 			parse(const std::string&				filename,
-				  std::shared_ptr<Options>			options,
+				  const std::string&                resolvedFilename,
+                  std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
 				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
 

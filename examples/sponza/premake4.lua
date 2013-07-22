@@ -2,6 +2,14 @@
 project "minko-example-sponza"
 	kind "ConsoleApp"
 	language "C++"
+
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links {
+			"minko-webgl"
+		}
+	end
+
 	links {
 		"minko-png",
 		"minko-jpeg",
@@ -10,7 +18,11 @@ project "minko-example-sponza"
 		"minko-particles",
 		"minko-framework"
 	}
-	files { "**.hpp", "**.h", "**.cpp" }
+	files {
+		"**.hpp",
+		"**.h",
+		"**.cpp"
+	}
 	includedirs {
 		"src",
 		"../../deps/all/include",
@@ -35,21 +47,35 @@ project "minko-example-sponza"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		buildoptions { "-std=c++11" }
+		links {
+			"GL",
+			"GLU",
+			"glfw3",
+			"m",
+			"Xrandr",
+			"Xxf86vm",
+			"Xi",
+			"rt"
+		}
 		libdirs {
 			"../../deps/lin/lib"
 		}
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
 		postbuildcommands {
-			'cp -r ../../framework/effect .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links {
+			"OpenGL32",
+			"glfw3dll",
+			"glew32"
+		}
 		libdirs {
 			"../../deps/win/lib"
 		}
@@ -57,7 +83,12 @@ project "minko-example-sponza"
 			"../../deps/win/include"
 		}
 		postbuildcommands {
-			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect'
+			-- copy framework effects
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
+			-- copy assets
+			'xcopy /y /e /i asset\\* $(TargetDir)',
+			-- copy dlls
+			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
 		}
 
 	-- macos
@@ -78,17 +109,19 @@ project "minko-example-sponza"
 			"../../deps/mac/include"
 		}
 		postbuildcommands {
-			'cp -r ../../framework/effect .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
-		links { "minko-webgl" }
-		includedirs { "../../plugins/webgl/src" }
 		buildoptions { "-std=c++11" }
+		includedirs {
+			"../../plugins/webgl/src"
+		}
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
 		}

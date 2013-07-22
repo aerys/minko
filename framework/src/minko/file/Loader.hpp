@@ -39,6 +39,7 @@ namespace minko
 			std::vector<unsigned char>		_data;
 			std::shared_ptr<Options>		_options;
 			std::string						_filename;
+            std::string                     _resolvedFilename;
 
 			std::shared_ptr<Signal<Ptr>>	_complete;
 			std::shared_ptr<Signal<Ptr>>	_progress;
@@ -72,6 +73,13 @@ namespace minko
 			{
 				return _filename;
 			}
+
+            inline
+            const std::string&
+            resolvedFilename()
+            {
+                return _resolvedFilename;
+            }
 
 			inline
 			std::shared_ptr<Signal<Ptr>>

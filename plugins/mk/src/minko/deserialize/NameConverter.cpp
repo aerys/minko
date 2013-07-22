@@ -40,6 +40,7 @@ NameConverter::initialize()
 	_asNameToCppName["specular"]		= "material.specular";
 	_asNameToCppName["alphaMap"]		= "material.alphaMap";
     _asNameToCppName["alphaThreshold"]	= "material.alphaThreshold";
+	_asNameToCppName["specularMap"]		= "material.specularMap";
 }
 
 std::string

@@ -33,9 +33,10 @@ project "minko-example-light"
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
+		buildoptions { "-std=c++11" }
 		postbuildcommands {
-			'cp -r ../../framework/effect .'
+			'cp -r ../../framework/effect .',
+			'cp -r asset/* .'
 		}
 
 	-- windows
@@ -48,7 +49,12 @@ project "minko-example-light"
 			"../../deps/win/include"
 		}
 		postbuildcommands {
-			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect'
+			-- copy framework effects
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
+			-- copy assets
+			'xcopy /y /e /i asset\\* $(TargetDir)',
+			-- copy dlls
+			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
 		}
 
 	-- macos
@@ -67,6 +73,10 @@ project "minko-example-light"
 		}
 		includedirs {
 			"../../deps/mac/include"
+		}
+		postbuildcommands {
+			'cp -r ../../framework/effect .',
+			'cp -r asset/* .'
 		}
 
 	-- emscripten

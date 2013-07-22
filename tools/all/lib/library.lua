@@ -1,3 +1,10 @@
+if _ACTION == 'clean' then
+	local prjs = solution().projects
+	for i, prj in ipairs(prjs) do
+		os.rmdir(prj.basedir .. "/bin")
+	end
+end
+
 function path.joinall(...)
   local s = ''
   for i, v in pairs(arg) do
