@@ -625,9 +625,13 @@ OpenGLES2Context::linkProgram(const unsigned int program)
 {
 	glLinkProgram(program);
 
-	#ifdef DEBUG
-		std::cout << "program info: " << getProgramInfoLogs(program) << std::endl;
-	#endif
+#ifdef DEBUG
+    auto errors = getProgramInfoLogs(program);
+
+    if (!errors.empty())
+    	std::cout << errors << std::endl;
+#endif
+
     checkForErrors();
 }
 
@@ -646,9 +650,12 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
 
-	//#ifdef DEBUG
-		std::cout << "error: " << getShaderCompilationLogs(shader) << std::endl;
-	//#endif
+#ifdef DEBUG
+     auto errors = getShaderCompilationLogs(shader);
+
+     if (!errors.empty())
+		std::cout << errors << std::endl;
+#endif
 
     checkForErrors();
 }
