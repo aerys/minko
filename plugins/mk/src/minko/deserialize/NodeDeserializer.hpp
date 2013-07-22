@@ -54,10 +54,10 @@ namespace minko
 			
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeGroup(NodeInfo		nodeInfo,
+			deserializeGroup(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap	controllerMap,
-							 NodeMap			nodeMap)
+							 ControllerMap&	controllerMap,
+							 NodeMap&		nodeMap)
 			{
 				std::shared_ptr<scene::Node>		group			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transformation"]);
@@ -70,10 +70,10 @@ namespace minko
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeMesh(NodeInfo		nodeInfo,
+			deserializeMesh(NodeInfo&		nodeInfo,
 							OptionsPtr		options,
-							ControllerMap	controllerMap,
-							NodeMap			nodeMap)
+							ControllerMap&	controllerMap,
+							NodeMap&		nodeMap)
 			{
 				std::shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
@@ -132,10 +132,10 @@ namespace minko
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeLight(NodeInfo		nodeInfo,
+			deserializeLight(NodeInfo&		nodeInfo,
 							 OptionsPtr		options,
-							 ControllerMap	controllerMap,
-							 NodeMap		nodeMap)
+							 ControllerMap&	controllerMap,
+							 NodeMap&		nodeMap)
 			{
 				std::shared_ptr<scene::Node> light = scene::Node::create(extractName(nodeInfo));
 
@@ -144,10 +144,10 @@ namespace minko
 
 			inline static
 			std::shared_ptr<scene::Node>
-			deserializeCamera(NodeInfo		nodeInfo,
-							  OptionsPtr	options,
-							  ControllerMap	controllerMap,
-							  NodeMap		nodeMap)
+			deserializeCamera(NodeInfo&		    nodeInfo,
+							  OptionsPtr	    options,
+							  ControllerMap&	controllerMap,
+							  NodeMap&		    nodeMap)
 			{
 				std::shared_ptr<scene::Node>		camera			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
