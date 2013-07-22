@@ -23,7 +23,6 @@ project "minko-example-sponza"
 		"../../plugins/webgl/src",
 		"../../plugins/png/src",
 		"../../plugins/jpeg/src",
-		"../../plugins/webgl/src",
 		"../../plugins/particles/src"
 	}
 
@@ -39,17 +38,27 @@ project "minko-example-sponza"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
+		buildoptions { "-std=c++11" }
+		links {
+			"minko-framework",
+			"GL",
+			"GLU",
+			"glfw3",
+			"m",
+			"Xrandr",
+			"Xxf86vm",
+			"Xi",
+			"rt"
+		}
 		libdirs {
 			"../../deps/lin/lib"
 		}
 		includedirs {
 			"../../deps/lin/include"
 		}
-		buildoptions "-std=c++11"
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
-			'cp -r asset/* .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- windows
@@ -94,8 +103,8 @@ project "minko-example-sponza"
 			"../../deps/mac/include"
 		}
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
-			'cp -r asset/* .'
+			'cp -r asset/* .',
+			'cp -r ../../framework/effect/* effect/'
 		}
 
 	-- emscripten
