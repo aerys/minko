@@ -289,10 +289,10 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
-									    const unsigned int 	offset,
-									    const unsigned int 	size,
-									    void* 				data)
+OpenGLES2Context::uploadVertexBufferData(const unsigned int vertexBuffer,
+									     const unsigned int offset,
+									     const unsigned int size,
+									     void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -446,12 +446,14 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	glBindTexture(GL_TEXTURE_2D, texture);
 
     // default sampler states
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  	_textures.push_back(texture);
+    _textureSizes[texture] = std::pair<uint, uint>(width, height);
+    _textureHasMipmaps[texture] = mipMapping;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -474,17 +476,17 @@ OpenGLES2Context::createTexture(unsigned int 	width,
     auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
 
 	if (mipMapping)
+    {
+        unsigned int level = 0;
 		for (unsigned int size = width > height ? width : height;
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 		}
+    }
 	else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
-
-	_textures.push_back(texture);
-    _textureSizes[texture] = std::pair<uint, uint>(width, height);
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -523,8 +525,8 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
         _renderBuffers.erase(texture);
     }
 
-    if (_textureSizes.count(texture))
-        _textureSizes.erase(texture);
+    _textureSizes.erase(texture);
+    _textureHasMipmaps.erase(texture);
 
     checkForErrors();
 }
@@ -554,6 +556,10 @@ void
 OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
 {
     glActiveTexture(GL_TEXTURE0 + position);
+
+    // disable mip mapping if mip maps are not available
+    if (!_textureHasMipmaps[_currentTexture[position]])
+        mipFiltering = MipFilter::NONE;
 
     switch (wrapping)
     {
@@ -625,9 +631,13 @@ OpenGLES2Context::linkProgram(const unsigned int program)
 {
 	glLinkProgram(program);
 
-	#ifdef DEBUG
-		std::cout << "program info: " << getProgramInfoLogs(program) << std::endl;
-	#endif
+#ifdef DEBUG
+    auto errors = getProgramInfoLogs(program);
+
+    if (!errors.empty())
+    	std::cout << errors << std::endl;
+#endif
+
     checkForErrors();
 }
 
@@ -646,9 +656,12 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 {
 	glCompileShader(shader);
 
-	//#ifdef DEBUG
-		std::cout << "error: " << getShaderCompilationLogs(shader) << std::endl;
-	//#endif
+#ifdef DEBUG
+     auto errors = getShaderCompilationLogs(shader);
+
+     if (!errors.empty())
+		std::cout << errors << std::endl;
+#endif
 
     checkForErrors();
 }
@@ -1011,6 +1024,9 @@ OpenGLES2Context::setTriangleCulling(TriangleCulling triangleCulling)
 void
 OpenGLES2Context::setRenderToBackBuffer()
 {
+    if (_currentTarget == 0)
+        return;
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
@@ -1084,4 +1100,13 @@ unsigned int
 OpenGLES2Context::getError()
 {
     return glGetError();
+}
+
+void
+OpenGLES2Context::generateMipmaps(unsigned int texture)
+{
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    checkForErrors();
 }

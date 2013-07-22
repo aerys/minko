@@ -66,21 +66,21 @@ namespace minko
 		            ->set("material.diffuseMap",	assets->texture("texture/firefull.jpg"));
 
                add(particle::modifier::StartForce::create(
-		            particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE),
-		            particle::sampler::RandomValue<float>::create(6. * SCALE, 8. * SCALE),
-		            particle::sampler::RandomValue<float>::create(-.2 * SCALE, .2 * SCALE)
+		            particle::sampler::RandomValue<float>::create(-.2f * SCALE, .2f * SCALE),
+		            particle::sampler::RandomValue<float>::create(6.f * SCALE, 8.f * SCALE),
+		            particle::sampler::RandomValue<float>::create(-.2f * SCALE, .2f * SCALE)
 	           ));
 
 	           add(particle::modifier::StartSize::create(
-		            particle::sampler::RandomValue<float>::create(1.3 * SCALE, 1.6 * SCALE)
+		            particle::sampler::RandomValue<float>::create(1.3f * SCALE, 1.6f * SCALE)
 	           ));
 
 	           add(particle::modifier::StartSprite::create(
-		            particle::sampler::RandomValue<float>::create(0. * SCALE, 4. * SCALE)
+		            particle::sampler::RandomValue<float>::create(0.f * SCALE, 4.f * SCALE)
 	           ));
 
 	           add(particle::modifier::StartAngularVelocity::create(
-		            particle::sampler::RandomValue<float>::create(0.1 * SCALE, 2. * SCALE)
+		            particle::sampler::RandomValue<float>::create(0.1f * SCALE, 2.f * SCALE)
 	           ));
 
 	           add(particle::modifier::SizeOverTime::create());

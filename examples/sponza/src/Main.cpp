@@ -42,9 +42,37 @@ auto			                root			    = scene::Node::create("root");
 
 #ifdef EMSCRIPTEN
 void
+clavierHandler(int key, int x, int y)
+{	
+    if (cameraColliderComp == nullptr)
+	{
+		if (key == GLUT_KEY_UP)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+		else if (key == GLUT_KEY_DOWN)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+		if (key == GLUT_KEY_LEFT)
+			camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+		else if (key == GLUT_KEY_RIGHT)
+			camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+	}
+	else
+	{
+		if (key == GLUT_KEY_UP)
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+		else if (key == GLUT_KEY_DOWN)
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+		if (key == GLUT_KEY_LEFT)
+			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+		else if (key == GLUT_KEY_RIGHT)
+			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+	}
+	 
+}
+
+void
 renderScene()
 {
-	renderingComponent->render();
+	rendering->render();
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -360,11 +388,15 @@ int main(int argc, char** argv)
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
 
+	std::cout << "WebGl context created" << std::endl;
+
 	auto context = render::WebGLContext::create();
 #else
     glfwInit();
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
+
+	std::cout << "OpenGl context created" << std::endl;
 
 	auto context = render::OpenGLES2Context::create();
 #endif
@@ -380,19 +412,21 @@ int main(int argc, char** argv)
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #endif
-#ifdef NDEBUG
-    assets->defaultOptions()->includePaths().insert("../..");
+#ifdef DEBUG
+    assets->defaultOptions()->includePaths().insert("bin/debug");
 #endif
 
     // load sponza lighting effect and set it as the default effect
     assets->load("effect/SponzaLighting.effect");
-    assets->defaultOptions()->effect(assets->effect("sponza lighting"));
+    assets->defaultOptions()->effect(assets->effect("effect/SponzaLighting.effect"));
 
     // load other assets
     assets
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		->queue("models/Sponza_lite.mk");
+		->queue("model/Sponza_lite.mk");
+
+    assets->defaultOptions()->generateMipmaps(true);
 
     rendering = Rendering::create(context);
 
@@ -407,7 +441,7 @@ int main(int argc, char** argv)
 		//root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
-		group->addChild(assets->node("models/Sponza_lite.mk"));
+		group->addChild(assets->node("model/Sponza_lite.mk"));
 
         scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
             ->descendants()
@@ -430,11 +464,15 @@ int main(int argc, char** argv)
 		std::cerr << "exception: " << e.what() << std::endl;
 	}
 
+	std::cout << "start rendering" << std::endl << std::flush;
+
 #ifdef EMSCRIPTEN
+	glutSpecialFunc(clavierHandler);
 	glutDisplayFunc(renderScene);
 	glutMainLoop();
 	return 0;
 #else
+	
 	while(!glfwWindowShouldClose(window))
     {
         if (cameraColliderComp == nullptr)

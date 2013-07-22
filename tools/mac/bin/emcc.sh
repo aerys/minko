@@ -1,0 +1,1 @@
+../../lin/bin/emcc.sh
