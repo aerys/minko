@@ -78,8 +78,16 @@ namespace minko
 				std::shared_ptr<scene::Node>		mesh			= scene::Node::create(extractName(nodeInfo));
 				std::shared_ptr<math::Matrix4x4>	transformMatrix = TypeDeserializer::matrix4x4(nodeInfo["transform"]);
 
-				mesh->addComponent(component::Transform::create());
-				mesh->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+                //if (!transformMatrix->isIdentity())
+                //{
+				    mesh->addComponent(component::Transform::create());
+				    mesh->component<component::Transform>()->transform()->copyFrom(transformMatrix);
+                //    std::cout << "transform:" << std::to_string(transformMatrix) << std::endl;
+                //}
+                //else
+                //{
+                //    std::cout << "no transform" << std::endl;
+                //}
 
 				Qark::ByteArray		geometryObject;
 				int					copyId			= -1;
