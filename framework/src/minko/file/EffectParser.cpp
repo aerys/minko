@@ -203,7 +203,9 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
         std::string targetName;
         auto target = parseTarget(pass, options->context(), targetName);
 
-        if (target)
+        if (_assetsLibrary->texture(targetName))
+            target = _assetsLibrary->texture(targetName);
+        else if (target)
         {
             target->upload();
     
