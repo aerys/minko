@@ -81,7 +81,7 @@
 					worldPosition = pos.xyz;
 				#endif
 
-				#if defined DIFFUSE_MAP || defined NORMAL_MAP
+				#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP 
 					vertexUV = uv;
 				#endif
 				
