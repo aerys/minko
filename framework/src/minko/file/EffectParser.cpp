@@ -203,15 +203,8 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
         std::string targetName;
         auto target = parseTarget(pass, options->context(), targetName);
 
-        if (_assetsLibrary->texture(targetName))
-            target = _assetsLibrary->texture(targetName);
-        else if (target)
-        {
-            target->upload();
-    
-            if (targetName != "")
-                targets[targetName] = target;
-        }
+        if (!targetName.empty())
+            targets[targetName] = target;
 
         passes.push_back(render::Pass::create(
 			name,
@@ -379,6 +372,15 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 
     if (targetValue.isObject())
     {
+        auto nameValue  = targetValue.get("name", 0);
+
+        if (nameValue.isString())
+        {
+            name = nameValue.asString();
+            if (_assetsLibrary->texture(name))
+                return _assetsLibrary->texture(name);
+        }
+
         auto sizeValue  = targetValue.get("size", 0);
         auto width      = 0;
         auto height     = 0;
@@ -391,14 +393,9 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        auto nameValue  = targetValue.get("name", 0);
         auto target     = render::Texture::create(context, width, height, true);
 
-        if (nameValue.isString())
-        {
-            name = nameValue.asString();
-            _assetsLibrary->texture(name, target);
-        }
+        _assetsLibrary->texture(name, target);
 
         return target;
     }
