@@ -237,6 +237,10 @@ namespace minko
             virtual
             void
             setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false) = 0;
+
+            virtual
+            void
+            generateMipmaps(unsigned int texture) = 0;
 		};
 	}	
 }
