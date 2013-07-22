@@ -2,12 +2,21 @@
 project "minko-example-sponza"
 	kind "ConsoleApp"
 	language "C++"
+
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links {
+			"minko-webgl"
+		}
+	end
+
 	links {
 		"minko-png",
 		"minko-jpeg",
 		"minko-mk",
 		"minko-bullet",
-		"minko-particles"
+		"minko-particles",
+		"minko-framework"
 	}
 	files {
 		"**.hpp",
@@ -40,7 +49,6 @@ project "minko-example-sponza"
 	configuration { "linux" }
 		buildoptions { "-std=c++11" }
 		links {
-			"minko-framework",
 			"GL",
 			"GLU",
 			"glfw3",
@@ -64,7 +72,6 @@ project "minko-example-sponza"
 	-- windows
 	configuration { "windows", "x32" }
 		links {
-			"minko-framework",
 			"OpenGL32",
 			"glfw3dll",
 			"glew32"
@@ -89,7 +96,6 @@ project "minko-example-sponza"
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
-			"minko-framework",
 			"m",
 			"glfw3",
 			"Cocoa.framework",
@@ -111,10 +117,6 @@ project "minko-example-sponza"
 	configuration { "emscripten" }
 		flags { "Optimize" }
 		buildoptions { "-std=c++11" }
-		links {
-			"minko-webgl",
-			"minko-framework"
-		}
 		includedirs {
 			"../../plugins/webgl/src"
 		}
