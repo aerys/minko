@@ -485,6 +485,7 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 
 	_textures.push_back(texture);
     _textureSizes[texture] = std::pair<uint, uint>(width, height);
+    _textureHasMipmaps[texture] = mipMapping;
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -523,8 +524,8 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
         _renderBuffers.erase(texture);
     }
 
-    if (_textureSizes.count(texture))
-        _textureSizes.erase(texture);
+    _textureSizes.erase(texture);
+    _textureHasMipmaps.erase(texture);
 
     checkForErrors();
 }
@@ -554,6 +555,10 @@ void
 OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
 {
     glActiveTexture(GL_TEXTURE0 + position);
+
+    // disable mip mapping if mip maps are not available
+    if (!_textureHasMipmaps[_currentTexture[position]])
+        mipFiltering = MipFilter::NONE;
 
     switch (wrapping)
     {
@@ -1091,4 +1096,11 @@ unsigned int
 OpenGLES2Context::getError()
 {
     return glGetError();
+}
+
+void
+OpenGLES2Context::generateMipmaps(unsigned int texture)
+{
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
