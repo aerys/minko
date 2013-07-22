@@ -34,6 +34,7 @@ namespace minko
 			std::shared_ptr<render::AbstractContext>	_context;
 			std::set<std::string>						_includePaths;
 
+            bool                                        _generateMipMaps;
             std::shared_ptr<render::Effect>             _effect;
 
 		public:
@@ -51,6 +52,7 @@ namespace minko
 				auto opt = std::shared_ptr<Options>(new Options(options->_context));
 
 				opt->_includePaths.insert(options->_includePaths.begin(), options->_includePaths.end());
+                opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_effect = options->_effect;
 
 				return opt;
@@ -69,6 +71,20 @@ namespace minko
 			{
 				return _includePaths;
 			}
+
+            inline
+            bool
+            generateMipmaps()
+            {
+                return _generateMipMaps;
+            }
+
+            inline
+            void
+            generateMipmaps(bool generateMipmaps)
+            {
+                _generateMipMaps = generateMipmaps;
+            }
 
             inline
             std::shared_ptr<render::Effect>
