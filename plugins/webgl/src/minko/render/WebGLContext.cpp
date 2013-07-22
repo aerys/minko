@@ -40,7 +40,8 @@ void
 WebGLContext::setShaderSource(const unsigned int shader,
 							  const std::string& source)
 {
-	const std::string src = "precision highp float\n\n" + source;
+	const std::string src = "precision highp float;\n\n"
+			      + source;
 
 	const char* sourceString = src.c_str();
 
