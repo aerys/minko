@@ -53,6 +53,8 @@ JPEGParser::parse(const std::string&				filename,
 
 	texture->data(bmpData, format);
 	texture->upload();
+    if (options->generateMipmaps())
+        texture->generateMipmaps();
 
 	assetsLibrary->texture(filename, texture);
 
