@@ -80,3 +80,9 @@ Texture::dispose()
 	    _id = -1;
     }
 }
+
+void
+Texture::generateMipmaps()
+{
+    _context->generateMipmaps(_id);
+}

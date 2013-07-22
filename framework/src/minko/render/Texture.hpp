@@ -79,6 +79,9 @@ namespace minko
 			void
 			upload();
 
+            void
+            generateMipmaps();
+
 		private:
 			Texture(std::shared_ptr<render::AbstractContext>	context,
 					const unsigned int							width,
