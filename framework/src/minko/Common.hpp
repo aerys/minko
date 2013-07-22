@@ -119,8 +119,6 @@ namespace minko
 		class Options;
 		class Loader;
 		class AbstractParser;
-		class AbstractModelParser;
-		class AbstractTextureParser;
 		class EffectParser;
 	}
 

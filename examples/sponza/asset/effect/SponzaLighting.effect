@@ -39,7 +39,7 @@
 	
 	"samplerStates"	: {
 		"alphaMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
 		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" },
 		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "none" }
 	},
