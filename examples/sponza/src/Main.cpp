@@ -42,6 +42,34 @@ auto			                root			    = scene::Node::create("root");
 
 #ifdef EMSCRIPTEN
 void
+clavierHandler(unsigned char key, int x, int y)
+{	
+    if (cameraColliderComp == nullptr)
+	{
+		if (key == GLUT_KEY_UP)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+		else if (key == GLUT_KEY_DOWN)
+			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+		if (key == GLUT_KEY_LEFT)
+			camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+		else if (key == GLUT_KEY_RIGHT)
+			camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+	}
+	else
+	{
+		if (key == GLUT_KEY_UP)
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+		else if (key == GLUT_KEY_DOWN)
+			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+		if (key == GLUT_KEY_LEFT)
+			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+		else if (key == GLUT_KEY_RIGHT)
+			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+	}
+	 
+}
+
+void
 renderScene()
 {
 	rendering->render();
@@ -434,11 +462,15 @@ int main(int argc, char** argv)
 		std::cerr << "exception: " << e.what() << std::endl;
 	}
 
+	std::cout << "start rendering" << std::endl << std::flush;
+
 #ifdef EMSCRIPTEN
+	glutSpecialFunc(clavierHandler);
 	glutDisplayFunc(renderScene);
 	glutMainLoop();
 	return 0;
 #else
+	
 	while(!glfwWindowShouldClose(window))
     {
         if (cameraColliderComp == nullptr)
