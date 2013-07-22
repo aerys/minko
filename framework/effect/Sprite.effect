@@ -1,0 +1,40 @@
+// sprite effect
+{
+	"name"	: "sprite",
+	
+	"attributeBindings"	: {
+		"position"		: "geometry.vertex.attribute.position"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseMap"	: "material.diffuseMap"
+	},
+	
+	"depthTest" : { "depthFunc" : "always" },
+	
+	"passes"	: [{	
+		"vertexShader"	: "
+			attribute vec3 position;
+
+			varying vec2 vertexUV;
+			
+			void main(void)
+			{
+				vertexUV = position.xy + 0.5;
+			
+				//gl_Position = vec4(vec3(2, 2, 1) * position, 1);
+				gl_Position = vec4(vec3(-.5, .5, 0) + position, 1);
+			}
+		",
+		"fragmentShader"	: "
+			uniform sampler2D diffuseMap;
+			
+			varying vec2 vertexUV;
+
+			void main(void)
+			{
+				gl_FragColor = texture2D(diffuseMap, vertexUV);
+			}
+		"
+	}]
+}
