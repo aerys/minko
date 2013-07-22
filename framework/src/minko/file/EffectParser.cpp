@@ -104,10 +104,11 @@ EffectParser::EffectParser() :
 }
 
 void
-EffectParser::parse(const std::string&					filename,
-					std::shared_ptr<Options>			options,
-					const std::vector<unsigned char>&	data,
-					std::shared_ptr<AssetsLibrary>		assetsLibrary)
+EffectParser::parse(const std::string&				    filename,
+				    const std::string&                  resolvedFilename,
+                    std::shared_ptr<Options>            options,
+				    const std::vector<unsigned char>&	data,
+				    std::shared_ptr<AssetsLibrary>	    assetsLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -122,7 +123,7 @@ EffectParser::parse(const std::string&					filename,
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
 	parsePasses(root, options);
-	parseDependencies(root, filename, options);
+	parseDependencies(root, resolvedFilename, options);
 	
 	if (_numDependencies == 0)
 		finalize();
@@ -203,15 +204,8 @@ EffectParser::parsePasses(Json::Value& root, file::Options::Ptr options)
         std::string targetName;
         auto target = parseTarget(pass, options->context(), targetName);
 
-        if (_assetsLibrary->texture(targetName))
-            target = _assetsLibrary->texture(targetName);
-        else if (target)
-        {
-            target->upload();
-    
-            if (targetName != "")
-                targets[targetName] = target;
-        }
+        if (!targetName.empty())
+            targets[targetName] = target;
 
         passes.push_back(render::Pass::create(
 			name,
@@ -379,6 +373,15 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 
     if (targetValue.isObject())
     {
+        auto nameValue  = targetValue.get("name", 0);
+
+        if (nameValue.isString())
+        {
+            name = nameValue.asString();
+            if (_assetsLibrary->texture(name))
+                return _assetsLibrary->texture(name);
+        }
+
         auto sizeValue  = targetValue.get("size", 0);
         auto width      = 0;
         auto height     = 0;
@@ -391,14 +394,9 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
             height = targetValue.get("height", 0).asUInt();
         }
 
-        auto nameValue  = targetValue.get("name", 0);
         auto target     = render::Texture::create(context, width, height, true);
 
-        if (nameValue.isString())
-        {
-            name = nameValue.asString();
-            _assetsLibrary->texture(name, target);
-        }
+        _assetsLibrary->texture(name, target);
 
         return target;
     }

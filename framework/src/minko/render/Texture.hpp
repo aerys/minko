@@ -42,6 +42,7 @@ namespace minko
 		private:
 			const unsigned int			_width;
 			const unsigned int			_height;
+            bool                        _mipMapping;
             bool                        _optimizeForRenderToTexture;
 			std::vector<unsigned char>	_data;
 
@@ -51,9 +52,10 @@ namespace minko
 			create(std::shared_ptr<render::AbstractContext> context,
 				   const unsigned int						width,
 				   const unsigned int						height,
+                   bool                                     mipMapping                  = false,
                    bool                                     optimizeForRenderToTexture  = false)
 			{
-				return std::shared_ptr<Texture>(new Texture(context, width, height, optimizeForRenderToTexture));
+				return std::shared_ptr<Texture>(new Texture(context, width, height, mipMapping, optimizeForRenderToTexture));
 			}
 
 			inline
@@ -70,6 +72,13 @@ namespace minko
 				return _height;
 			}
 
+            inline
+            const bool
+            mipMapping()
+            {
+                return _mipMapping;
+            }
+
 			void
 			data(unsigned char* data, DataFormat format = DataFormat::RGBA);
 
@@ -79,13 +88,11 @@ namespace minko
 			void
 			upload();
 
-            void
-            generateMipmaps();
-
 		private:
 			Texture(std::shared_ptr<render::AbstractContext>	context,
 					const unsigned int							width,
 					const unsigned int							height,
+                    bool                                        mipMapping,
                     bool                                        optimizeForRenderToTexture);
 		};
 	}

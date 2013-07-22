@@ -52,6 +52,9 @@ DrawCall::DrawCall(Program::Ptr											program,
     _states(states),
     _textures(8, -1),
     _textureLocations(8, -1),
+    _textureWrapMode(8, WrapMode::CLAMP),
+    _textureFilters(8, TextureFilter::NEAREST),
+    _textureMipFilters(8, MipFilter::NONE),
     _vertexBuffers(8, -1),
     _vertexBufferLocations(8, -1),
     _vertexSizes(8, -1),
@@ -165,12 +168,12 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
                 auto& samplerState  = _states->samplers().count(inputName)
                     ? _states->samplers().at(inputName)
                     : _defaultSamplerState;
-                auto wrap           = std::get<0>(samplerState);
-                auto textureFilter  = std::get<1>(samplerState);
-                auto mipFilter      = std::get<2>(samplerState);
 
                 _textures[numTextures] = texture;
                 _textureLocations[numTextures] = location;
+                _textureWrapMode[numTextures] = std::get<0>(samplerState);
+                _textureFilters[numTextures] = std::get<1>(samplerState);
+                _textureMipFilters[numTextures] = std::get<2>(samplerState);
 
 				++numTextures;
 			}
@@ -230,7 +233,9 @@ DrawCall::render(AbstractContext::Ptr context)
 
         context->setTextureAt(textureId, _textures[textureId], _textureLocations[textureId]);
         if (texture > 0)
-            context->setSamplerStateAt(textureId, WrapMode::REPEAT, TextureFilter::NEAREST, MipFilter::NONE);
+            context->setSamplerStateAt(
+                textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]
+            );
     }
 
     for (uint vertexBufferId = 0; vertexBufferId < _vertexBuffers.size(); ++vertexBufferId)

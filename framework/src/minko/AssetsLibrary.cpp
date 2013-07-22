@@ -19,13 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "AssetsLibrary.hpp"
 
+#include "minko/scene/Node.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
-#include "minko/file/AbstractModelParser.hpp"
 #include "minko/render/Texture.hpp"
-
 
 using namespace minko::render;
 using namespace minko::geometry;
@@ -179,7 +178,13 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 	{
 		auto parser = _parsers[extension]();
 		
-		parser->parse(loader->filename(), _filenameToOptions[filename], loader->data(), shared_from_this());
+		parser->parse(
+            loader->filename(),
+            loader->resolvedFilename(),
+            _filenameToOptions[filename],
+            loader->data(),
+            shared_from_this()
+        );
 	}
 	else
 		blob(filename, loader->data());
