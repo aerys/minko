@@ -8,6 +8,7 @@ project "minko-example-sponza"
 		"minko-mk",
 		"minko-bullet",
 		"minko-particles",
+		"minko-webgl",
 		"minko-framework"
 	}
 	files {
@@ -24,6 +25,7 @@ project "minko-example-sponza"
 		"../../plugins/webgl/src",
 		"../../plugins/png/src",
 		"../../plugins/jpeg/src",
+		"../../plugins/webgl/src",
 		"../../plugins/particles/src"
 	}
 
@@ -95,11 +97,11 @@ project "minko-example-sponza"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
-		links { "minko-webgl" }
-		includedirs { "../../plugins/webgl/src" }
+--		links { "minko-webgl" }
+--		includedirs { "../../plugins/webgl/src" }
 		buildoptions { "-std=c++11" }
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file models'
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
 		}
