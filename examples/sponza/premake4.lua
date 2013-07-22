@@ -7,9 +7,7 @@ project "minko-example-sponza"
 		"minko-jpeg",
 		"minko-mk",
 		"minko-bullet",
-		"minko-particles",
-		"minko-webgl",
-		"minko-framework"
+		"minko-particles"
 	}
 	files {
 		"**.hpp",
@@ -56,7 +54,12 @@ project "minko-example-sponza"
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "OpenGL32", "glfw3dll", "glew32" }
+		links {
+			"minko-framework",
+			"OpenGL32",
+			"glfw3dll",
+			"glew32"
+		}
 		libdirs {
 			"../../deps/win/lib"
 		}
@@ -77,6 +80,7 @@ project "minko-example-sponza"
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
+			"minko-framework",
 			"m",
 			"glfw3",
 			"Cocoa.framework",
@@ -97,9 +101,14 @@ project "minko-example-sponza"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
---		links { "minko-webgl" }
---		includedirs { "../../plugins/webgl/src" }
 		buildoptions { "-std=c++11" }
+		links {
+			"minko-webgl",
+			"minko-framework"
+		}
+		includedirs {
+			"../../plugins/webgl/src"
+		}
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
