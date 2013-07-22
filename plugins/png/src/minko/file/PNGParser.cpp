@@ -43,6 +43,8 @@ PNGParser::parse(const std::string&					filename,
 	
 	texture->data(&out[0]);
 	texture->upload();
+    if (options->generateMipmaps())
+        texture->generateMipmaps();
 
 	assetsLibrary->texture(filename, texture);
 }
