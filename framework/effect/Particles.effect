@@ -137,7 +137,7 @@
 				#endif
 				
 				// fake ColorOverTime
-				c *= 1 - pow(particleTime, 4);
+				c *= 1.0 - pow(particleTime, 4.);
 				
 				gl_FragColor = c;
 			}

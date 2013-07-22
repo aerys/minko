@@ -1,4 +1,5 @@
-bin
-bin/release/effect
-bin/debug/effect
-obj
+/bin
+/obj
+/effect
+/texture
+/model

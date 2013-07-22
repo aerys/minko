@@ -173,7 +173,9 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 
+#ifdef DEBUG
 		std::cout << node->name() << ": collider added to the world" << std::endl;
+#endif
 		_physicsWorld->addChild(_collider);
 	}
 }
