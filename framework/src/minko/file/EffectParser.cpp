@@ -104,10 +104,11 @@ EffectParser::EffectParser() :
 }
 
 void
-EffectParser::parse(const std::string&					filename,
-					std::shared_ptr<Options>			options,
-					const std::vector<unsigned char>&	data,
-					std::shared_ptr<AssetsLibrary>		assetsLibrary)
+EffectParser::parse(const std::string&				    filename,
+				    const std::string&                  resolvedFilename,
+                    std::shared_ptr<Options>            options,
+				    const std::vector<unsigned char>&	data,
+				    std::shared_ptr<AssetsLibrary>	    assetsLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -122,7 +123,7 @@ EffectParser::parse(const std::string&					filename,
 	_defaultPriority = root.get("priority", 0.f).asFloat();
 	parseDefaultValues(root);
 	parsePasses(root, options);
-	parseDependencies(root, filename, options);
+	parseDependencies(root, resolvedFilename, options);
 	
 	if (_numDependencies == 0)
 		finalize();

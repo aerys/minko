@@ -289,10 +289,10 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 }
 
 void
-OpenGLES2Context::uploadVertexBufferData(const unsigned int 	vertexBuffer,
-									    const unsigned int 	offset,
-									    const unsigned int 	size,
-									    void* 				data)
+OpenGLES2Context::uploadVertexBufferData(const unsigned int vertexBuffer,
+									     const unsigned int offset,
+									     const unsigned int size,
+									     void* 				data)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -446,12 +446,14 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	glBindTexture(GL_TEXTURE_2D, texture);
 
     // default sampler states
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  	_textures.push_back(texture);
+    _textureSizes[texture] = std::pair<uint, uint>(width, height);
+    _textureHasMipmaps[texture] = mipMapping;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -474,18 +476,17 @@ OpenGLES2Context::createTexture(unsigned int 	width,
     auto format = optimizeForRenderToTexture ? GL_BGRA : GL_RGBA;
 
 	if (mipMapping)
+    {
+        unsigned int level = 0;
 		for (unsigned int size = width > height ? width : height;
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 		}
+    }
 	else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
-
-	_textures.push_back(texture);
-    _textureSizes[texture] = std::pair<uint, uint>(width, height);
-    _textureHasMipmaps[texture] = mipMapping;
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -1103,4 +1104,6 @@ OpenGLES2Context::generateMipmaps(unsigned int texture)
 {
     glBindTexture(GL_TEXTURE_2D, texture);
     glGenerateMipmap(GL_TEXTURE_2D);
+
+    checkForErrors();
 }
