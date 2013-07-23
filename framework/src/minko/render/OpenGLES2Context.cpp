@@ -94,6 +94,9 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
+    _currentWrapMode(8, WrapMode::CLAMP),
+    _currentTextureFilter(8, TextureFilter::NEAREST),
+    _currentMipFilter(8, MipFilter::NONE),
 	_currentProgram(-1),
     _currentTriangleCulling(TriangleCulling::BACK)
 {
@@ -279,7 +282,7 @@ OpenGLES2Context::createVertexBuffer(const unsigned int size)
 	// usage Specifies the expected usage pattern of the data store.
 	//
 	// glBufferData creates and initializes a buffer object's data store
-	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), 0, GL_STATIC_DRAW);
 
 	_vertexBuffers.push_back(vertexBuffer);
 
@@ -377,7 +380,7 @@ OpenGLES2Context::createIndexBuffer(const unsigned int size)
 
 	_currentIndexBuffer = indexBuffer;
 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), 0, GL_STATIC_DRAW);
 
 	_indexBuffers.push_back(indexBuffer);
 
@@ -446,8 +449,8 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 	glBindTexture(GL_TEXTURE_2D, texture);
 
     // default sampler states
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -561,52 +564,62 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
     if (!_textureHasMipmaps[_currentTexture[position]])
         mipFiltering = MipFilter::NONE;
 
-    switch (wrapping)
+    //if (_currentWrapMode[position] != wrapping)
     {
-    case WrapMode::CLAMP :
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        break;
-    case WrapMode::REPEAT :
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        break;
+        //_currentWrapMode[position] = wrapping;
+
+        switch (wrapping)
+        {
+        case WrapMode::CLAMP :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            break;
+        case WrapMode::REPEAT :
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            break;
+        }
     }
-
-    switch (filtering)
+    //if (_currentTextureFilter[position] != filtering || _currentMipFilter[position] != mipFiltering)
     {
-    case TextureFilter::NEAREST :
-        switch (mipFiltering)
+        //_currentTextureFilter[position] = filtering;
+        //_currentMipFilter[position] = mipFiltering;
+
+        switch (filtering)
         {
-        case MipFilter::NONE :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        case TextureFilter::NEAREST :
+            switch (mipFiltering)
+            {
+            case MipFilter::NONE :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                break;
+            case MipFilter::NEAREST :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                break;
+            case MipFilter::LINEAR :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+                break;
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case MipFilter::NEAREST :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-            break;
-        case MipFilter::LINEAR :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+        case TextureFilter::LINEAR :
+            switch (mipFiltering)
+            {
+            case MipFilter::NONE :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                break;
+            case MipFilter::NEAREST :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+                break;
+            case MipFilter::LINEAR :
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                break;
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
         }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        break;
-    case TextureFilter::LINEAR :
-        switch (mipFiltering)
-        {
-        case MipFilter::NONE :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            break;
-        case MipFilter::NEAREST :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-            break;
-        case MipFilter::LINEAR :
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            break;
-        }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        break;
     }
 
     checkForErrors();
