@@ -5,8 +5,8 @@ package aerys.minko.type.loader
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.type.Signal;
-	
-	public final class AssetsLibrary
+
+	public class AssetsLibrary
 	{
 		private var _numGeometries 	: uint 						= 0;
 		private var _numMaterials	: uint 						= 0;
