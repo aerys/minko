@@ -42,12 +42,13 @@ auto			                mesh			    = scene::Node::create("mesh");
 auto			                group			    = scene::Node::create("group");
 auto			                camera			    = scene::Node::create("camera");
 auto			                root			    = scene::Node::create("root");
-int                             i                   = 0;
+auto                            speed               = 0.f;
+auto                            angSpeed            = 0.f;
 
 
 #if defined EMSCRIPTEN || defined __APPLE__
 void
-clavierHandler(int key, int x, int y)
+keyDownHandler(int key, int x, int y)
 {	
     if (cameraColliderComp == nullptr)
 	{
@@ -63,21 +64,35 @@ clavierHandler(int key, int x, int y)
 	else
 	{
 		if (key == GLUT_KEY_UP)
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+            speed = -CAMERA_LIN_SPEED;
 		else if (key == GLUT_KEY_DOWN)
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+            speed = -CAMERA_LIN_SPEED;
 		if (key == GLUT_KEY_LEFT)
-			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+            angSpeed = CAMERA_ANG_SPEED;
 		else if (key == GLUT_KEY_RIGHT)
-			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+            angSpeed = -CAMERA_ANG_SPEED;
 	}
-	 
+}
+
+void
+keyUpHandler(int key, int x, int y)
+{
+    if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN)
+        speed = 0;
+	if (key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT)
+        angSpeed = 0;
 }
 
 void
 renderScene()
 {
+    if (speed)
+        cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+    if (angSpeed)
+        cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+
     rendering->render();
+    
     glutSwapBuffers();
     #if defined __APPLE__
         glutPostRedisplay();
@@ -438,7 +453,9 @@ int main(int argc, char** argv)
 
     // load sponza lighting effect and set it as the default effect
     assets->load("effect/SponzaLighting.effect");
+    assets->load("effect/Basic.effect");
     assets->defaultOptions()->effect(assets->effect("effect/SponzaLighting.effect"));
+    //assets->defaultOptions()->effect(assets->effect("effect/Basic.effect"));
 
     // load other assets
     assets
@@ -481,15 +498,22 @@ int main(int argc, char** argv)
 	std::cout << "start rendering" << std::endl << std::flush;
 
 #if defined EMSCRIPTEN
-    glutSpecialFunc(clavierHandler);
+	glutSpecialFunc(keyDownHandler);
+    glutSpecialUpFunc(keyUpHandler);
     glutDisplayFunc(renderScene);
+    
     emscripten_set_main_loop(renderScene, FRAMERATE, true);
-	return 0;
+	
+    return 0;
 #elif defined __APPLE__
 	glutSpecialFunc(clavierHandler);
+	glutSpecialFunc(keyDownHandler);
+    glutSpecialUpFunc(keyUpHandler);
     glutDisplayFunc(renderScene);
-	glutMainLoop();
-	return 0;
+
+    glutMainLoop();
+	
+    return 0;
 #else
 	
 	while(!glfwWindowShouldClose(window))
