@@ -20,216 +20,177 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Collider.hpp"
 
 #include <minko/math/Matrix4x4.hpp>
-#include <minko/scene/Node.hpp>
-#include <minko/scene/NodeSet.hpp>
-#include <minko/component/Transform.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
-#include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
 
 using namespace minko;
 using namespace minko::math;
-using namespace minko::scene;
 using namespace minko::component;
 
-bullet::Collider::Collider(ColliderData::Ptr data):
-	AbstractComponent(),
-	_colliderData(data),
-	_physicsWorld(nullptr),
-	_targetTransform(nullptr),
-	_targetAddedSlot(nullptr),
-	_targetRemovedSlot(nullptr),
-	_addedSlot(nullptr),
-	_removedSlot(nullptr),
-	_graphicsTransformChangedSlot(nullptr)
+bullet::Collider::Collider(float						mass,
+						   AbstractPhysicsShape::Ptr	shape,
+						   Vector3::Ptr					inertia):
+	_name(""),
+	_mass(mass),
+	_worldTransform(Matrix4x4::create()),
+	_scaleCorrection(1.0f),
+	_correctionMatrix(Matrix4x4::create()->identity()),
+	_physicsTransform(Matrix4x4::create()->identity()),
+	_physicsStartOrientation(Quaternion::create()),
+	_physicsStartPosition(Vector3::create()),
+	_shape(shape),
+	_inertia(inertia),
+	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_linearDamping(0.0f),
+	_linearSleepingThreshold(0.8f),
+	_angularVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_angularDamping(0.0f),
+	_angularSleepingThreshold(1.0f),
+	_restitution(0.0f),
+	_friction(0.5f),
+	_rollingFriction(0.0f),
+	_deactivationDisabled(false),
+	_transformChanged(Signal<Ptr>::create()),
+	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
 {
-	if (data == nullptr)
-		throw std::invalid_argument("data");
+	_worldTransform->identity();
 }
 
 void
-bullet::Collider::initialize()
+bullet::Collider::setLinearVelocity(float x, float y, float z)
 {
-	_targetAddedSlot	= targetAdded()->connect(std::bind(
-		&bullet::Collider::targetAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
-		&bullet::Collider::targetRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	_graphicsTransformChangedSlot	= _colliderData->graphicsWorldTransformChanged()->connect(std::bind(
-		&bullet::Collider::graphicsWorldTransformChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
+	_linearVelocity->setTo(x, y, z);
 }
 
 void
-bullet::Collider::targetAddedHandler(
-	AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+bullet::Collider::setAngularVelocity(float x, float y, float z)
 {
-	if (targets().size() > 1)
-		throw std::logic_error("Collider cannot have more than one target.");
-
-	_addedSlot		= targets().front()->added()->connect(std::bind(
-		&bullet::Collider::addedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-		));
-
-	_removedSlot	= targets().front()->removed()->connect(std::bind(
-		&bullet::Collider::removedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-		));
-
-	// initialize from node if possible (mostly for adding a controller to the camera)
-	initializeFromNode(target);
+	_angularVelocity->setTo(x, y, z);
 }
 
 void
-bullet::Collider::targetRemovedHandler(
-	AbstractComponent::Ptr controller, 
-	Node::Ptr target)
+bullet::Collider::setLinearFactor(float x, float y, float z)
 {
-	_addedSlot						= nullptr;
-	_removedSlot					= nullptr;
-}
-
-void 
-bullet::Collider::addedHandler(
-	Node::Ptr node, 
-	Node::Ptr target, 
-	Node::Ptr parent)
-{
-	initializeFromNode(node);
+	_linearFactor->setTo(x, y, z);
 }
 
 void
-bullet::Collider::removedHandler(
-	Node::Ptr node, 
-	Node::Ptr target, 
-	Node::Ptr parent)
+bullet::Collider::setAngularFactor(float x, float y, float z)
 {
-	if (_physicsWorld != nullptr)
-		_physicsWorld->removeChild(_colliderData);
-
-	_physicsWorld		= nullptr;
-	_targetTransform	= nullptr;
+	_angularFactor->setTo(x, y, z);
 }
 
 void
-bullet::Collider::initializeFromNode(Node::Ptr node)
+bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	if (_targetTransform != nullptr && _physicsWorld != nullptr)
-		return;
+	/*
+	// uniform scaling assumed
+	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
-	if (!node->hasComponent<Transform>())
-		node->addComponent(Transform::create());
-	
-	_targetTransform = node->component<Transform>();
+	if (fabsf(_scaleCorrection) < 1e-6f)
+		throw std::logic_error("Physics simulation requires matrices with non-null uniform scaling (world transform matrix).");
 
-	auto nodeSet = NodeSet::create(node)
-		->ancestors(true)
-		->where([](Node::Ptr node)
-		{
-			return node->hasComponent<bullet::PhysicsWorld>();
-		});
+	// initialize collider's world transform from a scaling-free matrix
+	const float invScaling = 1.0f / _scaleCorrection;
+	auto scalingFreeMatrix = Matrix4x4::create()
+		->copyFrom(modelToWorldMatrix)
+		->prependScaling(invScaling, invScaling, invScaling);
 
-	if (nodeSet->nodes().size() != 1)
+	const float newScaling = powf(scalingFreeMatrix->determinant3x3(), 1.0f/3.0f);
+	if (fabsf(newScaling - 1.0f) > 1e-3f)
 	{
-#ifdef DEBUG_PHYSICS
-		std::cout << "[" << node->name() << "]\tcollider CANNOT be added (# PhysicsWorld = " << nodeSet->nodes().size() << ")." << std::endl;
-#endif // DEBUG_PHYSICS
-
-		return;
+		std::stringstream stream;
+		stream << "Model to world matrix does not have a uniform scaling.\n\tmatrix = "
+			<< std::to_string(modelToWorldMatrix) << std::endl;
+		throw std::logic_error(stream.str());
 	}
 
-	_colliderData->name(node->name());
-
-	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
-	_physicsWorld->addChild(_colliderData);
-
-	synchronizePhysicsWithGraphics();
+	// decompose the specified transform into its rotational and translational components
+	// (Bullet requires this)
+	auto rotation		= scalingFreeMatrix->rotationQuaternion();
+	auto translation	= scalingFreeMatrix->translationVector();
+	_worldTransform->initialize(rotation, translation);
+	*/
 }
 
 void
-bullet::Collider::synchronizePhysicsWithGraphics()
+bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
 {
-	if (_physicsWorld == nullptr || _targetTransform == nullptr)
-		return;
+#ifdef DEBUG
+	if (fabsf(fabsf(colliderWorldTransform->determinant3x3()) - 1.0f) > 1e-3f)
+		throw std::logic_error("Update of collider's world transform can only involve scaling-free matrices.");
+#endif // DEBUG
 
-	auto graphicsTransform = _targetTransform->modelToWorldMatrix(true);
+	// correct scaling lost at initialization of the collider's world transform
+	const std::vector<float>& m(colliderWorldTransform->values());
 
-	// remove the influence of scaling and shear
-	auto graphicsNoScaleTransform	= Matrix4x4::create();
-	auto correction					= Matrix4x4::create();
-	PhysicsWorld::removeScalingShear(
-		graphicsTransform, 
-		graphicsNoScaleTransform, 
-		correction
-	);
+	Vector3Ptr offset = _shape->centerOfMassTranslation();
 
-	// record the lost scaling and shear of the graphics transform
-	_colliderData->correction(correction);
+	_worldTransform
+		->initialize(
+		m[0]*_scaleCorrection, m[1]*_scaleCorrection, m[2]*_scaleCorrection, m[3] + offset->x(),
+		m[4]*_scaleCorrection, m[5]*_scaleCorrection, m[6]*_scaleCorrection, m[7] + offset->y() ,
+		m[8]*_scaleCorrection, m[9]*_scaleCorrection, m[10]*_scaleCorrection, m[11] + offset->z(),
+		0.0f, 0.0f, 0.0f, 1.0f
+		);
+
+	transformChanged()->execute(shared_from_this());
+}
+
+void
+bullet::Collider::initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsMatrix)
+{
+	// remove the influence of scaling and shear, but record it in order to correct the graphics matrix
+	auto graphicsNoScaleMatrix = Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(graphicsMatrix, _worldTransform, _correctionMatrix);
+
+	/*
+
+	// get the body's position from the translation
+	_physicsStartPosition		= graphicsTransform->translationVector(_physicsStartPosition);
+
+	// extract the rotational part of the matrix (once its translation has been removed) by orthogonalization
+	auto decompQR				= Matrix4x4::create()
+		->copyFrom(graphicsTransform)
+		->appendTranslation(-(*_physicsStartPosition))
+		->decomposeQR();
+	_physicsStartOrientation	= decompQR.first->rotationQuaternion();
+
+	_worldTransform->initialize(_physicsStartOrientation, _physicsStartPosition);
+
+	// record the lost scale and shear in the correction matrix
+	_correctionMatrix->copyFrom(decompQR.second);
+	*/
 
 #ifdef DEBUG_PHYSICS
-	std::cout << "[" << _colliderData->name() << "]\tsynchro graphics->physics" << std::endl;
-	PhysicsWorld::print(std::cout << "- correction =\n", correction) << std::endl;
-	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", graphicsNoScaleTransform) << std::endl;
+	std::cout << "[" << _name << "]\tinitialize from graphics matrix\n- correction =\n" << std::to_string(_correctionMatrix) << std::endl;
 #endif // DEBUG_PHYSICS
-
-	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, graphicsNoScaleTransform);
 }
 
 void
-bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr collider, 
-													   Matrix4x4::Ptr graphicsTransform)
+bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsTransform)
 {
-	if (_targetTransform == nullptr)
-		return;
+	// bullet returns the world transform of the center-of-mass, need to account for possible offset
+	auto graphicsTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix)
+		->append(_shape->physicsToGraphics())
+		->append(physicsTransform);
 
-	// get the world-to-parent matrix in order to update the target's Transform
-	auto worldToParent	= Matrix4x4::create()
-		->copyFrom(_targetTransform->modelToWorldMatrix(true))
-		->invert()
-		->append(_targetTransform->transform());
-
-	_targetTransform->transform()
-		->copyFrom(graphicsTransform)
-		->append(worldToParent);
+	graphicsWorldTransformChanged()->execute(shared_from_this(), graphicsTransform);
 }
 
-void
-bullet::Collider::prependLocalTranslation(Vector3::Ptr localTranslation)
+Matrix4x4::Ptr
+bullet::Collider::reconstructGraphicsWorldTransform(Matrix4x4::Ptr physicsTransform,
+													Matrix4x4::Ptr output) const
 {
-	if (_physicsWorld != nullptr)
-		_physicsWorld->prependLocalTranslation(_colliderData, localTranslation);
+	Matrix4x4::Ptr graphicsTransform = output == nullptr
+		? Matrix4x4::create()
+		: output;
+
+	return graphicsTransform
+		->copyFrom(_correctionMatrix)
+		->append(physicsTransform);
 }
 
-void
-bullet::Collider::prependRotationY(float radians)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->prependRotationY(_colliderData, radians);
-}
-
-void
-bullet::Collider::applyRelativeImpulse(Vector3::Ptr localImpulse)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->applyRelativeImpulse(_colliderData, localImpulse);
-}
