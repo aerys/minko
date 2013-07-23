@@ -40,12 +40,20 @@ namespace minko
 
 				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
 				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
+				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
 			private:
+				std::string		_name;
 				float			_mass;
 				Matrix4x4Ptr	_worldTransform;
 				float			_scaleCorrection;
+
+				Matrix4x4Ptr	_correctionMatrix;
+				Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
+				QuaternionPtr	_physicsStartOrientation;
+				Vector3Ptr		_physicsStartPosition;	
+
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
@@ -64,6 +72,7 @@ namespace minko
 				bool			_deactivationDisabled;
 
 				std::shared_ptr<Signal<Ptr>>	_transformChanged;
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>> _graphicsWorldTransformChanged;
 
 			public:
 				inline static
@@ -107,6 +116,38 @@ namespace minko
 				{
 					return _worldTransform;
 				}
+
+				inline
+				QuaternionPtr
+				physicsStartOrientation() const
+				{
+					return _physicsStartOrientation;
+				}
+
+				inline
+				Vector3Ptr
+				physicsStartPosition() const
+				{
+					return _physicsStartPosition;
+				}
+
+				inline
+				const std::string& name() const
+				{
+					return _name;
+				}
+
+				inline
+				void setName(const std::string& value)
+				{
+					_name = value;
+				}
+
+				void
+				initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsTransform);
+
+				void
+				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsTransform);
 
 				void
 				setWorldTransform(Matrix4x4Ptr);
@@ -273,8 +314,18 @@ namespace minko
 					return _transformChanged;
 				}
 
+				inline
+				Signal<Ptr, Matrix4x4Ptr>::Ptr
+				graphicsWorldTransformChanged()
+				{
+					return _graphicsWorldTransformChanged;
+				}
+
 			private:
 				Collider(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
+
+				Matrix4x4Ptr
+				reconstructGraphicsWorldTransform(Matrix4x4Ptr physicsTransform, Matrix4x4Ptr graphicsTransform = nullptr) const;
 
 				static
 				Vector3Ptr
