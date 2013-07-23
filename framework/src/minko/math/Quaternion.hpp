@@ -43,26 +43,22 @@ namespace minko
 
 		public:
 			inline static
-				Ptr
-				create(
-				float i = 0.0f, 
-				float j = 0.0f, 
-				float k = 0.0f, 
-				float r = 1.0f)
+			Ptr
+			create(float i = 0.0f, float j = 0.0f, float k = 0.0f, float r = 1.0f)
 			{
 				return std::shared_ptr<Quaternion>(new Quaternion(i, j, k, r));
 			}
 
 			inline
-				Ptr
-				copyFrom(Ptr value)
+			Ptr
+			copyFrom(Ptr value)
 			{
 				return setTo(value->i(), value->j(), value->k(), value->r());
 			}
 
 			inline
-				Ptr
-				setTo(float i, float j, float k, float r)
+			Ptr
+			setTo(float i, float j, float k, float r)
 			{
 				_i	= i;
 				_j	= j;
@@ -73,59 +69,59 @@ namespace minko
 			}
 
 			Ptr
-				initialize(float radians, Vector3Ptr axis);
+			initialize(float radians, Vector3Ptr axis);
 
 			inline
-				float
-				i() const
+			float
+			i() const
 			{
 				return _i;
 			}
 
 			inline 
-				float
-				j() const
+			float
+			j() const
 			{
 				return _j;
 			}
 
 			inline
-				float
-				k() const
+			float
+			k() const
 			{
 				return _k;
 			}
 
 			inline
-				float
-				r() const
+			float
+			r() const
 			{
 				return _r;
 			}
 
 			Ptr
-				identity();
+			identity();
 
 			Ptr
-				fromMatrix(Matrix4x4ConstPtr);
+			fromMatrix(Matrix4x4ConstPtr);
 
 			Matrix4x4Ptr
-				toMatrix(Matrix4x4Ptr output = nullptr) const;
+			toMatrix(Matrix4x4Ptr output = nullptr) const;
 
 			Ptr
-				normalize();
+			normalize();
 
 			float 
-				length() const;
+			length() const;
 
 		private:
 			Quaternion(float i = 1.0f, float j = 0.0f, float k = 0.0f, float r = 0.0f)
 				: _i(i), _j(j), _k(k), _r(r)
 			{
 			}
-			float 
-				lengthSquared() const;
 
+			float 
+			lengthSquared() const;
 		};
 	}
 }

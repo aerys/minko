@@ -34,11 +34,12 @@ using namespace minko::component;
 
 bullet::PhysicsWorld::PhysicsWorld():
 	_colliderMap(),
-	_btBroadphase(nullptr),
-	_btCollisionConfiguration(nullptr),
-	_btConstraintSolver(nullptr),
-	_btDispatcher(nullptr),
-	_btDynamicsWorld(nullptr),
+	_rendering(rendering),
+	_bulletBroadphase(nullptr),
+	_bulletCollisionConfiguration(nullptr),
+	_bulletConstraintSolver(nullptr),
+	_bulletDispatcher(nullptr),
+	_bulletDynamicsWorld(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_frameEndSlot(nullptr),
@@ -51,17 +52,17 @@ void
 bullet::PhysicsWorld::initialize()
 {
 	// straightforward physics world initialization for the time being
-	_btBroadphase				= std::shared_ptr<btDbvtBroadphase>(new btDbvtBroadphase());
-	_btCollisionConfiguration	= std::shared_ptr<btDefaultCollisionConfiguration>(new btDefaultCollisionConfiguration());
-	_btConstraintSolver			= std::shared_ptr<btSequentialImpulseConstraintSolver>(new btSequentialImpulseConstraintSolver());
-	_btDispatcher				= std::shared_ptr<btCollisionDispatcher>(new btCollisionDispatcher(_btCollisionConfiguration.get()));
+	_bulletBroadphase				= std::shared_ptr<btDbvtBroadphase>(new btDbvtBroadphase());
+	_bulletCollisionConfiguration	= std::shared_ptr<btDefaultCollisionConfiguration>(new btDefaultCollisionConfiguration());
+	_bulletConstraintSolver			= std::shared_ptr<btSequentialImpulseConstraintSolver>(new btSequentialImpulseConstraintSolver());
+	_bulletDispatcher				= std::shared_ptr<btCollisionDispatcher>(new btCollisionDispatcher(_bulletCollisionConfiguration.get()));
 
-	_btDynamicsWorld			= std::shared_ptr<btDiscreteDynamicsWorld>(new btDiscreteDynamicsWorld(
-		_btDispatcher.get(), 
-		_btBroadphase.get(),
-		_btConstraintSolver.get(),
-		_btCollisionConfiguration.get()
-	));
+	_bulletDynamicsWorld			= std::shared_ptr<btDiscreteDynamicsWorld>(new btDiscreteDynamicsWorld(
+		_bulletDispatcher.get(), 
+		_bulletBroadphase.get(),
+		_bulletConstraintSolver.get(),
+		_bulletCollisionConfiguration.get()
+		));
 
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::PhysicsWorld::targetAddedHandler,
@@ -140,12 +141,20 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 	if (hasCollider(collider))
 		throw std::logic_error("The same collider cannot be added twice.");
 
-	BulletCollider::Ptr btCollider = BulletCollider::create(collider);
-	_colliderMap.insert(std::pair<Collider::Ptr, BulletCollider::Ptr>(collider, btCollider));
+	BulletCollider::Ptr bulletCollider = BulletCollider::create(collider);
+	_colliderMap.insert(std::pair<Collider::Ptr, BulletCollider::Ptr>(collider, bulletCollider));
 
-	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_btDynamicsWorld)
-		->addRigidBody(std::dynamic_pointer_cast<btRigidBody>(btCollider->collisionObject()).get());
-	//_btDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
+#ifdef DEBUG_PHYSICS
+	std::cout << "[" << collider->name() << "]\tadd physics body" << std::endl;
+
+	btTransform bulletTransform;
+	bulletCollider->motionState()->getWorldTransform(bulletTransform);
+	print(std::cout << "motionstate.worldTransform =\n", bulletTransform) << std::endl;
+#endif // DEBUG_PHYSICS
+
+	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
+		->addRigidBody(std::dynamic_pointer_cast<btRigidBody>(bulletCollider->collisionObject()).get());
+	//_bulletDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
 }
 
 void
@@ -155,7 +164,7 @@ bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 	if (it == _colliderMap.end())
 		throw std::invalid_argument("collider");
 
-	_btDynamicsWorld->removeCollisionObject(it->second->collisionObject().get());
+	_bulletDynamicsWorld->removeCollisionObject(it->second->collisionObject().get());
 
 	_colliderMap.erase(it);
 }
@@ -170,7 +179,7 @@ bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
 void
 bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
 {
-	_btDynamicsWorld->setGravity(btVector3(gravity->x(), gravity->y(), gravity->z()));
+	_bulletDynamicsWorld->setGravity(btVector3(gravity->x(), gravity->y(), gravity->z()));
 }
 
 void
@@ -183,7 +192,7 @@ bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager
 void
 bullet::PhysicsWorld::update(float timeStep)
 {
-	_btDynamicsWorld->stepSimulation(timeStep);
+	_bulletDynamicsWorld->stepSimulation(timeStep);
 	updateColliders();
 }
 
@@ -200,8 +209,24 @@ bullet::PhysicsWorld::updateColliders()
 
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
-		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
+		//btTransform colliderWorldTrf;
+		//btCollider->motionState()->getWorldTransform(colliderWorldTrf);
+
+
+		//collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
+
+		collider->updateGraphicsTransformFromPhysics(fromBulletTransform(colliderWorldTrf));
 	}
+}
+
+void
+bullet::PhysicsWorld::setPhysicsTransformFromCollider(Collider::Ptr collider)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->setWorldTransform(collider->worldTransform());
 }
 
 void
@@ -296,6 +321,29 @@ bullet::PhysicsWorld::applyRelativeImpulse(Collider::Ptr collider, Vector3::Ptr 
 
 /*static*/
 Matrix4x4::Ptr
+bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input, 
+										 Matrix4x4::Ptr output, 
+										 Matrix4x4::Ptr correction)
+{
+	auto decompQR = Matrix4x4::create()
+		->copyFrom(input)
+		->appendTranslation(-(*input->translationVector()))
+		->decomposeQR();
+
+	if (correction != nullptr)
+		correction->copyFrom(decompQR.second);
+
+	if (output == nullptr)
+		output = Matrix4x4::create();
+	output
+		->copyFrom(decompQR.first)
+		->appendTranslation(input->translationVector());
+		
+	return output;
+}
+
+/*static*/
+Matrix4x4::Ptr
 bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
 {
 	auto basis			= transform.getBasis();
@@ -317,7 +365,7 @@ bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
 	btTransform& output)
 {
 	toBulletTransform(
-		transform->rotation(), 
+		transform->rotationQuaternion(), 
 		transform->translationVector(), output
 	);
 	/*
@@ -343,4 +391,19 @@ bullet::PhysicsWorld::toBulletTransform(Quaternion::Ptr rotation,
 
 	output.setOrigin(btOrigin);
 	output.setRotation(btRotation);
+}
+
+/*static*/
+std::ostream&
+bullet::PhysicsWorld::print(std::ostream& out, const btTransform& bulletTransform)
+{
+	const btVector3& origin(bulletTransform.getOrigin());
+	const btMatrix3x3& basis(bulletTransform.getBasis());
+
+	out << "\t- origin\t= [" << origin[0] << "\t" << origin[1] << "\t" << origin[2] << "]\n\t- basis \t=\n" 
+		<< "\t[" << basis[0][0] << "\t" << basis[0][1] << "\t" << basis[0][2] 
+		<< "\n\t " << basis[1][0] << "\t" << basis[1][1] << "\t" << basis[1][2] 
+		<< "\n\t " << basis[2][0] << "\t" << basis[2][1] << "\t" << basis[2][2] << "]";
+
+	return out;
 }

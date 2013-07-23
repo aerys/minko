@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "AbstractPhysicsShape.hpp"
 
 #include <minko/math/Matrix4x4.hpp>
+#include <minko/component/bullet/PhysicsWorld.hpp>
 
 using namespace minko;
 using namespace minko::math;
@@ -29,6 +30,10 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_type(type),
 	_margin(0.0f),
 	_localScaling(1.0f),
+	_centerOfMassOffset(Matrix4x4::create()->identity()),
+	_physicsToGraphics(Matrix4x4::create()->identity()),
+	_centerOfMassTransform(Matrix4x4::create()->identity()),
+	_centerOfMassInverseTransform(Matrix4x4::create()->identity()),
 	_centerOfMassTranslation(Vector3::create(0.0f, 0.0f, 0.0f)),
 	_centerOfMassRotation(Quaternion::create()->identity()),
 	_shapeChanged(Signal<Ptr>::create())
@@ -40,9 +45,14 @@ void
 bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset,
 													Matrix4x4::Ptr modelToWorld)
 {
+	/*
 	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
 
 	Vector3Ptr translation = centerOfMassOffset->translationVector();
+
+
+
+
 	_centerOfMassTranslation->setTo(
 		-translation->x(),
 		-translation->y(),
@@ -57,7 +67,7 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 	_centerOfMassRotation = Matrix4x4::create()
 		->copyFrom(centerOfMassOffset)
 		->prependScaling(invScaling, invScaling, invScaling) // remove scaling effect
-		->rotation();
+		->rotationQuaternion();
 
 #ifdef DEBUG
 	std::cout << "physics shape offset\n\t- translation = " << _centerOfMassTranslation->x() 
@@ -66,4 +76,39 @@ bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassO
 		<< "\n\tfrom delta matrix = " << std::to_string(centerOfMassOffset)
 		<< "\n\twith model->world = " << std::to_string(modelToWorld) << std::endl;
 #endif //DEBUG
+
+	_centerOfMassTransform->initialize(_centerOfMassRotation, _centerOfMassTranslation);
+	_centerOfMassInverseTransform->copyFrom(_centerOfMassTransform)->invert();
+	*/
+}
+
+void
+bullet::AbstractPhysicsShape::initializeCenterOfMassOffset(Matrix4x4::Ptr deltaMatrix, 
+														   Matrix4x4::Ptr graphicsMatrix)
+{
+	// IMPORTANT: all scaling contained in the deltaMatrix is expected to be properly repercuted
+	// on the dimensions of the collision shape itself. 
+
+	Matrix4x4::Ptr deltaNoScaleMatrix	= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(deltaMatrix, deltaNoScaleMatrix);
+	auto deltaTranslation	= deltaNoScaleMatrix->translationVector();
+	auto deltaRotation		= deltaNoScaleMatrix->rotationQuaternion()->toMatrix();
+
+	Matrix4x4::Ptr graphicsNoScaleMatrix	= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(graphicsMatrix, graphicsNoScaleMatrix);
+
+	// matrix used to initialize Bullet's motion state offset
+	_centerOfMassOffset
+		->copyFrom(graphicsNoScaleMatrix)->invert()
+		->append(deltaRotation)
+		->append(graphicsNoScaleMatrix)
+		->appendTranslation(deltaTranslation)
+		->invert();
+
+	// matrix used to convert Bullet's physics matrix to Minko graphics matrix
+	_physicsToGraphics
+		->identity()
+		->append(deltaRotation)
+		->appendTranslation(deltaTranslation)
+		->invert();
 }

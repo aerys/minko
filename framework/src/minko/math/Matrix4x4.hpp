@@ -42,6 +42,9 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Matrix4x4>	Ptr;
 
+		private:
+			typedef std::shared_ptr<Vector3>	Vector3Ptr;
+
 		public:
 			inline static
 			Ptr
@@ -116,6 +119,12 @@ namespace minko
 			prependTranslation(float x, float y, float z);
 
 			Ptr
+			appendTranslation(Vector3Ptr);
+
+			Ptr
+			prependTranslation(Vector3Ptr);
+
+			Ptr
 			appendRotationX(float radians);
 
 			Ptr
@@ -156,6 +165,9 @@ namespace minko
 
 			float
 			determinant3x3() const;
+
+			std::pair<Ptr, Ptr>
+			decomposeQR(Ptr matrixQ = nullptr, Ptr matrixR = nullptr) const;
 
 			Ptr
 			invert();
@@ -239,7 +251,7 @@ namespace minko
 			lerp(Matrix4x4::Ptr target, float ratio);
 
 			Quaternion::Ptr
-			rotation(Quaternion::Ptr output = 0) const;
+			rotationQuaternion(Quaternion::Ptr output = 0) const;
 
 			Vector3::Ptr
 			translationVector(Vector3::Ptr output = 0) const;
@@ -278,9 +290,9 @@ namespace std
 		const std::vector<float> values = value.values();
 		std::stringstream stream;
 
-		stream << "(" << values[0] << ", " << values[1] << ", " << values[2] << ", " << values[3] << ", "
-			<< values[4] << ", " << values[5] << ", " << values[6] << ", " << values[7] << ", "
-			<< values[8] << ", " << values[9] << ", " << values[10] << ", " << values[11] << ", "
+		stream << "(" << values[0] << ", " << values[1] << ", " << values[2] << ", " << values[3] << ",\n"
+			<< values[4] << ", " << values[5] << ", " << values[6] << ", " << values[7] << ",\n"
+			<< values[8] << ", " << values[9] << ", " << values[10] << ", " << values[11] << ",\n"
 			<< values[12] << ", " << values[13] << ", " << values[14] << ", " << values[15] << ")";
 
 		return stream.str();
