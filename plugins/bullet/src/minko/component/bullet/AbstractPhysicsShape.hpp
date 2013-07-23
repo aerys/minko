@@ -50,9 +50,14 @@ namespace minko
 			protected:
 				Type			_type;
 				float			_margin;
-				Matrix4x4Ptr	_deltaTransform;
-				Matrix4x4Ptr	_deltaTransformInverse;
-				Vector3Ptr		_localScaling;
+				float			_localScaling;
+				Matrix4x4Ptr	_centerOfMassOffset;
+				Matrix4x4Ptr	_physicsToGraphics;
+
+				Matrix4x4Ptr	_centerOfMassTransform;
+				Matrix4x4Ptr	_centerOfMassInverseTransform;
+				Vector3Ptr		_centerOfMassTranslation;
+				QuaternionPtr	_centerOfMassRotation;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -63,11 +68,41 @@ namespace minko
 				virtual
 				~AbstractPhysicsShape()
 				{
+				}
 
+				inline 
+				float 
+				localScaling() const 
+				{
+					return _localScaling;
+				}
+
+				inline 
+				void 
+				setLocalScaling(float value)
+				{
+					_localScaling = value;
 				}
 
 				void
-				initialize(Matrix4x4Ptr deltaTransform, Matrix4x4Ptr graphicsStartTransform);
+				setCenterOfMassOffset(Matrix4x4Ptr, Matrix4x4Ptr modelToWorld = nullptr);
+
+				void
+				initializeCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld);
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassOffset() const
+				{
+					return _centerOfMassOffset;
+				}
+
+				inline
+				Matrix4x4Ptr
+				physicsToGraphics() const
+				{
+					return _physicsToGraphics;
+				}
 
 				inline
 				Type
@@ -85,7 +120,7 @@ namespace minko
 
 				inline
 				void
-				margin(float margin)
+				setMargin(float margin)
 				{
 					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
 					_margin	= margin;
@@ -93,28 +128,32 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
-				inline 
-				Vector3Ptr 
-				localScaling() const 
-				{
-					return _localScaling;
-				}
-
-				void 
-				localScaling(float x, float y, float z);
-
 				inline
 				Matrix4x4Ptr
-				deltaTransform() const
+				centerOfMassTransform() const
 				{
-					return _deltaTransform;
+					return _centerOfMassTransform;
 				}
 
 				inline
 				Matrix4x4Ptr
-				deltaTransformInverse() const
+				centerOfMassInverseTransform() const
 				{
-					return _deltaTransformInverse;
+					return _centerOfMassInverseTransform;
+				}
+
+				inline
+				Vector3Ptr
+				centerOfMassTranslation() const
+				{
+					return _centerOfMassTranslation;
+				}
+
+				inline
+				QuaternionPtr
+				centerOfMassRotation() const
+				{
+					return _centerOfMassRotation;
 				}
 
 				inline
