@@ -41,6 +41,13 @@ bullet::PhysicsWorld::BulletCollider::BulletCollider():
 {
 }
 
+std::shared_ptr<btRigidBody>
+bullet::PhysicsWorld::BulletCollider::rigidBody() const
+{
+	return std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
+}
+
+
 void
 bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 {
@@ -148,12 +155,8 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 		->invert();
 		*/
 
-	Matrix4x4::Ptr offTransf = Matrix4x4::create()
-		->copyFrom(collider->shape()->centerOfMassOffset());
-
 	toBulletTransform(
-		offTransf->rotationQuaternion(),
-		offTransf->translationVector(),
+		collider->shape()->centerOfMassOffset(),
 		bulletOffsetTransform
 	);
 
@@ -177,9 +180,19 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 
 
 	_bulletMotionState	= std::shared_ptr<btMotionState>(new btDefaultMotionState(
-		bulletStartTransform,
+		btTransform(),
 		bulletOffsetTransform
 		));
+
+	/*
+	auto worldTransform = Matrix4x4::create()
+		->copyFrom(collider->shape()->centerOfMassOffsetInverse())
+		->append(collider->worldTransform());
+
+	setWorldTransform(worldTransform);
+	*/
+//	toBulletTransform(worldTransform, bulletStartTransform);
+//	_bulletMotionState->setWorldTransform(bulletStartTransform);
 }
 
 void
@@ -257,9 +270,23 @@ bullet::PhysicsWorld::BulletCollider::setLinearVelocity(Vector3::Ptr velocity)
 void 
 bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
 {
-	btTransform bulletWorldTransform;
-	toBulletTransform(worldTransform, bulletWorldTransform);
-	_bulletMotionState->setWorldTransform(bulletWorldTransform);
+	btTransform bulletTransform;
+	toBulletTransform(worldTransform, bulletTransform);
+
+#ifdef DEBUG_PHYSICS
+	std::cout << "BulletCollider::setWorldTransform\n" << std::to_string(worldTransform) << std::endl;
+#endif // DEBUG_PHYSICS
+
+	auto bulletRigidBody = rigidBody();
+	if (bulletRigidBody == nullptr)
+		_bulletMotionState->setWorldTransform(bulletTransform);
+	else
+	{
+		bulletRigidBody->getMotionState()->setWorldTransform(bulletTransform);
+
+		bulletRigidBody->getMotionState()->getWorldTransform(bulletTransform);
+		bulletRigidBody->setWorldTransform(bulletTransform);
+	}
 }
 
 void
@@ -313,3 +340,4 @@ bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
 
 	return bulletCollider;
 }
+
