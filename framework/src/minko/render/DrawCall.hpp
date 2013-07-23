@@ -50,8 +50,6 @@ namespace minko
 			const std::unordered_map<std::string, std::string>&	        _stateBindings;
             std::shared_ptr<States>                                     _states;
 
-			std::vector<std::function<void(AbsCtxPtr)>>			        _func;
-
             std::vector<int>                                            _vertexBuffers;
             std::vector<int>                                            _vertexBufferLocations;
             std::vector<int>                                            _vertexSizes;
@@ -69,6 +67,11 @@ namespace minko
             bool                                                        _depthMask;
             render::CompareMode                                         _depthFunc;
             render::TriangleCulling                                     _triangleCulling;
+            std::unordered_map<uint, float>                             _uniformFloat;
+            std::unordered_map<uint, std::shared_ptr<math::Vector2>>    _uniformFloat2;
+            std::unordered_map<uint, std::shared_ptr<math::Vector3>>    _uniformFloat3;
+            std::unordered_map<uint, std::shared_ptr<math::Vector4>>    _uniformFloat4;
+            std::unordered_map<uint, const float*>                      _uniformFloat16;
 
             std::list<Signal<ContainerPtr, const std::string&>::Slot>   _propertyChangedSlots;
 

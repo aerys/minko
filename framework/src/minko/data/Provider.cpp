@@ -72,7 +72,7 @@ Provider::propertyWrapperInitHandler(const std::string& propertyName)
 
 			
 bool 
-	Provider::hasProperty(const std::string& name) const
+Provider::hasProperty(const std::string& name) const
 {
 	return std::find(_names.begin(), _names.end(), name) != _names.end();
 }
