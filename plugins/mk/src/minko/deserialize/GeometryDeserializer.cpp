@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/render/Effect.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -45,7 +47,9 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 										  std::shared_ptr<AssetsLibrary>	library,
 										  std::shared_ptr<scene::Node>		mesh,
 										  std::shared_ptr<file::Options>	options,
-										  bool								computeTangent)
+										  bool								computeTangent,
+                                          std::shared_ptr<data::Provider>   material,
+                                          std::shared_ptr<render::Effect>   effect)
 {
 	if (isCopy)
 	{
@@ -53,8 +57,10 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 		std::map<int, GeometryDeserializer::NodeList>&	_waitGorGeometryNodeCopye = _waitForGeometryNodes;
 		
 		if (_geometryIdToName.find(copyId) != _geometryIdToName.end())
-			mesh->component<component::Surface>()->geometry(library->geometry(_geometryIdToName[copyId]));
-		else
+        {
+            mesh->addComponent(component::Surface::create(library->geometry(_geometryIdToName[copyId]), material, effect));
+		}
+        else
 			_waitForGeometryNodes[copyId].push_back(mesh);
 	}
 	else
@@ -73,8 +79,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 
 		geometry->indices(indexStream);
 		geometry->addVertexBuffer(vertexStream);
-
-		mesh->component<component::Surface>()->geometry(geometry);
+        mesh->addComponent(component::Surface::create(geometry, material, effect));
 
 		if (computeTangent && !vertexStream->hasAttribute("tangent"))
 			geometry->computeTangentSpace(!vertexStream->hasAttribute("normal"));
@@ -88,7 +93,7 @@ GeometryDeserializer::deserializeGeometry(bool								isCopy,
 			{
 				std::shared_ptr<scene::Node> m = _waitForGeometryNodes[copyId][meshId];
 
-				mesh->component<component::Surface>()->geometry(geometry);
+                mesh->addComponent(component::Surface::create(geometry, material, effect));
 			}
 		}
 
