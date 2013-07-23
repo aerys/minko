@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
 #include <minko/component/Transform.hpp>
+#include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/Collider.hpp>
 #include <minko/component/bullet/PhysicsWorld.hpp>
 
@@ -180,13 +181,16 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 	{
 		_collider->setName(node->name());
 
-		updateColliderWorldTransform();
+		//updateColliderWorldTransform();
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 		_physicsWorld->addChild(_collider);
+
+		synchronizePhysicsWithGraphics();
 	}
 }
 
+/*
 void 
 bullet::ColliderComponent::updateColliderWorldTransform()
 {
@@ -203,6 +207,7 @@ bullet::ColliderComponent::updateColliderWorldTransform()
 	if (_physicsWorld)
 		_physicsWorld->setWorldTransformFromCollider(_collider);
 }
+*/
 
 void
 bullet::ColliderComponent::removedHandler(
@@ -271,10 +276,29 @@ bullet::ColliderComponent::applyRelativeImpulse(Vector3::Ptr localImpulse)
 }
 
 void
-bullet::ColliderComponent::initializePhysicsFromGraphicsWorldTransform()
+bullet::ColliderComponent::synchronizePhysicsWithGraphics()
 {
-	if (_targetTransform == nullptr)
+	if (_physicsWorld == nullptr || _targetTransform == nullptr)
 		return;
 
-	_collider->initializePhysicsFromGraphicsWorldTransform(_targetTransform->modelToWorldMatrix(true));
+	auto graphicsMatrix = _targetTransform->modelToWorldMatrix(true);
+
+	// remove the influence of scaling and shear
+	auto graphicsNoScaleMatrix	= Matrix4x4::create();
+	auto correctionMatrix		= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(
+		graphicsMatrix, 
+		graphicsNoScaleMatrix, 
+		correctionMatrix
+	);
+
+	// record the lost scaling and shear
+	_collider->setCorrectionMatrix(correctionMatrix);
+
+	std::cout << "correction matrix = " << std::to_string(correctionMatrix) << std::endl;
+
+	// must account for possible collision shape offsets
+	graphicsNoScaleMatrix->prepend(_collider->shape()->centerOfMassOffsetInverse());
+
+	_physicsWorld->setPhysicsWorldMatrix(_collider, graphicsNoScaleMatrix);
 }
