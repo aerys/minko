@@ -200,26 +200,16 @@ namespace minko
 
 			inline
 			bool
-			equals(Ptr value)
+			operator==(Matrix4x4& value)
 			{
-				std::vector<float> m = value->_m;
+				std::vector<float> m = value._m;
 
 				for (auto i = 0; i < 16; ++i)
-					if (fabsf(_m[i] - m[i]) > 1e-6f)
+					if (_m[i] != m[i])
 						return false;
 
 				return true;
 			}
-
-            inline
-            bool
-            isIdentity()
-            {
-                return _m[0] == 1.f && _m[1] == 0.f && _m[2] == 0.f && _m[3] == 0.f
-                    && _m[4] == 0.f && _m[5] == 1.f && _m[6] == 0.f && _m[7] == 0.f
-                    && _m[8] == 0.f && _m[9] == 0.f && _m[10] == 1.f && _m[11] == 0.f
-                    && _m[12] == 0.f && _m[13] == 0.f && _m[14] == 0.f && _m[15] == 1.f;
-            }
 
 			Ptr
 			perspective(float fov, float ratio, float zNear, float zFar);
@@ -251,10 +241,10 @@ namespace minko
 			lerp(Matrix4x4::Ptr target, float ratio);
 
 			Quaternion::Ptr
-			rotationQuaternion(Quaternion::Ptr output = nullptr) const;
+			rotationQuaternion(Quaternion::Ptr output = 0) const;
 
 			Vector3::Ptr
-			translationVector(Vector3::Ptr output = nullptr) const;
+			translationVector(Vector3::Ptr output = 0) const;
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
