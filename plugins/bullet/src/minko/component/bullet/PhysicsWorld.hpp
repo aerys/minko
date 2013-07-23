@@ -31,6 +31,7 @@ class btCollisionShape;
 class btMotionState;
 class btCollisionObject;
 class btTransform;
+class btRigidBody;
 
 namespace minko
 {
@@ -92,7 +93,7 @@ namespace minko
 			public:
 				static
 				Ptr
-				create()
+				create(RenderingPtr rendering)
 				{
 					Ptr physicsWorld(new PhysicsWorld());
 
@@ -117,11 +118,15 @@ namespace minko
 				update(float timeStep = 1.0f/60.0f);
 
 				void
-				setPhysicsTransformFromCollider(ColliderPtr);
+				setPhysicsWorldMatrix(ColliderPtr, Matrix4x4Ptr);
 
 				void
-				setWorldTransformFromCollider(ColliderPtr);
+				setPhysicsTransformFromCollider(ColliderPtr);
 
+				/*
+				void
+				setWorldTransformFromCollider(ColliderPtr);
+				*/
 				void
 				forceColliderWorldTransform(ColliderPtr, Matrix4x4Ptr);
 
@@ -206,7 +211,7 @@ namespace minko
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
 					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
-
+					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
 					btCollisionShapePtr		_bulletCollisionShape;
@@ -217,6 +222,9 @@ namespace minko
 					static
 					BulletColliderPtr
 					create(ColliderPtr);
+
+					btRigidBodyPtr
+					rigidBody() const;
 
 					inline
 					btCollisionShapePtr
