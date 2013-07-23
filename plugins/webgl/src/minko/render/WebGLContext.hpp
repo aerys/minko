@@ -61,24 +61,6 @@ namespace minko
 								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
-
-			const unsigned int
-			createTexture(unsigned int 	width,
-						  unsigned int 	height,
-						  bool			mipMapping,
-                          bool          optimizeForRenderToTexture);
-
-			void
-			uploadTextureData(const unsigned int 	texture,
-			 			      unsigned int 		width,
-							  unsigned int 		height,
-							  unsigned int 		mipLevel,
-							  void*				data);
-			void
-			setUniformMatrix4x4(unsigned int location,
-								unsigned int size,
-								bool transpose,
-								const float* values);
 		};
 	}
 }
