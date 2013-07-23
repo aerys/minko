@@ -97,14 +97,10 @@ project "minko-example-sponza"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-<<<<<<< HEAD
-			--"glfw3",
-=======
-			--"glfw3","Cocoa.framework", "OpenGL.framework", "GLUT.framework", "IOKit.framework"
->>>>>>> 7ebd3f55fbdab01e275d1b1c074074fd184e4fe5
+			"glfw3",
+			"OpenGL.framework",
 			"GLUT.framework",
 			"Cocoa.framework",
-			"OpenGL.framework",
 			"IOKit.framework"
 		}
 		libdirs {
