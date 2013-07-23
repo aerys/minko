@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
+#include <minko/component/bullet/PhysicsWorld.hpp>
 
 using namespace minko;
 using namespace minko::math;
@@ -29,9 +30,14 @@ using namespace minko::component;
 bullet::Collider::Collider(float						mass,
 						   AbstractPhysicsShape::Ptr	shape,
 						   Vector3::Ptr					inertia):
-_mass(mass),
+	_name(""),
+	_mass(mass),
 	_worldTransform(Matrix4x4::create()),
 	_scaleCorrection(1.0f),
+	_correctionMatrix(Matrix4x4::create()->identity()),
+	_physicsTransform(Matrix4x4::create()->identity()),
+	_physicsStartOrientation(Quaternion::create()),
+	_physicsStartPosition(Vector3::create()),
 	_shape(shape),
 	_inertia(inertia),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
@@ -46,7 +52,8 @@ _mass(mass),
 	_friction(0.5f),
 	_rollingFriction(0.0f),
 	_deactivationDisabled(false),
-	_transformChanged(Signal<Ptr>::create())
+	_transformChanged(Signal<Ptr>::create()),
+	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
 {
 	_worldTransform->identity();
 }
@@ -78,6 +85,7 @@ bullet::Collider::setAngularFactor(float x, float y, float z)
 void
 bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
+	/*
 	// uniform scaling assumed
 	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
@@ -101,9 +109,10 @@ bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 
 	// decompose the specified transform into its rotational and translational components
 	// (Bullet requires this)
-	auto rotation		= scalingFreeMatrix->rotation();
+	auto rotation		= scalingFreeMatrix->rotationQuaternion();
 	auto translation	= scalingFreeMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
+	*/
 }
 
 void
@@ -128,5 +137,60 @@ bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTrans
 		);
 
 	transformChanged()->execute(shared_from_this());
+}
+
+void
+bullet::Collider::initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsMatrix)
+{
+	// remove the influence of scaling and shear, but record it in order to correct the graphics matrix
+	auto graphicsNoScaleMatrix = Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(graphicsMatrix, _worldTransform, _correctionMatrix);
+
+	/*
+
+	// get the body's position from the translation
+	_physicsStartPosition		= graphicsTransform->translationVector(_physicsStartPosition);
+
+	// extract the rotational part of the matrix (once its translation has been removed) by orthogonalization
+	auto decompQR				= Matrix4x4::create()
+		->copyFrom(graphicsTransform)
+		->appendTranslation(-(*_physicsStartPosition))
+		->decomposeQR();
+	_physicsStartOrientation	= decompQR.first->rotationQuaternion();
+
+	_worldTransform->initialize(_physicsStartOrientation, _physicsStartPosition);
+
+	// record the lost scale and shear in the correction matrix
+	_correctionMatrix->copyFrom(decompQR.second);
+	*/
+
+#ifdef DEBUG_PHYSICS
+	std::cout << "[" << _name << "]\tinitialize from graphics matrix\n- correction =\n" << std::to_string(_correctionMatrix) << std::endl;
+#endif // DEBUG_PHYSICS
+}
+
+void
+bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsTransform)
+{
+	// bullet returns the world transform of the center-of-mass, need to account for possible offset
+	auto graphicsTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix)
+		->append(_shape->physicsToGraphics())
+		->append(physicsTransform);
+
+	graphicsWorldTransformChanged()->execute(shared_from_this(), graphicsTransform);
+}
+
+Matrix4x4::Ptr
+bullet::Collider::reconstructGraphicsWorldTransform(Matrix4x4::Ptr physicsTransform,
+													Matrix4x4::Ptr output) const
+{
+	Matrix4x4::Ptr graphicsTransform = output == nullptr
+		? Matrix4x4::create()
+		: output;
+
+	return graphicsTransform
+		->copyFrom(_correctionMatrix)
+		->append(physicsTransform);
 }
 

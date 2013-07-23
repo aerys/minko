@@ -158,7 +158,7 @@ Matrix4x4::initialize(std::vector<float> m)
 Matrix4x4::Ptr
 Matrix4x4::initialize(Quaternion::Ptr rotation, Vector3::Ptr translation)
 {
-	return copyFrom(rotation->toMatrix())->appendTranslation(translation->x(), translation->y(), translation->z());
+	return copyFrom(rotation->toMatrix())->appendTranslation(translation);
 }
 
 Matrix4x4::Ptr
@@ -307,6 +307,18 @@ Matrix4x4::prependTranslation(float x, float y, float z)
 		0.f,	0.f,	1.f,    z,
 		0.f,	0.f,	0.f,    1.f
 	);
+}
+
+Matrix4x4::Ptr
+Matrix4x4::appendTranslation(Vector3::Ptr value)
+{
+	return appendTranslation(value->x(), value->y(), value->z());
+}
+
+Matrix4x4::Ptr
+Matrix4x4::prependTranslation(Vector3::Ptr value)
+{
+	return prependTranslation(value->x(), value->y(), value->z());
 }
 
 Matrix4x4::Ptr
@@ -537,7 +549,7 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 }
 
 Quaternion::Ptr
-Matrix4x4::rotation(Quaternion::Ptr output) const
+Matrix4x4::rotationQuaternion(Quaternion::Ptr output) const
 {
 	return Quaternion::create()->fromMatrix(shared_from_this());
 }
@@ -557,4 +569,57 @@ Matrix4x4::copyFrom(Matrix4x4::Ptr source)
 	_hasChanged = true;
 
 	return shared_from_this();
+}
+
+std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>
+Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
+{
+	Vector4::Ptr				vj		= Vector4::create();
+	Vector4::Ptr				accProj	= Vector4::create();
+	std::vector<Vector4::Ptr>	projVec(4);
+
+	std::vector<float> valuesR(16, 0.0f);
+	for (unsigned int j = 0; j < 4; ++j)
+	{
+		vj->setTo(_m[j], _m[j+4], _m[j+8], _m[j+12]); // jth column
+
+		accProj->setTo(0.0f, 0.0f, 0.0f, 0.0f);
+		for (unsigned int i = 0; i < j; ++i)
+		{
+			Vector4::Ptr proj = Vector4::create()->copyFrom(projVec[i]);
+			accProj = accProj + proj * (projVec[i]->dot(vj));
+		}
+
+		projVec[j] = Vector4::create()
+			->copyFrom(vj - accProj)
+			->normalize();
+
+		for (unsigned int i = 0; i <= j; ++i)
+			valuesR[j + (i<<2)] = projVec[i]->dot(vj);
+	}
+
+
+
+	Matrix4x4::Ptr matrixQ = matQ == nullptr
+		? Matrix4x4::create()
+		: matQ;
+	Matrix4x4::Ptr matrixR = matR == nullptr
+		? Matrix4x4::create()
+		: matR;
+
+	matrixQ->initialize(
+		projVec[0]->x(), projVec[1]->x(), projVec[2]->x(), projVec[3]->x(),
+		projVec[0]->y(), projVec[1]->y(), projVec[2]->y(), projVec[3]->y(),
+		projVec[0]->z(), projVec[1]->z(), projVec[2]->z(), projVec[3]->z(),
+		projVec[0]->w(), projVec[1]->w(), projVec[2]->w(), projVec[3]->w()
+	);
+
+	matrixR->initialize(
+		valuesR[0], valuesR[1], valuesR[2], valuesR[3],
+		valuesR[4], valuesR[5], valuesR[6], valuesR[7],
+		valuesR[8], valuesR[9], valuesR[10], valuesR[11],
+		valuesR[12], valuesR[13], valuesR[14], valuesR[15]
+	);
+
+	return std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>(matrixQ, matrixR);
 }
