@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/component/AbstractComponent.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
@@ -28,86 +28,311 @@ namespace minko
 	{
 		namespace bullet
 		{
-			class ColliderData;
-			class PhysicsWorld;
+			class AbstractPhysicsShape;
+			class DynamicsProperties;
 
 			class Collider:
-				public AbstractComponent,
 				public std::enable_shared_from_this<Collider>
 			{
 			public:
-				std::string name;
 				typedef std::shared_ptr<Collider> Ptr;
 
-			private:
-				typedef std::shared_ptr<AbstractComponent>		AbsCtrlPtr;
-				typedef std::shared_ptr<scene::Node>			NodePtr;
-				typedef std::shared_ptr<scene::NodeSet>			NodeSetPtr;
-				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
+				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
 				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
-				typedef std::shared_ptr<ColliderData>			ColliderDataPtr;
-				typedef std::shared_ptr<Transform>				TransformPtr;
-				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
-				
+				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
+				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
 			private:
-				ColliderDataPtr								_colliderData;
-				PhysicsWorldPtr								_physicsWorld;
-				TransformPtr								_targetTransform;
+				std::string		_name;
+				float			_mass;
+				Matrix4x4Ptr	_worldTransform;
+				float			_scaleCorrection;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
+				Matrix4x4Ptr	_correctionMatrix;
+				Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
+				QuaternionPtr	_physicsStartOrientation;
+				Vector3Ptr		_physicsStartPosition;	
+
+				AbsShapePtr		_shape;
+				Vector3Ptr		_inertia;
+
+				Vector3Ptr		_linearVelocity;
+				Vector3Ptr		_linearFactor;
+				float			_linearDamping;
+				float			_linearSleepingThreshold;
+				Vector3Ptr		_angularVelocity;
+				Vector3Ptr		_angularFactor;
+				float			_angularDamping;
+				float			_angularSleepingThreshold;
+				float			_restitution; // from bullet: best simulation results using zero restitution. 
+				float			_friction; // from bullet: best simulation results when friction is non-zero 
+				float			_rollingFriction;
+
+				bool			_deactivationDisabled;
+
+				std::shared_ptr<Signal<Ptr>>	_transformChanged;
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>> _graphicsWorldTransformChanged;
 
 			public:
 				inline static
 				Ptr
-				create(ColliderDataPtr data)
+				create(float mass, AbsShapePtr shape, Vector3Ptr inertia = nullptr)
 				{
-					Ptr Collider(new Collider(data));
+					return std::shared_ptr<Collider>(new Collider(mass, shape, inertia));
+				}
 
-					Collider->initialize();
+				inline
+				AbsShapePtr
+				shape() const
+				{
+					return _shape;
+				}
 
-					return Collider;
+				inline
+				float
+				mass() const
+				{
+					return _mass;
+				}
+
+				inline
+				Vector3Ptr
+				inertia() const
+				{
+					return _inertia;
+				}
+
+				inline
+				bool
+				isStatic() const
+				{
+					return _mass < std::numeric_limits<float>::epsilon();
+				}
+
+				inline
+				Matrix4x4Ptr
+				worldTransform() const
+				{
+					return _worldTransform;
+				}
+
+				inline
+				QuaternionPtr
+				physicsStartOrientation() const
+				{
+					return _physicsStartOrientation;
+				}
+
+				inline
+				Vector3Ptr
+				physicsStartPosition() const
+				{
+					return _physicsStartPosition;
+				}
+
+				inline
+				const std::string& name() const
+				{
+					return _name;
+				}
+
+				inline
+				void setName(const std::string& value)
+				{
+					_name = value;
 				}
 
 				void
-				synchronizePhysicsWithGraphics();
+				initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsTransform);
 
 				void
-				prependLocalTranslation(Vector3Ptr);
+				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsTransform);
 
 				void
-				prependRotationY(float);
+				setWorldTransform(Matrix4x4Ptr);
 
 				void
-				applyRelativeImpulse(Vector3Ptr);
+				updateColliderWorldTransform(Matrix4x4Ptr);
+
+				inline
+				Vector3Ptr
+				linearVelocity() const
+				{
+					return _linearVelocity;
+				}
+
+				inline
+				Vector3Ptr
+				linearFactor() const
+				{
+					return _linearFactor;
+				}
+
+				inline
+				float
+				linearDamping() const
+				{
+					return _linearDamping;
+				}
+
+				inline
+				Vector3Ptr
+				angularVelocity() const
+				{
+					return _angularVelocity;
+				}
+
+				inline
+				Vector3Ptr
+				angularFactor() const
+				{
+					return _angularFactor;
+				}
+
+				inline
+				float
+				angularDamping() const
+				{
+					return _angularDamping;
+				}
+
+				inline
+				float
+				restitution() const
+				{
+					return _restitution;
+				}
+
+				inline 
+				bool
+				deactivationDisabled() const
+				{
+					return _deactivationDisabled;
+				}
+
+				inline
+				void
+				disableDeactivation(bool value)
+				{
+					_deactivationDisabled = value;
+				}
+
+				void
+				setLinearVelocity(float, float, float);
+
+				void
+				setLinearFactor(float, float, float);
+
+				inline
+				void 
+				setLinearDamping(float value)
+				{
+					_linearDamping	= value;
+				}
+
+				void
+				setAngularVelocity(float, float, float);
+
+				void
+				setAngularFactor(float, float, float);
+
+				inline
+				void 
+				setAngularDamping(float value)
+				{
+					_angularDamping	= value;
+				}
+
+				inline
+				void
+				setRestitution(float value)
+				{
+					_restitution	= value;
+				}
+
+				inline
+				float
+				angularSleepingThreshold() const
+				{
+					return _angularSleepingThreshold;
+				}
+
+				inline
+				float
+				linearSleepingThreshold()
+				{
+					return _linearSleepingThreshold;
+				}
+
+				inline
+				void
+				setLinearSleepingThreshold(float value)
+				{
+					_linearSleepingThreshold = value;
+				}
+
+				inline
+				void
+				setAngularSleepingThreshold(float value)
+				{
+					_angularSleepingThreshold = value;
+				}
+
+								inline
+				float
+				friction() const 
+				{
+					return _friction;
+				}
+
+				inline
+				void
+				setFriction(float value)
+				{
+					_friction = value;
+				}
+
+				inline
+				float 
+				rollingFriction() const
+				{
+					return _rollingFriction;
+				}
+
+				inline
+				void
+				setRollingFriction(float value)
+				{
+					_rollingFriction = value;
+				}
+
+				inline
+				Signal<Ptr>::Ptr
+				transformChanged()
+				{
+					return _transformChanged;
+				}
+
+				inline
+				Signal<Ptr, Matrix4x4Ptr>::Ptr
+				graphicsWorldTransformChanged()
+				{
+					return _graphicsWorldTransformChanged;
+				}
 
 			private:
-				Collider(ColliderDataPtr);
+				Collider(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
 
-				void
-				initialize();
+				Matrix4x4Ptr
+				reconstructGraphicsWorldTransform(Matrix4x4Ptr physicsTransform, Matrix4x4Ptr graphicsTransform = nullptr) const;
 
-				void
-				initializeFromNode(NodePtr);
+				static
+				Vector3Ptr
+				getScaleCorrection(Matrix4x4Ptr, Vector3Ptr output = nullptr);
 
-				void
-				targetAddedHandler(AbsCtrlPtr, NodePtr);
-
-				void
-				targetRemovedHandler(AbsCtrlPtr, NodePtr);
-
-				void 
-				addedHandler(NodePtr, NodePtr, NodePtr);
-
-				void
-				removedHandler(NodePtr, NodePtr, NodePtr);
-
-				void
-				graphicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);
+				static
+				Matrix4x4Ptr
+				applyScaleCorrection(Vector3Ptr, Matrix4x4Ptr);
 			};
 		}
 	}
