@@ -29,8 +29,8 @@ using namespace minko::math;
 const float WINDOW_WIDTH        = 1024;
 const float WINDOW_HEIGHT       = 500;
 
-const float CAMERA_LIN_SPEED	= 0.05f;
-const float CAMERA_ANG_SPEED	= PI * 1.f / 180.0f;
+const float CAMERA_LIN_SPEED	= 0.1f;
+const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME   = "camera";
