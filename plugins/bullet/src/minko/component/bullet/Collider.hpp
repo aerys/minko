@@ -51,8 +51,8 @@ namespace minko
 
 				Matrix4x4Ptr	_correctionMatrix;
 				Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
-				QuaternionPtr	_physicsStartOrientation;
-				Vector3Ptr		_physicsStartPosition;	
+				//QuaternionPtr	_physicsStartOrientation;
+				//Vector3Ptr		_physicsStartPosition;	
 
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
@@ -117,6 +117,7 @@ namespace minko
 					return _worldTransform;
 				}
 
+				/*
 				inline
 				QuaternionPtr
 				physicsStartOrientation() const
@@ -130,6 +131,7 @@ namespace minko
 				{
 					return _physicsStartPosition;
 				}
+				*/
 
 				inline
 				const std::string& name() const

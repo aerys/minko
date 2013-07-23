@@ -31,6 +31,7 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_margin(0.0f),
 	_localScaling(1.0f),
 	_centerOfMassOffset(Matrix4x4::create()->identity()),
+	_centerOfMassOffsetInverse(Matrix4x4::create()->identity()),
 	_physicsToGraphics(Matrix4x4::create()->identity()),
 	_centerOfMassTransform(Matrix4x4::create()->identity()),
 	_centerOfMassInverseTransform(Matrix4x4::create()->identity()),
@@ -97,12 +98,17 @@ bullet::AbstractPhysicsShape::initializeCenterOfMassOffset(Matrix4x4::Ptr deltaM
 	Matrix4x4::Ptr graphicsNoScaleMatrix	= Matrix4x4::create();
 	PhysicsWorld::removeScalingShear(graphicsMatrix, graphicsNoScaleMatrix);
 
-	// matrix used to initialize Bullet's motion state offset
+	// matrix used to construct Bullet's motion state offset
 	_centerOfMassOffset
 		->copyFrom(graphicsNoScaleMatrix)->invert()
 		->append(deltaRotation)
 		->append(graphicsNoScaleMatrix)
 		->appendTranslation(deltaTranslation)
+		->invert();
+
+	// matrix used to specify a transform to Bullet's motion state
+	_centerOfMassOffsetInverse
+		->copyFrom(_centerOfMassOffset)
 		->invert();
 
 	// matrix used to convert Bullet's physics matrix to Minko graphics matrix
