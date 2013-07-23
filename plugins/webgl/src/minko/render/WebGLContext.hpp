@@ -61,6 +61,12 @@ namespace minko
 								std::vector<std::string>&			names,
 								std::vector<ProgramInputs::Type>&	types,
 								std::vector<unsigned int>&			locations);
+
+			void
+			setUniformMatrix4x4(unsigned int location,
+								unsigned int size,
+								bool transpose,
+								const float* values);
 		};
 	}
 }
