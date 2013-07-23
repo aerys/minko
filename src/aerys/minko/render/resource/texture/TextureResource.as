@@ -151,13 +151,13 @@ package aerys.minko.render.resource.texture
 			
 			atf.position 	= 0;
 			
-			if (_atfFormat == 5)
-				_format = FORMAT_COMPRESSED_ALPHA;
-			else if (_atfFormat == 3)
-				_format = FORMAT_COMPRESSED;
-			else
-				_format = FORMAT_BGRA;
-			
+			switch (_atfFormat) {
+				case 0: case 1: _format = FORMAT_BGRA; break;
+				case 2: case 3: _format = FORMAT_COMPRESSED; break;
+				case 4: case 5: _format = FORMAT_COMPRESSED_ALPHA; break;
+				default: throw new Error("Invalid ATF format");
+			}
+
 			if (_texture
 				&& (oldFormat != _format
 					|| oldMipmap != _mipmap
