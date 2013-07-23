@@ -48,6 +48,7 @@ bullet::PhysicsWorld::PhysicsWorld():
 {
 }
 
+
 void 
 bullet::PhysicsWorld::initialize()
 {
@@ -144,17 +145,23 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 	BulletCollider::Ptr bulletCollider = BulletCollider::create(collider);
 	_colliderMap.insert(std::pair<Collider::Ptr, BulletCollider::Ptr>(collider, bulletCollider));
 
+	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
+		->addRigidBody(bulletCollider->rigidBody().get());
+	//_bulletDynamicsWorld->addCollisionObject(bulletCollider->collisionObject().get());
+
+
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << collider->name() << "]\tadd physics body" << std::endl;
 
 	btTransform bulletTransform;
 	bulletCollider->motionState()->getWorldTransform(bulletTransform);
 	print(std::cout << "motionstate.worldTransform =\n", bulletTransform) << std::endl;
-#endif // DEBUG_PHYSICS
 
-	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
-		->addRigidBody(std::dynamic_pointer_cast<btRigidBody>(bulletCollider->collisionObject()).get());
-	//_bulletDynamicsWorld->addCollisionObject(btCollider->collisionObject().get());
+	bulletCollider->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
+	print(std::cout << "rigid.body.motionstate.worldTransform =\n", bulletTransform) << std::endl;
+
+	print(std::cout << "rigidbody.worldTransform =\n", bulletCollider->rigidBody()->getWorldTransform()) << std::endl;
+#endif // DEBUG_PHYSICS
 }
 
 void
@@ -202,15 +209,15 @@ bullet::PhysicsWorld::updateColliders()
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
 		Collider::Ptr		collider(it->first);
-		BulletCollider::Ptr	btCollider(it->second);
+		BulletCollider::Ptr	bulletCollider(it->second);
 
 		if (collider->isStatic())
 			continue;
 
-		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
+		const btTransform& colliderWorldTrf(bulletCollider->collisionObject()->getWorldTransform());	
 
 		//btTransform colliderWorldTrf;
-		//btCollider->motionState()->getWorldTransform(colliderWorldTrf);
+		//bulletCollider->motionState()->getWorldTransform(colliderWorldTrf);
 
 
 		//collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
@@ -220,6 +227,34 @@ bullet::PhysicsWorld::updateColliders()
 }
 
 void
+bullet::PhysicsWorld::setPhysicsWorldMatrix(Collider::Ptr collider, 
+											Matrix4x4::Ptr worldMatrix)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+#ifdef DEBUG_PHYSICS
+	const float scaling = powf(fabsf(worldMatrix->determinant3x3()), 1.0f/3.0f);
+	if (fabsf(scaling - 1.0f) > 1e-3)
+		throw std::logic_error("Physics world matrices must be pure rotation + translation matrices.");
+#endif // DEBUG_PHYSICS
+
+	it->second->setWorldTransform(worldMatrix);
+
+#ifdef DEBUG_PHYSICS
+	std::cout << "[" << collider->name() << "]\tsynchro graphics->physics" << std::endl;
+
+	btTransform bulletTransform;
+	it->second->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
+	print(std::cout << "- motionstate.worldTransform = ", bulletTransform) << std::endl;
+
+	print(std::cout << "- rigidbody.worldTransform = ", it->second->rigidBody()->getWorldTransform()) << std::endl;
+#endif // DEBUG_PHYSICS
+}
+
+/*
+void
 bullet::PhysicsWorld::setPhysicsTransformFromCollider(Collider::Ptr collider)
 {
 	auto it	= _colliderMap.find(collider);
@@ -228,6 +263,7 @@ bullet::PhysicsWorld::setPhysicsTransformFromCollider(Collider::Ptr collider)
 
 	it->second->setWorldTransform(collider->worldTransform());
 }
+
 
 void
 bullet::PhysicsWorld::setWorldTransformFromCollider(Collider::Ptr collider)
@@ -258,6 +294,7 @@ bullet::PhysicsWorld::forceColliderWorldTransform(Collider::Ptr collider, Matrix
 	it->second->setWorldTransform(scaleFreeMatrix);
 	it->first->updateColliderWorldTransform(scaleFreeMatrix);
 }
+*/
 
 Matrix4x4::Ptr
 bullet::PhysicsWorld::getPhysicsWorldTransform(Collider::Ptr collider) const
@@ -362,29 +399,20 @@ bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
 /*static*/
 void
 bullet::PhysicsWorld::toBulletTransform(Matrix4x4::Ptr transform,
-	btTransform& output)
+										btTransform& output)
 {
 	toBulletTransform(
 		transform->rotationQuaternion(), 
-		transform->translationVector(), output
+		transform->translationVector(), 
+		output
 	);
-	/*
-	auto translation	= transform->translationVector();
-	auto rotation		= transform->rotation();
-
-	btVector3		btOrigin(translation->x(), translation->y(), translation->z());
-	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
-
-	output.setOrigin(btOrigin);
-	output.setRotation(btRotation);
-	*/
 }
 
 /*static*/
 void
 bullet::PhysicsWorld::toBulletTransform(Quaternion::Ptr rotation, 
-	Vector3::Ptr translation, 
-	btTransform& output)
+										Vector3::Ptr translation, 
+										btTransform& output)
 {
 	btQuaternion	btRotation(rotation->i(), rotation->j(), rotation->k(), rotation->r());
 	btVector3		btOrigin(translation->x(), translation->y(), translation->z());

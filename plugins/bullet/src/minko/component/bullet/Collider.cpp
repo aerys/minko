@@ -35,7 +35,7 @@ bullet::Collider::Collider(float						mass,
 	_worldTransform(Matrix4x4::create()->identity()),
 	_scaleCorrection(1.0f),
 	_correctionMatrix(Matrix4x4::create()->identity()),
-	_physicsTransform(Matrix4x4::create()->identity()),
+	//_physicsTransform(Matrix4x4::create()->identity()),
 	//_physicsStartOrientation(Quaternion::create()),
 	//_physicsStartPosition(Vector3::create()),
 	_shape(shape),
@@ -56,6 +56,12 @@ bullet::Collider::Collider(float						mass,
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
 {
 	_worldTransform->identity();
+}
+
+void
+bullet::Collider::setCorrectionMatrix(Matrix4x4::Ptr value)
+{
+	_correctionMatrix->copyFrom(value);
 }
 
 void
@@ -179,18 +185,5 @@ bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsTrans
 		->append(physicsTransform);
 
 	graphicsWorldTransformChanged()->execute(shared_from_this(), graphicsTransform);
-}
-
-Matrix4x4::Ptr
-bullet::Collider::reconstructGraphicsWorldTransform(Matrix4x4::Ptr physicsTransform,
-													Matrix4x4::Ptr output) const
-{
-	Matrix4x4::Ptr graphicsTransform = output == nullptr
-		? Matrix4x4::create()
-		: output;
-
-	return graphicsTransform
-		->copyFrom(_correctionMatrix)
-		->append(physicsTransform);
 }
 
