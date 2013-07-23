@@ -4,6 +4,7 @@ package aerys.minko.render.shader.compiler.sequence
 	import aerys.minko.render.shader.compiler.register.RegisterType;
 	import aerys.minko.type.enum.SamplerDimension;
 	import aerys.minko.type.enum.SamplerFiltering;
+	import aerys.minko.type.enum.SamplerFormat;
 	import aerys.minko.type.enum.SamplerMipMapping;
 	import aerys.minko.type.enum.SamplerWrapping;
 	
@@ -32,6 +33,11 @@ package aerys.minko.render.shader.compiler.sequence
         {
             return _dimension;
         }
+
+		public function get format() : uint
+		{
+			return _format;
+		}
         
 		public function get wrapping() : uint
         {
@@ -75,13 +81,14 @@ package aerys.minko.render.shader.compiler.sequence
 		
 		public function getAgal(isVertexShader : Boolean) : String
 		{
-			return 'fs'
-				+ index + ' <'
-				+ SamplerFiltering.minko_shader::STRINGS[filter] + ','
-				+ SamplerMipMapping.minko_shader::STRINGS[mipmap] + ','
-				+ SamplerWrapping.minko_shader::STRINGS[wrapping] + ','
-				+ SamplerDimension.minko_shader::STRINGS[dimension]
-				+ '>';
+			var agal : String  = SamplerFiltering.minko_shader::STRINGS[filter] + ','
+								+ SamplerMipMapping.minko_shader::STRINGS[mipmap] + ','
+								+ SamplerWrapping.minko_shader::STRINGS[wrapping] + ','
+								+ SamplerDimension.minko_shader::STRINGS[dimension];
+			var atf : String = SamplerFormat.RGBA == format ? '' :
+					',' + SamplerFormat.minko_shader::STRINGS_DESKTOP[format];
+
+			return 'fs' + index + ' <' + agal + atf + '>';
 		}
 	}
 }
