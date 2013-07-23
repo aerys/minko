@@ -29,39 +29,86 @@ using namespace minko::component;
 bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_type(type),
 	_margin(0.0f),
-	_localScaling(Vector3::create(1.0f, 1.0f, 1.0f)),
-	_deltaTransform(Matrix4x4::create()->identity()),
-	_deltaTransformInverse(Matrix4x4::create()->identity()),
+	_localScaling(1.0f),
+	_centerOfMassOffset(Matrix4x4::create()->identity()),
+	_physicsToGraphics(Matrix4x4::create()->identity()),
+	_centerOfMassTransform(Matrix4x4::create()->identity()),
+	_centerOfMassInverseTransform(Matrix4x4::create()->identity()),
+	_centerOfMassTranslation(Vector3::create(0.0f, 0.0f, 0.0f)),
+	_centerOfMassRotation(Quaternion::create()->identity()),
 	_shapeChanged(Signal<Ptr>::create())
 {
 
 }
-				
+
 void
-bullet::AbstractPhysicsShape::localScaling(float x, float y, float z)
+bullet::AbstractPhysicsShape::setCenterOfMassOffset(Matrix4x4::Ptr centerOfMassOffset,
+													Matrix4x4::Ptr modelToWorld)
 {
-	_localScaling->setTo(x, y, z);
+	/*
+	const float offsetScaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
+
+	Vector3Ptr translation = centerOfMassOffset->translationVector();
+
+
+
+
+	_centerOfMassTranslation->setTo(
+		-translation->x(),
+		-translation->y(),
+		-translation->z()
+	);
+
+	_centerOfMassRotation->identity();
+	const float scaling = powf(centerOfMassOffset->determinant3x3(), 1.0f/3.0f);
+	if (fabsf(scaling) < 1e-6f)
+		return;
+	const float invScaling = 1.0f/scaling;
+	_centerOfMassRotation = Matrix4x4::create()
+		->copyFrom(centerOfMassOffset)
+		->prependScaling(invScaling, invScaling, invScaling) // remove scaling effect
+		->rotationQuaternion();
+
+#ifdef DEBUG
+	std::cout << "physics shape offset\n\t- translation = " << _centerOfMassTranslation->x() 
+		<< " " << _centerOfMassTranslation->y() << " " << _centerOfMassTranslation->z() 
+		<< "\n\t- rotation = " << std::to_string(_centerOfMassRotation->toMatrix()) 
+		<< "\n\tfrom delta matrix = " << std::to_string(centerOfMassOffset)
+		<< "\n\twith model->world = " << std::to_string(modelToWorld) << std::endl;
+#endif //DEBUG
+
+	_centerOfMassTransform->initialize(_centerOfMassRotation, _centerOfMassTranslation);
+	_centerOfMassInverseTransform->copyFrom(_centerOfMassTransform)->invert();
+	*/
 }
 
 void
-bullet::AbstractPhysicsShape::initialize(Matrix4x4::Ptr deltaTransform, 
-										 Matrix4x4::Ptr graphicsStartTransform)
+bullet::AbstractPhysicsShape::initializeCenterOfMassOffset(Matrix4x4::Ptr deltaMatrix, 
+														   Matrix4x4::Ptr graphicsMatrix)
 {
-	auto deltaScaling = Matrix4x4::create();
-	PhysicsWorld::removeScalingShear(
-		deltaTransform, 
-		_deltaTransform, 
-		deltaScaling
-	);
+	// IMPORTANT: all scaling contained in the deltaMatrix is expected to be properly repercuted
+	// on the dimensions of the collision shape itself. 
 
-	_deltaTransformInverse
-		->copyFrom(_deltaTransform)
+	Matrix4x4::Ptr deltaNoScaleMatrix	= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(deltaMatrix, deltaNoScaleMatrix);
+	auto deltaTranslation	= deltaNoScaleMatrix->translationVector();
+	auto deltaRotation		= deltaNoScaleMatrix->rotationQuaternion()->toMatrix();
+
+	Matrix4x4::Ptr graphicsNoScaleMatrix	= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(graphicsMatrix, graphicsNoScaleMatrix);
+
+	// matrix used to initialize Bullet's motion state offset
+	_centerOfMassOffset
+		->copyFrom(graphicsNoScaleMatrix)->invert()
+		->append(deltaRotation)
+		->append(graphicsNoScaleMatrix)
+		->appendTranslation(deltaTranslation)
 		->invert();
 
-	localScaling(deltaScaling->values()[0], deltaScaling->values()[5], deltaScaling->values()[10]);
-
-#ifdef DEBUG_PHYSICS
-	PhysicsWorld::print(std::cout << "- delta\t=\n", _deltaTransform) << std::endl;
-	std::cout << "- local scaling\t= [ " << _localScaling->x() << " " << _localScaling->y() << " " << _localScaling->z() << " ]" << std::endl;
-#endif // DEBUG_PHYSICS
+	// matrix used to convert Bullet's physics matrix to Minko graphics matrix
+	_physicsToGraphics
+		->identity()
+		->append(deltaRotation)
+		->appendTranslation(deltaTranslation)
+		->invert();
 }
