@@ -124,5 +124,5 @@ project "minko-example-sponza"
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
 		}
