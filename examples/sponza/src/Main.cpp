@@ -44,9 +44,9 @@ auto                            speed               = 0.f;
 auto                            angSpeed            = 0.f;
 
 #if defined EMSCRIPTEN
-render::WebGLContext::Ptr       context = render::WebGLContext::create();
+render::WebGLContext::Ptr       context;
 #else
-render::OpenGLES2Context::Ptr   context = render::OpenGLES2Context::create();
+render::OpenGLES2Context::Ptr   context;
 #endif
 
 #if defined EMSCRIPTEN || defined __APPLE__
@@ -417,26 +417,29 @@ int main(int argc, char** argv)
     glutReshapeFunc(resizeHandler);
     
 	std::cout << "WebGl context created" << std::endl;
+    context = render::WebGLContext::create();
 #elif defined __APPLE__
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
+
+    context = render::OpenGLES2Context::create();
 #else
     glfwInit();
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
     
-	std::cout << "OpenGl context created" << std::endl;
+	context = render::OpenGLES2Context::create();
 #endif
     
     std::cout << context->driverInfo() << std::endl;
     
     auto assets	= AssetsLibrary::create(context)
-    ->registerParser<file::PNGParser>("png")
-    ->registerParser<file::JPEGParser>("jpg")
-    ->registerParser<file::MkParser>("mk")
-    ->geometry("cube", geometry::CubeGeometry::create(context));
+        ->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg")
+        ->registerParser<file::MkParser>("mk")
+        ->geometry("cube", geometry::CubeGeometry::create(context));
     
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
