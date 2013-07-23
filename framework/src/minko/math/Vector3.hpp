@@ -168,7 +168,7 @@ namespace minko
 
 			inline
 			Ptr
-			operator-()
+			operator-() const
 			{
 				return create(-_x, -_y, -_z);
 			}
