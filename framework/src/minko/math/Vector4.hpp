@@ -38,7 +38,7 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float x, float y, float z, float w = 1.)
+			create(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 1.0f)
 			{
 				return std::shared_ptr<Vector4>(new Vector4(x, y, z, w));
 			}
@@ -112,7 +112,7 @@ namespace minko
 
 			inline
 			float
-			dot(Ptr value)
+			dot(Ptr value) const
 			{
 				return _x * value->_x + _y * value->_y + _z * value->_z + _w * value->_w;
 			}
@@ -158,6 +158,18 @@ namespace minko
 				_y -= value->_y;
 				_z -= value->_z;
 				_w -= value->_w;
+
+				return std::static_pointer_cast<Vector4>(shared_from_this());
+			}
+
+			inline
+			Ptr
+			operator*(float value)
+			{
+				_x *= value;
+				_y *= value;
+				_z *= value;
+				_w *= value;
 
 				return std::static_pointer_cast<Vector4>(shared_from_this());
 			}

@@ -59,6 +59,7 @@ namespace minko
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
 				Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
+				Signal<ColliderPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
 
 			public:
 				inline static
@@ -77,6 +78,9 @@ namespace minko
 
 				void
 				setPhysicsWorldTransform(Matrix4x4Ptr);
+
+				void
+				initializePhysicsFromGraphicsWorldTransform();
 
 				void
 				prependLocalTranslation(Vector3Ptr);
@@ -110,6 +114,9 @@ namespace minko
 
 				void
 				colliderTransformChangedHandler(ColliderPtr);
+
+				void
+				graphicsWorldTransformChangedHandler(ColliderPtr, Matrix4x4Ptr);
 
 				void 
 				updateColliderWorldTransform();

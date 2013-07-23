@@ -75,11 +75,11 @@ namespace minko
 			private:
 				ColliderMap										_colliderMap;
 
-				btBroadphasePtr									_btBroadphase;
-				btCollisionConfigurationPtr						_btCollisionConfiguration;
-				btConstraintSolverPtr							_btConstraintSolver;
-				btDispatcherPtr									_btDispatcher;
-				btDynamicsWorldPtr								_btDynamicsWorld;
+				btBroadphasePtr									_bulletBroadphase;
+				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
+				btConstraintSolverPtr							_bulletConstraintSolver;
+				btDispatcherPtr									_bulletDispatcher;
+				btDynamicsWorldPtr								_bulletDynamicsWorld;
 
 				std::shared_ptr<SceneManager>					_sceneManager;
 
@@ -117,6 +117,9 @@ namespace minko
 				update(float timeStep = 1.0f/60.0f);
 
 				void
+				setPhysicsTransformFromCollider(ColliderPtr);
+
+				void
 				setWorldTransformFromCollider(ColliderPtr);
 
 				void
@@ -139,6 +142,10 @@ namespace minko
 
 				void
 				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
+
+				static
+				Matrix4x4Ptr
+				removeScalingShear(Matrix4x4Ptr, Matrix4x4Ptr output = nullptr, Matrix4x4Ptr correction = nullptr);
 
 			private:
 				PhysicsWorld();
@@ -179,6 +186,10 @@ namespace minko
 				void
 				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
 
+				static
+				std::ostream&
+				print(std::ostream&, const btTransform&);
+
 			private:
 				class BulletCollider
 				{
@@ -198,9 +209,9 @@ namespace minko
 
 
 				private:
-					btCollisionShapePtr		_btCollisionShape;
-					btMotionStatePtr		_btMotionState;
-					btCollisionObjectPtr	_btCollisionObject;
+					btCollisionShapePtr		_bulletCollisionShape;
+					btMotionStatePtr		_bulletMotionState;
+					btCollisionObjectPtr	_bulletCollisionObject;
 
 				public:
 					static
@@ -211,21 +222,21 @@ namespace minko
 					btCollisionShapePtr
 					collisionShape() const
 					{
-						return _btCollisionShape;
+						return _bulletCollisionShape;
 					}
 
 					inline
 					btMotionStatePtr
 					motionState() const
 					{
-						return _btMotionState;
+						return _bulletMotionState;
 					}
 
 					inline 
 					btCollisionObjectPtr
 					collisionObject() const
 					{
-						return _btCollisionObject;
+						return _bulletCollisionObject;
 					}
 
 					void 

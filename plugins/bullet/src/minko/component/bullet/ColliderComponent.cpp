@@ -40,7 +40,8 @@ bullet::ColliderComponent::ColliderComponent(Collider::Ptr collider):
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_colliderTrfChangedSlot(nullptr)
+	_colliderTrfChangedSlot(nullptr),
+	_graphicsTransformChangedSlot(nullptr)
 {
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
@@ -67,6 +68,13 @@ bullet::ColliderComponent::initialize()
 		&bullet::ColliderComponent::colliderTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1
+		));
+
+	_graphicsTransformChangedSlot	= _collider->graphicsWorldTransformChanged()->connect(std::bind(
+		&bullet::ColliderComponent::graphicsWorldTransformChangedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
 		));
 }
 
@@ -103,9 +111,10 @@ bullet::ColliderComponent::targetRemovedHandler(
 	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
-	_addedSlot				= nullptr;
-	_removedSlot			= nullptr;
-	_colliderTrfChangedSlot	= nullptr;
+	_addedSlot						= nullptr;
+	_removedSlot					= nullptr;
+	//_colliderTrfChangedSlot			= nullptr;
+	//_graphicsTransformChangedSlot	= nullptr;
 }
 
 void 
@@ -169,15 +178,11 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 	}
 	else
 	{
-		_collider->name = node->name();
-		
+		_collider->setName(node->name());
+
 		updateColliderWorldTransform();
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
-
-#ifdef DEBUG
-		std::cout << node->name() << ": collider added to the world" << std::endl;
-#endif
 		_physicsWorld->addChild(_collider);
 	}
 }
@@ -189,8 +194,10 @@ bullet::ColliderComponent::updateColliderWorldTransform()
 		throw std::logic_error("The Transform of the ColliderComponent's target is invalid.");
 
 	// update the collider's world transform, and scale correction matrix
-	auto worldTransform	= _targetTransform->modelToWorldMatrix(true);
-	_collider->setWorldTransform(worldTransform);
+	auto graphicsTransform	= _targetTransform->modelToWorldMatrix(true);
+	//_collider->setWorldTransform(graphicsTransform);
+
+	_collider->initializePhysicsFromGraphicsWorldTransform(graphicsTransform);
 
 	// inject the new collider's world transform into the physics world's simulation
 	if (_physicsWorld)
@@ -203,8 +210,7 @@ bullet::ColliderComponent::removedHandler(
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
-    if (_physicsWorld)
-        _physicsWorld->removeChild(_collider);
+	_physicsWorld->removeChild(_collider);
 	_physicsWorld		= nullptr;
 	_targetTransform	= nullptr;
 }
@@ -225,19 +231,22 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 	_targetTransform->transform()->copyFrom(newTransform);
 }
 
-Matrix4x4::Ptr
-bullet::ColliderComponent::getPhysicsWorldTransform() const
-{
-	return _physicsWorld != nullptr
-		? _physicsWorld->getPhysicsWorldTransform(_collider)
-		: Matrix4x4::create()->identity();
-}
-
 void
-bullet::ColliderComponent::setPhysicsWorldTransform(Matrix4x4::Ptr transform)
+bullet::ColliderComponent::graphicsWorldTransformChangedHandler(Collider::Ptr collider, 
+																Matrix4x4::Ptr graphicsTransform)
 {
-	if (_physicsWorld != nullptr)
-		_physicsWorld->setPhysicsWorldTransform(_collider, transform);
+	if (_targetTransform == nullptr)
+		return;
+
+	// get the world-to-parent matrix in order to update the target's Transform
+	auto worldToParentMatrix	= Matrix4x4::create()
+		->copyFrom(_targetTransform->modelToWorldMatrix(true))
+		->invert()
+		->append(_targetTransform->transform());
+
+	_targetTransform->transform()
+		->copyFrom(graphicsTransform)
+		->append(worldToParentMatrix);
 }
 
 void
@@ -259,4 +268,13 @@ bullet::ColliderComponent::applyRelativeImpulse(Vector3::Ptr localImpulse)
 {
 	if (_physicsWorld != nullptr)
 		_physicsWorld->applyRelativeImpulse(_collider, localImpulse);
+}
+
+void
+bullet::ColliderComponent::initializePhysicsFromGraphicsWorldTransform()
+{
+	if (_targetTransform == nullptr)
+		return;
+
+	_collider->initializePhysicsFromGraphicsWorldTransform(_targetTransform->modelToWorldMatrix(true));
 }

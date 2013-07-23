@@ -51,6 +51,11 @@ namespace minko
 				Type			_type;
 				float			_margin;
 				float			_localScaling;
+				Matrix4x4Ptr	_centerOfMassOffset;
+				Matrix4x4Ptr	_physicsToGraphics;
+
+				Matrix4x4Ptr	_centerOfMassTransform;
+				Matrix4x4Ptr	_centerOfMassInverseTransform;
 				Vector3Ptr		_centerOfMassTranslation;
 				QuaternionPtr	_centerOfMassRotation;
 
@@ -80,7 +85,24 @@ namespace minko
 				}
 
 				void
-				setCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld = nullptr);
+				setCenterOfMassOffset(Matrix4x4Ptr, Matrix4x4Ptr modelToWorld = nullptr);
+
+				void
+				initializeCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld);
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassOffset() const
+				{
+					return _centerOfMassOffset;
+				}
+
+				inline
+				Matrix4x4Ptr
+				physicsToGraphics() const
+				{
+					return _physicsToGraphics;
+				}
 
 				inline
 				Type
@@ -104,6 +126,20 @@ namespace minko
 					_margin	= margin;
 					if (needsUpdate)
 						shapeChanged()->execute(shared_from_this());
+				}
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassTransform() const
+				{
+					return _centerOfMassTransform;
+				}
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassInverseTransform() const
+				{
+					return _centerOfMassInverseTransform;
 				}
 
 				inline
