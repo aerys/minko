@@ -8,8 +8,6 @@
 #include "minko/MinkoParticles.hpp"
 #include <time.h>
 
-#define FRAMERATE 60
-
 #ifdef EMSCRIPTEN
     #include "minko/MinkoWebGL.hpp"
     #include "GL/glut.h"
@@ -97,13 +95,6 @@ renderScene()
     #if defined __APPLE__
         glutPostRedisplay();
     #endif
-}
-
-void timerFunc(int t)
-{
-    renderScene();
-    glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-    glutPostRedisplay();
 }
 #endif
 
@@ -502,9 +493,8 @@ int main(int argc, char** argv)
 #if defined EMSCRIPTEN
 	glutSpecialFunc(keyDownHandler);
     glutSpecialUpFunc(keyUpHandler);
-    //glutDisplayFunc(renderScene);
     
-    emscripten_set_main_loop(renderScene, FRAMERATE, true);
+    emscripten_set_main_loop(renderScene, 0, true);
 	
     return 0;
 #elif defined __APPLE__
