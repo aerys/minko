@@ -6,12 +6,16 @@
 #include "minko/MinkoMk.hpp"
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
+#include <time.h>
+
+#define FRAMERATE 60
 
 #ifdef EMSCRIPTEN
 	#include "minko/MinkoWebGL.hpp"
 	#include "GL/glut.h"
-
-	#define FRAMERATE 60
+    #include "emscripten.h"
+#elif defined __APPLE__
+    #include "GLUT/glut.h"
 #else
 	#include "GLFW/glfw3.h"
 #endif
@@ -26,7 +30,7 @@ const float WINDOW_WIDTH        = 1024;
 const float WINDOW_HEIGHT       = 500;
 
 const float CAMERA_LIN_SPEED	= 0.05f;
-const float CAMERA_ANG_SPEED	= PI * 1.0f / 180.0f;
+const float CAMERA_ANG_SPEED	= PI * 1.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME   = "camera";
@@ -38,11 +42,13 @@ auto			                mesh			    = scene::Node::create("mesh");
 auto			                group			    = scene::Node::create("group");
 auto			                camera			    = scene::Node::create("camera");
 auto			                root			    = scene::Node::create("root");
+auto                            speed               = 0.f;
+auto                            angSpeed            = 0.f;
 
 
-#ifdef EMSCRIPTEN
+#if defined EMSCRIPTEN || defined __APPLE__
 void
-clavierHandler(int key, int x, int y)
+keyDownHandler(int key, int x, int y)
 {	
     if (cameraColliderComp == nullptr)
 	{
@@ -58,30 +64,46 @@ clavierHandler(int key, int x, int y)
 	else
 	{
 		if (key == GLUT_KEY_UP)
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
+            speed = -CAMERA_LIN_SPEED;
 		else if (key == GLUT_KEY_DOWN)
-			cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+            speed = -CAMERA_LIN_SPEED;
 		if (key == GLUT_KEY_LEFT)
-			cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
+            angSpeed = CAMERA_ANG_SPEED;
 		else if (key == GLUT_KEY_RIGHT)
-			cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
+            angSpeed = -CAMERA_ANG_SPEED;
 	}
-	 
+}
+
+void
+keyUpHandler(int key, int x, int y)
+{
+    if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN)
+        speed = 0;
+	if (key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT)
+        angSpeed = 0;
 }
 
 void
 renderScene()
 {
-	rendering->render();
+    if (speed)
+        cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+    if (angSpeed)
+        cameraColliderComp->prependRotationY(CAMERA_ANG_SPEED);
 
-	glutSwapBuffers();
-	glutPostRedisplay();
+    rendering->render();
+    
+    glutSwapBuffers();
+    #if defined __APPLE__
+        glutPostRedisplay();
+    #endif
 }
 
-void timerFunc(int)
+void timerFunc(int t)
 {
-	glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
-	glutPostRedisplay();
+    renderScene();
+    glutTimerFunc(1000 / FRAMERATE, timerFunc, 0);
+    glutPostRedisplay();
 }
 #endif
 
@@ -275,24 +297,6 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	return bullet::ColliderComponent::create(collider);
 }
 
-void
-printFramerate(const unsigned int delay = 1)
-{
-	static auto start = clock();
-	static auto numFrames = 0;
-
-	auto time = clock();
-	auto deltaT = (float)(clock() - start) / CLOCKS_PER_SEC;
-
-	++numFrames;
-	if (deltaT > delay)
-	{
-		std::cout << ((float)numFrames / deltaT) << " fps." << std::endl;
-		start = time;
-		numFrames = 0;
-	}
-}
-
 component::bullet::ColliderComponent::Ptr
 initializeDefaultCameraCollider()
 {
@@ -369,6 +373,25 @@ initializePhysics()
 	root->addComponent(physicWorld);
 }
 
+
+void
+printFramerate(const unsigned int delay = 1)
+{
+	static auto start = time(NULL);
+	static auto numFrames = 0;
+    
+    int secondTime = time(NULL);
+    
+	++numFrames;
+    
+	if ((secondTime - start) >= 1)
+	{
+		std::cout << numFrames << " fps." << std::endl;
+		start = time(NULL);
+		numFrames = 0;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	file::MkParser::registerController(
@@ -391,6 +414,13 @@ int main(int argc, char** argv)
 	std::cout << "WebGl context created" << std::endl;
 
 	auto context = render::WebGLContext::create();
+#elif defined __APPLE__
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	glutCreateWindow("Minko Examples");
+    
+	auto context = render::OpenGLES2Context::create();
 #else
     glfwInit();
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
@@ -412,13 +442,20 @@ int main(int argc, char** argv)
 #ifdef EMSCRIPTEN
 	assets->defaultOptions()->includePaths().insert("assets");
 #endif
+
+#ifdef __APPLE__
+	assets->defaultOptions()->includePaths().insert("../../");
+#endif
+
 #ifdef DEBUG
     assets->defaultOptions()->includePaths().insert("bin/debug");
 #endif
 
     // load sponza lighting effect and set it as the default effect
     assets->load("effect/SponzaLighting.effect");
+    assets->load("effect/Basic.effect");
     assets->defaultOptions()->effect(assets->effect("effect/SponzaLighting.effect"));
+    //assets->defaultOptions()->effect(assets->effect("effect/Basic.effect"));
 
     // load other assets
     assets
@@ -455,22 +492,28 @@ int main(int argc, char** argv)
 			fireNode->addComponent(fire);
 	});
 
-	try
-	{
-		assets->load();
-	}
-	catch(std::exception e)
-	{
-		std::cerr << "exception: " << e.what() << std::endl;
-	}
+	assets->load();
+
 
 	std::cout << "start rendering" << std::endl << std::flush;
 
-#ifdef EMSCRIPTEN
+#if defined EMSCRIPTEN
+	glutSpecialFunc(keyDownHandler);
+    glutSpecialUpFunc(keyUpHandler);
+    glutDisplayFunc(renderScene);
+    
+    emscripten_set_main_loop(renderScene, FRAMERATE, true);
+	
+    return 0;
+#elif defined __APPLE__
 	glutSpecialFunc(clavierHandler);
-	glutDisplayFunc(renderScene);
-	glutMainLoop();
-	return 0;
+	glutSpecialFunc(keyDownHandler);
+    glutSpecialUpFunc(keyUpHandler);
+    glutDisplayFunc(renderScene);
+
+    glutMainLoop();
+	
+    return 0;
 #else
 	
 	while(!glfwWindowShouldClose(window))
