@@ -52,6 +52,7 @@ namespace minko
 				float			_margin;
 				float			_localScaling;
 				Matrix4x4Ptr	_centerOfMassOffset;
+				Matrix4x4Ptr	_centerOfMassOffsetInverse;
 				Matrix4x4Ptr	_physicsToGraphics;
 
 				Matrix4x4Ptr	_centerOfMassTransform;
@@ -95,6 +96,13 @@ namespace minko
 				centerOfMassOffset() const
 				{
 					return _centerOfMassOffset;
+				}
+
+				inline
+				Matrix4x4Ptr
+				centerOfMassOffsetInverse() const
+				{
+					return _centerOfMassOffsetInverse;
 				}
 
 				inline

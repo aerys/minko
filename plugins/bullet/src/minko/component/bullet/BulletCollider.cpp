@@ -177,9 +177,16 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 
 
 	_bulletMotionState	= std::shared_ptr<btMotionState>(new btDefaultMotionState(
-		bulletStartTransform,
+		btTransform(),
 		bulletOffsetTransform
 		));
+
+	auto worldTransform = Matrix4x4::create()
+		->copyFrom(collider->shape()->centerOfMassOffsetInverse())
+		->append(collider->worldTransform());
+
+	toBulletTransform(worldTransform, bulletStartTransform);
+	_bulletMotionState->setWorldTransform(bulletStartTransform);
 }
 
 void
