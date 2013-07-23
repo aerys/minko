@@ -53,7 +53,9 @@ namespace minko
 								std::shared_ptr<AssetsLibrary>	library,
 								std::shared_ptr<scene::Node>	mesh,
 								std::shared_ptr<file::Options>	options,
-								bool							computeTangent);
+								bool							computeTangent,
+                                std::shared_ptr<data::Provider> material,
+                                std::shared_ptr<render::Effect> effect);
 
 			static
 			std::shared_ptr<render::IndexBuffer>
