@@ -80,7 +80,7 @@ namespace minko
 				setPhysicsWorldTransform(Matrix4x4Ptr);
 
 				void
-				initializePhysicsFromGraphicsWorldTransform();
+				synchronizePhysicsWithGraphics();
 
 				void
 				prependLocalTranslation(Vector3Ptr);
