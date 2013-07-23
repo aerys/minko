@@ -151,7 +151,7 @@ namespace minko
 
             static
             bool
-            compareDrawCalls(DrawCallPtr a, DrawCallPtr b);
+            compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
 		};
 	}
 }
