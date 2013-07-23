@@ -97,13 +97,14 @@ project "minko-example-sponza"
 		linkoptions { "-std=c++11", "-stdlib=libc++" }
 		links {
 			"m",
-			"glfw3",
+			--"glfw3","Cocoa.framework", "OpenGL.framework", "GLUT.framework", "IOKit.framework"
+			"GLUT.framework",
 			"Cocoa.framework",
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
 		libdirs {
-			"../../deps/mac/lib"
+			"../../../../deps/mac/lib"
 		}
 		includedirs {
 			"../../deps/mac/include"
