@@ -29,10 +29,8 @@ class btConstraintSolver;
 class btDispatcher;
 class btCollisionShape;
 class btMotionState;
-class btDefaultMotionState;
 class btCollisionObject;
 class btTransform;
-class btRigidBody;
 
 namespace minko
 {
@@ -45,7 +43,7 @@ namespace minko
 			class BoxShape;
 			class ConeShape;
 			class CylinderShape;
-			class ColliderData;
+			class Collider;
 
 			class PhysicsWorld:
 				public AbstractComponent,
@@ -57,13 +55,12 @@ namespace minko
 			private:
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
-				typedef std::shared_ptr<ColliderData>				ColliderDataPtr; 
+				typedef std::shared_ptr<Collider>					ColliderPtr; 
 				typedef std::shared_ptr<Rendering>					RenderingPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
 
-				typedef std::shared_ptr<btTransform>				btTransformPtr;
 				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
 				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
 				typedef std::shared_ptr<btConstraintSolver>			btConstraintSolverPtr;
@@ -71,8 +68,8 @@ namespace minko
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
 
 				class BulletCollider;
-				typedef std::shared_ptr<BulletCollider>							BulletColliderPtr;
-				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>	ColliderMap;
+				typedef std::shared_ptr<BulletCollider>				BulletColliderPtr;
+				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>	ColliderMap;
 
 			private:
 				ColliderMap										_colliderMap;
@@ -98,7 +95,7 @@ namespace minko
 			public:
 				static
 				Ptr
-				create(RenderingPtr rendering)
+					create(RenderingPtr rendering)
 				{
 					Ptr physicsWorld(new PhysicsWorld());
 
@@ -108,13 +105,13 @@ namespace minko
 				}
 
 				bool
-				hasCollider(ColliderDataPtr) const;
+				hasCollider(ColliderPtr) const;
 
 				void
-				addChild(ColliderDataPtr);
+				addChild(ColliderPtr);
 
 				void
-				removeChild(ColliderDataPtr);
+				removeChild(ColliderPtr);
 
 				void
 				setGravity(Vector3Ptr);
@@ -123,34 +120,29 @@ namespace minko
 				update(float timeStep = 1.0f/60.0f);
 
 				void
-				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
+				setPhysicsTransformFromCollider(ColliderPtr);
 
 				void
-				setPhysicsWorldMatrix(ColliderDataPtr, Matrix4x4Ptr);
+				setWorldTransformFromCollider(ColliderPtr);
 
 				void
-				setLinearVelocity(ColliderDataPtr, Vector3Ptr);
+				forceColliderWorldTransform(ColliderPtr, Matrix4x4Ptr);
 
 				void
-				prependLocalTranslation(ColliderDataPtr, Vector3Ptr);
+				setLinearVelocity(ColliderPtr, Vector3Ptr);
 
 				void
-				prependRotationY(ColliderDataPtr, float);
+				prependLocalTranslation(ColliderPtr, Vector3Ptr);
 
 				void
-				applyRelativeImpulse(ColliderDataPtr, Vector3Ptr);
+				prependRotationY(ColliderPtr, float);
+
+				void
+				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
 
 				static
 				Matrix4x4Ptr
 				removeScalingShear(Matrix4x4Ptr, Matrix4x4Ptr output = nullptr, Matrix4x4Ptr correction = nullptr);
-
-				static
-				std::ostream&
-				print(std::ostream&, const btTransform&);
-
-				static
-				std::ostream&
-				print(std::ostream&, Matrix4x4Ptr);
 
 			private:
 				PhysicsWorld();
@@ -175,7 +167,7 @@ namespace minko
 
 				static
 				Matrix4x4Ptr
-				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
+				fromBulletTransform(const btTransform&);
 
 				static
 				void
@@ -185,12 +177,15 @@ namespace minko
 				void
 				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
 
+<<<<<<< HEAD
 				void
 				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr component);
 
 				void
 				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
 
+=======
+>>>>>>> Refactored heavily the matrix handling system (removal of shear notably), works alright.
 				static
 				std::ostream&
 				print(std::ostream&, const btTransform&);
@@ -210,9 +205,8 @@ namespace minko
 
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
-					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
 					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
-					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
+
 
 				private:
 					btCollisionShapePtr		_bulletCollisionShape;
@@ -222,10 +216,28 @@ namespace minko
 				public:
 					static
 					BulletColliderPtr
-					create(ColliderDataPtr);
+					create(ColliderPtr);
 
-					btRigidBodyPtr
-					rigidBody() const;
+					inline
+					btCollisionShapePtr
+					collisionShape() const
+					{
+						return _bulletCollisionShape;
+					}
+
+					inline
+					btMotionStatePtr
+					motionState() const
+					{
+						return _bulletMotionState;
+					}
+
+					inline 
+					btCollisionObjectPtr
+					collisionObject() const
+					{
+						return _bulletCollisionObject;
+					}
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
@@ -246,28 +258,28 @@ namespace minko
 					BulletCollider();
 
 					void
-					initialize(ColliderDataPtr);
-
-					btCollisionShapePtr
-					initializeCollisionShape(AbsShapePtr) const;
-
-					btCollisionShapePtr
-					initializeSphereShape(SphereShapePtr) const;
-
-					btCollisionShapePtr
-					initializeBoxShape(BoxShapePtr) const;
-
-					btCollisionShapePtr
-					initializeConeShape(ConeShapePtr) const;
-
-					btCollisionShapePtr
-					initializeCylinderShape(CylinderShapePtr) const;
-
-					btMotionStatePtr
-					initializeMotionState(ColliderDataPtr) const;
+					initialize(ColliderPtr);
 
 					void
-					initializeCollisionObject(ColliderDataPtr, btCollisionShapePtr, btMotionStatePtr);
+					initializeCollisionShape(AbsShapePtr);
+
+					void
+					initializeSphereShape(SphereShapePtr);
+
+					void
+					initializeBoxShape(BoxShapePtr);
+
+					void
+					initializeConeShape(ConeShapePtr);
+
+					void
+					initializeCylinderShape(CylinderShapePtr);
+
+					void
+					initializeMotionState(ColliderPtr);
+
+					void
+					initializeCollisionObject(ColliderPtr);
 				};
 			};
 		}
