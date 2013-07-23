@@ -42,7 +42,6 @@ auto			                mesh			    = scene::Node::create("mesh");
 auto			                group			    = scene::Node::create("group");
 auto			                camera			    = scene::Node::create("camera");
 auto			                root			    = scene::Node::create("root");
-
 auto                            speed               = 0.f;
 auto                            angSpeed            = 0.f;
 
@@ -503,7 +502,7 @@ int main(int argc, char** argv)
 #if defined EMSCRIPTEN
 	glutSpecialFunc(keyDownHandler);
     glutSpecialUpFunc(keyUpHandler);
-    glutDisplayFunc(renderScene);
+    //glutDisplayFunc(renderScene);
     
     emscripten_set_main_loop(renderScene, FRAMERATE, true);
 	
