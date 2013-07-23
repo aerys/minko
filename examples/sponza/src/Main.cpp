@@ -89,6 +89,7 @@ renderScene()
     if (angSpeed)
         cameraColliderComp->prependRotationY(angSpeed);
 
+    sponzaLighting->step();
     rendering->render();
     
     glutSwapBuffers();
@@ -387,15 +388,15 @@ printFramerate(const unsigned int delay = 1)
 int main(int argc, char** argv)
 {
 	file::MkParser::registerController(
-                                       "colliderController",
-                                       std::bind(
-                                                 deserializeBullet,
-                                                 std::placeholders::_1,
-                                                 std::placeholders::_2,
-                                                 std::placeholders::_3,
-                                                 std::placeholders::_4
-                                                 )
-                                       );
+    "colliderController",
+    std::bind(
+        deserializeBullet,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4
+        )
+    );
     
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
@@ -450,9 +451,9 @@ int main(int argc, char** argv)
 
     // load other assets
     assets
-    ->queue("texture/firefull.jpg")
-    ->queue("effect/Particles.effect")
-    ->queue("model/Sponza_lite.mk");
+        ->queue("texture/firefull.jpg")
+        ->queue("effect/Particles.effect")
+        ->queue("model/Sponza_lite.mk");
     
     
     assets->defaultOptions()->generateMipmaps(true);
@@ -535,7 +536,7 @@ int main(int argc, char** argv)
 	    rendering->render();
         
 		sponzaLighting->step();
-	    printFramerate();
+	    //printFramerate();
         
         glfwSwapBuffers(window);
         glfwPollEvents();
