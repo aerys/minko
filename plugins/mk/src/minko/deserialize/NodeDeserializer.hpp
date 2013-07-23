@@ -113,19 +113,23 @@ namespace minko
 
 
 				std::vector<Any>&	bindingsId	= Any::cast<std::vector<Any>&>(nodeInfo["bindingsIds"]);
-				int					materialId	= Any::cast<int&>(bindingsId[0]);	
-
-				mesh->addComponent(component::Surface::create(
-					options->assetsLibrary()->geometry("cube"),
-					options->deserializedAssets()->material(materialId),
-                    options->parseOptions()->effect()
-                ));
+				int					materialId	= Any::cast<int&>(bindingsId[0]);
 
 				bool computeTangent = false;
 				if (options->deserializedAssets()->material(materialId)->hasProperty("material.normalMap"))
 					computeTangent = true;
 
-				GeometryDeserializer::deserializeGeometry(iscopy, geometryName, copyId, geometryObject, options->assetsLibrary(), mesh, options->parseOptions(), computeTangent);
+				GeometryDeserializer::deserializeGeometry(
+                                                          iscopy,
+                                                          geometryName,
+                                                          copyId,
+                                                          geometryObject,
+                                                          options->assetsLibrary(),
+                                                          mesh,
+                                                          options->parseOptions(),
+                                                          computeTangent,
+                                                          options->deserializedAssets()->material(materialId),
+                                                          options->parseOptions()->effect());
 
 				return mesh;
 			}
