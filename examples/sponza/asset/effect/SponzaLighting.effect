@@ -48,6 +48,8 @@
 
 	"passes"		: [{
 		"vertexShader"	: "
+			precision mediump float;
+		
 			attribute vec3	position;
 			
 			attribute vec3	normal;
@@ -96,6 +98,7 @@
 			}
 		",
 		"fragmentShader"	: "
+			precision mediump float;
 
 			struct Material {
 				vec4		diffuseColor;
