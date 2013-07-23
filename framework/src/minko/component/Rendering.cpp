@@ -232,7 +232,7 @@ Rendering::render()
 }
 
 bool
-Rendering::compareDrawCalls(DrawCallPtr a, DrawCallPtr b)
+Rendering::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 {
     return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 }
