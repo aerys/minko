@@ -74,7 +74,7 @@ namespace minko
 				}
 
 				void
-				initializePhysicsFromGraphicsWorldTransform();
+				synchronizePhysicsWithGraphics();
 
 				void
 				prependLocalTranslation(Vector3Ptr);
