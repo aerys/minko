@@ -485,11 +485,11 @@ OpenGLES2Context::createTexture(unsigned int 	width,
 			 size > 0;
 			 size = size >> 1, width = width >> 1, height = height >> 1)
 		{
-			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, level++, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 		}
     }
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, format, GL_UNSIGNED_BYTE, 0);
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(texture, width, height);
@@ -507,7 +507,7 @@ OpenGLES2Context::uploadTextureData(const unsigned int 	texture,
 								    void*				data)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     checkForErrors();
 }
