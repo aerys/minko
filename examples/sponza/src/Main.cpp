@@ -43,8 +43,19 @@ auto			                root			    = scene::Node::create("root");
 auto                            speed               = 0.f;
 auto                            angSpeed            = 0.f;
 
+#if defined EMSCRIPTEN
+render::WebGLContext::Ptr       context = render::WebGLContext::create();
+#else
+render::OpenGLES2Context::Ptr   context = render::OpenGLES2Context::create();
+#endif
 
 #if defined EMSCRIPTEN || defined __APPLE__
+void
+resizeHandler(int width, int height)
+{
+    context->configureViewport(0, 0, width, height);
+}
+
 void
 keyDownHandler(int key, int x, int y)
 {	
@@ -403,25 +414,20 @@ int main(int argc, char** argv)
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
+    glutReshapeFunc(resizeHandler);
     
 	std::cout << "WebGl context created" << std::endl;
-    
-	auto context = render::WebGLContext::create();
 #elif defined __APPLE__
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Minko Examples");
-    
-	auto context = render::OpenGLES2Context::create();
 #else
     glfwInit();
     auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
     glfwMakeContextCurrent(window);
     
 	std::cout << "OpenGl context created" << std::endl;
-    
-	auto context = render::OpenGLES2Context::create();
 #endif
     
     std::cout << context->driverInfo() << std::endl;
