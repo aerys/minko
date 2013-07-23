@@ -49,9 +49,9 @@ namespace minko
 				float			_scaleCorrection;
 
 				Matrix4x4Ptr	_correctionMatrix;
-				Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
-				QuaternionPtr	_physicsStartOrientation;
-				Vector3Ptr		_physicsStartPosition;	
+				//Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
+				//QuaternionPtr	_physicsStartOrientation;
+				//Vector3Ptr		_physicsStartPosition;	
 
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
@@ -116,6 +116,7 @@ namespace minko
 					return _worldTransform;
 				}
 
+				/*
 				inline
 				QuaternionPtr
 				physicsStartOrientation() const
@@ -129,6 +130,7 @@ namespace minko
 				{
 					return _physicsStartPosition;
 				}
+				*/
 
 				inline
 				const std::string& name() const
@@ -215,6 +217,16 @@ namespace minko
 				disableDeactivation(bool value)
 				{
 					_deactivationDisabled = value;
+				}
+
+				void
+				setCorrectionMatrix(Matrix4x4Ptr);
+
+				inline
+				Matrix4x4Ptr
+				correctionMatrix() const
+				{
+					return _correctionMatrix;
 				}
 
 				void
@@ -322,9 +334,6 @@ namespace minko
 
 			private:
 				Collider(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
-
-				Matrix4x4Ptr
-				reconstructGraphicsWorldTransform(Matrix4x4Ptr physicsTransform, Matrix4x4Ptr graphicsTransform = nullptr) const;
 
 				static
 				Vector3Ptr
