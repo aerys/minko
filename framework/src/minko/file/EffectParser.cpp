@@ -114,7 +114,11 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
+    {
+        std::cerr << resolvedFilename << ":" << reader.getFormatedErrorMessages() << std::endl;
+
 		throw std::invalid_argument("data");
+    }
 
     _filename = filename;
 	_assetsLibrary = assetsLibrary;
