@@ -46,8 +46,8 @@ namespace minko
 			private:
 				std::string		_name;
 				float			_mass;
-				Matrix4x4Ptr	_worldTransform;
-				float			_scaleCorrection;
+				//Matrix4x4Ptr	_worldTransform;
+				//float			_scaleCorrection;
 
 				Matrix4x4Ptr	_correctionMatrix;
 				//Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
@@ -110,6 +110,7 @@ namespace minko
 					return _mass < std::numeric_limits<float>::epsilon();
 				}
 
+				/*
 				inline
 				Matrix4x4Ptr
 				worldTransform() const
@@ -117,7 +118,7 @@ namespace minko
 					return _worldTransform;
 				}
 
-				/*
+				
 				inline
 				QuaternionPtr
 				physicsStartOrientation() const
@@ -151,11 +152,11 @@ namespace minko
 				void
 				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsTransform);
 
-				void
-				setWorldTransform(Matrix4x4Ptr);
+				//void
+				//setWorldTransform(Matrix4x4Ptr);
 
-				void
-				updateColliderWorldTransform(Matrix4x4Ptr);
+				//void
+				//updateColliderWorldTransform(Matrix4x4Ptr);
 
 				inline
 				Vector3Ptr
