@@ -214,8 +214,8 @@ namespace minko
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
-					btCollisionShapePtr		_bulletCollisionShape;
-					btMotionStatePtr		_bulletMotionState;
+					//btCollisionShapePtr		_bulletCollisionShape;
+					//btMotionStatePtr		_bulletMotionState;
 					btCollisionObjectPtr	_bulletCollisionObject;
 
 				public:
@@ -226,6 +226,7 @@ namespace minko
 					btRigidBodyPtr
 					rigidBody() const;
 
+					/*
 					inline
 					btCollisionShapePtr
 					collisionShape() const
@@ -239,6 +240,7 @@ namespace minko
 					{
 						return _bulletMotionState;
 					}
+					*/
 
 					inline 
 					btCollisionObjectPtr
@@ -246,6 +248,7 @@ namespace minko
 					{
 						return _bulletCollisionObject;
 					}
+					
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
@@ -271,26 +274,26 @@ namespace minko
 					void
 					initialize(ColliderPtr);
 
-					void
-					initializeCollisionShape(AbsShapePtr);
+					btCollisionShapePtr
+					initializeCollisionShape(AbsShapePtr) const;
+
+					btCollisionShapePtr
+					initializeSphereShape(SphereShapePtr) const;
+
+					btCollisionShapePtr
+					initializeBoxShape(BoxShapePtr) const;
+
+					btCollisionShapePtr
+					initializeConeShape(ConeShapePtr) const;
+
+					btCollisionShapePtr
+					initializeCylinderShape(CylinderShapePtr) const;
+
+					btMotionStatePtr
+					initializeMotionState(ColliderPtr) const;
 
 					void
-					initializeSphereShape(SphereShapePtr);
-
-					void
-					initializeBoxShape(BoxShapePtr);
-
-					void
-					initializeConeShape(ConeShapePtr);
-
-					void
-					initializeCylinderShape(CylinderShapePtr);
-
-					void
-					initializeMotionState(ColliderPtr);
-
-					void
-					initializeCollisionObject(ColliderPtr);
+					initializeCollisionObject(ColliderPtr, btCollisionShapePtr, btMotionStatePtr);
 				};
 			};
 		}
