@@ -132,6 +132,7 @@ class emscripten {
 
     exec { "/home/vagrant/src/minko-cpp/tools/lin/bin/premake4 --platform=emscripten gmake":
         alias => "configure",
+        logoutput => true,
         cwd => "/home/vagrant/src/minko-cpp",
         environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"],
         require => [
@@ -145,6 +146,7 @@ class emscripten {
 
     exec { "/usr/bin/make verbose=1 config=release":
         alias => "compile",
+        logoutput => true,
         cwd => "/home/vagrant/src/minko-cpp",
         environment => ["PWD=/home/vagrant/src", "HOME=/home/vagrant"],
         require => Exec["configure"]
