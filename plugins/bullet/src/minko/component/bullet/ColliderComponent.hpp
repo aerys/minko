@@ -79,6 +79,9 @@ namespace minko
 				prependRotationY(float);
 
 				void
+				lookAt(Vector3Ptr lookAt, Vector3Ptr position, Vector3Ptr up);
+
+				void
 				applyRelativeImpulse(Vector3Ptr);
 
 			private:

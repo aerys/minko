@@ -109,7 +109,7 @@ project "minko-example-sponza"
 			"IOKit.framework"
 		}
 		libdirs {
-			"../../../../deps/mac/lib"
+			"../../deps/mac/lib"
 		}
 		includedirs {
 			"../../deps/mac/include"

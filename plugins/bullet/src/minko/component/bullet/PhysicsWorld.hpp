@@ -132,6 +132,9 @@ namespace minko
 				prependRotationY(ColliderPtr, float);
 
 				void
+				lookAt(ColliderPtr, Vector3Ptr, Vector3Ptr, Vector3Ptr);
+
+				void
 				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
 
 			private:
@@ -221,6 +224,10 @@ namespace minko
 					{
 						return _btCollisionObject;
 					}
+
+					void
+					lookAt(Vector3Ptr lookAt, Vector3Ptr position, Vector3Ptr up);
+
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
