@@ -41,7 +41,7 @@ bullet::ColliderComponent::ColliderComponent(Collider::Ptr collider):
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_colliderTrfChangedSlot(nullptr),
+	//_colliderTrfChangedSlot(nullptr),
 	_graphicsTransformChangedSlot(nullptr)
 {
 	if (collider == nullptr)
@@ -65,11 +65,13 @@ bullet::ColliderComponent::initialize()
 		std::placeholders::_2
 		));
 
+	/*
 	_colliderTrfChangedSlot	= _collider->transformChanged()->connect(std::bind(
 		&bullet::ColliderComponent::colliderTransformChangedHandler,
 		shared_from_this(),
 		std::placeholders::_1
 		));
+		*/
 
 	_graphicsTransformChangedSlot	= _collider->graphicsWorldTransformChanged()->connect(std::bind(
 		&bullet::ColliderComponent::graphicsWorldTransformChangedHandler,
@@ -220,6 +222,7 @@ bullet::ColliderComponent::removedHandler(
 	_targetTransform	= nullptr;
 }
 
+/*
 void 
 bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collider)
 {
@@ -235,7 +238,7 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 
 	_targetTransform->transform()->copyFrom(newTransform);
 }
-
+*/
 void
 bullet::ColliderComponent::graphicsWorldTransformChangedHandler(Collider::Ptr collider, 
 																Matrix4x4::Ptr graphicsTransform)
