@@ -211,7 +211,7 @@ Matrix4x4::invert()
     float det = s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
 
 	if (det == 0.)
-		throw;
+		throw std::logic_error("matrix is not invertible (determinant = 0).");
 
     float invdet = 1.f / det;
 
@@ -505,19 +505,14 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	float m41 = -(xAxis->dot(eye));
 	float m42 = -(yAxis->dot(eye));
 	float m43 = -(zAxis->dot(eye));
-
+	
+	
 	return initialize(
 		xAxis->x(),	yAxis->x(),	zAxis->x(),	m41,
 		xAxis->y(),	yAxis->y(),	zAxis->y(), m42,
 		xAxis->z(),	yAxis->z(),	zAxis->z(),	m43,
 		0.f,		0.f,		0.f,		1.f
 	);
-	// return initialize(
-	// 	xAxis->x(),	yAxis->x(),	zAxis->x(),	0, //m41,
-	// 	xAxis->y(),	yAxis->y(),	zAxis->y(), 0, //m42,
-	// 	xAxis->z(),	yAxis->z(),	zAxis->z(),	0, //m43,
-	// 	m41, m42, m43, 1 //0.f,		0.f,		0.f,		1.f
-	// );
 }
 
 Matrix4x4::Ptr
