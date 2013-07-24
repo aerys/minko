@@ -201,6 +201,15 @@ bullet::PhysicsWorld::updateColliders()
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
+		if (collider->name == "camera")
+		{
+			const btTransform& toto = colliderWorldTrf;
+			Matrix4x4Ptr tata = fromBulletTransform(toto);
+			std::cout << "PhysicsWorld::updateColliders: " << std::to_string(tata) << std::endl;
+			static int n = 0;
+			if (n++ == 1000)
+				std::exit(666);
+		}
 	}
 }
 
@@ -262,6 +271,16 @@ bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
 		return;
 
 	it->second->prependRotationY(radians);
+}
+
+void
+bullet::PhysicsWorld::lookAt(Collider::Ptr collider, Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up)
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->lookAt(lookAt, position, up);
 }
 
 void
