@@ -154,9 +154,6 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 	std::cout << "[" << collider->name() << "]\tadd physics body" << std::endl;
 
 	btTransform bulletTransform;
-	bulletCollider->motionState()->getWorldTransform(bulletTransform);
-	print(std::cout << "motionstate.worldTransform =\n", bulletTransform) << std::endl;
-
 	bulletCollider->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
 	print(std::cout << "rigid.body.motionstate.worldTransform =\n", bulletTransform) << std::endl;
 
