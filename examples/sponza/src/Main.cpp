@@ -92,13 +92,60 @@ keyUpHandler(int key, int x, int y)
         angSpeed = 0;
 }
 
+float _rotationX = 0;
+float _rotationY = 0;
+float _mousePositionX = 0;
+float _mousePositionY = 0;
+
+Vector3::Ptr _lookAt = Vector3::create();
+Vector3::Ptr _position = Vector3::create();
+
+bool _updateCameraRotation = false;
+
+void
+mouseMoveHandler(int x, int y)
+{
+	_rotationY += -(_mousePositionX - x) * .005;
+	_rotationX +=  (_mousePositionY - y) * .005;
+
+	const float limit = 89 * PI / 180;
+
+	if (_rotationX < -limit)
+		_rotationX = -limit;
+	else if (_rotationX > +limit)
+		_rotationX = +limit;
+
+	_mousePositionX = x;
+	_mousePositionY = y;
+
+	_updateCameraRotation = true;
+
+}
+
 void
 renderScene()
 {
     if (speed)
         cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
-    if (angSpeed)
-        cameraColliderComp->prependRotationY(angSpeed);
+    // if (angSpeed)
+    //     cameraColliderComp->prependRotationY(angSpeed);
+
+    if (_updateCameraRotation)
+    {
+    	_position = camera->component<Transform>()->transform()->translationVector();
+
+		std::cout << _position->x() << " " << _position->y() << std::endl;
+		_lookAt->setTo(
+			_position->x() + sin(_rotationY) * cos(_rotationX),
+			_position->y() + 0, //sin(_rotationX),
+			_position->z() + cos(_rotationY) * cos(_rotationX)
+		);
+
+		// camera->component<Transform>()->transform()->view(_position, _lookAt, Vector3::upAxis());
+		cameraColliderComp->lookAt(_lookAt, _position, Vector3::upAxis());
+
+		_updateCameraRotation = false;
+    }
 
     sponzaLighting->step();
     rendering->render();
@@ -317,7 +364,7 @@ initializeDefaultCameraCollider()
 }
 
 void
-initializeCamera()
+initializeCamera(scene::Node::Ptr group)
 {
     auto cameras = scene::NodeSet::create(group)
 		->descendants(true)
@@ -471,14 +518,15 @@ int main(int argc, char** argv)
     
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-        initializeCamera();
+        scene::Node::Ptr sponza = assets->node("model/Sponza_lite.mk");
+        initializeCamera(sponza);
 
        	root->addChild(group);
 		root->addComponent(sceneManager);
 		root->addComponent(sponzaLighting);
 
 		group->addComponent(Transform::create());
-		group->addChild(assets->node("model/Sponza_lite.mk"));
+		group->addChild(sponza);
 
         scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
             ->descendants()
@@ -487,6 +535,7 @@ int main(int argc, char** argv)
 				return node->name() == "fire";
 			});
 
+        auto root2 = root;
         auto fire = Fire::create(assets);
         for (auto fireNode : fireNodes->nodes())
 			fireNode->addComponent(fire);
@@ -506,6 +555,7 @@ int main(int argc, char** argv)
 #elif defined __APPLE__
 	glutSpecialFunc(keyDownHandler);
     glutSpecialUpFunc(keyUpHandler);
+    glutMotionFunc(mouseMoveHandler);
     glutDisplayFunc(renderScene);
 
     glutMainLoop();

@@ -103,7 +103,7 @@
 			#ifdef GL_ES
 				precision mediump float;
 			#endif
-			
+
 			struct Material {
 				vec4		diffuseColor;
 				vec3		specular;
