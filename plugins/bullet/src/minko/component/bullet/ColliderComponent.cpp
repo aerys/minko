@@ -169,6 +169,8 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 	}
 	else
 	{
+		_collider->name = node->name();
+		
 		updateColliderWorldTransform();
 
 		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
@@ -201,7 +203,8 @@ bullet::ColliderComponent::removedHandler(
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
-	_physicsWorld->removeChild(_collider);
+    if (_physicsWorld)
+        _physicsWorld->removeChild(_collider);
 	_physicsWorld		= nullptr;
 	_targetTransform	= nullptr;
 }
@@ -234,6 +237,13 @@ bullet::ColliderComponent::prependRotationY(float radians)
 {
 	if (_physicsWorld != nullptr)
 		_physicsWorld->prependRotationY(_collider, radians);
+}
+
+void
+bullet::ColliderComponent::lookAt(Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->lookAt(_collider, lookAt, position, up);
 }
 
 void

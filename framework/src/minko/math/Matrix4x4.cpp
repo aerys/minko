@@ -492,7 +492,7 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	}
 
 	Vector3::Ptr xAxis = Vector3::create()->copyFrom(upAxis)->cross(zAxis)->normalize();
-	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis)->normalize();
+	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis); //->normalize();
 
 	if ((xAxis->x() == 0.f && xAxis->y() == 0.f && xAxis->z() == 0.f)
 		|| (yAxis->x() == 0.f && yAxis->y() == 0.f && yAxis->z() == 0.f))
@@ -512,6 +512,12 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 		xAxis->z(),	yAxis->z(),	zAxis->z(),	m43,
 		0.f,		0.f,		0.f,		1.f
 	);
+	// return initialize(
+	// 	xAxis->x(),	yAxis->x(),	zAxis->x(),	0, //m41,
+	// 	xAxis->y(),	yAxis->y(),	zAxis->y(), 0, //m42,
+	// 	xAxis->z(),	yAxis->z(),	zAxis->z(),	0, //m43,
+	// 	m41, m42, m43, 1 //0.f,		0.f,		0.f,		1.f
+	// );
 }
 
 Matrix4x4::Ptr

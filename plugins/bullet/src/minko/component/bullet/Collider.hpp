@@ -35,6 +35,7 @@ namespace minko
 				public std::enable_shared_from_this<Collider>
 			{
 			public:
+				std::string name;
 				typedef std::shared_ptr<Collider> Ptr;
 
 				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
