@@ -225,6 +225,21 @@ bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collide
 	_targetTransform->transform()->copyFrom(newTransform);
 }
 
+Matrix4x4::Ptr
+bullet::ColliderComponent::getPhysicsWorldTransform() const
+{
+	return _physicsWorld != nullptr
+		? _physicsWorld->getPhysicsWorldTransform(_collider)
+		: Matrix4x4::create()->identity();
+}
+
+void
+bullet::ColliderComponent::setPhysicsWorldTransform(Matrix4x4::Ptr transform)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->setPhysicsWorldTransform(_collider, transform);
+}
+
 void
 bullet::ColliderComponent::prependLocalTranslation(Vector3::Ptr localTranslation)
 {
@@ -237,13 +252,6 @@ bullet::ColliderComponent::prependRotationY(float radians)
 {
 	if (_physicsWorld != nullptr)
 		_physicsWorld->prependRotationY(_collider, radians);
-}
-
-void
-bullet::ColliderComponent::lookAt(Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->lookAt(_collider, lookAt, position, up);
 }
 
 void
