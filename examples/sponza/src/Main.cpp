@@ -560,8 +560,6 @@ main(int argc, char** argv)
 	glutSpecialUpFunc(keyUpHandler);
 
 	emscripten_set_main_loop(renderScene, 0, true);
-
-	return 0;
 #else
 	while(!glfwWindowShouldClose(window))
 	{
