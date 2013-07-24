@@ -32,8 +32,8 @@ bullet::Collider::Collider(float						mass,
 						   Vector3::Ptr					inertia):
 	_name(""),
 	_mass(mass),
-	_worldTransform(Matrix4x4::create()->identity()),
-	_scaleCorrection(1.0f),
+	//_worldTransform(Matrix4x4::create()->identity()),
+	//_scaleCorrection(1.0f),
 	_correctionMatrix(Matrix4x4::create()->identity()),
 	//_physicsTransform(Matrix4x4::create()->identity()),
 	//_physicsStartOrientation(Quaternion::create()),
@@ -55,7 +55,7 @@ bullet::Collider::Collider(float						mass,
 	_transformChanged(Signal<Ptr>::create()),
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
 {
-	_worldTransform->identity();
+
 }
 
 void
@@ -88,10 +88,11 @@ bullet::Collider::setAngularFactor(float x, float y, float z)
 	_angularFactor->setTo(x, y, z);
 }
 
+/*
 void
 bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 {
-	/*
+	
 	// uniform scaling assumed
 	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
 
@@ -118,7 +119,7 @@ bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
 	auto rotation		= scalingFreeMatrix->rotationQuaternion();
 	auto translation	= scalingFreeMatrix->translationVector();
 	_worldTransform->initialize(rotation, translation);
-	*/
+	
 }
 
 void
@@ -144,15 +145,18 @@ bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTrans
 
 	transformChanged()->execute(shared_from_this());
 }
+*/
 
+/*
 void
 bullet::Collider::initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsMatrix)
 {
+	
 	// remove the influence of scaling and shear, but record it in order to correct the graphics matrix
 	auto graphicsNoScaleMatrix = Matrix4x4::create();
 	PhysicsWorld::removeScalingShear(graphicsMatrix, _worldTransform, _correctionMatrix);
 
-	/*
+	
 
 	// get the body's position from the translation
 	_physicsStartPosition		= graphicsTransform->translationVector(_physicsStartPosition);
@@ -168,12 +172,14 @@ bullet::Collider::initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graph
 
 	// record the lost scale and shear in the correction matrix
 	_correctionMatrix->copyFrom(decompQR.second);
-	*/
+	
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << _name << "]\tinitialize from graphics matrix\n- correction =\n" << std::to_string(_correctionMatrix) << std::endl;
 #endif // DEBUG_PHYSICS
+	
 }
+*/
 
 void
 bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsTransform)

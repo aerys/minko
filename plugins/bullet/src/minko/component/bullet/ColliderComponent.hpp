@@ -58,7 +58,7 @@ namespace minko
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
-				Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
+				//Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
 				Signal<ColliderPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
 
 			public:
