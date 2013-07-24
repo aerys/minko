@@ -214,8 +214,8 @@ namespace minko
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
-					//btCollisionShapePtr		_bulletCollisionShape;
-					//btMotionStatePtr		_bulletMotionState;
+					btCollisionShapePtr		_bulletCollisionShape;
+					btMotionStatePtr		_bulletMotionState;
 					btCollisionObjectPtr	_bulletCollisionObject;
 
 				public:
