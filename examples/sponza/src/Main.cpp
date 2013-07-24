@@ -154,8 +154,8 @@ renderScene()
 void
 glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 {
-	_rotationY += -(_mousePositionX - x) * .001;
-	_rotationX +=  (_mousePositionY - y) * .001;
+	_rotationY += (_mousePositionX - x) * .005;
+	_rotationX += (_mousePositionY - y) * .005;
 
 	const float limit = 89 * PI / 180;
 
@@ -595,7 +595,8 @@ main(int argc, char** argv)
 				_eye->z() + cosf(_rotationY) * cosf(_rotationX)
 				);
 
-			_cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
+			// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
+			_cameraWorldTransform->view(_eye, _target, Vector3::upAxis());
 
 			auto newEyePos = _cameraWorldTransform->translationVector();
 
