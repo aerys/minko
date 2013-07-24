@@ -242,7 +242,9 @@ OpenGLES2Context::drawTriangles(const unsigned int indexBuffer, const int numTri
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+    //glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+
+    glDrawArrays(GL_TRIANGLES, 0, numTriangles * 3);
 
     checkForErrors();
 }
