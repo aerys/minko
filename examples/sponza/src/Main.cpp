@@ -13,8 +13,6 @@
 #include "minko/MinkoWebGL.hpp"
 #include "GL/glut.h"
 #include "emscripten.h"
-#elif defined __APPLE__
-#include "GLUT/glut.h"
 #else
 #include "GLFW/glfw3.h"
 #endif
@@ -25,35 +23,33 @@
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH        = 1024;
-const float WINDOW_HEIGHT       = 500;
+const float WINDOW_WIDTH		= 1024;
+const float WINDOW_HEIGHT		= 500;
 
 const float CAMERA_LIN_SPEED	= 0.1f;
 const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
-const std::string CAMERA_NAME   = "camera";
+const std::string CAMERA_NAME	= "camera";
 
-bullet::ColliderComponent::Ptr	cameraColliderComp  = nullptr;
-Rendering::Ptr	                rendering           = nullptr;
-auto			                sponzaLighting	    = SponzaLighting::create();
-auto			                mesh			    = scene::Node::create("mesh");
-auto			                group			    = scene::Node::create("group");
-auto			                camera			    = scene::Node::create("camera");
-auto			                root			    = scene::Node::create("root");
-auto                            speed               = 0.f;
-auto                            angSpeed            = 0.f;
-float _rotationX = 0;
-float _rotationY = 0;
-float _mousePositionX = 0;
-float _mousePositionY = 0;
+Rendering::Ptr		rendering			= nullptr;
+auto				sponzaLighting		= SponzaLighting::create();
+auto				mesh				= scene::Node::create("mesh");
+auto				group				= scene::Node::create("group");
+auto				camera				= scene::Node::create("camera");
+auto				root				= scene::Node::create("root");
+auto				speed				= 0.f;
+auto				angSpeed			= 0.f;
+float				_rotationX			= 0;
+float				_rotationY			= 0;
+float				_mousePositionX		= 0;
+float				_mousePositionY		= 0;
 
 Vector3::Ptr					_target					= Vector3::create();
 Vector3::Ptr					_eye					= Vector3::create();
 Matrix4x4::Ptr					_cameraWorldTransform	= Matrix4x4::create();
 bullet::ColliderComponent::Ptr	_cameraColliderComp		= nullptr;
-
-bool _updateCameraRotation = false;
+bool							_updateCameraRotation	= false;
 
 
 #if defined EMSCRIPTEN
@@ -62,37 +58,16 @@ render::WebGLContext::Ptr       context;
 render::OpenGLES2Context::Ptr   context;
 #endif
 
-#ifndef EMSCRIPTEN
+#if defined EMSCRIPTEN
 void
-	glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
-{
-	_rotationY += -(_mousePositionX - x) * .001;
-	_rotationX +=  (_mousePositionY - y) * .001;
-
-	const float limit = 89 * PI / 180;
-
-	if (_rotationX < -limit)
-		_rotationX = -limit;
-	else if (_rotationX > +limit)
-		_rotationX = +limit;
-
-	_mousePositionX = x;
-	_mousePositionY = y;
-
-	_updateCameraRotation = true;
-}
-#endif
-
-#if defined EMSCRIPTEN || defined __APPLE__
-void
-	resizeHandler(int width, int height)
+resizeHandler(int width, int height)
 {
 	context->configureViewport(0, 0, width, height);
 }
 
 void
-	keyDownHandler(int key, int x, int y)
-{	
+keyDownHandler(int key, int x, int y)
+{
 	if (_cameraColliderComp == nullptr)
 	{
 		if (key == GLUT_KEY_UP)
@@ -118,7 +93,7 @@ void
 }
 
 void
-	keyUpHandler(int key, int x, int y)
+keyUpHandler(int key, int x, int y)
 {
 	if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN)
 		speed = 0;
@@ -127,7 +102,7 @@ void
 }
 
 void
-	glutMouseMoveHandler(int x, int y)
+glutMouseMoveHandler(int x, int y)
 {
 	_rotationY += -(_mousePositionX - x) * .005;
 	_rotationX +=  (_mousePositionY - y) * .005;
@@ -146,7 +121,7 @@ void
 }
 
 void
-	renderScene()
+renderScene()
 {
 	if (speed)
 		_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
@@ -174,9 +149,25 @@ void
 	rendering->render();
 
 	glutSwapBuffers();
-#if defined __APPLE__
-	glutPostRedisplay();
-#endif
+}
+#else
+void
+glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
+{
+	_rotationY += -(_mousePositionX - x) * .001;
+	_rotationX +=  (_mousePositionY - y) * .001;
+
+	const float limit = 89 * PI / 180;
+
+	if (_rotationX < -limit)
+		_rotationX = -limit;
+	else if (_rotationX > +limit)
+		_rotationX = +limit;
+
+	_mousePositionX = x;
+	_mousePositionY = y;
+
+	_updateCameraRotation = true;
 }
 #endif
 
@@ -466,7 +457,8 @@ printFramerate(const unsigned int delay = 1)
 	}
 }
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
 	file::MkParser::registerController(
 		"colliderController",
@@ -483,25 +475,18 @@ int main(int argc, char** argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Minko Examples");
+	glutCreateWindow("Sponza Example");
 	glutReshapeFunc(resizeHandler);
 
-	std::cout << "WebGl context created" << std::endl;
+	std::cout << "WebGL context created" << std::endl;
 	context = render::WebGLContext::create();
-#elif defined __APPLE__
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Minko Examples");
-
-	context = render::OpenGLES2Context::create();
 #else
 	glfwInit();
 	auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
-
 	glfwSetCursorPosCallback(window, glfwMouseMoveHandler);
 
+	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
 #endif
 	
@@ -517,10 +502,6 @@ int main(int argc, char** argv)
 	
 #ifdef EMSCRIPTEN
 	sceneManager->assets()->defaultOptions()->includePaths().insert("assets");
-#endif
-
-#ifdef __APPLE__
-	sceneManager->assets()->defaultOptions()->includePaths().insert("../../");
 #endif
 
 #ifdef DEBUG
@@ -581,17 +562,7 @@ int main(int argc, char** argv)
 	emscripten_set_main_loop(renderScene, 0, true);
 
 	return 0;
-#elif defined __APPLE__
-	glutSpecialFunc(keyDownHandler);
-	glutSpecialUpFunc(keyUpHandler);
-	glutMotionFunc(glutMouseMoveHandler);
-	glutDisplayFunc(renderScene);
-
-	glutMainLoop();
-
-	return 0;
 #else
-
 	while(!glfwWindowShouldClose(window))
 	{
 		if (_cameraColliderComp == nullptr)
@@ -657,6 +628,6 @@ int main(int argc, char** argv)
 
 	glfwTerminate();
 
-	exit(EXIT_SUCCESS);
+	std::exit(EXIT_SUCCESS);
 #endif
 }
