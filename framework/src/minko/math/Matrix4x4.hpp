@@ -193,7 +193,7 @@ namespace minko
 				std::vector<float> m = value->_m;
 
 				for (auto i = 0; i < 16; ++i)
-					if (_m[i] != m[i])
+					if (fabsf(_m[i] - m[i]) > 1e-6f)
 						return false;
 
 				return true;

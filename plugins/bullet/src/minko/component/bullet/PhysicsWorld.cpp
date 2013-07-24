@@ -201,15 +201,6 @@ bullet::PhysicsWorld::updateColliders()
 		const btTransform& colliderWorldTrf(btCollider->collisionObject()->getWorldTransform());	
 
 		collider->updateColliderWorldTransform(fromBulletTransform(colliderWorldTrf));
-		if (collider->name == "camera")
-		{
-			const btTransform& toto = colliderWorldTrf;
-			Matrix4x4Ptr tata = fromBulletTransform(toto);
-			std::cout << "PhysicsWorld::updateColliders: " << std::to_string(tata) << std::endl;
-			static int n = 0;
-			if (n++ == 1000)
-				std::exit(666);
-		}
 	}
 }
 
@@ -243,6 +234,26 @@ bullet::PhysicsWorld::forceColliderWorldTransform(Collider::Ptr collider, Matrix
 	it->first->updateColliderWorldTransform(scaleFreeMatrix);
 }
 
+Matrix4x4::Ptr
+bullet::PhysicsWorld::getPhysicsWorldTransform(Collider::Ptr collider) const
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return Matrix4x4::create()->identity();
+
+	return fromBulletTransform(it->second->collisionObject()->getWorldTransform());
+}
+
+void
+bullet::PhysicsWorld::setPhysicsWorldTransform(Collider::Ptr collider, Matrix4x4::Ptr transform) const
+{
+	auto it	= _colliderMap.find(collider);
+	if (it == _colliderMap.end())
+		return;
+
+	it->second->setWorldTransform(transform);
+}
+
 void
 bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr velocity)
 {
@@ -271,16 +282,6 @@ bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
 		return;
 
 	it->second->prependRotationY(radians);
-}
-
-void
-bullet::PhysicsWorld::lookAt(Collider::Ptr collider, Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-	it->second->lookAt(lookAt, position, up);
 }
 
 void
