@@ -72,14 +72,17 @@ namespace minko
 					return colliderComponent;
 				}
 
+				Matrix4x4Ptr
+				getPhysicsWorldTransform() const;
+
+				void
+				setPhysicsWorldTransform(Matrix4x4Ptr);
+
 				void
 				prependLocalTranslation(Vector3Ptr);
 
 				void
 				prependRotationY(float);
-
-				void
-				lookAt(Vector3Ptr lookAt, Vector3Ptr position, Vector3Ptr up);
 
 				void
 				applyRelativeImpulse(Vector3Ptr);

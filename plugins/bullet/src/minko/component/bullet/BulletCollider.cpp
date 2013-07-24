@@ -222,31 +222,13 @@ bullet::PhysicsWorld::BulletCollider::setLinearVelocity(Vector3::Ptr velocity)
 	btRigidCollisionObject->setLinearVelocity(btVector3(velocity->x(), velocity->y(), velocity->z()));
 }
 
-void
-bullet::PhysicsWorld::BulletCollider::lookAt(Vector3::Ptr lookAt, Vector3::Ptr position, Vector3::Ptr up)
-{
-	Matrix4x4::Ptr m = Matrix4x4::create()->lookAt(lookAt, position, up);
-	btTransform bulletTransform;
-
-	// std::cout << std::to_string(m) << std::endl;
-
-	toBulletTransform(m, bulletTransform);
-
-	std::shared_ptr<btRigidBody> btRigidCollisionObject = std::dynamic_pointer_cast<btRigidBody>(_btCollisionObject);
-	btRigidCollisionObject->setWorldTransform(bulletTransform);
-
-	const btTransform& toto = btRigidCollisionObject->getWorldTransform();
-	Matrix4x4Ptr tata = fromBulletTransform(toto);
-	std::cout << "BulletCollider::lookAt: " << std::to_string(tata) << std::endl;
-	// std::exit(666);
-}
-
 void 
 bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
 {
 	btTransform btWorldTransform;
 	toBulletTransform(worldTransform, btWorldTransform);
-	_btMotionState->setWorldTransform(btWorldTransform);
+
+	_btCollisionObject->setWorldTransform(btWorldTransform);
 }
 
 void
