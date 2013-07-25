@@ -68,6 +68,7 @@ resizeHandler(int width, int height)
 void
 keyDownHandler(int key, int x, int y)
 {
+	std::cout << "keyDownHandler: " << key << std::endl;
 	if (_cameraColliderComp == nullptr)
 	{
 		if (key == GLUT_KEY_UP)
@@ -123,26 +124,48 @@ glutMouseMoveHandler(int x, int y)
 void
 renderScene()
 {
-	if (speed)
-		_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
-	// if (angSpeed)
-	//     _cameraColliderComp->prependRotationY(angSpeed);
-
-	if (_updateCameraRotation)
+	if (_cameraColliderComp == nullptr)
 	{
-		_eye = camera->component<Transform>()->transform()->translationVector();
+		if (speed)
+			_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+		if (angSpeed)
+		    _cameraColliderComp->prependRotationY(angSpeed);
+	}
+	else
+	{
+		// the camera has a collider component
+		_cameraWorldTransform = _cameraColliderComp->getPhysicsWorldTransform();
 
-		std::cout << _eye->x() << " " << _eye->y() << std::endl;
+		// move forward/backward
+		if (speed)
+			_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+
+		// look around
+		_eye = _cameraWorldTransform->translationVector();
+
 		_target->setTo(
-			_eye->x() + sin(_rotationY) * cos(_rotationX),
-			_eye->y() + 0, //sin(_rotationX),
-			_eye->z() + cos(_rotationY) * cos(_rotationX)
+			_eye->x() + sinf(_rotationY) * cosf(_rotationX),
+			_eye->y() + sinf(_rotationX),
+			_eye->z() + cosf(_rotationY) * cosf(_rotationX)
 			);
 
-		// camera->component<Transform>()->transform()->view(_eye, _target, Vector3::upAxis());
-		_cameraColliderComp->lookAt(_target, _eye, Vector3::upAxis());
+		// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
+		_cameraWorldTransform->view(_eye, _target, Vector3::upAxis());
 
-		_updateCameraRotation = false;
+		auto newEyePos = _cameraWorldTransform->translationVector();
+
+		_cameraWorldTransform->appendTranslation(
+			_eye->x() - newEyePos->x(),
+			_eye->y() - newEyePos->y(),
+			_eye->z() - newEyePos->z()
+			);
+
+		newEyePos = _cameraWorldTransform->translationVector(newEyePos);
+
+		//camera->component<Transform>()->transform()->copyFrom(_cameraWorldTransform);
+		_cameraColliderComp->setPhysicsWorldTransform(_cameraWorldTransform);
+
+		//_updateCameraRotation = false;
 	}
 
 	sponzaLighting->step();
@@ -558,6 +581,7 @@ main(int argc, char** argv)
 #if defined EMSCRIPTEN
 	glutSpecialFunc(keyDownHandler);
 	glutSpecialUpFunc(keyUpHandler);
+	glutMotionFunc(glutMouseMoveHandler);
 
 	emscripten_set_main_loop(renderScene, 0, true);
 #else
