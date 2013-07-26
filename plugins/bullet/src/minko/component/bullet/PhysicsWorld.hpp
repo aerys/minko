@@ -175,7 +175,7 @@ namespace minko
 
 				static
 				Matrix4x4Ptr
-				fromBulletTransform(const btTransform&);
+				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
 
 				static
 				void
@@ -226,17 +226,6 @@ namespace minko
 
 					btRigidBodyPtr
 					rigidBody() const;
-
-					btDefaultMotionStatePtr
-					defaultMotionState() const;
-
-					inline 
-					btCollisionObjectPtr
-					collisionObject() const
-					{
-						return _bulletCollisionObject;
-					}
-					
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
