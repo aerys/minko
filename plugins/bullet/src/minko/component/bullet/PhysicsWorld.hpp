@@ -77,6 +77,7 @@ namespace minko
 
 			private:
 				ColliderMap										_colliderMap;
+				RenderingPtr									_rendering;
 
 				btBroadphasePtr									_bulletBroadphase;
 				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
@@ -92,8 +93,8 @@ namespace minko
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
 
-				Matrix4x4Ptr				_tempTransform;
-				btTransformPtr				_bulletTempTransform;
+				Matrix4x4Ptr						_tempTransform;
+				btTransformPtr						_bulletTempTransform;
 
 			public:
 				static
@@ -181,7 +182,7 @@ namespace minko
 
 				static
 				Matrix4x4Ptr
-				fromBulletTransform(const btTransform&);
+				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
 
 				static
 				void
@@ -232,17 +233,6 @@ namespace minko
 
 					btRigidBodyPtr
 					rigidBody() const;
-
-					btDefaultMotionStatePtr
-					defaultMotionState() const;
-
-					inline 
-					btCollisionObjectPtr
-					collisionObject() const
-					{
-						return _bulletCollisionObject;
-					}
-					
 
 					void 
 					setWorldTransform(Matrix4x4Ptr);
