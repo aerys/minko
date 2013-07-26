@@ -147,10 +147,13 @@ namespace minko
 				}
 
 				void
+				updateGraphicsTransform(Matrix4x4Ptr);
+
+				void
 				initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsTransform);
 
 				void
-				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsTransform);
+				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsNoScaleTransform);
 
 				//void
 				//setWorldTransform(Matrix4x4Ptr);
@@ -226,7 +229,7 @@ namespace minko
 
 				inline
 				Matrix4x4Ptr
-				correctionMatrix() const
+				correction() const
 				{
 					return _correctionMatrix;
 				}

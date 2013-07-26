@@ -50,15 +50,16 @@ namespace minko
 			protected:
 				Type			_type;
 				float			_margin;
-				float			_localScaling;
+			public:
+				Vector3Ptr		_centerOfMassTranslation;
+				QuaternionPtr	_centerOfMassRotation;
+				Matrix4x4Ptr	_deltaTransform;
+				Matrix4x4Ptr	_deltaTransformInverse;
+			private:
+				Vector3Ptr		_localScaling;
 				Matrix4x4Ptr	_centerOfMassOffset;
 				Matrix4x4Ptr	_centerOfMassOffsetInverse;
 				Matrix4x4Ptr	_physicsToGraphics;
-
-				Matrix4x4Ptr	_centerOfMassTransform;
-				Matrix4x4Ptr	_centerOfMassInverseTransform;
-				Vector3Ptr		_centerOfMassTranslation;
-				QuaternionPtr	_centerOfMassRotation;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -69,27 +70,45 @@ namespace minko
 				virtual
 				~AbstractPhysicsShape()
 				{
+
+				}
+
+				void
+				initialize(Matrix4x4Ptr deltaTransform, Matrix4x4Ptr graphicsStartTransform);
+
+				inline
+				Type
+				type() const
+				{
+					return _type;
+				}
+
+				inline
+				float
+				margin() const
+				{
+					return _margin;
+				}
+
+				inline
+				void
+				margin(float margin)
+				{
+					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
+					_margin	= margin;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
 				}
 
 				inline 
-				float 
+				Vector3Ptr 
 				localScaling() const 
 				{
 					return _localScaling;
 				}
 
-				inline 
 				void 
-				setLocalScaling(float value)
-				{
-					_localScaling = value;
-				}
-
-				void
-				setCenterOfMassOffset(Matrix4x4Ptr, Matrix4x4Ptr modelToWorld = nullptr);
-
-				void
-				initializeCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld);
+				localScaling(float x, float y, float z);
 
 				inline
 				Matrix4x4Ptr
@@ -110,58 +129,6 @@ namespace minko
 				physicsToGraphics() const
 				{
 					return _physicsToGraphics;
-				}
-
-				inline
-				Type
-				type() const
-				{
-					return _type;
-				}
-
-				inline
-				float
-				margin() const
-				{
-					return _margin;
-				}
-
-				inline
-				void
-				setMargin(float margin)
-				{
-					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
-					_margin	= margin;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
-				inline
-				Matrix4x4Ptr
-				centerOfMassTransform() const
-				{
-					return _centerOfMassTransform;
-				}
-
-				inline
-				Matrix4x4Ptr
-				centerOfMassInverseTransform() const
-				{
-					return _centerOfMassInverseTransform;
-				}
-
-				inline
-				Vector3Ptr
-				centerOfMassTranslation() const
-				{
-					return _centerOfMassTranslation;
-				}
-
-				inline
-				QuaternionPtr
-				centerOfMassRotation() const
-				{
-					return _centerOfMassRotation;
 				}
 
 				inline
