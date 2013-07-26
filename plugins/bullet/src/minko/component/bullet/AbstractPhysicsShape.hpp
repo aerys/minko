@@ -50,16 +50,9 @@ namespace minko
 			protected:
 				Type			_type;
 				float			_margin;
-			public:
-				Vector3Ptr		_centerOfMassTranslation;
-				QuaternionPtr	_centerOfMassRotation;
 				Matrix4x4Ptr	_deltaTransform;
 				Matrix4x4Ptr	_deltaTransformInverse;
-			private:
 				Vector3Ptr		_localScaling;
-				Matrix4x4Ptr	_centerOfMassOffset;
-				Matrix4x4Ptr	_centerOfMassOffsetInverse;
-				Matrix4x4Ptr	_physicsToGraphics;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -112,23 +105,16 @@ namespace minko
 
 				inline
 				Matrix4x4Ptr
-				centerOfMassOffset() const
+				deltaTransform() const
 				{
-					return _centerOfMassOffset;
+					return _deltaTransform;
 				}
 
 				inline
 				Matrix4x4Ptr
-				centerOfMassOffsetInverse() const
+				deltaTransformInverse() const
 				{
-					return _centerOfMassOffsetInverse;
-				}
-
-				inline
-				Matrix4x4Ptr
-				physicsToGraphics() const
-				{
-					return _physicsToGraphics;
+					return _deltaTransformInverse;
 				}
 
 				inline

@@ -155,9 +155,6 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << collider->name() << "]\tadd physics body" << std::endl;
 
-	//btTransform bulletTransform;
-	//bulletCollider->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
-	//print(std::cout << "rigidbody.motionstate.worldTransform =\n", bulletTransform) << std::endl;
 	print(std::cout << "rigidbody.worldTransform =\n", bulletCollider->rigidBody()->getWorldTransform()) << std::endl;
 #endif // DEBUG_PHYSICS
 }
@@ -169,7 +166,7 @@ bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 	if (it == _colliderMap.end())
 		throw std::invalid_argument("collider");
 
-	_bulletDynamicsWorld->removeCollisionObject(it->second->collisionObject().get());
+	_bulletDynamicsWorld->removeCollisionObject(it->second->rigidBody().get());
 
 	_colliderMap.erase(it);
 }
@@ -204,43 +201,27 @@ bullet::PhysicsWorld::update(float timeStep)
 void
 bullet::PhysicsWorld::updateColliders()
 {
+	auto graphicsTransform	= Matrix4x4::create();
+	auto physicsTransform	= Matrix4x4::create(); 
+
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
-		Collider::Ptr		collider(it->first);
+		Collider::Ptr	collider(it->first);
 		if (collider->isStatic())
 			continue;
 
-		Matrix4x4::Ptr physicsNoScaleTransform = fromBulletTransform(it->second->rigidBody()->getWorldTransform());
-		collider->updateGraphicsTransformFromPhysics(physicsNoScaleTransform);
+		fromBulletTransform(
+			it->second->rigidBody()->getWorldTransform(),
+			physicsTransform
+		);
 
+		graphicsTransform
+			->copyFrom(collider->correction())
+			->append(collider->shape()->deltaTransformInverse())
+			->append(physicsTransform);
 
-		
-	//	BulletCollider::Ptr		bulletCollider(it->second);
-	//	btDefaultMotionState*	bulletMotionState = dynamic_cast<btDefaultMotionState*>(it->second->rigidBody()->getMotionState());
-	//	if (bulletMotionState)
-	//	{
-	//		Matrix4x4::Ptr graphicsNoScaleTransform = fromBulletTransform(bulletMotionState->m_graphicsWorldTrans);
-
-	//		collider->updateGraphicsTransform(graphicsNoScaleTransform);
-
-	//		if(collider->name() == "dynamic")
-	//		{
-	//			print(std::cout << "updateColliders:m_graphicsWorldTrans =\n", graphicsNoScaleTransform) << std::endl;
-	//		}
-	//		/*
-	//		const btTransform& bulletPhysicsTransform(bulletCollider->collisionObject()->getWorldTransform());	
-	//
-	//		std::cout << "updateColliders" << std::endl;
-	//		print(std::cout << "- rigidbody.worldTransform =\n", bulletPhysicsTransform) << std::endl;
-	//		btTransform bulletTransform;
-	//		bulletCollider->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
-	//		print(std::cout << "- rigidbody.motionstate.worldTransform =\n", bulletTransform) << std::endl;
-	//
-	//		collider->updateGraphicsTransformFromPhysics(fromBulletTransform(bulletPhysicsTransform));
-	//		//collider->updateGraphicsTransformFromPhysics(fromBulletTransform(bulletTransform));
-	//		*/
-	//	}
-	
+		collider->graphicsWorldTransformChanged()
+			->execute(collider, graphicsTransform);
 	}
 }
 
@@ -265,37 +246,22 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderPtr collider,
 
 	_tempTransform
 		->copyFrom(graphicsNoScaleTransform)->invert()
-		->append(collider->shape()->_deltaTransform)
+		->append(collider->shape()->deltaTransform())
 		->append(graphicsNoScaleTransform)
 		->invert();
-
-	/*
-	_tempTransform
-		->copyFrom(graphicsNoScaleTransform)->invert()
-		->append(collider->shape()->_centerOfMassRotation)
-		->append(graphicsNoScaleTransform)
-		->appendTranslation(collider->shape()->_centerOfMassTranslation)
-		->invert();
-		*/
 
 	toBulletTransform(
 		_tempTransform, 
 		bulletMotionState->m_centerOfMassOffset
 	);
 
-	/*
-	toBulletTransform(
-		graphicsNoScaleTransform,
-		bulletMotionState->m_startWorldTrans
-	);
-	*/
-
+	// update the motion state's world transform
 	toBulletTransform(
 		graphicsNoScaleTransform,
 		bulletMotionState->m_graphicsWorldTrans
 	);
 
-	// synchronize with bullet
+	// synchronize bullet
 	bulletMotionState->getWorldTransform(*_bulletTempTransform);
 
 	it->second->rigidBody()->setWorldTransform(*_bulletTempTransform);
@@ -306,32 +272,7 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderPtr collider,
 	print(std::cout << "- scalefree(graphics) = \n", graphicsNoScaleTransform) << std::endl;
 	print(std::cout << "- motionstate.offset = \n", bulletMotionState->m_centerOfMassOffset) << std::endl;
 	print(std::cout << "- rigidbody.worldtransform = \n", it->second->rigidBody()->getWorldTransform()) << std::endl;
-	print(std::cout << "- test physics = \n", _tempTransform) << std::endl;
 #endif // DEBUG_PHYSICS
-
-	/*
-	_tempTransform
-		->copyFrom(collider->shape()->_centerOfMassRotation->toMatrix())
-		->append(graphicsNoScaleTransform)
-		->appendTranslation(collider->shape()->_centerOfMassTranslation);
-
-	toBulletTransform(_tempTransform, *_bulletTempTransform); // physicsNoScaleTransform
-
-	it->second->rigidBody()->setWorldTransform(*_bulletTempTransform);
-	*/
-
-	/*
-	btDefaultMotionState* bulletMotionState = dynamic_cast<btDefaultMotionState*>(it->second->rigidBody()->getMotionState());
-	if (bulletMotionState)
-	{
-		//bulletMotionState->m_startWorldTrans	= bulletTransform;
-		bulletMotionState->m_graphicsWorldTrans	= bulletTransform;
-	
-		// synchronize physics
-		bulletMotionState->getWorldTransform(bulletTransform);
-		it->second->rigidBody()->setWorldTransform(bulletTransform);
-	}
-	*/
 }
 
 void
@@ -427,19 +368,23 @@ bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input,
 
 /*static*/
 Matrix4x4::Ptr
-bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform)
+bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform,
+										  Matrix4x4::Ptr output)
 {
 	auto basis			= transform.getBasis();
 	auto translation	= transform.getOrigin();
 
-	Matrix4x4::Ptr	output = Matrix4x4::create();
-	output->initialize(
+	Matrix4x4::Ptr ret = output == nullptr
+		? Matrix4x4::create()
+		: output;
+
+	ret->initialize(
 		basis[0][0], basis[0][1], basis[0][2], translation[0],
 		basis[1][0], basis[1][1], basis[1][2], translation[1],
 		basis[2][0], basis[2][1], basis[2][2], translation[2],
 		0.0f, 0.0f, 0.0f, 1.0f
 		);
-	return output;
+	return ret;
 }
 
 /*static*/
