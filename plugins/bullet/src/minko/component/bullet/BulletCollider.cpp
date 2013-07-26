@@ -47,14 +47,6 @@ bullet::PhysicsWorld::BulletCollider::rigidBody() const
 	return std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
 }
 
-std::shared_ptr<btDefaultMotionState>
-bullet::PhysicsWorld::BulletCollider::defaultMotionState() const
-{
-	btDefaultMotionState* motionState = dynamic_cast<btDefaultMotionState*>(rigidBody()->getMotionState());
-
-	return std::shared_ptr<btDefaultMotionState>(motionState);
-}
-
 void
 bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 {
@@ -110,6 +102,7 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsSh
 		shape->localScaling()->y(), 
 		shape->localScaling()->z()
 	));
+
 	bulletShape->setMargin(shape->margin());
 
 	return bulletShape;
@@ -125,6 +118,7 @@ std::shared_ptr<btCollisionShape>
 bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box) const
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
+
 	return std::shared_ptr<btBoxShape>(new btBoxShape(halfExtents));
 }
 
@@ -138,22 +132,13 @@ std::shared_ptr<btCollisionShape>
 bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder) const
 {
 	btVector3 halfExtents (cylinder->halfExtentX(), cylinder->halfExtentY(), cylinder->halfExtentZ());
+
 	return std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
 }
 
 std::shared_ptr<btMotionState>
 bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider) const
 {
-	// collider's center-of-mass offset transform
-	btTransform bulletOffsetTransform;
-	toBulletTransform(collider->shape()->centerOfMassOffset(), bulletOffsetTransform);
-
-#ifdef DEBUG_PHYSICS
-	std::cout << "[" << collider->name() << "]\tinit motion state" << std::endl;
-	print(std::cout << "- centerOfMassOffset =\n", bulletOffsetTransform) << std::endl;
-	print(std::cout << "- inverse(centerOfMassOffset) = \n", collider->shape()->centerOfMassOffsetInverse()) << std::endl;
-#endif // DEBUG_PHYSICS
-
 	return std::shared_ptr<btMotionState>(new btDefaultMotionState(
 		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f)),
 		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f))
