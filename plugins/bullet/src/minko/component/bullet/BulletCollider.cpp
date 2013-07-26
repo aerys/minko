@@ -47,6 +47,13 @@ bullet::PhysicsWorld::BulletCollider::rigidBody() const
 	return std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
 }
 
+std::shared_ptr<btDefaultMotionState>
+bullet::PhysicsWorld::BulletCollider::defaultMotionState() const
+{
+	btDefaultMotionState* motionState = dynamic_cast<btDefaultMotionState*>(rigidBody()->getMotionState());
+
+	return std::shared_ptr<btDefaultMotionState>(motionState);
+}
 
 void
 bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
@@ -54,149 +61,109 @@ bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
 
-	initializeCollisionShape(collider->shape());
+	std::shared_ptr<btCollisionShape>	bulletCollisionShape	= initializeCollisionShape(collider->shape());	
+	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(collider);
 
 #ifdef DEBUG_PHYSICS
-	std::cout << "[" << collider->name() << "]\tinit collision shape\n\t- local scaling = " << _bulletCollisionShape->getLocalScaling()[0] 
-	<< "\n\t- margin = " << _bulletCollisionShape->getMargin() << std::endl;
+	std::cout << "[" << collider->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0] 
+	<< "\n\t- margin = " << bulletCollisionShape->getMargin() << std::endl;
 #endif // DEBUG_PHYSICS
 
-	initializeMotionState(collider);
-	initializeCollisionObject(collider);
+	initializeCollisionObject(
+		collider, 
+		bulletCollisionShape, 
+		bulletMotionState
+	);
 }
 
-void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsShape::Ptr shape)
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsShape::Ptr shape) const
 {
 	if (shape == nullptr)
 		throw std::invalid_argument("shape");
 
+	std::shared_ptr<btCollisionShape> bulletShape = nullptr;
 	switch(shape->type())
 	{
 	case AbstractPhysicsShape::SPHERE:
-		initializeSphereShape(std::dynamic_pointer_cast<SphereShape>(shape));
+		bulletShape = initializeSphereShape(std::dynamic_pointer_cast<SphereShape>(shape));
 		break;
 
 	case AbstractPhysicsShape::BOX:
-		initializeBoxShape(std::dynamic_pointer_cast<BoxShape>(shape));
+		bulletShape = initializeBoxShape(std::dynamic_pointer_cast<BoxShape>(shape));
 		break;
 
 	case AbstractPhysicsShape::CONE:
-		initializeConeShape(std::dynamic_pointer_cast<ConeShape>(shape));
+		bulletShape = initializeConeShape(std::dynamic_pointer_cast<ConeShape>(shape));
 		break;
 
 	case AbstractPhysicsShape::CYLINDER:
-		initializeCylinderShape(std::dynamic_pointer_cast<CylinderShape>(shape));
+		bulletShape = initializeCylinderShape(std::dynamic_pointer_cast<CylinderShape>(shape));
 		break;
 
 	default:
 		throw std::logic_error("Unsupported physics shape");
 	}
 
-	_bulletCollisionShape->setLocalScaling(btVector3(
-		shape->localScaling(), 
-		shape->localScaling(), 
-		shape->localScaling()
+	bulletShape->setLocalScaling(btVector3(
+		shape->localScaling()->x(), 
+		shape->localScaling()->y(), 
+		shape->localScaling()->z()
 	));
-	_bulletCollisionShape->setMargin(shape->margin());
+	bulletShape->setMargin(shape->margin());
+
+	return bulletShape;
 }
 
-void 
-bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere)
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeSphereShape(SphereShape::Ptr sphere) const
 {
-	_bulletCollisionShape	= std::shared_ptr<btSphereShape>(new btSphereShape(sphere->radius()));
+	return std::shared_ptr<btSphereShape>(new btSphereShape(sphere->radius()));
 }
 
-void 
-bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box)
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeBoxShape(BoxShape::Ptr box) const
 {
 	btVector3 halfExtents (box->halfExtentX(), box->halfExtentY(), box->halfExtentZ());
-	_bulletCollisionShape	= std::shared_ptr<btBoxShape>(new btBoxShape(halfExtents));
+	return std::shared_ptr<btBoxShape>(new btBoxShape(halfExtents));
 }
 
-void 
-bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone)
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeConeShape(ConeShape::Ptr cone) const
 {
-	_bulletCollisionShape	= std::shared_ptr<btConeShape>(new btConeShape(cone->radius(), cone->height()));
+	return std::shared_ptr<btConeShape>(new btConeShape(cone->radius(), cone->height()));
 }
 
-void
-bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder)
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr cylinder) const
 {
 	btVector3 halfExtents (cylinder->halfExtentX(), cylinder->halfExtentY(), cylinder->halfExtentZ());
-	_bulletCollisionShape	= std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
+	return std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
 }
 
-void
-bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider)
+std::shared_ptr<btMotionState>
+bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider) const
 {
-	// collider's starting world transform
-	Matrix4x4Ptr startWorld = Matrix4x4::create()
-		->copyFrom(collider->worldTransform());
-		//->appendTranslation(collider->shape()->centerOfMassTranslation()->x(),
-		//					collider->shape()->centerOfMassTranslation()->y(),
-		//					collider->shape()->centerOfMassTranslation()->z());
-
-	btTransform bulletStartTransform;
-	toBulletTransform(startWorld, bulletStartTransform);
-
 	// collider's center-of-mass offset transform
 	btTransform bulletOffsetTransform;
-
-	Quaternion::Ptr offRotation = collider->shape()->centerOfMassInverseTransform()->rotationQuaternion();
-	Vector3::Ptr	offTransl = collider->shape()->centerOfMassInverseTransform()->translationVector();
-
-	/*
-	Matrix4x4::Ptr	offTransf = Matrix4x4::create()
-		->copyFrom(startWorld)->invert()
-		->append(offRotation)
-		->append(startWorld)
-		->appendTranslation(offTransl)
-		->invert();
-		*/
-
-	toBulletTransform(
-		collider->shape()->centerOfMassOffset(),
-		bulletOffsetTransform
-	);
-
-	/*
-	auto	offsetTranslation	= Vector3::create(0.f, 0.f, 0.f);
-	auto	offsetRotation		= collider->shape()->centerOfMassRotation();
-
-	btTransform bulletOffsetTransform;
-	toBulletTransform(
-		collider->shape()->centerOfMassRotation(),
-		collider->shape()->centerOfMassTranslation(),
-		bulletOffsetTransform
-	);
-	*/
+	toBulletTransform(collider->shape()->centerOfMassOffset(), bulletOffsetTransform);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << collider->name() << "]\tinit motion state" << std::endl;
-	print(std::cout << "- startTrans =\n", bulletStartTransform) << std::endl;
 	print(std::cout << "- centerOfMassOffset =\n", bulletOffsetTransform) << std::endl;
+	print(std::cout << "- inverse(centerOfMassOffset) = \n", collider->shape()->centerOfMassOffsetInverse()) << std::endl;
 #endif // DEBUG_PHYSICS
 
-
-	_bulletMotionState	= std::shared_ptr<btMotionState>(new btDefaultMotionState(
-		btTransform(),
-		bulletOffsetTransform
-		));
-
-	/*
-	auto worldTransform = Matrix4x4::create()
-		->copyFrom(collider->shape()->centerOfMassOffsetInverse())
-		->append(collider->worldTransform());
-
-	setWorldTransform(worldTransform);
-	*/
-//	toBulletTransform(worldTransform, bulletStartTransform);
-//	_bulletMotionState->setWorldTransform(bulletStartTransform);
+	return std::shared_ptr<btMotionState>(new btDefaultMotionState(
+		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f)),
+		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f))
+	));
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider,
+																std::shared_ptr<btCollisionShape> bulletCollisionShape, 
+																std::shared_ptr<btMotionState> bulletMotionState) 
 {
 	// only rigid objects are considerered for the moment
 
@@ -204,7 +171,7 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 	if (collider->inertia() == nullptr)
 	{
 		if (collider->mass() > 0.0f)
-			_bulletCollisionShape->calculateLocalInertia(collider->mass(), inertia);
+			bulletCollisionShape->calculateLocalInertia(collider->mass(), inertia);
 	}
 	else
 	{
@@ -216,8 +183,8 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 	// construction of a new rigid collision object
 	auto info = btRigidBody::btRigidBodyConstructionInfo(
 		collider->mass(),
-		_bulletMotionState.get(),
-		_bulletCollisionShape.get(),
+		bulletMotionState.get(),
+		bulletCollisionShape.get(),
 		inertia
 	);
 	info.m_linearDamping			= collider->linearDamping();
@@ -257,6 +224,8 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr co
 		: ACTIVE_TAG
 	);
 
+	_bulletCollisionShape	= bulletCollisionShape;
+	_bulletMotionState		= bulletMotionState;
 	_bulletCollisionObject	= bulletRigidBody;
 }
 
@@ -268,23 +237,32 @@ bullet::PhysicsWorld::BulletCollider::setLinearVelocity(Vector3::Ptr velocity)
 }
 
 void 
-bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTransform)
+bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr physicsNoScaleTransform)
 {
-	btTransform bulletTransform;
-	toBulletTransform(worldTransform, bulletTransform);
-
 #ifdef DEBUG_PHYSICS
-	std::cout << "BulletCollider::setWorldTransform\n" << std::to_string(worldTransform) << std::endl;
+	const float scaling = powf(fabsf(physicsNoScaleTransform->determinant3x3()), 1.0f/3.0f);
+	if (fabsf(scaling - 1.0f) > 1e-3f)
+		throw std::logic_error("World transforms sent to Bullet must not contain any scaling.");
 #endif // DEBUG_PHYSICS
 
+	btTransform bulletTransform;
+	toBulletTransform(physicsNoScaleTransform, bulletTransform);
+
 	auto bulletRigidBody = rigidBody();
-	if (bulletRigidBody == nullptr)
-		_bulletMotionState->setWorldTransform(bulletTransform);
-	else
+	if (bulletRigidBody != nullptr)
 	{
+
+#ifdef DEBUG_PHYSICS
+	PhysicsWorld::print(std::cout << "BulletCollider::setWorldTransform\n-physicsTrf = \n", bulletTransform) << std::endl;
+#endif // DEBUG_PHYSICS
+
 		bulletRigidBody->getMotionState()->setWorldTransform(bulletTransform);
 
 		bulletRigidBody->getMotionState()->getWorldTransform(bulletTransform);
+#ifdef DEBUG_PHYSICS
+	PhysicsWorld::print(std::cout << "BulletCollider::setWorldTransform\n-motionstate.worldTrf = \n", bulletTransform) << std::endl;
+#endif // DEBUG_PHYSICS
+
 		bulletRigidBody->setWorldTransform(bulletTransform);
 	}
 }
@@ -292,7 +270,7 @@ bullet::PhysicsWorld::BulletCollider::setWorldTransform(Matrix4x4::Ptr worldTran
 void
 bullet::PhysicsWorld::BulletCollider::applyRelativeImpulse(Vector3::Ptr relativeImpulse)
 {
-	std::shared_ptr<btRigidBody> bulletRigidBody = std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
+	auto bulletRigidBody = rigidBody();
 
 	btVector3 btRelImpulse(relativeImpulse->x(), relativeImpulse->y(), relativeImpulse->z());
 
@@ -305,7 +283,7 @@ bullet::PhysicsWorld::BulletCollider::applyRelativeImpulse(Vector3::Ptr relative
 void
 bullet::PhysicsWorld::BulletCollider::prependLocalTranslation(Vector3::Ptr relTranslation)
 {
-	std::shared_ptr<btRigidBody> bulletRigidBody = std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
+	auto bulletRigidBody = rigidBody();
 
 	btVector3 btRelTranslation(relTranslation->x(), relTranslation->y(), relTranslation->z());
 	btVector3 btTranslation = bulletRigidBody->getWorldTransform().getBasis() * btRelTranslation;
@@ -322,7 +300,7 @@ bullet::PhysicsWorld::BulletCollider::prependRotationY(float radians)
 {
 	btMatrix3x3	btRotation (btQuaternion(btVector3(0.0f, 1.0f, 0.0f), radians));
 
-	std::shared_ptr<btRigidBody> bulletRigidBody = std::dynamic_pointer_cast<btRigidBody>(_bulletCollisionObject);
+	auto bulletRigidBody = rigidBody();
 
 	btTransform btNewTransform;
 	btNewTransform.setBasis(bulletRigidBody->getWorldTransform().getBasis() * btRotation);
