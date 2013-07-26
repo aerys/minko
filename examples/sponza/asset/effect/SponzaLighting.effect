@@ -48,8 +48,10 @@
 
 	"passes"		: [{
 		"vertexShader"	: "
-			precision mediump float;
-		
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+			
 			attribute vec3	position;
 			
 			attribute vec3	normal;
@@ -98,8 +100,10 @@
 			}
 		",
 		"fragmentShader"	: "
-			precision mediump float;
-
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+			
 			struct Material {
 				vec4		diffuseColor;
 				vec3		specular;
