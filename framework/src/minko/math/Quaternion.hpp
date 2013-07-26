@@ -103,6 +103,9 @@ namespace minko
 			identity();
 
 			Ptr
+			invert();
+
+			Ptr
 			fromMatrix(Matrix4x4ConstPtr);
 
 			Matrix4x4Ptr
