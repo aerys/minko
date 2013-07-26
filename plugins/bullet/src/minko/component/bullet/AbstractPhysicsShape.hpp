@@ -50,14 +50,16 @@ namespace minko
 			protected:
 				Type			_type;
 				float			_margin;
-				float			_localScaling;
-				Matrix4x4Ptr	_centerOfMassOffset;
-				Matrix4x4Ptr	_physicsToGraphics;
-
-				Matrix4x4Ptr	_centerOfMassTransform;
-				Matrix4x4Ptr	_centerOfMassInverseTransform;
+			public:
 				Vector3Ptr		_centerOfMassTranslation;
 				QuaternionPtr	_centerOfMassRotation;
+				Matrix4x4Ptr	_deltaTransform;
+				Matrix4x4Ptr	_deltaTransformInverse;
+			private:
+				Vector3Ptr		_localScaling;
+				Matrix4x4Ptr	_centerOfMassOffset;
+				Matrix4x4Ptr	_centerOfMassOffsetInverse;
+				Matrix4x4Ptr	_physicsToGraphics;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -68,41 +70,11 @@ namespace minko
 				virtual
 				~AbstractPhysicsShape()
 				{
-				}
 
-				inline 
-				float 
-				localScaling() const 
-				{
-					return _localScaling;
-				}
-
-				inline 
-				void 
-				setLocalScaling(float value)
-				{
-					_localScaling = value;
 				}
 
 				void
-				setCenterOfMassOffset(Matrix4x4Ptr, Matrix4x4Ptr modelToWorld = nullptr);
-
-				void
-				initializeCenterOfMassOffset(Matrix4x4Ptr deltaMatrix, Matrix4x4Ptr modelToWorld);
-
-				inline
-				Matrix4x4Ptr
-				centerOfMassOffset() const
-				{
-					return _centerOfMassOffset;
-				}
-
-				inline
-				Matrix4x4Ptr
-				physicsToGraphics() const
-				{
-					return _physicsToGraphics;
-				}
+				initialize(Matrix4x4Ptr deltaTransform, Matrix4x4Ptr graphicsStartTransform);
 
 				inline
 				Type
@@ -120,7 +92,7 @@ namespace minko
 
 				inline
 				void
-				setMargin(float margin)
+				margin(float margin)
 				{
 					const bool needsUpdate	= fabsf(margin - _margin) > 1e-6f;
 					_margin	= margin;
@@ -128,32 +100,35 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
-				inline
-				Matrix4x4Ptr
-				centerOfMassTransform() const
+				inline 
+				Vector3Ptr 
+				localScaling() const 
 				{
-					return _centerOfMassTransform;
+					return _localScaling;
 				}
+
+				void 
+				localScaling(float x, float y, float z);
 
 				inline
 				Matrix4x4Ptr
-				centerOfMassInverseTransform() const
+				centerOfMassOffset() const
 				{
-					return _centerOfMassInverseTransform;
+					return _centerOfMassOffset;
 				}
 
 				inline
-				Vector3Ptr
-				centerOfMassTranslation() const
+				Matrix4x4Ptr
+				centerOfMassOffsetInverse() const
 				{
-					return _centerOfMassTranslation;
+					return _centerOfMassOffsetInverse;
 				}
 
 				inline
-				QuaternionPtr
-				centerOfMassRotation() const
+				Matrix4x4Ptr
+				physicsToGraphics() const
 				{
-					return _centerOfMassRotation;
+					return _physicsToGraphics;
 				}
 
 				inline
