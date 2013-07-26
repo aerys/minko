@@ -54,11 +54,31 @@ namespace minko
 					return _halfExtentX;
 				}
 
+				inline
+				void
+				halfExtentX(float halfExtentX)
+				{
+					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
+					_halfExtentX	= halfExtentX;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
+				}
+
 				inline 
 				float 
 				halfExtentY() const
 				{
 					return _halfExtentY;
+				}
+
+				inline
+				void
+				halfExtentY(float halfExtentY)
+				{
+					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
+					_halfExtentY	= halfExtentY;
+					if (needsUpdate)
+						shapeChanged()->execute(shared_from_this());
 				}
 
 				inline 
@@ -70,27 +90,7 @@ namespace minko
 
 				inline
 				void
-				setHalfExtentX(float halfExtentX)
-				{
-					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
-					_halfExtentX	= halfExtentX;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
-				inline
-				void
-				setHalfExtentY(float halfExtentY)
-				{
-					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
-					_halfExtentY	= halfExtentY;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
-
-				inline
-				void
-				setHalfExtentZ(float halfExtentZ)
+				halfExtentZ(float halfExtentZ)
 				{
 					const bool needsUpdate	= fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
 					_halfExtentZ	= halfExtentZ;

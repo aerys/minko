@@ -29,6 +29,7 @@ class btConstraintSolver;
 class btDispatcher;
 class btCollisionShape;
 class btMotionState;
+class btDefaultMotionState;
 class btCollisionObject;
 class btTransform;
 class btRigidBody;
@@ -62,6 +63,7 @@ namespace minko
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
 
+				typedef std::shared_ptr<btTransform>				btTransformPtr;
 				typedef std::shared_ptr<btBroadphaseInterface>		btBroadphasePtr;
 				typedef std::shared_ptr<btCollisionConfiguration>	btCollisionConfigurationPtr;
 				typedef std::shared_ptr<btConstraintSolver>			btConstraintSolverPtr;
@@ -89,6 +91,9 @@ namespace minko
 				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
+
+				Matrix4x4Ptr				_tempTransform;
+				btTransformPtr				_bulletTempTransform;
 
 			public:
 				static
@@ -118,17 +123,10 @@ namespace minko
 				update(float timeStep = 1.0f/60.0f);
 
 				void
+				synchronizePhysicsWithGraphics(ColliderPtr, Matrix4x4Ptr);
+
+				void
 				setPhysicsWorldMatrix(ColliderPtr, Matrix4x4Ptr);
-
-				void
-				setPhysicsTransformFromCollider(ColliderPtr);
-
-				/*
-				void
-				setWorldTransformFromCollider(ColliderPtr);
-				*/
-				void
-				forceColliderWorldTransform(ColliderPtr, Matrix4x4Ptr);
 
 				Matrix4x4Ptr
 				getPhysicsWorldTransform(ColliderPtr) const;
@@ -151,6 +149,14 @@ namespace minko
 				static
 				Matrix4x4Ptr
 				removeScalingShear(Matrix4x4Ptr, Matrix4x4Ptr output = nullptr, Matrix4x4Ptr correction = nullptr);
+
+				static
+				std::ostream&
+				print(std::ostream&, const btTransform&);
+
+				static
+				std::ostream&
+				print(std::ostream&, Matrix4x4Ptr);
 
 			private:
 				PhysicsWorld();
@@ -210,6 +216,7 @@ namespace minko
 
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
+					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
 					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
@@ -226,21 +233,8 @@ namespace minko
 					btRigidBodyPtr
 					rigidBody() const;
 
-					/*
-					inline
-					btCollisionShapePtr
-					collisionShape() const
-					{
-						return _bulletCollisionShape;
-					}
-
-					inline
-					btMotionStatePtr
-					motionState() const
-					{
-						return _bulletMotionState;
-					}
-					*/
+					btDefaultMotionStatePtr
+					defaultMotionState() const;
 
 					inline 
 					btCollisionObjectPtr
