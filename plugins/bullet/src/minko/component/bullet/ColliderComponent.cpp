@@ -158,7 +158,7 @@ bullet::ColliderComponent::initializeFromNode(Node::Ptr node)
 		return;
 	}
 
-	_collider->setName(node->name());
+	_collider->name(node->name());
 
 	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
 	_physicsWorld->addChild(_collider);
@@ -184,7 +184,7 @@ bullet::ColliderComponent::synchronizePhysicsWithGraphics()
 	);
 
 	// record the lost scaling and shear of the graphics transform
-	_collider->setCorrectionMatrix(correction);
+	_collider->correction(correction);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << _collider->name() << "]\tsynchro graphics->physics" << std::endl;
@@ -193,11 +193,6 @@ bullet::ColliderComponent::synchronizePhysicsWithGraphics()
 #endif // DEBUG_PHYSICS
 
 	_physicsWorld->synchronizePhysicsWithGraphics(_collider, graphicsNoScaleTransform);
-
-
-	// must account for possible collision shape offsets
-	//graphicsNoScaleTransform->prepend(_collider->shape()->centerOfMassOffsetInverse());
-	//_physicsWorld->setPhysicsWorldMatrix(_collider, graphicsNoScaleTransform);
 }
 
 void
