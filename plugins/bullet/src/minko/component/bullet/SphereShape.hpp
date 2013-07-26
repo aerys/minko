@@ -54,7 +54,7 @@ namespace minko
 
 				inline
 				void
-				setRadius(float radius)
+				radius(float radius)
 				{
 					const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
 					_radius	= radius;

@@ -24,7 +24,7 @@ using namespace minko;
 using namespace minko::math;
 
 Quaternion::Ptr
-	Quaternion::identity()
+Quaternion::identity()
 {
 	_i = _j = _k = 0.0f;
 	_r = 1.0f;
@@ -34,7 +34,7 @@ Quaternion::Ptr
 
 
 Quaternion::Ptr
-	Quaternion::initialize(float radians, Vector3::Ptr axis)
+Quaternion::initialize(float radians, Vector3::Ptr axis)
 {
 	const float x		= axis->x();
 	const float y		= axis->y();
@@ -51,22 +51,22 @@ Quaternion::Ptr
 }
 
 float
-	Quaternion::lengthSquared() const
+Quaternion::lengthSquared() const
 {
 	return _i*_i + _j*_j + _k*_k + _r*_r;
 }
 
 float 
-	Quaternion::length() const
+Quaternion::length() const
 {
 	return sqrtf(lengthSquared());
 }
 
 Quaternion::Ptr
-	Quaternion::normalize()
+Quaternion::normalize()
 {
 	const float l = length();
-	if (l > 0.0f)
+	if (l > 1e-6f)
 	{
 		const float invLength = 1.0f/l;
 		_i *= invLength;
@@ -79,7 +79,18 @@ Quaternion::Ptr
 }
 
 Quaternion::Ptr
-	Quaternion::fromMatrix(Matrix4x4ConstPtr matrix)
+Quaternion::invert()
+{
+	normalize();
+	_i = -_i;
+	_j = -_j;
+	_k = -_k;
+
+	return shared_from_this();
+}
+
+Quaternion::Ptr
+Quaternion::fromMatrix(Matrix4x4ConstPtr matrix)
 {
 	const float det3x3	= matrix->determinant3x3();
 	if (fabsf(fabsf(det3x3) - 1.0f) > 1e-3f)
@@ -147,7 +158,7 @@ Quaternion::Ptr
 }
 
 Matrix4x4::Ptr
-	Quaternion::toMatrix(Matrix4x4::Ptr output)const
+Quaternion::toMatrix(Matrix4x4::Ptr output)const
 {
 	if (fabsf(length() - 1.0f) > 1e-3f)
 		throw std::logic_error("Quaternion must be normalized prior to its conversion to a rotation matrix.");

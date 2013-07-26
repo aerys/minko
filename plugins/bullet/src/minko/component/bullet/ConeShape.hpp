@@ -54,15 +54,8 @@ namespace minko
 				}
 
 				inline
-				float
-				height() const
-				{
-					return _height;
-				}
-
-				inline
 				void
-				setRadius(float radius)
+				radius(float radius)
 				{
 					const bool needsUpdate	= fabsf(radius - _radius) > 1e-6f;
 					_radius	= radius;
@@ -71,8 +64,15 @@ namespace minko
 				}
 
 				inline
+				float
+				height() const
+				{
+					return _height;
+				}
+
+				inline
 				void
-				setHeight(float height)
+				height(float height)
 				{
 					const bool needsUpdate	= fabsf(height - _height) > 1e-6f;
 					_height	= height;
