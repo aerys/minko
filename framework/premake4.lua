@@ -1,14 +1,52 @@
--- A project defines one build target
 project "minko-framework"
 	kind "StaticLib"
 	language "C++"
-	files { "**.hpp", "**.h", "**.cpp", "**.c" }
+	files {
+		"src/**.hpp",
+		"src/**.h",
+		"src/**.cpp",
+		"src/**.c"
+	}
 	includedirs {
-		"src",
+		"src"
+	}
+	-- handle --no-glsl-optimizer option
+	if not _OPTIONS["no-glsl-optimizer"] then
+		defines { "MINKO_GLSL_OPTIMIZER" }
+	end
+	-- json cpp
+	files {
+		"lib/jsoncpp/src/**.cpp",
+		"lib/jsoncpp/src/**.hpp",
+		"lib/jsoncpp/src/**.c",
+		"lib/jsoncpp/src/**.h"
+	}
+	includedirs {
 		"lib/jsoncpp/src"
 	}
 	defines {
 		"JSON_IS_AMALGAMATION"
+	}
+	-- glsl optimizer
+	files {
+		"lib/glsl-optimizer/src/glsl/**.c",
+		"lib/glsl-optimizer/src/glsl/**.h",
+		"lib/glsl-optimizer/src/glsl/**.cpp",
+		"lib/glsl-optimizer/src/glsl/**.hpp",
+		"lib/glsl-optimizer/src/mesa/**.c",
+		"lib/glsl-optimizer/src/mesa/**.h",
+		"lib/glsl-optimizer/src/mesa/**.cpp",
+		"lib/glsl-optimizer/src/mesa/**.hpp",
+	}
+	includedirs {
+		"lib/glsl-optimizer/include",
+		"lib/glsl-optimizer/include/c99",
+		"lib/glsl-optimizer/src/mesa",
+		"lib/glsl-optimizer/src/glsl"
+	}
+	excludes {
+		"lib/glsl-optimizer/src/glsl/main.cpp",
+		"lib/glsl-optimizer/src/glsl/builtin_compiler/builtin_stubs.cpp"
 	}
 
 	configuration { "debug"}
@@ -41,3 +79,8 @@ project "minko-framework"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+
+	newoption {
+	   trigger     = "no-glsl-optimizer",
+	   description = "Use this option to disable the GLSL optimizer."
+	}

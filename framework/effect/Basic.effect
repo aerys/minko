@@ -34,6 +34,10 @@
 	
 	"passes"	: [{	
 		"vertexShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+		
 			attribute vec3 position;
 			attribute vec2 uv;
 
@@ -58,6 +62,10 @@
 			}
 		",
 		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+			
 			uniform vec4 		diffuseColor;
 			uniform sampler2D 	diffuseMap;
 			
