@@ -32,12 +32,7 @@ bullet::Collider::Collider(float						mass,
 						   Vector3::Ptr					inertia):
 	_name(""),
 	_mass(mass),
-	_worldTransform(Matrix4x4::create()->identity()),
-	_scaleCorrection(1.0f),
 	_correctionMatrix(Matrix4x4::create()->identity()),
-	//_physicsTransform(Matrix4x4::create()->identity()),
-	//_physicsStartOrientation(Quaternion::create()),
-	//_physicsStartPosition(Vector3::create()),
 	_shape(shape),
 	_inertia(inertia),
 	_linearVelocity(Vector3::create(0.0f, 0.0f, 0.0f)),
@@ -55,7 +50,7 @@ bullet::Collider::Collider(float						mass,
 	_transformChanged(Signal<Ptr>::create()),
 	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
 {
-	_worldTransform->identity();
+
 }
 
 void
@@ -89,101 +84,72 @@ bullet::Collider::setAngularFactor(float x, float y, float z)
 }
 
 void
-bullet::Collider::setWorldTransform(Matrix4x4::Ptr modelToWorldMatrix)
+bullet::Collider::updateGraphicsTransform(Matrix4x4::Ptr graphicsNoScaleTransform)
 {
-	/*
-	// uniform scaling assumed
-	_scaleCorrection	= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
-
-	if (fabsf(_scaleCorrection) < 1e-6f)
-		throw std::logic_error("Physics simulation requires matrices with non-null uniform scaling (world transform matrix).");
-
-	// initialize collider's world transform from a scaling-free matrix
-	const float invScaling = 1.0f / _scaleCorrection;
-	auto scalingFreeMatrix = Matrix4x4::create()
-		->copyFrom(modelToWorldMatrix)
-		->prependScaling(invScaling, invScaling, invScaling);
-
-	const float newScaling = powf(scalingFreeMatrix->determinant3x3(), 1.0f/3.0f);
-	if (fabsf(newScaling - 1.0f) > 1e-3f)
-	{
-		std::stringstream stream;
-		stream << "Model to world matrix does not have a uniform scaling.\n\tmatrix = "
-			<< std::to_string(modelToWorldMatrix) << std::endl;
-		throw std::logic_error(stream.str());
-	}
-
-	// decompose the specified transform into its rotational and translational components
-	// (Bullet requires this)
-	auto rotation		= scalingFreeMatrix->rotationQuaternion();
-	auto translation	= scalingFreeMatrix->translationVector();
-	_worldTransform->initialize(rotation, translation);
-	*/
-}
-
-void
-bullet::Collider::updateColliderWorldTransform(Matrix4x4::Ptr colliderWorldTransform)
-{
-#ifdef DEBUG
-	if (fabsf(fabsf(colliderWorldTransform->determinant3x3()) - 1.0f) > 1e-3f)
-		throw std::logic_error("Update of collider's world transform can only involve scaling-free matrices.");
-#endif // DEBUG
-
-	// correct scaling lost at initialization of the collider's world transform
-	const std::vector<float>& m(colliderWorldTransform->values());
-
-	Vector3Ptr offset = _shape->centerOfMassTranslation();
-
-	_worldTransform
-		->initialize(
-		m[0]*_scaleCorrection, m[1]*_scaleCorrection, m[2]*_scaleCorrection, m[3] + offset->x(),
-		m[4]*_scaleCorrection, m[5]*_scaleCorrection, m[6]*_scaleCorrection, m[7] + offset->y() ,
-		m[8]*_scaleCorrection, m[9]*_scaleCorrection, m[10]*_scaleCorrection, m[11] + offset->z(),
-		0.0f, 0.0f, 0.0f, 1.0f
-		);
-
-	transformChanged()->execute(shared_from_this());
-}
-
-void
-bullet::Collider::initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsMatrix)
-{
-	// remove the influence of scaling and shear, but record it in order to correct the graphics matrix
-	auto graphicsNoScaleMatrix = Matrix4x4::create();
-	PhysicsWorld::removeScalingShear(graphicsMatrix, _worldTransform, _correctionMatrix);
-
-	/*
-
-	// get the body's position from the translation
-	_physicsStartPosition		= graphicsTransform->translationVector(_physicsStartPosition);
-
-	// extract the rotational part of the matrix (once its translation has been removed) by orthogonalization
-	auto decompQR				= Matrix4x4::create()
-		->copyFrom(graphicsTransform)
-		->appendTranslation(-(*_physicsStartPosition))
-		->decomposeQR();
-	_physicsStartOrientation	= decompQR.first->rotationQuaternion();
-
-	_worldTransform->initialize(_physicsStartOrientation, _physicsStartPosition);
-
-	// record the lost scale and shear in the correction matrix
-	_correctionMatrix->copyFrom(decompQR.second);
-	*/
-
 #ifdef DEBUG_PHYSICS
-	std::cout << "[" << _name << "]\tinitialize from graphics matrix\n- correction =\n" << std::to_string(_correctionMatrix) << std::endl;
+	const float det3x3 = fabsf(graphicsNoScaleTransform->determinant3x3());
+	if (fabsf(det3x3 - 1.0f) > 1e-3f)
+		throw std::logic_error("Updates of colliders' graphics transforms must involve pure rotation-translation matrices.");
 #endif // DEBUG_PHYSICS
-}
 
-void
-bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsTransform)
-{
-	// bullet returns the world transform of the center-of-mass, need to account for possible offset
 	auto graphicsTransform = Matrix4x4::create()
 		->copyFrom(_correctionMatrix)
-		->append(_shape->physicsToGraphics())
-		->append(physicsTransform);
+		->append(graphicsNoScaleTransform);
 
-	graphicsWorldTransformChanged()->execute(shared_from_this(), graphicsTransform);
+	graphicsWorldTransformChanged()->execute(
+		shared_from_this(), 
+		graphicsTransform
+	);
+}
+
+void
+bullet::Collider::updateGraphicsTransformFromPhysics(Matrix4x4::Ptr physicsNoScaleTransform)
+{
+//	auto invOffsetRot = Matrix4x4::create()->copyFrom(_shape->_centerOfMassRotation->toMatrix())->invert();
+
+	auto graphicsTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix)
+		//->appendTranslation(-(*_shape->_centerOfMassTranslation))
+		//->append(Quaternion::create()->copyFrom(_shape->_centerOfMassRotation)->invert())
+		->append(_shape->_deltaTransformInverse)
+		->append(physicsNoScaleTransform)
+		//->appendTranslation(-(*_shape->_centerOfMassTranslation))
+		;
+	/*
+	auto trf = Matrix4x4::create()
+		->append(_shape->_centerOfMassRotation)
+		->appendTranslation(_shape->_centerOfMassTranslation)
+		->invert();
+
+	auto graphicsTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix)
+		->append(trf)
+		->append(physicsNoScaleTransform);
+		*/
+
+	// bullet returns the world transform of the center-of-mass, need to account for possible offset
+	/*
+	auto graphicsNoScaleTransform = Matrix4x4::create()
+		->copyFrom(physicsTransform);
+		*/
+	/*
+	auto graphicsNoScaleTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix) // account for lost scaling/shear
+		->append(_shape->physicsToGraphics()) // account for collision shape offset
+		->append(physicsTransform);
+	*/
+	
+	/*
+	auto graphicsNoScaleTransform = Matrix4x4::create()
+		->copyFrom(_correctionMatrix) // account for lost scaling/shear
+		->append(physicsTransform)
+		->append(_shape->centerOfMassOffset()); // account for collision shape offset
+	*/
+	PhysicsWorld::print(std::cout << "updateGraphicsTransformFromPhysics\tgraphics = \n", graphicsTransform) << std::endl;
+
+	graphicsWorldTransformChanged()->execute(
+		shared_from_this(), 
+		graphicsTransform
+	);
 }
 

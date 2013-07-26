@@ -58,7 +58,6 @@ namespace minko
 				Signal<AbsCtrlPtr, NodePtr>::Slot		_targetRemovedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_addedSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot	_removedSlot;
-				Signal<ColliderPtr>::Slot				_colliderTrfChangedSlot;
 				Signal<ColliderPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
 
 			public:
@@ -92,7 +91,7 @@ namespace minko
 				initialize();
 
 				void
-				initializeFromTarget(NodePtr);
+				initializeFromNode(NodePtr);
 
 				void
 				targetAddedHandler(AbsCtrlPtr, NodePtr);
@@ -107,13 +106,7 @@ namespace minko
 				removedHandler(NodePtr, NodePtr, NodePtr);
 
 				void
-				colliderTransformChangedHandler(ColliderPtr);
-
-				void
 				graphicsWorldTransformChangedHandler(ColliderPtr, Matrix4x4Ptr);
-
-				void 
-				updateColliderWorldTransform();
 			};
 		}
 	}
