@@ -46,14 +46,7 @@ namespace minko
 			private:
 				std::string		_name;
 				float			_mass;
-				//Matrix4x4Ptr	_worldTransform;
-				//float			_scaleCorrection;
-
 				Matrix4x4Ptr	_correctionMatrix;
-				//Matrix4x4Ptr	_physicsTransform; // must not contain scale or shear
-				//QuaternionPtr	_physicsStartOrientation;
-				//Vector3Ptr		_physicsStartPosition;	
-
 				AbsShapePtr		_shape;
 				Vector3Ptr		_inertia;
 
@@ -71,7 +64,6 @@ namespace minko
 
 				bool			_deactivationDisabled;
 
-				std::shared_ptr<Signal<Ptr>>	_transformChanged;
 				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>> _graphicsWorldTransformChanged;
 
 			public:
@@ -107,59 +99,22 @@ namespace minko
 				bool
 				isStatic() const
 				{
-					return _mass < std::numeric_limits<float>::epsilon();
-				}
-
-				/*
-				inline
-				Matrix4x4Ptr
-				worldTransform() const
-				{
-					return _worldTransform;
-				}
-
-				
-				inline
-				QuaternionPtr
-				physicsStartOrientation() const
-				{
-					return _physicsStartOrientation;
+					return _mass < 1e-6f;
 				}
 
 				inline
-				Vector3Ptr
-				physicsStartPosition() const
-				{
-					return _physicsStartPosition;
-				}
-				*/
-
-				inline
-				const std::string& name() const
+				const std::string& 
+				name() const
 				{
 					return _name;
 				}
 
 				inline
-				void setName(const std::string& value)
+				void 
+				name(const std::string& value)
 				{
 					_name = value;
 				}
-
-				void
-				updateGraphicsTransform(Matrix4x4Ptr);
-
-				void
-				initializePhysicsFromGraphicsWorldTransform(Matrix4x4Ptr graphicsTransform);
-
-				void
-				updateGraphicsTransformFromPhysics(Matrix4x4Ptr physicsNoScaleTransform);
-
-				//void
-				//setWorldTransform(Matrix4x4Ptr);
-
-				//void
-				//updateColliderWorldTransform(Matrix4x4Ptr);
 
 				inline
 				Vector3Ptr
@@ -168,12 +123,18 @@ namespace minko
 					return _linearVelocity;
 				}
 
+				void
+				linearVelocity(float, float, float);
+
 				inline
 				Vector3Ptr
 				linearFactor() const
 				{
 					return _linearFactor;
 				}
+
+				void
+				linearFactor(float, float, float);
 
 				inline
 				float
@@ -183,11 +144,21 @@ namespace minko
 				}
 
 				inline
+				void 
+				linearDamping(float value)
+				{
+					_linearDamping	= value;
+				}
+
+				inline
 				Vector3Ptr
 				angularVelocity() const
 				{
 					return _angularVelocity;
 				}
+
+				void
+				angularVelocity(float, float, float);
 
 				inline
 				Vector3Ptr
@@ -195,6 +166,9 @@ namespace minko
 				{
 					return _angularFactor;
 				}
+
+				void
+				angularFactor(float, float, float);
 
 				inline
 				float
@@ -204,10 +178,24 @@ namespace minko
 				}
 
 				inline
+				void 
+				angularDamping(float value)
+				{
+					_angularDamping	= value;
+				}
+
+				inline
 				float
 				restitution() const
 				{
 					return _restitution;
+				}
+
+				inline
+				void
+				restitution(float value)
+				{
+					_restitution = value;
 				}
 
 				inline 
@@ -225,53 +213,13 @@ namespace minko
 				}
 
 				void
-				setCorrectionMatrix(Matrix4x4Ptr);
+				correction(Matrix4x4Ptr);
 
 				inline
 				Matrix4x4Ptr
 				correction() const
 				{
 					return _correctionMatrix;
-				}
-
-				void
-				setLinearVelocity(float, float, float);
-
-				void
-				setLinearFactor(float, float, float);
-
-				inline
-				void 
-				setLinearDamping(float value)
-				{
-					_linearDamping	= value;
-				}
-
-				void
-				setAngularVelocity(float, float, float);
-
-				void
-				setAngularFactor(float, float, float);
-
-				inline
-				void 
-				setAngularDamping(float value)
-				{
-					_angularDamping	= value;
-				}
-
-				inline
-				void
-				setRestitution(float value)
-				{
-					_restitution	= value;
-				}
-
-				inline
-				float
-				angularSleepingThreshold() const
-				{
-					return _angularSleepingThreshold;
 				}
 
 				inline
@@ -283,19 +231,26 @@ namespace minko
 
 				inline
 				void
-				setLinearSleepingThreshold(float value)
+				linearSleepingThreshold(float value)
 				{
 					_linearSleepingThreshold = value;
 				}
 
 				inline
+				float
+				angularSleepingThreshold() const
+				{
+					return _angularSleepingThreshold;
+				}
+
+				inline
 				void
-				setAngularSleepingThreshold(float value)
+				angularSleepingThreshold(float value)
 				{
 					_angularSleepingThreshold = value;
 				}
 
-								inline
+				inline
 				float
 				friction() const 
 				{
@@ -304,7 +259,7 @@ namespace minko
 
 				inline
 				void
-				setFriction(float value)
+				friction(float value)
 				{
 					_friction = value;
 				}
@@ -318,16 +273,9 @@ namespace minko
 
 				inline
 				void
-				setRollingFriction(float value)
+				rollingFriction(float value)
 				{
 					_rollingFriction = value;
-				}
-
-				inline
-				Signal<Ptr>::Ptr
-				transformChanged()
-				{
-					return _transformChanged;
 				}
 
 				inline
@@ -339,14 +287,6 @@ namespace minko
 
 			private:
 				Collider(float, AbsShapePtr, Vector3Ptr inertia	= nullptr);
-
-				static
-				Vector3Ptr
-				getScaleCorrection(Matrix4x4Ptr, Vector3Ptr output = nullptr);
-
-				static
-				Matrix4x4Ptr
-				applyScaleCorrection(Vector3Ptr, Matrix4x4Ptr);
 			};
 		}
 	}
