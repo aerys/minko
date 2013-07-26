@@ -44,36 +44,22 @@ namespace minko
 
 			public:
 				inline static
-					Ptr
-					create(float halfExtentX, float halfExtentY, float halfExtentZ)
+				Ptr
+				create(float halfExtentX, float halfExtentY, float halfExtentZ)
 				{
 					return std::shared_ptr<BoxShape>(new BoxShape(halfExtentX, halfExtentY, halfExtentZ));
 				}
 
 				inline 
-					float 
-					halfExtentX() const
+				float 
+				halfExtentX() const
 				{
 					return _halfExtentX;
 				}
 
-				inline 
-					float 
-					halfExtentY() const
-				{
-					return _halfExtentY;
-				}
-
-				inline 
-					float 
-					halfExtentZ() const
-				{
-					return _halfExtentZ;
-				}
-
 				inline
-					void
-					setHalfExtentX(float halfExtentX)
+				void
+				halfExtentX(float halfExtentX)
 				{
 					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
 					_halfExtentX	= halfExtentX;
@@ -81,9 +67,16 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline 
+				float 
+				halfExtentY() const
+				{
+					return _halfExtentY;
+				}
+
 				inline
-					void
-					setHalfExtentY(float halfExtentY)
+				void
+				halfExtentY(float halfExtentY)
 				{
 					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
 					_halfExtentY	= halfExtentY;
@@ -91,9 +84,16 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline 
+				float 
+				halfExtentZ() const
+				{
+					return _halfExtentZ;
+				}
+
 				inline
-					void
-					setHalfExtentZ(float halfExtentZ)
+				void
+				halfExtentZ(float halfExtentZ)
 				{
 					const bool needsUpdate	= fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
 					_halfExtentZ	= halfExtentZ;

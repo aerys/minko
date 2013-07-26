@@ -551,7 +551,11 @@ Matrix4x4::lerp(Matrix4x4::Ptr target, float ratio)
 Quaternion::Ptr
 Matrix4x4::rotationQuaternion(Quaternion::Ptr output) const
 {
-	return Quaternion::create()->fromMatrix(shared_from_this());
+	Quaternion::Ptr ret = output == nullptr
+		? Quaternion::create()
+		: output;
+
+	return ret->fromMatrix(shared_from_this());
 }
 
 Vector3::Ptr

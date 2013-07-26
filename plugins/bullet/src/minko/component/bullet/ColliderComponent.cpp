@@ -41,7 +41,6 @@ bullet::ColliderComponent::ColliderComponent(Collider::Ptr collider):
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	//_colliderTrfChangedSlot(nullptr),
 	_graphicsTransformChangedSlot(nullptr)
 {
 	if (collider == nullptr)
@@ -64,14 +63,6 @@ bullet::ColliderComponent::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2
 		));
-
-	/*
-	_colliderTrfChangedSlot	= _collider->transformChanged()->connect(std::bind(
-		&bullet::ColliderComponent::colliderTransformChangedHandler,
-		shared_from_this(),
-		std::placeholders::_1
-		));
-		*/
 
 	_graphicsTransformChangedSlot	= _collider->graphicsWorldTransformChanged()->connect(std::bind(
 		&bullet::ColliderComponent::graphicsWorldTransformChangedHandler,
@@ -106,7 +97,7 @@ bullet::ColliderComponent::targetAddedHandler(
 		));
 
 	// initialize from node if possible (mostly for adding a controller to the camera)
-	initializeFromTarget(target);
+	initializeFromNode(target);
 }
 
 void
@@ -116,8 +107,6 @@ bullet::ColliderComponent::targetRemovedHandler(
 {
 	_addedSlot						= nullptr;
 	_removedSlot					= nullptr;
-	//_colliderTrfChangedSlot			= nullptr;
-	//_graphicsTransformChangedSlot	= nullptr;
 }
 
 void 
@@ -126,38 +115,24 @@ bullet::ColliderComponent::addedHandler(
 	Node::Ptr target, 
 	Node::Ptr parent)
 {
-	initializeFromTarget(node);
-	/*
-	if (!target->hasComponent<Transform>())
-		target->addComponent(Transform::create());
-	
-	_targetTransform	= node->component<Transform>();
-
-	auto nodeSet	= NodeSet::create(node)
-		->ancestors(true)
-		->where([](Node::Ptr node)
-		{
-			return node->hasComponent<bullet::PhysicsWorld>();
-		});
-	if (nodeSet->nodes().size() != 1)
-	{
-		std::stringstream stream;
-		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
-		//throw std::logic_error(stream.str());
-	}
-	else
-	{
-		updateColliderWorldTransform();
-
-		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
-
-		_physicsWorld->addChild(_collider);
-	}
-	*/
+	initializeFromNode(node);
 }
 
 void
-bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
+bullet::ColliderComponent::removedHandler(
+	Node::Ptr node, 
+	Node::Ptr target, 
+	Node::Ptr parent)
+{
+	if (_physicsWorld != nullptr)
+		_physicsWorld->removeChild(_collider);
+
+	_physicsWorld		= nullptr;
+	_targetTransform	= nullptr;
+}
+
+void
+bullet::ColliderComponent::initializeFromNode(Node::Ptr node)
 {
 	if (_targetTransform != nullptr && _physicsWorld != nullptr)
 		return;
@@ -173,72 +148,58 @@ bullet::ColliderComponent::initializeFromTarget(Node::Ptr node)
 		{
 			return node->hasComponent<bullet::PhysicsWorld>();
 		});
+
 	if (nodeSet->nodes().size() != 1)
 	{
-		std::stringstream stream;
-		stream << "ColliderComponent requires exactly one PhysicsWorld among the descendants of its target node. Found " << nodeSet->nodes().size();
-		//throw std::logic_error(stream.str());
+#ifdef DEBUG_PHYSICS
+		std::cout << "[" << node->name() << "]\tcollider CANNOT be added (# PhysicsWorld = " << nodeSet->nodes().size() << ")." << std::endl;
+#endif // DEBUG_PHYSICS
+
+		return;
 	}
-	else
-	{
-		_collider->setName(node->name());
 
-		//updateColliderWorldTransform();
+	_collider->setName(node->name());
 
-		_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
-		_physicsWorld->addChild(_collider);
+	_physicsWorld	= nodeSet->nodes().front()->component<bullet::PhysicsWorld>();
+	_physicsWorld->addChild(_collider);
 
-		synchronizePhysicsWithGraphics();
-	}
+	synchronizePhysicsWithGraphics();
 }
-
-/*
-void 
-bullet::ColliderComponent::updateColliderWorldTransform()
-{
-	if (_targetTransform == nullptr)
-		throw std::logic_error("The Transform of the ColliderComponent's target is invalid.");
-
-	// update the collider's world transform, and scale correction matrix
-	auto graphicsTransform	= _targetTransform->modelToWorldMatrix(true);
-	//_collider->setWorldTransform(graphicsTransform);
-
-	_collider->initializePhysicsFromGraphicsWorldTransform(graphicsTransform);
-
-	// inject the new collider's world transform into the physics world's simulation
-	if (_physicsWorld)
-		_physicsWorld->setWorldTransformFromCollider(_collider);
-}
-*/
 
 void
-bullet::ColliderComponent::removedHandler(
-	Node::Ptr node, 
-	Node::Ptr target, 
-	Node::Ptr parent)
+bullet::ColliderComponent::synchronizePhysicsWithGraphics()
 {
-	_physicsWorld->removeChild(_collider);
-	_physicsWorld		= nullptr;
-	_targetTransform	= nullptr;
+	if (_physicsWorld == nullptr || _targetTransform == nullptr)
+		return;
+
+	auto graphicsTransform = _targetTransform->modelToWorldMatrix(true);
+
+	// remove the influence of scaling and shear
+	auto graphicsNoScaleTransform	= Matrix4x4::create();
+	auto correction					= Matrix4x4::create();
+	PhysicsWorld::removeScalingShear(
+		graphicsTransform, 
+		graphicsNoScaleTransform, 
+		correction
+	);
+
+	// record the lost scaling and shear of the graphics transform
+	_collider->setCorrectionMatrix(correction);
+
+#ifdef DEBUG_PHYSICS
+	std::cout << "[" << _collider->name() << "]\tsynchro graphics->physics" << std::endl;
+	PhysicsWorld::print(std::cout << "- correction =\n", correction) << std::endl;
+	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", graphicsNoScaleTransform) << std::endl;
+#endif // DEBUG_PHYSICS
+
+	_physicsWorld->synchronizePhysicsWithGraphics(_collider, graphicsNoScaleTransform);
+
+
+	// must account for possible collision shape offsets
+	//graphicsNoScaleTransform->prepend(_collider->shape()->centerOfMassOffsetInverse());
+	//_physicsWorld->setPhysicsWorldMatrix(_collider, graphicsNoScaleTransform);
 }
 
-/*
-void 
-bullet::ColliderComponent::colliderTransformChangedHandler(Collider::Ptr collider)
-{
-	// get the world-to-parent matrix in order to update the target's Transform
-	auto worldToParentMatrix	= Matrix4x4::create()
-		->copyFrom(_targetTransform->modelToWorldMatrix(true))
-		->invert()
-		->append(_targetTransform->transform());
-
-	auto newTransform = Matrix4x4::create()
-		->copyFrom(collider->worldTransform())
-		->append(worldToParentMatrix);
-
-	_targetTransform->transform()->copyFrom(newTransform);
-}
-*/
 void
 bullet::ColliderComponent::graphicsWorldTransformChangedHandler(Collider::Ptr collider, 
 																Matrix4x4::Ptr graphicsTransform)
@@ -247,14 +208,14 @@ bullet::ColliderComponent::graphicsWorldTransformChangedHandler(Collider::Ptr co
 		return;
 
 	// get the world-to-parent matrix in order to update the target's Transform
-	auto worldToParentMatrix	= Matrix4x4::create()
+	auto worldToParent	= Matrix4x4::create()
 		->copyFrom(_targetTransform->modelToWorldMatrix(true))
 		->invert()
 		->append(_targetTransform->transform());
 
 	_targetTransform->transform()
 		->copyFrom(graphicsTransform)
-		->append(worldToParentMatrix);
+		->append(worldToParent);
 }
 
 void
@@ -276,32 +237,4 @@ bullet::ColliderComponent::applyRelativeImpulse(Vector3::Ptr localImpulse)
 {
 	if (_physicsWorld != nullptr)
 		_physicsWorld->applyRelativeImpulse(_collider, localImpulse);
-}
-
-void
-bullet::ColliderComponent::synchronizePhysicsWithGraphics()
-{
-	if (_physicsWorld == nullptr || _targetTransform == nullptr)
-		return;
-
-	auto graphicsMatrix = _targetTransform->modelToWorldMatrix(true);
-
-	// remove the influence of scaling and shear
-	auto graphicsNoScaleMatrix	= Matrix4x4::create();
-	auto correctionMatrix		= Matrix4x4::create();
-	PhysicsWorld::removeScalingShear(
-		graphicsMatrix, 
-		graphicsNoScaleMatrix, 
-		correctionMatrix
-	);
-
-	// record the lost scaling and shear
-	_collider->setCorrectionMatrix(correctionMatrix);
-
-	std::cout << "correction matrix = " << std::to_string(correctionMatrix) << std::endl;
-
-	// must account for possible collision shape offsets
-	graphicsNoScaleMatrix->prepend(_collider->shape()->centerOfMassOffsetInverse());
-
-	_physicsWorld->setPhysicsWorldMatrix(_collider, graphicsNoScaleMatrix);
 }
