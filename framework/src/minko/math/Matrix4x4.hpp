@@ -241,10 +241,10 @@ namespace minko
 			lerp(Matrix4x4::Ptr target, float ratio);
 
 			Quaternion::Ptr
-			rotationQuaternion(Quaternion::Ptr output = 0) const;
+			rotationQuaternion(Quaternion::Ptr output = nullptr) const;
 
 			Vector3::Ptr
-			translationVector(Vector3::Ptr output = 0) const;
+			translationVector(Vector3::Ptr output = nullptr) const;
 
 			Ptr
 			copyFrom(Matrix4x4::Ptr source);
