@@ -3,7 +3,7 @@ solution "minko"
 
 -- examples
 include 'examples/sponza'
-include 'examples/envmap'
+--include 'examples/envmap'
 if _OPTIONS["platform"] ~= "emscripten" then
 	include 'examples/cube'
 end
