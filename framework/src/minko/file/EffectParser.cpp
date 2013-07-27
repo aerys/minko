@@ -115,7 +115,7 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1],	root, false))
     {
-        std::cerr << resolvedFilename << ":" << reader.getFormatedErrorMessages() << std::endl;
+        std::cerr << resolvedFilename << ":" << reader.getFormattedErrorMessages() << std::endl;
 
 		throw std::invalid_argument("data");
     }
