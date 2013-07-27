@@ -1,27 +1,25 @@
-project "minko-framework"
+include "lib/glsl-optimizer"
+
+project "minko-glsl-optimizer"
 	kind "StaticLib"
 	language "C++"
+	links {
+		"minko-framework",
+		"glsl-optimizer"
+	}
 	files {
 		"src/**.hpp",
 		"src/**.cpp"
 	}
 	includedirs {
-		"src"
+		"src",
+		"../../framework/src",
+		-- glsl-optimizer headers
+		"lib/glsl-optimizer/include",
+		"lib/glsl-optimizer/src/mesa",
+		"lib/glsl-optimizer/src/glsl"
 	}
-	-- json cpp
-	files {
-		"lib/jsoncpp/src/**.cpp",
-		"lib/jsoncpp/src/**.hpp",
-		"lib/jsoncpp/src/**.c",
-		"lib/jsoncpp/src/**.h"
-	}
-	includedirs {
-		"lib/jsoncpp/src"
-	}
-	defines {
-		"JSON_IS_AMALGAMATION"
-	}
-
+	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -34,22 +32,18 @@ project "minko-framework"
 
 	-- linux
 	configuration { "linux" }
-		links { "GL", "GLU" }
 		buildoptions { "-std=c++11" }
 
 	-- windows
 	configuration { "windows", "x32" }
-		links { "glew32" }
 		includedirs {
-			"../deps/win/include",
+			-- glsl-optimizer c99 fix for windows only
+			"lib/glsl-optimizer/include/c99"
 		}
-		libdirs { "../deps/win/lib" }
-
+	
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
-		includedirs { "../deps/mac/include" }
-		libdirs { "../deps/mac/lib" }
 
 	-- emscripten
 	configuration { "emscripten" }
