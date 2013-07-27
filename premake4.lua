@@ -3,6 +3,7 @@ solution "minko"
 
 -- examples
 include 'examples/sponza'
+include 'examples/envmap'
 if _OPTIONS["platform"] ~= "emscripten" then
 	include 'examples/cube'
 end
@@ -19,6 +20,7 @@ end
 include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
+include 'plugins/glsl-optimizer'
 
 -- support for new actions
 dofile('tools/all/lib/library.lua')
