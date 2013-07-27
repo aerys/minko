@@ -40,7 +40,6 @@ project "minko-framework"
 	}
 	includedirs {
 		"lib/glsl-optimizer/include",
-		"lib/glsl-optimizer/include/c99",
 		"lib/glsl-optimizer/src/mesa",
 		"lib/glsl-optimizer/src/glsl"
 	}
@@ -67,7 +66,11 @@ project "minko-framework"
 	-- windows
 	configuration { "windows", "x32" }
 		links { "glew32" }
-		includedirs { "../deps/win/include" }
+		includedirs {
+			"../deps/win/include",
+			-- c99 fix for windows only
+			"lib/glsl-optimizer/include/c99"
+		}
 		libdirs { "../deps/win/lib" }
 
 	-- macos
