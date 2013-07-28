@@ -10,14 +10,7 @@ project "minko-example-sponza"
 		}
 	end
 
-	links {
-		"minko-png",
-		"minko-jpeg",
-		"minko-mk",
-		"minko-bullet",
-		"minko-particles",
-		"minko-framework"
-	}
+	links {	"minko-framework" }
 	files {
 		"**.hpp",
 		"**.h",
@@ -26,14 +19,27 @@ project "minko-example-sponza"
 	includedirs {
 		"src",
 		"../../deps/all/include",
-		"../../framework/src",
-		"../../plugins/mk/src",
-		"../../plugins/bullet/src",
-		"../../plugins/webgl/src",
-		"../../plugins/png/src",
-		"../../plugins/jpeg/src",
-		"../../plugins/particles/src"
+		"../../framework/src"
 	}
+	
+	-- mk plugin
+	includedirs { "../../plugins/mk/src" }
+	links { "minko-mk" }
+	-- bullet plugin
+	includedirs { "../../plugins/bullet/src" }
+	links { "minko-bullet" }
+	-- pgn plugin
+	includedirs { "../../plugins/png/src" }
+	links { "minko-png" }
+	-- jpeg plugin
+	includedirs { "../../plugins/jpeg/src" }
+	links { "minko-jpeg" }
+	-- particles plugin
+	includedirs { "../../plugins/particles/src" }
+	links { "minko-particles" }
+	-- glsl-optimizer plugin
+	includedirs { "../../plugins/glsl-optimizer/src" }
+	links {	"minko-glsl-optimizer", "glsl-optimizer" }
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -71,6 +77,7 @@ project "minko-example-sponza"
 
 	-- windows
 	configuration { "windows", "x32" }
+		buildoptions { "-std=c++11" }
 		links {
 			"OpenGL32",
 			"glfw3dll",
@@ -118,11 +125,12 @@ project "minko-example-sponza"
 	configuration { "emscripten" }
 		flags { "Optimize" }
 		buildoptions { "-std=c++11" }
-		includedirs {
-			"../../plugins/webgl/src"
-		}
+		-- webgl plugin
+		includedirs { "../../plugins/webgl/src" }
+
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model',
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O2 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
 		}
