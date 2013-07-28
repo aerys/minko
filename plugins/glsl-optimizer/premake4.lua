@@ -3,18 +3,19 @@ include "lib/glsl-optimizer"
 project "minko-glsl-optimizer"
 	kind "StaticLib"
 	language "C++"
-	links {
-		"minko-framework",
-		"glsl-optimizer"
-	}
+	links { "minko-framework" }
 	files {
 		"src/**.hpp",
 		"src/**.cpp"
 	}
 	includedirs {
 		"src",
-		"../../framework/src",
-		-- glsl-optimizer headers
+		"../../framework/src"
+	}
+	
+	-- glsl-optimizer
+	links { "glsl-optimizer" }
+	includedirs {
 		"lib/glsl-optimizer/include",
 		"lib/glsl-optimizer/src/mesa",
 		"lib/glsl-optimizer/src/glsl"
@@ -36,10 +37,9 @@ project "minko-glsl-optimizer"
 
 	-- windows
 	configuration { "windows", "x32" }
-		includedirs {
-			-- glsl-optimizer c99 fix for windows only
-			"lib/glsl-optimizer/include/c99"
-		}
+		buildoptions { "-std=c++11" }
+		libdirs { "../../deps/win/lib" }
+		includedirs { "../../deps/win/include" }
 	
 	-- macos
 	configuration { "macosx" }
