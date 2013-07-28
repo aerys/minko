@@ -40,9 +40,7 @@ project "minko-framework"
 	-- windows
 	configuration { "windows", "x32" }
 		links { "glew32" }
-		includedirs {
-			"../deps/win/include",
-		}
+		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 
 	-- macos
