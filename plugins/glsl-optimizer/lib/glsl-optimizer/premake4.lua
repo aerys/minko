@@ -3,9 +3,11 @@ project "glsl-optimizer"
 	language "C++"
 	files {
 		"src/glsl/**.h",
+		"src/glsl/**.c",
 		"src/glsl/**.cpp",
 		"src/mesa/**.h",
-		"src/mesa/**.cpp",
+		"src/mesa/**.c",
+		"src/mesa/**.cpp"
 	}
 	includedirs {
 		"include",
@@ -13,13 +15,22 @@ project "glsl-optimizer"
 		"src/glsl"
 	}
 	excludes {
-		"src/glsl/glcpp",
 		"src/glsl/main.cpp",
 		"src/glsl/builtin_compiler/builtin_stubs.cpp"
 	}
+	defines {
+		"_LIB",
+		"NOMINMAX",
+		"_CRT_SECURE_NO_WARNINGS",
+		"_CRT_SECURE_NO_DEPRECATE",
+		"__STDC_VERSION__=199901L",
+		"__STDC__",
+		"strdup=_strdup"
+	}
+	flags { "NoExceptions" }
 	
 	configuration { "debug"}
-		defines { "DEBUG" }
+		defines { "DEBUG", "_DEBUG" }
 		flags { "Symbols" }
 		targetdir "bin/debug"
 
@@ -34,10 +45,9 @@ project "glsl-optimizer"
 
 	-- windows
 	configuration { "windows", "x32" }
-		includedirs {
-			-- c99 fix for windows only
-			"include/c99"
-		}
+		defines { "WIN32" }
+		-- c99 fix for windows only
+		includedirs { "include/c99" }
 
 	-- macos
 	configuration { "macosx" }
