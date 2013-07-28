@@ -12,7 +12,8 @@ project "glsl-optimizer"
 	includedirs {
 		"include",
 		"src/mesa",
-		"src/glsl"
+		"src/glsl",
+		"src/glsl/glcpp"
 	}
 	excludes {
 		"src/glsl/main.cpp",
