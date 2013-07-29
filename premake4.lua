@@ -1,6 +1,6 @@
 solution "minko"
    configurations { "debug", "release" }
-
+   
 -- examples
 include 'examples/sponza'
 --include 'examples/envmap'

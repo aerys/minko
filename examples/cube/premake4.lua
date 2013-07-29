@@ -1,18 +1,29 @@
--- A project defines one build target
 project "minko-example-cube"
 	kind "ConsoleApp"
 	language "C++"
-	links {
-		"minko-png",
-		"minko-framework"
+	files {
+		"src/**.hpp", "src/**.cpp"
 	}
-	files { "**.hpp", "**.h", "**.cpp" }
 	includedirs {
 		"src",
-		"../../framework/src",
-		"../../plugins/png/src",
 		"../../deps/all/include"
 	}
+	
+	-- minko-webgl
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links { "minko-webgl" }
+	end
+
+	-- minko-png
+	links { "minko-png" }
+	includedirs { "../../plugins/png/src" }
+	-- minko-framework
+	links { "minko-framework" }
+	includedirs { "../../framework/src" }
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+	end
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -88,5 +99,6 @@ project "minko-example-cube"
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
 		}
