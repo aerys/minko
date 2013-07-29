@@ -18,15 +18,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "SceneDeserializer.hpp"
+
 #include "minko/Any.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/AssetsLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/deserialize/MkTypes.hpp"
 #include "minko/deserialize/NodeDeserializer.hpp"
 #include "minko/deserialize/AssetsDeserializer.hpp"
 #include "minko/file/MkParser.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -45,7 +46,7 @@ namespace minko
 		{
 			initializeNodeDeserializer();
 
-			std::shared_ptr<AssetsDeserializer> assetsDeserializer = AssetsDeserializer::create(assetsObject, options->assetsLibrary());
+			std::shared_ptr<AssetsDeserializer> assetsDeserializer = AssetsDeserializer::create(assetsObject, options->assetLibrary());
 
 			assetsDeserializer->extract(options->parseOptions(), options->nameConverter());
 			options->deserializedAssets(assetsDeserializer);

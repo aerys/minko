@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "ParticleSystem.hpp"
 
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 #include "minko/component/Rendering.hpp"
 #include "minko/component/Surface.hpp"
@@ -54,7 +54,7 @@ using namespace minko::particle;
 #define EPSILON 0.001
 
 ParticleSystem::ParticleSystem(AbstractContextPtr	context,
-							   AssetsLibraryPtr		assets,
+							   AssetLibraryPtr		assets,
 							   float				rate,
 							   FloatSamplerPtr		lifetime,
 							   ShapePtr				shape,

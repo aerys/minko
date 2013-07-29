@@ -40,16 +40,16 @@ GeometryDeserializer::read(std::stringstream& stream, T& value)
 }
 
 void
-GeometryDeserializer::deserializeGeometry(bool								isCopy,
-										  std::string						geometryName,
-										  int								copyId,
-										  Qark::ByteArray&					geometryData,
-										  std::shared_ptr<AssetsLibrary>	library,
-										  std::shared_ptr<scene::Node>		mesh,
-										  std::shared_ptr<file::Options>	options,
-										  bool								computeTangent,
-                                          std::shared_ptr<data::Provider>   material,
-                                          std::shared_ptr<render::Effect>   effect)
+GeometryDeserializer::deserializeGeometry(bool						    		isCopy,
+										  std::string			    			geometryName,
+										  int					    			copyId,
+										  Qark::ByteArray&		    			geometryData,
+										  std::shared_ptr<file::AssetLibrary>	library,
+										  std::shared_ptr<scene::Node>	    	mesh,
+										  std::shared_ptr<file::Options>    	options,
+										  bool							    	computeTangent,
+                                          std::shared_ptr<data::Provider>       material,
+                                          std::shared_ptr<render::Effect>       effect)
 {
 	if (isCopy)
 	{
