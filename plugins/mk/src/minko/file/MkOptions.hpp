@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/deserialize/AssetsDeserializer.hpp"
 #include "minko/deserialize/NameConverter.hpp"
 #include "minko/Qark.hpp"
@@ -40,7 +40,7 @@ namespace minko
 		typedef std::function<std::shared_ptr<component::AbstractComponent>(minko::Qark::Map&,  ControllerMap&, NodeMap&, NodePtr&)> DeserializeFunction;
 
 	private:
-		std::shared_ptr<AssetsLibrary>									_assetsLibary;
+		std::shared_ptr<AssetLibrary>									_assetsLibary;
 		std::shared_ptr<Options>										_options;
 		std::shared_ptr<deserialize::AssetsDeserializer>				_deserilizeAssets;
 		std::shared_ptr<deserialize::NameConverter>						_nameConverter;
@@ -53,14 +53,14 @@ namespace minko
 		inline static
 		Ptr
 		create(std::shared_ptr<file::Options>					options,
-			   std::shared_ptr<AssetsLibrary>					assetLibrary)
+			   std::shared_ptr<AssetLibrary>					assetLibrary)
 		{
 			return std::shared_ptr<MkOptions>(new MkOptions(options, assetLibrary));
 		}
 
 		inline
-		std::shared_ptr<AssetsLibrary>
-		assetsLibrary()
+		std::shared_ptr<AssetLibrary>
+		assetLibrary()
 		{
 			return _assetsLibary;
 		}
@@ -109,7 +109,7 @@ namespace minko
 
 	protected:
 		MkOptions(std::shared_ptr<file::Options>				options,
-			   std::shared_ptr<AssetsLibrary>					assetLibrary):
+			   std::shared_ptr<AssetLibrary>					assetLibrary):
 			_options(options),
 			_assetsLibary(assetLibrary),
 			_numMesh(0)
