@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/component/bullet/PhysicsWorld.hpp"
+#include "minko/component/bullet/ColliderData.hpp"
 #include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/ColliderComponent.hpp"
 #include "minko/component/bullet/AbstractPhysicsShape.hpp"
 #include "minko/component/bullet/SphereShape.hpp"
 #include "minko/component/bullet/BoxShape.hpp"
