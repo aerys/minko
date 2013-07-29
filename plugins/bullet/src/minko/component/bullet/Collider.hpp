@@ -60,6 +60,8 @@ namespace minko
 				Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
 
+				static Matrix4x4Ptr							_TMP_MATRIX;
+
 			public:
 				inline static
 				Ptr
@@ -74,15 +76,6 @@ namespace minko
 
 				void
 				synchronizePhysicsWithGraphics();
-
-				void
-				prependLocalTranslation(Vector3Ptr);
-
-				void
-				prependRotationY(float);
-
-				void
-				applyRelativeImpulse(Vector3Ptr);
 
 			private:
 				Collider(ColliderDataPtr);
