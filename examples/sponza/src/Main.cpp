@@ -529,6 +529,8 @@ main(int argc, char** argv)
 
 #ifdef DEBUG
 	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
+#else
+	sceneManager->assets()->defaultOptions()->includePaths().insert("bin/release");
 #endif
 	
 	// load sponza lighting effect and set it as the default effect
