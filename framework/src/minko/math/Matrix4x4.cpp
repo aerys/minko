@@ -579,6 +579,7 @@ std::pair<Matrix4x4::Ptr, Matrix4x4::Ptr>
 Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
 {
 	Vector4::Ptr				vj		= Vector4::create();
+	Vector4::Ptr				proj	= Vector4::create();
 	Vector4::Ptr				accProj	= Vector4::create();
 	std::vector<Vector4::Ptr>	projVec(4);
 
@@ -590,7 +591,7 @@ Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
 		accProj->setTo(0.0f, 0.0f, 0.0f, 0.0f);
 		for (unsigned int i = 0; i < j; ++i)
 		{
-			Vector4::Ptr proj = Vector4::create()->copyFrom(projVec[i]);
+			proj->copyFrom(projVec[i]);
 			accProj = accProj + proj * (projVec[i]->dot(vj));
 		}
 
@@ -601,8 +602,6 @@ Matrix4x4::decomposeQR(Matrix4x4::Ptr matQ, Matrix4x4::Ptr matR) const
 		for (unsigned int i = 0; i <= j; ++i)
 			valuesR[j + (i<<2)] = projVec[i]->dot(vj);
 	}
-
-
 
 	Matrix4x4::Ptr matrixQ = matQ == nullptr
 		? Matrix4x4::create()
