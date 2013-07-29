@@ -32,6 +32,9 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
+/*static*/
+Matrix4x4::Ptr bullet::Collider::_TMP_MATRIX = Matrix4x4::create();
+
 bullet::Collider::Collider(ColliderData::Ptr data):
 	AbstractComponent(),
 	_colliderData(data),
@@ -105,8 +108,8 @@ bullet::Collider::targetRemovedHandler(
 	AbstractComponent::Ptr controller, 
 	Node::Ptr target)
 {
-	_addedSlot						= nullptr;
-	_removedSlot					= nullptr;
+	_addedSlot		= nullptr;
+	_removedSlot	= nullptr;
 }
 
 void 
@@ -174,17 +177,13 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 
 	auto graphicsTransform = _targetTransform->modelToWorldMatrix(true);
 
-	// remove the influence of scaling and shear
-	auto graphicsNoScaleTransform	= Matrix4x4::create();
-	auto correction					= Matrix4x4::create();
+	// remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
 	PhysicsWorld::removeScalingShear(
 		graphicsTransform, 
-		graphicsNoScaleTransform, 
-		correction
+		_TMP_MATRIX, 
+		_colliderData->correction()
 	);
-
-	// record the lost scaling and shear of the graphics transform
-	_colliderData->correction(correction);
+	// _TMP_MATRIX = graphicsNoScaleTransform
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << _colliderData->name() << "]\tsynchro graphics->physics" << std::endl;
@@ -192,7 +191,7 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", graphicsNoScaleTransform) << std::endl;
 #endif // DEBUG_PHYSICS
 
-	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, graphicsNoScaleTransform);
+	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, _TMP_MATRIX);
 }
 
 void
@@ -203,33 +202,13 @@ bullet::Collider::graphicsWorldTransformChangedHandler(ColliderData::Ptr collide
 		return;
 
 	// get the world-to-parent matrix in order to update the target's Transform
-	auto worldToParent	= Matrix4x4::create()
+	_TMP_MATRIX
 		->copyFrom(_targetTransform->modelToWorldMatrix(true))
 		->invert()
 		->append(_targetTransform->transform());
+	// _TMP_MATRIX = worldToParent
 
 	_targetTransform->transform()
 		->copyFrom(graphicsTransform)
-		->append(worldToParent);
-}
-
-void
-bullet::Collider::prependLocalTranslation(Vector3::Ptr localTranslation)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->prependLocalTranslation(_colliderData, localTranslation);
-}
-
-void
-bullet::Collider::prependRotationY(float radians)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->prependRotationY(_colliderData, radians);
-}
-
-void
-bullet::Collider::applyRelativeImpulse(Vector3::Ptr localImpulse)
-{
-	if (_physicsWorld != nullptr)
-		_physicsWorld->applyRelativeImpulse(_colliderData, localImpulse);
+		->append(_TMP_MATRIX);
 }
