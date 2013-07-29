@@ -230,19 +230,20 @@ T
 }
 
 bullet::AbstractPhysicsShape::Ptr
-	deserializeShape(Qark::Map&							shapeData,
-	scene::Node::Ptr&					node)
+deserializeShape(Qark::Map&			shapeData,
+				 scene::Node::Ptr&	node)
 {
-	int type = Any::cast<int>(shapeData["type"]);
 	bullet::AbstractPhysicsShape::Ptr deserializedShape;
-	std::stringstream	stream;
 
-	double rx	= 0;
-	double ry	= 0;
-	double rz	= 0;
-	double h	= 0;
-	double r	= 0;
+	int type = Any::cast<int>(shapeData["type"]);
 
+	double rx	= 0.0;
+	double ry	= 0.0;
+	double rz	= 0.0;
+	double h	= 0.0;
+	double r	= 0.0;
+
+	std::stringstream stream;
 	switch (type)
 	{
 	case 101: // multiprofile
@@ -295,33 +296,32 @@ bullet::AbstractPhysicsShape::Ptr
 	case 100 : // TRANSFORM
 		{
 			deserializedShape		= deserializeShape(Any::cast<Qark::Map&>(shapeData["subGeometry"]), node);
-			Matrix4x4::Ptr offset	= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
-			auto modelToWorldMatrix	= node->component<Transform>()->modelToWorldMatrix(true);
-			const float scaling		= powf(modelToWorldMatrix->determinant3x3(), 1.0f/3.0f);
+
+			auto delta				= deserialize::TypeDeserializer::matrix4x4(shapeData["delta"]);
+			auto modelToWorld		= node->component<Transform>()->modelToWorldMatrix(true);
 
 #ifdef DEBUG
-			std::cout << "\n----------\n" << node->name() << "\t: deserialize TRANSFORMED\n\t- delta  \t= " << std::to_string(offset)
-				<< "\n\t- toWorld\t= " << std::to_string(modelToWorldMatrix) << "\n\t- scaling = " << scaling << std::endl;
+			std::cout << "[" << node->name() << "]\tdeserialize TRANSFORM" << std::endl;
+
+			component::bullet::PhysicsWorld::print(std::cout << "- delta = \n", delta) << std::endl;
+			component::bullet::PhysicsWorld::print(std::cout << "- world = \n", modelToWorld) << std::endl;
 #endif // DEBUG
 
-			deserializedShape->setLocalScaling(scaling);
-			//deserializedShape->apply(modelToWorldMatrix);
-
-			deserializedShape->setCenterOfMassOffset(offset, modelToWorldMatrix);
+			deserializedShape->initialize(delta, modelToWorld);
 		}
 		break;
 	default:
 		deserializedShape = nullptr;
 	}
 
-	return deserializedShape;
+	return deserializedShape;		
 }
 
-std::shared_ptr<bullet::ColliderComponent>
-	deserializeBullet(Qark::Map&						nodeInformation,
-	file::MkParser::ControllerMap&	controllerMap,
-	file::MkParser::NodeMap&			nodeMap,
-	scene::Node::Ptr&					node)
+std::shared_ptr<bullet::Collider>
+deserializeBullet(Qark::Map&						nodeInformation, 
+				  file::MkParser::ControllerMap&	controllerMap,
+				  file::MkParser::NodeMap&			nodeMap,
+				  scene::Node::Ptr&					node)
 {
 	Qark::Map& colliderData = Any::cast<Qark::Map&>(nodeInformation["defaultCollider"]);
 	Qark::Map& shapeData	= Any::cast<Qark::Map&>(colliderData["shape"]);
@@ -339,7 +339,6 @@ std::shared_ptr<bullet::ColliderComponent>
 	bool rotate			= false;
 	double friction		= 0.5; // bullet's advices
 	double restitution	= 0.0; // bullet's advices
-	double density      = 0.0;
 
 	if (shapeData.find("materialProfile") != shapeData.end())
 	{
@@ -347,7 +346,7 @@ std::shared_ptr<bullet::ColliderComponent>
 		std::stringstream	stream;
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
-		density         = readAndSwap<double>(stream); // do not care about it at this point
+		double density	= readAndSwap<double>(stream); // do not care about it at this point
 		friction		= readAndSwap<double>(stream);
 		restitution		= readAndSwap<double>(stream);
 	}
@@ -370,34 +369,33 @@ std::shared_ptr<bullet::ColliderComponent>
 		rotate	= readAndSwap<bool>(stream);
 	}
 
-	bullet::Collider::Ptr collider = bullet::Collider::create(mass, shape);
+	bullet::ColliderData::Ptr data = bullet::ColliderData::create(mass, shape);
 
-	collider->setLinearVelocity(vx, vy, vz);
-	collider->setAngularVelocity(avx, avy, avz);
-	collider->setFriction(friction);
-	collider->setRestitution(restitution);
+	data->linearVelocity(vx, vy, vz);
+	data->angularVelocity(avx, avy, avz);
+	data->friction(friction);
+	data->restitution(restitution);
 
 	if (!rotate)
-		collider->setAngularFactor(0.0f, 0.0f, 0.0f);
+		data->angularFactor(0.0f, 0.0f, 0.0f);
 	//collider->disableDeactivation(sleep == false);
-	collider->disableDeactivation(true);
+	data->disableDeactivation(true);
 
-	return bullet::ColliderComponent::create(collider);
+	return bullet::Collider::create(data);
 }
 
-component::bullet::ColliderComponent::Ptr
-	initializeDefaultCameraCollider()
+component::bullet::Collider::Ptr
+initializeDefaultCameraCollider()
 {
-	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, .75f, 0.2f);
+	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
 	//cameraShape->setMargin(0.3f);
-	auto cameraCollider					= bullet::Collider::create(CAMERA_MASS, cameraShape);
-
-	cameraCollider->setRestitution(0.5f);
-	cameraCollider->setAngularFactor(0.0f, 0.0f, 0.0f);
-	cameraCollider->setFriction(CAMERA_FRICTION);
+	auto cameraCollider					= bullet::ColliderData::create(CAMERA_MASS, cameraShape);
+	cameraCollider->restitution(0.5f);
+	cameraCollider->angularFactor(0.0f, 0.0f, 0.0f);
+	cameraCollider->friction(CAMERA_FRICTION);
 	cameraCollider->disableDeactivation(true);
-
-	return bullet::ColliderComponent::create(cameraCollider);
+	
+	return bullet::Collider::create(cameraCollider);
 }
 
 void
