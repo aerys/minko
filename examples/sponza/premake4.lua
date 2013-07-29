@@ -2,15 +2,6 @@
 project "minko-example-sponza"
 	kind "ConsoleApp"
 	language "C++"
-
-	-- ugly, but couldn't find a better solution to maintain linking order.
-	if _OPTIONS["platform"] == "emscripten" then
-		links {
-			"minko-webgl"
-		}
-	end
-
-	links {	"minko-framework" }
 	files {
 		"**.hpp",
 		"**.h",
@@ -18,28 +9,37 @@ project "minko-example-sponza"
 	}
 	includedirs {
 		"src",
-		"../../deps/all/include",
-		"../../framework/src"
+		"../../deps/all/include"
 	}
+
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links {
+			"minko-webgl"
+		}
+	end
 	
-	-- mk plugin
+	-- minko-framework
+	links { "minko-framework" }
+	includedirs { "../../framework/src" }
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+	end
+	-- minko-mk
 	includedirs { "../../plugins/mk/src" }
 	links { "minko-mk" }
-	-- bullet plugin
+	-- minko-bullet
 	includedirs { "../../plugins/bullet/src" }
 	links { "minko-bullet" }
-	-- pgn plugin
+	-- minko-png
 	includedirs { "../../plugins/png/src" }
 	links { "minko-png" }
-	-- jpeg plugin
+	-- minko-jpeg
 	includedirs { "../../plugins/jpeg/src" }
 	links { "minko-jpeg" }
-	-- particles plugin
+	-- minko-particles
 	includedirs { "../../plugins/particles/src" }
 	links { "minko-particles" }
-	-- glsl-optimizer plugin
-	includedirs { "../../plugins/glsl-optimizer/src" }
-	links {	"minko-glsl-optimizer", "glsl-optimizer" }
 
 	configuration { "debug"}
 		defines { "DEBUG" }
