@@ -35,9 +35,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "json/json.h"
-#include "minko/AssetsLibrary.hpp"
 
 using namespace minko::file;
 using namespace minko::render;
@@ -108,7 +107,7 @@ EffectParser::parse(const std::string&				    filename,
 				    const std::string&                  resolvedFilename,
                     std::shared_ptr<Options>            options,
 				    const std::vector<unsigned char>&	data,
-				    std::shared_ptr<AssetsLibrary>	    assetsLibrary)
+				    std::shared_ptr<AssetLibrary>	    AssetLibrary)
 {
 	Json::Value root;
 	Json::Reader reader;
@@ -121,7 +120,7 @@ EffectParser::parse(const std::string&				    filename,
     }
 
     _filename = filename;
-	_assetsLibrary = assetsLibrary;
+	_AssetLibrary = AssetLibrary;
 	_effectName = root.get("name", filename).asString();
 
 	_defaultPriority = root.get("priority", 0.f).asFloat();
@@ -382,8 +381,8 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
         if (nameValue.isString())
         {
             name = nameValue.asString();
-            if (_assetsLibrary->texture(name))
-                return _assetsLibrary->texture(name);
+            if (_AssetLibrary->texture(name))
+                return _AssetLibrary->texture(name);
         }
 
         auto sizeValue  = targetValue.get("size", 0);
@@ -400,7 +399,7 @@ EffectParser::parseTarget(Json::Value&                      contextNode,
 
         auto target     = render::Texture::create(context, width, height, true);
 
-        _assetsLibrary->texture(name, target);
+        _AssetLibrary->texture(name, target);
 
         return target;
     }
@@ -468,8 +467,8 @@ EffectParser::finalize()
 		program->fragmentShader()->source(_dependenciesCode + program->fragmentShader()->source());
     }
 
-	_assetsLibrary->effect(_effectName, _effect);
-    _assetsLibrary->effect(_filename, _effect);
+	_AssetLibrary->effect(_effectName, _effect);
+    _AssetLibrary->effect(_filename, _effect);
 
 	_complete->execute(shared_from_this());
 }
