@@ -30,8 +30,8 @@ namespace minko
 {
 	namespace deserialize
 	{
-		AssetsDeserializer::AssetsDeserializer(Any								assetsData,
-											   std::shared_ptr<AssetsLibrary>	library) :
+		AssetsDeserializer::AssetsDeserializer(Any					    			assetsData,
+											   std::shared_ptr<file::AssetLibrary>	library) :
 			_assetsData(assetsData),
 			_library(library)
 		{

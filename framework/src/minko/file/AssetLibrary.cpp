@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AssetsLibrary.hpp"
+#include "AssetLibrary.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/file/Loader.hpp"
@@ -28,32 +28,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::render;
 using namespace minko::geometry;
+using namespace minko::file;
 
-AssetsLibrary::Ptr
-AssetsLibrary::create(AbsContextPtr context)
+AssetLibrary::Ptr
+AssetLibrary::create(AbsContextPtr context)
 {
-	auto al = std::shared_ptr<AssetsLibrary>(new AssetsLibrary(context));
+	auto al = std::shared_ptr<AssetLibrary>(new AssetLibrary(context));
 
 	al->registerParser<file::EffectParser>("effect");
 
 	return al;
 }
 
-AssetsLibrary::AssetsLibrary(std::shared_ptr<AbstractContext> context) :
+AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 	_context(context),
 	_complete(Signal<Ptr>::create()),
 	_defaultOptions(file::Options::create(context))
 {
 }
 
-AssetsLibrary::GeometryPtr
-AssetsLibrary::geometry(const std::string& name)
+AssetLibrary::GeometryPtr
+AssetLibrary::geometry(const std::string& name)
 {
 	return _geometries[name];
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geometry)
+AssetLibrary::Ptr
+AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geometry)
 {
 	_geometries[name] = geometry;
 
@@ -61,13 +62,13 @@ AssetsLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geome
 }
 
 render::Texture::Ptr
-AssetsLibrary::texture(const std::string& name)
+AssetLibrary::texture(const std::string& name)
 {
 	return _textures[name];
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
+AssetLibrary::Ptr
+AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 {
 	_textures[name] = texture;
 
@@ -75,27 +76,27 @@ AssetsLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 scene::Node::Ptr
-AssetsLibrary::node(const std::string& name)
+AssetLibrary::node(const std::string& name)
 {
 	return _nodes[name];
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::node(const std::string& name, scene::Node::Ptr node)
+AssetLibrary::Ptr
+AssetLibrary::node(const std::string& name, scene::Node::Ptr node)
 {
 	_nodes[name] = node;
 
 	return shared_from_this();
 }
 
-AssetsLibrary::EffectPtr
-AssetsLibrary::effect(const std::string& name)
+AssetLibrary::EffectPtr
+AssetLibrary::effect(const std::string& name)
 {
 	return _effects[name];
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
+AssetLibrary::Ptr
+AssetLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 {
 	_effects[name] = effect;
 
@@ -103,21 +104,21 @@ AssetsLibrary::effect(const std::string& name, std::shared_ptr<Effect> effect)
 }
 
 const std::vector<unsigned char>&
-AssetsLibrary::blob(const std::string& name)
+AssetLibrary::blob(const std::string& name)
 {
 	return _blobs[name];
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::blob(const std::string& name, const std::vector<unsigned char>& blob)
+AssetLibrary::Ptr
+AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& blob)
 {
 	_blobs[name] = blob;
 
 	return shared_from_this();
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
+AssetLibrary::Ptr
+AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
 {
 	_filesQueue.push_back(filename);
 	_filenameToOptions[filename] = options ? options : _defaultOptions;
@@ -125,8 +126,8 @@ AssetsLibrary::queue(const std::string& filename, std::shared_ptr<file::Options>
 	return shared_from_this();
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
+AssetLibrary::Ptr
+AssetLibrary::load(const std::string& filename, std::shared_ptr<file::Options> options)
 {
 	queue(filename, options);
 	load();
@@ -134,8 +135,8 @@ AssetsLibrary::load(const std::string& filename, std::shared_ptr<file::Options> 
 	return shared_from_this();
 }
 
-AssetsLibrary::Ptr
-AssetsLibrary::load()
+AssetLibrary::Ptr
+AssetLibrary::load()
 {
 	std::list<std::string> queue = _filesQueue;
 
@@ -147,10 +148,10 @@ AssetsLibrary::load()
 
 			_filenameToLoader[filename] = loader;
 			_loaderSlots.push_back(loader->error()->connect(std::bind(
-				&AssetsLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
+				&AssetLibrary::loaderErrorHandler, shared_from_this(), std::placeholders::_1
 			)));
 			_loaderSlots.push_back(loader->complete()->connect(std::bind(
-				&AssetsLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
+				&AssetLibrary::loaderCompleteHandler, shared_from_this(), std::placeholders::_1
 			)));
 			loader->load(filename, _defaultOptions);
 		}
@@ -160,13 +161,13 @@ AssetsLibrary::load()
 }
 
 void
-AssetsLibrary::loaderErrorHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderErrorHandler(std::shared_ptr<file::Loader> loader)
 {
 	throw std::invalid_argument(loader->filename());
 }
 
 void
-AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
+AssetLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 {
 	auto filename = loader->filename();
 	auto extension = filename.substr(filename.find_last_of('.') + 1);
@@ -199,8 +200,8 @@ AssetsLibrary::loaderCompleteHandler(std::shared_ptr<file::Loader> loader)
 	}
 }
 
-AssetsLibrary::AbsParserPtr
-AssetsLibrary::parser(std::string extension)
+AssetLibrary::AbsParserPtr
+AssetLibrary::parser(std::string extension)
 {
 	return _parsers[extension]();
 }
