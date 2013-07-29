@@ -437,7 +437,7 @@ int main(int argc, char** argv)
     
     std::cout << context->driverInfo() << std::endl;
     
-    auto assets	= AssetsLibrary::create(context)
+    auto assets	= file::AssetLibrary::create(context)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::MkParser>("mk")
@@ -468,21 +468,18 @@ int main(int argc, char** argv)
         ->queue("effect/Particles.effect")
         ->queue("model/Sponza_lite.mk");
     
-    
     assets->defaultOptions()->generateMipmaps(true);
     
     rendering = Rendering::create(context);
     
     initializePhysics();
     
-	auto _ = assets->complete()->connect([](AssetsLibrary::Ptr assets)
-
+	auto _ = assets->complete()->connect([](file::AssetLibrary::Ptr assets)
 	{
         initializeCamera();
 
        	root->addChild(group);
 		root->addComponent(sponzaLighting);
-		//root->addComponent(DirectionalLight::create());
 
 		group->addComponent(Transform::create());
 		group->addChild(assets->node("model/Sponza_lite.mk"));
@@ -500,7 +497,6 @@ int main(int argc, char** argv)
 	});
 
 	assets->load();
-
 
 	std::cout << "start rendering" << std::endl << std::flush;
 

@@ -43,10 +43,10 @@ namespace minko
 
 			// attributes
 		private:
-			std::shared_ptr<AssetsLibrary>		_deserializedAssets;
-			ContextPtr							_context; 
-			std::map<int, NodeDeserializerFunc>	_nodeDeserializer;
-			std::map<std::shared_ptr<scene::Node>, NodeInfo&> _pluginControllers;
+			std::shared_ptr<file::AssetLibrary>	                _deserializedAssets;
+			ContextPtr							                _context; 
+			std::map<int, NodeDeserializerFunc>	                _nodeDeserializer;
+			std::map<std::shared_ptr<scene::Node>, NodeInfo&>   _pluginControllers;
 
 			// method
 		public:
@@ -58,7 +58,7 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<AssetsLibrary>
+			std::shared_ptr<file::AssetLibrary>
 			deserializedAssets()
 			{
 				return _deserializedAssets;
@@ -108,7 +108,7 @@ namespace minko
 
 			SceneDeserializer(ContextPtr context) : 
 				_context(context),
-				_deserializedAssets(AssetsLibrary::create(context))
+				_deserializedAssets(file::AssetLibrary::create(context))
 			{
 			}
 		};

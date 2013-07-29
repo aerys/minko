@@ -124,7 +124,7 @@ namespace minko
                                                           geometryName,
                                                           copyId,
                                                           geometryObject,
-                                                          options->assetsLibrary(),
+                                                          options->assetLibrary(),
                                                           mesh,
                                                           options->parseOptions(),
                                                           computeTangent,
