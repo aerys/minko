@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/deserialize/NameConverter.hpp"
 
 namespace minko
@@ -41,13 +41,13 @@ namespace minko
 			TextureMap							_idToTexture;
 			MaterialMap							_idToMaterial;
 			Any									_assetsData;
-			std::shared_ptr<AssetsLibrary>		_library;
+			std::shared_ptr<file::AssetLibrary>	_library;
 
 		public:
 			inline static
 			Ptr
-			create(Any								assetsData, 
-				   std::shared_ptr<AssetsLibrary>	library)
+			create(Any					    			assetsData, 
+				   std::shared_ptr<file::AssetLibrary>	library)
 			{
 				return std::shared_ptr<AssetsDeserializer>(new AssetsDeserializer(assetsData, library));
 			}
@@ -70,8 +70,8 @@ namespace minko
 			extract(std::shared_ptr<file::Options>				options,
 					std::shared_ptr<deserialize::NameConverter> nameConverter);
 		private:
-			AssetsDeserializer(Any								assetsData,
-							   std::shared_ptr<AssetsLibrary>	library);
+			AssetsDeserializer(Any					    			assetsData,
+							   std::shared_ptr<file::AssetLibrary>	library);
 		};
 	}
 }

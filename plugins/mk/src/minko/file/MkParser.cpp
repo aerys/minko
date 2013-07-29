@@ -18,7 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "MkParser.hpp"
-#include "minko/AssetsLibrary.hpp"
+
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/scene/Node.hpp"
 
@@ -32,7 +33,7 @@ MkParser::parse(const std::string&				    filename,
 				const std::string&                  resolvedFilename,
                 std::shared_ptr<Options>            options,
 				const std::vector<unsigned char>&	data,
-				std::shared_ptr<AssetsLibrary>	    assetsLibrary)
+				std::shared_ptr<AssetLibrary>	    AssetLibrary)
 {
 	std::vector<char> dataCopy(data.begin(), data.end());
 
@@ -48,7 +49,7 @@ MkParser::parse(const std::string&				    filename,
 	std::cout << "Version        : " << minko::Any::cast<std::string>(qarkData["version"]) << std::endl;
 	std::cout << std::flush;
 
-	std::shared_ptr<file::MkOptions> mkOptions = file::MkOptions::create(options, assetsLibrary);
+	std::shared_ptr<file::MkOptions> mkOptions = file::MkOptions::create(options, AssetLibrary);
 
 	mkOptions->pluginEntryToFunction(std::make_shared<std::map<std::string, file::MkOptions::DeserializeFunction>>(_pluginEntryToFunction));
 
@@ -56,7 +57,7 @@ MkParser::parse(const std::string&				    filename,
 
 	auto node = sceneDeserializer->deserializeScene(qarkData["scene"], qarkData["assets"], mkOptions, _controllerMap, _nodeMap);
 	
-	assetsLibrary->node(filename, node);
+	AssetLibrary->node(filename, node);
 
 	std::cout << "parse MK" << std::endl << std::flush;
 }

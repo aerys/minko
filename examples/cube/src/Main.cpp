@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 	auto context = render::OpenGLES2Context::create();
     auto renderingComponent = Rendering::create(context);
     auto mesh = scene::Node::create("mesh");
-    auto assets	= AssetsLibrary::create(context)
+    auto assets	= file::AssetLibrary::create(context)
 		->registerParser<file::PNGParser>("png")
 		->geometry("cube", geometry::CubeGeometry::create(context))
 		->queue("texture/box.png")
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 
     assets->defaultOptions()->generateMipmaps(true);
 
-    auto _ = assets->complete()->connect([=](AssetsLibrary::Ptr assets)
+    auto _ = assets->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto root   = scene::Node::create("root");
         auto camera	= scene::Node::create("camera");
