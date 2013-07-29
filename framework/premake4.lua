@@ -68,6 +68,6 @@ project "minko-framework"
 		flags { "Optimize" }
 
 	newoption {
-		trigger     = "no-glsl-optimization",
+		trigger     = "no-glsl-optimizer",
 		description = "Disable the GLSL optimizer."
 	}
