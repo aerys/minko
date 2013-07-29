@@ -141,13 +141,13 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 }
 
 void
-bullet::PhysicsWorld::addChild(Collider::Ptr collider)
+bullet::PhysicsWorld::addChild(ColliderData::Ptr collider)
 {
 	if (hasCollider(collider))
 		throw std::logic_error("The same collider cannot be added twice.");
 
 	BulletCollider::Ptr bulletCollider = BulletCollider::create(collider);
-	_colliderMap.insert(std::pair<Collider::Ptr, BulletCollider::Ptr>(collider, bulletCollider));
+	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(collider, bulletCollider));
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(bulletCollider->rigidBody().get());
@@ -160,7 +160,7 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
 }
 
 void
-bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
+bullet::PhysicsWorld::removeChild(ColliderData::Ptr collider)
 {
 	ColliderMap::const_iterator	it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -172,7 +172,7 @@ bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
 }
 
 bool
-bullet::PhysicsWorld::hasCollider(Collider::Ptr collider) const
+bullet::PhysicsWorld::hasCollider(ColliderData::Ptr collider) const
 {
 	return _colliderMap.find(collider) != _colliderMap.end();
 }
@@ -206,7 +206,7 @@ bullet::PhysicsWorld::updateColliders()
 
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
-		Collider::Ptr	collider(it->first);
+		ColliderData::Ptr	collider(it->first);
 		if (collider->isStatic())
 			continue;
 
@@ -226,7 +226,7 @@ bullet::PhysicsWorld::updateColliders()
 }
 
 void
-bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderPtr collider, 
+bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider, 
 													 Matrix4x4::Ptr graphicsNoScaleTransform)
 {
 	auto it	= _colliderMap.find(collider);
@@ -276,7 +276,7 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderPtr collider,
 }
 
 void
-bullet::PhysicsWorld::setPhysicsWorldMatrix(Collider::Ptr collider, 
+bullet::PhysicsWorld::setPhysicsWorldMatrix(ColliderData::Ptr collider, 
 											Matrix4x4::Ptr worldMatrix)
 {
 	auto it	= _colliderMap.find(collider);
@@ -303,7 +303,7 @@ bullet::PhysicsWorld::setPhysicsWorldMatrix(Collider::Ptr collider,
 }
 
 void
-bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr velocity)
+bullet::PhysicsWorld::setLinearVelocity(ColliderData::Ptr collider, Vector3::Ptr velocity)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -313,7 +313,7 @@ bullet::PhysicsWorld::setLinearVelocity(Collider::Ptr collider, Vector3::Ptr vel
 }
 
 void
-bullet::PhysicsWorld::prependLocalTranslation(Collider::Ptr collider, Vector3::Ptr translation)
+bullet::PhysicsWorld::prependLocalTranslation(ColliderData::Ptr collider, Vector3::Ptr translation)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -323,7 +323,7 @@ bullet::PhysicsWorld::prependLocalTranslation(Collider::Ptr collider, Vector3::P
 }
 
 void
-bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
+bullet::PhysicsWorld::prependRotationY(ColliderData::Ptr collider, float radians)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
@@ -333,7 +333,7 @@ bullet::PhysicsWorld::prependRotationY(Collider::Ptr collider, float radians)
 }
 
 void
-bullet::PhysicsWorld::applyRelativeImpulse(Collider::Ptr collider, Vector3::Ptr relativeForce)
+bullet::PhysicsWorld::applyRelativeImpulse(ColliderData::Ptr collider, Vector3::Ptr relativeForce)
 {
 	auto it	= _colliderMap.find(collider);
 	if (it == _colliderMap.end())
