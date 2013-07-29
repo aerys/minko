@@ -32,24 +32,22 @@ const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME	= "camera";
 
-Rendering::Ptr		rendering			= nullptr;
-auto				sponzaLighting		= SponzaLighting::create();
-auto				mesh				= scene::Node::create("mesh");
-auto				group				= scene::Node::create("group");
-auto				camera				= scene::Node::create("camera");
-auto				root				= scene::Node::create("root");
-auto				speed				= 0.f;
-auto				angSpeed			= 0.f;
-float				_rotationX			= 0;
-float				_rotationY			= 0;
-float				_mousePositionX		= 0;
-float				_mousePositionY		= 0;
-
-Vector3::Ptr					_target					= Vector3::create();
-Vector3::Ptr					_eye					= Vector3::create();
-Matrix4x4::Ptr					_cameraWorldTransform	= Matrix4x4::create();
-bullet::ColliderComponent::Ptr	_cameraColliderComp		= nullptr;
-bool							_updateCameraRotation	= false;
+Rendering::Ptr			rendering			= nullptr;
+auto					sponzaLighting		= SponzaLighting::create();
+auto					mesh				= scene::Node::create("mesh");
+auto					group				= scene::Node::create("group");
+auto					camera				= scene::Node::create("camera");
+auto					root				= scene::Node::create("root");
+auto					speed				= 0.f;
+auto					angSpeed			= 0.f;
+float					_rotationX			= 0;
+float					_rotationY			= 0;
+float					_mousePositionX		= 0;
+float					_mousePositionY		= 0;
+Vector3::Ptr			_target				= Vector3::create();
+Vector3::Ptr			_eye				= Vector3::create();
+bullet::Collider::Ptr	_cameraCollider		= nullptr;
+bool					_updateCameraRotation	= false;
 
 
 #if defined EMSCRIPTEN
@@ -69,7 +67,7 @@ void
 keyDownHandler(int key, int x, int y)
 {
 	std::cout << "keyDownHandler: " << key << std::endl;
-	if (_cameraColliderComp == nullptr)
+	if (_cameraCollider == nullptr)
 	{
 		if (key == GLUT_KEY_UP)
 			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
@@ -124,21 +122,21 @@ glutMouseMoveHandler(int x, int y)
 void
 renderScene()
 {
-	if (_cameraColliderComp == nullptr)
+	if (_cameraCollider == nullptr)
 	{
 		if (speed)
-			_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+			_cameraCollider->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
 		if (angSpeed)
-		    _cameraColliderComp->prependRotationY(angSpeed);
+		    _cameraCollider->prependRotationY(angSpeed);
 	}
 	else
 	{
 		// the camera has a collider component
-		_cameraWorldTransform = _cameraColliderComp->getPhysicsWorldTransform();
+		_cameraWorldTransform = _cameraCollider->getPhysicsWorldTransform();
 
 		// move forward/backward
 		if (speed)
-			_cameraColliderComp->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+			_cameraCollider->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
 
 		// look around
 		_eye = _cameraWorldTransform->translationVector();
@@ -163,7 +161,7 @@ renderScene()
 		newEyePos = _cameraWorldTransform->translationVector(newEyePos);
 
 		//camera->component<Transform>()->transform()->copyFrom(_cameraWorldTransform);
-		_cameraColliderComp->setPhysicsWorldTransform(_cameraWorldTransform);
+		_cameraCollider->setPhysicsWorldTransform(_cameraWorldTransform);
 
 		//_updateCameraRotation = false;
 	}
@@ -432,10 +430,10 @@ initializeCamera(scene::Node::Ptr group)
 
 		std::cout << "parsed camera's transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
 
-		if (camera->hasComponent<component::bullet::ColliderComponent>())
+		if (camera->hasComponent<component::bullet::Collider>())
 		{
 			std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
-			_cameraColliderComp = camera->component<component::bullet::ColliderComponent>();
+			_cameraCollider = camera->component<component::bullet::Collider>();
 		}
 		else
 			std::cout << "PARSED CAMERA W/OUT COLLIDER" << std::endl;
@@ -587,7 +585,7 @@ main(int argc, char** argv)
 #else
 	while(!glfwWindowShouldClose(window))
 	{
-		if (_cameraColliderComp == nullptr)
+		if (_cameraCollider == nullptr)
 		{
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
@@ -600,18 +598,18 @@ main(int argc, char** argv)
 		}
 		else
 		{
-			// the camera has a collider component
+			auto cameraTransform = camera->component<Transform>()->transform();
 
-			_cameraWorldTransform = _cameraColliderComp->getPhysicsWorldTransform();
-
-			// move forward/backward
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-				_cameraWorldTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+				// go forward
+				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
 			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-				_cameraWorldTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+				// go backward
+				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+
 
 			// look around
-			_eye = _cameraWorldTransform->translationVector();
+			_eye = cameraTransform->translationVector();
 
 			_target->setTo(
 				_eye->x() + sinf(_rotationY) * cosf(_rotationX),
@@ -620,22 +618,17 @@ main(int argc, char** argv)
 				);
 
 			// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
-			_cameraWorldTransform->view(_eye, _target, Vector3::upAxis());
+			cameraTransform->view(_eye, _target, Vector3::upAxis());
 
-			auto newEyePos = _cameraWorldTransform->translationVector();
+			auto newEyePos = cameraTransform->translationVector();
 
-			_cameraWorldTransform->appendTranslation(
+			cameraTransform->appendTranslation(
 				_eye->x() - newEyePos->x(),
 				_eye->y() - newEyePos->y(),
 				_eye->z() - newEyePos->z()
 				);
 
-			newEyePos = _cameraWorldTransform->translationVector(newEyePos);
-
-			//camera->component<Transform>()->transform()->copyFrom(_cameraWorldTransform);
-			_cameraColliderComp->setPhysicsWorldTransform(_cameraWorldTransform);
-
-			//_updateCameraRotation = false;
+			_cameraCollider->synchronizePhysicsWithGraphics();
 		}
 		
 		sceneManager->nextFrame();
