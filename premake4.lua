@@ -20,7 +20,6 @@ end
 include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
-include 'plugins/glsl-optimizer'
 
 -- support for new actions
 dofile('tools/all/lib/library.lua')
