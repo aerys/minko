@@ -33,7 +33,13 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-bullet::PhysicsWorld::PhysicsWorld():
+/*static*/
+Matrix4x4::Ptr	bullet::PhysicsWorld::_TMP_MATRIX	= Matrix4x4::create();
+/*static*/
+btTransform		bullet::PhysicsWorld::_TMP_BTTRANSFORM;
+
+bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
+	AbstractComponent(),
 	_colliderMap(),
 	_rendering(rendering),
 	_bulletBroadphase(nullptr),
@@ -41,8 +47,6 @@ bullet::PhysicsWorld::PhysicsWorld():
 	_bulletConstraintSolver(nullptr),
 	_bulletDispatcher(nullptr),
 	_bulletDynamicsWorld(nullptr),
-	_tempTransform(Matrix4x4::create()->identity()),
-	_bulletTempTransform(new btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f))),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
 	_frameEndSlot(nullptr),
@@ -200,9 +204,6 @@ bullet::PhysicsWorld::update(float timeStep)
 void
 bullet::PhysicsWorld::updateColliders()
 {
-	auto graphicsTransform	= Matrix4x4::create();
-	auto physicsTransform	= Matrix4x4::create(); 
-
 	for (ColliderMap::iterator it = _colliderMap.begin(); it != _colliderMap.end(); ++it)
 	{
 		ColliderData::Ptr	collider(it->first);
@@ -211,16 +212,17 @@ bullet::PhysicsWorld::updateColliders()
 
 		fromBulletTransform(
 			it->second->rigidBody()->getWorldTransform(),
-			physicsTransform
+			_TMP_MATRIX
 		);
+		// _TMP_MATRIX = physicsTransform
 
-		graphicsTransform
-			->copyFrom(collider->correction())
-			->append(collider->shape()->deltaTransformInverse())
-			->append(physicsTransform);
+		_TMP_MATRIX
+			->prepend(collider->shape()->deltaTransformInverse())
+			->prepend(collider->correction());
+		// _TMP_MATRIX = graphicsTransform = physicsTransform * deltaInverse * correction
 
 		collider->graphicsWorldTransformChanged()
-			->execute(collider, graphicsTransform);
+			->execute(collider, _TMP_MATRIX);
 	}
 }
 
@@ -243,14 +245,14 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 	if (bulletMotionState == nullptr)
 		return;
 
-	_tempTransform
+	_TMP_MATRIX
 		->copyFrom(graphicsNoScaleTransform)->invert()
 		->append(collider->shape()->deltaTransform())
 		->append(graphicsNoScaleTransform)
 		->invert();
 
 	toBulletTransform(
-		_tempTransform, 
+		_TMP_MATRIX, 
 		bulletMotionState->m_centerOfMassOffset
 	);
 
@@ -261,9 +263,8 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 	);
 
 	// synchronize bullet
-	bulletMotionState->getWorldTransform(*_bulletTempTransform);
-
-	it->second->rigidBody()->setWorldTransform(*_bulletTempTransform);
+	bulletMotionState->getWorldTransform(_TMP_BTTRANSFORM);
+	it->second->rigidBody()->setWorldTransform(_TMP_BTTRANSFORM);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << it->first->name() << "] synchro graphics -> physics" << std::endl;
@@ -274,73 +275,6 @@ bullet::PhysicsWorld::synchronizePhysicsWithGraphics(ColliderDataPtr collider,
 #endif // DEBUG_PHYSICS
 }
 
-void
-bullet::PhysicsWorld::setPhysicsWorldMatrix(ColliderData::Ptr collider, 
-											Matrix4x4::Ptr worldMatrix)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-#ifdef DEBUG_PHYSICS
-	const float scaling = powf(fabsf(worldMatrix->determinant3x3()), 1.0f/3.0f);
-	if (fabsf(scaling - 1.0f) > 1e-3)
-		throw std::logic_error("Physics world matrices must be pure rotation + translation matrices.");
-#endif // DEBUG_PHYSICS
-
-	it->second->setWorldTransform(worldMatrix);
-
-#ifdef DEBUG_PHYSICS
-	std::cout << "[" << collider->name() << "]\tsynchro graphics->physics" << std::endl;
-
-	btTransform bulletTransform;
-	it->second->rigidBody()->getMotionState()->getWorldTransform(bulletTransform);
-	print(std::cout << "- motionstate.worldTransform = ", bulletTransform) << std::endl;
-
-	print(std::cout << "- rigidbody.worldTransform = ", it->second->rigidBody()->getWorldTransform()) << std::endl;
-#endif // DEBUG_PHYSICS
-}
-
-void
-bullet::PhysicsWorld::setLinearVelocity(ColliderData::Ptr collider, Vector3::Ptr velocity)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-	it->second->setLinearVelocity(velocity);
-}
-
-void
-bullet::PhysicsWorld::prependLocalTranslation(ColliderData::Ptr collider, Vector3::Ptr translation)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-	it->second->prependLocalTranslation(translation);
-}
-
-void
-bullet::PhysicsWorld::prependRotationY(ColliderData::Ptr collider, float radians)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-	it->second->prependRotationY(radians);
-}
-
-void
-bullet::PhysicsWorld::applyRelativeImpulse(ColliderData::Ptr collider, Vector3::Ptr relativeForce)
-{
-	auto it	= _colliderMap.find(collider);
-	if (it == _colliderMap.end())
-		return;
-
-	it->second->applyRelativeImpulse(relativeForce);
-}
-
 /*static*/
 Matrix4x4::Ptr
 bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input, 
@@ -348,21 +282,20 @@ bullet::PhysicsWorld::removeScalingShear(Matrix4x4::Ptr input,
 										 Matrix4x4::Ptr correction)
 {
 	auto translation	= input->translationVector();
-	auto decompQR		= Matrix4x4::create()
-		->copyFrom(input)
-		->appendTranslation(-(*translation))
-		->decomposeQR();
 
-	if (correction != nullptr)
-		correction->copyFrom(decompQR.second);
+	// remove translational component, then perform QR decomposition
+	_TMP_MATRIX
+		->copyFrom(input)
+		->appendTranslation(-(*translation));
 
 	if (output == nullptr)
 		output = Matrix4x4::create();
-	output
-		->copyFrom(decompQR.first)
-		->appendTranslation(translation);
+	if (correction == nullptr)
+		correction = Matrix4x4::create();
 
-	return output;
+	_TMP_MATRIX->decomposeQR(output, correction);
+
+	return output->appendTranslation(translation);
 }
 
 /*static*/
@@ -373,17 +306,15 @@ bullet::PhysicsWorld::fromBulletTransform(const btTransform& transform,
 	auto basis			= transform.getBasis();
 	auto translation	= transform.getOrigin();
 
-	Matrix4x4::Ptr ret = output == nullptr
-		? Matrix4x4::create()
-		: output;
+	if (output == nullptr)
+		output = Matrix4x4::create();
 
-	ret->initialize(
+	return output->initialize(
 		basis[0][0], basis[0][1], basis[0][2], translation[0],
 		basis[1][0], basis[1][1], basis[1][2], translation[1],
 		basis[2][0], basis[2][1], basis[2][2], translation[2],
 		0.0f, 0.0f, 0.0f, 1.0f
 		);
-	return ret;
 }
 
 /*static*/
