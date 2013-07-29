@@ -2,7 +2,8 @@ project "minko-example-cube"
 	kind "ConsoleApp"
 	language "C++"
 	files {
-		"src/**.hpp", "src/**.cpp"
+		"src/**.hpp",
+		"src/**.cpp"
 	}
 	includedirs {
 		"src",
@@ -38,12 +39,8 @@ project "minko-example-cube"
 	-- linux
 	configuration { "linux" }
 		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
-		libdirs {
-			"../../deps/lin/lib"
-		}
-		includedirs {
-			"../../deps/lin/include"
-		}
+		libdirs { "../../deps/lin/lib" }
+		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }
 		postbuildcommands {
 			'cp -r ../../framework/effect .',
@@ -53,12 +50,8 @@ project "minko-example-cube"
 	-- windows
 	configuration { "windows", "x32" }
 		links { "OpenGL32", "glfw3dll", "glew32" }
-		libdirs {
-			"../../deps/win/lib"
-		}
-		includedirs {
-			"../../deps/win/include"
-		}
+		libdirs { "../../deps/win/lib" }
+		includedirs { "../../deps/win/include" }
 		postbuildcommands {
 			-- copy framework effects
 			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
