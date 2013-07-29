@@ -95,6 +95,9 @@ namespace minko
 				Matrix4x4Ptr									_tempTransform;
 				btTransformPtr									_bulletTempTransform;
 
+				static Matrix4x4Ptr					_TMP_MATRIX;
+				static btTransform					_TMP_BTTRANSFORM;
+
 			public:
 				static
 				Ptr
@@ -124,21 +127,6 @@ namespace minko
 
 				void
 				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
-
-				void
-				setPhysicsWorldMatrix(ColliderDataPtr, Matrix4x4Ptr);
-
-				void
-				setLinearVelocity(ColliderDataPtr, Vector3Ptr);
-
-				void
-				prependLocalTranslation(ColliderDataPtr, Vector3Ptr);
-
-				void
-				prependRotationY(ColliderDataPtr, float);
-
-				void
-				applyRelativeImpulse(ColliderDataPtr, Vector3Ptr);
 
 				static
 				Matrix4x4Ptr
