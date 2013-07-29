@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
 
+#ifdef MINKO_GLSL_OPTIMIZER
+struct glslopt_ctx;
+#endif
+
 namespace minko
 {
 	namespace render
@@ -47,40 +51,44 @@ namespace minko
             std::unordered_map<uint, bool>                  _textureHasMipmaps;
 
 		private:
-            static BlendFactorsMap      _blendingFactors;
-			static DepthFuncsMap	    _depthFuncs;
+            static BlendFactorsMap                  _blendingFactors;
+			static DepthFuncsMap	                _depthFuncs;
 
-            std::string                 _driverInfo;
+            std::string                             _driverInfo;
 
-			std::list<unsigned int>	    _vertexBuffers;
-			std::list<unsigned int>	    _indexBuffers;
-			std::list<unsigned int>     _programs;
-			std::list<unsigned int>     _vertexShaders;
-			std::list<unsigned int>     _fragmentShaders;
+			std::list<unsigned int>	                _vertexBuffers;
+			std::list<unsigned int>	                _indexBuffers;
+			std::list<unsigned int>                 _programs;
+			std::list<unsigned int>                 _vertexShaders;
+			std::list<unsigned int>                 _fragmentShaders;
 
-            TextureToBufferMap          _frameBuffers;
-            TextureToBufferMap          _renderBuffers;
+            TextureToBufferMap                      _frameBuffers;
+            TextureToBufferMap                      _renderBuffers;
 
-			unsigned int			    _viewportX;
-			unsigned int			    _viewportY;
-			unsigned int			    _viewportWidth;
-			unsigned int			    _viewportHeight;
+			unsigned int			                _viewportX;
+			unsigned int			                _viewportY;
+			unsigned int			                _viewportWidth;
+			unsigned int			                _viewportHeight;
 
-            unsigned int                _currentTarget;
-			int						    _currentIndexBuffer;
-			std::vector<int>		    _currentVertexBuffer;
-			std::vector<int>		    _currentVertexSize;
-			std::vector<int>		    _currentVertexStride;
-			std::vector<int>		    _currentVertexOffset;
-			std::vector<int>		    _currentTexture;
-            std::vector<WrapMode>       _currentWrapMode;
-            std::vector<TextureFilter>  _currentTextureFilter;
-            std::vector<MipFilter>      _currentMipFilter;
-			int						    _currentProgram;
-			Blending::Mode			    _currentBlendMode;
-			bool					    _currentDepthMask;
-			CompareMode				    _currentDepthFunc;
-            TriangleCulling             _currentTriangleCulling;
+            unsigned int                            _currentTarget;
+			int						                _currentIndexBuffer;
+			std::vector<int>		                _currentVertexBuffer;
+			std::vector<int>		                _currentVertexSize;
+			std::vector<int>		                _currentVertexStride;
+			std::vector<int>		                _currentVertexOffset;
+			std::vector<int>		                _currentTexture;
+            std::unordered_map<uint, WrapMode>      _currentWrapMode;
+            std::unordered_map<uint, TextureFilter> _currentTextureFilter;
+            std::unordered_map<uint, MipFilter>     _currentMipFilter;
+			int						                _currentProgram;
+			Blending::Mode			                _currentBlendMode;
+			bool					                _currentDepthMask;
+			CompareMode				                _currentDepthFunc;
+            TriangleCulling                         _currentTriangleCulling;
+
+#ifdef MINKO_GLSL_OPTIMIZER
+            glslopt_ctx*                            _glslOptimizer;
+#endif
 
 		public:
 			~OpenGLES2Context();

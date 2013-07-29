@@ -6,7 +6,6 @@
 #include "minko/MinkoMk.hpp"
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
-#include "minko/MinkoGLSLOptimizer.hpp"
 
 #include <time.h>
 
@@ -441,8 +440,6 @@ int main(int argc, char** argv)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::MkParser>("mk")
-        ->registerParser<file::GLSLParser>("fragment.glsl")
-        ->registerParser<file::GLSLParser>("vertex.glsl")
         ->geometry("cube", geometry::CubeGeometry::create(context));
     
 #ifdef EMSCRIPTEN
