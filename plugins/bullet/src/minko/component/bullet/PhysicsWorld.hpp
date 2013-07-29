@@ -45,7 +45,7 @@ namespace minko
 			class BoxShape;
 			class ConeShape;
 			class CylinderShape;
-			class Collider;
+			class ColliderData;
 
 			class PhysicsWorld:
 				public AbstractComponent,
@@ -57,7 +57,7 @@ namespace minko
 			private:
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
-				typedef std::shared_ptr<Collider>					ColliderPtr; 
+				typedef std::shared_ptr<ColliderData>				ColliderDataPtr; 
 				typedef std::shared_ptr<Rendering>					RenderingPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
@@ -71,8 +71,8 @@ namespace minko
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
 
 				class BulletCollider;
-				typedef std::shared_ptr<BulletCollider>				BulletColliderPtr;
-				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>	ColliderMap;
+				typedef std::shared_ptr<BulletCollider>							BulletColliderPtr;
+				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>	ColliderMap;
 
 			private:
 				ColliderMap										_colliderMap;
@@ -108,13 +108,13 @@ namespace minko
 				}
 
 				bool
-				hasCollider(ColliderPtr) const;
+				hasCollider(ColliderDataPtr) const;
 
 				void
-				addChild(ColliderPtr);
+				addChild(ColliderDataPtr);
 
 				void
-				removeChild(ColliderPtr);
+				removeChild(ColliderDataPtr);
 
 				void
 				setGravity(Vector3Ptr);
@@ -123,22 +123,22 @@ namespace minko
 				update(float timeStep = 1.0f/60.0f);
 
 				void
-				synchronizePhysicsWithGraphics(ColliderPtr, Matrix4x4Ptr);
+				synchronizePhysicsWithGraphics(ColliderDataPtr, Matrix4x4Ptr);
 
 				void
-				setPhysicsWorldMatrix(ColliderPtr, Matrix4x4Ptr);
+				setPhysicsWorldMatrix(ColliderDataPtr, Matrix4x4Ptr);
 
 				void
-				setLinearVelocity(ColliderPtr, Vector3Ptr);
+				setLinearVelocity(ColliderDataPtr, Vector3Ptr);
 
 				void
-				prependLocalTranslation(ColliderPtr, Vector3Ptr);
+				prependLocalTranslation(ColliderDataPtr, Vector3Ptr);
 
 				void
-				prependRotationY(ColliderPtr, float);
+				prependRotationY(ColliderDataPtr, float);
 
 				void
-				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
+				applyRelativeImpulse(ColliderDataPtr, Vector3Ptr);
 
 				static
 				Matrix4x4Ptr
@@ -222,7 +222,7 @@ namespace minko
 				public:
 					static
 					BulletColliderPtr
-					create(ColliderPtr);
+					create(ColliderDataPtr);
 
 					btRigidBodyPtr
 					rigidBody() const;
@@ -246,7 +246,7 @@ namespace minko
 					BulletCollider();
 
 					void
-					initialize(ColliderPtr);
+					initialize(ColliderDataPtr);
 
 					btCollisionShapePtr
 					initializeCollisionShape(AbsShapePtr) const;
@@ -264,10 +264,10 @@ namespace minko
 					initializeCylinderShape(CylinderShapePtr) const;
 
 					btMotionStatePtr
-					initializeMotionState(ColliderPtr) const;
+					initializeMotionState(ColliderDataPtr) const;
 
 					void
-					initializeCollisionObject(ColliderPtr, btCollisionShapePtr, btMotionStatePtr);
+					initializeCollisionObject(ColliderDataPtr, btCollisionShapePtr, btMotionStatePtr);
 				};
 			};
 		}
