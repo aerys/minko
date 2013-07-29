@@ -66,3 +66,8 @@ project "minko-framework"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+
+	newoption {
+		trigger     = "no-glsl-optimization",
+		description = "Disable the GLSL optimizer."
+	}
