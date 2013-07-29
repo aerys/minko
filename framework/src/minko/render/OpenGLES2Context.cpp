@@ -36,6 +36,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glu.h>
 #endif
 
+#ifdef MINKO_GLSL_OPTIMIZER
+# include "glsl_optimizer.h"
+#endif
+
 using namespace minko::render;
 
 OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
@@ -120,6 +124,10 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    _glslOptimizer = glslopt_initialize(true);
+#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -141,6 +149,10 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    glslopt_cleanup(_glslOptimizer);
+#endif
 }
 
 void
@@ -707,9 +719,6 @@ void
 OpenGLES2Context::setShaderSource(const unsigned int shader,
 							      const std::string& source)
 {
-    //std::string src = "#version 100\n#define GL_ES true\n" + source;
-	//const char* sourceString = src.c_str();
-    /*
 #ifdef MINKO_GLSL_OPTIMIZER
     std::string src = "#version 100\n" + source;
 	const char* sourceString = src.c_str();
@@ -731,12 +740,11 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     }
     glslopt_shader_delete(optimizedShader);
 #else
-    */
     std::string src = "#version 120\n" + source;
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
-//#endif
+#endif
 
     checkForErrors();
 }

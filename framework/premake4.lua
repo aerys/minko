@@ -1,3 +1,5 @@
+include "lib/glsl-optimizer"
+
 project "minko-framework"
 	kind "StaticLib"
 	language "C++"
@@ -21,7 +23,19 @@ project "minko-framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
-
+	-- glsl-optimizer
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+		defines { "MINKO_GLSL_OPTIMIZER" }
+		includedirs {
+			"lib/glsl-optimizer/include",
+			"lib/glsl-optimizer/include/c99",
+			"lib/glsl-optimizer/src/mesa",
+			"lib/glsl-optimizer/src/glsl",
+			"lib/glsl-optimizer/src/glsl/glcpp"
+		}
+	end
+	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
