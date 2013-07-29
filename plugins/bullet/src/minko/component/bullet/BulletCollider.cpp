@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Vector3.hpp>
 #include <minko/math/Quaternion.hpp>
 #include <minko/math/Matrix4x4.hpp>
-#include <minko/component/bullet/Collider.hpp>
+#include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/SphereShape.hpp>
 #include <minko/component/bullet/BoxShape.hpp>
@@ -48,7 +48,7 @@ bullet::PhysicsWorld::BulletCollider::rigidBody() const
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr collider)
 {
 	if (collider == nullptr)
 		throw std::invalid_argument("collider");
@@ -137,7 +137,7 @@ bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr
 }
 
 std::shared_ptr<btMotionState>
-bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collider) const
+bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderData::Ptr collider) const
 {
 	return std::shared_ptr<btMotionState>(new btDefaultMotionState(
 		btTransform(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), btVector3(0.0f, 0.0f, 0.0f)),
@@ -146,7 +146,7 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr collid
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr collider,
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr collider,
 																std::shared_ptr<btCollisionShape> bulletCollisionShape, 
 																std::shared_ptr<btMotionState> bulletMotionState) 
 {
@@ -295,7 +295,7 @@ bullet::PhysicsWorld::BulletCollider::prependRotationY(float radians)
 }
 
 bullet::PhysicsWorld::BulletCollider::Ptr
-bullet::PhysicsWorld::BulletCollider::create(Collider::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::create(ColliderData::Ptr collider)
 {
 	BulletColliderPtr bulletCollider(new BulletCollider());
 
