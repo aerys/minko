@@ -26,12 +26,12 @@ namespace minko
 {
 	namespace component
 	{
-		class Rendering :
+		class Renderer :
 			public AbstractComponent,
-			public std::enable_shared_from_this<Rendering>
+			public std::enable_shared_from_this<Renderer>
 		{
 		public:
-			typedef std::shared_ptr<Rendering>			Ptr;
+			typedef std::shared_ptr<Renderer>			Ptr;
 
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
@@ -61,7 +61,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				auto ctrl = std::shared_ptr<Rendering>(new Rendering());
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
 
 				ctrl->initialize();
 
@@ -100,7 +100,7 @@ namespace minko
 			}
 
 		private:
-			Rendering();
+			Renderer();
 
 			void
 			initialize();
@@ -145,7 +145,7 @@ namespace minko
             compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
 
 			void
-			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+			sceneManagerRendererBeginHandler(std::shared_ptr<SceneManager> sceneManager);
 
 			void
 			findSceneManager();
