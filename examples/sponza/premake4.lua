@@ -14,9 +14,7 @@ project "minko-example-sponza"
 
 	-- ugly, but couldn't find a better solution to maintain linking order.
 	if _OPTIONS["platform"] == "emscripten" then
-		links {
-			"minko-webgl"
-		}
+		links { "minko-webgl" }
 	end
 	
 	-- minko-framework

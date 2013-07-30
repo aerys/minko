@@ -1,4 +1,6 @@
-include "lib/glsl-optimizer"
+if not _OPTIONS["no-glsl-optimizer"] then
+	include "lib/glsl-optimizer"
+end
 
 project "minko-framework"
 	kind "StaticLib"
