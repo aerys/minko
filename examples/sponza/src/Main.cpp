@@ -362,7 +362,7 @@ initializeCamera()
 	if (!camera->hasComponent<Transform>())
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
     
-	camera->addComponent(Rendering::create());
+	camera->addComponent(Renderer::create());
     camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
     
     root->addChild(camera);

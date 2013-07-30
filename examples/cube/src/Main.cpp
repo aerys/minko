@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 		root->addComponent(sceneManager);
 
 		// setup camera
-        auto renderingComponent = Rendering::create();
+        auto renderingComponent = Renderer::create();
 		renderingComponent->backgroundColor(0x7F7F7FFF);
         camera->addComponent(renderingComponent);
 		camera->addComponent(Transform::create());
