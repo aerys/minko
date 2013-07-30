@@ -30,6 +30,7 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 	_type(type),
 	_margin(0.0f),
 	_localScaling(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_volumeScaling(1.0f),
 	_deltaTransform(Matrix4x4::create()->identity()),
 	_deltaTransformInverse(Matrix4x4::create()->identity()),
 	_shapeChanged(Signal<Ptr>::create())
@@ -41,6 +42,7 @@ void
 bullet::AbstractPhysicsShape::localScaling(float x, float y, float z)
 {
 	_localScaling->setTo(x, y, z);
+	_volumeScaling = fabsf(x * y * z);
 }
 
 void

@@ -339,7 +339,8 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		std::stringstream	stream;
 		stream.write(&*materialProfileData.begin(), materialProfileData.size());
 
-		double density	= readAndSwap<double>(stream); // do not care about it at this point
+		double density	= readAndSwap<double>(stream);
+		mass			= density * shape->volume();
 		friction		= readAndSwap<double>(stream);
 		restitution		= readAndSwap<double>(stream);
 	}
