@@ -17,12 +17,6 @@ project "minko-example-sponza"
 		links { "minko-webgl" }
 	end
 	
-	-- minko-framework
-	links { "minko-framework" }
-	includedirs { "../../framework/src" }
-	if not _OPTIONS["no-glsl-optimizer"] then
-		links { "glsl-optimizer" }
-	end
 	-- minko-mk
 	includedirs { "../../plugins/mk/src" }
 	links { "minko-mk" }
@@ -38,6 +32,12 @@ project "minko-example-sponza"
 	-- minko-particles
 	includedirs { "../../plugins/particles/src" }
 	links { "minko-particles" }
+	-- minko-framework
+	links { "minko-framework" }
+	includedirs { "../../framework/src" }
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+	end
 
 	configuration { "debug"}
 		defines { "DEBUG" }
