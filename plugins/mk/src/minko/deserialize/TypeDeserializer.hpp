@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/MkCommon.hpp"
+#include "minko/Qark.hpp"
 
 namespace minko
 {
@@ -28,6 +29,21 @@ namespace minko
 		class TypeDeserializer
 		{
 
+		// typedef
+		public :
+			typedef	std::function<void(
+				std::map<int, std::shared_ptr<render::Texture>>&, 
+				std::string&, 
+				std::shared_ptr<data::Provider>, 
+				Qark::Map&, 
+				std::shared_ptr<NameConverter>)> ReadMkTypeFunction;
+
+
+		// property
+		private:
+			static std::map<const unsigned int, ReadMkTypeFunction> _typeToReadFunc;
+
+		// methods
 		public:
 			
 			static
@@ -39,6 +55,43 @@ namespace minko
 			provider(std::vector<Any>&									properties,
 					 std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
 					 std::shared_ptr<NameConverter>						nameConverter);
+
+			static
+			void
+			texture(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+					std::string&										propertyName,
+					std::shared_ptr<data::Provider>						material,
+					Qark::Map&											object,
+					std::shared_ptr<NameConverter>						nameConverter);
+
+			static
+			void
+			number(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+				   std::string&										propertyName,
+				   std::shared_ptr<data::Provider>					material,
+				   Qark::Map&										object,
+				   std::shared_ptr<NameConverter>					nameConverter);
+
+			static
+			void
+			vector4(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+				    std::string&										propertyName,
+				    std::shared_ptr<data::Provider>						material,
+				    Qark::Map&											object,
+				    std::shared_ptr<NameConverter>						nameConverter);
+
+						static
+			void
+			vector4b(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+				     std::string&										propertyName,
+				     std::shared_ptr<data::Provider>					material,
+				     Qark::Map&											object,
+				     std::shared_ptr<NameConverter>						nameConverter);
+
+		private:
+			static
+			std::map<const unsigned int, ReadMkTypeFunction>
+			initIdToFunctionMap();
 		};
 	}
 }
