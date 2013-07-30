@@ -67,11 +67,11 @@ namespace minko
 				Ptr
 				create(ColliderDataPtr data)
 				{
-					Ptr Collider(new Collider(data));
+					Ptr collider(new Collider(data));
 
-					Collider->initialize();
+					collider->initialize();
 
-					return Collider;
+					return collider;
 				}
 
 				void
