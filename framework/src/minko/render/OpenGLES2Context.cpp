@@ -36,6 +36,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GL/glu.h>
 #endif
 
+#ifdef MINKO_GLSL_OPTIMIZER
+# include "glsl_optimizer.h"
+#endif
+
 using namespace minko::render;
 
 OpenGLES2Context::BlendFactorsMap OpenGLES2Context::_blendingFactors = OpenGLES2Context::initializeBlendFactorsMap();
@@ -94,9 +98,6 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexStride(8, -1),
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
-    _currentWrapMode(8, WrapMode::CLAMP),
-    _currentTextureFilter(8, TextureFilter::NEAREST),
-    _currentMipFilter(8, MipFilter::NONE),
 	_currentProgram(-1),
     _currentTriangleCulling(TriangleCulling::BACK)
 {
@@ -123,6 +124,10 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    _glslOptimizer = glslopt_initialize(true);
+#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -144,6 +149,10 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    glslopt_cleanup(_glslOptimizer);
+#endif
 }
 
 void
@@ -457,6 +466,9 @@ OpenGLES2Context::createTexture(unsigned int 	width,
   	_textures.push_back(texture);
     _textureSizes[texture] = std::pair<uint, uint>(width, height);
     _textureHasMipmaps[texture] = mipMapping;
+    _currentWrapMode[texture] = WrapMode::CLAMP;
+    _currentTextureFilter[texture] = TextureFilter::NEAREST;
+    _currentMipFilter[texture] = MipFilter::NONE;
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glTexImage2D.xml
 	//
@@ -530,6 +542,9 @@ OpenGLES2Context::deleteTexture(const unsigned int texture)
 
     _textureSizes.erase(texture);
     _textureHasMipmaps.erase(texture);
+    _currentWrapMode.erase(texture);
+    _currentTextureFilter.erase(texture);
+    _currentMipFilter.erase(texture);
 
     checkForErrors();
 }
@@ -558,15 +573,19 @@ OpenGLES2Context::setTextureAt(const unsigned int	position,
 void
 OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrapping, TextureFilter filtering, MipFilter mipFiltering)
 {
-    glActiveTexture(GL_TEXTURE0 + position);
+    auto texture    = _currentTexture[position];
+    auto active     = false;
 
     // disable mip mapping if mip maps are not available
     if (!_textureHasMipmaps[_currentTexture[position]])
         mipFiltering = MipFilter::NONE;
 
-    //if (_currentWrapMode[position] != wrapping)
+    if (_currentWrapMode[texture] != wrapping)
     {
-        //_currentWrapMode[position] = wrapping;
+        _currentWrapMode[texture] = wrapping;
+
+        glActiveTexture(GL_TEXTURE0 + position);
+        active = true;
 
         switch (wrapping)
         {
@@ -580,10 +599,14 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
             break;
         }
     }
-    //if (_currentTextureFilter[position] != filtering || _currentMipFilter[position] != mipFiltering)
+    
+    if (_currentTextureFilter[texture] != filtering || _currentMipFilter[texture] != mipFiltering)
     {
-        //_currentTextureFilter[position] = filtering;
-        //_currentMipFilter[position] = mipFiltering;
+        _currentTextureFilter[texture] = filtering;
+        _currentMipFilter[texture] = mipFiltering;
+
+        if (!active)
+            glActiveTexture(GL_TEXTURE0 + position);
 
         switch (filtering)
         {
@@ -696,9 +719,6 @@ void
 OpenGLES2Context::setShaderSource(const unsigned int shader,
 							      const std::string& source)
 {
-    //std::string src = "#version 100\n#define GL_ES true\n" + source;
-	//const char* sourceString = src.c_str();
-    /*
 #ifdef MINKO_GLSL_OPTIMIZER
     std::string src = "#version 100\n" + source;
 	const char* sourceString = src.c_str();
@@ -720,12 +740,11 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     }
     glslopt_shader_delete(optimizedShader);
 #else
-    */
     std::string src = "#version 120\n" + source;
 	const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
-//#endif
+#endif
 
     checkForErrors();
 }
