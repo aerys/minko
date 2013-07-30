@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/component/Rendering.hpp"
+#include "minko/component/Renderer.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/DirectionalLight.hpp"
 #include "minko/component/SceneManager.hpp"

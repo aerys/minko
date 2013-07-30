@@ -86,7 +86,7 @@ namespace minko
         class AbstractRootDataComponent;
 		class Transform;
 		class Surface;
-		class Rendering;
+		class Renderer;
 		class PerspectiveCamera;
         class DirectionalLight;
 		class SceneManager;
