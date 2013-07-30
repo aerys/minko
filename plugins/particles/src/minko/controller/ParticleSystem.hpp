@@ -85,18 +85,6 @@ namespace minko
 
 			TransformPtr												_toWorld;
 
-			std::map<RenderingPtr, Signal<RenderingPtr>::Slot>			_enterFrameSlots;
-			Signal<AbsCompPtr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbsCompPtr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentRemovedSlot;
-
-			NodeSetPtr													_renderers;
-
 			unsigned int 												_countLimit;
 			unsigned int												_maxCount;
 			unsigned int												_liveCount;
@@ -130,6 +118,16 @@ namespace minko
 			clock_t														_previousClock;
 			float														_time;
 
+			Signal<std::shared_ptr<SceneManager>>::Slot					_frameEndSlot;
+			Signal<AbsCompPtr, NodePtr>::Slot							_targetAddedSlot;
+			Signal<AbsCompPtr, NodePtr>::Slot							_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot					_componentRemovedSlot;
+
 		public:
 			static
 			Ptr
@@ -141,13 +139,15 @@ namespace minko
 				   particle::StartDirection	startDirection,
 				   FloatSamplerPtr 			startVelocity)
 			{
-				Ptr system = std::shared_ptr<ParticleSystem> (new ParticleSystem(context,
-																				 assets,
-																				 rate,
-																				 lifetime,
-																				 shape,
-																				 startDirection,
-																				 startVelocity));
+				Ptr system = std::shared_ptr<ParticleSystem> (new ParticleSystem(
+					context,
+					assets,
+					rate,
+					lifetime,
+					shape,
+					startDirection,
+					startVelocity
+				));
 
 				system->initialize();
 
@@ -159,7 +159,7 @@ namespace minko
 			material()
 			{
 				return _material;
-			};
+			}
 
 			inline
 			void
@@ -168,7 +168,7 @@ namespace minko
 				_rate =  1 / value;
 
 				updateMaxParticlesCount();
-			};
+			}
 
 			inline
 			void
@@ -177,35 +177,35 @@ namespace minko
 				_lifetime = value;
 
 				updateMaxParticlesCount();
-			};
+			}
 
 			inline
 			void
 				shape(ShapePtr value)
 			{
 				_shape = value;
-			};
+			}
 
 			inline
 			void
 			startDirection(particle::StartDirection value)
 			{
 				_startDirection = value;
-			};
+			}
 
 			inline
 			void
 			startVelocity(FloatSamplerPtr value)
 			{
 				_startVelocity = value;
-			};
+			}
 
 			inline
 			void
 			updateRate(unsigned int updatesPerSecond)
 			{
 				_updateStep = 1. / updatesPerSecond;
-			};
+			}
 
 			inline
 			void
@@ -217,14 +217,14 @@ namespace minko
 					if (_playing)
 						_previousClock = clock();
 				}
-			};
+			}
 
 			inline
 			void
 			emitting(bool value)
 			{
 					_emitting = value;
-			};
+			}
 
 			inline
 			void
@@ -232,7 +232,7 @@ namespace minko
 			{
 				reset();
 				playing(true);
-			};
+			}
 
 			inline
 			void
@@ -241,21 +241,21 @@ namespace minko
 				reset();
 				playing(false);
 				updateVertexBuffer();
-			};
+			}
 
 			inline
 			void
 			pause()
 			{
 				playing(false);
-			};
+			}
 
 			inline
 			void
 			resume()
 			{
 				playing(true);
-			};
+			}
 
 		public:
 			void
@@ -433,31 +433,10 @@ namespace minko
 			targetRemovedHandler(AbsCompPtr ctrl, NodePtr target);
 
 			void
-			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+			findSceneManager();
 
 			void
-			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
-
-			void
-			rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
-
-			void
-			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
-
-			void
-			componentAddedHandler(NodePtr node, NodePtr target, AbsCompPtr	ctrl);
-
-			void
-			componentRemovedHandler(NodePtr node, NodePtr target, AbsCompPtr ctrl);
-
-			void
-			addRenderer(RenderingPtr renderer);
-
-			void
-			removeRenderer(RenderingPtr renderer);
-
-			void
-			enterFrameHandler(RenderingPtr renderer);
+			frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
 		};
 	}
 }
