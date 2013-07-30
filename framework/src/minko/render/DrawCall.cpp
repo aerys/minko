@@ -186,34 +186,34 @@ DrawCall::render(AbstractContext::Ptr context)
 
     context->setProgram(_program->id());
 
-    for (auto uniformFloat : _uniformFloat)
+    for (auto& uniformFloat : _uniformFloat)
         context->setUniform(uniformFloat.first, uniformFloat.second);
-    for (auto uniformFloat2 : _uniformFloat2)
+    for (auto& uniformFloat2 : _uniformFloat2)
     {
-        auto float2 = uniformFloat2.second;
+        auto& float2 = uniformFloat2.second;
 
         context->setUniform(uniformFloat2.first, float2->x(), float2->y());
     }
-    for (auto uniformFloat3 : _uniformFloat3)
+    for (auto& uniformFloat3 : _uniformFloat3)
     {
-        auto float3 = uniformFloat3.second;
+        auto& float3 = uniformFloat3.second;
 
         context->setUniform(uniformFloat3.first, float3->x(), float3->y(), float3->z());
     }
-    for (auto uniformFloat4 : _uniformFloat4)
+    for (auto& uniformFloat4 : _uniformFloat4)
     {
-        auto float4 = uniformFloat4.second;
+        auto& float4 = uniformFloat4.second;
 
         context->setUniform(uniformFloat4.first, float4->x(), float4->y(), float4->z(), float4->w());
     }
-    for (auto uniformFloat16 : _uniformFloat16)
+    for (auto& uniformFloat16 : _uniformFloat16)
         context->setUniformMatrix4x4(uniformFloat16.first, 1, true, uniformFloat16.second);
 
     for (uint textureId = 0; textureId < _textures.size(); ++textureId)
     {
         auto texture = _textures[textureId];
 
-        context->setTextureAt(textureId, _textures[textureId], _textureLocations[textureId]);
+        context->setTextureAt(textureId, texture, _textureLocations[textureId]);
         if (texture > 0)
             context->setSamplerStateAt(
                 textureId, _textureWrapMode[textureId], _textureFilters[textureId], _textureMipFilters[textureId]

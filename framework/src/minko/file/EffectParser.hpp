@@ -66,7 +66,7 @@ namespace minko
 
 			unsigned int												_numDependencies;
 			unsigned int												_numLoadedDependencies;
-			std::shared_ptr<AssetsLibrary>								_assetsLibrary;
+			std::shared_ptr<AssetLibrary>								_AssetLibrary;
 
 			std::string													_dependenciesCode;
 
@@ -100,7 +100,7 @@ namespace minko
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetsLibrary>	assetsLibrary);
+				  std::shared_ptr<AssetLibrary>	AssetLibrary);
 
 			void
 			finalize();

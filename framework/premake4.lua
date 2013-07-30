@@ -1,3 +1,7 @@
+if not _OPTIONS["no-glsl-optimizer"] then
+	include "lib/glsl-optimizer"
+end
+
 project "minko-framework"
 	kind "StaticLib"
 	language "C++"
@@ -21,7 +25,13 @@ project "minko-framework"
 	defines {
 		"JSON_IS_AMALGAMATION"
 	}
-
+	-- glsl-optimizer
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+		defines { "MINKO_GLSL_OPTIMIZER" }
+		includedirs { "lib/glsl-optimizer/src/glsl" }
+	end
+	
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -40,9 +50,7 @@ project "minko-framework"
 	-- windows
 	configuration { "windows", "x32" }
 		links { "glew32" }
-		includedirs {
-			"../deps/win/include",
-		}
+		includedirs { "../deps/win/include" }
 		libdirs { "../deps/win/lib" }
 
 	-- macos
@@ -54,3 +62,8 @@ project "minko-framework"
 	-- emscripten
 	configuration { "emscripten" }
 		flags { "Optimize" }
+
+	newoption {
+		trigger     = "no-glsl-optimizer",
+		description = "Disable the GLSL optimizer."
+	}

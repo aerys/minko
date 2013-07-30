@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/MinkoParticles.hpp"
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Vector4.hpp"
 
 namespace minko
@@ -38,7 +38,7 @@ namespace minko
 	    public:
 		    inline static
 		    Ptr
-		    create(std::shared_ptr<AssetsLibrary> assets)
+		    create(std::shared_ptr<file::AssetLibrary> assets)
 		    {
                 auto fire = std::shared_ptr<Fire>(new Fire(assets));
 
@@ -48,7 +48,7 @@ namespace minko
 		    }
 
 	    private:
-		    Fire(std::shared_ptr<AssetsLibrary> assets) :
+		    Fire(std::shared_ptr<file::AssetLibrary> assets) :
                 ParticleSystem(
                     assets->context(),
 		            assets,
