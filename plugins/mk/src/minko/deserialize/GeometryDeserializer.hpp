@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Qark.hpp"
-#include "minko/AssetsLibrary.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
@@ -46,16 +46,16 @@ namespace minko
 
 			static
 			void
-			deserializeGeometry(bool							isCopy,
-								std::string						geometryName,
-								int								copyId,
-								Qark::ByteArray&				geometryData,
-								std::shared_ptr<AssetsLibrary>	library,
-								std::shared_ptr<scene::Node>	mesh,
-								std::shared_ptr<file::Options>	options,
-								bool							computeTangent,
-                                std::shared_ptr<data::Provider> material,
-                                std::shared_ptr<render::Effect> effect);
+			deserializeGeometry(bool				    			isCopy,
+								std::string			    			geometryName,
+								int					    			copyId,
+								Qark::ByteArray&	    			geometryData,
+								std::shared_ptr<file::AssetLibrary>	library,
+								std::shared_ptr<scene::Node>	    mesh,
+								std::shared_ptr<file::Options>	    options,
+								bool							    computeTangent,
+                                std::shared_ptr<data::Provider>     material,
+                                std::shared_ptr<render::Effect>     effect);
 
 			static
 			std::shared_ptr<render::IndexBuffer>

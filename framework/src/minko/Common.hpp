@@ -41,8 +41,10 @@ namespace minko
 {
     typedef unsigned int uint;
 
-	class AssetsLibrary;
-
+	class Any;
+	template<typename... A>
+	class Signal;
+    
 	namespace render
 	{
 		class AbstractContext;
@@ -120,13 +122,8 @@ namespace minko
 		class Loader;
 		class AbstractParser;
 		class EffectParser;
+        class AssetLibrary;
 	}
-
-	class AssetsLibrary;
-
-	class Any;
-	template<typename... A>
-	class Signal;
 }
 
 template<typename T>

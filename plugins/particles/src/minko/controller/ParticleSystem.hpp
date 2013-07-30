@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class AssetsLibrary;
+	class AssetLibrary;
 
 	namespace component
 	{
@@ -42,7 +42,7 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<render::AbstractContext>					AbstractContextPtr;
-			typedef std::shared_ptr<AssetsLibrary>								AssetsLibraryPtr;
+			typedef std::shared_ptr<file::AssetLibrary>							AssetLibraryPtr;
 
 			typedef std::shared_ptr<Transform>									TransformPtr;
 
@@ -134,7 +134,7 @@ namespace minko
 			static
 			Ptr
 			create(AbstractContextPtr		context,
-				   AssetsLibraryPtr			assets,
+				   AssetLibraryPtr			assets,
 				   float					rate,
 				   FloatSamplerPtr			lifetime,
 				   ShapePtr					shape,
@@ -416,7 +416,7 @@ namespace minko
 
 		protected:
 			ParticleSystem(AbstractContextPtr		context,
-						   AssetsLibraryPtr			assets,
+						   AssetLibraryPtr			assets,
 						   float					rate,
 						   FloatSamplerPtr			lifetime,
 						   ShapePtr					shape,
