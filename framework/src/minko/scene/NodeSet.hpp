@@ -93,6 +93,9 @@ namespace minko
 			Ptr
 			where(std::function<bool(std::shared_ptr<Node>)> filter, Ptr result = nullptr);
 
+			Ptr
+			roots(Ptr result = nullptr);
+
 		private:
 			NodeSet() :
 				_nodes()
