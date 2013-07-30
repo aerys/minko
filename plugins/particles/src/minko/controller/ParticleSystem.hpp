@@ -49,7 +49,7 @@ namespace minko
 			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
 			typedef std::shared_ptr<scene::Node>								NodePtr;
 			typedef std::shared_ptr<AbstractComponent>							AbsCompPtr;
-			typedef std::shared_ptr<Rendering>									RenderingPtr;
+			typedef std::shared_ptr<Renderer>									RendererPtr;
 
 			typedef std::shared_ptr<Surface>									SurfacePtr;
 			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
