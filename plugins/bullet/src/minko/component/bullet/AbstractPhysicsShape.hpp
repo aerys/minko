@@ -53,6 +53,7 @@ namespace minko
 				Matrix4x4Ptr	_deltaTransform;
 				Matrix4x4Ptr	_deltaTransformInverse;
 				Vector3Ptr		_localScaling;
+				float			_volumeScaling;
 
 			private:
 				std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -68,6 +69,10 @@ namespace minko
 
 				void
 				initialize(Matrix4x4Ptr deltaTransform, Matrix4x4Ptr graphicsStartTransform);
+
+				virtual
+				float
+				volume() const = 0;
 
 				inline
 				Type

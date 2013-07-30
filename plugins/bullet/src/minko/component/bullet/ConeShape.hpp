@@ -80,6 +80,16 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline
+				float
+				volume() const
+				{
+					const float radius	= _radius + _margin; 
+					const float volume	= (PI / 3.0f) * radius * radius * (_height + _margin);
+
+					return volume * _volumeScaling;
+				}
+
 			private:
 				ConeShape(float radius, float height):
 					AbstractPhysicsShape(CONE),

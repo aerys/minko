@@ -101,6 +101,18 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline
+				float
+				volume() const
+				{
+					const float volume = 8.0f 
+						* _localScaling->x() * (_halfExtentX + _margin)
+						* _localScaling->y() * (_halfExtentY + _margin)
+						* _localScaling->z() * (_halfExtentZ + _margin); 
+
+					return volume * _volumeScaling;
+				}
+
 			private:
 				BoxShape(float halfExtentX, float halfExtentY, float halfExtentZ):
 					AbstractPhysicsShape(BOX),
