@@ -1,18 +1,30 @@
--- A project defines one build target
 project "minko-example-cube"
 	kind "ConsoleApp"
 	language "C++"
-	links {
-		"minko-png",
-		"minko-framework"
+	files {
+		"src/**.hpp",
+		"src/**.cpp"
 	}
-	files { "**.hpp", "**.h", "**.cpp" }
 	includedirs {
 		"src",
-		"../../framework/src",
-		"../../plugins/png/src",
 		"../../deps/all/include"
 	}
+	
+	-- minko-webgl
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links { "minko-webgl" }
+	end
+
+	-- minko-png
+	links { "minko-png" }
+	includedirs { "../../plugins/png/src" }
+	-- minko-framework
+	links { "minko-framework" }
+	includedirs { "../../framework/src" }
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+	end
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -27,12 +39,8 @@ project "minko-example-cube"
 	-- linux
 	configuration { "linux" }
 		links { "GL", "GLU", "glfw3", "m", "Xrandr", "Xxf86vm", "Xi", "rt" }
-		libdirs {
-			"../../deps/lin/lib"
-		}
-		includedirs {
-			"../../deps/lin/include"
-		}
+		libdirs { "../../deps/lin/lib" }
+		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }
 		postbuildcommands {
 			'cp -r ../../framework/effect .',
@@ -42,12 +50,8 @@ project "minko-example-cube"
 	-- windows
 	configuration { "windows", "x32" }
 		links { "OpenGL32", "glfw3dll", "glew32" }
-		libdirs {
-			"../../deps/win/lib"
-		}
-		includedirs {
-			"../../deps/win/include"
-		}
+		libdirs { "../../deps/win/lib" }
+		includedirs { "../../deps/win/include" }
 		postbuildcommands {
 			-- copy framework effects
 			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
@@ -88,5 +92,6 @@ project "minko-example-cube"
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
+			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture',
 			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O1 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-dir effect --preload-dir texture'
 		}
