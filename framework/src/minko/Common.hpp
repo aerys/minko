@@ -89,6 +89,7 @@ namespace minko
 		class Rendering;
 		class PerspectiveCamera;
         class DirectionalLight;
+		class SceneManager;
 	}
 
 	namespace data

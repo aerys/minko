@@ -34,7 +34,6 @@ const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME   = "camera";
 
-Rendering::Ptr	                rendering           = nullptr;
 bullet::ColliderComponent::Ptr	cameraColliderComp  = nullptr;
 auto			                sponzaLighting	    = SponzaLighting::create();
 auto			                mesh			    = scene::Node::create("mesh");
@@ -321,11 +320,11 @@ void
 initializeCamera()
 {
     auto cameras = scene::NodeSet::create(group)
-    ->descendants(true)
-    ->where([](scene::Node::Ptr node)
-            {
-                return node->name() == CAMERA_NAME;
-            });
+		->descendants(true)
+		->where([](scene::Node::Ptr node)
+				{
+					return node->name() == CAMERA_NAME;
+				});
     
 	bool cameraInGroup = false;
 	if (cameras->nodes().empty())
@@ -337,8 +336,8 @@ initializeCamera()
         
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-        ->appendTranslation(0.0f, 0.75f, 5.0f)
-        ->appendRotationY(PI * 0.5);
+			->appendTranslation(0.0f, 0.75f, 5.0f)
+			->appendRotationY(PI * 0.5);
         
 		cameraColliderComp = initializeDefaultCameraCollider();
 		camera->addComponent(cameraColliderComp);
@@ -363,7 +362,7 @@ initializeCamera()
 	if (!camera->hasComponent<Transform>())
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
     
-	camera->addComponent(rendering);
+	camera->addComponent(Rendering::create());
     camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
     
     root->addChild(camera);
@@ -372,7 +371,7 @@ initializeCamera()
 void
 initializePhysics()
 {
-    auto physicWorld = bullet::PhysicsWorld::create(rendering);
+    auto physicWorld = bullet::PhysicsWorld::create();
     
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
@@ -436,46 +435,46 @@ int main(int argc, char** argv)
     
     std::cout << context->driverInfo() << std::endl;
     
-    auto assets	= file::AssetLibrary::create(context)
+	auto sceneManager = SceneManager::create(context);
+    
+	sceneManager->assets()
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::MkParser>("mk")
         ->geometry("cube", geometry::CubeGeometry::create(context));
     
 #ifdef EMSCRIPTEN
-	assets->defaultOptions()->includePaths().insert("assets");
+	sceneManager->assets()->defaultOptions()->includePaths().insert("assets");
 #endif
-    
 #ifdef __APPLE__
-	assets->defaultOptions()->includePaths().insert("../../");
+	sceneManager->assets()->defaultOptions()->includePaths().insert("../../");
 #endif
-
 #ifdef DEBUG
-    assets->defaultOptions()->includePaths().insert("bin/debug");
+    sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
 #endif
     
     // load sponza lighting effect and set it as the default effect
-    assets->load("effect/SponzaLighting.effect");
-    assets->load("effect/Basic.effect");
-    assets->defaultOptions()->effect(assets->effect("effect/SponzaLighting.effect"));
+    sceneManager->assets()
+		->load("effect/SponzaLighting.effect")
+		->load("effect/Basic.effect");
+    sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/SponzaLighting.effect"));
 
     // load other assets
-    assets
+    sceneManager->assets()
         ->queue("texture/firefull.jpg")
         ->queue("effect/Particles.effect")
         ->queue("model/Sponza_lite.mk");
     
-    assets->defaultOptions()->generateMipmaps(true);
-    
-    rendering = Rendering::create(context);
+    sceneManager->assets()->defaultOptions()->generateMipmaps(true);
     
     initializePhysics();
     
-	auto _ = assets->complete()->connect([](file::AssetLibrary::Ptr assets)
+	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
         initializeCamera();
 
        	root->addChild(group);
+		root->addComponent(sceneManager);
 		root->addComponent(sponzaLighting);
 
 		group->addComponent(Transform::create());
@@ -493,7 +492,7 @@ int main(int argc, char** argv)
 			fireNode->addComponent(fire);
 	});
 
-	assets->load();
+	sceneManager->assets()->load();
 
 	std::cout << "start rendering" << std::endl << std::flush;
 
@@ -539,7 +538,7 @@ int main(int argc, char** argv)
 				cameraColliderComp->prependRotationY(-CAMERA_ANG_SPEED);
 		}
         
-	    rendering->render();
+	    sceneManager->nextFrame();
         
 		sponzaLighting->step();
 	    //printFramerate();
