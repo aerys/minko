@@ -54,11 +54,11 @@ project "minko-example-cube"
 		includedirs { "../../deps/win/include" }
 		postbuildcommands {
 			-- copy framework effects
-			'xcopy /y /e /i ..\\..\\framework\\effect\\* $(TargetDir)effect',
+			'xcopy /y /e /i ..\\..\\framework\\effect\\* "$(TargetDir)effect"',
 			-- copy assets
-			'xcopy /y /e /i asset\\* $(TargetDir)',
+			'xcopy /y /e /i asset\\* "$(TargetDir)"',
 			-- copy dlls
-			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" $(TargetDir)'
+			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" "$(TargetDir)"'
 		}
 
 	-- macos
