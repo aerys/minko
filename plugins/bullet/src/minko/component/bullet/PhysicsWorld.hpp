@@ -56,7 +56,7 @@ namespace minko
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<Collider>					ColliderPtr; 
-				typedef std::shared_ptr<Rendering>					RenderingPtr;
+				typedef std::shared_ptr<Renderer>					RendererPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
