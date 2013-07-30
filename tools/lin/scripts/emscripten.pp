@@ -99,6 +99,12 @@ class emscripten {
         require => Exec["git-clone-emscripten"]
     }
 
+    exec { "/bin/bash doit.sh":
+        cwd => "/home/vagrant/src/emscripten/third_party/lzma.js",
+        alias => "emscripten-build-lzma",
+        require => Exec["git-pull-emscripten"]
+    }
+
     exec { "/usr/bin/wget ${clang_url}":
         alias => "wget-clang-llvm",
         cwd => "/home/vagrant/src",
@@ -139,6 +145,7 @@ class emscripten {
             File["link-apache"],
             Exec["untar-clang-llvm"],
             Exec["git-pull-emscripten"],
+            Exec["emscripten-build-lzma"],
             Exec["install-g++"],
             Exec["install-gcc"]
         ]
