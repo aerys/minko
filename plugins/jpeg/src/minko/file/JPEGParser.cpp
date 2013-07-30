@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "JPEGParser.hpp"
 
 #include "minko/file/Options.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/AssetsLibrary.hpp"
 
 #include "jpgd.h"
 
@@ -33,7 +33,7 @@ JPEGParser::parse(const std::string&				filename,
 				  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
 				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetsLibrary>	assetsLibrary)
+				  std::shared_ptr<AssetLibrary>	AssetLibrary)
 {
 	int width;
 	int height;
@@ -55,7 +55,7 @@ JPEGParser::parse(const std::string&				filename,
 	texture->data(bmpData, format);
 	texture->upload();
 
-	assetsLibrary->texture(filename, texture);
+	AssetLibrary->texture(filename, texture);
 
 	delete bmpData;
 }

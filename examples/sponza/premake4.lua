@@ -2,22 +2,6 @@
 project "minko-example-sponza"
 	kind "ConsoleApp"
 	language "C++"
-
-	-- ugly, but couldn't find a better solution to maintain linking order.
-	if _OPTIONS["platform"] == "emscripten" then
-		links {
-			"minko-webgl"
-		}
-	end
-
-	links {
-		"minko-png",
-		"minko-jpeg",
-		"minko-mk",
-		"minko-bullet",
-		"minko-particles",
-		"minko-framework"
-	}
 	files {
 		"**.hpp",
 		"**.h",
@@ -25,15 +9,35 @@ project "minko-example-sponza"
 	}
 	includedirs {
 		"src",
-		"../../deps/all/include",
-		"../../framework/src",
-		"../../plugins/mk/src",
-		"../../plugins/bullet/src",
-		"../../plugins/webgl/src",
-		"../../plugins/png/src",
-		"../../plugins/jpeg/src",
-		"../../plugins/particles/src"
+		"../../deps/all/include"
 	}
+
+	-- ugly, but couldn't find a better solution to maintain linking order.
+	if _OPTIONS["platform"] == "emscripten" then
+		links { "minko-webgl" }
+	end
+	
+	-- minko-mk
+	includedirs { "../../plugins/mk/src" }
+	links { "minko-mk" }
+	-- minko-bullet
+	includedirs { "../../plugins/bullet/src" }
+	links { "minko-bullet" }
+	-- minko-png
+	includedirs { "../../plugins/png/src" }
+	links { "minko-png" }
+	-- minko-jpeg
+	includedirs { "../../plugins/jpeg/src" }
+	links { "minko-jpeg" }
+	-- minko-particles
+	includedirs { "../../plugins/particles/src" }
+	links { "minko-particles" }
+	-- minko-framework
+	links { "minko-framework" }
+	includedirs { "../../framework/src" }
+	if not _OPTIONS["no-glsl-optimizer"] then
+		links { "glsl-optimizer" }
+	end
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -71,6 +75,7 @@ project "minko-example-sponza"
 
 	-- windows
 	configuration { "windows", "x32" }
+		buildoptions { "-std=c++11" }
 		links {
 			"OpenGL32",
 			"glfw3dll",
@@ -118,11 +123,14 @@ project "minko-example-sponza"
 	configuration { "emscripten" }
 		flags { "Optimize" }
 		buildoptions { "-std=c++11" }
-		includedirs {
-			"../../plugins/webgl/src"
-		}
+		-- webgl plugin
+		includedirs { "../../plugins/webgl/src" }
+
 		local bin = "bin/release/" .. project().name
 		postbuildcommands {
 			'cp ' .. bin .. ' ' .. bin .. '.bc',
-			'emcc ' .. bin .. '.bc -o ' .. bin .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=1073741824 --preload-file effect --preload-file texture --preload-file model'
+			'cp -r effect bin/release; cp -r texture bin/release; cp -r model bin/release',
+			'rm bin/release/model/Sponza_lite.mks',
+			'cd bin/release && emcc ' .. project().name .. '.bc -o ' .. project().name .. '.html -O2 -s ASM_JS=1 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model --compression /home/vagrant/src/emscripten/third_party/lzma.js/lzma-native,/home/vagrant/src/emscripten/third_party/lzma.js/lzma-decoder.js,LZMA.decompress',
+--			'emcc ' .. bin .. '.bc -o ' .. bin .. '.js -O2 -s ASM_JS=1 -s TOTAL_MEMORY=268435456 --preload-file effect --preload-file texture --preload-file model'
 		}
