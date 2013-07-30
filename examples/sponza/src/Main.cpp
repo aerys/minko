@@ -26,7 +26,7 @@ using namespace minko::math;
 const float WINDOW_WIDTH		= 1024;
 const float WINDOW_HEIGHT		= 500;
 
-const float CAMERA_LIN_SPEED	= 0.1f;
+const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
@@ -38,8 +38,8 @@ auto					mesh				= scene::Node::create("mesh");
 auto					group				= scene::Node::create("group");
 auto					camera				= scene::Node::create("camera");
 auto					root				= scene::Node::create("root");
-auto					speed				= 0.f;
-auto					angSpeed			= 0.f;
+auto					speed				= 0.0f;
+auto					angSpeed			= 0.0f;
 float					_rotationX			= 0;
 float					_rotationY			= 0;
 float					_mousePositionX		= 0;
@@ -122,48 +122,43 @@ glutMouseMoveHandler(int x, int y)
 void
 renderScene()
 {
+	auto cameraTransform = camera->component<Transform>()->transform();
 	if (_cameraCollider == nullptr)
 	{
 		if (speed)
-			_cameraCollider->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+			cameraTransform->prependTranslation(0.f, 0.f, speed);
 		if (angSpeed)
-		    _cameraCollider->prependRotationY(angSpeed);
+		    cameraTransform->prependRotationY(angSpeed);
 	}
 	else
 	{
 		// the camera has a collider component
-		_cameraWorldTransform = _cameraCollider->getPhysicsWorldTransform();
 
 		// move forward/backward
 		if (speed)
-			_cameraCollider->prependLocalTranslation(Vector3::create(0.0f, 0.0f, speed));
+			cameraTransform->prependTranslation(0.0f, 0.0f, speed);
 
 		// look around
-		_eye = _cameraWorldTransform->translationVector();
+		_eye = cameraTransform->translationVector();
 
 		_target->setTo(
 			_eye->x() + sinf(_rotationY) * cosf(_rotationX),
 			_eye->y() + sinf(_rotationX),
 			_eye->z() + cosf(_rotationY) * cosf(_rotationX)
 			);
-
+		
 		// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
-		_cameraWorldTransform->view(_eye, _target, Vector3::upAxis());
-
-		auto newEyePos = _cameraWorldTransform->translationVector();
-
-		_cameraWorldTransform->appendTranslation(
+		cameraTransform->view(_eye, _target, Vector3::upAxis());
+		
+		auto newEyePos = cameraTransform->translationVector();
+		
+		cameraTransform->appendTranslation(
 			_eye->x() - newEyePos->x(),
 			_eye->y() - newEyePos->y(),
 			_eye->z() - newEyePos->z()
 			);
-
-		newEyePos = _cameraWorldTransform->translationVector(newEyePos);
-
-		//camera->component<Transform>()->transform()->copyFrom(_cameraWorldTransform);
-		_cameraCollider->setPhysicsWorldTransform(_cameraWorldTransform);
-
-		//_updateCameraRotation = false;
+		
+		_cameraCollider->synchronizePhysicsWithGraphics();
 	}
 
 	sponzaLighting->step();
@@ -585,20 +580,20 @@ main(int argc, char** argv)
 #else
 	while(!glfwWindowShouldClose(window))
 	{
+		auto cameraTransform = camera->component<Transform>()->transform();
 		if (_cameraCollider == nullptr)
 		{
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
+				cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
 			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-				camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
+				cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
 			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-				camera->component<Transform>()->transform()->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
+				cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
 			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-				camera->component<Transform>()->transform()->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
+				cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
 		}
 		else
 		{
-			auto cameraTransform = camera->component<Transform>()->transform();
 
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				// go forward
@@ -606,7 +601,6 @@ main(int argc, char** argv)
 			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 				// go backward
 				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
-
 
 			// look around
 			_eye = cameraTransform->translationVector();
