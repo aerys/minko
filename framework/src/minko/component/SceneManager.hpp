@@ -42,8 +42,12 @@ namespace minko
             uint                                            _frameId;
             std::shared_ptr<file::AssetLibrary>             _assets;
 
-            Signal<Ptr>::Ptr                                _enterFrame;
-            Signal<Ptr>::Ptr                                _exitFrame;
+            Signal<Ptr>::Ptr                                _frameBegin;
+            Signal<Ptr>::Ptr                                _frameEnd;
+			Signal<Ptr>::Ptr                                _cullBegin;
+			Signal<Ptr>::Ptr                                _cullEnd;
+			Signal<Ptr>::Ptr                                _renderBegin;
+			Signal<Ptr>::Ptr                                _renderEnd;
 
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
@@ -52,9 +56,9 @@ namespace minko
 	    public:
 		    inline static
 		    Ptr
-		    create()
+		    create(const std::shared_ptr<render::AbstractContext>& context)
 		    {
-                auto sm = std::shared_ptr<SceneManager>(new SceneManager());
+                auto sm = std::shared_ptr<SceneManager>(new SceneManager(context));
 
                 sm->initialize();
 
@@ -77,17 +81,45 @@ namespace minko
 
             inline
             Signal<Ptr>::Ptr
-            enterFrame()
+            frameBegin()
             {
-                return _enterFrame;
+                return _frameBegin;
             }
 
             inline
             Signal<Ptr>::Ptr
-            exitFrame()
+            frameEnd()
             {
-                return _exitFrame;
+                return _frameEnd;
             }
+
+			inline
+			Signal<Ptr>::Ptr
+			cullingBegin()
+			{
+				return _cullBegin;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
+			cullingEnd()
+			{
+				return _cullEnd;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
+			renderingBegin()
+			{
+				return _renderBegin;
+			}
+
+			inline
+			Signal<Ptr>::Ptr
+			renderingEnd()
+			{
+				return _renderEnd;
+			}
 
             void
             initialize();
@@ -96,7 +128,7 @@ namespace minko
             nextFrame();
 
 	    private:
-		    SceneManager();
+		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);
 
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);

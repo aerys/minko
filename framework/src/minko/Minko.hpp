@@ -45,6 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Rendering.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/DirectionalLight.hpp"
+#include "minko/component/SceneManager.hpp"
 #include "minko/render/AbstractResource.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/VertexBuffer.hpp"
