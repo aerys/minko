@@ -27,13 +27,7 @@ project "minko-framework"
 	if not _OPTIONS["no-glsl-optimizer"] then
 		links { "glsl-optimizer" }
 		defines { "MINKO_GLSL_OPTIMIZER" }
-		includedirs {
-			"lib/glsl-optimizer/include",
-			"lib/glsl-optimizer/include/c99",
-			"lib/glsl-optimizer/src/mesa",
-			"lib/glsl-optimizer/src/glsl",
-			"lib/glsl-optimizer/src/glsl/glcpp"
-		}
+		includedirs { "lib/glsl-optimizer/src/glsl" }
 	end
 	
 	configuration { "debug"}
