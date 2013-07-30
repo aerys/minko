@@ -104,3 +104,14 @@ scene::NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, scene::
 
 	return result;
 }
+
+scene::NodeSet::Ptr
+scene::NodeSet::roots(Ptr result = nullptr)
+{
+	if (result == nullptr)
+		result = create();
+
+	for (auto node : _nodes)
+		if (std::find(result->_nodes.begin(), result->_nodes.end(), node->root()) == result->_nodes.end())
+			result->_nodes.push_back(node->root());
+}
