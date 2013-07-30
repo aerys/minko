@@ -98,6 +98,16 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline
+				float
+				volume() const
+				{
+					const float volume	= PI * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
+						* (_halfExtentY + _margin);
+
+					return volume * _volumeScaling;
+				}
+
 			private:
 				CylinderShape(float halfExtentX, float halfExtentY, float halfExtentZ):
 					AbstractPhysicsShape(CYLINDER),

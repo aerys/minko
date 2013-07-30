@@ -62,6 +62,16 @@ namespace minko
 						shapeChanged()->execute(shared_from_this());
 				}
 
+				inline
+				float
+				volume() const
+				{
+					const float radius	= _radius + _margin;
+					const float volume	= (PI * 4.0f / 3.0f) * radius * radius * radius;
+					
+					return volume * _volumeScaling;
+				}
+
 			private:
 				SphereShape(float radius):
 					AbstractPhysicsShape(SPHERE),
