@@ -3,7 +3,7 @@ solution "minko"
    
 -- disable the glsl-optimizer when building for emscripten to avoid linkage issues
 if _OPTIONS["platform"] == "emscripten" then
-	_OPTIONS["no-glsl-optimizer"] = true
+	_OPTIONS["no-glsl-optimizer"] = "true"
 end
    
 -- examples
