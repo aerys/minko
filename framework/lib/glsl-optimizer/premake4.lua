@@ -11,7 +11,6 @@ project "glsl-optimizer"
 	}
 	includedirs {
 		"include",
-		"include/c99",
 		"src/mesa",
 		"src/glsl",
 		"src/glsl/glcpp"
