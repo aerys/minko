@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "PNGParser.hpp"
 
 #include "minko/file/Options.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/AssetsLibrary.hpp"
 
 #include "lodepng.h"
 
@@ -32,7 +32,7 @@ PNGParser::parse(const std::string&				    filename,
 				 const std::string&                 resolvedFilename,
                  std::shared_ptr<Options>           options,
 				 const std::vector<unsigned char>&	data,
-				 std::shared_ptr<AssetsLibrary>	    assetsLibrary)
+				 std::shared_ptr<AssetLibrary>	    AssetLibrary)
 {
 	std::vector<unsigned char> out;
 	unsigned int width;
@@ -45,7 +45,7 @@ PNGParser::parse(const std::string&				    filename,
 	texture->data(&out[0]);
 	texture->upload();
 
-	assetsLibrary->texture(filename, texture);
+	AssetLibrary->texture(filename, texture);
 }
 
 
