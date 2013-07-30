@@ -34,6 +34,7 @@ namespace minko
 			static const unsigned NUMBER 					= 1;
 			static const unsigned POINT						= 2;
 			static const unsigned VECTOR4					= 3;
+			static const unsigned VECTOR4B					= 9;
 			static const unsigned MATRIX4X4 				= 4;
 			static const unsigned VECTORN					= 5;
 			static const unsigned VECTORV4					= 6;
