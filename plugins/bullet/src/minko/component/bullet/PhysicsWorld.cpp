@@ -41,6 +41,7 @@ btTransform		bullet::PhysicsWorld::_TMP_BTTRANSFORM;
 bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
 	AbstractComponent(),
 	_colliderMap(),
+	_colliderInvMap(),
 	_rendering(rendering),
 	_bulletBroadphase(nullptr),
 	_bulletCollisionConfiguration(nullptr),
@@ -144,40 +145,48 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 }
 
 void
-bullet::PhysicsWorld::addChild(ColliderData::Ptr collider)
+bullet::PhysicsWorld::addChild(ColliderData::Ptr data)
 {
-	if (hasCollider(collider))
-		throw std::logic_error("The same collider cannot be added twice.");
+	if (hasCollider(data))
+		throw std::logic_error("The same data cannot be added twice.");
 
-	BulletCollider::Ptr bulletCollider = BulletCollider::create(collider);
-	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(collider, bulletCollider));
+	BulletCollider::Ptr bulletCollider = BulletCollider::create(data);
+	_colliderMap.insert(std::pair<ColliderData::Ptr, BulletCollider::Ptr>(data, bulletCollider));
+	_colliderInvMap.insert(std::pair<btCollisionObject*, ColliderData::Ptr>(bulletCollider->rigidBody().get(), data));
 
 	std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
 		->addRigidBody(bulletCollider->rigidBody().get());
 
 #ifdef DEBUG_PHYSICS
-	std::cout << "[" << collider->name() << "]\tadd physics body" << std::endl;
+	std::cout << "[" << data->name() << "]\tadd physics body" << std::endl;
 
 	print(std::cout << "rigidbody.worldTransform =\n", bulletCollider->rigidBody()->getWorldTransform()) << std::endl;
 #endif // DEBUG_PHYSICS
 }
 
 void
-bullet::PhysicsWorld::removeChild(ColliderData::Ptr collider)
+bullet::PhysicsWorld::removeChild(ColliderData::Ptr data)
 {
-	ColliderMap::const_iterator	it	= _colliderMap.find(collider);
+	ColliderMap::const_iterator	it	= _colliderMap.find(data);
 	if (it == _colliderMap.end())
-		throw std::invalid_argument("collider");
+		throw std::invalid_argument("data");
 
-	_bulletDynamicsWorld->removeCollisionObject(it->second->rigidBody().get());
+	btCollisionObject* bulletObject = it->second->rigidBody().get();
+
+	ColliderInverseMap::const_iterator invIt = _colliderInvMap.find(bulletObject);
+	if (invIt == _colliderInvMap.end())
+		throw std::invalid_argument("data");
+
+	_bulletDynamicsWorld->removeCollisionObject(bulletObject);
 
 	_colliderMap.erase(it);
+	_colliderInvMap.erase(invIt);
 }
 
 bool
-bullet::PhysicsWorld::hasCollider(ColliderData::Ptr collider) const
+bullet::PhysicsWorld::hasCollider(ColliderData::Ptr data) const
 {
-	return _colliderMap.find(collider) != _colliderMap.end();
+	return _colliderMap.find(data) != _colliderMap.end();
 }
 
 
@@ -199,6 +208,7 @@ bullet::PhysicsWorld::update(float timeStep)
 {
 	_bulletDynamicsWorld->stepSimulation(timeStep);
 	updateColliders();
+	notifyCollisions();
 }
 
 void
@@ -223,6 +233,26 @@ bullet::PhysicsWorld::updateColliders()
 
 		collider->graphicsWorldTransformChanged()
 			->execute(collider, _TMP_MATRIX);
+	}
+}
+
+void
+bullet::PhysicsWorld::notifyCollisions()
+{
+	ColliderInverseMap::const_iterator	colliderData[2]		= { _colliderInvMap.end(), _colliderInvMap.end() };
+
+	const int numManifolds				= _bulletDynamicsWorld->getDispatcher()->getNumManifolds();
+
+	for (int i = 0; i < numManifolds; ++i)
+	{
+		btPersistentManifold* manifold	= _bulletDynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		colliderData[0]					= _colliderInvMap.find(manifold->getBody0());
+		colliderData[1]					= _colliderInvMap.find(manifold->getBody1());
+		if (colliderData[0] == _colliderInvMap.end() || colliderData[1] == _colliderInvMap.end())
+			std::cerr << "notifyCollisions issue" << std::endl;
+
+		if (colliderData[0]->second->triggerCollisions() || colliderData[1]->second->triggerCollisions())
+			std::cout << "collision \"" << colliderData[0]->second->name() << "\"\t\"" << colliderData[1]->second->name() << "\"" << std::endl;
 	}
 }
 

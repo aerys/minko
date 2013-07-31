@@ -62,6 +62,7 @@ namespace minko
 				float			_rollingFriction;
 
 				bool			_deactivationDisabled;
+				bool			_triggerCollisions;
 
 				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>> _graphicsWorldTransformChanged;
 
@@ -209,6 +210,20 @@ namespace minko
 				disableDeactivation(bool value)
 				{
 					_deactivationDisabled = value;
+				}
+
+				inline
+				bool 
+				triggerCollisions() const
+				{
+					return _triggerCollisions;
+				}
+
+				inline
+				void
+				triggerCollisions(bool value)
+				{
+					_triggerCollisions = value;
 				}
 
 				void
