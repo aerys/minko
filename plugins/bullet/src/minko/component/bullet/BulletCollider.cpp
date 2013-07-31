@@ -57,7 +57,7 @@ bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr data)
 	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(data);
 
 #ifdef DEBUG_PHYSICS
-	std::cout << "[" << collider->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0] 
+	std::cout << "[" << data->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0] 
 	<< "\n\t- margin = " << bulletCollisionShape->getMargin() << std::endl;
 #endif // DEBUG_PHYSICS
 

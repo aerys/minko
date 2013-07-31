@@ -17,14 +17,53 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "LinearIdAllocator.hpp"
 
-#include "minko/component/bullet/PhysicsWorld.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
-#include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/AbstractPhysicsShape.hpp"
-#include "minko/component/bullet/SphereShape.hpp"
-#include "minko/component/bullet/BoxShape.hpp"
-#include "minko/component/bullet/ConeShape.hpp"
-#include "minko/component/bullet/CylinderShape.hpp"
-#include "minko/component/bullet/LinearIdAllocator.hpp"
+using namespace minko;
+using namespace component;
+
+bullet::LinearIdAllocator::LinearIdAllocator(uint maxUid):
+	_uids(),
+	_uidToIndex(),
+	_numUsedUids(0),
+	_MAX_UID(maxUid)
+{
+	_uids.resize(_MAX_UID);
+	_uidToIndex.resize(_MAX_UID);
+
+	for (uint i = 0; i < _MAX_UID; ++i)
+		_uids[i] = _uidToIndex[i] = i;
+}
+
+uint
+bullet::LinearIdAllocator::allocate()
+{
+	if (_numUsedUids == _MAX_UID)
+		throw std::logic_error("failed to allocate a new unique id (max number of ids reached).");
+
+	const uint ret = _uids[_numUsedUids];
+
+	++_numUsedUids;
+
+	return ret;
+}
+
+void
+bullet::LinearIdAllocator::free(uint uid)
+{
+	if (uid > _MAX_UID || _uidToIndex[uid] >= _numUsedUids)
+		throw std::invalid_argument("uid");
+
+	const unsigned int pos	= _uidToIndex[uid];
+
+	const unsigned int pos2 = _numUsedUids-1;
+	const unsigned int uid2 = _uids[pos2];
+
+	_uids[_numUsedUids-1]	= uid;
+	_uidToIndex[uid]		= _numUsedUids-1;
+
+	_uids[pos]				= uid2;
+	_uidToIndex[uid2]		= pos;
+
+	--_numUsedUids;
+}
