@@ -44,7 +44,9 @@ bullet::Collider::Collider(ColliderData::Ptr data):
 	_targetRemovedSlot(nullptr),
 	_addedSlot(nullptr),
 	_removedSlot(nullptr),
-	_graphicsTransformChangedSlot(nullptr)
+	_graphicsTransformChangedSlot(nullptr),
+	_collisionStartedHandlerSlot(nullptr),
+	_collisionEndedHandlerSlot(nullptr)
 {
 	if (data == nullptr)
 		throw std::invalid_argument("data");
@@ -119,6 +121,20 @@ bullet::Collider::addedHandler(
 	Node::Ptr parent)
 {
 	initializeFromNode(node);
+
+	_collisionStartedHandlerSlot = _colliderData->collisionStarted()->connect(std::bind(
+		&bullet::Collider::collisionStartedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
+
+	_collisionEndedHandlerSlot	= _colliderData->collisionEnded()->connect(std::bind(
+		&bullet::Collider::collisionEndedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
 }
 
 void
@@ -130,8 +146,26 @@ bullet::Collider::removedHandler(
 	if (_physicsWorld != nullptr)
 		_physicsWorld->removeChild(_colliderData);
 
-	_physicsWorld		= nullptr;
-	_targetTransform	= nullptr;
+	_physicsWorld					= nullptr;
+	_targetTransform				= nullptr;
+	_collisionStartedHandlerSlot	= nullptr;
+	_collisionEndedHandlerSlot		= nullptr;
+}
+
+void
+bullet::Collider::collisionStartedHandler(ColliderData::Ptr obj0, ColliderData::Ptr obj1)
+{
+#ifdef DEBUG_PHYSICS_COLLISIONS
+	std::cout << "[" << obj0->name() << "]\t>-< [" << obj1->name() << "]" << std::endl;
+#endif // DEBUG_PHYSICS_COLLISIONS
+}
+
+void
+bullet::Collider::collisionEndedHandler(ColliderData::Ptr obj0, ColliderData::Ptr obj1)
+{
+#ifdef DEBUG_PHYSICS_COLLISIONS
+	std::cout << "[" << obj0->name() << "]\t< > [" << obj1->name() << "]" << std::endl;
+#endif // DEBUG_PHYSICS_COLLISIONS
 }
 
 void
@@ -187,8 +221,8 @@ bullet::Collider::synchronizePhysicsWithGraphics()
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << _colliderData->name() << "]\tsynchro graphics->physics" << std::endl;
-	PhysicsWorld::print(std::cout << "- correction =\n", correction) << std::endl;
-	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", graphicsNoScaleTransform) << std::endl;
+	PhysicsWorld::print(std::cout << "- correction =\n", _colliderData->correction()) << std::endl;
+	PhysicsWorld::print(std::cout << "- scalefree(graphics) =\n", _TMP_MATRIX) << std::endl;
 #endif // DEBUG_PHYSICS
 
 	_physicsWorld->synchronizePhysicsWithGraphics(_colliderData, _TMP_MATRIX);

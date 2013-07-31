@@ -40,6 +40,7 @@ namespace minko
 	{
 		namespace bullet
 		{
+			class LinearIdAllocator; 
 			class AbstractPhysicsShape;
 			class SphereShape;
 			class BoxShape;
@@ -55,6 +56,7 @@ namespace minko
 				typedef std::shared_ptr<PhysicsWorld> Ptr;
 
 			private:
+				typedef std::shared_ptr<LinearIdAllocator>			LinearIdAllocatorPtr;
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<ColliderData>				ColliderDataPtr; 
@@ -71,14 +73,19 @@ namespace minko
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
 
 				class BulletCollider;
-				typedef std::shared_ptr<BulletCollider>								BulletColliderPtr;
-				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>		ColliderMap;
-				typedef std::unordered_map<const btCollisionObject*, ColliderDataPtr>		ColliderInverseMap;
+				typedef std::shared_ptr<BulletCollider>									BulletColliderPtr;
+				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>			ColliderMap;
+				typedef std::unordered_map<const btCollisionObject*, ColliderDataPtr>	ColliderReverseMap;
+
+				typedef std::set<std::pair<uint, uint>>									CollisionSet;
 
 			private:
-				ColliderMap							_colliderMap;
-				ColliderInverseMap					_colliderInvMap;
-				RenderingPtr						_rendering;
+				LinearIdAllocatorPtr							_uidAllocator;
+				ColliderMap										_colliderMap;
+				ColliderReverseMap								_colliderReverseMap;
+				std::map<uint, ColliderDataPtr>					_uidToCollider;
+				CollisionSet									_collisions;
+				RenderingPtr									_rendering;
 
 				btBroadphasePtr									_bulletBroadphase;
 				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
@@ -94,11 +101,9 @@ namespace minko
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
 
-				Matrix4x4Ptr									_tempTransform;
-				btTransformPtr									_bulletTempTransform;
-
-				static Matrix4x4Ptr					_TMP_MATRIX;
-				static btTransform					_TMP_BTTRANSFORM;
+				static const uint								_MAX_BODIES;
+				static Matrix4x4Ptr								_TMP_MATRIX;
+				static btTransform								_TMP_BTTRANSFORM;
 
 			public:
 				static
