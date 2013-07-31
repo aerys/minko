@@ -71,12 +71,14 @@ namespace minko
 				typedef std::shared_ptr<btDynamicsWorld>			btDynamicsWorldPtr;
 
 				class BulletCollider;
-				typedef std::shared_ptr<BulletCollider>							BulletColliderPtr;
-				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>	ColliderMap;
+				typedef std::shared_ptr<BulletCollider>								BulletColliderPtr;
+				typedef std::unordered_map<ColliderDataPtr, BulletColliderPtr>		ColliderMap;
+				typedef std::unordered_map<const btCollisionObject*, ColliderDataPtr>		ColliderInverseMap;
 
 			private:
-				ColliderMap										_colliderMap;
-				RenderingPtr									_rendering;
+				ColliderMap							_colliderMap;
+				ColliderInverseMap					_colliderInvMap;
+				RenderingPtr						_rendering;
 
 				btBroadphasePtr									_bulletBroadphase;
 				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
@@ -161,6 +163,9 @@ namespace minko
 				void
 				updateColliders();
 
+				void
+				notifyCollisions();
+
 				static
 				Matrix4x4Ptr
 				fromBulletTransform(const btTransform&, Matrix4x4Ptr output = nullptr);
@@ -205,7 +210,7 @@ namespace minko
 					typedef std::shared_ptr<btCollisionShape>		btCollisionShapePtr;
 					typedef std::shared_ptr<btMotionState>			btMotionStatePtr;
 					typedef std::shared_ptr<btDefaultMotionState>	btDefaultMotionStatePtr;
-					typedef std::shared_ptr<btCollisionObject>		btCollisionObjectPtr;
+					typedef std::shared_ptr<btCollisionObject>			btCollisionObjectPtr;
 					typedef std::shared_ptr<btRigidBody>			btRigidBodyPtr;
 
 				private:
