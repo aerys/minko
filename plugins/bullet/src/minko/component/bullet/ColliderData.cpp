@@ -30,6 +30,7 @@ using namespace minko::component;
 bullet::ColliderData::ColliderData(float						mass,
 								   AbstractPhysicsShape::Ptr	shape,
 								   Vector3::Ptr					inertia):
+	_uid(0),
 	_name(""),
 	_mass(mass),
 	_correctionMatrix(Matrix4x4::create()->identity()),
@@ -47,7 +48,9 @@ bullet::ColliderData::ColliderData(float						mass,
 	_friction(0.5f),
 	_rollingFriction(0.0f),
 	_deactivationDisabled(false),
-	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create())
+	_graphicsWorldTransformChanged(Signal<Ptr, Matrix4x4Ptr>::create()),
+	_collisionStarted(Signal<Ptr, Ptr>::create()),
+	_collisionEnded(Signal<Ptr, Ptr>::create())
 {
 
 }

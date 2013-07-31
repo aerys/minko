@@ -50,17 +50,19 @@ namespace minko
 				
 
 			private:
-				ColliderDataPtr								_colliderData;
-				PhysicsWorldPtr								_physicsWorld;
-				TransformPtr								_targetTransform;
+				ColliderDataPtr									_colliderData;
+				PhysicsWorldPtr									_physicsWorld;
+				TransformPtr									_targetTransform;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-				Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot	_graphicsTransformChangedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
+				Signal<ColliderDataPtr, Matrix4x4Ptr>::Slot		_graphicsTransformChangedSlot;
+				Signal<ColliderDataPtr, ColliderDataPtr>::Slot	_collisionStartedHandlerSlot;
+				Signal<ColliderDataPtr, ColliderDataPtr>::Slot	_collisionEndedHandlerSlot;
 
-				static Matrix4x4Ptr							_TMP_MATRIX;
+				static Matrix4x4Ptr								_TMP_MATRIX;
 
 			public:
 				inline static
@@ -100,6 +102,12 @@ namespace minko
 
 				void
 				graphicsWorldTransformChangedHandler(ColliderDataPtr, Matrix4x4Ptr);
+
+				void
+				collisionStartedHandler(ColliderDataPtr, ColliderDataPtr);
+
+				void
+				collisionEndedHandler(ColliderDataPtr, ColliderDataPtr);
 			};
 		}
 	}
