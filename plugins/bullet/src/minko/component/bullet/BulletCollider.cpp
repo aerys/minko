@@ -48,13 +48,13 @@ bullet::PhysicsWorld::BulletCollider::rigidBody() const
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr collider)
+bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr data)
 {
-	if (collider == nullptr)
-		throw std::invalid_argument("collider");
+	if (data == nullptr)
+		throw std::invalid_argument("data");
 
-	std::shared_ptr<btCollisionShape>	bulletCollisionShape	= initializeCollisionShape(collider->shape());	
-	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(collider);
+	std::shared_ptr<btCollisionShape>	bulletCollisionShape	= initializeCollisionShape(data->shape());	
+	std::shared_ptr<btMotionState>		bulletMotionState		= initializeMotionState(data);
 
 #ifdef DEBUG_PHYSICS
 	std::cout << "[" << collider->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0] 
@@ -62,7 +62,7 @@ bullet::PhysicsWorld::BulletCollider::initialize(ColliderData::Ptr collider)
 #endif // DEBUG_PHYSICS
 
 	initializeCollisionObject(
-		collider, 
+		data, 
 		bulletCollisionShape, 
 		bulletMotionState
 	);
@@ -146,65 +146,65 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(ColliderData::Ptr co
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr collider,
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(ColliderData::Ptr data,
 																std::shared_ptr<btCollisionShape> bulletCollisionShape, 
 																std::shared_ptr<btMotionState> bulletMotionState) 
 {
 	// only rigid objects are considerered for the moment
 
 	btVector3 inertia (0.0, 0.0, 0.0);
-	if (collider->inertia() == nullptr)
+	if (data->inertia() == nullptr)
 	{
-		if (collider->mass() > 0.0f)
-			bulletCollisionShape->calculateLocalInertia(collider->mass(), inertia);
+		if (data->mass() > 0.0f)
+			bulletCollisionShape->calculateLocalInertia(data->mass(), inertia);
 	}
 	else
 	{
-		inertia.setX(collider->inertia()->x());
-		inertia.setY(collider->inertia()->y());
-		inertia.setZ(collider->inertia()->z());
+		inertia.setX(data->inertia()->x());
+		inertia.setY(data->inertia()->y());
+		inertia.setZ(data->inertia()->z());
 	}
 
 	// construction of a new rigid collision object
 	auto info = btRigidBody::btRigidBodyConstructionInfo(
-		collider->mass(),
+		data->mass(),
 		bulletMotionState.get(),
 		bulletCollisionShape.get(),
 		inertia
 	);
-	info.m_linearDamping			= collider->linearDamping();
-	info.m_angularDamping			= collider->angularDamping();
-	info.m_friction					= collider->friction();
-	info.m_rollingFriction			= collider->rollingFriction();
-	info.m_restitution				= collider->restitution();
-	info.m_linearSleepingThreshold	= collider->linearSleepingThreshold();
-	info.m_angularSleepingThreshold	= collider->angularSleepingThreshold();
+	info.m_linearDamping			= data->linearDamping();
+	info.m_angularDamping			= data->angularDamping();
+	info.m_friction					= data->friction();
+	info.m_rollingFriction			= data->rollingFriction();
+	info.m_restitution				= data->restitution();
+	info.m_linearSleepingThreshold	= data->linearSleepingThreshold();
+	info.m_angularSleepingThreshold	= data->angularSleepingThreshold();
 
 	auto bulletRigidBody = std::shared_ptr<btRigidBody>(new btRigidBody(info));
 
 	// communicate several properties of the rigid object
 	bulletRigidBody->setLinearVelocity(btVector3(
-		collider->linearVelocity()->x(), 
-		collider->linearVelocity()->y(), 
-		collider->linearVelocity()->z()
+		data->linearVelocity()->x(), 
+		data->linearVelocity()->y(), 
+		data->linearVelocity()->z()
 		));
 	bulletRigidBody->setLinearFactor(btVector3(
-		collider->linearFactor()->x(), 
-		collider->linearFactor()->y(), 
-		collider->linearFactor()->z()
+		data->linearFactor()->x(), 
+		data->linearFactor()->y(), 
+		data->linearFactor()->z()
 		));
 	bulletRigidBody->setAngularVelocity(btVector3(
-		collider->angularVelocity()->x(), 
-		collider->angularVelocity()->y(), 
-		collider->angularVelocity()->z()
+		data->angularVelocity()->x(), 
+		data->angularVelocity()->y(), 
+		data->angularVelocity()->z()
 		));
 	bulletRigidBody->setAngularFactor(btVector3(
-		collider->angularFactor()->x(), 
-		collider->angularFactor()->y(), 
-		collider->angularFactor()->z()
+		data->angularFactor()->x(), 
+		data->angularFactor()->y(), 
+		data->angularFactor()->z()
 		));
 
-	bulletRigidBody->setActivationState(collider->deactivationDisabled() 
+	bulletRigidBody->setActivationState(data->deactivationDisabled() 
 		? DISABLE_DEACTIVATION 
 		: ACTIVE_TAG
 	);
