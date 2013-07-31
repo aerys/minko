@@ -23,14 +23,19 @@
 using namespace minko::component;
 using namespace minko::math;
 
-const float WINDOW_WIDTH		= 1024;
-const float WINDOW_HEIGHT		= 500;
+const float WINDOW_WIDTH		= 1024.0f;
+const float WINDOW_HEIGHT		= 500.0f;
+
+const std::string MK_NAME			= "model/trigger-test.mk";
+const std::string DEFAULT_EFFECT	= "effect/Basic.effect";
+//const std::string MK_NAME			= "model/Sponza_lite_sphere.mk";
+//const std::string DEFAULT_EFFECT	= "effect/SponzaLighting.effect";
+const std::string CAMERA_NAME		= "camera";
 
 const float CAMERA_LIN_SPEED	= 0.05f;
 const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
-const std::string CAMERA_NAME	= "camera";
 
 Rendering::Ptr			rendering			= nullptr;
 auto					sponzaLighting		= SponzaLighting::create();
@@ -47,7 +52,7 @@ float					_mousePositionY		= 0;
 Vector3::Ptr			_target				= Vector3::create();
 Vector3::Ptr			_eye				= Vector3::create();
 bullet::Collider::Ptr	_cameraCollider		= nullptr;
-bool					_updateCameraRotation	= false;
+//bool					_updateCameraRotation	= false;
 
 
 #if defined EMSCRIPTEN
@@ -183,7 +188,7 @@ glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 	_mousePositionX = x;
 	_mousePositionY = y;
 
-	_updateCameraRotation = true;
+	//_updateCameraRotation = true;
 }
 #endif
 
@@ -330,6 +335,7 @@ deserializeBullet(Qark::Map&						nodeInformation,
 	double avz			= 0.0;
 	bool sleep			= false;
 	bool rotate			= false;
+	bool trigger		= false;
 	double friction		= 0.5; // bullet's advices
 	double restitution	= 0.0; // bullet's advices
 
@@ -343,6 +349,15 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		mass			= density * shape->volume();
 		friction		= readAndSwap<double>(stream);
 		restitution		= readAndSwap<double>(stream);
+	}
+
+	if (shapeData.find("logicProfile") != shapeData.end())
+	{
+		Qark::ByteArray& logicProfileData = Any::cast<Qark::ByteArray&>(shapeData["logicProfile"]);
+		std::stringstream	stream;
+		stream.write(&*logicProfileData.begin(), logicProfileData.size());
+
+		trigger	= readAndSwap<bool>(stream);
 	}
 
 	if (colliderData.find("dynamics") == colliderData.end())
@@ -363,12 +378,14 @@ deserializeBullet(Qark::Map&						nodeInformation,
 		rotate	= readAndSwap<bool>(stream);
 	}
 
+
 	bullet::ColliderData::Ptr data = bullet::ColliderData::create(mass, shape);
 
 	data->linearVelocity(vx, vy, vz);
 	data->angularVelocity(avx, avy, avz);
 	data->friction(friction);
 	data->restitution(restitution);
+	data->triggerCollisions(trigger);
 
 	if (!rotate)
 		data->angularFactor(0.0f, 0.0f, 0.0f);
@@ -535,26 +552,26 @@ main(int argc, char** argv)
 	sceneManager->assets()
 		->queue("texture/firefull.jpg")
 		->queue("effect/Particles.effect")
-		->queue("model/Sponza_lite_sphere.mk");
+		->queue(MK_NAME);
 	
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-	
+
 	rendering = Rendering::create(context);
 
 	initializePhysics();
 	
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
-		scene::Node::Ptr sponza = assets->node("model/Sponza_lite_sphere.mk");
-		//scene::Node::Ptr sponza = assets->node("model/four-squares.mk");
-		initializeCamera(sponza);
+		scene::Node::Ptr mk = assets->node(MK_NAME);
+		//scene::Node::Ptr mk = assets->node("model/four-squares.mk");
+		initializeCamera(mk);
 
 		root->addChild(group);
 		root->addComponent(sceneManager);
 		root->addComponent(sponzaLighting);
 
 		group->addComponent(Transform::create());
-		group->addChild(sponza);
+		group->addChild(mk);
 
 		scene::NodeSet::Ptr fireNodes = scene::NodeSet::create(group)
 			->descendants()
