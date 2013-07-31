@@ -100,7 +100,7 @@ bullet::Collider::targetAddedHandler(
 		));
 
 	// initialize from node if possible (mostly for adding a controller to the camera)
-	initializeFromNode(target);
+	//initializeFromNode(target);
 }
 
 void
