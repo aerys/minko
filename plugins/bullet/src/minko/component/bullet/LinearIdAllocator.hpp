@@ -19,12 +19,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/bullet/PhysicsWorld.hpp"
-#include "minko/component/bullet/ColliderData.hpp"
-#include "minko/component/bullet/Collider.hpp"
-#include "minko/component/bullet/AbstractPhysicsShape.hpp"
-#include "minko/component/bullet/SphereShape.hpp"
-#include "minko/component/bullet/BoxShape.hpp"
-#include "minko/component/bullet/ConeShape.hpp"
-#include "minko/component/bullet/CylinderShape.hpp"
-#include "minko/component/bullet/LinearIdAllocator.hpp"
+#include "minko/Common.hpp"
+
+namespace minko
+{
+	namespace component
+	{
+		namespace bullet
+		{
+			class LinearIdAllocator
+			{
+			public:
+				typedef std::shared_ptr<LinearIdAllocator> Ptr;
+		
+			private:
+				std::vector<uint>	_uids;
+				std::vector<uint>	_uidToIndex;
+				uint				_numUsedUids;
+				const uint			_MAX_UID;
+
+			public:
+				inline static
+				Ptr
+				create(uint maxUid = 2048)
+				{
+					return std::shared_ptr<LinearIdAllocator>(new LinearIdAllocator(maxUid));
+				}
+
+				uint
+				allocate();
+
+				void
+				free(uint uid);
+
+			private:
+				LinearIdAllocator(uint maxUid);
+			};
+		}
+	}
+}
