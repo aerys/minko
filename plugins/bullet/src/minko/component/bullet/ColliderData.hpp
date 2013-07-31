@@ -43,6 +43,8 @@ namespace minko
 				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
 
 			private:
+				uint			_uid;
+
 				std::string		_name;
 				float			_mass;
 				Matrix4x4Ptr	_correctionMatrix;
@@ -64,7 +66,9 @@ namespace minko
 				bool			_deactivationDisabled;
 				bool			_triggerCollisions;
 
-				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>> _graphicsWorldTransformChanged;
+				std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>	_graphicsWorldTransformChanged;
+				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionStarted;
+				std::shared_ptr<Signal<Ptr, Ptr>>			_collisionEnded;
 
 			public:
 				inline static
@@ -100,6 +104,18 @@ namespace minko
 				isStatic() const
 				{
 					return _mass < 1e-6f;
+				}
+
+				inline
+				uint uid() const
+				{
+					return _uid;
+				}
+
+				inline
+				void uid(uint value)
+				{
+					_uid = value;
 				}
 
 				inline
@@ -297,6 +313,20 @@ namespace minko
 				graphicsWorldTransformChanged()
 				{
 					return _graphicsWorldTransformChanged;
+				}
+
+				inline
+				Signal<Ptr, Ptr>::Ptr
+				collisionStarted()
+				{
+					return _collisionStarted;
+				}
+
+				inline
+				Signal<Ptr, Ptr>::Ptr
+				collisionEnded()
+				{
+					return _collisionEnded;
 				}
 
 			private:
