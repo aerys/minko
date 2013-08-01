@@ -62,7 +62,6 @@ namespace minko
 		class DrawCall;
 		class Pass;
 		class Effect;
-		class EffectInstance;
 		class ProgramInputs;
 
 		class AbstractResource;
