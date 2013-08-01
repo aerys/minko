@@ -117,6 +117,35 @@ AssetLibrary::blob(const std::string& name, const std::vector<unsigned char>& bl
 	return shared_from_this();
 }
 
+const unsigned int
+AssetLibrary::layer(const std::string& name)
+{
+	if (_layers.count(name) == 0)
+	{
+		unsigned int existingMask = 0;
+
+		for (auto layer : _layers)
+			existingMask |= layer.second;
+
+		auto mask = 1;
+		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
+			auto;
+
+		if (mask == 0)
+			throw;
+
+		_layers[name] = mask;
+	}
+
+	return _layers[name];
+}
+
+const unsigned int
+AssetLibrary::layer(const std::string& name, const unsigned int mask)
+{
+	_layers[name] = mask;
+}
+
 AssetLibrary::Ptr
 AssetLibrary::queue(const std::string& filename, std::shared_ptr<file::Options> options)
 {
