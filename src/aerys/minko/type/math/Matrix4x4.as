@@ -604,7 +604,7 @@ package aerys.minko.type.math
                 sz += (scale.z - sz) * ratio;
                 
 				_matrix.interpolateTo(target._matrix, ratio);
-                _matrix.appendScale(sx, sy, sz);
+                _matrix.prependScale(sx, sy, sz);
                 
                 if (interpolateW)
                 {
