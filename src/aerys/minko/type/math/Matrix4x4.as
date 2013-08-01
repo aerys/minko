@@ -602,10 +602,10 @@ package aerys.minko.type.math
                 sx += (scale.x - sx) * ratio;
                 sy += (scale.y - sy) * ratio;
                 sz += (scale.z - sz) * ratio;
-                
+				
 				_matrix.interpolateTo(target._matrix, ratio);
-                _matrix.appendScale(sx, sy, sz);
-                
+				_matrix.prependScale(sx,sy,sz);
+				
                 if (interpolateW)
                 {
                     var translation : Vector4   = getTranslation(TMP_VECTOR4);
