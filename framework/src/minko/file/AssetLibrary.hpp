@@ -124,7 +124,7 @@ namespace minko
 			const unsigned int
 			layer(const std::string& name);
 
-			const unsigned int
+			Ptr
 			layer(const std::string& name, const unsigned int mask);
 
 		    template <typename T>
