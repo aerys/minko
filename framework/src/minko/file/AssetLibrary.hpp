@@ -54,6 +54,7 @@ namespace minko
 		    std::unordered_map<std::string, TexturePtr>						_textures;
 		    std::unordered_map<std::string, NodePtr>						_nodes;
 		    std::unordered_map<std::string, std::vector<unsigned char>>		_blobs;
+			std::unordered_map<std::string, uint>							_layers;
 
 		    std::list<std::string>											_filesQueue;
 		    std::unordered_map<std::string, std::shared_ptr<file::Options>>	_filenameToOptions;
@@ -119,6 +120,12 @@ namespace minko
 
 		    Ptr
 		    blob(const std::string& name, const std::vector<unsigned char>& blob);
+
+			const unsigned int
+			layer(const std::string& name);
+
+			const unsigned int
+			layer(const std::string& name, const unsigned int mask);
 
 		    template <typename T>
 		    typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
