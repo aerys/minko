@@ -129,7 +129,7 @@ AssetLibrary::layer(const std::string& name)
 
 		auto mask = 1;
 		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
-			auto;
+			continue;
 
 		if (mask == 0)
 			throw;
@@ -140,10 +140,12 @@ AssetLibrary::layer(const std::string& name)
 	return _layers[name];
 }
 
-const unsigned int
+AssetLibrary::Ptr
 AssetLibrary::layer(const std::string& name, const unsigned int mask)
 {
 	_layers[name] = mask;
+
+	return shared_from_this();
 }
 
 AssetLibrary::Ptr
