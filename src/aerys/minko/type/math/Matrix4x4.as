@@ -604,8 +604,8 @@ package aerys.minko.type.math
                 sz += (scale.z - sz) * ratio;
 				
 				_matrix.interpolateTo(target._matrix, ratio);
-				_matrix.prependScale(sx,sy,sz);
-				
+                _matrix.prependScale(sx, sy, sz);
+                
                 if (interpolateW)
                 {
                     var translation : Vector4   = getTranslation(TMP_VECTOR4);
