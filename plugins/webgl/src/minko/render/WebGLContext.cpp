@@ -188,3 +188,35 @@ WebGLContext::setUniformMatrix4x4(unsigned int location, unsigned int size, bool
 	else
 		glUniformMatrix4fv(location, size, false, values);
 }
+
+void
+WebGLContext::uploadVertexBufferData(const unsigned int vertexBuffer,
+									 const unsigned int offset,
+									 const unsigned int size,
+									 void* 				data)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+	// IE 11 dev build workaround: glBufferSubData is not supported, use glBufferData instead
+	// FIXME: remove this useless override when glBufferSubData is available IE 11
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), data, GL_STATIC_DRAW);
+
+    checkForErrors();
+}
+
+void
+WebGLContext::uploaderIndexBufferData(const unsigned int 	indexBuffer,
+									  const unsigned int 	offset,
+									  const unsigned int 	size,
+									  void*					data)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+	_currentIndexBuffer = indexBuffer;
+
+	// IE 11 dev build workaround: glBufferSubData is not supported, use glBufferData instead
+	// FIXME: remove this useless override when glBufferSubData is available IE 11
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(GLushort), data, GL_STATIC_DRAW);
+
+    checkForErrors();
+}
