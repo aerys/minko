@@ -172,7 +172,7 @@ DrawCall::bindStates()
         _states->target()
     );
 	
-    if (_target && !_target->isValid())
+    if (_target && !_target->isReady())
         _target->upload();
 }
 

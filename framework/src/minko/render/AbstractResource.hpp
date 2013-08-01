@@ -54,7 +54,7 @@ namespace minko
 
 			inline
 			const bool
-			isValid()
+			isReady()
 			{
 				return _id != -1;
 			}
