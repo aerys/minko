@@ -29,3 +29,8 @@ namespace minko
 		class MkParser;
 	}
 }
+
+typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>	ControllerMap;
+typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
+typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
+typedef	std::map<std::string, Any>															NodeInfo;

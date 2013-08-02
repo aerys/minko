@@ -6,6 +6,7 @@
 #include "minko/MinkoMk.hpp"
 #include "minko/MinkoBullet.hpp"
 #include "minko/MinkoParticles.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
 
 #include <time.h>
 
