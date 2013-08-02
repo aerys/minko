@@ -37,7 +37,7 @@ const float CAMERA_ANG_SPEED	= PI * 2.f / 180.0f;
 const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 
-Rendering::Ptr			rendering			= nullptr;
+Renderer::Ptr			renderer			= nullptr;
 auto					sponzaLighting		= SponzaLighting::create();
 auto					mesh				= scene::Node::create("mesh");
 auto					group				= scene::Node::create("group");
@@ -45,15 +45,13 @@ auto					camera				= scene::Node::create("camera");
 auto					root				= scene::Node::create("root");
 auto					speed				= 0.0f;
 auto					angSpeed			= 0.0f;
-float					_rotationX			= 0.0f;
-float					_rotationY			= 0.0f;
-float					_mousePositionX		= 0.0f;
-float					_mousePositionY		= 0.0f;
-Vector3::Ptr			_target				= Vector3::create();
-Vector3::Ptr			_eye				= Vector3::create();
-bullet::Collider::Ptr	_cameraCollider		= nullptr;
-//bool					_updateCameraRotation	= false;
-
+float					rotationX			= 0.0f;
+float					rotationY			= 0.0f;
+float					mousePositionX		= 0.0f;
+float					mousePositionY		= 0.0f;
+Vector3::Ptr			target				= Vector3::create();
+Vector3::Ptr			eye					= Vector3::create();
+bullet::Collider::Ptr	cameraCollider		= nullptr;
 
 #if defined EMSCRIPTEN
 render::WebGLContext::Ptr       context;
@@ -72,7 +70,7 @@ void
 keyDownHandler(int key, int x, int y)
 {
 	std::cout << "keyDownHandler: " << key << std::endl;
-	if (_cameraCollider == nullptr)
+	if (cameraCollider == nullptr)
 	{
 		if (key == GLUT_KEY_UP)
 			camera->component<Transform>()->transform()->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
@@ -108,27 +106,25 @@ keyUpHandler(int key, int x, int y)
 void
 glutMouseMoveHandler(int x, int y)
 {
-	_rotationY += -(_mousePositionX - x) * .005;
-	_rotationX +=  (_mousePositionY - y) * .005;
+	rotationY += -(mousePositionX - x) * .005;
+	rotationX +=  (mousePositionY - y) * .005;
 
 	const float limit = 89 * PI / 180;
 
-	if (_rotationX < -limit)
-		_rotationX = -limit;
-	else if (_rotationX > +limit)
-		_rotationX = +limit;
+	if (rotationX < -limit)
+		rotationX = -limit;
+	else if (rotationX > +limit)
+		rotationX = +limit;
 
-	_mousePositionX = x;
-	_mousePositionY = y;
-
-	_updateCameraRotation = true;
+	mousePositionX = x;
+	mousePositionY = y;
 }
 
 void
 renderScene()
 {
 	auto cameraTransform = camera->component<Transform>()->transform();
-	if (_cameraCollider == nullptr)
+	if (cameraCollider == nullptr)
 	{
 		if (speed)
 			cameraTransform->prependTranslation(0.f, 0.f, speed);
@@ -144,26 +140,25 @@ renderScene()
 			cameraTransform->prependTranslation(0.0f, 0.0f, speed);
 
 		// look around
-		_eye = cameraTransform->translationVector();
+		eye = cameraTransform->translationVector();
 
-		_target->setTo(
-			_eye->x() + sinf(_rotationY) * cosf(_rotationX),
-			_eye->y() + sinf(_rotationX),
-			_eye->z() + cosf(_rotationY) * cosf(_rotationX)
-			);
+		target->setTo(
+			eye->x() + sinf(rotationY) * cosf(rotationX),
+			eye->y() + sinf(rotationX),
+			eye->z() + cosf(rotationY) * cosf(rotationX)
+		);
 		
-		// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
-		cameraTransform->view(_eye, _target, Vector3::upAxis());
+		cameraTransform->view(eye, target, Vector3::upAxis());
 		
 		auto newEyePos = cameraTransform->translationVector();
 		
 		cameraTransform->appendTranslation(
-			_eye->x() - newEyePos->x(),
-			_eye->y() - newEyePos->y(),
-			_eye->z() - newEyePos->z()
-			);
+			eye->x() - newEyePos->x(),
+			eye->y() - newEyePos->y(),
+			eye->z() - newEyePos->z()
+		);
 		
-		_cameraCollider->synchronizePhysicsWithGraphics();
+		cameraCollider->synchronizePhysicsWithGraphics();
 	}
 
 	sponzaLighting->step();
@@ -175,20 +170,18 @@ renderScene()
 void
 glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 {
-	_rotationY += (_mousePositionX - x) * .005;
-	_rotationX += (_mousePositionY - y) * .005;
+	rotationY += (mousePositionX - x) * .005;
+	rotationX += (mousePositionY - y) * .005;
 
 	const float limit = 89 * PI / 180;
 
-	if (_rotationX < -limit)
-		_rotationX = -limit;
-	else if (_rotationX > +limit)
-		_rotationX = +limit;
+	if (rotationX < -limit)
+		rotationX = -limit;
+	else if (rotationX > +limit)
+		rotationX = +limit;
 
-	_mousePositionX = x;
-	_mousePositionY = y;
-
-	//_updateCameraRotation = true;
+	mousePositionX = x;
+	mousePositionY = y;
 }
 #endif
 
@@ -398,15 +391,15 @@ deserializeBullet(Qark::Map&						nodeInformation,
 component::bullet::Collider::Ptr
 initializeDefaultCameraCollider()
 {
-	bullet::BoxShape::Ptr	cameraShape	= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
-	//cameraShape->setMargin(0.3f);
-	auto cameraCollider					= bullet::ColliderData::create(CAMERA_MASS, cameraShape);
-	cameraCollider->restitution(0.5f);
-	cameraCollider->angularFactor(0.0f, 0.0f, 0.0f);
-	cameraCollider->friction(CAMERA_FRICTION);
-	cameraCollider->disableDeactivation(true);
+	auto shape		= bullet::BoxShape::create(0.2f, 0.3f, 0.2f);
+	auto data		= bullet::ColliderData::create(CAMERA_MASS, shape);
+
+	data->restitution(0.5f);
+	data->angularFactor(0.0f, 0.0f, 0.0f);
+	data->friction(CAMERA_FRICTION);
+	data->disableDeactivation(true);
 	
-	return bullet::Collider::create(cameraCollider);
+	return bullet::Collider::create(data);
 }
 
 void
@@ -432,8 +425,8 @@ initializeCamera(scene::Node::Ptr group)
 			->appendTranslation(0.0f, 0.75f, 5.0f)
 			->appendRotationY(PI * 0.5);
 		
-		cameraColliderComp = initializeDefaultCameraCollider();
-		camera->addComponent(cameraColliderComp);
+		cameraCollider = initializeDefaultCameraCollider();
+		camera->addComponent(cameraCollider);
 	}
 	else
 	{
@@ -446,16 +439,18 @@ initializeCamera(scene::Node::Ptr group)
 		if (camera->hasComponent<component::bullet::Collider>())
 		{
 			std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
-			_cameraCollider = camera->component<component::bullet::Collider>();
+			cameraCollider = camera->component<component::bullet::Collider>();
 		}
 		else
+		{
 			std::cout << "PARSED CAMERA W/OUT COLLIDER" << std::endl;
+		}
 	}
 
 	if (!camera->hasComponent<Transform>())
 		throw std::logic_error("Camera (deserialized or created) must have a Transform.");
 
-	camera->addComponent(rendering);
+	camera->addComponent(renderer);
 	camera->addComponent(PerspectiveCamera::create(.785f, WINDOW_WIDTH / WINDOW_HEIGHT, .1f, 1000.f));
 
 	root->addChild(camera);
@@ -464,7 +459,7 @@ initializeCamera(scene::Node::Ptr group)
 void
 initializePhysics()
 {
-	auto physicWorld = bullet::PhysicsWorld::create(rendering);
+	auto physicWorld = bullet::PhysicsWorld::create(renderer);
 
 	physicWorld->setGravity(math::Vector3::create(0.f, -9.8f, 0.f));
 	root->addComponent(physicWorld);
@@ -556,7 +551,7 @@ main(int argc, char** argv)
 	
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
 
-	rendering = Rendering::create(context);
+	renderer = Renderer::create();
 
 	initializePhysics();
 	
@@ -599,7 +594,7 @@ main(int argc, char** argv)
 	while(!glfwWindowShouldClose(window))
 	{
 		auto cameraTransform = camera->component<Transform>()->transform();
-		if (_cameraCollider == nullptr)
+		if (cameraCollider == nullptr)
 		{
 			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
@@ -621,32 +616,31 @@ main(int argc, char** argv)
 				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
 
 			// look around
-			_eye = cameraTransform->translationVector();
+			eye = cameraTransform->translationVector();
 
-			_target->setTo(
-				_eye->x() + sinf(_rotationY) * cosf(_rotationX),
-				_eye->y() + sinf(_rotationX),
-				_eye->z() + cosf(_rotationY) * cosf(_rotationX)
-				);
+			target->setTo(
+				eye->x() + sinf(rotationY) * cosf(rotationX),
+				eye->y() + sinf(rotationX),
+				eye->z() + cosf(rotationY) * cosf(rotationX)
+			);
 
-			// _cameraWorldTransform->lookAt(_target, _eye, Vector3::upAxis());
-			cameraTransform->view(_eye, _target, Vector3::upAxis());
+			cameraTransform->view(eye, target, Vector3::upAxis());
 
 			auto newEyePos = cameraTransform->translationVector();
 
 			cameraTransform->appendTranslation(
-				_eye->x() - newEyePos->x(),
-				_eye->y() - newEyePos->y(),
-				_eye->z() - newEyePos->z()
-				);
+				eye->x() - newEyePos->x(),
+				eye->y() - newEyePos->y(),
+				eye->z() - newEyePos->z()
+			);
 
-			_cameraCollider->synchronizePhysicsWithGraphics();
+			cameraCollider->synchronizePhysicsWithGraphics();
 		}
 		
 		sceneManager->nextFrame();
 		
 		sponzaLighting->step();
-		rendering->render();
+		renderer->render();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
