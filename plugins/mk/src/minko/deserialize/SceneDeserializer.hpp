@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/MkCommon.hpp"
 #include "minko/Qark.hpp"
 #include "minko/file/MkOptions.hpp"
 
@@ -33,10 +33,6 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SceneDeserializer>													Ptr;
 			typedef std::shared_ptr<render::AbstractContext>											ContextPtr;
-			typedef std::map<std::shared_ptr<scene::Node>, std::vector<component::AbstractComponent>>	ControllerMap;
-			typedef std::map<std::shared_ptr<scene::Node>, uint>										NodeMap;
-			typedef std::shared_ptr<file::MkOptions>													OptionsPtr;
-			typedef	std::map<std::string, Any>															NodeInfo;
 		
 		private:
 			typedef	std::function<std::shared_ptr<scene::Node>(NodeInfo&, OptionsPtr, ControllerMap&, NodeMap&)> NodeDeserializerFunc;
