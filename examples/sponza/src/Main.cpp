@@ -160,7 +160,7 @@ renderScene()
 	}
 
 	sponzaLighting->step();
-	rendering->render();
+	renderer->render();
 
 	glutSwapBuffers();
 }
