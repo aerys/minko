@@ -99,10 +99,16 @@ class emscripten {
         require => Exec["git-clone-emscripten"]
     }
 
+    exec { "/bin/bash configure":
+        cwd => "/home/vagrant/src/emscripten/third_party/lzma.js/lzip",
+        alias => "emscripten-configure-lzma",
+        require => Exec["git-pull-emscripten"]
+    }
+
     exec { "/bin/bash doit.sh":
         cwd => "/home/vagrant/src/emscripten/third_party/lzma.js",
         alias => "emscripten-build-lzma",
-        require => Exec["git-pull-emscripten"]
+        require => Exec["emscripten-configure-lzma"]
     }
 
     exec { "/usr/bin/wget ${clang_url}":
