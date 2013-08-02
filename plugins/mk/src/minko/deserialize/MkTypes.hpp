@@ -26,53 +26,52 @@ namespace minko
 	namespace deserialize
 	{
 
-		class MkTypes
+		enum MkTypes
 		{
-		public:
+			BOOLEAN					= 0,
+			NUMBER 					= 1,
+			POINT					= 2,
+			VECTOR4					= 3,
+			VECTOR4B				= 9,
+			MATRIX4X4 				= 4,
+			VECTORN					= 5,
+			VECTORV4				= 6,
+			VECTORM4X4				= 7,
+			TEXTURE_RESOURCE		= 8,
 
-			static const unsigned BOOLEAN					= 0;
-			static const unsigned NUMBER 					= 1;
-			static const unsigned POINT						= 2;
-			static const unsigned VECTOR4					= 3;
-			static const unsigned VECTOR4B					= 9;
-			static const unsigned MATRIX4X4 				= 4;
-			static const unsigned VECTORN					= 5;
-			static const unsigned VECTORV4					= 6;
-			static const unsigned VECTORM4X4				= 7;
-			static const unsigned TEXTURE_RESOURCE			= 8;
+			GROUP					= 0,
+			MESH					= 1,
+			SYMBOL					= 2,
+			LIGHT					= 3,
+			CAMERA 					= 4,
 
-			static const unsigned int GROUP					= 0;
-			static const unsigned int MESH					= 1;
-			static const unsigned int SYMBOL				= 2;
-			static const unsigned int LIGHT					= 3;
-			static const unsigned int CAMERA 				= 4;
+			DIRECTIONAL_LIGHT		= 10,
+			POINT_LIGHT				= 11,
+			SPOT_LIGHT				= 12,
+			AMBIENT_LIGHT			= 13,
 
-			static const unsigned int DIRECTIONAL_LIGHT		= 10;
-			static const unsigned int POINT_LIGHT			= 11;
-			static const unsigned int SPOT_LIGHT			= 12;
-			static const unsigned int AMBIENT_LIGHT			= 13;
+			ANIMATION_CTRL			= 20,
+			SKELETON_CTRL			= 21,
+			SKINNING_CTRL			= 22,
+			MASTER_ANIMATION_CTRL	= 23,
 
-			static const unsigned int ANIMATION_CTRL		= 20;
-			static const unsigned int SKELETON_CTRL			= 21;
-			static const unsigned int SKINNING_CTRL			= 22;
-			static const unsigned int MASTER_ANIMATION_CTRL	= 23;
+			PROJECTION_CAMERA 		= 30,
+			ORTHOGRAPHIC_CAMERA		= 31,
 
-			static const unsigned int PROJECTION_CAMERA 	= 30;
-			static const unsigned int ORTHOGRAPHIC_CAMERA	= 31;
+			TEXTURE_ASSET			= 40,
+			SYMBOL_ASSET			= 41,
+			EFFECT_ASSET			= 42,
+			MATERIAL_ASSET			= 43,
+			TAGS_ASSET				= 44,
+			SOUND_ASSET				= 45,
 
-			static const unsigned int TEXTURE_ASSET			= 40;
-			static const unsigned int SYMBOL_ASSET			= 41;
-			static const unsigned int EFFECT_ASSET			= 42;
-			static const unsigned int MATERIAL_ASSET		= 43;
-			static const unsigned int TAGS_ASSET			= 44;
-			static const unsigned int SOUND_ASSET			= 45;
+			MATRIX_SEGMENT 			= 80,
+			MATRIX_LINEAR			= 81,
+			SCALAR_LINEAR			= 82,
+			SCALAR_REGULAR			= 83,
+			COLOR_LINEAR			= 84,
+			MATRIX_REGULAR			= 85,
 
-			static const unsigned int MATRIX_SEGMENT 		= 80;
-			static const unsigned int MATRIX_LINEAR			= 81;
-			static const unsigned int SCALAR_LINEAR			= 82;
-			static const unsigned int SCALAR_REGULAR		= 83;
-			static const unsigned int COLOR_LINEAR			= 84;
-			static const unsigned int MATRIX_REGULAR		= 85;
 		};
 	}
 }

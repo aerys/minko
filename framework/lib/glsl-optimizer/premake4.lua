@@ -19,15 +19,6 @@ project "glsl-optimizer"
 		"src/glsl/main.cpp",
 		"src/glsl/builtin_compiler/builtin_stubs.cpp"
 	}
-	defines {
-		"_LIB",
-		"NOMINMAX",
-		"_CRT_SECURE_NO_WARNINGS",
-		"_CRT_SECURE_NO_DEPRECATE",
-		"__STDC_VERSION__=199901L",
-		"__STDC__",
-		"strdup=_strdup"
-	}
 	flags { "NoExceptions" }
 	
 	configuration { "debug"}
@@ -46,7 +37,16 @@ project "glsl-optimizer"
 
 	-- windows
 	configuration { "windows", "x32" }
-		defines { "WIN32" }
+		defines {
+			"_LIB",
+			"NOMINMAX",
+			"_CRT_SECURE_NO_WARNINGS",
+			"_CRT_SECURE_NO_DEPRECATE",
+			"__STDC_VERSION__=199901L",
+			"__STDC__",
+			"strdup=_strdup",
+			"WIN32"
+		}
 		-- c99 fix for windows only
 		includedirs { "include/c99" }
 
