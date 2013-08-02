@@ -26,8 +26,6 @@ using namespace minko::math;
 const float WINDOW_WIDTH		= 1024.0f;
 const float WINDOW_HEIGHT		= 500.0f;
 
-//const std::string MK_NAME			= "model/trigger-test.mk";
-//const std::string DEFAULT_EFFECT	= "effect/Basic.effect";
 const std::string MK_NAME			= "model/Sponza_lite_sphere.mk";
 const std::string DEFAULT_EFFECT	= "effect/SponzaLighting.effect";
 const std::string CAMERA_NAME		= "camera";
@@ -186,15 +184,17 @@ glfwMouseMoveHandler(GLFWwindow* window, double x, double y)
 #endif
 
 template <typename T>
-static void
-	read(std::stringstream& stream, T& value)
+static
+void
+read(std::stringstream& stream, T& value)
 {
 	stream.read(reinterpret_cast<char*>(&value), sizeof (T));
 }
 
 template <typename T>
 static
-	T swap_endian(T u)
+T
+swap_endian(T u)
 {
 	union
 	{
@@ -212,7 +212,7 @@ static
 
 template <typename T>
 T
-	readAndSwap(std::stringstream& stream)
+readAndSwap(std::stringstream& stream)
 {
 	T value;
 	stream.read(reinterpret_cast<char*>(&value), sizeof (T));
@@ -490,13 +490,13 @@ main(int argc, char** argv)
 	file::MkParser::registerController(
 		"colliderController",
 		std::bind(
-		deserializeBullet,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3,
-		std::placeholders::_4
+			deserializeBullet,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3,
+			std::placeholders::_4
 		)
-		);
+	);
 
 #ifdef EMSCRIPTEN
 	glutInit(&argc, argv);
@@ -512,6 +512,7 @@ main(int argc, char** argv)
 	auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Sponza Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPosCallback(window, glfwMouseMoveHandler);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	std::cout << "OpenGL ES2 context created" << std::endl;
 	context = render::OpenGLES2Context::create();
@@ -591,29 +592,45 @@ main(int argc, char** argv)
 
 	emscripten_set_main_loop(renderScene, 0, true);
 #else
-	while(!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(window))
 	{
 		auto cameraTransform = camera->component<Transform>()->transform();
 		if (cameraCollider == nullptr)
 		{
-			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
 				cameraTransform->prependTranslation(0.f, 0.f, -CAMERA_LIN_SPEED);
-			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
+					 glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				cameraTransform->prependTranslation(0.f, 0.f, CAMERA_LIN_SPEED);
-			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 				cameraTransform->prependRotation(-CAMERA_ANG_SPEED, Vector3::yAxis());
-			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
+					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				cameraTransform->prependRotation(CAMERA_ANG_SPEED, Vector3::yAxis());
 		}
 		else
 		{
 
-			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
 				// go forward
 				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, -CAMERA_LIN_SPEED));
-			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
+					 glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 				// go backward
 				cameraTransform->prependTranslation(Vector3::create(0.0f, 0.0f, CAMERA_LIN_SPEED));
+			if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+				cameraTransform->prependTranslation(-CAMERA_LIN_SPEED, 0.0f, 0.0f);
+			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
+					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+				cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
 
 			// look around
 			eye = cameraTransform->translationVector();
