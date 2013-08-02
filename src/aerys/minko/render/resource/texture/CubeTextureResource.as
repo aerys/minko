@@ -2,7 +2,7 @@ package aerys.minko.render.resource.texture
 {
 	import aerys.minko.render.resource.Context3DResource;
 	import aerys.minko.type.enum.SamplerFormat;
-	
+
 	import flash.display.BitmapData;
 	import flash.display3D.Context3DTextureFormat;
 	import flash.display3D.textures.CubeTexture;
@@ -19,15 +19,29 @@ package aerys.minko.render.resource.texture
 	{
 		private static const SIDE_X : Vector.<Number> = new <Number>[2, 0, 1, 1, 1, 3];
 		private static const SIDE_Y : Vector.<Number> = new <Number>[1, 1, 0, 2, 1, 1];
-		
+
+		private static const FORMAT_BGRA				: String	= 'bgra';
+		private static const FORMAT_COMPRESSED			: String	= 'compressed';
+		private static const FORMAT_COMPRESSED_ALPHA 	: String 	= 'compressedAlpha';
+
+		private static const TEXTURE_FORMAT_TO_SAMPLER	: Array 	= []
+		{
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_BGRA] 				= SamplerFormat.RGBA;
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED] 		= SamplerFormat.COMPRESSED;
+			TEXTURE_FORMAT_TO_SAMPLER[FORMAT_COMPRESSED_ALPHA] 	= SamplerFormat.COMPRESSED_ALPHA;
+		}
+
 		private var _bitmapDatas	: Vector.<BitmapData>;
 		private var _resource		: CubeTexture;
 		private var _size			: uint;
         private var _mipMapping     : Boolean;
+		private var _atf			: ByteArray;
+		private var _atfFormat		: uint;
+		private var _format 		: String;
 		
         public function get format() : uint
         {
-            return SamplerFormat.RGBA;
+	        return TEXTURE_FORMAT_TO_SAMPLER[_format];
         }
         
         public function get mipMapping() : Boolean
@@ -61,7 +75,8 @@ package aerys.minko.render.resource.texture
 		{
 			_bitmapDatas = new <BitmapData>[];
             _mipMapping = mipmap;
-			
+			_format = FORMAT_BGRA;
+
 			var width	: Number = bitmapData.width / 4;
 			var height	: Number = bitmapData.height / 3;
 			
@@ -97,14 +112,44 @@ package aerys.minko.render.resource.texture
 		
 		public function setContentFromATF(atf : ByteArray) : void
 		{
-			throw new Error('Not yet implemented');
+			_atf			= atf;
+			_bitmapDatas    = null;
+
+			var oldSize 	: uint = _size;
+			var oldFormat	: String = _format;
+
+			atf.position 	= 6;
+
+			var formatByte 	: uint  = atf.readUnsignedByte();
+			var atfFormat   : uint	= formatByte & 7;
+			_size 			        = 1 << atf.readUnsignedByte();
+
+			atf.position 	= 0;
+
+			switch (atfFormat) {
+				case 0: case 1: _format = FORMAT_BGRA; break;
+				case 2: case 3: _format = FORMAT_COMPRESSED; break;
+				case 4: case 5: _format = FORMAT_COMPRESSED_ALPHA; break
+				default: throw new Error("Invalid ATF format");
+			}
+
+			if (_resource
+					&& (oldFormat != _format
+					|| oldSize != _size
+					))
+			{
+				_resource.dispose();
+				_resource = null;
+			}
 		}
 		
 		public function getTexture(context : Context3DResource) : TextureBase
 		{
 			if (!_resource)
-				_resource = context.createCubeTexture(_size, Context3DTextureFormat.BGRA, true);
-			
+				_resource = context.createCubeTexture(_size, _format, _bitmapDatas != null && _atf == null);
+			else
+				return _resource;
+
 			if (_bitmapDatas != null)
 			{
 				for (var side : uint = 0; side < 6; ++side)
@@ -137,6 +182,11 @@ package aerys.minko.render.resource.texture
 				}
 				
 				_bitmapDatas = null;
+			}
+			else if (_atf)
+			{
+				_resource.uploadCompressedTextureFromByteArray(_atf, 0);
+				_atf = null;
 			}
 			
 			if (!_resource)

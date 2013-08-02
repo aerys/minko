@@ -28,7 +28,9 @@ package aerys.minko.render.shader.part.phong
 					meshBindings.getProperty(BasicProperties.DIFFUSE_MAP_MIPMAPPING, SamplerMipMapping.LINEAR),
 					meshBindings.getProperty(BasicProperties.DIFFUSE_MAP_WRAPPING, SamplerWrapping.REPEAT),
                     0,
-                    meshBindings.getProperty(BasicProperties.DIFFUSE_MAP_FORMAT, SamplerFormat.RGBA)
+					meshBindings.getProperty(BasicProperties.DIFFUSE_MAP, null) ?
+					meshBindings.getProperty(BasicProperties.DIFFUSE_MAP, null).format :
+					meshBindings.getProperty(BasicProperties.DIFFUSE_MAP_FORMAT, SamplerFormat.RGBA)
 				);
 				
 				diffuseColor = sampleTexture(diffuseMap, uv);
