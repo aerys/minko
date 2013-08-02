@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/component/Rendering.hpp"
+#include "minko/component/Renderer.hpp"
 #include "minko/Any.hpp"
 
 namespace minko
@@ -111,8 +111,8 @@ namespace minko
 				typedef std::shared_ptr<RootTransform> Ptr;
 
 			private:
-				typedef std::shared_ptr<Rendering>	RenderingCtrlPtr;
-				typedef Signal<RenderingCtrlPtr>::Slot 			EnterFrameCallback;
+				typedef std::shared_ptr<Renderer>	RendererCtrlPtr;
+				typedef Signal<RendererCtrlPtr>::Slot 			EnterFrameCallback;
 
 			public:
 				inline static
@@ -142,7 +142,7 @@ namespace minko
 				bool											_invalidLists;
 
 				std::list<Any>									_targetSlots;
-				std::map<RenderingCtrlPtr, EnterFrameCallback>	_enterFrameSlots;
+				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
 
 			private:
 				void
@@ -176,7 +176,7 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				enterFrameHandler(RenderingCtrlPtr ctrl);
+				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
 			};
 		};
 	}

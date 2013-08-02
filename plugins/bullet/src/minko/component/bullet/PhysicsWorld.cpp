@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
-#include <minko/component/Rendering.hpp>
+#include <minko/component/SceneManager.hpp>
 #include <minko/component/bullet/Collider.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
@@ -32,10 +32,8 @@ using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
-bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
-	AbstractComponent(),
+bullet::PhysicsWorld::PhysicsWorld():
 	_colliderMap(),
-	_rendering(rendering),
 	_btBroadphase(nullptr),
 	_btCollisionConfiguration(nullptr),
 	_btConstraintSolver(nullptr),
@@ -43,10 +41,10 @@ bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
 	_btDynamicsWorld(nullptr),
 	_targetAddedSlot(nullptr),
 	_targetRemovedSlot(nullptr),
-	_exitFrameSlot(nullptr)
+	_frameEndSlot(nullptr),
+	_componentAddedOrRemovedSlot(nullptr),
+	_addedOrRemovedSlot(nullptr)
 {
-	if (_rendering == nullptr)
-		throw std::invalid_argument("rendering");
 }
 
 void 
@@ -63,68 +61,77 @@ bullet::PhysicsWorld::initialize()
 		_btBroadphase.get(),
 		_btConstraintSolver.get(),
 		_btCollisionConfiguration.get()
-		));
+	));
 
 	_targetAddedSlot	= targetAdded()->connect(std::bind(
 		&bullet::PhysicsWorld::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
 
 	_targetRemovedSlot	= targetRemoved()->connect(std::bind(
 		&bullet::PhysicsWorld::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
 }
 
 void 
 bullet::PhysicsWorld::targetAddedHandler(AbstractComponent::Ptr controller, 
-										 Node::Ptr target)
+										 Node::Ptr				target)
 {
-	if (target->components<PhysicsWorld>().size() > 1)
-		throw std::logic_error("There cannot be two PhysicsWorld on the same node.");
+	if (targets().size() > 1)
+		throw std::logic_error("The same PhysicsWorld cannot be used twice.");
 
-	// ugly solution to get rid of a cyclic dependency when one wants to add a collider to the camera.
-	// camera collider is lost because the PhysicsWorld is not initialized yet because the camera
-	// stores the Rendering.
-	_exitFrameSlot = _rendering->exitFrame()->connect(std::bind(
-		&bullet::PhysicsWorld::exitFrameHandler,
-		shared_from_this(),
-		std::placeholders::_1
-		));
-
-	/*
-	auto nodeSet		= NodeSet::create(target->root())
-		->descendants(true)
-		->where([](Node::Ptr node)
-		{
-			return node->hasComponent<Rendering>();
-	});
-	if (nodeSet->nodes().size() != 1)
-	{
-		std::stringstream stream;
-		stream << "PhysicsWorld requires exactly one Rendering among the descendants of its target node. Found " << nodeSet->nodes().size();
-		throw std::logic_error(stream.str());
-	}
-
-	auto renderingCtrl	= nodeSet->nodes().front()->component<Rendering>();
-
-	_exitFrameSlot		= renderingCtrl->exitFrame()->connect(std::bind(
-		&bullet::PhysicsWorld::exitFrameHandler,
-		shared_from_this(),
-		std::placeholders::_1
-		));
-		*/
+	setSceneManager(target->root()->component<SceneManager>());
 }
 
 void 
-bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr controller, 
-										   Node::Ptr target)
+bullet::PhysicsWorld::targetRemovedHandler(AbstractComponent::Ptr	controller, 
+										   Node::Ptr				target)
 {
-	_exitFrameSlot = nullptr;
+	_sceneManager = nullptr;
+	_frameEndSlot = nullptr;
+	_addedOrRemovedSlot = nullptr;
+	_componentAddedOrRemovedSlot = nullptr;
+}
+
+void
+bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
+{
+	if (sceneManager != _sceneManager || (!_componentAddedOrRemovedSlot && !_addedOrRemovedSlot))
+	{
+		auto target = targets()[0];
+		auto componentCallback = [&](NodePtr node, NodePtr target, AbsCtrlPtr cmp)
+		{
+			setSceneManager(target->root()->component<SceneManager>());
+		};
+		auto nodeCallback = [&](NodePtr node, NodePtr target, NodePtr ancestor)
+		{
+			setSceneManager(target->root()->component<SceneManager>());
+		};
+
+		if (sceneManager)
+		{
+			_sceneManager = sceneManager;
+			_frameEndSlot = sceneManager->cullingBegin()->connect(std::bind(
+				&PhysicsWorld::frameEndHandler, shared_from_this(), std::placeholders::_1
+			));
+
+			_componentAddedOrRemovedSlot = target->componentRemoved()->connect(componentCallback);
+			_addedOrRemovedSlot = target->removed()->connect(nodeCallback);
+		}
+		else
+		{
+			_sceneManager = nullptr;
+			_frameEndSlot = nullptr;
+
+			_componentAddedOrRemovedSlot = target->componentAdded()->connect(componentCallback);
+			_addedOrRemovedSlot = target->added()->connect(nodeCallback);
+		}
+	}
 }
 
 void
@@ -167,7 +174,7 @@ bullet::PhysicsWorld::setGravity(Vector3::Ptr gravity)
 }
 
 void
-bullet::PhysicsWorld::exitFrameHandler(Rendering::Ptr controller)
+bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
 {
 	update();
 }
