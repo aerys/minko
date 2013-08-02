@@ -44,15 +44,15 @@ namespace minko
             typedef std::unordered_map<unsigned int, unsigned int>	BlendFactorsMap;
 			typedef std::unordered_map<CompareMode, unsigned int>	DepthFuncsMap;
             typedef std::unordered_map<unsigned int, unsigned int>  TextureToBufferMap;
+			typedef std::pair<uint, uint>							TextureSize;
 
 		protected:
-			std::list<unsigned int>	                        _textures;
-            std::unordered_map<uint, std::pair<uint, uint>> _textureSizes;
-            std::unordered_map<uint, bool>                  _textureHasMipmaps;
+	        static BlendFactorsMap					_blendingFactors;
+			static DepthFuncsMap					_depthFuncs;
 
-		private:
-            static BlendFactorsMap                  _blendingFactors;
-			static DepthFuncsMap	                _depthFuncs;
+			std::list<unsigned int>	                _textures;
+            std::unordered_map<uint, TextureSize>	_textureSizes;
+            std::unordered_map<uint, bool>          _textureHasMipmaps;
 
             std::string                             _driverInfo;
 

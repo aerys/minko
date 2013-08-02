@@ -19,34 +19,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SceneManager.hpp"
 
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/scene/Node.hpp"
 
 using namespace minko::component;
 
-SceneManager::SceneManager() :
+SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
     _frameId(0),
-    _enterFrame(Signal<Ptr>::create()),
-    _exitFrame(Signal<Ptr>::create())
+	_assets(file::AssetLibrary::create(context)),
+    _frameBegin(Signal<Ptr>::create()),
+    _frameEnd(Signal<Ptr>::create()),
+	_cullBegin(Signal<Ptr>::create()),
+	_cullEnd(Signal<Ptr>::create()),
+	_renderBegin(Signal<Ptr>::create()),
+	_renderEnd(Signal<Ptr>::create())
 {
 }
 
 void
 SceneManager::initialize()
 {
-    /*
     _targetAddedSlot = targetAdded()->connect(std::bind(
         &SceneManager::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
         &SceneManager::targetAddedHandler, shared_from_this(), std::placeholders::_1, std::placeholders::_2
     ));
-    */
 }
 
 void
 SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-    /*
+	if (target->root() != target)
+        throw std::logic_error("SceneManager must be on the root node only.");
+	if (target->components<SceneManager>().size() > 1)
+		throw std::logic_error("The same root node cannot have more than one SceneManager.");
+
     _addedSlot = target->added()->connect(std::bind(
         &SceneManager::addedHandler,
         shared_from_this(),
@@ -54,7 +62,6 @@ SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
         std::placeholders::_2,
         std::placeholders::_3
     ));
-    */
 }
 
 void
@@ -75,6 +82,10 @@ SceneManager::nextFrame()
 {
     ++_frameId;
 
-    //_enterFrame->execute(shared_from_this());
-    //_exitFrame->execute(shared_from_this());
+    _frameBegin->execute(shared_from_this());
+    _frameEnd->execute(shared_from_this());
+	_cullBegin->execute(shared_from_this());
+	_cullEnd->execute(shared_from_this());
+	_renderBegin->execute(shared_from_this());
+	_renderEnd->execute(shared_from_this());
 }

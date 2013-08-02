@@ -56,7 +56,7 @@ namespace minko
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<Collider>					ColliderPtr; 
-				typedef std::shared_ptr<Rendering>					RenderingPtr;
+				typedef std::shared_ptr<Renderer>					RendererPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
@@ -73,25 +73,28 @@ namespace minko
 				typedef std::unordered_map<ColliderPtr, BulletColliderPtr>	ColliderMap;
 
 			private:
-				ColliderMap					_colliderMap;
-				RenderingPtr				_rendering;
+				ColliderMap										_colliderMap;
 
-				btBroadphasePtr				_btBroadphase;
-				btCollisionConfigurationPtr	_btCollisionConfiguration;
-				btConstraintSolverPtr		_btConstraintSolver;
-				btDispatcherPtr				_btDispatcher;
-				btDynamicsWorldPtr			_btDynamicsWorld;
+				btBroadphasePtr									_btBroadphase;
+				btCollisionConfigurationPtr						_btCollisionConfiguration;
+				btConstraintSolverPtr							_btConstraintSolver;
+				btDispatcherPtr									_btDispatcher;
+				btDynamicsWorldPtr								_btDynamicsWorld;
 
-				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetAddedSlot;
-				Signal<AbsCtrlPtr, NodePtr>::Slot	_targetRemovedSlot;
-				Signal<RenderingPtr>::Slot			_exitFrameSlot;
+				std::shared_ptr<SceneManager>					_sceneManager;
+
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
+				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
+				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
 
 			public:
 				static
 				Ptr
-					create(RenderingPtr rendering)
+				create()
 				{
-					Ptr physicsWorld(new PhysicsWorld(rendering));
+					Ptr physicsWorld(new PhysicsWorld());
 
 					physicsWorld->initialize();
 
@@ -132,7 +135,7 @@ namespace minko
 				applyRelativeImpulse(ColliderPtr, Vector3Ptr);
 
 			private:
-				PhysicsWorld(RenderingPtr);
+				PhysicsWorld();
 
 				void 
 				initialize();
@@ -144,7 +147,10 @@ namespace minko
 				targetRemovedHandler(AbsCtrlPtr, NodePtr);
 
 				void
-				exitFrameHandler(RenderingPtr);
+				addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+
+				void
+				frameEndHandler(std::shared_ptr<SceneManager> sceneManager);
 
 				void
 				updateColliders();
@@ -160,6 +166,12 @@ namespace minko
 				static
 				void
 				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
+
+				void
+				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr component);
+
+				void
+				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
 
 			private:
 				class BulletCollider

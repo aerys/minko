@@ -25,6 +25,7 @@ project "minko-webgl"
 
 	-- windows
 	configuration { "windows", "x32" }
+		includedirs { "../../deps/win/include" }
 
 	-- macos
 	configuration { "macosx" }
