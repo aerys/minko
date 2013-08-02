@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 
-#include "minko/component/Rendering.hpp"
+#include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 
@@ -117,171 +117,58 @@ ParticleSystem::initialize()
 void
 ParticleSystem::targetAddedHandler(AbsCompPtr	ctrl,
 								   NodePtr 		target)
-{	
+{
+	findSceneManager();
+
 	target->addComponent(_surface);
 
-	_addedSlot = target->added()->connect(std::bind(
-		&ParticleSystem::addedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+	auto nodeCallback = [&](NodePtr, NodePtr, NodePtr) { findSceneManager(); };
 
-	_removedSlot = target->removed()->connect(std::bind(
-		&ParticleSystem::removedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+	_addedSlot = target->added()->connect(nodeCallback);
+	_removedSlot = target->removed()->connect(nodeCallback);
 
-	addedHandler(target->root(), target, target->parent());
+	auto componentCallback = [&](NodePtr, NodePtr, AbsCompPtr) { findSceneManager(); };
+
+	_componentAddedSlot = target->root()->componentAdded()->connect(componentCallback);
+	_componentRemovedSlot = target->root()->componentRemoved()->connect(componentCallback);
 }
 
 void
 ParticleSystem::targetRemovedHandler(AbsCompPtr ctrl,
 									 NodePtr	target)
 {
-	target->addComponent(_surface);
+	findSceneManager();
+
+	target->removeComponent(_surface);
+	
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
-
-	removedHandler(target->root(), target, target->parent());
-}
-
-void
-ParticleSystem::addedHandler(NodePtr node,
-								  NodePtr target,
-								  NodePtr parent)
-{
-	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
-		&ParticleSystem::rootDescendantAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
-		&ParticleSystem::rootDescendantRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
-		&ParticleSystem::componentAddedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
-		&ParticleSystem::componentRemovedHandler,
-		shared_from_this(),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	rootDescendantAddedHandler(target->root(), target, target->parent());
-}
-
-void
-ParticleSystem::removedHandler(NodePtr node,
-									NodePtr target,
-									NodePtr parent)
-{
-	_rootDescendantAddedSlot = nullptr;
-	_rootDescendantRemovedSlot = nullptr;
 	_componentAddedSlot = nullptr;
 	_componentRemovedSlot = nullptr;
-
-	rootDescendantRemovedHandler(target->root(), target, target->parent());
 }
 
 void
-ParticleSystem::rootDescendantAddedHandler(NodePtr node,
-												NodePtr target,
-												NodePtr parent)
+ParticleSystem::findSceneManager()
 {
-	auto rendererNodes = scene::NodeSet::create(node)
-		->descendants(true)
-        ->where([](scene::Node::Ptr node)
-        {
-            return node->hasComponent<Rendering>();
-        });
+	NodeSetPtr roots = scene::NodeSet::create(targets())
+		->roots()
+		->where([](NodePtr node)
+		{
+			return node->hasComponent<SceneManager>();
+		});
 
-	for (auto rendererNode : rendererNodes->nodes())
-		for (auto renderer: rendererNode->components<Rendering>())
-			addRenderer(renderer);
+	if (roots->nodes().size() > 1)
+		throw std::logic_error("ParticleSystem cannot be in two separate scenes.");
+	else if (roots->nodes().size() == 1)
+		_frameEndSlot = roots->nodes()[0]->component<SceneManager>()->frameEnd()->connect(std::bind(
+			&ParticleSystem::frameEndHandler, shared_from_this(), std::placeholders::_1
+		));
+	else
+		_frameEndSlot = nullptr;
 }
 
 void
-ParticleSystem::rootDescendantRemovedHandler(NodePtr node,
-												  NodePtr target,
-												  NodePtr parent)
-{
-	auto rendererNodes = scene::NodeSet::create(node)
-		->descendants(true)
-        ->where([](scene::Node::Ptr node)
-        {
-            return node->hasComponent<Rendering>();
-        });
-
-	for (auto rendererNode : rendererNodes->nodes())
-		for (auto renderer: rendererNode->components<Rendering>())
-			removeRenderer(renderer);
-}
-
-void
-ParticleSystem::componentAddedHandler(NodePtr				node,
-											NodePtr				target,
-											AbsCompPtr	ctrl)
-{
-	auto renderer = std::dynamic_pointer_cast<Rendering>(ctrl);
-	
-	if (renderer)
-		addRenderer(renderer);
-}
-
-void
-ParticleSystem::componentRemovedHandler(NodePtr					node,
-											  NodePtr					target,
-											  AbsCompPtr	ctrl)
-{
-	auto renderer = std::dynamic_pointer_cast<Rendering>(ctrl);
-
-	if (renderer)
-		removeRenderer(renderer);
-}
-
-void
-ParticleSystem::addRenderer(RenderingPtr renderer)
-{
-	if (_playing)
-		_previousClock = clock();
-
-	if (_enterFrameSlots.find(renderer) == _enterFrameSlots.end())
-	{
-		_enterFrameSlots[renderer] = renderer->enterFrame()->connect(std::bind(
-				&ParticleSystem::enterFrameHandler,
-				shared_from_this(),
-				std::placeholders::_1));
-	}
-}
-
-void
-ParticleSystem::removeRenderer(RenderingPtr renderer)
-{
-		removeRenderer(renderer);
-}
-
-void
-ParticleSystem::enterFrameHandler(RenderingPtr renderer)
+ParticleSystem::frameEndHandler(SceneManager::Ptr sceneManager)
 {	
 	if(!_playing)
 		return;

@@ -47,6 +47,13 @@ project "glsl-optimizer"
 			"strdup=_strdup",
 			"WIN32"
 		}
+		buildoptions {
+			"/wd4028",
+			"/wd4244",
+			"/wd4267",
+			"/wd4996",
+			"/wd4273"
+		}
 		-- c99 fix for windows only
 		includedirs { "include/c99" }
 

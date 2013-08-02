@@ -14,29 +14,31 @@ int main(int argc, char** argv)
 	auto window = glfwCreateWindow(800, 600, "Minko - Cube Example", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
-	auto context = render::OpenGLES2Context::create();
-    auto renderingComponent = Rendering::create(context);
+	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
-    auto assets	= file::AssetLibrary::create(context)
+
+	// setup assets
+	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
+	sceneManager->assets()
 		->registerParser<file::PNGParser>("png")
-		->geometry("cube", geometry::CubeGeometry::create(context))
+		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
 		->queue("texture/box.png")
 		->queue("effect/Basic.effect");
 
 #ifdef DEBUG
-    assets->defaultOptions()->includePaths().insert("bin/debug");
+    sceneManager->assets()->defaultOptions()->includePaths().insert("bin/debug");
 #endif
 
-    std::cout << context->driverInfo() << std::endl;
-
-    assets->defaultOptions()->generateMipmaps(true);
-
-    auto _ = assets->complete()->connect([=](file::AssetLibrary::Ptr assets)
+    auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		auto root   = scene::Node::create("root");
         auto camera	= scene::Node::create("camera");
 		
-        renderingComponent->backgroundColor(0x7F7F7FFF);
+		root->addComponent(sceneManager);
+
+		// setup camera
+        auto renderingComponent = Renderer::create();
+		renderingComponent->backgroundColor(0x7F7F7FFF);
         camera->addComponent(renderingComponent);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
@@ -44,6 +46,7 @@ int main(int argc, char** argv)
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
         root->addChild(camera);
 
+		// setup mesh
 		mesh->addComponent(Transform::create());
 		mesh->addComponent(Surface::create(
 			assets->geometry("cube"),
@@ -55,13 +58,13 @@ int main(int argc, char** argv)
 		root->addChild(mesh);
 	});
 
-	assets->load();
+	sceneManager->assets()->load();
 
 	while (!glfwWindowShouldClose(window))
 	{
 		mesh->component<Transform>()->transform()->prependRotationY(.01f);
 
-		renderingComponent->render();
+		sceneManager->nextFrame();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
