@@ -17,7 +17,9 @@ include 'framework'
 -- plugins
 include 'plugins/jpeg'
 include 'plugins/png'
-include 'plugins/webgl'
+if _OPTIONS["platform"] == "emscripten" then
+	include 'plugins/webgl'
+end
 include 'plugins/mk'
 include 'plugins/bullet'
 include 'plugins/particles'
