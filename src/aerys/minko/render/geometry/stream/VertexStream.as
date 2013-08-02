@@ -90,7 +90,7 @@ package aerys.minko.render.geometry.stream
 			
 			_data = value;
 			_changed.execute(this);
-			updateMinMax();
+			updateMinMax(true);
 		}
 		
 		public function get locked() : Boolean
@@ -819,7 +819,7 @@ package aerys.minko.render.geometry.stream
 			// make sure the ByteArray position is at the end of the buffer
 			bytes.position = start + formatIn.numBytesPerVertex * count * dwordSize;
 			
-			stream._data = data;
+			stream.data = data;
 			
 			return stream;
 		}
