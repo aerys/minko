@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/component/SceneManager.hpp"
 
 using namespace minko::component;
 using namespace minko::math;
@@ -153,6 +154,13 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 		std::placeholders::_3
 	)));
 
+	auto sceneManager = target->root()->component<SceneManager>();
+
+	if (sceneManager != nullptr)
+		_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
+			&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
+		));
+
 	addedHandler(nullptr, target, target->parent());
 }
 
@@ -161,35 +169,39 @@ Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr 	ctrl,
 											   scene::Node::Ptr			target)
 {
 	_targetSlots.clear();
-	_enterFrameSlots.clear();
+	_frameEndSlot = nullptr;
 }
 
 void
-Transform::RootTransform::componentAddedHandler(scene::Node::Ptr			node,
-												 scene::Node::Ptr 			target,
-												 AbstractComponent::Ptr	ctrl)
+Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
+												scene::Node::Ptr 		target,
+												AbstractComponent::Ptr	ctrl)
 {
-	auto renderingCtrl = std::dynamic_pointer_cast<Rendering>(ctrl);
+	if (target->root() == target)
+	{
+		auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-	if (renderingCtrl != nullptr)
-		_enterFrameSlots[renderingCtrl] = renderingCtrl->enterFrame()->connect(std::bind(
-			&Transform::RootTransform::enterFrameHandler,
-			shared_from_this(),
-			std::placeholders::_1
-		));
+		if (sceneManager != nullptr)
+			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
+				&Transform::RootTransform::frameEndHandler, shared_from_this(), std::placeholders::_1
+			));
+	}
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
 
 void
 Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
-												   scene::Node::Ptr 		target,
-												   AbstractComponent::Ptr	ctrl)
+												  scene::Node::Ptr 			target,
+												  AbstractComponent::Ptr	ctrl)
 {
-	auto renderingCtrl = std::dynamic_pointer_cast<Rendering>(ctrl);
+	if (target->root() == target)
+	{
+		auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-	if (renderingCtrl != nullptr)
-		_enterFrameSlots.erase(renderingCtrl);
+		if (sceneManager != nullptr)
+			_frameEndSlot = nullptr;
+	}
 	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
 		_invalidLists = true;
 }
@@ -197,14 +209,8 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 void
 Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 									   scene::Node::Ptr target,
-									   scene::Node::Ptr parent)
+									   scene::Node::Ptr ancestor)
 {
-	auto enterFrameCallback = std::bind(
-		&Transform::RootTransform::enterFrameHandler,
-		shared_from_this(),
-		std::placeholders::_1
-	);
-
 	auto descendants = scene::NodeSet::create(target)->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
@@ -212,9 +218,6 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 
 		if (rootTransformCtrl && rootTransformCtrl != shared_from_this())
 			descendant->removeComponent(rootTransformCtrl);
-
-		for (auto renderingCtrl : descendant->components<Rendering>())
-			_enterFrameSlots[renderingCtrl] = renderingCtrl->enterFrame()->connect(enterFrameCallback);
 	}
 
 	_invalidLists = true;
@@ -223,14 +226,8 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 void
 Transform::RootTransform::removedHandler(scene::Node::Ptr node,
 									     scene::Node::Ptr target,
-										 scene::Node::Ptr parent)
+										 scene::Node::Ptr ancestor)
 {
-	auto descendants = scene::NodeSet::create(target)->descendants(true);
-
-	for (auto descendant : descendants->nodes())
-		for (auto renderingCtrl : descendant->components<Rendering>())
-			_enterFrameSlots.erase(renderingCtrl);
-
 	_invalidLists = true;
 }
 
@@ -370,7 +367,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node)
 }
 
 void
-Transform::RootTransform::enterFrameHandler(std::shared_ptr<Rendering> ctrl)
+Transform::RootTransform::frameEndHandler(std::shared_ptr<SceneManager> sceneManager)
 {
 	if (_invalidLists)
 		updateTransformsList();

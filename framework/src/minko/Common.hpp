@@ -62,7 +62,6 @@ namespace minko
 		class DrawCall;
 		class Pass;
 		class Effect;
-		class EffectInstance;
 		class ProgramInputs;
 
 		class AbstractResource;
@@ -86,9 +85,10 @@ namespace minko
         class AbstractRootDataComponent;
 		class Transform;
 		class Surface;
-		class Rendering;
+		class Renderer;
 		class PerspectiveCamera;
         class DirectionalLight;
+		class SceneManager;
 	}
 
 	namespace data
