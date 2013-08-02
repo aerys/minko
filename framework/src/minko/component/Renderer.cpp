@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Rendering.hpp"
+#include "Renderer.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -27,22 +27,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 using namespace minko::component;
 using namespace minko::scene;
 
+Renderer::Renderer() :
+    _backgroundColor(0),
+	_renderingBegin(Signal<Ptr>::create()),
+	_renderingEnd(Signal<Ptr>::create())
+{
+}
+
 void
-Rendering::initialize()
+Renderer::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Rendering::targetAddedHandler,
+		&Renderer::targetAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));	
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Rendering::targetRemovedHandler,
+		&Renderer::targetRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2
@@ -50,14 +59,14 @@ Rendering::initialize()
 }
 
 void
-Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
+Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 							  std::shared_ptr<Node> 			 target)
 {
-	if (target->components<Rendering>().size() > 1)
-		throw std::logic_error("There cannot be two Rendering on the same node.");
+	if (target->components<Renderer>().size() > 1)
+		throw std::logic_error("There cannot be two Renderer on the same node.");
 
 	_addedSlot = target->added()->connect(std::bind(
-		&Rendering::addedHandler,
+		&Renderer::addedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -65,7 +74,7 @@ Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 	));
 
 	_removedSlot = target->removed()->connect(std::bind(
-		&Rendering::removedHandler,
+		&Renderer::removedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -76,7 +85,7 @@ Rendering::targetAddedHandler(std::shared_ptr<AbstractComponent> ctrl,
 }
 
 void
-Rendering::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
+Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
 							    std::shared_ptr<Node> 				target)
 {
 	_addedSlot = nullptr;
@@ -86,12 +95,14 @@ Rendering::targetRemovedHandler(std::shared_ptr<AbstractComponent> 	ctrl,
 }
 
 void
-Rendering::addedHandler(std::shared_ptr<Node> node,
+Renderer::addedHandler(std::shared_ptr<Node> node,
 						std::shared_ptr<Node> target,
 						std::shared_ptr<Node> parent)
 {
+	findSceneManager();
+
 	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
-		&Rendering::rootDescendantAddedHandler,
+		&Renderer::rootDescendantAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -99,7 +110,7 @@ Rendering::addedHandler(std::shared_ptr<Node> node,
 	));
 
 	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
-		&Rendering::rootDescendantRemovedHandler,
+		&Renderer::rootDescendantRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -107,7 +118,7 @@ Rendering::addedHandler(std::shared_ptr<Node> node,
 	));
 
 	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
-		&Rendering::componentAddedHandler,
+		&Renderer::componentAddedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -115,7 +126,7 @@ Rendering::addedHandler(std::shared_ptr<Node> node,
 	));
 
 	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
-		&Rendering::componentRemovedHandler,
+		&Renderer::componentRemovedHandler,
 		shared_from_this(),
 		std::placeholders::_1,
 		std::placeholders::_2,
@@ -126,10 +137,12 @@ Rendering::addedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Rendering::removedHandler(std::shared_ptr<Node> node,
+Renderer::removedHandler(std::shared_ptr<Node> node,
 						  std::shared_ptr<Node> target,
 						  std::shared_ptr<Node> parent)
 {
+	findSceneManager();
+
 	_rootDescendantAddedSlot = nullptr;
 	_rootDescendantRemovedSlot = nullptr;
 	_componentAddedSlot = nullptr;
@@ -139,7 +152,7 @@ Rendering::removedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Rendering::rootDescendantAddedHandler(std::shared_ptr<Node> node,
+Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 									  std::shared_ptr<Node> target,
 									  std::shared_ptr<Node> parent)
 {
@@ -156,7 +169,7 @@ Rendering::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Rendering::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
+Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 									    std::shared_ptr<Node> target,
 									    std::shared_ptr<Node> parent)
 {
@@ -173,35 +186,41 @@ Rendering::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Rendering::componentAddedHandler(std::shared_ptr<Node>				node,
+Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 								 std::shared_ptr<Node>				target,
 								 std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 	
 	if (surfaceCtrl)
 		addSurfaceComponent(surfaceCtrl);
+	else if (sceneManager)
+		setSceneManager(sceneManager);
 }
 
 void
-Rendering::componentRemovedHandler(std::shared_ptr<Node>				node,
+Renderer::componentRemovedHandler(std::shared_ptr<Node>				node,
 								   std::shared_ptr<Node>				target,
 								   std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
 	if (surfaceCtrl)
 		removeSurfaceComponent(surfaceCtrl);
+	else if (sceneManager)
+		setSceneManager(nullptr);
 }
 
 void
-Rendering::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::addSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
 	_drawCalls.insert(_drawCalls.end(), ctrl->drawCalls().begin(), ctrl->drawCalls().end());
 }
 
 void
-Rendering::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
+Renderer::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 {
 #ifdef __GNUC__
   // Temporary non-fix for GCC missing feature N2350: http://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
@@ -211,28 +230,74 @@ Rendering::removeSurfaceComponent(std::shared_ptr<Surface> ctrl)
 }
 
 void
-Rendering::render()
+Renderer::render()
 {
-	_enterFrame->execute(shared_from_this());
+	_renderingEnd->execute(shared_from_this());
 
-	_context->clear(
+	auto context = _sceneManager->assets()->context();
+
+	context->clear(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
 		((_backgroundColor >> 16) & 0xff) / 255.f,
 		((_backgroundColor >> 8) & 0xff) / 255.f,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-    _drawCalls.sort(&Rendering::compareDrawCalls);
+    _drawCalls.sort(&Renderer::compareDrawCalls);
 	for (auto drawCall : _drawCalls)
-		drawCall->render(_context);
+		drawCall->render(context);
 
-	_context->present();
+	context->present();
 
-	_exitFrame->execute(shared_from_this());
+	_renderingBegin->execute(shared_from_this());
 }
 
 bool
-Rendering::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
+Renderer::compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b)
 {
     return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
+}
+
+void
+Renderer::findSceneManager()
+{
+	NodeSet::Ptr roots = NodeSet::create(targets())
+		->roots()
+		->where([](NodePtr node)
+		{
+			return node->hasComponent<SceneManager>();
+		});
+
+	if (roots->nodes().size() > 1)
+		throw std::logic_error("Renderer cannot be in two separate scenes.");
+	else if (roots->nodes().size() == 1)
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+	else
+		setSceneManager(nullptr);
+}
+
+void
+Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
+{
+	if (sceneManager != _sceneManager)
+	{
+		if (sceneManager)
+		{
+			_sceneManager = sceneManager;
+			_renderingBeginSlot = _sceneManager->renderingBegin()->connect(std::bind(
+				&Renderer::sceneManagerRendererBeginHandler, shared_from_this(), std::placeholders::_1
+			));
+		}
+		else
+		{
+			_sceneManager = nullptr;
+			_renderingBeginSlot = nullptr;
+		}
+	}
+}
+
+void
+Renderer::sceneManagerRendererBeginHandler(std::shared_ptr<SceneManager> sceneManager)
+{
+	render();
 }

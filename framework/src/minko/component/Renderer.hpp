@@ -26,28 +26,25 @@ namespace minko
 {
 	namespace component
 	{
-		class Rendering :
+		class Renderer :
 			public AbstractComponent,
-			public std::enable_shared_from_this<Rendering>
+			public std::enable_shared_from_this<Renderer>
 		{
 		public:
-			typedef std::shared_ptr<Rendering>		Ptr;
+			typedef std::shared_ptr<Renderer>			Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
-			typedef std::shared_ptr<Surface>					SurfaceCtrlPtr;
-			typedef std::shared_ptr<render::DrawCall>			DrawCallPtr;
-			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
+			typedef std::shared_ptr<Surface>			SurfaceCtrlPtr;
+			typedef std::shared_ptr<render::DrawCall>	DrawCallPtr;
 
 		private:
-			std::shared_ptr<render::AbstractContext>	_context;
 			std::list<DrawCallPtr>						_drawCalls;
-
 			unsigned int								_backgroundColor;
-
-			Signal<Ptr>::Ptr							_enterFrame;
-			Signal<Ptr>::Ptr							_exitFrame;
+			std::shared_ptr<SceneManager>				_sceneManager;
+			Signal<Ptr>::Ptr							_renderingBegin;
+			Signal<Ptr>::Ptr							_renderingEnd;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -57,13 +54,14 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_rootDescendantRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
+			Signal<std::shared_ptr<SceneManager>>::Slot	_renderingBeginSlot;
 
 		public:
 			static
 			Ptr
-			create(AbsContextPtr context)
+			create()
 			{
-				auto ctrl = std::shared_ptr<Rendering>(new Rendering(context));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
 
 				ctrl->initialize();
 
@@ -89,27 +87,20 @@ namespace minko
 
 			inline
 			Signal<Ptr>::Ptr
-			enterFrame()
+			renderingBegin()
 			{
-				return _enterFrame;
+				return _renderingBegin;
 			}
 
 			inline
 			Signal<Ptr>::Ptr
-			exitFrame()
+			renderingEnd()
 			{
-				return _exitFrame;
+				return _renderingEnd;
 			}
 
 		private:
-			Rendering(AbsContextPtr context) :
-				AbstractComponent(),
-				_context(context),
-                _backgroundColor(0),
-				_enterFrame(Signal<Ptr>::create()),
-				_exitFrame(Signal<Ptr>::create())
-			{
-			}
+			Renderer();
 
 			void
 			initialize();
@@ -152,6 +143,15 @@ namespace minko
             static
             bool
             compareDrawCalls(DrawCallPtr& a, DrawCallPtr& b);
+
+			void
+			sceneManagerRendererBeginHandler(std::shared_ptr<SceneManager> sceneManager);
+
+			void
+			findSceneManager();
+
+			void
+			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
 		};
 	}
 }
