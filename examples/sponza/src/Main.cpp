@@ -559,7 +559,6 @@ main(int argc, char** argv)
 	auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
 	{
 		scene::Node::Ptr mk = assets->node(MK_NAME);
-		//scene::Node::Ptr mk = assets->node("model/four-squares.mk");
 		initializeCamera(mk);
 
 		root->addChild(group);
@@ -631,6 +630,11 @@ main(int argc, char** argv)
 			else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
 					 glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				cameraTransform->prependTranslation(CAMERA_LIN_SPEED, 0.0f, 0.0f);
+
+			eye = cameraTransform->translationVector();
+
+			if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && eye->y() <= 0.5f)
+				cameraTransform->prependTranslation(0.0f, 4 * CAMERA_LIN_SPEED, 0.0f);
 
 			// look around
 			eye = cameraTransform->translationVector();
