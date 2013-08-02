@@ -60,7 +60,7 @@ namespace minko
 				typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<ColliderData>				ColliderDataPtr; 
-				typedef std::shared_ptr<Rendering>					RenderingPtr;
+				typedef std::shared_ptr<Renderer>					RendererPtr;
 				typedef std::shared_ptr<math::Vector3>				Vector3Ptr;
 				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<math::Quaternion>			QuaternionPtr;
@@ -85,7 +85,7 @@ namespace minko
 				ColliderReverseMap								_colliderReverseMap;
 				std::map<uint, ColliderDataPtr>					_uidToCollider;
 				CollisionSet									_collisions;
-				RenderingPtr									_rendering;
+				RendererPtr										_renderer;
 
 				btBroadphasePtr									_bulletBroadphase;
 				btCollisionConfigurationPtr						_bulletCollisionConfiguration;
@@ -97,6 +97,7 @@ namespace minko
 
 				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 				Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
+				Signal<AbsCtrlPtr, NodePtr>::Slot				_exitFrameSlot;
 				Signal<std::shared_ptr<SceneManager>>::Slot		_frameEndSlot;
 				Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedOrRemovedSlot;
 				Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot		_componentAddedOrRemovedSlot;
@@ -108,9 +109,9 @@ namespace minko
 			public:
 				static
 				Ptr
-				create(RenderingPtr rendering)
+				create(RendererPtr renderer)
 				{
-					Ptr physicsWorld(new PhysicsWorld());
+					Ptr physicsWorld(new PhysicsWorld(renderer));
 
 					physicsWorld->initialize();
 
@@ -148,7 +149,7 @@ namespace minko
 				print(std::ostream&, Matrix4x4Ptr);
 
 			private:
-				PhysicsWorld();
+				PhysicsWorld(RendererPtr renderer);
 
 				void 
 				initialize();
@@ -183,22 +184,12 @@ namespace minko
 				void
 				toBulletTransform(QuaternionPtr, Vector3Ptr, btTransform&);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 				void
 				componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr component);
 
 				void
 				setSceneManager(std::shared_ptr<SceneManager> sceneManager);
 
-=======
->>>>>>> Refactored heavily the matrix handling system (removal of shear notably), works alright.
-				static
-				std::ostream&
-				print(std::ostream&, const btTransform&);
-
-=======
->>>>>>> Messy code AGAIN, but do what it should in most cases.
 			private:
 				class BulletCollider
 				{
