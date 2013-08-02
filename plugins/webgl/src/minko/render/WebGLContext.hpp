@@ -63,10 +63,23 @@ namespace minko
 								std::vector<unsigned int>&			locations);
 
 			void
-			setUniformMatrix4x4(unsigned int location,
-								unsigned int size,
-								bool transpose,
-								const float* values);
+			setUniformMatrix4x4(unsigned int	location,
+								unsigned int	size,
+								bool			transpose,
+								const float*	values);
+
+			void
+			uploadVertexBufferData(const unsigned int	vertexBuffer,
+									 const unsigned int offset,
+									 const unsigned int size,
+									 void* 				data);
+
+			void
+			uploaderIndexBufferData(const unsigned int 		indexBuffer,
+									  const unsigned int 	offset,
+									  const unsigned int 	size,
+									  void*					data);
+
 		};
 	}
 }
