@@ -1,11 +1,11 @@
 package aerys.minko.render.resource.texture
 {
-	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.render.resource.IResource;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.textures.TextureBase;
 	import flash.utils.ByteArray;
+	
+	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.render.resource.IResource;
 
 	/**
 	 * ITextureResource objects handle texture allocation
@@ -26,7 +26,7 @@ package aerys.minko.render.resource.texture
 										  mipmap 		: Boolean,
 										  downSample	: Boolean	= false) : void;
 		
-		function setContentFromATF(atf : ByteArray) : void;
+		function setContentFromATF(atf			: ByteArray) : void;
 		
 		function getTexture(context : Context3DResource) : TextureBase;
 	}

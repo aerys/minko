@@ -1,13 +1,14 @@
 package aerys.minko.render.resource.texture
 {
-	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.type.enum.SamplerFormat;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
+	
+	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.SamplerFormat;
 
 	/**
 	 * @inheritdoc
@@ -43,7 +44,11 @@ package aerys.minko.render.resource.texture
 		private var _height			: Number;
 
 		private var _update			: Boolean;
-
+		
+		private var _disposed		: Boolean;
+		
+		private var _contextLost	: Signal = new Signal("TextureResource.contextLost");
+		
 		public function get format() : uint
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
@@ -151,9 +156,9 @@ package aerys.minko.render.resource.texture
 			
 			atf.position 	= 0;
 			
-			if (_atfFormat == 5)
+			if (_atfFormat == 5 || _atfFormat == 4)
 				_format = FORMAT_COMPRESSED_ALPHA;
-			else if (_atfFormat == 3)
+			else if (_atfFormat == 3 || _atfFormat == 2)
 				_format = FORMAT_COMPRESSED;
 			else
 				_format = FORMAT_BGRA;
@@ -168,9 +173,20 @@ package aerys.minko.render.resource.texture
 				_texture = null;
 			}
 		}
+		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			if (_disposed)
+				return;
+			_texture = null;
+			_contextLost.execute(this);
+		}
 
 		public function getTexture(context : Context3DResource) : TextureBase
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
+			
 			if (!_texture && _width && _height)
 			{
 				if (_texture)
@@ -192,6 +208,7 @@ package aerys.minko.render.resource.texture
 
 			_atf = null;
 			_bitmapData = null;
+			
 			
 			return _texture;
 		}
@@ -233,12 +250,14 @@ package aerys.minko.render.resource.texture
 			else if (_atf)
 			{
 				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
+				
                 _atf = null;
 			}
 		}
 		
 		public function dispose() : void
 		{
+			_disposed = true;
 			if (_texture)
 			{
 				_texture.dispose();

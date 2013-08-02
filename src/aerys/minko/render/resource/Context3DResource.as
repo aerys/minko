@@ -10,7 +10,7 @@ package aerys.minko.render.resource
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Rectangle;
 	
-	import aerys.minko.ns.minko_render;
+	import aerys.minko.type.Signal;
 
 	public final class Context3DResource
 	{
@@ -53,9 +53,22 @@ package aerys.minko.render.resource
         private var _stencilActionOnDepthFail               : String;
         private var _stencilActionOnDepthPassStencilFail    : String;
 		
+		private var _contextChanged							: Signal	= new Signal("Context3DResource.contextLost");
+		
+		public function get contextChanged():Signal
+		{
+			return _contextChanged;
+		}
+		
 		public function get context() : Context3D
 		{
 			return _context;
+		}
+		
+		public function set context(v : Context3D) : void
+		{
+			_context = v;
+			_contextChanged.execute(this);
 		}
 		
 		public function get enabledErrorChecking() : Boolean
@@ -74,10 +87,16 @@ package aerys.minko.render.resource
 		public function Context3DResource(context : Context3D)
 		{
 			_context = context;
-            
             initialize();
 		}
-        
+		
+		public function updateContext3D(context : Context3D) : void
+		{
+			_context = context;
+			
+			_contextChanged.execute(this);
+		}
+		
         private function initialize() : void
         {
             _vertexBuffers = new Vector.<VertexBuffer3D>(8, true);

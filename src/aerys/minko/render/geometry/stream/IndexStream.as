@@ -1,11 +1,11 @@
 package aerys.minko.render.geometry.stream
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Endian;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.resource.IndexBuffer3DResource;
 	import aerys.minko.type.Signal;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 
 	public final class IndexStream
 	{

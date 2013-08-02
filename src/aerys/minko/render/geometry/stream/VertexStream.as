@@ -1,5 +1,9 @@
 package aerys.minko.render.geometry.stream
 {
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	import flash.utils.Endian;
+	
 	import aerys.minko.ns.minko_stream;
 	import aerys.minko.render.geometry.stream.format.VertexComponent;
 	import aerys.minko.render.geometry.stream.format.VertexComponentType;
@@ -8,10 +12,6 @@ package aerys.minko.render.geometry.stream
 	import aerys.minko.render.resource.VertexBuffer3DResource;
 	import aerys.minko.type.Signal;
 	import aerys.minko.type.math.Matrix4x4;
-	
-	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
-	import flash.utils.Endian;
 
 	public final class VertexStream implements IVertexStream
 	{

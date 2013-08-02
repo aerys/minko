@@ -1,5 +1,8 @@
 package aerys.minko.render.shader
 {
+	import flash.display3D.Context3DRenderMode;
+	import flash.geom.Rectangle;
+	
 	import aerys.minko.ns.minko_render;
 	import aerys.minko.render.RenderTarget;
 	import aerys.minko.render.resource.Context3DResource;
@@ -9,8 +12,6 @@ package aerys.minko.render.shader
 	import aerys.minko.type.enum.DepthTest;
 	import aerys.minko.type.enum.StencilAction;
 	import aerys.minko.type.enum.TriangleCulling;
-	
-	import flash.geom.Rectangle;
 
 	public class ShaderSettings
 	{
@@ -47,7 +48,9 @@ package aerys.minko.render.shader
 		private var _stencilReadMask						: uint			= 255;
 		private var _stencilWriteMask						: uint			= 255;
 		
-		private var _colorMask			                    : uint			= 0;    
+		private var _colorMask			                    : uint			= 0;
+		
+		private var _backBuffer								: RenderTarget	= null;
 
 		minko_render function get signature() : Signature
 		{
@@ -310,6 +313,10 @@ package aerys.minko.render.shader
 										  backBuffer	: RenderTarget,
 										  previous		: ShaderSettings) : void
 		{
+			_backBuffer = backBuffer;
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
+						
 			if (!previous || previous._renderTarget != _renderTarget)
 			{
 				var rt 	: RenderTarget 	= _renderTarget || backBuffer;
@@ -339,6 +346,8 @@ package aerys.minko.render.shader
 									   backBuffer	: RenderTarget,
 									   previous		: ShaderSettings) : void
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
 			context
 				.setScissorRectangle(_rectangle)
 				.setDepthTest(_enableDepthWrite, _compareMode)
@@ -362,6 +371,12 @@ package aerys.minko.render.shader
 					(_colorMask & ColorMask.BLUE)	!= 0,
 					(_colorMask & ColorMask.ALPHA)	!= 0
 				);
+		}
+		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			setupRenderTarget(context, _backBuffer, null);
+			prepareContext(context,null,null);
 		}
 	}
 }

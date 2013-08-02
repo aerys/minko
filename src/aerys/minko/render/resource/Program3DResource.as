@@ -1,16 +1,13 @@
 package aerys.minko.render.resource
 {
-	import aerys.minko.ns.minko_render;
-	import aerys.minko.render.RenderTarget;
-	import aerys.minko.render.resource.texture.ITextureResource;
-	import aerys.minko.render.shader.ShaderSettings;
-	import aerys.minko.type.binding.Signature;
-	import aerys.minko.type.Signal;
-	import aerys.minko.render.geometry.stream.format.VertexComponent;
-	
 	import flash.display3D.Context3D;
 	import flash.display3D.Program3D;
 	import flash.utils.ByteArray;
+	
+	import aerys.minko.ns.minko_render;
+	import aerys.minko.render.geometry.stream.format.VertexComponent;
+	import aerys.minko.render.resource.texture.ITextureResource;
+	import aerys.minko.type.binding.Signature;
 
 	/**
 	 * Program3DResource objects handle programs allocation and
@@ -30,6 +27,10 @@ package aerys.minko.render.resource
 		
 		private var _vsProgram					: ByteArray					= null;
 		private var _fsProgram					: ByteArray					= null;
+		
+		private var _context					: Context3D					= null;
+		
+		private var _disposed					: Boolean					= false;
 		
 		minko_render var _vertexInputComponents	: Vector.<VertexComponent> 	= null;
 		minko_render var _vertexInputIndices	: Vector.<uint>				= null;
@@ -85,6 +86,8 @@ package aerys.minko.render.resource
 		public function prepareContext(context 		: Context3DResource,
 									   previous		: Program3DResource) : void
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
 			if (!_nativeProgram)
 			{
 				_nativeProgram = context.createProgram();
@@ -95,8 +98,18 @@ package aerys.minko.render.resource
 				context.setProgram(_nativeProgram);
 		}
 		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			if (!_disposed)
+			{
+				_nativeProgram = null;
+				prepareContext(context, this);
+			}
+		}
+		
 		public function dispose() : void
 		{
+			_disposed = true;
 			if (_nativeProgram)
 				_nativeProgram.dispose();
 		}
