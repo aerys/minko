@@ -38,10 +38,17 @@ TypeDeserializer::initIdToFunctionMap()
 {
 	std::map<const unsigned int, TypeDeserializer::ReadMkTypeFunction> m;
 
+	//m[MkTypes::VECTORM4X4]			= std::bind(&TypeDeserializer::unsupport, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	//m[MkTypes::MATRIX4X4]			= std::bind(&TypeDeserializer::unsupport, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	//m[MkTypes::VECTORN]				= std::bind(&TypeDeserializer::unsupport, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	//m[MkTypes::VECTORV4]			= std::bind(&TypeDeserializer::unsupport, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+
+	m[MkTypes::BOOLEAN]				= std::bind(&TypeDeserializer::boolean, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	m[MkTypes::VECTOR4B]			= std::bind(&TypeDeserializer::vector4b, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	m[MkTypes::VECTOR4]				= std::bind(&TypeDeserializer::vector4, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	m[MkTypes::TEXTURE_RESOURCE]	= std::bind(&TypeDeserializer::texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 	m[MkTypes::NUMBER]				= std::bind(&TypeDeserializer::number, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+	
 	return m;
 }
 
@@ -53,6 +60,16 @@ TypeDeserializer::texture(std::map<int, render::Texture::Ptr>&	idToTexture,
 						  std::shared_ptr<NameConverter>		nameConverter)
 {
 	material->set(nameConverter->convertString(propertyName), idToTexture[Any::cast<int>(object["id"])]);
+}
+
+void
+TypeDeserializer::boolean(std::map<int, render::Texture::Ptr>&	idToTexture,
+						  std::string&							propertyName,
+						  std::shared_ptr<data::Provider>		material,
+						  Qark::Map&							object,
+						  std::shared_ptr<NameConverter>		nameConverter)
+{
+	material->set(nameConverter->convertString(propertyName), Any::cast<bool>(object["value"]));
 }
 
 void
@@ -186,6 +203,15 @@ TypeDeserializer::matrix4x4(Any& matrixObject)
 	}
    
 	return matrix->initialize(datas)->transpose();
+}
+
+void
+TypeDeserializer::unsupport(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+							std::string&										propertyName,
+							std::shared_ptr<data::Provider>						material,
+							Qark::Map&											object,
+							std::shared_ptr<NameConverter>						nameConverter)
+{
 }
 
 data::Provider::Ptr
