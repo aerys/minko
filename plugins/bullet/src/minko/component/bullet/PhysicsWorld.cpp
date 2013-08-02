@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
 #include <minko/component/SceneManager.hpp>
-#include <minko/component/Rendering.hpp>
+#include <minko/component/Renderer.hpp>
 #include <minko/component/bullet/LinearIdAllocator.hpp>
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
@@ -41,14 +41,14 @@ Matrix4x4::Ptr	bullet::PhysicsWorld::_TMP_MATRIX	= Matrix4x4::create();
 /*static*/
 btTransform		bullet::PhysicsWorld::_TMP_BTTRANSFORM;
 
-bullet::PhysicsWorld::PhysicsWorld(Rendering::Ptr rendering):
+bullet::PhysicsWorld::PhysicsWorld(Renderer::Ptr renderer):
 	AbstractComponent(),
 	_uidAllocator(LinearIdAllocator::create(_MAX_BODIES)),
 	_colliderMap(),
 	_colliderReverseMap(),
 	_uidToCollider(),
 	_collisions(),
-	_rendering(rendering),
+	_renderer(renderer),
 	_bulletBroadphase(nullptr),
 	_bulletCollisionConfiguration(nullptr),
 	_bulletConstraintSolver(nullptr),
