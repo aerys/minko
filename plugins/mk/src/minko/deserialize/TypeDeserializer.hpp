@@ -66,6 +66,14 @@ namespace minko
 
 			static
 			void
+			boolean(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+				    std::string&										propertyName,
+				    std::shared_ptr<data::Provider>						material,
+				    Qark::Map&											object,
+				    std::shared_ptr<NameConverter>						nameConverter);
+
+			static
+			void
 			number(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
 				   std::string&										propertyName,
 				   std::shared_ptr<data::Provider>					material,
@@ -87,6 +95,13 @@ namespace minko
 				     std::shared_ptr<data::Provider>					material,
 				     Qark::Map&											object,
 				     std::shared_ptr<NameConverter>						nameConverter);
+
+			void
+			unsupport(std::map<int, std::shared_ptr<render::Texture>>&	idToTexture,
+				      std::string&										propertyName,
+				      std::shared_ptr<data::Provider>					material,
+				      Qark::Map&										object,
+				      std::shared_ptr<NameConverter>					nameConverter);
 
 		private:
 			static
