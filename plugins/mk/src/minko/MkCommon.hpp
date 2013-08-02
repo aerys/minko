@@ -17,7 +17,6 @@ namespace minko
 	{
 		class AssetsDeserializer;
 		class GeometryDeserializer;
-		class MkTypes;
 		class NameConverter;
 		class NodeDeserializer;
 		class SceneDeserializer;
