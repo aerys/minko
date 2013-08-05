@@ -4,6 +4,7 @@ package aerys.minko.type.loader
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
 	import aerys.minko.render.resource.texture.TextureResource;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
 	
 	public final class AssetsLibrary
@@ -11,18 +12,22 @@ package aerys.minko.type.loader
 		private var _numGeometries 	: uint 						= 0;
 		private var _numMaterials	: uint 						= 0;
 		private var _numTextures	: uint 						= 0;
+		private var _numSymbols		: uint 						= 0;
 		
 		private var _geometryList	: Vector.<Geometry> 		= new Vector.<Geometry>();
 		private var _materialList	: Vector.<Material> 		= new Vector.<Material>();
 		private var _textureList	: Vector.<TextureResource> 	= new Vector.<TextureResource>();
+		private var _symbolList		: Vector.<ISceneNode>		= new Vector.<ISceneNode>();
 		
 		private var _geometries		: Object;
+		private var _symbols		: Object;
 		private var _textures		: Object;
 		private var _materials		: Object;
 		private var _layers			: Vector.<String>;
 		private var _nameToLayer	: Object;
 		
 		private var _geometryAdded	: Signal;
+		private var _symbolAdded	: Signal;
 		private var _textureAdded	: Signal;
 		private var _materialAdded	: Signal;
 		private var _layerAdded		: Signal;
@@ -31,6 +36,11 @@ package aerys.minko.type.loader
 		{
 			initialize();
 			initializeSignals();
+		}
+		
+		public function get numSymbols() : uint
+		{
+			return _numSymbols;
 		}
 		
 		public function get numTextures() : uint
@@ -48,6 +58,11 @@ package aerys.minko.type.loader
 			return _numMaterials;
 		}
 		
+		public function getSymbolAt(index : uint) : ISceneNode
+		{
+			return _symbolList[index];
+		}
+		
 		public function getMaterialAt(index : uint): Material
 		{
 			return _materialList[index];
@@ -61,6 +76,11 @@ package aerys.minko.type.loader
 		public function getTextureAt(index : uint): TextureResource
 		{
 			return _textureList[index];
+		}
+		
+		public function getSymbolByName(name : String) : ISceneNode
+		{
+			return _symbols[name];
 		}
 		
 		public function getMaterialByName(name : String) : Material
@@ -83,6 +103,7 @@ package aerys.minko.type.loader
 			_geometries		= {};
 			_textures		= {};
 			_materials		= {};
+			_symbols		= {};
 			
 			_layers			= new Vector.<String>(32, true);
 			_layers[0]		= 'Default';
@@ -98,6 +119,7 @@ package aerys.minko.type.loader
 			_textureAdded	= new Signal('AssetsLibrary.textureAdded');
 			_materialAdded	= new Signal('AssetsLibrary.materialAdded');
 			_layerAdded		= new Signal('AssetsLibrary.layerAdded');
+			_symbolAdded	= new Signal('AssetsLibrary.symbolAdded');
 		}
 		
 		public function get layerAdded() : Signal
@@ -118,6 +140,22 @@ package aerys.minko.type.loader
 		public function get geometryAdded() : Signal
 		{
 			return _geometryAdded;
+		}
+		
+		public function get symbolAdded() : Signal
+		{
+			return _symbolAdded;
+		}
+		
+		public function setSymbol(name : String, node : ISceneNode) : void
+		{
+			if (_symbolList.indexOf(node) == -1)
+			{
+				++_numSymbols;
+				_symbolList.push(node);
+				_symbols[name] = node;
+				_symbolAdded.execute(this, name, node);
+			}
 		}
 		
 		public function setGeometry(name : String, geometry : Geometry) : void
