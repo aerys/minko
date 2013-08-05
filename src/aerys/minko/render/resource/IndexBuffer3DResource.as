@@ -55,7 +55,8 @@ package aerys.minko.render.resource
 			if (_disposed)
 				return;
 			
-			_indexBuffer = null;
+			if ((_stream.usage & StreamUsage.READ) && _stream._data != null)
+				_indexBuffer = null;
 			_contextLost.execute(this);
 		}
 

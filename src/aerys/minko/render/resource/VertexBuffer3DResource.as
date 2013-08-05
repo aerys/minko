@@ -1,11 +1,8 @@
 package aerys.minko.render.resource
 {
-	import flash.display3D.Context3D;
 	import flash.display3D.VertexBuffer3D;
-	import flash.utils.ByteArray;
 	
 	import aerys.minko.ns.minko_stream;
-	import aerys.minko.render.geometry.stream.IVertexStream;
 	import aerys.minko.render.geometry.stream.StreamUsage;
 	import aerys.minko.render.geometry.stream.VertexStream;
 	import aerys.minko.type.Signal;
@@ -30,8 +27,13 @@ package aerys.minko.render.resource
 		private var _disposed		: Boolean			= false;
 		
 		private var _uploaded		: Signal			= new Signal('VertexBuffer3DRessource.uploaded');
-		private var _contextLoast	: Signal			= new Signal('VertexBuffer3DRessource.contextLost');
+		private var _contextLost	: Signal			= new Signal('VertexBuffer3DRessource.contextLost');
 		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
+
 		public function get uploaded() : Signal
 		{
 			return _uploaded;
@@ -59,8 +61,9 @@ package aerys.minko.render.resource
 			if (_disposed)
 				return;
 			
-			_vertexBuffer = null;
-			_contextLoast.execute(this);
+			if ((_stream.usage & StreamUsage.READ) && _stream._data != null)
+				_vertexBuffer = null;
+			_contextLost.execute(this);
 		}
 
 		public function getVertexBuffer3D(context : Context3DResource) : VertexBuffer3D

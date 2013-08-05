@@ -14,13 +14,19 @@ package aerys.minko.render.geometry.stream
 		minko_stream var _data			: ByteArray;
 		minko_stream var _localDispose	: Boolean;
 
-		private var _usage		: uint;
-		private var _resource	: IndexBuffer3DResource;
-		private var _length		: uint;
+		private var _usage			: uint;
+		private var _resource		: IndexBuffer3DResource;
+		private var _length			: uint;
 		
-		private var _locked		: Boolean;
+		private var _locked			: Boolean;
 		
-		private var _changed	: Signal;
+		private var _changed		: Signal;
+		private var _contextLost	: Signal;
+
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
 
 		public function get usage() : uint
 		{

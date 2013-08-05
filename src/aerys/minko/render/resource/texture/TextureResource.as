@@ -49,6 +49,11 @@ package aerys.minko.render.resource.texture
 		
 		private var _contextLost	: Signal = new Signal("TextureResource.contextLost");
 		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
+
 		public function get format() : uint
 		{
 			return TEXTURE_FORMAT_TO_SAMPLER[_format];
