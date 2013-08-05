@@ -1157,7 +1157,34 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 unsigned int
 OpenGLES2Context::getError()
 {
-    return glGetError();
+	uint error = glGetError();
+	switch(error)
+	{
+	case GL_INVALID_ENUM:
+		std::cerr << "GL error\tinvalid enum" << std::endl;
+		break;
+
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		std::cerr << "GL error\tinvalid framebuffer operation" << std::endl;
+		break;
+
+	case GL_INVALID_VALUE:
+		std::cerr << "GL error\tinvalid value" << std::endl;
+		break;
+
+	case GL_INVALID_OPERATION:
+		std::cerr << "GL error\tinvalid operation" << std::endl;
+		break;
+
+	case GL_OUT_OF_MEMORY:
+		std::cerr << "GL error\tout of memory" << std::endl;
+		break;
+
+	default:
+		break;
+	}
+
+    return error;
 }
 
 void
