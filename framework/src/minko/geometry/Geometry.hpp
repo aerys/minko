@@ -35,6 +35,7 @@ namespace minko
 
 		private:
 			std::shared_ptr<data::Provider>	_data;
+		protected:
 			unsigned int					_vertexSize;
 			int								_numVertices;
 
