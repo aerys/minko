@@ -45,7 +45,6 @@ Geometry::addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 		_numVertices = bufferNumVertices;
 	else if (_numVertices != bufferNumVertices)
 		throw std::logic_error("inconsistent number of vertices between the geometry's vertex streams.");
-
 }
 
 Geometry::Ptr
