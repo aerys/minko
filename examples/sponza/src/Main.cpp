@@ -21,6 +21,7 @@
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 

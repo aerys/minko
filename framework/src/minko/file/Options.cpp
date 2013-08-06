@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "Options.hpp"
 
+using namespace minko;
 using namespace minko::file;
 
 Options::Options(std::shared_ptr<render::AbstractContext> context) :

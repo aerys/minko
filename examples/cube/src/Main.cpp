@@ -5,6 +5,7 @@
 
 #include "GLFW/glfw3.h"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 

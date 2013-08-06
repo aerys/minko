@@ -34,6 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
+using namespace minko;
 using namespace minko::math;
 using namespace minko::render;
 using namespace minko::render;
