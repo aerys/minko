@@ -3,6 +3,7 @@
 #include "minko/particle/tools/VertexComponentFlags.hpp"
 #include "minko/particle/sampler/Sampler.hpp"
 
+using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
