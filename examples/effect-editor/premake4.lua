@@ -22,8 +22,11 @@ project "minko-effect-editor"
 		error "ERROR\tenvironment variable QT_DIR is not specified."
 	end
 	
-	includedirs { QT_DIR .. "/include" }
-	libdirs { QT_DIR .. "/include" }
+	includedirs { 
+		QT_DIR .. "/include",
+		QT_DIR .. "/src/3rdparty/angle/include"
+	}
+	libdirs { QT_DIR .. "/lib" }
 	links { "Qt5Core", "Qt5OpenGL", "Qt5Gui" }
 	
 	local qtMoc = QT_DIR .. "/bin/moc.exe"
@@ -35,26 +38,26 @@ project "minko-effect-editor"
 		error("ERROR\trcc is not found at '" .. qtRcc .. "'")
 	end
 	
-	function generateMOC(files)
-		local mocFiles = os.matchfiles(files)
+	function generateMOC(filepaths)
+		local mocFiles = os.matchfiles(filepaths)
 		for _, file in pairs(mocFiles) do
 			local extension		= path.getextension(file)
 			local outputFile	= "moc/moc_" .. path.getbasename(file) .. ".cpp"
 			if extension == ".cpp" then
 				outputFile = "moc/" .. path.getbasename(file) .. ".moc"
 			end
-			
-			print("building " .. outputFile)
-			os.execute(qtMoc .. " " .. file .. " -o " .. outputFile)
+		
+			prebuildcommands { qtMoc .. " " .. file .. " -o " .. outputFile }
+			files { outputFile } 
 		end
 	end
+
 	
 	generateMOC("src/openglwindow.h")
-	
-	files { "moc/*.cpp" }
-	-- end of QT5
-	
-	
+	generateMOC("src/QOpenGLWindow.hpp")
+
+	-- /QT5
+
 	-- ugly, but couldn't find a better solution to maintain linking order.
 	if _OPTIONS["platform"] == "emscripten" then
 		links { "minko-webgl" }
