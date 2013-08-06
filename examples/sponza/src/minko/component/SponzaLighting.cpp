@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <climits>
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
