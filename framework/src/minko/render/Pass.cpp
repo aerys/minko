@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 
+using namespace minko;
 using namespace minko::render;
 
 Pass::Pass(const std::string&				name,
