@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "HalfEdgeCollection.hpp"
 
+using namespace minko;
 using namespace minko::data;
 
 HalfEdgeCollection::HalfEdgeCollection(IndexStreamPtr indexStream) :
