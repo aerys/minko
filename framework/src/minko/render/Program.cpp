@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Shader.hpp"
 
+using namespace minko;
 using namespace minko::render;
 
 Program::Program(Program::AbstractContextPtr context) :

@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Container.hpp"
 
+using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 
