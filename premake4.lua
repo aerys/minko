@@ -7,9 +7,10 @@ if _OPTIONS["platform"] == "emscripten" then
 end
    
 -- examples
-include 'examples/sponza'
+--include 'examples/sponza'
 --include 'examples/envmap'
-include 'examples/cube'
+--include 'examples/cube'
+include 'examples/effect-editor'
 
 -- core framework
 include 'framework'
@@ -20,9 +21,9 @@ include 'plugins/png'
 if _OPTIONS["platform"] == "emscripten" then
 	include 'plugins/webgl'
 end
-include 'plugins/mk'
-include 'plugins/bullet'
-include 'plugins/particles'
+--include 'plugins/mk'
+--include 'plugins/bullet'
+--include 'plugins/particles'
 
 -- support for new actions
 dofile('tools/all/lib/library.lua')
