@@ -193,4 +193,4 @@ namespace std
 	}
 }
 
-using namespace minko;
+//using namespace minko;
