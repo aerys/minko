@@ -3,6 +3,7 @@
 #include "minko/render/ParticleVertexBuffer.hpp"
 #include "minko/render/ParticleIndexBuffer.hpp"
 
+using namespace minko;
 using namespace minko::geometry;
 
 ParticlesGeometry::ParticlesGeometry(std::shared_ptr<render::AbstractContext> context)
