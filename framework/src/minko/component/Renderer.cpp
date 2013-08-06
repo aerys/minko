@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 
