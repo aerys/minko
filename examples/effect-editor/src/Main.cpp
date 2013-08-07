@@ -1,5 +1,6 @@
 
-#include "QOpenGLWindow.hpp"
+#include "QMinkoGLWidget.hpp"
+//#include "QOpenGLWindow.hpp"
 
 #include "openglwindow.h"
 
@@ -8,6 +9,8 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QScreen>
 
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtCore/qmath.h>
 
 using namespace minko;
@@ -44,25 +47,39 @@ TriangleWindow::TriangleWindow()
 int 
 main(int argc, char **argv)
 {
+	QApplication app(argc, argv);
+    app.setApplicationName("cube");
+    app.setApplicationVersion("0.1");
+
+#ifndef QT_NO_OPENGL
+    QMinkoGLWidget widget;
+    widget.show();
+#else
+	std::cerr << "OpenGL support required." << std::endl;
+#endif // QT_NO_OPENGL
+
+	/*
     QGuiApplication app(argc, argv);
 
     QSurfaceFormat format;
     format.setSamples(16);
-	/*
-    TriangleWindow window;
-    window.setFormat(format);
-    window.resize(640, 480);
-    window.show();
+	
+    //TriangleWindow window;
+    //window.setFormat(format);
+    //window.resize(640, 480);
+    //window.show();
 
-    window.setAnimating(true);
-	*/
+    //window.setAnimating(true);
+
+	
 	
 	QOpenGLWindow window;
 	window.setFormat(format);
 	window.resize(640, 480);
 	window.show();
 	//window.setAnimating(true);
-	
+	*/
+
     return app.exec();
 }
 //! [2]
