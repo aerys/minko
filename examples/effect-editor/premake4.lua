@@ -27,7 +27,7 @@ project "minko-effect-editor"
 		QT_DIR .. "/src/3rdparty/angle/include"
 	}
 	libdirs { QT_DIR .. "/lib" }
-	links { "Qt5Core", "Qt5OpenGL", "Qt5Gui" }
+	links { "Qt5Core", "Qt5OpenGL", "Qt5Gui", "Qt5Widgets" }
 	
 	local qtMoc = QT_DIR .. "/bin/moc.exe"
 	local qtRcc = QT_DIR .. "/bin/rcc.exe"
@@ -55,7 +55,7 @@ project "minko-effect-editor"
 	
 	generateMOC("src/openglwindow.h")
 	generateMOC("src/QOpenGLWindow.hpp")
-
+	generateMOC("src/QMinkoGLWidget.hpp")
 	-- /QT5
 
 	-- ugly, but couldn't find a better solution to maintain linking order.
