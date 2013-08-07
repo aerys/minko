@@ -133,6 +133,9 @@ project "minko-effect-editor"
 			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" "$(TargetDir)"'
 		}
 
+	configuration { "Debug" }
+		defines { "DEBUG_QGLWINDOW" } 
+		
 	-- macos
 	configuration { "macosx" }
 		buildoptions { "-std=c++11", "-stdlib=libc++" }
