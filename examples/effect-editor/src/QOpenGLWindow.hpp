@@ -22,6 +22,11 @@ class QOpenGLWindow :
 		AbstractContextPtr	_context;
 		RendererPtr			_renderer;
 		SceneManagerPtr		_sceneManager;
+		bool				_initialized;
+		bool				_animating;
+		bool				_updatePending;
+
+		std::shared_ptr<minko::scene::Node>	_box;
 
 	public:
 		explicit 
@@ -29,6 +34,7 @@ class QOpenGLWindow :
 		
 		~QOpenGLWindow();
 
+		/*
 		virtual 
 		void 
 		render(QPainter*);
@@ -36,14 +42,28 @@ class QOpenGLWindow :
 		virtual
 		void
 		render();
+		*/
 
 		virtual 
 		void 
 		initialize();
 
+		inline
+		bool
+		animating() const
+		{
+			return _animating;
+		}
+
+		void
+		setAnimating(bool);
+
 	public slots:
 		void
 		renderNow();
+
+		void
+		renderLater();
 
 	protected:
 		bool 
@@ -51,6 +71,9 @@ class QOpenGLWindow :
 
 		void 
 		exposeEvent(QExposeEvent*);
+
+		void
+		resizeEvent(QResizeEvent*);
 
 	private:
 		void
