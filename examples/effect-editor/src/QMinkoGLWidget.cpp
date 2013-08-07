@@ -1,5 +1,7 @@
 #include "QMinkoGLWidget.hpp"
 
+#include <QtCore/QAbstractEventDispatcher>
+
 #include <minko/render/OpenGLES2Context.hpp>
 #include <minko/math/Vector4.hpp>
 #include <minko/MinkoPNG.hpp>
@@ -15,6 +17,8 @@ QMinkoGLWidget::initializeGL()
 
 	initializeMinkoContext();
 	initializeMinkoScene();
+
+	QObject::connect(QAbstractEventDispatcher::instance(), SIGNAL(aboutToBlock()), this, SLOT(update()));
 }
 
 void
@@ -100,8 +104,6 @@ QMinkoGLWidget::initializeMinkoScene()
 			assets->effect("effect/Basic.effect")
 		));
 		root->addChild(_model);
-
-		_qtimer->start();
 
 		_initialized = true;
 	});
