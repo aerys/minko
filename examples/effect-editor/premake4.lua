@@ -9,6 +9,7 @@ project "minko-effect-editor"
 	includedirs {
 		"src",
 		"lib",
+		"ui",
 		"../../deps/all/include"
 	}
 
@@ -22,20 +23,43 @@ project "minko-effect-editor"
 		error "ERROR\tenvironment variable QT_DIR is not specified."
 	end
 	
-	includedirs { 
+	excludes
+	{
+		"qtcreator/effect-editor/*"
+	}
+	
+	includedirs 
+	{ 
 		QT_DIR .. "/include",
 		QT_DIR .. "/src/3rdparty/angle/include"
 	}
 	libdirs { QT_DIR .. "/lib" }
 	links { "Qt5Core", "Qt5OpenGL", "Qt5Gui", "Qt5Widgets" }
 	
+	local qtUic = QT_DIR .. "/bin/uic.exe"
 	local qtMoc = QT_DIR .. "/bin/moc.exe"
 	local qtRcc = QT_DIR .. "/bin/rcc.exe"
+	if not os.isfile(qtUic) then
+		error("ERROR\tuic is not found at '" .. qtUic .. "'")
+	end
 	if not os.isfile(qtMoc) then
 		error("ERROR\tmoc is not found at '" .. qtMoc .. "'")
 	end
 	if not os.isfile(qtRcc) then
 		error("ERROR\trcc is not found at '" .. qtRcc .. "'")
+	end
+	
+	function generateUI(filepaths)
+		local uiFiles = os.matchfiles(filepaths)
+		for _, file in pairs(uiFiles) do
+			local extension		= path.getextension(file)
+			local outputFile	= "ui/ui_" .. path.getbasename(file) .. ".h"
+			print(extension)
+			if extension == ".ui" then
+				prebuildcommands { qtUic .. " -o " .. outputFile .. " " .. file }
+				files { outputFile }
+			end
+		end
 	end
 	
 	function generateMOC(filepaths)
@@ -51,11 +75,12 @@ project "minko-effect-editor"
 			files { outputFile } 
 		end
 	end
-
 	
+	generateUI("src/QMinkoEffectEditor.ui")
 	generateMOC("src/openglwindow.h")
 	generateMOC("src/QOpenGLWindow.hpp")
 	generateMOC("src/QMinkoGLWidget.hpp")
+	generateMOC("src/QMinkoEffectEditor.hpp")
 	-- /QT5
 
 	-- ugly, but couldn't find a better solution to maintain linking order.
@@ -130,7 +155,11 @@ project "minko-effect-editor"
 			-- copy assets
 			--'xcopy /y /e /i asset\\* "$(TargetDir)"',
 			-- copy dlls
-			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" "$(TargetDir)"'
+			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\lib\\Qt5Core.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\lib\\Qt5Gui.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\lib\\Qt5OpenGL.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\lib\\Qt5Widgets.dll" "$(TargetDir)"'
 		}
 
 	configuration { "Debug" }
