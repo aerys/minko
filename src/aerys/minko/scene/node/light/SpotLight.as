@@ -225,6 +225,7 @@ package aerys.minko.scene.node.light
 			); 
 			
 			light.name = this.name;
+			light.knowledge.setProperties(knowledge);
 			light.transform.copyFrom(this.transform);
 			
 			return light;

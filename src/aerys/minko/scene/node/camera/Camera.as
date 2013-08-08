@@ -39,6 +39,7 @@ package aerys.minko.scene.node.camera
 		{
 			var clone : Camera = new Camera(fieldOfView, zNear, zFar);
 			
+			clone.knowledge.setProperties(knowledge);
 			clone.transform.copyFrom(this.transform);
 			
 			return clone as AbstractSceneNode;
