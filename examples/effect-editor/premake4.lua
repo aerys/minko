@@ -32,14 +32,14 @@ project "minko-effect-editor"
 	
 	includedirs 
 	{ 
-		QT_DIR .. "/include",
-		QT_DIR .. "/../qtwebkit/include",
-		QT_DIR .. "/src/3rdparty/angle/include"
+		QT_DIR .. "/qtbase/include",
+		QT_DIR .. "/qtwebkit/include",
+		QT_DIR .. "/qtbase/src/3rdparty/angle/include"
 	}
 	libdirs 
 	{ 
-		QT_DIR .. "/lib",
-		QT_DIR .. "/../qtwebkit/WebKitBuild/Release/lib"
+		QT_DIR .. "/qtbase/lib",
+		QT_DIR .. "/qtwebkit/WebKitBuild/Release/lib"
 	}
 	links 
 	{ 
@@ -51,9 +51,9 @@ project "minko-effect-editor"
 		"Qt5WebKitWidgets"
 	}
 	
-	local	qtUic		= QT_DIR .. "/bin/uic.exe"
-	local	qtMoc		= QT_DIR .. "/bin/moc.exe"
-	local	qtRcc		= QT_DIR .. "/bin/rcc.exe"
+	local	qtUic		= QT_DIR .. "/qtbase/bin/uic.exe"
+	local	qtMoc		= QT_DIR .. "/qtbase/bin/moc.exe"
+	local	qtRcc		= QT_DIR .. "/qtbase/bin/rcc.exe"
 	
 	local	outDirUic	= "src/ui"
 	local	outDirMoc	= "src/moc"
@@ -190,13 +190,13 @@ project "minko-effect-editor"
 			--'xcopy /y /e /i asset\\* "$(TargetDir)"',
 			-- copy dlls
 			'for /r %%x in (..\\..\\deps\\win\\lib\\*.dll) do xcopy /y /e /i "%%x" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5Core.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5Gui.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5OpenGL.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5WebKit.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5Widgets.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\..\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKit.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\..\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKitWidgets.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtbase\\lib\\Qt5Core.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtbase\\lib\\Qt5Gui.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtbase\\lib\\Qt5OpenGL.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtbase\\lib\\Qt5WebKit.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtbase\\lib\\Qt5Widgets.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKit.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKitWidgets.dll" "$(TargetDir)"',
 			'xcopy /y "D:\\icu\\bin\\*.dll" "$(TargetDir)"'
 		}
 
