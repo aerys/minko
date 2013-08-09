@@ -29,7 +29,7 @@ class QMinkoEffectEditor :
 	private:
 		Ui::QMinkoEffectEditor	*_ui;
 		QWebFrame				*_qTabFrames[NUM_TABS];
-		QSignalMapper			*_qSignalMapper;
+		QSignalMapper			*_qAddEditorSignalMapper;
 
 	public:
 	    explicit 
@@ -37,17 +37,38 @@ class QMinkoEffectEditor :
 
 	    ~QMinkoEffectEditor();
 
-		void
-		setupSourceTabs();
-
 	public slots:
 		void
-		sourcesSavedSlot();
+		sourcesChangedSlot();
 
 	private slots:
 		void
 		addEditorToJavaScript(int tabIndex);
 
+		void
+		loadMk();
+
+		void
+		loadEffect();
+
+		void
+		saveEffect();
+
 	private:
 		DISALLOW_COPY_AND_ASSIGN(QMinkoEffectEditor);
+
+		void
+		setupSourceTabs();
+
+		void
+		setupToolButtons();
+
+		void
+		loadMk(const QString&);
+
+		void
+		loadEffect(const QString&);
+
+		void
+		saveEffect(const QString&);
 };
