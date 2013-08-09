@@ -18,6 +18,11 @@ class QMinkoEffectEditor :
 		Ui::QMinkoEffectEditor	*ui;
 
 	public:
-	    explicit QMinkoEffectEditor(QWidget *parent = 0);
+	    explicit 
+		QMinkoEffectEditor(QWidget *parent = 0);
+
 	    ~QMinkoEffectEditor();
+
+		void
+		setupSourceTabs();
 };
