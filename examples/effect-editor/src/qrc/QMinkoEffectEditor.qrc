@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/">
+    <file>resources/test-codemirror.html</file>
+    <file>resources/minimal.html</file>
+    <file>resources/minimal.js</file>
+  </qresource>
+</RCC>
