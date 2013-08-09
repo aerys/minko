@@ -19,15 +19,9 @@ codeMirror.on("change", function()
 	clearTimeout(delay);
 	delay = setTimeout(updatePreview, 300);
 });
-      
+  
 function updatePreview()
 {
-	//var previewFrame = document.getElementById('preview');
-	//var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
-	//preview.open();
-	//preview.write(codeMirror.getValue());
-	//preview.close();
-	qMinkoEffectEditor.sourcesChangedSlot();
+	qMinkoEffectEditor.updateSource(qTabJSObject["tabIndex"]);
 }
 setTimeout(updatePreview, 300);
-	  
