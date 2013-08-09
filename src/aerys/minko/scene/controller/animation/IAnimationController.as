@@ -1,9 +1,12 @@
 package aerys.minko.scene.controller.animation
 {
+	import aerys.minko.type.Signal;
+
     public interface IAnimationController
     {
         function get numLabels() : uint;
         function get isPlaying() : Boolean;
+		function get labelHit() : Signal;
 
         function addLabel(name : String, time : Number) : IAnimationController;
         function removeLabel(name : String) : IAnimationController;
