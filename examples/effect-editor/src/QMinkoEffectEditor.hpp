@@ -28,8 +28,14 @@ class QMinkoEffectEditor :
 
 	private:
 		Ui::QMinkoEffectEditor	*_ui;
-		QWebFrame				*_qTabFrames[NUM_TABS];
+		QWidget					*_qTabWidget	[NUM_TABS];
+		QWebFrame				*_qTabFrames	[NUM_TABS];
+		QObject					*_qTabJSObjects	[NUM_TABS];
+		QString					_qTabSources	[NUM_TABS];
 		QSignalMapper			*_qAddEditorSignalMapper;
+
+		QIcon					*_qIconSave, *_qIconSaveNeeded;
+		bool					_saveNeeded;
 
 	public:
 	    explicit 
@@ -39,11 +45,14 @@ class QMinkoEffectEditor :
 
 	public slots:
 		void
-		sourcesChangedSlot();
+		updateSource(int tabIndex);
 
 	private slots:
 		void
-		addEditorToJavaScript(int tabIndex);
+		updateEffectName();
+
+		void
+		exposeQObjectsToJS(int tabIndex);
 
 		void
 		loadMk();
@@ -71,4 +80,16 @@ class QMinkoEffectEditor :
 
 		void
 		saveEffect(const QString&);
+
+		void
+		createEffect(std::string&) const;
+
+		void
+		displayEffect() const;
+
+		void
+		tabModified(int tabIndex, bool);
+
+		void
+		saveNeeded(bool);
 };
