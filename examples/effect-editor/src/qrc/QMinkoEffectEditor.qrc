@@ -1,7 +1,13 @@
 <RCC>
-  <qresource prefix="/">
-    <file>resources/test-codemirror.html</file>
-    <file>resources/minimal.html</file>
-    <file>resources/minimal.js</file>
-  </qresource>
+	<qresource prefix="/">
+		<file>resources/test-codemirror.html</file>
+		<file>resources/minimal-codemirror.html</file>
+		<file>resources/minimal.html</file>
+		<file>resources/minimal.js</file>
+		<file>resources/CodeMirror/lib/codemirror.js</file>
+		<file>resources/CodeMirror/lib/codemirror.css</file>
+		<file>resources/CodeMirror/mode/clike/clike.js</file>
+		<file>resources/CodeMirror/addon/search/searchCursor.js</file>
+		<file>resources/CodeMirror/addon/search/match-highlighter.js</file>
+	</qresource>
 </RCC>
