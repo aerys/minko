@@ -179,7 +179,6 @@ package aerys.minko.scene.controller.animation
 		
 		override minko_animation function triggerLabelHit(labelName:String, labelTime : int) : void
 		{
-			trace(labelName + " HIT");
 			var numAnimations : uint = _animations.length;
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
 				_animations[animationId].triggerLabelHit(labelName, labelTime);
