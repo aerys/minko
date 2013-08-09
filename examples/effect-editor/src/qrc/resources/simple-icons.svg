@@ -40,10 +40,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="6.772414"
-     inkscape:cx="75.394474"
-     inkscape:cy="965.33913"
+     inkscape:cx="58.413823"
+     inkscape:cy="954.96225"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer4"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -68,7 +68,7 @@
      inkscape:label="icon-load-mk"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline">
+     style="display:none">
     <g
        id="g3621"
        inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-load-mk.png"
@@ -157,23 +157,54 @@
      inkscape:label="icon-save-effect"
      style="display:none">
     <g
-       id="g3672"
-       inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
-       inkscape:export-xdpi="180"
-       inkscape:export-ydpi="180">
-      <rect
-         ry="1.9999783"
-         rx="2"
-         y="82.305191"
-         x="14.618126"
-         height="30"
-         width="30"
-         id="rect3644"
-         style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-      <path
-         id="path3668"
-         d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
-         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans" />
+       id="g2830">
+      <g
+         inkscape:export-ydpi="180"
+         inkscape:export-xdpi="180"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+         id="g3672">
+        <rect
+           style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           id="rect3644"
+           width="30"
+           height="30"
+           x="14.618126"
+           y="82.305191"
+           rx="2"
+           ry="1.9999783" />
+        <path
+           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+           d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
+           id="path3668" />
+      </g>
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="icon-save-effect-needed">
+    <g
+       style="display:inline"
+       id="g2836">
+      <g
+         id="g2838"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180">
+        <rect
+           ry="1.9999783"
+           rx="2"
+           y="82.305191"
+           x="14.618126"
+           height="30"
+           width="30"
+           id="rect2840"
+           style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+        <path
+           id="path2842"
+           d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
+           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans" />
+      </g>
     </g>
   </g>
 </svg>

@@ -100,6 +100,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="effectNameLabel">
+          <property name="text">
+           <string>Effect name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="effectNameLineEdit"/>
+        </item>
+        <item>
          <spacer name="rightPanelHSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -123,7 +133,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="vertexTab">
          <attribute name="title">
