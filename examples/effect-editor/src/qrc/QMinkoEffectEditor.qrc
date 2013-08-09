@@ -2,8 +2,10 @@
 	<qresource prefix="/">
 		<file>resources/test-codemirror.html</file>
 		<file>resources/minimal-codemirror.html</file>
+		<file>resources/minimal-codemirror.js</file>
 		<file>resources/minimal.html</file>
 		<file>resources/minimal.js</file>
+		<file>resources/jquery-1.10.2.js</file>
 		<file>resources/CodeMirror/lib/codemirror.js</file>
 		<file>resources/CodeMirror/lib/codemirror.css</file>
 		<file>resources/CodeMirror/mode/clike/clike.js</file>
