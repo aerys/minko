@@ -4,6 +4,7 @@
 #include <QtCore/QTimer>
 
 #include <minko/Minko.hpp>
+#include "EditorCommon.hpp"
 
 class QMinkoGLWidget :
 	public QGLWidget
@@ -53,6 +54,8 @@ class QMinkoGLWidget :
 		resizeGL(int, int);
 
 	private:
+		DISALLOW_COPY_AND_ASSIGN(QMinkoGLWidget);
+
 		void
 		initializeMinkoContext();
 
