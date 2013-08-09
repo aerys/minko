@@ -304,7 +304,7 @@ package aerys.minko.scene.controller.animation
 		
 		protected function checkLabelHit(previousTime : int, newTime : int) : void
 		{
-			if (!_isPlaying || !_nextLabelIds || !_nextLabelIds.length) || !_labelHit.numCallbacks)
+			if (!_isPlaying || !_nextLabelIds || !_nextLabelIds.length || !_labelHit.numCallbacks)
 				return;
 			
 			var nextLabelTime	: Number	= _labelTimes[_nextLabelIds[0]];
