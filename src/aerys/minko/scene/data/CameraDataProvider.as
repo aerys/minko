@@ -1,8 +1,6 @@
 package aerys.minko.scene.data
 {
-	import aerys.minko.type.Signal;
 	import aerys.minko.type.binding.DataProvider;
-	import aerys.minko.type.binding.IDataProvider;
 	import aerys.minko.type.enum.DataProviderUsage;
 	import aerys.minko.type.math.Frustum;
 	import aerys.minko.type.math.Matrix4x4;

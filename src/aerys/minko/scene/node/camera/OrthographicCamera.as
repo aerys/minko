@@ -12,7 +12,7 @@ package aerys.minko.scene.node.camera
 	use namespace minko_scene;
 	
 	public class OrthographicCamera extends AbstractCamera
-	{
+	{		
 		public static const ZOOM_DEFAULT : Number = 1;
 		
 		public function get zoom() : Number
@@ -31,7 +31,7 @@ package aerys.minko.scene.node.camera
 		{
 			super(zNear, zFar);
 			
-			_cameraData.zoom = zoom;
+			cameraData.zoom = zoom;
 		}
 		
 		override protected function initializeContollers() : void
@@ -49,15 +49,15 @@ package aerys.minko.scene.node.camera
 			out ||= new Ray();
 			
 			var sceneBindings	: DataBindings	= (root as Scene).bindings;
-			var zNear			: Number		= _cameraData.zNear;
-			var zFar			: Number		= _cameraData.zFar;
+			var zNear			: Number		= cameraData.zNear;
+			var zFar			: Number		= cameraData.zFar;
 			var width			: Number		= sceneBindings.getProperty('viewportWidth');
 			var height			: Number		= sceneBindings.getProperty('viewportHeight');
 			var xPercent		: Number		= (x / width - 0.5);
 			var yPercent 		: Number		= -(y / height - 0.5);
 			
 			out.origin.set(
-				xPercent * width / _cameraData.zoom, yPercent * height / _cameraData.zoom, zNear
+				xPercent * width / cameraData.zoom, yPercent * height / cameraData.zoom, zNear
 			);
 			out.direction.set(0, 0, 1);
 			
@@ -77,8 +77,8 @@ package aerys.minko.scene.node.camera
 			
 			worldPosition = worldToLocal(worldPosition, null, false, true);
 			
-			output.x = width  * (0.5 + (worldPosition.x / (width  / _cameraData.zoom)));
-			output.y = height * (0.5 - (worldPosition.y / (height / _cameraData.zoom)));
+			output.x = width  * (0.5 + (worldPosition.x / (width  / cameraData.zoom)));
+			output.y = height * (0.5 - (worldPosition.y / (height / cameraData.zoom)));
 			
 			return output;
 		}

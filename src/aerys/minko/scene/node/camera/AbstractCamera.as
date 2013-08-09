@@ -1,5 +1,8 @@
 package aerys.minko.scene.node.camera
 {
+	import flash.geom.Point;
+	
+	import aerys.minko.ns.minko_camera;
 	import aerys.minko.scene.controller.camera.CameraController;
 	import aerys.minko.scene.data.CameraDataProvider;
 	import aerys.minko.scene.node.AbstractSceneNode;
@@ -9,15 +12,16 @@ package aerys.minko.scene.node.camera
 	import aerys.minko.type.math.Ray;
 	import aerys.minko.type.math.Vector4;
 	
-	import flash.geom.Point;
 	
 	public class AbstractCamera extends AbstractSceneNode
 	{
+		use namespace minko_camera;
+		
 		public static const DEFAULT_ZNEAR	: Number	= .1;
 		public static const DEFAULT_ZFAR	: Number	= 500.;
 		
-		protected var _cameraCtrl	: CameraController;
-		protected var _cameraData	: CameraDataProvider;
+		minko_camera var _cameraCtrl	: CameraController;
+		minko_camera var _cameraData	: CameraDataProvider;
 		
 		protected var _enabled		: Boolean;
 		
