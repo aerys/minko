@@ -53,7 +53,7 @@ package aerys.minko.render.resource
         private var _stencilActionOnDepthFail               : String;
         private var _stencilActionOnDepthPassStencilFail    : String;
 		
-		private var _contextChanged							: Signal	= new Signal("Context3DResource.contextLost");
+		private var _contextChanged							: Signal	= new Signal("Context3DResource.contextChanged");
 		
 		public function get contextChanged():Signal
 		{
@@ -88,13 +88,6 @@ package aerys.minko.render.resource
 		{
 			_context = context;
             initialize();
-		}
-		
-		public function updateContext3D(context : Context3D) : void
-		{
-			_context = context;
-			
-			_contextChanged.execute(this);
 		}
 		
         private function initialize() : void

@@ -26,8 +26,8 @@ package aerys.minko.render.resource
 		
 		private var _disposed		: Boolean			= false;
 		
-		private var _uploaded		: Signal			= new Signal('VertexBuffer3DRessource.uploaded');
-		private var _contextLost	: Signal			= new Signal('VertexBuffer3DRessource.contextLost');
+		private var _uploaded		: Signal			= new Signal('VertexBuffer3DResource.uploaded');
+		private var _contextLost	: Signal			= new Signal('VertexBuffer3DResource.contextLost');
 		
 		public function get contextLost():Signal
 		{

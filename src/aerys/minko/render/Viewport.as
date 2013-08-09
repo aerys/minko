@@ -361,16 +361,19 @@ package aerys.minko.render
 			{
 				_context3d.context = _stage3d.context3D;
 				_contextLost.execute(this, _context3d);
+				
+				updateStage3D();
+				updateBackBuffer();
 			}
 			else
 			{
 				_context3d = new Context3DResource(_stage3d.context3D);
+				
+				updateStage3D();
+				updateBackBuffer();
+				
+				dispatchEvent(new Event(Event.INIT));
 			}
-			
-			updateStage3D();
-			updateBackBuffer();
-			
-			dispatchEvent(new Event(Event.INIT));
 		}
 		
 		private function updateBackBuffer() : void
