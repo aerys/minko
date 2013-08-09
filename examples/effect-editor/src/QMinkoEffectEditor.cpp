@@ -17,5 +17,5 @@ QMinkoEffectEditor::~QMinkoEffectEditor()
 void
 QMinkoEffectEditor::setupSourceTabs()
 {
-	ui->bindingsWebView->load(QUrl("qrc:///resources/minimal.html"));
+	ui->bindingsWebView->load(QUrl("qrc:///resources/minimal-codemirror.html"));
 }
