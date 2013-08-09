@@ -15,7 +15,7 @@ main(int argc, char **argv)
 
 	QApplication app(argc, argv);
 	QMinkoEffectEditor window;
-	window.show();
-	
+	window.show();	
+
 	return app.exec();
 }

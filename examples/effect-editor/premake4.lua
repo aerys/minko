@@ -85,7 +85,7 @@ project "minko-effect-editor"
 		local mocFiles = os.matchfiles(filepaths)
 		for _, file in pairs(mocFiles) do
 			local extension		= path.getextension(file)
-			if extension == ".h" then
+			if extension == ".hpp" or extension == ".h" then
 				local outputFile	= outdir ..  "/moc_" .. path.getbasename(file) .. ".cpp"
 				prebuildcommands { qtMoc .. " " .. file .. " -o " .. outputFile }
 				files { outputFile } 
