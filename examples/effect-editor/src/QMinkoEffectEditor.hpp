@@ -48,15 +48,6 @@ class QMinkoEffectEditor :
 		void
 		addEditorToJavaScript(int tabIndex);
 
-		void
-		addEditorToVertexSourceJavaScript();
-
-		void
-		addEditorToFragmentSourceJavaScript();
-
-		void
-		addEditorToBindingsSourceJavaScript();
-
 	private:
 		DISALLOW_COPY_AND_ASSIGN(QMinkoEffectEditor);
 };
