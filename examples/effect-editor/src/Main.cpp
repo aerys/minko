@@ -1,9 +1,6 @@
 
 #include "QMinkoGLWidget.hpp"
 #include "QMinkoEffectEditor.hpp"
-//#include "QOpenGLWindow.hpp"
-
-#include "openglwindow.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QMatrix4x4>
@@ -19,15 +16,14 @@ using namespace minko;
 int 
 main(int argc, char **argv)
 {
+	Q_INIT_RESOURCE(QMinkoEffectEditor);
+
+	QApplication app(argc, argv);
+	QMinkoEffectEditor window;
+	window.show();
+	
+	return app.exec();
 	/*
-	QApplication a(argc, argv);
-	QMinkoEffectEditor w;
-	w.show();
-	
-	return a.exec();
-	*/
-	
-	
 	QApplication app(argc, argv);
     app.setApplicationName("cube");
     app.setApplicationVersion("0.1");
@@ -39,5 +35,5 @@ main(int argc, char **argv)
 	std::cerr << "OpenGL support required." << std::endl;
 #endif // QT_NO_OPENGL
 	return app.exec();
-	
+	*/
 }

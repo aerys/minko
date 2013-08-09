@@ -25,20 +25,40 @@ project "minko-effect-editor"
 	
 	excludes
 	{
-		"qtcreator/effect-editor/*"
+		"qtcreator/effect-editor/*",
+		"qtcreator/effect-editor/debug/*",
+		"qtcreator/effect-editor/release/*"
 	}
 	
 	includedirs 
 	{ 
 		QT_DIR .. "/include",
+		QT_DIR .. "/../qtwebkit/include",
 		QT_DIR .. "/src/3rdparty/angle/include"
 	}
-	libdirs { QT_DIR .. "/lib" }
-	links { "Qt5Core", "Qt5OpenGL", "Qt5Gui", "Qt5Widgets" }
+	libdirs 
+	{ 
+		QT_DIR .. "/lib",
+		QT_DIR .. "/../qtwebkit/WebKitBuild/Release/lib"
+	}
+	links 
+	{ 
+		"Qt5Core", 
+		"Qt5OpenGL", 
+		"Qt5Gui", 
+		"Qt5Widgets", 
+		"Qt5WebKit",
+		"Qt5WebKitWidgets"
+	}
 	
-	local qtUic = QT_DIR .. "/bin/uic.exe"
-	local qtMoc = QT_DIR .. "/bin/moc.exe"
-	local qtRcc = QT_DIR .. "/bin/rcc.exe"
+	local	qtUic		= QT_DIR .. "/bin/uic.exe"
+	local	qtMoc		= QT_DIR .. "/bin/moc.exe"
+	local	qtRcc		= QT_DIR .. "/bin/rcc.exe"
+	
+	local	outDirUic	= "src/ui"
+	local	outDirMoc	= "src/moc"
+	local	outDirRcc	= "src/rcc"
+	
 	if not os.isfile(qtUic) then
 		error("ERROR\tuic is not found at '" .. qtUic .. "'")
 	end
@@ -49,38 +69,52 @@ project "minko-effect-editor"
 		error("ERROR\trcc is not found at '" .. qtRcc .. "'")
 	end
 	
-	function generateUI(filepaths)
+	function generateUI(filepaths, outdir)
 		local uiFiles = os.matchfiles(filepaths)
 		for _, file in pairs(uiFiles) do
 			local extension		= path.getextension(file)
-			local outputFile	= "ui/ui_" .. path.getbasename(file) .. ".h"
-			print(extension)
 			if extension == ".ui" then
+				local outputFile	= outdir .. "/ui_" .. path.getbasename(file) .. ".h"
 				prebuildcommands { qtUic .. " -o " .. outputFile .. " " .. file }
-				files { outputFile }
+				files { file, outputFile }
 			end
 		end
 	end
 	
-	function generateMOC(filepaths)
+	function generateMOC(filepaths, outdir)
 		local mocFiles = os.matchfiles(filepaths)
 		for _, file in pairs(mocFiles) do
 			local extension		= path.getextension(file)
-			local outputFile	= "moc/moc_" .. path.getbasename(file) .. ".cpp"
-			if extension == ".cpp" then
-				outputFile = "moc/" .. path.getbasename(file) .. ".moc"
+			if extension == ".h" then
+				local outputFile	= outdir ..  "/moc_" .. path.getbasename(file) .. ".cpp"
+				prebuildcommands { qtMoc .. " " .. file .. " -o " .. outputFile }
+				files { outputFile } 
 			end
-		
-			prebuildcommands { qtMoc .. " " .. file .. " -o " .. outputFile }
-			files { outputFile } 
 		end
 	end
 	
-	generateUI("src/QMinkoEffectEditor.ui")
-	generateMOC("src/openglwindow.h")
-	generateMOC("src/QOpenGLWindow.hpp")
-	generateMOC("src/QMinkoGLWidget.hpp")
-	generateMOC("src/QMinkoEffectEditor.hpp")
+	function generateRCC(filepaths, outdir)
+		local rccFiles = os.matchfiles(filepaths)
+		for _, file in pairs(rccFiles) do
+			local extension		= path.getextension(file)
+			if extension == ".qrc" then
+				local outputFile	= outdir .. "/rcc_" .. path.getbasename(file) .. ".cpp"
+				local resourceName	= path.getbasename(file)
+				prebuildcommands { qtRcc .. " -name " .. resourceName .. " -o " .. outputFile .. " " .. file }
+				files { file, outputFile } 
+				print("in Main.cpp: remember to add Q_INIT_RESOURCE(" .. resourceName .. ")")
+			end
+		end
+	end
+	
+	generateUI("src/ui/QMinkoEffectEditor.ui", outDirUic)
+	
+	--generateMOC("src/openglwindow.h", outDirMoc)
+	--generateMOC("src/QOpenGLWindow.hpp", outDirMoc)
+	generateMOC("src/QMinkoGLWidget.hpp", outDirMoc)
+	generateMOC("src/QMinkoEffectEditor.hpp", outDirMoc)
+	
+	generateRCC("src/qrc/QMinkoEffectEditor.qrc", outDirRcc)
 	-- /QT5
 
 	-- ugly, but couldn't find a better solution to maintain linking order.
@@ -159,7 +193,11 @@ project "minko-effect-editor"
 			'xcopy /y "%QT_DIR%\\lib\\Qt5Core.dll" "$(TargetDir)"',
 			'xcopy /y "%QT_DIR%\\lib\\Qt5Gui.dll" "$(TargetDir)"',
 			'xcopy /y "%QT_DIR%\\lib\\Qt5OpenGL.dll" "$(TargetDir)"',
-			'xcopy /y "%QT_DIR%\\lib\\Qt5Widgets.dll" "$(TargetDir)"'
+			'xcopy /y "%QT_DIR%\\lib\\Qt5WebKit.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\lib\\Qt5Widgets.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\..\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKit.dll" "$(TargetDir)"',
+			'xcopy /y "%QT_DIR%\\..\\qtwebkit\\WebKitBuild\\Release\\bin\\Qt5WebKitWidgets.dll" "$(TargetDir)"',
+			'xcopy /y "D:\\icu\\bin\\*.dll" "$(TargetDir)"'
 		}
 
 	configuration { "Debug" }
