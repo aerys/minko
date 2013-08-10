@@ -118,15 +118,12 @@ package aerys.minko.scene.controller.animation
 		{
 			if (_master)
 				return;
-			else if (updateOnTime(time))
-			{
-				update(scene, viewport, target, time);
-			}
+			
+			if (updateOnTime(time))
+				update(scene, time);
 		}
 		
 		minko_animation function update(scene		: Scene,
-										viewport	: Viewport,
-										target		: BitmapData,
 										time		: Number) : void
 		{
 			_updateOneTime = false;
@@ -139,7 +136,7 @@ package aerys.minko.scene.controller.animation
 					continue ;
 				
 				var numTimelines 	: int 			= _timelines.length;
-				var group			: Group			= target as Group;
+				var group			: Group			= ctrlTarget as Group;
 				
 				
 				for (var i : int = 0; i < numTimelines; ++i)

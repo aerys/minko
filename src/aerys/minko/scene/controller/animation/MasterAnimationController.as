@@ -13,17 +13,18 @@ package aerys.minko.scene.controller.animation
 	
 	public class MasterAnimationController extends AbstractAnimationController implements IRebindableController
 	{		
-		minko_animation var _animations : Vector.<AnimationController> = new Vector.<AnimationController>();
+		minko_animation var _animations : Vector.<AnimationController>	= null;
 		
 		public function MasterAnimationController(animations	: Vector.<AnimationController>, 
 												  loop			: Boolean = true)
 		{
 			super(loop);
+
 			_animations = animations.concat();
 			
 			var maxTime : int = 0;
 			
-			for each(var animation : AnimationController in _animations)
+			for each (var animation : AnimationController in _animations)
 			{
 				animation.setMaster(this);
 				maxTime = Math.max(maxTime, animation.totalTime);
@@ -170,7 +171,7 @@ package aerys.minko.scene.controller.animation
 				for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
 				{
 					_animations[animationId].setCurrentTime(currentTime);
-					_animations[animationId].update(scene, viewport, destination, time);
+					_animations[animationId].update(scene, time);
 				}
 				
 				checkLabelHit(_previousTime, _currentTime);
