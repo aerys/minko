@@ -120,10 +120,10 @@ namespace minko
                  std::shared_ptr<States>            states);
 
 			const unsigned int
-			buildSignature(std::shared_ptr<data::Container> data);
+			buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 
 			std::shared_ptr<Program>
-			selectProgram(std::shared_ptr<data::Container> data);
+			selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData);
 		};
 	}
 }
