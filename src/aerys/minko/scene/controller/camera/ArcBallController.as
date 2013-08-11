@@ -263,11 +263,22 @@ package aerys.minko.scene.controller.camera
 			if (_newPitch > Math.PI - EPSILON)
 				_newPitch = Math.PI - EPSILON;
 		}
+		
+		private function inertiaConverged() : Boolean
+		{
+			var distanceDiff	: Number = _newDistance - _distance;
+			var pitchDiff		: Number = _newPitch - _pitch;
+			var yawDiff			: Number = _newYaw - _yaw;
+			
+			return distanceDiff > -EPSILON && distanceDiff < EPSILON &&
+				pitchDiff > -EPSILON && pitchDiff < EPSILON &&
+				yawDiff > -EPSILON && yawDiff < EPSILON;
+		}
 
 		private function updateTargets(time : Number = 1) : void
 		{
 			var enableInertia	: Boolean	= (_inertia != 1. && _interpolationSpeed != 1.);
-			if (enableInertia || (_update && _enabled))
+			if ((enableInertia && !inertiaConverged()) || (_update && _enabled))
 			{
 				clampValues();
 				
