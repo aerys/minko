@@ -40,13 +40,13 @@ namespace minko
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
 
 		private:
-			const std::string		_name;
-			ProgramPtr				_programTemplate;
-			BindingMap				_attributeBindings;
-			BindingMap				_uniformBindings;
-			BindingMap				_stateBindings;
-			BindingMap				_macroBindings;
-            std::shared_ptr<States> _states;
+			const std::string		            _name;
+			ProgramPtr				            _programTemplate;
+			BindingMap				            _attributeBindings;
+			BindingMap				            _uniformBindings;
+			BindingMap				            _stateBindings;
+			BindingMap				            _macroBindings;
+            std::shared_ptr<States>             _states;
 
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
 
