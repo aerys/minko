@@ -49,7 +49,7 @@ std::shared_ptr<DrawCall>
 Pass::createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
 {
 	return DrawCall::create(
-        selectProgram(data),
+        selectProgram(data, rootData),
         data,
         rootData,
         _attributeBindings,
@@ -60,7 +60,7 @@ Pass::createDrawCall(std::shared_ptr<data::Container> data, std::shared_ptr<data
 }
 
 std::shared_ptr<Program>
-Pass::selectProgram(std::shared_ptr<data::Container> data)
+Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
 {
 	Program::Ptr program;
 
@@ -68,7 +68,7 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 		program = _programTemplate;
 	else
 	{
-		auto signature	= buildSignature(data);
+		auto signature	= buildSignature(data, rootData);
 
 		program = _signatureToProgram[signature];
 
@@ -111,14 +111,14 @@ Pass::selectProgram(std::shared_ptr<data::Container> data)
 }
 
 const unsigned int
-Pass::buildSignature(std::shared_ptr<data::Container> data)
+Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data::Container> rootData)
 {
 	unsigned int signature = 0;
 	unsigned int i = 0;
 
 	for (auto& macroBinding : _macroBindings)
     {
-		if (data->hasProperty(macroBinding.second))
+		if (data->hasProperty(macroBinding.second) || rootData->hasProperty(macroBinding.second))
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == 32)
