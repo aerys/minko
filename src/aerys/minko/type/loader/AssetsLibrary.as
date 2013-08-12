@@ -13,7 +13,9 @@ package aerys.minko.type.loader
 		private var _numMaterials	: uint 						= 0;
 		private var _numTextures	: uint 						= 0;
 		private var _numSymbols		: uint 						= 0;
+		private var _numLayers		: uint 						= 0;
 		
+		private var _layerList 		: Vector.<String>			= new Vector.<String>();
 		private var _geometryList	: Vector.<Geometry> 		= new Vector.<Geometry>();
 		private var _materialList	: Vector.<Material> 		= new Vector.<Material>();
 		private var _textureList	: Vector.<TextureResource> 	= new Vector.<TextureResource>();
@@ -36,6 +38,11 @@ package aerys.minko.type.loader
 		{
 			initialize();
 			initializeSignals();
+		}
+		
+		public function get numLayers() : uint
+		{
+			return _numLayers;
 		}
 		
 		public function get numSymbols() : uint
