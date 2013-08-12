@@ -109,6 +109,9 @@ namespace minko
 				return _vertexSize;
 			}
 
+			uint
+			numVertices() const;
+
 			void
 			upload();
 
