@@ -74,6 +74,10 @@ VertexBuffer::dispose()
     {
 	    _context->deleteVertexBuffer(_id);
 	    _id = -1;
+
+		_data.clear();
+		_attributes.clear();
+		_vertexSize	= 0;
     }
 }
 
@@ -108,4 +112,12 @@ VertexBuffer::attribute(const std::string& attributeName)
 			return attr;
 
 	throw std::invalid_argument("attributeName");
+}
+
+uint
+VertexBuffer::numVertices() const
+{
+	return _vertexSize > 0
+		? _data.size() / _vertexSize
+		: 0;
 }

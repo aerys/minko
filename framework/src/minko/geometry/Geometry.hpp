@@ -35,9 +35,9 @@ namespace minko
 
 		private:
 			std::shared_ptr<data::Provider>	_data;
-		protected:
 			unsigned int					_vertexSize;
-			int								_numVertices;
+			unsigned int					_numVertices;
+			unsigned int					_numVertexBuffers;
 
 		public:
 			inline
@@ -76,7 +76,10 @@ namespace minko
 			}
 
 			void
-			addVertexBuffer(std::shared_ptr<render::VertexBuffer> vertexBuffer);
+			addVertexBuffer(std::shared_ptr<render::VertexBuffer>);
+
+			void
+			removeVertexBuffer(const std::string&);
 
 			inline 
 			unsigned int
@@ -102,7 +105,8 @@ namespace minko
 			Geometry() :
 				_data(data::Provider::create()),
 				_vertexSize(0),
-				_numVertices(-1)
+				_numVertices(0),
+				_numVertexBuffers(0)
 			{
 			}
 
