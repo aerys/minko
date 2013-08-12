@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
+				->set("material.diffuseMap",		assets->texture("texture/box.png")),
 			assets->effect("effect/Basic.effect")
 		));
 		root->addChild(mesh);

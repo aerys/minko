@@ -25,12 +25,13 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-DirectionalLight::DirectionalLight()
+DirectionalLight::DirectionalLight() :
+	_direction(Vector3::create(-1.f, -1.f, -1.f)),
+	_color(Vector3::create(1.f, 1.f, 1.f)),
+	_worldDirection(Vector3::create()->copyFrom(_direction))
 {
     _data
-        ->set("light.ambient",      Vector3::create(.25f, .25f, .25f))
-		->set("light.direction",    Vector3::create(-1.f, -1.f, -1.f))
-        ->set("light.diffuse",		Vector3::create(1.f, 1.f, 1.f))
-        ->set("light.specular",		Vector3::create(1.f, 1.f, 1.f));
+		->set("light.direction",    _worldDirection)
+        ->set("light.color",			Vector3::create(1.f, 1.f, 1.f));
 }
 
