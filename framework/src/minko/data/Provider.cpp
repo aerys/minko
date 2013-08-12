@@ -22,6 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
+Provider::Provider() :
+	enable_shared_from_this(),
+	_propertyChanged(Signal<Ptr, const std::string&>::create()),
+	_propertyAdded(Signal<Ptr, const std::string&>::create()),
+	_propertyRemoved(Signal<Ptr, const std::string&>::create())
+{
+}
+
 void
 Provider::unset(const std::string& propertyName)
 {
