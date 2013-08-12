@@ -32,6 +32,6 @@ DirectionalLight::DirectionalLight() :
 {
     _data
 		->set("light.direction",    _worldDirection)
-        ->set("light.color",			Vector3::create(1.f, 1.f, 1.f));
+        ->set("light.color",			_color);
 }
 
