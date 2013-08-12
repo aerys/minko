@@ -34,6 +34,12 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
+		private:
+			std::shared_ptr<math::Vector3>	_direction;
+			std::shared_ptr<math::Vector3>	_color;
+
+			std::shared_ptr<math::Vector3>	_worldDirection;
+
 	    public:
 		    inline static
 		    Ptr
@@ -45,6 +51,20 @@ namespace minko
 
 			    return light;
 		    }
+
+			inline
+			std::shared_ptr<math::Vector3>
+			direction()
+			{
+				return _direction;
+			}
+
+			inline
+			std::shared_ptr<math::Vector3>
+			color()
+			{
+				return _color;
+			}
 
 	    private:
 		    DirectionalLight();

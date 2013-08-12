@@ -736,7 +736,13 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
     }
     else
     {
+		std::stringstream stream(source);
+		std::string line;
+
         std::cerr << glslopt_get_log(optimizedShader) << std::endl;
+		for (auto i = 0; std::getline(stream, line); ++i)
+			std::cerr << i << "\t" << line << std::endl;
+
         throw std::invalid_argument("source");
     }
     glslopt_shader_delete(optimizedShader);
@@ -847,7 +853,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
 		    	break;
 	    	case GL_FLOAT_VEC3:
 	    		inputType = ProgramInputs::Type::float3;
-	    		break;
+				std::cout << "name: " << std::string(&name[0]) << ", size: " << size << std::endl;
 	    	case GL_INT_VEC3:
 	    		inputType = ProgramInputs::Type::int3;
 	    		break;
