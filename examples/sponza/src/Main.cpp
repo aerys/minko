@@ -22,6 +22,7 @@
 #include "minko/component/SponzaLighting.hpp"
 #include "minko/component/Fire.hpp"
 
+using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
@@ -34,8 +35,8 @@ const float CAMERA_MASS			= 50.0f;
 const float CAMERA_FRICTION		= 0.6f;
 const std::string CAMERA_NAME   = "camera";
 
-bullet::ColliderComponent::Ptr	cameraColliderComp  = nullptr;
-SceneManager::Ptr				SceneManager		= nullptr;
+bullet::Collider::Ptr			cameraColliderComp  = nullptr;
+SceneManager::Ptr				sceneManager		= nullptr;
 auto			                sponzaLighting	    = SponzaLighting::create();
 auto			                mesh			    = scene::Node::create("mesh");
 auto			                group			    = scene::Node::create("group");
