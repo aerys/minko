@@ -126,17 +126,18 @@ namespace minko
 				return shared_from_this();
 			}
 
+			virtual
 			void
 			unset(const std::string& propertyName);
 
+		protected:
+			Provider();
+
+			virtual
+			void
+			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
+
 		private:
-			Provider() :
-				enable_shared_from_this(),
-				_propertyChanged(Signal<Ptr, const std::string&>::create()),
-				_propertyAdded(Signal<Ptr, const std::string&>::create()),
-				_propertyRemoved(Signal<Ptr, const std::string&>::create())
-			{
-			}
 
 			void
 			propertyWrapperInitHandler(const std::string& propertyName);
@@ -156,9 +157,6 @@ namespace minko
 			{
 				return ValueWrapper<T>::create(value);
 			}
-
-			void
-			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
 
 			template <typename P>
 			class ValueWrapper :
