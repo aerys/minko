@@ -13,7 +13,13 @@ using namespace minko;
 QMinkoEffectEditor::QMinkoEffectEditor(QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::QMinkoEffectEditor),
-	_qAddEditorSignalMapper(new QSignalMapper(this)),
+	_qVertexWebFrame(nullptr),
+	_qVertexObjectJS(nullptr),
+	_qVertexShaderSource(),
+	_qFragmentWebFrame(nullptr),
+	_qFragmentObjectJS(nullptr),
+	_qFragmentShaderSource(),
+	_qBindingsSource(),
 	_saveNeeded(false),
 	_effectParserCompleteSlot(nullptr)
 {
@@ -21,40 +27,27 @@ QMinkoEffectEditor::QMinkoEffectEditor(QWidget *parent) :
 
 	QObject::connect(_ui->effectNameLineEdit, SIGNAL(editingFinished()), this, SLOT(updateEffectName()));
 
-	setupBindingsButtons();
-
-	_qTabWidget[TAB_VERTEX_SOURCE]		= _ui->vertexTab;
-	_qTabWidget[TAB_FRAGMENT_SOURCE]	= _ui->fragmentTab;
-	_qTabWidget[TAB_BINDINGS]			= _ui->bindingsTab;
-
-	_qTabFrames[TAB_VERTEX_SOURCE]		= _ui->vertexWebView->page()->mainFrame();
-	_qTabFrames[TAB_FRAGMENT_SOURCE]	= _ui->fragmentWebView->page()->mainFrame();
-	_qTabFrames[TAB_BINDINGS]			= _ui->bindingsWebView->page()->mainFrame();
-
-	for (int tabIndex = TAB_VERTEX_SOURCE; tabIndex < NUM_TABS; ++tabIndex)
-	{
-		_qTabSources[tabIndex].clear();
-
-		_qTabJSObjects[tabIndex] = new QObject(this);
-		_qTabJSObjects[tabIndex]->setProperty("tabIndex", QVariant(tabIndex));
-	}
-
+	setupIOButtons();
 	setupSourceTabs();
 }
 
 QMinkoEffectEditor::~QMinkoEffectEditor()
 {
     delete _ui;
+	
 	if (_qIconSave)
 		delete _qIconSave;
 	if (_qIconSaveNeeded)
 		delete _qIconSaveNeeded;
 
+	delete _qVertexObjectJS;
+	delete _qFragmentObjectJS;
+
 	_effectParserCompleteSlot = nullptr;
 }
 
 void
-QMinkoEffectEditor::setupBindingsButtons()
+QMinkoEffectEditor::setupIOButtons()
 {
 	_qIconSave			= new QIcon(":/resources/icon-save-effect.png");
 	_qIconSaveNeeded	= new QIcon(":/resources/icon-save-effect-needed.png");
@@ -64,24 +57,26 @@ QMinkoEffectEditor::setupBindingsButtons()
 
 	saveNeeded(false);
 
-	QObject::connect(_ui->loadMkToolButton,		SIGNAL(clicked()),	this,	SLOT(loadMk()));
-	QObject::connect(_ui->loadEffectToolButton,	SIGNAL(clicked()),	this,	SLOT(loadEffect()));
-	QObject::connect(_ui->saveEffectToolButton,	SIGNAL(clicked()),	this,	SLOT(saveEffect()));
+	QObject::connect(_ui->loadMkToolButton,		SIGNAL(released()),	this,	SLOT(loadMk()));
+	QObject::connect(_ui->loadEffectToolButton,	SIGNAL(released()),	this,	SLOT(loadEffect()));
+	QObject::connect(_ui->saveEffectToolButton,	SIGNAL(released()),	this,	SLOT(saveEffect()));
 }
 
 void
 QMinkoEffectEditor::setupSourceTabs()
 {
-	for (int tabIndex = TAB_VERTEX_SOURCE; tabIndex < NUM_TABS; ++tabIndex)
-	{
-		_qTabFrames[tabIndex]->load(QUrl("qrc:///resources/minimal-codemirror.html"));
+	_qVertexWebFrame	= _ui->vertexWebView->page()->mainFrame();
+	_qVertexWebFrame	->load(QUrl("qrc:///resources/minimal-codemirror.html"));
+	_qVertexObjectJS	= new QObject();
+	_qVertexObjectJS	->setProperty("type", (QString)"vertexShader");
 
-		QObject::connect(_qTabFrames[tabIndex], SIGNAL(javaScriptWindowObjectCleared()), _qAddEditorSignalMapper, SLOT(map()));
+	_qFragmentWebFrame	= _ui->fragmentWebView->page()->mainFrame();
+	_qFragmentWebFrame	->load(QUrl("qrc:///resources/minimal-codemirror.html"));
+	_qFragmentObjectJS	= new QObject();
+	_qFragmentObjectJS	->setProperty("type", (QString)"fragmentShader");
 
-		_qAddEditorSignalMapper->setMapping(_qTabFrames[tabIndex], (int)tabIndex);
-	}
-
-	QObject::connect(_qAddEditorSignalMapper, SIGNAL(mapped(int)), this, SLOT(exposeQObjectsToJS(int)));
+	QObject::connect(_qVertexWebFrame,		SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(exposeQObjectsToVertexJS()));
+	QObject::connect(_qFragmentWebFrame,	SIGNAL(javaScriptWindowObjectCleared()), this, SLOT(exposeQObjectsToFragmentJS()));
 }
 
 void
@@ -147,8 +142,8 @@ QMinkoEffectEditor::effectParserCompleteHandler(file::AbstractParser::Ptr iParse
 		const std::string	vertexShaderJSCode		= "codeMirror.setValue(\"" + vertexSource + "\");";
 		const std::string	fragmentShaderJSCode	= "codeMirror.setValue(\"" + fragmentSource + "\");";
 
-		_qTabFrames[TAB_VERTEX_SOURCE]	->evaluateJavaScript(vertexShaderJSCode.c_str());
-		_qTabFrames[TAB_FRAGMENT_SOURCE]->evaluateJavaScript(fragmentShaderJSCode.c_str());
+		_qVertexWebFrame	->evaluateJavaScript(vertexShaderJSCode.c_str());
+		_qFragmentWebFrame	->evaluateJavaScript(fragmentShaderJSCode.c_str());
 
 		break;
 	}
@@ -164,21 +159,17 @@ QMinkoEffectEditor::saveEffect(const QString& filename)
 }
 
 void
-QMinkoEffectEditor::exposeQObjectsToJS(int tabIndex)
+QMinkoEffectEditor::exposeQObjectsToVertexJS()
 {
-	if (tabIndex < 0 || tabIndex >= NUM_TABS)
-		throw std::invalid_argument("tabIndex");
-
-	_qTabFrames[tabIndex]->addToJavaScriptWindowObject("qMinkoEffectEditor", this);
-	_qTabFrames[tabIndex]->addToJavaScriptWindowObject("qTabJSObject", _qTabJSObjects[tabIndex]);
+	_ui->vertexWebView->page()->mainFrame()->addToJavaScriptWindowObject("qMinkoEffectEditor", this);
+	_ui->vertexWebView->page()->mainFrame()->addToJavaScriptWindowObject("qObjectID", _qVertexObjectJS);
 }
 
 void
-QMinkoEffectEditor::tabModified(int tabIndex, bool value)
+QMinkoEffectEditor::exposeQObjectsToFragmentJS()
 {
-	const QString& tabName	= _qTabWidget[tabIndex]->objectName();
-	std::cout << "tabname[" << tabIndex << "] = " << qPrintable(tabName) << std::endl;
-
+	_ui->fragmentWebView->page()->mainFrame()->addToJavaScriptWindowObject("qMinkoEffectEditor", this);
+	_ui->fragmentWebView->page()->mainFrame()->addToJavaScriptWindowObject("qObjectID", _qFragmentObjectJS);
 }
 
 void
@@ -193,10 +184,10 @@ QMinkoEffectEditor::createEffect(std::string& effect) const
 {
 	effect.clear();
 
-	const std::string effectName	(_ui->effectNameLineEdit->text()	.toUtf8().constData());
-	const std::string srcVertex		(_qTabSources[TAB_VERTEX_SOURCE]	.toUtf8().constData());
-	const std::string srcFragment	(_qTabSources[TAB_FRAGMENT_SOURCE]	.toUtf8().constData());
-	const std::string srcBindings	(_qTabSources[TAB_BINDINGS]			.toUtf8().constData());
+	const std::string& effectName	(_ui->effectNameLineEdit->text()	.toUtf8().constData());
+	const std::string& srcVertex	(_qVertexShaderSource				.toUtf8().constData());
+	const std::string& srcFragment	(_qFragmentShaderSource				.toUtf8().constData());
+	const std::string& srcBindings	(_qBindingsSource					.toUtf8().constData());
 
 	effect = "effect name = " + effectName + "\n"
 		+ "bindings = \n" + srcBindings + "\n"
@@ -223,13 +214,14 @@ QMinkoEffectEditor::updateEffectName()
 
 /*slot*/
 void
-QMinkoEffectEditor::updateSource(int tabIndex)
+QMinkoEffectEditor::updateSource(const QString& type)
 {
-	if (tabIndex < 0 || tabIndex >= NUM_TABS)
-		throw std::invalid_argument("tabIndex");
-
-	_qTabSources[tabIndex] = _qTabFrames[tabIndex]->evaluateJavaScript("codeMirror.getValue();").toString();
-	tabModified(tabIndex, true);
+	if (type == QString("vertexShader"))
+		_qVertexShaderSource	= _qVertexWebFrame->evaluateJavaScript("codeMirror.getValue();").toString();
+	else if (type == QString("fragmentShader"))
+		_qFragmentShaderSource	= _qFragmentWebFrame->evaluateJavaScript("codeMirror.getValue();").toString();
+	else
+		throw std::invalid_argument("type");
 
 	saveNeeded(true);
 	displayEffect();
@@ -239,12 +231,7 @@ QMinkoEffectEditor::updateSource(int tabIndex)
 void
 QMinkoEffectEditor::loadMk()
 {
-	const QString& filename = QFileDialog::getOpenFileName(
-		this,
-		"Load *.mk file",
-		QString(),
-		"MK files (*.mk)"
-	);
+	const QString& filename = QFileDialog::getOpenFileName(this, tr("Load *.mk file"), QString(), "MK files (*.mk)");
 	if (filename.isEmpty())
 		return;
 
@@ -255,12 +242,7 @@ QMinkoEffectEditor::loadMk()
 void
 QMinkoEffectEditor::loadEffect()
 {
-	const QString& filename = QFileDialog::getOpenFileName(
-		this,
-		"Load *.effect file",
-		QString(),
-		"Effect files (*.effect)"
-	);
+	const QString& filename = QFileDialog::getOpenFileName(this, tr("Load *.effect file"), QString(), "Effect files (*.effect)");
 	if (filename.isEmpty())
 		return;
 
@@ -271,12 +253,7 @@ QMinkoEffectEditor::loadEffect()
 void
 QMinkoEffectEditor::saveEffect()
 {
-	const QString& filename = QFileDialog::getSaveFileName(
-		this,
-		"Save *.effect file",
-		QString(),
-		"Effect files (*.effect)"
-	);
+	const QString& filename = QFileDialog::getSaveFileName(this, tr("Save *.effect file"), QString(), "Effect files (*.effect)");
 	if (filename.isEmpty())
 		return;
 
