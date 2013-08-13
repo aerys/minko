@@ -110,10 +110,9 @@ project "minko-effect-editor"
 	generateUI("src/ui/QMinkoBindingsWidget.ui", outDirUic)
 	generateUI("src/ui/QMinkoEffectEditor.ui", outDirUic)
 	
-	--generateMOC("src/openglwindow.h", outDirMoc)
-	--generateMOC("src/QOpenGLWindow.hpp", outDirMoc)
 	generateMOC("src/QMinkoGLWidget.hpp", outDirMoc)
 	generateMOC("src/QMinkoEffectEditor.hpp", outDirMoc)
+	generateMOC("src/QMinkoBindingsWidget.hpp", outDirMoc)
 	
 	generateRCC("src/qrc/QMinkoEffectEditor.qrc", outDirRcc)
 	-- /QT5
