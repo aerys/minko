@@ -107,8 +107,8 @@ project "minko-effect-editor"
 		end
 	end
 	
-	generateUI("src/ui/QMinkoEffectEditor.ui", outDirUic)
 	generateUI("src/ui/QMinkoBindingsWidget.ui", outDirUic)
+	generateUI("src/ui/QMinkoEffectEditor.ui", outDirUic)
 	
 	--generateMOC("src/openglwindow.h", outDirMoc)
 	--generateMOC("src/QOpenGLWindow.hpp", outDirMoc)
