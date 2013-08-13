@@ -16,25 +16,21 @@ class QMinkoEffectEditor :
 {
     Q_OBJECT
     
-	public:
-		typedef enum
-		{
-			TAB_VERTEX_SOURCE = 0,
-			TAB_FRAGMENT_SOURCE,
-			TAB_BINDINGS,
-			NUM_TABS
-		}
-		TabType;
-
 	private:
 		Ui::QMinkoEffectEditor	*_ui;
-		QWidget					*_qTabWidget	[NUM_TABS];
-		QWebFrame				*_qTabFrames	[NUM_TABS];
-		QObject					*_qTabJSObjects	[NUM_TABS];
-		QString					_qTabSources	[NUM_TABS];
-		QSignalMapper			*_qAddEditorSignalMapper;
 
-		QIcon					*_qIconSave, *_qIconSaveNeeded;
+		QWebFrame				*_qVertexWebFrame;
+		QObject					*_qVertexObjectJS;
+		QString					_qVertexShaderSource;
+
+		QWebFrame				*_qFragmentWebFrame;
+		QObject					*_qFragmentObjectJS;
+		QString					_qFragmentShaderSource;
+
+		QString					_qBindingsSource;
+
+		QIcon					*_qIconSave;
+		QIcon					*_qIconSaveNeeded;
 		bool					_saveNeeded;
 
 		minko::Signal<minko::file::AbstractParser::Ptr>::Slot	_effectParserCompleteSlot;
@@ -47,14 +43,17 @@ class QMinkoEffectEditor :
 
 	public slots:
 		void
-		updateSource(int tabIndex);
+		updateSource(const QString&);
 
 	private slots:
 		void
 		updateEffectName();
 
 		void
-		exposeQObjectsToJS(int tabIndex);
+		exposeQObjectsToVertexJS();
+
+		void
+		exposeQObjectsToFragmentJS();
 
 		void
 		loadMk();
@@ -76,7 +75,7 @@ class QMinkoEffectEditor :
 		setupSourceTabs();
 
 		void
-		setupBindingsButtons();
+		setupIOButtons();
 
 		void
 		loadMk(const QString&);
@@ -86,22 +85,7 @@ class QMinkoEffectEditor :
 
 		void
 		effectParserCompleteHandler(minko::file::AbstractParser::Ptr);
-		
-		static
-		void 
-		escapeSpecialCharacters(const std::string&, std::string&);
-
-		static
-		unsigned int countLeftmostExtraTabs(const std::string&);
-
-		static
-		void 
-		removeLeftmostExtraTabs(const std::string&, std::string&);
-
-		static
-		void
-		fix(const std::string&, std::string&);
-
+	
 		void
 		saveEffect(const QString&);
 
@@ -112,8 +96,21 @@ class QMinkoEffectEditor :
 		displayEffect() const;
 
 		void
-		tabModified(int tabIndex, bool);
-
-		void
 		saveNeeded(bool);
+
+		static
+		void 
+		escapeSpecialCharacters(const std::string&, std::string&);
+
+		static
+		unsigned int 
+		countLeftmostExtraTabs(const std::string&);
+
+		static
+		void 
+		removeLeftmostExtraTabs(const std::string&, std::string&);
+
+		static
+		void
+		fix(const std::string&, std::string&);
 };
