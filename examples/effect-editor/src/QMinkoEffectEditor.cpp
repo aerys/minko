@@ -21,7 +21,7 @@ QMinkoEffectEditor::QMinkoEffectEditor(QWidget *parent) :
 
 	QObject::connect(_ui->effectNameLineEdit, SIGNAL(editingFinished()), this, SLOT(updateEffectName()));
 
-	setupToolButtons();
+	setupBindingsButtons();
 
 	_qTabWidget[TAB_VERTEX_SOURCE]		= _ui->vertexTab;
 	_qTabWidget[TAB_FRAGMENT_SOURCE]	= _ui->fragmentTab;
@@ -54,7 +54,7 @@ QMinkoEffectEditor::~QMinkoEffectEditor()
 }
 
 void
-QMinkoEffectEditor::setupToolButtons()
+QMinkoEffectEditor::setupBindingsButtons()
 {
 	_qIconSave			= new QIcon(":/resources/icon-save-effect.png");
 	_qIconSaveNeeded	= new QIcon(":/resources/icon-save-effect-needed.png");
@@ -76,17 +76,12 @@ QMinkoEffectEditor::setupSourceTabs()
 	{
 		_qTabFrames[tabIndex]->load(QUrl("qrc:///resources/minimal-codemirror.html"));
 
-		QObject::connect(
-			_qTabFrames[tabIndex], 
-			SIGNAL(javaScriptWindowObjectCleared()),
-			_qAddEditorSignalMapper,
-			SLOT(map())
-		);
+		QObject::connect(_qTabFrames[tabIndex], SIGNAL(javaScriptWindowObjectCleared()), _qAddEditorSignalMapper, SLOT(map()));
 
 		_qAddEditorSignalMapper->setMapping(_qTabFrames[tabIndex], (int)tabIndex);
-
-		QObject::connect(_qAddEditorSignalMapper, SIGNAL(mapped(int)), this, SLOT(exposeQObjectsToJS(int)));
 	}
+
+	QObject::connect(_qAddEditorSignalMapper, SIGNAL(mapped(int)), this, SLOT(exposeQObjectsToJS(int)));
 }
 
 void
