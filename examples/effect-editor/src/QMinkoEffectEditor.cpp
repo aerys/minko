@@ -301,7 +301,7 @@ void QMinkoEffectEditor::fix(const std::string& str,
 void QMinkoEffectEditor::removeLeftmostExtraTabs(const std::string& str, 
 												 std::string& res)
 {
-	int numTabs	= countLeftmostExtraTabs(str);
+	unsigned int numTabs = countLeftmostExtraTabs(str);
 
 	res.clear();
 	res.reserve(str.size());
@@ -360,8 +360,7 @@ unsigned int QMinkoEffectEditor::countLeftmostExtraTabs(const std::string& str)
 		if (actualLine && (minNumTabs < 0 || numTabs < minNumTabs))
 			minNumTabs	= numTabs;
 	}
-	std::cout << "min num start tabs = " << minNumTabs << std::endl;
-	return minNumTabs;
+	return minNumTabs < 0 ? 0 : minNumTabs;
 }
 
 /*static*/
