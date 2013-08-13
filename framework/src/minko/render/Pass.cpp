@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Pass.hpp"
 
 #include "minko/data/Container.hpp"
+#include "minko/data/Binding.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -30,10 +31,10 @@ using namespace minko::render;
 
 Pass::Pass(const std::string&				name,
 		   std::shared_ptr<render::Program>	program,
-		   BindingMap&						attributeBindings,
-		   BindingMap&						uniformBindings,
-		   BindingMap&						stateBindings,
-		   BindingMap&						macroBindings,
+		   data::BindingMap&				attributeBindings,
+		   data::BindingMap&				uniformBindings,
+		   data::BindingMap&				stateBindings,
+		   data::BindingMap&				macroBindings,
            std::shared_ptr<States>          states) :
 	_name(name),
 	_programTemplate(program),
@@ -118,7 +119,13 @@ Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data
 
 	for (auto& macroBinding : _macroBindings)
     {
-		if (data->hasProperty(macroBinding.second) || rootData->hasProperty(macroBinding.second))
+        auto flags = macroBinding.second->flags();
+        auto& propertyName = macroBinding.second->propertyName();
+
+        if (!(flags & data::Binding::Flag::PROPERTY_EXISTS))
+            throw;
+
+        if (data->hasProperty(propertyName) || rootData->hasProperty(propertyName))
 		{
 			// WARNING: we do not support more than 32 macro bindings
 			if (i == 32)
