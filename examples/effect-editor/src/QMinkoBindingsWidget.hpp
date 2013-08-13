@@ -43,6 +43,18 @@ public:
 
 	~QMinkoBindingsWidget();
     
+	void
+	addBinding(BindingType, const std::string& name, const std::string& value);
+
+	bool
+	bindingExists(BindingType, const std::string& name) const;
+
+	const std::string&
+	binding(BindingType, const std::string& name) const;
+
+	void
+	removeBinding(BindingType, const std::string& name);
+
 private:
 
 	void
@@ -51,14 +63,28 @@ private:
 	void
 	setupBindingsTables();
 
+signals:
+	void
+	bindingsChanged(const QString&);
+
 private slots:
 	void
-	addBinding(int bindType);
+	addBinding(int);
 
 	void
-	removeBinding(int bindType);
+	removeBinding(int);
+
+	void
+	addAttributeBindingAt(int row, int column);
+
+	void
+	addUniformBindingAt(int row, int column);
+
+	void
+	addStateBindingAt(int row, int column);
 
 private:
-	bool
-	bindingExists(int bindType, const std::string&) const;
+
+	void
+	addBindingAt(BindingType, int row, int column);
 };
