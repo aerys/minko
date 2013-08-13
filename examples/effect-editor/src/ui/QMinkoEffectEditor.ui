@@ -133,7 +133,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="vertexTab">
          <attribute name="title">
@@ -173,13 +173,7 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="0">
-           <widget class="QWebView" name="bindingsWebView">
-            <property name="url">
-             <url>
-              <string>about:blank</string>
-             </url>
-            </property>
-           </widget>
+           <widget class="QMinkoBindingsWidget" name="minkoBindingsWidget" native="true"/>
           </item>
          </layout>
         </widget>
@@ -232,6 +226,12 @@
    <class>QMinkoGLWidget</class>
    <extends>QWidget</extends>
    <header>QMinkoGLWidget.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QMinkoBindingsWidget</class>
+   <extends>QWidget</extends>
+   <header>QMinkoBindingsWidget.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
