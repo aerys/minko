@@ -9,12 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="34"
+   height="34"
    id="svg2"
    version="1.1"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="simple-icons.svg">
+   sodipodi:docname="simple-icons.svg"
+   inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-load-mk.png"
+   inkscape:export-xdpi="169.41"
+   inkscape:export-ydpi="169.41">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -31,6 +34,20 @@
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_x="0 : 0.5 : 1"
        sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2856"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:perspective
+       id="perspective2874"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -40,10 +57,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="6.772414"
-     inkscape:cx="58.413823"
-     inkscape:cy="954.96225"
+     inkscape:cx="35.9161"
+     inkscape:cy="16.194762"
      inkscape:document-units="px"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer6"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -60,7 +77,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -68,12 +85,14 @@
      inkscape:label="icon-load-mk"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:none">
+     style="display:inline"
+     transform="translate(0,-1018.3622)">
     <g
        id="g3621"
        inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-load-mk.png"
        inkscape:export-xdpi="180"
-       inkscape:export-ydpi="180">
+       inkscape:export-ydpi="180"
+       transform="translate(-19.594688,929.33693)">
       <rect
          ry="1.9999784"
          rx="2"
@@ -111,13 +130,15 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="icon-load-effect"
-     style="display:none">
+     style="display:none"
+     transform="translate(0,-1018.3622)">
     <g
        style="display:inline"
        id="g3627"
        inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-load-effect.png"
        inkscape:export-xdpi="180"
-       inkscape:export-ydpi="180">
+       inkscape:export-ydpi="180"
+       transform="translate(-19.594688,929.33693)">
       <rect
          transform="matrix(-1,0,0.13509655,0.99083244,0,0)"
          y="95.969414"
@@ -155,56 +176,171 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="icon-save-effect"
-     style="display:none">
+     style="display:none"
+     transform="translate(0,-1018.3622)">
     <g
-       id="g2830">
+       id="g2857"
+       transform="translate(-12.618126,938.05701)">
       <g
          inkscape:export-ydpi="180"
          inkscape:export-xdpi="180"
          inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
-         id="g3672">
-        <rect
-           style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-           id="rect3644"
-           width="30"
-           height="30"
-           x="14.618126"
-           y="82.305191"
-           rx="2"
-           ry="1.9999783" />
-        <path
-           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
-           d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
-           id="path3668" />
+         id="g2830">
+        <g
+           id="g3672"
+           inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+           inkscape:export-xdpi="180"
+           inkscape:export-ydpi="180">
+          <rect
+             ry="1.9999783"
+             rx="2"
+             y="82.305191"
+             x="14.618126"
+             height="30"
+             width="30"
+             id="rect3644"
+             style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+          <path
+             id="path3668"
+             d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
+             style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans" />
+        </g>
       </g>
+      <text
+         inkscape:export-ydpi="180"
+         inkscape:export-xdpi="180"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+         sodipodi:linespacing="125%"
+         id="text3633-1"
+         y="106.69337"
+         x="24.314003"
+         style="font-size:12.66804123px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Berlin Sans FB Demi;-inkscape-font-specification:Berlin Sans FB Demi Bold"
+         xml:space="preserve"><tspan
+           y="106.69337"
+           x="24.314003"
+           id="tspan3635-7"
+           sodipodi:role="line">fx</tspan></text>
     </g>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
-     inkscape:label="icon-save-effect-needed">
+     inkscape:label="icon-save-effect-needed"
+     style="display:none"
+     transform="translate(0,-1018.3622)">
     <g
-       style="display:inline"
-       id="g2836">
+       id="g2849"
+       transform="translate(-12.618126,938.05701)">
       <g
-         id="g2838"
-         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+         inkscape:export-ydpi="180"
          inkscape:export-xdpi="180"
-         inkscape:export-ydpi="180">
-        <rect
-           ry="1.9999783"
-           rx="2"
-           y="82.305191"
-           x="14.618126"
-           height="30"
-           width="30"
-           id="rect2840"
-           style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-        <path
-           id="path2842"
-           d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
-           style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans" />
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect-needed.png"
+         id="g2836"
+         style="display:inline">
+        <g
+           inkscape:export-ydpi="180"
+           inkscape:export-xdpi="180"
+           inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect.png"
+           id="g2838">
+          <rect
+             style="color:#000000;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+             id="rect2840"
+             width="30"
+             height="30"
+             x="14.618126"
+             y="82.305191"
+             rx="2"
+             ry="1.9999783" />
+          <path
+             style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
+             d="m 23.65625,81.3125 c -1.644697,0 -3,1.355303 -3,3 l 0,7.0625 c 0,1.644697 1.355303,3 3,3 l 11.9375,0 c 1.644697,0 3,-1.355303 3,-3 l 0,-7.0625 c 0,-1.644697 -1.355303,-3 -3,-3 l -11.9375,0 z m 9.25,1.96875 a 1.0001,1.0001 0 0 1 0.1875,0 l 2.1875,0 a 1.0001,1.0001 0 0 1 1,1 l 0,7.21875 a 1.0001,1.0001 0 0 1 -1,1 l -2.1875,0 a 1.0001,1.0001 0 0 1 -1,-1 l 0,-7.21875 a 1.0001,1.0001 0 0 1 0.8125,-1 z"
+             id="path2842" />
+        </g>
       </g>
+      <text
+         xml:space="preserve"
+         style="font-size:12.66804123px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Berlin Sans FB Demi;-inkscape-font-specification:Berlin Sans FB Demi Bold"
+         x="24.314003"
+         y="106.69337"
+         id="text2873"
+         sodipodi:linespacing="125%"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect-needed.png"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180"><tspan
+           sodipodi:role="line"
+           id="tspan2875"
+           x="24.314003"
+           y="106.69337">fx</tspan></text>
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="icon-add"
+     style="display:none"
+     transform="translate(0,-6)">
+    <g
+       id="g2893"
+       transform="matrix(1.1531531,0,0,1.1531531,-6.063062,-0.063062)">
+      <path
+         transform="matrix(1.0419099,0,0,1.0419099,-2.3846161,-0.06101042)"
+         d="m 33.961302,19.254074 a 12.477087,12.477087 0 1 1 -24.9541742,0 12.477087,12.477087 0 1 1 24.9541742,0 z"
+         sodipodi:ry="12.477087"
+         sodipodi:rx="12.477087"
+         sodipodi:cy="19.254074"
+         sodipodi:cx="21.484215"
+         id="path2891"
+         style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1.66461122;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         sodipodi:type="arc" />
+      <text
+         inkscape:export-ydpi="180"
+         inkscape:export-xdpi="180"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect-needed.png"
+         sodipodi:linespacing="125%"
+         id="text2873-0"
+         y="28.374422"
+         x="13.287837"
+         style="font-size:28.72833824px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Berlin Sans FB Demi;-inkscape-font-specification:Berlin Sans FB Demi Bold"
+         xml:space="preserve"><tspan
+           y="28.374422"
+           x="13.287837"
+           id="tspan2875-7"
+           sodipodi:role="line">+</tspan></text>
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="icon-remove"
+     style="display:none">
+    <g
+       transform="matrix(1.1531531,0,0,1.1531531,-6.063062,-6.063062)"
+       style="display:inline"
+       id="g2868">
+      <path
+         sodipodi:type="arc"
+         style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1.66461122;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         id="path2870"
+         sodipodi:cx="21.484215"
+         sodipodi:cy="19.254074"
+         sodipodi:rx="12.477087"
+         sodipodi:ry="12.477087"
+         d="m 33.961302,19.254074 a 12.477087,12.477087 0 1 1 -24.9541742,0 12.477087,12.477087 0 1 1 24.9541742,0 z"
+         transform="matrix(1.0419099,0,0,1.0419099,-2.3846161,-0.06101042)" />
+      <text
+         xml:space="preserve"
+         style="font-size:28.72833824px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;display:inline;font-family:Berlin Sans FB Demi;-inkscape-font-specification:Berlin Sans FB Demi Bold"
+         x="13.287837"
+         y="28.374422"
+         id="text2872"
+         sodipodi:linespacing="125%"
+         inkscape:export-filename="D:\Landes\minko-cpp\examples\effect-editor\src\qrc\resources\icon-save-effect-needed.png"
+         inkscape:export-xdpi="180"
+         inkscape:export-ydpi="180"><tspan
+           sodipodi:role="line"
+           id="tspan2874"
+           x="13.287837"
+           y="28.374422">-</tspan></text>
     </g>
   </g>
 </svg>
