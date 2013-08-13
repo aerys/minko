@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/data/Binding.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
 using namespace minko;
@@ -41,11 +42,11 @@ using namespace minko::render;
 
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 
-DrawCall::DrawCall(Program::Ptr											program,
-				   const std::unordered_map<std::string, std::string>&	attributeBindings,
-				   const std::unordered_map<std::string, std::string>&	uniformBindings,
-				   const std::unordered_map<std::string, std::string>&	stateBindings,
-                   States::Ptr                                          states) :
+DrawCall::DrawCall(Program::Ptr				program,
+                   const data::BindingMap&	attributeBindings,
+				   const data::BindingMap&	uniformBindings,
+				   const data::BindingMap&	stateBindings,
+                   States::Ptr              states) :
 	_program(program),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
@@ -88,8 +89,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 
 		if (type == ProgramInputs::Type::attribute)
 		{
-			auto name	= _attributeBindings.count(inputName)
-				? _attributeBindings.at(inputName)
+			auto& name	= _attributeBindings.count(inputName)
+				? _attributeBindings.at(inputName)->propertyName()
 				: inputName;
 
 			if (!dataHasProperty(name))
@@ -108,8 +109,8 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 		}
 		else
 		{
-			auto name	= _uniformBindings.count(inputName)
-				? _uniformBindings.at(inputName)
+			auto& name	= _uniformBindings.count(inputName)
+				? _uniformBindings.at(inputName)->propertyName()
 				: inputName;
 
 			if (!dataHasProperty(name))
@@ -150,26 +151,28 @@ void
 DrawCall::bindStates()
 {
 	_blendMode = getDataProperty<Blending::Mode>(
-        _stateBindings.count("blendMode") ? _stateBindings.at("blendMode") : "blendMode",
+        _stateBindings.count("blendMode") ? _stateBindings.at("blendMode")->propertyName() : "blendMode",
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
 	_depthMask = getDataProperty<bool>(
-		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
+		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask")->propertyName() : "depthMask",
         _states->depthMask()
 	);
 	_depthFunc = getDataProperty<CompareMode>(
-		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
+		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc")->propertyName() : "depthFunc",
         _states->depthFun()
 	);
 
     _triangleCulling = getDataProperty<TriangleCulling>(
-		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
+		_stateBindings.count("triangleCulling")
+            ? _stateBindings.at("triangleCulling")->propertyName()
+            : "triangleCulling",
         _states->triangleCulling()
 	);
 
     _target = getDataProperty<Texture::Ptr>(
-    	_stateBindings.count("target") ? _stateBindings.at("target") : "target",
+    	_stateBindings.count("target") ? _stateBindings.at("target")->propertyName() : "target",
         _states->target()
     );
 	
