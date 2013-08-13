@@ -7,6 +7,7 @@
 
 #include "QMinkoGLWidget.hpp"
 #include "QMinkoEffectEditor.hpp"
+#include "QMinkoBindingsWidget.hpp"
 
 int 
 main(int argc, char **argv)
@@ -14,7 +15,7 @@ main(int argc, char **argv)
 	Q_INIT_RESOURCE(QMinkoEffectEditor);
 
 	QApplication app(argc, argv);
-	QMinkoEffectEditor window;
+	QMinkoBindingsWidget window;
 	window.show();	
 
 	return app.exec();
