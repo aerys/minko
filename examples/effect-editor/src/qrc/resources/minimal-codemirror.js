@@ -22,7 +22,7 @@ codeMirror.on("change", function()
   
 function updatePreview()
 {
-	qMinkoEffectEditor.updateSource(qTabJSObject["tabIndex"]);
+	qMinkoEffectEditor.updateSource(qObjectID["type"]);
 }
 setTimeout(updatePreview, 300);
 
