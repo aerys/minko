@@ -76,7 +76,7 @@ class QMinkoEffectEditor :
 		setupSourceTabs();
 
 		void
-		setupToolButtons();
+		setupBindingsButtons();
 
 		void
 		loadMk(const QString&);
