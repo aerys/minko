@@ -15,5 +15,7 @@
 		<file>resources/icon-load-effect.png</file>
 		<file>resources/icon-save-effect.png</file>
 		<file>resources/icon-save-effect-needed.png</file>
+		<file>resources/icon-add.png</file>
+		<file>resources/icon-remove.png</file>
 	</qresource>
 </RCC>
