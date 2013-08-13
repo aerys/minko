@@ -25,3 +25,5 @@ function updatePreview()
 	qMinkoEffectEditor.updateSource(qTabJSObject["tabIndex"]);
 }
 setTimeout(updatePreview, 300);
+
+codeMirror.setSize("100%", "100%");
