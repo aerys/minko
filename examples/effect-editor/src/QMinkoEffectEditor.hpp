@@ -37,6 +37,8 @@ class QMinkoEffectEditor :
 		QIcon					*_qIconSave, *_qIconSaveNeeded;
 		bool					_saveNeeded;
 
+		minko::Signal<minko::file::AbstractParser::Ptr>::Slot	_effectParserCompleteSlot;
+
 	public:
 	    explicit 
 		QMinkoEffectEditor(QWidget *parent = 0);
@@ -63,6 +65,10 @@ class QMinkoEffectEditor :
 		void
 		saveEffect();
 
+	protected:
+		void 
+		resizeEvent(QResizeEvent);
+
 	private:
 		DISALLOW_COPY_AND_ASSIGN(QMinkoEffectEditor);
 
@@ -77,6 +83,24 @@ class QMinkoEffectEditor :
 
 		void
 		loadEffect(const QString&);
+
+		void
+		effectParserCompleteHandler(minko::file::AbstractParser::Ptr);
+		
+		static
+		void 
+		escapeSpecialCharacters(const std::string&, std::string&);
+
+		static
+		unsigned int countLeftmostExtraTabs(const std::string&);
+
+		static
+		void 
+		removeLeftmostExtraTabs(const std::string&, std::string&);
+
+		static
+		void
+		fix(const std::string&, std::string&);
 
 		void
 		saveEffect(const QString&);
