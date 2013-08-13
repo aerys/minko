@@ -15,7 +15,7 @@ main(int argc, char **argv)
 	Q_INIT_RESOURCE(QMinkoEffectEditor);
 
 	QApplication app(argc, argv);
-	QMinkoBindingsWidget window;
+	QMinkoEffectEditor window;
 	window.show();	
 
 	return app.exec();
