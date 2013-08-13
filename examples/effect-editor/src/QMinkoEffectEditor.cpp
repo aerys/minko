@@ -5,11 +5,17 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWebKitWidgets/QWebFrame>
 
+#include <minko/file/Loader.hpp>
+#include <minko/file/EffectParser.hpp>
+
+using namespace minko;
+
 QMinkoEffectEditor::QMinkoEffectEditor(QWidget *parent) :
     QMainWindow(parent),
     _ui(new Ui::QMinkoEffectEditor),
 	_qAddEditorSignalMapper(new QSignalMapper(this)),
-	_saveNeeded(false)
+	_saveNeeded(false),
+	_effectParserCompleteSlot(nullptr)
 {
     _ui->setupUi(this);
 
@@ -43,6 +49,8 @@ QMinkoEffectEditor::~QMinkoEffectEditor()
 		delete _qIconSave;
 	if (_qIconSaveNeeded)
 		delete _qIconSaveNeeded;
+
+	_effectParserCompleteSlot = nullptr;
 }
 
 void
@@ -91,7 +99,67 @@ void
 QMinkoEffectEditor::loadEffect(const QString& filename)
 {
 	std::cout << "load effect file: " << qPrintable(filename) << std::endl;
+
+	auto sceneManager			= _ui->minkoWidget->sceneManager();
+	auto loader					= file::Loader::create();
+	auto effectParser			= file::EffectParser::create();
+	_effectParserCompleteSlot	= effectParser->complete()->connect(std::bind(
+		&QMinkoEffectEditor::effectParserCompleteHandler,
+		this,
+		std::placeholders::_1
+	));
+
+	loader->load(
+		filename.toUtf8().constData(), 
+		sceneManager->assets()->defaultOptions()
+	);
+
+	effectParser->parse(
+		loader->filename(),
+		loader->resolvedFilename(),
+		sceneManager->assets()->defaultOptions(),
+		loader->data(),
+		sceneManager->assets()
+	);
 }
+
+void
+QMinkoEffectEditor::effectParserCompleteHandler(file::AbstractParser::Ptr iParser)
+{
+	file::EffectParser::Ptr parser = std::dynamic_pointer_cast<file::EffectParser>(iParser);
+	if (parser == nullptr)
+		return;
+
+	// update ui to account for the newly-parsed effect file
+	_ui->effectNameLineEdit->setText(parser->effectName().c_str());
+
+	auto effect = parser->effect();
+	auto passes = effect->passes();
+
+	if (passes.size() > 1)
+		std::cerr << "WARNING: only one pass shaders are handled for the time being." << std::endl;
+
+	for (unsigned int i = 0; i < passes.size(); ++i)
+	{
+		auto pass = passes[i];
+		
+		std::string			vertexSource;
+		std::string			fragmentSource;
+
+		fix(pass->program()->vertexShader()->source(),		vertexSource);
+		fix(pass->program()->fragmentShader()->source(),	fragmentSource);
+
+		const std::string	vertexShaderJSCode		= "codeMirror.setValue(\"" + vertexSource + "\");";
+		const std::string	fragmentShaderJSCode	= "codeMirror.setValue(\"" + fragmentSource + "\");";
+
+		_qTabFrames[TAB_VERTEX_SOURCE]	->evaluateJavaScript(vertexShaderJSCode.c_str());
+		_qTabFrames[TAB_FRAGMENT_SOURCE]->evaluateJavaScript(fragmentShaderJSCode.c_str());
+
+		break;
+	}
+}
+
+
 
 void
 QMinkoEffectEditor::saveEffect(const QString& filename)
@@ -165,7 +233,7 @@ QMinkoEffectEditor::updateSource(int tabIndex)
 	if (tabIndex < 0 || tabIndex >= NUM_TABS)
 		throw std::invalid_argument("tabIndex");
 
-	_qTabSources[tabIndex] = _qTabFrames[TAB_VERTEX_SOURCE]->evaluateJavaScript("codeMirror.getValue()").toString();
+	_qTabSources[tabIndex] = _qTabFrames[tabIndex]->evaluateJavaScript("codeMirror.getValue();").toString();
 	tabModified(tabIndex, true);
 
 	saveNeeded(true);
@@ -218,4 +286,133 @@ QMinkoEffectEditor::saveEffect()
 		return;
 
 	saveEffect(filename);
+}
+
+/*static*/
+void QMinkoEffectEditor::fix(const std::string& str,
+							 std::string& res)
+{
+	std::string temp;
+	removeLeftmostExtraTabs(str, temp);
+	escapeSpecialCharacters(temp, res);
+}
+
+/*static*/
+void QMinkoEffectEditor::removeLeftmostExtraTabs(const std::string& str, 
+												 std::string& res)
+{
+	int numTabs	= countLeftmostExtraTabs(str);
+
+	res.clear();
+	res.reserve(str.size());
+	if (numTabs > 0)
+	{
+		unsigned int i = 0;
+		while (i < str.size())
+		{
+			bool seqFound = true;
+
+			if (i > 0)
+				seqFound	= (str[i] == L'\n');
+			unsigned int offset = i == 0 ? 0 : 1;
+			for (unsigned int t = 0; t < numTabs; ++t)
+			{
+				const unsigned int j = i + offset + t;
+				seqFound	= seqFound && (j < str.size() && str[j] == L'\t');
+			}
+			
+			if (seqFound)
+				i += offset + numTabs;
+			else
+			{
+				res.push_back(str[i]);
+				++i;
+			}
+		}
+	}
+}
+
+/*static*/
+unsigned int QMinkoEffectEditor::countLeftmostExtraTabs(const std::string& str)
+{
+	int				minNumTabs	= -1;
+	unsigned int	i			= 0;
+	while (i < str.size())
+	{
+		bool actualLine	= false;
+		while (i < str.size() && (str[i] == L'\r' || str[i] == L'\n'))
+			++i;
+
+		int numTabs = 0;
+		while (i < str.size() && str[i++] == L'\t')
+			++numTabs;
+
+		while (i < str.size())
+		{
+			const bool doBreak = str[i] == L'\n';
+			if (doBreak)
+				break;
+			else if (isgraph(str[i]))
+				actualLine	= true;
+			++i;
+		}
+
+		if (actualLine && (minNumTabs < 0 || numTabs < minNumTabs))
+			minNumTabs	= numTabs;
+	}
+	std::cout << "min num start tabs = " << minNumTabs << std::endl;
+	return minNumTabs;
+}
+
+/*static*/
+void QMinkoEffectEditor::escapeSpecialCharacters(const std::string& str, 
+												std::string& res)
+{
+	res.clear();
+	res.reserve(str.size());
+	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
+	{
+		switch(*it)
+		{
+		case L'\'':
+			res.append("\\\'");
+			break;
+		case L'\"':
+			res.append("\\\"");
+			break;
+		case L'\?':
+			res.append("\\\?");
+			break;
+		case L'\\':
+			res.append("\\\\");
+			break;
+		case L'\0':
+			res.append("\\0");
+			break;
+		case L'\a':
+			res.append("\\a");
+			break;
+		case L'\b':
+			res.append("\\b");
+			break;
+		case L'\f':
+			res.append("\\f");
+			break;
+		case L'\n':
+			res.append("\\n");
+			break;
+		case L'\r':
+			res.append("\\r");
+			break;
+		case L'\t':
+			res.append("\\t");
+			break;
+		case L'\v':
+			res.append("\\v");
+			break;
+		default:
+			res.push_back(*it);
+			break;
+		}
+	}
 }

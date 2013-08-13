@@ -43,6 +43,20 @@ class QMinkoGLWidget :
 		{
 		}
 
+		inline
+		AbstractContextPtr
+		context() const
+		{
+			return _context;
+		}
+
+		inline
+		SceneManagerPtr
+		sceneManager() const
+		{
+			return _sceneManager;
+		}
+
 	protected:
 		void 
 		initializeGL();
