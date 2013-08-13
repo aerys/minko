@@ -35,17 +35,17 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
-			typedef const std::unordered_map<std::string, std::string>	    BindingMap;
+            typedef std::shared_ptr<data::Binding>                          BindingPtr;
 			typedef std::shared_ptr<Program>							    ProgramPtr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
 
 		private:
 			const std::string		            _name;
 			ProgramPtr				            _programTemplate;
-			BindingMap				            _attributeBindings;
-			BindingMap				            _uniformBindings;
-			BindingMap				            _stateBindings;
-			BindingMap				            _macroBindings;
+			data::BindingMap				    _attributeBindings;
+			data::BindingMap				    _uniformBindings;
+			data::BindingMap				    _stateBindings;
+			data::BindingMap				    _macroBindings;
             std::shared_ptr<States>             _states;
 
 			std::map<unsigned int, ProgramPtr>	_signatureToProgram;
@@ -55,10 +55,10 @@ namespace minko
 			Ptr
 			create(const std::string&				name,
 				   std::shared_ptr<render::Program>	program,
-				   BindingMap&						attributeBindings,
-				   BindingMap&						uniformBindings,
-				   BindingMap&						stateBindings,
-				   BindingMap&						macroBindings,
+				   data::BindingMap&				attributeBindings,
+				   data::BindingMap&				uniformBindings,
+				   data::BindingMap&				stateBindings,
+				   data::BindingMap&				macroBindings,
                    std::shared_ptr<States>          states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
@@ -87,21 +87,21 @@ namespace minko
 			}
 
 			inline
-			const BindingMap&
+			const data::BindingMap&
 			attributeBindings()
 			{
 				return _attributeBindings;
 			}
 
 			inline
-			const BindingMap&
+			const data::BindingMap&
 			uniformBindings()
 			{
 				return _uniformBindings;
 			}
 
 			inline
-			const BindingMap&
+			const data::BindingMap&
 			stateBindings()
 			{
 				return _stateBindings;
@@ -113,10 +113,10 @@ namespace minko
 		private:
 			Pass(const std::string&					name,
 				 std::shared_ptr<render::Program>	program,
-				 BindingMap&						attributeBindings,
-				 BindingMap&						uniformBindings,
-				 BindingMap&						stateBindings,
-				 BindingMap&						macroBindings,
+				 data::BindingMap&					attributeBindings,
+				 data::BindingMap&					uniformBindings,
+				 data::BindingMap&					stateBindings,
+				 data::BindingMap&					macroBindings,
                  std::shared_ptr<States>            states);
 
 			const unsigned int
