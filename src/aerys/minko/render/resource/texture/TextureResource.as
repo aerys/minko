@@ -150,23 +150,37 @@ package aerys.minko.render.resource.texture
 			var oldMipmap	: Boolean = _mipmap;
 			var oldFormat	: String = _format;
 			
-			atf.position 	= 6;
+			if (atf[6] == 0xFF)
+				atf.position 	= 12;
+			else
+				atf.position 	= 6;
 			
 			var formatByte 	: uint = atf.readUnsignedByte();
 			
-			_atfFormat 		= formatByte & 7;
+			_atfFormat 		= formatByte & 0x7F;
 			_width 			= 1 << atf.readUnsignedByte();
 			_height 		= 1 << atf.readUnsignedByte();
 			_mipmap 		= atf.readUnsignedByte() > 1;
 			
 			atf.position 	= 0;
 			
-			if (_atfFormat == 5 || _atfFormat == 4)
-				_format = FORMAT_COMPRESSED_ALPHA;
-			else if (_atfFormat == 3 || _atfFormat == 2)
-				_format = FORMAT_COMPRESSED;
-			else
-				_format = FORMAT_BGRA;
+			switch(_atfFormat)
+			{
+				case 0:
+				case 1: 
+					_format = FORMAT_BGRA;
+					break;
+				case 2:
+				case 3:
+					_format = FORMAT_COMPRESSED;
+					break;
+				case 4:
+				case 5:
+					_format = FORMAT_COMPRESSED_ALPHA;
+					break;
+				default:
+					throw new Error("Invalid ATF format");
+			}
 			
 			if (_texture
 				&& (oldFormat != _format
