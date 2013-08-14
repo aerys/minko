@@ -387,5 +387,38 @@ package aerys.minko.render.resource
 			return this;
 		}
 		
+		public function invalidate() : void
+		{
+			_depthMask = !_depthMask;
+			_passCompareMode = null;
+			
+			_triangleCulling = null;
+			
+			_blendingSource = null;
+			_blendingDestination = null;
+			
+			_colorMaskRed = !_colorMaskRed;
+			_colorMaskGreen = !_colorMaskGreen;
+			_colorMaskBlue = !_colorMaskBlue;
+			_colorMaskAlpha = !_colorMaskAlpha;
+			
+			_rectangle = null;
+			
+			for (var i : int = 0; i < _textures.length; ++i)
+				_textures[i] = null;
+			
+			for (i = 0; i < _vertexBuffers.length; ++i)
+				_vertexBuffers[i] = null;
+			
+			_stencilRefNum = 0;
+			_stencilReadMask = 0;
+			_stencilWriteMask = 0;
+			
+			_stencilTriangleFace = null;
+			_stencilCompareMode = null;
+			_stencilActionOnBothPass = null;
+			_stencilActionOnDepthFail = null;
+			_stencilActionOnDepthPassStencilFail = null;
+		}
 	}
 }
