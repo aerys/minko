@@ -179,8 +179,8 @@ package aerys.minko.render.material.phong
 				}
 			}
             
-//            if (ambientEnabled)
-//                passes.push(new PhongAmbientShader(renderTarget, .75));
+            if (ambientEnabled)
+                passes.push(new PhongAmbientShader(renderTarget, .75));
             
             passes.push(new ZPrepassShader(renderTarget, 1));
             passes.push(new PhongEmissiveShader(
