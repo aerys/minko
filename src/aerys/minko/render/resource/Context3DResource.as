@@ -389,6 +389,8 @@ package aerys.minko.render.resource
 		
 		public function invalidate() : void
 		{
+			_program = null;
+			
 			_depthMask = !_depthMask;
 			_passCompareMode = null;
 			
@@ -404,10 +406,10 @@ package aerys.minko.render.resource
 			
 			_rectangle = null;
 			
-			for (var i : int = 0; i < _textures.length; ++i)
+			for (var i : int = _textures.length - 1; i >= 0; --i)
 				_textures[i] = null;
 			
-			for (i = 0; i < _vertexBuffers.length; ++i)
+			for (i = _textures.length - 1; i >= 0; --i)
 				_vertexBuffers[i] = null;
 			
 			_stencilRefNum = 0;
