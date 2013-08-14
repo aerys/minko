@@ -34,7 +34,8 @@ namespace minko
 			LESS,
 			LESS_EQUAL,
 			NEVER,
-			NOT_EQUAL
+			NOT_EQUAL,
+			UNSET
 		};
 	}
 }
