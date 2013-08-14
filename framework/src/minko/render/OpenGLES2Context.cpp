@@ -89,10 +89,14 @@ OpenGLES2Context::initializeDepthFuncsMap()
 }
 
 OpenGLES2Context::OpenGLES2Context() :
+	_textures(),
+    _textureSizes(),
+    _textureHasMipmaps(),
 	_viewportX(0),
 	_viewportY(0),
 	_viewportWidth(0),
 	_viewportHeight(0),
+	_currentTarget(0),
 	_currentIndexBuffer(-1),
 	_currentVertexBuffer(8, -1),
 	_currentVertexSize(8, -1),
@@ -100,7 +104,13 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentVertexOffset(8, -1),
 	_currentTexture(8, -1),
 	_currentProgram(-1),
-    _currentTriangleCulling(TriangleCulling::BACK)
+    _currentTriangleCulling(TriangleCulling::BACK),
+    _currentWrapMode(),
+    _currentTextureFilter(),
+    _currentMipFilter(),
+    _currentBlendMode(Blending::Mode::DEFAULT),
+    _currentDepthMask(0xffffffff),
+    _currentDepthFunc(CompareMode::UNSET)
 {
 #ifdef _WIN32
     glewInit();
@@ -465,7 +475,7 @@ OpenGLES2Context::createTexture(unsigned int 	width,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   	_textures.push_back(texture);
-    _textureSizes[texture] = std::pair<uint, uint>(width, height);
+    _textureSizes[texture] = std::make_pair(width, height);
     _textureHasMipmaps[texture] = mipMapping;
     _currentWrapMode[texture] = WrapMode::CLAMP;
     _currentTextureFilter[texture] = TextureFilter::NEAREST;
