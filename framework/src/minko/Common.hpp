@@ -88,13 +88,15 @@ namespace minko
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
+        class SceneManager;
+        class AbstractLight;
         class DirectionalLight;
-		class SceneManager;
 	}
 
 	namespace data
 	{
 		class Provider;
+		class ArrayProvider;
 		class ValueBase;
 		class Value;
 		class Container;
