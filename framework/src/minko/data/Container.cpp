@@ -154,7 +154,7 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 
 void
 Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> 	provider,
-												 const std::string&				propertyName)
+										  const std::string&			propertyName)
 {
 	_propertyNameToProvider.erase(propertyName);
 
