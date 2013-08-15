@@ -31,6 +31,12 @@ AbstractRootDataComponent::AbstractRootDataComponent() :
 {
 }
 
+AbstractRootDataComponent::AbstractRootDataComponent(std::shared_ptr<data::Provider> provider) :
+    _data(provider),
+    _enabled(true)
+{
+}
+
 void
 AbstractRootDataComponent::initialize()
 {
@@ -73,12 +79,16 @@ AbstractRootDataComponent::targetAddedHandler(AbstractComponent::Ptr ctrl, NodeP
 void
 AbstractRootDataComponent::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
+    _root->data()->removeProvider(_data);
     _root = nullptr;
 }
 
 void
 AbstractRootDataComponent::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
+    if (node->root() == _root)
+        return;
+
     _root->data()->removeProvider(_data);
     _root = target->root();
     _root->data()->addProvider(_data);

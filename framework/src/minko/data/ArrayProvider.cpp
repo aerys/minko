@@ -21,7 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::data;
 
-ArrayProvider::ArrayProvider() :
+ArrayProvider::ArrayProvider(const std::string& name) :
+	_name(name),
 	_index(0)
 {
 }
@@ -44,8 +45,8 @@ ArrayProvider::unset(const std::string& propertyName)
 void
 ArrayProvider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
-	std::string arrayPropertyName = _name + '[' + std::to_string(_index) + ']' + propertyName;
-
+	std::string arrayPropertyName = _name + "[" + std::to_string(_index) + "]." + propertyName;
+	
 	_propertyNameToArrayPropertyName[propertyName] = arrayPropertyName;
 	Provider::registerProperty(arrayPropertyName, value);
 }
