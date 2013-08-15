@@ -26,8 +26,8 @@ using namespace minko::component;
 using namespace minko::math;
 
 DirectionalLight::DirectionalLight() :
+	AbstractLight(),
 	_direction(Vector3::create(-1.f, -1.f, -1.f)),
-	_color(Vector3::create(1.f, 1.f, 1.f)),
 	_worldDirection(Vector3::create()->copyFrom(_direction))
 {
     _data
