@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "EffectParser.hpp"
 
 #include "minko/data/Provider.hpp"
-#include "minko/data/Binding.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/Program.hpp"
@@ -321,62 +320,22 @@ EffectParser::parseBindings(Json::Value&	    contextNode,
 	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
 	if (attributeBindingsValue.isObject())
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
-			attributeBindings[propertyName] = parseBinding(attributeBindingsValue.get(propertyName, 0));
+			attributeBindings[propertyName] = attributeBindingsValue.get(propertyName, 0).asString();
 
 	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
 	if (uniformBindingsValue.isObject())
 		for (auto propertyName : uniformBindingsValue.getMemberNames())
-			uniformBindings[propertyName] = parseBinding(uniformBindingsValue.get(propertyName, 0));
+			uniformBindings[propertyName] = uniformBindingsValue.get(propertyName, 0).asString();
 
 	auto stateBindingsValue = contextNode.get("stateBindings", 0);
 	if (stateBindingsValue.isObject())
 		for (auto propertyName : stateBindingsValue.getMemberNames())
-			stateBindings[propertyName] = parseBinding(stateBindingsValue.get(propertyName, 0));
+			stateBindings[propertyName] = stateBindingsValue.get(propertyName, 0).asString();
 
 	auto macroBindingsValue = contextNode.get("macroBindings", 0);
 	if (macroBindingsValue.isObject())
 		for (auto propertyName : macroBindingsValue.getMemberNames())
-			macroBindings[propertyName] = parseBinding(macroBindingsValue.get(propertyName, 0));
-}
-
-data::Binding::Ptr
-EffectParser::parseBinding(Json::Value& contextNode)
-{
-    if (contextNode.isString())
-        return data::Binding::create(
-            contextNode.asString(),
-            data::Binding::Flag::NONE
-        );
-    else if (contextNode.isObject())
-        return data::Binding::create(
-            contextNode.get("propertyName", 0).asString(),
-            parseBindingFlags(contextNode.get("flags", 0))
-        );
-}
-
-data::Binding::Flag
-EffectParser::parseBindingFlags(Json::Value& contextNode)
-{
-    data::Binding::Flag flags = data::Binding::Flag::NONE;
-
-    if (contextNode.isString())
-        flags = stringToBindingFlag(contextNode.asString());
-    else if (contextNode.isArray())
-        for (auto flagValue : contextNode)
-            flags = static_cast<data::Binding::Flag>(flags | stringToBindingFlag(flagValue.asString()));
-
-    return flags;
-}
-
-data::Binding::Flag
-EffectParser::stringToBindingFlag(const std::string& str)
-{
-    if (str == "property_exists")
-        return data::Binding::Flag::PROPERTY_EXISTS;
-    else if (str == "push")
-        return data::Binding::Flag::PUSH;
-
-    return data::Binding::Flag::NONE;
+			macroBindings[propertyName] = macroBindingsValue.get(propertyName, 0).asString();
 }
 
 void
