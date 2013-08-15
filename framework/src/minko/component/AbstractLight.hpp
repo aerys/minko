@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/data/ArrayProvider.hpp"
+#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -34,18 +36,14 @@ namespace minko
 			typedef std::shared_ptr<AbstractLight> Ptr;
 
 		private:
-			bool							_enabled;
-			float							_priority;
-			std::shared_ptr<math::Vector3>	_color;
+			bool									_enabled;
+			float									_priority;
+			std::shared_ptr<math::Vector3>			_color;
+
+		protected:
+			std::shared_ptr<data::ArrayProvider>	_data;
 
 		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<AbstractLight>(new AbstractLight());
-			}
-
 			inline
 			const bool
 			enabled()
@@ -81,9 +79,14 @@ namespace minko
 				return _color;
 			}
 
-		private:
-			AbstractLight()
+		protected:
+			AbstractLight() :
+				_enabled(true),
+				_priority(0.f),
+				_color(math::Vector3::create(1, 1, 1)),
+				_data(data::ArrayProvider::create())
 			{
+				_data->set("color", _color);
 			}
 		};
 	}
