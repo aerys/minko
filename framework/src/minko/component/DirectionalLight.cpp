@@ -26,10 +26,17 @@ using namespace minko::component;
 using namespace minko::math;
 
 DirectionalLight::DirectionalLight() :
-	AbstractLight("directionalLights"),
-	_direction(Vector3::create(-1.f, -1.f, -1.f)),
-	_worldDirection(Vector3::create()->copyFrom(_direction))
+	AbstractDiscreteLight("directionalLights"),
+	_worldDirection(Vector3::create(-1.f, 0.f, -1.f))
 {
+	diffuse(1.f);
+	specular(1.f);
+
     data()->set("direction", _worldDirection);
 }
 
+void
+DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
+{
+	modelToWorld->transform(Vector3::zAxis(), _worldDirection);	
+}
