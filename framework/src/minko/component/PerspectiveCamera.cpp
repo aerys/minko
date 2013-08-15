@@ -50,10 +50,10 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
     AbstractRootDataComponent::targetAddedHandler(ctrl, target);
 
   	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
-  		&PerspectiveCamera::localToWorldChangedHandler,
-          std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
-  		std::placeholders::_1,
-  		std::placeholders::_2
+    		&PerspectiveCamera::localToWorldChangedHandler,
+        std::dynamic_pointer_cast<PerspectiveCamera>(shared_from_this()),
+    		std::placeholders::_1,
+    		std::placeholders::_2
   	));
 
     if (target->data()->hasProperty("transform.modelToWorldMatrix"))
