@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/render/Blending.hpp"
-#include "minko/data/Binding.hpp"
 
 namespace Json
 {
@@ -122,15 +121,6 @@ namespace minko
 						  data::BindingMap&	uniformBindings,
 						  data::BindingMap&	stateBindings,
 						  data::BindingMap&	macroBindings);
-
-            data::Binding::Ptr
-            parseBinding(Json::Value& contextNode);
-
-            data::Binding::Flag
-            parseBindingFlags(Json::Value& contextNode);
-
-            data::Binding::Flag
-            stringToBindingFlag(const std::string& str);
 
 			void
 			parseBlendMode(Json::Value&						contextNode,

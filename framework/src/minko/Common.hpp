@@ -98,8 +98,7 @@ namespace minko
 		class ValueBase;
 		class Value;
 		class Container;
-        class Binding;
-        typedef std::unordered_map<std::string, std::shared_ptr<Binding>> BindingMap;
+        typedef std::unordered_map<std::string, std::string> BindingMap;
 	}
 
 	namespace geometry
