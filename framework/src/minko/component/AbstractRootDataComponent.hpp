@@ -60,6 +60,7 @@ namespace minko
 
             AbstractRootDataComponent(std::shared_ptr<data::Provider> provider);
 
+            virtual
             void
             initialize();
 
