@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "Pass.hpp"
 
 #include "minko/data/Container.hpp"
-#include "minko/data/Binding.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -83,7 +82,15 @@ Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data:
 			for (auto& macroBinding : _macroBindings)
             {
 				if (signature & (1 << i++))
-					defines += "#define " + macroBinding.first + "\n";
+				{
+					auto& propertyName = macroBinding.second;
+					auto& container = data->hasProperty(propertyName) ? data : rootData;
+					std::string value = container->propertyHasType<int>(propertyName)
+						? std::to_string(container->get<int>(propertyName))
+						: "true";
+
+					defines += "#define " + macroBinding.first + " " + value + "\n";
+				}
             }
 
 			// for program template by adding #defines
@@ -119,11 +126,7 @@ Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data
 
 	for (auto& macroBinding : _macroBindings)
     {
-        auto flags = macroBinding.second->flags();
-        auto& propertyName = macroBinding.second->propertyName();
-
-        if (!(flags & data::Binding::Flag::PROPERTY_EXISTS))
-            throw;
+        auto& propertyName = macroBinding.second;
 
         if (data->hasProperty(propertyName) || rootData->hasProperty(propertyName))
 		{
