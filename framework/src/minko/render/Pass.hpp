@@ -35,8 +35,7 @@ namespace minko
 			typedef std::shared_ptr<Pass> Ptr;
 
 		private:
-            typedef std::shared_ptr<data::Binding>                          BindingPtr;
-			typedef std::shared_ptr<Program>							    ProgramPtr;
+ 			typedef std::shared_ptr<Program>							    ProgramPtr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStatesMap;
 
 		private:

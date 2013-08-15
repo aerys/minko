@@ -32,7 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Container.hpp"
-#include "minko/data/Binding.hpp"
 #include "minko/math/Matrix4x4.hpp"
 
 using namespace minko;
@@ -90,7 +89,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 		if (type == ProgramInputs::Type::attribute)
 		{
 			auto& name	= _attributeBindings.count(inputName)
-				? _attributeBindings.at(inputName)->propertyName()
+				? _attributeBindings.at(inputName)
 				: inputName;
 
 			if (!dataHasProperty(name))
@@ -110,7 +109,7 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 		else
 		{
 			auto& name	= _uniformBindings.count(inputName)
-				? _uniformBindings.at(inputName)->propertyName()
+				? _uniformBindings.at(inputName)
 				: inputName;
 
 			if (!dataHasProperty(name))
@@ -151,28 +150,26 @@ void
 DrawCall::bindStates()
 {
 	_blendMode = getDataProperty<Blending::Mode>(
-        _stateBindings.count("blendMode") ? _stateBindings.at("blendMode")->propertyName() : "blendMode",
+        _stateBindings.count("blendMode") ? _stateBindings.at("blendMode") : "blendMode",
         _states->blendingSourceFactor() | _states->blendingDestinationFactor()
     );
 
 	_depthMask = getDataProperty<bool>(
-		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask")->propertyName() : "depthMask",
+		_stateBindings.count("depthMask") ? _stateBindings.at("depthMask") : "depthMask",
         _states->depthMask()
 	);
 	_depthFunc = getDataProperty<CompareMode>(
-		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc")->propertyName() : "depthFunc",
+		_stateBindings.count("depthFunc") ? _stateBindings.at("depthFunc") : "depthFunc",
         _states->depthFun()
 	);
 
     _triangleCulling = getDataProperty<TriangleCulling>(
-		_stateBindings.count("triangleCulling")
-            ? _stateBindings.at("triangleCulling")->propertyName()
-            : "triangleCulling",
+		_stateBindings.count("triangleCulling") ? _stateBindings.at("triangleCulling") : "triangleCulling",
         _states->triangleCulling()
 	);
 
     _target = getDataProperty<Texture::Ptr>(
-    	_stateBindings.count("target") ? _stateBindings.at("target")->propertyName() : "target",
+    	_stateBindings.count("target") ? _stateBindings.at("target") : "target",
         _states->target()
     );
 	
