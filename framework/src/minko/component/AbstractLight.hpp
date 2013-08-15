@@ -36,28 +36,13 @@ namespace minko
 			typedef std::shared_ptr<AbstractLight> Ptr;
 
 		private:
-			bool									_enabled;
 			float									_priority;
 			std::shared_ptr<math::Vector3>			_color;
 
 		protected:
-			std::shared_ptr<data::ArrayProvider>	_data;
+			std::shared_ptr<data::ArrayProvider>	_arrayData;
 
 		public:
-			inline
-			const bool
-			enabled()
-			{
-				return _enabled;
-			}
-
-			inline
-			void
-			enabled(bool enabled)
-			{
-				_enabled = enabled;
-			}
-
 			inline
 			const float
 			priority()
@@ -80,13 +65,13 @@ namespace minko
 			}
 
 		protected:
-			AbstractLight() :
-				_enabled(true),
+			AbstractLight(const std::string& arrayName) :
+				AbstractRootDataComponent(data::ArrayProvider::create(arrayName)),
 				_priority(0.f),
 				_color(math::Vector3::create(1, 1, 1)),
-				_data(data::ArrayProvider::create())
+				_arrayData(std::dynamic_pointer_cast<data::ArrayProvider>(data()))
 			{
-				_data->set("color", _color);
+				data()->set("color", _color);
 			}
 		};
 	}
