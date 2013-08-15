@@ -857,7 +857,7 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
 		    	break;
 	    	case GL_FLOAT_VEC3:
 	    		inputType = ProgramInputs::Type::float3;
-				std::cout << "name: " << std::string(&name[0]) << ", size: " << size << std::endl;
+	    		break;
 	    	case GL_INT_VEC3:
 	    		inputType = ProgramInputs::Type::int3;
 	    		break;
