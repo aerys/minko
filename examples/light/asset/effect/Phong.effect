@@ -1,0 +1,111 @@
+// basic effect
+{
+	"name"	: "basic",
+	
+	"attributeBindings"	: {
+		"position"				: "geometry.vertex.attribute.position",
+		"uv"					: "geometry.vertex.attribute.uv",
+		"normal"				: "geometry.vertex.attribute.normal"
+	},
+	
+	"uniformBindings"	: {
+		"diffuseColor"			: "material.diffuseColor",
+		"diffuseMap"			: "material.diffuseMap",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
+	},
+	
+	"stateBindings"	: {
+		"blendMode"				: "material.blendMode"
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"DIRECTIONAL_LIGHTS"	: "directionalLights[0].color"
+	},
+	
+	"priority"			: 0,
+	"blendMode"			: ["one", "zero"],
+	"depthTest"			: [true, "less_equal"],
+	"triangleCulling"	: "back",
+	
+	"samplerStates" : {
+		"diffuseMap"	: { "mipFilter" : "linear" }
+	},
+
+	"includes"	: [ "Phong.glsl" ],
+	
+	"passes"	: [{	
+		"vertexShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+		
+			attribute vec3 position;
+			attribute vec2 uv;
+			attribute vec3 normal;
+
+			uniform mat4 modelToWorldMatrix;
+			uniform mat4 worldToScreenMatrix;
+
+			varying vec2 vertexUV;
+			varying vec4 vertexNormal;
+
+			void main(void)
+			{
+				#ifdef DIFFUSE_MAP
+					vertexUV = uv;
+				#endif
+
+				#ifdef DIRECTIONAL_LIGHTS
+					vertexNormal = vec4(normal, 1.0);
+					#ifdef MODEL_TO_WORLD
+						vertexNormal = mat3(modelToWorldMatrix) * vertexNormal;
+					#endif
+				#endif
+
+				vec4 pos = vec4(position, 1.0);
+				
+				#ifdef MODEL_TO_WORLD
+					pos = modelToWorldMatrix * pos;
+				#endif
+				
+				gl_Position =  worldToScreenMatrix * pos;
+			}
+		",
+		"fragmentShader"	: "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
+			uniform DirectionalLight 	directionalLights[1];
+			uniform vec4 				diffuseColor;
+			uniform sampler2D 			diffuseMap;
+			
+			varying vec2 vertexUV;
+			varying vec4 vertexNormal;
+
+			void main(void)
+			{
+				vec4 diffuse = vec4(0);
+
+				#ifdef DIFFUSE_MAP
+					diffuse = texture2D(diffuseMap, vertexUV);
+				#else
+					diffuse = diffuseColor;
+				#endif
+
+				#ifdef DIRECTIONAL_LIGHTS
+					vec3 diffuseReflection = phong_diffuseReflection(
+						vertexNormal, directionalLights[0].direction, directionalLights[0].color
+					);
+
+					diffuse = vec4(diffuse.rgb * diffuseReflection, diffuse.a);
+				#endif
+
+				gl_FragColor = diffuse;
+			}
+		"
+	}]
+}
