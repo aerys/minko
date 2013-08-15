@@ -17,6 +17,7 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
+    auto light = scene::Node::create("light");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -34,9 +35,12 @@ int main(int argc, char** argv)
 	{
 		auto root   = scene::Node::create("root");
         auto camera	= scene::Node::create("camera");
-		
+ 
 		root->addComponent(sceneManager);
-		root->addComponent(DirectionalLight::create());
+
+		light->addComponent(Transform::create());
+		light->addComponent(DirectionalLight::create());
+		root->addChild(light);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -54,7 +58,8 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",	assets->texture("texture/box.png")),
+				->set("material.diffuseMap",	assets->texture("texture/box.png"))
+				->set("material.shininess",		32.f),
 			assets->effect("effect/Phong.effect")
 		));
 		root->addChild(mesh);
@@ -64,7 +69,8 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
-		mesh->component<Transform>()->transform()->prependRotationY(.01f);
+		//mesh->component<Transform>()->transform()->prependRotationY(.01f);
+		light->component<Transform>()->transform()->prependRotationY(.01f);
 
 		sceneManager->nextFrame();
 
