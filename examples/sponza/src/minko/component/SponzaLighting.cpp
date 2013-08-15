@@ -50,7 +50,7 @@ SponzaLighting::SponzaLighting():
 		 0.01f + (rand()/(float)RAND_MAX) * 0.5f
 	);
 
-    _data
+    data()
 		->set("sponza.lightWorldPosition1",	Vector3::create(2.45f, 0.65f, 0.7f))
         ->set("sponza.lightAmbient1",		Vector3::create(0.25f, 0.12f, 0.0f))
 		->set("sponza.lightDiffuse1",		Vector3::create(1.0f, 0.7f, 0.5f))
@@ -75,8 +75,8 @@ SponzaLighting::step()
 {
 	_time = (_time + 1) % INT_MAX;
 
-	Vector4::Ptr thres = _data->get<Vector4::Ptr>("sponza.lightDistThres");
-	_data->set("sponza.lightDistThres", getDistanceThresholds(thres));
+	Vector4::Ptr thres = data()->get<Vector4::Ptr>("sponza.lightDistThres");
+	data()->set("sponza.lightDistThres", getDistanceThresholds(thres));
 }
 
 Vector4::Ptr
