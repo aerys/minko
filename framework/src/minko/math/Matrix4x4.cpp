@@ -253,10 +253,10 @@ Matrix4x4::transform(std::shared_ptr<Vector3> v, std::shared_ptr<Vector3> output
     if (!output)
         output = Vector3::create();
 
-    output->setTo(
-        v->x() * _m[0] + v->x() * _m[1] + v->x() * _m[2] + _m[3],
-        v->y() * _m[4] + v->y() * _m[5] + v->y() * _m[6] + _m[7],
-        v->z() * _m[8] + v->z() * _m[9] + v->z() * _m[10] + _m[11]
+	output->setTo(
+        v->x() * _m[0] + v->y() * _m[1] + v->z() * _m[2] + _m[3],
+        v->x() * _m[4] + v->y() * _m[5] + v->z() * _m[6] + _m[7],
+        v->x() * _m[8] + v->y() * _m[9] + v->z() * _m[10] + _m[11]
     );
 
     return output;
