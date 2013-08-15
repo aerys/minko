@@ -43,8 +43,8 @@ project "minko-example-cube"
 		includedirs { "../../deps/lin/include" }
 		buildoptions { "-std=c++11" }
 		postbuildcommands {
-			'cp -r ../../framework/effect .',
-			'cp -r asset/* .'
+			'cp -r ../../framework/effect ${TARGETDIR}',
+			'cp -r asset/* ${TARGETDIR}'
 		}
 
 	-- windows
