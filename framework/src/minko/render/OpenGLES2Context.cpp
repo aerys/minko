@@ -135,10 +135,6 @@ OpenGLES2Context::OpenGLES2Context() :
 	_viewportHeight = viewportSettings[3];
 
 	setDepthTest(true, CompareMode::LESS);
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    _glslOptimizer = glslopt_initialize(true);
-#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -160,10 +156,6 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    glslopt_cleanup(_glslOptimizer);
-#endif
 }
 
 void
@@ -704,10 +696,10 @@ OpenGLES2Context::compileShader(const unsigned int shader)
 	glCompileShader(shader);
 
 #ifdef DEBUG
-     auto errors = getShaderCompilationLogs(shader);
+    auto errors = getShaderCompilationLogs(shader);
 
-     if (!errors.empty())
-		std::cout << errors << std::endl;
+    if (!errors.empty())
+		std::cerr << errors << std::endl;
 #endif
 
     checkForErrors();
@@ -731,6 +723,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
 							      const std::string& source)
 {
 #ifdef MINKO_GLSL_OPTIMIZER
+	glslopt_ctx* glslOptimizer = glslopt_initialize(true);
     std::string src = "#version 100\n" + source;
 	const char* sourceString = src.c_str();
 
@@ -738,7 +731,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
         ? kGlslOptShaderVertex
         : kGlslOptShaderFragment;
 
-    auto optimizedShader = glslopt_optimize(_glslOptimizer, type, sourceString, 0);
+    auto optimizedShader = glslopt_optimize(glslOptimizer, type, sourceString, 0);
     if (glslopt_get_status(optimizedShader))
     {
         auto optimizedSource = glslopt_get_output(optimizedShader);
@@ -756,6 +749,7 @@ OpenGLES2Context::setShaderSource(const unsigned int shader,
         throw std::invalid_argument("source");
     }
     glslopt_shader_delete(optimizedShader);
+    glslopt_cleanup(glslOptimizer);
 #else
     std::string src = "#version 120\n" + source;
 	const char* sourceString = src.c_str();
