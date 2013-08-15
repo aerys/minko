@@ -63,9 +63,7 @@ namespace minko
 			unset(const std::string& propertyName);
 
 		private:
-			ArrayProvider()
-			{
-			}
+			ArrayProvider();
 		};
 	}
 }
