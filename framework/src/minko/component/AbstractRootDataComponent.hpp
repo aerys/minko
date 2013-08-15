@@ -38,10 +38,8 @@ namespace minko
         private:
             typedef std::shared_ptr<scene::Node>    NodePtr;
 
-        protected:
-            std::shared_ptr<data::Provider>                 _data;
-
         private:
+            std::shared_ptr<data::Provider>                 _data;
             bool                                            _enabled;
             NodePtr                                         _root;
 
@@ -50,20 +48,17 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
-	    public:
-		    inline static
-		    Ptr
-		    create()
-		    {
-                auto comp = std::shared_ptr<AbstractRootDataComponent>(new AbstractRootDataComponent());
-
-                comp->initialize();
-
-			    return comp;
-		    }
-
 	    protected:
+            inline
+            std::shared_ptr<data::Provider>
+            data()
+            {
+                return _data;
+            }
+
 		    AbstractRootDataComponent();
+
+            AbstractRootDataComponent(std::shared_ptr<data::Provider> provider);
 
             void
             initialize();
