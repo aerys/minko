@@ -21,6 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::data;
 
+ArrayProvider::ArrayProvider() :
+	_index(0)
+{
+}
+
 void
 ArrayProvider::index(unsigned int index)
 {
