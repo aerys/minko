@@ -87,10 +87,10 @@ namespace minko
                    std::shared_ptr<States>  states)
 			{
                 auto dc = std::shared_ptr<DrawCall>(new DrawCall(
-					program, attributeBindings, uniformBindings, stateBindings, states
+					attributeBindings, uniformBindings, stateBindings, states
 				));
 
-                dc->bind(data, rootData);
+                dc->configure(program, data, rootData);
 
 				return dc;
 			}
@@ -102,8 +102,10 @@ namespace minko
                 return _target;
             }
 
-			void
-			bind(ContainerPtr data, ContainerPtr rootData);
+            void
+            configure(std::shared_ptr<Program>  program,
+                      ContainerPtr              data,
+                      ContainerPtr              rootData);
 
 			void
 			render(std::shared_ptr<AbstractContext> context);
@@ -113,13 +115,15 @@ namespace minko
 					   const std::map<std::string, std::string>&	inputNameToBindingName);
 
 		private:
-			DrawCall(std::shared_ptr<Program>	program,
-				     const data::BindingMap&	attributeBindings,
+			DrawCall(const data::BindingMap&	attributeBindings,
 				     const data::BindingMap&	uniformBindings,
 					 const data::BindingMap&	stateBindings,
                      std::shared_ptr<States>    states);
 
 			void
+            bind(ContainerPtr data, ContainerPtr rootData);
+
+            void
 			bindStates();
 
             template <typename T>

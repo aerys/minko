@@ -94,7 +94,9 @@ Surface::geometry(std::shared_ptr<geometry::Geometry> newGeometry)
 		_drawCalls.clear();
 
 		for (auto pass : _effect->passes())
+		{
 			_drawCalls.push_back(pass->createDrawCall(target->data(), target->root()->data()));
+		}
 	}
 
 	_geometry = newGeometry;
@@ -146,6 +148,14 @@ Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
 void
 Surface::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	for (auto dc : _drawCalls)
-		dc->bind(targets()[0]->data(), node->root()->data());
+	auto nodeData = targets()[0]->data();
+	auto rootData = node->root()->data();
+	auto i = 0;
+
+	for (auto drawCall : _drawCalls)
+		drawCall->configure(
+			_effect->passes()[i++]->selectProgram(nodeData, rootData),
+			nodeData,
+			rootData
+		);
 }
