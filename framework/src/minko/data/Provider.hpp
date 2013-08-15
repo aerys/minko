@@ -118,6 +118,20 @@ namespace minko
 			}
 
 			template <typename T>
+			typename std::enable_if<std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
+			propertyHasType(const std::string& propertyName)
+			{
+				return std::dynamic_pointer_cast<typename T::element_type>(_values[propertyName]) != nullptr;
+			}
+
+			template <typename T>
+			typename std::enable_if<!std::is_convertible<T, std::shared_ptr<Value>>::value, bool>::type
+			propertyHasType(const std::string& propertyName)
+			{
+				return std::dynamic_pointer_cast<ValueWrapper<T>>(_values[propertyName]) != nullptr;
+			}
+
+			template <typename T>
 			Ptr
 			set(const std::string& propertyName, T value)
 			{
