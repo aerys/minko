@@ -38,9 +38,9 @@ int main(int argc, char** argv)
 		root->addComponent(sceneManager);
 
 		// setup camera
-        auto renderingComponent = Renderer::create();
-		renderingComponent->backgroundColor(0x7F7F7FFF);
-        camera->addComponent(renderingComponent);
+        auto renderer = Renderer::create();
+		renderer->backgroundColor(0x7F7F7FFF);
+        camera->addComponent(renderer);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
 			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 			assets->geometry("cube"),
 			data::Provider::create()
 				->set("material.diffuseColor",	Vector4::create(0.f, 0.f, 1.f, 1.f))
-				->set("material.diffuseMap",		assets->texture("texture/box.png")),
+				->set("material.diffuseMap",	assets->texture("texture/box.png")),
 			assets->effect("effect/Basic.effect")
 		));
 		root->addChild(mesh);
