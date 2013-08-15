@@ -1,6 +1,6 @@
-// basic effect
+// phong effect
 {
-	"name"	: "basic",
+	"name"	: "phong",
 	
 	"attributeBindings"	: {
 		"position"				: "geometry.vertex.attribute.position",
@@ -11,8 +11,10 @@
 	"uniformBindings"	: {
 		"diffuseColor"			: "material.diffuseColor",
 		"diffuseMap"			: "material.diffuseMap",
+		"shininess"				: "material.shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "camera.worldToScreenMatrix"
+		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
+		"cameraPosition"		: "camera.position"
 	},
 	
 	"stateBindings"	: {
@@ -21,6 +23,7 @@
 
 	"macroBindings"	: {
 		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"SHININESS"				: "material.shininess",
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
 		"DIRECTIONAL_LIGHTS"	: "directionalLights[0].color"
 	},
@@ -31,7 +34,7 @@
 	"triangleCulling"	: "back",
 	
 	"samplerStates" : {
-		"diffuseMap"	: { "mipFilter" : "linear" }
+		"diffuseMap"	: { "filter" : "linear", "mipFilter" : "linear" }
 	},
 
 	"includes"	: [ "Phong.glsl" ],
@@ -48,21 +51,16 @@
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
+			uniform vec3 cameraPosition;
 
 			varying vec2 vertexUV;
-			varying vec4 vertexNormal;
+			varying vec3 vertexNormal;
+			varying vec3 eyeVector;
 
 			void main(void)
 			{
 				#ifdef DIFFUSE_MAP
 					vertexUV = uv;
-				#endif
-
-				#ifdef DIRECTIONAL_LIGHTS
-					vertexNormal = vec4(normal, 1.0);
-					#ifdef MODEL_TO_WORLD
-						vertexNormal = mat3(modelToWorldMatrix) * vertexNormal;
-					#endif
 				#endif
 
 				vec4 pos = vec4(position, 1.0);
@@ -71,6 +69,16 @@
 					pos = modelToWorldMatrix * pos;
 				#endif
 				
+				#ifdef DIRECTIONAL_LIGHTS
+					vec3 worldNormal = normal;
+					#ifdef MODEL_TO_WORLD
+						worldNormal = mat3(modelToWorldMatrix) * worldNormal;
+					#endif
+					vertexNormal = normalize(worldNormal);
+
+					eyeVector = normalize(cameraPosition.xyz - pos.xyz);
+				#endif
+
 				gl_Position =  worldToScreenMatrix * pos;
 			}
 		",
@@ -82,9 +90,11 @@
 			uniform DirectionalLight 	directionalLights[1];
 			uniform vec4 				diffuseColor;
 			uniform sampler2D 			diffuseMap;
+			uniform float				shininess;
 			
 			varying vec2 vertexUV;
-			varying vec4 vertexNormal;
+			varying vec3 vertexNormal;
+			varying vec3 eyeVector;
 
 			void main(void)
 			{
@@ -97,11 +107,21 @@
 				#endif
 
 				#ifdef DIRECTIONAL_LIGHTS
-					vec3 diffuseReflection = phong_diffuseReflection(
-						vertexNormal, directionalLights[0].direction, directionalLights[0].color
-					);
+					vec3 normal = normalize(vertexNormal);
+					vec3 lightDirection = normalize(-directionalLights[0].direction);
+					float phong = phong_diffuseReflection(vertexNormal, lightDirection)
+						* directionalLights[0].diffuse;
 
-					diffuse = vec4(diffuse.rgb * diffuseReflection, diffuse.a);
+					#ifdef SHININESS
+						phong += phong_specularReflection(
+							vertexNormal,
+							lightDirection,
+							normalize(eyeVector),
+							shininess
+						) * directionalLights[0].specular;
+					#endif
+
+					diffuse = vec4(diffuse.rgb * (phong * directionalLights[0].color), diffuse.a);
 				#endif
 
 				gl_FragColor = diffuse;
