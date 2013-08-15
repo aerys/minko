@@ -41,12 +41,11 @@ using namespace minko::render;
 
 SamplerState DrawCall::_defaultSamplerState = SamplerState(WrapMode::CLAMP, TextureFilter::NEAREST, MipFilter::NONE);
 
-DrawCall::DrawCall(Program::Ptr				program,
-                   const data::BindingMap&	attributeBindings,
+DrawCall::DrawCall(const data::BindingMap&	attributeBindings,
 				   const data::BindingMap&	uniformBindings,
 				   const data::BindingMap&	stateBindings,
                    States::Ptr              states) :
-	_program(program),
+	_program(nullptr),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),
 	_stateBindings(stateBindings),
@@ -62,6 +61,15 @@ DrawCall::DrawCall(Program::Ptr				program,
     _vertexAttributeSizes(8, -1),
     _vertexAttributeOffsets(8, -1)
 {
+}
+
+void
+DrawCall::configure(std::shared_ptr<Program>  program,
+                    ContainerPtr              data,
+                    ContainerPtr              rootData)
+{
+    _program = program;
+    bind(data, rootData);
 }
 
 void

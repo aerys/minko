@@ -93,7 +93,6 @@ Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data:
 				}
             }
 
-            std::cout << defines << std::endl;
 			// for program template by adding #defines
 			auto vs = Shader::create(
 				_programTemplate->context(),
@@ -137,8 +136,6 @@ Pass::buildSignature(std::shared_ptr<data::Container> data, std::shared_ptr<data
 
 			signature |= 1 << i;
 		}
-		else
-			std::cout << "property not found: " << propertyName << std::endl;
         ++i;
     }
 
