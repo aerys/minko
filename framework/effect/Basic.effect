@@ -19,8 +19,8 @@
 	},
 
 	"macroBindings"	: {
-		"TECHNIQUE_DIFFUSE_MAP"	: "material.diffuseMap",
-		"HAS_MODEL_TO_WORLD"	: "transform.modelToWorldMatrix"
+		"DIFFUSE_MAP"			: "material.diffuseMap",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix"
 	},
 	
 	"priority"			: 0,
@@ -48,13 +48,13 @@
 
 			void main(void)
 			{
-				#ifdef TECHNIQUE_DIFFUSE_MAP
+				#ifdef DIFFUSE_MAP
 					vertexUV = uv;
 				#endif
 
 				vec4 pos = vec4(position, 1.0);
 				
-				#ifdef HAS_MODEL_TO_WORLD
+				#ifdef MODEL_TO_WORLD
 					pos = modelToWorldMatrix * pos;
 				#endif
 				
@@ -73,7 +73,7 @@
 
 			void main(void)
 			{
-				#ifdef TECHNIQUE_DIFFUSE_MAP
+				#ifdef DIFFUSE_MAP
 					gl_FragColor = texture2D(diffuseMap, vertexUV);
 				#else
 					gl_FragColor = diffuseColor;
