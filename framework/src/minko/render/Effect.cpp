@@ -30,13 +30,3 @@ Effect::Effect(std::vector<PassPtr>& passes) :
 	_data(data::Provider::create())
 {
 }
-
-/*
-std::shared_ptr<EffectInstance>
-Effect::instanciate(data::Container::Ptr data)
-{
-
-
-	return nullptr;
-}
-*/
