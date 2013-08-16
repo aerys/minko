@@ -29,7 +29,7 @@ package aerys.minko.scene.node
 		private var _name	    	    		: String;
 		private var _root	        			: ISceneNode;
 		private var _parent	        			: Group;
-        private var _knowledge 					: DataProvider;
+        private var _customData					: DataProvider;
 		
 		private var _transform			        : Matrix4x4;
 		
@@ -214,9 +214,9 @@ package aerys.minko.scene.node
 			return _localToWorldChanged;
 		}
         
-		public function get knowledge() : DataProvider
+		public function get customData() : DataProvider
 		{
-			return _knowledge;
+			return _customData;
 		}
 		
 		public function AbstractSceneNode()
@@ -230,7 +230,7 @@ package aerys.minko.scene.node
 			_transform = new Matrix4x4();
 			_controllers = new <AbstractController>[];
 			_root = this;
-			_knowledge = new DataProvider();
+			_customData = new DataProvider();
 			
 			initializeSignals();
 			initializeSignalHandlers();

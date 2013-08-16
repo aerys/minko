@@ -26,7 +26,7 @@ package aerys.minko.scene.node
 		function get scaleY() : Number;
 		function get scaleZ() : Number;
 		
-		function get knowledge() : DataProvider;
+		function get customData() : DataProvider;
 		
 		function set x(value : Number) : void;
 		function set y(value : Number) : void;
