@@ -38,7 +38,7 @@ package aerys.minko.scene.node.light
 			var light : AmbientLight = new AmbientLight(color, ambient, emissionMask);
 			
 			light.name = this.name;
-			light.customData.setProperties(customData);
+			light.userData.setProperties(userData);
 			light.transform.copyFrom(this.transform);
 			
 			return light;

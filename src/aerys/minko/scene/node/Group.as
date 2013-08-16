@@ -457,7 +457,7 @@ package aerys.minko.scene.node
 			
 			clone.name = name;
 			clone.transform.copyFrom(transform);
-			clone.customData.setProperties(customData);
+			clone.userData.setProperties(userData);
 			
 			for (var childId : uint = 0; childId < _numChildren; ++childId)
 			{
