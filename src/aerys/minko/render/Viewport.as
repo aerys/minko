@@ -375,18 +375,18 @@ package aerys.minko.render
 			_stage3d.x = upperLeft.x;
 			_stage3d.y = upperLeft.y;
 			
-			if (_width > 2048)
+			if (_width > 4096)
 			{
-				_stage3d.x = (_width - 2048) * 0.5;
-				_width = 2048;
+				_stage3d.x = (_width - 4096) * 0.5;
+				_width = 4096;
 			}
 			else
 				_stage3d.x = upperLeft.x;
 			
-			if (_height > 2048)
+			if (_height > 4096)
 			{
-				_stage3d.y = (_height - 2048) * 0.5;
-				_height = 2048;
+				_stage3d.y = (_height - 4096) * 0.5;
+				_height = 4096;
 			}
 			else
 				_stage3d.y = upperLeft.y;
