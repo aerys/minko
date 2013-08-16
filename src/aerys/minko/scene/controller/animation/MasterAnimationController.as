@@ -188,11 +188,11 @@ package aerys.minko.scene.controller.animation
 			super.triggerLabelHit(labelName, labelTime);
 		}
 		
-		override public function invalidate() : void
+		override public function invalidate(target : Object = null) : void
 		{
 			var numAnimations : uint = _animations.length;
 			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
-				_animations[animationId].invalidate();
+				_animations[animationId].invalidate(target);
 		}
 	}
 }

@@ -411,10 +411,16 @@ package aerys.minko.scene.controller.animation
 		override protected function targetAddedHandler(ctrl:EnterFrameController, target:ISceneNode):void
 		{
 			super.targetAddedHandler(ctrl,target);
-			invalidate();
+			invalidate(target);
+		}
+		
+		override protected function targetRemovedHandler(ctrl:EnterFrameController, target:ISceneNode):void
+		{
+			super.targetRemovedHandler(ctrl,target);
+			invalidate(target);
 		}
 
-		public function invalidate() : void
+		public function invalidate(target : Object = null) : void
 		{
 		}
 
