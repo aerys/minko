@@ -169,5 +169,11 @@ package aerys.minko.scene.controller.animation
 			
 			super.checkLabelHit(previousTime, newTime);
 		}
+		
+		override public function invalidate() : void
+		{
+			for each(var timeline : ITimeline in _timelines)
+				timeline.invalidate();
+		}
 	}
 }

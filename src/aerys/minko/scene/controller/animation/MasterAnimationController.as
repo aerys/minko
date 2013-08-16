@@ -8,6 +8,7 @@ package aerys.minko.scene.controller.animation
 	import aerys.minko.scene.controller.AbstractController;
 	import aerys.minko.scene.controller.IRebindableController;
 	import aerys.minko.scene.node.Scene;
+	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	use namespace minko_animation;
 	
@@ -185,6 +186,13 @@ package aerys.minko.scene.controller.animation
 				_animations[animationId].triggerLabelHit(labelName, labelTime);
 			
 			super.triggerLabelHit(labelName, labelTime);
+		}
+		
+		override public function invalidate() : void
+		{
+			var numAnimations : uint = _animations.length;
+			for (var animationId : uint = 0; animationId < numAnimations; ++animationId)
+				_animations[animationId].invalidate();
 		}
 	}
 }

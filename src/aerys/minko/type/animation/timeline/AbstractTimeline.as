@@ -72,6 +72,12 @@ package aerys.minko.type.animation.timeline
 			_currentTarget = _targetToCurrentTarget[target];
 		}
 		
+		public function invalidate() : void
+		{
+			_targetToCurrentTarget = new Dictionary();
+			_currentTarget = null;
+		}
+		
 		public function clone() : ITimeline
 		{
 			throw new Error();

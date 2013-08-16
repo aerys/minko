@@ -4,7 +4,9 @@ package aerys.minko.scene.controller.animation
 	
 	import aerys.minko.ns.minko_animation;
 	import aerys.minko.scene.controller.EnterFrameController;
+	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
+	import aerys.minko.type.animation.timeline.ITimeline;
 	
 	use namespace minko_animation;
 	
@@ -405,5 +407,16 @@ package aerys.minko.scene.controller.animation
 			if (_labelHit.numCallbacks)
 				_labelHit.execute(this, labelName, labelTime);
 		}
+		
+		override protected function targetAddedHandler(ctrl:EnterFrameController, target:ISceneNode):void
+		{
+			super.targetAddedHandler(ctrl,target);
+			invalidate();
+		}
+
+		public function invalidate() : void
+		{
+		}
+
 	}
 }
