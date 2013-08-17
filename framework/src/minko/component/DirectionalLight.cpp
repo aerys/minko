@@ -38,5 +38,5 @@ DirectionalLight::DirectionalLight() :
 void
 DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
 {
-	modelToWorld->transform(Vector3::zAxis(), _worldDirection);	
+	modelToWorld->deltaTransform(Vector3::zAxis(), _worldDirection);
 }
