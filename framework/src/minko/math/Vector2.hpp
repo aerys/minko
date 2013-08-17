@@ -88,6 +88,16 @@ namespace minko
 				return std::static_pointer_cast<Vector2>(shared_from_this());
 			}
 
+			std::string
+			toString()
+			{
+				std::stringstream stream;
+				
+				stream << "(" << _x << ", " << _y << ")";
+
+				return stream.str();
+			}
+
 			Ptr
 			normalize()
 			{
