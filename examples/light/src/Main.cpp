@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
-    auto light = scene::Node::create("light");
+    auto lightNode = scene::Node::create("light");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -37,10 +37,12 @@ int main(int argc, char** argv)
         auto camera	= scene::Node::create("camera");
  
 		root->addComponent(sceneManager);
-
-		light->addComponent(Transform::create());
-		light->addComponent(DirectionalLight::create());
-		root->addChild(light);
+		
+		// setup direcitonal light
+		auto directionalLight = DirectionalLight::create();
+		lightNode->addComponent(Transform::create());
+		lightNode->addComponent(directionalLight);
+		root->addChild(lightNode);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -48,7 +50,7 @@ int main(int argc, char** argv)
         camera->addComponent(renderingComponent);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+			->lookAt(Vector3::zero(), Vector3::create(5.f, 5.f, -5.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
         root->addChild(camera);
 
@@ -69,8 +71,8 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
-		//mesh->component<Transform>()->transform()->prependRotationY(.01f);
-		light->component<Transform>()->transform()->prependRotationY(.01f);
+		mesh->component<Transform>()->transform()->prependRotationY(-.01f);
+		lightNode->component<Transform>()->transform()->prependRotationY(.01f);
 
 		sceneManager->nextFrame();
 
