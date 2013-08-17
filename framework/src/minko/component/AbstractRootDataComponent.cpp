@@ -86,10 +86,16 @@ AbstractRootDataComponent::targetRemovedHandler(AbstractComponent::Ptr ctrl, Nod
 void
 AbstractRootDataComponent::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
+    updateRoot(node);
+}
+
+void
+AbstractRootDataComponent::updateRoot(NodePtr node)
+{
     if (node->root() == _root)
         return;
 
     _root->data()->removeProvider(_data);
-    _root = target->root();
+    _root = node->root();
     _root->data()->addProvider(_data);
 }
