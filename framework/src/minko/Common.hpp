@@ -186,14 +186,4 @@ operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 	return *a -= b;
 }
 
-namespace std
-{
-	template<typename T>
-	string
-	to_string(shared_ptr<T> value)
-	{
-		return to_string(*value);
-	}
-}
-
 //using namespace minko;
