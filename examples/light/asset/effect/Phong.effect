@@ -3,29 +3,29 @@
 	"name"	: "phong",
 	
 	"attributeBindings"	: {
-		"position"				: "geometry.vertex.attribute.position",
-		"uv"					: "geometry.vertex.attribute.uv",
-		"normal"				: "geometry.vertex.attribute.normal"
+		"position"					: "geometry.vertex.attribute.position",
+		"uv"						: "geometry.vertex.attribute.uv",
+		"normal"					: "geometry.vertex.attribute.normal"
 	},
 	
 	"uniformBindings"	: {
-		"diffuseColor"			: "material.diffuseColor",
-		"diffuseMap"			: "material.diffuseMap",
-		"shininess"				: "material.shininess",
-		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: "camera.worldToScreenMatrix",
-		"cameraPosition"		: "camera.position"
+		"diffuseColor"				: "material.diffuseColor",
+		"diffuseMap"				: "material.diffuseMap",
+		"shininess"					: "material.shininess",
+		"modelToWorldMatrix"		: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"		: "camera.worldToScreenMatrix",
+		"cameraPosition"			: "camera.position"
 	},
 	
 	"stateBindings"	: {
-		"blendMode"				: "material.blendMode"
+		"blendMode"					: "material.blendMode"
 	},
 
 	"macroBindings"	: {
-		"DIFFUSE_MAP"			: "material.diffuseMap",
-		"SHININESS"				: "material.shininess",
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"DIRECTIONAL_LIGHTS"	: "directionalLights[0].color"
+		"DIFFUSE_MAP"				: "material.diffuseMap",
+		"SHININESS"					: "material.shininess",
+		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
+		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length"
 	},
 	
 	"priority"			: 0,
@@ -51,11 +51,10 @@
 
 			uniform mat4 modelToWorldMatrix;
 			uniform mat4 worldToScreenMatrix;
-			uniform vec3 cameraPosition;
 
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 eyeVector;
+			varying vec3 vertexPosition;
 
 			void main(void)
 			{
@@ -69,14 +68,16 @@
 					pos = modelToWorldMatrix * pos;
 				#endif
 				
-				#ifdef DIRECTIONAL_LIGHTS
+				#ifdef NUM_DIRECTIONAL_LIGHTS
 					vec3 worldNormal = normal;
 					#ifdef MODEL_TO_WORLD
 						worldNormal = mat3(modelToWorldMatrix) * worldNormal;
 					#endif
 					vertexNormal = normalize(worldNormal);
 
-					eyeVector = normalize(cameraPosition.xyz - pos.xyz);
+					#ifdef SHININESS
+						vertexPosition = pos.xyz;
+					#endif
 				#endif
 
 				gl_Position =  worldToScreenMatrix * pos;
@@ -87,14 +88,17 @@
 				precision mediump float;
 			#endif
 
-			uniform DirectionalLight 	directionalLights[1];
+			#ifdef NUM_DIRECTIONAL_LIGHTS
+				uniform DirectionalLight 	directionalLights[NUM_DIRECTIONAL_LIGHTS];
+			#endif
 			uniform vec4 				diffuseColor;
 			uniform sampler2D 			diffuseMap;
 			uniform float				shininess;
+			uniform vec3 				cameraPosition;
 			
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
-			varying vec3 eyeVector;
+			varying vec3 vertexPosition;
 
 			void main(void)
 			{
@@ -106,20 +110,27 @@
 					diffuse = diffuseColor;
 				#endif
 
-				#ifdef DIRECTIONAL_LIGHTS
-					vec3 normal = normalize(vertexNormal);
-					vec3 lightDirection = normalize(-directionalLights[0].direction);
-					float phong = phong_diffuseReflection(vertexNormal, lightDirection)
-						* directionalLights[0].diffuse;
+				#ifdef NUM_DIRECTIONAL_LIGHTS
+					float phong = 0.;
 
-					#ifdef SHININESS
-						phong += phong_specularReflection(
-							vertexNormal,
-							lightDirection,
-							normalize(eyeVector),
-							shininess
-						) * directionalLights[0].specular;
-					#endif
+					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
+					{
+						vec3 eyeVector = normalize(cameraPosition - vertexPosition);
+						vec3 normal = normalize(vertexNormal);
+						vec3 lightDirection = normalize(-directionalLights[0].direction);
+						
+						phong += phong_diffuseReflection(normal, lightDirection)
+							* directionalLights[0].diffuse;
+
+						#ifdef SHININESS
+							phong += phong_specularReflection(
+								normal,
+								lightDirection,
+								eyeVector,
+								shininess
+							) * directionalLights[0].specular;
+						#endif
+					}
 
 					diffuse = vec4(diffuse.rgb * (phong * directionalLights[0].color), diffuse.a);
 				#endif
