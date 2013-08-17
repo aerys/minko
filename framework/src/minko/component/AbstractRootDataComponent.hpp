@@ -56,6 +56,13 @@ namespace minko
                 return _data;
             }
 
+            inline
+            NodePtr
+            root()
+            {
+                return _root;
+            }
+
 		    AbstractRootDataComponent();
 
             AbstractRootDataComponent(std::shared_ptr<data::Provider> provider);
@@ -71,6 +78,11 @@ namespace minko
             virtual
             void
             targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+
+        protected:
+            virtual
+            void
+            updateRoot(NodePtr node);
 
         private:
             void
