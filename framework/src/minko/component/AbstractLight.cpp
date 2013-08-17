@@ -17,67 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "AbstractLight.hpp"
 
-#include "minko/Common.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/component/LightManager.hpp"
 
-#include "minko/component/AbstractRootDataComponent.hpp"
-#include "minko/data/ArrayProvider.hpp"
-#include "minko/math/Vector3.hpp"
+using namespace minko::component;
 
-namespace minko
+AbstractLight::AbstractLight(const std::string& arrayName) :
+	AbstractRootDataComponent(data::ArrayProvider::create(arrayName)),
+	_priority(0.f),
+	_color(math::Vector3::create(1, 1, 1)),
+	_arrayData(std::dynamic_pointer_cast<data::ArrayProvider>(data()))
 {
-	namespace component
+	data()->set("color", _color);
+}
+
+void
+AbstractLight::updateRoot(scene::Node::Ptr node)
+{
+	auto oldRoot = root();
+
+	AbstractRootDataComponent::updateRoot(node);
+
+	auto newRoot = root();
+
+	if (newRoot != oldRoot && !newRoot->hasComponent<LightManager>())
 	{
-		class AbstractLight :
-			public AbstractRootDataComponent
-		{
-			friend LightManager;
+		auto lightManager = oldRoot->component<LightManager>();
 
-		public:
-			typedef std::shared_ptr<AbstractLight> Ptr;
+		if (!lightManager)
+			lightManager = LightManager::create();
 
-		private:
-			float									_priority;
-			std::shared_ptr<math::Vector3>			_color;
-
-		protected:
-			std::shared_ptr<data::ArrayProvider>	_arrayData;
-
-		public:
-			inline
-			const uint
-			lightId()
-			{
-				return _arrayData->index();
-			}
-
-			inline
-			const float
-			priority()
-			{
-				return _priority;
-			}
-
-			inline
-			void
-			priority(float priority)
-			{
-				_priority = priority;
-			}
-
-			inline
-			std::shared_ptr<math::Vector3>
-			color()
-			{
-				return _color;
-			}
-
-		protected:
-			AbstractLight(const std::string& arrayName);
-
-			void
-			updateRoot(std::shared_ptr<scene::Node> node);
-		};
+		newRoot->addComponent(lightManager);
 	}
 }
