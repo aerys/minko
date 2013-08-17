@@ -436,8 +436,6 @@ initializeCamera(scene::Node::Ptr group)
 		camera = cameras->nodes().front();
 		cameraInGroup = true;
 
-		std::cout << "parsed camera's transform = " << std::to_string(camera->component<Transform>()->transform()) << std::endl;
-
 		if (camera->hasComponent<component::bullet::Collider>())
 		{
 			std::cout << "PARSED CAMERA & COLLIDER" << std::endl;
