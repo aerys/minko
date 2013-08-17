@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/component/AbstractLight.hpp"
+
 namespace minko
 {
 	namespace component
