@@ -83,13 +83,17 @@ namespace minko
 	namespace component
 	{
 		class AbstractComponent;
-        class AbstractRootDataComponent;
-		class Transform;
+	    class AbstractRootDataComponent;
+	    class SceneManager;
+    	class Transform;
 		class Surface;
 		class Renderer;
 		class PerspectiveCamera;
-        class SceneManager;
+
+        class LightManager;
         class AbstractLight;
+        class AmbientLight;
+        class AbstractDiscreteLight;
         class DirectionalLight;
 	}
 
