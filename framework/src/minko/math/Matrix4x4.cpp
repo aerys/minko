@@ -522,10 +522,6 @@ Matrix4x4::view(Vector3::Ptr eye, Vector3::Ptr lookAt, Vector3::Ptr upAxis)
 	Vector3::Ptr xAxis = Vector3::create()->copyFrom(upAxis)->cross(zAxis)->normalize();
 	Vector3::Ptr yAxis = Vector3::create()->copyFrom(zAxis)->cross(xAxis)->normalize();
 
-	std::cout << "x: " << xAxis->toString() << std::endl;
-	std::cout << "y: " << yAxis->toString() << std::endl;
-	std::cout << "z: " << zAxis->toString() << std::endl;
-
 	if ((xAxis->x() == 0.f && xAxis->y() == 0.f && xAxis->z() == 0.f)
 		|| (yAxis->x() == 0.f && yAxis->y() == 0.f && yAxis->z() == 0.f))
 	{
