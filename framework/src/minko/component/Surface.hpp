@@ -64,6 +64,10 @@ namespace minko
 				return surface;
 			}
 
+			~Surface()
+			{
+			}
+
 			inline
 			std::shared_ptr<geometry::Geometry>
 			geometry()
