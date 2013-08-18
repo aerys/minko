@@ -74,7 +74,7 @@ namespace minko
 			}
 
 		protected:
-			AbstractLight(const std::string& arrayName);
+			AbstractLight(const std::string& arrayName, uint lightId);
 
 			void
 			updateRoot(std::shared_ptr<scene::Node> node);

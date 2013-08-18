@@ -72,30 +72,32 @@ AbstractRootDataComponent::targetAddedHandler(AbstractComponent::Ptr ctrl, NodeP
     _addedSlot = target->added()->connect(cb);
     _removedSlot = target->removed()->connect(cb);
 
-    _root = target->root();
-    _root->data()->addProvider(_data);
+    updateRoot(target->root());
 }
 
 void
 AbstractRootDataComponent::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-    _root->data()->removeProvider(_data);
-    _root = nullptr;
+    updateRoot(nullptr);
 }
 
 void
 AbstractRootDataComponent::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-    updateRoot(node);
+    updateRoot(node->root());
 }
 
 void
-AbstractRootDataComponent::updateRoot(NodePtr node)
+AbstractRootDataComponent::updateRoot(NodePtr root)
 {
-    if (node->root() == _root)
+    if (root == _root)
         return;
 
-    _root->data()->removeProvider(_data);
-    _root = node->root();
-    _root->data()->addProvider(_data);
+    if (_root)
+        _root->data()->removeProvider(_data);
+    
+    _root = root;
+
+    if (_root)
+        _root->data()->addProvider(_data);
 }
