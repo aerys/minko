@@ -47,7 +47,6 @@ namespace minko
 				typedef std::shared_ptr<ColliderData>			ColliderDataPtr;
 				typedef std::shared_ptr<Transform>				TransformPtr;
 				typedef std::shared_ptr<PhysicsWorld>			PhysicsWorldPtr;
-				
 
 			private:
 				ColliderDataPtr									_colliderData;
@@ -74,6 +73,10 @@ namespace minko
 					collider->initialize();
 
 					return collider;
+				}
+
+				~Collider()
+				{
 				}
 
 				void
