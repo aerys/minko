@@ -44,6 +44,29 @@ Provider::unset(const std::string& propertyName)
 }
 
 void
+Provider::swap(const std::string& propertyName1, const std::string& propertyName2)
+{
+	if (!hasProperty(propertyName1))
+	{
+		// move propertyName2 into propertyName1
+		// FIXME: update _names
+		// FIXME: update _values
+		// FIXME: update _changedSignalSlots
+	}
+	else if (!hasProperty(propertyName2))
+	{
+		// move propertyName1 into propertyName2
+		// FIXME: update _names
+		// FIXME: update _values
+		// FIXME: update _changedSignalSlots
+	}
+	else
+	{
+		// actual swap
+	}
+}
+
+void
 Provider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
 	bool isNewValue = _values.count(propertyName) == 0;
