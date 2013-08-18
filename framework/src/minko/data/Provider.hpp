@@ -65,6 +65,7 @@ namespace minko
 				return _names;
 			}
 
+			virtual
 			bool 
 			hasProperty(const std::string&) const;
 
@@ -143,6 +144,9 @@ namespace minko
 			virtual
 			void
 			unset(const std::string& propertyName);
+
+			void
+			swap(const std::string& propertyName1, const std::string& propertyName2);
 
 		protected:
 			Provider();

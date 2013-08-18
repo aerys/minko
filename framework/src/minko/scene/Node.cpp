@@ -121,6 +121,9 @@ Node::contains(Node::Ptr node)
 Node::Ptr
 Node::addComponent(std::shared_ptr<AbstractComponent> component)
 {
+	if (!component)
+		throw std::invalid_argument("component");
+
 	if (hasComponent(component))
 		throw std::logic_error("The same component cannot be added twice.");
 
@@ -145,6 +148,9 @@ Node::addComponent(std::shared_ptr<AbstractComponent> component)
 Node::Ptr
 Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 {
+	if (!component)
+		throw std::invalid_argument("component");
+
 	std::list<AbstractComponent::Ptr>::iterator it = std::find(
 		_components.begin(), _components.end(), component
 	);

@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::component;
 
-AbstractLight::AbstractLight(const std::string& arrayName) :
-	AbstractRootDataComponent(data::ArrayProvider::create(arrayName)),
+AbstractLight::AbstractLight(const std::string& arrayName, uint lightId) :
+	AbstractRootDataComponent(data::ArrayProvider::create(arrayName, lightId)),
 	_priority(0.f),
 	_color(math::Vector3::create(1, 1, 1)),
 	_arrayData(std::dynamic_pointer_cast<data::ArrayProvider>(data()))
@@ -42,13 +42,16 @@ AbstractLight::updateRoot(scene::Node::Ptr node)
 
 	auto newRoot = root();
 
-	if (newRoot != oldRoot && !newRoot->hasComponent<LightManager>())
+	if (newRoot != oldRoot)
 	{
-		auto lightManager = oldRoot->component<LightManager>();
+		auto lightManager = oldRoot ? oldRoot->component<LightManager>() : nullptr;
 
-		if (!lightManager)
+		if (lightManager)
+			oldRoot->removeComponent(lightManager);
+		else
 			lightManager = LightManager::create();
 
-		newRoot->addComponent(lightManager);
+		if (newRoot && !newRoot->hasComponent<LightManager>())
+			newRoot->addComponent(lightManager);
 	}
 }
