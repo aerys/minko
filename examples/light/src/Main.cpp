@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
 	auto sceneManager = SceneManager::create(render::OpenGLES2Context::create());
     auto mesh = scene::Node::create("mesh");
-    auto lightNode = scene::Node::create("light");
+    auto lightNode = scene::Node::create("directional light 1");
 
 	// setup assets
 	sceneManager->assets()->defaultOptions()->generateMipmaps(true);
@@ -38,11 +38,25 @@ int main(int argc, char** argv)
  
 		root->addComponent(sceneManager);
 		
-		// setup direcitonal light
+		auto ambientLight = scene::Node::create("ambient light");
+		ambientLight->addComponent(AmbientLight::create());
+		root->addChild(ambientLight);
+
+		// setup directional light
 		auto directionalLight = DirectionalLight::create();
 		lightNode->addComponent(Transform::create());
 		lightNode->addComponent(directionalLight);
 		root->addChild(lightNode);
+
+		// setup directional light 2
+		auto lightNode2 = scene::Node::create("light2");
+		directionalLight = DirectionalLight::create();
+		directionalLight->color()->setTo(1.f, 0.f, 0.f);
+		lightNode2->addComponent(directionalLight);
+		lightNode2->addComponent(Transform::create());
+		lightNode2->component<Transform>()->transform()
+			->lookAt(Vector3::zero(), Vector3::create(0.f, -1.f, 1.f));
+		root->addChild(lightNode2);
 
 		// setup camera
         auto renderingComponent = Renderer::create();
@@ -50,7 +64,7 @@ int main(int argc, char** argv)
         camera->addComponent(renderingComponent);
 		camera->addComponent(Transform::create());
 		camera->component<Transform>()->transform()
-			->lookAt(Vector3::zero(), Vector3::create(5.f, 5.f, -5.f));
+			->lookAt(Vector3::zero(), Vector3::create(3.f, 3.f, -3.f));
 		camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
         root->addChild(camera);
 
