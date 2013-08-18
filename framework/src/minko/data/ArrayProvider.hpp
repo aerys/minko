@@ -41,9 +41,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(const std::string& name)
+			create(const std::string& name, uint index = 0)
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
+				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name, index));
 			}
 
 			inline
@@ -56,6 +56,9 @@ namespace minko
 			void
 			index(unsigned int index);
 
+			bool 
+			hasProperty(const std::string& propertyName);
+
 			void
 			registerProperty(const std::string& propertyName, std::shared_ptr<Value> value);
 
@@ -63,7 +66,7 @@ namespace minko
 			unset(const std::string& propertyName);
 
 		private:
-			ArrayProvider(const std::string& name);
+			ArrayProvider(const std::string& name, uint index);
 		};
 	}
 }
