@@ -21,20 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
-
-#include "minko/scene/Node.hpp"
-#include "minko/scene/NodeSet.hpp"
-#include "minko/component/AmbientLight.hpp"
-#include "minko/component/DirectionalLight.hpp"
 
 namespace minko
 {
 	namespace component
 	{
 		class LightManager :
-			public AbstractRootDataComponent
+			public AbstractComponent,
+			public std::enable_shared_from_this<LightManager>
 		{
 		public:
 			typedef std::shared_ptr<LightManager>	Ptr;
@@ -44,11 +40,16 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 
 		private:
-			int										_numAmbientLights;
-			int										_numDirectionalLights;
+			std::shared_ptr<data::Provider>				_data;
+			std::set<std::shared_ptr<AmbientLight>>		_ambientLights;
+			std::set<std::shared_ptr<DirectionalLight>>	_directionalLights;
 
-			Signal<NodePtr, NodePtr, NodePtr>::Slot _addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot _removedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot 	_removedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot 	_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot 	_componentRemovedSlot;
 
 		public:
 			inline static
@@ -62,104 +63,36 @@ namespace minko
 				return lm;
 			}
 
+			~LightManager()
+			{
+			}
+
+			void
+			initialize();
+
 		private:
-			LightManager() :
-				AbstractRootDataComponent(),
-				_numAmbientLights(0),
-				_numDirectionalLights(0),
-				_addedSlot(nullptr),
-				_removedSlot(nullptr)
-			{
-				data()
-					->set("ambientLights.length", 		0)
-					->set("directionalLights.length", 	0);
-			}
+			LightManager();
 
 			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr target)
-			{
-				AbstractRootDataComponent::targetAddedHandler(cmp, target);
-
-				if (target->components<LightManager>().size() > 1)
-					throw std::logic_error("There cannot be more than one LightManager.");
-				if (target->root() != target)
-					throw std::invalid_argument("target");
-
-				_addedSlot = target->added()->connect(std::bind(
-					&LightManager::addedHandler,
-					std::dynamic_pointer_cast<LightManager>(shared_from_this()),
-					std::placeholders::_1,
-					std::placeholders::_2,
-					std::placeholders::_3
-				));
-
-				_removedSlot = target->removed()->connect(std::bind(
-					&LightManager::removedHandler,
-					std::dynamic_pointer_cast<LightManager>(shared_from_this()),
-					std::placeholders::_1,
-					std::placeholders::_2,
-					std::placeholders::_3
-				));
-			}
+			targetAddedHandler(AbsCmpPtr cmp, NodePtr target);
 
 			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr target)
-			{
-				AbstractRootDataComponent::targetRemovedHandler(cmp, target);
-
-				_addedSlot = nullptr;
-				_removedSlot = nullptr;
-			}
+			targetRemovedHandler(AbsCmpPtr cmp, NodePtr target);
 
 			void
-			addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
-			{
-				if (target->children().size() == 0)
-				{
-					_numAmbientLights += target->components<AmbientLight>().size();
-					_numDirectionalLights += target->components<DirectionalLight>().size();					
-				}
-				else
-				{
-					for (auto& descendant : scene::NodeSet::create(target)->descendants(true)->nodes())
-					{
-						_numAmbientLights += descendant->components<AmbientLight>().size();
-						_numDirectionalLights += descendant->components<DirectionalLight>().size();
-					}
-				}
-
-				data()
-					->set("ambientLights.length", 		_numAmbientLights)
-					->set("directionalLights.length", 	_numDirectionalLights);
-			}
+			addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
-			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
-			{
-				if (target->children().size() == 0)
-				{
-					_numAmbientLights -= target->components<AmbientLight>().size();
-					_numDirectionalLights -= target->components<DirectionalLight>().size();					
-				}
-				else
-				{
-					for (auto& descendant : scene::NodeSet::create(target)->descendants(true)->nodes())
-					{
-						_numAmbientLights -= descendant->components<AmbientLight>().size();
-						_numDirectionalLights -= descendant->components<DirectionalLight>().size();
-					}
-				}
-
-				data()
-					->set("ambientLights.length", 		_numAmbientLights)
-					->set("directionalLights.length", 	_numDirectionalLights);
-			}
+			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
-			sortLights()
-			{
-				// FIXME
-			}
+			componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
+
+			void
+			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
+
+			void
+			setLightArrayLength(const std::string& arrayName, int length);
 		};
 	}
 }
