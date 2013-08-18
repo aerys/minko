@@ -24,10 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractLight.hpp"
 #include "minko/Signal.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/data/Container.hpp"
-
 namespace minko
 {
 	namespace component
@@ -68,7 +64,7 @@ namespace minko
 			}
 
 		protected:
-			AbstractDiscreteLight(const std::string& arrayName);
+			AbstractDiscreteLight(const std::string& arrayName, uint lightId);
 
 			virtual
             void

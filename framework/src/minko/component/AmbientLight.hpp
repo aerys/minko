@@ -28,15 +28,32 @@ namespace minko
 	namespace component
 	{
 		class AmbientLight :
-			AbstractLight
+			public AbstractLight
 		{
 		public:
 			typedef std::shared_ptr<AmbientLight>	Ptr;
 
 		private:
+			static uint _counter;
+
 			float	_ambient;
 
 		public:
+			inline static
+			Ptr
+			create(float ambient = .2f)
+			{
+				auto al = std::shared_ptr<AmbientLight>(new AmbientLight(ambient));
+
+				al->initialize();
+
+				return al;
+			}
+
+			~AmbientLight()
+			{
+			}
+
 			inline
 			float
 			ambient()
@@ -53,10 +70,7 @@ namespace minko
 			}
 
 		protected:
-			AmbientLight() :
-				AbstractLight("ambientLights")
-			{
-			}
+			AmbientLight(float ambient);
 		};
 	}
 }

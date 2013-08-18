@@ -25,7 +25,8 @@
 		"DIFFUSE_MAP"				: "material.diffuseMap",
 		"SHININESS"					: "material.shininess",
 		"MODEL_TO_WORLD"			: "transform.modelToWorldMatrix",
-		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length"
+		"NUM_DIRECTIONAL_LIGHTS"	: "directionalLights.length",
+		"NUM_AMBIENT_LIGHTS"		: "ambientLights.length"
 	},
 	
 	"priority"			: 0,
@@ -88,13 +89,17 @@
 				precision mediump float;
 			#endif
 
-			#ifdef NUM_DIRECTIONAL_LIGHTS
-				uniform DirectionalLight 	directionalLights[NUM_DIRECTIONAL_LIGHTS];
+			#ifdef NUM_AMBIENT_LIGHTS
+				uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
 			#endif
-			uniform vec4 				diffuseColor;
-			uniform sampler2D 			diffuseMap;
-			uniform float				shininess;
-			uniform vec3 				cameraPosition;
+			#ifdef NUM_DIRECTIONAL_LIGHTS
+				uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
+			#endif
+
+			uniform vec4 diffuseColor;
+			uniform sampler2D diffuseMap;
+			uniform float shininess;
+			uniform vec3 cameraPosition;
 			
 			varying vec2 vertexUV;
 			varying vec3 vertexNormal;
@@ -104,35 +109,45 @@
 			{
 				vec4 diffuse = vec4(0);
 
+				// diffuse
 				#ifdef DIFFUSE_MAP
 					diffuse = texture2D(diffuseMap, vertexUV);
 				#else
 					diffuse = diffuseColor;
 				#endif
 
+				vec3 phong = vec3(0.);
+				#ifdef NUM_AMBIENT_LIGHTS
+					for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+					{
+						phong += ambientLights[i].color * ambientLights[i].ambient;
+					}
+				#endif
+
 				#ifdef NUM_DIRECTIONAL_LIGHTS
-					float phong = 0.;
+					vec3 eyeVector = normalize(cameraPosition - vertexPosition);
+					vec3 normal = normalize(vertexNormal);
 
 					for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 					{
-						vec3 eyeVector = normalize(cameraPosition - vertexPosition);
-						vec3 normal = normalize(vertexNormal);
-						vec3 lightDirection = normalize(-directionalLights[0].direction);
-						
-						phong += phong_diffuseReflection(normal, lightDirection)
-							* directionalLights[0].diffuse;
+						vec3 lightDirection = normalize(-directionalLights[i].direction);
+						float contribution = phong_diffuseReflection(normal, lightDirection)
+							* directionalLights[i].diffuse;
 
 						#ifdef SHININESS
-							phong += phong_specularReflection(
+							contribution += phong_specularReflection(
 								normal,
 								lightDirection,
 								eyeVector,
 								shininess
-							) * directionalLights[0].specular;
+							) * directionalLights[i].specular;
+
 						#endif
+
+						phong += contribution * directionalLights[i].color;
 					}
 
-					diffuse = vec4(diffuse.rgb * (phong * directionalLights[0].color), diffuse.a);
+					diffuse = vec4(diffuse.rgb * phong, diffuse.a);
 				#endif
 
 				gl_FragColor = diffuse;
