@@ -154,6 +154,10 @@ namespace minko
 				return system;
 			};
 
+			~ParticleSystem()
+			{
+			}
+
 			inline
 			ProviderPtr
 			material()
