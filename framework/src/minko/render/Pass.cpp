@@ -85,11 +85,11 @@ Pass::selectProgram(std::shared_ptr<data::Container> data, std::shared_ptr<data:
 				{
 					auto& propertyName = macroBinding.second;
 					auto& container = data->hasProperty(propertyName) ? data : rootData;
-					std::string value = container->propertyHasType<int>(propertyName)
-						? std::to_string(container->get<int>(propertyName))
-						: "true";
 
-					defines += "#define " + macroBinding.first + " " + value + "\n";
+					defines += "#define " + macroBinding.first;
+					if (container->propertyHasType<int>(propertyName))
+						defines += " " + std::to_string(container->get<int>(propertyName));
+					defines += "\n";
 				}
             }
 
