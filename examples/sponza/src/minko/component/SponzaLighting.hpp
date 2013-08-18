@@ -55,6 +55,10 @@ namespace minko
 				return lighting;
 			}
 
+			~SponzaLighting()
+			{
+			}
+
 			void
 			step();
 	

@@ -25,8 +25,10 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
+uint DirectionalLight::_counter = 0;
+
 DirectionalLight::DirectionalLight() :
-	AbstractDiscreteLight("directionalLights"),
+	AbstractDiscreteLight("directionalLights", _counter++),
 	_worldDirection(Vector3::create(-1.f, 0.f, -1.f))
 {
 	diffuse(1.f);

@@ -68,6 +68,10 @@ namespace minko
 				return ctrl;
 			}
 
+			~Renderer()
+			{
+			}
+
 			inline
 			unsigned int
 			backgroundColor()
