@@ -19,10 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "AbstractDiscreteLight.hpp"
 
+#include "minko/math/Matrix4x4.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/data/Container.hpp"
+
 using namespace minko::component;
 
-AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
-	AbstractLight(arrayName)
+AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName, uint lightId) :
+	AbstractLight(arrayName, lightId)
 {
 }
 

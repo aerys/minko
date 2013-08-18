@@ -255,7 +255,8 @@ namespace minko
 				return nullptr;
 			}
 
-			virtual ~Node()
+			virtual
+			~Node()
 			{
 			}
 
