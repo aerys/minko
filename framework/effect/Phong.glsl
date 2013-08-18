@@ -1,3 +1,9 @@
+struct AmbientLight
+{
+	vec3 color;
+	float ambient;	
+};
+
 struct DirectionalLight
 {
 	vec3 color;
