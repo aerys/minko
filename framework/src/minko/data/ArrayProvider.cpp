@@ -21,16 +21,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::data;
 
-ArrayProvider::ArrayProvider(const std::string& name) :
+ArrayProvider::ArrayProvider(const std::string& name, uint index) :
 	_name(name),
-	_index(0)
+	_index(index)
 {
 }
 
 void
 ArrayProvider::index(unsigned int index)
 {
-	throw;
+	if (_index == index)
+		return;
+
+	/*
+	for (auto& propertyNames : _propertyNameToArrayPropertyName)
+	{
+		auto& arrayPropertyName = propertyNames.second;
+
+		unset(propertyNames.first);
+
+	}
+	*/
+}
+
+bool 
+ArrayProvider::hasProperty(const std::string& propertyName)
+{
+	return _propertyNameToArrayPropertyName.count(propertyName);
 }
 
 void
