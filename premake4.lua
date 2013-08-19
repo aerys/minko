@@ -10,7 +10,8 @@ end
 --include 'examples/sponza'
 --include 'examples/envmap'
 --include 'examples/cube'
-include 'examples/effect-editor'
+--include 'examples/effect-editor'
+include '../minko-shader-editor/cpp'
 
 -- core framework
 include 'framework'
