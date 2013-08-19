@@ -654,7 +654,11 @@ OpenGLES2Context::setSamplerStateAt(const unsigned int position, WrapMode wrappi
 const unsigned int
 OpenGLES2Context::createProgram()
 {
-	return glCreateProgram();
+	auto handle = glCreateProgram();
+	
+	_programs.push_back(handle);
+
+	return handle;
 }
 
 void
@@ -807,6 +811,7 @@ OpenGLES2Context::getProgramInputs(const unsigned int program)
 	std::vector<ProgramInputs::Type> types;
 	std::vector<unsigned int> locations;
 
+	glUseProgram(program);
 	fillUniformInputs(program, names, types, locations);
 	fillAttributeInputs(program, names, types, locations);
 
@@ -824,7 +829,6 @@ OpenGLES2Context::fillUniformInputs(const unsigned int					program,
 	int total = -1;
 	int maxUniformNameLength = -1;
 
-	glUseProgram(program);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
 	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
 
@@ -900,7 +904,6 @@ OpenGLES2Context::fillAttributeInputs(const unsigned int				program,
 	int total = -1;
 	int maxAttributeNameLength = -1;
 
-	glUseProgram(program);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttributeNameLength);
 	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
 
@@ -1168,7 +1171,30 @@ OpenGLES2Context::createRTTBuffers(unsigned int texture, unsigned int width, uns
 unsigned int
 OpenGLES2Context::getError()
 {
-    return glGetError();
+	auto error = glGetError();
+
+	switch(error)
+	{
+	default:
+		break;
+	case GL_INVALID_ENUM:
+		std::cerr << "GL_INVALID_ENUM" << std::endl;
+		break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+		break;
+	case GL_INVALID_VALUE:
+		std::cerr << "GL_INVALID_VALUE" << std::endl;
+		break;
+	case GL_INVALID_OPERATION:
+		std::cerr << "GL_INVALID_OPERATION" << std::endl;
+		break;
+	case GL_OUT_OF_MEMORY:
+		std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
+		break;
+	}
+
+    return error;
 }
 
 void
