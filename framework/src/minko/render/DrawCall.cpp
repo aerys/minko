@@ -75,6 +75,8 @@ DrawCall::configure(std::shared_ptr<Program>  program,
 void
 DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 {
+	reset();
+
 	_data = data;
 	_rootData = rootData;
     _propertyChangedSlots.clear();
@@ -152,6 +154,40 @@ DrawCall::bind(ContainerPtr data, ContainerPtr rootData)
 	}
 
 	bindStates();
+}
+
+void
+DrawCall::reset()
+{
+	_uniformFloat.clear();
+	_uniformFloat2.clear();
+	_uniformFloat3.clear();
+	_uniformFloat4.clear();
+	_uniformFloat16.clear();
+
+	_textures.clear();
+	_textureLocations.clear();
+	_textureWrapMode.clear();
+	_textureFilters.clear();
+	_textureMipFilters.clear();
+
+	_textures.resize(8, -1);
+	_textureLocations.resize(8, -1);
+	_textureWrapMode.resize(8, WrapMode::CLAMP);
+	_textureFilters.resize(8, TextureFilter::NEAREST);
+	_textureMipFilters.resize(8, MipFilter::NONE);
+
+	_vertexBuffers.clear();
+	_vertexBufferLocations.clear();
+	_vertexSizes.clear();
+	_vertexAttributeSizes.clear();
+	_vertexAttributeOffsets.clear();
+
+	_vertexBuffers.resize(8, -1);
+	_vertexBufferLocations.resize(8, -1);
+	_vertexSizes.resize(8, -1);
+	_vertexAttributeSizes.resize(8, -1);
+	_vertexAttributeOffsets.resize(8, -1);
 }
 
 void
