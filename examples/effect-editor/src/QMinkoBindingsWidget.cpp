@@ -8,6 +8,8 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 
+using namespace minko::render;
+
 /*explicit*/
 QMinkoBindingsWidget::QMinkoBindingsWidget(QWidget *parent) :
     QWidget(parent),
@@ -20,14 +22,17 @@ QMinkoBindingsWidget::QMinkoBindingsWidget(QWidget *parent) :
 	_qAddButtons[BIND_ATTRIBUTE]		= _ui->attributeBindingsAddButton;
 	_qAddButtons[BIND_UNIFORM]			= _ui->uniformBindingsAddButton;
 	_qAddButtons[BIND_STATE]			= _ui->stateBindingsAddButton;
+	_qAddButtons[BIND_MACRO]			= _ui->macroBindingsAddButton;
 
 	_qRemoveButtons[BIND_ATTRIBUTE]		= _ui->attributeBindingsRemoveButton;
 	_qRemoveButtons[BIND_UNIFORM]		= _ui->uniformBindingsRemoveButton;
 	_qRemoveButtons[BIND_STATE]			= _ui->stateBindingsRemoveButton;
+	_qRemoveButtons[BIND_MACRO]			= _ui->macroBindingsRemoveButton;
 
 	_qBindingsTables[BIND_ATTRIBUTE]	= _ui->attributeBindingsTabWidget;
 	_qBindingsTables[BIND_UNIFORM]		= _ui->uniformBindingsTabWidget;
 	_qBindingsTables[BIND_STATE]		= _ui->stateBindingsTabWidget;
+	_qBindingsTables[BIND_MACRO]		= _ui->macroBindingsTabWidget;
 
 	setupBindingsButtons();
 	setupBindingsTables();
@@ -44,7 +49,9 @@ QMinkoBindingsWidget::setupBindingsButtons()
 	for (int i = BIND_ATTRIBUTE; i < NUM_BIND_TYPES; ++i)
 	{
 		_qAddButtons[i]		->setIcon(QIcon(":/resources/icon-add.png"));
+		_qAddButtons[i]		->setToolButtonStyle(Qt::ToolButtonIconOnly);
 		_qRemoveButtons[i]	->setIcon(QIcon(":/resources/icon-remove.png"));
+		_qRemoveButtons[i]	->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
 		QObject::connect(_qAddButtons[i],		SIGNAL(released()), _qAddSignalMapper,		SLOT(map()));
 		QObject::connect(_qRemoveButtons[i],	SIGNAL(released()), _qRemoveSignalMapper,	SLOT(map()));
@@ -64,6 +71,7 @@ QMinkoBindingsWidget::setupBindingsTables()
 	{
 		_qBindingsTables[i]->setColumnCount(2);
 		_qBindingsTables[i]->setHorizontalHeaderLabels(QStringList() << "Name" << "Value");
+		_qBindingsTables[i]->verticalHeader()->setVisible(false);
 		_qBindingsTables[i]->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 		_qBindingsTables[i]->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 	}
@@ -95,6 +103,8 @@ QMinkoBindingsWidget::addBinding(int bindTypeId)
 	case BIND_STATE:
 		bindTypeName	= "State";
 		break;
+	case BIND_MACRO:
+		bindTypeName	= "Macro";
 	default:
 		return;
 	}
@@ -116,13 +126,7 @@ QMinkoBindingsWidget::addBinding(int bindTypeId)
 		return;
 	}
 
-	QTableWidgetItem* nameItem	= new QTableWidgetItem(tr(name.c_str()));
-	QTableWidgetItem* valueItem	= new QTableWidgetItem(tr("\" \""));
-	nameItem->setFlags(Qt::NoItemFlags);
-
-	_qBindingsTables[bindType]->insertRow(0);
-	_qBindingsTables[bindType]->setItem(0, 0, nameItem);
-	_qBindingsTables[bindType]->setItem(0, 1, valueItem);
+	appendBindingTableRow(bindType, name, std::string());
 }
 
 /*slot*/
@@ -154,6 +158,8 @@ QMinkoBindingsWidget::removeBinding(int bindTypeId)
 
 	for (auto name : names)
 		removeBinding(bindType, name);
+
+	emit bindingsChanged(bindType);
 }
 
 /*slot*/
@@ -177,8 +183,15 @@ QMinkoBindingsWidget::addStateBindingAt(int row, int column)
 	addBindingAt(BIND_STATE, row, column);
 }
 
+/*slot*/
 void
-QMinkoBindingsWidget::addBindingAt(QMinkoBindingsWidget::BindingType bindType, 
+QMinkoBindingsWidget::addMacroBindingAt(int row, int column)
+{
+	addBindingAt(BIND_MACRO, row, column);
+}
+
+void
+QMinkoBindingsWidget::addBindingAt(BindingType bindType, 
 									int row, 
 									int column)
 {
@@ -204,8 +217,32 @@ QMinkoBindingsWidget::addBindingAt(QMinkoBindingsWidget::BindingType bindType,
 	);
 }
 
+void
+QMinkoBindingsWidget::appendBindingTableRow(minko::render::BindingType bindType, 
+											const std::string& name, 
+											const std::string& value)
+{
+#ifdef DEBUG
+	if (bindType == NUM_BIND_TYPES)
+		throw std::invalid_argument("bindType");
+#endif // DEBUG
+
+	if (name.empty())
+		return;
+
+	QTableWidgetItem* nameItem	= new QTableWidgetItem(tr(name.c_str()));
+	QTableWidgetItem* valueItem	= new QTableWidgetItem(tr(value.c_str()));
+	nameItem->setFlags(Qt::NoItemFlags);
+
+	const unsigned int row = _qBindingsTables[bindType]->rowCount();
+
+	_qBindingsTables[bindType]->insertRow(row);
+	_qBindingsTables[bindType]->setItem(row, 0, nameItem);
+	_qBindingsTables[bindType]->setItem(row, 1, valueItem);
+}
+
 bool
-QMinkoBindingsWidget::bindingExists(QMinkoBindingsWidget::BindingType bindType, 
+QMinkoBindingsWidget::bindingExists(BindingType bindType, 
 									const std::string& name) const
 {
 #ifdef DEBUG
@@ -217,7 +254,7 @@ QMinkoBindingsWidget::bindingExists(QMinkoBindingsWidget::BindingType bindType,
 }
 
 void
-QMinkoBindingsWidget::removeBinding(QMinkoBindingsWidget::BindingType bindType, 
+QMinkoBindingsWidget::removeBinding(BindingType bindType, 
 									const std::string& name)
 {
 #ifdef DEBUG
@@ -237,7 +274,7 @@ QMinkoBindingsWidget::removeBinding(QMinkoBindingsWidget::BindingType bindType,
 }
 
 void
-QMinkoBindingsWidget::addBinding(QMinkoBindingsWidget::BindingType bindType, 
+QMinkoBindingsWidget::addBinding(BindingType bindType, 
 								const std::string& name, 
 								const std::string& value)
 {
@@ -250,13 +287,15 @@ QMinkoBindingsWidget::addBinding(QMinkoBindingsWidget::BindingType bindType,
 
 	_bindings[bindType][name] = value;
 
+	emit bindingsChanged(bindType);
+
 #ifdef DEBUG
 	std::cout << "added bindings[" << bindType << "][" << name << "] = " << _bindings[bindType][name] << std::endl;
 #endif // DEBUG
 }
 
 const std::string&
-QMinkoBindingsWidget::binding(QMinkoBindingsWidget::BindingType bindType, 
+QMinkoBindingsWidget::binding(BindingType bindType, 
 							const std::string& name) const
 {
 #ifdef DEBUG
@@ -274,4 +313,33 @@ QMinkoBindingsWidget::binding(QMinkoBindingsWidget::BindingType bindType,
 	}
 
 	return it->second;
+}
+
+const QMinkoBindingsWidget::BindingMap&
+QMinkoBindingsWidget::bindings(BindingType bindType) const
+{
+#ifdef DEBUG
+	if (bindType == NUM_BIND_TYPES)
+		throw std::invalid_argument("bindType");
+#endif // DEBUG
+
+	return _bindings[bindType];
+}
+
+void
+QMinkoBindingsWidget::bindings(BindingType bindType, 
+							   const BindingMap& bindings)
+{
+#ifdef DEBUG
+	if (bindType == NUM_BIND_TYPES)
+		throw std::invalid_argument("bindType");
+#endif // DEBUG
+
+	_bindings[bindType].clear();
+
+	while(_qBindingsTables[bindType]->rowCount() > 0)
+		_qBindingsTables[bindType]->removeRow(0);
+
+	for (auto binding : bindings)
+		appendBindingTableRow(bindType, binding.first, binding.second);
 }
