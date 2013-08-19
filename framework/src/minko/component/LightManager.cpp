@@ -165,13 +165,13 @@ LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 				lights.push_back(directionalLight);
 	}
 
+	for (auto light : lights)
+		targets()[0]->data()->removeProvider(light->_arrayData);
+
 	if (numAmbientLights != _ambientLights.size())
 		updateLightArray("ambientLights", _ambientLights);
 	if (numDirectionalLights != _directionalLights.size())
 		updateLightArray("directionalLights", _directionalLights);
-
-	for (auto light : lights)
-		targets()[0]->data()->removeProvider(light->_arrayData);
 }
 
 void
@@ -200,18 +200,18 @@ LightManager::componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cm
 
 	if (ambientLight && _ambientLights.erase(ambientLight))
 	{
-		updateLightArray("ambientLights", _ambientLights);
 		targets()[0]->data()->removeProvider(ambientLight->_arrayData);
+		updateLightArray("ambientLights", _ambientLights);
 	}
 	else if (directionalLight && _directionalLights.erase(directionalLight))
 	{
-		updateLightArray("directionalLights", _directionalLights);
 		targets()[0]->data()->removeProvider(directionalLight->_arrayData);
+		updateLightArray("directionalLights", _directionalLights);
 	}
 }
 
 void
-LightManager::updateLightArray(const std::string& arrayName, std::set<AbstractLight::Ptr>& lights)
+LightManager::updateLightArray(const std::string& arrayName, std::unordered_set<AbstractLight::Ptr>& lights)
 {
 	auto propertyName = arrayName + ".length";
 	auto length = lights.size();
