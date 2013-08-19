@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/data/Container.hpp"
 
+using namespace minko;
 using namespace minko::component;
 
 AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
