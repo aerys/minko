@@ -21,7 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/component/AbstractRootDataComponent.hpp"
+#include "minko/Signal.hpp"
+#include "minko/component/AbstractComponent.hpp"
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/math/Vector3.hpp"
 
@@ -30,19 +31,28 @@ namespace minko
 	namespace component
 	{
 		class AbstractLight :
-			public AbstractRootDataComponent
+			public AbstractComponent,
+			public std::enable_shared_from_this<AbstractLight>
 		{
 			friend LightManager;
 
 		public:
-			typedef std::shared_ptr<AbstractLight> Ptr;
+			typedef std::shared_ptr<AbstractLight> 					Ptr;
 
 		private:
-			float									_priority;
+			typedef	std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<AbstractComponent>				AbsCmpPtr;
+			typedef Signal<NodePtr, NodePtr, NodePtr>::Slot 		SceneSignalSlot;
+			typedef std::unordered_map<NodePtr, SceneSignalSlot> 	NodeToSceneSignalSlotMap;
+
+		private:
+			std::shared_ptr<data::ArrayProvider>	_arrayData;
 			std::shared_ptr<math::Vector3>			_color;
 
-		protected:
-			std::shared_ptr<data::ArrayProvider>	_arrayData;
+			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot 		_targetRemovedSlot;
+			NodeToSceneSignalSlotMap 				_addedSlots;
+			NodeToSceneSignalSlotMap				_removedSlots;
 
 		public:
 			inline
@@ -53,17 +63,10 @@ namespace minko
 			}
 
 			inline
-			const float
-			priority()
-			{
-				return _priority;
-			}
-
-			inline
 			void
-			priority(float priority)
+			lightId(uint id)
 			{
-				_priority = priority;
+				_arrayData->index(id);
 			}
 
 			inline
@@ -74,10 +77,29 @@ namespace minko
 			}
 
 		protected:
-			AbstractLight(const std::string& arrayName, uint lightId);
+			AbstractLight(const std::string& arrayName);
+
+			inline
+			std::shared_ptr<data::Provider>
+			data()
+			{
+				return _arrayData;
+			}
 
 			void
-			updateRoot(std::shared_ptr<scene::Node> node);
+			initialize();
+
+			virtual
+			void
+			targetAddedHandler(AbsCmpPtr cmp, NodePtr target);
+
+			virtual
+			void
+			targetRemovedHandler(AbsCmpPtr cmp, NodePtr target);
+
+			virtual
+			void
+			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 		};
 	}
 }

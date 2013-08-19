@@ -33,15 +33,9 @@ ArrayProvider::index(unsigned int index)
 	if (_index == index)
 		return;
 
-	/*
+	_index = index;
 	for (auto& propertyNames : _propertyNameToArrayPropertyName)
-	{
-		auto& arrayPropertyName = propertyNames.second;
-
-		unset(propertyNames.first);
-
-	}
-	*/
+		swap(propertyNames.second, _name + "[" + std::to_string(_index) + "]." + propertyNames.first);
 }
 
 bool 
