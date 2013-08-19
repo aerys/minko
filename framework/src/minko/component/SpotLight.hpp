@@ -17,14 +17,68 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AmbientLight.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::component;
+#include "minko/Common.hpp"
 
-AmbientLight::AmbientLight(float ambient) :
-	AbstractLight("ambientLights"),
-	_ambient(ambient)
+#include "minko/component/AbstractDiscreteLight.hpp"
+
+namespace minko
 {
-	data()->set("ambient", ambient);
+	namespace component
+	{
+		class SpotLight :
+			public AbstractDiscreteLight
+		{
+		public:
+			typedef std::shared_ptr<SpotLight> Ptr;
+	
+		private:
+			static uint						_counter;
+
+			float							_cosInnerConeAngle;
+			float							_cosOuterConeAngle;
+			std::shared_ptr<math::Vector3>	_worldPosition;
+			std::shared_ptr<math::Vector3>	_worldDirection;
+
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto light = std::shared_ptr<SpotLight>(new SpotLight());
+
+                light->initialize();
+
+			    return light;
+			}
+
+			inline
+			float
+			cosInnerConeAngle() const
+			{
+				return _cosInnerConeAngle;
+			}
+
+			void
+			innerConeAngle(float radians);
+
+			inline
+			float
+			cosOuterConeAngle() const
+			{
+				return _cosOuterConeAngle;
+			}
+
+			void
+			outerConeAngle(float radians);
+
+		protected:
+			void
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
+
+		private:
+			SpotLight();
+		};
+	}
 }

@@ -17,14 +17,46 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AmbientLight.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::component;
+#include "minko/Common.hpp"
 
-AmbientLight::AmbientLight(float ambient) :
-	AbstractLight("ambientLights"),
-	_ambient(ambient)
+#include "minko/component/AbstractDiscreteLight.hpp"
+
+namespace minko
 {
-	data()->set("ambient", ambient);
+	namespace component
+	{
+		class PointLight:
+			public AbstractDiscreteLight
+		{
+		public:
+			typedef std::shared_ptr<PointLight> Ptr;
+	
+		private:
+			static uint						_counter;
+
+			std::shared_ptr<math::Vector3>	_color;
+			std::shared_ptr<math::Vector3>	_worldPosition;
+
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto light = std::shared_ptr<PointLight>(new PointLight());
+
+				light->initialize();
+
+				return light;
+			}
+	
+		protected:
+			void
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
+
+		private:
+			PointLight();
+		};
+	}
 }
