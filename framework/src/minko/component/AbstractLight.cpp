@@ -24,34 +24,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::component;
 
-AbstractLight::AbstractLight(const std::string& arrayName, uint lightId) :
-	AbstractRootDataComponent(data::ArrayProvider::create(arrayName, lightId)),
-	_priority(0.f),
-	_color(math::Vector3::create(1, 1, 1)),
-	_arrayData(std::dynamic_pointer_cast<data::ArrayProvider>(data()))
+AbstractLight::AbstractLight(const std::string& arrayName) :
+	AbstractComponent(),
+	_arrayData(data::ArrayProvider::create(arrayName, 0)),
+	_color(math::Vector3::create(1, 1, 1))
 {
 	data()->set("color", _color);
 }
 
 void
-AbstractLight::updateRoot(scene::Node::Ptr node)
+AbstractLight::initialize()
 {
-	auto oldRoot = root();
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&AbstractLight::targetAddedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 
-	AbstractRootDataComponent::updateRoot(node);
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&AbstractLight::targetRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+}
 
-	auto newRoot = root();
+void
+AbstractLight::targetAddedHandler(AbsCmpPtr cmp, NodePtr target)
+{
+	if (!target->root()->hasComponent<LightManager>())
+		target->root()->addComponent(LightManager::create());
 
-	if (newRoot != oldRoot)
-	{
-		auto lightManager = oldRoot ? oldRoot->component<LightManager>() : nullptr;
+	auto cb = std::bind(
+		&AbstractLight::addedOrRemovedHandler,
+		shared_from_this(),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	);
 
-		if (lightManager)
-			oldRoot->removeComponent(lightManager);
-		else
-			lightManager = LightManager::create();
+	_addedSlots[target] = target->added()->connect(cb);
+	_removedSlots[target] = target->removed()->connect(cb);
+}
 
-		if (newRoot && !newRoot->hasComponent<LightManager>())
-			newRoot->addComponent(lightManager);
-	}
+void
+AbstractLight::targetRemovedHandler(AbsCmpPtr cmp, NodePtr target)
+{
+	_addedSlots.erase(target);
+	_removedSlots.erase(target);
+}
+
+void
+AbstractLight::addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+{
+	if (node != target)
+		return;
+
+	if (!node->root()->hasComponent<LightManager>())
+		node->root()->addComponent(LightManager::create());
 }

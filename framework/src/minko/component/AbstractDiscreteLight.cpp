@@ -25,29 +25,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::component;
 
-AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName, uint lightId) :
-	AbstractLight(arrayName, lightId)
+AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName) :
+	AbstractLight(arrayName)
 {
 }
 
 void
 AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
 {
-	AbstractRootDataComponent::targetAddedHandler(cmp, target);
+	AbstractLight::targetAddedHandler(cmp, target);
 
-	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")
-		->connect(std::bind(
-			&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
-			std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
+	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
+		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
+		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
 }
 
 void
 AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
 {
-	AbstractRootDataComponent::targetRemovedHandler(cmp, target);
+	AbstractLight::targetRemovedHandler(cmp, target);
 
 	_modelToWorldChangedSlot = nullptr;
 }
