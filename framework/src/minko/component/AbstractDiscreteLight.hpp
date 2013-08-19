@@ -64,7 +64,7 @@ namespace minko
 			}
 
 		protected:
-			AbstractDiscreteLight(const std::string& arrayName, uint lightId);
+			AbstractDiscreteLight(const std::string& arrayName);
 
 			virtual
             void
