@@ -129,11 +129,11 @@ LightManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	for (auto& descendant : descendants->nodes())
 	{
 		for (auto& ambientLight : descendant->components<AmbientLight>())
-			if (_ambientLights.insert(ambientLight).second)
+			if (addLight(ambientLight, _ambientLights))
 				lights.push_back(ambientLight);
 
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
-			if (_directionalLights.insert(directionalLight).second)
+			if (addLight(directionalLight, _directionalLights))
 				lights.push_back(directionalLight);
 	}
 
@@ -157,11 +157,11 @@ LightManager::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 	for (auto& descendant : descendants->nodes())
 	{
 		for (auto& ambientLight : descendant->components<AmbientLight>())
-			if (_ambientLights.erase(ambientLight))
+			if (removeLight(ambientLight, _ambientLights))
 				lights.push_back(ambientLight);
 	
 		for (auto& directionalLight : descendant->components<DirectionalLight>())
-			if (_directionalLights.erase(directionalLight))
+			if (removeLight(directionalLight, _directionalLights))
 				lights.push_back(directionalLight);
 	}
 
@@ -180,12 +180,12 @@ LightManager::componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp)
 	auto ambientLight = std::dynamic_pointer_cast<AmbientLight>(cmp);
 	auto directionalLight = std::dynamic_pointer_cast<DirectionalLight>(cmp);
 
-	if (ambientLight && _ambientLights.insert(ambientLight).second)
+	if (ambientLight && addLight(ambientLight, _ambientLights))
 	{
 		updateLightArray("ambientLights", _ambientLights);
 		targets()[0]->data()->addProvider(ambientLight->_arrayData);
 	}
-	else if (directionalLight && _directionalLights.insert(directionalLight).second)
+	else if (directionalLight && addLight(directionalLight, _directionalLights))
 	{
 		updateLightArray("directionalLights", _directionalLights);
 		targets()[0]->data()->addProvider(directionalLight->_arrayData);
@@ -198,20 +198,44 @@ LightManager::componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cm
 	auto ambientLight = std::dynamic_pointer_cast<AmbientLight>(cmp);
 	auto directionalLight = std::dynamic_pointer_cast<DirectionalLight>(cmp);
 
-	if (ambientLight && _ambientLights.erase(ambientLight))
+	if (ambientLight && removeLight(ambientLight, _ambientLights))
 	{
 		targets()[0]->data()->removeProvider(ambientLight->_arrayData);
 		updateLightArray("ambientLights", _ambientLights);
 	}
-	else if (directionalLight && _directionalLights.erase(directionalLight))
+	else if (directionalLight && removeLight(directionalLight, _directionalLights))
 	{
 		targets()[0]->data()->removeProvider(directionalLight->_arrayData);
 		updateLightArray("directionalLights", _directionalLights);
 	}
 }
 
+bool
+LightManager::addLight(AbsLightPtr light, std::list<AbsLightPtr>& list)
+{
+	if (std::find(list.begin(), list.end(), light) != list.end())
+		return false;
+
+	list.push_back(light);
+
+	return true;
+}
+
+bool
+LightManager::removeLight(AbsLightPtr light, std::list<AbsLightPtr>& list)
+{
+	auto lightIt = std::find(list.begin(), list.end(), light);
+
+	if (lightIt == list.end())
+		return false;
+
+	list.erase(lightIt);
+
+	return true;
+}
+
 void
-LightManager::updateLightArray(const std::string& arrayName, std::unordered_set<AbstractLight::Ptr>& lights)
+LightManager::updateLightArray(const std::string& arrayName, std::list<AbstractLight::Ptr>& lights)
 {
 	auto propertyName = arrayName + ".length";
 	auto length = lights.size();
@@ -224,7 +248,7 @@ LightManager::updateLightArray(const std::string& arrayName, std::unordered_set<
 	else
 		_data->set<int>(propertyName, length);
 
-	auto counter = lights.size();
+	auto counter = 0;
 	for (auto& light : lights)
-		light->lightId(--counter);
+		light->lightId(counter++);
 }
