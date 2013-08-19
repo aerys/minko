@@ -4,7 +4,12 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWebKitWidgets/QWebFrame>
 
-#include "QMinkoGLWidget.hpp"
+#include <json/json.h>
+
+#include <minko/Minko.hpp>
+#include "minko/render/BindingType.hpp"
+
+#include "EditorCommon.hpp"
 
 namespace Ui 
 {
@@ -33,6 +38,8 @@ class QMinkoEffectEditor :
 		QIcon					*_qIconSaveNeeded;
 		bool					_saveNeeded;
 
+		Json::Value				_effectRoot;
+
 		minko::Signal<minko::file::AbstractParser::Ptr>::Slot	_effectParserCompleteSlot;
 
 	public:
@@ -50,6 +57,9 @@ class QMinkoEffectEditor :
 		updateEffectName();
 
 		void
+		updateBindings(minko::render::BindingType);
+
+		void
 		exposeQObjectsToVertexJS();
 
 		void
@@ -64,6 +74,9 @@ class QMinkoEffectEditor :
 		void
 		saveEffect();
 
+		void
+		previewEffectFile();
+
 	protected:
 		void 
 		resizeEvent(QResizeEvent);
@@ -73,6 +86,9 @@ class QMinkoEffectEditor :
 
 		void
 		setupSourceTabs();
+
+		void
+		setupListTabs();
 
 		void
 		setupIOButtons();
@@ -90,13 +106,17 @@ class QMinkoEffectEditor :
 		saveEffect(const QString&);
 
 		void
-		createEffect(std::string&) const;
+		createEffect();
 
 		void
-		displayEffect() const;
+		displayEffect();
 
 		void
 		saveNeeded(bool);
+
+		static
+		void
+		restoreSpecialCharacters(const std::string&, std::string&);
 
 		static
 		void 

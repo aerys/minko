@@ -11,6 +11,10 @@
 		<file>resources/CodeMirror/mode/clike/clike.js</file>
 		<file>resources/CodeMirror/addon/search/searchCursor.js</file>
 		<file>resources/CodeMirror/addon/search/match-highlighter.js</file>
+    <file>resources/CodeMirror/addon/fold/foldcode.js</file>
+    <file>resources/CodeMirror/addon/fold/foldgutter.js</file>
+    <file>resources/CodeMirror/addon/fold/brace-fold.js</file>
+    <file>resources/CodeMirror/addon/fold/xml-fold.js</file>
 		<file>resources/icon-load-mk.png</file>
 		<file>resources/icon-load-effect.png</file>
 		<file>resources/icon-save-effect.png</file>
