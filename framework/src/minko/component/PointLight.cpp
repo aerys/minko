@@ -17,14 +17,32 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AmbientLight.hpp"
+#include "PointLight.hpp"
+
+#include "minko/math/Vector4.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-AmbientLight::AmbientLight(float ambient) :
-	AbstractLight("ambientLights"),
-	_ambient(ambient)
+/*static*/
+uint PointLight::_counter = 0;
+
+PointLight::PointLight():
+	AbstractDiscreteLight("pointLights", _counter++),
+	_color(Vector3::create(1.0f, 1.0f, 1.0f)),
+	_worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
 {
-	data()->set("ambient", ambient);
+	diffuse(1.f);
+	specular(1.f);
+
+	data()->set("position", _worldPosition);
 }
+
+void
+PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
+{
+	modelToWorld->translationVector(_worldPosition);
+}
+

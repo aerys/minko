@@ -121,6 +121,9 @@ namespace minko
                      std::shared_ptr<States>    states);
 
 			void
+			reset();
+
+			void
             bind(ContainerPtr data, ContainerPtr rootData);
 
             void
