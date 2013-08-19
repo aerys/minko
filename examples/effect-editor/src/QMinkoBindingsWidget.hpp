@@ -1,11 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <unordered_map>
 
 #include <QtCore/QSignalMapper>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QTableWidget>
+
+#include "minko/render/BindingType.hpp"
 
 namespace Ui 
 {
@@ -17,43 +20,40 @@ class QMinkoBindingsWidget :
 {
     Q_OBJECT
 
-public:
-	typedef enum
-	{
-		BIND_ATTRIBUTE = 0,
-		BIND_UNIFORM,
-		BIND_STATE,
-		NUM_BIND_TYPES
-	} BindingType;
-
 private:
-	Ui::QMinkoBindingsWidget			*_ui;
-	QToolButton							*_qAddButtons		[NUM_BIND_TYPES];
-	QToolButton							*_qRemoveButtons	[NUM_BIND_TYPES];
-	QTableWidget						*_qBindingsTables	[NUM_BIND_TYPES];
-	QSignalMapper						*_qAddSignalMapper;	
-	QSignalMapper						*_qRemoveSignalMapper;
-
-	std::map<std::string, std::string>	_bindings			[NUM_BIND_TYPES];
+	typedef	std::unordered_map<std::string, std::string> BindingMap;
+private:
+	Ui::QMinkoBindingsWidget	*_ui;
+	QToolButton					*_qAddButtons		[minko::render::NUM_BIND_TYPES];
+	QToolButton					*_qRemoveButtons	[minko::render::NUM_BIND_TYPES];
+	QTableWidget				*_qBindingsTables	[minko::render::NUM_BIND_TYPES];
+	QSignalMapper				*_qAddSignalMapper;	
+	QSignalMapper				*_qRemoveSignalMapper;
+	BindingMap					_bindings			[minko::render::NUM_BIND_TYPES];
 
 public:
-    
 	explicit 
 	QMinkoBindingsWidget(QWidget *parent = 0);
 
 	~QMinkoBindingsWidget();
     
 	void
-	addBinding(BindingType, const std::string& name, const std::string& value);
+	addBinding(minko::render::BindingType, const std::string& name, const std::string& value);
 
 	bool
-	bindingExists(BindingType, const std::string& name) const;
+	bindingExists(minko::render::BindingType, const std::string& name) const;
 
 	const std::string&
-	binding(BindingType, const std::string& name) const;
+	binding(minko::render::BindingType, const std::string& name) const;
+
+	const BindingMap&
+	bindings(minko::render::BindingType) const;
 
 	void
-	removeBinding(BindingType, const std::string& name);
+	bindings(minko::render::BindingType, const BindingMap&);
+
+	void
+	removeBinding(minko::render::BindingType, const std::string& name);
 
 private:
 
@@ -65,7 +65,7 @@ private:
 
 signals:
 	void
-	bindingsChanged(const QString&);
+	bindingsChanged(minko::render::BindingType);
 
 private slots:
 	void
@@ -83,8 +83,13 @@ private slots:
 	void
 	addStateBindingAt(int row, int column);
 
+	void
+	addMacroBindingAt(int row, int column);
+
 private:
+	void
+	addBindingAt(minko::render::BindingType, int row, int column);
 
 	void
-	addBindingAt(BindingType, int row, int column);
+	appendBindingTableRow(minko::render::BindingType, const std::string& name, const std::string& value);
 };
