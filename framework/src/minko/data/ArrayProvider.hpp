@@ -67,6 +67,9 @@ namespace minko
 
 		private:
 			ArrayProvider(const std::string& name, uint index);
+
+			std::string
+			formatPropertyName(const std::string& propertyName);
 		};
 	}
 }
