@@ -43,6 +43,10 @@ namespace minko
 			std::shared_ptr<data::Provider>				_data;
 			std::set<std::shared_ptr<AmbientLight>>		_ambientLights;
 			std::set<std::shared_ptr<DirectionalLight>>	_directionalLights;
+			std::set<std::shared_ptr<PointLight>>		_pointLights;
+			std::set<std::shared_ptr<SpotLight>>		_spotLights;
+
+			std::shared_ptr<Vector3>					_sumAmbientColors;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -93,6 +97,9 @@ namespace minko
 
 			void
 			setLightArrayLength(const std::string& arrayName, int length);
+
+			void
+			setLightColor(const std::string& arrayName, Vector3::Ptr color);
 		};
 	}
 }
