@@ -46,23 +46,38 @@ Provider::unset(const std::string& propertyName)
 void
 Provider::swap(const std::string& propertyName1, const std::string& propertyName2)
 {
-	if (!hasProperty(propertyName1))
+	auto hasProperty1 = hasProperty(propertyName1);
+	auto hasProperty2 = hasProperty(propertyName2);
+
+	if (!hasProperty1 && !hasProperty2)
+		throw;
+
+	if (!hasProperty1 || !hasProperty2)
 	{
-		// move propertyName2 into propertyName1
-		// FIXME: update _names
-		// FIXME: update _values
-		// FIXME: update _changedSignalSlots
-	}
-	else if (!hasProperty(propertyName2))
-	{
-		// move propertyName1 into propertyName2
-		// FIXME: update _names
-		// FIXME: update _values
-		// FIXME: update _changedSignalSlots
+		auto source = hasProperty1 ? propertyName1 : propertyName2;
+		auto destination = hasProperty1 ? propertyName2 : propertyName1;
+		auto namesIt = std::find(_names.begin(), _names.end(), source);
+
+		*namesIt = destination;
+
+		_values[destination] = _values[source];
+		_values.erase(source);
+
+		_changedSignalSlots[destination] = _changedSignalSlots[source];
+		_changedSignalSlots.erase(source);
+
+		_propertyRemoved->execute(shared_from_this(), source);
+		_propertyAdded->execute(shared_from_this(), destination);
 	}
 	else
 	{
-		// actual swap
+		auto value = _values[propertyName1];
+
+		_values[propertyName1] = _values[propertyName2];
+		_values[propertyName2] = value;
+
+		_propertyChanged->execute(shared_from_this(), propertyName1);
+		_propertyChanged->execute(shared_from_this(), propertyName2);
 	}
 }
 
