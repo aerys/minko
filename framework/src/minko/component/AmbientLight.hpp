@@ -34,8 +34,6 @@ namespace minko
 			typedef std::shared_ptr<AmbientLight>	Ptr;
 
 		private:
-			static uint _counter;
-
 			float	_ambient;
 
 		public:
