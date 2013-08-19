@@ -42,8 +42,8 @@ namespace minko
 
 		private:
 			std::shared_ptr<data::Provider>				_data;
-			std::unordered_set<AbsLightPtr>				_ambientLights;
-			std::unordered_set<AbsLightPtr>				_directionalLights;
+			std::list<AbsLightPtr>						_ambientLights;
+			std::list<AbsLightPtr>						_directionalLights;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot			_targetRemovedSlot;
@@ -92,8 +92,14 @@ namespace minko
 			void
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr cmp);
 
+			bool
+			addLight(AbsLightPtr light, std::list<AbsLightPtr>& list);
+
+			bool
+			removeLight(AbsLightPtr light, std::list<AbsLightPtr>& list);
+
 			void
-			updateLightArray(const std::string& arrayName, std::unordered_set<AbsLightPtr>& lights);
+			updateLightArray(const std::string& arrayName, std::list<AbsLightPtr>& lights);
 		};
 	}
 }
