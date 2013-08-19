@@ -12,6 +12,14 @@ struct DirectionalLight
 	vec3 direction;	
 };
 
+struct SpotLight
+{
+	vec3 color;
+	float diffuse;
+	float specular;
+	vec3 position;
+};
+
 float phong_diffuseReflection(vec3 normal, vec3 lightDirection)
 {
 	return max(dot(normal, lightDirection), 0.);
