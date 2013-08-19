@@ -4,13 +4,16 @@ var codeMirror = CodeMirror(
 	document.body,
 	{
 		value: "int square(int x){ return x*x; }\n",
-		mode: "text/x-c++src",
+		mode: "x-shader/x-vertex",
 		smartIndent: true,
 		indentWithTabs: true,
 		tabSize: 4,
 		lineWrapping: true,
 		lineNumbers: true,
-		highlightSelectionMatches: {showToken: /\w/}
+		highlightSelectionMatches: {showToken: /\w/},
+		extraKeys: {"Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); }},
+		foldGutter: true,
+		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
 	}
 );
 
