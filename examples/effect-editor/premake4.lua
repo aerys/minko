@@ -1,18 +1,21 @@
 project "minko-effect-editor"
 	kind "ConsoleApp"
 	language "C++"
-	files {
+	files 
+	{
 		"**.hpp",
 		"**.h",
 		"**.cpp"
 	}
-	includedirs {
+	includedirs 
+	{
 		"src",
 		"lib",
 		"ui",
-		"../../deps/all/include"
+		"../../deps/all/include",
+		"../../framework/lib/jsoncpp/src"
 	}
-
+	defines { "JSON_IS_AMALGAMATION" }
 	-- QT5
 	if not _OPTIONS["os"] == "windows" then
 		error("ERROR\tcurrently, premake4.lua files only handle windows for QT5 support, sorry.");
