@@ -37,7 +37,7 @@ ArrayProvider::index(unsigned int index)
 	_index = index;
 	for (auto& propertyNames : _propertyNameToArrayPropertyName)
 	{
-		auto newPropertyName = _name + "[" + std::to_string(_index) + "]." + propertyNames.first;
+		auto newPropertyName = formatPropertyName(propertyNames.first);
 
 		swap(propertyNames.second, newPropertyName);
 		propertyNames.second = newPropertyName;
@@ -62,8 +62,14 @@ ArrayProvider::unset(const std::string& propertyName)
 void
 ArrayProvider::registerProperty(const std::string& propertyName, std::shared_ptr<Value> value)
 {
-	std::string arrayPropertyName = _name + "[" + std::to_string(_index) + "]." + propertyName;
+	std::string arrayPropertyName = formatPropertyName(propertyName);
 	
 	_propertyNameToArrayPropertyName[propertyName] = arrayPropertyName;
 	Provider::registerProperty(arrayPropertyName, value);
+}
+
+std::string
+ArrayProvider::formatPropertyName(const std::string& propertyName)
+{
+	return _name + "[" + std::to_string(_index) + "]." + propertyName;
 }
