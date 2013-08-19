@@ -137,7 +137,7 @@ Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
 										const std::string& 			propertyName)
 {
 	if (_propertyNameToProvider.count(propertyName) != 0)
-		throw std::logic_error("Duplicate binding property name: " + propertyName);
+		throw std::logic_error("duplicate property name: " + propertyName);
 	
 	_propertyNameToProvider[propertyName] = provider;
 
